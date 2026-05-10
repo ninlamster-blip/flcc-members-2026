@@ -1,0 +1,1351 @@
+{
+  "meta": {
+    "churchName": "FLCC - Abundance Church",
+    "publishedAt": "2026-05-10T20:20:41.788Z",
+    "version": "1.0"
+  },
+  "ministry": {
+    "headName": "Sis. Amazelle De Jesus",
+    "headTitle": "Fellowship Ministry Head",
+    "whatsapp": "+96595590217",
+    "messenger": "",
+    "phone": "+96595590217",
+    "email": "amazelle@yahoo.com"
+  },
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Bless De Jesus",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Hasmin Treseni",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Mae De Jesus",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Lizel Ocenar",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Fretz Guerzon",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider",
+        "preacher"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Dolly Cas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Rona Vergara",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Sandra Gabriel",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Christine Santos",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Celsa Sario",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Jhem Tulagan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Juneth Atienza",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-13",
+      "name": "Alma Flores",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider",
+        "preacher"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-14",
+      "name": "Almira Dela Paz",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-15",
+      "name": "Grace Siangco",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-16",
+      "name": "Annabelle Arciaga",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-17",
+      "name": "Jenarlyn Culao",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-18",
+      "name": "Laidz Pascual",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider",
+        "songLeader",
+        "preacher",
+        "pastoralPrayer",
+        "communionAssistant1",
+        "communionAssistant2"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-19",
+      "name": "Irene Sabangan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-20",
+      "name": "Thara Embo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Dandreb Serna",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Bong Cas",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Elbert Siangco",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Wilson Guerzon",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher",
+        "pastoralPrayer",
+        "communionAssistant1",
+        "communionAssistant2"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Allen Santos",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher",
+        "pastoralPrayer",
+        "communionAssistant1",
+        "communionAssistant2"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Ferdie Gajeton",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher",
+        "pastoralPrayer",
+        "communionAssistant1",
+        "communionAssistant2"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Edmund Gabriel",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "songLeader",
+        "preacher",
+        "pastoralPrayer",
+        "communionAssistant1",
+        "communionAssistant2"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-08",
+      "name": "Edward Sario",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-09",
+      "name": "Dave Vergara",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "ptr-01",
+      "name": "Justin Flores",
+      "title": "Ptr.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher",
+        "pastoralPrayer"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "ptr-02",
+      "name": "Doddie Arciaga",
+      "title": "Ptr.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher",
+        "pastoralPrayer"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "ptr-03",
+      "name": "Nerwin Suelo",
+      "title": "Ptr.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-01",
+      "name": "Cas Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-02",
+      "name": "Santos Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-03",
+      "name": "Pascual Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-04",
+      "name": "Vergara Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-05",
+      "name": "Gabriel Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-06",
+      "name": "Sario Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-07",
+      "name": "Arciaga Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-08",
+      "name": "Treseni Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-09",
+      "name": "Guerzon Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-10",
+      "name": "Siangco Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "fam-11",
+      "name": "Flores Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-01",
+      "name": "Tharah & Juneth",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-02",
+      "name": "Bless & Mae",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-03",
+      "name": "Lizel & Irene",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-04",
+      "name": "Jhem & Kamille",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-05",
+      "name": "Almira & Kitzie",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-06",
+      "name": "Jen & Sheng",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-07",
+      "name": "Jen & Lizel",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-08",
+      "name": "Ptr. Nerwin & Ferdie",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "par-09",
+      "name": "May & Danica",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active",
+      "birthday": ""
+    }
+  ],
+  "themes": {
+    "2026-02": "LOVE",
+    "2026-03": "PRAYER AND FASTING",
+    "2026-04": "WORKS OF THE HOLY SPIRIT / CHURCH GROWTH",
+    "2026-05": "YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)",
+    "2026-06": ""
+  },
+  "schedule": [
+    {
+      "id": "2026-02-06-friday",
+      "date": "2026-02-06",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-01",
+        "songLeader": "sis-06",
+        "preacher": "ptr-01",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-07"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-02-13-friday",
+      "date": "2026-02-13",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-02",
+        "songLeader": "bro-02",
+        "preacher": "bro-04",
+        "pastoralPrayer": "bro-06",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "par-03"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-02-20-friday",
+      "date": "2026-02-20",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-03",
+        "songLeader": "sis-17",
+        "preacher": "bro-05",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "par-04"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-02-27-friday",
+      "date": "2026-02-27",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-04",
+        "songLeader": "bro-03",
+        "preacher": "bro-07",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-02"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-02-01-sunday",
+      "date": "2026-02-01",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-05",
+        "songLeader": "bro-09",
+        "preacher": "ptr-02",
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-01"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-02-08-sunday",
+      "date": "2026-02-08",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-06",
+        "songLeader": "sis-18",
+        "preacher": "bro-06",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-04"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-02-15-sunday",
+      "date": "2026-02-15",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-07",
+        "songLeader": "sis-15",
+        "preacher": "sis-18",
+        "pastoralPrayer": "bro-06",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-05"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-02-22-sunday",
+      "date": "2026-02-22",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-08",
+        "songLeader": "bro-02",
+        "preacher": "bro-08",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "par-05"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-06-friday",
+      "date": "2026-03-06",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-09",
+        "songLeader": "bro-01",
+        "preacher": "ptr-02",
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "par-01"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-13-friday",
+      "date": "2026-03-13",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-10",
+        "songLeader": "bro-03",
+        "preacher": "bro-06",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-09"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-20-friday",
+      "date": "2026-03-20",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-11",
+        "songLeader": "sis-17",
+        "preacher": "sis-18",
+        "pastoralPrayer": "bro-06",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-08"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-28-friday",
+      "date": "2026-03-28",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-12",
+        "songLeader": "bro-02",
+        "preacher": "sis-19",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "par-06"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-01-sunday",
+      "date": "2026-03-01",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-13",
+        "songLeader": "sis-15",
+        "preacher": "ptr-01",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "par-08"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-08-sunday",
+      "date": "2026-03-08",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-14",
+        "songLeader": "bro-02",
+        "preacher": "bro-05",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-10"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-15-sunday",
+      "date": "2026-03-15",
+      "service": "Sunday",
+      "roles": {
+        "presider": "bro-09",
+        "songLeader": "sis-06",
+        "preacher": "bro-04",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-11"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-22-sunday",
+      "date": "2026-03-22",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-15",
+        "songLeader": "bro-03",
+        "preacher": "bro-07",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-03"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-03-29-sunday",
+      "date": "2026-03-29",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-16",
+        "songLeader": "sis-18",
+        "preacher": "ptr-03",
+        "pastoralPrayer": "bro-06",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-06"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-03-friday",
+      "date": "2026-04-03",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-04",
+        "songLeader": "sis-17",
+        "preacher": null,
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "par-01"
+      },
+      "isSpecial": true,
+      "specialNote": "Seven Last Words — Holy Week multi-speaker exhortation",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-10-friday",
+      "date": "2026-04-10",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-20",
+        "songLeader": "bro-01",
+        "preacher": "ptr-01",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "par-02"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-17-friday",
+      "date": "2026-04-17",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-02",
+        "songLeader": "sis-06",
+        "preacher": "bro-04",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "par-03"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-24-friday",
+      "date": "2026-04-24",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-03",
+        "songLeader": "bro-02",
+        "preacher": "bro-05",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "par-04"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-05-sunday",
+      "date": "2026-04-05",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-18",
+        "songLeader": "bro-02",
+        "preacher": "ptr-02",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-10"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-12-sunday",
+      "date": "2026-04-12",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-07",
+        "songLeader": "bro-03",
+        "preacher": "sis-19",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "par-08"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-19-sunday",
+      "date": "2026-04-19",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-08",
+        "songLeader": "sis-18",
+        "preacher": "bro-07",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "par-09"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-04-26-sunday",
+      "date": "2026-04-26",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-05",
+        "songLeader": "sis-15",
+        "preacher": "ptr-03",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-01"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-01-friday",
+      "date": "2026-05-01",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-09",
+        "songLeader": "sis-17",
+        "preacher": "ptr-02",
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-03"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-08-friday",
+      "date": "2026-05-08",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-11",
+        "songLeader": "bro-01",
+        "preacher": "bro-07",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-09"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-15-friday",
+      "date": "2026-05-15",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-17",
+        "songLeader": "sis-06",
+        "preacher": "sis-13",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-08"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": true,
+      "swapPartner": "2026-05-10-sunday",
+      "swapNote": "Swapped Preacher with 10-May Sunday"
+    },
+    {
+      "id": "2026-05-22-friday",
+      "date": "2026-05-22",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-12",
+        "songLeader": "bro-07",
+        "preacher": "sis-05",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-02"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-29-friday",
+      "date": "2026-05-29",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-01",
+        "songLeader": "bro-02",
+        "preacher": "bro-08",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "par-07"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-03-sunday",
+      "date": "2026-05-03",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-15",
+        "songLeader": "bro-02",
+        "preacher": "ptr-01",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-04"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-10-sunday",
+      "date": "2026-05-10",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-16",
+        "songLeader": "sis-18",
+        "preacher": "sis-19",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-05"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": true,
+      "swapPartner": "2026-05-15-friday",
+      "swapNote": "Swapped Preacher with 15-May Friday"
+    },
+    {
+      "id": "2026-05-17-sunday",
+      "date": "2026-05-17",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-10",
+        "songLeader": "bro-03",
+        "preacher": "bro-05",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "par-05"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-24-sunday",
+      "date": "2026-05-24",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-06",
+        "songLeader": "bro-09",
+        "preacher": "bro-04",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-06"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-05-31-sunday",
+      "date": "2026-05-31",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-14",
+        "songLeader": "sis-15",
+        "preacher": "ptr-03",
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "bro-06",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-07"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-05-friday",
+      "date": "2026-06-05",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-13",
+        "songLeader": "bro-01",
+        "preacher": "bro-07",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-11"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-12-friday",
+      "date": "2026-06-12",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-20",
+        "songLeader": "bro-01",
+        "preacher": "bro-05",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": null,
+        "foodInCharge": "par-01"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-19-friday",
+      "date": "2026-06-19",
+      "service": "Friday",
+      "roles": {},
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    }
+  ],
+  "events": [
+    {
+      "id": "evt-1778386815436",
+      "title": "Bro. Allen Santos Birthday",
+      "type": "birthday",
+      "date": "2026-05-19",
+      "startTime": "07:00",
+      "endTime": "21:00",
+      "location": "",
+      "notes": "",
+      "recurrence": "yearly",
+      "showOnDashboard": true
+    }
+  ]
+}
