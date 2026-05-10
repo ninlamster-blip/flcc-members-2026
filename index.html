@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLCC - Abundance Church · Schedule for Members</title>
+<meta name="description" content="View your service schedule, save events to your phone calendar, and report conflicts." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+  :root {
+    --bg: #FAFAF5;
+    --surface: #FFFFFF;
+    --ink: #18181B;
+    --ink-muted: #52525B;
+    --ink-subtle: #A1A1AA;
+    --border: #E7E5DE;
+    --border-strong: #D4D4D0;
+    --accent: #A33B2A;
+    --accent-hover: #8B2E20;
+    --accent-soft: #FBEBE7;
+    --success: #15803D;
+    --success-soft: #DCFCE7;
+    --warning: #B45309;
+    --warning-soft: #FEF3C7;
+    --danger: #B91C1C;
+    --danger-soft: #FEE2E2;
+    --info: #1E40AF;
+    --info-soft: #DBEAFE;
+  }
+
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-feature-settings: "ss01", "ss03"; }
+
+  .font-display { font-family: 'Fraunces', Georgia, serif; font-feature-settings: "ss01"; letter-spacing: -0.01em; }
+  .font-mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, monospace; }
+
+  .ink { color: var(--ink); }
+  .ink-muted { color: var(--ink-muted); }
+  .ink-subtle { color: var(--ink-subtle); }
+  .accent { color: var(--accent); }
+  .bg-app { background: var(--bg); }
+  .bg-surface { background: var(--surface); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.5rem 0.875rem; border-radius: 8px;
+    font-size: 0.875rem; font-weight: 500;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--ink); color: white; }
+  .btn-primary:hover { background: #27272A; }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
+  .btn-soft { background: #F4F4F0; color: var(--ink); }
+  .btn-soft:hover { background: #EDEDE7; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #991B1B; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding: 0.125rem 0.625rem; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 500; line-height: 1.4;
+  }
+  .pill-default { background: #F4F4F0; color: var(--ink-muted); }
+  .pill-success { background: var(--success-soft); color: var(--success); }
+  .pill-warning { background: var(--warning-soft); color: var(--warning); }
+  .pill-danger  { background: var(--danger-soft); color: var(--danger); }
+  .pill-info    { background: var(--info-soft); color: var(--info); }
+  .pill-accent  { background: var(--accent-soft); color: var(--accent); }
+  .pill-pink    { background: #FCE7F3; color: #BE185D; }
+
+  .input, .select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .input:focus, .select:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(24,24,27,0.06);
+  }
+
+  .tab {
+    padding: 0.625rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    cursor: pointer;
+    margin-right: 1.75rem;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab-active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(24,24,27,0.4);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+    padding: 1.5rem;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  }
+
+  .dotted-divider { border-top: 1px dashed var(--border-strong); }
+
+  /* Schedule rows */
+  .row-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .row-mine {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent-soft);
+    background: linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 30%);
+  }
+
+  /* Calendar grid */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .cal-header-cell {
+    background: #FBFBF7;
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+  .cal-day {
+    background: var(--surface);
+    padding: 0.5rem;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .cal-day:hover { background: #FAFAF5; }
+  .cal-day-other { background: #FBFBF7; }
+  .cal-day-other .cal-day-num { color: var(--ink-subtle); }
+  .cal-day-today { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+  .cal-day-mine { background: linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 60%); }
+  .cal-day-num { font-size: 0.875rem; font-weight: 500; color: var(--ink); line-height: 1; }
+  .cal-event {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .cal-service-badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .cal-mine-marker {
+    position: absolute;
+    bottom: 6px; right: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  @media (max-width: 640px) {
+    .cal-day { min-height: 60px; padding: 0.25rem; }
+    .cal-day-num { font-size: 0.75rem; }
+    .cal-event { padding: 0.0625rem 0.25rem; font-size: 0.5625rem; }
+    .cal-header-cell { padding: 0.25rem; font-size: 0.5625rem; }
+    .tab { margin-right: 1rem; font-size: 0.8125rem; }
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.2s ease-out; }
+
+  /* Channel buttons */
+  .channel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .channel-btn {
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .channel-btn:hover { border-color: var(--ink); background: var(--bg); }
+  .channel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .channel-btn:disabled:hover { border-color: var(--border); background: var(--surface); }
+  .channel-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef } = React;
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const ROLES = [
+  { key: 'presider', label: 'Presider' },
+  { key: 'songLeader', label: 'Song Leader' },
+  { key: 'preacher', label: 'Preacher' },
+  { key: 'pastoralPrayer', label: 'Pastoral Prayer' },
+  { key: 'communionAssistant1', label: 'Communion Asst.' },
+  { key: 'communionAssistant2', label: 'Communion Asst.' },
+  { key: 'foodInCharge', label: 'Food-in-Charge' },
+];
+
+const EVENT_TYPES = [
+  { key: 'bible-study',    label: 'Bible Study',    dot: '#D97706' },
+  { key: 'prayer-meeting', label: 'Prayer Meeting', dot: '#16A34A' },
+  { key: 'birthday',       label: 'Birthday',       dot: '#DB2777' },
+  { key: 'meeting',        label: 'Meeting',        dot: '#2563EB' },
+  { key: 'fellowship',     label: 'Fellowship',     dot: '#A33B2A' },
+  { key: 'other',          label: 'Other',          dot: '#71717A' },
+];
+
+const CONFLICT_REASONS = [
+  'Travel / out of town',
+  'Sickness',
+  'Work commitment',
+  'Family obligation',
+  'Other (explain in note)',
+];
+
+const ME_KEY = 'flcc-members-me';
+const DATA_URL = './data.json';
+const PRAYER_DATA_URL = './prayer.json';
+
+const PRAYER_ROLES = [
+  { key: 'presider',   label: 'Prayer Mtg. Presider' },
+  { key: 'exhorter',   label: 'Prayer Mtg. Exhorter' },
+  { key: 'songLeader', label: 'Prayer Mtg. Song Leader' },
+];
+
+const PRAYER_MEETING_TYPES = [
+  { key: 'sectoral',     label: 'Sectoral Prayer Meeting',     dot: '#7E22CE' },
+  { key: 'corporate',    label: 'Corporate Prayer Meeting',    dot: '#1E40AF' },
+  { key: 'fasting',      label: 'Prayer & Fasting',            dot: '#B45309' },
+  { key: 'regular',      label: 'Regular Prayer Meeting',      dot: '#15803D' },
+  { key: 'thanksgiving', label: 'Thanksgiving Prayer Meeting', dot: '#DB2777' },
+];
+
+// =============================================================================
+// DATE HELPERS
+// =============================================================================
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function parseISODate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function formatISODate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function todayISO() { return formatISODate(new Date()); }
+function dayOfWeek(s) { return DAY_NAMES[parseISODate(s).getDay()]; }
+function monthKey(s) { return s.slice(0,7); }
+function formatDateShort(s) {
+  const d = parseISODate(s);
+  return `${String(d.getDate()).padStart(2,'0')}-${MONTH_NAMES[d.getMonth()].slice(0,3)}`;
+}
+function formatMonthLabel(monthKey) {
+  const [y,m] = monthKey.split('-').map(Number);
+  return `${MONTH_NAMES[m-1]} ${y}`;
+}
+function formatDateLong(s) {
+  return parseISODate(s).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+function nextMonth(monthKey) {
+  let [y,m] = monthKey.split('-').map(Number);
+  m += 1; if (m > 12) { m = 1; y += 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function prevMonth(monthKey) {
+  let [y,m] = monthKey.split('-').map(Number);
+  m -= 1; if (m < 1) { m = 12; y -= 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function addDays(iso, n) {
+  const d = parseISODate(iso);
+  d.setDate(d.getDate() + n);
+  return formatISODate(d);
+}
+function daysInMonth(year, monthIndex) { return new Date(year, monthIndex + 1, 0).getDate(); }
+
+function workerDisplay(w) { return w ? (w.title ? `${w.title} ${w.name}` : w.name) : ''; }
+function workerShort(w) { return w ? w.name : ''; }
+function eventTypeMeta(typeKey) { return EVENT_TYPES.find(t => t.key === typeKey) || EVENT_TYPES[EVENT_TYPES.length - 1]; }
+function meetingTypeMeta(key) { return PRAYER_MEETING_TYPES.find(t => t.key === key) || PRAYER_MEETING_TYPES[3]; }
+function formatTime12(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hh = h % 12 || 12;
+  return `${hh}:${String(m).padStart(2,'0')} ${period}`;
+}
+
+// Match a prayer worker to a member by normalized name
+function findPrayerMatch(memberWorker, prayerWorkers) {
+  if (!memberWorker || !prayerWorkers) return null;
+  const norm = s => (s || '').trim().toLowerCase();
+  const fullKey = norm((memberWorker.title || '') + ' ' + memberWorker.name);
+  const nameKey = norm(memberWorker.name);
+  return prayerWorkers.find(pw => {
+    const pwFull = norm((pw.title || '') + ' ' + pw.name);
+    const pwName = norm(pw.name);
+    return pwFull === fullKey || pwName === nameKey;
+  });
+}
+
+// =============================================================================
+// EVENT EXPANSION
+// =============================================================================
+
+function getEventOccurrences(event, rangeStart, rangeEnd) {
+  if (!event.date) return [];
+  const occurrences = [];
+  const startDate = parseISODate(event.date);
+  if (event.recurrence === 'none' || !event.recurrence) {
+    if (event.date >= rangeStart && event.date <= rangeEnd) occurrences.push(event.date);
+    return occurrences;
+  }
+  let cur = new Date(startDate);
+  const end = parseISODate(rangeEnd);
+  let safety = 2000;
+  while (cur <= end && safety-- > 0) {
+    const iso = formatISODate(cur);
+    if (iso >= rangeStart && iso <= rangeEnd) occurrences.push(iso);
+    switch (event.recurrence) {
+      case 'daily':   cur.setDate(cur.getDate() + 1); break;
+      case 'weekly':  cur.setDate(cur.getDate() + 7); break;
+      case 'monthly': cur.setMonth(cur.getMonth() + 1); break;
+      case 'yearly':  cur.setFullYear(cur.getFullYear() + 1); break;
+      default: return occurrences;
+    }
+  }
+  return occurrences;
+}
+
+function getWorkerBirthdayEvents(workers, rangeStart, rangeEnd) {
+  const out = [];
+  const startYear = parseISODate(rangeStart).getFullYear();
+  const endYear = parseISODate(rangeEnd).getFullYear();
+  for (const w of workers) {
+    if (!w.birthday || !/^\d{2}-\d{2}$/.test(w.birthday)) continue;
+    if (w.status && w.status !== 'active') continue;
+    for (let y = startYear; y <= endYear; y++) {
+      const iso = `${y}-${w.birthday}`;
+      if (iso >= rangeStart && iso <= rangeEnd) {
+        out.push({
+          id: `birthday-${w.id}-${y}`,
+          title: `${workerDisplay(w)}'s Birthday`,
+          type: 'birthday',
+          date: iso,
+          startTime: null, endTime: null,
+          location: '', notes: '',
+          recurrence: 'yearly',
+          isAutoGenerated: true,
+          linkedWorkerId: w.id,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+function getAllEventsInRange(events, workers, rangeStart, rangeEnd) {
+  const out = [];
+  for (const e of (events || [])) {
+    const occs = getEventOccurrences(e, rangeStart, rangeEnd);
+    for (const date of occs) out.push({ ...e, date });
+  }
+  out.push(...getWorkerBirthdayEvents(workers, rangeStart, rangeEnd));
+  out.sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.startTime || '00:00').localeCompare(b.startTime || '00:00');
+  });
+  return out;
+}
+
+// =============================================================================
+// ICS GENERATION
+// =============================================================================
+
+function escapeICS(text) {
+  if (!text) return '';
+  return String(text).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+}
+function formatICSDateTime(year, month, day, hour, min) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${year}${pad(month)}${pad(day)}T${pad(hour)}${pad(min)}00`;
+}
+function formatICSDate(iso) { return iso.replace(/-/g, ''); }
+function formatICSStamp() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+}
+
+function eventToVEvent(event) {
+  const lines = ['BEGIN:VEVENT'];
+  lines.push(`UID:${event.id}@flcc-schedule-os`);
+  lines.push(`DTSTAMP:${formatICSStamp()}`);
+  if (event.startTime) {
+    const [y, m, d] = event.date.split('-').map(Number);
+    const [sh, sm] = event.startTime.split(':').map(Number);
+    lines.push(`DTSTART:${formatICSDateTime(y, m, d, sh, sm)}`);
+    if (event.endTime) {
+      const [eh, em] = event.endTime.split(':').map(Number);
+      lines.push(`DTEND:${formatICSDateTime(y, m, d, eh, em)}`);
+    } else {
+      lines.push(`DTEND:${formatICSDateTime(y, m, d, sh + 1, sm)}`);
+    }
+  } else {
+    lines.push(`DTSTART;VALUE=DATE:${formatICSDate(event.date)}`);
+    lines.push(`DTEND;VALUE=DATE:${formatICSDate(addDays(event.date, 1))}`);
+  }
+  lines.push(`SUMMARY:${escapeICS(event.title)}`);
+  if (event.location) lines.push(`LOCATION:${escapeICS(event.location)}`);
+  if (event.notes) lines.push(`DESCRIPTION:${escapeICS(event.notes)}`);
+  if (event.recurrence && event.recurrence !== 'none') {
+    lines.push(`RRULE:FREQ=${event.recurrence.toUpperCase()}`);
+  }
+  lines.push('END:VEVENT');
+  return lines.join('\r\n');
+}
+
+function serviceToVEvent(entry, workers, churchName) {
+  const lines = ['BEGIN:VEVENT'];
+  lines.push(`UID:${entry.id}@flcc-schedule-os`);
+  lines.push(`DTSTAMP:${formatICSStamp()}`);
+  // Default service times: 7 PM Friday, 6:30 PM Sunday (typical for FLCC)
+  const startHour = entry.service === 'Sunday' ? 18 : 19;
+  const startMin = entry.service === 'Sunday' ? 30 : 0;
+  const [y, m, d] = entry.date.split('-').map(Number);
+  lines.push(`DTSTART:${formatICSDateTime(y, m, d, startHour, startMin)}`);
+  lines.push(`DTEND:${formatICSDateTime(y, m, d, startHour + 2, startMin)}`);
+  const wd = (id) => { const w = workers.find(x => x.id === id); return w ? workerDisplay(w) : ''; };
+  const preacher = entry.isSpecial ? entry.specialNote : wd(entry.roles.preacher);
+  lines.push(`SUMMARY:${escapeICS(`${churchName} · ${entry.service} Service`)}`);
+  let desc = `Preacher: ${preacher || 'TBD'}\\nPresider: ${wd(entry.roles.presider) || 'TBD'}\\nSong Leader: ${wd(entry.roles.songLeader) || 'TBD'}\\nPastoral Prayer: ${wd(entry.roles.pastoralPrayer) || 'TBD'}`;
+  lines.push(`DESCRIPTION:${desc}`);
+  lines.push('END:VEVENT');
+  return lines.join('\r\n');
+}
+
+function eventsToICSFile(events, calendarName = 'FLCC Schedule') {
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//FLCC Schedule OS//EN',
+    'CALSCALE:GREGORIAN',
+    `X-WR-CALNAME:${escapeICS(calendarName)}`,
+  ];
+  for (const e of events) lines.push(eventToVEvent(e));
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+function downloadICS(filename, content) {
+  const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+function downloadServiceICS(entry, workers, churchName) {
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//FLCC Schedule OS//EN',
+    'CALSCALE:GREGORIAN',
+    serviceToVEvent(entry, workers, churchName),
+    'END:VCALENDAR',
+  ];
+  downloadICS(`flcc-${entry.service.toLowerCase()}-${entry.date}.ics`, lines.join('\r\n'));
+}
+
+// =============================================================================
+// CONFLICT MESSAGE BUILDER
+// =============================================================================
+
+function buildConflictMessage({ memberName, entry, role, reason, note, ministryHead, isPrayer }) {
+  const dateLabel = `${dayOfWeek(entry.date)} ${formatDateShort(entry.date)}`;
+  const greeting = ministryHead ? `Hi ${ministryHead}` : 'Hello';
+  let context;
+  if (isPrayer && entry._prayerType === 'meeting') {
+    const meta = meetingTypeMeta(entry.type);
+    const roleLabel = PRAYER_ROLES.find(r => r.key === role)?.label.replace('Prayer Mtg. ', '') || role;
+    context = `I have a scheduling conflict for the ${meta.label} on ${dateLabel} where I'm assigned as ${roleLabel}.`;
+  } else if (isPrayer && entry._prayerType === 'intercessory') {
+    context = `I have a scheduling conflict for the Intercessory Prayer on ${dateLabel} (${entry.service} service) where I'm part of the assigned team.`;
+  } else {
+    const roleLabel = ROLES.find(r => r.key === role)?.label || role;
+    context = `I have a scheduling conflict for our ${entry.service} service on ${dateLabel} where I'm assigned as ${roleLabel}.`;
+  }
+  const lines = [
+    `${greeting},`,
+    '',
+    `This is ${memberName}. ${context}`,
+    '',
+    `Reason: ${reason}`,
+  ];
+  if (note && note.trim()) lines.push(`Note: ${note.trim()}`);
+  lines.push('');
+  lines.push(`Could you please help me find a replacement? Sorry for the inconvenience and thank you.`);
+  lines.push('');
+  lines.push(`— ${memberName}`);
+  return lines.join('\n');
+}
+
+// Build channel URLs
+function whatsappURL(number, message) {
+  const cleaned = String(number || '').replace(/[^\d+]/g, '');
+  return `https://wa.me/${cleaned}?text=${encodeURIComponent(message)}`;
+}
+function smsURL(number, message) {
+  // iOS uses & for body; Android uses ? . Most modern devices accept both via sms:?body=
+  const cleaned = String(number || '').replace(/[^\d+]/g, '');
+  return `sms:${cleaned}?body=${encodeURIComponent(message)}`;
+}
+function messengerURL(username) {
+  return `https://m.me/${encodeURIComponent(String(username || '').replace(/^@/, ''))}`;
+}
+function emailURL(address, subject, message) {
+  return `mailto:${encodeURIComponent(address)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+}
+
+// =============================================================================
+// COMPONENTS
+// =============================================================================
+
+const Pill = ({ tone = 'default', children, className = '' }) => (
+  <span className={`pill pill-${tone} ${className}`}>{children}</span>
+);
+
+const SectionHeading = ({ eyebrow, title, children }) => (
+  <div className="mb-6">
+    {eyebrow && <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">{eyebrow}</div>}
+    <h2 className="font-display text-3xl font-semibold ink leading-tight">{title}</h2>
+    {children && <p className="mt-2 text-sm ink-muted max-w-xl">{children}</p>}
+  </div>
+);
+
+// --- Loading / Error states ---
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="text-center">
+        <div className="font-display text-2xl mb-2 ink">Loading schedule…</div>
+        <div className="ink-subtle text-sm">Fetching the latest from FLCC.</div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorScreen({ error, onRetry }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="card p-8 max-w-md text-center">
+        <div className="font-display text-2xl mb-2 ink">Couldn't load the schedule</div>
+        <p className="ink-muted text-sm mb-1">{error}</p>
+        <p className="ink-subtle text-xs mb-4">
+          The schedule data may not be published yet, or your internet connection may be slow.
+        </p>
+        <button className="btn btn-accent" onClick={onRetry}>↻ Try again</button>
+      </div>
+    </div>
+  );
+}
+
+// --- Welcome / Name picker ---
+function NamePicker({ workers, onPick, onSkip, churchName }) {
+  const [search, setSearch] = useState('');
+  const eligible = workers.filter(w => w.type === 'individual' && (!w.status || w.status === 'active'));
+  const q = search.trim().toLowerCase();
+  const filtered = q ? eligible.filter(w => (w.title + ' ' + w.name).toLowerCase().includes(q)) : eligible;
+  filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6 py-12">
+      <div className="card p-6 sm:p-8 max-w-lg w-full">
+        <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>{churchName}</div>
+        <h1 className="font-display text-3xl sm:text-4xl font-semibold mb-3">Welcome.</h1>
+        <p className="ink-muted text-sm mb-5">
+          Tap your name so we can show you your service assignments. Or skip to browse the full schedule.
+        </p>
+        <input
+          className="input mb-4"
+          placeholder="Search your name…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          autoFocus
+        />
+        <div className="space-y-1 max-h-72 overflow-y-auto" style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+          {filtered.length === 0 ? (
+            <div className="ink-subtle italic text-sm py-4 text-center">No workers found.</div>
+          ) : (
+            filtered.map(w => (
+              <div
+                key={w.id}
+                className="px-3 py-2 cursor-pointer rounded-md hover:bg-app text-sm"
+                style={{ background: 'transparent' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F4F4F0'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                onClick={() => onPick(w.id)}
+              >
+                {workerDisplay(w)}
+              </div>
+            ))
+          )}
+        </div>
+        <div className="mt-5 text-center">
+          <button className="btn btn-ghost" onClick={onSkip}>Skip — just browse</button>
+        </div>
+        <div className="mt-4 text-xs ink-subtle text-center">
+          Your selection is saved on this device only. Nothing is sent anywhere.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- My Schedule ---
+function MyScheduleTab({ data, prayerData, me, onConflict }) {
+  const today = todayISO();
+
+  // Main service assignments
+  const mainEntries = useMemo(() => {
+    return data.schedule
+      .filter(e => Object.values(e.roles).includes(me.id))
+      .filter(e => e.date >= today)
+      .map(e => ({ kind: 'main', date: e.date, entry: e }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [data.schedule, me.id, today]);
+
+  // Prayer assignments (matched by name across rosters)
+  const myPrayerWorker = useMemo(() => prayerData ? findPrayerMatch(me, prayerData.workers) : null, [me, prayerData]);
+  const prayerEntries = useMemo(() => {
+    if (!prayerData || !myPrayerWorker) return [];
+    return (prayerData.meetings || [])
+      .filter(m => m.date >= today)
+      .filter(m => m.presiderId === myPrayerWorker.id || m.exhorterId === myPrayerWorker.id || m.songLeaderId === myPrayerWorker.id)
+      .map(m => {
+        const roles = [];
+        if (m.presiderId === myPrayerWorker.id)   roles.push('presider');
+        if (m.exhorterId === myPrayerWorker.id)   roles.push('exhorter');
+        if (m.songLeaderId === myPrayerWorker.id) roles.push('songLeader');
+        return { kind: 'prayer', date: m.date, meeting: m, roles };
+      });
+  }, [prayerData, myPrayerWorker, today]);
+
+  // Unified upcoming list, chronologically sorted
+  const allUpcoming = useMemo(() => {
+    return [...mainEntries, ...prayerEntries].sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      // Same date — main service first
+      return a.kind === 'main' ? -1 : 1;
+    });
+  }, [mainEntries, prayerEntries]);
+
+  const myUpcomingBirthday = useMemo(() => {
+    if (!me.birthday) return null;
+    const now = new Date();
+    let candidate = `${now.getFullYear()}-${me.birthday}`;
+    if (candidate < today) candidate = `${now.getFullYear() + 1}-${me.birthday}`;
+    return candidate;
+  }, [me.birthday, today]);
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow={`Hello, ${me.title || ''} ${me.name}`} title="My Schedule">
+        Your upcoming service and prayer assignments. Tap 📅 to save to your phone calendar, or "Report conflict" if you can't make it.
+      </SectionHeading>
+
+      {myUpcomingBirthday && (
+        <div className="card p-4 mb-4 flex items-center gap-3" style={{ background: '#FCE7F3' }}>
+          <span className="text-2xl">🎂</span>
+          <div>
+            <div className="text-sm font-medium" style={{ color: '#BE185D' }}>Your next birthday</div>
+            <div className="text-xs" style={{ color: '#9D174D' }}>
+              {parseISODate(myUpcomingBirthday).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {allUpcoming.length === 0 ? (
+        <div className="card p-8 text-center">
+          <div className="font-display text-xl mb-2">No upcoming assignments</div>
+          <p className="ink-muted text-sm">You don't have any service or prayer assignments scheduled yet. Check back when the next month is published.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {allUpcoming.map((item, idx) => {
+            if (item.kind === 'main') {
+              const entry = item.entry;
+              const myRoles = ROLES.filter(r => entry.roles[r.key] === me.id);
+              return (
+                <div key={`main-${entry.id}`} className="row-card row-mine">
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div>
+                      <div className="font-display text-lg font-semibold">{formatDateLong(entry.date)}</div>
+                      <div className="text-xs ink-muted">{entry.service} Service</div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {myRoles.map(r => <Pill key={r.key} tone="accent">{r.label}</Pill>)}
+                    </div>
+                  </div>
+                  <div className="dotted-divider my-3" />
+                  <ServiceDetails entry={entry} workers={data.workers} highlightId={me.id} />
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button className="btn btn-soft" onClick={() => downloadServiceICS(entry, data.workers, data.meta.churchName)}>
+                      📅 Save to my calendar
+                    </button>
+                    {myRoles.map(r => (
+                      <button key={r.key} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({ entry, role: r.key })}>
+                        ⚠ Report conflict for {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            } else {
+              const m = item.meeting;
+              const meta = meetingTypeMeta(m.type);
+              const presider = (prayerData.workers || []).find(w => w.id === m.presiderId);
+              const exhorter = (prayerData.workers || []).find(w => w.id === m.exhorterId);
+              const songLeader = (prayerData.workers || []).find(w => w.id === m.songLeaderId);
+              const isCoord = ['sectoral', 'corporate'].includes(m.type);
+              return (
+                <div key={`prayer-${m.id}`} className="row-card row-mine" style={{ borderLeftWidth: '3px', borderLeftColor: meta.dot }}>
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div>
+                      <div className="font-display text-lg font-semibold">{formatDateLong(m.date)}</div>
+                      <div className="text-xs ink-muted">{meta.label} · {formatTime12(m.startTime)} · {m.venue || 'venue TBD'}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {item.roles.map(r => <Pill key={r} tone="accent">{PRAYER_ROLES.find(pr => pr.key === r)?.label.replace('Prayer Mtg. ', '')}</Pill>)}
+                    </div>
+                  </div>
+                  <div className="dotted-divider my-3" />
+                  {isCoord ? (
+                    <div className="text-sm"><span className="ink-muted text-xs">Coordinated by · </span>{m.coordinator || 'TBD'}</div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                      <div><span className="ink-muted text-xs">Presider · </span>{presider ? <span style={{ color: myPrayerWorker?.id === presider.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === presider.id ? 600 : 400 }}>{workerShort(presider)}{myPrayerWorker?.id === presider.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                      <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? <span style={{ color: myPrayerWorker?.id === exhorter.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === exhorter.id ? 600 : 400 }}>{workerShort(exhorter)}{myPrayerWorker?.id === exhorter.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                      <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? <span style={{ color: myPrayerWorker?.id === songLeader.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === songLeader.id ? 600 : 400 }}>{workerShort(songLeader)}{myPrayerWorker?.id === songLeader.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                    </div>
+                  )}
+                  {m.foodInChargeText && (
+                    <div className="text-xs ink-muted mt-3"><strong>Food in charge:</strong> {m.foodInChargeText}</div>
+                  )}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button className="btn btn-soft" onClick={() => downloadPrayerMeetingICS(m, prayerData, data.meta.churchName)}>
+                      📅 Save to my calendar
+                    </button>
+                    {item.roles.map(r => (
+                      <button key={r} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({
+                        entry: { ...m, _prayerType: 'meeting' }, role: r, isPrayer: true,
+                      })}>
+                        ⚠ Report conflict for {PRAYER_ROLES.find(pr => pr.key === r)?.label.replace('Prayer Mtg. ', '')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Service Details (shared component) ---
+function ServiceDetails({ entry, workers, highlightId }) {
+  const wd = (id) => {
+    const w = workers.find(x => x.id === id);
+    if (!w) return <span className="ink-subtle italic">TBD</span>;
+    const isMe = highlightId && id === highlightId;
+    return <span style={{ color: isMe ? 'var(--accent)' : 'var(--ink)', fontWeight: isMe ? 600 : 400 }}>{workerShort(w)}{isMe ? ' (you)' : ''}</span>;
+  };
+  const food = workers.find(w => w.id === entry.roles.foodInCharge);
+
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <div><span className="ink-muted text-xs">Presider · </span>{wd(entry.roles.presider)}</div>
+      <div><span className="ink-muted text-xs">Song Leader · </span>{wd(entry.roles.songLeader)}</div>
+      <div className="col-span-2">
+        <span className="ink-muted text-xs">Preacher · </span>
+        {entry.isSpecial ? <em style={{ color: 'var(--accent)' }}>{entry.specialNote || 'Special event'}</em> : wd(entry.roles.preacher)}
+        {entry.swapped && <Pill tone="info" className="ml-2">⇄ swap</Pill>}
+      </div>
+      <div><span className="ink-muted text-xs">Pastoral Prayer · </span>{wd(entry.roles.pastoralPrayer)}</div>
+      <div><span className="ink-muted text-xs">Communion · </span>{wd(entry.roles.communionAssistant1)}{entry.roles.communionAssistant2 ? <> & {wd(entry.roles.communionAssistant2)}</> : null}</div>
+      <div className="col-span-2"><span className="ink-muted text-xs">Food-in-Charge · </span>{food ? food.name : <span className="ink-subtle italic">TBD</span>}</div>
+    </div>
+  );
+}
+
+// --- This Month tab ---
+function ThisMonthTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConflict }) {
+  const monthEntries = data.schedule.filter(e => monthKey(e.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
+  const fridays = monthEntries.filter(e => e.service === 'Friday');
+  const sundays = monthEntries.filter(e => e.service === 'Sunday');
+  const theme = (data.themes || {})[currentMonth] || '';
+
+  // Index intercessory by date+service for quick lookup
+  const intercessoryByKey = useMemo(() => {
+    const m = new Map();
+    if (!prayerData?.intercessory) return m;
+    for (const ip of prayerData.intercessory) {
+      m.set(`${ip.date}|${ip.service}`, ip);
+    }
+    return m;
+  }, [prayerData]);
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow={`Service schedule · ${formatMonthLabel(currentMonth)}`} title={theme || 'This Month'}>
+        Tap any service to save to your phone calendar.
+      </SectionHeading>
+
+      <div className="card p-4 mb-6 flex items-center justify-center gap-3">
+        <button className="btn btn-ghost" onClick={() => setCurrentMonth(prevMonth(currentMonth))}>←</button>
+        <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
+        <button className="btn btn-ghost" onClick={() => setCurrentMonth(nextMonth(currentMonth))}>→</button>
+      </div>
+
+      {monthEntries.length === 0 ? (
+        <div className="card p-8 text-center">
+          <div className="font-display text-xl mb-2">No services published</div>
+          <p className="ink-muted text-sm">The schedule for {formatMonthLabel(currentMonth)} hasn't been published yet.</p>
+        </div>
+      ) : (
+        <>
+          <ServiceListSection title="Friday Service" entries={fridays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} />
+          <ServiceListSection title="Sunday Service" entries={sundays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function ServiceListSection({ title, entries, workers, me, churchName, onConflict, prayerData, intercessoryByKey }) {
+  if (entries.length === 0) return null;
+  return (
+    <div className="mb-6">
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">{title}</div>
+      <div className="space-y-3">
+        {entries.map(entry => {
+          const isMine = me && Object.values(entry.roles).includes(me.id);
+          const myRoles = me ? ROLES.filter(r => entry.roles[r.key] === me.id) : [];
+          const intercessory = intercessoryByKey?.get(`${entry.date}|${entry.service}`);
+          const intercessoryTeam = intercessory && prayerData ? (prayerData.teams || []).find(t => t.id === intercessory.teamId) : null;
+          return (
+            <div key={entry.id} className={`row-card ${isMine ? 'row-mine' : ''}`}>
+              <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                <div>
+                  <div className="font-display text-lg font-semibold">{formatDateLong(entry.date)}</div>
+                  {isMine && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {myRoles.map(r => <Pill key={r.key} tone="accent">You · {r.label}</Pill>)}
+                    </div>
+                  )}
+                </div>
+                <button className="btn btn-soft text-xs" onClick={() => downloadServiceICS(entry, workers, churchName)}>📅</button>
+              </div>
+              <div className="dotted-divider my-3" />
+              <ServiceDetails entry={entry} workers={workers} highlightId={me?.id} />
+              {intercessory && (
+                <div className="mt-3 pt-3" style={{ borderTop: '1px dashed var(--border-strong)' }}>
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-xs ink-muted">🙏 Intercessory ({formatTime12(intercessory.startTime)}{intercessory.endTime ? `–${formatTime12(intercessory.endTime)}` : ''}) ·</span>
+                    <span className="text-sm font-medium">{intercessoryTeam ? intercessoryTeam.name : <span className="ink-subtle italic">Unassigned</span>}</span>
+                  </div>
+                </div>
+              )}
+              {isMine && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {myRoles.map(r => (
+                    <button key={r.key} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({ entry, role: r.key })}>
+                      ⚠ Report conflict
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// --- Calendar tab (read-only with .ics export) ---
+function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
+  const [year, monthIdx] = useMemo(() => {
+    const [y, m] = currentMonth.split('-').map(Number);
+    return [y, m - 1];
+  }, [currentMonth]);
+
+  const firstDay = `${currentMonth}-01`;
+  const lastDay = `${currentMonth}-${String(daysInMonth(year, monthIdx)).padStart(2, '0')}`;
+  const gridStart = (() => {
+    const d = parseISODate(firstDay);
+    d.setDate(d.getDate() - d.getDay());
+    return formatISODate(d);
+  })();
+  const gridEnd = (() => {
+    const d = parseISODate(lastDay);
+    d.setDate(d.getDate() + (6 - d.getDay()));
+    return formatISODate(d);
+  })();
+
+  const allEvents = useMemo(
+    () => getAllEventsInRange(data.events || [], data.workers, gridStart, gridEnd),
+    [data.events, data.workers, gridStart, gridEnd]
+  );
+
+  // Match member to prayer roster (by name) for highlighting
+  const myPrayerWorker = useMemo(() => prayerData ? findPrayerMatch(me, prayerData.workers) : null, [me, prayerData]);
+
+  // Build prayer event entries that fit into the calendar grid
+  const prayerEventsByDate = useMemo(() => {
+    const map = new Map();
+    if (!prayerData) return map;
+    // Intercessory entries
+    for (const ip of (prayerData.intercessory || [])) {
+      if (ip.date < gridStart || ip.date > gridEnd) continue;
+      const team = (prayerData.teams || []).find(t => t.id === ip.teamId);
+      const list = map.get(ip.date) || [];
+      list.push({
+        id: ip.id,
+        date: ip.date,
+        title: `🙏 ${team ? team.name : 'Intercessory'}`,
+        startTime: ip.startTime,
+        endTime: ip.endTime,
+        location: '',
+        kind: 'prayer-intercessory',
+        dot: '#6366F1',
+      });
+      map.set(ip.date, list);
+    }
+    // Prayer meetings
+    for (const m of (prayerData.meetings || [])) {
+      if (m.date < gridStart || m.date > gridEnd) continue;
+      const meta = meetingTypeMeta(m.type);
+      const list = map.get(m.date) || [];
+      const isMine = myPrayerWorker && (m.presiderId === myPrayerWorker.id || m.exhorterId === myPrayerWorker.id || m.songLeaderId === myPrayerWorker.id);
+      list.push({
+        id: m.id,
+        date: m.date,
+        title: `🕊 ${meta.label.split(' ')[0]}`,
+        startTime: m.startTime,
+        endTime: '',
+        location: m.venue || '',
+        kind: 'prayer-meeting',
+        dot: meta.dot,
+        isMine,
+      });
+      map.set(m.date, list);
+    }
+    return map;
+  }, [prayerData, gridStart, gridEnd, myPrayerWorker]);
+
+  const eventsByDate = useMemo(() => {
+    const m = new Map();
+    for (const e of allEvents) {
+      if (!m.has(e.date)) m.set(e.date, []);
+      m.get(e.date).push(e);
+    }
+    // Merge prayer events
+    for (const [date, prayers] of prayerEventsByDate) {
+      const existing = m.get(date) || [];
+      m.set(date, [...existing, ...prayers]);
+    }
+    return m;
+  }, [allEvents, prayerEventsByDate]);
+
+  const servicesByDate = useMemo(() => {
+    const m = new Map();
+    for (const s of data.schedule) {
+      if (!m.has(s.date)) m.set(s.date, []);
+      m.get(s.date).push(s);
+    }
+    return m;
+  }, [data.schedule]);
+
+  const cells = [];
+  let cur = parseISODate(gridStart);
+  for (let i = 0; i < 42; i++) {
+    cells.push(formatISODate(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  const today = todayISO();
+  const upcomingFrom = today;
+  const upcomingTo = addDays(today, 60);
+  const upcoming = useMemo(() => {
+    const main = getAllEventsInRange(data.events || [], data.workers, upcomingFrom, upcomingTo);
+    const prayers = [];
+    if (prayerData) {
+      for (const ip of (prayerData.intercessory || [])) {
+        if (ip.date >= upcomingFrom && ip.date <= upcomingTo) {
+          const team = (prayerData.teams || []).find(t => t.id === ip.teamId);
+          prayers.push({
+            id: ip.id, date: ip.date,
+            title: `🙏 Intercessory · ${team ? team.name : 'TBD'} (${ip.service})`,
+            startTime: ip.startTime, endTime: ip.endTime, location: '',
+            dot: '#6366F1',
+            _prayerKind: 'intercessory', _raw: ip,
+          });
+        }
+      }
+      for (const m of (prayerData.meetings || [])) {
+        if (m.date >= upcomingFrom && m.date <= upcomingTo) {
+          const meta = meetingTypeMeta(m.type);
+          prayers.push({
+            id: m.id, date: m.date,
+            title: `🕊 ${meta.label}`,
+            startTime: m.startTime, endTime: '',
+            location: m.venue || '',
+            dot: meta.dot,
+            _prayerKind: 'meeting', _raw: m,
+          });
+        }
+      }
+    }
+    return [...main, ...prayers].sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return (a.startTime || '').localeCompare(b.startTime || '');
+    });
+  }, [data.events, data.workers, prayerData, upcomingFrom, upcomingTo]);
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Activities & birthdays" title="Calendar">
+        Bible studies, prayer meetings, fellowship gatherings, and worker birthdays.
+      </SectionHeading>
+
+      <div className="card p-4 mb-6 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <button className="btn btn-ghost" onClick={() => setCurrentMonth(prevMonth(currentMonth))}>←</button>
+          <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
+          <button className="btn btn-ghost" onClick={() => setCurrentMonth(nextMonth(currentMonth))}>→</button>
+          <button className="btn btn-soft text-xs" onClick={() => setCurrentMonth(monthKey(today))}>Today</button>
+        </div>
+        <div className="flex flex-wrap gap-3 text-xs ink-muted">
+          {EVENT_TYPES.slice(0, 4).map(t => (
+            <div key={t.key} className="flex items-center gap-1.5">
+              <span className="cal-event-dot" style={{ background: t.dot }}></span>
+              {t.label}
+            </div>
+          ))}
+          {prayerData && (
+            <>
+              <div className="flex items-center gap-1.5">
+                <span className="cal-event-dot" style={{ background: '#6366F1' }}></span>
+                Intercessory
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="cal-event-dot" style={{ background: '#15803D' }}></span>
+                Prayer Mtg.
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="cal-grid mb-6">
+        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+          <div key={d} className="cal-header-cell">{d}</div>
+        ))}
+        {cells.map(date => {
+          const isOtherMonth = monthKey(date) !== currentMonth;
+          const isToday = date === today;
+          const dayEvents = eventsByDate.get(date) || [];
+          const services = servicesByDate.get(date) || [];
+          const isMineMain = me && services.some(s => Object.values(s.roles).includes(me.id));
+          const isMinePrayer = dayEvents.some(e => e.isMine);
+          const isMine = isMineMain || isMinePrayer;
+          let cls = 'cal-day';
+          if (isOtherMonth) cls += ' cal-day-other';
+          if (isToday) cls += ' cal-day-today';
+          else if (isMine) cls += ' cal-day-mine';
+
+          return (
+            <div key={date} className={cls}>
+              <div className="flex items-start justify-between">
+                <span className="cal-day-num">{parseISODate(date).getDate()}</span>
+              </div>
+              {services.length > 0 && (
+                <div className="cal-service-badge">{services[0].service.toUpperCase().slice(0,3)}</div>
+              )}
+              {isMine && <div className="cal-mine-marker" title="You're scheduled this day"></div>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
+                {dayEvents.slice(0, 2).map(e => {
+                  const dotColor = e.dot || eventTypeMeta(e.type).dot;
+                  return (
+                    <div key={e.id} className="cal-event" style={{ background: dotColor + '20', color: dotColor }} title={e.title}>
+                      <span className="cal-event-dot" style={{ background: dotColor }}></span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</span>
+                    </div>
+                  );
+                })}
+                {dayEvents.length > 2 && (
+                  <div style={{ fontSize: '0.625rem', color: 'var(--ink-muted)', padding: '0 0.25rem' }}>+{dayEvents.length - 2} more</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="card p-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Upcoming · next 60 days</div>
+        {upcoming.length === 0 ? (
+          <div className="ink-subtle italic text-sm">No upcoming events.</div>
+        ) : (
+          <div className="space-y-2">
+            {upcoming.map((e, i) => {
+              const dotColor = e.dot || eventTypeMeta(e.type).dot;
+              const dateLabel = parseISODate(e.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+              return (
+                <div key={`${e.id}-${i}`} className="flex items-center gap-3 py-2" style={{ borderBottom: '1px dashed var(--border-strong)' }}>
+                  <div className="font-mono text-xs ink-muted" style={{ width: 90, flexShrink: 0 }}>{dateLabel}</div>
+                  <span className="cal-event-dot" style={{ background: dotColor, flexShrink: 0 }}></span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{e.title}</div>
+                    <div className="text-xs ink-muted">
+                      {e.startTime ? `${formatTime12(e.startTime)}${e.endTime ? '–' + formatTime12(e.endTime) : ''}` : 'All day'}
+                      {e.location ? ` · ${e.location}` : ''}
+                    </div>
+                  </div>
+                  <button className="btn btn-ghost text-xs" title="Save to phone calendar" onClick={() => {
+                    if (e._prayerKind === 'meeting') {
+                      downloadPrayerMeetingICS(e._raw, prayerData, data.meta.churchName);
+                    } else if (e._prayerKind === 'intercessory') {
+                      downloadIntercessoryICS(e._raw, prayerData, data.meta.churchName);
+                    } else {
+                      const ics = eventsToICSFile([e], e.title);
+                      downloadICS(`${e.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, ics);
+                    }
+                  }}>📅</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- About tab ---
+function AboutTab({ data, me, onChangeName }) {
+  const m = data.ministry || {};
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="About" title={data.meta.churchName}>
+        This members view is read-only and shows the latest schedule published by the admin.
+      </SectionHeading>
+
+      <div className="card p-6 mb-4">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Fellowship Ministry</div>
+        <div className="font-display text-2xl font-semibold">{m.headName || '—'}</div>
+        {m.headTitle && <div className="text-sm ink-muted mt-1">{m.headTitle}</div>}
+        <div className="dotted-divider my-4" />
+        <div className="space-y-2 text-sm">
+          {m.whatsapp && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(m.whatsapp, '')} className="ink hover:underline">{m.whatsapp}</a></div>}
+          {m.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(m.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{m.messenger}</a></div>}
+          {m.phone && <div><span className="ink-muted text-xs">SMS / Phone · </span><a href={`tel:${m.phone}`} className="ink hover:underline">{m.phone}</a></div>}
+          {m.email && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${m.email}`} className="ink hover:underline">{m.email}</a></div>}
+        </div>
+      </div>
+
+      <div className="card p-6 mb-4">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">You</div>
+        {me ? (
+          <>
+            <div className="font-display text-xl font-semibold">{workerDisplay(me)}</div>
+            <div className="text-sm ink-muted mt-1">Saved on this device only.</div>
+            <button className="btn btn-ghost mt-3 text-sm" onClick={onChangeName}>Change name</button>
+          </>
+        ) : (
+          <>
+            <div className="text-sm ink-muted mb-3">You haven't picked your name. Pick it to see personalized assignments.</div>
+            <button className="btn btn-accent text-sm" onClick={onChangeName}>Pick my name</button>
+          </>
+        )}
+      </div>
+
+      <div className="text-xs ink-subtle text-center mt-8">
+        Schedule last published: {data.meta.publishedAt ? new Date(data.meta.publishedAt).toLocaleString() : 'unknown'}
+      </div>
+    </div>
+  );
+}
+
+// --- Conflict Modal ---
+function ConflictModal({ entry, role, me, ministry, isPrayer, onClose }) {
+  const [reason, setReason] = useState(CONFLICT_REASONS[0]);
+  const [note, setNote] = useState('');
+
+  const message = useMemo(() => buildConflictMessage({
+    memberName: workerDisplay(me),
+    entry, role, reason, note,
+    ministryHead: ministry.headName,
+    isPrayer,
+  }), [me, entry, role, reason, note, ministry.headName, isPrayer]);
+
+  const subject = isPrayer
+    ? `Prayer schedule conflict · ${formatDateShort(entry.date)}`
+    : `Schedule conflict · ${entry.service} ${formatDateShort(entry.date)}`;
+
+  const channels = [
+    {
+      key: 'whatsapp', label: 'WhatsApp', icon: '💬', bg: '#25D366',
+      enabled: !!ministry.whatsapp,
+      url: () => whatsappURL(ministry.whatsapp, message),
+    },
+    {
+      key: 'messenger', label: 'Messenger', icon: 'M', bg: '#0084FF',
+      enabled: !!ministry.messenger,
+      url: () => messengerURL(ministry.messenger),
+      // Messenger doesn't accept prefilled message; we copy to clipboard then open
+      preAction: () => navigator.clipboard?.writeText(message).catch(() => {}),
+      hint: 'Message copied to clipboard — paste it into the Messenger chat',
+    },
+    {
+      key: 'sms', label: 'SMS', icon: '📱', bg: '#34C759',
+      enabled: !!ministry.phone,
+      url: () => smsURL(ministry.phone, message),
+    },
+    {
+      key: 'email', label: 'Email', icon: '✉', bg: '#EF4444',
+      enabled: !!ministry.email,
+      url: () => emailURL(ministry.email, subject, message),
+    },
+  ];
+
+  const sendVia = (channel) => {
+    if (channel.preAction) channel.preAction();
+    window.open(channel.url(), '_blank');
+    if (channel.hint) alert(channel.hint);
+  };
+
+  const copyMessage = () => {
+    navigator.clipboard.writeText(message).then(() => alert('Message copied to clipboard!')).catch(() => alert('Copy failed.'));
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()} style={{ maxWidth: 540 }}>
+        <h3 className="font-display text-2xl font-semibold mb-1">Report a conflict</h3>
+        <p className="text-sm ink-muted mb-4">
+          {dayOfWeek(entry.date)} {formatDateShort(entry.date)} · {entry.service} · {ROLES.find(r => r.key === role)?.label}
+        </p>
+
+        <div className="space-y-3 mb-5">
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Reason</label>
+            <select className="select mt-1" value={reason} onChange={e => setReason(e.target.value)}>
+              {CONFLICT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Note <span className="ink-subtle italic font-normal" style={{ letterSpacing: 0, textTransform: 'none' }}>· optional</span></label>
+            <textarea
+              className="input mt-1"
+              rows={3}
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              placeholder="Anything else Sis. Amazelle should know?"
+            />
+          </div>
+        </div>
+
+        <div className="card p-4 mb-5" style={{ background: 'var(--bg)' }}>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Preview</div>
+          <pre className="text-xs whitespace-pre-wrap" style={{ fontFamily: 'inherit', lineHeight: 1.5 }}>{message}</pre>
+        </div>
+
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Send via</div>
+        <div className="channel-grid mb-4">
+          {channels.map(c => (
+            <button
+              key={c.key}
+              className="channel-btn"
+              disabled={!c.enabled}
+              onClick={() => sendVia(c)}
+              title={c.enabled ? '' : 'Not configured by ministry'}
+            >
+              <div className="channel-icon" style={{ background: c.enabled ? c.bg : '#E7E5DE', color: c.enabled ? 'white' : 'var(--ink-subtle)' }}>{c.icon}</div>
+              <div>
+                <div className="text-sm font-medium">{c.label}</div>
+                <div className="text-xs ink-subtle">{c.enabled ? 'Tap to open' : 'Not available'}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex justify-between gap-2">
+          <button className="btn btn-ghost text-sm" onClick={copyMessage}>📋 Copy message</button>
+          <button className="btn btn-soft" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// PRAYER TAB
+// =============================================================================
+
+function downloadPrayerMeetingICS(meeting, prayerData, churchName) {
+  const meta = meetingTypeMeta(meeting.type);
+  const presider = (prayerData.workers || []).find(w => w.id === meeting.presiderId);
+  const exhorter = (prayerData.workers || []).find(w => w.id === meeting.exhorterId);
+  const songLeader = (prayerData.workers || []).find(w => w.id === meeting.songLeaderId);
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//FLCC Prayer OS//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${meeting.id}@flcc-prayer`,
+    `DTSTAMP:${formatICSStamp()}`,
+  ];
+  if (meeting.startTime) {
+    const [y, m, d] = meeting.date.split('-').map(Number);
+    const [sh, sm] = meeting.startTime.split(':').map(Number);
+    lines.push(`DTSTART:${formatICSDateTime(y, m, d, sh, sm)}`);
+    lines.push(`DTEND:${formatICSDateTime(y, m, d, sh + 1, sm + 30 > 60 ? sm - 30 : sm + 30)}`);
+  } else {
+    lines.push(`DTSTART;VALUE=DATE:${formatICSDate(meeting.date)}`);
+    lines.push(`DTEND;VALUE=DATE:${formatICSDate(addDays(meeting.date, 1))}`);
+  }
+  lines.push(`SUMMARY:${escapeICS(`${churchName} · ${meta.label}`)}`);
+  if (meeting.venue) lines.push(`LOCATION:${escapeICS(meeting.venue)}`);
+  let desc = `${meta.label}`;
+  if (['sectoral', 'corporate'].includes(meeting.type)) {
+    desc += `\\nC/O ${meeting.coordinator || 'TBD'}`;
+  } else {
+    if (presider)   desc += `\\nPresider: ${workerDisplay(presider)}`;
+    if (exhorter)   desc += `\\nExhorter: ${workerDisplay(exhorter)}`;
+    if (songLeader) desc += `\\nSong Leader: ${workerDisplay(songLeader)}`;
+  }
+  if (meeting.foodInChargeText) desc += `\\nFood in charge: ${meeting.foodInChargeText}`;
+  lines.push(`DESCRIPTION:${desc}`);
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  downloadICS(`flcc-prayer-${meeting.date}.ics`, lines.join('\r\n'));
+}
+
+function downloadIntercessoryICS(entry, prayerData, churchName) {
+  const team = (prayerData.teams || []).find(t => t.id === entry.teamId);
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//FLCC Prayer OS//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${entry.id}@flcc-prayer`,
+    `DTSTAMP:${formatICSStamp()}`,
+  ];
+  if (entry.startTime) {
+    const [y, m, d] = entry.date.split('-').map(Number);
+    const [sh, sm] = entry.startTime.split(':').map(Number);
+    lines.push(`DTSTART:${formatICSDateTime(y, m, d, sh, sm)}`);
+    if (entry.endTime) {
+      const [eh, em] = entry.endTime.split(':').map(Number);
+      lines.push(`DTEND:${formatICSDateTime(y, m, d, eh, em)}`);
+    } else {
+      lines.push(`DTEND:${formatICSDateTime(y, m, d, sh, sm + 15)}`);
+    }
+  }
+  lines.push(`SUMMARY:${escapeICS(`${churchName} · Intercessory Prayer (${entry.service})`)}`);
+  let desc = `Intercessory Prayer · ${entry.service} service`;
+  if (team) desc += `\\nTeam: ${team.name}`;
+  desc += `\\n\\nReminder: The Service Coordinator and Presider for this date should also join.`;
+  lines.push(`DESCRIPTION:${desc}`);
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  downloadICS(`flcc-intercessory-${entry.date}-${entry.service.toLowerCase()}.ics`, lines.join('\r\n'));
+}
+
+function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConflict }) {
+  const monthIntercessory = (prayerData.intercessory || []).filter(e => monthKey(e.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
+  const monthMeetings = (prayerData.meetings || []).filter(m => monthKey(m.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
+
+  // Match member to prayer roster (by name)
+  const myPrayerWorker = useMemo(() => findPrayerMatch(me, prayerData.workers), [me, prayerData.workers]);
+
+  const SERVICE_LABELS = {
+    'BOTR-NECK': 'BOTR-NECK',
+    'Friday': 'Abundance-Fri',
+    'Sunday': 'Abundance-Sun',
+  };
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow={prayerData.ministry?.headName || 'Prayer Ministry'} title="Prayer Schedule">
+        Intercessory Prayer (15 mins before service) and weekly Prayer Meetings.
+      </SectionHeading>
+
+      <div className="card p-4 mb-6 flex items-center justify-center gap-3">
+        <button className="btn btn-ghost" onClick={() => setCurrentMonth(prevMonth(currentMonth))}>←</button>
+        <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
+        <button className="btn btn-ghost" onClick={() => setCurrentMonth(nextMonth(currentMonth))}>→</button>
+      </div>
+
+      {/* Intercessory section */}
+      <div className="mb-8">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Intercessory Prayer</div>
+        {monthIntercessory.length === 0 ? (
+          <div className="card p-6 text-center ink-subtle italic text-sm">No intercessory prayer dates this month.</div>
+        ) : (
+          <div className="space-y-3">
+            {['BOTR-NECK', 'Friday', 'Sunday'].map(svc => {
+              const entries = monthIntercessory.filter(e => e.service === svc);
+              if (entries.length === 0) return null;
+              return (
+                <div key={svc}>
+                  <div className="text-xs font-semibold ink-muted mb-2">{SERVICE_LABELS[svc]}</div>
+                  <div className="space-y-2">
+                    {entries.map(entry => {
+                      const team = (prayerData.teams || []).find(t => t.id === entry.teamId);
+                      return (
+                        <div key={entry.id} className="row-card flex items-center gap-3 flex-wrap">
+                          <div className="font-mono text-xs ink-muted" style={{ width: 80, flexShrink: 0 }}>{formatDateShort(entry.date)}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium">{team ? team.name : <span className="ink-subtle italic">Unassigned</span>}</div>
+                            <div className="text-xs ink-muted">{formatTime12(entry.startTime)}{entry.endTime ? `–${formatTime12(entry.endTime)}` : ''}</div>
+                          </div>
+                          <button className="btn btn-ghost text-xs" title="Save to phone calendar" onClick={() => downloadIntercessoryICS(entry, prayerData, data.meta.churchName)}>📅</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div className="mt-3 text-xs ink-muted italic">
+          📌 The Service Coordinator and Presider for each date should also join the intercessory prayer.
+        </div>
+      </div>
+
+      {/* Prayer meetings section */}
+      <div>
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Prayer Meetings</div>
+        {monthMeetings.length === 0 ? (
+          <div className="card p-6 text-center ink-subtle italic text-sm">No prayer meetings this month.</div>
+        ) : (
+          <div className="space-y-3">
+            {monthMeetings.map(m => {
+              const meta = meetingTypeMeta(m.type);
+              const presider = (prayerData.workers || []).find(w => w.id === m.presiderId);
+              const exhorter = (prayerData.workers || []).find(w => w.id === m.exhorterId);
+              const songLeader = (prayerData.workers || []).find(w => w.id === m.songLeaderId);
+              const isCoord = ['sectoral', 'corporate'].includes(m.type);
+              // Check if this is mine
+              const myRolesInMeeting = [];
+              if (myPrayerWorker) {
+                if (m.presiderId === myPrayerWorker.id) myRolesInMeeting.push('presider');
+                if (m.exhorterId === myPrayerWorker.id) myRolesInMeeting.push('exhorter');
+                if (m.songLeaderId === myPrayerWorker.id) myRolesInMeeting.push('songLeader');
+              }
+              const isMine = myRolesInMeeting.length > 0;
+
+              return (
+                <div key={m.id} className={`row-card ${isMine ? 'row-mine' : ''}`} style={{ borderLeftWidth: '3px', borderLeftColor: meta.dot }}>
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div>
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <div className="font-display text-lg font-semibold">{formatDateShort(m.date)}</div>
+                        <div className="text-xs ink-muted">({dayOfWeek(m.date)})</div>
+                        <Pill tone="default" className="text-xs" >{meta.label.split(' ')[0]}</Pill>
+                      </div>
+                      <div className="text-xs ink-muted mt-1">{formatTime12(m.startTime)} · {m.venue || 'venue TBD'}</div>
+                      {isMine && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {myRolesInMeeting.map(r => <Pill key={r} tone="accent">You · {PRAYER_ROLES.find(pr => pr.key === r)?.label.replace('Prayer Mtg. ', '')}</Pill>)}
+                        </div>
+                      )}
+                    </div>
+                    <button className="btn btn-soft text-xs" onClick={() => downloadPrayerMeetingICS(m, prayerData, data.meta.churchName)}>📅</button>
+                  </div>
+
+                  <div className="dotted-divider my-3" />
+
+                  {isCoord ? (
+                    <div className="text-sm">
+                      <span className="ink-muted text-xs">Coordinated by · </span>{m.coordinator || <span className="ink-subtle italic">TBD</span>}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                      <div><span className="ink-muted text-xs">Presider · </span>{presider ? <span style={{ color: myPrayerWorker?.id === presider.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === presider.id ? 600 : 400 }}>{workerShort(presider)}{myPrayerWorker?.id === presider.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                      <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? <span style={{ color: myPrayerWorker?.id === exhorter.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === exhorter.id ? 600 : 400 }}>{workerShort(exhorter)}{myPrayerWorker?.id === exhorter.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                      <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? <span style={{ color: myPrayerWorker?.id === songLeader.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === songLeader.id ? 600 : 400 }}>{workerShort(songLeader)}{myPrayerWorker?.id === songLeader.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                    </div>
+                  )}
+
+                  {m.foodInChargeText && (
+                    <div className="text-xs ink-muted mt-3"><strong>Food in charge:</strong> {m.foodInChargeText}</div>
+                  )}
+
+                  {isMine && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {myRolesInMeeting.map(r => (
+                        <button key={r} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({
+                          entry: { ...m, _prayerType: 'meeting' },
+                          role: r,
+                          isPrayer: true,
+                        })}>
+                          ⚠ Report conflict
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// MAIN APP
+// =============================================================================
+
+const TABS = [
+  { key: 'mine', label: 'My Schedule', requiresMe: true },
+  { key: 'month', label: 'This Month' },
+  { key: 'prayer', label: 'Prayer', requiresPrayer: true },
+  { key: 'calendar', label: 'Calendar' },
+  { key: 'about', label: 'About' },
+];
+
+function App() {
+  const [data, setData] = useState(null);
+  const [prayerData, setPrayerData] = useState(null);  // null = not loaded yet, false = unavailable, object = loaded
+  const [error, setError] = useState(null);
+  const [me, setMe] = useState(null);  // worker object
+  const [meId, setMeId] = useState(() => {
+    try { return localStorage.getItem(ME_KEY); } catch { return null; }
+  });
+  const [showPicker, setShowPicker] = useState(false);
+  const [activeTab, setActiveTab] = useState('month');
+  const [currentMonth, setCurrentMonth] = useState(monthKey(todayISO()));
+  const [conflictTarget, setConflictTarget] = useState(null);
+
+  // Load data
+  const loadData = () => {
+    setError(null);
+    // Required: data.json
+    fetch(`${DATA_URL}?t=${Date.now()}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(d => {
+        if (!d.workers || !d.schedule) throw new Error('Data file is missing workers or schedule.');
+        setData(d);
+      })
+      .catch(err => {
+        setError(err.message || 'Network error');
+      });
+    // Optional: prayer.json (graceful failure)
+    fetch(`${PRAYER_DATA_URL}?t=${Date.now()}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(p => {
+        if (p && (p.intercessory || p.meetings)) setPrayerData(p);
+        else setPrayerData(false);
+      })
+      .catch(() => setPrayerData(false));  // silent; just no prayer features
+  };
+
+  useEffect(loadData, []);
+
+  // Resolve me from meId once data is loaded
+  useEffect(() => {
+    if (!data || !meId) return;
+    const w = data.workers.find(x => x.id === meId);
+    if (w) {
+      setMe(w);
+      setActiveTab('mine');
+    } else {
+      // ID stale (worker deleted) — clear it
+      try { localStorage.removeItem(ME_KEY); } catch {}
+      setMeId(null);
+    }
+  }, [data, meId]);
+
+  // First-time visitors: show picker if data loaded but no me
+  useEffect(() => {
+    if (data && !meId && !showPicker) {
+      // Check if user has explicitly skipped before
+      let skipped = false;
+      try { skipped = localStorage.getItem(ME_KEY + '-skipped') === '1'; } catch {}
+      if (!skipped) setShowPicker(true);
+    }
+  }, [data, meId, showPicker]);
+
+  const pickMe = (id) => {
+    try { localStorage.setItem(ME_KEY, id); localStorage.removeItem(ME_KEY + '-skipped'); } catch {}
+    setMeId(id);
+    setShowPicker(false);
+  };
+
+  const skipPicker = () => {
+    try { localStorage.setItem(ME_KEY + '-skipped', '1'); } catch {}
+    setShowPicker(false);
+  };
+
+  const changeName = () => {
+    try { localStorage.removeItem(ME_KEY); } catch {}
+    setMe(null);
+    setMeId(null);
+    setShowPicker(true);
+  };
+
+  if (error) return <ErrorScreen error={error} onRetry={loadData} />;
+  if (!data) return <LoadingScreen />;
+  if (showPicker) return <NamePicker workers={data.workers} onPick={pickMe} onSkip={skipPicker} churchName={data.meta.churchName} />;
+
+  const visibleTabs = TABS.filter(t => {
+    if (t.requiresMe && !me) return false;
+    if (t.requiresPrayer && !prayerData) return false;
+    return true;
+  });
+  const currentTab = visibleTabs.find(t => t.key === activeTab) ? activeTab : 'month';
+
+  return (
+    <div className="min-h-screen bg-app">
+      <header style={{ background: 'rgba(250, 250, 245, 0.9)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20, borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-0">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{data.meta.churchName}</div>
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1">
+                {me ? `Hello, ${me.name}` : 'Schedule'}
+              </h1>
+            </div>
+            <div className="text-xs ink-muted text-right">
+              {data.meta.publishedAt && (
+                <div>Updated {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
+              )}
+              <button className="text-xs underline ink-muted hover:ink mt-1" onClick={loadData}>↻ refresh</button>
+            </div>
+          </div>
+          <nav className="flex flex-wrap mt-4 overflow-x-auto" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+            {visibleTabs.map(t => (
+              <button key={t.key} className={`tab ${currentTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} me={me} onConflict={setConflictTarget} />}
+        {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+        {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+        {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} />}
+        {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} me={me} onChangeName={changeName} />}
+      </main>
+
+      {conflictTarget && (
+        <ConflictModal
+          entry={conflictTarget.entry}
+          role={conflictTarget.role}
+          me={me}
+          ministry={(conflictTarget.isPrayer && prayerData?.ministry) ? prayerData.ministry : (data.ministry || {})}
+          isPrayer={conflictTarget.isPrayer}
+          onClose={() => setConflictTarget(null)}
+        />
+      )}
+
+      <footer className="max-w-5xl mx-auto px-4 sm:px-6 py-12 text-xs ink-subtle text-center">
+        FLCC Schedule OS · Members View · Data fetched live from <code className="font-mono">data.json</code>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
