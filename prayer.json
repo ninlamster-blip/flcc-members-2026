@@ -1,0 +1,366 @@
+{
+  "meta": {
+    "churchName": "FLCC - Abundance Church",
+    "ministryName": "Prayer Ministry",
+    "publishedAt": "2026-05-10T20:15:28.373Z",
+    "version": "1.0"
+  },
+  "ministry": {
+    "headName": "Bro. Wilson Guerzon",
+    "headTitle": "Prayer Ministry Lead",
+    "whatsapp": "+96566299452",
+    "messenger": "",
+    "phone": "+96566299452",
+    "email": "wilson_guerzon@yahoo.com"
+  },
+  "teams": [
+    {
+      "id": "team-worship",
+      "name": "Worship Team",
+      "leader": ""
+    },
+    {
+      "id": "team-evangelism",
+      "name": "Evangelism Team",
+      "leader": ""
+    },
+    {
+      "id": "team-fellowship",
+      "name": "Fellowship Ministry",
+      "leader": ""
+    },
+    {
+      "id": "team-finance",
+      "name": "Finance Team",
+      "leader": ""
+    },
+    {
+      "id": "team-admin",
+      "name": "Admin Ministry",
+      "leader": ""
+    },
+    {
+      "id": "team-prayer",
+      "name": "Prayer Ministry",
+      "leader": "Bro. Wilson Guerzon"
+    },
+    {
+      "id": "team-discipleship",
+      "name": "Discipleship Ministry",
+      "leader": ""
+    },
+    {
+      "id": "team-auxiliary",
+      "name": "Auxiliary (Men-Women-Single)",
+      "leader": ""
+    }
+  ],
+  "workers": [
+    {
+      "id": "sis-13",
+      "name": "Alma Flores",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-16",
+      "name": "Annabelle Arciaga",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-20",
+      "name": "Thara Embo",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-18",
+      "name": "Laidz Pascual",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "sis-15",
+      "name": "Grace Siangco",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "ptr-01",
+      "name": "Justin Flores",
+      "title": "Ptr.",
+      "eligibleRoles": [
+        "exhorter",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "ptr-02",
+      "name": "Doddie Arciaga",
+      "title": "Ptr.",
+      "eligibleRoles": [
+        "exhorter"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "ptr-03",
+      "name": "Nerwin Suelo",
+      "title": "Ptr.",
+      "eligibleRoles": [
+        "exhorter"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Wilson Guerzon",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "exhorter",
+        "presider"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Allen Santos",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "exhorter"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Ferdie Gajeton",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "exhorter"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Edmund Gabriel",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "exhorter",
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Elbert Siangco",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Bong Cas",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Dandreb Serna",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "songLeader"
+      ],
+      "status": "active",
+      "birthday": ""
+    }
+  ],
+  "themes": {
+    "2026-04": "WORKS OF THE HOLY SPIRIT / CHURCH GROWTH",
+    "2026-05": "YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)",
+    "2026-06": ""
+  },
+  "intercessory": [
+    {
+      "id": "ip-2026-04-03-friday",
+      "date": "2026-04-03",
+      "service": "Friday",
+      "teamId": "team-worship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-04-10-friday",
+      "date": "2026-04-10",
+      "service": "Friday",
+      "teamId": "team-fellowship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-04-17-friday",
+      "date": "2026-04-17",
+      "service": "Friday",
+      "teamId": "team-admin",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-04-24-friday",
+      "date": "2026-04-24",
+      "service": "Friday",
+      "teamId": "team-discipleship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-04-05-sunday",
+      "date": "2026-04-05",
+      "service": "Sunday",
+      "teamId": "team-evangelism",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-04-12-sunday",
+      "date": "2026-04-12",
+      "service": "Sunday",
+      "teamId": "team-finance",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-04-19-sunday",
+      "date": "2026-04-19",
+      "service": "Sunday",
+      "teamId": "team-prayer",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-04-26-sunday",
+      "date": "2026-04-26",
+      "service": "Sunday",
+      "teamId": "team-auxiliary",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    }
+  ],
+  "meetings": [
+    {
+      "id": "pm-2026-04-02",
+      "date": "2026-04-02",
+      "startTime": "18:30",
+      "type": "sectoral",
+      "presiderId": null,
+      "exhorterId": null,
+      "songLeaderId": null,
+      "coordinator": "F&T",
+      "venue": "HS-ZOOM",
+      "isVirtual": true,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-2026-04-08",
+      "date": "2026-04-08",
+      "startTime": "18:00",
+      "type": "corporate",
+      "presiderId": null,
+      "exhorterId": null,
+      "songLeaderId": null,
+      "coordinator": "JAOC",
+      "venue": "CPM-ZOOM",
+      "isVirtual": true,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-2026-04-16",
+      "date": "2026-04-16",
+      "startTime": "18:30",
+      "type": "fasting",
+      "presiderId": "sis-13",
+      "exhorterId": "ptr-01",
+      "songLeaderId": "bro-07",
+      "coordinator": "",
+      "venue": "Siangco Family Flat",
+      "isVirtual": false,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-2026-04-23",
+      "date": "2026-04-23",
+      "startTime": "18:30",
+      "type": "regular",
+      "presiderId": "sis-16",
+      "exhorterId": "ptr-02",
+      "songLeaderId": "ptr-01",
+      "coordinator": "",
+      "venue": "Guerzon Family Flat",
+      "isVirtual": false,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-2026-04-30",
+      "date": "2026-04-30",
+      "startTime": "18:30",
+      "type": "thanksgiving",
+      "presiderId": "sis-20",
+      "exhorterId": "bro-06",
+      "songLeaderId": "bro-03",
+      "coordinator": "",
+      "venue": "Abundance Hall (2F)",
+      "isVirtual": false,
+      "foodInChargeText": "CELEBRANT (BIRTHDAY/ANNIVERSARY/ETC.)",
+      "notes": ""
+    }
+  ]
+}
