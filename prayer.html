@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLCC Prayer OS — Prayer Ministry Dashboard</title>
+<meta name="description" content="Prayer Ministry dashboard for FLCC - Abundance Church. Intercessory prayer, prayer meetings, teams." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+  :root {
+    --bg: #FAFAF5;
+    --surface: #FFFFFF;
+    --ink: #18181B;
+    --ink-muted: #52525B;
+    --ink-subtle: #A1A1AA;
+    --border: #E7E5DE;
+    --border-strong: #D4D4D0;
+    --accent: #6366F1;       /* Prayer ministry accent: indigo (vs Schedule OS terracotta) */
+    --accent-hover: #4F46E5;
+    --accent-soft: #EEF2FF;
+    --success: #15803D;
+    --success-soft: #DCFCE7;
+    --warning: #B45309;
+    --warning-soft: #FEF3C7;
+    --danger: #B91C1C;
+    --danger-soft: #FEE2E2;
+    --info: #1E40AF;
+    --info-soft: #DBEAFE;
+    --purple: #7E22CE;
+    --purple-soft: #F3E8FF;
+    --teal: #0F766E;
+    --teal-soft: #CCFBF1;
+  }
+
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-feature-settings: "ss01", "ss03"; }
+
+  .font-display { font-family: 'Fraunces', Georgia, serif; font-feature-settings: "ss01"; letter-spacing: -0.01em; }
+  .font-mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, monospace; }
+
+  .ink { color: var(--ink); }
+  .ink-muted { color: var(--ink-muted); }
+  .ink-subtle { color: var(--ink-subtle); }
+  .accent { color: var(--accent); }
+  .bg-surface { background: var(--surface); }
+  .bg-app { background: var(--bg); }
+  .border-app { border-color: var(--border); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 0.875rem; border-radius: 8px;
+    font-size: 0.875rem; font-weight: 500;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--ink); color: white; }
+  .btn-primary:hover { background: #27272A; }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
+  .btn-soft { background: #F4F4F0; color: var(--ink); }
+  .btn-soft:hover { background: #EDEDE7; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding: 0.125rem 0.625rem; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 500; line-height: 1.4;
+  }
+  .pill-default { background: #F4F4F0; color: var(--ink-muted); }
+  .pill-success { background: var(--success-soft); color: var(--success); }
+  .pill-warning { background: var(--warning-soft); color: var(--warning); }
+  .pill-danger  { background: var(--danger-soft); color: var(--danger); }
+  .pill-info    { background: var(--info-soft); color: var(--info); }
+  .pill-accent  { background: var(--accent-soft); color: var(--accent); }
+  .pill-purple  { background: var(--purple-soft); color: var(--purple); }
+  .pill-teal    { background: var(--teal-soft); color: var(--teal); }
+
+  .input, .select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .input:focus, .select:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(24,24,27,0.06);
+  }
+
+  .tab {
+    padding: 0.625rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    cursor: pointer;
+    margin-right: 1.75rem;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab-active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .schedule-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .schedule-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+  .schedule-table td {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .schedule-table tr:last-child td { border-bottom: none; }
+
+  .role-cell {
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 0.375rem 0.5rem;
+    margin: -0.375rem -0.5rem;
+    transition: background 0.15s;
+  }
+  .role-cell:hover { background: #F4F4F0; }
+  .role-cell-vacant { color: var(--ink-subtle); font-style: italic; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(24,24,27,0.4);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+    padding: 1.5rem;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    max-width: 540px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  }
+
+  .dropdown {
+    position: fixed; z-index: 100;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0.375rem;
+  }
+  .dropdown-item {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .dropdown-item:hover { background: #F4F4F0; }
+  .dropdown-item-empty { color: var(--ink-subtle); font-style: italic; padding: 0.625rem 0.75rem; font-size: 0.8125rem; }
+  .dropdown-section {
+    padding: 0.375rem 0.75rem 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+
+  .dotted-divider { border-top: 1px dashed var(--border-strong); }
+
+  /* Meeting type accent strips */
+  .strip-sectoral    { border-left: 3px solid var(--purple); }
+  .strip-corporate   { border-left: 3px solid var(--info); }
+  .strip-fasting     { border-left: 3px solid var(--warning); }
+  .strip-regular     { border-left: 3px solid var(--success); }
+  .strip-thanksgiving{ border-left: 3px solid #DB2777; }
+
+  /* Print */
+  @media print {
+    body * { visibility: hidden; }
+    .print-section, .print-section * { visibility: visible; }
+    .print-section {
+      position: absolute; left: 0; top: 0; width: 100%;
+      padding: 0; background: white;
+    }
+    .no-print { display: none !important; }
+    .print-table { font-size: 11px; }
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.2s ease-out; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useReducer, useRef } = React;
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const STORAGE_KEY = 'flcc-prayer-os-v1';
+const APP_VERSION = '1.0';
+
+const PRAYER_ROLES = [
+  { key: 'presider',   label: 'Presider' },
+  { key: 'exhorter',   label: 'Exhorter' },
+  { key: 'songLeader', label: 'Song Leader' },
+];
+
+const PRAYER_MEETING_TYPES = [
+  { key: 'sectoral',     label: 'Sectoral Prayer Meeting',     pill: 'purple',  strip: 'strip-sectoral',     description: 'Coordinated by a sector (e.g. F&T)' },
+  { key: 'corporate',    label: 'Corporate Prayer Meeting',    pill: 'info',    strip: 'strip-corporate',    description: 'Coordinated by JAOC' },
+  { key: 'fasting',      label: 'Prayer & Fasting',            pill: 'warning', strip: 'strip-fasting',      description: 'Special fasting prayer meeting' },
+  { key: 'regular',      label: 'Regular Prayer Meeting',      pill: 'success', strip: 'strip-regular',      description: 'Standard weekly prayer meeting' },
+  { key: 'thanksgiving', label: 'Thanksgiving Prayer Meeting', pill: 'default', strip: 'strip-thanksgiving', description: 'Birthday / anniversary celebration' },
+];
+
+const SERVICE_TYPES_FOR_INTERCESSORY = [
+  { key: 'BOTR-NECK',    label: 'BOTR-NECK',    defaultStart: '10:00', defaultEnd: '12:00', period: 'AM' },
+  { key: 'Friday',       label: 'Abundance-Fri', defaultStart: '16:15', defaultEnd: '16:30', period: 'PM' },
+  { key: 'Sunday',       label: 'Abundance-Sun', defaultStart: '18:15', defaultEnd: '18:30', period: 'PM' },
+];
+
+const RECURRENCE_TYPES = [
+  { key: 'none',    label: "Doesn't repeat" },
+  { key: 'daily',   label: 'Daily' },
+  { key: 'weekly',  label: 'Weekly' },
+  { key: 'monthly', label: 'Monthly' },
+  { key: 'yearly',  label: 'Yearly' },
+];
+
+// =============================================================================
+// SEED DATA
+// =============================================================================
+
+const SEED_TEAMS = [
+  { id: 'team-worship',      name: 'Worship Team',                    leader: '' },
+  { id: 'team-evangelism',   name: 'Evangelism Team',                 leader: '' },
+  { id: 'team-fellowship',   name: 'Fellowship Ministry',             leader: '' },
+  { id: 'team-finance',      name: 'Finance Team',                    leader: '' },
+  { id: 'team-admin',        name: 'Admin Ministry',                  leader: '' },
+  { id: 'team-prayer',       name: 'Prayer Ministry',                 leader: 'Bro. Wilson Guerzon' },
+  { id: 'team-discipleship', name: 'Discipleship Ministry',           leader: '' },
+  { id: 'team-auxiliary',    name: 'Auxiliary (Men-Women-Single)',    leader: '' },
+];
+
+// Prayer Ministry workers — shared roster with main church (matched to Schedule OS IDs)
+const SEED_WORKERS = [
+  { id: 'sis-13', name: 'Alma Flores',       title: 'Sis.', eligibleRoles: ['presider'],                   status: 'active', birthday: '' },
+  { id: 'sis-16', name: 'Annabelle Arciaga', title: 'Sis.', eligibleRoles: ['presider'],                   status: 'active', birthday: '' },
+  { id: 'sis-20', name: 'Thara Embo',        title: 'Sis.', eligibleRoles: ['presider'],                   status: 'active', birthday: '' },
+  { id: 'sis-18', name: 'Laidz Pascual',     title: 'Sis.', eligibleRoles: ['presider', 'songLeader'],     status: 'active', birthday: '' },
+  { id: 'sis-15', name: 'Grace Siangco',     title: 'Sis.', eligibleRoles: ['presider', 'songLeader'],     status: 'active', birthday: '' },
+  { id: 'ptr-01', name: 'Justin Flores',     title: 'Ptr.', eligibleRoles: ['exhorter', 'songLeader'],     status: 'active', birthday: '' },
+  { id: 'ptr-02', name: 'Doddie Arciaga',    title: 'Ptr.', eligibleRoles: ['exhorter'],                   status: 'active', birthday: '' },
+  { id: 'ptr-03', name: 'Nerwin Suelo',      title: 'Ptr.', eligibleRoles: ['exhorter'],                   status: 'active', birthday: '' },
+  { id: 'bro-04', name: 'Wilson Guerzon',    title: 'Bro.', eligibleRoles: ['exhorter', 'presider'],       status: 'active', birthday: '' },
+  { id: 'bro-05', name: 'Allen Santos',      title: 'Bro.', eligibleRoles: ['exhorter'],                   status: 'active', birthday: '' },
+  { id: 'bro-06', name: 'Ferdie Gajeton',    title: 'Bro.', eligibleRoles: ['exhorter'],                   status: 'active', birthday: '' },
+  { id: 'bro-07', name: 'Edmund Gabriel',    title: 'Bro.', eligibleRoles: ['exhorter', 'songLeader'],     status: 'active', birthday: '' },
+  { id: 'bro-03', name: 'Elbert Siangco',    title: 'Bro.', eligibleRoles: ['songLeader'],                 status: 'active', birthday: '' },
+  { id: 'bro-02', name: 'Bong Cas',          title: 'Bro.', eligibleRoles: ['songLeader'],                 status: 'active', birthday: '' },
+  { id: 'bro-01', name: 'Dandreb Serna',     title: 'Bro.', eligibleRoles: ['songLeader'],                 status: 'active', birthday: '' },
+];
+
+const SEED_VENUES = [
+  'Abundance Hall (2F)',
+  'Siangco Family Flat',
+  'Guerzon Family Flat',
+  'Pascual Family Flat',
+  'HS-ZOOM',
+  'CPM-ZOOM',
+];
+
+const SEED_THEMES = {
+  '2026-04': 'WORKS OF THE HOLY SPIRIT / CHURCH GROWTH',
+  '2026-05': 'YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)',
+  '2026-06': '',
+};
+
+// Helper for intercessory entries
+const ip = (date, service, teamId) => {
+  const def = SERVICE_TYPES_FOR_INTERCESSORY.find(s => s.key === service);
+  return {
+    id: `ip-${date}-${service.toLowerCase()}`,
+    date, service, teamId,
+    startTime: def?.defaultStart || null,
+    endTime: def?.defaultEnd || null,
+    notes: '',
+  };
+};
+
+// Helper for prayer meeting entries
+const pm = (id, date, startTime, type, opts = {}) => ({
+  id, date, startTime, type,
+  presiderId: opts.presiderId || null,
+  exhorterId: opts.exhorterId || null,
+  songLeaderId: opts.songLeaderId || null,
+  coordinator: opts.coordinator || '',
+  venue: opts.venue || '',
+  isVirtual: opts.isVirtual || false,
+  foodInChargeText: opts.foodInChargeText || '',
+  notes: opts.notes || '',
+});
+
+const SEED_INTERCESSORY = [
+  // April 2026 — Friday (BOTR-NECK is N/A for April)
+  ip('2026-04-03', 'Friday', 'team-worship'),
+  ip('2026-04-10', 'Friday', 'team-fellowship'),
+  ip('2026-04-17', 'Friday', 'team-admin'),
+  ip('2026-04-24', 'Friday', 'team-discipleship'),
+  // April 2026 — Sunday
+  ip('2026-04-05', 'Sunday', 'team-evangelism'),
+  ip('2026-04-12', 'Sunday', 'team-finance'),
+  ip('2026-04-19', 'Sunday', 'team-prayer'),
+  ip('2026-04-26', 'Sunday', 'team-auxiliary'),
+];
+
+const SEED_MEETINGS = [
+  pm('pm-2026-04-02', '2026-04-02', '18:30', 'sectoral',
+    { coordinator: 'F&T', venue: 'HS-ZOOM', isVirtual: true }),
+  pm('pm-2026-04-08', '2026-04-08', '18:00', 'corporate',
+    { coordinator: 'JAOC', venue: 'CPM-ZOOM', isVirtual: true }),
+  pm('pm-2026-04-16', '2026-04-16', '18:30', 'fasting',
+    { presiderId: 'sis-13', exhorterId: 'ptr-01', songLeaderId: 'bro-07', venue: 'Siangco Family Flat' }),
+  pm('pm-2026-04-23', '2026-04-23', '18:30', 'regular',
+    { presiderId: 'sis-16', exhorterId: 'ptr-02', songLeaderId: 'ptr-01', venue: 'Guerzon Family Flat' }),
+  pm('pm-2026-04-30', '2026-04-30', '18:30', 'thanksgiving',
+    { presiderId: 'sis-20', exhorterId: 'bro-06', songLeaderId: 'bro-03', venue: 'Abundance Hall (2F)',
+      foodInChargeText: 'CELEBRANT (BIRTHDAY/ANNIVERSARY/ETC.)' }),
+];
+
+// =============================================================================
+// STORAGE
+// =============================================================================
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (err) { return null; }
+}
+
+function saveState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, lastUpdated: new Date().toISOString() }));
+  } catch (err) {}
+}
+
+function defaultState() {
+  return {
+    meta: {
+      churchName: 'FLCC - Abundance Church',
+      ministryName: 'Prayer Ministry',
+      version: APP_VERSION,
+      lastUpdated: new Date().toISOString(),
+    },
+    ministry: {
+      headName: 'Bro. Wilson Guerzon',
+      headTitle: 'Prayer Ministry Lead',
+      whatsapp: '',
+      messenger: '',
+      phone: '',
+      email: '',
+    },
+    teams: SEED_TEAMS,
+    workers: SEED_WORKERS,
+    venues: SEED_VENUES,
+    themes: SEED_THEMES,
+    intercessory: SEED_INTERCESSORY,
+    meetings: SEED_MEETINGS,
+    currentMonth: '2026-06',
+    settings: {},
+  };
+}
+
+function migrate(state) {
+  if (!state) return state;
+  const s = { ...state };
+  if (!s.ministry) s.ministry = defaultState().ministry;
+  if (!Array.isArray(s.teams)) s.teams = SEED_TEAMS;
+  if (!Array.isArray(s.workers)) s.workers = [];
+  if (!Array.isArray(s.venues)) s.venues = SEED_VENUES;
+  if (!Array.isArray(s.intercessory)) s.intercessory = [];
+  if (!Array.isArray(s.meetings)) s.meetings = [];
+  if (!s.themes) s.themes = {};
+  return s;
+}
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function parseISODate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function dayOfWeek(s) { return DAY_NAMES[parseISODate(s).getDay()]; }
+function dayShort(s) { return DAY_NAMES[parseISODate(s).getDay()].slice(0,3).toUpperCase(); }
+function monthKey(s) { return s.slice(0,7); }
+function formatDateShort(s) {
+  const d = parseISODate(s);
+  return `${String(d.getDate()).padStart(2,'0')}-${MONTH_NAMES[d.getMonth()].slice(0,3)}`;
+}
+function formatMonthLabel(monthKey) {
+  const [y,m] = monthKey.split('-').map(Number);
+  return `${MONTH_NAMES[m-1]} ${y}`;
+}
+function nextMonth(monthKey) {
+  let [y,m] = monthKey.split('-').map(Number);
+  m += 1; if (m > 12) { m = 1; y += 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function prevMonth(monthKey) {
+  let [y,m] = monthKey.split('-').map(Number);
+  m -= 1; if (m < 1) { m = 12; y -= 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function workerDisplay(w) { return w ? (w.title ? `${w.title} ${w.name}` : w.name) : ''; }
+function workerShort(w) { return w ? w.name : ''; }
+function teamMeta(state, id) { return (state.teams || []).find(t => t.id === id); }
+function meetingTypeMeta(key) { return PRAYER_MEETING_TYPES.find(t => t.key === key) || PRAYER_MEETING_TYPES[3]; }
+
+function formatTime12(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hh = h % 12 || 12;
+  return `${hh}:${String(m).padStart(2,'0')} ${period}`;
+}
+
+// Suggest least-recently-used worker eligible for a role
+function suggestNext(workers, meetings, role, beforeDate, excludeIds = []) {
+  const eligible = workers.filter(w => w.status === 'active' && w.eligibleRoles.includes(role) && !excludeIds.includes(w.id));
+  const lastDate = new Map();
+  const roleField = role === 'presider' ? 'presiderId' : role === 'exhorter' ? 'exhorterId' : 'songLeaderId';
+  for (const m of meetings) {
+    if (m.date >= beforeDate) continue;
+    const wid = m[roleField];
+    if (!wid) continue;
+    if (!lastDate.has(wid) || m.date > lastDate.get(wid)) lastDate.set(wid, m.date);
+  }
+  return eligible.slice().sort((a, b) => {
+    const la = lastDate.get(a.id) || '0000-00-00';
+    const lb = lastDate.get(b.id) || '0000-00-00';
+    if (la === lb) return a.name.localeCompare(b.name);
+    return la.localeCompare(lb);
+  });
+}
+
+// Suggest least-recently-used team for intercessory
+function suggestNextTeam(teams, intercessory, beforeDate) {
+  const lastDate = new Map();
+  for (const i of intercessory) {
+    if (i.date >= beforeDate) continue;
+    if (!i.teamId) continue;
+    if (!lastDate.has(i.teamId) || i.date > lastDate.get(i.teamId)) lastDate.set(i.teamId, i.date);
+  }
+  return teams.slice().sort((a, b) => {
+    const la = lastDate.get(a.id) || '0000-00-00';
+    const lb = lastDate.get(b.id) || '0000-00-00';
+    if (la === lb) return a.name.localeCompare(b.name);
+    return la.localeCompare(lb);
+  });
+}
+
+// =============================================================================
+// REDUCER
+// =============================================================================
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'SET_CURRENT_MONTH': return { ...state, currentMonth: action.month };
+    case 'SET_THEME': return { ...state, themes: { ...state.themes, [action.month]: action.theme } };
+
+    case 'ADD_INTERCESSORY': return { ...state, intercessory: [...state.intercessory, action.entry] };
+    case 'UPDATE_INTERCESSORY': return { ...state, intercessory: state.intercessory.map(i => i.id === action.entry.id ? action.entry : i) };
+    case 'DELETE_INTERCESSORY': return { ...state, intercessory: state.intercessory.filter(i => i.id !== action.id) };
+    case 'SET_INTERCESSORY_TEAM': return { ...state, intercessory: state.intercessory.map(i => i.id === action.id ? { ...i, teamId: action.teamId } : i) };
+
+    case 'ADD_MEETING': return { ...state, meetings: [...state.meetings, action.meeting] };
+    case 'UPDATE_MEETING': return { ...state, meetings: state.meetings.map(m => m.id === action.meeting.id ? action.meeting : m) };
+    case 'DELETE_MEETING': return { ...state, meetings: state.meetings.filter(m => m.id !== action.id) };
+
+    case 'ADD_TEAM': return { ...state, teams: [...state.teams, action.team] };
+    case 'UPDATE_TEAM': return { ...state, teams: state.teams.map(t => t.id === action.team.id ? action.team : t) };
+    case 'DELETE_TEAM': return { ...state, teams: state.teams.filter(t => t.id !== action.id) };
+
+    case 'ADD_WORKER': return { ...state, workers: [...state.workers, action.worker] };
+    case 'UPDATE_WORKER': return { ...state, workers: state.workers.map(w => w.id === action.worker.id ? action.worker : w) };
+    case 'DELETE_WORKER': return { ...state, workers: state.workers.filter(w => w.id !== action.id) };
+
+    case 'UPDATE_VENUES': return { ...state, venues: action.venues };
+
+    case 'UPDATE_MINISTRY': return { ...state, ministry: { ...state.ministry, ...action.payload } };
+
+    case 'IMPORT_DATA': return migrate(action.payload);
+    case 'RESET': return defaultState();
+    default: return state;
+  }
+}
+
+// =============================================================================
+// SHARED UI COMPONENTS
+// =============================================================================
+
+const Pill = ({ tone = 'default', children, className = '' }) => (
+  <span className={`pill pill-${tone} ${className}`}>{children}</span>
+);
+
+const SectionHeading = ({ eyebrow, title, children }) => (
+  <div className="mb-6">
+    {eyebrow && <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">{eyebrow}</div>}
+    <h2 className="font-display text-3xl font-semibold ink leading-tight">{title}</h2>
+    {children && <p className="mt-2 text-sm ink-muted max-w-xl">{children}</p>}
+  </div>
+);
+
+// Worker picker (portal-based, like Schedule OS)
+function WorkerPicker({ workers, meetings, role, currentValue, onSelect, onClose, beforeDate, excludeIds, anchorRef }) {
+  const [search, setSearch] = useState('');
+  const [pos, setPos] = useState({ top: -9999, left: -9999, width: 280, ready: false });
+  const ref = useRef(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
+  useEffect(() => {
+    function place() {
+      if (!anchorRef?.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const width = vw < 640 ? Math.min(vw - 24, 320) : 280;
+      let left = rect.left;
+      let top = rect.bottom + 4;
+      if (left + width > vw - 8) left = vw - width - 8;
+      if (left < 8) left = 8;
+      const estH = Math.min(360, vh - 16);
+      if (top + estH > vh - 8) {
+        const above = rect.top - estH - 4;
+        top = above >= 8 ? above : Math.max(8, vh - estH - 8);
+      }
+      setPos({ top, left, width, ready: true });
+    }
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [anchorRef]);
+
+  useEffect(() => {
+    function onOutside(e) {
+      if (ref.current && !ref.current.contains(e.target) && anchorRef?.current && !anchorRef.current.contains(e.target)) onClose();
+    }
+    document.addEventListener('mousedown', onOutside);
+    document.addEventListener('touchstart', onOutside);
+    return () => {
+      document.removeEventListener('mousedown', onOutside);
+      document.removeEventListener('touchstart', onOutside);
+    };
+  }, [onClose, anchorRef]);
+
+  const ordered = useMemo(() => suggestNext(workers, meetings, role, beforeDate || '9999-12-31', excludeIds || []), [workers, meetings, role, beforeDate, excludeIds]);
+  const everyone = workers.filter(w => w.status === 'active');
+  const eligibleIds = new Set(ordered.map(w => w.id));
+  const others = everyone.filter(w => !eligibleIds.has(w.id));
+
+  const filtered = (list) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(w => (w.title + ' ' + w.name).toLowerCase().includes(q));
+  };
+
+  const dropdown = (
+    <div ref={ref} className="dropdown fade-in" style={{
+      top: pos.top, left: pos.left, width: pos.width,
+      visibility: pos.ready ? 'visible' : 'hidden',
+    }}>
+      <div className="px-2 pt-1 pb-2">
+        <input
+          autoFocus={!isMobile}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search workers…"
+          className="input"
+          style={{ fontSize: '0.8125rem' }}
+        />
+      </div>
+      {currentValue && (
+        <div className="dropdown-item" onClick={() => { onSelect(null); onClose(); }} style={{ color: 'var(--danger)' }}>
+          <span>✕ Clear assignment</span>
+        </div>
+      )}
+      <div className="dotted-divider my-1" />
+      <div className="dropdown-section">Suggested (least recently used)</div>
+      {filtered(ordered).length === 0 ? (
+        <div className="dropdown-item-empty">No eligible workers</div>
+      ) : (
+        filtered(ordered).slice(0, 10).map(w => (
+          <div key={w.id} className="dropdown-item" onClick={() => { onSelect(w.id); onClose(); }}>
+            <span>{workerDisplay(w)}</span>
+            {w.id === currentValue && <span className="ink-subtle text-xs">current</span>}
+          </div>
+        ))
+      )}
+      {filtered(others).length > 0 && (
+        <>
+          <div className="dropdown-section mt-1">Other workers</div>
+          {filtered(others).slice(0, 10).map(w => (
+            <div key={w.id} className="dropdown-item" onClick={() => { onSelect(w.id); onClose(); }}>
+              <span className="ink-muted">{workerDisplay(w)}</span>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+
+  return ReactDOM.createPortal(dropdown, document.body);
+}
+
+// Team picker (similar to worker picker but for teams)
+function TeamPicker({ teams, intercessory, currentValue, onSelect, onClose, beforeDate, anchorRef }) {
+  const [pos, setPos] = useState({ top: -9999, left: -9999, width: 240, ready: false });
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function place() {
+      if (!anchorRef?.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const width = vw < 640 ? Math.min(vw - 24, 280) : 260;
+      let left = rect.left;
+      let top = rect.bottom + 4;
+      if (left + width > vw - 8) left = vw - width - 8;
+      if (left < 8) left = 8;
+      const estH = Math.min(320, vh - 16);
+      if (top + estH > vh - 8) {
+        const above = rect.top - estH - 4;
+        top = above >= 8 ? above : Math.max(8, vh - estH - 8);
+      }
+      setPos({ top, left, width, ready: true });
+    }
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [anchorRef]);
+
+  useEffect(() => {
+    function onOutside(e) {
+      if (ref.current && !ref.current.contains(e.target) && anchorRef?.current && !anchorRef.current.contains(e.target)) onClose();
+    }
+    document.addEventListener('mousedown', onOutside);
+    document.addEventListener('touchstart', onOutside);
+    return () => {
+      document.removeEventListener('mousedown', onOutside);
+      document.removeEventListener('touchstart', onOutside);
+    };
+  }, [onClose, anchorRef]);
+
+  const ordered = useMemo(() => suggestNextTeam(teams, intercessory, beforeDate || '9999-12-31'), [teams, intercessory, beforeDate]);
+
+  const dropdown = (
+    <div ref={ref} className="dropdown fade-in" style={{
+      top: pos.top, left: pos.left, width: pos.width,
+      visibility: pos.ready ? 'visible' : 'hidden',
+    }}>
+      {currentValue && (
+        <div className="dropdown-item" onClick={() => { onSelect(null); onClose(); }} style={{ color: 'var(--danger)' }}>
+          <span>✕ Clear assignment</span>
+        </div>
+      )}
+      <div className="dropdown-section">Suggested (least recently used)</div>
+      {ordered.length === 0 ? (
+        <div className="dropdown-item-empty">No teams available</div>
+      ) : (
+        ordered.map(t => (
+          <div key={t.id} className="dropdown-item" onClick={() => { onSelect(t.id); onClose(); }}>
+            <span>{t.name}</span>
+            {t.id === currentValue && <span className="ink-subtle text-xs">current</span>}
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  return ReactDOM.createPortal(dropdown, document.body);
+}
+
+// =============================================================================
+// DASHBOARD TAB
+// =============================================================================
+
+function DashboardTab({ state, dispatch, mainData }) {
+  const month = state.currentMonth;
+  const monthIntercessory = state.intercessory.filter(e => monthKey(e.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+  const monthMeetings = state.meetings.filter(m => monthKey(m.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+  const theme = state.themes[month] || '';
+
+  // Stats
+  const ipUnassigned = monthIntercessory.filter(e => !e.teamId).length;
+  const meetingsIncomplete = monthMeetings.filter(m =>
+    !['sectoral', 'corporate'].includes(m.type) && (!m.presiderId || !m.exhorterId || !m.songLeaderId)
+  ).length;
+
+  const today = todayISO();
+  const upcomingMeetings = state.meetings
+    .filter(m => m.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 3);
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow={`Currently viewing · ${formatMonthLabel(month)}`} title="Dashboard">
+        Quick read on this month: theme, intercessory team rotation, and prayer meetings.
+      </SectionHeading>
+
+      <div className="card p-6 mb-6">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Monthly Theme</div>
+            <div className="font-display text-2xl font-semibold mt-1">{theme || <span className="ink-subtle italic font-normal">No theme set</span>}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: prevMonth(month) })}>← Prev</button>
+            <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: nextMonth(month) })}>Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatCard label="Service Dates" value={monthIntercessory.length} sub={ipUnassigned ? `${ipUnassigned} unassigned` : 'All teams set'} tone={ipUnassigned ? 'warning' : 'success'} />
+        <StatCard label="Prayer Meetings" value={monthMeetings.length} sub={meetingsIncomplete ? `${meetingsIncomplete} incomplete` : 'All staffed'} tone={meetingsIncomplete ? 'warning' : 'success'} />
+        <StatCard label="Active Workers" value={state.workers.filter(w => w.status === 'active').length} sub={`of ${state.workers.length} total`} />
+        <StatCard label="Teams" value={state.teams.length} sub="rotation pool" />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="card p-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Intercessory · {formatMonthLabel(month)}</div>
+          {monthIntercessory.length === 0 ? (
+            <div className="ink-subtle italic text-sm">No service dates yet.</div>
+          ) : (
+            <div className="space-y-2">
+              {monthIntercessory.map(e => {
+                const team = teamMeta(state, e.teamId);
+                return (
+                  <div key={e.id} className="flex items-baseline gap-3 py-2" style={{ borderBottom: '1px dashed var(--border-strong)' }}>
+                    <div className="font-mono text-xs ink-subtle" style={{ width: 60, flexShrink: 0 }}>{formatDateShort(e.date)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm">
+                        {team ? team.name : <span className="ink-subtle italic">Unassigned</span>}
+                      </div>
+                      <div className="text-xs ink-muted mt-0.5">{e.service} · {formatTime12(e.startTime)}{e.endTime ? `–${formatTime12(e.endTime)}` : ''}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="card p-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Upcoming Prayer Meetings</div>
+          {upcomingMeetings.length === 0 ? (
+            <div className="ink-subtle italic text-sm">No upcoming meetings.</div>
+          ) : (
+            <div className="space-y-3">
+              {upcomingMeetings.map(m => {
+                const meta = meetingTypeMeta(m.type);
+                const presider = state.workers.find(w => w.id === m.presiderId);
+                return (
+                  <div key={m.id} className={`pl-3 py-1 ${meta.strip}`}>
+                    <div className="flex items-baseline gap-2">
+                      <div className="font-mono text-xs ink-muted">{formatDateShort(m.date)}</div>
+                      <div className="text-xs ink-muted">{dayShort(m.date)}</div>
+                      <Pill tone={meta.pill}>{meta.label.split(' ')[0]}</Pill>
+                    </div>
+                    <div className="text-sm mt-0.5">
+                      {['sectoral', 'corporate'].includes(m.type) ? (
+                        <span>{meta.label} · C/O {m.coordinator || 'TBD'}</span>
+                      ) : (
+                        <span>{presider ? workerShort(presider) : <span className="ink-subtle italic">Presider TBD</span>}</span>
+                      )}
+                    </div>
+                    <div className="text-xs ink-subtle mt-0.5">{formatTime12(m.startTime)} · {m.venue || 'Venue TBD'}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const StatCard = ({ label, value, sub, tone = 'default' }) => {
+  const toneColor = {
+    default: 'var(--ink)',
+    success: 'var(--success)',
+    warning: 'var(--warning)',
+    danger: 'var(--danger)',
+    info: 'var(--info)',
+  }[tone];
+  return (
+    <div className="card p-4">
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle">{label}</div>
+      <div className="font-display text-3xl font-semibold mt-1" style={{ color: toneColor }}>{value}</div>
+      <div className="text-xs ink-muted mt-1">{sub}</div>
+    </div>
+  );
+};
+
+// =============================================================================
+// INTERCESSORY TAB
+// =============================================================================
+
+function IntercessoryTab({ state, dispatch, mainData }) {
+  const month = state.currentMonth;
+  const monthEntries = state.intercessory.filter(e => monthKey(e.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+
+  const [addOpen, setAddOpen] = useState(false);
+
+  const grouped = SERVICE_TYPES_FOR_INTERCESSORY.map(svc => ({
+    service: svc,
+    entries: monthEntries.filter(e => e.service === svc.key),
+  }));
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Pre-service prayer · 15 mins before each service" title="Intercessory Prayer">
+        Assign a team for each Friday and Sunday service. {mainData ? 'The Service Coordinator and Presider from the main schedule are shown beside each date — they should join too.' : 'The Service Coordinator and Presider from the main schedule join automatically.'}
+      </SectionHeading>
+
+      <div className="card p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: prevMonth(month) })}>←</button>
+          <div className="font-display text-2xl font-semibold">{formatMonthLabel(month)}</div>
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: nextMonth(month) })}>→</button>
+        </div>
+        <button className="btn btn-accent" onClick={() => setAddOpen(true)}>+ Add Date</button>
+      </div>
+
+      {grouped.map(g => (
+        <IntercessorySection
+          key={g.service.key}
+          service={g.service}
+          entries={g.entries}
+          state={state}
+          dispatch={dispatch}
+          mainData={mainData}
+        />
+      ))}
+
+      <div className="card p-4 mt-4 text-xs ink-muted" style={{ borderColor: 'var(--info-soft)', background: '#FAFCFF' }}>
+        <strong>📌 Reminder:</strong> The Service Coordinator and Presider assigned on each date should also join the intercessory prayer. (PS from original schedule.)
+        {!mainData && <div className="mt-1 italic">Once <code className="font-mono">data.json</code> is uploaded to the same folder, their names will appear here automatically.</div>}
+      </div>
+
+      {addOpen && <AddIntercessoryModal month={month} state={state} dispatch={dispatch} onClose={() => setAddOpen(false)} />}
+    </div>
+  );
+}
+
+function IntercessorySection({ service, entries, state, dispatch, mainData }) {
+  return (
+    <div className="card mb-4 overflow-hidden">
+      <div className="px-5 py-3 flex items-baseline justify-between" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle">{service.label}</div>
+        <div className="text-xs ink-muted">
+          {service.defaultStart && `${formatTime12(service.defaultStart)}${service.defaultEnd ? ' – ' + formatTime12(service.defaultEnd) : ''}`}
+        </div>
+      </div>
+      {entries.length === 0 ? (
+        <div className="p-5 ink-subtle italic text-sm">No dates scheduled for this service in this month.</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="schedule-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Team</th>
+                {mainData && <th>Coordinator</th>}
+                {mainData && <th>Presider</th>}
+                <th>Time</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map(e => <IntercessoryRow key={e.id} entry={e} state={state} dispatch={dispatch} mainData={mainData} />)}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IntercessoryRow({ entry, state, dispatch, mainData }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const teamCellRef = useRef(null);
+  const team = teamMeta(state, entry.teamId);
+
+  const onSelectTeam = (teamId) => dispatch({ type: 'SET_INTERCESSORY_TEAM', id: entry.id, teamId });
+
+  // Match against main schedule
+  const mainEntry = mainData ? mainData.schedule.find(s => s.date === entry.date && s.service === entry.service) : null;
+  const wd = (id) => {
+    if (!mainData || !id) return null;
+    const w = mainData.workers.find(x => x.id === id);
+    return w ? `${w.title || ''} ${w.name}`.trim() : null;
+  };
+  const coord    = mainEntry ? wd(mainEntry.roles?.serviceCoordinator) : null;
+  const presider = mainEntry ? wd(mainEntry.roles?.presider) : null;
+
+  return (
+    <tr>
+      <td>
+        <div className="font-mono text-xs">{formatDateShort(entry.date)}</div>
+        <div className="text-xs ink-subtle">{dayOfWeek(entry.date)}</div>
+      </td>
+      <td>
+        <div ref={teamCellRef} className="role-cell" onClick={() => setPickerOpen(o => !o)}>
+          {team ? team.name : <span className="role-cell-vacant">Unassigned</span>}
+        </div>
+        {pickerOpen && (
+          <TeamPicker
+            teams={state.teams}
+            intercessory={state.intercessory}
+            currentValue={entry.teamId}
+            onSelect={onSelectTeam}
+            onClose={() => setPickerOpen(false)}
+            beforeDate={entry.date}
+            anchorRef={teamCellRef}
+          />
+        )}
+      </td>
+      {mainData && (
+        <td className="text-xs">
+          {coord ? <span style={{ color: 'var(--ink-muted)' }}>{coord}</span> : <span className="ink-subtle italic">—</span>}
+        </td>
+      )}
+      {mainData && (
+        <td className="text-xs">
+          {presider ? <span style={{ color: 'var(--ink-muted)' }}>{presider}</span> : <span className="ink-subtle italic">—</span>}
+        </td>
+      )}
+      <td className="font-mono text-xs ink-muted">{formatTime12(entry.startTime)}{entry.endTime ? ` – ${formatTime12(entry.endTime)}` : ''}</td>
+      <td>
+        <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => {
+          if (confirm(`Delete intercessory prayer on ${formatDateShort(entry.date)}?`)) dispatch({ type: 'DELETE_INTERCESSORY', id: entry.id });
+        }}>Delete</button>
+      </td>
+    </tr>
+  );
+}
+
+function AddIntercessoryModal({ month, state, dispatch, onClose }) {
+  const [date, setDate] = useState(`${month}-`);
+  const [service, setService] = useState('Friday');
+  const submit = () => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Date format: YYYY-MM-DD'); return; }
+    const id = `ip-${date}-${service.toLowerCase()}`;
+    if (state.intercessory.some(e => e.id === id)) { alert('That date+service already exists.'); return; }
+    const def = SERVICE_TYPES_FOR_INTERCESSORY.find(s => s.key === service);
+    dispatch({ type: 'ADD_INTERCESSORY', entry: {
+      id, date, service, teamId: null,
+      startTime: def?.defaultStart || null, endTime: def?.defaultEnd || null, notes: '',
+    }});
+    onClose();
+  };
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()}>
+        <h3 className="font-display text-2xl font-semibold mb-4">Add intercessory date</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Date</label>
+            <input className="input mt-1" type="date" value={date} onChange={e => setDate(e.target.value)} />
+            {date && /^\d{4}-\d{2}-\d{2}$/.test(date) && <div className="text-xs ink-muted mt-1">{dayOfWeek(date)}</div>}
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Service</label>
+            <select className="select mt-1" value={service} onChange={e => setService(e.target.value)}>
+              {SERVICE_TYPES_FOR_INTERCESSORY.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-accent" onClick={submit}>Add</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// MEETINGS TAB
+// =============================================================================
+
+function MeetingsTab({ state, dispatch }) {
+  const month = state.currentMonth;
+  const monthMeetings = state.meetings.filter(m => monthKey(m.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+  const [editing, setEditing] = useState(null);
+
+  const newMeeting = () => setEditing({
+    id: null,
+    date: `${month}-01`,
+    startTime: '18:30',
+    type: 'regular',
+    presiderId: null, exhorterId: null, songLeaderId: null,
+    coordinator: '',
+    venue: state.venues[0] || '',
+    isVirtual: false,
+    foodInChargeText: '',
+    notes: '',
+  });
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Weekly evening prayer" title="Prayer Meetings">
+        Sectoral, Corporate, Prayer & Fasting, Regular, and Thanksgiving meetings.
+      </SectionHeading>
+
+      <div className="card p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: prevMonth(month) })}>←</button>
+          <div className="font-display text-2xl font-semibold">{formatMonthLabel(month)}</div>
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: nextMonth(month) })}>→</button>
+        </div>
+        <button className="btn btn-accent" onClick={newMeeting}>+ Add Meeting</button>
+      </div>
+
+      {monthMeetings.length === 0 ? (
+        <div className="card p-8 text-center">
+          <div className="font-display text-xl mb-2">No prayer meetings in {formatMonthLabel(month)}</div>
+          <p className="ink-muted text-sm mb-4">Add the first one to get started.</p>
+          <button className="btn btn-accent" onClick={newMeeting}>+ Add Meeting</button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {monthMeetings.map(m => <MeetingCard key={m.id} meeting={m} state={state} onEdit={() => setEditing({ ...m })} />)}
+        </div>
+      )}
+
+      {editing && (
+        <MeetingModal
+          meeting={editing}
+          state={state}
+          onSave={(meeting) => {
+            if (meeting.id) dispatch({ type: 'UPDATE_MEETING', meeting });
+            else dispatch({ type: 'ADD_MEETING', meeting: { ...meeting, id: `pm-${Date.now()}` } });
+            setEditing(null);
+          }}
+          onDelete={(id) => {
+            if (confirm('Delete this prayer meeting?')) {
+              dispatch({ type: 'DELETE_MEETING', id });
+              setEditing(null);
+            }
+          }}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function MeetingCard({ meeting, state, onEdit }) {
+  const meta = meetingTypeMeta(meeting.type);
+  const presider = state.workers.find(w => w.id === meeting.presiderId);
+  const exhorter = state.workers.find(w => w.id === meeting.exhorterId);
+  const songLeader = state.workers.find(w => w.id === meeting.songLeaderId);
+  const isCoordinated = ['sectoral', 'corporate'].includes(meeting.type);
+
+  return (
+    <div className={`card p-5 ${meta.strip}`}>
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div>
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <div className="font-display text-xl font-semibold">{formatDateShort(meeting.date)}</div>
+            <div className="text-sm ink-muted">({dayOfWeek(meeting.date)})</div>
+            <Pill tone={meta.pill}>{meta.label}</Pill>
+          </div>
+          <div className="text-xs ink-muted mt-1">{formatTime12(meeting.startTime)} · {meeting.venue || <span className="italic">venue TBD</span>}</div>
+        </div>
+        <button className="btn btn-soft text-xs" onClick={onEdit}>Edit</button>
+      </div>
+
+      {isCoordinated ? (
+        <div className="text-sm">
+          <span className="ink-muted text-xs">Coordinated by · </span>{meeting.coordinator || <span className="ink-subtle italic">TBD</span>}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+          <div><span className="ink-muted text-xs">Presider · </span>{presider ? workerShort(presider) : <span className="ink-subtle italic">TBD</span>}</div>
+          <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? workerShort(exhorter) : <span className="ink-subtle italic">TBD</span>}</div>
+          <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? workerShort(songLeader) : <span className="ink-subtle italic">TBD</span>}</div>
+        </div>
+      )}
+
+      {meeting.foodInChargeText && (
+        <div className="text-xs ink-muted mt-3"><strong>Food in charge:</strong> {meeting.foodInChargeText}</div>
+      )}
+    </div>
+  );
+}
+
+function MeetingModal({ meeting, state, onSave, onDelete, onClose }) {
+  const [m, setM] = useState(meeting);
+  const meta = meetingTypeMeta(m.type);
+  const isCoordinated = ['sectoral', 'corporate'].includes(m.type);
+
+  const submit = () => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(m.date)) { alert('Valid date is required.'); return; }
+    if (!m.startTime) { alert('Start time is required.'); return; }
+    onSave(m);
+  };
+
+  // Worker pickers for non-coordinated meetings
+  const PickerCell = ({ role, fieldKey }) => {
+    const [open, setOpen] = useState(false);
+    const cellRef = useRef(null);
+    const wid = m[fieldKey];
+    const w = state.workers.find(x => x.id === wid);
+    return (
+      <div ref={cellRef} className="relative">
+        <div className="role-cell" onClick={() => setOpen(o => !o)} style={{ minWidth: 120 }}>
+          {w ? workerShort(w) : <span className="role-cell-vacant">Pick worker</span>}
+        </div>
+        {open && (
+          <WorkerPicker
+            workers={state.workers}
+            meetings={state.meetings}
+            role={role}
+            currentValue={wid}
+            onSelect={(id) => setM({ ...m, [fieldKey]: id })}
+            onClose={() => setOpen(false)}
+            beforeDate={m.date}
+            excludeIds={['presiderId', 'exhorterId', 'songLeaderId']
+              .filter(k => k !== fieldKey)
+              .map(k => m[k])
+              .filter(Boolean)}
+            anchorRef={cellRef}
+          />
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()}>
+        <h3 className="font-display text-2xl font-semibold mb-4">{m.id ? 'Edit Prayer Meeting' : 'New Prayer Meeting'}</h3>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Type</label>
+            <select className="select mt-1" value={m.type} onChange={e => setM({ ...m, type: e.target.value })}>
+              {PRAYER_MEETING_TYPES.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
+            </select>
+            <div className="text-xs ink-muted mt-1">{meta.description}</div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Date</label>
+              <input className="input mt-1" type="date" value={m.date} onChange={e => setM({ ...m, date: e.target.value })} />
+              {m.date && /^\d{4}-\d{2}-\d{2}$/.test(m.date) && <div className="text-xs ink-muted mt-1">{dayOfWeek(m.date)}</div>}
+            </div>
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Start time</label>
+              <input className="input mt-1" type="time" value={m.startTime || ''} onChange={e => setM({ ...m, startTime: e.target.value })} />
+            </div>
+          </div>
+
+          {isCoordinated ? (
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Coordinator</label>
+              <input className="input mt-1" value={m.coordinator || ''} onChange={e => setM({ ...m, coordinator: e.target.value })} placeholder={m.type === 'sectoral' ? 'e.g. F&T' : 'e.g. JAOC'} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Presider</label>
+                <div className="mt-1"><PickerCell role="presider" fieldKey="presiderId" /></div>
+              </div>
+              <div>
+                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Exhorter</label>
+                <div className="mt-1"><PickerCell role="exhorter" fieldKey="exhorterId" /></div>
+              </div>
+              <div>
+                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Song Leader</label>
+                <div className="mt-1"><PickerCell role="songLeader" fieldKey="songLeaderId" /></div>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Venue</label>
+            <input className="input mt-1" value={m.venue || ''} onChange={e => setM({ ...m, venue: e.target.value, isVirtual: e.target.value.toUpperCase().includes('ZOOM') })} list="venue-options" placeholder="e.g. Abundance Hall (2F) or HS-ZOOM" />
+            <datalist id="venue-options">
+              {state.venues.map(v => <option key={v} value={v} />)}
+            </datalist>
+          </div>
+
+          {m.type === 'thanksgiving' && (
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Food in charge</label>
+              <input className="input mt-1" value={m.foodInChargeText || ''} onChange={e => setM({ ...m, foodInChargeText: e.target.value })} placeholder="e.g. CELEBRANT (BIRTHDAY/ANNIVERSARY/ETC.)" />
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Notes</label>
+            <textarea className="input mt-1" rows={2} value={m.notes || ''} onChange={e => setM({ ...m, notes: e.target.value })} />
+          </div>
+        </div>
+
+        <div className="flex justify-between gap-2 mt-6">
+          <div>{m.id && <button className="btn btn-ghost" onClick={() => onDelete(m.id)} style={{ color: 'var(--danger)' }}>Delete</button>}</div>
+          <div className="flex gap-2">
+            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn-accent" onClick={submit}>Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// TEAMS TAB
+// =============================================================================
+
+function TeamsTab({ state, dispatch }) {
+  const [editing, setEditing] = useState(null);
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Intercessory rotation" title="Teams">
+        These teams take turns leading the 15-min intercessory prayer before each service.
+      </SectionHeading>
+
+      <div className="card p-4 mb-4 flex justify-end">
+        <button className="btn btn-accent" onClick={() => setEditing({ id: null, name: '', leader: '' })}>+ Add Team</button>
+      </div>
+
+      <div className="card overflow-hidden">
+        <table className="schedule-table">
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>Leader</th>
+              <th>Last Served</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {state.teams.map(t => {
+              const lastEntry = state.intercessory
+                .filter(i => i.teamId === t.id)
+                .sort((a, b) => b.date.localeCompare(a.date))[0];
+              return (
+                <tr key={t.id}>
+                  <td className="font-medium">{t.name}</td>
+                  <td>{t.leader || <span className="ink-subtle italic">—</span>}</td>
+                  <td className="font-mono text-xs ink-muted">{lastEntry ? formatDateShort(lastEntry.date) : <span className="italic">never</span>}</td>
+                  <td><button className="btn btn-ghost text-xs" onClick={() => setEditing({ ...t })}>Edit</button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {editing && (
+        <div className="modal-backdrop" onClick={() => setEditing(null)}>
+          <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()}>
+            <h3 className="font-display text-2xl font-semibold mb-4">{editing.id ? 'Edit Team' : 'Add Team'}</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Team name</label>
+                <input className="input mt-1" value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} placeholder="e.g. Worship Team" autoFocus />
+              </div>
+              <div>
+                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Leader (optional)</label>
+                <input className="input mt-1" value={editing.leader || ''} onChange={e => setEditing({ ...editing, leader: e.target.value })} placeholder="e.g. Bro. Wilson Guerzon" />
+              </div>
+            </div>
+            <div className="flex justify-between gap-2 mt-6">
+              <div>{editing.id && <button className="btn btn-ghost" onClick={() => {
+                if (confirm('Delete this team?')) { dispatch({ type: 'DELETE_TEAM', id: editing.id }); setEditing(null); }
+              }} style={{ color: 'var(--danger)' }}>Delete</button>}</div>
+              <div className="flex gap-2">
+                <button className="btn btn-ghost" onClick={() => setEditing(null)}>Cancel</button>
+                <button className="btn btn-accent" onClick={() => {
+                  if (!editing.name.trim()) { alert('Name is required.'); return; }
+                  if (editing.id) dispatch({ type: 'UPDATE_TEAM', team: editing });
+                  else dispatch({ type: 'ADD_TEAM', team: { ...editing, id: `team-${Date.now()}` } });
+                  setEditing(null);
+                }}>Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// WORKERS TAB
+// =============================================================================
+
+function WorkersTab({ state, dispatch }) {
+  const [editing, setEditing] = useState(null);
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Prayer meeting roster" title="Workers">
+        Individuals who serve as Presider, Exhorter, or Song Leader for prayer meetings.
+      </SectionHeading>
+
+      <div className="card p-4 mb-4 flex justify-end">
+        <button className="btn btn-accent" onClick={() => setEditing({ id: null, name: '', title: 'Sis.', eligibleRoles: [], status: 'active' })}>+ Add Worker</button>
+      </div>
+
+      <div className="card overflow-hidden">
+        <table className="schedule-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Eligible Roles</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {state.workers.map(w => (
+              <tr key={w.id}>
+                <td className="font-medium">{workerDisplay(w)}</td>
+                <td>
+                  <div className="flex flex-wrap gap-1">
+                    {w.eligibleRoles.map(r => {
+                      const role = PRAYER_ROLES.find(x => x.key === r);
+                      return role ? <Pill key={r} tone="default">{role.label}</Pill> : null;
+                    })}
+                    {w.eligibleRoles.length === 0 && <span className="ink-subtle text-xs italic">none</span>}
+                  </div>
+                </td>
+                <td><Pill tone={w.status === 'active' ? 'success' : 'default'}>{w.status}</Pill></td>
+                <td><button className="btn btn-ghost text-xs" onClick={() => setEditing({ ...w })}>Edit</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {editing && <WorkerEditModal worker={editing} onSave={(w) => {
+        if (!w.name.trim()) { alert('Name is required.'); return; }
+        if (w.id) dispatch({ type: 'UPDATE_WORKER', worker: w });
+        else dispatch({ type: 'ADD_WORKER', worker: { ...w, id: `pw-${Date.now()}` } });
+        setEditing(null);
+      }} onDelete={(id) => {
+        if (confirm('Delete this worker?')) { dispatch({ type: 'DELETE_WORKER', id }); setEditing(null); }
+      }} onClose={() => setEditing(null)} />}
+    </div>
+  );
+}
+
+function WorkerEditModal({ worker, onSave, onDelete, onClose }) {
+  const [w, setW] = useState(worker);
+  const toggleRole = (role) => {
+    const has = w.eligibleRoles.includes(role);
+    setW({ ...w, eligibleRoles: has ? w.eligibleRoles.filter(r => r !== role) : [...w.eligibleRoles, role] });
+  };
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()}>
+        <h3 className="font-display text-2xl font-semibold mb-4">{w.id ? 'Edit Worker' : 'Add Worker'}</h3>
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Title</label>
+              <select className="select mt-1" value={w.title || ''} onChange={e => setW({ ...w, title: e.target.value })}>
+                <option value="">(none)</option>
+                <option value="Sis.">Sis.</option>
+                <option value="Bro.">Bro.</option>
+                <option value="Ptr.">Ptr.</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
+              <input className="input mt-1" value={w.name} onChange={e => setW({ ...w, name: e.target.value })} placeholder="e.g. Wilson Guerzon" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Eligible Roles</label>
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {PRAYER_ROLES.map(r => (
+                <label key={r.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={w.eligibleRoles.includes(r.key)} onChange={() => toggleRole(r.key)} />
+                  {r.label}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Status</label>
+            <select className="select mt-1" value={w.status} onChange={e => setW({ ...w, status: e.target.value })}>
+              <option value="active">Active</option>
+              <option value="on-leave">On leave</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-between gap-2 mt-6">
+          <div>{w.id && <button className="btn btn-ghost" onClick={() => onDelete(w.id)} style={{ color: 'var(--danger)' }}>Delete</button>}</div>
+          <div className="flex gap-2">
+            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn-accent" onClick={() => onSave(w)}>Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// PRINT TAB
+// =============================================================================
+
+function PrintTab({ state, mainData }) {
+  const month = state.currentMonth;
+  const monthIntercessory = state.intercessory.filter(e => monthKey(e.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+  const monthMeetings = state.meetings.filter(m => monthKey(m.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+
+  const fridays = monthIntercessory.filter(e => e.service === 'Friday');
+  const sundays = monthIntercessory.filter(e => e.service === 'Sunday');
+  const botr = monthIntercessory.filter(e => e.service === 'BOTR-NECK');
+
+  // Build "who else joins" lookup from main schedule
+  const joinReminders = useMemo(() => {
+    if (!mainData) return [];
+    const out = [];
+    for (const ip of monthIntercessory) {
+      const main = mainData.schedule.find(s => s.date === ip.date && s.service === ip.service);
+      if (!main) continue;
+      const wd = (id) => {
+        const w = mainData.workers.find(x => x.id === id);
+        return w ? `${w.title || ''} ${w.name}`.trim() : null;
+      };
+      const coord = wd(main.roles?.serviceCoordinator);
+      const presider = wd(main.roles?.presider);
+      if (coord || presider) out.push({ date: ip.date, service: ip.service, coord, presider });
+    }
+    return out;
+  }, [monthIntercessory, mainData]);
+
+  return (
+    <div className="fade-in">
+      <div className="no-print">
+        <SectionHeading eyebrow="Export-ready view" title="Print / Share">
+          Replicates the original two schedules side by side. Use Print to save as PDF or copy as text for Messenger.
+        </SectionHeading>
+        <div className="card p-4 mb-6 flex items-center gap-3 flex-wrap">
+          <button className="btn btn-primary" onClick={() => window.print()}>🖨 Print / Save PDF</button>
+          <button className="btn btn-soft" onClick={() => {
+            navigator.clipboard.writeText(generateMessengerText(state, month)).then(() => alert('Copied to clipboard!')).catch(() => alert('Copy failed.'));
+          }}>📋 Copy as text</button>
+          <div className="flex-1" />
+          <span className="text-xs ink-subtle">Showing {formatMonthLabel(month)}</span>
+        </div>
+      </div>
+
+      <div className="print-section">
+        {/* Intercessory Schedule (Image 2) */}
+        <div className="text-center mb-2">
+          <div className="font-display text-2xl font-bold" style={{ color: 'var(--accent)' }}>{state.meta.churchName}</div>
+          <div className="text-sm font-semibold mt-1 underline" style={{ color: 'var(--info)' }}>INTERCESSORY PRAYER SCHEDULE</div>
+          <div className="text-xs font-semibold mt-1">MONTH: {formatMonthLabel(month).toUpperCase()}</div>
+        </div>
+
+        <table className="print-table w-full mb-6" style={{ borderCollapse: 'collapse', border: '1px solid #999' }}>
+          <thead>
+            <tr>
+              <th colSpan="2" style={{ ...thIP, background: '#BFDBFE' }}>BOTR - NECK</th>
+              <th colSpan="2" style={{ ...thIP, background: '#FEF08A' }}>ABUNDANCE - FRI</th>
+              <th colSpan="2" style={{ ...thIP, background: '#86EFAC' }}>ABUNDANCE - SUN</th>
+            </tr>
+            <tr>
+              <th style={{ ...thIP2, background: '#DBEAFE' }}>DATE</th>
+              <th style={{ ...thIP2, background: '#DBEAFE' }}>TIME (AM)<br/>10:00 TO 12:00</th>
+              <th style={{ ...thIP2, background: '#FEFCE8' }}>DATE</th>
+              <th style={{ ...thIP2, background: '#FEFCE8' }}>TIME (PM)<br/>4:15 TO 4:30</th>
+              <th style={{ ...thIP2, background: '#DCFCE7' }}>DATE</th>
+              <th style={{ ...thIP2, background: '#DCFCE7' }}>TIME (PM)<br/>6:15 TO 6:30</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: Math.max(fridays.length, sundays.length, botr.length, 1) }, (_, i) => (
+              <tr key={i}>
+                <td style={{ ...tdIP, background: '#EFF6FF' }}>{botr[i] ? formatDateShort(botr[i].date).toUpperCase().replace('-',' ') : 'N/A'}</td>
+                <td style={{ ...tdIP, background: '#EFF6FF' }}>{botr[i] ? (teamMeta(state, botr[i].teamId)?.name || 'TBD') : 'N/A'}</td>
+                <td style={{ ...tdIP, background: '#FEFCE8' }}>{fridays[i] ? formatDateShort(fridays[i].date).toUpperCase().replace('-',' ') : ''}</td>
+                <td style={{ ...tdIP, background: '#FEFCE8' }}>{fridays[i] ? (teamMeta(state, fridays[i].teamId)?.name || '—') : ''}</td>
+                <td style={{ ...tdIP, background: '#F0FDF4' }}>{sundays[i] ? formatDateShort(sundays[i].date).toUpperCase().replace('-',' ') : ''}</td>
+                <td style={{ ...tdIP, background: '#F0FDF4' }}>{sundays[i] ? (teamMeta(state, sundays[i].teamId)?.name || '—') : ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="text-xs italic mb-2" style={{ color: 'var(--danger)' }}>
+          PS: ANG SERVICE COORDINATOR AT PRESIDER NA NAKA ASSIGN ON THE ABOVE DATE AY KAILANGAN PONG MAG JOIN DITO. - THANKS!
+        </div>
+
+        {joinReminders.length > 0 && (
+          <div className="mb-8 p-3" style={{ border: '1px solid #999', background: '#FFF7ED' }}>
+            <div className="text-xs font-semibold mb-2" style={{ letterSpacing: '0.05em' }}>WHO ALSO JOINS (FROM MAIN SCHEDULE):</div>
+            <table className="print-table w-full" style={{ borderCollapse: 'collapse' }}>
+              <tbody>
+                {joinReminders.map((j, i) => (
+                  <tr key={i}>
+                    <td style={{ ...td, width: 110 }}>{formatDateShort(j.date).toUpperCase().replace('-',' ')} ({j.service.slice(0,3).toUpperCase()})</td>
+                    <td style={td}><strong>Coord:</strong> {j.coord || '—'}</td>
+                    <td style={td}><strong>Presider:</strong> {j.presider || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {!joinReminders.length && <div className="mb-8" />}
+
+        {/* Prayer Meeting Schedule (Image 3) */}
+        <div className="text-center mb-2">
+          <div className="font-display text-2xl font-bold" style={{ color: 'var(--accent)' }}>{state.meta.churchName}</div>
+          <div className="text-sm font-semibold mt-1 underline" style={{ color: 'var(--info)' }}>SCHEDULE OF PRAYER MEETING</div>
+          <div className="text-xs font-semibold mt-1">MONTH: {formatMonthLabel(month).toUpperCase()}</div>
+        </div>
+
+        <table className="print-table w-full" style={{ borderCollapse: 'collapse', border: '1px solid #999' }}>
+          <thead>
+            <tr style={{ background: '#FEF08A' }}>
+              <th style={th}>DATE (DAY)</th>
+              <th style={th}>TIME START</th>
+              <th style={th}>PRESIDER</th>
+              <th style={th}>EXHORTER</th>
+              <th style={th}>SONG LEADER</th>
+              <th style={th}>VENUE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {monthMeetings.length === 0 ? (
+              <tr><td colSpan="6" style={{ ...td, fontStyle: 'italic', textAlign: 'center', padding: 16 }}>No meetings scheduled.</td></tr>
+            ) : monthMeetings.map(m => {
+              const meta = meetingTypeMeta(m.type);
+              const isCoord = ['sectoral', 'corporate'].includes(m.type);
+              const presider = state.workers.find(w => w.id === m.presiderId);
+              const exhorter = state.workers.find(w => w.id === m.exhorterId);
+              const songLeader = state.workers.find(w => w.id === m.songLeaderId);
+              return (
+                <React.Fragment key={m.id}>
+                  <tr>
+                    <td style={td}>{formatDateShort(m.date).toUpperCase().replace('-',' ')} ({dayShort(m.date).slice(0,2)})</td>
+                    <td style={td}>{formatTime12(m.startTime)}</td>
+                    {isCoord ? (
+                      <td colSpan="3" style={{ ...td, fontStyle: 'italic' }}>{meta.label.toUpperCase()} (C/O {m.coordinator || 'TBD'})</td>
+                    ) : (
+                      <>
+                        <td style={td}>{presider ? workerDisplay(presider).toUpperCase() : 'TBD'}</td>
+                        <td style={td}>{exhorter ? workerDisplay(exhorter).toUpperCase() : 'TBD'}</td>
+                        <td style={td}>{songLeader ? workerDisplay(songLeader).toUpperCase() : 'TBD'}</td>
+                      </>
+                    )}
+                    <td style={td}>{m.venue || ''}</td>
+                  </tr>
+                  {!isCoord && (
+                    <tr>
+                      <td colSpan="6" style={{ ...td, textAlign: 'center', fontWeight: 600, letterSpacing: '0.1em' }}>
+                        {meta.label.toUpperCase()}{m.foodInChargeText ? ` · Food in Charge: ${m.foodInChargeText}` : ''}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+const thIP  = { padding: '6px 8px', fontSize: '12px', fontWeight: 700, border: '1px solid #999', textAlign: 'center' };
+const thIP2 = { padding: '4px 8px', fontSize: '10px', fontWeight: 600, border: '1px solid #999', textAlign: 'center' };
+const tdIP  = { padding: '6px 8px', fontSize: '11px', border: '1px solid #999', textAlign: 'center' };
+const th    = { padding: '6px 8px', fontSize: '11px', fontWeight: 600, border: '1px solid #999', textAlign: 'left' };
+const td    = { padding: '6px 8px', fontSize: '11px', border: '1px solid #999' };
+
+function generateMessengerText(state, month) {
+  const monthIP = state.intercessory.filter(e => monthKey(e.date) === month).sort((a,b) => a.date.localeCompare(b.date));
+  const monthM = state.meetings.filter(m => monthKey(m.date) === month).sort((a,b) => a.date.localeCompare(b.date));
+  let out = `🙏 ${state.meta.churchName} · ${state.meta.ministryName}\n${formatMonthLabel(month).toUpperCase()}\n\n`;
+  out += `INTERCESSORY PRAYER\n`;
+  for (const svc of SERVICE_TYPES_FOR_INTERCESSORY) {
+    const entries = monthIP.filter(e => e.service === svc.key);
+    if (entries.length === 0) continue;
+    out += `\n${svc.label.toUpperCase()} (${formatTime12(svc.defaultStart)})\n`;
+    for (const e of entries) {
+      out += `• ${formatDateShort(e.date)} — ${teamMeta(state, e.teamId)?.name || 'TBD'}\n`;
+    }
+  }
+  out += `\n\nPRAYER MEETINGS\n`;
+  for (const m of monthM) {
+    const meta = meetingTypeMeta(m.type);
+    out += `\n${formatDateShort(m.date)} (${dayOfWeek(m.date)}) ${formatTime12(m.startTime)}\n`;
+    out += `• ${meta.label}\n`;
+    if (['sectoral','corporate'].includes(m.type)) {
+      out += `• C/O ${m.coordinator || 'TBD'}\n`;
+    } else {
+      const wd = (id) => { const w = state.workers.find(x => x.id === id); return w ? workerDisplay(w) : 'TBD'; };
+      out += `• Presider: ${wd(m.presiderId)}\n`;
+      out += `• Exhorter: ${wd(m.exhorterId)}\n`;
+      out += `• Song Leader: ${wd(m.songLeaderId)}\n`;
+    }
+    out += `• Venue: ${m.venue || 'TBD'}\n`;
+    if (m.foodInChargeText) out += `• Food: ${m.foodInChargeText}\n`;
+  }
+  return out.trim();
+}
+
+// =============================================================================
+// DATA TAB (publish + sync)
+// =============================================================================
+
+function DataTab({ state, dispatch }) {
+  const fileInputRef = useRef(null);
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `flcc-prayer-${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const publishForMembers = () => {
+    const out = {
+      meta: {
+        churchName: state.meta.churchName,
+        ministryName: state.meta.ministryName,
+        publishedAt: new Date().toISOString(),
+        version: APP_VERSION,
+      },
+      ministry: state.ministry,
+      teams: state.teams,
+      workers: state.workers,
+      themes: state.themes,
+      intercessory: state.intercessory,
+      meetings: state.meetings,
+    };
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'prayer.json';
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const importData = (file) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.intercessory && !data.meetings) throw new Error('Invalid file format');
+        if (confirm('This will replace your current data. Continue?')) {
+          dispatch({ type: 'IMPORT_DATA', payload: data });
+          alert('Imported successfully!');
+        }
+      } catch (err) { alert('Import failed: ' + err.message); }
+    };
+    reader.readAsText(file);
+  };
+
+  const m = state.ministry || {};
+  const setMinistry = (patch) => dispatch({ type: 'UPDATE_MINISTRY', payload: patch });
+  const ministryComplete = m.headName && (m.whatsapp || m.messenger || m.phone || m.email);
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Sync & publish" title="Data">
+        Backup, share with your prayer ministry team, and publish to the FLCC members view.
+      </SectionHeading>
+
+      <div className="card p-6 mb-6" style={{ borderColor: 'var(--accent)' }}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>For FLCC Members</div>
+        <div className="font-display text-2xl font-semibold mt-1">Publish for Members</div>
+        <p className="ink-muted text-sm mt-2 max-w-xl mb-4">
+          Generate <code className="font-mono text-xs px-1 py-0.5 rounded" style={{ background: '#F4F4F0' }}>prayer.json</code> and upload it to the <code className="font-mono text-xs">flcc-schedule-os</code> repo on GitHub. Once uploaded, the prayer ministry schedule appears alongside the main schedule in the members view.
+        </p>
+
+        <div className="grid sm:grid-cols-2 gap-3 mb-4">
+          <button className="btn btn-accent" onClick={publishForMembers} disabled={!ministryComplete}>↓ Generate prayer.json</button>
+          <button className="btn btn-soft" onClick={() => {
+            const text = `🙏 The prayer schedule has been updated.\n\nView it at:\nhttps://ninlamster-blip.github.io/flcc-schedule-os/members.html\n\nIf you have a conflict on any of your prayer assignments, you can report it directly from the app.\n\n— ${m.headName || 'Prayer Ministry'}`;
+            navigator.clipboard.writeText(text).then(() => alert('Announcement copied!')).catch(() => alert('Copy failed.'));
+          }}>📋 Copy member announcement</button>
+        </div>
+
+        {!ministryComplete && (
+          <div className="text-xs p-3 rounded" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
+            ⚠ Fill in the Ministry Contact below first — members need at least one channel to report conflicts.
+          </div>
+        )}
+
+        <details className="text-sm mt-3">
+          <summary className="cursor-pointer ink-muted">How to deploy →</summary>
+          <ol className="ink-muted text-xs mt-2 space-y-1 ml-4 list-decimal">
+            <li>Click "Generate prayer.json" above (downloads to your computer)</li>
+            <li>Go to <code className="font-mono">flcc-schedule-os</code> repo on GitHub</li>
+            <li>Upload <code className="font-mono">prayer.json</code> to the repo root (replace existing if present)</li>
+            <li>Commit. Members see updates within ~1 minute when they refresh.</li>
+          </ol>
+        </details>
+      </div>
+
+      {/* Ministry contact */}
+      <div className="card p-6 mb-6">
+        <div className="font-display text-xl font-semibold mb-1">Ministry Contact</div>
+        <p className="ink-muted text-sm mb-4">When members report a prayer-related conflict, the message routes to the channel they pick below. Fill in at least one.</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
+            <input className="input mt-1" value={m.headName || ''} onChange={e => setMinistry({ headName: e.target.value })} placeholder="e.g. Bro. Wilson Guerzon" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Title / Role</label>
+            <input className="input mt-1" value={m.headTitle || ''} onChange={e => setMinistry({ headTitle: e.target.value })} placeholder="e.g. Prayer Ministry Lead" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">WhatsApp number</label>
+            <input className="input mt-1" value={m.whatsapp || ''} onChange={e => setMinistry({ whatsapp: e.target.value })} placeholder="+96512345678 (with country code)" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Messenger username</label>
+            <input className="input mt-1" value={m.messenger || ''} onChange={e => setMinistry({ messenger: e.target.value })} placeholder="username (without @)" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">SMS / phone</label>
+            <input className="input mt-1" value={m.phone || ''} onChange={e => setMinistry({ phone: e.target.value })} placeholder="+96512345678" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Email</label>
+            <input className="input mt-1" type="email" value={m.email || ''} onChange={e => setMinistry({ email: e.target.value })} placeholder="wilson@example.com" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <div className="card p-6">
+          <div className="font-display text-xl font-semibold mb-2">Admin Backup (Export)</div>
+          <p className="ink-muted text-sm mb-4">Full admin backup. Send to a fellow leader or save for safekeeping.</p>
+          <button className="btn btn-primary" onClick={exportData}>↓ Download admin JSON</button>
+        </div>
+        <div className="card p-6">
+          <div className="font-display text-xl font-semibold mb-2">Import</div>
+          <p className="ink-muted text-sm mb-4">Replace current data with an exported file.</p>
+          <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={(e) => e.target.files[0] && importData(e.target.files[0])} />
+          <button className="btn btn-soft" onClick={() => fileInputRef.current?.click()}>↑ Choose JSON file</button>
+        </div>
+      </div>
+
+      <div className="card p-6">
+        <div className="font-display text-xl font-semibold mb-2">Reset</div>
+        <p className="ink-muted text-sm mb-4">Restore the original seed data (April 2026 from your photos).</p>
+        <button className="btn btn-ghost" style={{ color: 'var(--danger)' }} onClick={() => {
+          if (confirm('Reset to seed data? All your changes will be lost.')) dispatch({ type: 'RESET' });
+        }}>↺ Reset to seed data</button>
+      </div>
+
+      <div className="mt-6 text-xs ink-muted">
+        Last updated: {new Date(state.meta.lastUpdated).toLocaleString()} · Version {state.meta.version}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// APP
+// =============================================================================
+
+const TABS = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'intercessory', label: 'Intercessory' },
+  { key: 'meetings', label: 'Meetings' },
+  { key: 'teams', label: 'Teams' },
+  { key: 'workers', label: 'Workers' },
+  { key: 'print', label: 'Print' },
+  { key: 'data', label: 'Data' },
+];
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, null, () => migrate(loadState()) || defaultState());
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [mainData, setMainData] = useState(null);  // null = not loaded, false = unavailable, object = loaded
+
+  useEffect(() => { saveState(state); }, [state]);
+
+  // Fetch main schedule (data.json) so Wilson sees who the coordinator/presider is per service date
+  useEffect(() => {
+    fetch(`./data.json?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(d => { if (d?.schedule && d?.workers) setMainData(d); else setMainData(false); })
+      .catch(() => setMainData(false));
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-app">
+      <header className="border-b border-app no-print" style={{ background: 'rgba(250, 250, 245, 0.85)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20 }}>
+        <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{state.meta.churchName} · {state.meta.ministryName}</div>
+              <h1 className="font-display text-3xl font-semibold mt-1">Prayer OS</h1>
+            </div>
+            <div className="text-xs ink-muted">
+              <span className="font-mono">{formatMonthLabel(state.currentMonth)}</span>
+              <span className="mx-2">·</span>
+              <span>v{state.meta.version}</span>
+              {mainData && <><span className="mx-2">·</span><span title="Synced with main schedule">🔗 synced</span></>}
+            </div>
+          </div>
+          <nav className="flex flex-wrap mt-4">
+            {TABS.map(t => (
+              <button key={t.key} className={`tab ${activeTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {activeTab === 'dashboard'    && <DashboardTab state={state} dispatch={dispatch} mainData={mainData} />}
+        {activeTab === 'intercessory' && <IntercessoryTab state={state} dispatch={dispatch} mainData={mainData} />}
+        {activeTab === 'meetings'     && <MeetingsTab state={state} dispatch={dispatch} />}
+        {activeTab === 'teams'        && <TeamsTab state={state} dispatch={dispatch} />}
+        {activeTab === 'workers'      && <WorkersTab state={state} dispatch={dispatch} />}
+        {activeTab === 'print'        && <PrintTab state={state} mainData={mainData} />}
+        {activeTab === 'data'         && <DataTab state={state} dispatch={dispatch} />}
+      </main>
+
+      <footer className="max-w-7xl mx-auto px-6 py-12 text-xs ink-subtle no-print">
+        FLCC Prayer OS · Built for {state.ministry.headName || 'the Prayer Ministry'} · Data stored locally in your browser
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
