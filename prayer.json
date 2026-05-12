@@ -2,7 +2,7 @@
   "meta": {
     "churchName": "FLCC - Abundance Church",
     "ministryName": "Prayer Ministry",
-    "publishedAt": "2026-05-10T20:15:28.373Z",
+    "publishedAt": "2026-05-12T18:11:14.779Z",
     "version": "1.0"
   },
   "ministry": {
@@ -210,6 +210,48 @@
       ],
       "status": "active",
       "birthday": ""
+    },
+    {
+      "id": "pw-1778609033558",
+      "name": "Edward Pascual",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "presider",
+        "exhorter"
+      ],
+      "status": "active"
+    },
+    {
+      "id": "pw-1778609099409",
+      "name": "Rona ",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "exhorter",
+        "presider"
+      ],
+      "status": "active"
+    },
+    {
+      "id": "pw-1778609198792",
+      "name": "Celsa Sario",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider",
+        "exhorter",
+        "songLeader"
+      ],
+      "status": "active"
+    },
+    {
+      "id": "pw-1778609276362",
+      "name": "Jenarlyn Culao",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider",
+        "exhorter",
+        "songLeader"
+      ],
+      "status": "active"
     }
   ],
   "themes": {
@@ -289,6 +331,96 @@
       "startTime": "18:15",
       "endTime": "18:30",
       "notes": ""
+    },
+    {
+      "id": "ip-2026-05-01-friday",
+      "date": "2026-05-01",
+      "service": "Friday",
+      "teamId": "team-worship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-08-friday",
+      "date": "2026-05-08",
+      "service": "Friday",
+      "teamId": "team-fellowship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-15-friday",
+      "date": "2026-05-15",
+      "service": "Friday",
+      "teamId": "team-admin",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-03-sunday",
+      "date": "2026-05-03",
+      "service": "Sunday",
+      "teamId": "team-worship",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-22-friday",
+      "date": "2026-05-22",
+      "service": "Friday",
+      "teamId": "team-prayer",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-29-friday",
+      "date": "2026-05-29",
+      "service": "Friday",
+      "teamId": "team-discipleship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-10-sunday",
+      "date": "2026-05-10",
+      "service": "Sunday",
+      "teamId": "team-finance",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-17-sunday",
+      "date": "2026-05-17",
+      "service": "Sunday",
+      "teamId": "team-evangelism",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-24-sunday",
+      "date": "2026-05-24",
+      "service": "Sunday",
+      "teamId": "team-prayer",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-05-31-sunday",
+      "date": "2026-05-31",
+      "service": "Sunday",
+      "teamId": "team-auxiliary",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
     }
   ],
   "meetings": [
@@ -360,6 +492,62 @@
       "venue": "Abundance Hall (2F)",
       "isVirtual": false,
       "foodInChargeText": "CELEBRANT (BIRTHDAY/ANNIVERSARY/ETC.)",
+      "notes": ""
+    },
+    {
+      "id": "pm-1778608513794",
+      "date": "2026-05-07",
+      "startTime": "18:30",
+      "type": "sectoral",
+      "presiderId": null,
+      "exhorterId": null,
+      "songLeaderId": null,
+      "coordinator": "Cornerstone",
+      "venue": "CPM-ZOOM",
+      "isVirtual": true,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-1778608609013",
+      "date": "2026-05-13",
+      "startTime": "18:00",
+      "type": "corporate",
+      "presiderId": null,
+      "exhorterId": null,
+      "songLeaderId": null,
+      "coordinator": "Harvester",
+      "venue": "CPM-ZOOM",
+      "isVirtual": true,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-1778608774162",
+      "date": "2026-05-21",
+      "startTime": "18:30",
+      "type": "fasting",
+      "presiderId": "sis-18",
+      "exhorterId": "pw-1778609033558",
+      "songLeaderId": "ptr-01",
+      "coordinator": "",
+      "venue": "Gabriel Family Flat",
+      "isVirtual": false,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-1778608906052",
+      "date": "2026-05-28",
+      "startTime": "18:30",
+      "type": "thanksgiving",
+      "presiderId": "pw-1778609099409",
+      "exhorterId": "pw-1778609276362",
+      "songLeaderId": "pw-1778609198792",
+      "coordinator": "",
+      "venue": "Abundance Hall (2F)",
+      "isVirtual": false,
+      "foodInChargeText": "",
       "notes": ""
     }
   ]
