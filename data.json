@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church",
-    "publishedAt": "2026-05-10T20:20:41.788Z",
+    "publishedAt": "2026-05-12T20:07:52.628Z",
     "version": "1.0"
   },
   "ministry": {
@@ -610,6 +610,28 @@
       ],
       "status": "active",
       "birthday": ""
+    },
+    {
+      "id": "w-1778531822050",
+      "name": "Christine Santos",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "presider"
+      ],
+      "status": "active",
+      "birthday": "08-19"
+    },
+    {
+      "id": "w-1778531881868",
+      "name": "Irene Sabangan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [
+        "preacher"
+      ],
+      "status": "active",
+      "birthday": "05-04"
     }
   ],
   "themes": {
@@ -1345,6 +1367,18 @@
       "location": "",
       "notes": "",
       "recurrence": "yearly",
+      "showOnDashboard": true
+    },
+    {
+      "id": "evt-1778607214810",
+      "title": "Bible Study - Forgiveness",
+      "type": "bible-study",
+      "date": "2026-05-15",
+      "startTime": "13:00",
+      "endTime": "15:00",
+      "location": "FLCC - Abundance Hall",
+      "notes": "",
+      "recurrence": "none",
       "showOnDashboard": true
     }
   ]
