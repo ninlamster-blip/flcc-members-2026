@@ -258,6 +258,172 @@
     font-size: 1rem;
     flex-shrink: 0;
   }
+
+  /* HOME tab grid */
+  .home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.75rem;
+  }
+  .home-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    position: relative;
+  }
+  .home-card:hover { border-color: var(--ink); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .home-card-mine {
+    border-left: 3px solid var(--accent);
+    background: linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 40%);
+  }
+  .home-card-eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+  }
+  .home-card-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  .home-card-body {
+    flex: 1;
+    font-size: 0.8125rem;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .home-card-actions {
+    display: flex;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+  }
+
+  /* iOS-style mobile calendar */
+  .ios-cal {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .ios-cal-header-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0.5rem 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .ios-cal-header-cell {
+    text-align: center;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--ink-subtle);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .ios-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .ios-cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.4rem 0.25rem 0.25rem;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+    background: var(--surface);
+  }
+  .ios-cal-day:active { background: #F4F4F0; }
+  .ios-cal-day-num {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--ink);
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    line-height: 1;
+  }
+  .ios-cal-day-other .ios-cal-day-num { color: var(--ink-subtle); opacity: 0.5; }
+  .ios-cal-day-today .ios-cal-day-num {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+  .ios-cal-day-mine .ios-cal-day-num {
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .ios-cal-day-today.ios-cal-day-mine .ios-cal-day-num {
+    background: var(--accent);
+    color: white;
+    box-shadow: none;
+  }
+  .ios-cal-dots {
+    display: flex;
+    gap: 2px;
+    margin-top: 4px;
+    height: 6px;
+    align-items: center;
+    justify-content: center;
+  }
+  .ios-cal-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* iOS-style bottom sheet */
+  .sheet-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    z-index: 50;
+    animation: fadeIn 0.2s ease-out;
+  }
+  .sheet {
+    background: var(--surface);
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-height: 75vh;
+    overflow-y: auto;
+    padding: 0.5rem 1rem 2rem;
+    animation: sheetUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--border-strong);
+    border-radius: 2px;
+    margin: 0.5rem auto 1rem;
+  }
+  .sheet-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.375rem;
+    font-weight: 600;
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @media (min-width: 768px) {
+    .sheet-backdrop { align-items: center; justify-content: center; padding: 1.5rem; }
+    .sheet { border-radius: 16px; max-width: 480px; max-height: 80vh; }
+  }
 </style>
 </head>
 <body>
@@ -300,6 +466,8 @@ const CONFLICT_REASONS = [
 const ME_KEY = 'flcc-members-me';
 const DATA_URL = './data.json';
 const PRAYER_DATA_URL = './prayer.json';
+const MUSIC_DATA_URL = './music.json';
+const MUSIC_ACCENT = '#EA580C';
 
 const PRAYER_ROLES = [
   { key: 'presider',   label: 'Prayer Mtg. Presider' },
@@ -314,6 +482,20 @@ const PRAYER_MEETING_TYPES = [
   { key: 'regular',      label: 'Regular Prayer Meeting',      dot: '#15803D' },
   { key: 'thanksgiving', label: 'Thanksgiving Prayer Meeting', dot: '#DB2777' },
 ];
+
+// Find music team member matching the logged-in member by normalized name
+function findMusicMatch(memberWorker, musicWorkers) {
+  if (!memberWorker || !musicWorkers) return null;
+  const norm = s => (s || '').trim().toLowerCase();
+  const fullKey = norm((memberWorker.title || '') + ' ' + memberWorker.name);
+  const nameKey = norm(memberWorker.name);
+  return musicWorkers.find(mw => {
+    if (mw.kind === 'group') return false;
+    const mwFull = norm((mw.title || '') + ' ' + mw.name);
+    const mwName = norm(mw.name);
+    return mwFull === fullKey || mwName === nameKey;
+  });
+}
 
 // =============================================================================
 // DATE HELPERS
@@ -562,11 +744,13 @@ function downloadServiceICS(entry, workers, churchName) {
 // CONFLICT MESSAGE BUILDER
 // =============================================================================
 
-function buildConflictMessage({ memberName, entry, role, reason, note, ministryHead, isPrayer }) {
+function buildConflictMessage({ memberName, entry, role, reason, note, ministryHead, isPrayer, isMusic, serviceTypeLabel, roleLabel: musicRoleLabel }) {
   const dateLabel = `${dayOfWeek(entry.date)} ${formatDateShort(entry.date)}`;
   const greeting = ministryHead ? `Hi ${ministryHead}` : 'Hello';
   let context;
-  if (isPrayer && entry._prayerType === 'meeting') {
+  if (isMusic) {
+    context = `I have a scheduling conflict for the ${serviceTypeLabel || entry.service} on ${dateLabel} where I'm assigned${musicRoleLabel ? ` as ${musicRoleLabel}` : ' on the music team'}.`;
+  } else if (isPrayer && entry._prayerType === 'meeting') {
     const meta = meetingTypeMeta(entry.type);
     const roleLabel = PRAYER_ROLES.find(r => r.key === role)?.label.replace('Prayer Mtg. ', '') || role;
     context = `I have a scheduling conflict for the ${meta.label} on ${dateLabel} where I'm assigned as ${roleLabel}.`;
@@ -704,7 +888,7 @@ function NamePicker({ workers, onPick, onSkip, churchName }) {
 }
 
 // --- My Schedule ---
-function MyScheduleTab({ data, prayerData, me, onConflict }) {
+function MyScheduleTab({ data, prayerData, musicData, me, onConflict }) {
   const today = todayISO();
 
   // Main service assignments
@@ -732,14 +916,28 @@ function MyScheduleTab({ data, prayerData, me, onConflict }) {
       });
   }, [prayerData, myPrayerWorker, today]);
 
+  // Music assignments (matched by name)
+  const myMusicWorker = useMemo(() => musicData ? findMusicMatch(me, musicData.workers) : null, [me, musicData]);
+  const musicEntries = useMemo(() => {
+    if (!musicData || !myMusicWorker) return [];
+    return (musicData.entries || [])
+      .filter(e => e.date >= today)
+      .filter(e => e.assignments && Object.values(e.assignments).includes(myMusicWorker.id))
+      .map(e => {
+        const roles = (musicData.roles || []).filter(r => e.assignments?.[r.key] === myMusicWorker.id);
+        return { kind: 'music', date: e.date, entry: e, roles };
+      });
+  }, [musicData, myMusicWorker, today]);
+
   // Unified upcoming list, chronologically sorted
   const allUpcoming = useMemo(() => {
-    return [...mainEntries, ...prayerEntries].sort((a, b) => {
+    return [...mainEntries, ...prayerEntries, ...musicEntries].sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
-      // Same date — main service first
-      return a.kind === 'main' ? -1 : 1;
+      // Same date — main service first, then music, then prayer
+      const order = { main: 0, music: 1, prayer: 2 };
+      return (order[a.kind] || 99) - (order[b.kind] || 99);
     });
-  }, [mainEntries, prayerEntries]);
+  }, [mainEntries, prayerEntries, musicEntries]);
 
   const myUpcomingBirthday = useMemo(() => {
     if (!me.birthday) return null;
@@ -797,6 +995,52 @@ function MyScheduleTab({ data, prayerData, me, onConflict }) {
                     </button>
                     {myRoles.map(r => (
                       <button key={r.key} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({ entry, role: r.key })}>
+                        ⚠ Report conflict for {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            } else if (item.kind === 'music') {
+              const entry = item.entry;
+              const svc = (musicData.serviceTypes || []).find(s => s.key === entry.service);
+              return (
+                <div key={`music-${entry.id}`} className="row-card row-mine" style={{ borderLeftWidth: '3px', borderLeftColor: svc?.dot || MUSIC_ACCENT }}>
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div>
+                      <div className="font-display text-lg font-semibold">{formatDateLong(entry.date)}</div>
+                      <div className="text-xs ink-muted">🎵 {svc?.label || entry.service} · Music Ministry</div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {item.roles.map(r => <Pill key={r.key} tone="accent">{r.label}</Pill>)}
+                    </div>
+                  </div>
+                  <div className="dotted-divider my-3" />
+                  <div className="space-y-1 text-sm">
+                    {(musicData.roles || []).map(r => {
+                      const w = musicData.workers.find(x => x.id === entry.assignments?.[r.key]);
+                      if (!w) return null;
+                      const isMyRole = myMusicWorker && w.id === myMusicWorker.id;
+                      return (
+                        <div key={r.key}>
+                          <span className="ink-muted text-xs">{r.label} · </span>
+                          <span style={{ color: isMyRole ? MUSIC_ACCENT : 'inherit', fontWeight: isMyRole ? 600 : 400 }}>
+                            {w.kind === 'group' ? <>🎵 {w.name}</> : workerShort(w)}{isMyRole ? ' (you)' : ''}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button className="btn btn-soft" onClick={() => downloadMusicICS(entry, musicData, data.meta.churchName)}>
+                      📅 Save to my calendar
+                    </button>
+                    {item.roles.map(r => (
+                      <button key={r.key} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({
+                        entry: { ...entry, _musicServiceLabel: svc?.label, _musicRoleLabel: r.label },
+                        role: r.key,
+                        isMusic: true,
+                      })}>
                         ⚠ Report conflict for {r.label}
                       </button>
                     ))}
@@ -882,8 +1126,326 @@ function ServiceDetails({ entry, workers, highlightId }) {
   );
 }
 
+// =============================================================================
+// HOME TAB — Grid dashboard of upcoming items
+// =============================================================================
+
+function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict }) {
+  const today = todayISO();
+  const nextWeekStart = today;
+  const horizon = addDays(today, 60);
+
+  // My next service assignment
+  const myNextService = useMemo(() => {
+    if (!me) return null;
+    return data.schedule
+      .filter(e => Object.values(e.roles).includes(me.id))
+      .filter(e => e.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+  }, [data.schedule, me, today]);
+
+  // My next prayer assignment
+  const myPrayerWorker = useMemo(() => prayerData ? findPrayerMatch(me, prayerData.workers) : null, [me, prayerData]);
+  const myNextPrayer = useMemo(() => {
+    if (!myPrayerWorker || !prayerData) return null;
+    return (prayerData.meetings || [])
+      .filter(m => m.date >= today)
+      .filter(m => m.presiderId === myPrayerWorker.id || m.exhorterId === myPrayerWorker.id || m.songLeaderId === myPrayerWorker.id)
+      .sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+  }, [myPrayerWorker, prayerData, today]);
+
+  // My next music assignment
+  const myMusicWorker = useMemo(() => musicData ? findMusicMatch(me, musicData.workers) : null, [me, musicData]);
+  const myNextMusic = useMemo(() => {
+    if (!myMusicWorker || !musicData) return null;
+    return (musicData.entries || [])
+      .filter(e => e.date >= today)
+      .filter(e => {
+        if (!e.assignments) return false;
+        return Object.values(e.assignments).includes(myMusicWorker.id);
+      })
+      .sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+  }, [myMusicWorker, musicData, today]);
+
+  // Next Friday + Sunday service (regardless of whether I serve)
+  const nextFriday = useMemo(() => data.schedule.filter(e => e.service === 'Friday' && e.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0] || null, [data.schedule, today]);
+  const nextSunday = useMemo(() => data.schedule.filter(e => e.service === 'Sunday' && e.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0] || null, [data.schedule, today]);
+
+  // Next prayer meeting (any kind)
+  const nextPrayerMeeting = useMemo(() => {
+    if (!prayerData) return null;
+    return (prayerData.meetings || []).filter(m => m.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+  }, [prayerData, today]);
+
+  // Next 3 music entries (for ministry-wide card)
+  const upcomingMusic = useMemo(() => {
+    if (!musicData) return [];
+    return (musicData.entries || [])
+      .filter(e => e.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 3);
+  }, [musicData, today]);
+
+  // Upcoming birthdays (next 30 days)
+  const upcomingBirthdays = useMemo(() => {
+    const list = [];
+    const [todayMonth, todayDay] = today.slice(5).split('-').map(Number);
+    for (const w of (data.workers || [])) {
+      if (!w.birthday) continue;
+      const [bMonth, bDay] = w.birthday.split('-').map(Number);
+      // Compute next birthday year
+      const thisYear = new Date().getFullYear();
+      let nextBday = new Date(thisYear, bMonth - 1, bDay);
+      if (nextBday < new Date(thisYear, todayMonth - 1, todayDay)) {
+        nextBday = new Date(thisYear + 1, bMonth - 1, bDay);
+      }
+      const daysAway = Math.floor((nextBday - new Date(thisYear, todayMonth - 1, todayDay)) / 86400000);
+      if (daysAway <= 30) list.push({ worker: w, date: nextBday, daysAway });
+    }
+    return list.sort((a, b) => a.daysAway - b.daysAway);
+  }, [data.workers, today]);
+
+  // Upcoming events (next 60 days)
+  const upcomingEvents = useMemo(() => {
+    return getAllEventsInRange(data.events || [], data.workers, today, horizon).slice(0, 4);
+  }, [data.events, data.workers, today, horizon]);
+
+  const daysAway = (dateStr) => {
+    const d = Math.floor((parseISODate(dateStr) - parseISODate(today)) / 86400000);
+    if (d === 0) return 'Today';
+    if (d === 1) return 'Tomorrow';
+    if (d < 7) return `In ${d} days`;
+    if (d < 14) return `Next week`;
+    return `In ${d} days`;
+  };
+
+  // ICS export per card type
+  const saveServiceICS = (entry) => downloadServiceICS(entry, data.workers, data.meta.churchName);
+  const savePrayerICS = (m) => downloadPrayerMeetingICS(m, prayerData, data.meta.churchName);
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow={me ? `Hello, ${me.title || ''} ${me.name}` : 'Welcome'} title="Today">
+        {me ? `Your upcoming services, prayer meetings, and what's coming up at ${data.meta.churchName}.` : `What's coming up at ${data.meta.churchName}.`}
+      </SectionHeading>
+
+      {/* My assignments - top priority cards */}
+      {me && (myNextService || myNextPrayer || myNextMusic) && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">⭐ Your assignments</div>
+          <div className="home-grid">
+            {myNextService && (
+              <div className="home-card home-card-mine" onClick={() => setActiveTab('mine')}>
+                <div className="home-card-eyebrow">{daysAway(myNextService.date)} · {myNextService.service}</div>
+                <div className="home-card-title">{formatDateLong(myNextService.date)}</div>
+                <div className="home-card-body">
+                  {ROLES.filter(r => myNextService.roles[r.key] === me.id).map(r => (
+                    <Pill key={r.key} tone="accent" className="mr-1 mt-1">{r.label}</Pill>
+                  ))}
+                </div>
+                <div className="home-card-actions">
+                  <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); saveServiceICS(myNextService); }}>📅 Save</button>
+                </div>
+              </div>
+            )}
+
+            {myNextPrayer && (
+              <div className="home-card home-card-mine" onClick={() => setActiveTab('mine')} style={{ borderLeftColor: meetingTypeMeta(myNextPrayer.type).dot }}>
+                <div className="home-card-eyebrow">{daysAway(myNextPrayer.date)} · {meetingTypeMeta(myNextPrayer.type).label}</div>
+                <div className="home-card-title">{formatDateLong(myNextPrayer.date)}</div>
+                <div className="home-card-body">
+                  <span className="text-xs ink-muted">{formatTime12(myNextPrayer.startTime)} · {myNextPrayer.venue || 'venue TBD'}</span>
+                  <div className="mt-1">
+                    {[
+                      myNextPrayer.presiderId === myPrayerWorker?.id ? 'Presider' : null,
+                      myNextPrayer.exhorterId === myPrayerWorker?.id ? 'Exhorter' : null,
+                      myNextPrayer.songLeaderId === myPrayerWorker?.id ? 'Song Leader' : null,
+                    ].filter(Boolean).map(role => <Pill key={role} tone="accent" className="mr-1 mt-1">{role}</Pill>)}
+                  </div>
+                </div>
+                <div className="home-card-actions">
+                  <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); savePrayerICS(myNextPrayer); }}>📅 Save</button>
+                </div>
+              </div>
+            )}
+
+            {myNextMusic && (() => {
+              const svc = (musicData.serviceTypes || []).find(s => s.key === myNextMusic.service);
+              return (
+                <div className="home-card home-card-mine" onClick={() => setActiveTab('music')} style={{ borderLeftColor: svc?.dot || MUSIC_ACCENT }}>
+                  <div className="home-card-eyebrow" style={{ color: svc?.dot || MUSIC_ACCENT }}>🎵 {daysAway(myNextMusic.date)} · {svc?.label || myNextMusic.service}</div>
+                  <div className="home-card-title">{formatDateLong(myNextMusic.date)}</div>
+                  <div className="home-card-body">
+                    {(musicData.roles || []).filter(r => myNextMusic.assignments?.[r.key] === myMusicWorker?.id).map(r => (
+                      <Pill key={r.key} tone="accent" className="mr-1 mt-1">{r.label}</Pill>
+                    ))}
+                  </div>
+                  <div className="home-card-actions">
+                    <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); downloadMusicICS(myNextMusic, musicData, data.meta.churchName); }}>📅 Save</button>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Next services - everyone sees these */}
+      {(nextFriday || nextSunday) && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">⛪ Next services</div>
+          <div className="home-grid">
+            {nextFriday && (
+              <div className="home-card" onClick={() => { setCurrentMonth(monthKey(nextFriday.date)); setActiveTab('month'); }}>
+                <div className="home-card-eyebrow">{daysAway(nextFriday.date)} · Friday</div>
+                <div className="home-card-title">{formatDateLong(nextFriday.date)}</div>
+                <div className="home-card-body text-xs ink-muted">
+                  {(() => {
+                    const preacher = data.workers.find(w => w.id === nextFriday.roles.preacher);
+                    const presider = data.workers.find(w => w.id === nextFriday.roles.presider);
+                    return (
+                      <>
+                        {preacher && <div>Preacher · {workerShort(preacher)}</div>}
+                        {presider && <div>Presider · {workerShort(presider)}</div>}
+                      </>
+                    );
+                  })()}
+                </div>
+                <div className="home-card-actions">
+                  <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); saveServiceICS(nextFriday); }}>📅 Save</button>
+                </div>
+              </div>
+            )}
+            {nextSunday && (
+              <div className="home-card" onClick={() => { setCurrentMonth(monthKey(nextSunday.date)); setActiveTab('month'); }}>
+                <div className="home-card-eyebrow">{daysAway(nextSunday.date)} · Sunday</div>
+                <div className="home-card-title">{formatDateLong(nextSunday.date)}</div>
+                <div className="home-card-body text-xs ink-muted">
+                  {(() => {
+                    const preacher = data.workers.find(w => w.id === nextSunday.roles.preacher);
+                    const presider = data.workers.find(w => w.id === nextSunday.roles.presider);
+                    return (
+                      <>
+                        {preacher && <div>Preacher · {workerShort(preacher)}</div>}
+                        {presider && <div>Presider · {workerShort(presider)}</div>}
+                      </>
+                    );
+                  })()}
+                </div>
+                <div className="home-card-actions">
+                  <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); saveServiceICS(nextSunday); }}>📅 Save</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Next prayer meeting */}
+      {nextPrayerMeeting && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">🙏 Next prayer meeting</div>
+          <div className="home-grid">
+            <div className="home-card" onClick={() => setActiveTab('prayer')} style={{ borderLeftColor: meetingTypeMeta(nextPrayerMeeting.type).dot, borderLeftWidth: '3px' }}>
+              <div className="home-card-eyebrow">{daysAway(nextPrayerMeeting.date)} · {meetingTypeMeta(nextPrayerMeeting.type).label}</div>
+              <div className="home-card-title">{formatDateLong(nextPrayerMeeting.date)}</div>
+              <div className="home-card-body text-xs ink-muted">
+                {formatTime12(nextPrayerMeeting.startTime)} · {nextPrayerMeeting.venue || 'venue TBD'}
+                {nextPrayerMeeting.foodInChargeText && <div className="mt-1">Food · {nextPrayerMeeting.foodInChargeText}</div>}
+              </div>
+              <div className="home-card-actions">
+                <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); savePrayerICS(nextPrayerMeeting); }}>📅 Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Music ministry — who's leading worship next */}
+      {musicData && upcomingMusic.length > 0 && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2" style={{ color: MUSIC_ACCENT }}>🎵 Music ministry</div>
+          <div className="home-grid">
+            {upcomingMusic.map(e => {
+              const svc = (musicData.serviceTypes || []).find(s => s.key === e.service);
+              const primaryRole = musicData.settings?.primaryRole || 'lead';
+              const primary = musicData.workers.find(w => w.id === e.assignments?.[primaryRole]);
+              return (
+                <div key={e.id} className="home-card" onClick={() => setActiveTab('music')} style={{ borderLeftColor: svc?.dot || MUSIC_ACCENT, borderLeftWidth: '3px' }}>
+                  <div className="home-card-eyebrow">{daysAway(e.date)} · {svc?.label || e.service}</div>
+                  <div className="home-card-title">{formatDateLong(e.date)}</div>
+                  <div className="home-card-body text-xs">
+                    {primary ? (
+                      <div>
+                        <span className="ink-muted">Led by · </span>
+                        <span className="font-medium">
+                          {primary.kind === 'group' ? <>🎵 {primary.name}</> : (primary.title ? primary.title + ' ' + primary.name : primary.name)}
+                        </span>
+                      </div>
+                    ) : <span className="ink-subtle italic">Team TBD</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming birthdays */}
+      {upcomingBirthdays.length > 0 && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">🎂 Birthdays this month</div>
+          <div className="home-grid">
+            {upcomingBirthdays.slice(0, 4).map(b => (
+              <div key={b.worker.id} className="home-card" style={{ background: '#FDF2F8' }}>
+                <div className="home-card-eyebrow" style={{ color: '#BE185D' }}>
+                  {b.daysAway === 0 ? '🎉 Today!' : b.daysAway === 1 ? 'Tomorrow' : `In ${b.daysAway} days`}
+                </div>
+                <div className="home-card-title" style={{ fontSize: '1rem' }}>{workerDisplay(b.worker)}</div>
+                <div className="home-card-body text-xs ink-muted">
+                  {b.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming events */}
+      {upcomingEvents.length > 0 && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📅 Upcoming events</div>
+          <div className="home-grid">
+            {upcomingEvents.map((ev, i) => {
+              const meta = eventTypeMeta(ev.type);
+              return (
+                <div key={`${ev.id}-${i}`} className="home-card" onClick={() => setActiveTab('calendar')} style={{ borderLeftColor: meta.dot, borderLeftWidth: '3px' }}>
+                  <div className="home-card-eyebrow" style={{ color: meta.dot }}>{daysAway(ev.date)}</div>
+                  <div className="home-card-title" style={{ fontSize: '1rem' }}>{ev.title}</div>
+                  <div className="home-card-body text-xs ink-muted">
+                    {ev.startTime ? `${formatTime12(ev.startTime)}${ev.endTime ? '–' + formatTime12(ev.endTime) : ''}` : 'All day'}
+                    {ev.location ? ` · ${ev.location}` : ''}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {!me && (
+        <div className="card p-5 text-center mt-6" style={{ background: 'var(--accent-soft)' }}>
+          <div className="font-display text-lg font-semibold mb-1">Pick your name to personalize</div>
+          <p className="text-xs ink-muted mb-3">Get conflict reporting, "save my assignments" buttons, and personalized highlights.</p>
+          <button className="btn btn-accent text-sm" onClick={() => setActiveTab('about')}>Get started</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- This Month tab ---
-function ThisMonthTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConflict }) {
+function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurrentMonth, onConflict }) {
   const monthEntries = data.schedule.filter(e => monthKey(e.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
   const fridays = monthEntries.filter(e => e.service === 'Friday');
   const sundays = monthEntries.filter(e => e.service === 'Sunday');
@@ -898,6 +1460,16 @@ function ThisMonthTab({ data, prayerData, me, currentMonth, setCurrentMonth, onC
     }
     return m;
   }, [prayerData]);
+
+  // Index music by date+service
+  const musicByKey = useMemo(() => {
+    const m = new Map();
+    if (!musicData?.entries) return m;
+    for (const me of musicData.entries) {
+      m.set(`${me.date}|${me.service}`, me);
+    }
+    return m;
+  }, [musicData]);
 
   return (
     <div className="fade-in">
@@ -918,15 +1490,15 @@ function ThisMonthTab({ data, prayerData, me, currentMonth, setCurrentMonth, onC
         </div>
       ) : (
         <>
-          <ServiceListSection title="Friday Service" entries={fridays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} />
-          <ServiceListSection title="Sunday Service" entries={sundays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} />
+          <ServiceListSection title="Friday Service" entries={fridays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} />
+          <ServiceListSection title="Sunday Service" entries={sundays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} />
         </>
       )}
     </div>
   );
 }
 
-function ServiceListSection({ title, entries, workers, me, churchName, onConflict, prayerData, intercessoryByKey }) {
+function ServiceListSection({ title, entries, workers, me, churchName, onConflict, prayerData, intercessoryByKey, musicData, musicByKey }) {
   if (entries.length === 0) return null;
   return (
     <div className="mb-6">
@@ -937,6 +1509,8 @@ function ServiceListSection({ title, entries, workers, me, churchName, onConflic
           const myRoles = me ? ROLES.filter(r => entry.roles[r.key] === me.id) : [];
           const intercessory = intercessoryByKey?.get(`${entry.date}|${entry.service}`);
           const intercessoryTeam = intercessory && prayerData ? (prayerData.teams || []).find(t => t.id === intercessory.teamId) : null;
+          const musicEntry = musicByKey?.get(`${entry.date}|${entry.service}`);
+          const musicPrimary = musicEntry && musicData ? musicData.workers.find(w => w.id === musicEntry.assignments?.[musicData.settings?.primaryRole || 'lead']) : null;
           return (
             <div key={entry.id} className={`row-card ${isMine ? 'row-mine' : ''}`}>
               <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
@@ -960,6 +1534,18 @@ function ServiceListSection({ title, entries, workers, me, churchName, onConflic
                   </div>
                 </div>
               )}
+              {musicEntry && (
+                <div className="mt-3 pt-3" style={{ borderTop: '1px dashed var(--border-strong)' }}>
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-xs" style={{ color: MUSIC_ACCENT }}>🎵 Music ministry ·</span>
+                    <span className="text-sm font-medium">
+                      {musicPrimary ? (
+                        musicPrimary.kind === 'group' ? <>🎵 {musicPrimary.name}</> : (musicPrimary.title ? musicPrimary.title + ' ' + musicPrimary.name : musicPrimary.name)
+                      ) : <span className="ink-subtle italic">Team TBD</span>}
+                    </span>
+                  </div>
+                </div>
+              )}
               {isMine && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {myRoles.map(r => (
@@ -978,7 +1564,7 @@ function ServiceListSection({ title, entries, workers, me, churchName, onConflic
 }
 
 // --- Calendar tab (read-only with .ics export) ---
-function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
+function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMonth, me }) {
   const [year, monthIdx] = useMemo(() => {
     const [y, m] = currentMonth.split('-').map(Number);
     return [y, m - 1];
@@ -1004,6 +1590,9 @@ function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
 
   // Match member to prayer roster (by name) for highlighting
   const myPrayerWorker = useMemo(() => prayerData ? findPrayerMatch(me, prayerData.workers) : null, [me, prayerData]);
+
+  // Match member to music roster (by name) for highlighting
+  const myMusicWorker = useMemo(() => musicData ? findMusicMatch(me, musicData.workers) : null, [me, musicData]);
 
   // Build prayer event entries that fit into the calendar grid
   const prayerEventsByDate = useMemo(() => {
@@ -1048,6 +1637,36 @@ function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
     return map;
   }, [prayerData, gridStart, gridEnd, myPrayerWorker]);
 
+  // Build music event entries
+  const musicEventsByDate = useMemo(() => {
+    const map = new Map();
+    if (!musicData) return map;
+    const primaryRole = musicData.settings?.primaryRole || 'lead';
+    for (const me of (musicData.entries || [])) {
+      if (me.date < gridStart || me.date > gridEnd) continue;
+      const svc = (musicData.serviceTypes || []).find(s => s.key === me.service);
+      const primary = musicData.workers.find(w => w.id === me.assignments?.[primaryRole]);
+      const list = map.get(me.date) || [];
+      const isMine = myMusicWorker && me.assignments && Object.values(me.assignments).includes(myMusicWorker.id);
+      list.push({
+        id: me.id,
+        date: me.date,
+        title: `🎵 ${primary ? (primary.kind === 'group' ? primary.name : primary.name) : (svc?.label || me.service)}`,
+        startTime: '',
+        endTime: '',
+        location: '',
+        kind: 'music',
+        dot: MUSIC_ACCENT,
+        isMine,
+        _entry: me,
+        _service: svc,
+        _primary: primary,
+      });
+      map.set(me.date, list);
+    }
+    return map;
+  }, [musicData, gridStart, gridEnd, myMusicWorker]);
+
   const eventsByDate = useMemo(() => {
     const m = new Map();
     for (const e of allEvents) {
@@ -1059,8 +1678,13 @@ function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
       const existing = m.get(date) || [];
       m.set(date, [...existing, ...prayers]);
     }
+    // Merge music events
+    for (const [date, musics] of musicEventsByDate) {
+      const existing = m.get(date) || [];
+      m.set(date, [...existing, ...musics]);
+    }
     return m;
-  }, [allEvents, prayerEventsByDate]);
+  }, [allEvents, prayerEventsByDate, musicEventsByDate]);
 
   const servicesByDate = useMemo(() => {
     const m = new Map();
@@ -1111,93 +1735,52 @@ function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
         }
       }
     }
-    return [...main, ...prayers].sort((a, b) => {
+    const musics = [];
+    if (musicData) {
+      const primaryRole = musicData.settings?.primaryRole || 'lead';
+      for (const me of (musicData.entries || [])) {
+        if (me.date >= upcomingFrom && me.date <= upcomingTo) {
+          const svc = (musicData.serviceTypes || []).find(s => s.key === me.service);
+          const primary = musicData.workers.find(w => w.id === me.assignments?.[primaryRole]);
+          const leadName = primary ? (primary.kind === 'group' ? primary.name : primary.name) : 'Team TBD';
+          musics.push({
+            id: me.id, date: me.date,
+            title: `🎵 Music · ${leadName} (${svc?.label || me.service})`,
+            startTime: '', endTime: '', location: '',
+            dot: MUSIC_ACCENT,
+            _musicKind: true, _raw: me,
+          });
+        }
+      }
+    }
+    return [...main, ...prayers, ...musics].sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
       return (a.startTime || '').localeCompare(b.startTime || '');
     });
-  }, [data.events, data.workers, prayerData, upcomingFrom, upcomingTo]);
+  }, [data.events, data.workers, prayerData, musicData, upcomingFrom, upcomingTo]);
 
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="Activities & birthdays" title="Calendar">
-        Bible studies, prayer meetings, fellowship gatherings, and worker birthdays.
+        Tap any date to see what's happening.
       </SectionHeading>
 
-      <div className="card p-4 mb-6 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <button className="btn btn-ghost" onClick={() => setCurrentMonth(prevMonth(currentMonth))}>←</button>
-          <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
-          <button className="btn btn-ghost" onClick={() => setCurrentMonth(nextMonth(currentMonth))}>→</button>
-          <button className="btn btn-soft text-xs" onClick={() => setCurrentMonth(monthKey(today))}>Today</button>
-        </div>
-        <div className="flex flex-wrap gap-3 text-xs ink-muted">
-          {EVENT_TYPES.slice(0, 4).map(t => (
-            <div key={t.key} className="flex items-center gap-1.5">
-              <span className="cal-event-dot" style={{ background: t.dot }}></span>
-              {t.label}
-            </div>
-          ))}
-          {prayerData && (
-            <>
-              <div className="flex items-center gap-1.5">
-                <span className="cal-event-dot" style={{ background: '#6366F1' }}></span>
-                Intercessory
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="cal-event-dot" style={{ background: '#15803D' }}></span>
-                Prayer Mtg.
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+      <CalendarMobile
+        currentMonth={currentMonth}
+        setCurrentMonth={setCurrentMonth}
+        cells={cells}
+        today={today}
+        eventsByDate={eventsByDate}
+        servicesByDate={servicesByDate}
+        me={me}
+        prayerData={prayerData}
+        musicData={musicData}
+        data={data}
+        prayerEventsByDate={prayerEventsByDate}
+        musicEventsByDate={musicEventsByDate}
+      />
 
-      <div className="cal-grid mb-6">
-        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-          <div key={d} className="cal-header-cell">{d}</div>
-        ))}
-        {cells.map(date => {
-          const isOtherMonth = monthKey(date) !== currentMonth;
-          const isToday = date === today;
-          const dayEvents = eventsByDate.get(date) || [];
-          const services = servicesByDate.get(date) || [];
-          const isMineMain = me && services.some(s => Object.values(s.roles).includes(me.id));
-          const isMinePrayer = dayEvents.some(e => e.isMine);
-          const isMine = isMineMain || isMinePrayer;
-          let cls = 'cal-day';
-          if (isOtherMonth) cls += ' cal-day-other';
-          if (isToday) cls += ' cal-day-today';
-          else if (isMine) cls += ' cal-day-mine';
-
-          return (
-            <div key={date} className={cls}>
-              <div className="flex items-start justify-between">
-                <span className="cal-day-num">{parseISODate(date).getDate()}</span>
-              </div>
-              {services.length > 0 && (
-                <div className="cal-service-badge">{services[0].service.toUpperCase().slice(0,3)}</div>
-              )}
-              {isMine && <div className="cal-mine-marker" title="You're scheduled this day"></div>}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
-                {dayEvents.slice(0, 2).map(e => {
-                  const dotColor = e.dot || eventTypeMeta(e.type).dot;
-                  return (
-                    <div key={e.id} className="cal-event" style={{ background: dotColor + '20', color: dotColor }} title={e.title}>
-                      <span className="cal-event-dot" style={{ background: dotColor }}></span>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</span>
-                    </div>
-                  );
-                })}
-                {dayEvents.length > 2 && (
-                  <div style={{ fontSize: '0.625rem', color: 'var(--ink-muted)', padding: '0 0.25rem' }}>+{dayEvents.length - 2} more</div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="card p-5">
+      <div className="card p-5 mt-6">
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Upcoming · next 60 days</div>
         {upcoming.length === 0 ? (
           <div className="ink-subtle italic text-sm">No upcoming events.</div>
@@ -1222,6 +1805,8 @@ function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
                       downloadPrayerMeetingICS(e._raw, prayerData, data.meta.churchName);
                     } else if (e._prayerKind === 'intercessory') {
                       downloadIntercessoryICS(e._raw, prayerData, data.meta.churchName);
+                    } else if (e._musicKind) {
+                      downloadMusicICS(e._raw, musicData, data.meta.churchName);
                     } else {
                       const ics = eventsToICSFile([e], e.title);
                       downloadICS(`${e.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, ics);
@@ -1237,9 +1822,169 @@ function CalendarTab({ data, prayerData, currentMonth, setCurrentMonth, me }) {
   );
 }
 
+// iOS-style mobile-native calendar with day details bottom sheet
+function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByDate, servicesByDate, me, prayerData, musicData, data, prayerEventsByDate, musicEventsByDate }) {
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const isMineOnDate = (date) => {
+    const services = servicesByDate.get(date) || [];
+    const events = eventsByDate.get(date) || [];
+    const isMineMain = me && services.some(s => Object.values(s.roles).includes(me.id));
+    const isMinePrayer = events.some(e => e.isMine);
+    return isMineMain || isMinePrayer;
+  };
+
+  return (
+    <div>
+      {/* Month header — iOS style */}
+      <div className="flex items-center justify-between mb-4">
+        <button className="btn btn-ghost text-lg" onClick={() => setCurrentMonth(prevMonth(currentMonth))} aria-label="Previous month">‹</button>
+        <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
+        <button className="btn btn-ghost text-lg" onClick={() => setCurrentMonth(nextMonth(currentMonth))} aria-label="Next month">›</button>
+      </div>
+
+      {/* Today button + legend */}
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <button className="btn btn-soft text-xs" onClick={() => { setCurrentMonth(monthKey(today)); }}>Today</button>
+        <div className="flex flex-wrap gap-3 text-xs ink-subtle">
+          <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: 'var(--accent)' }}></span>Service</div>
+          {prayerData && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#6366F1' }}></span>Prayer</div>}
+          {musicData && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: MUSIC_ACCENT }}></span>Music</div>}
+          <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#D97706' }}></span>Event</div>
+        </div>
+      </div>
+
+      <div className="ios-cal">
+        <div className="ios-cal-header-row">
+          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+            <div key={d} className="ios-cal-header-cell">{d}</div>
+          ))}
+        </div>
+        <div className="ios-cal-grid">
+          {cells.map(date => {
+            const isOtherMonth = monthKey(date) !== currentMonth;
+            const isToday = date === today;
+            const services = servicesByDate.get(date) || [];
+            const events = eventsByDate.get(date) || [];
+            const allItems = [...services.map(s => ({ kind: 'service' })), ...events];
+            const isMine = isMineOnDate(date);
+
+            // Dot colors (up to 3 for visual density)
+            const dotColors = [];
+            if (services.length > 0) dotColors.push('var(--accent)');
+            for (const e of events.slice(0, 3 - dotColors.length)) {
+              dotColors.push(e.dot || eventTypeMeta(e.type).dot);
+            }
+
+            let cls = 'ios-cal-day';
+            if (isOtherMonth) cls += ' ios-cal-day-other';
+            if (isToday) cls += ' ios-cal-day-today';
+            if (isMine && !isToday) cls += ' ios-cal-day-mine';
+
+            return (
+              <div key={date} className={cls} onClick={() => setSelectedDate(date)}>
+                <div className="ios-cal-day-num">{parseISODate(date).getDate()}</div>
+                <div className="ios-cal-dots">
+                  {dotColors.slice(0, 3).map((color, i) => (
+                    <span key={i} className="ios-cal-dot" style={{ background: color }}></span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {selectedDate && (
+        <DayDetailSheet
+          date={selectedDate}
+          onClose={() => setSelectedDate(null)}
+          services={servicesByDate.get(selectedDate) || []}
+          events={eventsByDate.get(selectedDate) || []}
+          data={data}
+          prayerData={prayerData}
+          musicData={musicData}
+          me={me}
+        />
+      )}
+    </div>
+  );
+}
+
+function DayDetailSheet({ date, onClose, services, events, data, prayerData, musicData, me }) {
+  const dayLabel = parseISODate(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const hasContent = services.length > 0 || events.length > 0;
+
+  return (
+    <div className="sheet-backdrop" onClick={onClose}>
+      <div className="sheet" onClick={e => e.stopPropagation()}>
+        <div className="sheet-handle"></div>
+        <div className="px-1">
+          <div className="text-xs ink-subtle">{date === todayISO() ? 'Today' : ''}</div>
+          <div className="sheet-title mb-3">{dayLabel}</div>
+
+          {!hasContent && (
+            <div className="py-8 text-center ink-subtle italic text-sm">Nothing scheduled for this day.</div>
+          )}
+
+          {services.map(s => {
+            const isMine = me && Object.values(s.roles).includes(me.id);
+            const myRoles = me ? ROLES.filter(r => s.roles[r.key] === me.id) : [];
+            return (
+              <div key={s.id} className={`row-card mb-3 ${isMine ? 'row-mine' : ''}`}>
+                <div className="flex items-baseline justify-between gap-2 mb-2 flex-wrap">
+                  <div className="font-display text-lg font-semibold">{s.service} Service</div>
+                  {isMine && myRoles.map(r => <Pill key={r.key} tone="accent">{r.label}</Pill>)}
+                </div>
+                <div className="dotted-divider my-2" />
+                <ServiceDetails entry={s} workers={data.workers} highlightId={me?.id} />
+                <div className="mt-3">
+                  <button className="btn btn-soft text-xs" onClick={() => downloadServiceICS(s, data.workers, data.meta.churchName)}>📅 Save to my calendar</button>
+                </div>
+              </div>
+            );
+          })}
+
+          {events.map((e, i) => {
+            const dotColor = e.dot || eventTypeMeta(e.type).dot;
+            return (
+              <div key={`${e.id}-${i}`} className="row-card mb-3" style={{ borderLeft: `3px solid ${dotColor}` }}>
+                <div className="text-sm font-semibold mb-1">{e.title}</div>
+                <div className="text-xs ink-muted">
+                  {e.startTime ? `${formatTime12(e.startTime)}${e.endTime ? '–' + formatTime12(e.endTime) : ''}` : 'All day'}
+                  {e.location ? ` · ${e.location}` : ''}
+                </div>
+                <div className="mt-2">
+                  <button className="btn btn-soft text-xs" onClick={() => {
+                    if (e.kind === 'prayer-meeting') {
+                      const raw = (prayerData.meetings || []).find(m => m.id === e.id);
+                      if (raw) downloadPrayerMeetingICS(raw, prayerData, data.meta.churchName);
+                    } else if (e.kind === 'prayer-intercessory') {
+                      const raw = (prayerData.intercessory || []).find(ip => ip.id === e.id);
+                      if (raw) downloadIntercessoryICS(raw, prayerData, data.meta.churchName);
+                    } else if (e.kind === 'music') {
+                      const raw = (musicData?.entries || []).find(me => me.id === e.id);
+                      if (raw) downloadMusicICS(raw, musicData, data.meta.churchName);
+                    } else {
+                      const ics = eventsToICSFile([e], e.title);
+                      downloadICS(`${e.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, ics);
+                    }
+                  }}>📅 Save</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- About tab ---
-function AboutTab({ data, me, onChangeName }) {
+function AboutTab({ data, prayerData, musicData, me, onChangeName }) {
   const m = data.ministry || {};
+  const pm = prayerData?.ministry || null;
+  const mm = musicData?.ministry || null;
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="About" title={data.meta.churchName}>
@@ -1258,6 +2003,36 @@ function AboutTab({ data, me, onChangeName }) {
           {m.email && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${m.email}`} className="ink hover:underline">{m.email}</a></div>}
         </div>
       </div>
+
+      {pm && pm.headName && (
+        <div className="card p-6 mb-4">
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>🙏 Prayer Ministry</div>
+          <div className="font-display text-2xl font-semibold">{pm.headName}</div>
+          {pm.headTitle && <div className="text-sm ink-muted mt-1">{pm.headTitle}</div>}
+          <div className="dotted-divider my-4" />
+          <div className="space-y-2 text-sm">
+            {pm.whatsapp && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(pm.whatsapp, '')} className="ink hover:underline">{pm.whatsapp}</a></div>}
+            {pm.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(pm.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{pm.messenger}</a></div>}
+            {pm.phone && <div><span className="ink-muted text-xs">SMS / Phone · </span><a href={`tel:${pm.phone}`} className="ink hover:underline">{pm.phone}</a></div>}
+            {pm.email && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${pm.email}`} className="ink hover:underline">{pm.email}</a></div>}
+          </div>
+        </div>
+      )}
+
+      {mm && mm.headName && (
+        <div className="card p-6 mb-4">
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: MUSIC_ACCENT }}>🎵 Music Ministry</div>
+          <div className="font-display text-2xl font-semibold">{mm.headName}</div>
+          {mm.headTitle && <div className="text-sm ink-muted mt-1">{mm.headTitle}</div>}
+          <div className="dotted-divider my-4" />
+          <div className="space-y-2 text-sm">
+            {mm.whatsapp && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(mm.whatsapp, '')} className="ink hover:underline">{mm.whatsapp}</a></div>}
+            {mm.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(mm.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{mm.messenger}</a></div>}
+            {mm.phone && <div><span className="ink-muted text-xs">SMS / Phone · </span><a href={`tel:${mm.phone}`} className="ink hover:underline">{mm.phone}</a></div>}
+            {mm.email && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${mm.email}`} className="ink hover:underline">{mm.email}</a></div>}
+          </div>
+        </div>
+      )}
 
       <div className="card p-6 mb-4">
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">You</div>
@@ -1283,7 +2058,7 @@ function AboutTab({ data, me, onChangeName }) {
 }
 
 // --- Conflict Modal ---
-function ConflictModal({ entry, role, me, ministry, isPrayer, onClose }) {
+function ConflictModal({ entry, role, me, ministry, isPrayer, isMusic, onClose }) {
   const [reason, setReason] = useState(CONFLICT_REASONS[0]);
   const [note, setNote] = useState('');
 
@@ -1292,9 +2067,14 @@ function ConflictModal({ entry, role, me, ministry, isPrayer, onClose }) {
     entry, role, reason, note,
     ministryHead: ministry.headName,
     isPrayer,
-  }), [me, entry, role, reason, note, ministry.headName, isPrayer]);
+    isMusic,
+    serviceTypeLabel: entry._musicServiceLabel,
+    roleLabel: entry._musicRoleLabel,
+  }), [me, entry, role, reason, note, ministry.headName, isPrayer, isMusic]);
 
-  const subject = isPrayer
+  const subject = isMusic
+    ? `Music ministry conflict · ${formatDateShort(entry.date)}`
+    : isPrayer
     ? `Prayer schedule conflict · ${formatDateShort(entry.date)}`
     : `Schedule conflict · ${entry.service} ${formatDateShort(entry.date)}`;
 
@@ -1614,33 +2394,182 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
 }
 
 // =============================================================================
+// MUSIC TAB
+// =============================================================================
+
+function downloadMusicICS(entry, musicData, churchName) {
+  const serviceType = (musicData.serviceTypes || []).find(s => s.key === entry.service);
+  const serviceLabel = serviceType?.label || entry.service;
+  const primary = musicData.workers.find(w => w.id === entry.assignments?.[musicData.settings?.primaryRole || 'lead']);
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//FLCC Music OS//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${entry.id}@flcc-music`,
+    `DTSTAMP:${formatICSStamp()}`,
+    `DTSTART;VALUE=DATE:${formatICSDate(entry.date)}`,
+    `DTEND;VALUE=DATE:${formatICSDate(addDays(entry.date, 1))}`,
+    `SUMMARY:${escapeICS(`${churchName} · Music: ${serviceLabel}`)}`,
+  ];
+  let desc = `🎵 Music Ministry · ${serviceLabel}`;
+  if (primary) desc += `\\nLed by: ${primary.kind === 'group' ? primary.name : (primary.title ? primary.title + ' ' + primary.name : primary.name)}`;
+  // Other roles
+  for (const r of (musicData.roles || [])) {
+    if (r.key === (musicData.settings?.primaryRole || 'lead')) continue;
+    const w = musicData.workers.find(x => x.id === entry.assignments?.[r.key]);
+    if (w) desc += `\\n${r.label}: ${w.kind === 'group' ? w.name : (w.title ? w.title + ' ' + w.name : w.name)}`;
+  }
+  lines.push(`DESCRIPTION:${desc}`);
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  downloadICS(`flcc-music-${entry.date}.ics`, lines.join('\r\n'));
+}
+
+function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConflict }) {
+  const monthEntries = (musicData.entries || []).filter(e => monthKey(e.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
+  const myMusicWorker = useMemo(() => musicData ? findMusicMatch(me, musicData.workers) : null, [me, musicData]);
+  const primaryRoleKey = musicData.settings?.primaryRole || 'lead';
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow={musicData.ministry?.headName || 'Music Ministry'} title="Music Schedule">
+        Who's leading worship and the music team for each service this month.
+      </SectionHeading>
+
+      <div className="card p-4 mb-6 flex items-center justify-center gap-3">
+        <button className="btn btn-ghost" onClick={() => setCurrentMonth(prevMonth(currentMonth))}>←</button>
+        <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
+        <button className="btn btn-ghost" onClick={() => setCurrentMonth(nextMonth(currentMonth))}>→</button>
+      </div>
+
+      {(musicData.serviceTypes || []).map(svc => {
+        const svcEntries = monthEntries.filter(e => e.service === svc.key);
+        if (svcEntries.length === 0) return null;
+        return (
+          <div key={svc.key} className="mb-6">
+            <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2 flex items-center gap-2">
+              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: svc.dot }}></span>
+              {svc.label}
+            </div>
+            <div className="space-y-2">
+              {svcEntries.map(entry => {
+                const primary = musicData.workers.find(w => w.id === entry.assignments?.[primaryRoleKey]);
+                const isPrimaryMe = myMusicWorker && primary && primary.id === myMusicWorker.id;
+                // Check additional roles
+                const myAdditionalRoles = [];
+                if (myMusicWorker) {
+                  for (const r of (musicData.roles || [])) {
+                    if (r.key === primaryRoleKey) continue;
+                    if (entry.assignments?.[r.key] === myMusicWorker.id) myAdditionalRoles.push(r);
+                  }
+                }
+                const isMine = isPrimaryMe || myAdditionalRoles.length > 0;
+                const allMyRoles = [
+                  ...(isPrimaryMe ? [musicData.roles.find(r => r.key === primaryRoleKey)].filter(Boolean) : []),
+                  ...myAdditionalRoles,
+                ];
+
+                return (
+                  <div key={entry.id} className={`row-card ${isMine ? 'row-mine' : ''}`} style={{ borderLeftWidth: '3px', borderLeftColor: svc.dot }}>
+                    <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                      <div>
+                        <div className="font-display text-lg font-semibold">{formatDateShort(entry.date)}</div>
+                        <div className="text-xs ink-muted">{dayOfWeek(entry.date)} · {svc.label}</div>
+                        {isMine && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {allMyRoles.map(r => <Pill key={r.key} tone="accent">You · {r.label}</Pill>)}
+                          </div>
+                        )}
+                      </div>
+                      <button className="btn btn-soft text-xs" onClick={() => downloadMusicICS(entry, musicData, data.meta.churchName)}>📅</button>
+                    </div>
+                    <div className="dotted-divider my-3" />
+                    <div className="space-y-1 text-sm">
+                      {(musicData.roles || []).map(r => {
+                        const w = musicData.workers.find(x => x.id === entry.assignments?.[r.key]);
+                        if (!w) return null;
+                        const isMyRole = myMusicWorker && w.id === myMusicWorker.id;
+                        return (
+                          <div key={r.key}>
+                            <span className="ink-muted text-xs">{r.label} · </span>
+                            <span style={{ color: isMyRole ? MUSIC_ACCENT : 'inherit', fontWeight: isMyRole ? 600 : 400 }}>
+                              {w.kind === 'group' ? <>🎵 {w.name}</> : workerShort(w)}{isMyRole ? ' (you)' : ''}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      {!(musicData.roles || []).some(r => entry.assignments?.[r.key]) && (
+                        <div className="ink-subtle italic">No assignments yet.</div>
+                      )}
+                    </div>
+                    {isMine && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {allMyRoles.map(r => (
+                          <button key={r.key} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({
+                            entry: { ...entry, _musicServiceLabel: svc.label, _musicRoleLabel: r.label },
+                            role: r.key,
+                            isMusic: true,
+                          })}>
+                            ⚠ Report conflict
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {monthEntries.length === 0 && (
+        <div className="card p-6 text-center ink-subtle italic text-sm">No music assignments for {formatMonthLabel(currentMonth)} yet.</div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
 const TABS = [
+  { key: 'home', label: 'Home' },
   { key: 'mine', label: 'My Schedule', requiresMe: true },
   { key: 'month', label: 'This Month' },
   { key: 'prayer', label: 'Prayer', requiresPrayer: true },
+  { key: 'music', label: 'Music', requiresMusic: true },
   { key: 'calendar', label: 'Calendar' },
   { key: 'about', label: 'About' },
 ];
 
 function App() {
   const [data, setData] = useState(null);
-  const [prayerData, setPrayerData] = useState(null);  // null = not loaded yet, false = unavailable, object = loaded
+  const [prayerData, setPrayerData] = useState(null);
+  const [musicData, setMusicData] = useState(null);
   const [error, setError] = useState(null);
-  const [me, setMe] = useState(null);  // worker object
+  const [me, setMe] = useState(null);
   const [meId, setMeId] = useState(() => {
     try { return localStorage.getItem(ME_KEY); } catch { return null; }
   });
   const [showPicker, setShowPicker] = useState(false);
-  const [activeTab, setActiveTab] = useState('month');
+  const [activeTab, setActiveTab] = useState('home');
   const [currentMonth, setCurrentMonth] = useState(monthKey(todayISO()));
   const [conflictTarget, setConflictTarget] = useState(null);
+  const [lastLoaded, setLastLoaded] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Load data
-  const loadData = () => {
-    setError(null);
+  // Load data (silent variant when called from visibility change)
+  const loadData = (silent = false) => {
+    if (!silent) setError(null);
+    setRefreshing(true);
+    let pendingDone = 0;
+    const checkDone = () => {
+      pendingDone += 1;
+      if (pendingDone >= 3) setRefreshing(false);
+    };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
       .then(res => {
@@ -1650,24 +2579,51 @@ function App() {
       .then(d => {
         if (!d.workers || !d.schedule) throw new Error('Data file is missing workers or schedule.');
         setData(d);
+        setLastLoaded(Date.now());
       })
       .catch(err => {
-        setError(err.message || 'Network error');
-      });
-    // Optional: prayer.json (graceful failure)
-    fetch(`${PRAYER_DATA_URL}?t=${Date.now()}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        if (!silent) setError(err.message || 'Network error');
       })
+      .finally(checkDone);
+    // Optional: prayer.json
+    fetch(`${PRAYER_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(p => {
         if (p && (p.intercessory || p.meetings)) setPrayerData(p);
         else setPrayerData(false);
       })
-      .catch(() => setPrayerData(false));  // silent; just no prayer features
+      .catch(() => setPrayerData(false))
+      .finally(checkDone);
+    // Optional: music.json
+    fetch(`${MUSIC_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(m => {
+        if (m && m.entries) setMusicData(m);
+        else setMusicData(false);
+      })
+      .catch(() => setMusicData(false))
+      .finally(checkDone);
   };
 
-  useEffect(loadData, []);
+  useEffect(() => loadData(false), []);
+
+  // Silent refresh when the user comes back to the app (tab regains focus or visibility)
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        // Only if it's been at least 30 seconds since last load (avoid hammering)
+        if (!lastLoaded || (Date.now() - lastLoaded) > 30000) {
+          loadData(true);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onVisibility);
+    };
+  }, [lastLoaded]);
 
   // Resolve me from meId once data is loaded
   useEffect(() => {
@@ -1675,7 +2631,7 @@ function App() {
     const w = data.workers.find(x => x.id === meId);
     if (w) {
       setMe(w);
-      setActiveTab('mine');
+      setActiveTab('home');
     } else {
       // ID stale (worker deleted) — clear it
       try { localStorage.removeItem(ME_KEY); } catch {}
@@ -1711,16 +2667,28 @@ function App() {
     setShowPicker(true);
   };
 
-  if (error) return <ErrorScreen error={error} onRetry={loadData} />;
+  if (error) return <ErrorScreen error={error} onRetry={() => loadData(false)} />;
   if (!data) return <LoadingScreen />;
   if (showPicker) return <NamePicker workers={data.workers} onPick={pickMe} onSkip={skipPicker} churchName={data.meta.churchName} />;
 
   const visibleTabs = TABS.filter(t => {
     if (t.requiresMe && !me) return false;
     if (t.requiresPrayer && !prayerData) return false;
+    if (t.requiresMusic && !musicData) return false;
     return true;
   });
-  const currentTab = visibleTabs.find(t => t.key === activeTab) ? activeTab : 'month';
+  const currentTab = visibleTabs.find(t => t.key === activeTab) ? activeTab : 'home';
+
+  const formatLoadedAgo = () => {
+    if (!lastLoaded) return '';
+    const seconds = Math.floor((Date.now() - lastLoaded) / 1000);
+    if (seconds < 60) return 'just now';
+    const mins = Math.floor(seconds / 60);
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return new Date(lastLoaded).toLocaleDateString();
+  };
 
   return (
     <div className="min-h-screen bg-app">
@@ -1735,9 +2703,11 @@ function App() {
             </div>
             <div className="text-xs ink-muted text-right">
               {data.meta.publishedAt && (
-                <div>Updated {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
+                <div>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
               )}
-              <button className="text-xs underline ink-muted hover:ink mt-1" onClick={loadData}>↻ refresh</button>
+              <button className="text-xs underline ink-muted hover:ink mt-1" onClick={() => loadData(false)} disabled={refreshing}>
+                {refreshing ? '↻ refreshing…' : `↻ ${formatLoadedAgo() || 'refresh'}`}
+              </button>
             </div>
           </div>
           <nav className="flex flex-wrap mt-4 overflow-x-auto" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
@@ -1751,11 +2721,13 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} me={me} onConflict={setConflictTarget} />}
-        {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} />}
+        {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} />}
-        {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} me={me} onChangeName={changeName} />}
+        {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+        {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} />}
+        {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} me={me} onChangeName={changeName} />}
       </main>
 
       {conflictTarget && (
@@ -1763,8 +2735,13 @@ function App() {
           entry={conflictTarget.entry}
           role={conflictTarget.role}
           me={me}
-          ministry={(conflictTarget.isPrayer && prayerData?.ministry) ? prayerData.ministry : (data.ministry || {})}
+          ministry={
+            conflictTarget.isMusic && musicData?.ministry ? musicData.ministry :
+            conflictTarget.isPrayer && prayerData?.ministry ? prayerData.ministry :
+            (data.ministry || {})
+          }
           isPrayer={conflictTarget.isPrayer}
+          isMusic={conflictTarget.isMusic}
           onClose={() => setConflictTarget(null)}
         />
       )}
