@@ -1,0 +1,456 @@
+{
+  "meta": {
+    "churchName": "FLCC - Abundance Church",
+    "ministryName": "Music Ministry",
+    "publishedAt": "2026-05-12T17:16:52.797Z",
+    "version": "1.0"
+  },
+  "ministry": {
+    "headName": "Bro. Edmund Gabriel",
+    "headTitle": "Music Ministry Lead",
+    "whatsapp": "+96566778899",
+    "messenger": "",
+    "phone": "+96566778899",
+    "email": "edmund@yahoo.com"
+  },
+  "roles": [
+    {
+      "key": "lead",
+      "label": "Worship Leader"
+    },
+    {
+      "key": "vocal",
+      "label": "Backup Vocal"
+    },
+    {
+      "key": "instrument",
+      "label": "Instrumentalist"
+    }
+  ],
+  "serviceTypes": [
+    {
+      "key": "Friday",
+      "label": "Friday Service",
+      "dot": "#10B981"
+    },
+    {
+      "key": "Sunday",
+      "label": "Sunday Service",
+      "dot": "#F59E0B"
+    },
+    {
+      "key": "PrayerMeeting",
+      "label": "Prayer Meeting",
+      "dot": "#8B5CF6"
+    }
+  ],
+  "workers": [
+    {
+      "id": "bro-07",
+      "name": "Edmund Gabriel",
+      "title": "Bro.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "ptr-01",
+      "name": "Justin Flores",
+      "title": "Ptr.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "bro-03",
+      "name": "Elbert Siangco",
+      "title": "Bro.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "sis-18",
+      "name": "Laidz Pascual",
+      "title": "Sis.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "sis-15",
+      "name": "Grace Siangco",
+      "title": "Sis.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "sis-17",
+      "name": "Jenarlyn Culao",
+      "title": "Sis.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "bro-01",
+      "name": "Dandreb Serna",
+      "title": "Bro.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "mus-01",
+      "name": "Dolly",
+      "title": "Sis.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "bro-02",
+      "name": "Bong Cas",
+      "title": "Bro.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "bro-09",
+      "name": "Dave Vergara",
+      "title": "Bro.",
+      "kind": "individual",
+      "status": "active"
+    },
+    {
+      "id": "grp-hope",
+      "name": "HOPE Sector",
+      "title": "",
+      "kind": "group",
+      "status": "active"
+    },
+    {
+      "id": "grp-cpm",
+      "name": "CPM",
+      "title": "",
+      "kind": "group",
+      "status": "active"
+    },
+    {
+      "id": "grp-fb",
+      "name": "Fruitbearers",
+      "title": "",
+      "kind": "group",
+      "status": "active"
+    },
+    {
+      "id": "grp-rpg",
+      "name": "RPG",
+      "title": "",
+      "kind": "group",
+      "status": "active"
+    }
+  ],
+  "entries": [
+    {
+      "id": "m-2026-02-01-sunday",
+      "date": "2026-02-01",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-09"
+      }
+    },
+    {
+      "id": "m-2026-02-05-prayermeeting",
+      "date": "2026-02-05",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-fb"
+      }
+    },
+    {
+      "id": "m-2026-02-06-friday",
+      "date": "2026-02-06",
+      "service": "Friday",
+      "assignments": {
+        "lead": "mus-01"
+      }
+    },
+    {
+      "id": "m-2026-02-08-sunday",
+      "date": "2026-02-08",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-18"
+      }
+    },
+    {
+      "id": "m-2026-02-11-prayermeeting",
+      "date": "2026-02-11",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-cpm"
+      }
+    },
+    {
+      "id": "m-2026-02-13-friday",
+      "date": "2026-02-13",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-02-15-sunday",
+      "date": "2026-02-15",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-15"
+      }
+    },
+    {
+      "id": "m-2026-02-19-prayermeeting",
+      "date": "2026-02-19",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "ptr-01"
+      }
+    },
+    {
+      "id": "m-2026-02-20-friday",
+      "date": "2026-02-20",
+      "service": "Friday",
+      "assignments": {
+        "lead": "sis-17"
+      }
+    },
+    {
+      "id": "m-2026-02-22-sunday",
+      "date": "2026-02-22",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-02-26-prayermeeting",
+      "date": "2026-02-26",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "bro-07"
+      }
+    },
+    {
+      "id": "m-2026-02-27-friday",
+      "date": "2026-02-27",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-03"
+      }
+    },
+    {
+      "id": "m-2026-03-01-sunday",
+      "date": "2026-03-01",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-15"
+      }
+    },
+    {
+      "id": "m-2026-03-04-prayermeeting",
+      "date": "2026-03-04",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-rpg"
+      }
+    },
+    {
+      "id": "m-2026-03-06-friday",
+      "date": "2026-03-06",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-01"
+      }
+    },
+    {
+      "id": "m-2026-03-08-sunday",
+      "date": "2026-03-08",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-03-11-prayermeeting",
+      "date": "2026-03-11",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-rpg"
+      }
+    },
+    {
+      "id": "m-2026-03-13-friday",
+      "date": "2026-03-13",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-03"
+      }
+    },
+    {
+      "id": "m-2026-03-15-sunday",
+      "date": "2026-03-15",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "mus-01"
+      }
+    },
+    {
+      "id": "m-2026-03-19-prayermeeting",
+      "date": "2026-03-19",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "bro-07"
+      }
+    },
+    {
+      "id": "m-2026-03-20-friday",
+      "date": "2026-03-20",
+      "service": "Friday",
+      "assignments": {
+        "lead": "sis-17"
+      }
+    },
+    {
+      "id": "m-2026-03-22-sunday",
+      "date": "2026-03-22",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-03"
+      }
+    },
+    {
+      "id": "m-2026-03-26-prayermeeting",
+      "date": "2026-03-26",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "ptr-01"
+      }
+    },
+    {
+      "id": "m-2026-03-27-friday",
+      "date": "2026-03-27",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-03-29-sunday",
+      "date": "2026-03-29",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-18"
+      }
+    },
+    {
+      "id": "m-2026-04-02-prayermeeting",
+      "date": "2026-04-02",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-hope"
+      }
+    },
+    {
+      "id": "m-2026-04-03-friday",
+      "date": "2026-04-03",
+      "service": "Friday",
+      "assignments": {
+        "lead": "sis-17"
+      }
+    },
+    {
+      "id": "m-2026-04-05-sunday",
+      "date": "2026-04-05",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-04-08-prayermeeting",
+      "date": "2026-04-08",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-cpm"
+      }
+    },
+    {
+      "id": "m-2026-04-10-friday",
+      "date": "2026-04-10",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-01"
+      }
+    },
+    {
+      "id": "m-2026-04-12-sunday",
+      "date": "2026-04-12",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-03"
+      }
+    },
+    {
+      "id": "m-2026-04-16-prayermeeting",
+      "date": "2026-04-16",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "bro-07"
+      }
+    },
+    {
+      "id": "m-2026-04-17-friday",
+      "date": "2026-04-17",
+      "service": "Friday",
+      "assignments": {
+        "lead": "mus-01"
+      }
+    },
+    {
+      "id": "m-2026-04-19-sunday",
+      "date": "2026-04-19",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-18"
+      }
+    },
+    {
+      "id": "m-2026-04-23-prayermeeting",
+      "date": "2026-04-23",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "ptr-01"
+      }
+    },
+    {
+      "id": "m-2026-04-24-friday",
+      "date": "2026-04-24",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-04-26-sunday",
+      "date": "2026-04-26",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-15"
+      }
+    },
+    {
+      "id": "m-2026-04-30-prayermeeting",
+      "date": "2026-04-30",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "bro-03"
+      }
+    }
+  ],
+  "settings": {
+    "primaryRole": "lead"
+  }
+}
