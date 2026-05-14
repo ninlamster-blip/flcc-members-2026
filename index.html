@@ -4209,14 +4209,14 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 // =============================================================================
 
 const TABS = [
-  { key: 'home',    label: 'Home' },
-  { key: 'mine',    label: 'My Schedule', requiresMe: true },
-  { key: 'month',   label: 'This Month' },
-  { key: 'prayer',  label: 'Prayer',  requiresPrayer: true },
-  { key: 'music',   label: 'Music',   requiresMusic:  true },
-  { key: 'equip',   label: 'Equip'   },
-  { key: 'calendar',label: 'Calendar' },
-  { key: 'about',   label: 'About' },
+  { key: 'home',     label: 'Home' },
+  { key: 'mine',     label: 'My Schedule', requiresMe: true },
+  { key: 'month',    label: 'This Month' },
+  { key: 'calendar', label: 'Calendar' },
+  { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
+  { key: 'music',    label: 'Music',   requiresMusic:  true },
+  { key: 'equip',    label: 'Equip'   },
+  { key: 'about',    label: 'About' },
 ];
 
 function App() {
@@ -4403,13 +4403,17 @@ function App() {
               </button>
             </div>
           </div>
-          <nav style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', overflowY: 'visible', marginTop: '1rem', paddingBottom: '3px', msOverflowStyle: 'none', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', gap: '0' }}>
-            {visibleTabs.map(t => (
-              <button key={t.key} className={`tab ${currentTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
-                {t.label}
-              </button>
-            ))}
-          </nav>
+          <div style={{ position: 'relative' }}>
+            <nav style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', overflowY: 'visible', marginTop: '1rem', paddingBottom: '3px', paddingRight: '32px', msOverflowStyle: 'none', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+              {visibleTabs.map(t => (
+                <button key={t.key} className={`tab ${currentTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
+                  {t.label}
+                </button>
+              ))}
+            </nav>
+            {/* Right fade — indicates more tabs to scroll */}
+            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 36, background: 'linear-gradient(to right, transparent, rgba(250,250,245,0.95))', pointerEvents: 'none' }} />
+          </div>
         </div>
       </header>
 
