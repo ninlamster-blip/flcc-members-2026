@@ -2226,6 +2226,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
         data={data}
         prayerEventsByDate={prayerEventsByDate}
         musicEventsByDate={musicEventsByDate}
+        personalEvents={personalEvents}
         onEditPersonal={onEditPersonal}
       />
 
@@ -2272,7 +2273,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
 }
 
 // iOS-style mobile-native calendar with day details bottom sheet
-function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByDate, servicesByDate, me, prayerData, musicData, data, prayerEventsByDate, musicEventsByDate, onEditPersonal }) {
+function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByDate, servicesByDate, me, prayerData, musicData, data, prayerEventsByDate, musicEventsByDate, personalEvents, onEditPersonal }) {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const isMineOnDate = (date) => {
