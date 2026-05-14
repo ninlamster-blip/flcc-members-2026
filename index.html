@@ -107,13 +107,15 @@
 
   .tab {
     padding: 0.625rem 0;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: var(--ink-muted);
     border-bottom: 2px solid transparent;
     transition: color 0.15s, border-color 0.15s;
     cursor: pointer;
-    margin-right: 1.75rem;
+    margin-right: 1.25rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .tab:hover { color: var(--ink); }
   .tab-active { color: var(--ink); border-bottom-color: var(--accent); }
@@ -4398,7 +4400,7 @@ function App() {
               </button>
             </div>
           </div>
-          <nav className="flex flex-wrap mt-4 overflow-x-auto" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+          <nav className="flex flex-nowrap mt-4 overflow-x-auto" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
             {visibleTabs.map(t => (
               <button key={t.key} className={`tab ${currentTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
                 {t.label}
