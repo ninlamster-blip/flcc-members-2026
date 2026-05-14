@@ -424,6 +424,51 @@
     .sheet-backdrop { align-items: center; justify-content: center; padding: 1.5rem; }
     .sheet { border-radius: 16px; max-width: 480px; max-height: 80vh; }
   }
+
+  /* ── Sermon Notes slide-up sheet ───────────────────────────────── */
+  @keyframes snSheetUp   { from { transform:translateY(100%); opacity:.85 } to { transform:translateY(0); opacity:1 } }
+  @keyframes snSheetDown { from { transform:translateY(0);    opacity:1   } to { transform:translateY(105%); opacity:.7 } }
+  @keyframes snSaveFlash { 0%{opacity:0;transform:translateX(5px)} 12%{opacity:1;transform:translateX(0)} 80%{opacity:1} 100%{opacity:0} }
+  @keyframes snNoteDot   { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes snFadeUp    { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  .sn-sheet {
+    background: var(--surface);
+    width: 100%;
+    max-width: 700px;
+    max-height: 92vh;
+    border-radius: 22px 22px 0 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -8px 56px rgba(0,0,0,0.14), 0 -2px 12px rgba(0,0,0,0.06);
+    animation: snSheetUp .38s cubic-bezier(.32,.72,0,1) both;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sn-sheet.closing { animation: snSheetDown .28s cubic-bezier(.4,0,1,1) both !important; }
+
+  @media (min-width: 640px) {
+    .sn-sheet {
+      border-radius: 20px;
+      animation: snFadeIn .28s cubic-bezier(.34,1.56,.64,1) both !important;
+    }
+    @keyframes snFadeIn { from{opacity:0;transform:scale(.96) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .sn-sheet.closing { animation: snFadeOut .22s ease-in both !important; }
+    @keyframes snFadeOut { to{opacity:0;transform:scale(.97) translateY(6px)} }
+  }
+
+  .sn-field-base {
+    width: 100%; border: none; outline: none; background: transparent;
+    font-family: 'Geist', sans-serif; color: var(--ink);
+    transition: border-color .15s;
+    box-sizing: border-box;
+  }
+  .sn-line { border-bottom: 1.5px solid var(--border); }
+  .sn-line:focus { border-bottom-color: #16A34A; }
+  .sn-note-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #16A34A; flex-shrink: 0;
+    animation: snNoteDot .32s cubic-bezier(.34,1.56,.64,1) both;
+  }
 </style>
 </head>
 <body>
@@ -498,8 +543,216 @@ function findMusicMatch(memberWorker, musicWorkers) {
 }
 
 // =============================================================================
-// DATE HELPERS
+// PERSONAL EVENTS — device-private, category-tagged, conflict-aware
 // =============================================================================
+
+const PERSONAL_EVENTS_KEY = 'flcc-personal-events-v1';
+
+const PERSONAL_CATEGORIES = [
+  { key: 'work',     label: 'Work',     color: '#3B82F6', emoji: '💼' },
+  { key: 'family',   label: 'Family',   color: '#EC4899', emoji: '👨‍👩‍👧' },
+  { key: 'personal', label: 'Personal', color: '#8B5CF6', emoji: '⭐' },
+  { key: 'travel',   label: 'Travel',   color: '#F59E0B', emoji: '✈️' },
+  { key: 'health',   label: 'Health',   color: '#10B981', emoji: '🏥' },
+  { key: 'other',    label: 'Other',    color: '#71717A', emoji: '📌' },
+];
+
+function catMeta(key) {
+  return PERSONAL_CATEGORIES.find(c => c.key === key) || PERSONAL_CATEGORIES[5];
+}
+
+function loadPersonalEvents() {
+  try { return JSON.parse(localStorage.getItem(PERSONAL_EVENTS_KEY) || '[]'); } catch { return []; }
+}
+function savePersonalEvents(events) {
+  try { localStorage.setItem(PERSONAL_EVENTS_KEY, JSON.stringify(events)); } catch {}
+}
+
+// Build a Set of ISO dates on which the member has any church assignment
+function buildMyAssignmentDates(me, data, prayerData, musicData, myPrayerWorker, myMusicWorker) {
+  const dates = new Set();
+  if (!me) return dates;
+  for (const e of (data.schedule || [])) {
+    if (Object.values(e.roles || {}).includes(me.id)) dates.add(e.date);
+  }
+  if (myPrayerWorker && prayerData) {
+    for (const m of (prayerData.meetings || [])) {
+      if (m.presiderId === myPrayerWorker.id || m.exhorterId === myPrayerWorker.id || m.songLeaderId === myPrayerWorker.id) dates.add(m.date);
+    }
+  }
+  if (myMusicWorker && musicData) {
+    for (const e of (musicData.entries || [])) {
+      if (e.assignments && Object.values(e.assignments).includes(myMusicWorker.id)) dates.add(e.date);
+    }
+  }
+  return dates;
+}
+
+function downloadPersonalEventICS(ev, churchName) {
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FLCC Members//Personal//EN', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${ev.id}@flcc-personal`,
+    `DTSTAMP:${formatICSStamp()}`,
+  ];
+  if (ev.startTime) {
+    const [h, mn] = ev.startTime.split(':').map(Number);
+    const [y, mo, d] = ev.date.split('-');
+    const pad = n => String(n).padStart(2, '0');
+    lines.push(`DTSTART:${y}${mo}${d}T${pad(h)}${pad(mn)}00`);
+    if (ev.endTime) {
+      const [eh, em] = ev.endTime.split(':').map(Number);
+      lines.push(`DTEND:${y}${mo}${d}T${pad(eh)}${pad(em)}00`);
+    } else {
+      lines.push(`DTEND:${y}${mo}${d}T${pad(h + 1)}${pad(mn)}00`);
+    }
+  } else {
+    lines.push(`DTSTART;VALUE=DATE:${formatICSDate(ev.date)}`);
+    lines.push(`DTEND;VALUE=DATE:${formatICSDate(addDays(ev.date, 1))}`);
+  }
+  lines.push(`SUMMARY:${escapeICS(ev.title)}`);
+  if (ev.location) lines.push(`LOCATION:${escapeICS(ev.location)}`);
+  if (ev.notes) lines.push(`DESCRIPTION:${escapeICS(ev.notes)}`);
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  downloadICS(`personal-${ev.date}-${ev.id.slice(-4)}.ics`, lines.join('\r\n'));
+}
+
+// =============================================================================
+// PERSONAL EVENT MODAL — add / edit
+// =============================================================================
+
+function PersonalEventModal({ initialEvent, onSave, onDelete, onClose, conflictDates }) {
+  const blank = { title: '', date: todayISO(), startTime: '', endTime: '', location: '', notes: '', category: 'personal' };
+  const [ev, setEv] = useState(initialEvent || blank);
+  const isEdit = !!initialEvent?.id;
+  const conflict = ev.date && conflictDates && conflictDates.has(ev.date);
+
+  const set = patch => setEv(e => ({ ...e, ...patch }));
+
+  const submit = () => {
+    if (!ev.title.trim()) { alert('Please add a title.'); return; }
+    if (!ev.date) { alert('Please pick a date.'); return; }
+    const saved = {
+      ...ev,
+      id: ev.id || `pe-${Date.now()}`,
+      title: ev.title.trim(),
+      createdAt: ev.createdAt || new Date().toISOString(),
+    };
+    onSave(saved);
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+        <h3 className="font-display text-2xl font-semibold mb-4">{isEdit ? 'Edit event' : 'Add personal event'}</h3>
+
+        <div className="space-y-3">
+          {/* Category pills */}
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Category</label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {PERSONAL_CATEGORIES.map(c => (
+                <button
+                  key={c.key}
+                  onClick={() => set({ category: c.key })}
+                  className="pill"
+                  style={{
+                    background: ev.category === c.key ? c.color : '#F4F4F0',
+                    color: ev.category === c.key ? 'white' : 'var(--ink-muted)',
+                    cursor: 'pointer', border: 'none',
+                    transition: 'all 0.15s',
+                  }}
+                >{c.emoji} {c.label}</button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Title</label>
+            <input className="input mt-1" value={ev.title} onChange={e => set({ title: e.target.value })} placeholder="e.g. Work shift, Doctor's appointment, Family lunch…" autoFocus />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Date</label>
+              <input type="date" className="input mt-1" value={ev.date} onChange={e => set({ date: e.target.value })} />
+            </div>
+            <div />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Start time</label>
+              <input type="time" className="input mt-1" value={ev.startTime} onChange={e => set({ startTime: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">End time</label>
+              <input type="time" className="input mt-1" value={ev.endTime} onChange={e => set({ endTime: e.target.value })} />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Location</label>
+            <input className="input mt-1" value={ev.location} onChange={e => set({ location: e.target.value })} placeholder="optional" />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Notes</label>
+            <textarea className="input mt-1" rows={2} value={ev.notes} onChange={e => set({ notes: e.target.value })} placeholder="optional" style={{ resize: 'none' }} />
+          </div>
+
+          {/* Conflict warning inline */}
+          {conflict && (
+            <div className="rounded-lg p-3 text-sm" style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
+              ⚠️ You have a church assignment on this date. This event will show a conflict badge — you can report it directly from your schedule.
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-between gap-2 mt-6">
+          <div>{isEdit && <button className="btn btn-ghost" style={{ color: 'var(--danger)' }} onClick={() => { if (confirm('Delete this event?')) onDelete(ev.id); }}>Delete</button>}</div>
+          <div className="flex gap-2">
+            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" onClick={submit}>{isEdit ? 'Save changes' : 'Add event'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Personal event card — reusable across tabs
+function PersonalEventCard({ ev, onEdit, hasConflict, onConflictReport }) {
+  const cat = catMeta(ev.category);
+  return (
+    <div className="row-card" style={{ borderLeft: `3px solid ${cat.color}` }}>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium">{cat.emoji} {ev.title}</span>
+            <span className="pill pill-default text-xs">{cat.label}</span>
+            {hasConflict && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Church assignment</span>}
+          </div>
+          <div className="text-xs ink-muted mt-1">
+            {formatDateLong ? formatDateLong(ev.date) : ev.date}
+            {ev.startTime && <span> · {formatTime12(ev.startTime)}{ev.endTime ? `–${formatTime12(ev.endTime)}` : ''}</span>}
+            {ev.location && <span> · {ev.location}</span>}
+          </div>
+          {ev.notes && <div className="text-xs ink-muted mt-1 italic">{ev.notes}</div>}
+        </div>
+        <button className="btn btn-soft text-xs flex-shrink-0" onClick={() => onEdit(ev)}>Edit</button>
+      </div>
+      <div className="flex flex-wrap gap-2 mt-3">
+        <button className="btn btn-soft text-xs" onClick={() => downloadPersonalEventICS(ev, '')}>📅 Save to calendar</button>
+        {hasConflict && onConflictReport && (
+          <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflictReport(ev)}>
+            ⚠ Report conflict
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -888,7 +1141,7 @@ function NamePicker({ workers, onPick, onSkip, churchName }) {
 }
 
 // --- My Schedule ---
-function MyScheduleTab({ data, prayerData, musicData, me, onConflict }) {
+function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEvents, onEditPersonal, sermonNotes, onOpenNote }) {
   const today = todayISO();
 
   // Main service assignments
@@ -929,15 +1182,30 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict }) {
       });
   }, [musicData, myMusicWorker, today]);
 
+  // Personal events
+  const personalEntries = useMemo(() => {
+    if (!personalEvents) return [];
+    return personalEvents
+      .filter(e => e.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(e => ({ kind: 'personal', date: e.date, event: e }));
+  }, [personalEvents, today]);
+
+  // Assignment dates for conflict detection on personal events
+  const myAssignmentDates = useMemo(() =>
+    buildMyAssignmentDates(me, data, prayerData, musicData, myPrayerWorker, myMusicWorker),
+    [me, data, prayerData, musicData, myPrayerWorker, myMusicWorker]
+  );
+
   // Unified upcoming list, chronologically sorted
   const allUpcoming = useMemo(() => {
-    return [...mainEntries, ...prayerEntries, ...musicEntries].sort((a, b) => {
+    return [...mainEntries, ...prayerEntries, ...musicEntries, ...personalEntries].sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
-      // Same date — main service first, then music, then prayer
-      const order = { main: 0, music: 1, prayer: 2 };
+      // Same date — church first, then personal
+      const order = { main: 0, music: 1, prayer: 2, personal: 3 };
       return (order[a.kind] || 99) - (order[b.kind] || 99);
     });
-  }, [mainEntries, prayerEntries, musicEntries]);
+  }, [mainEntries, prayerEntries, musicEntries, personalEntries]);
 
   const myUpcomingBirthday = useMemo(() => {
     if (!me.birthday) return null;
@@ -976,6 +1244,7 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict }) {
             if (item.kind === 'main') {
               const entry = item.entry;
               const myRoles = ROLES.filter(r => entry.roles[r.key] === me.id);
+              const noteId = makeNoteId(entry.date, entry.service);
               return (
                 <div key={`main-${entry.id}`} className="row-card row-mine">
                   <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
@@ -993,6 +1262,20 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict }) {
                     <button className="btn btn-soft" onClick={() => downloadServiceICS(entry, data.workers, data.meta.churchName)}>
                       📅 Save to my calendar
                     </button>
+                    <SermonNoteBtn
+                      noteId={noteId}
+                      sermonNotes={sermonNotes}
+                      onClick={() => onOpenNote({
+                        id: noteId,
+                        meta: {
+                          date: entry.date,
+                          service: entry.service,
+                          dateLabel: formatDateLong(entry.date),
+                          preacher: getEntryPreacher(entry, data.workers),
+                          myRole: myRoles.map(r => r.label).join(', ') || null,
+                        }
+                      })}
+                    />
                     {myRoles.map(r => (
                       <button key={r.key} className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => onConflict({ entry, role: r.key })}>
                         ⚠ Report conflict for {r.label}
@@ -1044,6 +1327,43 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict }) {
                         ⚠ Report conflict for {r.label}
                       </button>
                     ))}
+                  </div>
+                </div>
+              );
+            } else if (item.kind === 'personal') {
+              const ev = item.event;
+              const cat = catMeta(ev.category);
+              const conflict = myAssignmentDates.has(ev.date);
+              return (
+                <div key={`personal-${ev.id}`} className="row-card" style={{ borderLeftWidth: '3px', borderLeftColor: cat.color, background: '#FEFEFE' }}>
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div>
+                      <div className="font-display text-lg font-semibold">{cat.emoji} {ev.title}</div>
+                      <div className="text-xs ink-muted mt-0.5">
+                        {formatDateLong(ev.date)}
+                        {ev.startTime && <span> · {formatTime12(ev.startTime)}{ev.endTime ? `–${formatTime12(ev.endTime)}` : ''}</span>}
+                        {ev.location && <span> · {ev.location}</span>}
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        <Pill tone="default">{cat.label}</Pill>
+                        {conflict && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Church assignment same day</span>}
+                      </div>
+                    </div>
+                    <button className="btn btn-soft text-xs" onClick={() => onEditPersonal(ev)}>Edit</button>
+                  </div>
+                  {ev.notes && <div className="text-xs ink-muted italic mt-1">{ev.notes}</div>}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button className="btn btn-soft text-xs" onClick={() => downloadPersonalEventICS(ev, '')}>📅 Save to calendar</button>
+                    {conflict && (
+                      <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => {
+                        // Find the overlapping church entry for conflict report
+                        const churchEntry = data.schedule.find(e => e.date === ev.date && me && Object.values(e.roles).includes(me.id));
+                        if (churchEntry) {
+                          const myRoles = ROLES.filter(r => churchEntry.roles[r.key] === me.id);
+                          if (myRoles.length) onConflict({ entry: churchEntry, role: myRoles[0].key });
+                        }
+                      }}>⚠ Report church conflict</button>
+                    )}
                   </div>
                 </div>
               );
@@ -1130,7 +1450,7 @@ function ServiceDetails({ entry, workers, highlightId }) {
 // HOME TAB — Grid dashboard of upcoming items
 // =============================================================================
 
-function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict }) {
+function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal }) {
   const today = todayISO();
   const nextWeekStart = today;
   const horizon = addDays(today, 60);
@@ -1185,6 +1505,18 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       .sort((a, b) => a.date.localeCompare(b.date))
       .slice(0, 3);
   }, [musicData, today]);
+
+  // Upcoming personal events
+  const upcomingPersonal = useMemo(() => {
+    if (!personalEvents) return [];
+    return personalEvents.filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4);
+  }, [personalEvents, today]);
+
+  // Conflict dates for personal events
+  const myAssignmentDates = useMemo(() =>
+    buildMyAssignmentDates(me, data, prayerData, musicData, myPrayerWorker, myMusicWorker),
+    [me, data, prayerData, musicData, myPrayerWorker, myMusicWorker]
+  );
 
   // Upcoming birthdays (next 30 days)
   const upcomingBirthdays = useMemo(() => {
@@ -1433,6 +1765,37 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
         </div>
       )}
 
+      {/* My personal events — private to this device */}
+      {upcomingPersonal.length > 0 && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">🗓 My personal events</div>
+          <div className="space-y-2">
+            {upcomingPersonal.map(ev => {
+              const cat = catMeta(ev.category);
+              const conflict = myAssignmentDates.has(ev.date);
+              return (
+                <div key={ev.id} className="home-card" style={{ borderLeftColor: cat.color, borderLeftWidth: '3px', cursor: 'default' }}>
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <div className="home-card-eyebrow" style={{ color: cat.color }}>
+                        {cat.emoji} {daysAway(ev.date)} · {cat.label}
+                        {conflict && <span className="ml-2 pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Church assignment</span>}
+                      </div>
+                      <div className="home-card-title" style={{ fontSize: '1rem' }}>{ev.title}</div>
+                      <div className="home-card-body text-xs ink-muted">
+                        {ev.startTime && <span>{formatTime12(ev.startTime)}{ev.endTime ? `–${formatTime12(ev.endTime)}` : ''} · </span>}
+                        {ev.location || 'No location'}
+                      </div>
+                    </div>
+                    <button className="btn btn-soft text-xs flex-shrink-0" onClick={() => onEditPersonal(ev)}>Edit</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {!me && (
         <div className="card p-5 text-center mt-6" style={{ background: 'var(--accent-soft)' }}>
           <div className="font-display text-lg font-semibold mb-1">Pick your name to personalize</div>
@@ -1445,7 +1808,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
 }
 
 // --- This Month tab ---
-function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurrentMonth, onConflict }) {
+function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurrentMonth, onConflict, personalEvents, onEditPersonal, sermonNotes, onOpenNote }) {
   const monthEntries = data.schedule.filter(e => monthKey(e.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
   const fridays = monthEntries.filter(e => e.service === 'Friday');
   const sundays = monthEntries.filter(e => e.service === 'Sunday');
@@ -1465,11 +1828,25 @@ function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurren
   const musicByKey = useMemo(() => {
     const m = new Map();
     if (!musicData?.entries) return m;
-    for (const me of musicData.entries) {
-      m.set(`${me.date}|${me.service}`, me);
+    for (const meEntry of musicData.entries) {
+      m.set(`${meEntry.date}|${meEntry.service}`, meEntry);
     }
     return m;
   }, [musicData]);
+
+  // Personal events this month
+  const personalThisMonth = useMemo(() => {
+    if (!personalEvents) return [];
+    return personalEvents.filter(e => monthKey(e.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
+  }, [personalEvents, currentMonth]);
+
+  // Assignment dates for conflict detection
+  const myPrayerWorkerTM = useMemo(() => prayerData ? findPrayerMatch(me, prayerData.workers) : null, [me, prayerData]);
+  const myMusicWorkerTM = useMemo(() => musicData ? findMusicMatch(me, musicData.workers) : null, [me, musicData]);
+  const myAssignmentDates = useMemo(() =>
+    buildMyAssignmentDates(me, data, prayerData, musicData, myPrayerWorkerTM, myMusicWorkerTM),
+    [me, data, prayerData, musicData, myPrayerWorkerTM, myMusicWorkerTM]
+  );
 
   return (
     <div className="fade-in">
@@ -1490,15 +1867,47 @@ function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurren
         </div>
       ) : (
         <>
-          <ServiceListSection title="Friday Service" entries={fridays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} />
-          <ServiceListSection title="Sunday Service" entries={sundays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} />
+          <ServiceListSection title="Friday Service" entries={fridays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} sermonNotes={sermonNotes} onOpenNote={onOpenNote} />
+          <ServiceListSection title="Sunday Service" entries={sundays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} sermonNotes={sermonNotes} onOpenNote={onOpenNote} />
         </>
+      )}
+
+      {/* Personal events this month */}
+      {personalThisMonth.length > 0 && (
+        <div className="mt-6">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">🗓 My personal events · {formatMonthLabel(currentMonth)}</div>
+          <div className="space-y-2">
+            {personalThisMonth.map(ev => {
+              const cat = catMeta(ev.category);
+              const conflict = myAssignmentDates.has(ev.date);
+              return (
+                <div key={ev.id} className="row-card" style={{ borderLeft: `3px solid ${cat.color}` }}>
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium">{cat.emoji} {ev.title}</span>
+                        <Pill tone="default">{cat.label}</Pill>
+                        {conflict && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Assignment this day</span>}
+                      </div>
+                      <div className="text-xs ink-muted mt-1">
+                        {formatDateLong(ev.date)}
+                        {ev.startTime && <span> · {formatTime12(ev.startTime)}{ev.endTime ? `–${formatTime12(ev.endTime)}` : ''}</span>}
+                        {ev.location && <span> · {ev.location}</span>}
+                      </div>
+                    </div>
+                    <button className="btn btn-soft text-xs" onClick={() => onEditPersonal(ev)}>Edit</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-function ServiceListSection({ title, entries, workers, me, churchName, onConflict, prayerData, intercessoryByKey, musicData, musicByKey }) {
+function ServiceListSection({ title, entries, workers, me, churchName, onConflict, prayerData, intercessoryByKey, musicData, musicByKey, sermonNotes, onOpenNote }) {
   if (entries.length === 0) return null;
   return (
     <div className="mb-6">
@@ -1511,6 +1920,7 @@ function ServiceListSection({ title, entries, workers, me, churchName, onConflic
           const intercessoryTeam = intercessory && prayerData ? (prayerData.teams || []).find(t => t.id === intercessory.teamId) : null;
           const musicEntry = musicByKey?.get(`${entry.date}|${entry.service}`);
           const musicPrimary = musicEntry && musicData ? musicData.workers.find(w => w.id === musicEntry.assignments?.[musicData.settings?.primaryRole || 'lead']) : null;
+          const noteId = makeNoteId(entry.date, entry.service);
           return (
             <div key={entry.id} className={`row-card ${isMine ? 'row-mine' : ''}`}>
               <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
@@ -1522,7 +1932,24 @@ function ServiceListSection({ title, entries, workers, me, churchName, onConflic
                     </div>
                   )}
                 </div>
-                <button className="btn btn-soft text-xs" onClick={() => downloadServiceICS(entry, workers, churchName)}>📅</button>
+                <div className="flex items-center gap-2">
+                  <SermonNoteBtn
+                    noteId={noteId}
+                    sermonNotes={sermonNotes}
+                    compact
+                    onClick={() => onOpenNote && onOpenNote({
+                      id: noteId,
+                      meta: {
+                        date: entry.date,
+                        service: entry.service,
+                        dateLabel: formatDateLong(entry.date),
+                        preacher: getEntryPreacher(entry, workers),
+                        myRole: isMine ? myRoles.map(r => r.label).join(', ') : null,
+                      }
+                    })}
+                  />
+                  <button className="btn btn-soft text-xs" onClick={() => downloadServiceICS(entry, workers, churchName)}>📅</button>
+                </div>
               </div>
               <div className="dotted-divider my-3" />
               <ServiceDetails entry={entry} workers={workers} highlightId={me?.id} />
@@ -1564,7 +1991,7 @@ function ServiceListSection({ title, entries, workers, me, churchName, onConflic
 }
 
 // --- Calendar tab (read-only with .ics export) ---
-function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMonth, me }) {
+function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMonth, me, personalEvents, onEditPersonal }) {
   const [year, monthIdx] = useMemo(() => {
     const [y, m] = currentMonth.split('-').map(Number);
     return [y, m - 1];
@@ -1683,8 +2110,24 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
       const existing = m.get(date) || [];
       m.set(date, [...existing, ...musics]);
     }
+    // Merge personal events
+    for (const ev of (personalEvents || [])) {
+      if (ev.date < gridStart || ev.date > gridEnd) continue;
+      const cat = catMeta(ev.category);
+      const existing = m.get(ev.date) || [];
+      m.set(ev.date, [...existing, {
+        id: ev.id, date: ev.date,
+        title: `${cat.emoji} ${ev.title}`,
+        startTime: ev.startTime || '',
+        endTime: ev.endTime || '',
+        location: ev.location || '',
+        kind: 'personal',
+        dot: cat.color,
+        _personalEvent: ev,
+      }]);
+    }
     return m;
-  }, [allEvents, prayerEventsByDate, musicEventsByDate]);
+  }, [allEvents, prayerEventsByDate, musicEventsByDate, personalEvents, gridStart, gridEnd]);
 
   const servicesByDate = useMemo(() => {
     const m = new Map();
@@ -1778,6 +2221,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
         data={data}
         prayerEventsByDate={prayerEventsByDate}
         musicEventsByDate={musicEventsByDate}
+        onEditPersonal={onEditPersonal}
       />
 
       <div className="card p-5 mt-6">
@@ -1823,7 +2267,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
 }
 
 // iOS-style mobile-native calendar with day details bottom sheet
-function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByDate, servicesByDate, me, prayerData, musicData, data, prayerEventsByDate, musicEventsByDate }) {
+function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByDate, servicesByDate, me, prayerData, musicData, data, prayerEventsByDate, musicEventsByDate, onEditPersonal }) {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const isMineOnDate = (date) => {
@@ -1850,6 +2294,7 @@ function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByD
           <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: 'var(--accent)' }}></span>Service</div>
           {prayerData && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#6366F1' }}></span>Prayer</div>}
           {musicData && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: MUSIC_ACCENT }}></span>Music</div>}
+          {(personalEvents || []).length > 0 && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#8B5CF6' }}></span>My events</div>}
           <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#D97706' }}></span>Event</div>
         </div>
       </div>
@@ -1905,13 +2350,14 @@ function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByD
           prayerData={prayerData}
           musicData={musicData}
           me={me}
+          onEditPersonal={onEditPersonal}
         />
       )}
     </div>
   );
 }
 
-function DayDetailSheet({ date, onClose, services, events, data, prayerData, musicData, me }) {
+function DayDetailSheet({ date, onClose, services, events, data, prayerData, musicData, me, onEditPersonal }) {
   const dayLabel = parseISODate(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const hasContent = services.length > 0 || events.length > 0;
 
@@ -1965,11 +2411,16 @@ function DayDetailSheet({ date, onClose, services, events, data, prayerData, mus
                     } else if (e.kind === 'music') {
                       const raw = (musicData?.entries || []).find(me => me.id === e.id);
                       if (raw) downloadMusicICS(raw, musicData, data.meta.churchName);
+                    } else if (e.kind === 'personal') {
+                      downloadPersonalEventICS(e._personalEvent, '');
                     } else {
                       const ics = eventsToICSFile([e], e.title);
                       downloadICS(`${e.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, ics);
                     }
                   }}>📅 Save</button>
+                  {e.kind === 'personal' && onEditPersonal && (
+                    <button className="btn btn-ghost text-xs ml-2" onClick={() => { onEditPersonal(e._personalEvent); onClose(); }}>Edit</button>
+                  )}
                 </div>
               </div>
             );
@@ -2532,17 +2983,1235 @@ function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConfli
 }
 
 // =============================================================================
+// EQUIP — Learning Management System
+// =============================================================================
+
+const EQUIP_ACCENT = '#16A34A';
+const EQUIP_SOFT  = '#DCFCE7';
+const EQUIP_TINT  = '#F0FDF4';
+const EQUIP_PROGRESS_KEY = 'flcc-equip-progress-v1';
+const EQUIP_BOOKMARKS_KEY = 'flcc-equip-bookmarks-v1';
+const EQUIP_ACTIVITY_KEY  = 'flcc-equip-activity-v1';
+
+const TRACK_META = {
+  foundation:     { label: 'Foundation',     color: '#16A34A', icon: '🌱' },
+  evangelism:     { label: 'Evangelism',     color: '#0284C7', icon: '🕊️' },
+  discipleship:   { label: 'Discipleship',   color: '#6D28D9', icon: '⚓' },
+  leadership:     { label: 'Leadership',     color: '#BE123C', icon: '👑' },
+  multiplication: { label: 'Multiplication', color: '#0F766E', icon: '🌿' },
+};
+
+const RES_META = {
+  pdf:            { label: 'PDF',         icon: '📄', color: '#B45309' },
+  audio:          { label: 'Audio',       icon: '🎧', color: '#7C3AED' },
+  video:          { label: 'Video',       icon: '▶️',  color: '#DC2626' },
+  devotional:     { label: 'Devotional',  icon: '🙏', color: '#059669' },
+  playlist:       { label: 'Playlist',    icon: '🎵', color: '#EA580C' },
+  'sermon-notes': { label: 'Sermon',      icon: '📝', color: '#6366F1' },
+  guide:          { label: 'Guide',       icon: '📚', color: '#16A34A' },
+  external:       { label: 'Link',        icon: '🔗', color: '#0284C7' },
+};
+
+const EQUIP_COURSES = [
+  {
+    id: 'new-believer', title: 'New Believer Materials', subtitle: 'Starting your faith journey',
+    track: 'foundation', level: 'Beginner', estimatedHours: 3, badge: '🌱', badgeLabel: 'Seedling',
+    facilitator: 'Ptr. Justin Flores', prerequisite: null, featured: true,
+    description: 'Essential foundations for those who have just given their life to Christ. Covers salvation, prayer, Bible reading, and church life.',
+    reflections: ['What does it mean to you that God loves you unconditionally?', 'How has your life changed since accepting Christ?', 'What is one spiritual habit you want to start this week?'],
+    lessons: [
+      { id: 'nb-1', title: 'Welcome to the Family of God', duration: 20, hasQuiz: true },
+      { id: 'nb-2', title: 'Understanding Salvation', duration: 25, hasQuiz: true },
+      { id: 'nb-3', title: 'The Importance of Prayer', duration: 20, hasQuiz: false },
+      { id: 'nb-4', title: 'Reading Your Bible', duration: 25, hasQuiz: true },
+      { id: 'nb-5', title: 'Finding a Church Home', duration: 15, hasQuiz: false },
+      { id: 'nb-6', title: 'Baptism and the Lord\'s Supper', duration: 20, hasQuiz: true },
+      { id: 'nb-7', title: 'Living as a New Believer', duration: 20, hasQuiz: false },
+    ],
+  },
+  {
+    id: 'four-spiritual-laws', title: 'Four Spiritual Laws', subtitle: 'God\'s plan for your life',
+    track: 'evangelism', level: 'Beginner', estimatedHours: 2, badge: '🕊️', badgeLabel: 'Herald',
+    facilitator: 'Ptr. Justin Flores', prerequisite: null, featured: true,
+    description: 'A clear presentation of the gospel. Learn to share your faith effectively using the Four Spiritual Laws framework.',
+    reflections: ['How would you explain the gospel to someone in 2 minutes?', 'Who in your life needs to hear about God\'s love?', 'What fears do you have about sharing your faith?'],
+    lessons: [
+      { id: 'fsl-1', title: 'God loves you and has a plan for your life', duration: 20, hasQuiz: true },
+      { id: 'fsl-2', title: 'Man is sinful and separated from God', duration: 20, hasQuiz: true },
+      { id: 'fsl-3', title: 'Jesus Christ is God\'s only provision', duration: 25, hasQuiz: true },
+      { id: 'fsl-4', title: 'We must individually receive Jesus Christ', duration: 20, hasQuiz: true },
+    ],
+  },
+  {
+    id: 'bible-study', title: 'Bible Study Lessons', subtitle: 'How to study God\'s Word',
+    track: 'foundation', level: 'Beginner', estimatedHours: 4, badge: '📖', badgeLabel: 'Scholar',
+    facilitator: 'Bro. Allen Santos', prerequisite: null, featured: false,
+    description: 'Learn effective Bible study methods — inductive study, context analysis, and devotional reading — to deepen your understanding of Scripture.',
+    reflections: ['What is your current Bible reading habit?', 'Which study method resonates most with you and why?', 'Share a verse that has spoken to you recently.'],
+    lessons: [
+      { id: 'bs-1', title: 'How to Study the Bible', duration: 30, hasQuiz: true },
+      { id: 'bs-2', title: 'Observation, Interpretation, Application', duration: 30, hasQuiz: true },
+      { id: 'bs-3', title: 'Inductive Bible Study Method', duration: 35, hasQuiz: true },
+      { id: 'bs-4', title: 'Understanding Context', duration: 25, hasQuiz: false },
+      { id: 'bs-5', title: 'Devotional Reading', duration: 20, hasQuiz: false },
+      { id: 'bs-6', title: 'Topical Studies', duration: 25, hasQuiz: true },
+    ],
+  },
+  {
+    id: 'discipleship', title: 'Discipleship Course', subtitle: 'Making and being a disciple',
+    track: 'discipleship', level: 'Intermediate', estimatedHours: 5, badge: '⚓', badgeLabel: 'Disciple',
+    facilitator: 'Ptr. Justin Flores', prerequisite: 'new-believer', featured: false,
+    description: 'A comprehensive course on what it means to be a disciple of Jesus and how to effectively disciple others in your context.',
+    reflections: ['Who is discipling you right now?', 'Who are you discipling or mentoring?', 'What spiritual discipline are you currently developing?'],
+    lessons: [
+      { id: 'dc-1', title: 'What is a Disciple?', duration: 25, hasQuiz: true },
+      { id: 'dc-2', title: 'The Cost of Discipleship', duration: 30, hasQuiz: true },
+      { id: 'dc-3', title: 'Spiritual Disciplines', duration: 35, hasQuiz: false },
+      { id: 'dc-4', title: 'One-on-One Discipleship', duration: 30, hasQuiz: true },
+      { id: 'dc-5', title: 'Group Discipleship', duration: 25, hasQuiz: false },
+      { id: 'dc-6', title: 'Passing the Baton', duration: 25, hasQuiz: true },
+    ],
+  },
+  {
+    id: 'jesus-on-leadership', title: 'Jesus on Leadership', subtitle: 'Leading the way Jesus led',
+    track: 'leadership', level: 'Intermediate', estimatedHours: 5, badge: '👑', badgeLabel: 'Servant Leader',
+    facilitator: 'Bro. Allen Santos', prerequisite: 'discipleship', featured: true,
+    description: 'Discover the leadership principles Jesus modeled — servant leadership, vision casting, character, and developing others.',
+    reflections: ['In what area of leadership are you currently growing?', 'How are you currently serving others in your ministry?', 'What character quality do you most need to develop as a leader?'],
+    lessons: [
+      { id: 'jl-1', title: 'The Servant Leader', duration: 30, hasQuiz: true },
+      { id: 'jl-2', title: 'Character Before Competence', duration: 30, hasQuiz: true },
+      { id: 'jl-3', title: 'Leading with Vision', duration: 25, hasQuiz: false },
+      { id: 'jl-4', title: 'Developing Others', duration: 30, hasQuiz: true },
+      { id: 'jl-5', title: 'The Leader\'s Inner Life', duration: 25, hasQuiz: true },
+    ],
+  },
+  {
+    id: 'leadership-training', title: 'Leadership Training', subtitle: 'Ministry leadership essentials',
+    track: 'leadership', level: 'Advanced', estimatedHours: 7, badge: '🦅', badgeLabel: 'Ministry Leader',
+    facilitator: 'Ptr. Justin Flores', prerequisite: 'jesus-on-leadership', featured: false,
+    description: 'Advanced training for CSL (Christ Servant Leadership) and ministry heads. Team dynamics, vision casting, conflict resolution, and accountability.',
+    reflections: ['Describe your current ministry responsibilities.', 'What is your greatest leadership challenge right now?', 'How do you maintain accountability in your ministry role?'],
+    lessons: [
+      { id: 'lt-1', title: 'Ministry DNA of FLCC', duration: 30, hasQuiz: true },
+      { id: 'lt-2', title: 'Spiritual Authority', duration: 30, hasQuiz: true },
+      { id: 'lt-3', title: 'Team Building', duration: 35, hasQuiz: true },
+      { id: 'lt-4', title: 'Conflict Resolution', duration: 30, hasQuiz: true },
+      { id: 'lt-5', title: 'Communication Skills', duration: 25, hasQuiz: false },
+      { id: 'lt-6', title: 'Vision Casting', duration: 30, hasQuiz: true },
+      { id: 'lt-7', title: 'Stewardship and Accountability', duration: 30, hasQuiz: true },
+    ],
+  },
+  {
+    id: 'multiply-churches', title: 'Multiply Churches', subtitle: 'Church planting and multiplication',
+    track: 'multiplication', level: 'Advanced', estimatedHours: 6, badge: '🌿', badgeLabel: 'Church Planter',
+    facilitator: 'Ptr. Justin Flores', prerequisite: 'leadership-training', featured: false,
+    description: 'Principles and practices of church multiplication based on the Great Commission — applied to the OFW mission context in Kuwait.',
+    reflections: ['What is your vision for church multiplication?', 'Who are potential leaders you could develop for a new work?', 'What one step can you take this month toward multiplication?'],
+    lessons: [
+      { id: 'mc-1', title: 'The Great Commission Mandate', duration: 30, hasQuiz: true },
+      { id: 'mc-2', title: 'Church Planting Philosophy', duration: 35, hasQuiz: true },
+      { id: 'mc-3', title: 'Reaching Your Community', duration: 30, hasQuiz: false },
+      { id: 'mc-4', title: 'Making Disciples Who Make Disciples', duration: 35, hasQuiz: true },
+      { id: 'mc-5', title: 'Multiplication Principles', duration: 30, hasQuiz: true },
+      { id: 'mc-6', title: 'Sustaining a Church Plant', duration: 30, hasQuiz: true },
+    ],
+  },
+];
+
+const LEADERSHIP_PATHWAY = [
+  { stage: 1, name: 'Foundation', icon: '🌱', color: '#16A34A', description: 'Established in the faith basics', requiredCourses: ['new-believer', 'bible-study'] },
+  { stage: 2, name: 'Evangelist', icon: '🕊️', color: '#0284C7', description: 'Equipped to share the gospel', requiredCourses: ['four-spiritual-laws'] },
+  { stage: 3, name: 'Disciple Maker', icon: '⚓', color: '#6D28D9', description: 'Actively discipling others', requiredCourses: ['discipleship'] },
+  { stage: 4, name: 'Servant Leader', icon: '👑', color: '#BE123C', description: 'Leading in ministry', requiredCourses: ['jesus-on-leadership'] },
+  { stage: 5, name: 'Ministry Leader', icon: '🦅', color: '#EA580C', description: 'Leading ministry teams', requiredCourses: ['leadership-training'] },
+  { stage: 6, name: 'Church Planter', icon: '🌿', color: '#0F766E', description: 'Ready to plant and multiply', requiredCourses: ['multiply-churches'] },
+];
+
+const EQUIP_RESOURCES = [
+  { id: 'r1',  title: 'Four Spiritual Laws Booklet', type: 'pdf',            url: '#', description: 'Classic evangelism booklet by Campus Crusade for Christ.', category: 'evangelism',      courseId: 'four-spiritual-laws',  featured: true  },
+  { id: 'r2',  title: 'Multiply — Francis Chan',     type: 'external',       url: 'https://www.multiplymovement.com', description: 'Free discipleship resource for church multiplication based on the Great Commission.', category: 'multiplication', courseId: 'multiply-churches', featured: true },
+  { id: 'r3',  title: 'FLCC Vision & Mission 2026',  type: 'pdf',            url: '#', description: 'Our church vision, mission, and core values. Essential reading for all ministry leaders.', category: 'church', courseId: null, featured: true },
+  { id: 'r4',  title: 'OFW Faith: Standing Strong Abroad', type: 'devotional', url: '#', description: 'Daily devotional written for overseas Filipino workers. A 30-day journey of faith.', category: 'spiritual-growth', courseId: null, featured: true },
+  { id: 'r5',  title: 'Leadership DNA Guide',         type: 'guide',          url: '#', description: 'FLCC CSL leadership principles, values, and the servant leadership framework handbook.', category: 'leadership', courseId: 'leadership-training', featured: true },
+  { id: 'r6',  title: 'The Bible Project (YouTube)',  type: 'video',          url: 'https://www.youtube.com/@thebibleproject', description: 'Animated Bible overviews and theological education. Free on YouTube.', category: 'bible-study', courseId: 'bible-study', featured: true },
+  { id: 'r7',  title: 'Worship Playlist',             type: 'playlist',       url: '#', description: 'Curated worship songs for personal devotion and quiet time.', category: 'worship', courseId: null, featured: false },
+  { id: 'r8',  title: 'Sermon Notes: Philippians 4:8', type: 'sermon-notes', url: '#', description: 'Notes from our media consumption series. On renewing your mind.', category: 'sermons', courseId: null, featured: false },
+  { id: 'r9',  title: 'New Believer Starter Pack',    type: 'pdf',            url: '#', description: 'Compilation of essential materials for newly saved members at FLCC - Farwaniya 1.', category: 'new-believers', courseId: 'new-believer', featured: false },
+  { id: 'r10', title: 'Through the Bible — J. Vernon McGee', type: 'audio',  url: '#', description: 'Classic through-the-Bible audio teaching. The full Bible in 5 years.', category: 'bible-study', courseId: null, featured: false },
+  { id: 'r11', title: 'Church Manual 2026',           type: 'guide',          url: '#', description: 'FLCC official church operations, ministry guidelines, and governance document.', category: 'church', courseId: null, featured: false },
+  { id: 'r12', title: 'Discipleship Journal',         type: 'devotional',     url: '#', description: 'Weekly reflection guide for discipleship groups. Includes questions and memory verses.', category: 'discipleship', courseId: 'discipleship', featured: false },
+  { id: 'r13', title: 'Jesus on Leadership Summary',  type: 'pdf',            url: '#', description: 'Key leadership principles derived from the life and ministry of Jesus.', category: 'leadership', courseId: 'jesus-on-leadership', featured: false },
+  { id: 'r14', title: '30 Days of Prayer Guide',      type: 'devotional',     url: '#', description: 'A focused 30-day prayer devotional for personal and corporate intercession.', category: 'spiritual-growth', courseId: null, featured: false },
+  { id: 'r15', title: 'Cost of Discipleship (Video)', type: 'video',          url: '#', description: 'A teaching on counting the cost of following Christ in the modern world.', category: 'discipleship', courseId: 'discipleship', featured: false },
+];
+
+// --- Equip storage helpers ---
+function loadEquipProgress()  { try { return JSON.parse(localStorage.getItem(EQUIP_PROGRESS_KEY)  || '{}'); } catch { return {}; } }
+function saveEquipProgress(p) { try { localStorage.setItem(EQUIP_PROGRESS_KEY,  JSON.stringify(p)); } catch {} }
+function loadEquipBookmarks() { try { return JSON.parse(localStorage.getItem(EQUIP_BOOKMARKS_KEY) || '[]'); } catch { return []; } }
+function saveEquipBookmarks(b){ try { localStorage.setItem(EQUIP_BOOKMARKS_KEY, JSON.stringify(b)); } catch {} }
+function loadEquipActivity()  { try { return JSON.parse(localStorage.getItem(EQUIP_ACTIVITY_KEY)  || '[]'); } catch { return []; } }
+function recordEquipActivity(date) {
+  const a = loadEquipActivity();
+  if (!a.includes(date)) { try { localStorage.setItem(EQUIP_ACTIVITY_KEY, JSON.stringify([...a, date])); } catch {} }
+}
+
+function getCourseProgress(courseId, progress) {
+  const c = EQUIP_COURSES.find(x => x.id === courseId);
+  if (!c) return { status: 'not_started', percent: 0, completedLessons: [] };
+  const p = progress[courseId] || {};
+  const done = (p.completedLessons || []).length;
+  const total = c.lessons.length;
+  const percent = total ? Math.round((done / total) * 100) : 0;
+  const status = done === total && total > 0 ? 'completed' : done > 0 ? 'in_progress' : 'not_started';
+  return { status, percent, completedLessons: p.completedLessons || [], startedAt: p.startedAt, completedAt: p.completedAt, notes: p.notes || '', mentor: p.mentor || '', lastActivityAt: p.lastActivityAt };
+}
+
+function computeStreak(activityDates) {
+  if (!activityDates.length) return { current: 0, longest: 0 };
+  const sorted = [...new Set(activityDates)].sort();
+  const today = todayISO();
+  const yesterday = addDays(today, -1);
+  let longest = 0, streak = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const a = parseISODate(sorted[i-1]), b = parseISODate(sorted[i]);
+    streak = (b - a) / 86400000 === 1 ? streak + 1 : 1;
+    longest = Math.max(longest, streak);
+  }
+  if (sorted.length === 1) longest = 1;
+  const last = sorted[sorted.length - 1];
+  const current = (last === today || last === yesterday) ? streak : 0;
+  return { current, longest: Math.max(longest, streak) };
+}
+
+function getEarnedBadges(progress) {
+  return EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 100)
+    .map(c => ({ ...c, earnedAt: progress[c.id]?.completedAt }));
+}
+
+function getPathwayStage(progress) {
+  let stage = 0;
+  for (const s of LEADERSHIP_PATHWAY) {
+    if (s.requiredCourses.every(cid => getCourseProgress(cid, progress).percent === 100)) stage = s.stage;
+    else break;
+  }
+  return stage;
+}
+
+// =============================================================================
+// EQUIP TAB
+// =============================================================================
+
+function EquipTab() {
+  const [subTab, setSubTab] = useState('overview');
+  const [progress, setProgressState] = useState(loadEquipProgress);
+  const [bookmarks, setBookmarksState] = useState(loadEquipBookmarks);
+  const [activity]  = useState(loadEquipActivity);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [resSearch, setResSearch] = useState('');
+  const [resType, setResType] = useState('all');
+
+  const setProgress  = p => { saveEquipProgress(p);  setProgressState(p); };
+  const setBookmarks = b => { saveEquipBookmarks(b);  setBookmarksState(b); };
+
+  const toggleLesson = (courseId, lessonId) => {
+    const today = todayISO();
+    recordEquipActivity(today);
+    const course = EQUIP_COURSES.find(c => c.id === courseId);
+    const prev = progress[courseId] || {};
+    const done = [...(prev.completedLessons || [])];
+    const idx = done.indexOf(lessonId);
+    if (idx === -1) done.push(lessonId); else done.splice(idx, 1);
+    const full = course && done.length === course.lessons.length;
+    setProgress({
+      ...progress,
+      [courseId]: {
+        ...prev,
+        completedLessons: done,
+        status: full ? 'completed' : done.length ? 'in_progress' : 'not_started',
+        startedAt:   prev.startedAt   || (done.length ? today : null),
+        completedAt: full ? (prev.completedAt || today) : null,
+        lastActivityAt: today,
+      },
+    });
+  };
+
+  const saveNotesMentor = (courseId, notes, mentor) => {
+    const prev = progress[courseId] || {};
+    setProgress({ ...progress, [courseId]: { ...prev, notes, mentor } });
+  };
+
+  const toggleBookmark = id => setBookmarks(bookmarks.includes(id) ? bookmarks.filter(b => b !== id) : [...bookmarks, id]);
+
+  const streak      = useMemo(() => computeStreak(activity), [activity]);
+  const badges      = useMemo(() => getEarnedBadges(progress), [progress]);
+  const pathwayStage = useMemo(() => getPathwayStage(progress), [progress]);
+
+  const subTabs = [
+    { key: 'overview',   label: '🏠 Overview'  },
+    { key: 'courses',    label: '📚 Courses'   },
+    { key: 'resources',  label: '📁 Resources' },
+    { key: 'progress',   label: '🏆 Progress'  },
+    { key: 'admin',      label: '👁 Admin'      },
+  ];
+
+  return (
+    <div className="fade-in">
+      {/* Module header */}
+      <div className="mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: EQUIP_ACCENT }}>FLCC · Equip Module</div>
+        <h2 className="font-display text-3xl font-semibold">Equip</h2>
+        <p className="text-sm ink-muted mt-1">Grow in faith, deepen your knowledge, and develop your calling.</p>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-3 gap-2 mb-5">
+        <div className="card p-3 text-center">
+          <div className="font-display text-2xl font-semibold" style={{ color: streak.current > 0 ? '#F59E0B' : 'var(--ink)' }}>{streak.current}</div>
+          <div className="text-xs ink-muted">Day streak 🔥</div>
+        </div>
+        <div className="card p-3 text-center">
+          <div className="font-display text-2xl font-semibold" style={{ color: EQUIP_ACCENT }}>{badges.length}</div>
+          <div className="text-xs ink-muted">Badges</div>
+        </div>
+        <div className="card p-3 text-center">
+          <div className="font-display text-2xl font-semibold">
+            {EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 100).length}<span className="text-sm ink-muted">/{EQUIP_COURSES.length}</span>
+          </div>
+          <div className="text-xs ink-muted">Completed</div>
+        </div>
+      </div>
+
+      {/* Sub-nav pills */}
+      <div className="flex overflow-x-auto gap-1.5 mb-6 pb-1" style={{ scrollbarWidth: 'none' }}>
+        {subTabs.map(t => (
+          <button key={t.key} onClick={() => setSubTab(t.key)} style={{
+            background: subTab === t.key ? EQUIP_ACCENT : '#F4F4F0',
+            color: subTab === t.key ? 'white' : 'var(--ink-muted)',
+            border: 'none', cursor: 'pointer', borderRadius: 999,
+            padding: '0.375rem 0.875rem', fontSize: '0.8125rem', fontWeight: subTab === t.key ? 600 : 400,
+            whiteSpace: 'nowrap', transition: 'all 0.15s',
+          }}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Sub-tab content */}
+      {subTab === 'overview'  && <EquipOverview  progress={progress} streak={streak} badges={badges} pathwayStage={pathwayStage} setSubTab={setSubTab} setSelectedCourse={setSelectedCourse} />}
+      {subTab === 'courses'   && <EquipCourses   progress={progress} setSelectedCourse={setSelectedCourse} />}
+      {subTab === 'resources' && <EquipResources bookmarks={bookmarks} toggleBookmark={toggleBookmark} resSearch={resSearch} setResSearch={setResSearch} resType={resType} setResType={setResType} />}
+      {subTab === 'progress'  && <EquipProgress  progress={progress} badges={badges} streak={streak} pathwayStage={pathwayStage} />}
+      {subTab === 'admin'     && <EquipAdmin      progress={progress} />}
+
+      {selectedCourse && (
+        <EquipCourseModal course={selectedCourse} progress={progress} onToggleLesson={toggleLesson} onSaveNotes={saveNotesMentor} onClose={() => setSelectedCourse(null)} />
+      )}
+    </div>
+  );
+}
+
+// --- Overview sub-tab ---
+function EquipOverview({ progress, streak, badges, pathwayStage, setSubTab, setSelectedCourse }) {
+  const today = todayISO();
+  const inProgress = EQUIP_COURSES.filter(c => { const p = getCourseProgress(c.id, progress); return p.percent > 0 && p.percent < 100; });
+  const featured   = EQUIP_COURSES.filter(c => c.featured && getCourseProgress(c.id, progress).percent < 100).slice(0, 4);
+  const currentStage = LEADERSHIP_PATHWAY[pathwayStage - 1];
+  const nextStage    = LEADERSHIP_PATHWAY[pathwayStage];
+
+  return (
+    <div className="space-y-5">
+      {/* Pathway stage */}
+      <div className="card p-5" style={{ background: EQUIP_TINT, borderColor: EQUIP_SOFT }}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: EQUIP_ACCENT }}>Your Pathway Stage</div>
+        {currentStage ? (
+          <>
+            <div className="font-display text-2xl font-semibold">{currentStage.icon} {currentStage.name}</div>
+            <div className="text-sm ink-muted mt-1">{currentStage.description}</div>
+            {nextStage && (
+              <div className="mt-2 text-xs ink-muted">
+                Next: {nextStage.icon} <strong>{nextStage.name}</strong> — complete {nextStage.requiredCourses.map(id => EQUIP_COURSES.find(c => c.id === id)?.title).join(' & ')}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="font-display text-2xl font-semibold">Begin your journey</div>
+            <div className="text-sm ink-muted mt-1">Start with New Believer Materials or Four Spiritual Laws to unlock your first pathway stage.</div>
+          </>
+        )}
+      </div>
+
+      {/* In progress */}
+      {inProgress.length > 0 && (
+        <div>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">▸ Continue Learning</div>
+          <div className="space-y-2">
+            {inProgress.map(c => {
+              const p = getCourseProgress(c.id, progress);
+              const tr = TRACK_META[c.track];
+              return (
+                <div key={c.id} className="card p-4 cursor-pointer" onClick={() => setSelectedCourse(c)} style={{ borderLeft: `3px solid ${tr.color}` }}>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div>
+                      <div className="text-sm font-medium">{c.title}</div>
+                      <div className="text-xs ink-muted">{tr.icon} {tr.label} · {p.completedLessons.length}/{c.lessons.length} lessons</div>
+                    </div>
+                    <div className="text-sm font-semibold flex-shrink-0" style={{ color: tr.color }}>{p.percent}%</div>
+                  </div>
+                  <div className="h-1.5 rounded-full" style={{ background: '#E5E7EB' }}>
+                    <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: tr.color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Featured */}
+      <div>
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Featured Courses</div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {featured.map(c => {
+            const tr = TRACK_META[c.track];
+            return (
+              <div key={c.id} className="card p-4 cursor-pointer" onClick={() => setSelectedCourse(c)} style={{ borderTop: `3px solid ${tr.color}` }}>
+                <div className="text-2xl mb-2">{c.badge}</div>
+                <div className="font-semibold text-sm">{c.title}</div>
+                <div className="text-xs ink-muted mt-1">{tr.icon} {tr.label} · {c.level} · {c.estimatedHours}h</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Streak card */}
+      {streak.current > 0 && (
+        <div className="card p-4" style={{ background: '#FFFBEB', borderColor: '#FDE68A' }}>
+          <div className="font-medium text-sm">🔥 {streak.current}-day learning streak!</div>
+          <div className="text-xs ink-muted mt-0.5">Longest streak: {streak.longest} days. Keep going!</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Courses sub-tab ---
+function EquipCourses({ progress, setSelectedCourse }) {
+  const [filter, setFilter] = useState('all');
+
+  const filters = [
+    { key: 'all',         label: 'All'             },
+    { key: 'in_progress', label: 'In Progress'     },
+    { key: 'completed',   label: 'Completed'       },
+    { key: 'recommended', label: 'Recommended'     },
+    { key: 'leadership',  label: 'Leadership Track'},
+  ];
+
+  const filtered = useMemo(() => EQUIP_COURSES.filter(c => {
+    const p = getCourseProgress(c.id, progress);
+    if (filter === 'in_progress') return p.percent > 0 && p.percent < 100;
+    if (filter === 'completed')   return p.percent === 100;
+    if (filter === 'recommended') return p.percent === 0 && (!c.prerequisite || getCourseProgress(c.prerequisite, progress).percent === 100);
+    if (filter === 'leadership')  return c.track === 'leadership' || c.track === 'multiplication';
+    return true;
+  }), [filter, progress]);
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-1.5 mb-5">
+        {filters.map(f => (
+          <button key={f.key} onClick={() => setFilter(f.key)} style={{
+            background: filter === f.key ? EQUIP_ACCENT : '#F4F4F0',
+            color: filter === f.key ? 'white' : 'var(--ink-muted)',
+            border: 'none', cursor: 'pointer', borderRadius: 999,
+            padding: '0.3rem 0.75rem', fontSize: '0.8125rem', fontWeight: filter === f.key ? 600 : 400,
+          }}>{f.label}</button>
+        ))}
+      </div>
+      {filtered.length === 0 ? (
+        <div className="card p-6 text-center ink-subtle italic text-sm">No courses in this category.</div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4">
+          {filtered.map(c => <EquipCourseCard key={c.id} course={c} progress={progress} onClick={() => setSelectedCourse(c)} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EquipCourseCard({ course, progress, onClick }) {
+  const p   = getCourseProgress(course.id, progress);
+  const tr  = TRACK_META[course.track];
+  const prereqDone = !course.prerequisite || getCourseProgress(course.prerequisite, progress).percent === 100;
+  const locked = !prereqDone;
+  const prereq = course.prerequisite ? EQUIP_COURSES.find(c => c.id === course.prerequisite) : null;
+
+  return (
+    <div className="card p-5" style={{ opacity: locked ? 0.65 : 1, cursor: locked ? 'default' : 'pointer' }} onClick={locked ? null : onClick}>
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="text-3xl">{course.badge}</div>
+        <div className="flex flex-col items-end gap-1">
+          <span className="pill text-xs" style={{ background: tr.color + '20', color: tr.color }}>{tr.icon} {tr.label}</span>
+          {p.percent === 100 && <span className="pill text-xs" style={{ background: EQUIP_SOFT, color: EQUIP_ACCENT }}>✓ Complete</span>}
+          {p.percent > 0 && p.percent < 100 && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>In Progress</span>}
+          {locked && <span className="pill text-xs" style={{ background: '#F4F4F0', color: 'var(--ink-subtle)' }}>🔒 Locked</span>}
+        </div>
+      </div>
+      <div className="font-display text-lg font-semibold mb-0.5">{course.title}</div>
+      <div className="text-xs ink-muted mb-2">{course.subtitle}</div>
+      <div className="text-xs ink-muted mb-3 leading-relaxed line-clamp-2">{course.description}</div>
+      <div className="flex flex-wrap gap-3 text-xs ink-muted mb-3">
+        <span>⏱ {course.estimatedHours}h</span>
+        <span>📝 {course.lessons.length} lessons</span>
+        <span>🎓 {course.level}</span>
+      </div>
+      {p.percent > 0 && (
+        <div>
+          <div className="flex justify-between text-xs ink-muted mb-1"><span>{p.completedLessons.length}/{course.lessons.length} done</span><span>{p.percent}%</span></div>
+          <div className="h-1.5 rounded-full" style={{ background: '#E5E7EB' }}>
+            <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
+          </div>
+        </div>
+      )}
+      {locked && prereq && <div className="text-xs ink-subtle mt-2 italic">Complete "{prereq.title}" to unlock</div>}
+    </div>
+  );
+}
+
+// --- Course Detail Modal ---
+function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClose }) {
+  const p   = getCourseProgress(course.id, progress);
+  const tr  = TRACK_META[course.track];
+  const [notes, setNotes]   = useState(p.notes);
+  const [mentor, setMentor] = useState(p.mentor);
+  const [openLesson, setOpenLesson] = useState(null);
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal fade-in" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="p-6 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <div className="text-3xl mb-1">{course.badge}</div>
+              <div className="font-display text-2xl font-semibold">{course.title}</div>
+              <div className="text-sm ink-muted">{course.subtitle}</div>
+            </div>
+            <button onClick={onClose} className="btn btn-ghost text-xs flex-shrink-0">✕ Close</button>
+          </div>
+          <div className="flex flex-wrap gap-3 text-xs ink-muted mb-3">
+            <span>{tr.icon} {tr.label}</span><span>⏱ {course.estimatedHours}h</span>
+            <span>🎓 {course.level}</span><span>👤 {course.facilitator}</span>
+            {p.startedAt && <span>📅 Started {formatDateShort(p.startedAt)}</span>}
+            {p.completedAt && <span>✅ Completed {formatDateShort(p.completedAt)}</span>}
+          </div>
+          <div className="flex justify-between text-xs ink-muted mb-1">
+            <span>{p.completedLessons.length}/{course.lessons.length} lessons</span>
+            <span style={{ color: tr.color }}>{p.percent}%</span>
+          </div>
+          <div className="h-2 rounded-full" style={{ background: '#E5E7EB' }}>
+            <div className="h-2 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
+          </div>
+          {p.percent === 100 && (
+            <div className="mt-3 p-3 rounded-lg text-sm font-medium text-center" style={{ background: EQUIP_SOFT, color: EQUIP_ACCENT }}>
+              🎉 You've completed this course and earned the {course.badge} {course.badgeLabel} badge!
+            </div>
+          )}
+        </div>
+
+        <div className="overflow-y-auto p-6 space-y-5" style={{ maxHeight: '62vh' }}>
+          {/* Lessons */}
+          <div>
+            <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Lessons</div>
+            <div className="space-y-2">
+              {course.lessons.map((lesson, idx) => {
+                const done = p.completedLessons.includes(lesson.id);
+                const isOpen = openLesson === lesson.id;
+                return (
+                  <div key={lesson.id}>
+                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: done ? EQUIP_TINT : '#F9F9F7', border: `1px solid ${done ? EQUIP_ACCENT + '40' : 'var(--border)'}` }}>
+                      <button onClick={() => onToggleLesson(course.id, lesson.id)} className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm" style={{ background: done ? EQUIP_ACCENT : 'white', border: `2px solid ${done ? EQUIP_ACCENT : 'var(--border-strong)'}`, color: done ? 'white' : 'transparent', cursor: 'pointer' }}>✓</button>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate" style={{ color: done ? EQUIP_ACCENT : 'var(--ink)' }}>{idx + 1}. {lesson.title}</div>
+                        <div className="text-xs ink-muted flex gap-2 mt-0.5">
+                          <span>⏱ {lesson.duration} min</span>
+                          {lesson.hasQuiz && <span>📝 Reflection</span>}
+                        </div>
+                      </div>
+                      {lesson.hasQuiz && (
+                        <button className="btn btn-soft text-xs flex-shrink-0" onClick={() => setOpenLesson(isOpen ? null : lesson.id)}>
+                          {isOpen ? 'Hide' : 'Reflect'}
+                        </button>
+                      )}
+                    </div>
+                    {isOpen && (
+                      <div className="p-4 rounded-xl mt-1 space-y-1" style={{ background: EQUIP_TINT, border: `1px solid ${EQUIP_ACCENT}30` }}>
+                        <div className="text-xs font-medium mb-2" style={{ color: EQUIP_ACCENT }}>Reflection Questions</div>
+                        {course.reflections.map((q, qi) => <div key={qi} className="text-xs ink-muted">• {q}</div>)}
+                        <div className="text-xs ink-subtle mt-2 italic">Write your answers in the Notes section below.</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Notes & mentor */}
+          <div>
+            <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Notes & Mentor</div>
+            <div className="space-y-2">
+              <div>
+                <label className="text-xs ink-muted">Facilitator / Mentor</label>
+                <input className="input mt-1" value={mentor} onChange={e => setMentor(e.target.value)} placeholder="Who is guiding you through this course?" />
+              </div>
+              <div>
+                <label className="text-xs ink-muted">My Reflections & Notes</label>
+                <textarea className="input mt-1" rows={4} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Key insights, takeaways, personal reflections…" style={{ resize: 'vertical' }} />
+              </div>
+              <button className="btn btn-primary text-sm" onClick={() => { onSaveNotes(course.id, notes, mentor); }}>Save Notes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Resources sub-tab ---
+function EquipResources({ bookmarks, toggleBookmark, resSearch, setResSearch, resType, setResType }) {
+  const [showBookmarked, setShowBookmarked] = useState(false);
+  const types = ['all', 'pdf', 'video', 'audio', 'devotional', 'guide', 'sermon-notes', 'playlist', 'external'];
+
+  const filtered = useMemo(() => {
+    let r = EQUIP_RESOURCES;
+    if (resType !== 'all') r = r.filter(x => x.type === resType);
+    if (showBookmarked) r = r.filter(x => bookmarks.includes(x.id));
+    if (resSearch.trim()) {
+      const q = resSearch.toLowerCase();
+      r = r.filter(x => x.title.toLowerCase().includes(q) || x.description.toLowerCase().includes(q) || x.category.toLowerCase().includes(q));
+    }
+    return r;
+  }, [resType, showBookmarked, resSearch, bookmarks]);
+
+  const showFeatured = !resSearch && !showBookmarked && resType === 'all';
+
+  return (
+    <div>
+      {showFeatured && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">⭐ Featured</div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {EQUIP_RESOURCES.filter(r => r.featured).slice(0, 4).map(r => (
+              <EquipResourceCard key={r.id} resource={r} isBookmarked={bookmarks.includes(r.id)} onToggle={() => toggleBookmark(r.id)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-2 mb-3">
+        <input className="input flex-1" value={resSearch} onChange={e => setResSearch(e.target.value)} placeholder="Search resources…" />
+        <button onClick={() => setShowBookmarked(b => !b)} className="btn text-xs flex-shrink-0" style={{ background: showBookmarked ? EQUIP_SOFT : '#F4F4F0', color: showBookmarked ? EQUIP_ACCENT : 'var(--ink-muted)', border: 'none' }}>
+          🔖 {showBookmarked ? 'Saved' : 'Saved'}
+        </button>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 mb-5">
+        {types.map(t => {
+          const m = RES_META[t];
+          return (
+            <button key={t} onClick={() => setResType(t)} style={{
+              background: resType === t ? (m?.color || EQUIP_ACCENT) : '#F4F4F0',
+              color: resType === t ? 'white' : 'var(--ink-muted)',
+              border: 'none', cursor: 'pointer', borderRadius: 999,
+              padding: '0.25rem 0.625rem', fontSize: '0.75rem', fontWeight: resType === t ? 600 : 400,
+            }}>{m ? `${m.icon} ${m.label}` : 'All'}</button>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="card p-6 text-center ink-subtle italic text-sm">No resources found.</div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-3">
+          {filtered.map(r => <EquipResourceCard key={r.id} resource={r} isBookmarked={bookmarks.includes(r.id)} onToggle={() => toggleBookmark(r.id)} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EquipResourceCard({ resource, isBookmarked, onToggle }) {
+  const m = RES_META[resource.type] || RES_META.external;
+  const rel = resource.courseId ? EQUIP_COURSES.find(c => c.id === resource.courseId) : null;
+  const actionLabel = { pdf: '↓ Download', audio: '▶ Listen', video: '▶ Watch', playlist: '▶ Play' }[resource.type] || '→ Open';
+  return (
+    <div className="card p-4 flex flex-col gap-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-2 flex-1">
+          <div className="text-xl flex-shrink-0 mt-0.5">{m.icon}</div>
+          <div className="flex-1">
+            <div className="font-medium text-sm leading-snug">{resource.title}</div>
+            <div className="text-xs ink-muted mt-0.5 leading-relaxed">{resource.description}</div>
+          </div>
+        </div>
+        <button onClick={onToggle} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.125rem', color: isBookmarked ? '#F59E0B' : 'var(--ink-subtle)', transition: 'color 0.15s', flexShrink: 0 }} title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}>
+          🔖
+        </button>
+      </div>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="pill text-xs" style={{ background: m.color + '20', color: m.color }}>{m.icon} {m.label}</span>
+        {rel && <span className="pill text-xs pill-default">{rel.badge} {rel.title}</span>}
+      </div>
+      <a href={resource.url} target="_blank" rel="noopener noreferrer" className="btn btn-soft text-xs mt-auto" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>{actionLabel}</a>
+    </div>
+  );
+}
+
+// --- Progress sub-tab ---
+function EquipProgress({ progress, badges, streak, pathwayStage }) {
+  const totalLessons = EQUIP_COURSES.reduce((s, c) => s + c.lessons.length, 0);
+  const doneLessons  = EQUIP_COURSES.reduce((s, c) => s + getCourseProgress(c.id, progress).completedLessons.length, 0);
+  const overall = totalLessons ? Math.round((doneLessons / totalLessons) * 100) : 0;
+
+  return (
+    <div className="space-y-5">
+      {/* Streak */}
+      <div className="card p-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-4">🔥 Learning Streak</div>
+        <div className="grid grid-cols-2 gap-4 text-center">
+          <div>
+            <div className="font-display text-5xl font-semibold" style={{ color: streak.current > 0 ? '#F59E0B' : 'var(--ink-subtle)' }}>{streak.current}</div>
+            <div className="text-xs ink-muted mt-1">Current streak (days)</div>
+          </div>
+          <div>
+            <div className="font-display text-5xl font-semibold">{streak.longest}</div>
+            <div className="text-xs ink-muted mt-1">Personal best</div>
+          </div>
+        </div>
+        {streak.current === 0 && <div className="text-xs ink-muted text-center mt-3 italic">Complete a lesson today to start your streak!</div>}
+      </div>
+
+      {/* Overall */}
+      <div className="card p-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Overall Progress</div>
+        <div className="flex items-baseline gap-2 mb-2">
+          <div className="font-display text-3xl font-semibold" style={{ color: EQUIP_ACCENT }}>{overall}%</div>
+          <div className="text-sm ink-muted">{doneLessons} of {totalLessons} lessons complete</div>
+        </div>
+        <div className="h-3 rounded-full" style={{ background: '#E5E7EB' }}>
+          <div className="h-3 rounded-full" style={{ width: `${overall}%`, background: EQUIP_ACCENT, transition: 'width 0.5s ease' }} />
+        </div>
+      </div>
+
+      {/* Leadership pathway */}
+      <div className="card p-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-4">Leadership Pathway</div>
+        <div className="space-y-4">
+          {LEADERSHIP_PATHWAY.map(stage => {
+            const completed = pathwayStage >= stage.stage;
+            const isCurrent = pathwayStage === stage.stage - 1;
+            const stagePercent = Math.round(
+              stage.requiredCourses.reduce((s, cid) => s + getCourseProgress(cid, progress).percent, 0) / stage.requiredCourses.length
+            );
+            return (
+              <div key={stage.stage} className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-xl"
+                  style={{ background: completed ? stage.color : isCurrent ? stage.color + '18' : '#F4F4F0', border: `2px solid ${completed || isCurrent ? stage.color : 'var(--border)'}`, color: completed ? 'white' : 'inherit' }}>
+                  {completed ? '✓' : stage.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <div className="text-sm font-medium" style={{ color: completed ? stage.color : 'var(--ink)' }}>{stage.name}</div>
+                    <div className="text-xs ink-muted">{stagePercent}%</div>
+                  </div>
+                  <div className="text-xs ink-muted mb-1">{stage.description}</div>
+                  {!completed && (
+                    <div className="h-1 rounded-full" style={{ background: '#E5E7EB' }}>
+                      <div className="h-1 rounded-full" style={{ width: `${stagePercent}%`, background: stage.color }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Badge wall */}
+      <div className="card p-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-4">🏅 Badges Earned</div>
+        {badges.length === 0 ? (
+          <div className="text-center ink-subtle italic text-sm py-4">Complete a course to earn your first badge!</div>
+        ) : (
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-4">
+            {badges.map(b => (
+              <div key={b.id} className="text-center p-3 rounded-xl" style={{ background: EQUIP_TINT }}>
+                <div className="text-3xl mb-1">{b.badge}</div>
+                <div className="text-xs font-semibold" style={{ color: EQUIP_ACCENT }}>{b.badgeLabel}</div>
+                {b.earnedAt && <div className="text-xs ink-subtle mt-0.5">{formatDateShort(b.earnedAt)}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+        {EQUIP_COURSES.filter(c => !badges.find(b => b.id === c.id)).length > 0 && (
+          <>
+            <div className="text-xs ink-subtle mb-2">{badges.length > 0 ? 'Locked:' : 'Earn these:'}</div>
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+              {EQUIP_COURSES.filter(c => !badges.find(b => b.id === c.id)).map(c => (
+                <div key={c.id} className="text-center p-2 rounded-lg" style={{ filter: 'grayscale(1)', opacity: 0.4 }}>
+                  <div className="text-2xl">{c.badge}</div>
+                  <div className="text-xs ink-subtle mt-0.5" style={{ fontSize: '0.6rem' }}>{c.badgeLabel}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Per-course stats */}
+      <div className="card overflow-hidden">
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Course Breakdown</div>
+        </div>
+        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+          {EQUIP_COURSES.map(c => {
+            const p = getCourseProgress(c.id, progress);
+            const tr = TRACK_META[c.track];
+            return (
+              <div key={c.id} className="px-5 py-3 flex items-center gap-3">
+                <div className="text-xl flex-shrink-0">{c.badge}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{c.title}</div>
+                  <div className="h-1.5 rounded-full mt-1.5" style={{ background: '#E5E7EB' }}>
+                    <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
+                  </div>
+                </div>
+                <div className="text-xs font-mono ink-muted flex-shrink-0">{p.percent}%</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Admin sub-tab ---
+function EquipAdmin({ progress }) {
+  const inProg    = EQUIP_COURSES.filter(c => { const p = getCourseProgress(c.id, progress); return p.percent > 0 && p.percent < 100; });
+  const completed = EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 100);
+  const notStart  = EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 0);
+
+  const exportReport = () => {
+    const report = {
+      generatedAt: new Date().toISOString(),
+      summary: { total: EQUIP_COURSES.length, inProgress: inProg.length, completed: completed.length, notStarted: notStart.length },
+      courses: EQUIP_COURSES.map(c => ({ course: c.title, track: c.track, ...getCourseProgress(c.id, progress) })),
+    };
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `flcc-equip-report-${todayISO()}.json`; a.click(); URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="card p-5" style={{ background: EQUIP_TINT, borderColor: EQUIP_SOFT }}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: EQUIP_ACCENT }}>For Pastors & Ministry Leaders</div>
+        <div className="font-display text-lg font-semibold mb-2">Admin Dashboard</div>
+        <p className="text-sm ink-muted">This view shows the current device's learning data. Full multi-member monitoring, aggregate stats, and member-by-member tracking is planned for the upcoming <code className="font-mono text-xs px-1 rounded" style={{ background: EQUIP_SOFT }}>equip-admin.html</code> app.</p>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Courses', value: EQUIP_COURSES.length,  color: 'var(--ink)' },
+          { label: 'In Progress',   value: inProg.length,         color: '#B45309' },
+          { label: 'Completed',     value: completed.length,      color: EQUIP_ACCENT },
+          { label: 'Not Started',   value: notStart.length,       color: 'var(--ink-subtle)' },
+        ].map(s => (
+          <div key={s.label} className="card p-4 text-center">
+            <div className="font-display text-3xl font-semibold" style={{ color: s.color }}>{s.value}</div>
+            <div className="text-xs ink-muted mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card overflow-hidden">
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Course Status Table</div>
+        </div>
+        <table className="schedule-table">
+          <thead><tr><th>Course</th><th>Track</th><th>Progress</th><th>Status</th></tr></thead>
+          <tbody>
+            {EQUIP_COURSES.map(c => {
+              const p = getCourseProgress(c.id, progress);
+              const tr = TRACK_META[c.track];
+              return (
+                <tr key={c.id}>
+                  <td className="text-sm font-medium">{c.badge} {c.title}</td>
+                  <td><span className="pill text-xs" style={{ background: tr.color + '20', color: tr.color }}>{tr.label}</span></td>
+                  <td>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 rounded-full" style={{ background: '#E5E7EB', minWidth: 60, flex: 1 }}>
+                        <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
+                      </div>
+                      <span className="text-xs font-mono ink-muted">{p.percent}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="pill text-xs" style={{
+                      background: p.percent === 100 ? EQUIP_SOFT : p.percent > 0 ? '#FEF3C7' : '#F4F4F0',
+                      color: p.percent === 100 ? EQUIP_ACCENT : p.percent > 0 ? '#B45309' : 'var(--ink-subtle)',
+                    }}>{p.percent === 100 ? '✓ Done' : p.percent > 0 ? 'In Progress' : 'Not Started'}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="card p-5">
+        <div className="font-display text-lg font-semibold mb-2">Export Report</div>
+        <p className="text-sm ink-muted mb-4">Download a JSON progress report to share with your pastoral team or facilitator.</p>
+        <button className="btn btn-primary" onClick={exportReport}>↓ Export Progress Report</button>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// SERMON NOTES — Personal spiritual journal tied to service dates
+// =============================================================================
+
+const SN_NOTES_GREEN  = '#16A34A';
+const SN_NOTES_SOFT   = '#DCFCE7';
+const SN_NOTES_TINT   = '#F0FDF4';
+const SERMON_NOTES_STORE_KEY = 'flcc-sermon-notes-v1';
+
+function loadSermonNotes()       { try { return JSON.parse(localStorage.getItem(SERMON_NOTES_STORE_KEY) || '{}'); } catch { return {}; } }
+function persistSermonNotes(n)   { try { localStorage.setItem(SERMON_NOTES_STORE_KEY, JSON.stringify(n)); } catch {} }
+function makeNoteId(date, svc)   { return `${date}|${svc}`; }
+
+function getEntryPreacher(entry, workers) {
+  const w = (workers || []).find(x => x.id === entry?.roles?.preacher);
+  return w ? (w.title ? `${w.title} ${w.name}` : w.name) : null;
+}
+
+function exportNoteToPDF(note, meta) {
+  const sec = (label, val) => val
+    ? `<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${SN_NOTES_GREEN};margin-bottom:5px">${label}</div><div style="font-size:14px;line-height:1.7;white-space:pre-wrap;color:#18181B">${String(val).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>` : '';
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sermon Notes · ${meta.date}</title>
+  <style>*{box-sizing:border-box}body{font-family:Georgia,'Times New Roman',serif;max-width:580px;margin:48px auto;padding:0 28px;color:#18181B;line-height:1.65}h1{font-size:26px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}.sub{font-size:13px;color:#52525B;margin:0 0 22px}.meta{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#71717A;border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;padding:10px 0;margin-bottom:28px}.body-text{font-size:15px;line-height:1.8;white-space:pre-wrap;margin-bottom:28px;color:#18181B}.ftr{margin-top:48px;font-size:11px;color:#A1A1AA;border-top:1px solid #E5E7EB;padding-top:10px}@media print{body{margin:0;padding:20px}}</style>
+  </head><body>
+  <h1>${note.title || 'Sermon Notes'}</h1>
+  <div class="sub">${meta.dateLabel} · ${meta.service} Service</div>
+  <div class="meta">
+    ${meta.preacher ? `<span>🎤 ${meta.preacher}</span>` : ''}
+    ${meta.myRole   ? `<span>🎭 ${meta.myRole}</span>` : ''}
+    ${note.updatedAt ? `<span>Last edited: ${new Date(note.updatedAt).toLocaleString()}</span>` : ''}
+  </div>
+  ${note.body ? `<div class="body-text">${note.body.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>` : ''}
+  ${sec('✦ Key Verse', note.keyVerse)}
+  ${sec('🙏 Prayer Requests', note.prayerRequests)}
+  ${sec('⚡ Action Points / Application', note.actionPoints)}
+  ${note.favoriteQuote ? sec('💬 Favorite Quote', `"${note.favoriteQuote}"`) : ''}
+  <div class="ftr">FLCC - Farwaniya 1 · Personal Sermon Journal</div>
+  </body></html>`;
+  const win = window.open('', '_blank');
+  if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 350); }
+}
+
+// ── Sermon Note Button (indicator + open) ────────────────────────
+function SermonNoteBtn({ noteId, sermonNotes, onClick, compact }) {
+  const hasNote = !!(sermonNotes || {})[noteId];
+  return (
+    <button
+      className={`btn btn-soft text-xs`}
+      onClick={onClick}
+      style={{ display: 'flex', alignItems: 'center', gap: hasNote ? 5 : 4, transition: 'all .15s', position: 'relative' }}
+      title={hasNote ? 'View / edit your sermon notes' : 'Add sermon notes'}
+    >
+      <span style={{ fontSize: '0.875rem' }}>📓</span>
+      {!compact && <span>{hasNote ? 'Notes' : 'Notes'}</span>}
+      {hasNote && <span className="sn-note-dot" />}
+    </button>
+  );
+}
+
+// ── Sermon Notes Modal ────────────────────────────────────────────
+function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose }) {
+  const existing  = sermonNotes[noteId] || {};
+  const formRef   = useRef({
+    title: existing.title || '', body: existing.body || '',
+    keyVerse: existing.keyVerse || '', prayerRequests: existing.prayerRequests || '',
+    actionPoints: existing.actionPoints || '', favoriteQuote: existing.favoriteQuote || '',
+  });
+  const [form, setFormState] = useState(formRef.current);
+  const setForm = patch => { formRef.current = { ...formRef.current, ...patch }; setFormState(f => ({ ...f, ...patch })); };
+
+  const [view,     setView]         = useState('editor');
+  const [sectOpen, setSectOpen]     = useState(!!(existing.keyVerse || existing.prayerRequests || existing.actionPoints || existing.favoriteQuote));
+  const [saveStatus, setSaveStatus] = useState('');
+  const [closing,  setClosing]      = useState(false);
+  const [jSearch,  setJSearch]      = useState('');
+  const saveTimer = useRef(null);
+
+  const handleClose = () => { setClosing(true); setTimeout(onClose, 290); };
+
+  const triggerSave = (patch = {}) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    setSaveStatus('saving');
+    saveTimer.current = setTimeout(() => {
+      onSave(noteId, {
+        ...existing, ...formRef.current, ...patch,
+        updatedAt: new Date().toISOString(),
+        createdAt: existing.createdAt || new Date().toISOString(),
+      });
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2600);
+    }, 700);
+  };
+
+  const allNotes = useMemo(() => {
+    const q = jSearch.toLowerCase().trim();
+    return Object.entries(sermonNotes)
+      .map(([id, n]) => { const [d, s] = id.split('|'); return { id, date: d, service: s, ...n }; })
+      .filter(n => !q || [n.title, n.body, n.keyVerse, n.favoriteQuote].some(v => (v || '').toLowerCase().includes(q)))
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [sermonNotes, jSearch]);
+
+  const byMonth = useMemo(() => {
+    const m = new Map();
+    for (const n of allNotes) {
+      const mk = n.date.slice(0, 7);
+      if (!m.has(mk)) m.set(mk, []);
+      m.get(mk).push(n);
+    }
+    return m;
+  }, [allNotes]);
+
+  const wordCount   = (form.body || '').trim().split(/\s+/).filter(Boolean).length;
+  const hasContent  = !!(form.body || form.keyVerse || form.prayerRequests || form.actionPoints || form.favoriteQuote || form.title);
+  const hasExisting = !!(existing.body || existing.title);
+
+  const inputStyle = (extra = {}) => ({
+    ...extra,
+    width: '100%', border: 'none', outline: 'none', background: 'transparent',
+    fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box',
+    transition: 'border-color .15s',
+  });
+
+  const sectionFields = [
+    { key: 'keyVerse',       label: '✦ Key Verse',                   placeholder: '"For I can do all things through Christ…" — Phil 4:13', multi: false },
+    { key: 'prayerRequests', label: '🙏 Prayer Requests',             placeholder: 'People to pray for, personal needs…',                   multi: true  },
+    { key: 'actionPoints',   label: '⚡ Action Points / Application', placeholder: 'What will you do differently this week?',                multi: true  },
+    { key: 'favoriteQuote',  label: '💬 Favorite Quote',              placeholder: 'A line from the sermon that stayed with you…',           multi: false },
+  ];
+
+  return ReactDOM.createPortal(
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: closing ? 'rgba(24,24,27,0)' : 'rgba(24,24,27,0.38)', backdropFilter: 'blur(7px)', transition: 'background .28s ease', padding: '0' }}
+      onClick={handleClose}
+    >
+      <div className={`sn-sheet${closing ? ' closing' : ''}`} onClick={e => e.stopPropagation()}>
+
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 11, paddingBottom: 4 }}>
+          <div style={{ width: 42, height: 4, borderRadius: 2, background: 'var(--border-strong)', opacity: .6 }} />
+        </div>
+
+        {/* Header bar */}
+        <div style={{ padding: '6px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[['editor', '✏️ Notes'], ['journal', '📅 Journal']].map(([v, lbl]) => (
+              <button key={v} onClick={() => setView(v)} style={{
+                padding: '4px 13px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                fontSize: '0.8125rem', fontWeight: view === v ? 600 : 400,
+                background: view === v ? 'var(--ink)' : '#F4F4F0',
+                color: view === v ? 'white' : 'var(--ink-muted)',
+                transition: 'all .22s cubic-bezier(.34,1.56,.64,1)',
+                transform: view === v ? 'scale(1.03)' : 'scale(1)',
+              }}>{lbl}</button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {saveStatus === 'saving' && <span style={{ fontSize: '0.6875rem', color: 'var(--ink-subtle)', transition: 'opacity .2s' }}>Saving…</span>}
+            {saveStatus === 'saved'  && <span style={{ fontSize: '0.6875rem', color: SN_NOTES_GREEN, animation: 'snSaveFlash 2.6s ease-out both' }}>✓ Saved</span>}
+            <button onClick={handleClose} style={{ background: '#F4F4F0', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: '0.8125rem', cursor: 'pointer', color: 'var(--ink-muted)', transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background='#EBEBEB'}
+              onMouseLeave={e => e.currentTarget.style.background='#F4F4F0'}
+            >✕</button>
+          </div>
+        </div>
+
+        {/* ─── EDITOR VIEW ─────────────────────────────────── */}
+        {view === 'editor' && (
+          <div style={{ overflowY: 'auto', flex: 1, padding: '20px 20px 36px', WebkitOverflowScrolling: 'touch' }}>
+            {/* Service meta chip */}
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '11px 14px', borderRadius: 12, background: SN_NOTES_TINT, border: `1px solid ${SN_NOTES_GREEN}28`, marginBottom: 22, animation: 'snFadeUp .22s ease-out both' }}>
+              <div style={{ fontSize: '1.25rem', marginTop: 1 }}>📖</div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--ink)' }}>{meta.dateLabel} · {meta.service} Service</div>
+                {meta.preacher && <div style={{ fontSize: '0.8125rem', color: 'var(--ink-muted)', marginTop: 1 }}>🎤 {meta.preacher}</div>}
+                {meta.myRole   && <div style={{ fontSize: '0.8125rem', color: 'var(--ink-muted)', marginTop: 1 }}>🎭 Your role: {meta.myRole}</div>}
+              </div>
+            </div>
+
+            {/* Title input */}
+            <input
+              value={form.title}
+              onChange={e => { setForm({ title: e.target.value }); triggerSave({ title: e.target.value }); }}
+              placeholder="Sermon title or topic…"
+              style={{ ...inputStyle({ fontSize: '1.25rem', fontFamily: '"Fraunces", Georgia, serif', fontWeight: 600, letterSpacing: '-.01em', padding: '0 0 10px', marginBottom: 20, borderBottom: '2px solid var(--border)' }) }}
+              onFocus={e => e.target.style.borderBottomColor = SN_NOTES_GREEN}
+              onBlur={e => e.target.style.borderBottomColor = 'var(--border)'}
+            />
+
+            {/* Body textarea */}
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink-subtle)', marginBottom: 8 }}>Sermon Notes</div>
+              <textarea
+                value={form.body}
+                onChange={e => { setForm({ body: e.target.value }); triggerSave({ body: e.target.value }); }}
+                placeholder={"Write your notes here…\n\nWhat spoke to you today?\nWhat is God saying through His Word?"}
+                style={{ ...inputStyle({ fontSize: '0.9375rem', lineHeight: 1.78, resize: 'none', minHeight: 152, padding: '4px 0 12px', borderBottom: '1px solid var(--border)' }) }}
+                onFocus={e => e.target.style.borderBottomColor = SN_NOTES_GREEN}
+                onBlur={e => e.target.style.borderBottomColor = 'var(--border)'}
+              />
+              {wordCount > 0 && <div style={{ textAlign: 'right', fontSize: '0.6875rem', color: 'var(--ink-subtle)', marginTop: 3 }}>{wordCount} words</div>}
+            </div>
+
+            {/* Optional sections toggle */}
+            <button
+              onClick={() => setSectOpen(o => !o)}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'none', border: 'none', cursor: 'pointer', color: SN_NOTES_GREEN, fontSize: '0.8125rem', fontWeight: 500, padding: '13px 0', width: '100%', textAlign: 'left', borderTop: `1px dashed ${sectOpen ? SN_NOTES_GREEN + '30' : 'var(--border)'}`, borderBottom: sectOpen ? 'none' : `1px dashed var(--border)`, transition: 'border-color .2s' }}
+            >
+              <span style={{ display: 'inline-block', transition: 'transform .3s cubic-bezier(.34,1.56,.64,1)', transform: sectOpen ? 'rotate(90deg)' : 'rotate(0deg)', fontSize: '0.75rem' }}>▶</span>
+              {sectOpen ? 'Hide extra sections' : '+ Key Verse · Prayer Requests · Action Points · Favorite Quote'}
+            </button>
+
+            <div style={{ overflow: 'hidden', maxHeight: sectOpen ? 900 : 0, opacity: sectOpen ? 1 : 0, transition: 'max-height .42s cubic-bezier(.4,0,.2,1), opacity .3s ease' }}>
+              {sectionFields.map(({ key, label, placeholder, multi }) => (
+                <div key={key} style={{ borderBottom: '1px solid var(--border)', padding: '14px 0' }}>
+                  <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: SN_NOTES_GREEN, marginBottom: 7 }}>{label}</div>
+                  {multi ? (
+                    <textarea value={form[key]} rows={2}
+                      onChange={e => { setForm({ [key]: e.target.value }); triggerSave({ [key]: e.target.value }); }}
+                      placeholder={placeholder}
+                      style={{ ...inputStyle({ fontSize: '0.9375rem', lineHeight: 1.7, resize: 'none' }) }}
+                    />
+                  ) : (
+                    <input value={form[key]}
+                      onChange={e => { setForm({ [key]: e.target.value }); triggerSave({ [key]: e.target.value }); }}
+                      placeholder={placeholder}
+                      style={{ ...inputStyle({ fontSize: '0.9375rem' }) }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer actions */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.6875rem', color: 'var(--ink-subtle)' }}>
+                {existing.updatedAt
+                  ? `Last edited ${new Date(existing.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${new Date(existing.updatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+                  : hasContent ? 'Not saved yet — type to auto-save' : ''}
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {hasContent && (
+                  <button className="btn btn-soft text-xs" onClick={() => exportNoteToPDF({ ...formRef.current }, { ...meta })}>↗ Export PDF</button>
+                )}
+                {hasExisting && (
+                  <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }}
+                    onClick={() => { if (confirm('Delete this note? This cannot be undone.')) { onDelete(noteId); } }}>
+                    Delete
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── JOURNAL VIEW ───────────────────────────────── */}
+        {view === 'journal' && (
+          <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px 36px', WebkitOverflowScrolling: 'touch' }}>
+            <input
+              className="input" value={jSearch}
+              onChange={e => setJSearch(e.target.value)}
+              placeholder="Search your sermon notes…"
+              autoFocus
+              style={{ marginBottom: 20 }}
+            />
+
+            {allNotes.length === 0 ? (
+              <div style={{ textAlign: 'center', paddingTop: 48, color: 'var(--ink-subtle)', fontSize: '0.875rem' }}>
+                <div style={{ fontSize: '2rem', marginBottom: 12 }}>📓</div>
+                {jSearch ? 'No notes match your search.' : 'No sermon notes yet.\nSwitch to Notes to write your first entry.'}
+              </div>
+            ) : (
+              <div style={{ animation: 'snFadeUp .22s ease-out both' }}>
+                {Array.from(byMonth.entries()).map(([mk, notes]) => (
+                  <div key={mk} style={{ marginBottom: 28 }}>
+                    <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink-subtle)', marginBottom: 10 }}>
+                      {formatMonthLabel(mk)}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {notes.map(n => {
+                        const preview   = (n.body || '').slice(0, 110).trim();
+                        const isCurrent = n.id === noteId;
+                        return (
+                          <div key={n.id} style={{ padding: '14px 16px', borderRadius: 14, background: isCurrent ? SN_NOTES_TINT : 'var(--bg)', border: `1px solid ${isCurrent ? SN_NOTES_GREEN + '50' : 'var(--border)'}`, transition: 'border-color .2s' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: isCurrent ? SN_NOTES_GREEN : 'var(--ink)' }}>
+                                {n.title || <span style={{ fontStyle: 'italic', color: 'var(--ink-subtle)', fontWeight: 400 }}>Untitled</span>}
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--ink-subtle)', flexShrink: 0 }}>
+                                {formatDateShort(n.date)} · {n.service}
+                              </div>
+                            </div>
+                            {preview && <div style={{ fontSize: '0.8125rem', color: 'var(--ink-muted)', lineHeight: 1.55, marginBottom: 8 }}>{preview}{(n.body||'').length > 110 ? '…' : ''}</div>}
+                            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                              {n.keyVerse       && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>✦ Verse</span>}
+                              {n.prayerRequests && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>🙏 Prayer</span>}
+                              {n.actionPoints   && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>⚡ Actions</span>}
+                              {n.favoriteQuote  && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>💬 Quote</span>}
+                              {isCurrent && <span className="pill" style={{ fontSize: '0.6875rem', background: SN_NOTES_SOFT, color: SN_NOTES_GREEN }}>← current</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--ink-subtle)', marginTop: 12 }}>
+                  {allNotes.length} note{allNotes.length !== 1 ? 's' : ''} · tap a service card to edit
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
 const TABS = [
-  { key: 'home', label: 'Home' },
-  { key: 'mine', label: 'My Schedule', requiresMe: true },
-  { key: 'month', label: 'This Month' },
-  { key: 'prayer', label: 'Prayer', requiresPrayer: true },
-  { key: 'music', label: 'Music', requiresMusic: true },
-  { key: 'calendar', label: 'Calendar' },
-  { key: 'about', label: 'About' },
+  { key: 'home',    label: 'Home' },
+  { key: 'mine',    label: 'My Schedule', requiresMe: true },
+  { key: 'month',   label: 'This Month' },
+  { key: 'prayer',  label: 'Prayer',  requiresPrayer: true },
+  { key: 'music',   label: 'Music',   requiresMusic:  true },
+  { key: 'equip',   label: 'Equip'   },
+  { key: 'calendar',label: 'Calendar' },
+  { key: 'about',   label: 'About' },
 ];
 
 function App() {
@@ -2560,6 +4229,25 @@ function App() {
   const [conflictTarget, setConflictTarget] = useState(null);
   const [lastLoaded, setLastLoaded] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [personalEvents, setPersonalEventsState] = useState(() => loadPersonalEvents());
+  const [showAddPersonal, setShowAddPersonal] = useState(false);
+  const [editingPersonal, setEditingPersonal] = useState(null);
+  const [sermonNotes, setSermonNotesState]     = useState(loadSermonNotes);
+  const [openingNote, setOpeningNote]          = useState(null);   // { id, meta }
+
+  const setPersonalEvents = (evs) => { savePersonalEvents(evs); setPersonalEventsState(evs); };
+  const handleSaveSermonNote = (id, note) => {
+    const updated = { ...sermonNotes, [id]: note };
+    persistSermonNotes(updated);
+    setSermonNotesState(updated);
+  };
+  const handleDeleteSermonNote = (id) => {
+    const updated = { ...sermonNotes };
+    delete updated[id];
+    persistSermonNotes(updated);
+    setSermonNotesState(updated);
+    setOpeningNote(null);
+  };
 
   // Load data (silent variant when called from visibility change)
   const loadData = (silent = false) => {
@@ -2721,14 +4409,27 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} />}
-        {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
+        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
+        {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
         {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} />}
+        {currentTab === 'equip'    && <EquipTab />}
+        {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
         {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} me={me} onChangeName={changeName} />}
       </main>
+
+      {/* Sermon Notes Modal */}
+      {openingNote && (
+        <SermonNotesModal
+          noteId={openingNote.id}
+          meta={openingNote.meta}
+          sermonNotes={sermonNotes}
+          onSave={handleSaveSermonNote}
+          onDelete={handleDeleteSermonNote}
+          onClose={() => setOpeningNote(null)}
+        />
+      )}
 
       {conflictTarget && (
         <ConflictModal
@@ -2745,6 +4446,53 @@ function App() {
           onClose={() => setConflictTarget(null)}
         />
       )}
+
+      {/* Personal event modals */}
+      {(showAddPersonal || editingPersonal) && (() => {
+        const myPrayerWorker = prayerData ? findPrayerMatch(me, prayerData.workers) : null;
+        const myMusicWorker = musicData ? findMusicMatch(me, musicData.workers) : null;
+        const conflictDates = buildMyAssignmentDates(me, data, prayerData, musicData, myPrayerWorker, myMusicWorker);
+        return (
+          <PersonalEventModal
+            initialEvent={editingPersonal || null}
+            conflictDates={conflictDates}
+            onSave={(saved) => {
+              setPersonalEvents(
+                editingPersonal
+                  ? personalEvents.map(e => e.id === saved.id ? saved : e)
+                  : [...personalEvents, saved]
+              );
+              setShowAddPersonal(false);
+              setEditingPersonal(null);
+            }}
+            onDelete={(id) => {
+              setPersonalEvents(personalEvents.filter(e => e.id !== id));
+              setEditingPersonal(null);
+            }}
+            onClose={() => { setShowAddPersonal(false); setEditingPersonal(null); }}
+          />
+        );
+      })()}
+
+      {/* FAB — Add personal event */}
+      <button
+        onClick={() => setShowAddPersonal(true)}
+        style={{
+          position: 'fixed', bottom: 28, right: 24,
+          width: 54, height: 54, borderRadius: '50%',
+          background: 'var(--ink)', color: 'white',
+          border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.5rem', lineHeight: 1,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.22)',
+          zIndex: 25,
+          transition: 'transform 0.15s, box-shadow 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.28)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.22)'; }}
+        title="Add personal event"
+        aria-label="Add personal event"
+      >+</button>
 
       <footer className="max-w-5xl mx-auto px-4 sm:px-6 py-12 text-xs ink-subtle text-center">
         FLCC Schedule OS · Members View · Data fetched live from <code className="font-mono">data.json</code>
