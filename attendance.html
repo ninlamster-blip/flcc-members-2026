@@ -366,7 +366,7 @@ function MemberCard({ member, record, onStatus, isLastAction, onUndo }) {
     <div className="member-row" style={{ background: sc ? sc.soft + 'BB' : 'white' }}>
       <Avatar name={member.name} />
       <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.name}</div>
+        <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.fullName || member.name}</div>
         <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{member.ministry || 'Ministry'}</div>
       </div>
       <div style={{ display:'flex', gap:6, flexShrink:0 }}>
@@ -689,7 +689,7 @@ function HistoryTab({ state, dispatch, members }) {
                           <div key={m.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 16px', borderBottom:'1px solid var(--border)', background:cfg?cfg.soft+'88':'transparent' }}>
                             <Avatar name={m.name} size={32} />
                             <div style={{ flex:1, minWidth:0 }}>
-                              <div style={{ fontSize:'0.875rem', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.name}</div>
+                              <div style={{ fontSize:'0.875rem', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.fullName||m.name}</div>
                             </div>
                             <div style={{ flexShrink:0 }}>
                               {cfg ? (
@@ -720,137 +720,308 @@ function HistoryTab({ state, dispatch, members }) {
 
 // ─── ANALYTICS TAB ───────────────────────────────────────────────────────────
 function AnalyticsTab({ state, members }) {
-  const sessions = useMemo(()=>[...state.sessions].sort((a,b)=>a.date.localeCompare(b.date)),[state.sessions]);
+  const allSessions = useMemo(()=>[...state.sessions].sort((a,b)=>a.date.localeCompare(b.date)),[state.sessions]);
 
-  // Last 8 sessions bar chart
+  // Build list of months that have sessions
+  const availableMonths = useMemo(()=>{
+    const seen = new Set();
+    for (const s of allSessions) seen.add(s.date.slice(0,7));
+    return ['all', ...Array.from(seen).sort().reverse()];
+  },[allSessions]);
+
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const [serviceView,   setServiceView]   = useState('all'); // 'all' | 'Friday' | 'Sunday'
+
+  // Sessions filtered by selected month + service view
+  const sessions = useMemo(()=>{
+    let list = allSessions;
+    if (selectedMonth !== 'all') list = list.filter(s=>s.date.slice(0,7)===selectedMonth);
+    if (serviceView  !== 'all') list = list.filter(s=>s.service===serviceView);
+    return list;
+  },[allSessions, selectedMonth, serviceView]);
+
+  const fridaySessions  = useMemo(()=>allSessions.filter(s=>s.service==='Friday'),[allSessions]);
+  const sundaySessions  = useMemo(()=>allSessions.filter(s=>s.service==='Sunday'),[allSessions]);
+
+  // Helper: top N members by attendance for a given session list
+  function topByService(sessionList, n=5) {
+    return members.map(m=>{
+      const relevant = sessionList.filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
+      if (!relevant.length) return null;
+      const present  = relevant.filter(s=>{const r=(s.records||[]).find(x=>x.memberId===m.id);return r&&r.status!=='absent';}).length;
+      const pct      = Math.round((present/relevant.length)*100);
+      return { member:m, pct, attended:present, total:relevant.length };
+    })
+    .filter(Boolean)
+    .filter(x=>x.total>0)
+    .sort((a,b)=>b.pct-a.pct||b.attended-a.attended)
+    .slice(0,n);
+  }
+
+  const topFriday  = useMemo(()=>topByService(fridaySessions),[fridaySessions, members]);
+  const topSunday  = useMemo(()=>topByService(sundaySessions),[sundaySessions, members]);
+  const topFiltered = useMemo(()=>topByService(sessions),[sessions, members]);
+
+  // Bar charts
   const sessionBars = useMemo(()=>
     sessions.slice(-8).map(s=>{
       const sum = getSessionSummary(s, members.length);
-      return { label:formatDateShort(s.date), value: sum.total>0 ? Math.round(((sum.present+sum.late)/sum.total)*100) : 0 };
-    }), [sessions, members]);
+      return { label:formatDateShort(s.date), value:sum.total>0?Math.round(((sum.present+sum.late)/sum.total)*100):0 };
+    }),[sessions, members]);
 
-  // Monthly bars (last 4 months)
+  // Monthly breakdown (all months, all service types, for the bar chart)
   const monthlyBars = useMemo(()=>{
-    const months = new Map();
-    for (const s of sessions) {
+    const map = new Map();
+    for (const s of allSessions) {
       const mk = s.date.slice(0,7);
-      if (!months.has(mk)) months.set(mk,[]);
-      months.get(mk).push(s);
+      if (!map.has(mk)) map.set(mk,[]);
+      map.get(mk).push(s);
     }
-    return Array.from(months.entries()).slice(-5).map(([mk, ss])=>{
-      const avgPct = ss.length ? Math.round(ss.reduce((acc,s)=>{
-        const sum = getSessionSummary(s,members.length);
-        return acc+(sum.total>0?((sum.present+sum.late)/sum.total)*100:0);
+    return Array.from(map.entries()).sort().slice(-6).map(([mk,ss])=>{
+      const avg = ss.length ? Math.round(ss.reduce((acc,s)=>{
+        const sum=getSessionSummary(s,members.length);
+        return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);
       },0)/ss.length) : 0;
       const [y,m] = mk.split('-');
-      return { label: new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'short'}), value:avgPct };
+      return { label:new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'short'}), value:avg, mk };
     });
-  },[sessions,members]);
+  },[allSessions,members]);
 
-  // Top consistent members
-  const topMembers = useMemo(()=>
-    members.filter(m=>m.status==='active').map(m=>({
-      member:m,
-      pct: getMemberAttendancePct(m.id, sessions) ?? 0,
-      sessions: sessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)).length,
-    }))
-    .filter(x=>x.sessions>0)
-    .sort((a,b)=>b.pct-a.pct)
-    .slice(0,5), [members, sessions]);
+  // Monthly report — per-session breakdown for selected month
+  const monthReport = useMemo(()=>{
+    if (selectedMonth==='all') return null;
+    const mSessions = allSessions.filter(s=>s.date.slice(0,7)===selectedMonth);
+    if (!mSessions.length) return null;
+    const fridays = mSessions.filter(s=>s.service==='Friday');
+    const sundays = mSessions.filter(s=>s.service==='Sunday');
+    const others  = mSessions.filter(s=>s.service!=='Friday'&&s.service!=='Sunday');
+    const total   = mSessions.length;
+    const avgPct  = total ? Math.round(mSessions.reduce((acc,s)=>{
+      const sum=getSessionSummary(s,members.length);
+      return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);
+    },0)/total) : 0;
+    return { mSessions, fridays, sundays, others, total, avgPct };
+  },[selectedMonth, allSessions, members]);
 
-  // Care flags
-  const careFlags = useMemo(()=>computeCareFlags(sessions, members),[sessions,members]);
+  // Care flags (always from all sessions)
+  const careFlags = useMemo(()=>computeCareFlags(allSessions, members),[allSessions,members]);
 
-  if (!sessions.length) return (
-    <div style={{ textAlign:'center', padding:'60px 20px', color:'var(--ink-subtle)' }}>
-      <div style={{ fontSize:'2.5rem', marginBottom:12 }}>📊</div>
-      <div className="font-display" style={{ fontSize:'1.25rem' }}>No data yet</div>
-      <p style={{ fontSize:'0.875rem', marginTop:8 }}>Record at least one session to see analytics.</p>
+  const MEDAL = ['🥇','🥈','🥉'];
+
+  function LeaderList({ list, color, emptyMsg }) {
+    if (!list.length) return <div style={{padding:'16px',textAlign:'center',color:'var(--ink-subtle)',fontStyle:'italic',fontSize:'0.8125rem'}}>{emptyMsg}</div>;
+    return list.map((x,i)=>(
+      <div key={x.member.id} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 16px',borderBottom:'1px solid var(--border)'}}>
+        <div style={{width:26,textAlign:'center',fontSize:'1rem',flexShrink:0}}>{i<3?MEDAL[i]:<span style={{fontSize:'0.875rem',color:'var(--ink-subtle)',fontWeight:700}}>{i+1}</span>}</div>
+        <Avatar name={x.member.name} size={36} />
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:'0.875rem',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{x.member.fullName||x.member.name}</div>
+          <div style={{fontSize:'0.6875rem',color:'var(--ink-muted)',marginTop:2}}>{x.attended} of {x.total} session{x.total!==1?'s':''}</div>
+          <div style={{width:`${x.pct}%`,height:3,borderRadius:2,background:color,marginTop:4,maxWidth:100}}/>
+        </div>
+        <div style={{fontWeight:700,color,flexShrink:0,fontFamily:'Fraunces,Georgia,serif',fontSize:'1.125rem'}}>{x.pct}%</div>
+      </div>
+    ));
+  }
+
+  if (!allSessions.length) return (
+    <div style={{textAlign:'center',padding:'60px 20px',color:'var(--ink-subtle)'}}>
+      <div style={{fontSize:'2.5rem',marginBottom:12}}>📊</div>
+      <div className="font-display" style={{fontSize:'1.25rem'}}>No data yet</div>
+      <p style={{fontSize:'0.875rem',marginTop:8}}>Record at least one session to see analytics.</p>
     </div>
   );
 
   return (
-    <div style={{ padding:16 }} className="fade-in">
-      <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:600, marginBottom:16 }}>Analytics</div>
+    <div style={{padding:16}} className="fade-in">
+      <div className="font-display" style={{fontSize:'1.5rem',fontWeight:600,marginBottom:16}}>Analytics</div>
 
-      {/* Summary stats */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:20 }}>
+      {/* Month + Service filter row */}
+      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
+        <select className="select" style={{flex:'1 1 140px',maxWidth:180}} value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)}>
+          <option value="all">All months</option>
+          {availableMonths.filter(m=>m!=='all').map(mk=>{
+            const [y,m] = mk.split('-');
+            return <option key={mk} value={mk}>{new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'})}</option>;
+          })}
+        </select>
+        <div style={{display:'flex',gap:6,flex:'1 1 auto'}}>
+          {[{k:'all',l:'All services'},{k:'Friday',l:'Friday'},{k:'Sunday',l:'Sunday'}].map(f=>(
+            <button key={f.k} onClick={()=>setServiceView(f.k)} style={{
+              flex:1,padding:'6px',borderRadius:8,border:'none',cursor:'pointer',fontSize:'0.8125rem',fontWeight:serviceView===f.k?600:400,
+              background:serviceView===f.k?ATT_ACCENT:'#F4F4F0',color:serviceView===f.k?'white':'var(--ink-muted)',transition:'all .15s'
+            }}>{f.l}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Summary stats for current filter */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
         {[
-          { label:'Sessions', value:sessions.length, color:ATT_ACCENT },
-          { label:'Avg %',    value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A' },
-          { label:'Best',     value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#7C3AED' },
+          {label:'Sessions',  value:sessions.length,  color:ATT_ACCENT},
+          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
+          {label:'Best',      value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#7C3AED'},
         ].map(s=>(
-          <div key={s.label} className="card" style={{ padding:'14px 10px', textAlign:'center' }}>
-            <div className="font-display" style={{ fontSize:'1.875rem', fontWeight:600, color:s.color }}>{s.value}</div>
-            <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>{s.label}</div>
+          <div key={s.label} className="card" style={{padding:'14px 10px',textAlign:'center'}}>
+            <div className="font-display" style={{fontSize:'1.875rem',fontWeight:600,color:s.color}}>{s.value}</div>
+            <div style={{fontSize:'0.6875rem',color:'var(--ink-muted)',marginTop:2}}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Attendance trend */}
+      {/* Monthly report card — appears when a specific month is selected */}
+      {monthReport && (
+        <div className="card" style={{padding:16,marginBottom:14,borderColor:ATT_ACCENT}}>
+          <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:ATT_ACCENT,marginBottom:12}}>
+            📋 Monthly Report — {(() => { const [y,m]=selectedMonth.split('-'); return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'}); })()}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
+            {[
+              {label:'Total sessions', value:monthReport.total, color:'var(--ink)'},
+              {label:'Friday services', value:monthReport.fridays.length, color:'#0284C7'},
+              {label:'Sunday services', value:monthReport.sundays.length, color:'#7C3AED'},
+            ].map(x=>(
+              <div key={x.label} style={{textAlign:'center',padding:'10px 6px',borderRadius:10,background:'#F9F9F7',border:'1px solid var(--border)'}}>
+                <div className="font-display" style={{fontSize:'1.5rem',fontWeight:600,color:x.color}}>{x.value}</div>
+                <div style={{fontSize:'0.625rem',color:'var(--ink-muted)',marginTop:1}}>{x.label}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginBottom:10}}>Session breakdown:</div>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
+              const sum=getSessionSummary(s,members.length);
+              const pct=sum.total>0?Math.round(((sum.present+sum.late)/sum.total)*100):0;
+              return (
+                <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:8,background:'#FAFAFA',border:'1px solid var(--border)'}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:'0.875rem',fontWeight:500}}>{s.serviceLabel||s.service}</div>
+                    <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>{formatDateFull(s.date)}</div>
+                  </div>
+                  <div style={{display:'flex',gap:8,fontSize:'0.75rem',flexShrink:0}}>
+                    <span style={{color:'#16A34A',fontWeight:600}}>✓{sum.present}</span>
+                    <span style={{color:'#D97706',fontWeight:600}}>○{sum.late}</span>
+                    <span style={{color:'#DC2626',fontWeight:600}}>✗{sum.absent}</span>
+                  </div>
+                  <div style={{fontWeight:700,color:pct>=80?'#16A34A':pct>=60?'#D97706':'#DC2626',fontFamily:'Fraunces,Georgia,serif',fontSize:'1rem',flexShrink:0,minWidth:38,textAlign:'right'}}>{pct}%</div>
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={()=>{
+            const [y,m]=selectedMonth.split('-');
+            const mLabel=new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+            const lines=[`FLCC - Farwaniya 1 · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);},0)/sessions.length):0}%`,``];
+            lines.push('Sessions:');
+            for (const s of monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date))) {
+              const sum=getSessionSummary(s,members.length);
+              const pct=sum.total>0?Math.round(((sum.present+sum.late)/sum.total)*100):0;
+              lines.push(`  ${s.serviceLabel||s.service} ${s.date}: Present ${sum.present}, Late ${sum.late}, Absent ${sum.absent} (${pct}%)`);
+            }
+            navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Monthly report copied! Paste in Messenger.')).catch(()=>alert('Copy failed.'));
+          }} style={{marginTop:14,padding:'8px 14px',borderRadius:8,background:ATT_ACCENT,color:'white',border:'none',cursor:'pointer',fontSize:'0.8125rem',fontWeight:600,display:'flex',alignItems:'center',gap:6}}>
+            📋 Copy report for Messenger
+          </button>
+        </div>
+      )}
+
+      {/* Attendance trend bar */}
       {sessionBars.length > 1 && (
-        <div className="card" style={{ padding:'16px', marginBottom:14 }}>
-          <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Attendance Trend (last {sessionBars.length} sessions)</div>
+        <div className="card" style={{padding:'16px',marginBottom:14}}>
+          <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ink-subtle)',marginBottom:12}}>
+            Attendance Trend{selectedMonth!=='all'?' — this month':''} (last {sessionBars.length} sessions)
+          </div>
           <BarChart bars={sessionBars} color={ATT_ACCENT} />
         </div>
       )}
 
-      {/* Monthly */}
+      {/* Monthly average bar chart — always shows all months */}
       {monthlyBars.length > 1 && (
-        <div className="card" style={{ padding:'16px', marginBottom:14 }}>
-          <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Monthly Average %</div>
+        <div className="card" style={{padding:'16px',marginBottom:14}}>
+          <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ink-subtle)',marginBottom:6}}>Month-by-Month Average</div>
+          <div style={{display:'flex',gap:6,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
+            {monthlyBars.map(b=>(
+              <div key={b.mk} onClick={()=>setSelectedMonth(b.mk)} style={{
+                padding:'3px 10px',borderRadius:999,border:'none',cursor:'pointer',fontSize:'0.6875rem',fontWeight:selectedMonth===b.mk?700:400,
+                background:selectedMonth===b.mk?ATT_ACCENT:'#F4F4F0',color:selectedMonth===b.mk?'white':'var(--ink-muted)',whiteSpace:'nowrap',flexShrink:0
+              }}>{b.label} · {b.value}%</div>
+            ))}
+          </div>
           <BarChart bars={monthlyBars} color='#7C3AED' />
         </div>
       )}
 
-      {/* Top consistent */}
-      {topMembers.length > 0 && (
-        <div className="card" style={{ overflow:'hidden', marginBottom:14 }}>
-          <div style={{ padding:'12px 16px', background:'#FAFAFA', borderBottom:'1px solid var(--border)' }}>
-            <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)' }}>Most Consistent 🏆</div>
-          </div>
-          {topMembers.map((x,i)=>(
-            <div key={x.member.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:'1px solid var(--border)' }}>
-              <div style={{ width:24, textAlign:'center', fontSize:'0.875rem', color:i<3?['#F59E0B','#9CA3AF','#CD7C44'][i]:'var(--ink-subtle)', fontWeight:700 }}>{i+1}</div>
-              <Avatar name={x.member.name} size={36} />
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:'0.875rem', fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{x.member.name}</div>
-                <div style={{ width:`${x.pct}%`, height:3, borderRadius:2, background:ATT_ACCENT, marginTop:4, maxWidth:120 }}/>
+      {/* Most Present — Friday vs Sunday side by side */}
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ink-subtle)',marginBottom:12}}>Most Present — by Service Type</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+
+          {/* Friday */}
+          <div className="card" style={{overflow:'hidden',borderTop:`3px solid #0284C7`}}>
+            <div style={{padding:'12px 14px',background:'#F0F9FF',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:6}}>
+              <span style={{fontSize:'1rem'}}>📅</span>
+              <div>
+                <div style={{fontSize:'0.75rem',fontWeight:700,color:'#0284C7'}}>Friday</div>
+                <div style={{fontSize:'0.625rem',color:'var(--ink-subtle)'}}>{fridaySessions.length} sessions</div>
               </div>
-              <div style={{ fontWeight:700, color:ATT_ACCENT, flexShrink:0, fontFamily:'Fraunces,Georgia,serif', fontSize:'1.125rem' }}>{x.pct}%</div>
             </div>
-          ))}
+            <LeaderList list={topFriday} color='#0284C7' emptyMsg='No Friday data' />
+          </div>
+
+          {/* Sunday */}
+          <div className="card" style={{overflow:'hidden',borderTop:'3px solid #7C3AED'}}>
+            <div style={{padding:'12px 14px',background:'#F5F3FF',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:6}}>
+              <span style={{fontSize:'1rem'}}>🙏</span>
+              <div>
+                <div style={{fontSize:'0.75rem',fontWeight:700,color:'#7C3AED'}}>Sunday</div>
+                <div style={{fontSize:'0.625rem',color:'var(--ink-subtle)'}}>{sundaySessions.length} sessions</div>
+              </div>
+            </div>
+            <LeaderList list={topSunday} color='#7C3AED' emptyMsg='No Sunday data' />
+          </div>
+        </div>
+      </div>
+
+      {/* Overall leaderboard (filtered) */}
+      {topFiltered.length > 0 && (
+        <div className="card" style={{overflow:'hidden',marginBottom:14}}>
+          <div style={{padding:'12px 16px',background:'#FAFAFA',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ink-subtle)'}}>
+              Overall Most Present 🏆{selectedMonth!=='all'?` — ${(()=>{const [y,m]=selectedMonth.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'short'});})()}`:''}
+            </div>
+          </div>
+          <LeaderList list={topFiltered} color={ATT_ACCENT} emptyMsg='No data for this filter' />
         </div>
       )}
 
       {/* Care Mode */}
       {careFlags.length > 0 && (
-        <div className="card" style={{ overflow:'hidden' }}>
-          <div style={{ padding:'12px 16px', background:'#FFFBEB', borderBottom:'1px solid var(--border)' }}>
-            <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'#92400E' }}>🙏 Pastoral Care Follow-Up</div>
-            <div style={{ fontSize:'0.75rem', color:'#92400E', marginTop:3 }}>Members absent for 2+ consecutive services — visible to steward & pastor only</div>
+        <div className="card" style={{overflow:'hidden',marginBottom:14}}>
+          <div style={{padding:'12px 16px',background:'#FFFBEB',borderBottom:'1px solid var(--border)'}}>
+            <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#92400E'}}>🙏 Pastoral Care Follow-Up</div>
+            <div style={{fontSize:'0.75rem',color:'#92400E',marginTop:3}}>Absent 2+ consecutive sessions — pastoral eyes only</div>
           </div>
           {careFlags.map(flag=>(
-            <div key={flag.member.id} className="care-card" style={{ margin:'10px 14px 0' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <div key={flag.member.id} className="care-card" style={{margin:'10px 14px 0'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
                 <Avatar name={flag.member.name} size={36} />
-                <div style={{ flex:1 }}>
-                  <div style={{ fontWeight:600, fontSize:'0.9375rem' }}>{flag.member.name}</div>
-                  <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:'0.9375rem'}}>{flag.member.fullName||flag.member.name}</div>
+                  <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>
                     Absent {flag.streak} consecutive session{flag.streak>1?'s':''}
-                    {flag.lastPresent ? ` · last seen ${formatDateShort(flag.lastPresent)}` : ' · no recent attendance'}
+                    {flag.lastPresent?` · last seen ${formatDateShort(flag.lastPresent)}`:' · no recent attendance'}
                   </div>
                 </div>
               </div>
             </div>
           ))}
-          <div style={{ height:14 }}/>
+          <div style={{height:14}}/>
         </div>
       )}
-      {careFlags.length === 0 && sessions.length >= 3 && (
-        <div className="card" style={{ padding:'16px', textAlign:'center', color:'#16A34A' }}>
-          <div style={{ fontSize:'1.5rem', marginBottom:4 }}>✓</div>
-          <div style={{ fontSize:'0.875rem', fontWeight:500 }}>No follow-up needed — everyone is engaged!</div>
+      {careFlags.length===0&&allSessions.length>=3&&(
+        <div className="card" style={{padding:'16px',textAlign:'center',color:'#16A34A'}}>
+          <div style={{fontSize:'1.5rem',marginBottom:4}}>✓</div>
+          <div style={{fontSize:'0.875rem',fontWeight:500}}>No follow-up needed — everyone is engaged!</div>
         </div>
       )}
     </div>
@@ -889,7 +1060,7 @@ function MembersTab({ members, state, dispatch }) {
               <Avatar name={m.name} />
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                  <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.name}</div>
+                  <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.fullName||m.name}</div>
                   {isCustom && <span className="pill" style={{ background:ATT_ACCENT+'20', color:ATT_ACCENT, fontSize:'0.6rem', padding:'1px 5px' }}>custom</span>}
                 </div>
                 <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{m.ministry||'Ministry'}</div>
@@ -1112,13 +1283,16 @@ function App() {
   // Members list = data.json workers + custom permanent members
   const members = useMemo(()=>{
     const base = (mainData?.workers||[])
-      .filter(w=>w.status==='active'&&w.type!=='family')
-      .map(w=>({
-        id:    w.id,
-        name:  workerDisplay(w),
-        title: w.title,
-        type:  'individual',
-        status:'active',
+      // Only individual members — exclude families, pairs, food-rotation combos
+      .filter(w => w.status === 'active' && w.type === 'individual')
+      .map(w => ({
+        id:       w.id,
+        // Store plain name (no title) for display; title kept separately
+        name:     w.name,
+        title:    w.title || '',
+        fullName: w.title ? `${w.title} ${w.name}` : w.name,
+        type:     'individual',
+        status:   'active',
         ministry: deriveMinistry(w),
       }));
     return base;
