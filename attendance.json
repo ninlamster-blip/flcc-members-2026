@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "churchName": "FLCC - Abundance Church",
+    "publishedAt": "2026-05-15T20:31:17.853Z"
+  },
+  "recentSessions": [
+    {
+      "id": "a-1778875828481-wny5",
+      "date": "2026-05-15",
+      "service": "Sunday",
+      "serviceLabel": "Sunday Service",
+      "summary": {
+        "present": 0,
+        "late": 0,
+        "absent": 0,
+        "unrecorded": 43,
+        "total": 43
+      }
+    }
+  ]
+}
