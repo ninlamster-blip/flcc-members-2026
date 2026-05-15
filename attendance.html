@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>FLCC Attendance — Steward Dashboard</title>
+<meta name="description" content="Private attendance steward app for FLCC - Farwaniya 1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+  :root {
+    --bg: #FAFAF5; --surface: #FFFFFF;
+    --ink: #18181B; --ink-muted: #52525B; --ink-subtle: #A1A1AA;
+    --border: #E7E5DE; --border-strong: #D4D4D0;
+    --accent: #0284C7; --accent-hover: #0369A1;
+    --accent-soft: #E0F2FE; --accent-tint: #F0F9FF;
+    --present: #16A34A; --present-soft: #F0FDF4; --present-ring: #BBF7D0;
+    --late: #D97706; --late-soft: #FFFBEB; --late-ring: #FDE68A;
+    --absent: #DC2626; --absent-soft: #FFF1F2; --absent-ring: #FECDD3;
+    --danger: #B91C1C; --danger-soft: #FEE2E2;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--ink); margin: 0; overscroll-behavior: none; }
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+  .font-display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.01em; }
+  .font-mono { font-family: 'Geist Mono', ui-monospace, monospace; }
+  .ink-muted { color: var(--ink-muted); } .ink-subtle { color: var(--ink-subtle); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; border: 1px solid transparent; cursor: pointer; white-space: nowrap; }
+  .btn-primary { background: var(--ink); color: white; } .btn-primary:hover { background: #27272A; }
+  .btn-accent  { background: var(--accent); color: white; } .btn-accent:hover { background: var(--accent-hover); }
+  .btn-ghost   { background: transparent; color: var(--ink); border-color: var(--border); } .btn-ghost:hover { background: var(--bg); }
+  .btn-soft    { background: #F4F4F0; color: var(--ink); } .btn-soft:hover { background: #EDEDE7; }
+  .btn-danger  { background: var(--danger-soft); color: var(--danger); border: none; }
+
+  .input, .select, .textarea {
+    width: 100%; padding: 0.5rem 0.75rem; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem;
+    color: var(--ink); font-family: 'Geist', sans-serif;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2,132,199,0.1); }
+  .textarea { resize: vertical; }
+
+  .tab { padding: 0.625rem 0; font-size: 0.8125rem; font-weight: 500; color: var(--ink-muted); border-bottom: 2px solid transparent; cursor: pointer; margin-right: 1.25rem; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; flex-shrink: 0; transition: color .15s; }
+  .tab:hover { color: var(--ink); }
+  .tab-active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .pill { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(24,24,27,0.45); backdrop-filter: blur(6px); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
+  @media (min-width: 600px) { .modal-backdrop { align-items: center; } }
+  .modal { background: var(--surface); border-radius: 20px 20px 0 0; max-width: 560px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: 0 -8px 40px rgba(0,0,0,.14); animation: slideUp .32s cubic-bezier(.32,.72,0,1) both; }
+  @media (min-width: 600px) { .modal { border-radius: 16px; animation: fadeScale .24s cubic-bezier(.34,1.56,.64,1) both; } }
+  @keyframes slideUp   { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  @keyframes fadeScale { from{opacity:0;transform:scale(.96) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  @keyframes fadeIn    { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn .2s ease-out both; }
+
+  /* Member card */
+  .member-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--border); transition: background .18s ease; }
+  .member-row:last-child { border-bottom: none; }
+  .status-btn { width: 40px; height: 40px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; font-size: 1rem; font-weight: 700; transition: all .18s cubic-bezier(.34,1.56,.64,1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+
+  /* Bar chart */
+  .bar-wrap { display: flex; align-items: flex-end; gap: 5px; height: 64px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .4s ease; min-height: 2px; }
+  .bar-label { font-size: 0.5625rem; color: var(--ink-subtle); text-align: center; font-family: 'Geist Mono', monospace; }
+
+  /* Undo toast */
+  .undo-toast { position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 12px 18px; border-radius: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.22); z-index: 60; white-space: nowrap; animation: fadeIn .22s cubic-bezier(.34,1.56,.64,1) both; }
+
+  /* Sync status dot */
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sync-dot-ok   { background: #16A34A; }
+  .sync-dot-pend { background: #F59E0B; }
+  .sync-dot-err  { background: #DC2626; }
+
+  /* Care flag */
+  .care-card { padding: 12px 14px; border-radius: 12px; border-left: 3px solid #F59E0B; background: #FFFBEB; margin-bottom: 10px; animation: fadeIn .2s ease-out; }
+
+  nav::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useReducer, useRef, useCallback } = React;
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const STORE_KEY = 'flcc-attendance-v1';
+const DATA_URL  = './data.json';
+const VERSION   = '1.0';
+const ATT_ACCENT = '#0284C7';
+
+const STATUS_CFG = {
+  present: { label: 'Present', emoji: '✓', color: '#16A34A', soft: '#F0FDF4', ring: '#BBF7D0' },
+  late:    { label: 'Late',    emoji: '○', color: '#D97706', soft: '#FFFBEB', ring: '#FDE68A' },
+  absent:  { label: 'Absent', emoji: '✗', color: '#DC2626', soft: '#FFF1F2', ring: '#FECDD3' },
+};
+
+const ROLE_MINISTRY = {
+  preacher: 'Preaching', pastoralPrayer: 'Preaching',
+  songLeader: 'Music / Worship', presider: 'Service',
+  communionAssistant1: 'Communion', communionAssistant2: 'Communion',
+  foodInCharge: 'Kitchen Ministry',
+};
+
+const SERVICE_TYPES = [
+  { key: 'Friday',        label: 'Friday Service'        },
+  { key: 'Sunday',        label: 'Sunday Service'        },
+  { key: 'PrayerMeeting', label: 'Prayer Meeting'        },
+  { key: 'MensService',   label: "Men's Service"         },
+  { key: 'Special',       label: 'Special Service'       },
+];
+
+const GAS_TEMPLATE = `// ─── Paste this in Google Apps Script ───────────────────
+// 1. Open script.google.com → New project
+// 2. Paste this code
+// 3. Replace SHEET_ID with your Google Sheet ID
+// 4. Deploy → New deployment → Web app
+//    Execute as: Me | Who has access: Anyone
+// 5. Copy the deployment URL → paste in Settings
+
+const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE';
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    if (data.action === 'logAttendance') {
+      let sheet = ss.getSheetByName('Attendance_Log');
+      if (!sheet) {
+        sheet = ss.insertSheet('Attendance_Log');
+        sheet.appendRow([
+          'log_id','session_id','service_date','service_type',
+          'member_id','member_name','ministry','attendance_status',
+          'timestamp','recorded_by'
+        ]);
+      }
+      const session = data.session;
+      for (const r of (session.records || [])) {
+        sheet.appendRow([
+          Utilities.getUuid(), session.id,
+          session.date, session.service,
+          r.memberId, r.memberName || '',
+          r.ministry || '', r.status,
+          r.timestamp || '', session.recordedBy || ''
+        ]);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, synced: session.records.length }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ error: 'Unknown action' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.message })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput('FLCC Attendance API is running.').setMimeType(ContentService.MimeType.TEXT);
+}`;
+
+// ─── Storage ──────────────────────────────────────────────────────────────────
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { return null; }
+}
+function persistState(s) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch {}
+}
+function defaultState() {
+  return {
+    meta: { churchName: 'FLCC - Farwaniya 1', stewardName: '', gasUrl: '', lastSync: null },
+    sessions: [],
+    customMembers: [],
+  };
+}
+function migrate(s) {
+  if (!s) return null;
+  if (!s.meta) s.meta = defaultState().meta;
+  if (!s.sessions) s.sessions = [];
+  if (!s.customMembers) s.customMembers = [];
+  return s;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDateFull(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+}
+function formatDateShort(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+function dayOfWeekStr(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(y,m-1,d).getDay()];
+}
+function uid() { return `a-${Date.now()}-${Math.random().toString(36).slice(2,6)}`; }
+
+function deriveMinistry(worker) {
+  for (const r of (worker.eligibleRoles || [])) if (ROLE_MINISTRY[r]) return ROLE_MINISTRY[r];
+  return worker.type === 'family' ? 'Family' : 'Ministry';
+}
+function workerDisplay(w) { return w ? (w.title ? `${w.title} ${w.name}` : w.name) : ''; }
+
+const AV_COLORS = ['#0284C7','#7C3AED','#BE123C','#0F766E','#B45309','#16A34A','#0369A1','#6D28D9'];
+function avatarBg(name) { return AV_COLORS[(name||'?').charCodeAt(0) % AV_COLORS.length]; }
+function getInitials(name) {
+  const clean = (name||'').replace(/^(Bro\.|Sis\.|Ptr\.)\s*/i,'');
+  const parts = clean.split(' ').filter(Boolean);
+  return parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : (parts[0]||'?')[0].toUpperCase();
+}
+
+function getSessionSummary(session, totalMembers) {
+  const recs = session?.records || [];
+  const present = recs.filter(r=>r.status==='present').length;
+  const late    = recs.filter(r=>r.status==='late').length;
+  const absent  = recs.filter(r=>r.status==='absent').length;
+  const total   = totalMembers || session?.totalMembers || 0;
+  return { present, late, absent, unrecorded: Math.max(0, total - present - late - absent), total };
+}
+
+function computeCareFlags(sessions, members) {
+  const recent = [...sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+  if (recent.length < 2) return [];
+  return members.filter(w=>w.status==='active').reduce((flags,m)=>{
+    const statuses = recent.map(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status||null);
+    let streak=0, maxStreak=0;
+    for (const st of statuses) {
+      if (st==='absent') { streak++; maxStreak=Math.max(maxStreak,streak); }
+      else if (st!==null) streak=0;
+    }
+    if (maxStreak >= 2) {
+      const lastPresent = recent.find(s=>['present','late'].includes((s.records||[]).find(r=>r.memberId===m.id)?.status));
+      flags.push({ member:m, streak:maxStreak, lastPresent: lastPresent?.date||null });
+    }
+    return flags;
+  }, []);
+}
+
+function getMemberAttendancePct(memberId, sessions) {
+  const relevant = sessions.filter(s=>(s.records||[]).find(r=>r.memberId===memberId));
+  if (!relevant.length) return null;
+  const present = relevant.filter(s=>{const r=(s.records||[]).find(x=>x.memberId===memberId);return r&&r.status!=='absent';}).length;
+  return Math.round((present/relevant.length)*100);
+}
+
+function detectTodayService(schedule) {
+  const today = todayISO();
+  const dow   = dayOfWeekStr(today);
+  const exact = (schedule||[]).find(s=>s.date===today);
+  if (exact) return exact.service;
+  if (dow === 'Friday')  return 'Friday';
+  if (dow === 'Sunday')  return 'Sunday';
+  return null;
+}
+
+// ─── Reducer ──────────────────────────────────────────────────────────────────
+function reducer(state, action) {
+  let next;
+  switch (action.type) {
+    case 'UPSERT_SESSION': {
+      const i = state.sessions.findIndex(s=>s.id===action.session.id);
+      const sessions = i>=0
+        ? state.sessions.map(s=>s.id===action.session.id?action.session:s)
+        : [...state.sessions, action.session];
+      next = { ...state, sessions };
+      break;
+    }
+    case 'DELETE_SESSION':
+      next = { ...state, sessions: state.sessions.filter(s=>s.id!==action.id) };
+      break;
+    case 'ADD_CUSTOM_MEMBER':
+      next = { ...state, customMembers: [...state.customMembers, action.member] };
+      break;
+    case 'REMOVE_CUSTOM_MEMBER':
+      next = { ...state, customMembers: state.customMembers.filter(m=>m.id!==action.id) };
+      break;
+    case 'UPDATE_META':
+      next = { ...state, meta: { ...state.meta, ...action.payload } };
+      break;
+    case 'RESET':
+      next = defaultState();
+      break;
+    default: return state;
+  }
+  persistState(next);
+  return next;
+}
+
+// ─── UI Primitives ────────────────────────────────────────────────────────────
+function Avatar({ name, size=40 }) {
+  return (
+    <div style={{ width:size, height:size, borderRadius:size/2, background:avatarBg(name), display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:size*0.34, flexShrink:0, letterSpacing:'.02em', userSelect:'none' }}>
+      {getInitials(name)}
+    </div>
+  );
+}
+
+function SummaryBar({ summary }) {
+  const { present, late, absent, unrecorded, total } = summary;
+  return (
+    <div style={{ display:'flex', gap:12, flexWrap:'wrap', fontSize:'0.8125rem' }}>
+      {[
+        { label:'Present', count:present, color:'#16A34A' },
+        { label:'Late',    count:late,    color:'#D97706' },
+        { label:'Absent',  count:absent,  color:'#DC2626' },
+        { label:'—',       count:unrecorded, color:'var(--ink-subtle)' },
+      ].map(x=>(
+        <div key={x.label} style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <div style={{ width:8, height:8, borderRadius:2, background:x.color, flexShrink:0 }}/>
+          <span style={{ fontWeight:600, color:x.color }}>{x.count}</span>
+          <span style={{ color:'var(--ink-muted)' }}>{x.label}</span>
+        </div>
+      ))}
+      {total>0 && <div style={{ marginLeft:'auto', color:'var(--ink-subtle)', fontSize:'0.75rem' }}>{total} members</div>}
+    </div>
+  );
+}
+
+function BarChart({ bars, color='#0284C7' }) {
+  const maxVal = Math.max(...bars.map(b=>b.value), 1);
+  return (
+    <div className="bar-wrap">
+      {bars.map((b,i)=>(
+        <div key={i} className="bar-col">
+          <div className="bar" style={{ height:`${Math.max(2,(b.value/maxVal)*56)}px`, background: b.value===0?'var(--border)':color, opacity:b.value===0?.4:1 }}/>
+          <div className="bar-label">{b.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Member Card ──────────────────────────────────────────────────────────────
+function MemberCard({ member, record, onStatus, isLastAction, onUndo }) {
+  const status = record?.status || null;
+  const sc     = status ? STATUS_CFG[status] : null;
+
+  const tap = s => {
+    if (navigator.vibrate) navigator.vibrate(8);
+    onStatus(member.id, s === status ? null : s);
+  };
+
+  return (
+    <div className="member-row" style={{ background: sc ? sc.soft + 'BB' : 'white' }}>
+      <Avatar name={member.name} />
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.name}</div>
+        <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{member.ministry || 'Ministry'}</div>
+      </div>
+      <div style={{ display:'flex', gap:6, flexShrink:0 }}>
+        {Object.entries(STATUS_CFG).map(([key, cfg])=>(
+          <button key={key} onClick={()=>tap(key)} className="status-btn"
+            style={{
+              background: status===key ? cfg.color : '#F4F4F0',
+              color:      status===key ? 'white'  : '#9CA3AF',
+              border:     `2px solid ${status===key ? cfg.color : 'transparent'}`,
+              transform:  status===key ? 'scale(1.12)' : 'scale(1)',
+            }}>
+            {cfg.emoji}
+          </button>
+        ))}
+      </div>
+      {isLastAction && (
+        <button onClick={onUndo} style={{ fontSize:'0.6875rem', color:ATT_ACCENT, background:'none', border:'none', cursor:'pointer', fontWeight:600, textDecoration:'underline', flexShrink:0, paddingLeft:4 }}>Undo</button>
+      )}
+    </div>
+  );
+}
+
+// ─── TODAY TAB ────────────────────────────────────────────────────────────────
+function TodayTab({ members, state, dispatch, schedule }) {
+  const today = todayISO();
+  const existing = state.sessions.find(s=>s.date===today);
+
+  const [session,    setSession]    = useState(existing || null);
+  const [search,     setSearch]     = useState('');
+  const [filter,     setFilter]     = useState('all');
+  const [lastAction, setLastAction] = useState(null);
+  const [showPicker, setShowPicker] = useState(!existing);
+  const [showAddVis, setShowAddVis] = useState(false);
+  const undoTimer = useRef(null);
+
+  const todayVisitors = state.customMembers.filter(m=>m.sessionDate===today||m.permanent);
+  const allMembers = useMemo(()=>[...members,...todayVisitors],[members,todayVisitors]);
+
+  // Auto-detect service
+  const detectedService = useMemo(()=>detectTodayService(schedule),[schedule]);
+
+  const startSession = serviceKey => {
+    const svcLabel = SERVICE_TYPES.find(s=>s.key===serviceKey)?.label || serviceKey;
+    const sess = {
+      id: uid(), date: today, service: serviceKey, serviceLabel: svcLabel,
+      recordedBy: state.meta.stewardName || 'Attendance Steward',
+      createdAt: new Date().toISOString(),
+      totalMembers: allMembers.length,
+      records: [], synced: false,
+    };
+    setSession(sess);
+    setShowPicker(false);
+    dispatch({ type:'UPSERT_SESSION', session: sess });
+  };
+
+  const updateStatus = (memberId, newStatus) => {
+    if (!session) return;
+    const member  = allMembers.find(m=>m.id===memberId);
+    const prevRec = (session.records||[]).find(r=>r.memberId===memberId);
+    const prevSt  = prevRec?.status || null;
+
+    const updatedRecs = newStatus === null
+      ? session.records.filter(r=>r.memberId!==memberId)
+      : prevRec
+        ? session.records.map(r=>r.memberId===memberId?{...r,status:newStatus,timestamp:new Date().toISOString()}:r)
+        : [...session.records,{memberId,memberName:member?.name||'',ministry:member?.ministry||'',status:newStatus,timestamp:new Date().toISOString()}];
+
+    const updated = { ...session, records:updatedRecs };
+    setSession(updated);
+    dispatch({ type:'UPSERT_SESSION', session:updated });
+
+    // Undo toast
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+    setLastAction({ memberId, memberName:member?.name||'', prevStatus:prevSt, newStatus });
+    undoTimer.current = setTimeout(()=>setLastAction(null), 5000);
+  };
+
+  const handleUndo = () => {
+    if (!lastAction) return;
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+    const { memberId, prevStatus } = lastAction;
+    const prevRec = (session.records||[]).find(r=>r.memberId===memberId);
+    const updatedRecs = prevStatus===null
+      ? session.records.filter(r=>r.memberId!==memberId)
+      : prevRec
+        ? session.records.map(r=>r.memberId===memberId?{...r,status:prevStatus}:r)
+        : [...session.records,{memberId,memberName:lastAction.memberName,ministry:'',status:prevStatus,timestamp:new Date().toISOString()}];
+    const updated = { ...session, records:updatedRecs };
+    setSession(updated);
+    dispatch({ type:'UPSERT_SESSION', session:updated });
+    setLastAction(null);
+  };
+
+  const summary = useMemo(()=>getSessionSummary(session, allMembers.length),[session,allMembers]);
+
+  const visibleMembers = useMemo(()=>{
+    let list = allMembers;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(m=>(m.name||'').toLowerCase().includes(q)||(m.ministry||'').toLowerCase().includes(q));
+    }
+    if (filter !== 'all') {
+      const statusMap = { present:'present', late:'late', absent:'absent' };
+      const targetStatus = statusMap[filter];
+      if (targetStatus) list = list.filter(m=>(session?.records||[]).find(r=>r.memberId===m.id)?.status===targetStatus);
+      if (filter==='unrecorded') list = list.filter(m=>!(session?.records||[]).find(r=>r.memberId===m.id));
+    }
+    // Sort: unrecorded first, then by name
+    return list.slice().sort((a,b)=>{
+      const ar = (session?.records||[]).find(r=>r.memberId===a.id);
+      const br = (session?.records||[]).find(r=>r.memberId===b.id);
+      if (!ar && br) return -1; if (ar && !br) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  },[allMembers, search, filter, session]);
+
+  if (showPicker) return (
+    <div className="fade-in" style={{ padding:20 }}>
+      <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:600, marginBottom:6 }}>
+        {formatDateFull(today)}
+      </div>
+      <p style={{ fontSize:'0.875rem', color:'var(--ink-muted)', marginBottom:24 }}>
+        {detectedService ? `Auto-detected: ${SERVICE_TYPES.find(s=>s.key===detectedService)?.label}. Start this session or choose another.` : 'Choose the service type to begin attendance recording.'}
+      </p>
+
+      {detectedService && (
+        <button className="btn btn-accent" style={{ width:'100%', justifyContent:'center', padding:'14px', borderRadius:12, fontSize:'1rem', marginBottom:16 }} onClick={()=>startSession(detectedService)}>
+          ▶ Start {SERVICE_TYPES.find(s=>s.key===detectedService)?.label}
+        </button>
+      )}
+
+      <div style={{ display:'grid', gap:10 }}>
+        {SERVICE_TYPES.filter(s=>s.key!==detectedService).map(svc=>(
+          <button key={svc.key} onClick={()=>startSession(svc.key)} style={{ padding:'13px 16px', borderRadius:12, border:'1px solid var(--border)', background:'var(--surface)', textAlign:'left', cursor:'pointer', fontSize:'0.9375rem', fontWeight:500, transition:'background .15s' }}
+            onMouseEnter={e=>e.currentTarget.style.background=ATT_ACCENT+'10'}
+            onMouseLeave={e=>e.currentTarget.style.background=''}>
+            {svc.label}
+          </button>
+        ))}
+      </div>
+
+      {!state.meta.stewardName && (
+        <div style={{ marginTop:20, padding:'12px 14px', borderRadius:10, background:'#FEF3C7', fontSize:'0.8125rem', color:'#92400E' }}>
+          ⚠ Set your name in Settings so it's recorded with attendance.
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', height:'calc(100vh - 120px)' }}>
+      {/* Service header */}
+      <div style={{ padding:'12px 16px', background:ATT_ACCENT+'10', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:10 }}>
+          <div>
+            <div className="font-display" style={{ fontSize:'1.125rem', fontWeight:600 }}>{session?.serviceLabel}</div>
+            <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)' }}>{formatDateFull(today)}</div>
+          </div>
+          <div style={{ display:'flex', gap:6 }}>
+            <button className="btn btn-soft text-xs" onClick={()=>setShowAddVis(true)} style={{ padding:'5px 10px', fontSize:'0.75rem' }}>+ Visitor</button>
+            <button className="btn btn-soft text-xs" onClick={()=>setShowPicker(true)} style={{ padding:'5px 10px', fontSize:'0.75rem' }}>Change</button>
+          </div>
+        </div>
+        <SummaryBar summary={summary} />
+      </div>
+
+      {/* Search + filter */}
+      <div style={{ padding:'10px 14px', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
+        <input className="input" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search members…" style={{ marginBottom:8 }} />
+        <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none' }}>
+          {[
+            { k:'all',       l:'All' },
+            { k:'unrecorded',l:'Unrecorded' },
+            { k:'present',   l:'Present'   },
+            { k:'late',      l:'Late'      },
+            { k:'absent',    l:'Absent'    },
+          ].map(f=>(
+            <button key={f.k} onClick={()=>setFilter(f.k)} style={{ padding:'4px 12px', borderRadius:999, border:'none', cursor:'pointer', fontSize:'0.75rem', fontWeight:filter===f.k?600:400, whiteSpace:'nowrap', background:filter===f.k?ATT_ACCENT:'#F4F4F0', color:filter===f.k?'white':'var(--ink-muted)', transition:'all .15s', flexShrink:0 }}>{f.l}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Member list */}
+      <div style={{ overflowY:'auto', flex:1, WebkitOverflowScrolling:'touch' }}>
+        {visibleMembers.length===0
+          ? <div style={{ textAlign:'center', padding:40, color:'var(--ink-subtle)', fontStyle:'italic', fontSize:'0.875rem' }}>{search?'No members match.':'No members found.'}</div>
+          : visibleMembers.map(m=>(
+            <MemberCard
+              key={m.id}
+              member={m}
+              record={(session?.records||[]).find(r=>r.memberId===m.id)}
+              onStatus={updateStatus}
+              isLastAction={lastAction?.memberId===m.id}
+              onUndo={handleUndo}
+            />
+          ))
+        }
+        <div style={{ height:80 }} />
+      </div>
+
+      {/* Undo toast */}
+      {lastAction && lastAction.newStatus && (
+        <div className="undo-toast">
+          <div style={{ fontSize:'0.8125rem' }}>
+            <strong>{lastAction.memberName}</strong> marked <span style={{ color: STATUS_CFG[lastAction.newStatus]?.color }}>{STATUS_CFG[lastAction.newStatus]?.label}</span>
+          </div>
+          <button onClick={handleUndo} style={{ background:'rgba(255,255,255,.18)', border:'none', borderRadius:6, padding:'4px 10px', color:'white', cursor:'pointer', fontSize:'0.8125rem', fontWeight:600 }}>Undo</button>
+        </div>
+      )}
+
+      {/* Add visitor modal */}
+      {showAddVis && (
+        <VisitorModal state={state} dispatch={dispatch} today={today} onClose={()=>{setShowAddVis(false);}} />
+      )}
+    </div>
+  );
+}
+
+// ─── Visitor Modal ────────────────────────────────────────────────────────────
+function VisitorModal({ state, dispatch, today, onClose }) {
+  const [name,       setName]      = useState('');
+  const [ministry,   setMinistry]  = useState('Visitor');
+  const [permanent,  setPermanent] = useState(false);
+
+  const submit = () => {
+    if (!name.trim()) { alert('Name is required.'); return; }
+    dispatch({
+      type: 'ADD_CUSTOM_MEMBER',
+      member: { id:`vis-${Date.now()}`, name:name.trim(), ministry:ministry||'Visitor', type:'individual', status:'active', sessionDate:today, permanent },
+    });
+    onClose();
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" style={{ padding:24 }} onClick={e=>e.stopPropagation()}>
+        <div style={{ width:42, height:4, borderRadius:2, background:'var(--border-strong)', margin:'0 auto 20px', opacity:.6 }}/>
+        <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:600, marginBottom:16 }}>Add Visitor / New Member</div>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          <div>
+            <label style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>Full name *</label>
+            <input className="input" style={{ marginTop:4 }} value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Bro. Juan dela Cruz" autoFocus />
+          </div>
+          <div>
+            <label style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>Ministry / label</label>
+            <input className="input" style={{ marginTop:4 }} value={ministry} onChange={e=>setMinistry(e.target.value)} placeholder="Visitor, Praise Team…" />
+          </div>
+          <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', fontSize:'0.875rem' }}>
+            <input type="checkbox" checked={permanent} onChange={e=>setPermanent(e.target.checked)} />
+            Save permanently (appears in all future sessions)
+          </label>
+        </div>
+        <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:20 }}>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-accent" onClick={submit}>Add</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── HISTORY TAB ──────────────────────────────────────────────────────────────
+function HistoryTab({ state, dispatch, members }) {
+  const [expanded, setExpanded] = useState(null);
+  const sorted = useMemo(()=>[...state.sessions].sort((a,b)=>b.date.localeCompare(a.date)),[state.sessions]);
+
+  if (!sorted.length) return (
+    <div style={{ textAlign:'center', padding:'60px 20px', color:'var(--ink-subtle)' }}>
+      <div style={{ fontSize:'2.5rem', marginBottom:12 }}>📋</div>
+      <div className="font-display" style={{ fontSize:'1.25rem' }}>No sessions yet</div>
+      <p style={{ fontSize:'0.875rem', marginTop:8 }}>Record your first session in the Today tab.</p>
+    </div>
+  );
+
+  return (
+    <div style={{ padding:16 }} className="fade-in">
+      <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:16 }}>
+        <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:600 }}>Session History</div>
+        <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>{sorted.length} sessions</div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+        {sorted.map(sess=>{
+          const sum = getSessionSummary(sess, members.length);
+          const isOpen = expanded===sess.id;
+          const attendedPct = sum.total>0 ? Math.round(((sum.present+sum.late)/sum.total)*100) : 0;
+          return (
+            <div key={sess.id} className="card overflow-hidden">
+              <div onClick={()=>setExpanded(isOpen?null:sess.id)} style={{ padding:'14px 16px', cursor:'pointer', userSelect:'none' }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                  <div>
+                    <div style={{ fontWeight:600, fontSize:'0.9375rem' }}>{sess.serviceLabel||sess.service}</div>
+                    <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginTop:2 }}>{formatDateFull(sess.date)}</div>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
+                    <div style={{ textAlign:'right' }}>
+                      <div style={{ fontSize:'1.375rem', fontWeight:700, color:attendedPct>=80?'#16A34A':attendedPct>=60?'#D97706':'#DC2626', fontFamily:'Fraunces,Georgia,serif' }}>{attendedPct}%</div>
+                      <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)' }}>attendance</div>
+                    </div>
+                    <div style={{ fontSize:'0.75rem', transform:isOpen?'rotate(90deg)':'rotate(0)', transition:'transform .2s', color:'var(--ink-subtle)' }}>▶</div>
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:14, marginTop:10, fontSize:'0.8125rem' }}>
+                  <span style={{ color:'#16A34A', fontWeight:600 }}>✓ {sum.present}</span>
+                  <span style={{ color:'#D97706', fontWeight:600 }}>○ {sum.late}</span>
+                  <span style={{ color:'#DC2626', fontWeight:600 }}>✗ {sum.absent}</span>
+                  {sum.unrecorded>0&&<span style={{ color:'var(--ink-subtle)' }}>— {sum.unrecorded}</span>}
+                  {sess.synced && <span style={{ marginLeft:'auto', color:'#16A34A', fontSize:'0.6875rem' }}>✓ synced</span>}
+                </div>
+              </div>
+              {isOpen && (
+                <div style={{ borderTop:'1px solid var(--border)', background:'#FAFAFA' }}>
+                  <div style={{ maxHeight:280, overflowY:'auto' }}>
+                    {[...members,...(state.customMembers||[]).filter(m=>m.sessionDate===sess.date||m.permanent)]
+                      .filter(m=>m.status==='active')
+                      .map(m=>{
+                        const rec = (sess.records||[]).find(r=>r.memberId===m.id);
+                        const st  = rec?.status;
+                        const cfg = st ? STATUS_CFG[st] : null;
+                        return (
+                          <div key={m.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 16px', borderBottom:'1px solid var(--border)', background:cfg?cfg.soft+'88':'transparent' }}>
+                            <Avatar name={m.name} size={32} />
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ fontSize:'0.875rem', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.name}</div>
+                            </div>
+                            <div style={{ flexShrink:0 }}>
+                              {cfg ? (
+                                <span className="pill" style={{ background:cfg.color+'20', color:cfg.color, fontSize:'0.75rem' }}>{cfg.emoji} {cfg.label}</span>
+                              ) : (
+                                <span style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', fontStyle:'italic' }}>not recorded</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  <div style={{ display:'flex', justifyContent:'flex-end', padding:'10px 14px', borderTop:'1px solid var(--border)' }}>
+                    <button className="btn btn-ghost" style={{ fontSize:'0.75rem', color:'var(--absent)', borderColor:'var(--absent)' }}
+                      onClick={()=>{ if(confirm('Delete this session?')) { dispatch({type:'DELETE_SESSION',id:sess.id}); setExpanded(null); } }}>
+                      Delete session
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── ANALYTICS TAB ───────────────────────────────────────────────────────────
+function AnalyticsTab({ state, members }) {
+  const sessions = useMemo(()=>[...state.sessions].sort((a,b)=>a.date.localeCompare(b.date)),[state.sessions]);
+
+  // Last 8 sessions bar chart
+  const sessionBars = useMemo(()=>
+    sessions.slice(-8).map(s=>{
+      const sum = getSessionSummary(s, members.length);
+      return { label:formatDateShort(s.date), value: sum.total>0 ? Math.round(((sum.present+sum.late)/sum.total)*100) : 0 };
+    }), [sessions, members]);
+
+  // Monthly bars (last 4 months)
+  const monthlyBars = useMemo(()=>{
+    const months = new Map();
+    for (const s of sessions) {
+      const mk = s.date.slice(0,7);
+      if (!months.has(mk)) months.set(mk,[]);
+      months.get(mk).push(s);
+    }
+    return Array.from(months.entries()).slice(-5).map(([mk, ss])=>{
+      const avgPct = ss.length ? Math.round(ss.reduce((acc,s)=>{
+        const sum = getSessionSummary(s,members.length);
+        return acc+(sum.total>0?((sum.present+sum.late)/sum.total)*100:0);
+      },0)/ss.length) : 0;
+      const [y,m] = mk.split('-');
+      return { label: new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'short'}), value:avgPct };
+    });
+  },[sessions,members]);
+
+  // Top consistent members
+  const topMembers = useMemo(()=>
+    members.filter(m=>m.status==='active').map(m=>({
+      member:m,
+      pct: getMemberAttendancePct(m.id, sessions) ?? 0,
+      sessions: sessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)).length,
+    }))
+    .filter(x=>x.sessions>0)
+    .sort((a,b)=>b.pct-a.pct)
+    .slice(0,5), [members, sessions]);
+
+  // Care flags
+  const careFlags = useMemo(()=>computeCareFlags(sessions, members),[sessions,members]);
+
+  if (!sessions.length) return (
+    <div style={{ textAlign:'center', padding:'60px 20px', color:'var(--ink-subtle)' }}>
+      <div style={{ fontSize:'2.5rem', marginBottom:12 }}>📊</div>
+      <div className="font-display" style={{ fontSize:'1.25rem' }}>No data yet</div>
+      <p style={{ fontSize:'0.875rem', marginTop:8 }}>Record at least one session to see analytics.</p>
+    </div>
+  );
+
+  return (
+    <div style={{ padding:16 }} className="fade-in">
+      <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:600, marginBottom:16 }}>Analytics</div>
+
+      {/* Summary stats */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:20 }}>
+        {[
+          { label:'Sessions', value:sessions.length, color:ATT_ACCENT },
+          { label:'Avg %',    value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A' },
+          { label:'Best',     value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#7C3AED' },
+        ].map(s=>(
+          <div key={s.label} className="card" style={{ padding:'14px 10px', textAlign:'center' }}>
+            <div className="font-display" style={{ fontSize:'1.875rem', fontWeight:600, color:s.color }}>{s.value}</div>
+            <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Attendance trend */}
+      {sessionBars.length > 1 && (
+        <div className="card" style={{ padding:'16px', marginBottom:14 }}>
+          <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Attendance Trend (last {sessionBars.length} sessions)</div>
+          <BarChart bars={sessionBars} color={ATT_ACCENT} />
+        </div>
+      )}
+
+      {/* Monthly */}
+      {monthlyBars.length > 1 && (
+        <div className="card" style={{ padding:'16px', marginBottom:14 }}>
+          <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Monthly Average %</div>
+          <BarChart bars={monthlyBars} color='#7C3AED' />
+        </div>
+      )}
+
+      {/* Top consistent */}
+      {topMembers.length > 0 && (
+        <div className="card" style={{ overflow:'hidden', marginBottom:14 }}>
+          <div style={{ padding:'12px 16px', background:'#FAFAFA', borderBottom:'1px solid var(--border)' }}>
+            <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)' }}>Most Consistent 🏆</div>
+          </div>
+          {topMembers.map((x,i)=>(
+            <div key={x.member.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:'1px solid var(--border)' }}>
+              <div style={{ width:24, textAlign:'center', fontSize:'0.875rem', color:i<3?['#F59E0B','#9CA3AF','#CD7C44'][i]:'var(--ink-subtle)', fontWeight:700 }}>{i+1}</div>
+              <Avatar name={x.member.name} size={36} />
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:'0.875rem', fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{x.member.name}</div>
+                <div style={{ width:`${x.pct}%`, height:3, borderRadius:2, background:ATT_ACCENT, marginTop:4, maxWidth:120 }}/>
+              </div>
+              <div style={{ fontWeight:700, color:ATT_ACCENT, flexShrink:0, fontFamily:'Fraunces,Georgia,serif', fontSize:'1.125rem' }}>{x.pct}%</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Care Mode */}
+      {careFlags.length > 0 && (
+        <div className="card" style={{ overflow:'hidden' }}>
+          <div style={{ padding:'12px 16px', background:'#FFFBEB', borderBottom:'1px solid var(--border)' }}>
+            <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'#92400E' }}>🙏 Pastoral Care Follow-Up</div>
+            <div style={{ fontSize:'0.75rem', color:'#92400E', marginTop:3 }}>Members absent for 2+ consecutive services — visible to steward & pastor only</div>
+          </div>
+          {careFlags.map(flag=>(
+            <div key={flag.member.id} className="care-card" style={{ margin:'10px 14px 0' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <Avatar name={flag.member.name} size={36} />
+                <div style={{ flex:1 }}>
+                  <div style={{ fontWeight:600, fontSize:'0.9375rem' }}>{flag.member.name}</div>
+                  <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>
+                    Absent {flag.streak} consecutive session{flag.streak>1?'s':''}
+                    {flag.lastPresent ? ` · last seen ${formatDateShort(flag.lastPresent)}` : ' · no recent attendance'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div style={{ height:14 }}/>
+        </div>
+      )}
+      {careFlags.length === 0 && sessions.length >= 3 && (
+        <div className="card" style={{ padding:'16px', textAlign:'center', color:'#16A34A' }}>
+          <div style={{ fontSize:'1.5rem', marginBottom:4 }}>✓</div>
+          <div style={{ fontSize:'0.875rem', fontWeight:500 }}>No follow-up needed — everyone is engaged!</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MEMBERS TAB ──────────────────────────────────────────────────────────────
+function MembersTab({ members, state, dispatch }) {
+  const [search, setSearch] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
+
+  const permanentVisitors = state.customMembers.filter(m=>m.permanent);
+  const allDisplay = [...members, ...permanentVisitors];
+
+  const filtered = useMemo(()=>{
+    const q = search.toLowerCase();
+    return allDisplay.filter(m=>m.status==='active'&&(!q||(m.name||'').toLowerCase().includes(q)||(m.ministry||'').toLowerCase().includes(q)));
+  },[allDisplay, search]);
+
+  return (
+    <div className="fade-in">
+      <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)' }}>
+        <div style={{ display:'flex', gap:8, marginBottom:10 }}>
+          <input className="input" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search members…" style={{ flex:1 }} />
+          <button className="btn btn-accent" onClick={()=>setShowAdd(true)}>+ Add</button>
+        </div>
+        <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)' }}>{filtered.length} active members · {members.length} from data.json + {permanentVisitors.length} custom</div>
+      </div>
+
+      <div style={{ overflowY:'auto' }}>
+        {filtered.map(m=>{
+          const pct = getMemberAttendancePct(m.id, state.sessions);
+          const isCustom = !!state.customMembers.find(x=>x.id===m.id);
+          return (
+            <div key={m.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 16px', borderBottom:'1px solid var(--border)' }}>
+              <Avatar name={m.name} />
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.name}</div>
+                  {isCustom && <span className="pill" style={{ background:ATT_ACCENT+'20', color:ATT_ACCENT, fontSize:'0.6rem', padding:'1px 5px' }}>custom</span>}
+                </div>
+                <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{m.ministry||'Ministry'}</div>
+              </div>
+              <div style={{ textAlign:'right', flexShrink:0 }}>
+                {pct!==null ? (
+                  <>
+                    <div style={{ fontWeight:700, color:pct>=80?'#16A34A':pct>=60?'#D97706':'#DC2626', fontFamily:'Fraunces,Georgia,serif', fontSize:'1.125rem' }}>{pct}%</div>
+                    <div style={{ fontSize:'0.6rem', color:'var(--ink-subtle)' }}>attendance</div>
+                  </>
+                ) : <span style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', fontStyle:'italic' }}>no data</span>}
+              </div>
+              {isCustom && (
+                <button onClick={()=>{ if(confirm('Remove this custom member?')) dispatch({type:'REMOVE_CUSTOM_MEMBER',id:m.id}); }}
+                  style={{ background:'none', border:'none', color:'var(--absent)', cursor:'pointer', fontSize:'1rem', padding:'4px', flexShrink:0 }}>✕</button>
+              )}
+            </div>
+          );
+        })}
+        <div style={{ height:40 }}/>
+      </div>
+
+      {showAdd && <VisitorModal state={state} dispatch={dispatch} today={todayISO()} onClose={()=>setShowAdd(false)} />}
+    </div>
+  );
+}
+
+// ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
+function SettingsTab({ state, dispatch }) {
+  const m = state.meta;
+  const set = payload => dispatch({ type:'UPDATE_META', payload });
+  const [gasGuide, setGasGuide] = useState(false);
+  const [testStatus, setTestStatus] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const fileRef = useRef(null);
+
+  const testGas = async () => {
+    if (!m.gasUrl) { alert('Paste your GAS URL first.'); return; }
+    setTestStatus('testing');
+    try {
+      await fetch(m.gasUrl, { method:'POST', mode:'no-cors', body:JSON.stringify({ action:'test' }) });
+      setTestStatus('ok');
+      setTimeout(()=>setTestStatus(''),3000);
+    } catch { setTestStatus('err'); setTimeout(()=>setTestStatus(''),4000); }
+  };
+
+  const exportBackup = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a'); a.href=url; a.download=`flcc-attendance-${todayISO()}.json`; a.click(); URL.revokeObjectURL(url);
+  };
+
+  const importBackup = f => {
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        const d = JSON.parse(ev.target.result);
+        if (!Array.isArray(d.sessions)) throw new Error('Invalid format');
+        if (confirm('Replace all attendance data with this backup?')) dispatch({ type:'RESET' });
+        // Re-import sessions
+        for (const s of d.sessions) dispatch({ type:'UPSERT_SESSION', session:s });
+        alert('Imported!');
+      } catch { alert('Import failed.'); }
+    };
+    r.readAsText(f);
+  };
+
+  const publishAttendanceJSON = () => {
+    const recent = [...state.sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+    const out = {
+      meta: { churchName:m.churchName, publishedAt:new Date().toISOString() },
+      recentSessions: recent.map(s=>({
+        id:s.id, date:s.date, service:s.service, serviceLabel:s.serviceLabel,
+        summary: getSessionSummary(s),
+      })),
+    };
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a'); a.href=url; a.download='attendance.json'; a.click(); URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div style={{ padding:16 }} className="fade-in">
+      <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:600, marginBottom:20 }}>Settings</div>
+
+      {/* Steward & church */}
+      <div className="card" style={{ padding:16, marginBottom:14 }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Steward Info</div>
+        <div style={{ display:'grid', gap:10 }}>
+          <div>
+            <label style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>Your name (recorded with attendance)</label>
+            <input className="input" style={{ marginTop:4 }} value={m.stewardName||''} onChange={e=>set({stewardName:e.target.value})} placeholder="e.g. Sis. Maria Santos" />
+          </div>
+          <div>
+            <label style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>Church name</label>
+            <input className="input" style={{ marginTop:4 }} value={m.churchName||''} onChange={e=>set({churchName:e.target.value})} placeholder="FLCC - Farwaniya 1" />
+          </div>
+        </div>
+      </div>
+
+      {/* Google Sheets sync */}
+      <div className="card" style={{ padding:16, marginBottom:14, borderColor:ATT_ACCENT }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:ATT_ACCENT }}>Google Sheets Sync</div>
+        <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:12 }}>Paste your Google Apps Script web app URL to enable one-tap sync after each service.</div>
+        <div style={{ display:'flex', gap:6, marginBottom:10 }}>
+          <input className="input" style={{ flex:1 }} value={m.gasUrl||''} onChange={e=>set({gasUrl:e.target.value})} placeholder="https://script.google.com/macros/s/…/exec" />
+          <button className="btn btn-soft" onClick={testGas} style={{ flexShrink:0 }}>
+            {testStatus==='testing'?'…':testStatus==='ok'?'✓ OK':testStatus==='err'?'✗ Err':'Test'}
+          </button>
+        </div>
+        {m.lastSync && <div style={{ fontSize:'0.75rem', color:'var(--ink-subtle)' }}>Last synced: {new Date(m.lastSync).toLocaleString()}</div>}
+        <button onClick={()=>setGasGuide(g=>!g)} style={{ fontSize:'0.8125rem', color:ATT_ACCENT, background:'none', border:'none', cursor:'pointer', textDecoration:'underline', marginTop:8 }}>
+          {gasGuide?'Hide':'Show'} setup guide →
+        </button>
+        {gasGuide && (
+          <div style={{ marginTop:12, padding:14, borderRadius:10, background:'#F9FAFB', border:'1px solid var(--border)' }}>
+            <div style={{ fontWeight:600, fontSize:'0.875rem', marginBottom:8 }}>How to set up Google Sheets sync:</div>
+            <ol style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', paddingLeft:18, lineHeight:1.8 }}>
+              <li>Open <a href="https://script.google.com" target="_blank" rel="noopener" style={{ color:ATT_ACCENT }}>script.google.com</a> → New project</li>
+              <li>Create a Google Sheet → copy its ID from the URL</li>
+              <li>Paste the Apps Script code below (copy button)</li>
+              <li>Replace <code style={{ background:'#E5E7EB', padding:'1px 5px', borderRadius:4 }}>YOUR_GOOGLE_SHEET_ID_HERE</code></li>
+              <li>Deploy → New deployment → Web app → Execute as: Me → Anyone</li>
+              <li>Copy the deployment URL → paste above</li>
+            </ol>
+            <div style={{ marginTop:12, position:'relative' }}>
+              <pre style={{ background:'#1E293B', color:'#E2E8F0', padding:14, borderRadius:10, fontSize:'0.6875rem', overflowX:'auto', lineHeight:1.6, margin:0 }}>{GAS_TEMPLATE}</pre>
+              <button onClick={()=>navigator.clipboard.writeText(GAS_TEMPLATE).then(()=>alert('Copied!')).catch(()=>{})} style={{ position:'absolute', top:8, right:8, padding:'3px 10px', borderRadius:6, background:'rgba(255,255,255,.15)', border:'none', color:'white', cursor:'pointer', fontSize:'0.6875rem' }}>Copy</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Publish + backup */}
+      <div className="card" style={{ padding:16, marginBottom:14 }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Data & Publish</div>
+        <div style={{ display:'grid', gap:8 }}>
+          <button className="btn btn-accent" onClick={publishAttendanceJSON} disabled={!state.sessions.length}>↓ Generate attendance.json (for members view)</button>
+          <button className="btn btn-primary" onClick={exportBackup}>↓ Download admin backup</button>
+          <div>
+            <input ref={fileRef} type="file" accept=".json" style={{ display:'none' }} onChange={e=>e.target.files[0]&&importBackup(e.target.files[0])} />
+            <button className="btn btn-soft" style={{ width:'100%', justifyContent:'center' }} onClick={()=>fileRef.current?.click()}>↑ Import backup</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding:16 }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:8 }}>Danger Zone</div>
+        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10 }}>Reset clears all sessions and custom members. Export a backup first.</p>
+        <button className="btn btn-danger" onClick={()=>{ if(confirm('Delete ALL attendance data? This cannot be undone.')) dispatch({type:'RESET'}); }}>Reset all data</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── SYNC PANEL (top of app, appears when session is unsynced) ────────────────
+function SyncPanel({ state, dispatch, members }) {
+  const [syncing, setSyncing] = useState(false);
+  const [result,  setResult]  = useState(null);
+  const today = todayISO();
+  const unsynced = state.sessions.filter(s=>!s.synced);
+
+  if (!unsynced.length || !state.meta.gasUrl) return null;
+
+  const syncNow = async () => {
+    if (!state.meta.gasUrl) return;
+    setSyncing(true); setResult(null);
+    let ok = 0, fail = 0;
+    for (const sess of unsynced) {
+      try {
+        await fetch(state.meta.gasUrl, {
+          method:'POST', mode:'no-cors',
+          body: JSON.stringify({ action:'logAttendance', session: sess }),
+        });
+        dispatch({ type:'UPSERT_SESSION', session:{ ...sess, synced:true, syncedAt:new Date().toISOString() } });
+        ok++;
+      } catch { fail++; }
+    }
+    dispatch({ type:'UPDATE_META', payload:{ lastSync: new Date().toISOString() } });
+    setSyncing(false);
+    setResult(fail===0 ? 'ok' : 'partial');
+    setTimeout(()=>setResult(null), 4000);
+  };
+
+  return (
+    <div style={{ padding:'8px 16px', background:'#FEF3C7', borderBottom:'1px solid #FDE68A', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+      <div style={{ fontSize:'0.8125rem', color:'#92400E' }}>
+        {unsynced.length} session{unsynced.length>1?'s':''} not yet synced to Google Sheets
+      </div>
+      <button onClick={syncNow} disabled={syncing} style={{ padding:'5px 12px', borderRadius:8, background:'#D97706', color:'white', border:'none', cursor:syncing?'wait':'pointer', fontSize:'0.75rem', fontWeight:600, flexShrink:0 }}>
+        {syncing ? '↻ Syncing…' : result==='ok' ? '✓ Synced!' : result==='partial' ? '⚠ Partial' : '↑ Sync now'}
+      </button>
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+const TABS = [
+  { key:'today',     label:'Today'     },
+  { key:'history',   label:'History'   },
+  { key:'analytics', label:'Analytics' },
+  { key:'members',   label:'Members'   },
+  { key:'settings',  label:'Settings'  },
+];
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, null, ()=>migrate(loadState())||defaultState());
+  const [tab,       setTab]     = useState('today');
+  const [mainData,  setMainData] = useState(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Fetch data.json for workers + schedule
+  useEffect(()=>{
+    fetch(`${DATA_URL}?t=${Date.now()}`)
+      .then(r=>r.ok?r.json():null)
+      .then(d=>{ if(d) setMainData(d); setDataLoaded(true); })
+      .catch(()=>setDataLoaded(true));
+  },[]);
+
+  // Members list = data.json workers + custom permanent members
+  const members = useMemo(()=>{
+    const base = (mainData?.workers||[])
+      .filter(w=>w.status==='active'&&w.type!=='family')
+      .map(w=>({
+        id:    w.id,
+        name:  workerDisplay(w),
+        title: w.title,
+        type:  'individual',
+        status:'active',
+        ministry: deriveMinistry(w),
+      }));
+    return base;
+  },[mainData]);
+
+  const schedule = mainData?.schedule || [];
+  const todayStr = todayISO();
+  const unsynced = state.sessions.filter(s=>!s.synced).length;
+
+  return (
+    <div style={{ minHeight:'100vh', background:'var(--bg)' }}>
+      {/* Header */}
+      <header style={{ background:'rgba(250,250,245,.92)', backdropFilter:'blur(10px)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:20 }}>
+        <div style={{ maxWidth:700, margin:'0 auto', padding:'16px 18px 0' }}>
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:10 }}>
+            <div>
+              <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', color:ATT_ACCENT }}>
+                {state.meta.churchName||'FLCC - Farwaniya 1'} · Attendance OS
+              </div>
+              <div className="font-display" style={{ fontSize:'1.625rem', fontWeight:600, lineHeight:1.2 }}>
+                📋 Attendance
+              </div>
+            </div>
+            <div style={{ textAlign:'right', fontSize:'0.75rem', color:'var(--ink-subtle)' }}>
+              {state.meta.stewardName && <div style={{ fontWeight:500, color:'var(--ink-muted)' }}>{state.meta.stewardName}</div>}
+              <div>{todayStr}</div>
+              {unsynced>0 && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#D97706', fontWeight:500 }}>{unsynced} unsynced</span></div>}
+            </div>
+          </div>
+          <nav style={{ display:'flex', overflowX:'auto', scrollbarWidth:'none' }}>
+            {TABS.map(t=>(
+              <button key={t.key} className={`tab ${tab===t.key?'tab-active':''}`} onClick={()=>setTab(t.key)}>{t.label}</button>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      {/* Sync banner */}
+      {state.meta.gasUrl && <SyncPanel state={state} dispatch={dispatch} members={members} />}
+
+      {/* Data loading state */}
+      {!dataLoaded && (
+        <div style={{ textAlign:'center', padding:40, color:'var(--ink-subtle)', fontSize:'0.875rem' }}>
+          Loading member data from data.json…
+        </div>
+      )}
+
+      {/* Loading error — no data.json */}
+      {dataLoaded && !mainData && (
+        <div style={{ margin:'16px', padding:'12px 16px', borderRadius:10, background:'#FEF3C7', border:'1px solid #FDE68A', fontSize:'0.8125rem', color:'#92400E' }}>
+          ⚠ Could not load data.json. Place attendance.html alongside data.json in your repo, or add members manually in the Members tab.
+        </div>
+      )}
+
+      {/* Tab content */}
+      <main style={{ maxWidth:700, margin:'0 auto' }}>
+        {tab==='today'     && <TodayTab     members={members} state={state} dispatch={dispatch} schedule={schedule} />}
+        {tab==='history'   && <HistoryTab   state={state} dispatch={dispatch} members={members} />}
+        {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
+        {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
+        {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} />}
+      </main>
+
+      <footer style={{ maxWidth:700, margin:'0 auto', padding:'3rem 1.5rem 6rem', fontSize:'0.75rem', color:'var(--ink-subtle)', textAlign:'center' }}>
+        FLCC Attendance OS · Steward: {state.meta.stewardName||'(set name in Settings)'} · Data stored locally
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
