@@ -525,11 +525,12 @@ const CONFLICT_REASONS = [
   'Other (explain in note)',
 ];
 
-const ME_KEY = 'flcc-members-me';
-const DATA_URL        = './data.json';
-const PRAYER_DATA_URL = './prayer.json';
-const MUSIC_DATA_URL  = './music.json';
-const EQUIP_DATA_URL  = './equip.json';
+const ME_KEY             = 'flcc-members-me';
+const DATA_URL           = './data.json';
+const PRAYER_DATA_URL    = './prayer.json';
+const MUSIC_DATA_URL     = './music.json';
+const EQUIP_DATA_URL     = './equip.json';
+const ATTENDANCE_DATA_URL = './attendance.json';
 const MUSIC_ACCENT = '#EA580C';
 
 const PRAYER_ROLES = [
@@ -1159,7 +1160,7 @@ function NamePicker({ workers, onPick, onSkip, churchName }) {
 }
 
 // --- My Schedule ---
-function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEvents, onEditPersonal, sermonNotes, onOpenNote }) {
+function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEvents, onEditPersonal, sermonNotes, onOpenNote, attendanceData }) {
   const today = todayISO();
 
   // Main service assignments
@@ -1238,6 +1239,11 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
       <SectionHeading eyebrow={`Hello, ${me.title || ''} ${me.name}`} title="My Schedule">
         Your upcoming service and prayer assignments. Tap 📅 to save to your phone calendar, or "Report conflict" if you can't make it.
       </SectionHeading>
+
+      {/* Personal attendance record — full card */}
+      {attendanceData && (
+        <PersonalAttendanceCard me={me} attendanceData={attendanceData} compact={false} />
+      )}
 
       {myUpcomingBirthday && (
         <div className="card p-4 mb-4 flex items-center gap-3" style={{ background: '#FCE7F3' }}>
@@ -1468,7 +1474,7 @@ function ServiceDetails({ entry, workers, highlightId }) {
 // HOME TAB — Grid dashboard of upcoming items
 // =============================================================================
 
-function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal }) {
+function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData }) {
   const today = todayISO();
   const nextWeekStart = today;
   const horizon = addDays(today, 60);
@@ -1780,6 +1786,14 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* My attendance record — compact badge */}
+      {me && attendanceData && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📋 My attendance</div>
+          <PersonalAttendanceCard me={me} attendanceData={attendanceData} compact={true} />
         </div>
       )}
 
@@ -5170,6 +5184,190 @@ function FillBlank({ gState, setGState }) {
 }
 
 // =============================================================================
+// PERSONAL ATTENDANCE — member sees own history from attendance.json
+// =============================================================================
+
+const ATT_BLUE = '#0284C7';
+
+// Find this member's records in attendance.json by name matching
+function matchAttendanceRecord(me, attendanceData) {
+  if (!me || !attendanceData?.sessions) return null;
+  const norm = s => (s || '').trim().toLowerCase();
+  const myName = norm(me.name);
+  const myFull = norm((me.title ? me.title + ' ' : '') + me.name);
+
+  // Look through all sessions to find records for this member
+  const myRecords = [];
+  for (const sess of attendanceData.sessions) {
+    const rec = (sess.records || []).find(r =>
+      norm(r.memberName) === myName ||
+      norm(r.memberName) === myFull ||
+      r.memberId === me.id
+    );
+    myRecords.push({
+      date:         sess.date,
+      service:      sess.service,
+      serviceLabel: sess.serviceLabel || sess.service,
+      status:       rec?.status || 'absent',  // not found in records = absent
+    });
+  }
+  return myRecords.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function getMyAttendanceStats(myRecords) {
+  if (!myRecords || !myRecords.length) return null;
+  const fridays = myRecords.filter(r => r.service === 'Friday');
+  const sundays = myRecords.filter(r => r.service === 'Sunday');
+
+  const pct = list => list.length
+    ? Math.round(list.filter(r => r.status === 'present').length / list.length * 100)
+    : null;
+
+  return {
+    overall:        pct(myRecords),
+    friday:         pct(fridays),
+    sunday:         pct(sundays),
+    totalSessions:  myRecords.length,
+    fridaySessions: fridays.length,
+    sundaySessions: sundays.length,
+    recent10:       myRecords.slice(0, 10),
+    streak: (() => {
+      let streak = 0;
+      for (const r of myRecords) {
+        if (r.status === 'present') streak++;
+        else break;
+      }
+      return streak;
+    })(),
+  };
+}
+
+function PersonalAttendanceCard({ me, attendanceData, compact }) {
+  const myRecords = useMemo(() => matchAttendanceRecord(me, attendanceData), [me, attendanceData]);
+  const stats     = useMemo(() => getMyAttendanceStats(myRecords), [myRecords]);
+
+  if (!attendanceData || !myRecords || !stats) return null;
+  if (!stats.totalSessions) return null;
+
+  const pctColor = pct =>
+    pct === null ? 'var(--ink-subtle)' :
+    pct >= 80 ? '#16A34A' :
+    pct >= 60 ? '#D97706' : '#DC2626';
+
+  if (compact) {
+    // Small badge for Home tab
+    return (
+      <div className="card" style={{ padding:'14px 16px', borderLeft:`3px solid ${ATT_BLUE}`, marginBottom:0 }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:ATT_BLUE, marginBottom:6 }}>
+          📋 My Attendance
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+          <div style={{ textAlign:'center' }}>
+            <div className="font-display" style={{ fontSize:'2rem', fontWeight:700, color:pctColor(stats.overall), lineHeight:1 }}>{stats.overall}%</div>
+            <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Overall</div>
+          </div>
+          {stats.fridaySessions > 0 && (
+            <div style={{ textAlign:'center' }}>
+              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:pctColor(stats.friday), lineHeight:1 }}>{stats.friday}%</div>
+              <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Friday</div>
+            </div>
+          )}
+          {stats.sundaySessions > 0 && (
+            <div style={{ textAlign:'center' }}>
+              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:pctColor(stats.sunday), lineHeight:1 }}>{stats.sunday}%</div>
+              <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Sunday</div>
+            </div>
+          )}
+          {stats.streak > 1 && (
+            <div style={{ textAlign:'center' }}>
+              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:'#F59E0B', lineHeight:1 }}>🔥{stats.streak}</div>
+              <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Streak</div>
+            </div>
+          )}
+        </div>
+        <div style={{ fontSize:'0.6875rem', color:'var(--ink-subtle)', marginTop:8 }}>
+          Based on {stats.totalSessions} recorded session{stats.totalSessions !== 1 ? 's' : ''}
+        </div>
+      </div>
+    );
+  }
+
+  // Full card for My Schedule tab
+  return (
+    <div className="card" style={{ overflow:'hidden', marginBottom:16 }}>
+      {/* Header */}
+      <div style={{ padding:'14px 16px', background:ATT_BLUE+'0F', borderBottom:'1px solid var(--border)' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:ATT_BLUE, marginBottom:4 }}>📋 My Attendance Record</div>
+        <div style={{ display:'flex', gap:20, flexWrap:'wrap', alignItems:'center' }}>
+          <div>
+            <div className="font-display" style={{ fontSize:'3rem', fontWeight:700, color:pctColor(stats.overall), lineHeight:1 }}>{stats.overall}%</div>
+            <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>Overall · {stats.totalSessions} sessions</div>
+          </div>
+          <div style={{ display:'flex', gap:16 }}>
+            {stats.fridaySessions > 0 && (
+              <div>
+                <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:700, color:pctColor(stats.friday) }}>{stats.friday}%</div>
+                <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)' }}>Friday · {stats.fridaySessions}</div>
+              </div>
+            )}
+            {stats.sundaySessions > 0 && (
+              <div>
+                <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:700, color:pctColor(stats.sunday) }}>{stats.sunday}%</div>
+                <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)' }}>Sunday · {stats.sundaySessions}</div>
+              </div>
+            )}
+          </div>
+        </div>
+        {stats.streak >= 2 && (
+          <div style={{ marginTop:8, fontSize:'0.8125rem', color:'#F59E0B', fontWeight:600 }}>
+            🔥 {stats.streak} consecutive sessions — keep it up!
+          </div>
+        )}
+      </div>
+
+      {/* Timeline — last 10 */}
+      <div style={{ padding:'12px 16px 4px' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:10 }}>Last 10 Services</div>
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+          {stats.recent10.map((r, i) => (
+            <div key={i} title={`${r.serviceLabel} · ${r.date}`}
+              style={{
+                display:'flex', flexDirection:'column', alignItems:'center', gap:3,
+                padding:'6px 4px', borderRadius:8, minWidth:36,
+                background: r.status === 'present' ? '#F0FDF4' : '#FFF1F2',
+                border: `1px solid ${r.status === 'present' ? '#BBF7D0' : '#FECDD3'}`,
+              }}>
+              <div style={{ fontSize:'0.875rem' }}>{r.status === 'present' ? '✓' : '✗'}</div>
+              <div style={{ fontSize:'0.5625rem', color:'var(--ink-subtle)', fontFamily:'Geist Mono,monospace', lineHeight:1.2, textAlign:'center' }}>
+                {r.date.slice(5)}
+              </div>
+              <div style={{ fontSize:'0.5rem', color:r.service==='Friday'?ATT_BLUE:'#7C3AED', fontWeight:600 }}>
+                {r.service.slice(0,3).toUpperCase()}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ padding:'12px 16px 14px' }}>
+        <div style={{ height:6, borderRadius:3, background:'#E5E7EB', overflow:'hidden' }}>
+          <div style={{ height:6, borderRadius:3, background:ATT_BLUE, width:`${stats.overall}%`, transition:'width .5s ease' }} />
+        </div>
+        <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, fontSize:'0.6875rem', color:'var(--ink-subtle)' }}>
+          <span>0%</span>
+          <span style={{ color:pctColor(stats.overall), fontWeight:600 }}>You: {stats.overall}%</span>
+          <span>100%</span>
+        </div>
+        <div style={{ fontSize:'0.6875rem', color:'var(--ink-subtle)', marginTop:8, textAlign:'center', fontStyle:'italic' }}>
+          Your attendance is private — only visible to you on this device
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
@@ -5189,6 +5387,7 @@ function App() {
   const [prayerData, setPrayerData] = useState(null);
   const [musicData, setMusicData] = useState(null);
   const [equipData, setEquipData] = useState(null);
+  const [attendanceData, setAttendanceData] = useState(null);
   const [error, setError] = useState(null);
   const [me, setMe] = useState(null);
   const [meId, setMeId] = useState(() => {
@@ -5228,7 +5427,7 @@ function App() {
     let pendingDone = 0;
     const checkDone = () => {
       pendingDone += 1;
-      if (pendingDone >= 4) setRefreshing(false);
+      if (pendingDone >= 5) setRefreshing(false);
     };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
@@ -5271,6 +5470,15 @@ function App() {
         else setEquipData(false);
       })
       .catch(() => setEquipData(false))
+      .finally(checkDone);
+    // Optional: attendance.json
+    fetch(`${ATTENDANCE_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(a => {
+        if (a && Array.isArray(a.sessions)) setAttendanceData(a);
+        else setAttendanceData(false);
+      })
+      .catch(() => setAttendanceData(false))
       .finally(checkDone);
   };
 
@@ -5394,8 +5602,8 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
-        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
+        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
+        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
         {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
         {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}

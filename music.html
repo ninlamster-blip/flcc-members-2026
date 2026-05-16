@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLCC Music OS — Music Ministry Dashboard</title>
+<meta name="description" content="Music Ministry dashboard for FLCC - Abundance Church. Configurable roles, services, and team scheduling." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+  :root {
+    --bg: #FAFAF5;
+    --surface: #FFFFFF;
+    --ink: #18181B;
+    --ink-muted: #52525B;
+    --ink-subtle: #A1A1AA;
+    --border: #E7E5DE;
+    --border-strong: #D4D4D0;
+    --accent: #EA580C;       /* Music ministry: coral / warm orange */
+    --accent-hover: #C2410C;
+    --accent-soft: #FFEDD5;
+    --accent-tint: #FFF7ED;
+    --success: #15803D;
+    --success-soft: #DCFCE7;
+    --warning: #B45309;
+    --warning-soft: #FEF3C7;
+    --danger: #B91C1C;
+    --danger-soft: #FEE2E2;
+    --info: #1E40AF;
+    --info-soft: #DBEAFE;
+  }
+
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+
+  .font-display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.01em; }
+  .font-mono { font-family: 'Geist Mono', ui-monospace, monospace; }
+
+  .ink { color: var(--ink); }
+  .ink-muted { color: var(--ink-muted); }
+  .ink-subtle { color: var(--ink-subtle); }
+  .accent { color: var(--accent); }
+  .bg-surface { background: var(--surface); }
+  .bg-app { background: var(--bg); }
+  .border-app { border-color: var(--border); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 0.875rem; border-radius: 8px;
+    font-size: 0.875rem; font-weight: 500;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--ink); color: white; }
+  .btn-primary:hover { background: #27272A; }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
+  .btn-soft { background: #F4F4F0; color: var(--ink); }
+  .btn-soft:hover { background: #EDEDE7; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding: 0.125rem 0.625rem; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 500;
+  }
+  .pill-default { background: #F4F4F0; color: var(--ink-muted); }
+  .pill-success { background: var(--success-soft); color: var(--success); }
+  .pill-warning { background: var(--warning-soft); color: var(--warning); }
+  .pill-danger { background: var(--danger-soft); color: var(--danger); }
+  .pill-info { background: var(--info-soft); color: var(--info); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent); }
+  .pill-group { background: #EDE9FE; color: #6D28D9; }
+
+  .input, .select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .input:focus, .select:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(24,24,27,0.06);
+  }
+
+  .tab {
+    padding: 0.625rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    margin-right: 1.75rem;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab-active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .schedule-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .schedule-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+  .schedule-table td {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .schedule-table tr:last-child td { border-bottom: none; }
+
+  .role-cell {
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 0.375rem 0.5rem;
+    margin: -0.375rem -0.5rem;
+    transition: background 0.15s;
+  }
+  .role-cell:hover { background: #F4F4F0; }
+  .role-cell-vacant { color: var(--ink-subtle); font-style: italic; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(24,24,27,0.4);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+    padding: 1.5rem;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    max-width: 540px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  }
+
+  .dropdown {
+    position: fixed; z-index: 100;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0.375rem;
+  }
+  .dropdown-item {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .dropdown-item:hover { background: #F4F4F0; }
+  .dropdown-item-empty { color: var(--ink-subtle); font-style: italic; padding: 0.625rem 0.75rem; font-size: 0.8125rem; }
+  .dropdown-section {
+    padding: 0.375rem 0.75rem 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+
+  .dotted-divider { border-top: 1px dashed var(--border-strong); }
+
+  @media print {
+    body * { visibility: hidden; }
+    .print-section, .print-section * { visibility: visible; }
+    .print-section { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: white; }
+    .no-print { display: none !important; }
+    .print-table { font-size: 11px; }
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.2s ease-out; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useReducer, useRef } = React;
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const STORAGE_KEY = 'flcc-music-os-v1';
+const APP_VERSION = '1.0';
+
+// Default roles — Edmund can edit these in Settings tab
+const DEFAULT_ROLES = [
+  { key: 'lead',        label: 'Worship Leader' },
+  { key: 'vocal',       label: 'Backup Vocal' },
+  { key: 'instrument',  label: 'Instrumentalist' },
+];
+
+// Default service types — Edmund can edit
+const DEFAULT_SERVICE_TYPES = [
+  { key: 'Friday',       label: 'Friday Service',   dot: '#10B981' },
+  { key: 'Sunday',       label: 'Sunday Service',   dot: '#F59E0B' },
+  { key: 'PrayerMeeting', label: 'Prayer Meeting',   dot: '#8B5CF6' },
+];
+
+// =============================================================================
+// SEED DATA — from Allen's photos (Feb / Mar / Apr 2026)
+// =============================================================================
+
+// Music team — mix of individuals (matched to main Schedule OS IDs where possible) and groups
+const SEED_WORKERS = [
+  // Individuals
+  { id: 'bro-07', name: 'Edmund Gabriel', title: 'Bro.', kind: 'individual', status: 'active' },
+  { id: 'ptr-01', name: 'Justin Flores',  title: 'Ptr.', kind: 'individual', status: 'active' },
+  { id: 'bro-03', name: 'Elbert Siangco', title: 'Bro.', kind: 'individual', status: 'active' },
+  { id: 'sis-18', name: 'Laidz Pascual',  title: 'Sis.', kind: 'individual', status: 'active' },
+  { id: 'sis-15', name: 'Grace Siangco',  title: 'Sis.', kind: 'individual', status: 'active' },
+  { id: 'sis-17', name: 'Jenarlyn Culao', title: 'Sis.', kind: 'individual', status: 'active' },
+  { id: 'bro-01', name: 'Dandreb Serna',  title: 'Bro.', kind: 'individual', status: 'active' },
+  { id: 'mus-01', name: 'Dolly',          title: 'Sis.', kind: 'individual', status: 'active' },
+  { id: 'bro-02', name: 'Bong Cas',       title: 'Bro.', kind: 'individual', status: 'active' },
+  { id: 'bro-09', name: 'Dave Vergara',   title: 'Bro.', kind: 'individual', status: 'active' },
+  // Groups (group assignments where the whole group leads worship)
+  { id: 'grp-hope', name: 'HOPE Sector',  title: '', kind: 'group', status: 'active' },
+  { id: 'grp-cpm',  name: 'CPM',          title: '', kind: 'group', status: 'active' },
+  { id: 'grp-fb',   name: 'Fruitbearers', title: '', kind: 'group', status: 'active' },
+  { id: 'grp-rpg',  name: 'RPG',          title: '', kind: 'group', status: 'active' },
+];
+
+// Default role per service type for simple "single assignment" mode
+const DEFAULT_PRIMARY_ROLE = 'lead';
+
+// Seed entries from photos
+const e = (date, service, workerId) => ({
+  id: `m-${date}-${service.toLowerCase()}`,
+  date, service,
+  assignments: { lead: workerId },  // primary role pre-filled
+});
+
+const SEED_ENTRIES = [
+  // FEBRUARY 2026
+  e('2026-02-01', 'Sunday',        'bro-09'), // Dave
+  e('2026-02-05', 'PrayerMeeting', 'grp-fb'),  // Fruitbearers
+  e('2026-02-06', 'Friday',        'mus-01'), // Dolly
+  e('2026-02-08', 'Sunday',        'sis-18'), // Laidz
+  e('2026-02-11', 'PrayerMeeting', 'grp-cpm'), // CPM
+  e('2026-02-13', 'Friday',        'bro-02'), // Bong
+  e('2026-02-15', 'Sunday',        'sis-15'), // Grace
+  e('2026-02-19', 'PrayerMeeting', 'ptr-01'), // Ptr Justin
+  e('2026-02-20', 'Friday',        'sis-17'), // Jenarlyn
+  e('2026-02-22', 'Sunday',        'bro-02'), // Bong
+  e('2026-02-26', 'PrayerMeeting', 'bro-07'), // Edmund
+  e('2026-02-27', 'Friday',        'bro-03'), // Elbert
+
+  // MARCH 2026
+  e('2026-03-01', 'Sunday',        'sis-15'), // Grace
+  e('2026-03-04', 'PrayerMeeting', 'grp-rpg'), // RPG
+  e('2026-03-06', 'Friday',        'bro-01'), // Dandreb
+  e('2026-03-08', 'Sunday',        'bro-02'), // Bong
+  e('2026-03-11', 'PrayerMeeting', 'grp-rpg'), // RPG
+  e('2026-03-13', 'Friday',        'bro-03'), // Elbert
+  e('2026-03-15', 'Sunday',        'mus-01'), // Dolly
+  e('2026-03-19', 'PrayerMeeting', 'bro-07'), // Edmund
+  e('2026-03-20', 'Friday',        'sis-17'), // Jenarlyn
+  e('2026-03-22', 'Sunday',        'bro-03'), // Elbert
+  e('2026-03-26', 'PrayerMeeting', 'ptr-01'), // Ptr Justin
+  e('2026-03-27', 'Friday',        'bro-02'), // Bong
+  e('2026-03-29', 'Sunday',        'sis-18'), // Laidz
+
+  // APRIL 2026
+  e('2026-04-02', 'PrayerMeeting', 'grp-hope'), // HOPE Sector
+  e('2026-04-03', 'Friday',        'sis-17'),   // Jenarlyn
+  e('2026-04-05', 'Sunday',        'bro-02'),   // Bong
+  e('2026-04-08', 'PrayerMeeting', 'grp-cpm'),  // CPM
+  e('2026-04-10', 'Friday',        'bro-01'),   // Dandreb
+  e('2026-04-12', 'Sunday',        'bro-03'),   // Elbert
+  e('2026-04-16', 'PrayerMeeting', 'bro-07'),   // Edmund
+  e('2026-04-17', 'Friday',        'mus-01'),   // Dolly
+  e('2026-04-19', 'Sunday',        'sis-18'),   // Laidz
+  e('2026-04-23', 'PrayerMeeting', 'ptr-01'),   // Ptr Justin
+  e('2026-04-24', 'Friday',        'bro-02'),   // Bong
+  e('2026-04-26', 'Sunday',        'sis-15'),   // Grace
+  e('2026-04-30', 'PrayerMeeting', 'bro-03'),   // Elbert
+];
+
+// =============================================================================
+// STORAGE
+// =============================================================================
+
+function loadState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+}
+function saveState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, lastUpdated: new Date().toISOString() })); } catch {}
+}
+
+function defaultState() {
+  return {
+    meta: {
+      churchName: 'FLCC - Abundance Church',
+      ministryName: 'Music Ministry',
+      version: APP_VERSION,
+      lastUpdated: new Date().toISOString(),
+    },
+    ministry: {
+      headName: 'Bro. Edmund Gabriel',
+      headTitle: 'Music Ministry Lead',
+      whatsapp: '',
+      messenger: '',
+      phone: '',
+      email: '',
+    },
+    roles: DEFAULT_ROLES,
+    serviceTypes: DEFAULT_SERVICE_TYPES,
+    workers: SEED_WORKERS,
+    entries: SEED_ENTRIES,
+    currentMonth: '2026-04',
+    settings: { primaryRole: DEFAULT_PRIMARY_ROLE },
+  };
+}
+
+function migrate(state) {
+  if (!state) return state;
+  const s = { ...state };
+  if (!s.ministry) s.ministry = defaultState().ministry;
+  if (!Array.isArray(s.roles) || s.roles.length === 0) s.roles = DEFAULT_ROLES;
+  if (!Array.isArray(s.serviceTypes) || s.serviceTypes.length === 0) s.serviceTypes = DEFAULT_SERVICE_TYPES;
+  if (!Array.isArray(s.workers)) s.workers = [];
+  if (!Array.isArray(s.entries)) s.entries = [];
+  if (!s.settings) s.settings = { primaryRole: s.roles[0]?.key || 'lead' };
+  return s;
+}
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function parseISODate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function dayOfWeek(s) { return DAY_NAMES[parseISODate(s).getDay()]; }
+function monthKey(s) { return s.slice(0,7); }
+function formatDateShort(s) {
+  const d = parseISODate(s);
+  return `${String(d.getDate()).padStart(2,'0')}-${MONTH_NAMES[d.getMonth()].slice(0,3)}`;
+}
+function formatMonthLabel(monthKey) {
+  const [y,m] = monthKey.split('-').map(Number);
+  return `${MONTH_NAMES[m-1]} ${y}`;
+}
+function nextMonth(monthKey) {
+  let [y,m] = monthKey.split('-').map(Number);
+  m += 1; if (m > 12) { m = 1; y += 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function prevMonth(monthKey) {
+  let [y,m] = monthKey.split('-').map(Number);
+  m -= 1; if (m < 1) { m = 12; y -= 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function workerDisplay(w) { return w ? (w.title ? `${w.title} ${w.name}`.trim() : w.name) : ''; }
+function workerShort(w) { return w ? w.name : ''; }
+function getServiceType(state, key) { return state.serviceTypes.find(s => s.key === key) || state.serviceTypes[0]; }
+function getRole(state, key) { return state.roles.find(r => r.key === key) || state.roles[0]; }
+
+// Suggest workers least recently assigned to this service type
+function suggestNextWorker(state, serviceType, beforeDate) {
+  const lastDate = new Map();
+  for (const entry of state.entries) {
+    if (entry.date >= beforeDate) continue;
+    if (entry.service !== serviceType) continue;
+    const primary = entry.assignments?.[state.settings.primaryRole];
+    if (primary) {
+      if (!lastDate.has(primary) || entry.date > lastDate.get(primary)) lastDate.set(primary, entry.date);
+    }
+  }
+  const active = state.workers.filter(w => w.status === 'active');
+  return active.slice().sort((a, b) => {
+    const la = lastDate.get(a.id) || '0000-00-00';
+    const lb = lastDate.get(b.id) || '0000-00-00';
+    if (la === lb) return a.name.localeCompare(b.name);
+    return la.localeCompare(lb);
+  });
+}
+
+// =============================================================================
+// REDUCER
+// =============================================================================
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'SET_CURRENT_MONTH': return { ...state, currentMonth: action.month };
+
+    case 'ADD_ENTRY': return { ...state, entries: [...state.entries, action.entry] };
+    case 'UPDATE_ENTRY': return { ...state, entries: state.entries.map(e => e.id === action.entry.id ? action.entry : e) };
+    case 'DELETE_ENTRY': return { ...state, entries: state.entries.filter(e => e.id !== action.id) };
+    case 'SET_ENTRY_ASSIGNMENT': return {
+      ...state,
+      entries: state.entries.map(e => e.id === action.id ? {
+        ...e,
+        assignments: { ...(e.assignments || {}), [action.role]: action.workerId }
+      } : e)
+    };
+
+    case 'ADD_WORKER': return { ...state, workers: [...state.workers, action.worker] };
+    case 'UPDATE_WORKER': return { ...state, workers: state.workers.map(w => w.id === action.worker.id ? action.worker : w) };
+    case 'DELETE_WORKER': return { ...state, workers: state.workers.filter(w => w.id !== action.id) };
+
+    case 'UPDATE_ROLES': return { ...state, roles: action.roles };
+    case 'UPDATE_SERVICE_TYPES': return { ...state, serviceTypes: action.serviceTypes };
+    case 'UPDATE_SETTINGS': return { ...state, settings: { ...state.settings, ...action.payload } };
+
+    case 'UPDATE_MINISTRY': return { ...state, ministry: { ...state.ministry, ...action.payload } };
+
+    case 'IMPORT_DATA': return migrate(action.payload);
+    case 'RESET': return defaultState();
+    default: return state;
+  }
+}
+
+// =============================================================================
+// SHARED UI
+// =============================================================================
+
+const Pill = ({ tone = 'default', children, className = '' }) => (
+  <span className={`pill pill-${tone} ${className}`}>{children}</span>
+);
+
+const SectionHeading = ({ eyebrow, title, children }) => (
+  <div className="mb-6">
+    {eyebrow && <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">{eyebrow}</div>}
+    <h2 className="font-display text-3xl font-semibold ink leading-tight">{title}</h2>
+    {children && <p className="mt-2 text-sm ink-muted max-w-xl">{children}</p>}
+  </div>
+);
+
+// Worker picker (portal)
+function WorkerPicker({ state, serviceType, currentValue, onSelect, onClose, beforeDate, anchorRef }) {
+  const [search, setSearch] = useState('');
+  const [pos, setPos] = useState({ top: -9999, left: -9999, width: 280, ready: false });
+  const ref = useRef(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
+  useEffect(() => {
+    function place() {
+      if (!anchorRef?.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const width = vw < 640 ? Math.min(vw - 24, 320) : 280;
+      let left = rect.left, top = rect.bottom + 4;
+      if (left + width > vw - 8) left = vw - width - 8;
+      if (left < 8) left = 8;
+      const estH = Math.min(360, vh - 16);
+      if (top + estH > vh - 8) top = Math.max(8, rect.top - estH - 4);
+      setPos({ top, left, width, ready: true });
+    }
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
+  }, [anchorRef]);
+
+  useEffect(() => {
+    function onOutside(e) {
+      if (ref.current && !ref.current.contains(e.target) && anchorRef?.current && !anchorRef.current.contains(e.target)) onClose();
+    }
+    document.addEventListener('mousedown', onOutside);
+    document.addEventListener('touchstart', onOutside);
+    return () => { document.removeEventListener('mousedown', onOutside); document.removeEventListener('touchstart', onOutside); };
+  }, [onClose, anchorRef]);
+
+  const ordered = useMemo(() => suggestNextWorker(state, serviceType, beforeDate || '9999-12-31'), [state, serviceType, beforeDate]);
+
+  const filtered = (list) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(w => (w.title + ' ' + w.name).toLowerCase().includes(q));
+  };
+
+  const individuals = filtered(ordered.filter(w => w.kind !== 'group'));
+  const groups = filtered(ordered.filter(w => w.kind === 'group'));
+
+  const dropdown = (
+    <div ref={ref} className="dropdown fade-in" style={{ top: pos.top, left: pos.left, width: pos.width, visibility: pos.ready ? 'visible' : 'hidden' }}>
+      <div className="px-2 pt-1 pb-2">
+        <input autoFocus={!isMobile} value={search} onChange={e => setSearch(e.target.value)} placeholder="Search team…" className="input" style={{ fontSize: '0.8125rem' }} />
+      </div>
+      {currentValue && (
+        <div className="dropdown-item" onClick={() => { onSelect(null); onClose(); }} style={{ color: 'var(--danger)' }}>
+          <span>✕ Clear assignment</span>
+        </div>
+      )}
+      <div className="dotted-divider my-1" />
+      <div className="dropdown-section">Individuals (least recently assigned)</div>
+      {individuals.length === 0 ? (
+        <div className="dropdown-item-empty">No matches</div>
+      ) : (
+        individuals.slice(0, 10).map(w => (
+          <div key={w.id} className="dropdown-item" onClick={() => { onSelect(w.id); onClose(); }}>
+            <span>{workerDisplay(w)}</span>
+            {w.id === currentValue && <span className="ink-subtle text-xs">current</span>}
+          </div>
+        ))
+      )}
+      {groups.length > 0 && (
+        <>
+          <div className="dropdown-section mt-1">Groups</div>
+          {groups.map(w => (
+            <div key={w.id} className="dropdown-item" onClick={() => { onSelect(w.id); onClose(); }}>
+              <span>🎵 {w.name}</span>
+              {w.id === currentValue && <span className="ink-subtle text-xs">current</span>}
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+
+  return ReactDOM.createPortal(dropdown, document.body);
+}
+
+// =============================================================================
+// DASHBOARD TAB
+// =============================================================================
+
+function DashboardTab({ state, dispatch, mainData }) {
+  const month = state.currentMonth;
+  const monthEntries = state.entries.filter(e => monthKey(e.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+
+  const today = todayISO();
+  const upcoming = state.entries.filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
+
+  const primaryRole = state.settings.primaryRole;
+  const unassigned = monthEntries.filter(e => !e.assignments?.[primaryRole]).length;
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow={`Currently viewing · ${formatMonthLabel(month)}`} title="Dashboard">
+        Quick read: this month's music ministry rotation, upcoming services, and team status.
+      </SectionHeading>
+
+      <div className="card p-6 mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle">This month</div>
+          <div className="font-display text-2xl font-semibold mt-1">{formatMonthLabel(month)}</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: prevMonth(month) })}>← Prev</button>
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: nextMonth(month) })}>Next →</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatCard label="Services" value={monthEntries.length} sub={unassigned ? `${unassigned} unassigned` : 'All filled'} tone={unassigned ? 'warning' : 'success'} />
+        <StatCard label="Team size" value={state.workers.filter(w => w.status === 'active' && w.kind !== 'group').length} sub="active individuals" />
+        <StatCard label="Groups" value={state.workers.filter(w => w.kind === 'group' && w.status === 'active').length} sub="HOPE / CPM / etc." />
+        <StatCard label="Service types" value={state.serviceTypes.length} sub="configurable" />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="card p-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Upcoming Services</div>
+          {upcoming.length === 0 ? (
+            <div className="ink-subtle italic text-sm">No upcoming services scheduled.</div>
+          ) : (
+            <div className="space-y-3">
+              {upcoming.map(e => {
+                const svc = getServiceType(state, e.service);
+                const primary = state.workers.find(w => w.id === e.assignments?.[primaryRole]);
+                return (
+                  <div key={e.id} className="pl-3 py-1" style={{ borderLeft: `3px solid ${svc.dot}` }}>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <div className="font-mono text-xs ink-muted">{formatDateShort(e.date)}</div>
+                      <div className="text-xs ink-muted">{dayOfWeek(e.date).slice(0,3)}</div>
+                      <Pill tone="default">{svc.label}</Pill>
+                    </div>
+                    <div className="text-sm mt-0.5">
+                      {primary ? (
+                        primary.kind === 'group' ? <Pill tone="group">🎵 {primary.name}</Pill> : workerShort(primary)
+                      ) : <span className="ink-subtle italic">Unassigned</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="card p-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Quick Actions</div>
+          <div className="space-y-2">
+            <p className="text-xs ink-muted">Get up and running fast:</p>
+            <ol className="text-xs ink-muted ml-4 list-decimal space-y-1">
+              <li>Open <strong>Schedule</strong> to assign team members for each service date</li>
+              <li>Use <strong>Workers</strong> to add new team members or groups</li>
+              <li>Use <strong>Settings</strong> to customize roles and service types</li>
+              <li><strong>Print / Share</strong> sends the schedule via Messenger or PDF</li>
+              <li><strong>Data</strong> publishes to FLCC members</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      {mainData && (
+        <div className="mt-4 text-xs ink-muted">
+          <span>🔗 Synced with main schedule — {mainData.schedule?.length || 0} service dates available.</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const StatCard = ({ label, value, sub, tone = 'default' }) => {
+  const colors = { default: 'var(--ink)', success: 'var(--success)', warning: 'var(--warning)', danger: 'var(--danger)' };
+  return (
+    <div className="card p-4">
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle">{label}</div>
+      <div className="font-display text-3xl font-semibold mt-1" style={{ color: colors[tone] }}>{value}</div>
+      <div className="text-xs ink-muted mt-1">{sub}</div>
+    </div>
+  );
+};
+
+// =============================================================================
+// SCHEDULE TAB
+// =============================================================================
+
+function ScheduleTab({ state, dispatch }) {
+  const month = state.currentMonth;
+  const monthEntries = state.entries.filter(e => monthKey(e.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+  const [adding, setAdding] = useState(false);
+
+  // Group by service type
+  const grouped = state.serviceTypes.map(svc => ({
+    service: svc,
+    entries: monthEntries.filter(e => e.service === svc.key),
+  }));
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Team assignments" title="Schedule">
+        Assign your worship team or groups to each service date. Suggestions are sorted least-recently-used.
+      </SectionHeading>
+
+      <div className="card p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: prevMonth(month) })}>←</button>
+          <div className="font-display text-2xl font-semibold">{formatMonthLabel(month)}</div>
+          <button className="btn btn-ghost" onClick={() => dispatch({ type: 'SET_CURRENT_MONTH', month: nextMonth(month) })}>→</button>
+        </div>
+        <button className="btn btn-accent" onClick={() => setAdding(true)}>+ Add Date</button>
+      </div>
+
+      {grouped.map(g => g.entries.length > 0 || true ? (
+        <ScheduleSection key={g.service.key} service={g.service} entries={g.entries} state={state} dispatch={dispatch} />
+      ) : null)}
+
+      {adding && <AddEntryModal month={month} state={state} dispatch={dispatch} onClose={() => setAdding(false)} />}
+    </div>
+  );
+}
+
+function ScheduleSection({ service, entries, state, dispatch }) {
+  return (
+    <div className="card mb-4 overflow-hidden">
+      <div className="px-5 py-3 flex items-baseline justify-between" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+        <div className="flex items-center gap-2">
+          <span className="cal-event-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: service.dot, display: 'inline-block' }}></span>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle">{service.label}</div>
+        </div>
+        <div className="text-xs ink-muted">{entries.length} dates</div>
+      </div>
+      {entries.length === 0 ? (
+        <div className="p-5 ink-subtle italic text-sm">No dates this month for this service.</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="schedule-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                {state.roles.map(r => <th key={r.key}>{r.label}</th>)}
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map(e => <EntryRow key={e.id} entry={e} state={state} dispatch={dispatch} />)}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EntryRow({ entry, state, dispatch }) {
+  return (
+    <tr>
+      <td>
+        <div className="font-mono text-xs">{formatDateShort(entry.date)}</div>
+        <div className="text-xs ink-subtle">{dayOfWeek(entry.date)}</div>
+      </td>
+      {state.roles.map(r => (
+        <RoleCell key={r.key} entry={entry} role={r} state={state} dispatch={dispatch} />
+      ))}
+      <td>
+        <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => {
+          if (confirm(`Delete this entry for ${formatDateShort(entry.date)}?`)) dispatch({ type: 'DELETE_ENTRY', id: entry.id });
+        }}>Delete</button>
+      </td>
+    </tr>
+  );
+}
+
+function RoleCell({ entry, role, state, dispatch }) {
+  const [open, setOpen] = useState(false);
+  const cellRef = useRef(null);
+  const wid = entry.assignments?.[role.key];
+  const w = state.workers.find(x => x.id === wid);
+
+  return (
+    <td>
+      <div ref={cellRef} className="role-cell" onClick={() => setOpen(o => !o)}>
+        {w ? (
+          w.kind === 'group' ? <Pill tone="group">🎵 {w.name}</Pill> : workerShort(w)
+        ) : <span className="role-cell-vacant">Pick</span>}
+      </div>
+      {open && (
+        <WorkerPicker
+          state={state}
+          serviceType={entry.service}
+          currentValue={wid}
+          onSelect={(id) => dispatch({ type: 'SET_ENTRY_ASSIGNMENT', id: entry.id, role: role.key, workerId: id })}
+          onClose={() => setOpen(false)}
+          beforeDate={entry.date}
+          anchorRef={cellRef}
+        />
+      )}
+    </td>
+  );
+}
+
+function AddEntryModal({ month, state, dispatch, onClose }) {
+  const [date, setDate] = useState(`${month}-01`);
+  const [service, setService] = useState(state.serviceTypes[0]?.key || 'Friday');
+  const submit = () => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Valid date is required.'); return; }
+    const id = `m-${date}-${service.toLowerCase()}-${Date.now()}`;
+    dispatch({ type: 'ADD_ENTRY', entry: { id, date, service, assignments: {} } });
+    onClose();
+  };
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()}>
+        <h3 className="font-display text-2xl font-semibold mb-4">Add service date</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Date</label>
+            <input className="input mt-1" type="date" value={date} onChange={e => setDate(e.target.value)} />
+            {date && /^\d{4}-\d{2}-\d{2}$/.test(date) && <div className="text-xs ink-muted mt-1">{dayOfWeek(date)}</div>}
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Service type</label>
+            <select className="select mt-1" value={service} onChange={e => setService(e.target.value)}>
+              {state.serviceTypes.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-accent" onClick={submit}>Add</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// WORKERS TAB
+// =============================================================================
+
+function WorkersTab({ state, dispatch }) {
+  const [editing, setEditing] = useState(null);
+  const individuals = state.workers.filter(w => w.kind !== 'group');
+  const groups = state.workers.filter(w => w.kind === 'group');
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Team roster" title="Workers & Groups">
+        Individual team members + named groups (HOPE Sector, CPM, RPG, Fruitbearers, etc.) who can be assigned to lead worship.
+      </SectionHeading>
+
+      <div className="card p-4 mb-4 flex justify-end gap-2">
+        <button className="btn btn-soft" onClick={() => setEditing({ id: null, name: '', title: '', kind: 'group', status: 'active' })}>+ Add Group</button>
+        <button className="btn btn-accent" onClick={() => setEditing({ id: null, name: '', title: 'Sis.', kind: 'individual', status: 'active' })}>+ Add Worker</button>
+      </div>
+
+      <div className="card overflow-hidden mb-4">
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Individuals · {individuals.length}</div>
+        </div>
+        <table className="schedule-table">
+          <thead>
+            <tr><th>Name</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            {individuals.map(w => (
+              <tr key={w.id}>
+                <td className="font-medium">{workerDisplay(w)}</td>
+                <td><Pill tone={w.status === 'active' ? 'success' : 'default'}>{w.status}</Pill></td>
+                <td><button className="btn btn-ghost text-xs" onClick={() => setEditing({ ...w })}>Edit</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="card overflow-hidden">
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Groups · {groups.length}</div>
+        </div>
+        <table className="schedule-table">
+          <thead>
+            <tr><th>Group Name</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            {groups.map(w => (
+              <tr key={w.id}>
+                <td className="font-medium">🎵 {w.name}</td>
+                <td><Pill tone={w.status === 'active' ? 'success' : 'default'}>{w.status}</Pill></td>
+                <td><button className="btn btn-ghost text-xs" onClick={() => setEditing({ ...w })}>Edit</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {editing && <WorkerEditModal worker={editing} onSave={(w) => {
+        if (!w.name.trim()) { alert('Name is required.'); return; }
+        if (w.id) dispatch({ type: 'UPDATE_WORKER', worker: w });
+        else dispatch({ type: 'ADD_WORKER', worker: { ...w, id: `${w.kind === 'group' ? 'grp' : 'mus'}-${Date.now()}` } });
+        setEditing(null);
+      }} onDelete={(id) => { if (confirm('Delete this team member?')) { dispatch({ type: 'DELETE_WORKER', id }); setEditing(null); } }} onClose={() => setEditing(null)} />}
+    </div>
+  );
+}
+
+function WorkerEditModal({ worker, onSave, onDelete, onClose }) {
+  const [w, setW] = useState(worker);
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal p-6 fade-in" onClick={e => e.stopPropagation()}>
+        <h3 className="font-display text-2xl font-semibold mb-4">{w.id ? 'Edit' : 'Add'} {w.kind === 'group' ? 'Group' : 'Worker'}</h3>
+        <div className="space-y-3">
+          {w.kind !== 'group' && (
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Title</label>
+                <select className="select mt-1" value={w.title || ''} onChange={e => setW({ ...w, title: e.target.value })}>
+                  <option value="">(none)</option>
+                  <option value="Sis.">Sis.</option>
+                  <option value="Bro.">Bro.</option>
+                  <option value="Ptr.">Ptr.</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
+                <input className="input mt-1" value={w.name} onChange={e => setW({ ...w, name: e.target.value })} placeholder="e.g. Jenarlyn Culao" />
+              </div>
+            </div>
+          )}
+          {w.kind === 'group' && (
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Group name</label>
+              <input className="input mt-1" value={w.name} onChange={e => setW({ ...w, name: e.target.value })} placeholder="e.g. HOPE Sector, CPM, Fruitbearers, RPG" />
+            </div>
+          )}
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Type</label>
+            <select className="select mt-1" value={w.kind} onChange={e => setW({ ...w, kind: e.target.value })}>
+              <option value="individual">Individual</option>
+              <option value="group">Group (multiple people)</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Status</label>
+            <select className="select mt-1" value={w.status} onChange={e => setW({ ...w, status: e.target.value })}>
+              <option value="active">Active</option>
+              <option value="on-leave">On leave</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-between gap-2 mt-6">
+          <div>{w.id && <button className="btn btn-ghost" onClick={() => onDelete(w.id)} style={{ color: 'var(--danger)' }}>Delete</button>}</div>
+          <div className="flex gap-2">
+            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn-accent" onClick={() => onSave(w)}>Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// SETTINGS TAB — Edmund customizes roles, service types
+// =============================================================================
+
+function SettingsTab({ state, dispatch }) {
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Customize" title="Settings">
+        Configure your team's roles and service types. Changes apply across the whole app.
+      </SectionHeading>
+
+      <RolesEditor state={state} dispatch={dispatch} />
+      <ServiceTypesEditor state={state} dispatch={dispatch} />
+    </div>
+  );
+}
+
+function RolesEditor({ state, dispatch }) {
+  const [roles, setRoles] = useState(state.roles);
+  const [primaryRole, setPrimaryRole] = useState(state.settings.primaryRole);
+
+  const update = (i, patch) => setRoles(roles.map((r, idx) => idx === i ? { ...r, ...patch } : r));
+  const add = () => {
+    const key = `role-${Date.now()}`;
+    setRoles([...roles, { key, label: 'New Role' }]);
+  };
+  const remove = (i) => {
+    if (roles.length === 1) { alert('You need at least one role.'); return; }
+    setRoles(roles.filter((_, idx) => idx !== i));
+  };
+  const save = () => {
+    if (roles.some(r => !r.label.trim())) { alert('All roles need a label.'); return; }
+    dispatch({ type: 'UPDATE_ROLES', roles });
+    dispatch({ type: 'UPDATE_SETTINGS', payload: { primaryRole } });
+    alert('Roles saved!');
+  };
+
+  return (
+    <div className="card p-5 mb-6">
+      <div className="font-display text-xl font-semibold mb-1">Roles</div>
+      <p className="ink-muted text-sm mb-4">Define what positions your team fills. Use just one (like "Assigned") for simple scheduling, or add more for richer team breakdowns.</p>
+      <div className="space-y-2 mb-4">
+        {roles.map((r, i) => (
+          <div key={r.key} className="flex items-center gap-2">
+            <input className="input" value={r.label} onChange={e => update(i, { label: e.target.value })} placeholder="e.g. Worship Leader" />
+            <label className="flex items-center gap-1.5 text-xs ink-muted cursor-pointer" title="Use this role for sorting and primary display">
+              <input type="radio" name="primary" checked={primaryRole === r.key} onChange={() => setPrimaryRole(r.key)} />
+              Primary
+            </label>
+            <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => remove(i)}>✕</button>
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between gap-2">
+        <button className="btn btn-soft text-xs" onClick={add}>+ Add Role</button>
+        <button className="btn btn-accent" onClick={save}>Save Roles</button>
+      </div>
+    </div>
+  );
+}
+
+function ServiceTypesEditor({ state, dispatch }) {
+  const [types, setTypes] = useState(state.serviceTypes);
+
+  const update = (i, patch) => setTypes(types.map((t, idx) => idx === i ? { ...t, ...patch } : t));
+  const add = () => {
+    const key = `svc-${Date.now()}`;
+    setTypes([...types, { key, label: 'New Service', dot: '#71717A' }]);
+  };
+  const remove = (i) => {
+    if (types.length === 1) { alert('You need at least one service type.'); return; }
+    setTypes(types.filter((_, idx) => idx !== i));
+  };
+  const save = () => {
+    if (types.some(t => !t.label.trim() || !t.key.trim())) { alert('Each service needs a key and label.'); return; }
+    dispatch({ type: 'UPDATE_SERVICE_TYPES', serviceTypes: types });
+    alert('Service types saved!');
+  };
+
+  return (
+    <div className="card p-5 mb-6">
+      <div className="font-display text-xl font-semibold mb-1">Service Types</div>
+      <p className="ink-muted text-sm mb-4">What kinds of services does your team play for? Examples: Friday Service, Sunday Service, Prayer Meeting, Special Events.</p>
+      <div className="space-y-2 mb-4">
+        {types.map((t, i) => (
+          <div key={t.key} className="flex items-center gap-2">
+            <input type="color" value={t.dot} onChange={e => update(i, { dot: e.target.value })} style={{ width: 32, height: 32, padding: 0, border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }} />
+            <input className="input" value={t.key} onChange={e => update(i, { key: e.target.value })} placeholder="Key (e.g. Friday)" style={{ maxWidth: 140 }} />
+            <input className="input" value={t.label} onChange={e => update(i, { label: e.target.value })} placeholder="Label (e.g. Friday Service)" />
+            <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => remove(i)}>✕</button>
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between gap-2">
+        <button className="btn btn-soft text-xs" onClick={add}>+ Add Service Type</button>
+        <button className="btn btn-accent" onClick={save}>Save Service Types</button>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// PRINT / SHARE TAB — Messenger export + PDF print
+// =============================================================================
+
+function PrintTab({ state }) {
+  const month = state.currentMonth;
+  const monthEntries = state.entries.filter(e => monthKey(e.date) === month).sort((a, b) => a.date.localeCompare(b.date));
+
+  const generateMessengerText = () => {
+    const lines = [];
+    lines.push(`🎵 ${state.meta.churchName}`);
+    lines.push(`${state.meta.ministryName} — ${formatMonthLabel(month).toUpperCase()}`);
+    lines.push('');
+    // Group by service type
+    for (const svc of state.serviceTypes) {
+      const entries = monthEntries.filter(e => e.service === svc.key);
+      if (entries.length === 0) continue;
+      lines.push(`▸ ${svc.label.toUpperCase()}`);
+      for (const e of entries) {
+        const primary = state.workers.find(w => w.id === e.assignments?.[state.settings.primaryRole]);
+        const primaryName = primary ? (primary.kind === 'group' ? `🎵 ${primary.name}` : workerDisplay(primary)) : 'TBD';
+        lines.push(`  ${formatDateShort(e.date)} (${dayOfWeek(e.date).slice(0,3)}) — ${primaryName}`);
+        // Additional roles if filled
+        for (const r of state.roles) {
+          if (r.key === state.settings.primaryRole) continue;
+          const extra = state.workers.find(w => w.id === e.assignments?.[r.key]);
+          if (extra) lines.push(`    · ${r.label}: ${workerDisplay(extra)}`);
+        }
+      }
+      lines.push('');
+    }
+    lines.push(`Please confirm your assignment and let me know if you have any conflicts.`);
+    lines.push(`— ${state.ministry.headName || 'Music Ministry'} 🎵`);
+    return lines.join('\n');
+  };
+
+  const sendViaMessenger = () => {
+    const text = generateMessengerText();
+    navigator.clipboard.writeText(text).then(() => {
+      // Try to open Messenger if a username is configured
+      if (state.ministry.messenger) {
+        window.open(`https://m.me/${state.ministry.messenger}`, '_blank');
+        alert(`Schedule copied to clipboard! Messenger is opening — paste it into your group chat.`);
+      } else {
+        alert(`Schedule copied to clipboard! Open Messenger and paste it into your group chat.`);
+      }
+    }).catch(() => alert('Copy failed.'));
+  };
+
+  return (
+    <div className="fade-in">
+      <div className="no-print">
+        <SectionHeading eyebrow="Send the schedule" title="Print / Share">
+          Send the monthly music ministry schedule to your team via Messenger, or save as PDF for paper printing.
+        </SectionHeading>
+        <div className="card p-4 mb-6 flex items-center gap-3 flex-wrap">
+          <button className="btn btn-accent" onClick={sendViaMessenger}>📲 Copy & Open Messenger</button>
+          <button className="btn btn-primary" onClick={() => window.print()}>🖨 Print / Save PDF</button>
+          <button className="btn btn-soft" onClick={() => {
+            navigator.clipboard.writeText(generateMessengerText()).then(() => alert('Schedule copied to clipboard!')).catch(() => alert('Copy failed.'));
+          }}>📋 Copy as text</button>
+          <div className="flex-1" />
+          <span className="text-xs ink-subtle">Showing {formatMonthLabel(month)}</span>
+        </div>
+      </div>
+
+      <div className="print-section">
+        <div className="text-center mb-4">
+          <div className="font-display text-2xl font-bold" style={{ color: 'var(--accent)' }}>{state.meta.churchName}</div>
+          <div className="text-sm font-semibold mt-1 underline" style={{ color: 'var(--info)' }}>{state.meta.ministryName.toUpperCase()} SCHEDULE</div>
+          <div className="text-xs font-semibold mt-1">MONTH: {formatMonthLabel(month).toUpperCase()}</div>
+        </div>
+
+        {state.serviceTypes.map(svc => {
+          const entries = monthEntries.filter(e => e.service === svc.key);
+          if (entries.length === 0) return null;
+          return (
+            <div key={svc.key} className="mb-6">
+              <div className="font-semibold text-sm mb-2" style={{ color: svc.dot, borderBottom: `2px solid ${svc.dot}`, paddingBottom: 4 }}>
+                {svc.label.toUpperCase()}
+              </div>
+              <table className="print-table w-full" style={{ borderCollapse: 'collapse', border: '1px solid #999' }}>
+                <thead>
+                  <tr style={{ background: '#FEF3C7' }}>
+                    <th style={th}>DATE</th>
+                    <th style={th}>DAY</th>
+                    {state.roles.map(r => <th key={r.key} style={th}>{r.label.toUpperCase()}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map(e => (
+                    <tr key={e.id}>
+                      <td style={td}>{formatDateShort(e.date).toUpperCase().replace('-', ' ')}</td>
+                      <td style={td}>{dayOfWeek(e.date).slice(0,3).toUpperCase()}</td>
+                      {state.roles.map(r => {
+                        const w = state.workers.find(x => x.id === e.assignments?.[r.key]);
+                        return <td key={r.key} style={td}>{w ? (w.kind === 'group' ? `🎵 ${w.name}` : workerDisplay(w).toUpperCase()) : '—'}</td>;
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const th = { padding: '6px 8px', fontSize: '11px', fontWeight: 600, border: '1px solid #999', textAlign: 'left' };
+const td = { padding: '6px 8px', fontSize: '11px', border: '1px solid #999' };
+
+// =============================================================================
+// DATA TAB — publish to members + ministry contact
+// =============================================================================
+
+function DataTab({ state, dispatch }) {
+  const fileInputRef = useRef(null);
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `flcc-music-${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const publishForMembers = () => {
+    const out = {
+      meta: {
+        churchName: state.meta.churchName,
+        ministryName: state.meta.ministryName,
+        publishedAt: new Date().toISOString(),
+        version: APP_VERSION,
+      },
+      ministry: state.ministry,
+      roles: state.roles,
+      serviceTypes: state.serviceTypes,
+      workers: state.workers,
+      entries: state.entries,
+      settings: state.settings,
+    };
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'music.json';
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const importData = (file) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.entries) throw new Error('Invalid file format');
+        if (confirm('This will replace your current data. Continue?')) {
+          dispatch({ type: 'IMPORT_DATA', payload: data });
+          alert('Imported successfully!');
+        }
+      } catch (err) { alert('Import failed: ' + err.message); }
+    };
+    reader.readAsText(file);
+  };
+
+  const m = state.ministry || {};
+  const setMinistry = (patch) => dispatch({ type: 'UPDATE_MINISTRY', payload: patch });
+  const ministryComplete = m.headName && (m.whatsapp || m.messenger || m.phone || m.email);
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Sync & publish" title="Data">
+        Publish to FLCC members, share with your team, or back up your data.
+      </SectionHeading>
+
+      <div className="card p-6 mb-6" style={{ borderColor: 'var(--accent)' }}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>For FLCC Members</div>
+        <div className="font-display text-2xl font-semibold">Publish for Members</div>
+        <p className="ink-muted text-sm mt-2 max-w-xl mb-4">
+          Generate <code className="font-mono text-xs px-1 py-0.5 rounded" style={{ background: '#F4F4F0' }}>music.json</code> and upload it to the FLCC members repo. The music ministry schedule appears in the members view automatically.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-3 mb-4">
+          <button className="btn btn-accent" onClick={publishForMembers} disabled={!ministryComplete}>↓ Generate music.json</button>
+          <button className="btn btn-soft" onClick={() => {
+            const text = `🎵 The music ministry schedule has been updated.\n\nView it in the FLCC members app — open your bookmark and the Music tab will be there with this month's assignments.\n\nIf you have a conflict on any of your assignments, you can report it directly from the app.\n\n— ${m.headName || 'Music Ministry'}`;
+            navigator.clipboard.writeText(text).then(() => alert('Announcement copied!')).catch(() => alert('Copy failed.'));
+          }}>📋 Copy member announcement</button>
+        </div>
+        {!ministryComplete && (
+          <div className="text-xs p-3 rounded" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
+            ⚠ Fill in the Ministry Contact below first — members need at least one channel to report conflicts.
+          </div>
+        )}
+      </div>
+
+      <div className="card p-6 mb-6">
+        <div className="font-display text-xl font-semibold mb-1">Ministry Contact</div>
+        <p className="ink-muted text-sm mb-4">When members report a music-related conflict, the message routes to the channel they pick below.</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
+            <input className="input mt-1" value={m.headName || ''} onChange={e => setMinistry({ headName: e.target.value })} placeholder="e.g. Bro. Edmund Gabriel" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Title / Role</label>
+            <input className="input mt-1" value={m.headTitle || ''} onChange={e => setMinistry({ headTitle: e.target.value })} placeholder="e.g. Music Ministry Lead" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">WhatsApp number</label>
+            <input className="input mt-1" value={m.whatsapp || ''} onChange={e => setMinistry({ whatsapp: e.target.value })} placeholder="+96512345678" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Messenger username</label>
+            <input className="input mt-1" value={m.messenger || ''} onChange={e => setMinistry({ messenger: e.target.value })} placeholder="username (without @)" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">SMS / phone</label>
+            <input className="input mt-1" value={m.phone || ''} onChange={e => setMinistry({ phone: e.target.value })} placeholder="+96512345678" />
+          </div>
+          <div>
+            <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Email</label>
+            <input className="input mt-1" type="email" value={m.email || ''} onChange={e => setMinistry({ email: e.target.value })} placeholder="edmund@example.com" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <div className="card p-6">
+          <div className="font-display text-xl font-semibold mb-2">Admin Backup</div>
+          <p className="ink-muted text-sm mb-4">Download your full admin backup. Send to a co-leader or save for safekeeping.</p>
+          <button className="btn btn-primary" onClick={exportData}>↓ Download admin JSON</button>
+        </div>
+        <div className="card p-6">
+          <div className="font-display text-xl font-semibold mb-2">Import</div>
+          <p className="ink-muted text-sm mb-4">Replace your current data with an exported file.</p>
+          <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={e => e.target.files[0] && importData(e.target.files[0])} />
+          <button className="btn btn-soft" onClick={() => fileInputRef.current?.click()}>↑ Choose JSON file</button>
+        </div>
+      </div>
+
+      <div className="card p-6">
+        <div className="font-display text-xl font-semibold mb-2">Reset</div>
+        <p className="ink-muted text-sm mb-4">Restore the original seed data (Feb / Mar / Apr 2026 from Allen's photos).</p>
+        <button className="btn btn-ghost" style={{ color: 'var(--danger)' }} onClick={() => { if (confirm('Reset to seed data? All your changes will be lost.')) dispatch({ type: 'RESET' }); }}>↺ Reset to seed data</button>
+      </div>
+
+      <div className="mt-6 text-xs ink-muted">
+        Last updated: {new Date(state.meta.lastUpdated).toLocaleString()} · Version {state.meta.version}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// APP
+// =============================================================================
+
+const TABS = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'schedule', label: 'Schedule' },
+  { key: 'workers', label: 'Workers' },
+  { key: 'settings', label: 'Settings' },
+  { key: 'print', label: 'Print / Share' },
+  { key: 'data', label: 'Data' },
+];
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, null, () => migrate(loadState()) || defaultState());
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [mainData, setMainData] = useState(null);
+  const [mainDataLoadedAt, setMainDataLoadedAt] = useState(null);
+
+  useEffect(() => { saveState(state); }, [state]);
+
+  const fetchMain = () => {
+    fetch(`./data.json?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(d => {
+        if (d?.schedule && d?.workers) { setMainData(d); setMainDataLoadedAt(Date.now()); }
+        else setMainData(false);
+      })
+      .catch(() => setMainData(false));
+  };
+  useEffect(fetchMain, []);
+
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        if (!mainDataLoadedAt || (Date.now() - mainDataLoadedAt) > 30000) fetchMain();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onVisibility);
+    return () => { document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('focus', onVisibility); };
+  }, [mainDataLoadedAt]);
+
+  return (
+    <div className="min-h-screen bg-app">
+      <header className="border-b border-app no-print" style={{ background: 'rgba(250, 250, 245, 0.85)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20 }}>
+        <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{state.meta.churchName} · {state.meta.ministryName}</div>
+              <h1 className="font-display text-3xl font-semibold mt-1">🎵 Music OS</h1>
+            </div>
+            <div className="text-xs ink-muted">
+              <span className="font-mono">{formatMonthLabel(state.currentMonth)}</span>
+              <span className="mx-2">·</span>
+              <span>v{state.meta.version}</span>
+              {mainData && <><span className="mx-2">·</span><span title="Synced with main schedule">🔗 synced</span></>}
+            </div>
+          </div>
+          <nav className="flex flex-wrap mt-4">
+            {TABS.map(t => (
+              <button key={t.key} className={`tab ${activeTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {activeTab === 'dashboard' && <DashboardTab state={state} dispatch={dispatch} mainData={mainData} />}
+        {activeTab === 'schedule'  && <ScheduleTab state={state} dispatch={dispatch} />}
+        {activeTab === 'workers'   && <WorkersTab state={state} dispatch={dispatch} />}
+        {activeTab === 'settings'  && <SettingsTab state={state} dispatch={dispatch} />}
+        {activeTab === 'print'     && <PrintTab state={state} />}
+        {activeTab === 'data'      && <DataTab state={state} dispatch={dispatch} />}
+      </main>
+
+      <footer className="max-w-7xl mx-auto px-6 py-12 text-xs ink-subtle no-print">
+        FLCC Music OS · Built for {state.ministry.headName || 'the Music Ministry'} · Data stored locally in your browser
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

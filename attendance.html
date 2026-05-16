@@ -109,8 +109,7 @@ const ATT_ACCENT = '#0284C7';
 
 const STATUS_CFG = {
   present: { label: 'Present', emoji: '✓', color: '#16A34A', soft: '#F0FDF4', ring: '#BBF7D0' },
-  late:    { label: 'Late',    emoji: '○', color: '#D97706', soft: '#FFFBEB', ring: '#FDE68A' },
-  absent:  { label: 'Absent', emoji: '✗', color: '#DC2626', soft: '#FFF1F2', ring: '#FECDD3' },
+  absent:  { label: 'Absent',  emoji: '✗', color: '#DC2626', soft: '#FFF1F2', ring: '#FECDD3' },
 };
 
 const ROLE_MINISTRY = {
@@ -232,12 +231,11 @@ function getInitials(name) {
 }
 
 function getSessionSummary(session, totalMembers) {
-  const recs = session?.records || [];
-  const present = recs.filter(r=>r.status==='present').length;
-  const late    = recs.filter(r=>r.status==='late').length;
-  const absent  = recs.filter(r=>r.status==='absent').length;
+  const recs    = session?.records || [];
+  const present = recs.filter(r => r.status === 'present').length;
   const total   = totalMembers || session?.totalMembers || 0;
-  return { present, late, absent, unrecorded: Math.max(0, total - present - late - absent), total };
+  const absent  = Math.max(0, total - present);
+  return { present, absent, total };
 }
 
 function computeCareFlags(sessions, members) {
@@ -247,11 +245,11 @@ function computeCareFlags(sessions, members) {
     const statuses = recent.map(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status||null);
     let streak=0, maxStreak=0;
     for (const st of statuses) {
-      if (st==='absent') { streak++; maxStreak=Math.max(maxStreak,streak); }
-      else if (st!==null) streak=0;
+      if (st !== 'present') { streak++; maxStreak=Math.max(maxStreak,streak); }
+      else streak=0;
     }
     if (maxStreak >= 2) {
-      const lastPresent = recent.find(s=>['present','late'].includes((s.records||[]).find(r=>r.memberId===m.id)?.status));
+      const lastPresent = recent.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
       flags.push({ member:m, streak:maxStreak, lastPresent: lastPresent?.date||null });
     }
     return flags;
@@ -318,22 +316,28 @@ function Avatar({ name, size=40 }) {
 }
 
 function SummaryBar({ summary }) {
-  const { present, late, absent, unrecorded, total } = summary;
+  const { present, absent, total } = summary;
+  const unrecorded = Math.max(0, total - present);
   return (
-    <div style={{ display:'flex', gap:12, flexWrap:'wrap', fontSize:'0.8125rem' }}>
-      {[
-        { label:'Present', count:present, color:'#16A34A' },
-        { label:'Late',    count:late,    color:'#D97706' },
-        { label:'Absent',  count:absent,  color:'#DC2626' },
-        { label:'—',       count:unrecorded, color:'var(--ink-subtle)' },
-      ].map(x=>(
-        <div key={x.label} style={{ display:'flex', alignItems:'center', gap:5 }}>
-          <div style={{ width:8, height:8, borderRadius:2, background:x.color, flexShrink:0 }}/>
-          <span style={{ fontWeight:600, color:x.color }}>{x.count}</span>
-          <span style={{ color:'var(--ink-muted)' }}>{x.label}</span>
+    <div style={{ display:'flex', gap:12, flexWrap:'wrap', fontSize:'0.8125rem', alignItems:'center' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+        <div style={{ width:8, height:8, borderRadius:2, background:'#16A34A', flexShrink:0 }}/>
+        <span style={{ fontWeight:700, color:'#16A34A', fontSize:'1rem' }}>{present}</span>
+        <span style={{ color:'var(--ink-muted)' }}>Present</span>
+      </div>
+      <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+        <div style={{ width:8, height:8, borderRadius:2, background:'#DC2626', flexShrink:0 }}/>
+        <span style={{ fontWeight:700, color:'#DC2626', fontSize:'1rem' }}>{absent}</span>
+        <span style={{ color:'var(--ink-muted)' }}>Absent</span>
+      </div>
+      {unrecorded > 0 && (
+        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <div style={{ width:8, height:8, borderRadius:2, background:'var(--ink-subtle)', flexShrink:0 }}/>
+          <span style={{ fontWeight:600, color:'var(--ink-subtle)' }}>{unrecorded}</span>
+          <span style={{ color:'var(--ink-subtle)' }}>not yet tapped</span>
         </div>
-      ))}
-      {total>0 && <div style={{ marginLeft:'auto', color:'var(--ink-subtle)', fontSize:'0.75rem' }}>{total} members</div>}
+      )}
+      {total > 0 && <div style={{ marginLeft:'auto', color:'var(--ink-subtle)', fontSize:'0.75rem' }}>{total} total</div>}
     </div>
   );
 }
@@ -354,37 +358,46 @@ function BarChart({ bars, color='#0284C7' }) {
 
 // ─── Member Card ──────────────────────────────────────────────────────────────
 function MemberCard({ member, record, onStatus, isLastAction, onUndo }) {
-  const status = record?.status || null;
-  const sc     = status ? STATUS_CFG[status] : null;
+  const isPresent = record?.status === 'present';
 
-  const tap = s => {
-    if (navigator.vibrate) navigator.vibrate(8);
-    onStatus(member.id, s === status ? null : s);
+  const tap = () => {
+    if (navigator.vibrate) navigator.vibrate(10);
+    onStatus(member.id, isPresent ? null : 'present');
   };
 
   return (
-    <div className="member-row" style={{ background: sc ? sc.soft + 'BB' : 'white' }}>
+    <div className="member-row" style={{ background: isPresent ? '#F0FDF4' : 'white' }}>
       <Avatar name={member.name} />
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.fullName || member.name}</div>
-        <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{member.ministry || 'Ministry'}</div>
-      </div>
-      <div style={{ display:'flex', gap:6, flexShrink:0 }}>
-        {Object.entries(STATUS_CFG).map(([key, cfg])=>(
-          <button key={key} onClick={()=>tap(key)} className="status-btn"
-            style={{
-              background: status===key ? cfg.color : '#F4F4F0',
-              color:      status===key ? 'white'  : '#9CA3AF',
-              border:     `2px solid ${status===key ? cfg.color : 'transparent'}`,
-              transform:  status===key ? 'scale(1.12)' : 'scale(1)',
-            }}>
-            {cfg.emoji}
-          </button>
-        ))}
+        <div style={{ fontSize:'0.75rem', color: isPresent ? '#15803D' : 'var(--ink-subtle)', marginTop:1 }}>
+          {isPresent ? '✓ Present' : 'Not yet recorded'}
+        </div>
       </div>
       {isLastAction && (
-        <button onClick={onUndo} style={{ fontSize:'0.6875rem', color:ATT_ACCENT, background:'none', border:'none', cursor:'pointer', fontWeight:600, textDecoration:'underline', flexShrink:0, paddingLeft:4 }}>Undo</button>
+        <button onClick={onUndo} style={{ fontSize:'0.6875rem', color:ATT_ACCENT, background:'none', border:'none', cursor:'pointer', fontWeight:600, textDecoration:'underline', flexShrink:0, paddingRight:8 }}>Undo</button>
       )}
+      <button
+        onClick={tap}
+        style={{
+          width: 54, height: 54, borderRadius: 14,
+          border: `2px solid ${isPresent ? '#16A34A' : '#D1D5DB'}`,
+          background: isPresent ? '#16A34A' : '#F9FAFB',
+          color: isPresent ? 'white' : '#9CA3AF',
+          cursor: 'pointer',
+          fontSize: isPresent ? '1.5rem' : '1.25rem',
+          fontWeight: 700,
+          transition: 'all .2s cubic-bezier(.34,1.56,.64,1)',
+          transform: isPresent ? 'scale(1.08)' : 'scale(1)',
+          flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          WebkitTapHighlightColor: 'transparent',
+          boxShadow: isPresent ? '0 4px 14px rgba(22,163,74,0.35)' : 'none',
+        }}
+        aria-label={isPresent ? 'Mark absent' : 'Mark present'}
+      >
+        {isPresent ? '✓' : ''}
+      </button>
     </div>
   );
 }
@@ -424,24 +437,23 @@ function TodayTab({ members, state, dispatch, schedule }) {
 
   const updateStatus = (memberId, newStatus) => {
     if (!session) return;
-    const member  = allMembers.find(m=>m.id===memberId);
-    const prevRec = (session.records||[]).find(r=>r.memberId===memberId);
+    const member  = allMembers.find(m => m.id === memberId);
+    const prevRec = (session.records||[]).find(r => r.memberId === memberId);
     const prevSt  = prevRec?.status || null;
 
     const updatedRecs = newStatus === null
-      ? session.records.filter(r=>r.memberId!==memberId)
+      ? session.records.filter(r => r.memberId !== memberId)
       : prevRec
-        ? session.records.map(r=>r.memberId===memberId?{...r,status:newStatus,timestamp:new Date().toISOString()}:r)
-        : [...session.records,{memberId,memberName:member?.name||'',ministry:member?.ministry||'',status:newStatus,timestamp:new Date().toISOString()}];
+        ? session.records.map(r => r.memberId === memberId ? { ...r, status: newStatus, timestamp: new Date().toISOString() } : r)
+        : [...session.records, { memberId, memberName: member?.fullName || member?.name || '', ministry: member?.ministry || '', status: newStatus, timestamp: new Date().toISOString() }];
 
-    const updated = { ...session, records:updatedRecs };
+    const updated = { ...session, records: updatedRecs };
     setSession(updated);
-    dispatch({ type:'UPSERT_SESSION', session:updated });
+    dispatch({ type:'UPSERT_SESSION', session: updated });
 
-    // Undo toast
     if (undoTimer.current) clearTimeout(undoTimer.current);
-    setLastAction({ memberId, memberName:member?.name||'', prevStatus:prevSt, newStatus });
-    undoTimer.current = setTimeout(()=>setLastAction(null), 5000);
+    setLastAction({ memberId, memberName: member?.fullName || member?.name || '', prevStatus: prevSt, newStatus });
+    undoTimer.current = setTimeout(() => setLastAction(null), 5000);
   };
 
   const handleUndo = () => {
@@ -469,10 +481,8 @@ function TodayTab({ members, state, dispatch, schedule }) {
       list = list.filter(m=>(m.name||'').toLowerCase().includes(q)||(m.ministry||'').toLowerCase().includes(q));
     }
     if (filter !== 'all') {
-      const statusMap = { present:'present', late:'late', absent:'absent' };
-      const targetStatus = statusMap[filter];
-      if (targetStatus) list = list.filter(m=>(session?.records||[]).find(r=>r.memberId===m.id)?.status===targetStatus);
-      if (filter==='unrecorded') list = list.filter(m=>!(session?.records||[]).find(r=>r.memberId===m.id));
+      if (filter === 'present')    list = list.filter(m => (session?.records||[]).find(r => r.memberId === m.id)?.status === 'present');
+      if (filter === 'unrecorded') list = list.filter(m => !(session?.records||[]).find(r => r.memberId === m.id && r.status === 'present'));
     }
     // Sort: unrecorded first, then by name
     return list.slice().sort((a,b)=>{
@@ -539,10 +549,8 @@ function TodayTab({ members, state, dispatch, schedule }) {
         <div style={{ display:'flex', gap:6, overflowX:'auto', scrollbarWidth:'none' }}>
           {[
             { k:'all',       l:'All' },
-            { k:'unrecorded',l:'Unrecorded' },
-            { k:'present',   l:'Present'   },
-            { k:'late',      l:'Late'      },
-            { k:'absent',    l:'Absent'    },
+            { k:'present',   l:'✓ Present' },
+            { k:'unrecorded',l:'Not yet tapped' },
           ].map(f=>(
             <button key={f.k} onClick={()=>setFilter(f.k)} style={{ padding:'4px 12px', borderRadius:999, border:'none', cursor:'pointer', fontSize:'0.75rem', fontWeight:filter===f.k?600:400, whiteSpace:'nowrap', background:filter===f.k?ATT_ACCENT:'#F4F4F0', color:filter===f.k?'white':'var(--ink-muted)', transition:'all .15s', flexShrink:0 }}>{f.l}</button>
           ))}
@@ -564,14 +572,25 @@ function TodayTab({ members, state, dispatch, schedule }) {
             />
           ))
         }
-        <div style={{ height:80 }} />
+
+        {/* Big Sync button — always visible at bottom */}
+        {session && state.meta.gasUrl && (
+          <SyncButton session={session} state={state} dispatch={dispatch} />
+        )}
+        {session && !state.meta.gasUrl && (
+          <div style={{ margin:'20px 16px', padding:'14px 16px', borderRadius:12, background:'#F0F9FF', border:'1px solid #BAE6FD', textAlign:'center' }}>
+            <div style={{ fontSize:'0.8125rem', color:'#0369A1', marginBottom:8 }}>Set up Google Sheets sync in Settings to save attendance to the cloud.</div>
+            <div style={{ fontSize:'0.75rem', color:ATT_ACCENT }}>All data is already saved on this device. ✓</div>
+          </div>
+        )}
+        <div style={{ height:100 }} />
       </div>
 
-      {/* Undo toast */}
-      {lastAction && lastAction.newStatus && (
+      {lastAction && (
         <div className="undo-toast">
           <div style={{ fontSize:'0.8125rem' }}>
-            <strong>{lastAction.memberName}</strong> marked <span style={{ color: STATUS_CFG[lastAction.newStatus]?.color }}>{STATUS_CFG[lastAction.newStatus]?.label}</span>
+            <strong>{lastAction.memberName}</strong>
+            {lastAction.newStatus === 'present' ? ' marked Present ✓' : ' removed'}
           </div>
           <button onClick={handleUndo} style={{ background:'rgba(255,255,255,.18)', border:'none', borderRadius:6, padding:'4px 10px', color:'white', cursor:'pointer', fontSize:'0.8125rem', fontWeight:600 }}>Undo</button>
         </div>
@@ -651,7 +670,7 @@ function HistoryTab({ state, dispatch, members }) {
         {sorted.map(sess=>{
           const sum = getSessionSummary(sess, members.length);
           const isOpen = expanded===sess.id;
-          const attendedPct = sum.total>0 ? Math.round(((sum.present+sum.late)/sum.total)*100) : 0;
+          const attendedPct = sum.total>0 ? Math.round((sum.present/sum.total)*100) : 0;
           return (
             <div key={sess.id} className="card overflow-hidden">
               <div onClick={()=>setExpanded(isOpen?null:sess.id)} style={{ padding:'14px 16px', cursor:'pointer', userSelect:'none' }}>
@@ -669,10 +688,8 @@ function HistoryTab({ state, dispatch, members }) {
                   </div>
                 </div>
                 <div style={{ display:'flex', gap:14, marginTop:10, fontSize:'0.8125rem' }}>
-                  <span style={{ color:'#16A34A', fontWeight:600 }}>✓ {sum.present}</span>
-                  <span style={{ color:'#D97706', fontWeight:600 }}>○ {sum.late}</span>
-                  <span style={{ color:'#DC2626', fontWeight:600 }}>✗ {sum.absent}</span>
-                  {sum.unrecorded>0&&<span style={{ color:'var(--ink-subtle)' }}>— {sum.unrecorded}</span>}
+                  <span style={{ color:'#16A34A', fontWeight:600 }}>✓ {sum.present} Present</span>
+                  <span style={{ color:'#DC2626', fontWeight:600 }}>✗ {sum.absent} Absent</span>
                   {sess.synced && <span style={{ marginLeft:'auto', color:'#16A34A', fontSize:'0.6875rem' }}>✓ synced</span>}
                 </div>
               </div>
@@ -766,7 +783,7 @@ function AnalyticsTab({ state, members }) {
   const sessionBars = useMemo(()=>
     sessions.slice(-8).map(s=>{
       const sum = getSessionSummary(s, members.length);
-      return { label:formatDateShort(s.date), value:sum.total>0?Math.round(((sum.present+sum.late)/sum.total)*100):0 };
+      return { label:formatDateShort(s.date), value:sum.total>0?Math.round((sum.present/sum.total)*100):0 };
     }),[sessions, members]);
 
   // Monthly breakdown (all months, all service types, for the bar chart)
@@ -780,7 +797,7 @@ function AnalyticsTab({ state, members }) {
     return Array.from(map.entries()).sort().slice(-6).map(([mk,ss])=>{
       const avg = ss.length ? Math.round(ss.reduce((acc,s)=>{
         const sum=getSessionSummary(s,members.length);
-        return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);
+        return acc+(sum.total?(sum.present/sum.total)*100:0);
       },0)/ss.length) : 0;
       const [y,m] = mk.split('-');
       return { label:new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'short'}), value:avg, mk };
@@ -798,7 +815,7 @@ function AnalyticsTab({ state, members }) {
     const total   = mSessions.length;
     const avgPct  = total ? Math.round(mSessions.reduce((acc,s)=>{
       const sum=getSessionSummary(s,members.length);
-      return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);
+      return acc+(sum.total?(sum.present/sum.total)*100:0);
     },0)/total) : 0;
     return { mSessions, fridays, sundays, others, total, avgPct };
   },[selectedMonth, allSessions, members]);
@@ -859,7 +876,7 @@ function AnalyticsTab({ state, members }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
         {[
           {label:'Sessions',  value:sessions.length,  color:ATT_ACCENT},
-          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
+          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
           {label:'Best',      value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#7C3AED'},
         ].map(s=>(
           <div key={s.label} className="card" style={{padding:'14px 10px',textAlign:'center'}}>
@@ -891,7 +908,7 @@ function AnalyticsTab({ state, members }) {
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
               const sum=getSessionSummary(s,members.length);
-              const pct=sum.total>0?Math.round(((sum.present+sum.late)/sum.total)*100):0;
+              const pct=sum.total>0?Math.round((sum.present/sum.total)*100):0;
               return (
                 <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:8,background:'#FAFAFA',border:'1px solid var(--border)'}}>
                   <div style={{flex:1}}>
@@ -899,9 +916,8 @@ function AnalyticsTab({ state, members }) {
                     <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>{formatDateFull(s.date)}</div>
                   </div>
                   <div style={{display:'flex',gap:8,fontSize:'0.75rem',flexShrink:0}}>
-                    <span style={{color:'#16A34A',fontWeight:600}}>✓{sum.present}</span>
-                    <span style={{color:'#D97706',fontWeight:600}}>○{sum.late}</span>
-                    <span style={{color:'#DC2626',fontWeight:600}}>✗{sum.absent}</span>
+                    <span style={{color:'#16A34A',fontWeight:600}}>✓ {sum.present} Present</span>
+                    <span style={{color:'#DC2626',fontWeight:600}}>✗ {sum.absent} Absent</span>
                   </div>
                   <div style={{fontWeight:700,color:pct>=80?'#16A34A':pct>=60?'#D97706':'#DC2626',fontFamily:'Fraunces,Georgia,serif',fontSize:'1rem',flexShrink:0,minWidth:38,textAlign:'right'}}>{pct}%</div>
                 </div>
@@ -911,12 +927,12 @@ function AnalyticsTab({ state, members }) {
           <button onClick={()=>{
             const [y,m]=selectedMonth.split('-');
             const mLabel=new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-            const lines=[`FLCC - Farwaniya 1 · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?((sum.present+sum.late)/sum.total)*100:0);},0)/sessions.length):0}%`,``];
+            const lines=[`FLCC - Farwaniya 1 · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`,``];
             lines.push('Sessions:');
             for (const s of monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date))) {
               const sum=getSessionSummary(s,members.length);
-              const pct=sum.total>0?Math.round(((sum.present+sum.late)/sum.total)*100):0;
-              lines.push(`  ${s.serviceLabel||s.service} ${s.date}: Present ${sum.present}, Late ${sum.late}, Absent ${sum.absent} (${pct}%)`);
+              const pct=sum.total>0?Math.round((sum.present/sum.total)*100):0;
+              lines.push(`  ${s.serviceLabel||s.service} ${s.date}: Present ${sum.present}, Absent ${sum.absent} (${pct}%)`);
             }
             navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Monthly report copied! Paste in Messenger.')).catch(()=>alert('Copy failed.'));
           }} style={{marginTop:14,padding:'8px 14px',borderRadius:8,background:ATT_ACCENT,color:'white',border:'none',cursor:'pointer',fontSize:'0.8125rem',fontWeight:600,display:'flex',alignItems:'center',gap:6}}>
@@ -1129,17 +1145,150 @@ function SettingsTab({ state, dispatch }) {
   };
 
   const publishAttendanceJSON = () => {
-    const recent = [...state.sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+    // Include all sessions (not just recent 10) so members can see full history
+    const sorted = [...state.sessions].sort((a,b) => b.date.localeCompare(a.date));
     const out = {
-      meta: { churchName:m.churchName, publishedAt:new Date().toISOString() },
-      recentSessions: recent.map(s=>({
-        id:s.id, date:s.date, service:s.service, serviceLabel:s.serviceLabel,
-        summary: getSessionSummary(s),
+      meta: {
+        churchName: m.churchName || 'FLCC - Farwaniya 1',
+        publishedAt: new Date().toISOString(),
+        totalSessions: sorted.length,
+      },
+      // Full session list with per-member records (ID + name for matching)
+      sessions: sorted.map(s => ({
+        id:           s.id,
+        date:         s.date,
+        service:      s.service,
+        serviceLabel: s.serviceLabel || s.service,
+        summary:      getSessionSummary(s),
+        // Per-member status — members.html uses this to show personal history
+        records:      (s.records || []).map(r => ({
+          memberId:   r.memberId,
+          memberName: r.memberName,
+          status:     r.status,
+        })),
       })),
     };
     const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a'); a.href=url; a.download='attendance.json'; a.click(); URL.revokeObjectURL(url);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'attendance.json'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Weekly summary for Ptr. Justin — formatted for Messenger
+  const generateWeeklySummary = () => {
+    const today = todayISO();
+    const weekAgo = (() => {
+      const d = new Date(); d.setDate(d.getDate() - 7);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    })();
+    const monthKey = today.slice(0, 7);
+    const thisWeek = state.sessions
+      .filter(s => s.date >= weekAgo && s.date <= today)
+      .sort((a,b) => a.date.localeCompare(b.date));
+    const thisMonth = state.sessions.filter(s => s.date.slice(0,7) === monthKey);
+
+    if (!thisWeek.length && !thisMonth.length) {
+      alert('No sessions found for this week or month yet.');
+      return;
+    }
+
+    const allMembers = state.customMembers || [];
+    const lines = [];
+    lines.push(`📋 FLCC - FARWANIYA 1`);
+    lines.push(`Attendance Summary`);
+    lines.push(`Week of ${weekAgo} – ${today}`);
+    lines.push(`Generated: ${new Date().toLocaleString()}`);
+    lines.push(``);
+
+    if (thisWeek.length) {
+      lines.push(`📅 THIS WEEK'S SESSIONS (${thisWeek.length}):`);
+      for (const s of thisWeek) {
+        const sum = getSessionSummary(s);
+        const pct = sum.total > 0 ? Math.round((sum.present / sum.total) * 100) : 0;
+        lines.push(`  ${s.serviceLabel || s.service} · ${s.date}`);
+        lines.push(`  ✓ Present: ${sum.present}  ✗ Absent: ${sum.absent}  (${pct}%)`);
+      }
+      lines.push(``);
+    }
+
+    if (thisMonth.length) {
+      const monthAvg = Math.round(thisMonth.reduce((acc, s) => {
+        const sum = getSessionSummary(s);
+        return acc + (sum.total ? (sum.present / sum.total) * 100 : 0);
+      }, 0) / thisMonth.length);
+      const [y, mo] = monthKey.split('-');
+      const monthLabel = new Date(+y, +mo-1, 1).toLocaleDateString('en-US', { month:'long', year:'numeric' });
+      lines.push(`📊 ${monthLabel.toUpperCase()} SUMMARY:`);
+      lines.push(`  Total sessions: ${thisMonth.length}`);
+      lines.push(`  Monthly average: ${monthAvg}%`);
+      lines.push(``);
+    }
+
+    // Top 5 most present this month
+    const monthSessions = thisMonth.length ? thisMonth : thisWeek;
+    const memberCounts = {};
+    for (const s of monthSessions) {
+      for (const r of (s.records || [])) {
+        if (r.status === 'present') {
+          const key = r.memberId;
+          memberCounts[key] = memberCounts[key] || { name: r.memberName, count: 0, total: 0 };
+          memberCounts[key].count++;
+        }
+        const key2 = r.memberId;
+        memberCounts[key2] = memberCounts[key2] || { name: r.memberName, count: 0, total: 0 };
+        memberCounts[key2].total = (memberCounts[key2].total || 0) + 1;
+      }
+    }
+    const top5 = Object.values(memberCounts)
+      .map(x => ({ ...x, pct: x.total ? Math.round((x.count / monthSessions.length) * 100) : 0 }))
+      .sort((a,b) => b.count - a.count || b.pct - a.pct)
+      .slice(0, 5);
+
+    if (top5.length) {
+      lines.push(`🏆 MOST FAITHFUL ATTENDEES:`);
+      top5.forEach((x, i) => {
+        const medals = ['🥇','🥈','🥉','4.','5.'];
+        lines.push(`  ${medals[i]} ${x.name} — ${x.count} sessions`);
+      });
+      lines.push(``);
+    }
+
+    // Care flags
+    const careMembers = [];
+    const recent6 = [...state.sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 6);
+    const memberIds = new Set();
+    for (const s of recent6) for (const r of (s.records||[])) memberIds.add(r.memberId);
+    for (const id of memberIds) {
+      const statuses = recent6.map(s => (s.records||[]).find(r=>r.memberId===id)?.status || null);
+      let streak = 0;
+      for (const st of statuses) {
+        if (st !== 'present') streak++; else break;
+      }
+      if (streak >= 2) {
+        const nameRec = recent6.flatMap(s=>s.records||[]).find(r=>r.memberId===id);
+        if (nameRec) careMembers.push({ name: nameRec.memberName, streak });
+      }
+    }
+
+    if (careMembers.length) {
+      lines.push(`🙏 NEEDS PASTORAL FOLLOW-UP:`);
+      for (const c of careMembers) {
+        lines.push(`  • ${c.name} — absent ${c.streak} consecutive session${c.streak>1?'s':''}`);
+      }
+      lines.push(``);
+    } else {
+      lines.push(`✅ No follow-up needed this week — everyone is engaging!`);
+      lines.push(``);
+    }
+
+    lines.push(`Recorded by: ${m.stewardName || 'Attendance Steward'}`);
+    lines.push(`FLCC - Farwaniya 1 · Attendance OS`);
+
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text)
+      .then(() => alert('✓ Weekly summary copied! Paste it in your Messenger to Ptr. Justin.'))
+      .catch(() => alert('Copy failed. Please try again.'));
   };
 
   return (
@@ -1194,11 +1343,51 @@ function SettingsTab({ state, dispatch }) {
         )}
       </div>
 
-      {/* Publish + backup */}
+      {/* For Ptr. Justin — Weekly Summary */}
+      <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#6D28D9' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#6D28D9' }}>For Ptr. Justin — Weekly Summary</div>
+        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.6 }}>
+          Generates a formatted Messenger-ready text with this week's sessions, monthly average, top 5 faithful members, and anyone needing pastoral follow-up.
+        </p>
+        <button className="btn" style={{ background:'#6D28D9', color:'white', width:'100%', justifyContent:'center', padding:'13px', fontSize:'0.9375rem', fontWeight:700, borderRadius:12 }}
+          onClick={generateWeeklySummary} disabled={!state.sessions.length}>
+          📋 Copy weekly summary for Messenger
+        </button>
+        {!state.sessions.length && <div style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', marginTop:6, textAlign:'center' }}>Record at least one session first.</div>}
+      </div>
+
+      {/* For Allen — Admin Review */}
+      <div className="card" style={{ padding:16, marginBottom:14, borderColor:ATT_ACCENT }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:ATT_ACCENT }}>For Allen — Admin Review</div>
+        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.6 }}>
+          The full master record lives in your Google Sheet after every sync. Open it anytime to filter by month, member, or service type. All steward sessions are timestamped and stored there permanently.
+        </p>
+        {m.gasUrl ? (
+          <a href={m.gasUrl.replace('/exec','').replace('/macros/s/','').includes('docs.google.com') ? m.gasUrl : '#'}
+            target="_blank" rel="noopener"
+            style={{ display:'block', padding:'10px 14px', borderRadius:10, background:ATT_ACCENT+'10', border:`1px solid ${ATT_ACCENT}30`, fontSize:'0.8125rem', color:ATT_ACCENT, textDecoration:'none', fontWeight:500 }}>
+            ↗ Open in Google Sheets (paste your Sheet URL here)
+          </a>
+        ) : (
+          <div style={{ padding:'10px 14px', borderRadius:10, background:'#F4F4F0', fontSize:'0.8125rem', color:'var(--ink-subtle)', fontStyle:'italic' }}>
+            Set up Google Sheets sync above, then you can access the master record anytime.
+          </div>
+        )}
+        <div style={{ marginTop:10, fontSize:'0.75rem', color:'var(--ink-muted)' }}>
+          Tip: You can also view Analytics tab in this app anytime to see trends, care flags, and top members — no internet needed.
+        </div>
+      </div>
+
+      {/* Data section */}
       <div className="card" style={{ padding:16, marginBottom:14 }}>
         <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Data & Publish</div>
+        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.5 }}>
+          Generate <code style={{ background:'#F4F4F0', padding:'1px 5px', borderRadius:4, fontSize:'0.75rem' }}>attendance.json</code> and upload it to your GitHub repo. Members will then see their own personal attendance history when they open the app.
+        </p>
         <div style={{ display:'grid', gap:8 }}>
-          <button className="btn btn-accent" onClick={publishAttendanceJSON} disabled={!state.sessions.length}>↓ Generate attendance.json (for members view)</button>
+          <button className="btn btn-accent" onClick={publishAttendanceJSON} disabled={!state.sessions.length}>
+            ↓ Generate attendance.json
+          </button>
           <button className="btn btn-primary" onClick={exportBackup}>↓ Download admin backup</button>
           <div>
             <input ref={fileRef} type="file" accept=".json" style={{ display:'none' }} onChange={e=>e.target.files[0]&&importBackup(e.target.files[0])} />
@@ -1216,43 +1405,66 @@ function SettingsTab({ state, dispatch }) {
   );
 }
 
-// ─── SYNC PANEL (top of app, appears when session is unsynced) ────────────────
-function SyncPanel({ state, dispatch, members }) {
-  const [syncing, setSyncing] = useState(false);
-  const [result,  setResult]  = useState(null);
-  const today = todayISO();
-  const unsynced = state.sessions.filter(s=>!s.synced);
+// ─── SYNC BUTTON — big, simple, used inside TodayTab ─────────────────────────
+function SyncButton({ session, state, dispatch }) {
+  const [syncing,  setSyncing]  = useState(false);
+  const [done,     setDone]     = useState(false);
+  const [err,      setErr]      = useState(false);
 
-  if (!unsynced.length || !state.meta.gasUrl) return null;
+  const alreadySynced = session?.synced;
+  const summary = getSessionSummary(session, null);
 
   const syncNow = async () => {
     if (!state.meta.gasUrl) return;
-    setSyncing(true); setResult(null);
-    let ok = 0, fail = 0;
-    for (const sess of unsynced) {
-      try {
-        await fetch(state.meta.gasUrl, {
-          method:'POST', mode:'no-cors',
-          body: JSON.stringify({ action:'logAttendance', session: sess }),
-        });
-        dispatch({ type:'UPSERT_SESSION', session:{ ...sess, synced:true, syncedAt:new Date().toISOString() } });
-        ok++;
-      } catch { fail++; }
+    setSyncing(true); setDone(false); setErr(false);
+    try {
+      await fetch(state.meta.gasUrl, {
+        method: 'POST', mode: 'no-cors',
+        body: JSON.stringify({ action: 'logAttendance', session }),
+      });
+      dispatch({ type:'UPSERT_SESSION', session:{ ...session, synced:true, syncedAt:new Date().toISOString() } });
+      dispatch({ type:'UPDATE_META', payload:{ lastSync: new Date().toISOString() } });
+      setDone(true);
+    } catch {
+      setErr(true);
     }
-    dispatch({ type:'UPDATE_META', payload:{ lastSync: new Date().toISOString() } });
     setSyncing(false);
-    setResult(fail===0 ? 'ok' : 'partial');
-    setTimeout(()=>setResult(null), 4000);
+    setTimeout(() => { setDone(false); setErr(false); }, 4000);
   };
 
   return (
-    <div style={{ padding:'8px 16px', background:'#FEF3C7', borderBottom:'1px solid #FDE68A', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-      <div style={{ fontSize:'0.8125rem', color:'#92400E' }}>
-        {unsynced.length} session{unsynced.length>1?'s':''} not yet synced to Google Sheets
-      </div>
-      <button onClick={syncNow} disabled={syncing} style={{ padding:'5px 12px', borderRadius:8, background:'#D97706', color:'white', border:'none', cursor:syncing?'wait':'pointer', fontSize:'0.75rem', fontWeight:600, flexShrink:0 }}>
-        {syncing ? '↻ Syncing…' : result==='ok' ? '✓ Synced!' : result==='partial' ? '⚠ Partial' : '↑ Sync now'}
+    <div style={{ margin:'20px 16px' }}>
+      <button
+        onClick={syncNow}
+        disabled={syncing}
+        style={{
+          width: '100%', padding: '18px', borderRadius: 16,
+          background: done ? '#16A34A' : err ? '#DC2626' : alreadySynced ? '#F0FDF4' : ATT_ACCENT,
+          color: alreadySynced && !done && !err ? ATT_ACCENT : 'white',
+          border: `2px solid ${alreadySynced && !done && !err ? '#BAE6FD' : 'transparent'}`,
+          cursor: syncing ? 'wait' : 'pointer',
+          fontSize: '1.0625rem', fontWeight: 700,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          transition: 'all .25s cubic-bezier(.34,1.56,.64,1)',
+          boxShadow: done || alreadySynced ? 'none' : `0 6px 24px rgba(2,132,199,0.35)`,
+        }}
+      >
+        <span style={{ fontSize: '1.25rem' }}>
+          {syncing ? '↻' : done ? '✓' : err ? '⚠' : '☁'}
+        </span>
+        <span>
+          {syncing ? 'Syncing to Google Sheets…'
+            : done  ? 'Synced successfully!'
+            : err   ? 'Sync failed — tap to retry'
+            : alreadySynced ? `Already synced · ${summary.present} present, ${summary.absent} absent`
+            : `Sync to Google Sheets · ${summary.present} present, ${summary.absent} absent`}
+        </span>
       </button>
+      {state.meta.lastSync && !done && (
+        <div style={{ textAlign:'center', fontSize:'0.6875rem', color:'var(--ink-subtle)', marginTop:8 }}>
+          Last synced: {new Date(state.meta.lastSync).toLocaleString()}
+        </div>
+      )}
     </div>
   );
 }
@@ -1329,9 +1541,6 @@ function App() {
           </nav>
         </div>
       </header>
-
-      {/* Sync banner */}
-      {state.meta.gasUrl && <SyncPanel state={state} dispatch={dispatch} members={members} />}
 
       {/* Data loading state */}
       {!dataLoaded && (
