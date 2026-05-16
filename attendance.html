@@ -120,12 +120,18 @@ const ROLE_MINISTRY = {
 };
 
 const SERVICE_TYPES = [
-  { key: 'Friday',        label: 'Friday Service'        },
-  { key: 'Sunday',        label: 'Sunday Service'        },
-  { key: 'PrayerMeeting', label: 'Prayer Meeting'        },
-  { key: 'MensService',   label: "Men's Service"         },
-  { key: 'Special',       label: 'Special Service'       },
+  { key: 'Friday',        label: 'Friday Service',   pastoralCare: true  },
+  { key: 'Sunday',        label: 'Sunday Service',   pastoralCare: true  },
+  { key: 'Thanksgiving',  label: 'Thanksgiving',     pastoralCare: false },
+  { key: 'PrayerMeeting', label: 'Prayer Meeting',   pastoralCare: false },
+  { key: 'Training',      label: 'Training',         pastoralCare: false },
+  { key: 'Fellowship',    label: 'Fellowship',       pastoralCare: false },
+  { key: 'MensService',   label: "Men's Service",    pastoralCare: false },
+  { key: 'Special',       label: 'Special Service',  pastoralCare: false },
 ];
+
+// Services that count for Pastoral Care flags — Friday and Sunday only
+const PASTORAL_CARE_SERVICES = new Set(['Friday','Sunday']);
 
 const GAS_TEMPLATE = `// ─── Paste this in Google Apps Script ───────────────────
 // 1. Open script.google.com → New project
@@ -239,7 +245,11 @@ function getSessionSummary(session, totalMembers) {
 }
 
 function computeCareFlags(sessions, members) {
-  const recent = [...sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 8);
+  // Pastoral care only applies to Friday and Sunday worship services
+  const worshipSessions = [...sessions]
+    .filter(s => PASTORAL_CARE_SERVICES.has(s.service))
+    .sort((a,b) => b.date.localeCompare(a.date));
+  const recent = worshipSessions.slice(0, 8);
   if (recent.length < 3) return [];
   return members.filter(w=>w.status==='active').reduce((flags,m)=>{
     const statuses = recent.map(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status||null);
@@ -250,24 +260,23 @@ function computeCareFlags(sessions, members) {
     }
     if (maxStreak >= 3) {
       const lastPresent = recent.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
-      const allSessions = sessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
-      const pct = allSessions.length
-        ? Math.round(allSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / allSessions.length * 100)
+      const allWorshipSessions = worshipSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
+      const pct = allWorshipSessions.length
+        ? Math.round(allWorshipSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / allWorshipSessions.length * 100)
         : 0;
-      // Escalation: 3-4 = gentle (steward), 5+ = pastoral priority (pastor)
       const level = maxStreak >= 5 ? 'priority' : 'gentle';
       flags.push({
-        member:      m,
-        streak:      maxStreak,
+        member:        m,
+        streak:        maxStreak,
         level,
-        lastPresent: lastPresent?.date || null,
-        lastService: lastPresent?.service || null,
-        overallPct:  pct,
-        totalSessions: allSessions.length,
+        lastPresent:   lastPresent?.date || null,
+        lastService:   lastPresent?.service || null,
+        overallPct:    pct,
+        totalSessions: allWorshipSessions.length,
       });
     }
     return flags;
-  }, []).sort((a,b) => b.streak - a.streak);  // most absent first
+  }, []).sort((a,b) => b.streak - a.streak);
 }
 
 function getMemberAttendancePct(memberId, sessions) {
@@ -282,8 +291,15 @@ function detectTodayService(schedule) {
   const dow   = dayOfWeekStr(today);
   const exact = (schedule||[]).find(s=>s.date===today);
   if (exact) return exact.service;
-  if (dow === 'Friday')  return 'Friday';
-  if (dow === 'Sunday')  return 'Sunday';
+  if (dow === 'Friday')   return 'Friday';
+  if (dow === 'Sunday')   return 'Sunday';
+  // Auto-detect Thanksgiving — last Thursday of the month
+  if (dow === 'Thursday') {
+    const [y,m,d] = today.split('-').map(Number);
+    // Check if next Thursday falls in a different month
+    const nextThursday = new Date(y, m-1, d+7);
+    if (nextThursday.getMonth() !== m-1) return 'Thanksgiving';
+  }
   return null;
 }
 
@@ -512,20 +528,41 @@ function TodayTab({ members, state, dispatch, schedule }) {
       <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:600, marginBottom:6 }}>
         {formatDateFull(today)}
       </div>
-      <p style={{ fontSize:'0.875rem', color:'var(--ink-muted)', marginBottom:24 }}>
-        {detectedService ? `Auto-detected: ${SERVICE_TYPES.find(s=>s.key===detectedService)?.label}. Start this session or choose another.` : 'Choose the service type to begin attendance recording.'}
+      <p style={{ fontSize:'0.875rem', color:'var(--ink-muted)', marginBottom:20 }}>
+        {detectedService ? `Auto-detected: ${SERVICE_TYPES.find(s=>s.key===detectedService)?.label}. Start this session or choose another.` : 'Choose the session type to begin recording attendance.'}
       </p>
 
+      {/* Auto-detected */}
       {detectedService && (
         <button className="btn btn-accent" style={{ width:'100%', justifyContent:'center', padding:'14px', borderRadius:12, fontSize:'1rem', marginBottom:16 }} onClick={()=>startSession(detectedService)}>
           ▶ Start {SERVICE_TYPES.find(s=>s.key===detectedService)?.label}
         </button>
       )}
 
-      <div style={{ display:'grid', gap:10 }}>
-        {SERVICE_TYPES.filter(s=>s.key!==detectedService).map(svc=>(
-          <button key={svc.key} onClick={()=>startSession(svc.key)} style={{ padding:'13px 16px', borderRadius:12, border:'1px solid var(--border)', background:'var(--surface)', textAlign:'left', cursor:'pointer', fontSize:'0.9375rem', fontWeight:500, transition:'background .15s' }}
-            onMouseEnter={e=>e.currentTarget.style.background=ATT_ACCENT+'10'}
+      {/* Worship services — Pastoral Care applies */}
+      <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:8 }}>
+        ✝️ Worship Services <span style={{ fontWeight:400, textTransform:'none', letterSpacing:'normal', fontSize:'0.6rem', color:ATT_ACCENT }}>— Pastoral Care applies</span>
+      </div>
+      <div style={{ display:'grid', gap:8, marginBottom:16 }}>
+        {SERVICE_TYPES.filter(s=>s.pastoralCare && s.key!==detectedService).map(svc=>(
+          <button key={svc.key} onClick={()=>startSession(svc.key)}
+            style={{ padding:'12px 16px', borderRadius:12, border:`1.5px solid ${ATT_ACCENT}30`, background:ATT_ACCENT+'08', textAlign:'left', cursor:'pointer', fontSize:'0.9375rem', fontWeight:600, color:ATT_ACCENT, transition:'background .15s' }}
+            onMouseEnter={e=>e.currentTarget.style.background=ATT_ACCENT+'18'}
+            onMouseLeave={e=>e.currentTarget.style.background=ATT_ACCENT+'08'}>
+            {svc.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Other gatherings — no Pastoral Care */}
+      <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:8 }}>
+        🗓 Other Gatherings <span style={{ fontWeight:400, textTransform:'none', letterSpacing:'normal', fontSize:'0.6rem', color:'var(--ink-subtle)' }}>— no Pastoral Care flag</span>
+      </div>
+      <div style={{ display:'grid', gap:8 }}>
+        {SERVICE_TYPES.filter(s=>!s.pastoralCare && s.key!==detectedService).map(svc=>(
+          <button key={svc.key} onClick={()=>startSession(svc.key)}
+            style={{ padding:'12px 16px', borderRadius:12, border:'1px solid var(--border)', background:'var(--surface)', textAlign:'left', cursor:'pointer', fontSize:'0.9375rem', fontWeight:500, transition:'background .15s' }}
+            onMouseEnter={e=>e.currentTarget.style.background='#F4F4F0'}
             onMouseLeave={e=>e.currentTarget.style.background=''}>
             {svc.label}
           </button>
@@ -548,6 +585,12 @@ function TodayTab({ members, state, dispatch, schedule }) {
           <div>
             <div className="font-display" style={{ fontSize:'1.125rem', fontWeight:600 }}>{session?.serviceLabel}</div>
             <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)' }}>{formatDateFull(today)}</div>
+            {/* Show whether this session counts for Pastoral Care */}
+            {session && (
+              PASTORAL_CARE_SERVICES.has(session.service)
+                ? <div style={{ fontSize:'0.6875rem', color:ATT_ACCENT, fontWeight:500, marginTop:3 }}>✝️ Worship service · Pastoral Care applies</div>
+                : <div style={{ fontSize:'0.6875rem', color:'var(--ink-subtle)', marginTop:3 }}>🗓 Other gathering · Pastoral Care not applicable</div>
+            )}
           </div>
           <div style={{ display:'flex', gap:6 }}>
             <button className="btn btn-soft text-xs" onClick={()=>setShowAddVis(true)} style={{ padding:'5px 10px', fontSize:'0.75rem' }}>+ Visitor</button>
@@ -1029,7 +1072,7 @@ function AnalyticsTab({ state, members }) {
         <div className="card" style={{overflow:'hidden',marginBottom:14}}>
           <div style={{padding:'12px 16px',background:'#FFFBEB',borderBottom:'1px solid var(--border)'}}>
             <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#92400E'}}>🙏 Pastoral Care Needed</div>
-            <div style={{fontSize:'0.75rem',color:'#92400E',marginTop:3}}>{careFlags.length} member{careFlags.length!==1?'s':''} absent 3+ consecutive sessions — see Care tab for full details</div>
+            <div style={{fontSize:'0.75rem',color:'#92400E',marginTop:3}}>{careFlags.length} member{careFlags.length!==1?'s':''} absent 3+ consecutive Friday/Sunday services — see Care tab</div>
           </div>
           {careFlags.slice(0,3).map(flag=>(
             <div key={flag.member.id} className="care-card" style={{margin:'10px 14px 0'}}>
@@ -1269,9 +1312,11 @@ function SettingsTab({ state, dispatch }) {
       lines.push(``);
     }
 
-    // Care flags
+    // Care flags — Friday and Sunday worship services only
     const careMembers = [];
-    const recent6 = [...state.sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 6);
+    const recent6 = [...state.sessions]
+      .filter(s => PASTORAL_CARE_SERVICES.has(s.service))
+      .sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 6);
     const memberIds = new Set();
     for (const s of recent6) for (const r of (s.records||[])) memberIds.add(r.memberId);
     for (const id of memberIds) {
@@ -1600,9 +1645,12 @@ function CareTab({ state, members }) {
       {/* Header */}
       <div style={{marginBottom:20}}>
         <div className="font-display" style={{fontSize:'1.5rem',fontWeight:600,marginBottom:4}}>Pastoral Care</div>
-        <p style={{fontSize:'0.8125rem',color:'var(--ink-muted)',lineHeight:1.6}}>
-          Members absent for <strong>3 or more consecutive sessions</strong> are flagged here. This is strictly for pastoral follow-up — not visible to general members.
+        <p style={{fontSize:'0.8125rem',color:'var(--ink-muted)',lineHeight:1.6,marginBottom:10}}>
+          Members absent for <strong>3 or more consecutive sessions</strong> are flagged here. Strictly for pastoral follow-up — not visible to general members.
         </p>
+        <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'5px 12px',borderRadius:999,background:'#EFF6FF',border:'1px solid #BAE6FD',fontSize:'0.75rem',color:'#0369A1',fontWeight:500,lineHeight:1.5}}>
+          ✝️ Based on <strong style={{margin:'0 3px'}}>Friday &amp; Sunday worship services only</strong> — Prayer Meetings, Training, Fellowship, and other gatherings do not affect this flag
+        </div>
       </div>
 
       {/* Summary chips */}
