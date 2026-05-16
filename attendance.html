@@ -239,8 +239,8 @@ function getSessionSummary(session, totalMembers) {
 }
 
 function computeCareFlags(sessions, members) {
-  const recent = [...sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
-  if (recent.length < 2) return [];
+  const recent = [...sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 8);
+  if (recent.length < 3) return [];
   return members.filter(w=>w.status==='active').reduce((flags,m)=>{
     const statuses = recent.map(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status||null);
     let streak=0, maxStreak=0;
@@ -248,12 +248,26 @@ function computeCareFlags(sessions, members) {
       if (st !== 'present') { streak++; maxStreak=Math.max(maxStreak,streak); }
       else streak=0;
     }
-    if (maxStreak >= 2) {
+    if (maxStreak >= 3) {
       const lastPresent = recent.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
-      flags.push({ member:m, streak:maxStreak, lastPresent: lastPresent?.date||null });
+      const allSessions = sessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
+      const pct = allSessions.length
+        ? Math.round(allSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / allSessions.length * 100)
+        : 0;
+      // Escalation: 3-4 = gentle (steward), 5+ = pastoral priority (pastor)
+      const level = maxStreak >= 5 ? 'priority' : 'gentle';
+      flags.push({
+        member:      m,
+        streak:      maxStreak,
+        level,
+        lastPresent: lastPresent?.date || null,
+        lastService: lastPresent?.service || null,
+        overallPct:  pct,
+        totalSessions: allSessions.length,
+      });
     }
     return flags;
-  }, []);
+  }, []).sort((a,b) => b.streak - a.streak);  // most absent first
 }
 
 function getMemberAttendancePct(memberId, sessions) {
@@ -1010,28 +1024,29 @@ function AnalyticsTab({ state, members }) {
         </div>
       )}
 
-      {/* Care Mode */}
+      {/* Care Mode — compact pointer to dedicated Care tab */}
       {careFlags.length > 0 && (
         <div className="card" style={{overflow:'hidden',marginBottom:14}}>
           <div style={{padding:'12px 16px',background:'#FFFBEB',borderBottom:'1px solid var(--border)'}}>
-            <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#92400E'}}>🙏 Pastoral Care Follow-Up</div>
-            <div style={{fontSize:'0.75rem',color:'#92400E',marginTop:3}}>Absent 2+ consecutive sessions — pastoral eyes only</div>
+            <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#92400E'}}>🙏 Pastoral Care Needed</div>
+            <div style={{fontSize:'0.75rem',color:'#92400E',marginTop:3}}>{careFlags.length} member{careFlags.length!==1?'s':''} absent 3+ consecutive sessions — see Care tab for full details</div>
           </div>
-          {careFlags.map(flag=>(
+          {careFlags.slice(0,3).map(flag=>(
             <div key={flag.member.id} className="care-card" style={{margin:'10px 14px 0'}}>
               <div style={{display:'flex',alignItems:'center',gap:10}}>
                 <Avatar name={flag.member.name} size={36} />
                 <div style={{flex:1}}>
                   <div style={{fontWeight:600,fontSize:'0.9375rem'}}>{flag.member.fullName||flag.member.name}</div>
                   <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>
-                    Absent {flag.streak} consecutive session{flag.streak>1?'s':''}
-                    {flag.lastPresent?` · last seen ${formatDateShort(flag.lastPresent)}`:' · no recent attendance'}
+                    {flag.level==='priority'?'🔴':'🟡'} Absent {flag.streak} consecutive session{flag.streak>1?'s':''}
+                    {flag.lastPresent?` · last seen ${formatDateShort(flag.lastPresent)}`:' · no attendance on record'}
                   </div>
                 </div>
               </div>
             </div>
           ))}
-          <div style={{height:14}}/>
+          {careFlags.length>3&&<div style={{fontSize:'0.75rem',color:'var(--ink-muted)',padding:'8px 16px 0',fontStyle:'italic'}}>+{careFlags.length-3} more in the 🙏 Care tab</div>}
+          <div style={{height:10}}/>
         </div>
       )}
       {careFlags.length===0&&allSessions.length>=3&&(
@@ -1265,7 +1280,7 @@ function SettingsTab({ state, dispatch }) {
       for (const st of statuses) {
         if (st !== 'present') streak++; else break;
       }
-      if (streak >= 2) {
+      if (streak >= 3) {
         const nameRec = recent6.flatMap(s=>s.records||[]).find(r=>r.memberId===id);
         if (nameRec) careMembers.push({ name: nameRec.memberName, streak });
       }
@@ -1469,11 +1484,350 @@ function SyncButton({ session, state, dispatch }) {
   );
 }
 
+// ─── CARE TAB — Full Pastoral Follow-Up Dashboard ────────────────────────────
+
+function buildFollowUpMessage(flag, stewardName, churchName) {
+  const name = (flag.member.fullName || flag.member.name).replace(/^(Bro\.|Sis\.|Ptr\.)\s*/i, '');
+  const title = (flag.member.fullName || flag.member.name).match(/^(Bro\.|Sis\.|Ptr\.)/i)?.[0] || '';
+  const displayName = title ? `${title} ${name}` : name;
+  const plural = flag.streak > 1 ? 'few services' : 'service';
+
+  if (flag.level === 'priority') {
+    return `Hi ${displayName}! 😊
+
+This is ${stewardName || 'your church family'} from ${churchName || 'FLCC - Farwaniya 1'}.
+
+We've noticed we haven't seen you for a while now and we genuinely miss you. You are an important part of our congregation and your presence means a lot to all of us. 🙏
+
+We're reaching out not to pressure you, but simply to let you know we care about you — your faith, your family, and your wellbeing.
+
+If there's anything going on or any way we can support you, please don't hesitate to reach out. Our doors and hearts are always open.
+
+We're praying for you. God bless! ✝️
+
+— ${stewardName || 'FLCC Pastoral Team'}
+${churchName || 'FLCC - Farwaniya 1'}`;
+  }
+
+  return `Hi ${displayName}! 😊
+
+This is ${stewardName || 'your church family'} from ${churchName || 'FLCC - Farwaniya 1'}. We missed you the past ${plural} and just wanted to check in on you.
+
+Hope you and your family are doing well. We're praying for you and look forward to seeing you again soon! 🙏
+
+God bless,
+${stewardName || 'FLCC - Farwaniya 1'}`;
+}
+
+function CareTab({ state, members }) {
+  const allSessions = useMemo(() =>
+    [...state.sessions].sort((a,b) => a.date.localeCompare(b.date)),
+    [state.sessions]
+  );
+  const careFlags = useMemo(() =>
+    computeCareFlags(allSessions, members),
+    [allSessions, members]
+  );
+
+  const gentle   = careFlags.filter(f => f.level === 'gentle');
+  const priority = careFlags.filter(f => f.level === 'priority');
+
+  const stewardName  = state.meta.stewardName  || 'Pastoral Team';
+  const churchName   = state.meta.churchName   || 'FLCC - Farwaniya 1';
+
+  const copyFullReport = () => {
+    const today = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    const lines = [];
+    lines.push(`📋 FLCC PASTORAL CARE REPORT`);
+    lines.push(`${churchName}`);
+    lines.push(`Generated: ${today}`);
+    lines.push(``);
+    lines.push(`Total sessions recorded: ${allSessions.length}`);
+    lines.push(`Members needing follow-up: ${careFlags.length}`);
+    lines.push(``);
+
+    if (priority.length) {
+      lines.push(`🔴 PASTORAL PRIORITY (5+ consecutive absences):`);
+      lines.push(`These members need direct pastoral outreach from the pastor.`);
+      lines.push(``);
+      priority.forEach((f,i) => {
+        lines.push(`${i+1}. ${f.member.fullName||f.member.name}`);
+        lines.push(`   Ministry: ${f.member.ministry||'—'}`);
+        lines.push(`   Consecutive absences: ${f.streak} sessions`);
+        lines.push(`   Overall attendance: ${f.overallPct}% (${f.totalSessions} sessions)`);
+        lines.push(`   Last present: ${f.lastPresent ? formatDateFull(f.lastPresent) : 'No record'}`);
+        lines.push(``);
+      });
+    }
+
+    if (gentle.length) {
+      lines.push(`🟡 GENTLE FOLLOW-UP (3–4 consecutive absences):`);
+      lines.push(`Steward or CSL can reach out with a friendly check-in.`);
+      lines.push(``);
+      gentle.forEach((f,i) => {
+        lines.push(`${i+1}. ${f.member.fullName||f.member.name}`);
+        lines.push(`   Ministry: ${f.member.ministry||'—'}`);
+        lines.push(`   Consecutive absences: ${f.streak} sessions`);
+        lines.push(`   Overall attendance: ${f.overallPct}% (${f.totalSessions} sessions)`);
+        lines.push(`   Last present: ${f.lastPresent ? formatDateFull(f.lastPresent) : 'No record'}`);
+        lines.push(``);
+      });
+    }
+
+    if (!careFlags.length) {
+      lines.push(`✅ No follow-up needed — everyone is engaging faithfully!`);
+    }
+
+    lines.push(`— Recorded by: ${stewardName}`);
+    lines.push(`${churchName} · Attendance OS`);
+
+    navigator.clipboard.writeText(lines.join('\n'))
+      .then(() => alert('✓ Pastoral care report copied! Paste it in Messenger to Ptr. Justin.'))
+      .catch(() => alert('Copy failed.'));
+  };
+
+  if (!allSessions.length) return (
+    <div style={{textAlign:'center',padding:'60px 20px',color:'var(--ink-subtle)'}}>
+      <div style={{fontSize:'2.5rem',marginBottom:12}}>🙏</div>
+      <div className="font-display" style={{fontSize:'1.25rem'}}>No sessions recorded yet</div>
+      <p style={{fontSize:'0.875rem',marginTop:8}}>Record at least 3 sessions to detect follow-up needs.</p>
+    </div>
+  );
+
+  return (
+    <div style={{padding:16}} className="fade-in">
+
+      {/* Header */}
+      <div style={{marginBottom:20}}>
+        <div className="font-display" style={{fontSize:'1.5rem',fontWeight:600,marginBottom:4}}>Pastoral Care</div>
+        <p style={{fontSize:'0.8125rem',color:'var(--ink-muted)',lineHeight:1.6}}>
+          Members absent for <strong>3 or more consecutive sessions</strong> are flagged here. This is strictly for pastoral follow-up — not visible to general members.
+        </p>
+      </div>
+
+      {/* Summary chips */}
+      <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+        <div style={{padding:'10px 16px',borderRadius:12,background:'#FEF3C7',border:'1px solid #FDE68A',flex:1,minWidth:120,textAlign:'center'}}>
+          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#D97706',lineHeight:1}}>{gentle.length}</div>
+          <div style={{fontSize:'0.6875rem',color:'#92400E',marginTop:3,fontWeight:600}}>🟡 Gentle follow-up</div>
+          <div style={{fontSize:'0.6rem',color:'#92400E',marginTop:1}}>3–4 absences</div>
+        </div>
+        <div style={{padding:'10px 16px',borderRadius:12,background:'#FEE2E2',border:'1px solid #FECACA',flex:1,minWidth:120,textAlign:'center'}}>
+          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#DC2626',lineHeight:1}}>{priority.length}</div>
+          <div style={{fontSize:'0.6875rem',color:'#991B1B',marginTop:3,fontWeight:600}}>🔴 Pastor priority</div>
+          <div style={{fontSize:'0.6rem',color:'#991B1B',marginTop:1}}>5+ absences</div>
+        </div>
+        <div style={{padding:'10px 16px',borderRadius:12,background:'#F0FDF4',border:'1px solid #BBF7D0',flex:1,minWidth:120,textAlign:'center'}}>
+          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#16A34A',lineHeight:1}}>{members.length - careFlags.length}</div>
+          <div style={{fontSize:'0.6875rem',color:'#15803D',marginTop:3,fontWeight:600}}>✅ All good</div>
+          <div style={{fontSize:'0.6rem',color:'#15803D',marginTop:1}}>members</div>
+        </div>
+      </div>
+
+      {careFlags.length === 0 ? (
+        <div style={{textAlign:'center',padding:'48px 20px',borderRadius:16,background:'#F0FDF4',border:'1px solid #BBF7D0'}}>
+          <div style={{fontSize:'2.5rem',marginBottom:12}}>✅</div>
+          <div className="font-display" style={{fontSize:'1.25rem',color:'#16A34A',fontWeight:600}}>No follow-up needed</div>
+          <p style={{fontSize:'0.875rem',color:'#15803D',marginTop:8}}>Everyone has been attending faithfully. Praise God! 🙏</p>
+        </div>
+      ) : (
+        <>
+          {/* Copy full report */}
+          <button onClick={copyFullReport} style={{
+            width:'100%',padding:'13px',marginBottom:20,borderRadius:12,
+            background:'#7C3AED',color:'white',border:'none',cursor:'pointer',
+            fontSize:'0.9375rem',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+          }}>
+            📋 Copy full report for Ptr. Justin
+          </button>
+
+          {/* Priority flags */}
+          {priority.length > 0 && (
+            <div style={{marginBottom:24}}>
+              <div style={{
+                display:'flex',alignItems:'center',gap:10,
+                padding:'10px 14px',borderRadius:'12px 12px 0 0',
+                background:'#DC2626',color:'white',
+                fontSize:'0.8125rem',fontWeight:700,letterSpacing:'.04em',
+              }}>
+                🔴 PASTORAL PRIORITY — 5+ Consecutive Absences
+                <span style={{marginLeft:'auto',fontSize:'0.75rem',fontWeight:400,opacity:.85}}>Pastor should reach out personally</span>
+              </div>
+              <div style={{borderRadius:'0 0 12px 12px',border:'2px solid #FECACA',borderTop:'none',overflow:'hidden'}}>
+                {priority.map((flag,i) => (
+                  <CareMemberCard key={flag.member.id} flag={flag} stewardName={stewardName} churchName={churchName} isLast={i===priority.length-1} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Gentle flags */}
+          {gentle.length > 0 && (
+            <div style={{marginBottom:24}}>
+              <div style={{
+                display:'flex',alignItems:'center',gap:10,
+                padding:'10px 14px',borderRadius:'12px 12px 0 0',
+                background:'#D97706',color:'white',
+                fontSize:'0.8125rem',fontWeight:700,letterSpacing:'.04em',
+              }}>
+                🟡 GENTLE FOLLOW-UP — 3–4 Consecutive Absences
+                <span style={{marginLeft:'auto',fontSize:'0.75rem',fontWeight:400,opacity:.85}}>Steward or CSL can reach out</span>
+              </div>
+              <div style={{borderRadius:'0 0 12px 12px',border:'2px solid #FDE68A',borderTop:'none',overflow:'hidden'}}>
+                {gentle.map((flag,i) => (
+                  <CareMemberCard key={flag.member.id} flag={flag} stewardName={stewardName} churchName={churchName} isLast={i===gentle.length-1} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Scripture footer */}
+          <div style={{padding:'16px 18px',borderRadius:12,background:'#F5F3FF',border:'1px solid #DDD6FE',textAlign:'center'}}>
+            <div style={{fontSize:'0.8125rem',color:'#6D28D9',fontStyle:'italic',lineHeight:1.7}}>
+              "Suppose one of you has a hundred sheep and loses one of them. Does he not leave the ninety-nine… and go after the lost sheep until he finds it?"
+            </div>
+            <div style={{fontSize:'0.6875rem',color:'#7C3AED',marginTop:6,fontWeight:600}}>— Luke 15:4</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CareMemberCard({ flag, stewardName, churchName, isLast }) {
+  const [expanded, setExpanded] = useState(false);
+  const [copied,   setCopied]   = useState(false);
+  const m = flag.member;
+  const isP = flag.level === 'priority';
+  const accentColor  = isP ? '#DC2626' : '#D97706';
+  const accentSoft   = isP ? '#FEF2F2' : '#FFFBEB';
+
+  const message = buildFollowUpMessage(flag, stewardName, churchName);
+
+  const copyMsg = () => {
+    navigator.clipboard.writeText(message)
+      .then(() => { setCopied(true); setTimeout(() => setCopied(false), 3000); })
+      .catch(() => alert('Copy failed.'));
+  };
+
+  const openMessenger = () => {
+    // Copy message first, then open Messenger search
+    navigator.clipboard.writeText(message).catch(()=>{});
+    window.open('https://www.messenger.com', '_blank');
+  };
+
+  return (
+    <div style={{
+      borderBottom: isLast ? 'none' : '1px solid #F3F4F6',
+      background: expanded ? accentSoft : 'white',
+      transition: 'background .2s',
+    }}>
+      {/* Member row */}
+      <div style={{display:'flex',alignItems:'center',gap:12,padding:'14px 16px',cursor:'pointer'}}
+        onClick={() => setExpanded(e => !e)}>
+        {/* Avatar */}
+        <div style={{
+          width:48,height:48,borderRadius:14,flexShrink:0,
+          background:avatarBg(m.name),
+          display:'flex',alignItems:'center',justifyContent:'center',
+          color:'white',fontWeight:700,fontSize:'1.0625rem',letterSpacing:'.02em',
+          boxShadow:`0 0 0 3px ${accentColor}30`,
+        }}>
+          {getInitials(m.name)}
+        </div>
+
+        {/* Info */}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+            <div style={{fontWeight:700,fontSize:'0.9375rem'}}>{m.fullName||m.name}</div>
+            <span style={{
+              padding:'2px 8px',borderRadius:999,fontSize:'0.625rem',fontWeight:700,
+              background:accentColor+'18',color:accentColor,letterSpacing:'.06em',textTransform:'uppercase',
+            }}>{isP ? '🔴 Priority' : '🟡 Follow-up'}</span>
+          </div>
+          <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginTop:2}}>{m.ministry||'Ministry'}</div>
+          <div style={{fontSize:'0.75rem',color:accentColor,fontWeight:600,marginTop:2}}>
+            Absent {flag.streak} consecutive session{flag.streak!==1?'s':''}
+            {flag.lastPresent
+              ? <span style={{fontWeight:400,color:'var(--ink-muted)'}}> · last seen {formatDateShort(flag.lastPresent)}</span>
+              : <span style={{fontWeight:400,color:'var(--ink-muted)'}}> · no attendance on record</span>}
+          </div>
+        </div>
+
+        {/* Stats + chevron */}
+        <div style={{textAlign:'right',flexShrink:0}}>
+          <div className="font-display" style={{fontSize:'1.25rem',fontWeight:700,color:flag.overallPct>=60?'#D97706':'#DC2626'}}>{flag.overallPct}%</div>
+          <div style={{fontSize:'0.6rem',color:'var(--ink-subtle)'}}>overall</div>
+          <div style={{fontSize:'0.6875rem',color:'var(--ink-subtle)',marginTop:4,transition:'transform .2s',transform:expanded?'rotate(180deg)':'rotate(0)'}}>▼</div>
+        </div>
+      </div>
+
+      {/* Expanded detail */}
+      {expanded && (
+        <div style={{padding:'0 16px 16px',animation:'fadeIn .2s ease-out'}}>
+          {/* Stats row */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
+            {[
+              {label:'Consecutive',value:`${flag.streak} absent`,color:accentColor},
+              {label:'Overall %', value:`${flag.overallPct}%`,   color:flag.overallPct>=60?'#D97706':'#DC2626'},
+              {label:'Total sessions',value:flag.totalSessions,  color:'var(--ink-muted)'},
+            ].map(s=>(
+              <div key={s.label} style={{textAlign:'center',padding:'10px 8px',borderRadius:10,background:'white',border:'1px solid var(--border)'}}>
+                <div className="font-display" style={{fontSize:'1.125rem',fontWeight:700,color:s.color}}>{s.value}</div>
+                <div style={{fontSize:'0.625rem',color:'var(--ink-subtle)',marginTop:2}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Suggested message preview */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ink-subtle)',marginBottom:8}}>
+              Suggested follow-up message
+            </div>
+            <div style={{
+              padding:'12px 14px',borderRadius:10,
+              background:isP?'#FEF2F2':'#FFFBEB',
+              border:`1px solid ${accentColor}30`,
+              fontSize:'0.8125rem',color:'var(--ink)',lineHeight:1.7,
+              whiteSpace:'pre-wrap',fontFamily:'Geist,sans-serif',
+              maxHeight:160,overflowY:'auto',
+            }}>{message}</div>
+          </div>
+
+          {/* Action buttons */}
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            <button onClick={copyMsg} style={{
+              flex:1,padding:'11px',borderRadius:10,border:'none',cursor:'pointer',
+              background:copied?'#16A34A':accentColor,color:'white',
+              fontSize:'0.875rem',fontWeight:700,transition:'background .2s',
+              display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+            }}>
+              {copied ? '✓ Copied!' : '📋 Copy message'}
+            </button>
+            <button onClick={openMessenger} style={{
+              flex:1,padding:'11px',borderRadius:10,border:'none',cursor:'pointer',
+              background:'#0084FF',color:'white',
+              fontSize:'0.875rem',fontWeight:700,
+              display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+            }}>
+              💬 Open Messenger
+            </button>
+          </div>
+          <div style={{fontSize:'0.6875rem',color:'var(--ink-subtle)',marginTop:8,textAlign:'center'}}>
+            Message is auto-copied when you tap Open Messenger — just find their name and paste
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── APP ──────────────────────────────────────────────────────────────────────
 const TABS = [
   { key:'today',     label:'Today'     },
   { key:'history',   label:'History'   },
   { key:'analytics', label:'Analytics' },
+  { key:'care',      label:'🙏 Care'   },
   { key:'members',   label:'Members'   },
   { key:'settings',  label:'Settings'  },
 ];
@@ -1561,6 +1915,7 @@ function App() {
         {tab==='today'     && <TodayTab     members={members} state={state} dispatch={dispatch} schedule={schedule} />}
         {tab==='history'   && <HistoryTab   state={state} dispatch={dispatch} members={members} />}
         {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
+        {tab==='care'      && <CareTab      state={state} members={members} />}
         {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
         {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} />}
       </main>
