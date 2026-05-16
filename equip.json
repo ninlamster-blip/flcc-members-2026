@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "churchName": "FLCC - Farwaniya 1",
+    "ministryName": "Equip Ministry",
+    "version": "1.0",
+    "lastUpdated": "2026-05-16T11:27:14.160Z",
+    "publishedAt": "2026-05-16T11:36:32.929Z"
+  },
+  "courses": [],
+  "ministries": [
+    {
+      "id": "discipleship",
+      "name": "Discipleship Ministry",
+      "icon": "⚓",
+      "color": "#6D28D9",
+      "headName": "Ptr. Justin Flores",
+      "headTitle": "Discipleship Ministry Head",
+      "whatsapp": "+96567611268",
+      "messenger": "justin.flores.35574406",
+      "phone": "+96567611268",
+      "email": ""
+    },
+    {
+      "id": "admin",
+      "name": "Admin Ministry",
+      "icon": "🗂️",
+      "color": "#0284C7",
+      "headName": "Bro. Allen Santos",
+      "headTitle": "Admin Ministry Head",
+      "whatsapp": "+96550029790",
+      "messenger": "",
+      "phone": "+96550029790",
+      "email": "ninlamster@gmail.com"
+    },
+    {
+      "id": "finance",
+      "name": "Finance Ministry",
+      "icon": "💼",
+      "color": "#B45309",
+      "headName": "Sis. Annabelle Arciaga",
+      "headTitle": "Finance Ministry Head",
+      "whatsapp": "+96565780160",
+      "messenger": "",
+      "phone": "+96565780160",
+      "email": ""
+    }
+  ]
+}
