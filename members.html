@@ -107,15 +107,20 @@
 
   .tab {
     padding: 0.625rem 0;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: var(--ink-muted);
     border-bottom: 2px solid transparent;
     transition: color 0.15s, border-color 0.15s;
     cursor: pointer;
-    margin-right: 1.75rem;
+    margin-right: 1.25rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .tab:hover { color: var(--ink); }
+  .tab-active { color: var(--ink); border-bottom-color: var(--accent); }
+  /* Hide scrollbar on tab nav */
+  nav::-webkit-scrollbar { display: none; }
   .tab-active { color: var(--ink); border-bottom-color: var(--accent); }
 
   .modal-backdrop {
@@ -431,6 +436,7 @@
   @keyframes snSaveFlash { 0%{opacity:0;transform:translateX(5px)} 12%{opacity:1;transform:translateX(0)} 80%{opacity:1} 100%{opacity:0} }
   @keyframes snNoteDot   { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
   @keyframes snFadeUp    { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes snShakeX    { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
 
   .sn-sheet {
     background: var(--surface);
@@ -469,6 +475,17 @@
     width: 7px; height: 7px; border-radius: 50%; background: #16A34A; flex-shrink: 0;
     animation: snNoteDot .32s cubic-bezier(.34,1.56,.64,1) both;
   }
+
+  /* Camera scan UI */
+  @keyframes snPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.95)} }
+  @keyframes snSlideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .sn-scan-ripple {
+    position: absolute; inset: -6px; border-radius: 12px;
+    border: 2px solid #16A34A;
+    animation: snRipple 1.5s ease-out infinite;
+  }
+  @keyframes snRipple { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.18)} }
+  .sn-scan-result { animation: snSlideUp .3s cubic-bezier(.34,1.56,.64,1) both; }
 </style>
 </head>
 <body>
@@ -508,10 +525,12 @@ const CONFLICT_REASONS = [
   'Other (explain in note)',
 ];
 
-const ME_KEY = 'flcc-members-me';
-const DATA_URL = './data.json';
-const PRAYER_DATA_URL = './prayer.json';
-const MUSIC_DATA_URL = './music.json';
+const ME_KEY             = 'flcc-members-me';
+const DATA_URL           = './data.json';
+const PRAYER_DATA_URL    = './prayer.json';
+const MUSIC_DATA_URL     = './music.json';
+const EQUIP_DATA_URL     = './equip.json';
+const ATTENDANCE_DATA_URL = './attendance.json';
 const MUSIC_ACCENT = '#EA580C';
 
 const PRAYER_ROLES = [
@@ -1141,7 +1160,7 @@ function NamePicker({ workers, onPick, onSkip, churchName }) {
 }
 
 // --- My Schedule ---
-function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEvents, onEditPersonal, sermonNotes, onOpenNote }) {
+function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEvents, onEditPersonal, sermonNotes, onOpenNote, attendanceData }) {
   const today = todayISO();
 
   // Main service assignments
@@ -1220,6 +1239,11 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
       <SectionHeading eyebrow={`Hello, ${me.title || ''} ${me.name}`} title="My Schedule">
         Your upcoming service and prayer assignments. Tap 📅 to save to your phone calendar, or "Report conflict" if you can't make it.
       </SectionHeading>
+
+      {/* Personal attendance record — full card */}
+      {attendanceData && (
+        <PersonalAttendanceCard me={me} attendanceData={attendanceData} compact={false} />
+      )}
 
       {myUpcomingBirthday && (
         <div className="card p-4 mb-4 flex items-center gap-3" style={{ background: '#FCE7F3' }}>
@@ -1450,7 +1474,7 @@ function ServiceDetails({ entry, workers, highlightId }) {
 // HOME TAB — Grid dashboard of upcoming items
 // =============================================================================
 
-function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal }) {
+function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData }) {
   const today = todayISO();
   const nextWeekStart = today;
   const horizon = addDays(today, 60);
@@ -1762,6 +1786,14 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* My attendance record — compact badge */}
+      {me && attendanceData && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📋 My attendance</div>
+          <PersonalAttendanceCard me={me} attendanceData={attendanceData} compact={true} />
         </div>
       )}
 
@@ -2221,6 +2253,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
         data={data}
         prayerEventsByDate={prayerEventsByDate}
         musicEventsByDate={musicEventsByDate}
+        personalEvents={personalEvents}
         onEditPersonal={onEditPersonal}
       />
 
@@ -2267,7 +2300,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
 }
 
 // iOS-style mobile-native calendar with day details bottom sheet
-function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByDate, servicesByDate, me, prayerData, musicData, data, prayerEventsByDate, musicEventsByDate, onEditPersonal }) {
+function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByDate, servicesByDate, me, prayerData, musicData, data, prayerEventsByDate, musicEventsByDate, personalEvents, onEditPersonal }) {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const isMineOnDate = (date) => {
@@ -2432,29 +2465,33 @@ function DayDetailSheet({ date, onClose, services, events, data, prayerData, mus
 }
 
 // --- About tab ---
-function AboutTab({ data, prayerData, musicData, me, onChangeName }) {
-  const m = data.ministry || {};
+function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) {
+  const m  = data.ministry || {};
   const pm = prayerData?.ministry || null;
-  const mm = musicData?.ministry || null;
+  const mm = musicData?.ministry  || null;
+  const equipMinistries = (equipData?.ministries || []).filter(em => em.headName);
+
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="About" title={data.meta.churchName}>
         This members view is read-only and shows the latest schedule published by the admin.
       </SectionHeading>
 
+      {/* Main ministry */}
       <div className="card p-6 mb-4">
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Fellowship Ministry</div>
         <div className="font-display text-2xl font-semibold">{m.headName || '—'}</div>
         {m.headTitle && <div className="text-sm ink-muted mt-1">{m.headTitle}</div>}
         <div className="dotted-divider my-4" />
         <div className="space-y-2 text-sm">
-          {m.whatsapp && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(m.whatsapp, '')} className="ink hover:underline">{m.whatsapp}</a></div>}
+          {m.whatsapp  && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(m.whatsapp, '')} className="ink hover:underline">{m.whatsapp}</a></div>}
           {m.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(m.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{m.messenger}</a></div>}
-          {m.phone && <div><span className="ink-muted text-xs">SMS / Phone · </span><a href={`tel:${m.phone}`} className="ink hover:underline">{m.phone}</a></div>}
-          {m.email && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${m.email}`} className="ink hover:underline">{m.email}</a></div>}
+          {m.phone     && <div><span className="ink-muted text-xs">SMS / Phone · </span><a href={`tel:${m.phone}`} className="ink hover:underline">{m.phone}</a></div>}
+          {m.email     && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${m.email}`} className="ink hover:underline">{m.email}</a></div>}
         </div>
       </div>
 
+      {/* Prayer ministry */}
       {pm && pm.headName && (
         <div className="card p-6 mb-4">
           <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>🙏 Prayer Ministry</div>
@@ -2462,14 +2499,15 @@ function AboutTab({ data, prayerData, musicData, me, onChangeName }) {
           {pm.headTitle && <div className="text-sm ink-muted mt-1">{pm.headTitle}</div>}
           <div className="dotted-divider my-4" />
           <div className="space-y-2 text-sm">
-            {pm.whatsapp && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(pm.whatsapp, '')} className="ink hover:underline">{pm.whatsapp}</a></div>}
+            {pm.whatsapp  && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(pm.whatsapp, '')} className="ink hover:underline">{pm.whatsapp}</a></div>}
             {pm.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(pm.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{pm.messenger}</a></div>}
-            {pm.phone && <div><span className="ink-muted text-xs">SMS / Phone · </span><a href={`tel:${pm.phone}`} className="ink hover:underline">{pm.phone}</a></div>}
-            {pm.email && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${pm.email}`} className="ink hover:underline">{pm.email}</a></div>}
+            {pm.phone     && <div><span className="ink-muted text-xs">SMS · </span><a href={`tel:${pm.phone}`} className="ink hover:underline">{pm.phone}</a></div>}
+            {pm.email     && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${pm.email}`} className="ink hover:underline">{pm.email}</a></div>}
           </div>
         </div>
       )}
 
+      {/* Music ministry */}
       {mm && mm.headName && (
         <div className="card p-6 mb-4">
           <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: MUSIC_ACCENT }}>🎵 Music Ministry</div>
@@ -2477,14 +2515,35 @@ function AboutTab({ data, prayerData, musicData, me, onChangeName }) {
           {mm.headTitle && <div className="text-sm ink-muted mt-1">{mm.headTitle}</div>}
           <div className="dotted-divider my-4" />
           <div className="space-y-2 text-sm">
-            {mm.whatsapp && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(mm.whatsapp, '')} className="ink hover:underline">{mm.whatsapp}</a></div>}
+            {mm.whatsapp  && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(mm.whatsapp, '')} className="ink hover:underline">{mm.whatsapp}</a></div>}
             {mm.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(mm.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{mm.messenger}</a></div>}
-            {mm.phone && <div><span className="ink-muted text-xs">SMS / Phone · </span><a href={`tel:${mm.phone}`} className="ink hover:underline">{mm.phone}</a></div>}
-            {mm.email && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${mm.email}`} className="ink hover:underline">{mm.email}</a></div>}
+            {mm.phone     && <div><span className="ink-muted text-xs">SMS · </span><a href={`tel:${mm.phone}`} className="ink hover:underline">{mm.phone}</a></div>}
+            {mm.email     && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${mm.email}`} className="ink hover:underline">{mm.email}</a></div>}
           </div>
         </div>
       )}
 
+      {/* Equip-defined ministries (Discipleship, Admin, Finance, etc.) */}
+      {equipMinistries.map(em => (
+        <div key={em.id} className="card p-6 mb-4">
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: em.color || '#16A34A' }}>{em.icon} {em.name}</div>
+          <div className="font-display text-2xl font-semibold">{em.headName}</div>
+          {em.headTitle && <div className="text-sm ink-muted mt-1">{em.headTitle}</div>}
+          {(em.whatsapp || em.messenger || em.phone || em.email) && (
+            <>
+              <div className="dotted-divider my-4" />
+              <div className="space-y-2 text-sm">
+                {em.whatsapp  && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(em.whatsapp, '')} className="ink hover:underline">{em.whatsapp}</a></div>}
+                {em.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(em.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{em.messenger}</a></div>}
+                {em.phone     && <div><span className="ink-muted text-xs">SMS · </span><a href={`tel:${em.phone}`} className="ink hover:underline">{em.phone}</a></div>}
+                {em.email     && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${em.email}`} className="ink hover:underline">{em.email}</a></div>}
+              </div>
+            </>
+          )}
+        </div>
+      ))}
+
+      {/* You */}
       <div className="card p-6 mb-4">
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">You</div>
         {me ? (
@@ -3157,8 +3216,9 @@ function recordEquipActivity(date) {
   if (!a.includes(date)) { try { localStorage.setItem(EQUIP_ACTIVITY_KEY, JSON.stringify([...a, date])); } catch {} }
 }
 
-function getCourseProgress(courseId, progress) {
-  const c = EQUIP_COURSES.find(x => x.id === courseId);
+function getCourseProgress(courseId, progress, courses) {
+  const list = courses || EQUIP_COURSES;
+  const c = list.find(x => x.id === courseId);
   if (!c) return { status: 'not_started', percent: 0, completedLessons: [] };
   const p = progress[courseId] || {};
   const done = (p.completedLessons || []).length;
@@ -3185,15 +3245,17 @@ function computeStreak(activityDates) {
   return { current, longest: Math.max(longest, streak) };
 }
 
-function getEarnedBadges(progress) {
-  return EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 100)
+function getEarnedBadges(progress, courses) {
+  const list = courses || EQUIP_COURSES;
+  return list.filter(c => getCourseProgress(c.id, progress, list).percent === 100)
     .map(c => ({ ...c, earnedAt: progress[c.id]?.completedAt }));
 }
 
-function getPathwayStage(progress) {
+function getPathwayStage(progress, courses) {
+  const list = courses || EQUIP_COURSES;
   let stage = 0;
   for (const s of LEADERSHIP_PATHWAY) {
-    if (s.requiredCourses.every(cid => getCourseProgress(cid, progress).percent === 100)) stage = s.stage;
+    if (s.requiredCourses.every(cid => getCourseProgress(cid, progress, list).percent === 100)) stage = s.stage;
     else break;
   }
   return stage;
@@ -3203,7 +3265,22 @@ function getPathwayStage(progress) {
 // EQUIP TAB
 // =============================================================================
 
-function EquipTab() {
+// Context so all Equip sub-components use the live merged course list
+const EquipCoursesCtx = React.createContext(EQUIP_COURSES);
+const useEquipCourses = () => React.useContext(EquipCoursesCtx);
+
+function EquipTab({ equipData }) {
+  // Merge admin courses from equip.json with seed courses
+  const allCourses = useMemo(() => {
+    const adminCourses = (equipData?.courses || []);
+    if (!adminCourses.length) return EQUIP_COURSES;
+    const adminById = new Map(adminCourses.map(c => [c.id, c]));
+    const merged = EQUIP_COURSES.map(c => adminById.has(c.id) ? adminById.get(c.id) : c);
+    for (const ac of adminCourses) {
+      if (!EQUIP_COURSES.find(c => c.id === ac.id)) merged.push(ac);
+    }
+    return merged;
+  }, [equipData]);
   const [subTab, setSubTab] = useState('overview');
   const [progress, setProgressState] = useState(loadEquipProgress);
   const [bookmarks, setBookmarksState] = useState(loadEquipBookmarks);
@@ -3218,7 +3295,7 @@ function EquipTab() {
   const toggleLesson = (courseId, lessonId) => {
     const today = todayISO();
     recordEquipActivity(today);
-    const course = EQUIP_COURSES.find(c => c.id === courseId);
+    const course = allCourses.find(c => c.id === courseId);
     const prev = progress[courseId] || {};
     const done = [...(prev.completedLessons || [])];
     const idx = done.indexOf(lessonId);
@@ -3245,8 +3322,8 @@ function EquipTab() {
   const toggleBookmark = id => setBookmarks(bookmarks.includes(id) ? bookmarks.filter(b => b !== id) : [...bookmarks, id]);
 
   const streak      = useMemo(() => computeStreak(activity), [activity]);
-  const badges      = useMemo(() => getEarnedBadges(progress), [progress]);
-  const pathwayStage = useMemo(() => getPathwayStage(progress), [progress]);
+  const badges      = useMemo(() => getEarnedBadges(progress, allCourses), [progress, allCourses]);
+  const pathwayStage = useMemo(() => getPathwayStage(progress, allCourses), [progress, allCourses]);
 
   const subTabs = [
     { key: 'overview',   label: '🏠 Overview'  },
@@ -3257,12 +3334,14 @@ function EquipTab() {
   ];
 
   return (
+    <EquipCoursesCtx.Provider value={allCourses}>
     <div className="fade-in">
       {/* Module header */}
       <div className="mb-5">
         <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: EQUIP_ACCENT }}>FLCC · Equip Module</div>
         <h2 className="font-display text-3xl font-semibold">Equip</h2>
         <p className="text-sm ink-muted mt-1">Grow in faith, deepen your knowledge, and develop your calling.</p>
+        {equipData && <div className="text-xs mt-1" style={{ color: EQUIP_ACCENT }}>✓ {allCourses.length} courses loaded</div>}
       </div>
 
       {/* Quick stats */}
@@ -3277,7 +3356,7 @@ function EquipTab() {
         </div>
         <div className="card p-3 text-center">
           <div className="font-display text-2xl font-semibold">
-            {EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 100).length}<span className="text-sm ink-muted">/{EQUIP_COURSES.length}</span>
+            {allCourses.filter(c => getCourseProgress(c.id, progress).percent === 100).length}<span className="text-sm ink-muted">/{allCourses.length}</span>
           </div>
           <div className="text-xs ink-muted">Completed</div>
         </div>
@@ -3307,14 +3386,16 @@ function EquipTab() {
         <EquipCourseModal course={selectedCourse} progress={progress} onToggleLesson={toggleLesson} onSaveNotes={saveNotesMentor} onClose={() => setSelectedCourse(null)} />
       )}
     </div>
+    </EquipCoursesCtx.Provider>
   );
 }
 
 // --- Overview sub-tab ---
 function EquipOverview({ progress, streak, badges, pathwayStage, setSubTab, setSelectedCourse }) {
+  const COURSES = useEquipCourses();
   const today = todayISO();
-  const inProgress = EQUIP_COURSES.filter(c => { const p = getCourseProgress(c.id, progress); return p.percent > 0 && p.percent < 100; });
-  const featured   = EQUIP_COURSES.filter(c => c.featured && getCourseProgress(c.id, progress).percent < 100).slice(0, 4);
+  const inProgress = COURSES.filter(c => { const p = getCourseProgress(c.id, progress, COURSES); return p.percent > 0 && p.percent < 100; });
+  const featured   = COURSES.filter(c => c.featured && getCourseProgress(c.id, progress, COURSES).percent < 100).slice(0, 4);
   const currentStage = LEADERSHIP_PATHWAY[pathwayStage - 1];
   const nextStage    = LEADERSHIP_PATHWAY[pathwayStage];
 
@@ -3329,7 +3410,7 @@ function EquipOverview({ progress, streak, badges, pathwayStage, setSubTab, setS
             <div className="text-sm ink-muted mt-1">{currentStage.description}</div>
             {nextStage && (
               <div className="mt-2 text-xs ink-muted">
-                Next: {nextStage.icon} <strong>{nextStage.name}</strong> — complete {nextStage.requiredCourses.map(id => EQUIP_COURSES.find(c => c.id === id)?.title).join(' & ')}
+                Next: {nextStage.icon} <strong>{nextStage.name}</strong> — complete {nextStage.requiredCourses.map(id => COURSES.find(c => c.id === id)?.title).join(' & ')}
               </div>
             )}
           </>
@@ -3398,8 +3479,8 @@ function EquipOverview({ progress, streak, badges, pathwayStage, setSubTab, setS
 
 // --- Courses sub-tab ---
 function EquipCourses({ progress, setSelectedCourse }) {
+  const COURSES = useEquipCourses();
   const [filter, setFilter] = useState('all');
-
   const filters = [
     { key: 'all',         label: 'All'             },
     { key: 'in_progress', label: 'In Progress'     },
@@ -3407,15 +3488,14 @@ function EquipCourses({ progress, setSelectedCourse }) {
     { key: 'recommended', label: 'Recommended'     },
     { key: 'leadership',  label: 'Leadership Track'},
   ];
-
-  const filtered = useMemo(() => EQUIP_COURSES.filter(c => {
-    const p = getCourseProgress(c.id, progress);
+  const filtered = useMemo(() => COURSES.filter(c => {
+    const p = getCourseProgress(c.id, progress, COURSES);
     if (filter === 'in_progress') return p.percent > 0 && p.percent < 100;
     if (filter === 'completed')   return p.percent === 100;
-    if (filter === 'recommended') return p.percent === 0 && (!c.prerequisite || getCourseProgress(c.prerequisite, progress).percent === 100);
+    if (filter === 'recommended') return p.percent === 0 && (!c.prerequisite || getCourseProgress(c.prerequisite, progress, COURSES).percent === 100);
     if (filter === 'leadership')  return c.track === 'leadership' || c.track === 'multiplication';
     return true;
-  }), [filter, progress]);
+  }), [filter, progress, COURSES]);
 
   return (
     <div>
@@ -3441,11 +3521,12 @@ function EquipCourses({ progress, setSelectedCourse }) {
 }
 
 function EquipCourseCard({ course, progress, onClick }) {
-  const p   = getCourseProgress(course.id, progress);
+  const COURSES = useEquipCourses();
+  const p   = getCourseProgress(course.id, progress, COURSES);
   const tr  = TRACK_META[course.track];
-  const prereqDone = !course.prerequisite || getCourseProgress(course.prerequisite, progress).percent === 100;
+  const prereqDone = !course.prerequisite || getCourseProgress(course.prerequisite, progress, COURSES).percent === 100;
   const locked = !prereqDone;
-  const prereq = course.prerequisite ? EQUIP_COURSES.find(c => c.id === course.prerequisite) : null;
+  const prereq = course.prerequisite ? COURSES.find(c => c.id === course.prerequisite) : null;
 
   return (
     <div className="card p-5" style={{ opacity: locked ? 0.65 : 1, cursor: locked ? 'default' : 'pointer' }} onClick={locked ? null : onClick}>
@@ -3643,8 +3724,9 @@ function EquipResources({ bookmarks, toggleBookmark, resSearch, setResSearch, re
 }
 
 function EquipResourceCard({ resource, isBookmarked, onToggle }) {
+  const COURSES = useEquipCourses();
   const m = RES_META[resource.type] || RES_META.external;
-  const rel = resource.courseId ? EQUIP_COURSES.find(c => c.id === resource.courseId) : null;
+  const rel = resource.courseId ? COURSES.find(c => c.id === resource.courseId) : null;
   const actionLabel = { pdf: '↓ Download', audio: '▶ Listen', video: '▶ Watch', playlist: '▶ Play' }[resource.type] || '→ Open';
   return (
     <div className="card p-4 flex flex-col gap-2">
@@ -3671,8 +3753,9 @@ function EquipResourceCard({ resource, isBookmarked, onToggle }) {
 
 // --- Progress sub-tab ---
 function EquipProgress({ progress, badges, streak, pathwayStage }) {
-  const totalLessons = EQUIP_COURSES.reduce((s, c) => s + c.lessons.length, 0);
-  const doneLessons  = EQUIP_COURSES.reduce((s, c) => s + getCourseProgress(c.id, progress).completedLessons.length, 0);
+  const COURSES = useEquipCourses();
+  const totalLessons = COURSES.reduce((s, c) => s + c.lessons.length, 0);
+  const doneLessons  = COURSES.reduce((s, c) => s + getCourseProgress(c.id, progress, COURSES).completedLessons.length, 0);
   const overall = totalLessons ? Math.round((doneLessons / totalLessons) * 100) : 0;
 
   return (
@@ -3713,7 +3796,7 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
             const completed = pathwayStage >= stage.stage;
             const isCurrent = pathwayStage === stage.stage - 1;
             const stagePercent = Math.round(
-              stage.requiredCourses.reduce((s, cid) => s + getCourseProgress(cid, progress).percent, 0) / stage.requiredCourses.length
+              stage.requiredCourses.reduce((s, cid) => s + getCourseProgress(cid, progress, COURSES).percent, 0) / stage.requiredCourses.length
             );
             return (
               <div key={stage.stage} className="flex items-center gap-3">
@@ -3755,11 +3838,11 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
             ))}
           </div>
         )}
-        {EQUIP_COURSES.filter(c => !badges.find(b => b.id === c.id)).length > 0 && (
+        {COURSES.filter(c => !badges.find(b => b.id === c.id)).length > 0 && (
           <>
             <div className="text-xs ink-subtle mb-2">{badges.length > 0 ? 'Locked:' : 'Earn these:'}</div>
             <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-              {EQUIP_COURSES.filter(c => !badges.find(b => b.id === c.id)).map(c => (
+              {COURSES.filter(c => !badges.find(b => b.id === c.id)).map(c => (
                 <div key={c.id} className="text-center p-2 rounded-lg" style={{ filter: 'grayscale(1)', opacity: 0.4 }}>
                   <div className="text-2xl">{c.badge}</div>
                   <div className="text-xs ink-subtle mt-0.5" style={{ fontSize: '0.6rem' }}>{c.badgeLabel}</div>
@@ -3776,8 +3859,8 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
           <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Course Breakdown</div>
         </div>
         <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-          {EQUIP_COURSES.map(c => {
-            const p = getCourseProgress(c.id, progress);
+          {COURSES.map(c => {
+            const p = getCourseProgress(c.id, progress, COURSES);
             const tr = TRACK_META[c.track];
             return (
               <div key={c.id} className="px-5 py-3 flex items-center gap-3">
@@ -3800,15 +3883,16 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
 
 // --- Admin sub-tab ---
 function EquipAdmin({ progress }) {
-  const inProg    = EQUIP_COURSES.filter(c => { const p = getCourseProgress(c.id, progress); return p.percent > 0 && p.percent < 100; });
-  const completed = EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 100);
-  const notStart  = EQUIP_COURSES.filter(c => getCourseProgress(c.id, progress).percent === 0);
+  const COURSES = useEquipCourses();
+  const inProg    = COURSES.filter(c => { const p = getCourseProgress(c.id, progress, COURSES); return p.percent > 0 && p.percent < 100; });
+  const completed = COURSES.filter(c => getCourseProgress(c.id, progress, COURSES).percent === 100);
+  const notStart  = COURSES.filter(c => getCourseProgress(c.id, progress, COURSES).percent === 0);
 
   const exportReport = () => {
     const report = {
       generatedAt: new Date().toISOString(),
-      summary: { total: EQUIP_COURSES.length, inProgress: inProg.length, completed: completed.length, notStarted: notStart.length },
-      courses: EQUIP_COURSES.map(c => ({ course: c.title, track: c.track, ...getCourseProgress(c.id, progress) })),
+      summary: { total: COURSES.length, inProgress: inProg.length, completed: completed.length, notStarted: notStart.length },
+      courses: COURSES.map(c => ({ course: c.title, track: c.track, ...getCourseProgress(c.id, progress, COURSES) })),
     };
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -3825,10 +3909,10 @@ function EquipAdmin({ progress }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Courses', value: EQUIP_COURSES.length,  color: 'var(--ink)' },
-          { label: 'In Progress',   value: inProg.length,         color: '#B45309' },
-          { label: 'Completed',     value: completed.length,      color: EQUIP_ACCENT },
-          { label: 'Not Started',   value: notStart.length,       color: 'var(--ink-subtle)' },
+          { label: 'Total Courses', value: COURSES.length,    color: 'var(--ink)' },
+          { label: 'In Progress',   value: inProg.length,     color: '#B45309' },
+          { label: 'Completed',     value: completed.length,  color: EQUIP_ACCENT },
+          { label: 'Not Started',   value: notStart.length,   color: 'var(--ink-subtle)' },
         ].map(s => (
           <div key={s.label} className="card p-4 text-center">
             <div className="font-display text-3xl font-semibold" style={{ color: s.color }}>{s.value}</div>
@@ -3844,8 +3928,8 @@ function EquipAdmin({ progress }) {
         <table className="schedule-table">
           <thead><tr><th>Course</th><th>Track</th><th>Progress</th><th>Status</th></tr></thead>
           <tbody>
-            {EQUIP_COURSES.map(c => {
-              const p = getCourseProgress(c.id, progress);
+            {COURSES.map(c => {
+              const p = getCourseProgress(c.id, progress, COURSES);
               const tr = TRACK_META[c.track];
               return (
                 <tr key={c.id}>
@@ -3951,12 +4035,216 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
   const [form, setFormState] = useState(formRef.current);
   const setForm = patch => { formRef.current = { ...formRef.current, ...patch }; setFormState(f => ({ ...f, ...patch })); };
 
-  const [view,     setView]         = useState('editor');
-  const [sectOpen, setSectOpen]     = useState(!!(existing.keyVerse || existing.prayerRequests || existing.actionPoints || existing.favoriteQuote));
-  const [saveStatus, setSaveStatus] = useState('');
-  const [closing,  setClosing]      = useState(false);
-  const [jSearch,  setJSearch]      = useState('');
-  const saveTimer = useRef(null);
+  const [view,       setView]        = useState('editor');
+  const [sectOpen,   setSectOpen]    = useState(!!(existing.keyVerse || existing.prayerRequests || existing.actionPoints || existing.favoriteQuote));
+  const [saveStatus, setSaveStatus]  = useState('');
+  const [closing,    setClosing]     = useState(false);
+  const [jSearch,    setJSearch]     = useState('');
+  const saveTimer   = useRef(null);
+
+  // ── Camera / AI scan state ──────────────────────────────────────────────────
+  const cameraInputRef = useRef(null);
+  const [scanState,    setScanState]    = useState('idle');
+  const [scanResult,   setScanResult]   = useState('');
+  const [scanPreview,  setScanPreview]  = useState('');
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanMsg,      setScanMsg]      = useState('');
+
+  // ── Image preprocessing — optimised for projected screen / slides ────────
+  const preprocessImage = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1920;
+        const ratio = Math.min(MAX / img.width, MAX / img.height, 1);
+        const W = Math.round(img.width  * ratio);
+        const H = Math.round(img.height * ratio);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, W, H);
+
+        const imageData = ctx.getImageData(0, 0, W, H);
+        const d = imageData.data;
+
+        // ── Step 1: detect dark-background slide (projector screen) ──────
+        // Sample ~500 pixels and measure average luminance
+        let totalLum = 0, samples = 0;
+        const step = Math.max(1, Math.floor(d.length / (4 * 500)));
+        for (let i = 0; i < d.length; i += 4 * step) {
+          totalLum += 0.2126 * d[i] + 0.7152 * d[i+1] + 0.0722 * d[i+2];
+          samples++;
+        }
+        const avgLum = totalLum / (samples || 1);
+        // Dark background if average luminance < 110
+        const isDarkSlide = avgLum < 110;
+
+        // ── Step 2: pixel-level processing ───────────────────────────────
+        for (let i = 0; i < d.length; i += 4) {
+          let r = d[i], g = d[i+1], b = d[i+2];
+
+          // Boost yellow text first — very common in Tagalog church slides
+          // Yellow: high R+G, low B
+          if (r > 180 && g > 150 && b < 100) {
+            r = 255; g = 255; b = 0;
+          }
+
+          // Weighted greyscale
+          let grey = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+          if (isDarkSlide) {
+            // INVERT so text becomes dark on white — Tesseract reads this best
+            grey = 255 - grey;
+            // Extra contrast: push text darker, background whiter
+            if (grey < 140) grey = Math.max(0,   grey - 50);
+            else            grey = Math.min(255, grey + 40);
+          } else {
+            // Light slide — normal contrast boost
+            const contrast = 1.7;
+            const f = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            grey = Math.max(0, Math.min(255, f * (grey - 128) + 128));
+            if      (grey < 90)  grey = Math.max(0,   grey - 30);
+            else if (grey > 180) grey = Math.min(255, grey + 30);
+          }
+
+          d[i] = d[i+1] = d[i+2] = grey;
+          d[i+3] = 255;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        resolve({ dataUrl: canvas.toDataURL('image/png', 1.0), isDarkSlide });
+      };
+      img.onerror = () => reject(new Error('Could not load image'));
+      img.src = ev.target.result;
+    };
+    reader.onerror = () => reject(new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+
+  // ── Post-process OCR text — clean common recognition errors ───────────────
+  const cleanOCRText = (raw) => raw
+    .replace(/\f/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[|}{\\]/g, '')
+    .replace(/(\w)\s*[：:]\s*(\d)/g, '$1:$2')   // fix "John 3 : 16" → "John 3:16"
+    .replace(/\b0([A-Za-z])/g, 'O$1')            // 0God → OGod
+    .replace(/l([A-Z][a-z])/g, 'I$1')            // lowercase l before capital → I
+    .trim();
+
+  // ── Main scan handler ──────────────────────────────────────────────────────
+  const handleCameraCapture = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';   // allow same file to be re-scanned
+
+    setScanState('scanning');
+    setScanResult('');
+    setScanPreview('');
+    setScanProgress(0);
+    setScanMsg('Preparing image…');
+
+    // Tesseract.js v5 CDN URLs — all dependencies explicit so Safari doesn't lose them
+    const TESS_CDN  = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    const WORK_PATH = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js';
+    const CORE_PATH = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.0/tesseract-core-simd.wasm.js';
+    const LANG_PATH = 'https://tessdata.projectnaptha.com/4.0.0';
+
+    let worker = null;
+    try {
+      // ── Step 1: preprocess image ──────────────────────────────────────────
+      setScanProgress(8);
+      const { dataUrl, isDarkSlide } = await preprocessImage(file);
+      setScanPreview(dataUrl);
+      setScanMsg(isDarkSlide ? 'Detected projection screen — inverting…' : 'Detected light slide…');
+      setScanProgress(15);
+
+      // ── Step 2: load Tesseract.js from CDN (once, then cached) ───────────
+      if (!window.Tesseract) {
+        setScanMsg('Loading OCR engine… (first time only ~2 MB)');
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = TESS_CDN;
+          s.onload = res;
+          s.onerror = () => rej(new Error('Failed to load OCR library. Check internet connection.'));
+          document.head.appendChild(s);
+        });
+      }
+      setScanProgress(22);
+      setScanMsg('Initializing OCR engine…');
+
+      // ── Step 3: create worker with all explicit CDN paths ─────────────────
+      // This is the critical fix — v5 needs explicit paths when loaded from CDN
+      worker = await window.Tesseract.createWorker('eng', 1, {
+        workerPath: WORK_PATH,
+        corePath:   CORE_PATH,
+        langPath:   LANG_PATH,
+        logger: m => {
+          if (m.status === 'loading tesseract core') {
+            setScanMsg('Loading OCR core…'); setScanProgress(25);
+          } else if (m.status === 'initializing tesseract') {
+            setScanMsg('Starting OCR…'); setScanProgress(32);
+          } else if (m.status === 'loading language traineddata') {
+            setScanMsg('Loading language data…'); setScanProgress(38);
+          } else if (m.status === 'initializing api') {
+            setScanMsg('Almost ready…'); setScanProgress(44);
+          } else if (m.status === 'recognizing text') {
+            const pct = Math.round(44 + m.progress * 50);
+            setScanProgress(pct);
+            setScanMsg(`Reading text… ${Math.round(m.progress * 100)}%`);
+          }
+        },
+      });
+
+      // Tuned parameters for handwritten notes
+      await worker.setParameters({
+        tessedit_pageseg_mode:    '1',   // auto — handles mixed layouts
+        tessedit_char_blacklist:  '`~^',  // rarely appear in notes
+        preserve_interword_spaces:'1',
+      });
+
+      setScanProgress(50);
+      setScanMsg('Reading your notes…');
+
+      // ── Step 4: run recognition ───────────────────────────────────────────
+      const { data } = await worker.recognize(dataUrl);
+      setScanProgress(96);
+
+      const text = cleanOCRText(data.text || '');
+      if (!text || text.length < 2) throw new Error('No readable text found. Try better lighting or hold the camera steady.');
+
+      setScanResult(text);
+      setScanState('result');
+      setScanProgress(100);
+      setScanMsg('');
+
+    } catch (err) {
+      console.error('Camera scan error:', err);
+      setScanState('error');
+      setScanMsg(err.message || 'Scan failed. Please try again.');
+      setScanProgress(0);
+    } finally {
+      // Always terminate worker to free memory
+      if (worker) {
+        try { await worker.terminate(); } catch (_) {}
+      }
+    }
+  };
+
+  const applyScan = (mode) => {
+    // mode: 'append' | 'replace'
+    const newBody = mode === 'replace'
+      ? scanResult
+      : [formRef.current.body, scanResult].filter(Boolean).join('\n\n');
+    setForm({ body: newBody });
+    triggerSave({ body: newBody });
+    setScanState('idle');
+    setScanResult('');
+    setScanPreview('');
+  };
 
   const handleClose = () => { setClosing(true); setTimeout(onClose, 290); };
 
@@ -4069,9 +4357,101 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
               onBlur={e => e.target.style.borderBottomColor = 'var(--border)'}
             />
 
+            {/* Notes label + camera scan button */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink-subtle)' }}>Sermon Notes</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {scanState === 'idle' && (
+                  <button
+                    onClick={() => cameraInputRef.current?.click()}
+                    title="Point at the presentation screen to scan slide text"
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#15803D', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#DCFCE7'}
+                    onMouseLeave={e => e.currentTarget.style.background='#F0FDF4'}
+                  >
+                    <span style={{ fontSize: '0.875rem' }}>📷</span> Scan notes
+                  </button>
+                )}
+                {scanState === 'scanning' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 180 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 4, background: '#16A34A', animation: 'snPulse 1.2s ease-in-out infinite', flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#15803D' }}>{scanMsg || 'Processing…'}</span>
+                    </div>
+                    <div style={{ height: 3, borderRadius: 2, background: '#DCFCE7', overflow: 'hidden' }}>
+                      <div style={{ height: 3, borderRadius: 2, background: '#16A34A', width: `${scanProgress}%`, transition: 'width .4s ease' }} />
+                    </div>
+                  </div>
+                )}
+                {scanState === 'error' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--danger)', fontWeight: 500 }}>⚠ {scanMsg || 'Scan failed'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => cameraInputRef.current?.click()} style={{ fontSize: '0.75rem', color: '#15803D', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>Try again</button>
+                      <button onClick={() => { setScanState('idle'); setScanMsg(''); }} style={{ fontSize: '0.75rem', color: 'var(--ink-subtle)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Dismiss</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Hidden camera input */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style={{ display: 'none' }}
+              onChange={handleCameraCapture}
+            />
+
+            {/* Scan result pane */}
+            {scanState === 'result' && (
+              <div className="sn-scan-result" style={{ marginBottom: 14, borderRadius: 12, overflow: 'hidden', border: '1px solid #BBF7D0', background: '#F0FDF4' }}>
+                {scanPreview && (
+                  <div style={{ display: 'flex', justifyContent: 'center', background: '#DCFCE7', padding: '10px' }}>
+                    <img src={scanPreview} alt="Captured notes" style={{ maxHeight: 120, maxWidth: '100%', borderRadius: 8, objectFit: 'contain', boxShadow: '0 2px 8px rgba(0,0,0,.12)' }} />
+                  </div>
+                )}
+                <div style={{ padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#15803D' }}>✦ Slide Transcription</span>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--ink-subtle)' }}>— review &amp; edit before adding</span>
+                  </div>
+                  <textarea
+                    value={scanResult}
+                    onChange={e => setScanResult(e.target.value)}
+                    rows={5}
+                    style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: '"Geist", sans-serif', fontSize: '0.875rem', color: 'var(--ink)', lineHeight: 1.7, resize: 'vertical', boxSizing: 'border-box' }}
+                  />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => applyScan('append')}
+                      style={{ padding: '6px 14px', borderRadius: 8, background: '#16A34A', color: 'white', border: 'none', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', transition: 'background .15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background='#15803D'}
+                      onMouseLeave={e => e.currentTarget.style.background='#16A34A'}
+                    >+ Add to notes</button>
+                    <button
+                      onClick={() => applyScan('replace')}
+                      style={{ padding: '6px 14px', borderRadius: 8, background: '#F4F4F0', color: 'var(--ink)', border: 'none', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer' }}
+                    >↺ Replace notes</button>
+                    <button
+                      onClick={() => cameraInputRef.current?.click()}
+                      style={{ padding: '6px 14px', borderRadius: 8, background: '#F4F4F0', color: 'var(--ink)', border: 'none', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer' }}
+                    >📷 Scan again</button>
+                    <button
+                      onClick={() => { setScanState('idle'); setScanResult(''); setScanPreview(''); }}
+                      style={{ padding: '6px 10px', borderRadius: 8, background: 'none', color: 'var(--ink-subtle)', border: 'none', fontSize: '0.8125rem', cursor: 'pointer', marginLeft: 'auto' }}
+                    >Discard</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Body textarea */}
             <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink-subtle)', marginBottom: 8 }}>Sermon Notes</div>
               <textarea
                 value={form.body}
                 onChange={e => { setForm({ body: e.target.value }); triggerSave({ body: e.target.value }); }}
@@ -4200,24 +4580,928 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 }
 
 // =============================================================================
+// GAMES MODULE — Bible games for members waiting before service
+// =============================================================================
+
+const GAMES_KEY  = 'flcc-games-v1';
+const G_ACCENT   = '#7C3AED';
+const G_SOFT     = '#EDE9FE';
+const G_TINT     = '#F5F3FF';
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const W_WORDS = [
+  'GRACE','MERCY','FAITH','PEACE','CROSS','PETER','MOSES','DAVID','ANGEL','WATER',
+  'LIGHT','TRUTH','BREAD','BLOOD','HEART','POWER','CROWN','SWORD','STONE','SHEEP',
+  'FLESH','SOULS','TOWER','SEVEN','GLORY','SAVED','RISEN','FRUIT','JAMES','SIMON',
+  'LYDIA','TITUS','HEROD','NAOMI','RAHAB','CALEB','SARAH','ISAAC','JACOB','JONAH',
+  'AARON','HOSEA','MICAH','JUDAH','LABAN','ABNER','JOASH','ELIAS','KORAH','DEMAS',
+  'TAMAR','ZERAH','PRAYS','PSALM','ABRAM','ALPHA','OMEGA','LAMBS','HIRAM','JORAM',
+  'THREE','ELIAM',
+];
+
+const TRIVIA = {
+  easy:[
+    {q:'Who built the ark?',a:'Noah',o:['Moses','Noah','Abraham','Elijah']},
+    {q:'Who was swallowed by a large fish?',a:'Jonah',o:['Elijah','Moses','Jonah','Daniel']},
+    {q:'What did God create on the first day?',a:'Light',o:['Water','Light','Animals','Man']},
+    {q:'In which city was Jesus born?',a:'Bethlehem',o:['Jerusalem','Nazareth','Bethlehem','Jericho']},
+    {q:'How many disciples did Jesus have?',a:'12',o:['10','12','7','14']},
+    {q:'Who denied Jesus three times?',a:'Peter',o:['Judas','Thomas','Peter','John']},
+    {q:'What is the first book of the Bible?',a:'Genesis',o:['Exodus','Psalms','Matthew','Genesis']},
+    {q:'What is the last book of the Bible?',a:'Revelation',o:['Acts','Revelation','Hebrews','Jude']},
+    {q:'Who led the Israelites out of Egypt?',a:'Moses',o:['Joshua','Moses','Abraham','Noah']},
+    {q:'How many commandments did God give Moses?',a:'10',o:['5','7','10','12']},
+  ],
+  medium:[
+    {q:'How many books are in the New Testament?',a:'27',o:['24','27','29','39']},
+    {q:'Who baptized Jesus?',a:'John the Baptist',o:['Peter','James','John the Baptist','Andrew']},
+    {q:'How many loaves fed 5,000 people?',a:'5',o:['2','5','7','12']},
+    {q:'Who was the wisest king of Israel?',a:'Solomon',o:['David','Solomon','Saul','Josiah']},
+    {q:'Who climbed a tree to see Jesus?',a:'Zacchaeus',o:['Matthew','Zacchaeus','Bartimaeus','Lazarus']},
+    {q:'What was Jesus\'s first miracle?',a:'Water to wine',o:['Healing a leper','Water to wine','Raising Lazarus','Walking on water']},
+    {q:'How many days was Jesus in the tomb?',a:'3',o:['1','2','3','7']},
+    {q:'Who was the father of John the Baptist?',a:'Zechariah',o:['Zechariah','Joseph','Abraham','Jesse']},
+    {q:'What does Immanuel mean?',a:'God with us',o:['God saves','God with us','God is love','God is light']},
+    {q:'Which apostle was a tax collector?',a:'Matthew',o:['Peter','Matthew','Luke','John']},
+  ],
+  hard:[
+    {q:'How many Psalms are in the Bible?',a:'150',o:['100','120','150','175']},
+    {q:'What was Paul\'s original name?',a:'Saul',o:['Simon','Saul','Stephen','Silas']},
+    {q:'Who replaced Judas as apostle?',a:'Matthias',o:['Barnabas','Matthias','Mark','Stephen']},
+    {q:'In which city was Paul born?',a:'Tarsus',o:['Jerusalem','Antioch','Tarsus','Corinth']},
+    {q:'Who was David\'s best friend?',a:'Jonathan',o:['Saul','Jonathan','Nathan','Joab']},
+    {q:'How many years did Israel wander in the desert?',a:'40',o:['20','30','40','50']},
+    {q:'What is the longest book in the Bible?',a:'Psalms',o:['Isaiah','Psalms','Genesis','Jeremiah']},
+    {q:'In what language was most of the NT written?',a:'Greek',o:['Hebrew','Aramaic','Greek','Latin']},
+    {q:'Who was Abraham\'s nephew?',a:'Lot',o:['Isaac','Lot','Ishmael','Jacob']},
+    {q:'What river was Jesus baptized in?',a:'Jordan',o:['Nile','Jordan','Euphrates','Galilee']},
+  ],
+};
+
+const VERSE_PAIRS = [
+  {v:'For God so loved the world…',r:'John 3:16'},
+  {v:'I can do all things through Christ…',r:'Phil 4:13'},
+  {v:'The Lord is my shepherd…',r:'Psalm 23:1'},
+  {v:'Love is patient, love is kind…',r:'1 Cor 13:4'},
+  {v:'Trust in the Lord with all your heart…',r:'Prov 3:5'},
+  {v:'Be still, and know that I am God…',r:'Psalm 46:10'},
+  {v:'In all things God works for the good…',r:'Romans 8:28'},
+  {v:'For I know the plans I have for you…',r:'Jer 29:11'},
+  {v:'No weapon formed against you shall prosper…',r:'Isaiah 54:17'},
+  {v:'Create in me a pure heart, O God…',r:'Psalm 51:10'},
+  {v:'Your word is a lamp to my feet…',r:'Psalm 119:105'},
+  {v:'Do not conform to the pattern of this world…',r:'Romans 12:2'},
+  {v:'The joy of the Lord is your strength…',r:'Neh 8:10'},
+  {v:'Cast all your anxiety on him…',r:'1 Peter 5:7'},
+  {v:'I am the way, the truth, and the life…',r:'John 14:6'},
+  {v:'Ask and it will be given to you…',r:'Matt 7:7'},
+];
+
+const FITB = [
+  {t:'For God so ___ the world…',b:'loved',r:'John 3:16',o:['saved','loved','helped','chose']},
+  {t:'I can do all things through ___…',b:'Christ',r:'Phil 4:13',o:['God','faith','Christ','prayer']},
+  {t:'The Lord is my ___; I shall not want.',b:'shepherd',r:'Psalm 23:1',o:['king','shepherd','father','rock']},
+  {t:'Love is ___, love is kind.',b:'patient',r:'1 Cor 13:4',o:['patient','pure','strong','gentle']},
+  {t:'Trust in the Lord with all your ___.',b:'heart',r:'Prov 3:5',o:['mind','heart','soul','strength']},
+  {t:'Be ___, and know that I am God.',b:'still',r:'Psalm 46:10',o:['quiet','still','calm','faithful']},
+  {t:'Your word is a ___ to my feet.',b:'lamp',r:'Psalm 119:105',o:['guide','lamp','shield','sword']},
+  {t:'The ___ of the Lord is your strength.',b:'joy',r:'Neh 8:10',o:['peace','joy','love','grace']},
+  {t:'I am the way, the ___, and the life.',b:'truth',r:'John 14:6',o:['truth','light','door','vine']},
+  {t:'It is by ___ you have been saved.',b:'grace',r:'Eph 2:8',o:['faith','grace','works','love']},
+  {t:'The fruit of the Spirit is love, ___, peace.',b:'joy',r:'Gal 5:22',o:['joy','hope','faith','grace']},
+  {t:'Seek first the ___ of God.',b:'kingdom',r:'Matt 6:33',o:['kingdom','will','glory','word']},
+  {t:'In the beginning ___ created the heavens.',b:'God',r:'Gen 1:1',o:['God','Jesus','Moses','man']},
+  {t:'Jesus ___. (shortest verse in the Bible)',b:'wept',r:'John 11:35',o:['prayed','wept','spoke','healed']},
+  {t:'No ___ formed against you will prevail.',b:'weapon',r:'Isaiah 54:17',o:['enemy','weapon','curse','plan']},
+];
+
+const WS_THEMES = [
+  {name:'Fruit of the Spirit 🍎',words:['LOVE','JOY','PEACE','PATIENCE','KINDNESS','GOODNESS','GENTLENESS']},
+  {name:'Books of the NT 📖',words:['MATTHEW','MARK','LUKE','JOHN','ACTS','ROMANS','JAMES','TITUS']},
+  {name:'The Disciples 🙏',words:['PETER','ANDREW','JAMES','JOHN','PHILIP','THOMAS','MATTHEW','SIMON']},
+  {name:'Names of Jesus ✝️',words:['KING','LORD','SAVIOR','BREAD','LIGHT','TRUTH','LAMB','VINE']},
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function loadGamesState()  { try { return JSON.parse(localStorage.getItem(GAMES_KEY)||'{}'); } catch { return {}; } }
+function saveGamesState(s) { try { localStorage.setItem(GAMES_KEY, JSON.stringify(s)); } catch {} }
+
+function buildWSGrid(words, SIZE = 10) {
+  const DIRS = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
+  const grid = Array.from({length:SIZE}, () => Array(SIZE).fill(''));
+  const placed = [];
+  const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const sorted = [...words].filter(w => w.length <= SIZE).sort((a,b) => b.length - a.length);
+  for (const word of sorted) {
+    let ok = false;
+    for (let t = 0; t < 80 && !ok; t++) {
+      const [dr,dc] = DIRS[Math.floor(Math.random()*DIRS.length)];
+      const r = Math.floor(Math.random()*SIZE), c = Math.floor(Math.random()*SIZE);
+      let fits = true;
+      const cells = [];
+      for (let i = 0; i < word.length; i++) {
+        const nr = r+dr*i, nc = c+dc*i;
+        if (nr<0||nr>=SIZE||nc<0||nc>=SIZE||(grid[nr][nc]!==''&&grid[nr][nc]!==word[i])){fits=false;break;}
+        cells.push([nr,nc]);
+      }
+      if (fits) { cells.forEach(([nr,nc],i)=>{ grid[nr][nc]=word[i]; }); placed.push({word,cells}); ok=true; }
+    }
+  }
+  for (let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) if(!grid[r][c]) grid[r][c]=ALPHA[Math.floor(Math.random()*26)];
+  return { grid, placed };
+}
+
+// ─── GAME HUB ─────────────────────────────────────────────────────────────────
+const GAMES_META = [
+  {key:'trivia',icon:'❓',name:'Bible Trivia', desc:'Test your Bible knowledge · 3 levels',  color:'#0284C7'},
+  {key:'wordle',icon:'🔤',name:'Wordle',        desc:'Daily 5-letter Bible word',              color:'#16A34A'},
+  {key:'match', icon:'🃏',name:'Memory Match',  desc:'Match verses to scripture references',  color:'#BE123C'},
+  {key:'search',icon:'🔍',name:'Word Search',   desc:'Find hidden Bible words in the grid',   color:'#B45309'},
+  {key:'fitb',  icon:'✍️', name:'Fill the Blank',desc:'Complete the scripture verse',          color:G_ACCENT},
+];
+
+function GameHub({ onClose }) {
+  const [active, setActive] = useState(null);
+  const [gState, setGRaw]   = useState(loadGamesState);
+  const setGState = s => { saveGamesState(s); setGRaw(s); };
+  const [closing, setClosing] = useState(false);
+
+  const handleClose = () => { setClosing(true); setTimeout(onClose, 280); };
+  const gameMeta = active ? GAMES_META.find(g => g.key === active) : null;
+
+  return ReactDOM.createPortal(
+    <div style={{position:'fixed',inset:0,zIndex:80,display:'flex',alignItems:'flex-end',justifyContent:'center',
+      background:closing?'rgba(24,24,27,0)':'rgba(24,24,27,.45)',backdropFilter:'blur(7px)',
+      transition:'background .28s ease'}} onClick={!active?handleClose:undefined}>
+      <div className={closing?'sn-sheet closing':'sn-sheet'} style={{maxWidth:620}} onClick={e=>e.stopPropagation()}>
+
+        {/* Drag handle */}
+        <div style={{display:'flex',justifyContent:'center',paddingTop:11,paddingBottom:4}}>
+          <div style={{width:42,height:4,borderRadius:2,background:'var(--border-strong)',opacity:.6}}/>
+        </div>
+
+        {/* Header */}
+        <div style={{padding:'6px 18px 14px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div>
+            {active && (
+              <button onClick={()=>setActive(null)} style={{background:'none',border:'none',cursor:'pointer',fontSize:'0.8125rem',color:'var(--ink-muted)',padding:0,display:'flex',alignItems:'center',gap:4,marginBottom:2}}>
+                ← Games
+              </button>
+            )}
+            <div className="font-display" style={{fontSize:'1.5rem',fontWeight:600,display:'flex',alignItems:'center',gap:8}}>
+              {active ? <>{gameMeta.icon} {gameMeta.name}</> : '🎮 Games'}
+            </div>
+            {!active && <div style={{fontSize:'0.8125rem',color:'var(--ink-muted)',marginTop:2}}>Spiritual games for while you wait · scores saved locally</div>}
+          </div>
+          <button onClick={handleClose} style={{background:'#F4F4F0',border:'none',borderRadius:8,padding:'4px 10px',fontSize:'0.8125rem',cursor:'pointer',color:'var(--ink-muted)',transition:'background .15s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.background='#F4F4F0'}>✕</button>
+        </div>
+
+        {/* Content */}
+        <div style={{overflowY:'auto',flex:1,WebkitOverflowScrolling:'touch'}}>
+          {!active ? (
+            <div style={{padding:20}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+                {GAMES_META.map(g => {
+                  const hs = gState[g.key]?.highScore || gState[g.key]?.bestStreak || (g.key==='match'&&Object.values(gState.match?.bestTime||{}).length?Math.min(...Object.values(gState.match.bestTime))+'s best':0);
+                  return (
+                    <div key={g.key} onClick={()=>setActive(g.key)}
+                      style={{padding:16,borderRadius:14,border:'1px solid var(--border)',cursor:'pointer',borderTop:`3px solid ${g.color}`,transition:'transform .15s,box-shadow .15s'}}
+                      onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,.08)';}}
+                      onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';}}>
+                      <div style={{fontSize:'2rem',marginBottom:8}}>{g.icon}</div>
+                      <div style={{fontSize:'0.9375rem',fontWeight:600,marginBottom:2}}>{g.name}</div>
+                      <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',lineHeight:1.4}}>{g.desc}</div>
+                      {hs > 0 && <div style={{fontSize:'0.6875rem',color:g.color,marginTop:8,fontWeight:600}}>Best: {hs}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{padding:'10px 14px',borderRadius:10,background:G_TINT,border:`1px solid ${G_SOFT}`,fontSize:'0.75rem',color:G_ACCENT,textAlign:'center'}}>
+                🙏 All games teach Bible knowledge · scores saved privately on your device
+              </div>
+            </div>
+          ) : (
+            <div>
+              {active==='trivia' && <BibleTrivia gState={gState} setGState={setGState}/>}
+              {active==='wordle' && <BibleWordle gState={gState} setGState={setGState}/>}
+              {active==='match'  && <MemoryMatch gState={gState} setGState={setGState}/>}
+              {active==='search' && <WordSearch  gState={gState} setGState={setGState}/>}
+              {active==='fitb'   && <FillBlank   gState={gState} setGState={setGState}/>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// ─── GAME: Bible Trivia ────────────────────────────────────────────────────────
+function BibleTrivia({ gState, setGState }) {
+  const [diff,   setDiff]     = useState(null);
+  const [qs,     setQs]       = useState([]);
+  const [qIdx,   setQIdx]     = useState(0);
+  const [score,  setScore]    = useState(0);
+  const [ans,    setAns]      = useState(null);
+  const [sel,    setSel]      = useState(null);
+  const [done,   setDone]     = useState(false);
+
+  const start = d => {
+    setQs([...TRIVIA[d]].sort(()=>Math.random()-.5).slice(0,10));
+    setDiff(d); setQIdx(0); setScore(0); setAns(null); setSel(null); setDone(false);
+  };
+
+  const pick = opt => {
+    if (ans) return;
+    setSel(opt);
+    const ok = opt === qs[qIdx].a;
+    setAns(ok?'correct':'wrong');
+    const pts = diff==='easy'?10:diff==='medium'?20:30;
+    const newScore = score + (ok?pts:0);
+    setTimeout(()=>{
+      if (qIdx+1 >= qs.length) {
+        const prev = gState.trivia||{};
+        if (newScore > (prev.highScore||0)) setGState({...gState,trivia:{...prev,highScore:newScore}});
+        setScore(newScore); setDone(true);
+      } else {
+        setScore(newScore); setQIdx(i=>i+1); setAns(null); setSel(null);
+      }
+    }, 1100);
+  };
+
+  if (!diff) return (
+    <div style={{padding:20}}>
+      <div className="font-display" style={{fontSize:'1.25rem',fontWeight:600,marginBottom:6}}>Choose Difficulty</div>
+      <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:20}}>10 questions per round. Higher difficulty = more points per correct answer.</div>
+      {[{k:'easy',l:'🌱 Easy',d:'Bible basics · 10 pts each',c:'#16A34A'},
+        {k:'medium',l:'📖 Medium',d:'Deeper knowledge · 20 pts each',c:'#0284C7'},
+        {k:'hard',l:'🔥 Hard',d:'Scholar level · 30 pts each',c:'#BE123C'}].map(x=>(
+        <div key={x.k} onClick={()=>start(x.k)} style={{padding:'16px 18px',borderRadius:12,border:`1px solid ${x.c}30`,marginBottom:10,cursor:'pointer',background:x.c+'0A',transition:'background .15s'}}
+          onMouseEnter={e=>e.currentTarget.style.background=x.c+'18'} onMouseLeave={e=>e.currentTarget.style.background=x.c+'0A'}>
+          <div style={{fontWeight:600,color:x.c}}>{x.l}</div>
+          <div style={{fontSize:'0.8125rem',color:'var(--ink-muted)',marginTop:2}}>{x.d}</div>
+        </div>
+      ))}
+      {gState.trivia?.highScore>0 && <div style={{textAlign:'center',fontSize:'0.8125rem',color:'var(--ink-muted)',marginTop:8}}>Best score: <strong style={{color:'#0284C7'}}>{gState.trivia.highScore}</strong></div>}
+    </div>
+  );
+
+  if (done) {
+    const max = 10*(diff==='easy'?10:diff==='medium'?20:30);
+    const pct = Math.round((score/max)*100);
+    return (
+      <div style={{padding:24,textAlign:'center'}}>
+        <div style={{fontSize:'3rem',marginBottom:12}}>{pct>=90?'🏆':pct>=70?'🌟':pct>=50?'📖':'🙏'}</div>
+        <div className="font-display" style={{fontSize:'2.25rem',fontWeight:600,marginBottom:4}}>{score} pts</div>
+        <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:8}}>{pct>=90?'Bible Scholar!':pct>=70?'Great job!':pct>=50?'Keep studying!':'Keep reading your Bible!'}</div>
+        {gState.trivia?.highScore===score&&score>0&&<div style={{color:'#F59E0B',fontWeight:600,marginBottom:16}}>⭐ New high score!</div>}
+        <button onClick={()=>setDiff(null)} style={{padding:'10px 24px',borderRadius:999,background:'var(--ink)',color:'white',border:'none',cursor:'pointer',fontSize:'0.875rem',fontWeight:600}}>Play again</button>
+      </div>
+    );
+  }
+
+  const q = qs[qIdx];
+  return (
+    <div style={{padding:20}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
+        <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>Q {qIdx+1}/10 · {diff}</div>
+        <div style={{fontSize:'0.875rem',fontWeight:600,color:'#0284C7'}}>{score} pts</div>
+      </div>
+      <div style={{height:4,borderRadius:2,background:'var(--border)',marginBottom:20}}>
+        <div style={{height:4,borderRadius:2,background:'#0284C7',width:`${((qIdx)/10)*100}%`,transition:'width .3s'}}/>
+      </div>
+      <div className="font-display" style={{fontSize:'1.125rem',fontWeight:600,lineHeight:1.5,marginBottom:24,minHeight:56}}>{q.q}</div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {q.o.map(opt=>{
+          let bg='#F9F9F7',border='var(--border)',color='var(--ink)';
+          if(ans){
+            if(opt===q.a){bg='#F0FDF4';border='#16A34A';color='#15803D';}
+            else if(opt===sel&&sel!==q.a){bg='#FEF2F2';border='#DC2626';color='#DC2626';}
+          }
+          return (
+            <button key={opt} onClick={()=>pick(opt)} disabled={!!ans}
+              style={{padding:'14px 16px',borderRadius:12,border:`2px solid ${border}`,background:bg,color,textAlign:'left',cursor:ans?'default':'pointer',fontSize:'0.9375rem',fontWeight:500,transition:'all .2s',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              {opt}
+              {ans&&opt===q.a&&<span>✓</span>}
+              {ans&&opt===sel&&sel!==q.a&&<span>✗</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── GAME: Bible Wordle ────────────────────────────────────────────────────────
+function BibleWordle({ gState, setGState }) {
+  const today = todayISO();
+  const ANSWER = W_WORDS[parseInt(today.replace(/-/g,'')) % W_WORDS.length];
+  const ws     = gState.wordle||{};
+  const init   = ws.date===today ? (ws.guesses||[]) : [];
+
+  const [guesses, setGuesses] = useState(init);
+  const [cur,     setCur]     = useState('');
+  const [shake,   setShake]   = useState(false);
+  const [won,  setWon]  = useState(init.some(g=>g===ANSWER));
+  const [lost, setLost] = useState(!init.some(g=>g===ANSWER) && init.length>=6);
+
+  const KEYS = ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
+
+  const letterState = useMemo(()=>{
+    const s={};
+    for(const g of guesses) for(let i=0;i<5;i++){
+      const ch=g[i];
+      if(ANSWER[i]===ch) s[ch]='correct';
+      else if(ANSWER.includes(ch)&&s[ch]!=='correct') s[ch]='present';
+      else if(!s[ch]) s[ch]='absent';
+    }
+    return s;
+  },[guesses,ANSWER]);
+
+  const cellColor=(g,col)=>{
+    if(ANSWER[col]===g[col]) return '#16A34A';
+    if(ANSWER.includes(g[col])) return '#D97706';
+    return '#6B7280';
+  };
+
+  const submit=()=>{
+    if(cur.length<5){setShake(true);setTimeout(()=>setShake(false),500);return;}
+    const ng=[...guesses,cur];
+    setGuesses(ng); setCur('');
+    const w=cur===ANSWER, l=!w&&ng.length>=6;
+    if(w)setWon(true); if(l)setLost(true);
+    const prev=gState.wordle||{};
+    const streak=w?((prev.date===addDays(today,-1))?(prev.streak||0)+1:1):0;
+    setGState({...gState,wordle:{date:today,guesses:ng,streak:w?streak:prev.streak||0,bestStreak:Math.max(streak,prev.bestStreak||0)}});
+  };
+
+  const handleKey=k=>{
+    if(won||lost)return;
+    if(k==='ENTER'){submit();return;}
+    if(k==='DEL'){setCur(c=>c.slice(0,-1));return;}
+    if(/^[A-Z]$/.test(k)&&cur.length<5)setCur(c=>c+k);
+  };
+
+  useEffect(()=>{
+    const fn=e=>{
+      const k=e.key.toUpperCase();
+      if(k==='ENTER'||k==='BACKSPACE'||/^[A-Z]$/.test(k)) handleKey(k==='BACKSPACE'?'DEL':k);
+    };
+    window.addEventListener('keydown',fn);
+    return ()=>window.removeEventListener('keydown',fn);
+  });
+
+  const kbColor=k=>{
+    const st=letterState[k];
+    return st==='correct'?'#16A34A':st==='present'?'#D97706':st==='absent'?'#9CA3AF':'#E5E7EB';
+  };
+  const kbText=k=>letterState[k]?'white':'var(--ink)';
+
+  return (
+    <div style={{padding:'14px 16px'}}>
+      <div style={{textAlign:'center',fontSize:'0.75rem',color:'var(--ink-muted)',marginBottom:10}}>
+        📅 Daily word · {today}{ws.streak>0?` · 🔥 ${ws.streak}-day streak`:''}
+      </div>
+
+      {/* Grid */}
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5,marginBottom:14}}>
+        {Array.from({length:6},(_,row)=>(
+          <div key={row} style={{display:'flex',gap:5}}>
+            {Array.from({length:5},(_,col)=>{
+              const g=guesses[row]; const revealed=!!g;
+              const ch=g?g[col]:(row===guesses.length?cur[col]:'');
+              let bg='transparent',border='#D1D5DB',color='var(--ink)';
+              if(revealed){bg=cellColor(g,col);border=bg;color='white';}
+              else if(ch)border='#6B7280';
+              return (
+                <div key={col} style={{width:50,height:50,display:'flex',alignItems:'center',justifyContent:'center',border:`2px solid ${border}`,borderRadius:8,fontWeight:700,fontSize:'1.375rem',background:bg,color,fontFamily:'Geist Mono,monospace',
+                  animation:(!revealed&&row===guesses.length&&shake)?'snShakeX .4s ease':'none',transition:'background .3s'}}>
+                  {ch||''}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {(won||lost)&&(
+        <div style={{textAlign:'center',padding:'10px 14px',borderRadius:10,background:won?'#F0FDF4':'#FEF2F2',marginBottom:12}}>
+          <div style={{fontWeight:700,color:won?'#16A34A':'#DC2626'}}>{won?`✓ ${ANSWER} — Well done! 🎉`:`The word was: ${ANSWER}`}</div>
+          <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginTop:3}}>Come back tomorrow for a new word!</div>
+        </div>
+      )}
+
+      {/* Keyboard */}
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
+        {KEYS.map((row,ri)=>(
+          <div key={ri} style={{display:'flex',gap:4}}>
+            {ri===2&&<button onClick={()=>handleKey('ENTER')} style={{padding:'13px 6px',borderRadius:7,background:'#374151',color:'white',border:'none',fontSize:'0.625rem',fontWeight:700,cursor:'pointer',letterSpacing:'.04em'}}>ENTER</button>}
+            {row.split('').map(k=>(
+              <button key={k} onClick={()=>handleKey(k)} style={{width:30,height:42,borderRadius:7,background:kbColor(k),color:kbText(k),border:'none',fontSize:'0.875rem',fontWeight:700,cursor:'pointer',transition:'background .2s'}}>{k}</button>
+            ))}
+            {ri===2&&<button onClick={()=>handleKey('DEL')} style={{padding:'13px 6px',borderRadius:7,background:'#374151',color:'white',border:'none',fontSize:'0.625rem',fontWeight:700,cursor:'pointer'}}>DEL</button>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── GAME: Memory Match ────────────────────────────────────────────────────────
+function MemoryMatch({ gState, setGState }) {
+  const [diff,   setDiff]  = useState(null);
+  const [cards,  setCards] = useState([]);
+  const [flip,   setFlip]  = useState([]);
+  const [match,  setMatch] = useState([]);
+  const [moves,  setMoves] = useState(0);
+  const [t0,     setT0]    = useState(null);
+  const [elapsed,setElapsed]=useState(0);
+  const [done,   setDone]  = useState(false);
+  const block = useRef(false);
+
+  useEffect(()=>{
+    if(t0&&!done){const iv=setInterval(()=>setElapsed(Math.floor((Date.now()-t0)/1000)),1000);return()=>clearInterval(iv);}
+  },[t0,done]);
+
+  const start=d=>{
+    const n=d==='easy'?4:d==='medium'?8:12;
+    const pairs=[...VERSE_PAIRS].sort(()=>Math.random()-.5).slice(0,n);
+    const cs=[...pairs.map((p,i)=>({id:i*2,type:'verse',text:p.v,pid:i})),
+              ...pairs.map((p,i)=>({id:i*2+1,type:'ref',text:p.r,pid:i}))].sort(()=>Math.random()-.5);
+    setDiff(d);setCards(cs);setFlip([]);setMatch([]);setMoves(0);setT0(Date.now());setElapsed(0);setDone(false);
+  };
+
+  const tap=id=>{
+    if(block.current||flip.includes(id)||match.includes(id))return;
+    const nf=[...flip,id];
+    setFlip(nf);
+    if(nf.length===2){
+      setMoves(m=>m+1); block.current=true;
+      const [a,b]=nf.map(x=>cards.find(c=>c.id===x));
+      if(a.pid===b.pid){
+        const nm=[...match,...nf];
+        setMatch(nm); setFlip([]); block.current=false;
+        if(nm.length===cards.length){
+          setDone(true);
+          const el=Math.floor((Date.now()-t0)/1000);
+          setElapsed(el);
+          const prev=gState.match||{};
+          const bt=prev.bestTime||{};
+          if(!bt[diff]||el<bt[diff]) setGState({...gState,match:{...prev,bestTime:{...bt,[diff]:el}}});
+        }
+      } else { setTimeout(()=>{setFlip([]);block.current=false;},900); }
+    }
+  };
+
+  if(!diff) return (
+    <div style={{padding:20}}>
+      <div className="font-display" style={{fontSize:'1.25rem',fontWeight:600,marginBottom:6}}>Memory Match</div>
+      <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:20}}>Flip cards to match Bible verses with their scripture references.</div>
+      {[{k:'easy',l:'🌱 Easy — 4 pairs',c:'#16A34A'},{k:'medium',l:'📖 Medium — 8 pairs',c:'#0284C7'},{k:'hard',l:'🔥 Hard — 12 pairs',c:'#BE123C'}].map(x=>(
+        <div key={x.k} onClick={()=>start(x.k)} style={{padding:'14px 18px',borderRadius:12,border:`1px solid ${x.c}30`,marginBottom:10,cursor:'pointer',background:x.c+'0A',transition:'background .15s'}}
+          onMouseEnter={e=>e.currentTarget.style.background=x.c+'18'} onMouseLeave={e=>e.currentTarget.style.background=x.c+'0A'}>
+          <div style={{fontWeight:600,color:x.c}}>{x.l}</div>
+          {gState.match?.bestTime?.[x.k]&&<div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginTop:2}}>Best: {gState.match.bestTime[x.k]}s</div>}
+        </div>
+      ))}
+    </div>
+  );
+
+  if(done) return (
+    <div style={{padding:24,textAlign:'center'}}>
+      <div style={{fontSize:'3rem',marginBottom:12}}>🎉</div>
+      <div className="font-display" style={{fontSize:'1.75rem',fontWeight:600,marginBottom:4}}>Complete!</div>
+      <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:16}}>{moves} moves · {elapsed} seconds</div>
+      <button onClick={()=>setDiff(null)} style={{padding:'10px 24px',borderRadius:999,background:'var(--ink)',color:'white',border:'none',cursor:'pointer',fontSize:'0.875rem',fontWeight:600}}>Play again</button>
+    </div>
+  );
+
+  const cols=diff==='easy'?4:4;
+  return (
+    <div style={{padding:14}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:12,fontSize:'0.8125rem',color:'var(--ink-muted)'}}>
+        <span>🃏 {match.length/2}/{cards.length/2} matched</span>
+        <span>{moves} moves · {elapsed}s</span>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gap:8}}>
+        {cards.map(card=>{
+          const isFlip=flip.includes(card.id)||match.includes(card.id);
+          const isMatch=match.includes(card.id);
+          return (
+            <div key={card.id} onClick={()=>tap(card.id)} style={{
+              aspectRatio:'2/3',borderRadius:10,cursor:'pointer',padding:8,
+              display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',
+              background:isMatch?'#F0FDF4':isFlip?(card.type==='verse'?'#EFF6FF':G_TINT):'#1E293B',
+              border:`2px solid ${isMatch?'#16A34A':isFlip?G_ACCENT:'#334155'}`,
+              color:isFlip?'var(--ink)':'transparent',
+              fontSize:diff==='hard'?'0.5625rem':'0.625rem',
+              lineHeight:1.35,fontWeight:500,
+              transition:'all .25s ease',
+              boxShadow:isFlip?'0 2px 8px rgba(0,0,0,.08)':'0 2px 8px rgba(0,0,0,.2)',
+            }}>
+              {isFlip?card.text:'✝️'}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── GAME: Word Search ─────────────────────────────────────────────────────────
+function WordSearch({ gState, setGState }) {
+  const [themeIdx, setThemeIdx] = useState(null);
+  const [gd,       setGd]       = useState(null);
+  const [found,    setFound]    = useState([]); // [{word,cells}]
+  const [sel,      setSel]      = useState(null); // start cell
+  const [hover,    setHover]    = useState(null);
+  const [wonMsg,   setWonMsg]   = useState('');
+
+  const startTheme = idx => {
+    setThemeIdx(idx);
+    setGd(buildWSGrid(WS_THEMES[idx].words, 10));
+    setFound([]); setSel(null); setHover(null); setWonMsg('');
+  };
+
+  const getPath=(s,e)=>{
+    if(!s||!e)return[];
+    const [r1,c1]=s,[r2,c2]=e;
+    const dr=r2-r1,dc=c2-c1,len=Math.max(Math.abs(dr),Math.abs(dc));
+    if(len===0)return[s];
+    if(dr!==0&&dc!==0&&Math.abs(dr)!==Math.abs(dc))return[];
+    const sr=dr===0?0:dr/Math.abs(dr),sc=dc===0?0:dc/Math.abs(dc);
+    return Array.from({length:len+1},(_,i)=>[r1+sr*i,c1+sc*i]);
+  };
+
+  const tryWord=end=>{
+    if(!sel)return;
+    const path=getPath(sel,end);
+    const w=path.map(([r,c])=>gd.grid[r][c]).join('');
+    const wr=w.split('').reverse().join('');
+    const target=gd.placed.find(p=>p.word===w||p.word===wr);
+    if(target&&!found.some(f=>f.word===target.word)){
+      const nf=[...found,target];
+      setFound(nf);
+      if(nf.length===gd.placed.length)setWonMsg('🎉 All words found! Well done!');
+    }
+    setSel(null);setHover(null);
+  };
+
+  const foundCells=useMemo(()=>{
+    const s=new Set();
+    found.forEach(f=>f.cells.forEach(([r,c])=>s.add(`${r},${c}`)));
+    return s;
+  },[found]);
+
+  const pathCells=useMemo(()=>{
+    const path=getPath(sel,hover||sel);
+    return new Set(path.map(([r,c])=>`${r},${c}`));
+  },[sel,hover]);
+
+  if(themeIdx===null) return (
+    <div style={{padding:20}}>
+      <div className="font-display" style={{fontSize:'1.25rem',fontWeight:600,marginBottom:6}}>Word Search</div>
+      <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:20}}>Tap a letter to start, tap the end letter to select a word. Horizontal, vertical, and diagonal.</div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+        {WS_THEMES.map((t,i)=>(
+          <div key={i} onClick={()=>startTheme(i)} style={{padding:14,borderRadius:12,border:'1px solid var(--border)',cursor:'pointer',transition:'background .15s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='#F4F4F0'} onMouseLeave={e=>e.currentTarget.style.background=''}>
+            <div style={{fontWeight:600,fontSize:'0.9375rem',marginBottom:2}}>{t.name}</div>
+            <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>{t.words.length} words</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{padding:'12px 14px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+        <div style={{fontSize:'0.8125rem',fontWeight:600}}>{WS_THEMES[themeIdx].name}</div>
+        <div style={{fontSize:'0.8125rem',color:'var(--ink-muted)'}}>{found.length}/{gd.placed.length} found</div>
+      </div>
+
+      {wonMsg&&<div style={{textAlign:'center',padding:'8px 14px',borderRadius:8,background:'#F0FDF4',color:'#16A34A',fontWeight:700,marginBottom:10,fontSize:'0.875rem'}}>
+        {wonMsg} <button onClick={()=>setThemeIdx(null)} style={{marginLeft:8,fontSize:'0.75rem',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',color:'#16A34A'}}>Play another</button>
+      </div>}
+
+      <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:12}}>
+        {gd.placed.map(p=>(
+          <span key={p.word} style={{fontSize:'0.6875rem',fontWeight:600,padding:'2px 8px',borderRadius:999,
+            background:found.some(f=>f.word===p.word)?'#F0FDF4':'#F4F4F0',
+            color:found.some(f=>f.word===p.word)?'#16A34A':'var(--ink-muted)',
+            textDecoration:found.some(f=>f.word===p.word)?'line-through':'none',letterSpacing:'.04em'}}>{p.word}</span>
+        ))}
+      </div>
+
+      <div style={{display:'inline-grid',gridTemplateColumns:'repeat(10,1fr)',gap:2,touchAction:'none',userSelect:'none'}}>
+        {gd.grid.map((row,r)=>row.map((ch,c)=>{
+          const key=`${r},${c}`;
+          const isF=foundCells.has(key),isP=pathCells.has(key),isS=sel&&sel[0]===r&&sel[1]===c;
+          return (
+            <div key={key}
+              onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);setSel([r,c]);setHover([r,c]);}}
+              onPointerEnter={()=>{if(sel)setHover([r,c]);}}
+              onPointerUp={()=>tryWord([r,c])}
+              style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
+                borderRadius:6,fontWeight:700,fontSize:'0.8125rem',fontFamily:'Geist Mono,monospace',cursor:'pointer',
+                background:isF?'#F0FDF4':isS?G_ACCENT:isP?G_SOFT:'#F9F9F7',
+                color:isF?'#16A34A':isS?'white':isP?G_ACCENT:'var(--ink)',
+                border:`1px solid ${isF?'#BBF7D0':isP?G_ACCENT:'var(--border)'}`,
+                transition:'background .08s',}}>
+              {ch}
+            </div>
+          );
+        }))}
+      </div>
+
+      <button onClick={()=>setThemeIdx(null)} style={{marginTop:14,fontSize:'0.8125rem',color:'var(--ink-muted)',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',display:'block'}}>← Choose another theme</button>
+    </div>
+  );
+}
+
+// ─── GAME: Fill in the Blank ───────────────────────────────────────────────────
+function FillBlank({ gState, setGState }) {
+  const [qs]    = useState(()=>[...FITB].sort(()=>Math.random()-.5).slice(0,10));
+  const [qIdx,  setQIdx]  = useState(0);
+  const [score, setScore] = useState(0);
+  const [ans,   setAns]   = useState(null);
+  const [sel,   setSel]   = useState(null);
+  const [done,  setDone]  = useState(false);
+
+  const q=qs[qIdx];
+  const pick=opt=>{
+    if(ans)return;
+    setSel(opt);
+    const ok=opt===q.b;
+    setAns(ok?'correct':'wrong');
+    const ns=score+(ok?10:0);
+    setTimeout(()=>{
+      if(qIdx+1>=qs.length){
+        const prev=gState.fitb||{};
+        if(ns>(prev.highScore||0))setGState({...gState,fitb:{...prev,highScore:ns}});
+        setScore(ns);setDone(true);
+      } else {setScore(ns);setQIdx(i=>i+1);setAns(null);setSel(null);}
+    },1100);
+  };
+
+  if(done){
+    const pct=Math.round((score/100)*100);
+    return (
+      <div style={{padding:24,textAlign:'center'}}>
+        <div style={{fontSize:'3rem',marginBottom:12}}>{pct>=80?'🏆':pct>=60?'🌟':'📖'}</div>
+        <div className="font-display" style={{fontSize:'2.25rem',fontWeight:600,marginBottom:4}}>{score}/100</div>
+        <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:16}}>{pct>=80?'Scripture Scholar!':pct>=60?'Keep memorizing!':'Keep reading your Bible!'}</div>
+        {gState.fitb?.highScore===score&&score>0&&<div style={{color:'#F59E0B',fontWeight:600,marginBottom:16}}>⭐ New high score!</div>}
+        <button onClick={()=>{setQIdx(0);setScore(0);setAns(null);setSel(null);setDone(false);}} style={{padding:'10px 24px',borderRadius:999,background:'var(--ink)',color:'white',border:'none',cursor:'pointer',fontSize:'0.875rem',fontWeight:600}}>Play again</button>
+      </div>
+    );
+  }
+
+  const parts=q.t.split('___');
+  return (
+    <div style={{padding:20}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
+        <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>Verse {qIdx+1}/10</div>
+        <div style={{fontSize:'0.875rem',fontWeight:600,color:G_ACCENT}}>{score} pts</div>
+      </div>
+      <div style={{height:4,borderRadius:2,background:'var(--border)',marginBottom:20}}>
+        <div style={{height:4,borderRadius:2,background:G_ACCENT,width:`${(qIdx/10)*100}%`,transition:'width .3s'}}/>
+      </div>
+
+      <div style={{padding:'18px',borderRadius:14,background:G_TINT,border:`1px solid ${G_SOFT}`,marginBottom:20,lineHeight:1.8,fontSize:'1.0625rem'}}>
+        <span style={{fontStyle:'italic',color:'var(--ink)'}}>
+          "{parts[0]}
+          <span style={{display:'inline-block',borderBottom:`2px solid ${G_ACCENT}`,minWidth:56,height:26,marginBottom:-6,background:ans?G_SOFT:'transparent',color:G_ACCENT,fontWeight:700,textAlign:'center',padding:'0 6px',transition:'background .3s'}}>
+            {ans?q.b:'　'}
+          </span>
+          {parts[1]}"
+        </span>
+        <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginTop:8,fontStyle:'normal'}}>— {q.r}</div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+        {q.o.map(opt=>{
+          let bg='#F9F9F7',border='var(--border)',color='var(--ink)';
+          if(ans){if(opt===q.b){bg='#F0FDF4';border='#16A34A';color='#15803D';}else if(opt===sel&&sel!==q.b){bg='#FEF2F2';border='#DC2626';color='#DC2626';}}
+          return (
+            <button key={opt} onClick={()=>pick(opt)} disabled={!!ans}
+              style={{padding:'14px',borderRadius:12,border:`2px solid ${border}`,background:bg,color,fontSize:'0.9375rem',fontWeight:600,cursor:ans?'default':'pointer',transition:'all .2s'}}>
+              {opt}{ans&&opt===q.b?' ✓':''}{ans&&opt===sel&&sel!==q.b?' ✗':''}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// PERSONAL ATTENDANCE — member sees own history from attendance.json
+// =============================================================================
+
+const ATT_BLUE = '#0284C7';
+
+// Find this member's records in attendance.json by name matching
+function matchAttendanceRecord(me, attendanceData) {
+  if (!me || !attendanceData?.sessions) return null;
+  const norm = s => (s || '').trim().toLowerCase();
+  const myName = norm(me.name);
+  const myFull = norm((me.title ? me.title + ' ' : '') + me.name);
+
+  // Look through all sessions to find records for this member
+  const myRecords = [];
+  for (const sess of attendanceData.sessions) {
+    const rec = (sess.records || []).find(r =>
+      norm(r.memberName) === myName ||
+      norm(r.memberName) === myFull ||
+      r.memberId === me.id
+    );
+    myRecords.push({
+      date:         sess.date,
+      service:      sess.service,
+      serviceLabel: sess.serviceLabel || sess.service,
+      status:       rec?.status || 'absent',  // not found in records = absent
+    });
+  }
+  return myRecords.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function getMyAttendanceStats(myRecords) {
+  if (!myRecords || !myRecords.length) return null;
+  const fridays = myRecords.filter(r => r.service === 'Friday');
+  const sundays = myRecords.filter(r => r.service === 'Sunday');
+
+  const pct = list => list.length
+    ? Math.round(list.filter(r => r.status === 'present').length / list.length * 100)
+    : null;
+
+  return {
+    overall:        pct(myRecords),
+    friday:         pct(fridays),
+    sunday:         pct(sundays),
+    totalSessions:  myRecords.length,
+    fridaySessions: fridays.length,
+    sundaySessions: sundays.length,
+    recent10:       myRecords.slice(0, 10),
+    streak: (() => {
+      let streak = 0;
+      for (const r of myRecords) {
+        if (r.status === 'present') streak++;
+        else break;
+      }
+      return streak;
+    })(),
+  };
+}
+
+function PersonalAttendanceCard({ me, attendanceData, compact }) {
+  const myRecords = useMemo(() => matchAttendanceRecord(me, attendanceData), [me, attendanceData]);
+  const stats     = useMemo(() => getMyAttendanceStats(myRecords), [myRecords]);
+
+  if (!attendanceData || !myRecords || !stats) return null;
+  if (!stats.totalSessions) return null;
+
+  const pctColor = pct =>
+    pct === null ? 'var(--ink-subtle)' :
+    pct >= 80 ? '#16A34A' :
+    pct >= 60 ? '#D97706' : '#DC2626';
+
+  if (compact) {
+    // Small badge for Home tab
+    return (
+      <div className="card" style={{ padding:'14px 16px', borderLeft:`3px solid ${ATT_BLUE}`, marginBottom:0 }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:ATT_BLUE, marginBottom:6 }}>
+          📋 My Attendance
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+          <div style={{ textAlign:'center' }}>
+            <div className="font-display" style={{ fontSize:'2rem', fontWeight:700, color:pctColor(stats.overall), lineHeight:1 }}>{stats.overall}%</div>
+            <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Overall</div>
+          </div>
+          {stats.fridaySessions > 0 && (
+            <div style={{ textAlign:'center' }}>
+              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:pctColor(stats.friday), lineHeight:1 }}>{stats.friday}%</div>
+              <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Friday</div>
+            </div>
+          )}
+          {stats.sundaySessions > 0 && (
+            <div style={{ textAlign:'center' }}>
+              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:pctColor(stats.sunday), lineHeight:1 }}>{stats.sunday}%</div>
+              <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Sunday</div>
+            </div>
+          )}
+          {stats.streak > 1 && (
+            <div style={{ textAlign:'center' }}>
+              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:'#F59E0B', lineHeight:1 }}>🔥{stats.streak}</div>
+              <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Streak</div>
+            </div>
+          )}
+        </div>
+        <div style={{ fontSize:'0.6875rem', color:'var(--ink-subtle)', marginTop:8 }}>
+          Based on {stats.totalSessions} recorded session{stats.totalSessions !== 1 ? 's' : ''}
+        </div>
+      </div>
+    );
+  }
+
+  // Full card for My Schedule tab
+  return (
+    <div className="card" style={{ overflow:'hidden', marginBottom:16 }}>
+      {/* Header */}
+      <div style={{ padding:'14px 16px', background:ATT_BLUE+'0F', borderBottom:'1px solid var(--border)' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:ATT_BLUE, marginBottom:4 }}>📋 My Attendance Record</div>
+        <div style={{ display:'flex', gap:20, flexWrap:'wrap', alignItems:'center' }}>
+          <div>
+            <div className="font-display" style={{ fontSize:'3rem', fontWeight:700, color:pctColor(stats.overall), lineHeight:1 }}>{stats.overall}%</div>
+            <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>Overall · {stats.totalSessions} sessions</div>
+          </div>
+          <div style={{ display:'flex', gap:16 }}>
+            {stats.fridaySessions > 0 && (
+              <div>
+                <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:700, color:pctColor(stats.friday) }}>{stats.friday}%</div>
+                <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)' }}>Friday · {stats.fridaySessions}</div>
+              </div>
+            )}
+            {stats.sundaySessions > 0 && (
+              <div>
+                <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:700, color:pctColor(stats.sunday) }}>{stats.sunday}%</div>
+                <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)' }}>Sunday · {stats.sundaySessions}</div>
+              </div>
+            )}
+          </div>
+        </div>
+        {stats.streak >= 2 && (
+          <div style={{ marginTop:8, fontSize:'0.8125rem', color:'#F59E0B', fontWeight:600 }}>
+            🔥 {stats.streak} consecutive sessions — keep it up!
+          </div>
+        )}
+      </div>
+
+      {/* Timeline — last 10 */}
+      <div style={{ padding:'12px 16px 4px' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:10 }}>Last 10 Services</div>
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+          {stats.recent10.map((r, i) => (
+            <div key={i} title={`${r.serviceLabel} · ${r.date}`}
+              style={{
+                display:'flex', flexDirection:'column', alignItems:'center', gap:3,
+                padding:'6px 4px', borderRadius:8, minWidth:36,
+                background: r.status === 'present' ? '#F0FDF4' : '#FFF1F2',
+                border: `1px solid ${r.status === 'present' ? '#BBF7D0' : '#FECDD3'}`,
+              }}>
+              <div style={{ fontSize:'0.875rem' }}>{r.status === 'present' ? '✓' : '✗'}</div>
+              <div style={{ fontSize:'0.5625rem', color:'var(--ink-subtle)', fontFamily:'Geist Mono,monospace', lineHeight:1.2, textAlign:'center' }}>
+                {r.date.slice(5)}
+              </div>
+              <div style={{ fontSize:'0.5rem', color:r.service==='Friday'?ATT_BLUE:'#7C3AED', fontWeight:600 }}>
+                {r.service.slice(0,3).toUpperCase()}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ padding:'12px 16px 14px' }}>
+        <div style={{ height:6, borderRadius:3, background:'#E5E7EB', overflow:'hidden' }}>
+          <div style={{ height:6, borderRadius:3, background:ATT_BLUE, width:`${stats.overall}%`, transition:'width .5s ease' }} />
+        </div>
+        <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, fontSize:'0.6875rem', color:'var(--ink-subtle)' }}>
+          <span>0%</span>
+          <span style={{ color:pctColor(stats.overall), fontWeight:600 }}>You: {stats.overall}%</span>
+          <span>100%</span>
+        </div>
+        <div style={{ fontSize:'0.6875rem', color:'var(--ink-subtle)', marginTop:8, textAlign:'center', fontStyle:'italic' }}>
+          Your attendance is private — only visible to you on this device
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
 const TABS = [
-  { key: 'home',    label: 'Home' },
-  { key: 'mine',    label: 'My Schedule', requiresMe: true },
-  { key: 'month',   label: 'This Month' },
-  { key: 'prayer',  label: 'Prayer',  requiresPrayer: true },
-  { key: 'music',   label: 'Music',   requiresMusic:  true },
-  { key: 'equip',   label: 'Equip'   },
-  { key: 'calendar',label: 'Calendar' },
-  { key: 'about',   label: 'About' },
+  { key: 'home',     label: 'Home' },
+  { key: 'mine',     label: 'My Schedule', requiresMe: true },
+  { key: 'month',    label: 'This Month' },
+  { key: 'calendar', label: 'Calendar' },
+  { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
+  { key: 'music',    label: 'Music',   requiresMusic:  true },
+  { key: 'equip',    label: 'Equip'   },
+  { key: 'about',    label: 'About' },
 ];
 
 function App() {
   const [data, setData] = useState(null);
   const [prayerData, setPrayerData] = useState(null);
   const [musicData, setMusicData] = useState(null);
+  const [equipData, setEquipData] = useState(null);
+  const [attendanceData, setAttendanceData] = useState(null);
   const [error, setError] = useState(null);
   const [me, setMe] = useState(null);
   const [meId, setMeId] = useState(() => {
@@ -4233,7 +5517,8 @@ function App() {
   const [showAddPersonal, setShowAddPersonal] = useState(false);
   const [editingPersonal, setEditingPersonal] = useState(null);
   const [sermonNotes, setSermonNotesState]     = useState(loadSermonNotes);
-  const [openingNote, setOpeningNote]          = useState(null);   // { id, meta }
+  const [openingNote, setOpeningNote]          = useState(null);
+  const [showGames,   setShowGames]            = useState(false);   // { id, meta }
 
   const setPersonalEvents = (evs) => { savePersonalEvents(evs); setPersonalEventsState(evs); };
   const handleSaveSermonNote = (id, note) => {
@@ -4256,7 +5541,7 @@ function App() {
     let pendingDone = 0;
     const checkDone = () => {
       pendingDone += 1;
-      if (pendingDone >= 3) setRefreshing(false);
+      if (pendingDone >= 5) setRefreshing(false);
     };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
@@ -4290,6 +5575,24 @@ function App() {
         else setMusicData(false);
       })
       .catch(() => setMusicData(false))
+      .finally(checkDone);
+    // Optional: equip.json
+    fetch(`${EQUIP_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(e => {
+        if (e && (Array.isArray(e.courses) || Array.isArray(e.ministries))) setEquipData(e);
+        else setEquipData(false);
+      })
+      .catch(() => setEquipData(false))
+      .finally(checkDone);
+    // Optional: attendance.json
+    fetch(`${ATTENDANCE_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(a => {
+        if (a && Array.isArray(a.sessions)) setAttendanceData(a);
+        else setAttendanceData(false);
+      })
+      .catch(() => setAttendanceData(false))
       .finally(checkDone);
   };
 
@@ -4398,25 +5701,29 @@ function App() {
               </button>
             </div>
           </div>
-          <nav className="flex flex-wrap mt-4 overflow-x-auto" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-            {visibleTabs.map(t => (
-              <button key={t.key} className={`tab ${currentTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
-                {t.label}
-              </button>
-            ))}
-          </nav>
+          <div style={{ position: 'relative' }}>
+            <nav style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', overflowY: 'visible', marginTop: '1rem', paddingBottom: '3px', paddingRight: '32px', msOverflowStyle: 'none', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+              {visibleTabs.map(t => (
+                <button key={t.key} className={`tab ${currentTab === t.key ? 'tab-active' : ''}`} onClick={() => setActiveTab(t.key)}>
+                  {t.label}
+                </button>
+              ))}
+            </nav>
+            {/* Right fade — indicates more tabs to scroll */}
+            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 36, background: 'linear-gradient(to right, transparent, rgba(250,250,245,0.95))', pointerEvents: 'none' }} />
+          </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
-        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
+        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
+        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
         {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
         {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'equip'    && <EquipTab />}
+        {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
         {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
-        {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} me={me} onChangeName={changeName} />}
+        {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
       </main>
 
       {/* Sermon Notes Modal */}
@@ -4474,7 +5781,26 @@ function App() {
         );
       })()}
 
-      {/* FAB — Add personal event */}
+      {/* Games FAB — bottom left */}
+      <button
+        onClick={() => setShowGames(true)}
+        style={{
+          position: 'fixed', bottom: 28, left: 24,
+          width: 54, height: 54, borderRadius: '50%',
+          background: G_ACCENT, color: 'white',
+          border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.375rem', lineHeight: 1,
+          boxShadow: '0 4px 20px rgba(124,58,237,0.38)',
+          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.46)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(124,58,237,0.38)'; }}
+        title="Bible games"
+        aria-label="Open Bible games"
+      >🎮</button>
+
+      {/* Personal events FAB — bottom right */}
       <button
         onClick={() => setShowAddPersonal(true)}
         style={{
@@ -4485,14 +5811,16 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.5rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(0,0,0,0.22)',
-          zIndex: 25,
-          transition: 'transform 0.15s, box-shadow 0.15s',
+          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
         }}
         onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.28)'; }}
         onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.22)'; }}
         title="Add personal event"
         aria-label="Add personal event"
       >+</button>
+
+      {/* Game Hub */}
+      {showGames && <GameHub onClose={() => setShowGames(false)} />}
 
       <footer className="max-w-5xl mx-auto px-4 sm:px-6 py-12 text-xs ink-subtle text-center">
         FLCC Schedule OS · Members View · Data fetched live from <code className="font-mono">data.json</code>
