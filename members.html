@@ -531,6 +531,7 @@ const PRAYER_DATA_URL    = './prayer.json';
 const MUSIC_DATA_URL     = './music.json';
 const EQUIP_DATA_URL     = './equip.json';
 const ATTENDANCE_DATA_URL = './attendance.json';
+const GIVING_DATA_URL    = './finance-members.json';
 const MUSIC_ACCENT = '#EA580C';
 
 const PRAYER_ROLES = [
@@ -5493,8 +5494,211 @@ const TABS = [
   { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
   { key: 'music',    label: 'Music',   requiresMusic:  true },
   { key: 'equip',    label: 'Equip'   },
+  { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
 ];
+
+const GIVING_KEY = 'flcc-giving-name-v1';
+const GIVING_GOLD = '#D97706';
+
+// ── number to words (KWD) ───────────────────────────────────────────────────
+const G_ONES=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const G_TENS=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+function gChunk(n){ if(n<=0)return''; if(n<20)return G_ONES[n]; if(n<100)return G_TENS[Math.floor(n/10)]+(n%10?' '+G_ONES[n%10]:''); return G_ONES[Math.floor(n/100)]+' Hundred'+(n%100?' '+gChunk(n%100):'') }
+function gWords(amt){ const w=Math.floor(amt),f=Math.round((amt-w)*1000); let p=[]; if(w>0){if(w>=1000)p.push(gChunk(Math.floor(w/1000))+' Thousand'); if(w%1000)p.push(gChunk(w%1000)); p.push('Dinar'+(w!==1?'s':''));} if(f>0)p.push(gChunk(f)+' Fils'); return(p.join(' ')||'Zero')+' Only'; }
+
+function GivingTab({ givingData, me }) {
+  const allNames = useMemo(() =>
+    (givingData?.members||[]).map(m=>m.name).sort(),
+    [givingData]
+  );
+
+  const [selName, setSelName] = useState(() => {
+    try { return localStorage.getItem(GIVING_KEY)||''; } catch { return ''; }
+  });
+
+  // Auto-select if name matches the logged-in member
+  useEffect(() => {
+    if (me && !selName) {
+      const match = allNames.find(n => n.toLowerCase() === me.name.toLowerCase());
+      if (match) { setSelName(match); try{localStorage.setItem(GIVING_KEY,match)}catch{} }
+    }
+  }, [me, allNames]);
+
+  const record = useMemo(() =>
+    selName ? (givingData?.members||[]).find(m=>m.name.toLowerCase()===selName.toLowerCase()) : null,
+    [givingData, selName]
+  );
+
+  const pick = name => {
+    setSelName(name);
+    try { localStorage.setItem(GIVING_KEY, name); } catch {}
+  };
+
+  const f3 = n => (parseFloat(n)||0).toFixed(3);
+  const fKD = n => `KD ${f3(n)}`;
+
+  const monthly   = record?.monthly||[];
+  const maxKD     = Math.max(...monthly.map(m=>m.totalKD), 1);
+  const curYear   = new Date().getFullYear().toString();
+  const ytdKD     = record?.ytdKD||0;
+  const ytdYear   = record?.ytdYear||curYear;
+  const consistency = record?.consistency||0;
+  const recentRecs = (record?.records||[]).slice(0,8);
+
+  // Consistency colour
+  const consColor = consistency>=80?'#16A34A':consistency>=50?GIVING_GOLD:'#DC2626';
+
+  return (
+    <div className="fade-in" style={{ paddingBottom: 80 }}>
+      {/* Header */}
+      <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid var(--border)', background: 'white' }}>
+        <div className="font-display" style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: 4 }}>💰 My Giving</div>
+        <p style={{ fontSize: '.8125rem', color: 'var(--ink-muted)', marginBottom: 14, lineHeight: 1.5 }}>
+          Your personal tithe and offering history. Only you can see this.
+        </p>
+
+        {/* Name selector */}
+        <div>
+          <label style={{ fontSize: '.7rem', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink-subtle)', display: 'block', marginBottom: 5 }}>
+            Select your name
+          </label>
+          <select
+            value={selName}
+            onChange={e => pick(e.target.value)}
+            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${selName ? GIVING_GOLD : 'var(--border)'}`, background: 'white', fontSize: '.9375rem', fontWeight: 500, fontFamily: 'inherit', color: 'var(--ink)', cursor: 'pointer' }}
+          >
+            <option value="">— choose your name —</option>
+            {allNames.map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {!selName && (
+        <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--ink-subtle)' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🙏</div>
+          <div className="font-display" style={{ fontSize: '1.25rem', marginBottom: 8 }}>Select your name above</div>
+          <p style={{ fontSize: '.875rem', lineHeight: 1.6 }}>Your giving history, year-to-date total, and consistency will appear here.</p>
+        </div>
+      )}
+
+      {selName && !record && (
+        <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--ink-subtle)' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📭</div>
+          <div className="font-display" style={{ fontSize: '1.25rem', marginBottom: 8 }}>No giving records yet</div>
+          <p style={{ fontSize: '.875rem', lineHeight: 1.6 }}>No tithe or offering records found for <strong>{selName}</strong>. Check with Sis. Annabelle if you believe this is incorrect.</p>
+        </div>
+      )}
+
+      {record && (
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+          {/* Summary cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+            {/* YTD */}
+            <div className="card" style={{ padding: '12px 14px', gridColumn: '1/3', borderTop: `3px solid ${GIVING_GOLD}` }}>
+              <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-subtle)', marginBottom: 4 }}>YTD {ytdYear}</div>
+              <div className="font-display" style={{ fontSize: '1.5rem', fontWeight: 700, color: GIVING_GOLD }}>{fKD(ytdKD)}</div>
+              <div style={{ fontSize: '.7rem', color: 'var(--ink-muted)', marginTop: 3, fontStyle: 'italic' }}>{gWords(ytdKD)}</div>
+            </div>
+
+            {/* Consistency */}
+            <div className="card" style={{ padding: '12px 14px', borderTop: `3px solid ${consColor}` }}>
+              <div style={{ fontSize: '.55rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-subtle)', marginBottom: 4 }}>Consistency</div>
+              <div className="font-display" style={{ fontSize: '1.5rem', fontWeight: 700, color: consColor }}>{consistency}%</div>
+              <div style={{ fontSize: '.65rem', color: 'var(--ink-muted)', marginTop: 3 }}>{record.monthsGiven}/{record.monthsAvailable} months</div>
+            </div>
+          </div>
+
+          {/* Consistency bar visual */}
+          <div className="card" style={{ padding: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: '.8125rem', fontWeight: 600 }}>Giving Consistency</span>
+              <span style={{ fontSize: '.8125rem', fontWeight: 700, color: consColor }}>{consistency}%</span>
+            </div>
+            <div style={{ height: 10, borderRadius: 5, background: '#F0F0EE', overflow: 'hidden', marginBottom: 6 }}>
+              <div style={{ height: 10, borderRadius: 5, background: consColor, width: `${consistency}%`, transition: 'width .6s cubic-bezier(.34,1.56,.64,1)' }}/>
+            </div>
+            <div style={{ fontSize: '.7rem', color: 'var(--ink-muted)' }}>
+              {consistency >= 80 ? '🌟 Excellent — faithful and consistent tither' :
+               consistency >= 60 ? '👍 Good — giving regularly' :
+               consistency >= 40 ? '📈 Growing — keep it up' :
+               '🙏 Getting started — every gift matters'}
+            </div>
+          </div>
+
+          {/* Monthly chart */}
+          {monthly.length > 0 && (
+            <div className="card" style={{ padding: 14 }}>
+              <div style={{ fontSize: '.6rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-subtle)', marginBottom: 14 }}>Monthly Giving (KD)</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, height: 90 }}>
+                {monthly.slice(-12).map((m, i) => {
+                  const h = Math.max(4, Math.round((m.totalKD / maxKD) * 76));
+                  const isLatest = i === Math.min(monthly.length, 12) - 1;
+                  return (
+                    <div key={m.mk} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                      <div style={{ fontSize: '.45rem', color: isLatest ? GIVING_GOLD : 'var(--ink-subtle)', fontFamily: 'Geist Mono,monospace', fontWeight: isLatest ? 700 : 400 }}>
+                        {m.totalKD > 0 ? f3(m.totalKD) : ''}
+                      </div>
+                      <div style={{ width: '100%', height: `${h}px`, borderRadius: '3px 3px 0 0', background: isLatest ? GIVING_GOLD : '#D97706', opacity: isLatest ? 1 : 0.5, transition: 'height .4s ease' }}/>
+                      <div style={{ fontSize: '.45rem', color: isLatest ? GIVING_GOLD : 'var(--ink-subtle)', fontWeight: isLatest ? 700 : 400, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        {m.label.split(' ')[0]}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {record.lastGiven && (
+                <div style={{ marginTop: 10, fontSize: '.75rem', color: 'var(--ink-muted)' }}>
+                  Last given: <strong>{new Date(record.lastGiven).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})}</strong>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Recent records */}
+          {recentRecs.length > 0 && (
+            <div className="card" style={{ overflow: 'hidden' }}>
+              <div style={{ padding: '10px 14px', background: '#F9F9F7', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '.6rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-subtle)' }}>Recent Giving History</div>
+              </div>
+              {recentRecs.map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderBottom: i < recentRecs.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 18, background: `${GIVING_GOLD}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: '1rem' }}>🙏</span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: '.9375rem' }}>{r.service}</div>
+                    <div style={{ fontSize: '.75rem', color: 'var(--ink-muted)', marginTop: 2 }}>
+                      {new Date(r.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}
+                      {r.month && ` · Month: ${r.month}`}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div className="font-display" style={{ fontSize: '1.0625rem', fontWeight: 700, color: GIVING_GOLD }}>{fKD(r.amountKD)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Scripture encouragement */}
+          <div style={{ padding: '14px 16px', borderRadius: 12, background: `${GIVING_GOLD}10`, border: `1px solid ${GIVING_GOLD}30`, textAlign: 'center' }}>
+            <div style={{ fontSize: '.8125rem', fontStyle: 'italic', color: 'var(--ink-muted)', lineHeight: 1.7, marginBottom: 4 }}>
+              "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."
+            </div>
+            <div style={{ fontSize: '.7rem', fontWeight: 700, color: GIVING_GOLD }}>2 Corinthians 9:7</div>
+          </div>
+
+          {/* Privacy note */}
+          <div style={{ fontSize: '.7rem', color: 'var(--ink-subtle)', textAlign: 'center', lineHeight: 1.5 }}>
+            🔒 Only you can see your giving history. Data is managed by Sis. Annabelle and updated by the Finance Ministry.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function App() {
   const [data, setData] = useState(null);
@@ -5502,6 +5706,7 @@ function App() {
   const [musicData, setMusicData] = useState(null);
   const [equipData, setEquipData] = useState(null);
   const [attendanceData, setAttendanceData] = useState(null);
+  const [givingData, setGivingData] = useState(null);
   const [error, setError] = useState(null);
   const [me, setMe] = useState(null);
   const [meId, setMeId] = useState(() => {
@@ -5541,7 +5746,7 @@ function App() {
     let pendingDone = 0;
     const checkDone = () => {
       pendingDone += 1;
-      if (pendingDone >= 5) setRefreshing(false);
+      if (pendingDone >= 6) setRefreshing(false);
     };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
@@ -5593,6 +5798,15 @@ function App() {
         else setAttendanceData(false);
       })
       .catch(() => setAttendanceData(false))
+      .finally(checkDone);
+    // Optional: finance-members.json
+    fetch(`${GIVING_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(g => {
+        if (g && Array.isArray(g.members)) setGivingData(g);
+        else setGivingData(false);
+      })
+      .catch(() => setGivingData(false))
       .finally(checkDone);
   };
 
@@ -5666,6 +5880,7 @@ function App() {
     if (t.requiresMe && !me) return false;
     if (t.requiresPrayer && !prayerData) return false;
     if (t.requiresMusic && !musicData) return false;
+    if (t.requiresGiving && !givingData) return false;
     return true;
   });
   const currentTab = visibleTabs.find(t => t.key === activeTab) ? activeTab : 'home';
@@ -5722,6 +5937,7 @@ function App() {
         {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
+        {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
         {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
         {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
       </main>
