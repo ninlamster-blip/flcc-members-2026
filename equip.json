@@ -4,9 +4,82 @@
     "ministryName": "Equip Ministry",
     "version": "1.0",
     "lastUpdated": "2026-05-16T11:27:14.160Z",
-    "publishedAt": "2026-05-16T11:36:32.929Z"
+    "publishedAt": "2026-05-21T20:09:33.753Z"
   },
-  "courses": [],
+  "courses": [
+    {
+      "id": "c-1779393701015-yl8hl",
+      "title": "Forgiving - Love One Another Series",
+      "subtitle": "Pursuing Restoration in Relationship",
+      "track": "leadership",
+      "level": "Intermediate",
+      "estimatedHours": 2,
+      "badge": "🌱",
+      "badgeLabel": "",
+      "facilitator": "Ptr. Justin Flores",
+      "prerequisite": "",
+      "featured": true,
+      "description": "",
+      "lessons": [
+        {
+          "id": "c-1779393701015-85e9w",
+          "title": "God's Forgiveness",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779393893521-z138f",
+          "title": "Why God's Forgives",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779393932724-z1fy2",
+          "title": "Forgiving Others",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779393949304-6utu4",
+          "title": "Results of Forgiving",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779393990195-qwq3t",
+          "title": "Perspective on Injustice",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779394010170-le2fq",
+          "title": "Reacting to Injustice",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779394027079-mwt8q",
+          "title": "Results of an Unforgiving Spirit",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779394050952-htfh2",
+          "title": "Offending Others",
+          "duration": 20,
+          "hasQuiz": false
+        },
+        {
+          "id": "c-1779394069477-7y4ed",
+          "title": "Being Offended",
+          "duration": 20,
+          "hasQuiz": false
+        }
+      ],
+      "reflections": [],
+      "createdAt": "2026-05-21"
+    }
+  ],
   "ministries": [
     {
       "id": "discipleship",
