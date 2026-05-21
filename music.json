@@ -2,7 +2,7 @@
   "meta": {
     "churchName": "FLCC - Abundance Church",
     "ministryName": "Music Ministry",
-    "publishedAt": "2026-05-16T11:53:50.048Z",
+    "publishedAt": "2026-05-21T08:10:29.226Z",
     "version": "1.0"
   },
   "ministry": {
@@ -141,6 +141,13 @@
       "name": "RPG",
       "title": "",
       "kind": "group",
+      "status": "active"
+    },
+    {
+      "id": "mus-1779350928289",
+      "name": "Celsa Sario",
+      "title": "Sis.",
+      "kind": "individual",
       "status": "active"
     }
   ],
@@ -447,6 +454,102 @@
       "service": "PrayerMeeting",
       "assignments": {
         "lead": "bro-03"
+      }
+    },
+    {
+      "id": "m-2026-06-05-friday-1779350606481",
+      "date": "2026-06-05",
+      "service": "Friday",
+      "assignments": {
+        "lead": "mus-01"
+      }
+    },
+    {
+      "id": "m-2026-06-12-friday-1779350627095",
+      "date": "2026-06-12",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-06-19-friday-1779350641595",
+      "date": "2026-06-19",
+      "service": "Friday",
+      "assignments": {
+        "lead": "ptr-01"
+      }
+    },
+    {
+      "id": "m-2026-06-26-friday-1779350669329",
+      "date": "2026-06-26",
+      "service": "Friday",
+      "assignments": {
+        "lead": "sis-18"
+      }
+    },
+    {
+      "id": "m-2026-06-07-sunday-1779350708820",
+      "date": "2026-06-07",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-09"
+      }
+    },
+    {
+      "id": "m-2026-06-14-sunday-1779350728866",
+      "date": "2026-06-14",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-03"
+      }
+    },
+    {
+      "id": "m-2026-06-21-sunday-1779350763818",
+      "date": "2026-06-21",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-15"
+      }
+    },
+    {
+      "id": "m-2026-06-28-sunday-1779350782719",
+      "date": "2026-06-28",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-07"
+      }
+    },
+    {
+      "id": "m-2026-06-04-prayermeeting-1779350803903",
+      "date": "2026-06-04",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-hope"
+      }
+    },
+    {
+      "id": "m-2026-06-10-prayermeeting-1779350837569",
+      "date": "2026-06-10",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-cpm"
+      }
+    },
+    {
+      "id": "m-2026-06-18-prayermeeting-1779350871165",
+      "date": "2026-06-18",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "mus-1779350928289"
+      }
+    },
+    {
+      "id": "m-2026-06-25-prayermeeting-1779350959809",
+      "date": "2026-06-25",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "bro-02"
       }
     }
   ],
