@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLCC Ask · AI Assistant</title>
+<meta name="description" content="Ask anything about the FLCC schedule, members, Bible verses, and the Christian faith." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+
+<style>
+  :root {
+    --bg: #FAFAF5;
+    --surface: #FFFFFF;
+    --ink: #18181B;
+    --ink-muted: #52525B;
+    --ink-subtle: #A1A1AA;
+    --border: #E7E5DE;
+    --border-strong: #D4D4D0;
+    --accent: #A33B2A;
+    --accent-hover: #8B2E20;
+    --accent-soft: #FBEBE7;
+    --success: #15803D;
+    --success-soft: #DCFCE7;
+    --warning: #B45309;
+    --warning-soft: #FEF3C7;
+    --danger: #B91C1C;
+    --danger-soft: #FEE2E2;
+    --info: #1E40AF;
+    --info-soft: #DBEAFE;
+  }
+
+  *, *::before, *::after {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+  body {
+    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "ss01", "ss03";
+  }
+  .font-display { font-family: 'Fraunces', Georgia, serif; font-feature-settings: "ss01"; }
+
+  /* ── Layout ── */
+  #root { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+  .page-header {
+    background: rgba(250,250,245,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.625rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+
+  .chat-main {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-width: 780px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 0.5rem;
+    min-height: 0;
+  }
+
+  /* ── Messages ── */
+  .messages-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 0.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    scroll-behavior: smooth;
+    min-height: 0;
+  }
+  .messages-list::-webkit-scrollbar { width: 4px; }
+  .messages-list::-webkit-scrollbar-track { background: transparent; }
+  .messages-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+  /* ── Bubbles ── */
+  .msg-user { display: flex; justify-content: flex-end; }
+  .msg-user .bubble {
+    background: var(--ink);
+    color: #fff;
+    border-radius: 18px 18px 4px 18px;
+    padding: 0.625rem 1rem;
+    max-width: 80%;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .msg-assistant { display: flex; gap: 0.625rem; align-items: flex-start; }
+  .msg-assistant .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    border: 1.5px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8125rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--accent);
+  }
+  .msg-assistant .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px 18px 18px 18px;
+    padding: 0.75rem 1rem;
+    max-width: calc(100% - 40px);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    word-break: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  /* ── Markdown ── */
+  .md p { margin: 0 0 0.65em; }
+  .md p:last-child { margin-bottom: 0; }
+  .md h1, .md h2, .md h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    margin: 0.85em 0 0.4em;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .md h1 { font-size: 1.125rem; }
+  .md h2 { font-size: 1rem; }
+  .md h3 { font-size: 0.9375rem; }
+  .md h1:first-child, .md h2:first-child, .md h3:first-child { margin-top: 0; }
+  .md ul, .md ol { margin: 0.5em 0; padding-left: 1.5em; }
+  .md li { margin-bottom: 0.25em; line-height: 1.55; }
+  .md code {
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.85em;
+    background: #F4F4F0;
+    padding: 0.1em 0.375em;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+  .md pre {
+    background: #F4F4F0;
+    border-radius: 10px;
+    padding: 0.75rem;
+    overflow-x: auto;
+    margin: 0.6em 0;
+  }
+  .md pre code { background: none; padding: 0; color: var(--ink); font-size: 0.8125rem; }
+  .md blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 0.75em 0;
+    padding: 0.25em 0 0.25em 0.875em;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+  .md strong { font-weight: 600; }
+  .md em { font-style: italic; color: var(--ink-muted); }
+  .md hr { border: none; border-top: 1px solid var(--border); margin: 0.85em 0; }
+  .md a { color: var(--accent); text-decoration: underline; }
+  .md table { width: 100%; border-collapse: collapse; margin: 0.6em 0; font-size: 0.875rem; }
+  .md th { background: #F4F4F0; font-weight: 600; padding: 0.375rem 0.625rem; text-align: left; border: 1px solid var(--border); }
+  .md td { padding: 0.375rem 0.625rem; border: 1px solid var(--border); }
+  .md tr:nth-child(even) td { background: #FBFBF7; }
+
+  /* ── Streaming cursor ── */
+  .streaming-cursor::after {
+    content: '▋';
+    animation: blink 0.65s steps(1) infinite;
+    color: var(--accent);
+    font-size: 0.8em;
+    vertical-align: baseline;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* ── Thinking dots ── */
+  .thinking { display: flex; gap: 4px; align-items: center; padding: 3px 0; }
+  .thinking span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border-strong);
+    animation: bounce 1.1s ease-in-out infinite;
+  }
+  .thinking span:nth-child(1) { animation-delay: 0s; }
+  .thinking span:nth-child(2) { animation-delay: 0.18s; }
+  .thinking span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+    30% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* ── Input area ── */
+  .input-area {
+    flex-shrink: 0;
+    padding: 0.625rem 0.5rem 0.875rem;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  .input-wrap {
+    background: var(--surface);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 16px;
+    display: flex;
+    align-items: flex-end;
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    gap: 0.5rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .input-wrap:focus-within {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(24,24,27,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .chat-textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--ink);
+    outline: none;
+    max-height: 150px;
+    min-height: 24px;
+    padding: 3px 0;
+  }
+  .chat-textarea::placeholder { color: var(--ink-subtle); }
+  .send-btn {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .send-btn:enabled { background: var(--ink); color: #fff; }
+  .send-btn:enabled:hover { background: #27272A; transform: scale(1.04); }
+  .send-btn:disabled { background: #F4F4F0; color: var(--ink-subtle); cursor: not-allowed; }
+  .send-btn.stop:enabled { background: var(--danger); }
+  .send-btn.stop:enabled:hover { background: #991B1B; }
+
+  /* ── Suggestions ── */
+  .suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  @media (max-width: 420px) { .suggestions-grid { grid-template-columns: 1fr; } }
+  .suggestion-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 0.875rem;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+    line-height: 1.45;
+  }
+  .suggestion-chip:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--ink);
+    box-shadow: 0 2px 8px rgba(163,59,42,0.1);
+  }
+  .chip-icon { font-size: 1.0625rem; display: block; margin-bottom: 0.3rem; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.4375rem 0.875rem;
+    border-radius: 8px;
+    font-size: 0.8125rem; font-weight: 500;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--ink); color: #fff; }
+  .btn-primary:hover { background: #27272A; }
+  .btn-primary:disabled { background: #D4D4D0; cursor: not-allowed; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
+
+  /* ── Modal ── */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(24,24,27,0.5);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; padding: 1.5rem;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 25px 60px -12px rgba(0,0,0,0.3);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Error banner ── */
+  .error-banner {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border: 1px solid #FCA5A5;
+    border-radius: 10px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0 0.5rem 0.5rem;
+  }
+
+  /* ── Icon button ── */
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+    padding: 0.375rem 0.625rem;
+    border-radius: 7px;
+    font-size: 0.75rem; font-weight: 500;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink-muted);
+    font-family: inherit;
+  }
+  .icon-btn:hover { background: #F0F0EC; color: var(--ink); }
+</style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+const STORAGE_KEY_API   = 'flcc_ask_apikey';
+const STORAGE_KEY_MODEL = 'flcc_ask_model';
+
+const MODELS = [
+  { id: 'claude-haiku-4-5-20251001', label: 'Haiku · Fast' },
+  { id: 'claude-sonnet-4-6',         label: 'Sonnet · Smart' },
+];
+
+const SUGGESTIONS = [
+  { icon: '📅', text: 'Who is preaching this Sunday?' },
+  { icon: '🎵', text: 'Who leads worship this Friday?' },
+  { icon: '🙏', text: 'When is the next prayer meeting?' },
+  { icon: '📖', text: 'Give me John 3:16 NIV' },
+  { icon: '✨', text: "What is this month's theme?" },
+  { icon: '❤️', text: 'What does the Bible say about love?' },
+  { icon: '🎂', text: 'Who has an upcoming birthday?' },
+  { icon: '⛪', text: 'Tell me about Abundance Church' },
+];
+
+// ─── System prompt ───────────────────────────────────────────────────────────
+function buildSystemPrompt(data, music, prayer) {
+  const today = new Date().toISOString().split('T')[0];
+
+  const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
+  const musicWorkersById  = Object.fromEntries(music.workers.map(w => [w.id, w]));
+  const prayerWorkersById = Object.fromEntries(prayer.workers.map(w => [w.id, w]));
+
+  const ROLE_LABELS = {
+    presider: 'Presider', songLeader: 'Song Leader', preacher: 'Preacher',
+    pastoralPrayer: 'Pastoral Prayer', communionAssistant1: 'Communion Asst. 1',
+    communionAssistant2: 'Communion Asst. 2', foodInCharge: 'Food In Charge',
+    exhorter: 'Exhorter', lead: 'Worship Leader', vocal: 'Backup Vocal',
+    instrument: 'Instrumentalist',
+  };
+  const rl = r => ROLE_LABELS[r] || r;
+
+  const wn = (id, dict) => {
+    const w = dict[id];
+    if (!w) return id;
+    return (w.title ? w.title + ' ' : '') + w.name;
+  };
+
+  const upcomingSchedule = data.schedule
+    .filter(s => s.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 14)
+    .map(s => {
+      const roles = Object.entries(s.roles || {})
+        .filter(([, v]) => v)
+        .map(([role, id]) => `${rl(role)}: ${wn(id, workersById)}`)
+        .join(' | ');
+      const flag = s.isSpecial ? ` ★ ${s.specialNote}` : '';
+      return `  ${s.date} [${s.service}]${flag}\n    ${roles}`;
+    })
+    .join('\n');
+
+  const upcomingMusic = music.entries
+    .filter(e => e.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 10)
+    .map(e => {
+      const str = Object.entries(e.assignments || {})
+        .map(([role, id]) => `${rl(role)}: ${wn(id, musicWorkersById)}`)
+        .join(', ');
+      return `  ${e.date} [${e.service}]: ${str}`;
+    })
+    .join('\n');
+
+  const upcomingPrayer = prayer.meetings
+    .filter(m => m.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 8)
+    .map(m => {
+      const p  = m.presiderId   ? wn(m.presiderId,   prayerWorkersById) : 'TBA';
+      const ex = m.exhorterId   ? wn(m.exhorterId,   prayerWorkersById) : 'TBA';
+      const sl = m.songLeaderId ? wn(m.songLeaderId, prayerWorkersById) : 'TBA';
+      const venue = m.isVirtual ? `${m.venue} (Virtual)` : m.venue;
+      const coord = m.coordinator ? ` · Coordinator: ${m.coordinator}` : '';
+      return `  ${m.date} ${m.startTime} [${m.type}] @ ${venue}${coord}\n    Presider: ${p} | Exhorter: ${ex} | Song Leader: ${sl}`;
+    })
+    .join('\n');
+
+  const membersList = data.workers
+    .filter(w => w.type === 'individual')
+    .map(w => {
+      const roles = (w.eligibleRoles || []).map(r => rl(r)).join(', ');
+      const bday = w.birthday ? ` · Birthday: ${w.birthday}` : '';
+      return `  • ${w.title ? w.title + ' ' : ''}${w.name}${roles ? ' (' + roles + ')' : ''}${bday}`;
+    })
+    .join('\n');
+
+  const foodList = data.workers
+    .filter(w => w.type === 'family' || w.type === 'pair')
+    .map(w => `  • ${w.name}`)
+    .join('\n');
+
+  const themes = Object.entries(data.themes || {})
+    .map(([month, theme]) => `  • ${month}: ${theme || '(not yet set)'}`)
+    .join('\n');
+
+  const events = (data.events || [])
+    .map(e => `  • ${e.date}: ${e.title} (${e.type})${e.location ? ' @ ' + e.location : ''}`)
+    .join('\n');
+
+  const prayerTeams = prayer.teams
+    .map(t => `  • ${t.name}${t.leader ? ' — ' + t.leader : ''}`)
+    .join('\n');
+
+  return `You are the FLCC Church Assistant — a warm, knowledgeable, and encouraging AI for FLCC - Abundance Church (also called Abundance Church). You help church members with anything: the service schedule, member assignments, Bible passages, Christian theology, and general knowledge.
+
+## Today's Date
+${today}
+
+## Church Overview
+- **Name**: FLCC - Abundance Church
+- **Fellowship Ministry Head**: Sis. Amazelle De Jesus | WhatsApp/Phone: +96595590217 | Email: amazelle@yahoo.com
+- **Music Ministry Lead**: Bro. Edmund Gabriel | WhatsApp: +96555667788
+- **Prayer Ministry Lead**: Bro. Wilson Guerzon | WhatsApp: +96566299452 | Email: wilson_guerzon@yahoo.com
+
+## Individual Members & Their Ministry Roles
+${membersList}
+
+## Food Ministry (Families & Pairs serving food)
+${foodList}
+
+## Monthly Service Themes
+${themes}
+
+## Upcoming Service Schedule (Fellowship Ministry)
+${upcomingSchedule || '  (none loaded)'}
+
+## Upcoming Music Ministry Assignments
+${upcomingMusic || '  (none loaded)'}
+
+## Upcoming Prayer Meetings
+${upcomingPrayer || '  (none loaded)'}
+
+## Prayer Intercession Teams
+${prayerTeams}
+
+## Upcoming Events
+${events || '  (none)'}
+
+---
+
+## Your Guidelines
+1. **Bible**: Always quote in NIV (New International Version) unless the user requests another translation. Cite the reference (e.g., *John 3:16, NIV*).
+2. **Tone**: Warm, encouraging, faith-affirming. You are serving a church family.
+3. **Names**: Use full titles — Bro., Sis., Ptr. — when referring to members.
+4. **Schedule questions**: Be specific — name the date, person, and role. If the date is past, say so.
+5. **Outside FLCC**: You can answer any question — theology, Bible, Christianity, general knowledge, prayer, devotion topics, etc.
+6. **Honesty**: If something about FLCC isn't in your data, say so and suggest contacting the ministry head.
+7. **Formatting**: Use markdown (bold, lists, blockquotes for Bible verses) when it improves readability. Keep answers concise unless detail is needed.`;
+}
+
+// ─── Markdown renderer ───────────────────────────────────────────────────────
+function Md({ text, streaming }) {
+  const html = useMemo(() => {
+    if (!text) return '';
+    try { return marked.parse(text, { breaks: true, gfm: true }); }
+    catch { return text; }
+  }, [text]);
+  return (
+    <div
+      className={`md${streaming ? ' streaming-cursor' : ''}`}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
+// ─── API Key Modal ────────────────────────────────────────────────────────────
+function ApiKeyModal({ existingKey, onSave, onClose }) {
+  const [key, setKey] = useState(existingKey || '');
+  const inputRef = useRef(null);
+  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 60); }, []);
+
+  return (
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose && onClose()}>
+      <div className="modal">
+        <div className="font-display text-xl font-semibold mb-1" style={{color:'var(--ink)'}}>
+          Anthropic API Key
+        </div>
+        <p className="text-sm mb-4" style={{color:'var(--ink-muted)', lineHeight:1.55}}>
+          Your key is saved locally in your browser and sent directly to Anthropic — it never passes through any other server.
+        </p>
+
+        <label className="block text-xs font-medium mb-1.5" style={{color:'var(--ink-muted)'}}>API KEY</label>
+        <input
+          ref={inputRef}
+          type="password"
+          className="w-full px-3 py-2 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 font-mono"
+          style={{borderColor:'var(--border-strong)', fontFamily:'Geist Mono, monospace', '--tw-ring-color':'rgba(24,24,27,0.08)'}}
+          placeholder="sk-ant-api03-…"
+          value={key}
+          onChange={e => setKey(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && key.trim() && onSave(key.trim())}
+        />
+        <p className="text-xs mt-2 mb-4" style={{color:'var(--ink-subtle)'}}>
+          Get yours at <strong style={{color:'var(--ink-muted)'}}>console.anthropic.com</strong>
+        </p>
+
+        <div className="flex gap-2 justify-end">
+          {existingKey && (
+            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          )}
+          <button
+            className="btn btn-primary"
+            onClick={() => key.trim() && onSave(key.trim())}
+            disabled={!key.trim()}
+          >
+            Save &amp; Start Chatting
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+function App() {
+  const [apiKey, setApiKey]     = useState(() => localStorage.getItem(STORAGE_KEY_API)   || '');
+  const [model,  setModel]      = useState(() => localStorage.getItem(STORAGE_KEY_MODEL) || MODELS[0].id);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+
+  const [appData,    setAppData]    = useState(null);
+  const [dataError,  setDataError]  = useState(null);
+
+  const [messages,       setMessages]       = useState([]);
+  const [input,          setInput]          = useState('');
+  const [isStreaming,    setIsStreaming]     = useState(false);
+  const [streamingText,  setStreamingText]  = useState('');
+  const [error,          setError]          = useState(null);
+
+  const messagesEndRef = useRef(null);
+  const textareaRef    = useRef(null);
+  const abortRef       = useRef(null);
+
+  // Load JSON data
+  useEffect(() => {
+    Promise.all([
+      fetch('data.json').then(r => r.json()),
+      fetch('music.json').then(r => r.json()),
+      fetch('prayer.json').then(r => r.json()),
+    ]).then(([data, music, prayer]) => {
+      setAppData({ data, music, prayer, systemPrompt: buildSystemPrompt(data, music, prayer) });
+    }).catch(() => {
+      setDataError('Could not load church data. Please open this file from a web server.');
+    });
+  }, []);
+
+  // Auto-scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, streamingText]);
+
+  // Textarea auto-resize
+  const handleInputChange = e => {
+    setInput(e.target.value);
+    const ta = e.target;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 150) + 'px';
+  };
+
+  const saveKey = key => {
+    setApiKey(key);
+    localStorage.setItem(STORAGE_KEY_API, key);
+    setShowKeyModal(false);
+  };
+
+  const handleModelChange = id => {
+    setModel(id);
+    localStorage.setItem(STORAGE_KEY_MODEL, id);
+  };
+
+  const stopStream = () => {
+    abortRef.current?.abort();
+    if (streamingText) {
+      setMessages(prev => [...prev, { role: 'assistant', content: streamingText }]);
+      setStreamingText('');
+    }
+    setIsStreaming(false);
+  };
+
+  const clearChat = () => {
+    if (isStreaming) stopStream();
+    setMessages([]);
+    setStreamingText('');
+    setError(null);
+    setIsStreaming(false);
+  };
+
+  // Send / stream
+  const sendMessage = useCallback(async (overrideText) => {
+    const text = (overrideText || input).trim();
+    if (!text || isStreaming) return;
+    if (!apiKey) { setShowKeyModal(true); return; }
+    if (!appData) return;
+
+    const userMsg = { role: 'user', content: text };
+    const history = [...messages, userMsg];
+    setMessages(history);
+    setInput('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    setError(null);
+    setIsStreaming(true);
+    setStreamingText('');
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 2048,
+          stream: true,
+          system: appData.systemPrompt,
+          messages: history,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        let msg = `API error ${res.status}`;
+        try {
+          const d = await res.json();
+          msg = d.error?.message || msg;
+          if (res.status === 401) msg = 'Invalid API key — please update it in Settings.';
+          if (res.status === 429) msg = 'Rate limit reached. Please wait a moment and try again.';
+        } catch {}
+        throw new Error(msg);
+      }
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = '';
+      let buf  = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (raw === '[DONE]') continue;
+          try {
+            const ev = JSON.parse(raw);
+            if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+              full += ev.delta.text;
+              setStreamingText(full);
+            }
+          } catch {}
+        }
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', content: full }]);
+      setStreamingText('');
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      setError(err.message);
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [messages, input, apiKey, model, appData, isStreaming]);
+
+  const handleKeyDown = e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const hasMessages = messages.length > 0 || isStreaming;
+  const modelLabel  = MODELS.find(m => m.id === model)?.label || model;
+
+  return (
+    <>
+      {/* ── Header ── */}
+      <header className="page-header">
+        <a
+          href="index.html"
+          title="Back to Schedule"
+          style={{color:'var(--ink-muted)', display:'flex', alignItems:'center', flexShrink:0}}
+          className="icon-btn"
+        >
+          <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </a>
+
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div
+            style={{
+              width:28, height:28, borderRadius:8,
+              background:'var(--accent-soft)',
+              border:'1.5px solid var(--accent)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              flexShrink:0,
+            }}
+          >
+            <span style={{color:'var(--accent)', fontSize:'0.8125rem', fontWeight:700}}>✦</span>
+          </div>
+          <div className="min-w-0">
+            <div className="font-display font-semibold leading-tight truncate" style={{fontSize:'0.9375rem', color:'var(--ink)'}}>
+              FLCC Ask
+            </div>
+            <div className="text-xs truncate" style={{color:'var(--ink-subtle)'}}>
+              AI Assistant · Abundance Church
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Model selector */}
+          <select
+            value={model}
+            onChange={e => handleModelChange(e.target.value)}
+            style={{
+              fontSize:'0.75rem', border:'1px solid var(--border)', borderRadius:7,
+              padding:'0.3rem 0.5rem', background:'var(--surface)', color:'var(--ink-muted)',
+              fontFamily:'inherit', cursor:'pointer', outline:'none',
+            }}
+          >
+            {MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+
+          {/* New chat */}
+          {hasMessages && (
+            <button className="icon-btn" onClick={clearChat} title="New conversation">
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              New
+            </button>
+          )}
+
+          {/* Settings / key */}
+          <button
+            className="icon-btn"
+            onClick={() => setShowKeyModal(true)}
+            title={apiKey ? 'API Key settings' : 'Set API Key'}
+            style={!apiKey ? {color:'var(--accent)', fontWeight:600} : {}}
+          >
+            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            {apiKey ? 'Key' : 'Set Key'}
+          </button>
+        </div>
+      </header>
+
+      {/* ── Main ── */}
+      <div className="chat-main">
+
+        {dataError && (
+          <div className="mx-1 mt-3 px-3 py-2 rounded-xl text-sm" style={{background:'var(--warning-soft)', color:'var(--warning)', border:'1px solid #FDE68A'}}>
+            ⚠ {dataError}
+          </div>
+        )}
+
+        {/* Messages */}
+        <div className="messages-list">
+
+          {/* Welcome screen */}
+          {!hasMessages && (
+            <div className="flex flex-col gap-5 pt-2">
+              <div className="text-center px-2">
+                <div style={{
+                  width:52, height:52, borderRadius:14,
+                  background:'var(--accent-soft)',
+                  border:'1.5px solid var(--accent)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  margin:'0 auto 0.875rem',
+                  fontSize:'1.375rem',
+                }}>✦</div>
+                <h1 className="font-display font-semibold mb-1.5" style={{fontSize:'1.5rem', color:'var(--ink)'}}>
+                  Ask me anything
+                </h1>
+                <p className="text-sm leading-relaxed" style={{color:'var(--ink-muted)', maxWidth:340, margin:'0 auto'}}>
+                  About the FLCC schedule, members, Bible verses (NIV), prayer,
+                  or anything about the Christian faith.
+                </p>
+                {!apiKey && (
+                  <button className="btn btn-accent mt-4" onClick={() => setShowKeyModal(true)}>
+                    Set API Key to start
+                  </button>
+                )}
+              </div>
+
+              {apiKey && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'var(--ink-subtle)'}}>
+                    Try asking…
+                  </div>
+                  <div className="suggestions-grid">
+                    {SUGGESTIONS.map((s, i) => (
+                      <button
+                        key={i}
+                        className="suggestion-chip"
+                        onClick={() => sendMessage(s.text)}
+                        disabled={!appData}
+                      >
+                        <span className="chip-icon">{s.icon}</span>
+                        {s.text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Conversation */}
+          {messages.map((msg, i) => (
+            <div key={i} className={msg.role === 'user' ? 'msg-user' : 'msg-assistant'}>
+              {msg.role === 'assistant' && (
+                <div className="avatar">✦</div>
+              )}
+              <div className="bubble">
+                {msg.role === 'user'
+                  ? <span style={{whiteSpace:'pre-wrap'}}>{msg.content}</span>
+                  : <Md text={msg.content} />
+                }
+              </div>
+            </div>
+          ))}
+
+          {/* Streaming response */}
+          {isStreaming && (
+            <div className="msg-assistant">
+              <div className="avatar">✦</div>
+              <div className="bubble">
+                {streamingText
+                  ? <Md text={streamingText} streaming={true} />
+                  : <div className="thinking"><span/><span/><span/></div>
+                }
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="error-banner">
+            <span style={{flexShrink:0}}>⚠</span>
+            <span style={{flex:1}}>{error}</span>
+            <button
+              onClick={() => setError(null)}
+              style={{flexShrink:0, background:'none', border:'none', cursor:'pointer', fontSize:'0.75rem', textDecoration:'underline', color:'inherit', padding:0}}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="input-area">
+          <div className="input-wrap">
+            <textarea
+              ref={textareaRef}
+              className="chat-textarea"
+              placeholder={
+                !apiKey        ? 'Set your API key above to start…' :
+                !appData       ? 'Loading church data…' :
+                'Ask about the schedule, Bible, or anything…'
+              }
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              disabled={isStreaming || !apiKey || !appData}
+            />
+            {isStreaming ? (
+              <button className="send-btn stop" onClick={stopStream} title="Stop">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="4" y="4" width="16" height="16" rx="2"/>
+                </svg>
+              </button>
+            ) : (
+              <button
+                className="send-btn"
+                onClick={() => sendMessage()}
+                disabled={!input.trim() || !apiKey || !appData}
+                title="Send (Enter)"
+              >
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <line x1="12" y1="19" x2="12" y2="5"/>
+                  <polyline points="5 12 12 5 19 12"/>
+                </svg>
+              </button>
+            )}
+          </div>
+          <p className="text-center text-xs mt-1.5" style={{color:'var(--ink-subtle)'}}>
+            Enter to send · Shift+Enter for new line
+          </p>
+        </div>
+      </div>
+
+      {/* API Key Modal */}
+      {showKeyModal && (
+        <ApiKeyModal
+          existingKey={apiKey}
+          onSave={saveKey}
+          onClose={apiKey ? () => setShowKeyModal(false) : null}
+        />
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
