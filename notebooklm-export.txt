@@ -1,0 +1,816 @@
+FLCC - ABUNDANCE CHURCH
+Church Data Export for NotebookLM
+Generated: 2026-05-24
+================================================================================
+
+ABOUT THIS CHURCH
+-----------------
+Church Name: FLCC - Abundance Church
+Also known as: FLCC - Farwaniya 1
+This document contains member information, service schedules, ministry data,
+prayer meeting schedules, music assignments, and attendance records for
+FLCC - Abundance Church.
+
+
+================================================================================
+SECTION 1: FELLOWSHIP MINISTRY
+================================================================================
+
+Ministry Head: Sis. Amazelle De Jesus
+Title: Fellowship Ministry Head
+WhatsApp / Phone: +96595590217
+Email: amazelle@yahoo.com
+
+
+--- MEMBERS AND THEIR ELIGIBLE ROLES ---
+
+INDIVIDUAL MEMBERS (Sisters):
+
+1.  Sis. Bless De Jesus       (ID: sis-01) — Roles: Presider
+2.  Sis. Hasmin Treseni       (ID: sis-02) — Roles: Presider
+3.  Sis. Mae De Jesus         (ID: sis-03) — Roles: Presider
+4.  Sis. Lizel Ocenar         (ID: sis-04) — Roles: Presider
+5.  Sis. Fretz Guerzon        (ID: sis-05) — Roles: Presider, Preacher
+6.  Sis. Dolly Cas            (ID: sis-06) — Roles: Presider, Song Leader
+7.  Sis. Rona Vergara         (ID: sis-07) — Roles: Presider
+8.  Sis. Sandra Gabriel       (ID: sis-08) — Roles: Presider
+9.  Sis. Christine Santos     (ID: sis-09) — Roles: Presider
+10. Sis. Celsa Sario          (ID: sis-10) — Roles: Presider
+11. Sis. Jhem Tulagan         (ID: sis-11) — Roles: Presider
+12. Sis. Juneth Atienza       (ID: sis-12) — Roles: Presider
+13. Sis. Alma Flores          (ID: sis-13) — Roles: Presider, Preacher
+14. Sis. Almira Dela Paz      (ID: sis-14) — Roles: Presider
+15. Sis. Grace Siangco        (ID: sis-15) — Roles: Presider, Song Leader
+16. Sis. Annabelle Arciaga    (ID: sis-16) — Roles: Presider
+17. Sis. Jenarlyn Culao       (ID: sis-17) — Roles: Presider, Song Leader
+18. Sis. Laidz Pascual        (ID: sis-18) — Roles: Presider, Song Leader, Preacher, Pastoral Prayer, Communion Assistant 1, Communion Assistant 2
+19. Sis. Irene Sabangan       (ID: sis-19) — Roles: Preacher
+20. Sis. Thara Embo           (ID: sis-20) — Roles: Presider
+
+INDIVIDUAL MEMBERS (Brothers):
+
+21. Bro. Dandreb Serna        (ID: bro-01) — Roles: Song Leader
+22. Bro. Bong Cas             (ID: bro-02) — Roles: Song Leader
+23. Bro. Elbert Siangco       (ID: bro-03) — Roles: Song Leader
+24. Bro. Wilson Guerzon       (ID: bro-04) — Roles: Preacher, Pastoral Prayer, Communion Assistant 1, Communion Assistant 2
+25. Bro. Allen Santos         (ID: bro-05) — Roles: Preacher, Pastoral Prayer, Communion Assistant 1, Communion Assistant 2
+26. Bro. Ferdie Gajeton       (ID: bro-06) — Roles: Preacher, Pastoral Prayer, Communion Assistant 1, Communion Assistant 2
+27. Bro. Edmund Gabriel       (ID: bro-07) — Roles: Song Leader, Preacher, Pastoral Prayer, Communion Assistant 1, Communion Assistant 2
+28. Bro. Edward Sario         (ID: bro-08) — Roles: Preacher
+29. Bro. Dave Vergara         (ID: bro-09) — Roles: Presider, Song Leader
+
+PASTORS:
+
+30. Ptr. Justin Flores        (ID: ptr-01) — Roles: Preacher, Pastoral Prayer
+31. Ptr. Doddie Arciaga       (ID: ptr-02) — Roles: Preacher, Pastoral Prayer
+32. Ptr. Nerwin Suelo         (ID: ptr-03) — Roles: Preacher
+
+FAMILY GROUPS (Food In Charge rotation):
+
+F1.  Cas Family
+F2.  Santos Family
+F3.  Pascual Family
+F4.  Vergara Family
+F5.  Gabriel Family
+F6.  Sario Family
+F7.  Arciaga Family
+F8.  Treseni Family
+F9.  Guerzon Family
+F10. Siangco Family
+F11. Flores Family
+
+PAIRS (Food In Charge rotation):
+
+P1.  Tharah & Juneth
+P2.  Bless & Mae
+P3.  Lizel & Irene
+P4.  Jhem & Kamille
+P5.  Almira & Kitzie
+P6.  Jen & Sheng
+P7.  Jen & Lizel
+P8.  Ptr. Nerwin & Ferdie
+P9.  May & Danica
+
+
+--- MONTHLY THEMES ---
+
+February 2026:  LOVE
+March 2026:     PRAYER AND FASTING
+April 2026:     WORKS OF THE HOLY SPIRIT / CHURCH GROWTH
+May 2026:       YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)
+June 2026:      (To be announced)
+
+
+--- SERVICE SCHEDULE (Feb–Jun 2026) ---
+
+FEBRUARY 2026:
+
+Sunday, Feb 1, 2026
+  Presider:             Sis. Fretz Guerzon (sis-05)
+  Song Leader:          Bro. Dave Vergara (bro-09)
+  Preacher:             Ptr. Doddie Arciaga (ptr-02)
+  Pastoral Prayer:      Ptr. Justin Flores (ptr-01)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Cas Family
+
+Friday, Feb 6, 2026
+  Presider:             Sis. Bless De Jesus (sis-01)
+  Song Leader:          Sis. Dolly Cas (sis-06)
+  Preacher:             Ptr. Justin Flores (ptr-01)
+  Pastoral Prayer:      Ptr. Doddie Arciaga (ptr-02)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Arciaga Family
+
+Sunday, Feb 8, 2026
+  Presider:             Sis. Dolly Cas (sis-06)
+  Song Leader:          Sis. Laidz Pascual (sis-18)
+  Preacher:             Bro. Ferdie Gajeton (bro-06)
+  Pastoral Prayer:      Bro. Wilson Guerzon (bro-04)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Vergara Family
+
+Friday, Feb 13, 2026
+  Presider:             Sis. Hasmin Treseni (sis-02)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Bro. Wilson Guerzon (bro-04)
+  Pastoral Prayer:      Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Lizel & Irene
+
+Sunday, Feb 15, 2026
+  Presider:             Sis. Rona Vergara (sis-07)
+  Song Leader:          Sis. Grace Siangco (sis-15)
+  Preacher:             Sis. Laidz Pascual (sis-18)
+  Pastoral Prayer:      Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Gabriel Family
+
+Friday, Feb 20, 2026
+  Presider:             Sis. Mae De Jesus (sis-03)
+  Song Leader:          Sis. Jenarlyn Culao (sis-17)
+  Preacher:             Bro. Allen Santos (bro-05)
+  Pastoral Prayer:      Sis. Laidz Pascual (sis-18)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Jhem & Kamille
+
+Sunday, Feb 22, 2026
+  Presider:             Sis. Sandra Gabriel (sis-08)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Bro. Edward Sario (bro-08)
+  Pastoral Prayer:      Bro. Edmund Gabriel (bro-07)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Almira & Kitzie
+
+Friday, Feb 27, 2026
+  Presider:             Sis. Lizel Ocenar (sis-04)
+  Song Leader:          Bro. Elbert Siangco (bro-03)
+  Preacher:             Bro. Edmund Gabriel (bro-07)
+  Pastoral Prayer:      Bro. Allen Santos (bro-05)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Santos Family
+
+MARCH 2026:
+
+Sunday, Mar 1, 2026
+  Presider:             Sis. Alma Flores (sis-13)
+  Song Leader:          Sis. Grace Siangco (sis-15)
+  Preacher:             Ptr. Justin Flores (ptr-01)
+  Pastoral Prayer:      Ptr. Doddie Arciaga (ptr-02)
+  Communion Asst 1:     Bro. Wilson Guerzon (bro-04)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Ptr. Nerwin & Ferdie
+
+Friday, Mar 6, 2026
+  Presider:             Sis. Christine Santos (sis-09)
+  Song Leader:          Bro. Dandreb Serna (bro-01)
+  Preacher:             Ptr. Doddie Arciaga (ptr-02)
+  Pastoral Prayer:      Ptr. Justin Flores (ptr-01)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Tharah & Juneth
+
+Sunday, Mar 8, 2026
+  Presider:             Sis. Almira Dela Paz (sis-14)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Bro. Allen Santos (bro-05)
+  Pastoral Prayer:      Bro. Wilson Guerzon (bro-04)
+  Communion Asst 1:     Bro. Wilson Guerzon (bro-04)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Siangco Family
+
+Friday, Mar 13, 2026
+  Presider:             Sis. Celsa Sario (sis-10)
+  Song Leader:          Bro. Elbert Siangco (bro-03)
+  Preacher:             Bro. Ferdie Gajeton (bro-06)
+  Pastoral Prayer:      Bro. Edmund Gabriel (bro-07)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Guerzon Family
+
+Sunday, Mar 15, 2026
+  Presider:             Bro. Dave Vergara (bro-09)
+  Song Leader:          Sis. Dolly Cas (sis-06)
+  Preacher:             Bro. Wilson Guerzon (bro-04)
+  Pastoral Prayer:      Bro. Allen Santos (bro-05)
+  Communion Asst 1:     Bro. Wilson Guerzon (bro-04)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Flores Family
+
+Friday, Mar 20, 2026
+  Presider:             Sis. Jhem Tulagan (sis-11)
+  Song Leader:          Sis. Jenarlyn Culao (sis-17)
+  Preacher:             Sis. Laidz Pascual (sis-18)
+  Pastoral Prayer:      Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Treseni Family
+
+Sunday, Mar 22, 2026
+  Presider:             Sis. Grace Siangco (sis-15)
+  Song Leader:          Bro. Elbert Siangco (bro-03)
+  Preacher:             Bro. Edmund Gabriel (bro-07)
+  Pastoral Prayer:      Sis. Laidz Pascual (sis-18)
+  Communion Asst 1:     Bro. Wilson Guerzon (bro-04)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Pascual Family
+
+Friday, Mar 28, 2026
+  Presider:             Sis. Juneth Atienza (sis-12)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Sis. Irene Sabangan (sis-19)
+  Pastoral Prayer:      Ptr. Doddie Arciaga (ptr-02)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Jen & Sheng
+
+Sunday, Mar 29, 2026
+  Presider:             Sis. Annabelle Arciaga (sis-16)
+  Song Leader:          Sis. Laidz Pascual (sis-18)
+  Preacher:             Ptr. Nerwin Suelo (ptr-03)
+  Pastoral Prayer:      Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 1:     Bro. Wilson Guerzon (bro-04)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Sario Family
+
+APRIL 2026:
+
+Friday, Apr 3, 2026 [SPECIAL — Holy Week]
+  Presider:             Sis. Lizel Ocenar (sis-04)
+  Song Leader:          Sis. Jenarlyn Culao (sis-17)
+  Special Note:         Seven Last Words — Holy Week multi-speaker exhortation
+  Pastoral Prayer:      Ptr. Justin Flores (ptr-01)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Tharah & Juneth
+
+Sunday, Apr 5, 2026
+  Presider:             Sis. Laidz Pascual (sis-18)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Ptr. Doddie Arciaga (ptr-02)
+  Pastoral Prayer:      Bro. Allen Santos (bro-05)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Siangco Family
+
+Friday, Apr 10, 2026
+  Presider:             Sis. Thara Embo (sis-20)
+  Song Leader:          Bro. Dandreb Serna (bro-01)
+  Preacher:             Ptr. Justin Flores (ptr-01)
+  Pastoral Prayer:      Bro. Wilson Guerzon (bro-04)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Bless & Mae
+
+Sunday, Apr 12, 2026
+  Presider:             Sis. Rona Vergara (sis-07)
+  Song Leader:          Bro. Elbert Siangco (bro-03)
+  Preacher:             Sis. Irene Sabangan (sis-19)
+  Pastoral Prayer:      Bro. Edmund Gabriel (bro-07)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Ptr. Nerwin & Ferdie
+
+Friday, Apr 17, 2026
+  Presider:             Sis. Hasmin Treseni (sis-02)
+  Song Leader:          Sis. Dolly Cas (sis-06)
+  Preacher:             Bro. Wilson Guerzon (bro-04)
+  Pastoral Prayer:      Bro. Allen Santos (bro-05)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Lizel & Irene
+
+Sunday, Apr 19, 2026
+  Presider:             Sis. Sandra Gabriel (sis-08)
+  Song Leader:          Sis. Laidz Pascual (sis-18)
+  Preacher:             Bro. Edmund Gabriel (bro-07)
+  Pastoral Prayer:      Bro. Wilson Guerzon (bro-04)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       May & Danica
+
+Friday, Apr 24, 2026
+  Presider:             Sis. Mae De Jesus (sis-03)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Bro. Allen Santos (bro-05)
+  Pastoral Prayer:      Sis. Laidz Pascual (sis-18)
+  Communion Asst 1:     Sis. Laidz Pascual (sis-18)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Jhem & Kamille
+
+Sunday, Apr 26, 2026
+  Presider:             Sis. Fretz Guerzon (sis-05)
+  Song Leader:          Sis. Grace Siangco (sis-15)
+  Preacher:             Ptr. Nerwin Suelo (ptr-03)
+  Pastoral Prayer:      Ptr. Doddie Arciaga (ptr-02)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Edmund Gabriel (bro-07)
+  Food In Charge:       Cas Family
+
+MAY 2026:
+
+Friday, May 1, 2026
+  Presider:             Sis. Christine Santos (sis-09)
+  Song Leader:          Sis. Jenarlyn Culao (sis-17)
+  Preacher:             Ptr. Doddie Arciaga (ptr-02)
+  Pastoral Prayer:      Ptr. Justin Flores (ptr-01)
+  Communion Asst 1:     Bro. Edmund Gabriel (bro-07)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Pascual Family
+
+Sunday, May 3, 2026
+  Presider:             Sis. Grace Siangco (sis-15)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Ptr. Justin Flores (ptr-01)
+  Pastoral Prayer:      Ptr. Doddie Arciaga (ptr-02)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Vergara Family
+
+Friday, May 8, 2026
+  Presider:             Sis. Jhem Tulagan (sis-11)
+  Song Leader:          Bro. Dandreb Serna (bro-01)
+  Preacher:             Bro. Edmund Gabriel (bro-07)
+  Pastoral Prayer:      Bro. Wilson Guerzon (bro-04)
+  Communion Asst 1:     Bro. Edmund Gabriel (bro-07)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Guerzon Family
+
+Sunday, May 10, 2026 [SWAPPED — Preacher swapped with May 15 Friday]
+  Presider:             Sis. Annabelle Arciaga (sis-16)
+  Song Leader:          Sis. Laidz Pascual (sis-18)
+  Preacher:             Sis. Irene Sabangan (sis-19)
+  Pastoral Prayer:      Sis. Laidz Pascual (sis-18)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Gabriel Family
+  Swap Note:            Swapped Preacher with 15-May Friday
+
+Friday, May 15, 2026 [SWAPPED — Preacher swapped with May 10 Sunday]
+  Presider:             Sis. Jenarlyn Culao (sis-17)
+  Song Leader:          Sis. Dolly Cas (sis-06)
+  Preacher:             Sis. Alma Flores (sis-13)
+  Pastoral Prayer:      Bro. Edmund Gabriel (bro-07)
+  Communion Asst 1:     Bro. Edmund Gabriel (bro-07)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Treseni Family
+  Swap Note:            Swapped Preacher with 10-May Sunday
+
+Sunday, May 17, 2026
+  Presider:             Sis. Celsa Sario (sis-10)
+  Song Leader:          Bro. Elbert Siangco (bro-03)
+  Preacher:             Bro. Allen Santos (bro-05)
+  Pastoral Prayer:      Bro. Wilson Guerzon (bro-04)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Almira & Kitzie
+
+Friday, May 22, 2026
+  Presider:             Sis. Juneth Atienza (sis-12)
+  Song Leader:          Bro. Edmund Gabriel (bro-07)
+  Preacher:             Sis. Fretz Guerzon (sis-05)
+  Pastoral Prayer:      Sis. Laidz Pascual (sis-18)
+  Communion Asst 1:     Bro. Edmund Gabriel (bro-07)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Santos Family
+
+Sunday, May 24, 2026
+  Presider:             Sis. Dolly Cas (sis-06)
+  Song Leader:          Bro. Dave Vergara (bro-09)
+  Preacher:             Bro. Wilson Guerzon (bro-04)
+  Pastoral Prayer:      Bro. Allen Santos (bro-05)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Sario Family
+
+Friday, May 29, 2026
+  Presider:             Sis. Bless De Jesus (sis-01)
+  Song Leader:          Bro. Bong Cas (bro-02)
+  Preacher:             Bro. Edward Sario (bro-08)
+  Pastoral Prayer:      Ptr. Doddie Arciaga (ptr-02)
+  Communion Asst 1:     Bro. Edmund Gabriel (bro-07)
+  Communion Asst 2:     Bro. Allen Santos (bro-05)
+  Food In Charge:       Jen & Lizel
+
+Sunday, May 31, 2026
+  Presider:             Sis. Almira Dela Paz (sis-14)
+  Song Leader:          Sis. Grace Siangco (sis-15)
+  Preacher:             Ptr. Nerwin Suelo (ptr-03)
+  Pastoral Prayer:      Ptr. Justin Flores (ptr-01)
+  Communion Asst 1:     Bro. Ferdie Gajeton (bro-06)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Arciaga Family
+
+JUNE 2026:
+
+Friday, Jun 5, 2026
+  Presider:             Sis. Alma Flores (sis-13)
+  Song Leader:          Bro. Dandreb Serna (bro-01)
+  Preacher:             Bro. Edmund Gabriel (bro-07)
+  Pastoral Prayer:      Sis. Laidz Pascual (sis-18)
+  Communion Asst 1:     Bro. Allen Santos (bro-05)
+  Communion Asst 2:     Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Flores Family
+
+Friday, Jun 12, 2026
+  Presider:             Sis. Thara Embo (sis-20)
+  Song Leader:          Bro. Dandreb Serna (bro-01)
+  Preacher:             Bro. Allen Santos (bro-05)
+  Pastoral Prayer:      Bro. Wilson Guerzon (bro-04)
+  Food In Charge:       Tharah & Juneth
+
+Friday, Jun 19, 2026
+  (Roles not yet assigned)
+
+
+--- UPCOMING EVENTS ---
+
+Event: Bro. Allen Santos Birthday
+  Date:       May 19, 2026
+  Type:       Birthday (Yearly)
+  Time:       7:00 AM – 9:00 PM
+
+Event: Bible Study — Forgiveness
+  Date:       May 15, 2026
+  Type:       Bible Study (One-time)
+  Time:       1:00 PM – 3:00 PM
+  Location:   FLCC - Abundance Hall
+
+
+================================================================================
+SECTION 2: MUSIC MINISTRY
+================================================================================
+
+Ministry Head: Bro. Edmund Gabriel
+Title: Music Ministry Lead
+WhatsApp: +96555667788
+
+Music Ministry Roles:
+  - Worship Leader (lead)
+  - Backup Vocal (vocal)
+  - Instrumentalist (instrument)
+
+Service Types:
+  - Friday Service
+  - Sunday Service
+  - Prayer Meeting
+
+--- MUSIC / WORSHIP LEADER ASSIGNMENTS ---
+
+FEBRUARY 2026:
+  Feb 1 (Sunday):            Bro. Dave Vergara
+  Feb 5 (Prayer Meeting):    Fruitbearers Group
+  Feb 6 (Friday):            Sis. Dolly
+  Feb 8 (Sunday):            Sis. Laidz Pascual
+  Feb 11 (Prayer Meeting):   CPM Group
+  Feb 13 (Friday):           Bro. Bong Cas
+  Feb 15 (Sunday):           Sis. Grace Siangco
+  Feb 19 (Prayer Meeting):   Ptr. Justin Flores
+  Feb 20 (Friday):           Sis. Jenarlyn Culao
+  Feb 22 (Sunday):           Bro. Bong Cas
+  Feb 26 (Prayer Meeting):   Bro. Edmund Gabriel
+  Feb 27 (Friday):           Bro. Elbert Siangco
+
+MARCH 2026:
+  Mar 1 (Sunday):            Sis. Grace Siangco
+  Mar 4 (Prayer Meeting):    RPG Group
+  Mar 6 (Friday):            Bro. Dandreb Serna
+  Mar 8 (Sunday):            Bro. Bong Cas
+  Mar 11 (Prayer Meeting):   RPG Group
+  Mar 13 (Friday):           Bro. Elbert Siangco
+  Mar 15 (Sunday):           Sis. Dolly
+  Mar 19 (Prayer Meeting):   Bro. Edmund Gabriel
+  Mar 20 (Friday):           Sis. Jenarlyn Culao
+  Mar 22 (Sunday):           Bro. Elbert Siangco
+  Mar 26 (Prayer Meeting):   Ptr. Justin Flores
+  Mar 27 (Friday):           Bro. Bong Cas
+  Mar 29 (Sunday):           Sis. Laidz Pascual
+
+APRIL 2026:
+  Apr 2 (Prayer Meeting):    HOPE Sector Group
+  Apr 3 (Friday):            Sis. Jenarlyn Culao
+  Apr 5 (Sunday):            Bro. Bong Cas
+  Apr 8 (Prayer Meeting):    CPM Group
+  Apr 10 (Friday):           Bro. Dandreb Serna
+  Apr 12 (Sunday):           Bro. Elbert Siangco
+  Apr 16 (Prayer Meeting):   Bro. Edmund Gabriel
+  Apr 17 (Friday):           Sis. Dolly
+  Apr 19 (Sunday):           Sis. Laidz Pascual
+  Apr 23 (Prayer Meeting):   Ptr. Justin Flores
+  Apr 24 (Friday):           Bro. Bong Cas
+  Apr 26 (Sunday):           Sis. Grace Siangco
+  Apr 30 (Prayer Meeting):   Bro. Elbert Siangco
+
+JUNE 2026:
+  Jun 4 (Prayer Meeting):    HOPE Sector Group
+  Jun 5 (Friday):            Sis. Dolly
+  Jun 7 (Sunday):            Bro. Dave Vergara
+  Jun 10 (Prayer Meeting):   CPM Group
+  Jun 12 (Friday):           Bro. Bong Cas
+  Jun 14 (Sunday):           Bro. Elbert Siangco
+  Jun 18 (Prayer Meeting):   Sis. Celsa Sario
+  Jun 19 (Friday):           Ptr. Justin Flores
+  Jun 21 (Sunday):           Sis. Grace Siangco
+  Jun 25 (Prayer Meeting):   Bro. Bong Cas
+  Jun 26 (Friday):           Sis. Laidz Pascual
+  Jun 28 (Sunday):           Bro. Edmund Gabriel
+
+Music Ministry Workers:
+  - Bro. Edmund Gabriel (Worship Leader)
+  - Ptr. Justin Flores
+  - Bro. Elbert Siangco
+  - Sis. Laidz Pascual
+  - Sis. Grace Siangco
+  - Sis. Jenarlyn Culao
+  - Bro. Dandreb Serna
+  - Sis. Dolly (Sis. Dolly Cas)
+  - Bro. Bong Cas
+  - Bro. Dave Vergara
+  - Sis. Celsa Sario
+
+Music Ministry Groups:
+  - HOPE Sector
+  - CPM
+  - Fruitbearers
+  - RPG
+
+
+================================================================================
+SECTION 3: PRAYER MINISTRY
+================================================================================
+
+Ministry Head: Bro. Wilson Guerzon
+Title: Prayer Ministry Lead
+WhatsApp / Phone: +96566299452
+Email: wilson_guerzon@yahoo.com
+
+Prayer Ministry Themes:
+  April 2026:   WORKS OF THE HOLY SPIRIT / CHURCH GROWTH
+  May 2026:     YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)
+  June 2026:    (To be announced)
+
+--- MINISTRY TEAMS ---
+
+  1. Worship Team
+  2. Evangelism Team
+  3. Fellowship Ministry
+  4. Finance Team
+  5. Admin Ministry
+  6. Prayer Ministry (Led by Bro. Wilson Guerzon)
+  7. Discipleship Ministry
+  8. Auxiliary (Men-Women-Single)
+
+--- PRAYER MEETING SCHEDULE ---
+
+APRIL 2026:
+
+Apr 2, 2026 (Sectoral) — Virtual: CPM-ZOOM
+  Time:         6:30 PM
+  Coordinator:  F&T
+
+Apr 8, 2026 (Corporate) — Virtual: CPM-ZOOM
+  Time:         6:00 PM
+  Coordinator:  JAOC
+
+Apr 16, 2026 (Fasting) — Siangco Family Flat
+  Time:         6:30 PM
+  Presider:     Sis. Alma Flores
+  Exhorter:     Ptr. Justin Flores
+  Song Leader:  Bro. Edmund Gabriel
+
+Apr 23, 2026 (Regular) — Guerzon Family Flat
+  Time:         6:30 PM
+  Presider:     Sis. Annabelle Arciaga
+  Exhorter:     Ptr. Doddie Arciaga
+  Song Leader:  Ptr. Justin Flores
+
+Apr 30, 2026 (Thanksgiving) — Abundance Hall (2F)
+  Time:         6:30 PM
+  Presider:     Sis. Thara Embo
+  Exhorter:     Bro. Ferdie Gajeton
+  Song Leader:  Bro. Elbert Siangco
+  Food:         Celebrant (Birthday / Anniversary / Etc.)
+
+MAY 2026:
+
+May 7, 2026 (Sectoral) — Virtual: CPM-ZOOM
+  Time:         6:30 PM
+  Coordinator:  Cornerstone
+
+May 13, 2026 (Corporate) — Virtual: CPM-ZOOM
+  Time:         6:00 PM
+  Coordinator:  Harvester
+
+May 21, 2026 (Fasting) — Gabriel Family Flat
+  Time:         6:30 PM
+  Presider:     Sis. Laidz Pascual
+  Exhorter:     Bro. Edward Pascual
+  Song Leader:  Ptr. Justin Flores
+
+May 28, 2026 (Thanksgiving) — Abundance Hall (2F)
+  Time:         6:30 PM
+  Presider:     Sis. Rona
+  Exhorter:     Sis. Jenarlyn Culao
+  Song Leader:  Sis. Celsa Sario
+
+--- INTERCESSORY PRAYER SCHEDULE ---
+(Intercessory prayer takes place before each service)
+
+APRIL 2026 — Fridays (4:15–4:30 PM):
+  Apr 3:   Worship Team
+  Apr 10:  Fellowship Ministry
+  Apr 17:  Admin Ministry
+  Apr 24:  Discipleship Ministry
+
+APRIL 2026 — Sundays (6:15–6:30 PM):
+  Apr 5:   Evangelism Team
+  Apr 12:  Finance Team
+  Apr 19:  Prayer Ministry
+  Apr 26:  Auxiliary (Men-Women-Single)
+
+MAY 2026 — Fridays (4:15–4:30 PM):
+  May 1:   Worship Team
+  May 8:   Fellowship Ministry
+  May 15:  Admin Ministry
+  May 22:  Prayer Ministry
+  May 29:  Discipleship Ministry
+
+MAY 2026 — Sundays (6:15–6:30 PM):
+  May 3:   Worship Team
+  May 10:  Finance Team
+  May 17:  Evangelism Team
+  May 24:  Prayer Ministry
+  May 31:  Auxiliary (Men-Women-Single)
+
+Prayer Ministry Workers and Their Roles:
+  Sis. Alma Flores        — Presider
+  Sis. Annabelle Arciaga  — Presider
+  Sis. Thara Embo         — Presider
+  Sis. Laidz Pascual      — Presider, Song Leader
+  Sis. Grace Siangco      — Presider, Song Leader
+  Ptr. Justin Flores      — Exhorter, Song Leader
+  Ptr. Doddie Arciaga     — Exhorter
+  Ptr. Nerwin Suelo       — Exhorter
+  Bro. Wilson Guerzon     — Exhorter, Presider
+  Bro. Allen Santos       — Exhorter
+  Bro. Ferdie Gajeton     — Exhorter
+  Bro. Edmund Gabriel     — Exhorter, Song Leader
+  Bro. Elbert Siangco     — Song Leader
+  Bro. Bong Cas           — Song Leader
+  Bro. Dandreb Serna      — Song Leader
+  Bro. Edward Pascual     — Presider, Exhorter
+  Sis. Rona               — Exhorter, Presider
+  Sis. Celsa Sario        — Presider, Exhorter, Song Leader
+  Sis. Jenarlyn Culao     — Presider, Exhorter, Song Leader
+
+
+================================================================================
+SECTION 4: EQUIP MINISTRY
+================================================================================
+
+Church: FLCC - Farwaniya 1
+Ministry: Equip Ministry
+Last Updated: 2026-05-16
+Published: 2026-05-21
+
+--- MINISTRIES ---
+
+Discipleship Ministry
+  Head:       Ptr. Justin Flores
+  Title:      Discipleship Ministry Head
+  WhatsApp:   +96567611268
+  Messenger:  justin.flores.35574406
+  Phone:      +96567611268
+
+Admin Ministry
+  Head:       Bro. Allen Santos
+  Title:      Admin Ministry Head
+  WhatsApp:   +96550029790
+  Phone:      +96550029790
+  Email:      ninlamster@gmail.com
+
+Finance Ministry
+  Head:       Sis. Annabelle Arciaga
+  Title:      Finance Ministry Head
+  WhatsApp:   +96565780160
+  Phone:      +96565780160
+
+--- CURRENT COURSES ---
+
+Course: Forgiving — Love One Another Series
+  Subtitle:       Pursuing Restoration in Relationship
+  Track:          Leadership
+  Level:          Intermediate
+  Duration:       2 hours estimated
+  Facilitator:    Ptr. Justin Flores
+  Featured:       Yes
+  Created:        2026-05-21
+
+  Lessons:
+  1. God's Forgiveness             (20 min)
+  2. Why God Forgives              (20 min)
+  3. Forgiving Others              (20 min)
+  4. Results of Forgiving          (20 min)
+  5. Perspective on Injustice      (20 min)
+  6. Reacting to Injustice         (20 min)
+  7. Results of an Unforgiving Spirit (20 min)
+  8. Offending Others              (20 min)
+  9. Being Offended                (20 min)
+
+
+================================================================================
+SECTION 5: ATTENDANCE RECORDS
+================================================================================
+
+--- SESSION: Friday Service, May 16, 2026 ---
+  Present:  24 members
+  Absent:   12 members
+  Total:    36 members
+
+  Present:
+  - Bro. Allen Santos
+  - Sis. Alma Flores
+  - Sis. Annabelle Arciaga
+  - Sis. Bless De Jesus
+  - Bro. Edward Pascual (Visitor)
+  - Sis. Celsa Sario
+  - Sis. Christine Santos
+  - Ptr. Doddie Arciaga
+  - Sis. Dolly Cas
+  - Bro. Edmund Gabriel
+  - Bro. Edward Sario
+  - Bro. Elbert Siangco
+  - Sis. Fretz Guerzon
+  - Sis. Hasmin Treseni
+  - Sis. Jenarlyn Culao
+  - Sis. Jhem Tulagan
+  - Ptr. Justin Flores
+  - Sis. Laidz Pascual
+  - Sis. Lizel Ocenar
+  - Sis. Mae De Jesus
+  - Sis. Rona Vergara
+  - Sis. Sandra Gabriel
+  - Sis. Thara Embo
+  - Bro. Wilson Guerzon
+
+--- SESSION: Friday Service, May 15, 2026 ---
+  Present:  23 members
+  Absent:   20 members
+  Total:    43 members
+
+  Present:
+  - Bro. Allen Santos
+  - Bro. Edmund Gabriel
+  - Bro. Edward Sario
+  - Bro. Elbert Siangco
+  - Bro. Wilson Guerzon
+  - Ptr. Doddie Arciaga
+  - Ptr. Justin Flores
+  - Sis. Alma Flores
+  - Sis. Annabelle Arciaga
+  - Sis. Bless De Jesus
+  - Sis. Celsa Sario
+  - Sis. Christine Santos
+  - Sis. Dolly Cas
+  - Sis. Fretz Guerzon
+  - Sis. Hasmin Treseni
+  - Sis. Jenarlyn Culao
+  - Sis. Jhem Tulagan
+  - Sis. Laidz Pascual
+  - Sis. Lizel Ocenar
+  - Sis. Mae De Jesus
+  - Sis. Rona Vergara
+  - Sis. Sandra Gabriel
+  - Sis. Thara Embo
+
+
+================================================================================
+END OF DOCUMENT
+================================================================================
