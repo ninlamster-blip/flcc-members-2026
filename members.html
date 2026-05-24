@@ -5907,11 +5907,26 @@ function App() {
                 {me ? `Hello, ${me.name}` : 'Schedule'}
               </h1>
             </div>
-            <div className="text-xs ink-muted text-right">
+            <div className="text-xs ink-muted text-right flex flex-col items-end gap-1">
+              <a
+                href="ask.html"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                  padding: '0.3rem 0.625rem', borderRadius: 7,
+                  background: 'var(--accent-soft)', color: 'var(--accent)',
+                  border: '1px solid var(--accent)', fontWeight: 500,
+                  textDecoration: 'none', fontSize: '0.75rem', lineHeight: 1,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F5D7D1'}
+                onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-soft)'}
+              >
+                <span style={{fontSize:'0.8125rem'}}>✦</span> Ask AI
+              </a>
               {data.meta.publishedAt && (
                 <div>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
               )}
-              <button className="text-xs underline ink-muted hover:ink mt-1" onClick={() => loadData(false)} disabled={refreshing}>
+              <button className="text-xs underline ink-muted hover:ink" onClick={() => loadData(false)} disabled={refreshing}>
                 {refreshing ? '↻ refreshing…' : `↻ ${formatLoadedAgo() || 'refresh'}`}
               </button>
             </div>
