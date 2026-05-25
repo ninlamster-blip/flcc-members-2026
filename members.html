@@ -5911,17 +5911,19 @@ function App() {
               <a
                 href="ask.html"
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-                  padding: '0.3rem 0.625rem', borderRadius: 7,
-                  background: 'var(--accent-soft)', color: 'var(--accent)',
-                  border: '1px solid var(--accent)', fontWeight: 500,
-                  textDecoration: 'none', fontSize: '0.75rem', lineHeight: 1,
-                  transition: 'background 0.15s',
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.45rem 0.875rem', borderRadius: 9,
+                  background: 'var(--accent)', color: '#fff',
+                  border: 'none', fontWeight: 600,
+                  textDecoration: 'none', fontSize: '0.875rem', lineHeight: 1,
+                  transition: 'background 0.15s, transform 0.1s',
+                  boxShadow: '0 2px 8px rgba(163,59,42,0.25)',
+                  letterSpacing: '-0.01em',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = '#F5D7D1'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--accent-soft)'}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-hover)'; e.currentTarget.style.transform = 'scale(1.03)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.transform = 'scale(1)'; }}
               >
-                <span style={{fontSize:'0.8125rem'}}>✦</span> Ask AI
+                💬 Ask FLCC
               </a>
               {data.meta.publishedAt && (
                 <div>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
