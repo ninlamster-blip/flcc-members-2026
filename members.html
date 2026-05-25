@@ -4179,7 +4179,8 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 
       // ── Step 3: create worker with all explicit CDN paths ─────────────────
       // This is the critical fix — v5 needs explicit paths when loaded from CDN
-      worker = await window.Tesseract.createWorker('eng', 1, {
+      // eng+fil: bilingual model handles English and Tagalog text on slides
+      worker = await window.Tesseract.createWorker('eng+fil', 1, {
         workerPath: WORK_PATH,
         corePath:   CORE_PATH,
         langPath:   LANG_PATH,
@@ -4189,7 +4190,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
           } else if (m.status === 'initializing tesseract') {
             setScanMsg('Starting OCR…'); setScanProgress(32);
           } else if (m.status === 'loading language traineddata') {
-            setScanMsg('Loading language data…'); setScanProgress(38);
+            setScanMsg('Loading English + Filipino language data…'); setScanProgress(38);
           } else if (m.status === 'initializing api') {
             setScanMsg('Almost ready…'); setScanProgress(44);
           } else if (m.status === 'recognizing text') {
@@ -4200,10 +4201,10 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
         },
       });
 
-      // Tuned parameters for handwritten notes
+      // PSM 3: fully automatic without OSD — more reliable for phone-angle photos of slides
       await worker.setParameters({
-        tessedit_pageseg_mode:    '1',   // auto — handles mixed layouts
-        tessedit_char_blacklist:  '`~^',  // rarely appear in notes
+        tessedit_pageseg_mode:    '3',
+        tessedit_char_blacklist:  '`~^',
         preserve_interword_spaces:'1',
       });
 

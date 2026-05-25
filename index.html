@@ -4058,6 +4058,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
   const [txState,   setTxState]   = useState('idle'); // idle | listening | error
   const [txInterim, setTxInterim] = useState('');
   const [txError,   setTxError]   = useState('');
+  const [txLang,    setTxLang]    = useState('fil-PH'); // fil-PH = Filipino/Taglish, en-PH = English
   const SpeechRec = typeof window !== 'undefined' &&
     (window.SpeechRecognition || window.webkitSpeechRecognition);
 
@@ -4074,7 +4075,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
     const r = new SpeechRec();
     r.continuous     = true;
     r.interimResults = true;
-    r.lang           = 'en-PH';   // Filipino English
+    r.lang           = txLang;  // fil-PH handles Tagalog/Taglish; en-PH for English-only
 
     r.onresult = evt => {
       let interim = '';
@@ -4274,7 +4275,8 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 
       // ── Step 3: create worker with all explicit CDN paths ─────────────────
       // This is the critical fix — v5 needs explicit paths when loaded from CDN
-      worker = await window.Tesseract.createWorker('eng', 1, {
+      // eng+fil: bilingual model handles English and Tagalog text on slides
+      worker = await window.Tesseract.createWorker('eng+fil', 1, {
         workerPath: WORK_PATH,
         corePath:   CORE_PATH,
         langPath:   LANG_PATH,
@@ -4284,7 +4286,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
           } else if (m.status === 'initializing tesseract') {
             setScanMsg('Starting OCR…'); setScanProgress(32);
           } else if (m.status === 'loading language traineddata') {
-            setScanMsg('Loading language data…'); setScanProgress(38);
+            setScanMsg('Loading English + Filipino language data…'); setScanProgress(38);
           } else if (m.status === 'initializing api') {
             setScanMsg('Almost ready…'); setScanProgress(44);
           } else if (m.status === 'recognizing text') {
@@ -4295,10 +4297,10 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
         },
       });
 
-      // Tuned parameters for handwritten notes
+      // PSM 3: fully automatic without OSD — more reliable for phone-angle photos of slides
       await worker.setParameters({
-        tessedit_pageseg_mode:    '1',   // auto — handles mixed layouts
-        tessedit_char_blacklist:  '`~^',  // rarely appear in notes
+        tessedit_pageseg_mode:    '3',
+        tessedit_char_blacklist:  '`~^',
         preserve_interword_spaces:'1',
       });
 
@@ -4458,17 +4460,27 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
               <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink-subtle)' }}>Sermon Notes</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
 
-                {/* 🎙 Transcribe button */}
+                {/* 🎙 Transcribe button + language toggle */}
                 {txState === 'idle' && scanState === 'idle' && (
-                  <button
-                    onClick={startTranscription}
-                    title="Tap and listen — transcribes the preacher's sermon live"
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
-                    onMouseEnter={e => e.currentTarget.style.background='#FDE68A'}
-                    onMouseLeave={e => e.currentTarget.style.background='#FEF3C7'}
-                  >
-                    <span style={{ fontSize: '0.875rem' }}>🎙</span> Transcribe
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button
+                      onClick={startTranscription}
+                      title={txLang === 'fil-PH' ? 'Transcribe in Filipino/Taglish' : 'Transcribe in English'}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background='#FDE68A'}
+                      onMouseLeave={e => e.currentTarget.style.background='#FEF3C7'}
+                    >
+                      <span style={{ fontSize: '0.875rem' }}>🎙</span> Transcribe
+                    </button>
+                    {/* Language toggle: FIL (Tagalog/Taglish) ↔ EN */}
+                    <button
+                      onClick={() => setTxLang(l => l === 'fil-PH' ? 'en-PH' : 'fil-PH')}
+                      title={txLang === 'fil-PH' ? 'Currently: Filipino/Taglish — tap to switch to English' : 'Currently: English — tap to switch to Filipino/Taglish'}
+                      style={{ padding: '3px 8px', borderRadius: 999, background: txLang === 'fil-PH' ? '#DBEAFE' : '#F3F4F6', border: `1px solid ${txLang === 'fil-PH' ? '#93C5FD' : '#D1D5DB'}`, color: txLang === 'fil-PH' ? '#1D4ED8' : '#6B7280', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '.02em', transition: 'all .15s' }}
+                    >
+                      {txLang === 'fil-PH' ? 'FIL' : 'EN'}
+                    </button>
+                  </div>
                 )}
 
                 {/* Listening state */}
@@ -4529,7 +4541,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                 <div style={{ padding: '8px 14px', background: '#DC2626', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'white', animation: 'snPulse 1.2s ease-in-out infinite', flexShrink: 0 }}/>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', letterSpacing: '.04em' }}>LIVE — Listening to sermon…</span>
-                  <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,.75)', marginLeft: 'auto' }}>Keep phone mic toward speaker</span>
+                  <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,.85)', marginLeft: 'auto' }}>{txLang === 'fil-PH' ? '🇵🇭 Tagalog/Taglish' : '🇬🇧 English'}</span>
                 </div>
 
                 {/* Live text preview */}
