@@ -2,7 +2,7 @@
   "meta": {
     "churchName": "FLCC - Abundance Church",
     "ministryName": "Prayer Ministry",
-    "publishedAt": "2026-05-12T18:11:14.779Z",
+    "publishedAt": "2026-05-26T14:13:45.641Z",
     "version": "1.0"
   },
   "ministry": {
@@ -223,7 +223,7 @@
     },
     {
       "id": "pw-1778609099409",
-      "name": "Rona ",
+      "name": "Rona Vergara",
       "title": "Sis.",
       "eligibleRoles": [
         "exhorter",
@@ -250,6 +250,26 @@
         "presider",
         "exhorter",
         "songLeader"
+      ],
+      "status": "active"
+    },
+    {
+      "id": "pw-1779804041427",
+      "name": "Fretz Guerzon",
+      "title": "Sis.",
+      "eligibleRoles": [
+        "presider",
+        "exhorter"
+      ],
+      "status": "active"
+    },
+    {
+      "id": "pw-1779804091843",
+      "name": "Edward Sario",
+      "title": "Bro.",
+      "eligibleRoles": [
+        "presider",
+        "exhorter"
       ],
       "status": "active"
     }
@@ -421,6 +441,78 @@
       "startTime": "18:15",
       "endTime": "18:30",
       "notes": ""
+    },
+    {
+      "id": "ip-2026-06-05-friday",
+      "date": "2026-06-05",
+      "service": "Friday",
+      "teamId": "team-worship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-06-12-friday",
+      "date": "2026-06-12",
+      "service": "Friday",
+      "teamId": "team-fellowship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-06-19-friday",
+      "date": "2026-06-19",
+      "service": "Friday",
+      "teamId": "team-admin",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-06-26-friday",
+      "date": "2026-06-26",
+      "service": "Friday",
+      "teamId": "team-discipleship",
+      "startTime": "16:15",
+      "endTime": "16:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-06-07-sunday",
+      "date": "2026-06-07",
+      "service": "Sunday",
+      "teamId": "team-prayer",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-06-14-sunday",
+      "date": "2026-06-14",
+      "service": "Sunday",
+      "teamId": "team-finance",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-06-21-sunday",
+      "date": "2026-06-21",
+      "service": "Sunday",
+      "teamId": "team-evangelism",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
+    },
+    {
+      "id": "ip-2026-06-28-sunday",
+      "date": "2026-06-28",
+      "service": "Sunday",
+      "teamId": "team-auxiliary",
+      "startTime": "18:15",
+      "endTime": "18:30",
+      "notes": ""
     }
   ],
   "meetings": [
@@ -544,6 +636,62 @@
       "presiderId": "pw-1778609099409",
       "exhorterId": "pw-1778609276362",
       "songLeaderId": "pw-1778609198792",
+      "coordinator": "",
+      "venue": "Abundance Hall (2F)",
+      "isVirtual": false,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-1779803675145",
+      "date": "2026-06-04",
+      "startTime": "18:30",
+      "type": "sectoral",
+      "presiderId": null,
+      "exhorterId": null,
+      "songLeaderId": null,
+      "coordinator": "FB",
+      "venue": "SPM - ZOOM",
+      "isVirtual": true,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-1779803711697",
+      "date": "2026-06-10",
+      "startTime": "18:00",
+      "type": "corporate",
+      "presiderId": null,
+      "exhorterId": null,
+      "songLeaderId": null,
+      "coordinator": "F&T",
+      "venue": "CPM-ZOOM",
+      "isVirtual": true,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-1779803901855",
+      "date": "2026-06-18",
+      "startTime": "18:30",
+      "type": "fasting",
+      "presiderId": "pw-1779804041427",
+      "exhorterId": "bro-04",
+      "songLeaderId": "pw-1778609198792",
+      "coordinator": "",
+      "venue": "Vergara Family Flat",
+      "isVirtual": false,
+      "foodInChargeText": "",
+      "notes": ""
+    },
+    {
+      "id": "pm-1779803971673",
+      "date": "2026-06-25",
+      "startTime": "18:30",
+      "type": "thanksgiving",
+      "presiderId": "pw-1778609198792",
+      "exhorterId": "pw-1779804091843",
+      "songLeaderId": "bro-02",
       "coordinator": "",
       "venue": "Abundance Hall (2F)",
       "isVirtual": false,
