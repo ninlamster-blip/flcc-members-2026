@@ -4,6 +4,25 @@
     "publishedAt": "2026-05-12T20:07:52.628Z",
     "version": "1.0"
   },
+  "botrChurch": {
+    "name": "FLCC - BOTR Church",
+    "leadPastor": {
+      "name": "Rev. Jopet Alim",
+      "title": "Lead Pastor",
+      "whatsapp": "",
+      "messenger": "",
+      "phone": "",
+      "email": ""
+    },
+    "sectorLeaders": [
+      { "name": "", "sector": "Sector A", "title": "Sector Leader", "whatsapp": "", "phone": "" },
+      { "name": "", "sector": "Sector B", "title": "Sector Leader", "whatsapp": "", "phone": "" },
+      { "name": "", "sector": "Sector C", "title": "Sector Leader", "whatsapp": "", "phone": "" }
+    ],
+    "satelliteChurches": [
+      { "name": "", "church": "", "location": "", "title": "Pastor", "whatsapp": "", "phone": "" }
+    ]
+  },
   "ministry": {
     "headName": "Sis. Amazelle De Jesus",
     "headTitle": "Fellowship Ministry Head",
