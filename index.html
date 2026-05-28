@@ -2479,23 +2479,39 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
         This members view is read-only and shows the latest schedule published by the admin.
       </SectionHeading>
 
-      {/* BOTR Church Section */}
+      {/* BOTR Church Network Section */}
       {botr && (
         <div className="card p-6 mb-4">
-          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#7C3AED' }}>⛪ {botr.name || 'FLCC BOTR Church'}</div>
+          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#7C3AED' }}>⛪ {botr.name || 'FLCC BOTR Church Network'}</div>
+          {botr.network && <div className="text-xs ink-subtle mb-3">{botr.network}</div>}
+
+          {/* Mission */}
+          {botr.missionTarget && (
+            <div className="mb-4 px-3 py-2 rounded-lg" style={{ background: '#F5F3FF', border: '1px solid #DDD6FE' }}>
+              <div className="text-xs font-semibold" style={{ color: '#7C3AED' }}>🎯 Mission Target</div>
+              <div className="text-sm mt-0.5" style={{ color: '#4C1D95' }}>{botr.missionTarget}</div>
+              {botr.totalChurches && <div className="text-xs ink-subtle mt-1">{botr.totalChurches} satellite locations + virtual platform</div>}
+            </div>
+          )}
 
           {/* Lead Pastor */}
           {botr.leadPastor?.name && (
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="text-xs ink-subtle mb-1">Lead Pastor</div>
-              <div className="font-display text-2xl font-semibold">{botr.leadPastor.name}</div>
-              {botr.leadPastor.title && <div className="text-sm ink-muted mt-0.5">{botr.leadPastor.title}</div>}
-              <div className="space-y-1 mt-2 text-sm">
+              <div className="font-display text-xl font-semibold">{botr.leadPastor.name}</div>
+              {botr.leadPastor.title && <div className="text-sm ink-muted">{botr.leadPastor.title}</div>}
+              <div className="space-y-1 mt-1 text-sm">
                 {botr.leadPastor.whatsapp  && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(botr.leadPastor.whatsapp, '')} className="ink hover:underline">{botr.leadPastor.whatsapp}</a></div>}
-                {botr.leadPastor.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(botr.leadPastor.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{botr.leadPastor.messenger}</a></div>}
                 {botr.leadPastor.phone     && <div><span className="ink-muted text-xs">Phone · </span><a href={`tel:${botr.leadPastor.phone}`} className="ink hover:underline">{botr.leadPastor.phone}</a></div>}
-                {botr.leadPastor.email     && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${botr.leadPastor.email}`} className="ink hover:underline">{botr.leadPastor.email}</a></div>}
               </div>
+            </div>
+          )}
+
+          {/* Evangelism Ministry Head */}
+          {botr.evangelismMinistryHead?.name && (
+            <div className="mb-3">
+              <div className="text-xs ink-subtle mb-0.5">Evangelism Ministry Head</div>
+              <div className="text-sm font-semibold">{botr.evangelismMinistryHead.name}</div>
             </div>
           )}
 
@@ -2503,34 +2519,37 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
           {(botr.sectorLeaders || []).some(s => s.name) && (
             <>
               <div className="dotted-divider my-3" />
-              <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Sector Leaders</div>
-              <div className="space-y-3">
+              <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Sector Leaders</div>
+              <div className="space-y-4">
                 {(botr.sectorLeaders || []).filter(s => s.name).map((s, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
+                  <div key={i}>
+                    <div className="flex items-center gap-2 mb-1">
                       <div className="text-sm font-semibold">{s.name}</div>
-                      <div className="text-xs ink-muted">{s.sector}{s.title ? ` · ${s.title}` : ''}</div>
-                      {s.whatsapp && <a href={whatsappURL(s.whatsapp, '')} className="text-xs ink hover:underline">{s.whatsapp}</a>}
+                      <span className="pill pill-accent text-xs">{s.sector}</span>
                     </div>
+                    {s.evangelismCoordinator && <div className="text-xs ink-muted">Evangelism Coord: {s.evangelismCoordinator}</div>}
+                    {s.churches?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {s.churches.map((c, j) => <span key={j} className="pill pill-default text-xs">{c}</span>)}
+                      </div>
+                    )}
+                    {s.whatsapp && <a href={whatsappURL(s.whatsapp, '')} className="text-xs ink hover:underline block mt-1">{s.whatsapp}</a>}
                   </div>
                 ))}
               </div>
             </>
           )}
 
-          {/* Satellite Church Pastors */}
-          {(botr.satelliteChurches || []).some(s => s.name) && (
+          {/* Satellite Churches */}
+          {(botr.satelliteChurches || []).length > 0 && (
             <>
               <div className="dotted-divider my-3" />
               <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Satellite Churches</div>
-              <div className="space-y-3">
-                {(botr.satelliteChurches || []).filter(s => s.name).map((s, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold">{s.name}</div>
-                      <div className="text-xs ink-muted">{s.title || 'Pastor'}{s.church ? ` · ${s.church}` : ''}{s.location ? ` — ${s.location}` : ''}</div>
-                      {s.whatsapp && <a href={whatsappURL(s.whatsapp, '')} className="text-xs ink hover:underline">{s.whatsapp}</a>}
-                    </div>
+              <div className="flex flex-wrap gap-2">
+                {(botr.satelliteChurches || []).map((s, i) => (
+                  <div key={i} className="pill pill-default text-xs flex items-center gap-1">
+                    <span>{s.church}</span>
+                    <span className="ink-subtle">· {s.sector}</span>
                   </div>
                 ))}
               </div>
@@ -5926,6 +5945,215 @@ function BibleTab() {
     </div>
   );
 }
+
+// =============================================================================
+// ASK FLCC TAB
+// =============================================================================
+
+const ASK_KEY   = 'flcc-claude-api-key-v1';
+const ASK_MODEL = 'claude-haiku-4-5-20251001';
+
+function buildChurchContext(data, prayerData, musicData, equipData) {
+  const workers  = data.workers  || [];
+  const schedule = data.schedule || [];
+  const botr     = data.botrChurch || {};
+  const pm = prayerData?.ministry || {};
+  const mm = musicData?.ministry  || {};
+
+  const workerLines = workers.map(w =>
+    `  - ${[w.title,w.name].filter(Boolean).join(' ')}${w.eligibleRoles?.length ? ` (${w.eligibleRoles.join(', ')})` : ''}`
+  ).join('\n');
+
+  const find = id => { const w = workers.find(x=>x.id===id); return w ? [w.title,w.name].filter(Boolean).join(' ') : id||'—'; };
+  const scheduleLines = schedule.map(s => {
+    const r = s.roles||{};
+    return `  ${s.date} ${s.service}: Presider=${find(r.presider)}, Preacher=${find(r.preacher)}, SongLeader=${find(r.songLeader)}, Food=${r.foodInCharge||'—'}${s.specialNote?` [${s.specialNote}]`:''}`;
+  }).join('\n');
+
+  const themeLines  = Object.entries(data.themes||{}).map(([m,t])=>`  ${m}: ${t||'(TBD)'}`).join('\n');
+  const equipMin    = (equipData?.ministries||[]).map(em=>`  ${em.name}: ${em.headName}`).join('\n');
+  const courses     = (equipData?.courses||[]).map(c=>`  - ${c.title} (${c.facilitator})`).join('\n');
+  const events      = (data.events||[]).map(e=>`  - ${e.date}: ${e.title} (${e.type})`).join('\n');
+
+  const botrSectors = (botr.sectorLeaders||[]).filter(s=>s.name).map(s=>
+    `  ${s.sector}: ${s.name} | Coord: ${s.evangelismCoordinator||'—'} | Churches: ${(s.churches||[]).join(', ')}`
+  ).join('\n');
+  const botrChurches = (botr.satelliteChurches||[]).map(s=>`  ${s.church} (${s.sector})`).join('\n');
+
+  return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta.churchName} (Full Life Christian Church).
+You have complete knowledge of the church: members, schedules, ministries, events, BOTR network, and more.
+Be warm, encouraging, and helpful. Address members by their proper titles (Bro./Sis./Ptr./Rev.).
+You know the Bible deeply and can answer Christian faith questions. When quoting Scripture, give the reference.
+
+=== FLCC BOTR CHURCH NETWORK ===
+Name: ${botr.name||'FLCC - BOTR Church Network'}
+Network: ${botr.network||'N.E.C.K. Kuwait'}
+Lead Pastor: ${botr.leadPastor?.name||'(to be updated)'}  Title: ${botr.leadPastor?.title||''}
+Evangelism Ministry Head: ${botr.evangelismMinistryHead?.name||'—'}
+Mission Target: ${botr.missionTarget||''}
+Total Churches: ${botr.totalChurches||'12'} satellite locations + virtual platform
+
+Sector Leaders:
+${botrSectors}
+
+Satellite Churches:
+${botrChurches}
+
+=== FLCC ABUNDANCE — FELLOWSHIP MINISTRY ===
+Head: ${data.ministry?.headName||'N/A'} (${data.ministry?.headTitle||''}) · WhatsApp: ${data.ministry?.whatsapp||'N/A'}
+
+=== PRAYER MINISTRY ===
+Head: ${pm.headName||'N/A'} (${pm.headTitle||''}) · WhatsApp: ${pm.whatsapp||'N/A'}
+
+=== MUSIC MINISTRY ===
+Head: ${mm.headName||'N/A'} (${mm.headTitle||''}) · WhatsApp: ${mm.whatsapp||'N/A'}
+
+=== OTHER MINISTRIES ===
+${equipMin||'(none listed)'}
+
+=== EQUIP COURSES ===
+${courses||'(none listed)'}
+
+=== MEMBERS (${workers.length} total) ===
+${workerLines}
+
+=== MONTHLY THEMES ===
+${themeLines}
+
+=== FULL SERVICE SCHEDULE ===
+${scheduleLines}
+
+=== EVENTS ===
+${events||'(none listed)'}`;
+}
+
+function AskTab({ data, prayerData, musicData, equipData }) {
+  const [apiKey, setApiKey]     = React.useState(() => { try { return localStorage.getItem(ASK_KEY)||''; } catch { return ''; } });
+  const [keyInput, setKeyInput] = React.useState('');
+  const [showKey, setShowKey]   = React.useState(false);
+  const [messages, setMessages] = React.useState([
+    { role:'assistant', content:`Hello! I'm Ask FLCC — your church AI assistant.\n\nI know everything about ${data.meta.churchName}, the FLCC BOTR Network, all service schedules, members, and ministries. I can also answer Bible questions and give Christian guidance.\n\nWhat would you like to know?` }
+  ]);
+  const [input, setInput]   = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const endRef   = React.useRef(null);
+  const inputRef = React.useRef(null);
+
+  const systemCtx = React.useMemo(() => buildChurchContext(data, prayerData, musicData, equipData), []);
+  React.useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
+
+  const saveKey = () => {
+    const k = keyInput.trim();
+    if (!k.startsWith('sk-ant-')) { alert("That doesn't look like an Anthropic API key — it should start with sk-ant-"); return; }
+    setApiKey(k); try { localStorage.setItem(ASK_KEY, k); } catch {}
+    setShowKey(false); setKeyInput('');
+  };
+
+  const clearKey = () => { setApiKey(''); try { localStorage.removeItem(ASK_KEY); } catch {} };
+
+  const send = async () => {
+    if (!input.trim() || loading) return;
+    const userMsg = { role:'user', content: input.trim() };
+    const history = [...messages, userMsg];
+    setMessages(history); setInput(''); setLoading(true);
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true',
+        },
+        body: JSON.stringify({
+          model: ASK_MODEL, max_tokens: 1024,
+          system: systemCtx,
+          messages: history.map(m=>({ role:m.role, content:m.content })),
+        }),
+      });
+      if (!resp.ok) { const e=await resp.json().catch(()=>{}); throw new Error(e?.error?.message||`HTTP ${resp.status}`); }
+      const d = await resp.json();
+      setMessages(prev => [...prev, { role:'assistant', content: d.content?.[0]?.text||'(no response)' }]);
+    } catch(e) {
+      setMessages(prev => [...prev, { role:'assistant', content:`⚠️ ${e.message}. Please check your API key.` }]);
+    } finally { setLoading(false); inputRef.current?.focus(); }
+  };
+
+  const onKey = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+
+  if (!apiKey) return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Ask FLCC" title="AI Church Assistant">
+        Powered by Claude AI — knows your full church data, BOTR network, Bible, and Christian guidance.
+      </SectionHeading>
+      <div className="card p-8 text-center">
+        <div style={{fontSize:'3rem',marginBottom:'1rem'}}>💬</div>
+        <div className="font-display text-xl font-semibold mb-2">One-Time Setup</div>
+        <div className="text-sm ink-muted mb-6 max-w-sm mx-auto">
+          Ask FLCC is powered by the Claude AI API. Enter your Anthropic API key below — it stays on this device only and is never stored anywhere else.
+        </div>
+        {!showKey ? (
+          <div className="flex flex-col gap-3 items-center">
+            <button className="btn btn-accent" onClick={() => setShowKey(true)}>Enter API Key</button>
+            <a href="https://console.anthropic.com/" target="_blank" rel="noopener" className="text-xs ink-muted hover:underline">Get a key at console.anthropic.com →</a>
+          </div>
+        ) : (
+          <div className="max-w-sm mx-auto space-y-3">
+            <input type="password" className="input" placeholder="sk-ant-..." value={keyInput} onChange={e=>setKeyInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveKey()} autoFocus />
+            <div className="flex gap-2 justify-center">
+              <button className="btn btn-ghost" onClick={()=>setShowKey(false)}>Cancel</button>
+              <button className="btn btn-accent" onClick={saveKey} disabled={!keyInput.trim()}>Activate</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fade-in" style={{display:'flex',flexDirection:'column',height:'calc(100vh - 200px)',minHeight:400}}>
+      <div className="flex items-center justify-between mb-3">
+        <SectionHeading eyebrow="Ask FLCC" title="AI Church Assistant" />
+        <button className="btn btn-ghost text-xs" onClick={clearKey} style={{flexShrink:0}}>🔑 Change Key</button>
+      </div>
+      <div className="card flex-1 overflow-y-auto p-4" style={{marginBottom:'0.75rem',minHeight:200}}>
+        <div className="space-y-4">
+          {messages.map((msg,i) => (
+            <div key={i} className={`flex ${msg.role==='user'?'justify-end':'justify-start'}`}>
+              <div style={{
+                maxWidth:'85%', padding:'10px 14px', whiteSpace:'pre-wrap', lineHeight:1.6, fontSize:'0.9rem',
+                borderRadius: msg.role==='user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                background: msg.role==='user' ? 'var(--accent)' : 'var(--bg)',
+                color: msg.role==='user' ? 'white' : 'var(--ink)',
+                border: msg.role==='assistant' ? '1px solid var(--border)' : 'none',
+              }}>
+                {msg.role==='assistant' && <div style={{fontSize:'0.65rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--accent)',marginBottom:4}}>Ask FLCC</div>}
+                {msg.content}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div style={{padding:'10px 14px',borderRadius:'16px 16px 16px 4px',background:'var(--bg)',border:'1px solid var(--border)',color:'var(--ink-muted)',fontSize:'0.9rem'}}>
+                ✦ Thinking…
+              </div>
+            </div>
+          )}
+          <div ref={endRef} />
+        </div>
+      </div>
+      <div className="card p-3" style={{display:'flex',gap:'0.5rem',alignItems:'flex-end'}}>
+        <textarea ref={inputRef} rows={2}
+          style={{flex:1,background:'transparent',border:'none',outline:'none',resize:'none',fontSize:'0.9rem',fontFamily:'inherit',color:'var(--ink)'}}
+          placeholder="Ask anything about FLCC, the BOTR network, the schedule, Bible verses…"
+          value={input} onChange={e=>setInput(e.target.value)} onKeyDown={onKey} disabled={loading} />
+        <button className="btn btn-accent" onClick={send} disabled={loading||!input.trim()} style={{flexShrink:0}}>{loading?'…':'Send'}</button>
+      </div>
+      <div className="text-xs ink-subtle text-center mt-2">Enter to send · Shift+Enter for new line</div>
+    </div>
+  );
+}
+
 // =============================================================================
 // MAIN APP
 // =============================================================================
@@ -5939,6 +6167,7 @@ const TABS = [
   { key: 'music',    label: 'Music',   requiresMusic:  true },
   { key: 'equip',    label: 'Equip'   },
   { key: 'bible',    label: '📖 Bible' },
+  { key: 'ask',      label: '💬 Ask FLCC' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
 ];
@@ -6400,6 +6629,7 @@ function App() {
         {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
         {currentTab === 'bible'    && <BibleTab />}
+        {currentTab === 'ask'      && <AskTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} />}
         {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
         {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
         {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
