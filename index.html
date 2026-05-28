@@ -5950,8 +5950,9 @@ function BibleTab() {
 // ASK FLCC TAB
 // =============================================================================
 
-const ASK_KEY   = 'flcc-claude-api-key-v1';
-const ASK_MODEL = 'claude-haiku-4-5-20251001';
+const ASK_KEY        = 'flcc-claude-api-key-v1';
+const ASK_PROXY_KEY  = 'flcc-ask-proxy-url-v1';
+const ASK_MODEL      = 'claude-haiku-4-5-20251001';
 
 function buildChurchContext(data, prayerData, musicData, equipData) {
   const workers  = data.workers  || [];
@@ -6028,28 +6029,39 @@ ${events||'(none listed)'}`;
 }
 
 function AskTab({ data, prayerData, musicData, equipData }) {
-  const [apiKey, setApiKey]     = React.useState(() => { try { return localStorage.getItem(ASK_KEY)||''; } catch { return ''; } });
-  const [keyInput, setKeyInput] = React.useState('');
-  const [showKey, setShowKey]   = React.useState(false);
+  const [proxyUrl, setProxyUrl]   = React.useState(() => { try { return localStorage.getItem(ASK_PROXY_KEY)||''; } catch { return ''; } });
+  const [apiKey, setApiKey]       = React.useState(() => { try { return localStorage.getItem(ASK_KEY)||''; } catch { return ''; } });
+  const [setupInput, setSetupInput] = React.useState('');
+  const [setupMode, setSetupMode]   = React.useState('proxy'); // 'proxy' | 'key'
   const [messages, setMessages] = React.useState([
     { role:'assistant', content:`Hello! I'm Ask FLCC — your church AI assistant.\n\nI know everything about ${data.meta.churchName}, the FLCC BOTR Network, all service schedules, members, and ministries. I can also answer Bible questions and give Christian guidance.\n\nWhat would you like to know?` }
   ]);
-  const [input, setInput]   = React.useState('');
+  const [input, setInput]     = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const endRef   = React.useRef(null);
   const inputRef = React.useRef(null);
 
+  const isReady   = !!(proxyUrl || apiKey);
   const systemCtx = React.useMemo(() => buildChurchContext(data, prayerData, musicData, equipData), []);
   React.useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
 
-  const saveKey = () => {
-    const k = keyInput.trim();
-    if (!k.startsWith('sk-ant-')) { alert("That doesn't look like an Anthropic API key — it should start with sk-ant-"); return; }
-    setApiKey(k); try { localStorage.setItem(ASK_KEY, k); } catch {}
-    setShowKey(false); setKeyInput('');
+  const saveSetup = () => {
+    const v = setupInput.trim();
+    if (!v) return;
+    if (setupMode === 'proxy') {
+      if (!v.startsWith('http')) { alert('Proxy URL should start with https://'); return; }
+      setProxyUrl(v); try { localStorage.setItem(ASK_PROXY_KEY, v); } catch {}
+    } else {
+      if (!v.startsWith('sk-ant-')) { alert("API key should start with sk-ant-"); return; }
+      setApiKey(v); try { localStorage.setItem(ASK_KEY, v); } catch {}
+    }
+    setSetupInput('');
   };
 
-  const clearKey = () => { setApiKey(''); try { localStorage.removeItem(ASK_KEY); } catch {} };
+  const clearSetup = () => {
+    setProxyUrl(''); setApiKey('');
+    try { localStorage.removeItem(ASK_PROXY_KEY); localStorage.removeItem(ASK_KEY); } catch {}
+  };
 
   const send = async () => {
     if (!input.trim() || loading) return;
@@ -6057,14 +6069,15 @@ function AskTab({ data, prayerData, musicData, equipData }) {
     const history = [...messages, userMsg];
     setMessages(history); setInput(''); setLoading(true);
     try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version':'2023-06-01',
-          'anthropic-dangerous-direct-browser-access':'true',
-        },
+      const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+      const headers  = { 'Content-Type': 'application/json' };
+      if (!proxyUrl) {
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      }
+      const resp = await fetch(endpoint, {
+        method: 'POST', headers,
         body: JSON.stringify({
           model: ASK_MODEL, max_tokens: 1024,
           system: systemCtx,
@@ -6075,38 +6088,58 @@ function AskTab({ data, prayerData, musicData, equipData }) {
       const d = await resp.json();
       setMessages(prev => [...prev, { role:'assistant', content: d.content?.[0]?.text||'(no response)' }]);
     } catch(e) {
-      setMessages(prev => [...prev, { role:'assistant', content:`⚠️ ${e.message}. Please check your API key.` }]);
+      setMessages(prev => [...prev, { role:'assistant', content:`⚠️ ${e.message}. Please check your setup.` }]);
     } finally { setLoading(false); inputRef.current?.focus(); }
   };
 
   const onKey = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
 
-  if (!apiKey) return (
+  if (!isReady) return (
     <div className="fade-in">
       <SectionHeading eyebrow="Ask FLCC" title="AI Church Assistant">
         Powered by Claude AI — knows your full church data, BOTR network, Bible, and Christian guidance.
       </SectionHeading>
-      <div className="card p-8 text-center">
-        <div style={{fontSize:'3rem',marginBottom:'1rem'}}>💬</div>
-        <div className="font-display text-xl font-semibold mb-2">One-Time Setup</div>
-        <div className="text-sm ink-muted mb-6 max-w-sm mx-auto">
-          Ask FLCC is powered by the Claude AI API. Enter your Anthropic API key below — it stays on this device only and is never stored anywhere else.
-        </div>
-        {!showKey ? (
-          <div className="flex flex-col gap-3 items-center">
-            <button className="btn btn-accent" onClick={() => setShowKey(true)}>Enter API Key</button>
-            <a href="https://console.anthropic.com/" target="_blank" rel="noopener" className="text-xs ink-muted hover:underline">Get a key at console.anthropic.com →</a>
-          </div>
-        ) : (
-          <div className="max-w-sm mx-auto space-y-3">
-            <input type="password" className="input" placeholder="sk-ant-..." value={keyInput} onChange={e=>setKeyInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveKey()} autoFocus />
-            <div className="flex gap-2 justify-center">
-              <button className="btn btn-ghost" onClick={()=>setShowKey(false)}>Cancel</button>
-              <button className="btn btn-accent" onClick={saveKey} disabled={!keyInput.trim()}>Activate</button>
-            </div>
-          </div>
-        )}
+
+      {/* Mode toggle */}
+      <div className="flex gap-2 mb-4">
+        <button className={`btn text-xs ${setupMode==='proxy'?'btn-primary':'btn-ghost'}`} onClick={()=>setSetupMode('proxy')}>
+          🌐 Shared (Cloudflare Worker)
+        </button>
+        <button className={`btn text-xs ${setupMode==='key'?'btn-primary':'btn-ghost'}`} onClick={()=>setSetupMode('key')}>
+          🔑 My Own API Key
+        </button>
       </div>
+
+      {setupMode === 'proxy' ? (
+        <div className="card p-6 mb-4">
+          <div className="font-display text-lg font-semibold mb-1">Shared Mode — Works for Everyone</div>
+          <div className="text-sm ink-muted mb-4">
+            The admin sets up a Cloudflare Worker once. All members use Ask FLCC with no individual setup required.
+          </div>
+          <div className="space-y-2 text-sm mb-5">
+            <div className="flex gap-2"><span className="pill pill-accent">1</span><span>Go to <strong>dash.cloudflare.com</strong> → Workers &amp; Pages → Create Worker</span></div>
+            <div className="flex gap-2"><span className="pill pill-accent">2</span><span>Paste the script from <code className="font-mono text-xs bg-gray-100 px-1 rounded">ask-proxy/worker.js</code> in this repo, then Deploy</span></div>
+            <div className="flex gap-2"><span className="pill pill-accent">3</span><span>Worker Settings → Variables → Add Secret: <code className="font-mono text-xs bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code></span></div>
+            <div className="flex gap-2"><span className="pill pill-accent">4</span><span>Copy your Worker URL and paste it below</span></div>
+          </div>
+          <div className="flex gap-2">
+            <input className="input flex-1" placeholder="https://flcc-ask.yourname.workers.dev" value={setupInput} onChange={e=>setSetupInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveSetup()} />
+            <button className="btn btn-accent" onClick={saveSetup} disabled={!setupInput.trim()}>Activate</button>
+          </div>
+        </div>
+      ) : (
+        <div className="card p-6 mb-4">
+          <div className="font-display text-lg font-semibold mb-1">My Own API Key</div>
+          <div className="text-sm ink-muted mb-4">
+            Your key stays on this device only. Each member who wants to use Ask FLCC will need to set up their own key.
+          </div>
+          <div className="flex gap-2 mb-3">
+            <input type="password" className="input flex-1" placeholder="sk-ant-..." value={setupInput} onChange={e=>setSetupInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveSetup()} />
+            <button className="btn btn-accent" onClick={saveSetup} disabled={!setupInput.trim()}>Activate</button>
+          </div>
+          <a href="https://console.anthropic.com/" target="_blank" rel="noopener" className="text-xs ink-muted hover:underline">Get a free key at console.anthropic.com →</a>
+        </div>
+      )}
     </div>
   );
 
@@ -6114,7 +6147,7 @@ function AskTab({ data, prayerData, musicData, equipData }) {
     <div className="fade-in" style={{display:'flex',flexDirection:'column',height:'calc(100vh - 200px)',minHeight:400}}>
       <div className="flex items-center justify-between mb-3">
         <SectionHeading eyebrow="Ask FLCC" title="AI Church Assistant" />
-        <button className="btn btn-ghost text-xs" onClick={clearKey} style={{flexShrink:0}}>🔑 Change Key</button>
+        <button className="btn btn-ghost text-xs" onClick={clearSetup} style={{flexShrink:0}}>⚙️ Change Setup</button>
       </div>
       <div className="card flex-1 overflow-y-auto p-4" style={{marginBottom:'0.75rem',minHeight:200}}>
         <div className="space-y-4">
