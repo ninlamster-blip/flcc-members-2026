@@ -5750,6 +5750,64 @@ const VOTD_REFS = [
   'Ephesians 3:20','Colossians 1:17','Psalm 121:1-2','Romans 15:13','2 Corinthians 12:9',
 ];
 
+const VOTD_DEVOTIONS = {
+  'John 3:16':               "God's love is not passive or distant — it moved Him to give the most precious gift possible: His own Son. This verse reminds us that salvation is not earned by our efforts but received through faith. Today, rest in the certainty that you are deeply and unconditionally loved by God.",
+  'Psalm 23:1-6':            "David wrote 'The Lord is my shepherd' not from a place of comfort, but from experience in the wilderness. A good shepherd provides, protects, and guides — even through dark valleys. Walk confidently today knowing the Good Shepherd is leading your every step.",
+  'Proverbs 3:5-6':          "Trusting God completely means releasing our grip on our own understanding and plans. When we acknowledge Him in all our ways, we invite His wisdom into every decision we make. Surrender your agenda to Him today and trust that His path is better than your own.",
+  'Philippians 4:13':        "Paul wrote these words from a prison cell — yet his confidence was unshakable. Our strength is not found in our circumstances but in Christ who indwells us. Whatever challenge faces you today, face it knowing you are empowered by the risen Lord.",
+  'Romans 8:28':             "This promise does not say everything that happens is good, but that God works all things together for good. Even in our darkest moments, God is weaving a tapestry of purpose we cannot yet see. Trust His sovereign hand over every detail of your life today.",
+  'Isaiah 40:31':            "Waiting on the Lord is not passive — it is an active posture of trust and expectation. God's promise is that those who wait on Him will be renewed, not just sustained. Come to Him in your weariness today, and He will give you strength to soar.",
+  'Jeremiah 29:11':          "God spoke these words to a people in exile, in the middle of their suffering — not after it. His plans for us are not derailed by our present circumstances. Hold on to hope today knowing that God's future for you is filled with purpose and blessing.",
+  'Joshua 1:9':              "God gave Joshua this command not once but repeatedly — because courage is not a feeling, it is a daily choice. The source of Joshua's courage was not his own strength but the presence of God with him. You are not alone in your challenges today — God is with you wherever you go.",
+  'Matthew 6:33':            "Jesus invites us to reorder our priorities, putting God's kingdom first above all earthly concerns. When we seek Him first, He promises to meet our every need in His perfect timing. Let this be your anchor today: seek God first, and trust Him with the rest.",
+  '1 Corinthians 13:4-7':   "Love is not merely a feeling — it is a series of deliberate choices made daily. Paul's description of love reveals that it is fundamentally other-centered and sacrificial. Ask God today to help you love the people around you in these practical, Christlike ways.",
+  'Psalm 46:1':              "The psalmist wrote this in the middle of upheaval — earthquakes, roaring seas, shifting mountains. Yet amidst all the chaos, God remains a fortress that cannot be shaken. Run to Him today as your refuge, your strength, your ever-present help.",
+  'Romans 12:2':             "Transformation begins not with better behavior but with a renewed mind — changing how we think changes how we live. The world constantly pressures us to conform to its patterns, but God calls us to something higher. Feed your mind on God's Word today and let it shape your thinking.",
+  'Galatians 5:22-23':       "The fruit of the Spirit is not produced by our striving but by the Spirit's work within us. Just as fruit grows naturally on a healthy tree, these qualities grow when we stay connected to Christ. Surrender to the Spirit's work in you today and watch His character bloom.",
+  'Ephesians 2:8-9':         "Salvation is entirely God's gift — not a reward for our religious performance. This truth humbles us and fills us with gratitude, knowing we could never earn what God freely gives. Receive this grace afresh today and let it move you to live for His glory.",
+  'Hebrews 11:1':            "Faith is not wishful thinking — it is confident trust in a God who has proven Himself faithful. It gives substance to what we cannot yet see and certainty to what we hope for. Anchor your heart in faith today, knowing the God of promises never fails.",
+  'James 1:2-4':             "James does not say trials might come — he says when they come. But he reframes them not as tragedies but as invitations to grow. Perseverance forged in trials produces a completeness in us that comfort alone never could. Let today's difficulty be your classroom.",
+  '2 Timothy 1:7':           "Fear is not from God — He has given us power, love, and a sound mind. Timothy was young and perhaps intimidated, yet Paul reminds him of the Spirit within him. Whatever you face today, reject the spirit of fear and step forward in the power God has placed in you.",
+  'Psalm 119:105':           "God's Word is not just information — it is illumination for our path when life feels dark. The lamp does not light the entire road at once, only the next step. Read His Word faithfully today, and trust it to guide you one faithful step at a time.",
+  'Matthew 28:19-20':        "The Great Commission is not a suggestion for the spiritually gifted — it is a command for every follower of Jesus. But it comes with the most powerful promise: 'I am with you always.' You are not sent alone — the risen Christ goes with you wherever you go.",
+  'John 14:6':               "Jesus did not say He shows the way or teaches the truth — He said He is the Way, the Truth, and the Life. In a world of competing voices and shifting standards, He alone is the absolute answer. Come to the Father today through Jesus — there is no other door.",
+  'Philippians 4:6-7':       "Anxiety comes from trying to carry tomorrow's burdens with today's strength. God's invitation is to bring everything to Him in prayer with a thankful heart. The peace He gives in return defies all logic — it guards our hearts like a soldier on watch.",
+  'Isaiah 41:10':            "This is God's personal assurance to those who feel afraid and alone. He does not just observe our fear from a distance — He holds us with His righteous right hand. Let these words be a steadying anchor for your soul today: 'I am with you. Do not fear.'",
+  'Lamentations 3:22-23':    "These words were written in the ruins of Jerusalem by a prophet who had lost everything. Yet even in his darkest hour, Jeremiah found a reason for hope: God's mercies are new every morning. Whatever yesterday held, today is a fresh start — His faithfulness never runs out.",
+  'Romans 3:23':             "This verse levels the ground at the foot of the cross — all have sinned, no one is beyond needing God's grace. Recognizing our need is the first step toward receiving the salvation God offers. Come honestly to Him today, and He will meet you with grace and forgiveness.",
+  'John 10:10':              "Jesus came not to give us a minimal existence but a life overflowing with meaning and abundance. The thief comes to rob and destroy, but the Shepherd comes to restore and give life. Reject the enemy's lies about your life today and embrace the abundant life Jesus offers.",
+  'Colossians 3:23':         "Whatever task is before you today — work, family, ministry — do it as worship to the Lord. When we shift our perspective from working for people to working for God, even ordinary tasks become sacred. Let your work today be an offering to the Lord who sees and values it.",
+  'Psalm 37:4':              "Delighting in the Lord is not the condition for getting what we want — it transforms what we want. When our joy is found in God, our desires begin to align with His heart. Draw close to Him today and discover that what your heart truly longs for is found in Him.",
+  'Matthew 11:28-30':        "Jesus speaks to the exhausted — those worn down by life, by religion, by trying hard enough. His invitation is to come to Him and find rest, not just for the body but for the soul. Lay your burdens at His feet today and take on His easy yoke instead.",
+  'John 1:1':                "Before creation began, the Word — Jesus — already existed in eternal fellowship with God. This profound truth anchors our faith: Jesus is not a created being but the eternal God who became flesh for us. Worship Him today as the Alpha and Omega, the beginning and the end.",
+  '1 John 4:7':              "John connects love for one another with knowing God — because love is not just what God commands, it is who He is. Every act of genuine love we show to others flows from the God who first loved us. Ask God today to let His love flow through you to someone who needs it.",
+  'Romans 5:8':              "God did not wait until we cleaned ourselves up before He sent His Son — He demonstrated His love while we were still in rebellion. This is the radical grace of the gospel: loved before we deserved it. Let this truth compel you to love others the same way today.",
+  'Ephesians 4:32':          "Forgiveness is not always a feeling — often it is a decision to release someone from the debt we feel they owe us. We forgive because we ourselves have been forgiven an enormous debt by God in Christ. Choose to extend that same grace to someone today.",
+  'Psalm 27:1':              "When the Lord is your light, darkness has no power over you. When He is your salvation, fear loses its grip. David had real enemies — yet his confidence in God was unshaken. Face your challenges today with this declaration: the Lord is my light and my salvation.",
+  'Micah 6:8':               "God's requirements are not complicated rituals — they are justice, mercy, and humble closeness with Him. These three things are both vertical (humility before God) and horizontal (justice and mercy toward others). Let this be the rhythm of your life today: just, merciful, and humbly walking with God.",
+  'Zephaniah 3:17':          "Imagine the Creator of the universe singing over you with joy — this is the picture God paints through the prophet Zephaniah. He does not merely tolerate us; He delights in us and quiets our souls with His love. Rest in His delight over you today.",
+  'Deuteronomy 31:6':        "These words were spoken to a nation about to enter unknown territory without their beloved leader Moses. God promises that He goes before them — and He makes the same promise to us. Whatever new territory you face today, you are not going in alone.",
+  'Acts 1:8':                "The early church had no buildings, no budgets, no platforms — just the power of the Holy Spirit and the message of the risen Christ. That same power is available to every believer today. Be a witness in your home, your workplace, your community — and trust the Spirit to work through you.",
+  '2 Corinthians 5:17':      "In Christ, you are not a reformed version of your old self — you are a new creation entirely. The old has gone, the new has come — this is not a gradual improvement but a radical transformation. Live today from this truth: you are a new person in Christ.",
+  'Revelation 3:20':         "Jesus stands at the door of our hearts and knocks — He will not force His way in. He patiently waits for us to open the door and invite Him in. Is there any area of your heart where you have been keeping the door closed? Open it to Him now.",
+  'John 15:5':               "Apart from Christ we can do nothing of eternal value — but connected to Him, we bear much fruit. The key is not striving harder but abiding deeper — staying close to Him through prayer and His Word. Stay connected to the Vine today and watch the fruit grow naturally.",
+  'Matthew 5:14-16':         "You are not called to be a flashlight — you are called to be a city on a hill, impossible to miss. Our good works are not to earn praise for ourselves but to point others to the Father who lives in us. Let your light shine today in a way that gives glory to God.",
+  'Psalm 100:4-5':           "Gratitude is not a response to good circumstances — it is an acknowledgment of who God is and what He has done. We enter His presence with thanksgiving because He is good and His love never ends. Begin today with praise and let a thankful heart set the tone for everything else.",
+  '1 Peter 5:7':             "God does not just tolerate our worries — He actively invites us to cast them on Him. The word 'cast' is vigorous — throw them forcefully, completely, definitively. Give Him your anxieties today, one by one, and trust that He genuinely cares about each one.",
+  'Hebrews 4:16':            "Because of Jesus, we do not approach God as strangers hoping for an audience — we come boldly as beloved children to a loving Father. The throne of God is a throne of grace, not judgment, for those who come through Christ. Come confidently to Him today with every need.",
+  'John 16:33':              "Jesus promised trouble in this world — not as a warning to fear, but as context for our courage. He said 'take heart' not because the trouble is not real but because He has already overcome it. Whatever trial you face today, face it with courage: the battle is already won.",
+  'Isaiah 26:3':             "Perfect peace is not the absence of problems — it is steadiness of heart in the middle of them. The key is a mind fixed on God, trusting Him rather than fixating on circumstances. Set your mind on Him today and receive the supernatural peace that only He can give.",
+  'Psalm 34:8':              "You cannot fully explain the goodness of God to someone who has not tasted it — it must be experienced personally. David invites us to move from hearing about God to encountering Him for ourselves. Take refuge in Him today and discover afresh that He is truly good.",
+  'Proverbs 18:10':          "The name of the Lord is not just a title — it represents all of who He is: His character, His power, His faithfulness. When we run to Him in times of trouble, we find a fortress that nothing can break. Whatever is threatening you today, run to the name of the Lord.",
+  'Philippians 1:6':         "God does not start a work and abandon it halfway — what He begins, He completes. This is not just a verse about salvation; it is a promise about every area of your life He is working in. Trust His process today even when the work feels incomplete or slow.",
+  '1 Thessalonians 5:16-18': "Joy, prayer, and gratitude are not responses to circumstances — they are a lifestyle for the believer. Paul says this is God's will for you in Christ Jesus — not a suggestion but a calling. Cultivate these habits today and watch how they transform your perspective.",
+  'Ephesians 3:20':          "Our biggest prayers and boldest dreams are still not enough to exhaust what God is able to do. He works not just at our level but abundantly, immeasurably beyond it — according to His power at work within us. Dream bigger today, pray bolder, and trust a God who can do exceedingly more.",
+  'Colossians 1:17':         "Christ is not just the Savior of our souls — He is the sustainer of all creation. Every atom, every galaxy, every heartbeat exists because He holds it in place. This Jesus who holds the universe together also holds your life together. Trust Him today.",
+  'Psalm 121:1-2':           "The psalmist looked to the hills and asked where true help comes from — the answer: not from the hills, but from the Lord who made them. When you face today's challenges, look up. Your help comes from the Maker of heaven and earth.",
+  'Romans 15:13':            "Hope is not wishful thinking — it is confident expectation rooted in the God who keeps His promises. Paul prays that we would overflow with hope, not just have a little. Ask God to fill you with His hope by the power of the Holy Spirit today, so much that it overflows to others.",
+  '2 Corinthians 12:9':      "Paul asked three times for his thorn to be removed — and God said no. Instead, God offered something better: His grace, sufficient for every weakness. Our weaknesses are not obstacles to God's power — they are the very places where His strength shines brightest. Embrace your weakness today as an opportunity for His grace.",
+};
+
 function BibleTab() {
   const [translation, setTranslation] = React.useState(() => {
     try { return localStorage.getItem(BIBLE_KEY) || 'web'; } catch { return 'web'; }
@@ -5767,6 +5825,8 @@ function BibleTab() {
     const day = Math.floor((Date.now() - start) / 86400000);
     return VOTD_REFS[day % VOTD_REFS.length];
   }, []);
+
+  const devotion = VOTD_DEVOTIONS[dayRef] || null;
 
   const fetchVerse = async (ref, trans) => {
     const url = `https://bible-api.com/${encodeURIComponent(ref)}?translation=${trans}`;
@@ -5827,6 +5887,15 @@ function BibleTab() {
           </>
         )}
       </div>
+
+      {/* Daily Devotion */}
+      {devotion && (
+        <div className="card p-6 mb-6">
+          <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{color:'var(--accent)'}}>🕊️ Today's Devotion</div>
+          <div className="text-sm ink-muted mb-2 font-medium">{dayRef}</div>
+          <p className="text-sm ink leading-relaxed" style={{lineHeight:1.8}}>{devotion}</p>
+        </div>
+      )}
 
       {/* Search */}
       <div className="card p-6">
