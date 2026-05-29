@@ -6301,7 +6301,6 @@ const TABS = [
   { key: 'music',    label: 'Music',   requiresMusic:  true },
   { key: 'equip',    label: 'Equip'   },
   { key: 'bible',    label: '📖 Bible' },
-  { key: 'ask',      label: '💬 Ask FLCC' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
 ];
@@ -6763,7 +6762,6 @@ function App() {
         {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
         {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
         {currentTab === 'bible'    && <BibleTab />}
-        {currentTab === 'ask'      && <AskTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} />}
         {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
         {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
         {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}

@@ -53,7 +53,7 @@ export default {
       );
     }
 
-    // Forward to Anthropic
+    // Forward to Anthropic — stream body passthrough so SSE streaming works
     const anthropicResp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -64,10 +64,12 @@ export default {
       body: JSON.stringify(body),
     });
 
-    const data = await anthropicResp.text();
-    return new Response(data, {
+    return new Response(anthropicResp.body, {
       status: anthropicResp.status,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: {
+        ...corsHeaders,
+        'Content-Type': anthropicResp.headers.get('Content-Type') || 'application/json',
+      },
     });
   },
 };
