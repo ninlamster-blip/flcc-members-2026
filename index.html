@@ -71,6 +71,19 @@
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
   .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
+  .ask-pill {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.45rem 0.875rem; border-radius: 9px;
+    background: var(--accent); color: #fff;
+    text-decoration: none; font-weight: 600;
+    font-size: 0.875rem; line-height: 1;
+    box-shadow: 0 2px 8px rgba(163,59,42,0.25);
+    letter-spacing: -0.01em;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+  }
+  .ask-pill:hover { background: var(--accent-hover); }
   .btn-soft { background: #F4F4F0; color: var(--ink); }
   .btn-soft:hover { background: #EDEDE7; }
   .btn-danger { background: var(--danger); color: white; }
@@ -6715,23 +6728,7 @@ function App() {
               </h1>
             </div>
             <div className="text-xs ink-muted text-right flex flex-col items-end gap-1">
-              <a
-                href="ask.html"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                  padding: '0.45rem 0.875rem', borderRadius: 9,
-                  background: 'var(--accent)', color: '#fff',
-                  border: 'none', fontWeight: 600,
-                  textDecoration: 'none', fontSize: '0.875rem', lineHeight: 1,
-                  transition: 'background 0.15s, transform 0.1s',
-                  boxShadow: '0 2px 8px rgba(163,59,42,0.25)',
-                  letterSpacing: '-0.01em',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-hover)'; e.currentTarget.style.transform = 'scale(1.03)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.transform = 'scale(1)'; }}
-              >
-                💬 Ask FLCC
-              </a>
+              <a href="ask.html" className="ask-pill">💬 Ask FLCC</a>
               {data.meta.publishedAt && (
                 <div>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
               )}
@@ -6833,10 +6830,8 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.375rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(124,58,237,0.38)',
-          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.46)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(124,58,237,0.38)'; }}
         title="Bible games"
         aria-label="Open Bible games"
       >🎮</button>
@@ -6852,10 +6847,8 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.5rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(0,0,0,0.22)',
-          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.28)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.22)'; }}
         title="Add personal event"
         aria-label="Add personal event"
       >+</button>
