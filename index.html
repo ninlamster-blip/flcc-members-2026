@@ -2558,6 +2558,86 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
         </div>
       )}
 
+      {/* 2026 Sermon Themes + Worker Roster */}
+      {data.workerRoster2026 && (() => {
+        const r = data.workerRoster2026;
+        const today = new Date().toISOString().slice(0, 10);
+        const upcoming = r.fullSchedule.filter(s => s.date >= today).slice(0, 5);
+        const currentMonth = new Date().getMonth();
+        return (
+          <>
+            {/* Monthly Sermon Themes */}
+            <div className="card p-6 mb-4">
+              <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{ color:'#0284C7' }}>📖 2026 Sermon Themes</div>
+              {r.monthlyThemes[currentMonth] && (
+                <div className="px-3 py-2 rounded-lg mb-3" style={{ background:'#EFF6FF', border:'1px solid #BFDBFE' }}>
+                  <div className="text-xs font-semibold" style={{ color:'#1D4ED8' }}>This Month — {r.monthlyThemes[currentMonth].month}</div>
+                  <div className="text-sm font-medium mt-0.5">{r.monthlyThemes[currentMonth].theme}</div>
+                </div>
+              )}
+              <div className="space-y-1">
+                {r.monthlyThemes.map((t, i) => (
+                  <div key={i} className="flex gap-3 items-start py-0.5">
+                    <span className="text-xs ink-subtle shrink-0 w-8 pt-0.5">{t.month.slice(0,3)}</span>
+                    <span className={`text-sm ${i === currentMonth ? 'font-semibold' : 'ink-muted'}`}>{t.theme}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ministry Workers by Role */}
+            <div className="card p-6 mb-4">
+              <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-4">🎙 Ministry Workers 2026</div>
+              <div className="mb-4">
+                <div className="text-xs font-semibold mb-2" style={{ color:'#1D4ED8' }}>Preachers</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.preachers.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+              <div className="mb-4">
+                <div className="text-xs font-semibold mb-2" style={{ color:'#6D28D9' }}>Pastoral Prayer</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.pastoralPrayer.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+              <div className="mb-4">
+                <div className="text-xs font-semibold mb-2" style={{ color:'#D97706' }}>EMCEE / Presiders</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.emcee.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-semibold mb-2 ink-muted">Guest Speakers</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.guestSpeakers.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+            </div>
+
+            {/* Upcoming Services */}
+            {upcoming.length > 0 && (
+              <div className="card p-6 mb-4">
+                <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">📅 Upcoming Services</div>
+                <div className="space-y-3">
+                  {upcoming.map((s, i) => {
+                    const d = new Date(s.date + 'T00:00:00');
+                    const label = d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+                    return (
+                      <div key={i} className="pb-3" style={{ borderBottom: i < upcoming.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                        <div className="text-xs ink-subtle mb-1">{label}{s.event ? ` · ${s.event}` : ''}</div>
+                        {s.preacher && <div className="text-sm"><span className="ink-muted text-xs">Preacher · </span>{s.preacher}</div>}
+                        {s.prayer   && <div className="text-sm"><span className="ink-muted text-xs">Pastoral Prayer · </span>{s.prayer}</div>}
+                        {s.emcee    && <div className="text-sm"><span className="ink-muted text-xs">EMCEE · </span>{s.emcee}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
+
       {/* Main ministry */}
       <div className="card p-6 mb-4">
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Fellowship Ministry</div>
@@ -5958,6 +6038,7 @@ function buildChurchContext(data, prayerData, musicData, equipData) {
   const workers  = data.workers  || [];
   const schedule = data.schedule || [];
   const botr     = data.botrChurch || {};
+  const roster   = data.workerRoster2026 || {};
   const pm = prayerData?.ministry || {};
   const mm = musicData?.ministry  || {};
 
@@ -5980,6 +6061,11 @@ function buildChurchContext(data, prayerData, musicData, equipData) {
     `  ${s.sector}: ${s.name} | Coord: ${s.evangelismCoordinator||'—'} | Churches: ${(s.churches||[]).join(', ')}`
   ).join('\n');
   const botrChurches = (botr.satelliteChurches||[]).map(s=>`  ${s.church} (${s.sector})`).join('\n');
+
+  const monthlyThemeLines = (roster.monthlyThemes||[]).map(t=>`  ${t.month}: ${t.theme}`).join('\n');
+  const preachingScheduleLines = (roster.fullSchedule||[]).map(s=>
+    `  ${s.date}: Preacher=${s.preacher||'—'}, Prayer=${s.prayer||'—'}, EMCEE=${s.emcee||'—'}${s.event?`, Event=${s.event}`:''}`
+  ).join('\n');
 
   return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta.churchName} (Full Life Christian Church).
 You have complete knowledge of the church: members, schedules, ministries, events, BOTR network, and more.
@@ -6018,10 +6104,25 @@ ${courses||'(none listed)'}
 === MEMBERS (${workers.length} total) ===
 ${workerLines}
 
-=== MONTHLY THEMES ===
-${themeLines}
+=== 2026 PREACHERS ===
+${(roster.preachers||[]).join(', ')}
 
-=== FULL SERVICE SCHEDULE ===
+=== 2026 PASTORAL PRAYER MINISTERS ===
+${(roster.pastoralPrayer||[]).join(', ')}
+
+=== 2026 EMCEE / PRESIDERS ===
+${(roster.emcee||[]).join(', ')}
+
+=== 2026 GUEST SPEAKERS ===
+${(roster.guestSpeakers||[]).join(', ')}
+
+=== 2026 MONTHLY SERMON THEMES ===
+${monthlyThemeLines||themeLines}
+
+=== 2026 FULL PREACHING SCHEDULE (52 services) ===
+${preachingScheduleLines}
+
+=== INTERNAL SCHEDULE (role IDs) ===
 ${scheduleLines}
 
 === EVENTS ===
