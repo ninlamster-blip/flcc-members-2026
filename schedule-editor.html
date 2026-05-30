@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>FLCC Schedule Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root {
+    --bg: #FAFAF5; --surface: #fff; --ink: #18181B; --ink-muted: #52525B; --ink-subtle: #A1A1AA;
+    --border: #E7E5DE; --accent: #A33B2A; --accent-hover: #8B2E20;
+    --success: #16A34A; --success-soft: #F0FDF4; --success-ring: #BBF7D0;
+    --warning: #B45309; --warning-soft: #FFFBEB;
+    --friday: #0284C7; --sunday: #7C3AED;
+  }
+  * { -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--ink); margin: 0; font-family: 'Geist', ui-sans-serif, sans-serif; }
+  .font-display { font-family: 'Fraunces', Georgia, serif; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+  .input { width: 100%; padding: 0.45rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 0.8125rem; color: var(--ink); font-family: 'Geist', sans-serif; }
+  .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(163,59,42,.1); }
+  .btn { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .875rem; border-radius: 8px; font-size: .875rem; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .btn-accent { background: var(--accent); color: #fff; } .btn-accent:hover { background: var(--accent-hover); }
+  .btn-ghost  { background: transparent; color: var(--ink); border-color: var(--border); } .btn-ghost:hover { background: var(--bg); }
+  .btn-soft   { background: #F4F4F0; color: var(--ink); } .btn-soft:hover { background: #EDEDE7; }
+  .btn-success { background: var(--success); color: #fff; }
+  .tab-pill { padding: .375rem .875rem; border-radius: 999px; font-size: .8125rem; font-weight: 500; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; }
+  .tab-pill-active { background: var(--accent); color: #fff; }
+  .tab-pill-idle { background: #F4F4F0; color: var(--ink-muted); }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn .2s ease-out both; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+const DATA_URL    = './data.json';
+const GH_TOKEN_KEY = 'flcc-sched-editor-token-v1';
+const GH_REPO     = 'ninlamster-blip/flcc-members-2026';
+const GH_FILE     = 'data.json';
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SERVICE_COLORS = { Friday: 'var(--friday)', Sunday: 'var(--sunday)' };
+
+function fmt(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+function uid() { return `svc-${Date.now()}-${Math.random().toString(36).slice(2,6)}`; }
+
+// ─── Field editor row ────────────────────────────────────────────────────────
+function ServiceRow({ entry, onChange, onDelete }) {
+  const svcColor = SERVICE_COLORS[entry.service] || 'var(--ink-muted)';
+  const set = (key, val) => onChange({ ...entry, [key]: val });
+
+  return (
+    <div className="card fade-in" style={{ marginBottom: 10, overflow: 'hidden' }}>
+      {/* Header bar */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px', background: entry.service === 'Friday' ? '#EFF6FF' : entry.service === 'Sunday' ? '#F5F3FF' : '#FAFAF5', borderBottom:'1px solid var(--border)' }}>
+        <select
+          value={entry.service || ''}
+          onChange={e => set('service', e.target.value)}
+          style={{ fontWeight:700, fontSize:'0.8125rem', color: svcColor, background:'transparent', border:'none', cursor:'pointer', padding:0, appearance:'none', WebkitAppearance:'none' }}
+        >
+          <option value="Friday">Friday Service</option>
+          <option value="Sunday">Sunday Service</option>
+          <option value="">Other</option>
+        </select>
+        <span style={{ color:'var(--ink-subtle)', fontSize:'0.75rem' }}>·</span>
+        <input
+          type="date"
+          value={entry.date || ''}
+          onChange={e => set('date', e.target.value)}
+          style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', background:'transparent', border:'none', cursor:'pointer', padding:0, fontFamily:'Geist,sans-serif' }}
+        />
+        {entry.event && (
+          <span style={{ marginLeft:'auto', fontSize:'0.6875rem', padding:'2px 8px', borderRadius:999, background:'#FEF3C7', color:'#92400E', fontWeight:600 }}>{entry.event}</span>
+        )}
+        <button
+          onClick={() => { if (confirm(`Delete ${fmt(entry.date)} ${entry.service || ''}?`)) onDelete(entry.id); }}
+          style={{ marginLeft: entry.event ? 8 : 'auto', background:'none', border:'none', cursor:'pointer', color:'var(--ink-subtle)', fontSize:'1rem', lineHeight:1, padding:'2px 4px', borderRadius:4 }}
+          title="Delete"
+        >✕</button>
+      </div>
+
+      {/* Fields grid */}
+      <div style={{ padding:'12px 14px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 12px' }}>
+        {[
+          { key:'preacher',          label:'Preacher' },
+          { key:'prayer',            label:'Pastoral Prayer' },
+          { key:'presider',          label:'Presider' },
+          { key:'songLeader',        label:'Song Leader' },
+          { key:'communionAssistant',label:'Communion Assistant' },
+          { key:'foodInCharge',      label:'Food In Charge' },
+        ].map(({ key, label }) => (
+          <div key={key}>
+            <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:3 }}>{label}</div>
+            <input
+              className="input"
+              value={entry[key] || ''}
+              onChange={e => set(key, e.target.value)}
+              placeholder={label}
+            />
+          </div>
+        ))}
+        <div style={{ gridColumn:'1 / -1' }}>
+          <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:3 }}>Special Event / Note (optional)</div>
+          <input className="input" value={entry.event || ''} onChange={e => set('event', e.target.value)} placeholder="e.g. Lord's Supper, Father's Day" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App ─────────────────────────────────────────────────────────────────────
+function App() {
+  const [fullData,    setFullData]    = useState(null);
+  const [schedule,    setSchedule]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState('');
+  const [activeMonth, setActiveMonth] = useState(null);
+  const [dirty,       setDirty]       = useState(false);
+  const [saved,       setSaved]       = useState(false);
+
+  // GitHub publish state
+  const [ghToken,      setGhToken]      = useState(() => { try { return localStorage.getItem(GH_TOKEN_KEY)||''; } catch { return ''; } });
+  const [ghTokenInput, setGhTokenInput] = useState('');
+  const [ghPublishing, setGhPublishing] = useState(false);
+  const [ghStatus,     setGhStatus]     = useState('');
+  const [showSetup,    setShowSetup]    = useState(false);
+
+  useEffect(() => {
+    fetch(DATA_URL + '?t=' + Date.now())
+      .then(r => r.json())
+      .then(data => {
+        setFullData(data);
+        const sched = (data.workerRoster2026?.fullSchedule || []).map(s => ({ ...s, id: s.id || uid() }));
+        setSchedule(sched);
+        // Default to current month
+        const m = new Date().getMonth();
+        setActiveMonth(MONTHS[m]);
+        setLoading(false);
+      })
+      .catch(e => { setError('Failed to load data.json: ' + e.message); setLoading(false); });
+  }, []);
+
+  const monthsWithEntries = useMemo(() => {
+    const seen = new Set(schedule.map(s => {
+      if (!s.date) return null;
+      const m = parseInt(s.date.split('-')[1], 10) - 1;
+      return MONTHS[m];
+    }).filter(Boolean));
+    return MONTHS.filter(m => seen.has(m));
+  }, [schedule]);
+
+  const visibleEntries = useMemo(() => {
+    if (!activeMonth) return schedule;
+    const mi = MONTHS.indexOf(activeMonth) + 1;
+    return schedule
+      .filter(s => s.date && parseInt(s.date.split('-')[1], 10) === mi)
+      .sort((a,b) => a.date.localeCompare(b.date));
+  }, [schedule, activeMonth]);
+
+  const updateEntry = useCallback((updated) => {
+    setSchedule(prev => prev.map(s => s.id === updated.id ? updated : s));
+    setDirty(true); setSaved(false);
+  }, []);
+
+  const deleteEntry = useCallback((id) => {
+    setSchedule(prev => prev.filter(s => s.id !== id));
+    setDirty(true); setSaved(false);
+  }, []);
+
+  const addEntry = () => {
+    const mi = activeMonth ? MONTHS.indexOf(activeMonth) + 1 : new Date().getMonth() + 1;
+    const year = 2026;
+    const date = `${year}-${String(mi).padStart(2,'0')}-01`;
+    const newEntry = { id: uid(), date, service: 'Friday', preacher:'', prayer:'', presider:'', songLeader:'', communionAssistant:'', foodInCharge:'', event:'' };
+    setSchedule(prev => [...prev, newEntry]);
+    setDirty(true); setSaved(false);
+  };
+
+  // Save token
+  const saveToken = () => {
+    const v = ghTokenInput.trim();
+    if (!v.startsWith('ghp_') && !v.startsWith('github_pat_')) { alert('Token should start with ghp_ or github_pat_'); return; }
+    setGhToken(v); try { localStorage.setItem(GH_TOKEN_KEY, v); } catch {}
+    setGhTokenInput(''); setShowSetup(false);
+  };
+
+  // Publish to GitHub
+  const publishToGitHub = async () => {
+    if (!ghToken) { setShowSetup(true); return; }
+    if (!fullData) return;
+    setGhPublishing(true); setGhStatus('');
+    try {
+      const cleanSchedule = schedule.map(({ id, ...rest }) => rest);
+      const updatedData = {
+        ...fullData,
+        workerRoster2026: {
+          ...fullData.workerRoster2026,
+          fullSchedule: cleanSchedule,
+        },
+      };
+      const content  = JSON.stringify(updatedData, null, 2);
+      const encoded  = btoa(unescape(encodeURIComponent(content)));
+      const getResp  = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json' },
+      });
+      const existing = getResp.ok ? await getResp.json() : null;
+      const putResp  = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Update schedule — ${activeMonth || 'all months'} ${new Date().getFullYear()}`,
+          content: encoded,
+          ...(existing?.sha ? { sha: existing.sha } : {}),
+        }),
+      });
+      if (!putResp.ok) { const e = await putResp.json().catch(()=>({})); throw new Error(e.message || `HTTP ${putResp.status}`); }
+      setGhStatus('ok'); setDirty(false); setSaved(true);
+      setTimeout(() => setGhStatus(''), 6000);
+    } catch (e) {
+      alert(`Publish failed: ${e.message}`);
+      setGhStatus('err'); setTimeout(() => setGhStatus(''), 5000);
+    } finally { setGhPublishing(false); }
+  };
+
+  if (loading) return <div style={{ textAlign:'center', padding:60, color:'var(--ink-subtle)' }}>Loading schedule…</div>;
+  if (error)   return <div style={{ padding:32, color:'#DC2626' }}>{error}</div>;
+
+  const publishBtnBg = ghStatus==='ok' ? 'var(--success)' : ghStatus==='err' ? '#DC2626' : 'var(--accent)';
+  const publishBtnLabel = ghPublishing ? '↻ Publishing…' : ghStatus==='ok' ? '✓ Published! Members can see it now' : ghStatus==='err' ? '⚠ Failed — tap to retry' : '☁ Update to GitHub';
+
+  return (
+    <div style={{ maxWidth: 680, margin: '0 auto', padding: '16px 16px 80px' }}>
+
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:20 }}>
+        <div>
+          <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:600, letterSpacing:'-.02em', lineHeight:1.1 }}>Schedule Editor</div>
+          <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginTop:3 }}>FLCC - Abundance Church · 2026</div>
+        </div>
+        <a href="./index.html" className="btn btn-ghost" style={{ fontSize:'0.75rem', marginTop:4 }}>← Members App</a>
+      </div>
+
+      {/* Publish card */}
+      <div className="card" style={{ padding:20, marginBottom:20, borderColor: ghStatus==='ok' ? 'var(--success)' : 'var(--accent)' }}>
+        <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', color:'var(--accent)', marginBottom:4 }}>Publish to Members</div>
+        <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:600, marginBottom:6 }}>☁ Update to GitHub</div>
+        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.55 }}>
+          One tap pushes the latest schedule live. Members see the update immediately — no downloads or file uploads needed.
+        </p>
+
+        {ghToken && !showSetup ? (
+          <div>
+            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:10, background:'var(--success-soft)', border:'1px solid var(--success-ring)', marginBottom:12 }}>
+              <div className="sync-dot" style={{ background:'var(--success)' }} />
+              <span style={{ fontSize:'0.8125rem', color:'var(--success)', fontWeight:500 }}>GitHub connected</span>
+              <button onClick={() => setShowSetup(true)} style={{ marginLeft:'auto', fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Change</button>
+            </div>
+            <button
+              onClick={publishToGitHub}
+              disabled={ghPublishing}
+              style={{ width:'100%', padding:'14px', borderRadius:12, background: publishBtnBg, color:'#fff', border:'none', fontSize:'1rem', fontWeight:700, cursor: ghPublishing ? 'wait' : 'pointer', transition:'background .2s', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
+            >
+              {publishBtnLabel}
+            </button>
+            {dirty && !ghPublishing && ghStatus !== 'ok' && (
+              <div style={{ textAlign:'center', marginTop:8, fontSize:'0.75rem', color:'var(--warning)' }}>⚠ You have unsaved changes — tap to publish</div>
+            )}
+            {saved && (
+              <div style={{ textAlign:'center', marginTop:8, fontSize:'0.75rem', color:'var(--success)' }}>✓ All changes saved and live</div>
+            )}
+          </div>
+        ) : (
+          <div>
+            {!showSetup ? (
+              <button onClick={() => setShowSetup(true)} style={{ padding:'13px', width:'100%', borderRadius:12, background:'var(--accent)', color:'#fff', border:'none', fontSize:'1rem', fontWeight:700, cursor:'pointer' }}>
+                Connect GitHub to enable publishing →
+              </button>
+            ) : (
+              <div>
+                <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.6 }}>
+                  <strong>One-time setup:</strong> Create a GitHub Personal Access Token with <em>Contents: Read &amp; write</em> for this repo, then paste it below. It stays on this device only.
+                </p>
+                <ol style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', paddingLeft:18, lineHeight:1.9, marginBottom:12 }}>
+                  <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens → Fine-grained tokens</li>
+                  <li>Generate new token → Repository access: <strong>flcc-members-2026</strong> only</li>
+                  <li>Permissions → Contents → <strong>Read and write</strong> → Generate</li>
+                  <li>Copy the token (starts with <code style={{ background:'#F4F4F0', padding:'1px 4px', borderRadius:4, fontSize:'0.75rem' }}>github_pat_</code>) and paste below</li>
+                </ol>
+                <div style={{ display:'flex', gap:8 }}>
+                  <input
+                    className="input" type="password"
+                    placeholder="github_pat_… or ghp_…"
+                    value={ghTokenInput} onChange={e => setGhTokenInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && saveToken()}
+                    style={{ flex:1 }}
+                  />
+                  <button className="btn btn-success" onClick={saveToken} disabled={!ghTokenInput.trim()} style={{ background:'var(--success)', color:'#fff', flexShrink:0 }}>Connect</button>
+                </div>
+                {ghToken && <button onClick={() => setShowSetup(false)} style={{ marginTop:8, fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Cancel</button>}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Month tabs */}
+      <div style={{ display:'flex', gap:6, overflowX:'auto', marginBottom:16, paddingBottom:2, scrollbarWidth:'none' }}>
+        {MONTHS.map(m => {
+          const hasEntries = monthsWithEntries.includes(m);
+          return (
+            <button
+              key={m}
+              onClick={() => setActiveMonth(m)}
+              className={`tab-pill ${activeMonth === m ? 'tab-pill-active' : 'tab-pill-idle'}`}
+              style={{ opacity: hasEntries || activeMonth === m ? 1 : 0.45 }}
+            >
+              {m.slice(0,3)}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Month heading */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+        <div className="font-display" style={{ fontSize:'1.25rem', fontWeight:600 }}>{activeMonth}</div>
+        <button className="btn btn-soft" onClick={addEntry} style={{ fontSize:'0.8125rem' }}>+ Add service</button>
+      </div>
+
+      {/* Service entries */}
+      {visibleEntries.length === 0 ? (
+        <div style={{ textAlign:'center', padding:'40px 20px', color:'var(--ink-subtle)', fontSize:'0.875rem' }}>
+          No services for {activeMonth} yet.
+          <br /><button className="btn btn-ghost" onClick={addEntry} style={{ marginTop:12 }}>+ Add first service</button>
+        </div>
+      ) : (
+        visibleEntries.map(e => (
+          <ServiceRow key={e.id} entry={e} onChange={updateEntry} onDelete={deleteEntry} />
+        ))
+      )}
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
