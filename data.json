@@ -1,138 +1,8 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church",
-    "publishedAt": "2026-05-12T20:07:52.628Z",
+    "publishedAt": "2026-05-30T13:57:52.786Z",
     "version": "1.0"
-  },
-  "botrChurch": {
-    "name": "FLCC - BOTR Church Network",
-    "network": "N.E.C.K. Kuwait",
-    "missionTarget": "Introduce 270,000 people to Jesus Christ by 2030",
-    "totalChurches": 12,
-    "leadPastor": {
-      "name": "Rev. Jopet Alim",
-      "title": "Lead Pastor — FLCC BOTR Network",
-      "whatsapp": "",
-      "messenger": "",
-      "phone": "",
-      "email": ""
-    },
-    "evangelismMinistryHead": {
-      "name": "Lizel Ocenar",
-      "title": "Evangelism Ministry Head"
-    },
-    "sectorLeaders": [
-      {
-        "name": "Rodel Comayingking",
-        "sector": "Hope Sector",
-        "title": "Sector Leader",
-        "evangelismCoordinator": "Fretzie Guerzon",
-        "churches": [
-          "Abundance",
-          "FB",
-          "F&T",
-          "Cornerstone"
-        ],
-        "whatsapp": "",
-        "phone": ""
-      },
-      {
-        "name": "Virgilio Monastrial",
-        "sector": "Faith Sector",
-        "title": "Sector Leader",
-        "evangelismCoordinator": "Anne Sacueza",
-        "churches": [
-          "BOTR Fri/Sun",
-          "Shekinah",
-          "Agape",
-          "HOTK"
-        ],
-        "whatsapp": "",
-        "phone": ""
-      },
-      {
-        "name": "Oscar Tumambing",
-        "sector": "Love Sector",
-        "title": "Sector Leader",
-        "evangelismCoordinator": "Maricel De Grano, Elena Aboy",
-        "churches": [
-          "MTCC",
-          "GIL",
-          "JAOC",
-          "Harvester",
-          "Virtual Church"
-        ],
-        "whatsapp": "",
-        "phone": ""
-      }
-    ],
-    "satelliteChurches": [
-      {
-        "church": "Abundance",
-        "sector": "Hope",
-        "pastor": ""
-      },
-      {
-        "church": "FB",
-        "sector": "Hope",
-        "pastor": ""
-      },
-      {
-        "church": "F&T",
-        "sector": "Hope",
-        "pastor": ""
-      },
-      {
-        "church": "Cornerstone",
-        "sector": "Hope",
-        "pastor": ""
-      },
-      {
-        "church": "BOTR Fri/Sun",
-        "sector": "Faith",
-        "pastor": ""
-      },
-      {
-        "church": "Shekinah",
-        "sector": "Faith",
-        "pastor": ""
-      },
-      {
-        "church": "Agape",
-        "sector": "Faith",
-        "pastor": ""
-      },
-      {
-        "church": "HOTK",
-        "sector": "Faith",
-        "pastor": ""
-      },
-      {
-        "church": "MTCC",
-        "sector": "Love",
-        "pastor": ""
-      },
-      {
-        "church": "GIL",
-        "sector": "Love",
-        "pastor": ""
-      },
-      {
-        "church": "JAOC",
-        "sector": "Love",
-        "pastor": ""
-      },
-      {
-        "church": "Harvester",
-        "sector": "Love",
-        "pastor": ""
-      },
-      {
-        "church": "Virtual Church",
-        "sector": "Love",
-        "pastor": ""
-      }
-    ]
   },
   "ministry": {
     "headName": "Sis. Amazelle De Jesus",
@@ -762,6 +632,24 @@
       ],
       "status": "active",
       "birthday": "05-04"
+    },
+    {
+      "id": "w-1780148789141",
+      "name": "C/O Fellowship",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [],
+      "status": "active"
+    },
+    {
+      "id": "w-1780149181405",
+      "name": "Sabangan Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active"
     }
   ],
   "themes": {
@@ -769,7 +657,7 @@
     "2026-03": "PRAYER AND FASTING",
     "2026-04": "WORKS OF THE HOLY SPIRIT / CHURCH GROWTH",
     "2026-05": "YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)",
-    "2026-06": ""
+    "2026-06": "WORSHIP / EVANGELISM / DISCIPLESHIP / FELLOWSHIP"
   },
   "schedule": [
     {
@@ -1442,13 +1330,13 @@
       "date": "2026-06-05",
       "service": "Friday",
       "roles": {
-        "presider": "sis-13",
-        "songLeader": "bro-01",
-        "preacher": "bro-07",
-        "pastoralPrayer": "sis-18",
-        "communionAssistant1": "bro-05",
-        "communionAssistant2": "bro-04",
-        "foodInCharge": "fam-11"
+        "presider": "sis-02",
+        "songLeader": "sis-06",
+        "preacher": "ptr-01",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "par-01"
       },
       "isSpecial": false,
       "specialNote": "",
@@ -1461,12 +1349,13 @@
       "date": "2026-06-12",
       "service": "Friday",
       "roles": {
-        "presider": "sis-20",
-        "songLeader": "bro-01",
+        "presider": "sis-05",
+        "songLeader": "bro-02",
         "preacher": "bro-05",
         "pastoralPrayer": "bro-04",
-        "communionAssistant1": null,
-        "foodInCharge": "par-01"
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "fam-11"
       },
       "isSpecial": false,
       "specialNote": "",
@@ -1478,7 +1367,110 @@
       "id": "2026-06-19-friday",
       "date": "2026-06-19",
       "service": "Friday",
-      "roles": {},
+      "roles": {
+        "presider": "sis-20",
+        "songLeader": "ptr-01",
+        "preacher": "sis-04",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "par-02"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-26-friday",
+      "date": "2026-06-26",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-03",
+        "songLeader": "sis-18",
+        "preacher": "w-1778531881868",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "w-1780148789141"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-07-sunday",
+      "date": "2026-06-07",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-07",
+        "songLeader": "bro-09",
+        "preacher": "ptr-02",
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-10"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-14-sunday",
+      "date": "2026-06-14",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-08",
+        "songLeader": "bro-03",
+        "preacher": "sis-18",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-01"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-21-sunday",
+      "date": "2026-06-21",
+      "service": "Sunday",
+      "roles": {
+        "presider": "bro-09",
+        "songLeader": "sis-15",
+        "preacher": "bro-07",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "w-1780149181405"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-28-sunday",
+      "date": "2026-06-28",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-10",
+        "songLeader": "bro-07",
+        "preacher": "ptr-03",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-04"
+      },
       "isSpecial": false,
       "specialNote": "",
       "swapped": false,
@@ -1511,539 +1503,5 @@
       "recurrence": "none",
       "showOnDashboard": true
     }
-  ],
-  "workerRoster2026": {
-    "monthlyThemes": [
-      {
-        "month": "January",
-        "theme": "Recommitment / New Beginning"
-      },
-      {
-        "month": "February",
-        "theme": "Love — Sacrificial & Unconditional"
-      },
-      {
-        "month": "March",
-        "theme": "Prayer & Fasting"
-      },
-      {
-        "month": "April",
-        "theme": "Works of the Holy Spirit / Church Growth"
-      },
-      {
-        "month": "May",
-        "theme": "You Are What You Eat — Physically & Spiritually"
-      },
-      {
-        "month": "June",
-        "theme": "Worship / Evangelism / Discipleship / Fellowship"
-      },
-      {
-        "month": "July",
-        "theme": "Book of Ephesians"
-      },
-      {
-        "month": "August",
-        "theme": "Book of Ephesians"
-      },
-      {
-        "month": "September",
-        "theme": "Financial Stewardship"
-      },
-      {
-        "month": "October",
-        "theme": "Missions"
-      },
-      {
-        "month": "November",
-        "theme": "Thanksgiving"
-      },
-      {
-        "month": "December",
-        "theme": "Birth of Christ / God Incarnate"
-      }
-    ],
-    "preachers": [
-      "Ptr Jopet",
-      "Ptr Wing",
-      "Ptra Mitch",
-      "Ptra Verna",
-      "Ptr Ver",
-      "Ptr Justin",
-      "Ptr Doddie",
-      "Ptr Anson",
-      "Ptr Rodel",
-      "Ptr Mike",
-      "Ptr Froi",
-      "Ptr Oca",
-      "Ptra Cathy",
-      "Ptra Wing",
-      "Ptra Ellen"
-    ],
-    "pastoralPrayer": [
-      "Rev Oscar",
-      "Ptra Weng",
-      "Rev Ver",
-      "Rev Rodel",
-      "Rev Jopet"
-    ],
-    "emcee": [
-      "Bro Allen",
-      "Sis Zeny",
-      "Bro Wilson",
-      "Sis Emma",
-      "Bro Ryan",
-      "Sis Lovely",
-      "Sis AJ",
-      "Sis Ying",
-      "Sis Laidz",
-      "Sis Alma",
-      "Sis Maricel",
-      "Bro Edmund",
-      "Bro Rey",
-      "Sis Lala",
-      "Sis Annabelle",
-      "Bro Rolly",
-      "Sis Rona",
-      "Sis Belle",
-      "Bro Ferdie",
-      "Sis Precy"
-    ],
-    "guestSpeakers": [
-      "Lala",
-      "AJ",
-      "Wilson",
-      "Edmund",
-      "Laidz",
-      "Maricel",
-      "Ptr Doodz",
-      "Emma"
-    ],
-    "fullSchedule": [
-      {
-        "date": "2026-01-02",
-        "preacher": "Ptr Jopet",
-        "prayer": "Ptra Ellen",
-        "emcee": "Bro Allen",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-01-09",
-        "preacher": "Ptr Wing",
-        "prayer": "Rev Oscar",
-        "emcee": "Sis Zeny",
-        "event": ""
-      },
-      {
-        "date": "2026-01-16",
-        "preacher": "Ptra Mitch",
-        "prayer": "Ptra Weng",
-        "emcee": "Bro Wilson",
-        "event": ""
-      },
-      {
-        "date": "2026-01-23",
-        "preacher": "Ptra Verna",
-        "prayer": "Ptr Mike",
-        "emcee": "Sis Emma",
-        "event": ""
-      },
-      {
-        "date": "2026-01-30",
-        "preacher": "Lala (Guest)",
-        "prayer": "Ptra Mitch",
-        "emcee": "Bro Ryan",
-        "event": ""
-      },
-      {
-        "date": "2026-02-06",
-        "preacher": "Ptr Ver",
-        "prayer": "Ptr Froi",
-        "emcee": "Sis Lovely",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-02-13",
-        "preacher": "Ptr Justin",
-        "prayer": "Ptra Verna",
-        "emcee": "Sis AJ",
-        "event": ""
-      },
-      {
-        "date": "2026-02-20",
-        "preacher": "Ptr Doddie",
-        "prayer": "Rev Ver",
-        "emcee": "Sis Ying",
-        "event": ""
-      },
-      {
-        "date": "2026-02-27",
-        "preacher": "Ptr Anson",
-        "prayer": "Ptra Cathy",
-        "emcee": "Sis Laidz",
-        "event": ""
-      },
-      {
-        "date": "2026-03-06",
-        "preacher": "Ptr Rodel",
-        "prayer": "Ptr Justin",
-        "emcee": "Sis Alma",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-03-13",
-        "preacher": "Ptr Mike",
-        "prayer": "Rev Rodel",
-        "emcee": "Sis Maricel",
-        "event": ""
-      },
-      {
-        "date": "2026-03-20",
-        "preacher": "AJ (Guest)",
-        "prayer": "Ptr Doddie",
-        "emcee": "Bro Edmund",
-        "event": ""
-      },
-      {
-        "date": "2026-03-27",
-        "preacher": "Ptra Ellen",
-        "prayer": "Rev Jopet",
-        "emcee": "Bro Rey",
-        "event": ""
-      },
-      {
-        "date": "2026-04-03",
-        "preacher": "7 Last Words",
-        "prayer": "Ptr Anson",
-        "emcee": "Sis Lala",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-04-10",
-        "preacher": "Ptr Jopet",
-        "prayer": "Ptra Ellen",
-        "emcee": "Sis Annabelle",
-        "event": "34th Anniversary"
-      },
-      {
-        "date": "2026-04-17",
-        "preacher": "Ptr Froi",
-        "prayer": "Rev Oscar",
-        "emcee": "Bro Rolly",
-        "event": ""
-      },
-      {
-        "date": "2026-04-24",
-        "preacher": "Wilson (Guest)",
-        "prayer": "Ptra Weng",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-05-01",
-        "preacher": "Ptr Oca",
-        "prayer": "Ptr Mike",
-        "emcee": "Sis Rona",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-05-08",
-        "preacher": "Ptra Cathy",
-        "prayer": "Ptr Oca",
-        "emcee": "Sis Ying",
-        "event": "Mother's Day"
-      },
-      {
-        "date": "2026-05-15",
-        "preacher": "Edmund (Guest)",
-        "prayer": "Ptra Mitch",
-        "emcee": "Bro Allen",
-        "event": ""
-      },
-      {
-        "date": "2026-05-22",
-        "preacher": "Laidz (Guest)",
-        "prayer": "Ptr Froi",
-        "emcee": "Sis AJ",
-        "event": ""
-      },
-      {
-        "date": "2026-05-29",
-        "preacher": "Ptra Wing",
-        "prayer": "Ptra Verna",
-        "emcee": "Bro Wilson",
-        "event": ""
-      },
-      {
-        "date": "2026-06-05",
-        "service": "Friday",
-        "presider": "Sis Hasmin",
-        "songLeader": "Sis Dolly",
-        "preacher": "Ptr Justin",
-        "prayer": "Ptr Doddie",
-        "communionAssistant": "Bro Wilson & Sis Laidz",
-        "foodInCharge": "Tharah & Juneth",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-06-07",
-        "service": "Sunday",
-        "presider": "Sis Rona",
-        "songLeader": "Bro Dave",
-        "preacher": "Ptr Doddie",
-        "prayer": "Ptr Justin",
-        "communionAssistant": "Bro Allen & Bro Edmund",
-        "foodInCharge": "Siangco Family",
-        "event": ""
-      },
-      {
-        "date": "2026-06-12",
-        "service": "Friday",
-        "presider": "Sis Fretz",
-        "songLeader": "Bro Bong",
-        "preacher": "Bro Allen",
-        "prayer": "Bro Wilson",
-        "communionAssistant": "Bro Wilson & Sis Laidz",
-        "foodInCharge": "Flores Family",
-        "event": ""
-      },
-      {
-        "date": "2026-06-14",
-        "service": "Sunday",
-        "presider": "Sis Sandra",
-        "songLeader": "Bro Elbert",
-        "preacher": "Sis Laidz",
-        "prayer": "Bro Allen",
-        "communionAssistant": "Bro Allen & Bro Edmund",
-        "foodInCharge": "Cas Family",
-        "event": ""
-      },
-      {
-        "date": "2026-06-19",
-        "service": "Friday",
-        "presider": "Sis Thara",
-        "songLeader": "Ptr Justin",
-        "preacher": "Sis Lizel",
-        "prayer": "Bro Allen",
-        "communionAssistant": "Bro Wilson & Sis Laidz",
-        "foodInCharge": "Bless & Mae",
-        "event": "Father's Day"
-      },
-      {
-        "date": "2026-06-21",
-        "service": "Sunday",
-        "presider": "Bro Dave",
-        "songLeader": "Sis Grace",
-        "preacher": "Bro Edmund",
-        "prayer": "Bro Wilson",
-        "communionAssistant": "Bro Allen & Bro Edmund",
-        "foodInCharge": "Sabangan Family",
-        "event": "Father's Day"
-      },
-      {
-        "date": "2026-06-26",
-        "service": "Friday",
-        "presider": "Sis Mae",
-        "songLeader": "Sis Laidz",
-        "preacher": "Sis Irene",
-        "prayer": "Bro Edmund",
-        "communionAssistant": "Bro Wilson & Sis Laidz",
-        "foodInCharge": "C/O Fellowship",
-        "event": ""
-      },
-      {
-        "date": "2026-06-28",
-        "service": "Sunday",
-        "presider": "Sis Celsa",
-        "songLeader": "Bro Edmund",
-        "preacher": "Ptr Nerwin",
-        "prayer": "Ptr Doddie",
-        "communionAssistant": "Bro Allen & Bro Edmund",
-        "foodInCharge": "Vergara Family",
-        "event": ""
-      },
-      {
-        "date": "2026-07-03",
-        "preacher": "Ptr Jopet",
-        "prayer": "Ptr Doddie",
-        "emcee": "Sis Precy",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-07-10",
-        "preacher": "Ptra Mitch",
-        "prayer": "Rev Jopet",
-        "emcee": "Sis Alma",
-        "event": ""
-      },
-      {
-        "date": "2026-07-17",
-        "preacher": "Ptr Doddie",
-        "prayer": "Ptr Anson",
-        "emcee": "Sis Maricel",
-        "event": ""
-      },
-      {
-        "date": "2026-07-24",
-        "preacher": "Ptr Mike",
-        "prayer": "Rev Oscar",
-        "emcee": "Bro Edmund",
-        "event": ""
-      },
-      {
-        "date": "2026-07-31",
-        "preacher": "Ptra Cathy",
-        "prayer": "Ptra Weng",
-        "emcee": "Bro Rey",
-        "event": ""
-      },
-      {
-        "date": "2026-08-07",
-        "preacher": "Ptr Rodel",
-        "prayer": "",
-        "emcee": "Sis Lala",
-        "event": ""
-      },
-      {
-        "date": "2026-08-14",
-        "preacher": "Ptr Froi",
-        "prayer": "",
-        "emcee": "Sis Belle",
-        "event": ""
-      },
-      {
-        "date": "2026-08-21",
-        "preacher": "Ptr Anson",
-        "prayer": "",
-        "emcee": "Bro Rolly",
-        "event": ""
-      },
-      {
-        "date": "2026-08-28",
-        "preacher": "Ptra Mitch",
-        "prayer": "",
-        "emcee": "Bro Ferdie",
-        "event": ""
-      },
-      {
-        "date": "2026-09-04",
-        "preacher": "Ptr Oca",
-        "prayer": "",
-        "emcee": "Sis Rona",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-09-11",
-        "preacher": "Ptra Verna",
-        "prayer": "",
-        "emcee": "Sis Ying",
-        "event": ""
-      },
-      {
-        "date": "2026-09-18",
-        "preacher": "Ptr Justin",
-        "prayer": "",
-        "emcee": "Sis Laidz",
-        "event": ""
-      },
-      {
-        "date": "2026-09-25",
-        "preacher": "Ptr Doddie",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-10-02",
-        "preacher": "Ptr Rodel",
-        "prayer": "",
-        "emcee": "",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-10-09",
-        "preacher": "Ptr Mike",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-10-16",
-        "preacher": "Ptra Cathy",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-10-23",
-        "preacher": "Ptra Wing",
-        "prayer": "",
-        "emcee": "",
-        "event": "Pastor's Appreciation"
-      },
-      {
-        "date": "2026-10-30",
-        "preacher": "Ptr Doodz (Guest)",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-11-06",
-        "preacher": "Ptr Ver",
-        "prayer": "",
-        "emcee": "",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-11-13",
-        "preacher": "Ptr Froi",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-11-20",
-        "preacher": "Ptr Anson",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-11-27",
-        "preacher": "Ptra Mitch",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-12-04",
-        "preacher": "Ptr Oca",
-        "prayer": "",
-        "emcee": "",
-        "event": "Lord's Supper"
-      },
-      {
-        "date": "2026-12-11",
-        "preacher": "Ptr Justin",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-12-18",
-        "preacher": "Emma (Guest)",
-        "prayer": "",
-        "emcee": "",
-        "event": ""
-      },
-      {
-        "date": "2026-12-25",
-        "preacher": "Ptr Jopet",
-        "prayer": "",
-        "emcee": "",
-        "event": "Christmas"
-      }
-    ]
-  }
+  ]
 }
