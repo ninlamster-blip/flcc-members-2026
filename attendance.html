@@ -443,7 +443,9 @@ function TodayTab({ members, state, dispatch, schedule }) {
   const [lastAction, setLastAction] = useState(null);
   const [showPicker, setShowPicker] = useState(!existing);
   const [showAddVis, setShowAddVis] = useState(false);
+  const [doneToast,  setDoneToast]  = useState(false);
   const undoTimer = useRef(null);
+  const doneTimer = useRef(null);
 
   const todayVisitors = state.customMembers.filter(m=>m.sessionDate===today||m.permanent);
   const allMembers = useMemo(()=>[...members,...todayVisitors],[members,todayVisitors]);
@@ -452,6 +454,12 @@ function TodayTab({ members, state, dispatch, schedule }) {
   const detectedService = useMemo(()=>detectTodayService(schedule),[schedule]);
 
   const startSession = serviceKey => {
+    // Warn if a session for this exact service type already has records
+    const dup = state.sessions.find(s=>s.date===today && s.service===serviceKey && (s.records||[]).length>0);
+    if (dup) {
+      const sum = getSessionSummary(dup, allMembers.length);
+      if (!confirm(`A ${dup.serviceLabel} session for today already has ${sum.present} present recorded.\n\nContinue and start a duplicate session?`)) return;
+    }
     const svcLabel = SERVICE_TYPES.find(s=>s.key===serviceKey)?.label || serviceKey;
     const sess = {
       id: uid(), date: today, service: serviceKey, serviceLabel: svcLabel,
@@ -481,6 +489,14 @@ function TodayTab({ members, state, dispatch, schedule }) {
     setSession(updated);
     dispatch({ type:'UPSERT_SESSION', session: updated });
 
+    // Show "all done" toast when last unrecorded member is now marked
+    const newCount = updatedRecs.filter(r=>r.status==='present').length;
+    if (newStatus === 'present' && newCount === allMembers.length) {
+      if (doneTimer.current) clearTimeout(doneTimer.current);
+      setDoneToast(true);
+      doneTimer.current = setTimeout(() => setDoneToast(false), 6000);
+    }
+
     if (undoTimer.current) clearTimeout(undoTimer.current);
     setLastAction({ memberId, memberName: member?.fullName || member?.name || '', prevStatus: prevSt, newStatus });
     undoTimer.current = setTimeout(() => setLastAction(null), 5000);
@@ -503,6 +519,8 @@ function TodayTab({ members, state, dispatch, schedule }) {
   };
 
   const summary = useMemo(()=>getSessionSummary(session, allMembers.length),[session,allMembers]);
+  const allRecorded = session && summary.present === allMembers.length && allMembers.length > 0;
+  const hasRecords  = session && (session.records||[]).length > 0;
 
   const visibleMembers = useMemo(()=>{
     let list = allMembers;
@@ -598,6 +616,16 @@ function TodayTab({ members, state, dispatch, schedule }) {
           </div>
         </div>
         <SummaryBar summary={summary} />
+        {allRecorded && (
+          <div style={{ marginTop:10, padding:'9px 12px', borderRadius:9, background:'#F0FDF4', border:'1px solid #BBF7D0', fontSize:'0.8125rem', color:'#15803D', fontWeight:500 }}>
+            ✅ All attendance recorded for this session
+          </div>
+        )}
+        {!allRecorded && hasRecords && (
+          <div style={{ marginTop:10, padding:'9px 12px', borderRadius:9, background:'#FFFBEB', border:'1px solid #FDE68A', fontSize:'0.8125rem', color:'#92400E', fontWeight:500 }}>
+            ⚠ Attendance in progress — {summary.present} of {allMembers.length} recorded
+          </div>
+        )}
       </div>
 
       {/* Search + filter */}
@@ -650,6 +678,13 @@ function TodayTab({ members, state, dispatch, schedule }) {
             {lastAction.newStatus === 'present' ? ' marked Present ✓' : ' removed'}
           </div>
           <button onClick={handleUndo} style={{ background:'rgba(255,255,255,.18)', border:'none', borderRadius:6, padding:'4px 10px', color:'white', cursor:'pointer', fontSize:'0.8125rem', fontWeight:600 }}>Undo</button>
+        </div>
+      )}
+
+      {doneToast && (
+        <div className="undo-toast" style={{ background:'#16A34A', bottom: lastAction ? 'calc(145px + var(--safe-bottom))' : 'calc(90px + var(--safe-bottom))' }}>
+          <div style={{ fontSize:'0.8125rem' }}>🎉 All {allMembers.length} members recorded!</div>
+          <button onClick={() => setDoneToast(false)} style={{ background:'rgba(255,255,255,.18)', border:'none', borderRadius:6, padding:'4px 10px', color:'white', cursor:'pointer', fontSize:'0.8125rem', fontWeight:600 }}>✕</button>
         </div>
       )}
 
