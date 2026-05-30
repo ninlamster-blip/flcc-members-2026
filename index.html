@@ -2634,13 +2634,21 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
                 <div className="space-y-3">
                   {upcoming.map((s, i) => {
                     const d = new Date(s.date + 'T00:00:00');
-                    const label = d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+                    const label = d.toLocaleDateString('en-US', { weekday:'short', month:'long', day:'numeric', year:'numeric' });
+                    const svcLabel = s.service ? `${s.service} Service` : '';
+                    const mc = s.presider || s.emcee;
                     return (
                       <div key={i} className="pb-3" style={{ borderBottom: i < upcoming.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                        <div className="text-xs ink-subtle mb-1">{label}{s.event ? ` · ${s.event}` : ''}</div>
-                        {s.preacher && <div className="text-sm"><span className="ink-muted text-xs">Preacher · </span>{s.preacher}</div>}
-                        {s.prayer   && <div className="text-sm"><span className="ink-muted text-xs">Pastoral Prayer · </span>{s.prayer}</div>}
-                        {s.emcee    && <div className="text-sm"><span className="ink-muted text-xs">EMCEE · </span>{s.emcee}</div>}
+                        <div className="text-xs ink-subtle mb-1">
+                          {svcLabel && <span style={{ fontWeight:600, color:'var(--accent)' }}>{svcLabel} · </span>}
+                          {label}{s.event ? ` · ${s.event}` : ''}
+                        </div>
+                        {s.preacher    && <div className="text-sm"><span className="ink-muted text-xs">Preacher · </span>{s.preacher}</div>}
+                        {s.prayer      && <div className="text-sm"><span className="ink-muted text-xs">Pastoral Prayer · </span>{s.prayer}</div>}
+                        {mc            && <div className="text-sm"><span className="ink-muted text-xs">Presider · </span>{mc}</div>}
+                        {s.songLeader  && <div className="text-sm"><span className="ink-muted text-xs">Song Leader · </span>{s.songLeader}</div>}
+                        {s.communionAssistant && <div className="text-sm"><span className="ink-muted text-xs">Communion · </span>{s.communionAssistant}</div>}
+                        {s.foodInCharge && <div className="text-sm"><span className="ink-muted text-xs">Food · </span>{s.foodInCharge}</div>}
                       </div>
                     );
                   })}
@@ -6077,7 +6085,7 @@ function buildChurchContext(data, prayerData, musicData, equipData) {
 
   const monthlyThemeLines = (roster.monthlyThemes||[]).map(t=>`  ${t.month}: ${t.theme}`).join('\n');
   const preachingScheduleLines = (roster.fullSchedule||[]).map(s=>
-    `  ${s.date}: Preacher=${s.preacher||'—'}, Prayer=${s.prayer||'—'}, EMCEE=${s.emcee||'—'}${s.event?`, Event=${s.event}`:''}`
+    `  ${s.date}${s.service?` (${s.service})`:''}: Preacher=${s.preacher||'—'}, Prayer=${s.prayer||'—'}, Presider=${s.presider||s.emcee||'—'}, SongLeader=${s.songLeader||'—'}${s.communionAssistant?`, Communion=${s.communionAssistant}`:''}${s.foodInCharge?`, Food=${s.foodInCharge}`:''}${s.event?`, Event=${s.event}`:''}`
   ).join('\n');
 
   return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta.churchName} (Full Life Christian Church).
