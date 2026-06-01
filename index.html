@@ -1997,6 +1997,12 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
         </div>
       )}
 
+      {/* Bible — Verse of the Day + Lookup */}
+      <div className="mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📖 God's Word</div>
+        <BibleSection />
+      </div>
+
       {!me && (
         <div className="card p-5 text-center mt-6" style={{ background: 'var(--accent-soft)' }}>
           <div className="font-display text-lg font-semibold mb-1">Pick your name to personalize</div>
@@ -2004,6 +2010,120 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           <button className="btn btn-accent text-sm" onClick={() => setActiveTab('about')}>Get started</button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Shared Bible section (Verse of the Day + lookup) ───────────────────────
+function BibleSection() {
+  const [translation, setTranslation] = React.useState(() => {
+    try { return localStorage.getItem(BIBLE_KEY) || 'web'; } catch { return 'web'; }
+  });
+  const [votd, setVotd] = React.useState(null);
+  const [votdLoading, setVotdLoading] = React.useState(true);
+  const [votdError, setVotdError] = React.useState(null);
+  const [query, setQuery] = React.useState('');
+  const [result, setResult] = React.useState(null);
+  const [searchLoading, setSearchLoading] = React.useState(false);
+  const [searchError, setSearchError] = React.useState(null);
+
+  const dayRef = React.useMemo(() => {
+    const start = new Date(new Date().getFullYear(), 0, 0);
+    const day = Math.floor((Date.now() - start) / 86400000);
+    return VOTD_REFS[day % VOTD_REFS.length];
+  }, []);
+
+  const devotion = VOTD_DEVOTIONS[dayRef] || null;
+
+  const fetchVerse = async (ref, trans) => {
+    const resp = await fetch(`https://bible-api.com/${encodeURIComponent(ref)}?translation=${trans}`);
+    if (!resp.ok) throw new Error('Verse not found');
+    return resp.json();
+  };
+
+  React.useEffect(() => {
+    setVotdLoading(true); setVotdError(null);
+    fetchVerse(dayRef, translation)
+      .then(d => setVotd(d))
+      .catch(() => setVotdError('Could not load verse. Check your connection.'))
+      .finally(() => setVotdLoading(false));
+  }, [dayRef, translation]);
+
+  const changeTranslation = t => {
+    setTranslation(t);
+    try { localStorage.setItem(BIBLE_KEY, t); } catch {}
+    setResult(null);
+  };
+
+  const handleSearch = async e => {
+    e?.preventDefault();
+    if (!query.trim()) return;
+    setSearchLoading(true); setSearchError(null); setResult(null);
+    try { setResult(await fetchVerse(query.trim(), translation)); }
+    catch { setSearchError('Verse not found. Try "John 3:16", "Psalm 23", or "Romans 8:28-30".'); }
+    finally { setSearchLoading(false); }
+  };
+
+  return (
+    <div>
+      {/* Translation picker */}
+      <div className="flex gap-2 mb-3 flex-wrap">
+        {[{key:'web',label:'WEB'},{key:'kjv',label:'KJV'}].map(t => (
+          <button key={t.key} className={`btn text-xs ${translation===t.key?'btn-primary':'btn-ghost'}`} onClick={() => changeTranslation(t.key)}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Verse of the Day */}
+      <div className="card p-5 mb-3" style={{background:'linear-gradient(135deg,#1E1B4B 0%,#312E81 100%)',border:'none',color:'white'}}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'#A5B4FC'}}>📖 Verse of the Day</div>
+        {votdLoading && <div className="text-sm" style={{color:'#C7D2FE'}}>Loading…</div>}
+        {votdError  && <div className="text-sm" style={{color:'#FCA5A5'}}>{votdError}</div>}
+        {votd && !votdLoading && (
+          <>
+            <blockquote className="font-display text-base leading-relaxed mb-3" style={{color:'#EEF2FF',fontStyle:'italic'}}>
+              "{votd.text?.trim()}"
+            </blockquote>
+            <div className="text-sm font-semibold" style={{color:'#A5B4FC'}}>
+              {votd.reference} <span className="font-normal" style={{color:'#818CF8'}}>· {translation.toUpperCase()}</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Daily Devotion — compact */}
+      {devotion && (
+        <div className="card p-4 mb-3">
+          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{color:'var(--accent)'}}>🕊️ Today's Devotion</div>
+          <p className="text-sm ink leading-relaxed">{devotion}</p>
+        </div>
+      )}
+
+      {/* Verse Lookup */}
+      <div className="card p-4">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Look Up a Verse</div>
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <input className="input flex-1" placeholder='e.g. John 3:16, Psalm 23' value={query} onChange={e => setQuery(e.target.value)} />
+          <button type="submit" className="btn btn-accent" disabled={searchLoading || !query.trim()}>{searchLoading ? '…' : 'Go'}</button>
+        </form>
+        {searchError && <div className="text-sm mt-2" style={{color:'var(--danger)'}}>{searchError}</div>}
+        {result && (
+          <div className="mt-4">
+            <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">{result.reference} · {translation.toUpperCase()}</div>
+            {(result.verses||[]).length > 1 ? (
+              <div className="space-y-2">
+                {result.verses.map(v => (
+                  <div key={v.verse} className="flex gap-2 text-sm leading-relaxed">
+                    <span className="font-mono text-xs ink-subtle mt-0.5" style={{minWidth:20}}>{v.verse}</span>
+                    <span className="ink">{v.text?.trim()}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm ink leading-relaxed">{result.text?.trim()}</div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -2641,6 +2761,10 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
   const equipMinistries = (equipData?.ministries || []).filter(em => em.headName);
   const botr = data.botrChurch || null;
 
+  // Pastoral leadership — pinned to top of ministry list
+  const justinFlores  = (data.workers || []).find(w => w.id === 'ptr-01');
+  const doddieArciaga = (data.workers || []).find(w => w.id === 'ptr-02');
+
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="About" title={data.meta.churchName}>
@@ -2813,6 +2937,24 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
           </>
         );
       })()}
+
+      {/* Lead Pastor — Ptr. Justin Flores */}
+      {justinFlores && (
+        <div className="card p-6 mb-4" style={{ borderTop: '3px solid var(--accent)', background: 'linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 35%)' }}>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>✝️ Lead Pastor</div>
+          <div className="font-display text-2xl font-semibold">{justinFlores.title} {justinFlores.name}</div>
+          <div className="text-sm ink-muted mt-1">Senior Pastor · FLCC Abundance</div>
+        </div>
+      )}
+
+      {/* Ptr. Doddie Arciaga */}
+      {doddieArciaga && (
+        <div className="card p-6 mb-4" style={{ borderTop: '3px solid #6366F1' }}>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>✝️ Pastor</div>
+          <div className="font-display text-2xl font-semibold">{doddieArciaga.title} {doddieArciaga.name}</div>
+          <div className="text-sm ink-muted mt-1">Pastor · FLCC Abundance</div>
+        </div>
+      )}
 
       {/* Main ministry */}
       <div className="card p-6 mb-4">
@@ -6476,7 +6618,6 @@ const TABS = [
   { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
   { key: 'music',    label: 'Music',   requiresMusic:  true },
   { key: 'equip',    label: 'Equip'   },
-  { key: 'bible',    label: '📖 Bible' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
 ];
@@ -6923,7 +7064,6 @@ function App() {
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
-          {currentTab === 'bible'    && <BibleTab />}
           {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
           {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
           {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
