@@ -3,39 +3,238 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>FLCC Schedule Editor</title>
+<title>Schedule Editor — FLCC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,600;9..144,0,700;9..144,1,400&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
   :root {
-    --bg: #FAFAF5; --surface: #fff; --ink: #18181B; --ink-muted: #52525B; --ink-subtle: #A1A1AA;
-    --border: #E7E5DE; --accent: #A33B2A; --accent-hover: #8B2E20;
-    --success: #16A34A; --success-soft: #F0FDF4; --success-ring: #BBF7D0;
-    --warning: #B45309; --warning-soft: #FFFBEB;
-    --friday: #0284C7; --sunday: #7C3AED;
+    --bg: #F8F7F2;
+    --surface: #FFFFFF;
+    --ink: #1A1A1E;
+    --ink-2: #3D3D44;
+    --ink-3: #6E6E78;
+    --ink-4: #A8A8B3;
+    --border: #E8E6DF;
+    --border-2: #D5D2C8;
+    --friday: #0EA5E9;
+    --friday-soft: #E0F2FE;
+    --friday-mid: #BAE6FD;
+    --sunday: #8B5CF6;
+    --sunday-soft: #EDE9FE;
+    --sunday-mid: #DDD6FE;
+    --accent: #A33B2A;
+    --accent-hover: #7E2D1F;
+    --success: #16A34A;
+    --success-soft: #DCFCE7;
+    --warning: #D97706;
+    --warning-soft: #FEF3C7;
+    --danger: #DC2626;
   }
-  * { -webkit-font-smoothing: antialiased; box-sizing: border-box; }
-  html, body { background: var(--bg); color: var(--ink); margin: 0; font-family: 'Geist', ui-sans-serif, sans-serif; }
+
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
   .font-display { font-family: 'Fraunces', Georgia, serif; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
-  .input { width: 100%; padding: 0.45rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 0.8125rem; color: var(--ink); font-family: 'Geist', sans-serif; }
-  .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(163,59,42,.1); }
-  .btn { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .875rem; border-radius: 8px; font-size: .875rem; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: all .15s; white-space: nowrap; }
-  .btn-accent { background: var(--accent); color: #fff; } .btn-accent:hover { background: var(--accent-hover); }
-  .btn-ghost  { background: transparent; color: var(--ink); border-color: var(--border); } .btn-ghost:hover { background: var(--bg); }
-  .btn-soft   { background: #F4F4F0; color: var(--ink); } .btn-soft:hover { background: #EDEDE7; }
-  .btn-success { background: var(--success); color: #fff; }
-  .tab-pill { padding: .375rem .875rem; border-radius: 999px; font-size: .8125rem; font-weight: 500; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; }
-  .tab-pill-active { background: var(--accent); color: #fff; }
-  .tab-pill-idle { background: #F4F4F0; color: var(--ink-muted); }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
-  .fade-in { animation: fadeIn .2s ease-out both; }
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Animations ── */
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+  @keyframes scaleIn  { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
+  @keyframes spin     { to { transform:rotate(360deg); } }
+  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:.45} }
+  @keyframes bounce   { 0%,100%{transform:scale(1)} 35%{transform:scale(1.18)} 65%{transform:scale(.92)} }
+  @keyframes shimmer  {
+    0%   { background-position: -400px 0; }
+    100% { background-position:  400px 0; }
+  }
+  @keyframes slideRight { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+  @keyframes notif { 0%{transform:translateY(20px);opacity:0} 12%{transform:translateY(0);opacity:1} 80%{transform:translateY(0);opacity:1} 100%{transform:translateY(20px);opacity:0} }
+
+  .fade-up   { animation: fadeUp  .45s cubic-bezier(.22,1,.36,1) both; }
+  .fade-in   { animation: fadeIn  .3s ease both; }
+  .scale-in  { animation: scaleIn .35s cubic-bezier(.34,1.56,.64,1) both; }
+  .spin      { animation: spin 1s linear infinite; }
+
+  /* ── Cards ── */
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease;
+    transform: translateY(0);
+  }
+  .service-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,.08);
+    transform: translateY(-2px);
+    border-color: var(--border-2);
+  }
+  .service-card.expanded {
+    box-shadow: 0 12px 48px rgba(0,0,0,.11);
+    transform: translateY(-2px);
+  }
+
+  /* ── Card fields (accordion) ── */
+  .card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .38s cubic-bezier(.4,0,.2,1), opacity .28s ease;
+    opacity: 0;
+  }
+  .card-body.open {
+    max-height: 600px;
+    opacity: 1;
+  }
+
+  /* ── Inputs ── */
+  .field-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: .45rem .7rem;
+    font-size: .875rem;
+    color: var(--ink);
+    font-family: 'Geist', sans-serif;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+    outline: none;
+  }
+  .field-input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(163,59,42,.12);
+  }
+  .date-input {
+    background: transparent;
+    border: none;
+    font-size: .8125rem;
+    color: var(--ink-3);
+    font-family: 'Geist', sans-serif;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem 1rem; border-radius: 10px;
+    font-size: .875rem; font-weight: 600;
+    border: 1.5px solid transparent;
+    cursor: pointer; transition: all .18s; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn-ghost { background: transparent; color: var(--ink-2); border-color: var(--border-2); }
+  .btn-ghost:hover { background: var(--bg); }
+  .btn-soft  { background: #F0EFE9; color: var(--ink-2); }
+  .btn-soft:hover { background: #E8E6DF; }
+
+  /* ── Publish button — hero ── */
+  .publish-btn {
+    position: relative; overflow: hidden;
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    padding: .75rem 1.75rem; border-radius: 12px;
+    font-size: .9375rem; font-weight: 700;
+    border: none; cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(163,59,42,.35);
+    transition: background .2s, box-shadow .2s, transform .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .publish-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.18) 50%, transparent 100%);
+    background-size: 400px 100%;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .publish-btn.loading::before { opacity:1; animation: shimmer 1.2s linear infinite; }
+  .publish-btn:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 6px 24px rgba(163,59,42,.42); transform: translateY(-1px); }
+  .publish-btn:active:not(:disabled) { transform: translateY(0) scale(.97); }
+  .publish-btn:disabled { opacity: .7; cursor: wait; }
+  .publish-btn.ok  { background: var(--success); box-shadow: 0 4px 18px rgba(22,163,74,.3); animation: bounce .5s ease; }
+  .publish-btn.err { background: var(--danger);  box-shadow: 0 4px 18px rgba(220,38,38,.3); }
+
+  /* ── Month sidebar item ── */
+  .month-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .5rem .75rem; border-radius: 10px;
+    font-size: .875rem; font-weight: 500;
+    cursor: pointer; transition: all .18s;
+    color: var(--ink-3);
+    border: none; background: transparent; width: 100%; text-align: left;
+  }
+  .month-item:hover  { background: rgba(163,59,42,.07); color: var(--ink); }
+  .month-item.active { background: rgba(163,59,42,.1); color: var(--accent); font-weight: 700; }
+  .month-item.active .month-dot { background: var(--accent); }
+
+  /* ── Mobile month tabs ── */
+  .m-tab { padding: .375rem .875rem; border-radius: 999px; font-size: .8125rem; font-weight: 500; cursor: pointer; border: none; white-space: nowrap; flex-shrink: 0; transition: all .2s; }
+  .m-tab.active { background: var(--accent); color: #fff; box-shadow: 0 3px 10px rgba(163,59,42,.3); }
+  .m-tab.idle   { background: #F0EFE9; color: var(--ink-3); }
+  .m-tab.idle:hover { background: #E5E3DB; color: var(--ink); }
+
+  /* ── Service badge ── */
+  .svc-badge {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .2rem .65rem; border-radius: 999px;
+    font-size: .6875rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+
+  /* ── Field label ── */
+  .field-label {
+    font-size: .6rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-4); margin-bottom: 4px;
+  }
+
+  /* ── Chevron rotate ── */
+  .chevron { transition: transform .3s cubic-bezier(.34,1.56,.64,1); display: inline-block; }
+  .chevron.up { transform: rotate(180deg); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: #1A1A1E; color: #fff;
+    padding: 12px 20px; border-radius: 12px;
+    font-size: .875rem; font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+    z-index: 100; white-space: nowrap;
+    animation: notif 3.5s ease forwards;
+  }
+
+  /* ── Sidebar layout ── */
+  .app-shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+  .sidebar { grid-row: 1 / 3; padding: 28px 14px; border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .main-header { padding: 22px 28px 16px; border-bottom: 1px solid var(--border); }
+  .main-content { padding: 24px 28px 80px; overflow-y: auto; }
+
+  @media (max-width: 700px) {
+    .app-shell { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+    .sidebar { display: none; }
+    .main-header { padding: 16px; }
+    .main-content { padding: 16px 16px 80px; }
+  }
+
+  /* ── Progress line ── */
+  .progress-line { height: 3px; border-radius: 99px; background: var(--border); overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.22,1,.36,1); transform-origin: left; }
+
+  /* scrollbar hide */
+  ::-webkit-scrollbar { width: 0; height: 0; }
 </style>
 </head>
 <body>
@@ -43,315 +242,475 @@
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
-const DATA_URL    = './data.json';
+const DATA_URL     = './data.json';
 const GH_TOKEN_KEY = 'flcc-sched-editor-token-v1';
-const GH_REPO     = 'ninlamster-blip/flcc-members-2026';
-const GH_FILE     = 'data.json';
+const GH_REPO      = 'ninlamster-blip/flcc-members-2026';
+const GH_FILE      = 'data.json';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const SERVICE_COLORS = { Friday: 'var(--friday)', Sunday: 'var(--sunday)' };
+
+const FIELDS = [
+  { key:'preacher',            label:'Preacher' },
+  { key:'prayer',              label:'Pastoral Prayer' },
+  { key:'presider',            label:'Presider' },
+  { key:'songLeader',          label:'Song Leader' },
+  { key:'communionAssistant',  label:'Communion Assistant' },
+  { key:'foodInCharge',        label:'Food In Charge' },
+];
 
 function fmt(iso) {
-  if (!iso) return '';
+  if (!iso) return '—';
   const [y,m,d] = iso.split('-').map(Number);
-  return new Date(y,m-1,d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  return new Date(y,m-1,d).toLocaleDateString('en-US', { weekday:'short', month:'long', day:'numeric' });
 }
-function uid() { return `svc-${Date.now()}-${Math.random().toString(36).slice(2,6)}`; }
+function uid() { return `s${Date.now()}${Math.random().toString(36).slice(2,5)}`; }
+function monthOf(iso) { return iso ? parseInt(iso.split('-')[1],10) - 1 : -1; }
 
-// ─── Field editor row ────────────────────────────────────────────────────────
-function ServiceRow({ entry, onChange, onDelete }) {
-  const svcColor = SERVICE_COLORS[entry.service] || 'var(--ink-muted)';
-  const set = (key, val) => onChange({ ...entry, [key]: val });
+// ─── Service badge ────────────────────────────────────────────────────────────
+function SvcBadge({ service }) {
+  const cfg = service === 'Friday'
+    ? { bg:'var(--friday-soft)', color:'var(--friday)', dot:'#0EA5E9', label:'Friday' }
+    : service === 'Sunday'
+    ? { bg:'var(--sunday-soft)', color:'var(--sunday)', dot:'#8B5CF6', label:'Sunday' }
+    : { bg:'#F0EFE9', color:'var(--ink-3)', dot:'var(--ink-4)', label: service||'Other' };
+  return (
+    <span className="svc-badge" style={{ background:cfg.bg, color:cfg.color }}>
+      <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
+      {cfg.label}
+    </span>
+  );
+}
+
+// ─── Service card ─────────────────────────────────────────────────────────────
+function ServiceCard({ entry, isOpen, onToggle, onChange, onDelete, index }) {
+  const set = (k,v) => onChange({ ...entry, [k]:v });
+  const svcColor = entry.service === 'Friday' ? 'var(--friday)' : entry.service === 'Sunday' ? 'var(--sunday)' : 'var(--ink-4)';
+  const accentLine = entry.service === 'Friday' ? 'var(--friday)' : entry.service === 'Sunday' ? 'var(--sunday)' : 'var(--border-2)';
+
+  const filledCount = FIELDS.filter(f => entry[f.key]?.trim()).length;
+  const pct = Math.round((filledCount / FIELDS.length) * 100);
 
   return (
-    <div className="card fade-in" style={{ marginBottom: 10, overflow: 'hidden' }}>
-      {/* Header bar */}
-      <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px', background: entry.service === 'Friday' ? '#EFF6FF' : entry.service === 'Sunday' ? '#F5F3FF' : '#FAFAF5', borderBottom:'1px solid var(--border)' }}>
-        <select
-          value={entry.service || ''}
-          onChange={e => set('service', e.target.value)}
-          style={{ fontWeight:700, fontSize:'0.8125rem', color: svcColor, background:'transparent', border:'none', cursor:'pointer', padding:0, appearance:'none', WebkitAppearance:'none' }}
-        >
-          <option value="Friday">Friday Service</option>
-          <option value="Sunday">Sunday Service</option>
-          <option value="">Other</option>
-        </select>
-        <span style={{ color:'var(--ink-subtle)', fontSize:'0.75rem' }}>·</span>
-        <input
-          type="date"
-          value={entry.date || ''}
-          onChange={e => set('date', e.target.value)}
-          style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', background:'transparent', border:'none', cursor:'pointer', padding:0, fontFamily:'Geist,sans-serif' }}
-        />
-        {entry.event && (
-          <span style={{ marginLeft:'auto', fontSize:'0.6875rem', padding:'2px 8px', borderRadius:999, background:'#FEF3C7', color:'#92400E', fontWeight:600 }}>{entry.event}</span>
-        )}
-        <button
-          onClick={() => { if (confirm(`Delete ${fmt(entry.date)} ${entry.service || ''}?`)) onDelete(entry.id); }}
-          style={{ marginLeft: entry.event ? 8 : 'auto', background:'none', border:'none', cursor:'pointer', color:'var(--ink-subtle)', fontSize:'1rem', lineHeight:1, padding:'2px 4px', borderRadius:4 }}
-          title="Delete"
-        >✕</button>
+    <div
+      className={`service-card fade-up ${isOpen ? 'expanded' : ''}`}
+      style={{ marginBottom:12, animationDelay:`${index*55}ms`, borderLeft:`3px solid ${accentLine}` }}
+    >
+      {/* Card header — always visible, click to toggle */}
+      <div
+        onClick={onToggle}
+        style={{ padding:'14px 16px', cursor:'pointer', display:'flex', alignItems:'flex-start', gap:10, userSelect:'none' }}
+      >
+        {/* Left: badges + date */}
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:6 }}>
+            <SvcBadge service={entry.service} />
+            {entry.event && (
+              <span style={{ fontSize:'.6875rem', padding:'2px 8px', borderRadius:999, background:'#FEF3C7', color:'#92400E', fontWeight:600, border:'1px solid #FDE68A' }}>
+                ✦ {entry.event}
+              </span>
+            )}
+          </div>
+          <div className="font-display" style={{ fontSize:'1.0625rem', fontWeight:600, color:'var(--ink)', marginBottom:4 }}>
+            {fmt(entry.date)}
+          </div>
+          {/* Quick summary */}
+          {!isOpen && (entry.preacher || entry.prayer) && (
+            <div style={{ fontSize:'.8125rem', color:'var(--ink-3)', display:'flex', gap:12, flexWrap:'wrap', animation:'fadeIn .2s ease' }}>
+              {entry.preacher && <span><span style={{ color:'var(--ink-4)' }}>Preacher · </span>{entry.preacher}</span>}
+              {entry.prayer   && <span><span style={{ color:'var(--ink-4)' }}>Prayer · </span>{entry.prayer}</span>}
+            </div>
+          )}
+          {/* Progress bar */}
+          {!isOpen && pct > 0 && (
+            <div style={{ marginTop:8 }}>
+              <div className="progress-line" style={{ width:120 }}>
+                <div className="progress-fill" style={{ width:`${pct}%`, background: pct===100?'var(--success)':svcColor }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: actions + chevron */}
+        <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0, marginTop:2 }}>
+          {pct === 100 && !isOpen && (
+            <span style={{ fontSize:'1rem' }} title="All fields filled">✅</span>
+          )}
+          <span className={`chevron ${isOpen ? 'up':''}`} style={{ color:'var(--ink-4)', fontSize:'.875rem' }}>▾</span>
+        </div>
       </div>
 
-      {/* Fields grid */}
-      <div style={{ padding:'12px 14px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 12px' }}>
-        {[
-          { key:'preacher',          label:'Preacher' },
-          { key:'prayer',            label:'Pastoral Prayer' },
-          { key:'presider',          label:'Presider' },
-          { key:'songLeader',        label:'Song Leader' },
-          { key:'communionAssistant',label:'Communion Assistant' },
-          { key:'foodInCharge',      label:'Food In Charge' },
-        ].map(({ key, label }) => (
-          <div key={key}>
-            <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:3 }}>{label}</div>
-            <input
-              className="input"
-              value={entry[key] || ''}
-              onChange={e => set(key, e.target.value)}
-              placeholder={label}
-            />
+      {/* Expandable fields */}
+      <div className={`card-body ${isOpen ? 'open':''}`}>
+        <div style={{ padding:'0 16px 16px', borderTop:'1px solid var(--border)', paddingTop:14 }}>
+
+          {/* Date + service selectors */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 12px', marginBottom:12 }}>
+            <div>
+              <div className="field-label">Date</div>
+              <input type="date" className="field-input" value={entry.date||''} onChange={e=>set('date',e.target.value)} />
+            </div>
+            <div>
+              <div className="field-label">Service Type</div>
+              <select className="field-input" value={entry.service||''} onChange={e=>set('service',e.target.value)}>
+                <option value="Friday">Friday Service</option>
+                <option value="Sunday">Sunday Service</option>
+                <option value="">Other</option>
+              </select>
+            </div>
           </div>
-        ))}
-        <div style={{ gridColumn:'1 / -1' }}>
-          <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:3 }}>Special Event / Note (optional)</div>
-          <input className="input" value={entry.event || ''} onChange={e => set('event', e.target.value)} placeholder="e.g. Lord's Supper, Father's Day" />
+
+          {/* Role fields */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 12px' }}>
+            {FIELDS.map(({ key, label }) => (
+              <div key={key}>
+                <div className="field-label">{label}</div>
+                <input
+                  className="field-input"
+                  value={entry[key]||''}
+                  onChange={e => set(key, e.target.value)}
+                  placeholder={label}
+                />
+              </div>
+            ))}
+            <div style={{ gridColumn:'1 / -1' }}>
+              <div className="field-label">Special Event / Note</div>
+              <input
+                className="field-input"
+                value={entry.event||''}
+                onChange={e => set('event', e.target.value)}
+                placeholder="e.g. Lord's Supper, Father's Day, Anniversary Sunday"
+              />
+            </div>
+          </div>
+
+          {/* Delete */}
+          <div style={{ marginTop:14, display:'flex', justifyContent:'flex-end' }}>
+            <button
+              onClick={() => { if(confirm(`Delete ${fmt(entry.date)}?`)) onDelete(entry.id); }}
+              style={{ background:'none', border:'none', cursor:'pointer', fontSize:'.8125rem', color:'var(--danger)', padding:'4px 8px', borderRadius:6, fontWeight:500, transition:'background .15s' }}
+              onMouseEnter={e=>e.target.style.background='#FEE2E2'}
+              onMouseLeave={e=>e.target.style.background='none'}
+            >
+              🗑 Delete this service
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── App ─────────────────────────────────────────────────────────────────────
+// ─── GitHub setup modal ───────────────────────────────────────────────────────
+function TokenModal({ onSave, onClose }) {
+  const [val, setVal] = useState('');
+  const save = () => {
+    const v = val.trim();
+    if (!v.startsWith('ghp_') && !v.startsWith('github_pat_')) { alert('Token should start with ghp_ or github_pat_'); return; }
+    onSave(v);
+  };
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(26,26,30,.5)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200, padding:16 }}
+      onClick={onClose}>
+      <div className="scale-in" style={{ background:'var(--surface)', borderRadius:20, padding:28, maxWidth:480, width:'100%', boxShadow:'0 24px 80px rgba(0,0,0,.2)' }}
+        onClick={e=>e.stopPropagation()}>
+        <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:600, marginBottom:6 }}>Connect GitHub</div>
+        <p style={{ fontSize:'.875rem', color:'var(--ink-3)', marginBottom:20, lineHeight:1.6 }}>
+          One-time setup. Your token is saved on this device only — never sent anywhere except GitHub.
+        </p>
+        <ol style={{ fontSize:'.8125rem', color:'var(--ink-3)', paddingLeft:18, lineHeight:2, marginBottom:18 }}>
+          <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens → <strong>Fine-grained tokens</strong></li>
+          <li>Generate new token → Repository access → <strong>flcc-members-2026 only</strong></li>
+          <li>Permissions → Contents → <strong>Read and write</strong> → Generate token</li>
+          <li>Copy the token below</li>
+        </ol>
+        <input
+          autoFocus type="password"
+          style={{ width:'100%', padding:'.6rem .8rem', borderRadius:10, border:'1.5px solid var(--border-2)', fontSize:'.9375rem', fontFamily:'Geist,sans-serif', outline:'none', marginBottom:12 }}
+          placeholder="github_pat_… or ghp_…"
+          value={val} onChange={e=>setVal(e.target.value)}
+          onKeyDown={e=>e.key==='Enter'&&save()}
+        />
+        <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button
+            onClick={save} disabled={!val.trim()}
+            style={{ padding:'.55rem 1.25rem', borderRadius:10, background:'var(--success)', color:'#fff', border:'none', fontWeight:700, fontSize:'.9375rem', cursor:'pointer', opacity:val.trim()?1:.5 }}>
+            Connect →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
 function App() {
   const [fullData,    setFullData]    = useState(null);
   const [schedule,    setSchedule]    = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState('');
-  const [activeMonth, setActiveMonth] = useState(null);
+  const [activeMonth, setActiveMonth] = useState(MONTHS[new Date().getMonth()]);
+  const [expandedId,  setExpandedId]  = useState(null);
   const [dirty,       setDirty]       = useState(false);
-  const [saved,       setSaved]       = useState(false);
+  const [toast,       setToast]       = useState(null);
 
-  // GitHub publish state
-  const [ghToken,      setGhToken]      = useState(() => { try { return localStorage.getItem(GH_TOKEN_KEY)||''; } catch { return ''; } });
-  const [ghTokenInput, setGhTokenInput] = useState('');
+  const [ghToken,      setGhToken]      = useState(()=>{ try{return localStorage.getItem(GH_TOKEN_KEY)||'';}catch{return '';} });
   const [ghPublishing, setGhPublishing] = useState(false);
   const [ghStatus,     setGhStatus]     = useState('');
   const [showSetup,    setShowSetup]    = useState(false);
 
-  useEffect(() => {
-    fetch(DATA_URL + '?t=' + Date.now())
-      .then(r => r.json())
-      .then(data => {
+  useEffect(()=>{
+    fetch(DATA_URL+'?t='+Date.now())
+      .then(r=>r.json())
+      .then(data=>{
         setFullData(data);
-        const sched = (data.workerRoster2026?.fullSchedule || []).map(s => ({ ...s, id: s.id || uid() }));
+        const sched = (data.workerRoster2026?.fullSchedule||[]).map(s=>({...s, id:s.id||uid()}));
         setSchedule(sched);
-        // Default to current month
-        const m = new Date().getMonth();
-        setActiveMonth(MONTHS[m]);
         setLoading(false);
       })
-      .catch(e => { setError('Failed to load data.json: ' + e.message); setLoading(false); });
-  }, []);
+      .catch(e=>{ setError('Could not load data.json: '+e.message); setLoading(false); });
+  },[]);
 
-  const monthsWithEntries = useMemo(() => {
-    const seen = new Set(schedule.map(s => {
-      if (!s.date) return null;
-      const m = parseInt(s.date.split('-')[1], 10) - 1;
-      return MONTHS[m];
-    }).filter(Boolean));
-    return MONTHS.filter(m => seen.has(m));
-  }, [schedule]);
+  const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null), 3500); };
 
-  const visibleEntries = useMemo(() => {
-    if (!activeMonth) return schedule;
-    const mi = MONTHS.indexOf(activeMonth) + 1;
+  // Month stats
+  const monthStats = useMemo(()=>{
+    const map = {};
+    MONTHS.forEach((m,i)=>{ map[m] = schedule.filter(s=>monthOf(s.date)===i).length; });
+    return map;
+  },[schedule]);
+
+  const visibleEntries = useMemo(()=>{
+    const mi = MONTHS.indexOf(activeMonth);
     return schedule
-      .filter(s => s.date && parseInt(s.date.split('-')[1], 10) === mi)
-      .sort((a,b) => a.date.localeCompare(b.date));
-  }, [schedule, activeMonth]);
+      .filter(s=>monthOf(s.date)===mi)
+      .sort((a,b)=>a.date.localeCompare(b.date));
+  },[schedule, activeMonth]);
 
-  const updateEntry = useCallback((updated) => {
-    setSchedule(prev => prev.map(s => s.id === updated.id ? updated : s));
-    setDirty(true); setSaved(false);
-  }, []);
+  const allFilled = useMemo(()=>
+    visibleEntries.length > 0 &&
+    visibleEntries.every(e => FIELDS.every(f=>e[f.key]?.trim()))
+  ,[visibleEntries]);
 
-  const deleteEntry = useCallback((id) => {
-    setSchedule(prev => prev.filter(s => s.id !== id));
-    setDirty(true); setSaved(false);
-  }, []);
+  const updateEntry = useCallback((updated)=>{
+    setSchedule(prev=>prev.map(s=>s.id===updated.id?updated:s));
+    setDirty(true);
+  },[]);
 
-  const addEntry = () => {
-    const mi = activeMonth ? MONTHS.indexOf(activeMonth) + 1 : new Date().getMonth() + 1;
-    const year = 2026;
-    const date = `${year}-${String(mi).padStart(2,'0')}-01`;
-    const newEntry = { id: uid(), date, service: 'Friday', preacher:'', prayer:'', presider:'', songLeader:'', communionAssistant:'', foodInCharge:'', event:'' };
-    setSchedule(prev => [...prev, newEntry]);
-    setDirty(true); setSaved(false);
+  const deleteEntry = useCallback((id)=>{
+    setSchedule(prev=>prev.filter(s=>s.id!==id));
+    setDirty(true); setExpandedId(null);
+  },[]);
+
+  const addEntry = ()=>{
+    const mi = MONTHS.indexOf(activeMonth)+1;
+    const date = `2026-${String(mi).padStart(2,'0')}-01`;
+    const id = uid();
+    setSchedule(prev=>[...prev,{ id, date, service:'Friday', preacher:'',prayer:'',presider:'',songLeader:'',communionAssistant:'',foodInCharge:'',event:'' }]);
+    setExpandedId(id);
+    setDirty(true);
   };
 
-  // Save token
-  const saveToken = () => {
-    const v = ghTokenInput.trim();
-    if (!v.startsWith('ghp_') && !v.startsWith('github_pat_')) { alert('Token should start with ghp_ or github_pat_'); return; }
-    setGhToken(v); try { localStorage.setItem(GH_TOKEN_KEY, v); } catch {}
-    setGhTokenInput(''); setShowSetup(false);
+  const saveToken = (v)=>{
+    setGhToken(v); try{localStorage.setItem(GH_TOKEN_KEY,v);}catch{}
+    setShowSetup(false);
+    showToast('✓ GitHub connected');
   };
 
-  // Publish to GitHub
-  const publishToGitHub = async () => {
+  const publishToGitHub = async ()=>{
     if (!ghToken) { setShowSetup(true); return; }
-    if (!fullData) return;
     setGhPublishing(true); setGhStatus('');
     try {
-      const cleanSchedule = schedule.map(({ id, ...rest }) => rest);
-      const updatedData = {
-        ...fullData,
-        workerRoster2026: {
-          ...fullData.workerRoster2026,
-          fullSchedule: cleanSchedule,
-        },
-      };
+      const cleanSchedule = schedule.map(({id,...rest})=>rest);
+      const updatedData   = { ...fullData, workerRoster2026: { ...fullData.workerRoster2026, fullSchedule:cleanSchedule } };
       const content  = JSON.stringify(updatedData, null, 2);
       const encoded  = btoa(unescape(encodeURIComponent(content)));
-      const getResp  = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
-        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json' },
+      const getResp  = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
+        headers:{ Authorization:`Bearer ${ghToken}`, Accept:'application/vnd.github+json' }
       });
       const existing = getResp.ok ? await getResp.json() : null;
-      const putResp  = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      const putResp  = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
+        method:'PUT',
+        headers:{ Authorization:`Bearer ${ghToken}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json' },
         body: JSON.stringify({
-          message: `Update schedule — ${activeMonth || 'all months'} ${new Date().getFullYear()}`,
+          message: `Update schedule — ${activeMonth} 2026`,
           content: encoded,
-          ...(existing?.sha ? { sha: existing.sha } : {}),
-        }),
+          ...(existing?.sha?{sha:existing.sha}:{})
+        })
       });
-      if (!putResp.ok) { const e = await putResp.json().catch(()=>({})); throw new Error(e.message || `HTTP ${putResp.status}`); }
-      setGhStatus('ok'); setDirty(false); setSaved(true);
-      setTimeout(() => setGhStatus(''), 6000);
-    } catch (e) {
+      if (!putResp.ok){ const e=await putResp.json().catch(()=>({})); throw new Error(e.message||`HTTP ${putResp.status}`); }
+      setGhStatus('ok'); setDirty(false);
+      showToast('🎉 Schedule published! Members can see it now.');
+      setTimeout(()=>setGhStatus(''),7000);
+    } catch(e){
       alert(`Publish failed: ${e.message}`);
-      setGhStatus('err'); setTimeout(() => setGhStatus(''), 5000);
+      setGhStatus('err'); setTimeout(()=>setGhStatus(''),5000);
     } finally { setGhPublishing(false); }
   };
 
-  if (loading) return <div style={{ textAlign:'center', padding:60, color:'var(--ink-subtle)' }}>Loading schedule…</div>;
-  if (error)   return <div style={{ padding:32, color:'#DC2626' }}>{error}</div>;
+  if (loading) return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', flexDirection:'column', gap:16 }}>
+      <div style={{ width:36, height:36, border:'3px solid var(--border)', borderTopColor:'var(--accent)', borderRadius:'50%' }} className="spin"/>
+      <div style={{ color:'var(--ink-3)', fontSize:'.9375rem' }}>Loading schedule…</div>
+    </div>
+  );
+  if (error) return <div style={{ padding:32, color:'var(--danger)' }}>{error}</div>;
 
-  const publishBtnBg = ghStatus==='ok' ? 'var(--success)' : ghStatus==='err' ? '#DC2626' : 'var(--accent)';
-  const publishBtnLabel = ghPublishing ? '↻ Publishing…' : ghStatus==='ok' ? '✓ Published! Members can see it now' : ghStatus==='err' ? '⚠ Failed — tap to retry' : '☁ Update to GitHub';
+  const publishBtnClass = `publish-btn${ghPublishing?' loading':''}${ghStatus===' ok'?' ok':ghStatus==='err'?' err':''}`;
+  const publishLabel = ghPublishing ? '↻ Publishing…' : ghStatus==='ok' ? '✓ Published! Members can see it' : ghStatus==='err' ? '⚠ Failed — tap to retry' : dirty ? '☁ Update to GitHub' : '☁ Update to GitHub';
+
+  // Month theme
+  const themes = fullData?.workerRoster2026?.monthlyThemes||[];
+  const activeTheme = themes.find(t=>t.month===activeMonth)?.theme || '';
 
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '16px 16px 80px' }}>
+    <div className="app-shell">
 
-      {/* Header */}
-      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, marginBottom:20 }}>
-        <div>
-          <div className="font-display" style={{ fontSize:'1.75rem', fontWeight:600, letterSpacing:'-.02em', lineHeight:1.1 }}>Schedule Editor</div>
-          <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginTop:3 }}>FLCC - Abundance Church · 2026</div>
+      {/* ── Sidebar ── */}
+      <aside className="sidebar">
+        <div style={{ marginBottom:24 }}>
+          <div className="font-display" style={{ fontSize:'1.0625rem', fontWeight:600, color:'var(--ink)', marginBottom:2 }}>📅 Schedule Editor</div>
+          <div style={{ fontSize:'.75rem', color:'var(--ink-4)' }}>FLCC · Abundance Church</div>
         </div>
-        <a href="./index.html" className="btn btn-ghost" style={{ fontSize:'0.75rem', marginTop:4 }}>← Members App</a>
-      </div>
 
-      {/* Publish card */}
-      <div className="card" style={{ padding:20, marginBottom:20, borderColor: ghStatus==='ok' ? 'var(--success)' : 'var(--accent)' }}>
-        <div style={{ fontSize:'0.6rem', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', color:'var(--accent)', marginBottom:4 }}>Publish to Members</div>
-        <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:600, marginBottom:6 }}>☁ Update to GitHub</div>
-        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.55 }}>
-          One tap pushes the latest schedule live. Members see the update immediately — no downloads or file uploads needed.
-        </p>
-
-        {ghToken && !showSetup ? (
-          <div>
-            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:10, background:'var(--success-soft)', border:'1px solid var(--success-ring)', marginBottom:12 }}>
-              <div className="sync-dot" style={{ background:'var(--success)' }} />
-              <span style={{ fontSize:'0.8125rem', color:'var(--success)', fontWeight:500 }}>GitHub connected</span>
-              <button onClick={() => setShowSetup(true)} style={{ marginLeft:'auto', fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Change</button>
-            </div>
-            <button
-              onClick={publishToGitHub}
-              disabled={ghPublishing}
-              style={{ width:'100%', padding:'14px', borderRadius:12, background: publishBtnBg, color:'#fff', border:'none', fontSize:'1rem', fontWeight:700, cursor: ghPublishing ? 'wait' : 'pointer', transition:'background .2s', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
-            >
-              {publishBtnLabel}
+        <div style={{ marginBottom:20 }}>
+          {MONTHS.map(m=>(
+            <button key={m} className={`month-item ${activeMonth===m?'active':''}`} onClick={()=>{setActiveMonth(m);setExpandedId(null);}}>
+              {m}
+              {monthStats[m]>0 && (
+                <span style={{ fontSize:'.6875rem', padding:'1px 7px', borderRadius:999, background: activeMonth===m?'rgba(163,59,42,.15)':'var(--bg)', color: activeMonth===m?'var(--accent)':'var(--ink-4)', fontWeight:600, border:'1px solid var(--border)' }}>
+                  {monthStats[m]}
+                </span>
+              )}
             </button>
-            {dirty && !ghPublishing && ghStatus !== 'ok' && (
-              <div style={{ textAlign:'center', marginTop:8, fontSize:'0.75rem', color:'var(--warning)' }}>⚠ You have unsaved changes — tap to publish</div>
-            )}
-            {saved && (
-              <div style={{ textAlign:'center', marginTop:8, fontSize:'0.75rem', color:'var(--success)' }}>✓ All changes saved and live</div>
-            )}
+          ))}
+        </div>
+
+        {ghToken ? (
+          <div style={{ padding:'10px 12px', borderRadius:12, background:'var(--success-soft)', border:'1px solid #BBF7D0', fontSize:'.75rem', color:'var(--success)', fontWeight:500, marginBottom:10 }}>
+            ✓ GitHub connected
+            <button onClick={()=>{setGhToken('');try{localStorage.removeItem(GH_TOKEN_KEY);}catch{};}} style={{ display:'block', marginTop:4, fontSize:'.6875rem', color:'var(--ink-4)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', padding:0 }}>Disconnect</button>
           </div>
         ) : (
+          <button className="btn btn-ghost" style={{ width:'100%', justifyContent:'center', fontSize:'.8125rem' }} onClick={()=>setShowSetup(true)}>
+            🔑 Connect GitHub
+          </button>
+        )}
+
+        <div style={{ marginTop:'auto', paddingTop:16 }}>
+          <a href="./index.html" style={{ fontSize:'.75rem', color:'var(--ink-4)', textDecoration:'none' }}>← Back to Members App</a>
+        </div>
+      </aside>
+
+      {/* ── Main header ── */}
+      <header className="main-header">
+        <div style={{ display:'flex', alignItems:'center', gap:12, justifyContent:'space-between', flexWrap:'wrap' }}>
+
+          {/* Title + month */}
           <div>
-            {!showSetup ? (
-              <button onClick={() => setShowSetup(true)} style={{ padding:'13px', width:'100%', borderRadius:12, background:'var(--accent)', color:'#fff', border:'none', fontSize:'1rem', fontWeight:700, cursor:'pointer' }}>
-                Connect GitHub to enable publishing →
-              </button>
-            ) : (
-              <div>
-                <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.6 }}>
-                  <strong>One-time setup:</strong> Create a GitHub Personal Access Token with <em>Contents: Read &amp; write</em> for this repo, then paste it below. It stays on this device only.
-                </p>
-                <ol style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', paddingLeft:18, lineHeight:1.9, marginBottom:12 }}>
-                  <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens → Fine-grained tokens</li>
-                  <li>Generate new token → Repository access: <strong>flcc-members-2026</strong> only</li>
-                  <li>Permissions → Contents → <strong>Read and write</strong> → Generate</li>
-                  <li>Copy the token (starts with <code style={{ background:'#F4F4F0', padding:'1px 4px', borderRadius:4, fontSize:'0.75rem' }}>github_pat_</code>) and paste below</li>
-                </ol>
-                <div style={{ display:'flex', gap:8 }}>
-                  <input
-                    className="input" type="password"
-                    placeholder="github_pat_… or ghp_…"
-                    value={ghTokenInput} onChange={e => setGhTokenInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && saveToken()}
-                    style={{ flex:1 }}
-                  />
-                  <button className="btn btn-success" onClick={saveToken} disabled={!ghTokenInput.trim()} style={{ background:'var(--success)', color:'#fff', flexShrink:0 }}>Connect</button>
-                </div>
-                {ghToken && <button onClick={() => setShowSetup(false)} style={{ marginTop:8, fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Cancel</button>}
+            <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:700, color:'var(--ink)', lineHeight:1 }}>{activeMonth} <span style={{ color:'var(--ink-4)', fontWeight:400, fontSize:'1.125rem' }}>2026</span></div>
+            {activeTheme && (
+              <div style={{ fontSize:'.75rem', color:'var(--ink-4)', marginTop:3, fontStyle:'italic' }}>Theme: {activeTheme}</div>
+            )}
+          </div>
+
+          {/* Publish button */}
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {dirty && !ghPublishing && (
+              <span style={{ fontSize:'.75rem', color:'var(--warning)', fontWeight:500, animation:'pulse 2s infinite' }}>● Unsaved</span>
+            )}
+            <button
+              className={`publish-btn${ghPublishing?' loading':''}${ghStatus==='ok'?' ok':ghStatus==='err'?' err':''}`}
+              onClick={publishToGitHub}
+              disabled={ghPublishing}
+            >
+              {ghPublishing
+                ? <><span style={{ width:16,height:16,border:'2px solid rgba(255,255,255,.4)',borderTopColor:'#fff',borderRadius:'50%' }} className="spin"/><span>Publishing…</span></>
+                : ghStatus==='ok' ? '✓ Published!'
+                : ghStatus==='err' ? '⚠ Retry'
+                : '☁ Update to GitHub'
+              }
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile month tabs */}
+        <div style={{ display:'flex', gap:6, overflowX:'auto', marginTop:14, paddingBottom:2, scrollbarWidth:'none' }} className="md:hidden">
+          {MONTHS.map(m=>(
+            <button key={m} className={`m-tab ${activeMonth===m?'active':'idle'}`} onClick={()=>{setActiveMonth(m);setExpandedId(null);}}>
+              {m.slice(0,3)}{monthStats[m]>0?` ${monthStats[m]}`:''}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      {/* ── Main content ── */}
+      <main className="main-content">
+
+        {/* Summary chips */}
+        {visibleEntries.length > 0 && (
+          <div className="fade-in" style={{ display:'flex', gap:8, marginBottom:18, flexWrap:'wrap' }}>
+            <div style={{ padding:'5px 12px', borderRadius:999, background:'var(--friday-soft)', color:'var(--friday)', fontSize:'.8125rem', fontWeight:600 }}>
+              📅 {visibleEntries.filter(e=>e.service==='Friday').length} Friday
+            </div>
+            <div style={{ padding:'5px 12px', borderRadius:999, background:'var(--sunday-soft)', color:'var(--sunday)', fontSize:'.8125rem', fontWeight:600 }}>
+              🙏 {visibleEntries.filter(e=>e.service==='Sunday').length} Sunday
+            </div>
+            {allFilled && (
+              <div style={{ padding:'5px 12px', borderRadius:999, background:'var(--success-soft)', color:'var(--success)', fontSize:'.8125rem', fontWeight:600, animation:'scaleIn .3s ease' }}>
+                ✅ All fields complete
               </div>
             )}
           </div>
         )}
-      </div>
 
-      {/* Month tabs */}
-      <div style={{ display:'flex', gap:6, overflowX:'auto', marginBottom:16, paddingBottom:2, scrollbarWidth:'none' }}>
-        {MONTHS.map(m => {
-          const hasEntries = monthsWithEntries.includes(m);
-          return (
+        {/* Cards */}
+        {visibleEntries.length === 0 ? (
+          <div style={{ textAlign:'center', padding:'60px 20px' }}>
+            <div style={{ fontSize:'3rem', marginBottom:12 }}>📋</div>
+            <div className="font-display" style={{ fontSize:'1.375rem', color:'var(--ink-2)', fontWeight:600 }}>No services yet for {activeMonth}</div>
+            <p style={{ color:'var(--ink-4)', fontSize:'.9375rem', marginTop:6, marginBottom:20 }}>Add the first service to get started.</p>
             <button
-              key={m}
-              onClick={() => setActiveMonth(m)}
-              className={`tab-pill ${activeMonth === m ? 'tab-pill-active' : 'tab-pill-idle'}`}
-              style={{ opacity: hasEntries || activeMonth === m ? 1 : 0.45 }}
+              onClick={addEntry}
+              style={{ padding:'.7rem 1.5rem', borderRadius:12, background:'var(--accent)', color:'#fff', border:'none', fontWeight:700, fontSize:'.9375rem', cursor:'pointer', boxShadow:'0 4px 18px rgba(163,59,42,.3)', transition:'transform .15s' }}
+              onMouseEnter={e=>e.target.style.transform='translateY(-2px)'}
+              onMouseLeave={e=>e.target.style.transform=''}
             >
-              {m.slice(0,3)}
+              + Add first service
             </button>
-          );
-        })}
-      </div>
+          </div>
+        ) : (
+          <>
+            {visibleEntries.map((e, i) => (
+              <ServiceCard
+                key={e.id}
+                entry={e}
+                index={i}
+                isOpen={expandedId === e.id}
+                onToggle={() => setExpandedId(expandedId === e.id ? null : e.id)}
+                onChange={updateEntry}
+                onDelete={deleteEntry}
+              />
+            ))}
+            <div style={{ textAlign:'center', marginTop:4 }}>
+              <button
+                onClick={addEntry}
+                style={{ padding:'.55rem 1.25rem', borderRadius:10, background:'transparent', color:'var(--ink-3)', border:'1.5px dashed var(--border-2)', fontWeight:600, fontSize:'.875rem', cursor:'pointer', transition:'all .18s' }}
+                onMouseEnter={e=>{ e.target.style.background='var(--bg)'; e.target.style.color='var(--ink)'; e.target.style.borderColor='var(--ink-4)'; }}
+                onMouseLeave={e=>{ e.target.style.background='transparent'; e.target.style.color='var(--ink-3)'; e.target.style.borderColor='var(--border-2)'; }}
+              >
+                + Add service
+              </button>
+            </div>
+          </>
+        )}
+      </main>
 
-      {/* Month heading */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
-        <div className="font-display" style={{ fontSize:'1.25rem', fontWeight:600 }}>{activeMonth}</div>
-        <button className="btn btn-soft" onClick={addEntry} style={{ fontSize:'0.8125rem' }}>+ Add service</button>
-      </div>
+      {/* ── Token setup modal ── */}
+      {showSetup && <TokenModal onSave={saveToken} onClose={()=>setShowSetup(false)} />}
 
-      {/* Service entries */}
-      {visibleEntries.length === 0 ? (
-        <div style={{ textAlign:'center', padding:'40px 20px', color:'var(--ink-subtle)', fontSize:'0.875rem' }}>
-          No services for {activeMonth} yet.
-          <br /><button className="btn btn-ghost" onClick={addEntry} style={{ marginTop:12 }}>+ Add first service</button>
-        </div>
-      ) : (
-        visibleEntries.map(e => (
-          <ServiceRow key={e.id} entry={e} onChange={updateEntry} onDelete={deleteEntry} />
-        ))
-      )}
-
+      {/* ── Toast ── */}
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }
