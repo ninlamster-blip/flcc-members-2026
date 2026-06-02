@@ -4,7 +4,7 @@
     "ministryName": "Equip Ministry",
     "version": "1.0",
     "lastUpdated": "2026-05-16T11:27:14.160Z",
-    "publishedAt": "2026-05-21T20:09:33.753Z"
+    "publishedAt": "2026-05-30T16:29:47.161Z"
   },
   "courses": [
     {
@@ -86,10 +86,10 @@
       "name": "Discipleship Ministry",
       "icon": "⚓",
       "color": "#6D28D9",
-      "headName": "Ptr. Justin Flores",
+      "headName": "Sis. Alma Flores",
       "headTitle": "Discipleship Ministry Head",
       "whatsapp": "+96567611268",
-      "messenger": "justin.flores.35574406",
+      "messenger": "",
       "phone": "+96567611268",
       "email": ""
     },
@@ -115,6 +115,42 @@
       "whatsapp": "+96565780160",
       "messenger": "",
       "phone": "+96565780160",
+      "email": ""
+    },
+    {
+      "id": "c-1780157966363-dfl7j",
+      "name": "Lead Pastor",
+      "icon": "✝️",
+      "color": "#16A34A",
+      "headName": "Ptr. Justin Flores",
+      "headTitle": "Lead Pastor",
+      "whatsapp": "+96567611268",
+      "messenger": "justin.flores.35574406",
+      "phone": "+96567611268",
+      "email": ""
+    },
+    {
+      "id": "c-1780158034562-7vswc",
+      "name": "Evangelism Ministry",
+      "icon": "🕊️",
+      "color": "#0284C7",
+      "headName": "Sis. Lizel Ocenar",
+      "headTitle": "Evangelism Ministry Head",
+      "whatsapp": "+96566098812",
+      "messenger": "",
+      "phone": "+96566098812",
+      "email": ""
+    },
+    {
+      "id": "c-1780158194164-95a8g",
+      "name": "Lead Pastor",
+      "icon": "✝️",
+      "color": "#16A34A",
+      "headName": "Ptr. Doddie Arciaga",
+      "headTitle": "Lead Pastor",
+      "whatsapp": "+96597472834",
+      "messenger": "",
+      "phone": "+96597472834",
       "email": ""
     }
   ]

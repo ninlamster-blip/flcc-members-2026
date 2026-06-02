@@ -94,6 +94,27 @@
   .care-card { padding: 12px 14px; border-radius: 12px; border-left: 3px solid #F59E0B; background: #FFFBEB; margin-bottom: 10px; animation: fadeIn .2s ease-out; }
 
   nav::-webkit-scrollbar { display: none; }
+
+  /* ── DYNAMIC UI LAYER ──────────────────────────────────────────────── */
+  :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes gradientPulse { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  @keyframes fadeSlideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes accentGlow { 0%,100%{box-shadow:0 0 0 0 rgba(163,59,42,0.25)} 50%{box-shadow:0 0 0 7px rgba(163,59,42,0)} }
+  @keyframes tabPop { from{transform:scaleX(0);opacity:0} to{transform:scaleX(1);opacity:1} }
+
+  .hdr-strip { height:3px; background:linear-gradient(90deg,var(--accent),#E86848,#D97706,#C2410C,var(--accent)); background-size:250% 100%; animation:gradientPulse 5s ease-in-out infinite; }
+  header { background:linear-gradient(180deg,rgba(251,235,231,0.45) 0%,rgba(250,250,245,0.93) 55%) !important; }
+  .tab { position:relative; }
+  .tab-active { border-bottom-color:transparent !important; }
+  .tab-active::after { content:''; position:absolute; bottom:-3px; left:0; right:0; height:2px; background:var(--accent); border-radius:2px 2px 0 0; transform-origin:left center; animation:tabPop 0.22s var(--spring) both; }
+  .tab-content-area { animation:fadeSlideUp 0.28s var(--spring) both; }
+  .btn { transition:transform 0.18s var(--spring),box-shadow 0.18s ease,background 0.15s ease !important; }
+  .btn:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.12); }
+  .btn:active { transform:translateY(0) scale(0.95) !important; box-shadow:none !important; }
+  .row-card { transition:transform 0.18s var(--spring),box-shadow 0.18s ease,border-color 0.15s ease !important; }
+  .row-card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); border-color:var(--border-strong); }
+  .input:focus,.select:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(163,59,42,0.1),0 0 0 1px rgba(163,59,42,0.4) !important; }
+  .modal { animation:fadeSlideUp 0.3s var(--spring) both !important; }
 </style>
 </head>
 <body>
@@ -102,10 +123,13 @@
 const { useState, useEffect, useMemo, useReducer, useRef, useCallback } = React;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const STORE_KEY = 'flcc-attendance-v1';
-const DATA_URL  = './data.json';
-const VERSION   = '1.0';
-const ATT_ACCENT = '#0284C7';
+const STORE_KEY   = 'flcc-attendance-v1';
+const GH_TOKEN_KEY = 'flcc-gh-token-v1';
+const GH_REPO     = 'ninlamster-blip/flcc-members-2026';
+const GH_FILE     = 'attendance.json';
+const DATA_URL    = './data.json';
+const VERSION     = '1.0';
+const ATT_ACCENT  = '#0284C7';
 
 const STATUS_CFG = {
   present: { label: 'Present', emoji: '✓', color: '#16A34A', soft: '#F0FDF4', ring: '#BBF7D0' },
@@ -1237,23 +1261,20 @@ function SettingsTab({ state, dispatch }) {
     r.readAsText(f);
   };
 
-  const publishAttendanceJSON = () => {
-    // Include all sessions (not just recent 10) so members can see full history
+  const buildAttendanceJSON = () => {
     const sorted = [...state.sessions].sort((a,b) => b.date.localeCompare(a.date));
-    const out = {
+    return {
       meta: {
         churchName: m.churchName || 'FLCC - Farwaniya 1',
         publishedAt: new Date().toISOString(),
         totalSessions: sorted.length,
       },
-      // Full session list with per-member records (ID + name for matching)
       sessions: sorted.map(s => ({
         id:           s.id,
         date:         s.date,
         service:      s.service,
         serviceLabel: s.serviceLabel || s.service,
         summary:      getSessionSummary(s),
-        // Per-member status — members.html uses this to show personal history
         records:      (s.records || []).map(r => ({
           memberId:   r.memberId,
           memberName: r.memberName,
@@ -1261,11 +1282,65 @@ function SettingsTab({ state, dispatch }) {
         })),
       })),
     };
+  };
+
+  const publishAttendanceJSON = () => {
+    const out  = buildAttendanceJSON();
     const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url; a.download = 'attendance.json'; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const [ghToken, setGhToken]     = useState(() => { try { return localStorage.getItem(GH_TOKEN_KEY)||''; } catch { return ''; } });
+  const [ghTokenInput, setGhTokenInput] = useState('');
+  const [ghPublishing, setGhPublishing] = useState(false);
+  const [ghStatus, setGhStatus]   = useState(''); // 'ok' | 'err' | ''
+
+  const saveGhToken = () => {
+    const v = ghTokenInput.trim();
+    if (!v.startsWith('ghp_') && !v.startsWith('github_pat_')) { alert('Token should start with ghp_ or github_pat_'); return; }
+    setGhToken(v); try { localStorage.setItem(GH_TOKEN_KEY, v); } catch {}
+    setGhTokenInput('');
+  };
+
+  const clearGhToken = () => {
+    setGhToken(''); try { localStorage.removeItem(GH_TOKEN_KEY); } catch {}
+  };
+
+  const publishToGitHub = async () => {
+    if (!ghToken) { alert('Enter your GitHub token first.'); return; }
+    if (!state.sessions.length) { alert('No sessions to publish yet.'); return; }
+    setGhPublishing(true); setGhStatus('');
+    try {
+      const content = JSON.stringify(buildAttendanceJSON(), null, 2);
+      const encoded = btoa(unescape(encodeURIComponent(content)));
+      // Get current file SHA (needed for updates)
+      const getResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json' },
+      });
+      const existing = getResp.ok ? await getResp.json() : null;
+      const sha = existing?.sha;
+      // Commit the new file
+      const putResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Update attendance.json — ${new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`,
+          content: encoded,
+          ...(sha ? { sha } : {}),
+        }),
+      });
+      if (!putResp.ok) {
+        const err = await putResp.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${putResp.status}`);
+      }
+      setGhStatus('ok'); setTimeout(() => setGhStatus(''), 4000);
+    } catch (e) {
+      alert(`Publish failed: ${e.message}`);
+      setGhStatus('err'); setTimeout(() => setGhStatus(''), 4000);
+    } finally { setGhPublishing(false); }
   };
 
   // Weekly summary for Ptr. Justin — formatted for Messenger
@@ -1455,33 +1530,72 @@ function SettingsTab({ state, dispatch }) {
       <div className="card" style={{ padding:16, marginBottom:14, borderColor:ATT_ACCENT }}>
         <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:ATT_ACCENT }}>For Allen — Admin Review</div>
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.6 }}>
-          The full master record lives in your Google Sheet after every sync. Open it anytime to filter by month, member, or service type. All steward sessions are timestamped and stored there permanently.
+          After every service, tap <strong>Publish attendance to GitHub</strong> above. The members dashboard updates within seconds — no file uploads, no Google Sheets required.
         </p>
-        {m.gasUrl ? (
-          <a href={m.gasUrl.replace('/exec','').replace('/macros/s/','').includes('docs.google.com') ? m.gasUrl : '#'}
-            target="_blank" rel="noopener"
-            style={{ display:'block', padding:'10px 14px', borderRadius:10, background:ATT_ACCENT+'10', border:`1px solid ${ATT_ACCENT}30`, fontSize:'0.8125rem', color:ATT_ACCENT, textDecoration:'none', fontWeight:500 }}>
-            ↗ Open in Google Sheets (paste your Sheet URL here)
-          </a>
+        <a href="https://github.com/ninlamster-blip/flcc-members-2026/blob/main/attendance.json"
+          target="_blank" rel="noopener"
+          style={{ display:'block', padding:'10px 14px', borderRadius:10, background:ATT_ACCENT+'10', border:`1px solid ${ATT_ACCENT}30`, fontSize:'0.8125rem', color:ATT_ACCENT, textDecoration:'none', fontWeight:500 }}>
+          ↗ View attendance.json on GitHub
+        </a>
+        <div style={{ marginTop:10, fontSize:'0.75rem', color:'var(--ink-muted)' }}>
+          Tip: Use the Analytics tab to see trends, care flags, and top members anytime — no internet needed.
+        </div>
+      </div>
+
+      {/* Auto-sync to GitHub */}
+      <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#16A34A' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#16A34A' }}>Auto-Sync to Members Dashboard</div>
+        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:12, lineHeight:1.5 }}>
+          One tap publishes attendance directly to GitHub — members see their history instantly. No manual download or upload needed.
+        </p>
+        {ghToken ? (
+          <div>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12, padding:'8px 12px', borderRadius:10, background:'#F0FDF4', border:'1px solid #BBF7D0' }}>
+              <div className="sync-dot sync-dot-ok" />
+              <span style={{ fontSize:'0.8125rem', color:'#16A34A', fontWeight:500 }}>GitHub token connected</span>
+              <button onClick={clearGhToken} style={{ marginLeft:'auto', fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer' }}>Remove</button>
+            </div>
+            <button
+              className="btn"
+              style={{ width:'100%', justifyContent:'center', padding:'13px', fontSize:'0.9375rem', fontWeight:700, borderRadius:12, background: ghStatus==='ok'?'#16A34A': ghStatus==='err'?'#DC2626':'#16A34A', color:'white' }}
+              onClick={publishToGitHub}
+              disabled={ghPublishing || !state.sessions.length}
+            >
+              {ghPublishing ? '↻ Publishing…' : ghStatus==='ok' ? '✓ Published! Members can see it now' : ghStatus==='err' ? '⚠ Failed — try again' : '☁ Publish attendance to GitHub'}
+            </button>
+            {!state.sessions.length && <div style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', marginTop:6, textAlign:'center' }}>Record at least one session first.</div>}
+          </div>
         ) : (
-          <div style={{ padding:'10px 14px', borderRadius:10, background:'#F4F4F0', fontSize:'0.8125rem', color:'var(--ink-subtle)', fontStyle:'italic' }}>
-            Set up Google Sheets sync above, then you can access the master record anytime.
+          <div>
+            <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.6 }}>
+              <strong>One-time setup:</strong> Create a free GitHub Personal Access Token (fine-grained), give it <em>Contents: Read &amp; write</em> permission for this repo only, then paste it below.
+            </div>
+            <ol style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', paddingLeft:18, lineHeight:1.9, marginBottom:12 }}>
+              <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens → Fine-grained tokens</li>
+              <li>Click <strong>Generate new token</strong></li>
+              <li>Repository access → Only select repositories → <strong>flcc-members-2026</strong></li>
+              <li>Permissions → Repository permissions → Contents → <strong>Read and write</strong></li>
+              <li>Click Generate → Copy the token (starts with <code style={{ background:'#F4F4F0', padding:'1px 4px', borderRadius:4, fontSize:'0.75rem' }}>github_pat_</code>)</li>
+            </ol>
+            <div style={{ display:'flex', gap:6 }}>
+              <input
+                className="input" style={{ flex:1 }} type="password"
+                placeholder="github_pat_…"
+                value={ghTokenInput} onChange={e=>setGhTokenInput(e.target.value)}
+                onKeyDown={e=>e.key==='Enter'&&saveGhToken()}
+              />
+              <button className="btn" style={{ background:'#16A34A', color:'white', flexShrink:0 }} onClick={saveGhToken} disabled={!ghTokenInput.trim()}>Connect</button>
+            </div>
           </div>
         )}
-        <div style={{ marginTop:10, fontSize:'0.75rem', color:'var(--ink-muted)' }}>
-          Tip: You can also view Analytics tab in this app anytime to see trends, care flags, and top members — no internet needed.
-        </div>
       </div>
 
       {/* Data section */}
       <div className="card" style={{ padding:16, marginBottom:14 }}>
-        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Data & Publish</div>
-        <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.5 }}>
-          Generate <code style={{ background:'#F4F4F0', padding:'1px 5px', borderRadius:4, fontSize:'0.75rem' }}>attendance.json</code> and upload it to your GitHub repo. Members will then see their own personal attendance history when they open the app.
-        </p>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Backup & Restore</div>
         <div style={{ display:'grid', gap:8 }}>
-          <button className="btn btn-accent" onClick={publishAttendanceJSON} disabled={!state.sessions.length}>
-            ↓ Generate attendance.json
+          <button className="btn btn-soft" onClick={publishAttendanceJSON} disabled={!state.sessions.length}>
+            ↓ Download attendance.json (manual upload)
           </button>
           <button className="btn btn-primary" onClick={exportBackup}>↓ Download admin backup</button>
           <div>
@@ -1954,7 +2068,8 @@ function App() {
   return (
     <div style={{ minHeight:'100vh', background:'var(--bg)' }}>
       {/* Header */}
-      <header style={{ background:'rgba(250,250,245,.92)', backdropFilter:'blur(10px)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:20 }}>
+      <header style={{ backdropFilter:'blur(10px)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:20 }}>
+        <div className="hdr-strip" />
         <div style={{ maxWidth:700, margin:'0 auto', padding:'16px 18px 0' }}>
           <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:10 }}>
             <div>
@@ -1995,12 +2110,14 @@ function App() {
 
       {/* Tab content */}
       <main style={{ maxWidth:700, margin:'0 auto' }}>
-        {tab==='today'     && <TodayTab     members={members} state={state} dispatch={dispatch} schedule={schedule} />}
-        {tab==='history'   && <HistoryTab   state={state} dispatch={dispatch} members={members} />}
-        {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
-        {tab==='care'      && <CareTab      state={state} members={members} />}
-        {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
-        {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} />}
+        <div key={tab} className="tab-content-area">
+          {tab==='today'     && <TodayTab     members={members} state={state} dispatch={dispatch} schedule={schedule} />}
+          {tab==='history'   && <HistoryTab   state={state} dispatch={dispatch} members={members} />}
+          {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
+          {tab==='care'      && <CareTab      state={state} members={members} />}
+          {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
+          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} />}
+        </div>
       </main>
 
       <footer style={{ maxWidth:700, margin:'0 auto', padding:'3rem 1.5rem 6rem', fontSize:'0.75rem', color:'var(--ink-subtle)', textAlign:'center' }}>

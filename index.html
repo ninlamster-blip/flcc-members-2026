@@ -71,6 +71,19 @@
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
   .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
+  .ask-pill {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.45rem 0.875rem; border-radius: 9px;
+    background: var(--accent); color: #fff;
+    text-decoration: none; font-weight: 600;
+    font-size: 0.875rem; line-height: 1;
+    box-shadow: 0 2px 8px rgba(163,59,42,0.25);
+    letter-spacing: -0.01em;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+  }
+  .ask-pill:hover { background: var(--accent-hover); }
   .btn-soft { background: #F4F4F0; color: var(--ink); }
   .btn-soft:hover { background: #EDEDE7; }
   .btn-danger { background: var(--danger); color: white; }
@@ -486,6 +499,161 @@
   }
   @keyframes snRipple { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.18)} }
   .sn-scan-result { animation: snSlideUp .3s cubic-bezier(.34,1.56,.64,1) both; }
+
+  /* ── DYNAMIC UI LAYER ──────────────────────────────────────────────── */
+
+  /* Spring easing shorthand */
+  :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+  @keyframes gradientPulse {
+    0%,100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes greetingPop {
+    from { opacity: 0; transform: translateY(5px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes accentGlow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(163,59,42,0.25); }
+    50%     { box-shadow: 0 0 0 7px rgba(163,59,42,0); }
+  }
+  @keyframes tabPop {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+  @keyframes fabFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-5px) scale(1.03); }
+  }
+
+  /* Animated header accent strip */
+  .hdr-strip {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #E86848, #D97706, #C2410C, var(--accent));
+    background-size: 250% 100%;
+    animation: gradientPulse 5s ease-in-out infinite;
+  }
+
+  /* Header warm glow */
+  header {
+    background: linear-gradient(180deg, rgba(251,235,231,0.45) 0%, rgba(250,250,245,0.93) 55%) !important;
+  }
+
+  /* Greeting entrance */
+  .greeting-h1 {
+    animation: greetingPop 0.55s var(--spring) both;
+    animation-delay: 0.08s;
+  }
+
+  /* Tab active: animated underline */
+  .tab { position: relative; }
+  .tab-active { border-bottom-color: transparent !important; }
+  .tab-active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+    transform-origin: left center;
+    animation: tabPop 0.22s var(--spring) both;
+  }
+
+  /* Main tab content entrance */
+  .tab-content-area {
+    animation: fadeSlideUp 0.28s var(--spring) both;
+  }
+
+  /* Button spring */
+  .btn {
+    transition: transform 0.18s var(--spring), box-shadow 0.18s ease, background 0.15s ease !important;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+  .btn:active { transform: translateY(0) scale(0.95) !important; box-shadow: none !important; }
+  .btn-accent:hover { box-shadow: 0 4px 16px rgba(163,59,42,0.32) !important; }
+  .btn-primary:hover { box-shadow: 0 4px 16px rgba(24,24,27,0.22) !important; }
+
+  /* Ask pill spring hover */
+  .ask-pill {
+    transition: transform 0.2s var(--spring), box-shadow 0.2s ease, background 0.15s ease !important;
+  }
+  .ask-pill:hover {
+    transform: translateY(-2px) scale(1.04) !important;
+    box-shadow: 0 6px 22px rgba(163,59,42,0.38) !important;
+  }
+  .ask-pill:active { transform: scale(0.95) !important; }
+
+  /* Cards: lift */
+  .home-card {
+    transition: transform 0.2s var(--spring), box-shadow 0.2s ease, border-color 0.15s ease !important;
+  }
+  .home-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.04) !important;
+    border-color: var(--border-strong) !important;
+  }
+  .home-card:active { transform: translateY(-1px) scale(0.99) !important; }
+
+  .row-card {
+    transition: transform 0.18s var(--spring), box-shadow 0.18s ease, border-color 0.15s ease !important;
+  }
+  .row-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border-color: var(--border-strong);
+  }
+
+  /* "Mine" assignment pulse */
+  .row-mine { animation: accentGlow 3s ease-in-out infinite; }
+  .home-card-mine { animation: accentGlow 3s ease-in-out 1.2s infinite; }
+
+  /* Channel buttons */
+  .channel-btn {
+    transition: transform 0.18s var(--spring), box-shadow 0.18s ease, border-color 0.15s ease !important;
+  }
+  .channel-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+  }
+
+  /* Input / select accent focus */
+  .input:focus, .select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(163,59,42,0.1), 0 0 0 1px rgba(163,59,42,0.4) !important;
+  }
+
+  /* Calendar day hover warm */
+  .cal-day:hover { background: var(--accent-soft) !important; }
+  .ios-cal-day { transition: background 0.12s ease !important; }
+
+  /* Today glow */
+  .cal-day-today { animation: accentGlow 2.5s ease-in-out 0.5s 1; }
+
+  /* FAB: float + spring */
+  .fab-live {
+    transition: transform 0.2s var(--spring), box-shadow 0.2s ease !important;
+    animation: fabFloat 4s ease-in-out 2s infinite;
+  }
+  .fab-live:hover {
+    transform: scale(1.15) translateY(-3px) !important;
+    animation: none !important;
+  }
+  .fab-live:active {
+    transform: scale(0.88) !important;
+    animation: none !important;
+    transition-duration: 0.08s !important;
+  }
+
+  /* Modal pop */
+  .modal { animation: fadeSlideUp 0.3s var(--spring) both !important; }
+  .sheet { animation: sheetUp 0.28s var(--spring) !important; }
+
+  /* Pill spring */
+  .pill { transition: transform 0.12s var(--spring); }
 </style>
 </head>
 <body>
@@ -1829,6 +1997,12 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
         </div>
       )}
 
+      {/* Bible — Verse of the Day + Lookup */}
+      <div className="mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📖 God's Word</div>
+        <BibleSection />
+      </div>
+
       {!me && (
         <div className="card p-5 text-center mt-6" style={{ background: 'var(--accent-soft)' }}>
           <div className="font-display text-lg font-semibold mb-1">Pick your name to personalize</div>
@@ -1836,6 +2010,120 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           <button className="btn btn-accent text-sm" onClick={() => setActiveTab('about')}>Get started</button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Shared Bible section (Verse of the Day + lookup) ───────────────────────
+function BibleSection() {
+  const [translation, setTranslation] = React.useState(() => {
+    try { return localStorage.getItem(BIBLE_KEY) || 'web'; } catch { return 'web'; }
+  });
+  const [votd, setVotd] = React.useState(null);
+  const [votdLoading, setVotdLoading] = React.useState(true);
+  const [votdError, setVotdError] = React.useState(null);
+  const [query, setQuery] = React.useState('');
+  const [result, setResult] = React.useState(null);
+  const [searchLoading, setSearchLoading] = React.useState(false);
+  const [searchError, setSearchError] = React.useState(null);
+
+  const dayRef = React.useMemo(() => {
+    const start = new Date(new Date().getFullYear(), 0, 0);
+    const day = Math.floor((Date.now() - start) / 86400000);
+    return VOTD_REFS[day % VOTD_REFS.length];
+  }, []);
+
+  const devotion = VOTD_DEVOTIONS[dayRef] || null;
+
+  const fetchVerse = async (ref, trans) => {
+    const resp = await fetch(`https://bible-api.com/${encodeURIComponent(ref)}?translation=${trans}`);
+    if (!resp.ok) throw new Error('Verse not found');
+    return resp.json();
+  };
+
+  React.useEffect(() => {
+    setVotdLoading(true); setVotdError(null);
+    fetchVerse(dayRef, translation)
+      .then(d => setVotd(d))
+      .catch(() => setVotdError('Could not load verse. Check your connection.'))
+      .finally(() => setVotdLoading(false));
+  }, [dayRef, translation]);
+
+  const changeTranslation = t => {
+    setTranslation(t);
+    try { localStorage.setItem(BIBLE_KEY, t); } catch {}
+    setResult(null);
+  };
+
+  const handleSearch = async e => {
+    e?.preventDefault();
+    if (!query.trim()) return;
+    setSearchLoading(true); setSearchError(null); setResult(null);
+    try { setResult(await fetchVerse(query.trim(), translation)); }
+    catch { setSearchError('Verse not found. Try "John 3:16", "Psalm 23", or "Romans 8:28-30".'); }
+    finally { setSearchLoading(false); }
+  };
+
+  return (
+    <div>
+      {/* Translation picker */}
+      <div className="flex gap-2 mb-3 flex-wrap">
+        {[{key:'web',label:'WEB'},{key:'kjv',label:'KJV'}].map(t => (
+          <button key={t.key} className={`btn text-xs ${translation===t.key?'btn-primary':'btn-ghost'}`} onClick={() => changeTranslation(t.key)}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Verse of the Day */}
+      <div className="card p-5 mb-3" style={{background:'linear-gradient(135deg,#1E1B4B 0%,#312E81 100%)',border:'none',color:'white'}}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'#A5B4FC'}}>📖 Verse of the Day</div>
+        {votdLoading && <div className="text-sm" style={{color:'#C7D2FE'}}>Loading…</div>}
+        {votdError  && <div className="text-sm" style={{color:'#FCA5A5'}}>{votdError}</div>}
+        {votd && !votdLoading && (
+          <>
+            <blockquote className="font-display text-base leading-relaxed mb-3" style={{color:'#EEF2FF',fontStyle:'italic'}}>
+              "{votd.text?.trim()}"
+            </blockquote>
+            <div className="text-sm font-semibold" style={{color:'#A5B4FC'}}>
+              {votd.reference} <span className="font-normal" style={{color:'#818CF8'}}>· {translation.toUpperCase()}</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Daily Devotion — compact */}
+      {devotion && (
+        <div className="card p-4 mb-3">
+          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{color:'var(--accent)'}}>🕊️ Today's Devotion</div>
+          <p className="text-sm ink leading-relaxed">{devotion}</p>
+        </div>
+      )}
+
+      {/* Verse Lookup */}
+      <div className="card p-4">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Look Up a Verse</div>
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <input className="input flex-1" placeholder='e.g. John 3:16, Psalm 23' value={query} onChange={e => setQuery(e.target.value)} />
+          <button type="submit" className="btn btn-accent" disabled={searchLoading || !query.trim()}>{searchLoading ? '…' : 'Go'}</button>
+        </form>
+        {searchError && <div className="text-sm mt-2" style={{color:'var(--danger)'}}>{searchError}</div>}
+        {result && (
+          <div className="mt-4">
+            <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">{result.reference} · {translation.toUpperCase()}</div>
+            {(result.verses||[]).length > 1 ? (
+              <div className="space-y-2">
+                {result.verses.map(v => (
+                  <div key={v.verse} className="flex gap-2 text-sm leading-relaxed">
+                    <span className="font-mono text-xs ink-subtle mt-0.5" style={{minWidth:20}}>{v.verse}</span>
+                    <span className="ink">{v.text?.trim()}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm ink leading-relaxed">{result.text?.trim()}</div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -2473,29 +2761,49 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
   const equipMinistries = (equipData?.ministries || []).filter(em => em.headName);
   const botr = data.botrChurch || null;
 
+  // Pastoral leadership — pinned to top of ministry list
+  const justinFlores  = (data.workers || []).find(w => w.id === 'ptr-01');
+  const doddieArciaga = (data.workers || []).find(w => w.id === 'ptr-02');
+
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="About" title={data.meta.churchName}>
         This members view is read-only and shows the latest schedule published by the admin.
       </SectionHeading>
 
-      {/* BOTR Church Section */}
+      {/* BOTR Church Network Section */}
       {botr && (
         <div className="card p-6 mb-4">
-          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#7C3AED' }}>⛪ {botr.name || 'FLCC BOTR Church'}</div>
+          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#7C3AED' }}>⛪ {botr.name || 'FLCC BOTR Church Network'}</div>
+          {botr.network && <div className="text-xs ink-subtle mb-3">{botr.network}</div>}
+
+          {/* Mission */}
+          {botr.missionTarget && (
+            <div className="mb-4 px-3 py-2 rounded-lg" style={{ background: '#F5F3FF', border: '1px solid #DDD6FE' }}>
+              <div className="text-xs font-semibold" style={{ color: '#7C3AED' }}>🎯 Mission Target</div>
+              <div className="text-sm mt-0.5" style={{ color: '#4C1D95' }}>{botr.missionTarget}</div>
+              {botr.totalChurches && <div className="text-xs ink-subtle mt-1">{botr.totalChurches} satellite locations + virtual platform</div>}
+            </div>
+          )}
 
           {/* Lead Pastor */}
           {botr.leadPastor?.name && (
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="text-xs ink-subtle mb-1">Lead Pastor</div>
-              <div className="font-display text-2xl font-semibold">{botr.leadPastor.name}</div>
-              {botr.leadPastor.title && <div className="text-sm ink-muted mt-0.5">{botr.leadPastor.title}</div>}
-              <div className="space-y-1 mt-2 text-sm">
+              <div className="font-display text-xl font-semibold">{botr.leadPastor.name}</div>
+              {botr.leadPastor.title && <div className="text-sm ink-muted">{botr.leadPastor.title}</div>}
+              <div className="space-y-1 mt-1 text-sm">
                 {botr.leadPastor.whatsapp  && <div><span className="ink-muted text-xs">WhatsApp · </span><a href={whatsappURL(botr.leadPastor.whatsapp, '')} className="ink hover:underline">{botr.leadPastor.whatsapp}</a></div>}
-                {botr.leadPastor.messenger && <div><span className="ink-muted text-xs">Messenger · </span><a href={messengerURL(botr.leadPastor.messenger)} target="_blank" rel="noopener" className="ink hover:underline">@{botr.leadPastor.messenger}</a></div>}
                 {botr.leadPastor.phone     && <div><span className="ink-muted text-xs">Phone · </span><a href={`tel:${botr.leadPastor.phone}`} className="ink hover:underline">{botr.leadPastor.phone}</a></div>}
-                {botr.leadPastor.email     && <div><span className="ink-muted text-xs">Email · </span><a href={`mailto:${botr.leadPastor.email}`} className="ink hover:underline">{botr.leadPastor.email}</a></div>}
               </div>
+            </div>
+          )}
+
+          {/* Evangelism Ministry Head */}
+          {botr.evangelismMinistryHead?.name && (
+            <div className="mb-3">
+              <div className="text-xs ink-subtle mb-0.5">Evangelism Ministry Head</div>
+              <div className="text-sm font-semibold">{botr.evangelismMinistryHead.name}</div>
             </div>
           )}
 
@@ -2503,39 +2811,148 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
           {(botr.sectorLeaders || []).some(s => s.name) && (
             <>
               <div className="dotted-divider my-3" />
-              <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Sector Leaders</div>
-              <div className="space-y-3">
+              <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Sector Leaders</div>
+              <div className="space-y-4">
                 {(botr.sectorLeaders || []).filter(s => s.name).map((s, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
+                  <div key={i}>
+                    <div className="flex items-center gap-2 mb-1">
                       <div className="text-sm font-semibold">{s.name}</div>
-                      <div className="text-xs ink-muted">{s.sector}{s.title ? ` · ${s.title}` : ''}</div>
-                      {s.whatsapp && <a href={whatsappURL(s.whatsapp, '')} className="text-xs ink hover:underline">{s.whatsapp}</a>}
+                      <span className="pill pill-accent text-xs">{s.sector}</span>
                     </div>
+                    {s.evangelismCoordinator && <div className="text-xs ink-muted">Evangelism Coord: {s.evangelismCoordinator}</div>}
+                    {s.churches?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {s.churches.map((c, j) => <span key={j} className="pill pill-default text-xs">{c}</span>)}
+                      </div>
+                    )}
+                    {s.whatsapp && <a href={whatsappURL(s.whatsapp, '')} className="text-xs ink hover:underline block mt-1">{s.whatsapp}</a>}
                   </div>
                 ))}
               </div>
             </>
           )}
 
-          {/* Satellite Church Pastors */}
-          {(botr.satelliteChurches || []).some(s => s.name) && (
+          {/* Satellite Churches */}
+          {(botr.satelliteChurches || []).length > 0 && (
             <>
               <div className="dotted-divider my-3" />
               <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Satellite Churches</div>
-              <div className="space-y-3">
-                {(botr.satelliteChurches || []).filter(s => s.name).map((s, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold">{s.name}</div>
-                      <div className="text-xs ink-muted">{s.title || 'Pastor'}{s.church ? ` · ${s.church}` : ''}{s.location ? ` — ${s.location}` : ''}</div>
-                      {s.whatsapp && <a href={whatsappURL(s.whatsapp, '')} className="text-xs ink hover:underline">{s.whatsapp}</a>}
-                    </div>
+              <div className="flex flex-wrap gap-2">
+                {(botr.satelliteChurches || []).map((s, i) => (
+                  <div key={i} className="pill pill-default text-xs flex items-center gap-1">
+                    <span>{s.church}</span>
+                    <span className="ink-subtle">· {s.sector}</span>
                   </div>
                 ))}
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* 2026 Sermon Themes + Worker Roster */}
+      {data.workerRoster2026 && (() => {
+        const r = data.workerRoster2026;
+        const today = new Date().toISOString().slice(0, 10);
+        const upcoming = r.fullSchedule.filter(s => s.date >= today).slice(0, 5);
+        const currentMonth = new Date().getMonth();
+        return (
+          <>
+            {/* Monthly Sermon Themes */}
+            <div className="card p-6 mb-4">
+              <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{ color:'#0284C7' }}>📖 2026 Sermon Themes</div>
+              {r.monthlyThemes[currentMonth] && (
+                <div className="px-3 py-2 rounded-lg mb-3" style={{ background:'#EFF6FF', border:'1px solid #BFDBFE' }}>
+                  <div className="text-xs font-semibold" style={{ color:'#1D4ED8' }}>This Month — {r.monthlyThemes[currentMonth].month}</div>
+                  <div className="text-sm font-medium mt-0.5">{r.monthlyThemes[currentMonth].theme}</div>
+                </div>
+              )}
+              <div className="space-y-1">
+                {r.monthlyThemes.map((t, i) => (
+                  <div key={i} className="flex gap-3 items-start py-0.5">
+                    <span className="text-xs ink-subtle shrink-0 w-8 pt-0.5">{t.month.slice(0,3)}</span>
+                    <span className={`text-sm ${i === currentMonth ? 'font-semibold' : 'ink-muted'}`}>{t.theme}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ministry Workers by Role */}
+            <div className="card p-6 mb-4">
+              <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-4">🎙 Ministry Workers 2026</div>
+              <div className="mb-4">
+                <div className="text-xs font-semibold mb-2" style={{ color:'#1D4ED8' }}>Preachers</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.preachers.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+              <div className="mb-4">
+                <div className="text-xs font-semibold mb-2" style={{ color:'#6D28D9' }}>Pastoral Prayer</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.pastoralPrayer.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+              <div className="mb-4">
+                <div className="text-xs font-semibold mb-2" style={{ color:'#D97706' }}>EMCEE / Presiders</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.emcee.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-semibold mb-2 ink-muted">Guest Speakers</div>
+                <div className="flex flex-wrap gap-1">
+                  {r.guestSpeakers.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
+                </div>
+              </div>
+            </div>
+
+            {/* Upcoming Services */}
+            {upcoming.length > 0 && (
+              <div className="card p-6 mb-4">
+                <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">📅 Upcoming Services</div>
+                <div className="space-y-3">
+                  {upcoming.map((s, i) => {
+                    const d = new Date(s.date + 'T00:00:00');
+                    const label = d.toLocaleDateString('en-US', { weekday:'short', month:'long', day:'numeric', year:'numeric' });
+                    const svcLabel = s.service ? `${s.service} Service` : '';
+                    const mc = s.presider || s.emcee;
+                    return (
+                      <div key={i} className="pb-3" style={{ borderBottom: i < upcoming.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                        <div className="text-xs ink-subtle mb-1">
+                          {svcLabel && <span style={{ fontWeight:600, color:'var(--accent)' }}>{svcLabel} · </span>}
+                          {label}{s.event ? ` · ${s.event}` : ''}
+                        </div>
+                        {s.preacher    && <div className="text-sm"><span className="ink-muted text-xs">Preacher · </span>{s.preacher}</div>}
+                        {s.prayer      && <div className="text-sm"><span className="ink-muted text-xs">Pastoral Prayer · </span>{s.prayer}</div>}
+                        {mc            && <div className="text-sm"><span className="ink-muted text-xs">Presider · </span>{mc}</div>}
+                        {s.songLeader  && <div className="text-sm"><span className="ink-muted text-xs">Song Leader · </span>{s.songLeader}</div>}
+                        {s.communionAssistant && <div className="text-sm"><span className="ink-muted text-xs">Communion · </span>{s.communionAssistant}</div>}
+                        {s.foodInCharge && <div className="text-sm"><span className="ink-muted text-xs">Food · </span>{s.foodInCharge}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
+
+      {/* Lead Pastor — Ptr. Justin Flores */}
+      {justinFlores && (
+        <div className="card p-6 mb-4" style={{ borderTop: '3px solid var(--accent)', background: 'linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 35%)' }}>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>✝️ Lead Pastor</div>
+          <div className="font-display text-2xl font-semibold">{justinFlores.title} {justinFlores.name}</div>
+          <div className="text-sm ink-muted mt-1">Senior Pastor · FLCC Abundance</div>
+        </div>
+      )}
+
+      {/* Ptr. Doddie Arciaga */}
+      {doddieArciaga && (
+        <div className="card p-6 mb-4" style={{ borderTop: '3px solid #6366F1' }}>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>✝️ Pastor</div>
+          <div className="font-display text-2xl font-semibold">{doddieArciaga.title} {doddieArciaga.name}</div>
+          <div className="text-sm ink-muted mt-1">Pastor · FLCC Abundance</div>
         </div>
       )}
 
@@ -4119,6 +4536,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
   const [txState,   setTxState]   = useState('idle'); // idle | listening | error
   const [txInterim, setTxInterim] = useState('');
   const [txError,   setTxError]   = useState('');
+  const [txLang,    setTxLang]    = useState('fil-PH'); // fil-PH = Filipino/Taglish, en-PH = English
   const SpeechRec = typeof window !== 'undefined' &&
     (window.SpeechRecognition || window.webkitSpeechRecognition);
 
@@ -4135,7 +4553,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
     const r = new SpeechRec();
     r.continuous     = true;
     r.interimResults = true;
-    r.lang           = 'en-PH';   // Filipino English
+    r.lang           = txLang;  // fil-PH handles Tagalog/Taglish; en-PH for English-only
 
     r.onresult = evt => {
       let interim = '';
@@ -4335,7 +4753,8 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 
       // ── Step 3: create worker with all explicit CDN paths ─────────────────
       // This is the critical fix — v5 needs explicit paths when loaded from CDN
-      worker = await window.Tesseract.createWorker('eng', 1, {
+      // eng+fil: bilingual model handles English and Tagalog text on slides
+      worker = await window.Tesseract.createWorker('eng+fil', 1, {
         workerPath: WORK_PATH,
         corePath:   CORE_PATH,
         langPath:   LANG_PATH,
@@ -4345,7 +4764,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
           } else if (m.status === 'initializing tesseract') {
             setScanMsg('Starting OCR…'); setScanProgress(32);
           } else if (m.status === 'loading language traineddata') {
-            setScanMsg('Loading language data…'); setScanProgress(38);
+            setScanMsg('Loading English + Filipino language data…'); setScanProgress(38);
           } else if (m.status === 'initializing api') {
             setScanMsg('Almost ready…'); setScanProgress(44);
           } else if (m.status === 'recognizing text') {
@@ -4356,10 +4775,10 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
         },
       });
 
-      // Tuned parameters for handwritten notes
+      // PSM 3: fully automatic without OSD — more reliable for phone-angle photos of slides
       await worker.setParameters({
-        tessedit_pageseg_mode:    '1',   // auto — handles mixed layouts
-        tessedit_char_blacklist:  '`~^',  // rarely appear in notes
+        tessedit_pageseg_mode:    '3',
+        tessedit_char_blacklist:  '`~^',
         preserve_interword_spaces:'1',
       });
 
@@ -4519,17 +4938,27 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
               <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink-subtle)' }}>Sermon Notes</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
 
-                {/* 🎙 Transcribe button */}
+                {/* 🎙 Transcribe button + language toggle */}
                 {txState === 'idle' && scanState === 'idle' && (
-                  <button
-                    onClick={startTranscription}
-                    title="Tap and listen — transcribes the preacher's sermon live"
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
-                    onMouseEnter={e => e.currentTarget.style.background='#FDE68A'}
-                    onMouseLeave={e => e.currentTarget.style.background='#FEF3C7'}
-                  >
-                    <span style={{ fontSize: '0.875rem' }}>🎙</span> Transcribe
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button
+                      onClick={startTranscription}
+                      title={txLang === 'fil-PH' ? 'Transcribe in Filipino/Taglish' : 'Transcribe in English'}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background='#FDE68A'}
+                      onMouseLeave={e => e.currentTarget.style.background='#FEF3C7'}
+                    >
+                      <span style={{ fontSize: '0.875rem' }}>🎙</span> Transcribe
+                    </button>
+                    {/* Language toggle: FIL (Tagalog/Taglish) ↔ EN */}
+                    <button
+                      onClick={() => setTxLang(l => l === 'fil-PH' ? 'en-PH' : 'fil-PH')}
+                      title={txLang === 'fil-PH' ? 'Currently: Filipino/Taglish — tap to switch to English' : 'Currently: English — tap to switch to Filipino/Taglish'}
+                      style={{ padding: '3px 8px', borderRadius: 999, background: txLang === 'fil-PH' ? '#DBEAFE' : '#F3F4F6', border: `1px solid ${txLang === 'fil-PH' ? '#93C5FD' : '#D1D5DB'}`, color: txLang === 'fil-PH' ? '#1D4ED8' : '#6B7280', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '.02em', transition: 'all .15s' }}
+                    >
+                      {txLang === 'fil-PH' ? 'FIL' : 'EN'}
+                    </button>
+                  </div>
                 )}
 
                 {/* Listening state */}
@@ -4590,7 +5019,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                 <div style={{ padding: '8px 14px', background: '#DC2626', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'white', animation: 'snPulse 1.2s ease-in-out infinite', flexShrink: 0 }}/>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', letterSpacing: '.04em' }}>LIVE — Listening to sermon…</span>
-                  <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,.75)', marginLeft: 'auto' }}>Keep phone mic toward speaker</span>
+                  <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,.85)', marginLeft: 'auto' }}>{txLang === 'fil-PH' ? '🇵🇭 Tagalog/Taglish' : '🇬🇧 English'}</span>
                 </div>
 
                 {/* Live text preview */}
@@ -5738,6 +6167,64 @@ const VOTD_REFS = [
   'Ephesians 3:20','Colossians 1:17','Psalm 121:1-2','Romans 15:13','2 Corinthians 12:9',
 ];
 
+const VOTD_DEVOTIONS = {
+  'John 3:16':               "God's love is not passive or distant — it moved Him to give the most precious gift possible: His own Son. This verse reminds us that salvation is not earned by our efforts but received through faith. Today, rest in the certainty that you are deeply and unconditionally loved by God.",
+  'Psalm 23:1-6':            "David wrote 'The Lord is my shepherd' not from a place of comfort, but from experience in the wilderness. A good shepherd provides, protects, and guides — even through dark valleys. Walk confidently today knowing the Good Shepherd is leading your every step.",
+  'Proverbs 3:5-6':          "Trusting God completely means releasing our grip on our own understanding and plans. When we acknowledge Him in all our ways, we invite His wisdom into every decision we make. Surrender your agenda to Him today and trust that His path is better than your own.",
+  'Philippians 4:13':        "Paul wrote these words from a prison cell — yet his confidence was unshakable. Our strength is not found in our circumstances but in Christ who indwells us. Whatever challenge faces you today, face it knowing you are empowered by the risen Lord.",
+  'Romans 8:28':             "This promise does not say everything that happens is good, but that God works all things together for good. Even in our darkest moments, God is weaving a tapestry of purpose we cannot yet see. Trust His sovereign hand over every detail of your life today.",
+  'Isaiah 40:31':            "Waiting on the Lord is not passive — it is an active posture of trust and expectation. God's promise is that those who wait on Him will be renewed, not just sustained. Come to Him in your weariness today, and He will give you strength to soar.",
+  'Jeremiah 29:11':          "God spoke these words to a people in exile, in the middle of their suffering — not after it. His plans for us are not derailed by our present circumstances. Hold on to hope today knowing that God's future for you is filled with purpose and blessing.",
+  'Joshua 1:9':              "God gave Joshua this command not once but repeatedly — because courage is not a feeling, it is a daily choice. The source of Joshua's courage was not his own strength but the presence of God with him. You are not alone in your challenges today — God is with you wherever you go.",
+  'Matthew 6:33':            "Jesus invites us to reorder our priorities, putting God's kingdom first above all earthly concerns. When we seek Him first, He promises to meet our every need in His perfect timing. Let this be your anchor today: seek God first, and trust Him with the rest.",
+  '1 Corinthians 13:4-7':   "Love is not merely a feeling — it is a series of deliberate choices made daily. Paul's description of love reveals that it is fundamentally other-centered and sacrificial. Ask God today to help you love the people around you in these practical, Christlike ways.",
+  'Psalm 46:1':              "The psalmist wrote this in the middle of upheaval — earthquakes, roaring seas, shifting mountains. Yet amidst all the chaos, God remains a fortress that cannot be shaken. Run to Him today as your refuge, your strength, your ever-present help.",
+  'Romans 12:2':             "Transformation begins not with better behavior but with a renewed mind — changing how we think changes how we live. The world constantly pressures us to conform to its patterns, but God calls us to something higher. Feed your mind on God's Word today and let it shape your thinking.",
+  'Galatians 5:22-23':       "The fruit of the Spirit is not produced by our striving but by the Spirit's work within us. Just as fruit grows naturally on a healthy tree, these qualities grow when we stay connected to Christ. Surrender to the Spirit's work in you today and watch His character bloom.",
+  'Ephesians 2:8-9':         "Salvation is entirely God's gift — not a reward for our religious performance. This truth humbles us and fills us with gratitude, knowing we could never earn what God freely gives. Receive this grace afresh today and let it move you to live for His glory.",
+  'Hebrews 11:1':            "Faith is not wishful thinking — it is confident trust in a God who has proven Himself faithful. It gives substance to what we cannot yet see and certainty to what we hope for. Anchor your heart in faith today, knowing the God of promises never fails.",
+  'James 1:2-4':             "James does not say trials might come — he says when they come. But he reframes them not as tragedies but as invitations to grow. Perseverance forged in trials produces a completeness in us that comfort alone never could. Let today's difficulty be your classroom.",
+  '2 Timothy 1:7':           "Fear is not from God — He has given us power, love, and a sound mind. Timothy was young and perhaps intimidated, yet Paul reminds him of the Spirit within him. Whatever you face today, reject the spirit of fear and step forward in the power God has placed in you.",
+  'Psalm 119:105':           "God's Word is not just information — it is illumination for our path when life feels dark. The lamp does not light the entire road at once, only the next step. Read His Word faithfully today, and trust it to guide you one faithful step at a time.",
+  'Matthew 28:19-20':        "The Great Commission is not a suggestion for the spiritually gifted — it is a command for every follower of Jesus. But it comes with the most powerful promise: 'I am with you always.' You are not sent alone — the risen Christ goes with you wherever you go.",
+  'John 14:6':               "Jesus did not say He shows the way or teaches the truth — He said He is the Way, the Truth, and the Life. In a world of competing voices and shifting standards, He alone is the absolute answer. Come to the Father today through Jesus — there is no other door.",
+  'Philippians 4:6-7':       "Anxiety comes from trying to carry tomorrow's burdens with today's strength. God's invitation is to bring everything to Him in prayer with a thankful heart. The peace He gives in return defies all logic — it guards our hearts like a soldier on watch.",
+  'Isaiah 41:10':            "This is God's personal assurance to those who feel afraid and alone. He does not just observe our fear from a distance — He holds us with His righteous right hand. Let these words be a steadying anchor for your soul today: 'I am with you. Do not fear.'",
+  'Lamentations 3:22-23':    "These words were written in the ruins of Jerusalem by a prophet who had lost everything. Yet even in his darkest hour, Jeremiah found a reason for hope: God's mercies are new every morning. Whatever yesterday held, today is a fresh start — His faithfulness never runs out.",
+  'Romans 3:23':             "This verse levels the ground at the foot of the cross — all have sinned, no one is beyond needing God's grace. Recognizing our need is the first step toward receiving the salvation God offers. Come honestly to Him today, and He will meet you with grace and forgiveness.",
+  'John 10:10':              "Jesus came not to give us a minimal existence but a life overflowing with meaning and abundance. The thief comes to rob and destroy, but the Shepherd comes to restore and give life. Reject the enemy's lies about your life today and embrace the abundant life Jesus offers.",
+  'Colossians 3:23':         "Whatever task is before you today — work, family, ministry — do it as worship to the Lord. When we shift our perspective from working for people to working for God, even ordinary tasks become sacred. Let your work today be an offering to the Lord who sees and values it.",
+  'Psalm 37:4':              "Delighting in the Lord is not the condition for getting what we want — it transforms what we want. When our joy is found in God, our desires begin to align with His heart. Draw close to Him today and discover that what your heart truly longs for is found in Him.",
+  'Matthew 11:28-30':        "Jesus speaks to the exhausted — those worn down by life, by religion, by trying hard enough. His invitation is to come to Him and find rest, not just for the body but for the soul. Lay your burdens at His feet today and take on His easy yoke instead.",
+  'John 1:1':                "Before creation began, the Word — Jesus — already existed in eternal fellowship with God. This profound truth anchors our faith: Jesus is not a created being but the eternal God who became flesh for us. Worship Him today as the Alpha and Omega, the beginning and the end.",
+  '1 John 4:7':              "John connects love for one another with knowing God — because love is not just what God commands, it is who He is. Every act of genuine love we show to others flows from the God who first loved us. Ask God today to let His love flow through you to someone who needs it.",
+  'Romans 5:8':              "God did not wait until we cleaned ourselves up before He sent His Son — He demonstrated His love while we were still in rebellion. This is the radical grace of the gospel: loved before we deserved it. Let this truth compel you to love others the same way today.",
+  'Ephesians 4:32':          "Forgiveness is not always a feeling — often it is a decision to release someone from the debt we feel they owe us. We forgive because we ourselves have been forgiven an enormous debt by God in Christ. Choose to extend that same grace to someone today.",
+  'Psalm 27:1':              "When the Lord is your light, darkness has no power over you. When He is your salvation, fear loses its grip. David had real enemies — yet his confidence in God was unshaken. Face your challenges today with this declaration: the Lord is my light and my salvation.",
+  'Micah 6:8':               "God's requirements are not complicated rituals — they are justice, mercy, and humble closeness with Him. These three things are both vertical (humility before God) and horizontal (justice and mercy toward others). Let this be the rhythm of your life today: just, merciful, and humbly walking with God.",
+  'Zephaniah 3:17':          "Imagine the Creator of the universe singing over you with joy — this is the picture God paints through the prophet Zephaniah. He does not merely tolerate us; He delights in us and quiets our souls with His love. Rest in His delight over you today.",
+  'Deuteronomy 31:6':        "These words were spoken to a nation about to enter unknown territory without their beloved leader Moses. God promises that He goes before them — and He makes the same promise to us. Whatever new territory you face today, you are not going in alone.",
+  'Acts 1:8':                "The early church had no buildings, no budgets, no platforms — just the power of the Holy Spirit and the message of the risen Christ. That same power is available to every believer today. Be a witness in your home, your workplace, your community — and trust the Spirit to work through you.",
+  '2 Corinthians 5:17':      "In Christ, you are not a reformed version of your old self — you are a new creation entirely. The old has gone, the new has come — this is not a gradual improvement but a radical transformation. Live today from this truth: you are a new person in Christ.",
+  'Revelation 3:20':         "Jesus stands at the door of our hearts and knocks — He will not force His way in. He patiently waits for us to open the door and invite Him in. Is there any area of your heart where you have been keeping the door closed? Open it to Him now.",
+  'John 15:5':               "Apart from Christ we can do nothing of eternal value — but connected to Him, we bear much fruit. The key is not striving harder but abiding deeper — staying close to Him through prayer and His Word. Stay connected to the Vine today and watch the fruit grow naturally.",
+  'Matthew 5:14-16':         "You are not called to be a flashlight — you are called to be a city on a hill, impossible to miss. Our good works are not to earn praise for ourselves but to point others to the Father who lives in us. Let your light shine today in a way that gives glory to God.",
+  'Psalm 100:4-5':           "Gratitude is not a response to good circumstances — it is an acknowledgment of who God is and what He has done. We enter His presence with thanksgiving because He is good and His love never ends. Begin today with praise and let a thankful heart set the tone for everything else.",
+  '1 Peter 5:7':             "God does not just tolerate our worries — He actively invites us to cast them on Him. The word 'cast' is vigorous — throw them forcefully, completely, definitively. Give Him your anxieties today, one by one, and trust that He genuinely cares about each one.",
+  'Hebrews 4:16':            "Because of Jesus, we do not approach God as strangers hoping for an audience — we come boldly as beloved children to a loving Father. The throne of God is a throne of grace, not judgment, for those who come through Christ. Come confidently to Him today with every need.",
+  'John 16:33':              "Jesus promised trouble in this world — not as a warning to fear, but as context for our courage. He said 'take heart' not because the trouble is not real but because He has already overcome it. Whatever trial you face today, face it with courage: the battle is already won.",
+  'Isaiah 26:3':             "Perfect peace is not the absence of problems — it is steadiness of heart in the middle of them. The key is a mind fixed on God, trusting Him rather than fixating on circumstances. Set your mind on Him today and receive the supernatural peace that only He can give.",
+  'Psalm 34:8':              "You cannot fully explain the goodness of God to someone who has not tasted it — it must be experienced personally. David invites us to move from hearing about God to encountering Him for ourselves. Take refuge in Him today and discover afresh that He is truly good.",
+  'Proverbs 18:10':          "The name of the Lord is not just a title — it represents all of who He is: His character, His power, His faithfulness. When we run to Him in times of trouble, we find a fortress that nothing can break. Whatever is threatening you today, run to the name of the Lord.",
+  'Philippians 1:6':         "God does not start a work and abandon it halfway — what He begins, He completes. This is not just a verse about salvation; it is a promise about every area of your life He is working in. Trust His process today even when the work feels incomplete or slow.",
+  '1 Thessalonians 5:16-18': "Joy, prayer, and gratitude are not responses to circumstances — they are a lifestyle for the believer. Paul says this is God's will for you in Christ Jesus — not a suggestion but a calling. Cultivate these habits today and watch how they transform your perspective.",
+  'Ephesians 3:20':          "Our biggest prayers and boldest dreams are still not enough to exhaust what God is able to do. He works not just at our level but abundantly, immeasurably beyond it — according to His power at work within us. Dream bigger today, pray bolder, and trust a God who can do exceedingly more.",
+  'Colossians 1:17':         "Christ is not just the Savior of our souls — He is the sustainer of all creation. Every atom, every galaxy, every heartbeat exists because He holds it in place. This Jesus who holds the universe together also holds your life together. Trust Him today.",
+  'Psalm 121:1-2':           "The psalmist looked to the hills and asked where true help comes from — the answer: not from the hills, but from the Lord who made them. When you face today's challenges, look up. Your help comes from the Maker of heaven and earth.",
+  'Romans 15:13':            "Hope is not wishful thinking — it is confident expectation rooted in the God who keeps His promises. Paul prays that we would overflow with hope, not just have a little. Ask God to fill you with His hope by the power of the Holy Spirit today, so much that it overflows to others.",
+  '2 Corinthians 12:9':      "Paul asked three times for his thorn to be removed — and God said no. Instead, God offered something better: His grace, sufficient for every weakness. Our weaknesses are not obstacles to God's power — they are the very places where His strength shines brightest. Embrace your weakness today as an opportunity for His grace.",
+};
+
 function BibleTab() {
   const [translation, setTranslation] = React.useState(() => {
     try { return localStorage.getItem(BIBLE_KEY) || 'web'; } catch { return 'web'; }
@@ -5755,6 +6242,8 @@ function BibleTab() {
     const day = Math.floor((Date.now() - start) / 86400000);
     return VOTD_REFS[day % VOTD_REFS.length];
   }, []);
+
+  const devotion = VOTD_DEVOTIONS[dayRef] || null;
 
   const fetchVerse = async (ref, trans) => {
     const url = `https://bible-api.com/${encodeURIComponent(ref)}?translation=${trans}`;
@@ -5816,6 +6305,15 @@ function BibleTab() {
         )}
       </div>
 
+      {/* Daily Devotion */}
+      {devotion && (
+        <div className="card p-6 mb-6">
+          <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{color:'var(--accent)'}}>🕊️ Today's Devotion</div>
+          <div className="text-sm ink-muted mb-2 font-medium">{dayRef}</div>
+          <p className="text-sm ink leading-relaxed" style={{lineHeight:1.8}}>{devotion}</p>
+        </div>
+      )}
+
       {/* Search */}
       <div className="card p-6">
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Look Up a Verse</div>
@@ -5850,47 +6348,75 @@ function BibleTab() {
 // ASK FLCC TAB
 // =============================================================================
 
-const ASK_KEY = 'flcc-claude-api-key-v1';
-const ASK_MODEL = 'claude-haiku-4-5-20251001';
+const ASK_KEY        = 'flcc-claude-api-key-v1';
+const ASK_PROXY_KEY  = 'flcc-ask-proxy-url-v1';
+const ASK_MODEL      = 'claude-haiku-4-5-20251001';
 
-function buildChurchContext(data, prayerData, musicData, equipData) {
-  const workers = data.workers || [];
+function buildChurchContext(data, prayerData, musicData, equipData, botrData = {}) {
+  const workers  = data.workers  || [];
   const schedule = data.schedule || [];
-  const botr = data.botrChurch || {};
+  const botr     = botrData || {};
   const pm = prayerData?.ministry || {};
-  const mm = musicData?.ministry || {};
+  const mm = musicData?.ministry  || {};
+
+  const wn = id => { const w = workers.find(x=>x.id===id); return w ? [w.title,w.name].filter(Boolean).join(' ') : id||'—'; };
 
   const workerLines = workers.map(w =>
     `  - ${[w.title,w.name].filter(Boolean).join(' ')}${w.eligibleRoles?.length ? ` (${w.eligibleRoles.join(', ')})` : ''}`
   ).join('\n');
 
-  const find = id => { const w = workers.find(x=>x.id===id); return w ? [w.title,w.name].filter(Boolean).join(' ') : id || '—'; };
+  const byRole = role => workers
+    .filter(w => w.status==='active' && w.eligibleRoles?.includes(role))
+    .map(w => [w.title,w.name].filter(Boolean).join(' '))
+    .join(', ');
 
-  const scheduleLines = schedule.map(s => {
-    const r = s.roles || {};
-    return `  ${s.date} ${s.service}: Presider=${find(r.presider)}, Preacher=${find(r.preacher)}, SongLeader=${find(r.songLeader)}, Food=${r.foodInCharge||'—'}${s.specialNote?` [SPECIAL: ${s.specialNote}]`:''}`;
-  }).join('\n');
+  const scheduleLines = schedule
+    .slice().sort((a,b)=>a.date.localeCompare(b.date))
+    .map(s => {
+      const r = s.roles||{};
+      const parts = [
+        r.preacher           ? `Preacher: ${wn(r.preacher)}` : null,
+        r.pastoralPrayer     ? `Prayer: ${wn(r.pastoralPrayer)}` : null,
+        r.presider           ? `Presider: ${wn(r.presider)}` : null,
+        r.songLeader         ? `Song Leader: ${wn(r.songLeader)}` : null,
+        r.communionAssistant1 ? `Communion: ${wn(r.communionAssistant1)}` : null,
+        r.communionAssistant2 ? `& ${wn(r.communionAssistant2)}` : null,
+        r.foodInCharge       ? `Food: ${wn(r.foodInCharge)}` : null,
+      ].filter(Boolean).join(' | ');
+      const flag = s.isSpecial ? ` ★ ${s.specialNote}` : '';
+      return `  ${s.date} [${s.service}]${flag}: ${parts||'(not assigned)'}`;
+    }).join('\n');
 
-  const themeLines = Object.entries(data.themes||{}).map(([m,t])=>`  ${m}: ${t||'(TBD)'}`).join('\n');
-  const equipMin = (equipData?.ministries||[]).map(em=>`  ${em.name}: ${em.headName}`).join('\n');
-  const courses = (equipData?.courses||[]).map(c=>`  - ${c.title} (${c.facilitator})`).join('\n');
-  const events = (data.events||[]).map(e=>`  - ${e.date}: ${e.title} (${e.type})`).join('\n');
-  const botrLeaders = [
-    ...(botr.sectorLeaders||[]).filter(s=>s.name).map(s=>`Sector Leader (${s.sector}): ${s.name}`),
-    ...(botr.satelliteChurches||[]).filter(s=>s.name).map(s=>`Satellite Pastor: ${s.name} — ${s.church||''} ${s.location?`(${s.location})`:''}`),
-  ].join('\n');
+  const themeLines  = Object.entries(data.themes||{}).map(([m,t])=>`  ${m}: ${t||'(TBD)'}`).join('\n');
+  const equipMin    = (equipData?.ministries||[]).map(em=>`  ${em.name}: ${em.headName}`).join('\n');
+  const courses     = (equipData?.courses||[]).map(c=>`  - ${c.title} (${c.facilitator})`).join('\n');
+  const events      = (data.events||[]).map(e=>`  - ${e.date}: ${e.title} (${e.type})`).join('\n');
 
-  return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta.churchName} (Full Life Christian Church).
-You have complete, up-to-date knowledge of the church: members, schedules, ministries, events, and more.
+  const botrSectors = (botr.sectorLeaders||[]).filter(s=>s.name).map(s=>
+    `  ${s.sector}: ${s.name} | Coord: ${s.evangelismCoordinator||'—'} | Churches: ${(s.churches||[]).join(', ')}`
+  ).join('\n');
+  const botrChurches = (botr.satelliteChurches||[]).map(s=>`  ${s.church} (${s.sector})`).join('\n');
+
+  return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta?.churchName||'FLCC - Abundance Church'} (Full Life Christian Church).
+You have complete knowledge of the church: members, schedules, ministries, events, BOTR network, and more.
 Be warm, encouraging, and helpful. Address members by their proper titles (Bro./Sis./Ptr./Rev.).
-You also know the Bible deeply and can answer Christian faith questions. When quoting Scripture, give the reference and translation.
+You know the Bible deeply and can answer Christian faith questions. When quoting Scripture, give the reference.
 
-=== FLCC BOTR CHURCH ===
-Name: ${botr.name||'FLCC - BOTR Church'}
-Lead Pastor: ${botr.leadPastor?.name||'(to be updated)'}
-${botrLeaders}
+=== FLCC BOTR CHURCH NETWORK ===
+Name: ${botr.name||'FLCC - BOTR Church Network'}
+Network: ${botr.network||'N.E.C.K. Kuwait'}
+Lead Pastor: ${botr.leadPastor?.name||'Rev. Jopet Alim'}  Title: ${botr.leadPastor?.title||'Lead Pastor, FLCC BOTR Network'}
+Evangelism Ministry Head: ${botr.evangelismMinistryHead?.name||'Sis. Lizel Ocenar'}
+Mission Target: ${botr.missionTarget||'Introduce 270,000 people to Jesus Christ by 2030'}
+Total Churches: ${botr.totalChurches||'12'} satellite locations + virtual platform
 
-=== FELLOWSHIP MINISTRY ===
+Sector Leaders:
+${botrSectors||'  (data not yet loaded from BOTR app)'}
+
+Satellite Churches:
+${botrChurches||'  (data not yet loaded from BOTR app)'}
+
+=== FLCC ABUNDANCE — FELLOWSHIP MINISTRY ===
 Head: ${data.ministry?.headName||'N/A'} (${data.ministry?.headTitle||''}) · WhatsApp: ${data.ministry?.whatsapp||'N/A'}
 
 === PRAYER MINISTRY ===
@@ -5908,10 +6434,16 @@ ${courses||'(none listed)'}
 === MEMBERS (${workers.length} total) ===
 ${workerLines}
 
-=== MONTHLY THEMES ===
+=== 2026 ACTIVE WORKERS BY ROLE ===
+Preachers: ${byRole('preacher')||'(none listed)'}
+Pastoral Prayer: ${byRole('pastoralPrayer')||'(none listed)'}
+Presiders/EMCEEs: ${byRole('presider')||'(none listed)'}
+Song Leaders: ${byRole('songLeader')||'(none listed)'}
+
+=== 2026 MONTHLY SERMON THEMES ===
 ${themeLines}
 
-=== FULL SERVICE SCHEDULE ===
+=== 2026 FULL SERVICE SCHEDULE (names resolved) ===
 ${scheduleLines}
 
 === EVENTS ===
@@ -5919,29 +6451,39 @@ ${events||'(none listed)'}`;
 }
 
 function AskTab({ data, prayerData, musicData, equipData }) {
-  const [apiKey, setApiKey] = React.useState(() => { try { return localStorage.getItem(ASK_KEY)||''; } catch { return ''; } });
-  const [keyInput, setKeyInput] = React.useState('');
-  const [showKeyInput, setShowKeyInput] = React.useState(false);
+  const [proxyUrl, setProxyUrl]   = React.useState(() => { try { return localStorage.getItem(ASK_PROXY_KEY)||''; } catch { return ''; } });
+  const [apiKey, setApiKey]       = React.useState(() => { try { return localStorage.getItem(ASK_KEY)||''; } catch { return ''; } });
+  const [setupInput, setSetupInput] = React.useState('');
+  const [setupMode, setSetupMode]   = React.useState('proxy'); // 'proxy' | 'key'
   const [messages, setMessages] = React.useState([
-    { role: 'assistant', content: `Hello! I'm Ask FLCC — your church AI assistant. I know everything about ${data.meta.churchName}: schedules, members, ministries, events, and more. I can also help with Bible questions and Christian guidance. What would you like to know?` }
+    { role:'assistant', content:`Hello! I'm Ask FLCC — your church AI assistant.\n\nI know everything about ${data.meta.churchName}, the FLCC BOTR Network, all service schedules, members, and ministries. I can also answer Bible questions and give Christian guidance.\n\nWhat would you like to know?` }
   ]);
-  const [input, setInput] = React.useState('');
+  const [input, setInput]     = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const endRef = React.useRef(null);
+  const endRef   = React.useRef(null);
   const inputRef = React.useRef(null);
 
+  const isReady   = !!(proxyUrl || apiKey);
   const systemCtx = React.useMemo(() => buildChurchContext(data, prayerData, musicData, equipData), []);
+  React.useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
 
-  React.useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-  const saveKey = () => {
-    const k = keyInput.trim();
-    if (!k.startsWith('sk-ant-')) { alert('That doesn\'t look like an Anthropic API key — it should start with sk-ant-'); return; }
-    setApiKey(k); try { localStorage.setItem(ASK_KEY, k); } catch {}
-    setShowKeyInput(false); setKeyInput('');
+  const saveSetup = () => {
+    const v = setupInput.trim();
+    if (!v) return;
+    if (setupMode === 'proxy') {
+      if (!v.startsWith('http')) { alert('Proxy URL should start with https://'); return; }
+      setProxyUrl(v); try { localStorage.setItem(ASK_PROXY_KEY, v); } catch {}
+    } else {
+      if (!v.startsWith('sk-ant-')) { alert("API key should start with sk-ant-"); return; }
+      setApiKey(v); try { localStorage.setItem(ASK_KEY, v); } catch {}
+    }
+    setSetupInput('');
   };
 
-  const clearKey = () => { setApiKey(''); try { localStorage.removeItem(ASK_KEY); } catch {} };
+  const clearSetup = () => {
+    setProxyUrl(''); setApiKey('');
+    try { localStorage.removeItem(ASK_PROXY_KEY); localStorage.removeItem(ASK_KEY); } catch {}
+  };
 
   const send = async () => {
     if (!input.trim() || loading) return;
@@ -5949,59 +6491,77 @@ function AskTab({ data, prayerData, musicData, equipData }) {
     const history = [...messages, userMsg];
     setMessages(history); setInput(''); setLoading(true);
     try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+      const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+      const headers  = { 'Content-Type': 'application/json' };
+      if (!proxyUrl) {
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      }
+      const resp = await fetch(endpoint, {
+        method: 'POST', headers,
         body: JSON.stringify({
-          model: ASK_MODEL,
-          max_tokens: 1024,
+          model: ASK_MODEL, max_tokens: 1024,
           system: systemCtx,
-          messages: history.map(m => ({ role: m.role, content: m.content })),
+          messages: history.map(m=>({ role:m.role, content:m.content })),
         }),
       });
-      if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${resp.status}`); }
+      if (!resp.ok) { const e=await resp.json().catch(()=>{}); throw new Error(e?.error?.message||`HTTP ${resp.status}`); }
       const d = await resp.json();
       setMessages(prev => [...prev, { role:'assistant', content: d.content?.[0]?.text||'(no response)' }]);
     } catch(e) {
-      setMessages(prev => [...prev, { role:'assistant', content:`⚠️ ${e.message}. Please check your API key.` }]);
-    } finally {
-      setLoading(false); inputRef.current?.focus();
-    }
+      setMessages(prev => [...prev, { role:'assistant', content:`⚠️ ${e.message}. Please check your setup.` }]);
+    } finally { setLoading(false); inputRef.current?.focus(); }
   };
 
   const onKey = e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
 
-  if (!apiKey) return (
+  if (!isReady) return (
     <div className="fade-in">
       <SectionHeading eyebrow="Ask FLCC" title="AI Church Assistant">
-        Powered by Claude AI — knows your full church data, Bible, and Christian guidance.
+        Powered by Claude AI — knows your full church data, BOTR network, Bible, and Christian guidance.
       </SectionHeading>
-      <div className="card p-8 text-center">
-        <div style={{fontSize:'3rem',marginBottom:'1rem'}}>💬</div>
-        <div className="font-display text-xl font-semibold mb-2">One-Time Setup</div>
-        <div className="text-sm ink-muted mb-6 max-w-sm mx-auto">
-          Ask FLCC is powered by the Claude AI API. Add your Anthropic API key below — it stays on this device only and is never stored in the app code.
-        </div>
-        {!showKeyInput ? (
-          <div className="flex flex-col gap-3 items-center">
-            <button className="btn btn-accent" onClick={() => setShowKeyInput(true)}>Enter API Key</button>
-            <a href="https://console.anthropic.com/" target="_blank" rel="noopener" className="text-xs ink-muted hover:underline">Get a key at console.anthropic.com →</a>
-          </div>
-        ) : (
-          <div className="max-w-sm mx-auto space-y-3">
-            <input type="password" className="input" placeholder="sk-ant-..." value={keyInput} onChange={e=>setKeyInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveKey()} autoFocus />
-            <div className="flex gap-2 justify-center">
-              <button className="btn btn-ghost" onClick={()=>setShowKeyInput(false)}>Cancel</button>
-              <button className="btn btn-accent" onClick={saveKey} disabled={!keyInput.trim()}>Activate</button>
-            </div>
-          </div>
-        )}
+
+      {/* Mode toggle */}
+      <div className="flex gap-2 mb-4">
+        <button className={`btn text-xs ${setupMode==='proxy'?'btn-primary':'btn-ghost'}`} onClick={()=>setSetupMode('proxy')}>
+          🌐 Shared (Cloudflare Worker)
+        </button>
+        <button className={`btn text-xs ${setupMode==='key'?'btn-primary':'btn-ghost'}`} onClick={()=>setSetupMode('key')}>
+          🔑 My Own API Key
+        </button>
       </div>
+
+      {setupMode === 'proxy' ? (
+        <div className="card p-6 mb-4">
+          <div className="font-display text-lg font-semibold mb-1">Shared Mode — Works for Everyone</div>
+          <div className="text-sm ink-muted mb-4">
+            The admin sets up a Cloudflare Worker once. All members use Ask FLCC with no individual setup required.
+          </div>
+          <div className="space-y-2 text-sm mb-5">
+            <div className="flex gap-2"><span className="pill pill-accent">1</span><span>Go to <strong>dash.cloudflare.com</strong> → Workers &amp; Pages → Create Worker</span></div>
+            <div className="flex gap-2"><span className="pill pill-accent">2</span><span>Paste the script from <code className="font-mono text-xs bg-gray-100 px-1 rounded">ask-proxy/worker.js</code> in this repo, then Deploy</span></div>
+            <div className="flex gap-2"><span className="pill pill-accent">3</span><span>Worker Settings → Variables → Add Secret: <code className="font-mono text-xs bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code></span></div>
+            <div className="flex gap-2"><span className="pill pill-accent">4</span><span>Copy your Worker URL and paste it below</span></div>
+          </div>
+          <div className="flex gap-2">
+            <input className="input flex-1" placeholder="https://flcc-ask.yourname.workers.dev" value={setupInput} onChange={e=>setSetupInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveSetup()} />
+            <button className="btn btn-accent" onClick={saveSetup} disabled={!setupInput.trim()}>Activate</button>
+          </div>
+        </div>
+      ) : (
+        <div className="card p-6 mb-4">
+          <div className="font-display text-lg font-semibold mb-1">My Own API Key</div>
+          <div className="text-sm ink-muted mb-4">
+            Your key stays on this device only. Each member who wants to use Ask FLCC will need to set up their own key.
+          </div>
+          <div className="flex gap-2 mb-3">
+            <input type="password" className="input flex-1" placeholder="sk-ant-..." value={setupInput} onChange={e=>setSetupInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveSetup()} />
+            <button className="btn btn-accent" onClick={saveSetup} disabled={!setupInput.trim()}>Activate</button>
+          </div>
+          <a href="https://console.anthropic.com/" target="_blank" rel="noopener" className="text-xs ink-muted hover:underline">Get a free key at console.anthropic.com →</a>
+        </div>
+      )}
     </div>
   );
 
@@ -6009,12 +6569,11 @@ function AskTab({ data, prayerData, musicData, equipData }) {
     <div className="fade-in" style={{display:'flex',flexDirection:'column',height:'calc(100vh - 200px)',minHeight:400}}>
       <div className="flex items-center justify-between mb-3">
         <SectionHeading eyebrow="Ask FLCC" title="AI Church Assistant" />
-        <button className="btn btn-ghost text-xs" onClick={clearKey} style={{flexShrink:0}}>🔑 Change Key</button>
+        <button className="btn btn-ghost text-xs" onClick={clearSetup} style={{flexShrink:0}}>⚙️ Change Setup</button>
       </div>
-
       <div className="card flex-1 overflow-y-auto p-4" style={{marginBottom:'0.75rem',minHeight:200}}>
         <div className="space-y-4">
-          {messages.map((msg, i) => (
+          {messages.map((msg,i) => (
             <div key={i} className={`flex ${msg.role==='user'?'justify-end':'justify-start'}`}>
               <div style={{
                 maxWidth:'85%', padding:'10px 14px', whiteSpace:'pre-wrap', lineHeight:1.6, fontSize:'0.9rem',
@@ -6031,17 +6590,17 @@ function AskTab({ data, prayerData, musicData, equipData }) {
           {loading && (
             <div className="flex justify-start">
               <div style={{padding:'10px 14px',borderRadius:'16px 16px 16px 4px',background:'var(--bg)',border:'1px solid var(--border)',color:'var(--ink-muted)',fontSize:'0.9rem'}}>
-                <span>✦ Thinking…</span>
+                ✦ Thinking…
               </div>
             </div>
           )}
           <div ref={endRef} />
         </div>
       </div>
-
       <div className="card p-3" style={{display:'flex',gap:'0.5rem',alignItems:'flex-end'}}>
-        <textarea ref={inputRef} rows={2} style={{flex:1,background:'transparent',border:'none',outline:'none',resize:'none',fontSize:'0.9rem',fontFamily:'inherit',color:'var(--ink)'}}
-          placeholder="Ask anything about FLCC, the schedule, Bible verses, Christian guidance…"
+        <textarea ref={inputRef} rows={2}
+          style={{flex:1,background:'transparent',border:'none',outline:'none',resize:'none',fontSize:'0.9rem',fontFamily:'inherit',color:'var(--ink)'}}
+          placeholder="Ask anything about FLCC, the BOTR network, the schedule, Bible verses…"
           value={input} onChange={e=>setInput(e.target.value)} onKeyDown={onKey} disabled={loading} />
         <button className="btn btn-accent" onClick={send} disabled={loading||!input.trim()} style={{flexShrink:0}}>{loading?'…':'Send'}</button>
       </div>
@@ -6062,8 +6621,6 @@ const TABS = [
   { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
   { key: 'music',    label: 'Music',   requiresMusic:  true },
   { key: 'equip',    label: 'Equip'   },
-  { key: 'bible',    label: '📖 Bible' },
-  { key: 'ask',      label: '💬 Ask FLCC' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
 ];
@@ -6468,20 +7025,22 @@ function App() {
 
   return (
     <div className="min-h-screen bg-app">
-      <header style={{ background: 'rgba(250, 250, 245, 0.9)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20, borderBottom: '1px solid var(--border)' }}>
+      <header style={{ backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 20, borderBottom: '1px solid var(--border)' }}>
+        <div className="hdr-strip" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-0">
           <div className="flex items-baseline justify-between gap-4 flex-wrap">
             <div>
               <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{data.meta.churchName}</div>
-              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1">
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1 greeting-h1">
                 {me ? `Hello, ${me.name}` : 'Schedule'}
               </h1>
             </div>
-            <div className="text-xs ink-muted text-right">
+            <div className="text-xs ink-muted text-right flex flex-col items-end gap-1">
+              <a href="ask.html" className="ask-pill">💬 Ask FLCC</a>
               {data.meta.publishedAt && (
                 <div>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
               )}
-              <button className="text-xs underline ink-muted hover:ink mt-1" onClick={() => loadData(false)} disabled={refreshing}>
+              <button className="text-xs underline ink-muted hover:ink" onClick={() => loadData(false)} disabled={refreshing}>
                 {refreshing ? '↻ refreshing…' : `↻ ${formatLoadedAgo() || 'refresh'}`}
               </button>
             </div>
@@ -6501,17 +7060,17 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
-        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
-        {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
-        {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
-        {currentTab === 'bible'    && <BibleTab />}
-        {currentTab === 'ask'      && <AskTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} />}
-        {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
-        {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
-        {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
+        <div key={currentTab} className="tab-content-area">
+          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
+          {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
+          {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
+          {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+          {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+          {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
+          {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
+          {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
+          {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
+        </div>
       </main>
 
       {/* Sermon Notes Modal */}
@@ -6571,6 +7130,7 @@ function App() {
 
       {/* Games FAB — bottom left */}
       <button
+        className="fab-live"
         onClick={() => setShowGames(true)}
         style={{
           position: 'fixed', bottom: 28, left: 24,
@@ -6580,16 +7140,15 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.375rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(124,58,237,0.38)',
-          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.46)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(124,58,237,0.38)'; }}
         title="Bible games"
         aria-label="Open Bible games"
       >🎮</button>
 
       {/* Personal events FAB — bottom right */}
       <button
+        className="fab-live"
         onClick={() => setShowAddPersonal(true)}
         style={{
           position: 'fixed', bottom: 28, right: 24,
@@ -6599,10 +7158,8 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.5rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(0,0,0,0.22)',
-          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.28)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.22)'; }}
         title="Add personal event"
         aria-label="Add personal event"
       >+</button>

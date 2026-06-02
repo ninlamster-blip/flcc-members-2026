@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church",
-    "publishedAt": "2026-05-12T20:07:52.628Z",
+    "publishedAt": "2026-05-30T13:57:52.786Z",
     "version": "1.0"
   },
   "botrChurch": {
@@ -651,6 +651,24 @@
       ],
       "status": "active",
       "birthday": "05-04"
+    },
+    {
+      "id": "w-1780148789141",
+      "name": "C/O Fellowship",
+      "title": "",
+      "type": "pair",
+      "eligibleRoles": [],
+      "status": "active"
+    },
+    {
+      "id": "w-1780149181405",
+      "name": "Sabangan Family",
+      "title": "",
+      "type": "family",
+      "eligibleRoles": [
+        "foodInCharge"
+      ],
+      "status": "active"
     }
   ],
   "themes": {
@@ -658,7 +676,7 @@
     "2026-03": "PRAYER AND FASTING",
     "2026-04": "WORKS OF THE HOLY SPIRIT / CHURCH GROWTH",
     "2026-05": "YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)",
-    "2026-06": ""
+    "2026-06": "WORSHIP / EVANGELISM / DISCIPLESHIP / FELLOWSHIP"
   },
   "schedule": [
     {
@@ -1331,13 +1349,13 @@
       "date": "2026-06-05",
       "service": "Friday",
       "roles": {
-        "presider": "sis-13",
-        "songLeader": "bro-01",
-        "preacher": "bro-07",
-        "pastoralPrayer": "sis-18",
-        "communionAssistant1": "bro-05",
-        "communionAssistant2": "bro-04",
-        "foodInCharge": "fam-11"
+        "presider": "sis-02",
+        "songLeader": "sis-06",
+        "preacher": "ptr-01",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "par-01"
       },
       "isSpecial": false,
       "specialNote": "",
@@ -1350,12 +1368,13 @@
       "date": "2026-06-12",
       "service": "Friday",
       "roles": {
-        "presider": "sis-20",
-        "songLeader": "bro-01",
+        "presider": "sis-05",
+        "songLeader": "bro-02",
         "preacher": "bro-05",
         "pastoralPrayer": "bro-04",
-        "communionAssistant1": null,
-        "foodInCharge": "par-01"
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "fam-11"
       },
       "isSpecial": false,
       "specialNote": "",
@@ -1367,7 +1386,110 @@
       "id": "2026-06-19-friday",
       "date": "2026-06-19",
       "service": "Friday",
-      "roles": {},
+      "roles": {
+        "presider": "sis-20",
+        "songLeader": "ptr-01",
+        "preacher": "sis-04",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "par-02"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-26-friday",
+      "date": "2026-06-26",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-03",
+        "songLeader": "sis-18",
+        "preacher": "w-1778531881868",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "bro-04",
+        "communionAssistant2": "sis-18",
+        "foodInCharge": "w-1780148789141"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-07-sunday",
+      "date": "2026-06-07",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-07",
+        "songLeader": "bro-09",
+        "preacher": "ptr-02",
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-10"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-14-sunday",
+      "date": "2026-06-14",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-08",
+        "songLeader": "bro-03",
+        "preacher": "sis-18",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-01"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-21-sunday",
+      "date": "2026-06-21",
+      "service": "Sunday",
+      "roles": {
+        "presider": "bro-09",
+        "songLeader": "sis-15",
+        "preacher": "bro-07",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "w-1780149181405"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-06-28-sunday",
+      "date": "2026-06-28",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-10",
+        "songLeader": "bro-07",
+        "preacher": "ptr-03",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-05",
+        "communionAssistant2": "bro-07",
+        "foodInCharge": "fam-04"
+      },
       "isSpecial": false,
       "specialNote": "",
       "swapped": false,

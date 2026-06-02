@@ -486,6 +486,137 @@
   }
   @keyframes snRipple { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.18)} }
   .sn-scan-result { animation: snSlideUp .3s cubic-bezier(.34,1.56,.64,1) both; }
+
+  /* ── DYNAMIC UI LAYER ──────────────────────────────────────────────── */
+  :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+  @keyframes gradientPulse {
+    0%,100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes greetingPop {
+    from { opacity: 0; transform: translateY(5px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes accentGlow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(163,59,42,0.25); }
+    50%     { box-shadow: 0 0 0 7px rgba(163,59,42,0); }
+  }
+  @keyframes tabPop {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+  @keyframes fabFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-5px) scale(1.03); }
+  }
+
+  .hdr-strip {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #E86848, #D97706, #C2410C, var(--accent));
+    background-size: 250% 100%;
+    animation: gradientPulse 5s ease-in-out infinite;
+  }
+
+  header {
+    background: linear-gradient(180deg, rgba(251,235,231,0.45) 0%, rgba(250,250,245,0.93) 55%) !important;
+  }
+
+  .greeting-h1 {
+    animation: greetingPop 0.55s var(--spring) both;
+    animation-delay: 0.08s;
+  }
+
+  .tab { position: relative; }
+  .tab-active { border-bottom-color: transparent !important; }
+  .tab-active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+    transform-origin: left center;
+    animation: tabPop 0.22s var(--spring) both;
+  }
+
+  .tab-content-area { animation: fadeSlideUp 0.28s var(--spring) both; }
+
+  .btn {
+    transition: transform 0.18s var(--spring), box-shadow 0.18s ease, background 0.15s ease !important;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+  .btn:active { transform: translateY(0) scale(0.95) !important; box-shadow: none !important; }
+  .btn-accent:hover { box-shadow: 0 4px 16px rgba(163,59,42,0.32) !important; }
+  .btn-primary:hover { box-shadow: 0 4px 16px rgba(24,24,27,0.22) !important; }
+
+  .ask-pill {
+    transition: transform 0.2s var(--spring), box-shadow 0.2s ease, background 0.15s ease !important;
+  }
+  .ask-pill:hover {
+    transform: translateY(-2px) scale(1.04) !important;
+    box-shadow: 0 6px 22px rgba(163,59,42,0.38) !important;
+  }
+  .ask-pill:active { transform: scale(0.95) !important; }
+
+  .home-card {
+    transition: transform 0.2s var(--spring), box-shadow 0.2s ease, border-color 0.15s ease !important;
+  }
+  .home-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.04) !important;
+    border-color: var(--border-strong) !important;
+  }
+
+  .row-card {
+    transition: transform 0.18s var(--spring), box-shadow 0.18s ease, border-color 0.15s ease !important;
+  }
+  .row-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border-color: var(--border-strong);
+  }
+
+  .row-mine { animation: accentGlow 3s ease-in-out infinite; }
+  .home-card-mine { animation: accentGlow 3s ease-in-out 1.2s infinite; }
+
+  .channel-btn {
+    transition: transform 0.18s var(--spring), box-shadow 0.18s ease, border-color 0.15s ease !important;
+  }
+  .channel-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+  }
+
+  .input:focus, .select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(163,59,42,0.1), 0 0 0 1px rgba(163,59,42,0.4) !important;
+  }
+
+  .cal-day:hover { background: var(--accent-soft) !important; }
+  .ios-cal-day { transition: background 0.12s ease !important; }
+  .cal-day-today { animation: accentGlow 2.5s ease-in-out 0.5s 1; }
+
+  .fab-live {
+    transition: transform 0.2s var(--spring), box-shadow 0.2s ease !important;
+    animation: fabFloat 4s ease-in-out 2s infinite;
+  }
+  .fab-live:hover {
+    transform: scale(1.15) translateY(-3px) !important;
+    animation: none !important;
+  }
+  .fab-live:active {
+    transform: scale(0.88) !important;
+    animation: none !important;
+    transition-duration: 0.08s !important;
+  }
+
+  .modal { animation: fadeSlideUp 0.3s var(--spring) both !important; }
+  .pill { transition: transform 0.12s var(--spring); }
 </style>
 </head>
 <body>
@@ -4179,7 +4310,8 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 
       // ── Step 3: create worker with all explicit CDN paths ─────────────────
       // This is the critical fix — v5 needs explicit paths when loaded from CDN
-      worker = await window.Tesseract.createWorker('eng', 1, {
+      // eng+fil: bilingual model handles English and Tagalog text on slides
+      worker = await window.Tesseract.createWorker('eng+fil', 1, {
         workerPath: WORK_PATH,
         corePath:   CORE_PATH,
         langPath:   LANG_PATH,
@@ -4189,7 +4321,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
           } else if (m.status === 'initializing tesseract') {
             setScanMsg('Starting OCR…'); setScanProgress(32);
           } else if (m.status === 'loading language traineddata') {
-            setScanMsg('Loading language data…'); setScanProgress(38);
+            setScanMsg('Loading English + Filipino language data…'); setScanProgress(38);
           } else if (m.status === 'initializing api') {
             setScanMsg('Almost ready…'); setScanProgress(44);
           } else if (m.status === 'recognizing text') {
@@ -4200,10 +4332,10 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
         },
       });
 
-      // Tuned parameters for handwritten notes
+      // PSM 3: fully automatic without OSD — more reliable for phone-angle photos of slides
       await worker.setParameters({
-        tessedit_pageseg_mode:    '1',   // auto — handles mixed layouts
-        tessedit_char_blacklist:  '`~^',  // rarely appear in notes
+        tessedit_pageseg_mode:    '3',
+        tessedit_char_blacklist:  '`~^',
         preserve_interword_spaces:'1',
       });
 
@@ -5898,20 +6030,38 @@ function App() {
 
   return (
     <div className="min-h-screen bg-app">
-      <header style={{ background: 'rgba(250, 250, 245, 0.9)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 20, borderBottom: '1px solid var(--border)' }}>
+      <header style={{ backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 20, borderBottom: '1px solid var(--border)' }}>
+        <div className="hdr-strip" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-0">
           <div className="flex items-baseline justify-between gap-4 flex-wrap">
             <div>
               <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{data.meta.churchName}</div>
-              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1">
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1 greeting-h1">
                 {me ? `Hello, ${me.name}` : 'Schedule'}
               </h1>
             </div>
-            <div className="text-xs ink-muted text-right">
+            <div className="text-xs ink-muted text-right flex flex-col items-end gap-1">
+              <a
+                href="ask.html"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.45rem 0.875rem', borderRadius: 9,
+                  background: 'var(--accent)', color: '#fff',
+                  border: 'none', fontWeight: 600,
+                  textDecoration: 'none', fontSize: '0.875rem', lineHeight: 1,
+                  transition: 'background 0.15s, transform 0.1s',
+                  boxShadow: '0 2px 8px rgba(163,59,42,0.25)',
+                  letterSpacing: '-0.01em',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-hover)'; e.currentTarget.style.transform = 'scale(1.03)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                💬 Ask FLCC
+              </a>
               {data.meta.publishedAt && (
                 <div>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
               )}
-              <button className="text-xs underline ink-muted hover:ink mt-1" onClick={() => loadData(false)} disabled={refreshing}>
+              <button className="text-xs underline ink-muted hover:ink" onClick={() => loadData(false)} disabled={refreshing}>
                 {refreshing ? '↻ refreshing…' : `↻ ${formatLoadedAgo() || 'refresh'}`}
               </button>
             </div>
@@ -5931,15 +6081,17 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
-        {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
-        {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
-        {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-        {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
-        {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
-        {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
-        {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
+        <div key={currentTab} className="tab-content-area">
+          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
+          {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
+          {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
+          {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+          {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+          {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
+          {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
+          {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
+          {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
+        </div>
       </main>
 
       {/* Sermon Notes Modal */}
@@ -5999,6 +6151,7 @@ function App() {
 
       {/* Games FAB — bottom left */}
       <button
+        className="fab-live"
         onClick={() => setShowGames(true)}
         style={{
           position: 'fixed', bottom: 28, left: 24,
@@ -6008,16 +6161,15 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.375rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(124,58,237,0.38)',
-          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
+          zIndex: 25,
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.46)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(124,58,237,0.38)'; }}
         title="Bible games"
         aria-label="Open Bible games"
       >🎮</button>
 
       {/* Personal events FAB — bottom right */}
       <button
+        className="fab-live"
         onClick={() => setShowAddPersonal(true)}
         style={{
           position: 'fixed', bottom: 28, right: 24,
@@ -6027,10 +6179,8 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.5rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(0,0,0,0.22)',
-          zIndex: 25, transition: 'transform 0.15s, box-shadow 0.15s',
+          zIndex: 25,
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.28)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.22)'; }}
         title="Add personal event"
         aria-label="Add personal event"
       >+</button>
