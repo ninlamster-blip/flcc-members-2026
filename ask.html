@@ -412,11 +412,62 @@ const SUGGESTIONS = [
   { icon: '✨', text: "What is this month's theme?" },
   { icon: '❤️', text: 'What does the Bible say about love?' },
   { icon: '🎂', text: 'Who has an upcoming birthday?' },
-  { icon: '⛪', text: 'Tell me about Abundance Church' },
+  { icon: '📊', text: 'What is the BOTR gospel count so far?' },
 ];
 
+// ─── BOTR live stats (JSONP from Google Sheets) ───────────────────────────────
+const BOTR_SHEET_ID   = '1Z-nY7P4GWuXKwEQNLwvry42bzYgXrsCFpaZ2PE-uE1c';
+const BOTR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
+
+function readBotrSheet(sheetName) {
+  return new Promise(resolve => {
+    const cbName = 'gviz_cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    const script = document.createElement('script');
+    const timer  = setTimeout(() => { cleanup(); resolve([]); }, 12000);
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      try { document.head.removeChild(script); } catch(e) {}
+    }
+    window[cbName] = function(res) {
+      cleanup();
+      try {
+        const rows = (res?.table?.rows || []).map(r => (r.c || []).map(c => c?.v ?? null));
+        resolve(rows);
+      } catch(e) { resolve([]); }
+    };
+    script.src = 'https://docs.google.com/visualization/query'
+      + '?key=' + BOTR_SHEET_ID
+      + '&headers=1'
+      + '&tq=' + encodeURIComponent("SELECT * FROM '" + sheetName + "'")
+      + '&tqx=out:json;responseHandler:' + cbName
+      + '&_=' + Date.now();
+    document.head.appendChild(script);
+  });
+}
+
+async function fetchBotrLiveStats() {
+  try {
+    // cols assumed: [timestamp, memberName, church, sector, actionType, actionLabel, pts, ...]
+    const rows = await readBotrSheet('Actions');
+    if (!rows.length) return null;
+    let totalGospel = 0, totalDisc = 0, totalLeaders = 0;
+    const churchMap = {};
+    rows.forEach(row => {
+      if (!row || row.length < 5) return;
+      const type   = String(row[4] || '');
+      const church = String(row[2] || 'Unknown');
+      if (!churchMap[church]) churchMap[church] = { gospel: 0, disciples: 0, leaders: 0 };
+      if (type === 'Evangelism')                                { totalGospel++;  churchMap[church].gospel++; }
+      else if (type === 'Discipleship')                         { totalDisc++;    churchMap[church].disciples++; }
+      else if (type === 'Leadership' || type === 'Multiplying') { totalLeaders++; churchMap[church].leaders++; }
+    });
+    return { totalGospel, totalDisc, totalLeaders, churches: churchMap };
+  } catch(e) { return null; }
+}
+
 // ─── System prompt ───────────────────────────────────────────────────────────
-function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}) {
+function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null) {
   const today = new Date().toISOString().split('T')[0];
 
   const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
@@ -535,6 +586,22 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
     })
     .join('\n');
 
+  // ── BOTR live standings ──
+  const year2026Target = (botr.yearTargets || []).find(t => t.year === 2026)?.target || 54000;
+  const botrLiveSection = liveStats
+    ? [
+        `- **Gospel Shared**: ${liveStats.totalGospel.toLocaleString()} / ${year2026Target.toLocaleString()} (${Math.round(liveStats.totalGospel / year2026Target * 100)}% of 2026 target)`,
+        `- **Disciples Made**: ${liveStats.totalDisc.toLocaleString()}`,
+        `- **Leaders Developed**: ${liveStats.totalLeaders.toLocaleString()}`,
+        '',
+        '**Per-Church Breakdown:**',
+        ...Object.entries(liveStats.churches)
+          .filter(([, v]) => v.gospel + v.disciples + v.leaders > 0)
+          .sort((a, b) => (b[1].gospel + b[1].disciples + b[1].leaders) - (a[1].gospel + a[1].disciples + a[1].leaders))
+          .map(([church, s]) => `  • ${church}: Gospel ${s.gospel} | Disciples ${s.disciples} | Leaders ${s.leaders}`),
+      ].join('\n')
+    : '  (Live data loading — check back or visit the BOTR Strategic Direction dashboard)';
+
   // ── Role groups derived from active workers ──
   const byRole = role => data.workers
     .filter(w => w.status === 'active' && w.eligibleRoles?.includes(role))
@@ -598,6 +665,9 @@ ${botrSectors || '  (data not available)'}
 
 **Satellite Churches (all 13):**
 ${botrChurches || '  (data not available)'}
+
+**2026 Live Standings (pulled from the BOTR dashboard):**
+${botrLiveSection}
 
 ---
 
@@ -736,7 +806,13 @@ function App() {
   const [showKeyModal, setShowKeyModal] = useState(false);
 
   const [appData,    setAppData]    = useState(null);
+  const [liveStats,  setLiveStats]  = useState(null);
   const [dataError,  setDataError]  = useState(null);
+
+  const systemPrompt = useMemo(() => {
+    if (!appData) return null;
+    return buildSystemPrompt(appData.data, appData.music, appData.prayer, appData.equip, appData.botrData, appData.attendance, liveStats);
+  }, [appData, liveStats]);
 
   const [messages,       setMessages]       = useState([]);
   const [input,          setInput]          = useState('');
@@ -750,7 +826,7 @@ function App() {
 
   const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem(ASK_PROXY_KEY) || '');
 
-  // Load JSON data
+  // Load static JSON data, then fetch live BOTR stats in the background
   useEffect(() => {
     Promise.all([
       fetch('data.json').then(r => r.json()),
@@ -760,7 +836,9 @@ function App() {
       fetch('botr.json').then(r => r.json()).catch(() => ({})),
       fetch('attendance.json').then(r => r.json()).catch(() => ({})),
     ]).then(([data, music, prayer, equip, botrData, attendance]) => {
-      setAppData({ data, music, prayer, equip, botrData, attendance, systemPrompt: buildSystemPrompt(data, music, prayer, equip, botrData, attendance) });
+      setAppData({ data, music, prayer, equip, botrData, attendance });
+      // Non-blocking: fetch live BOTR standings from Google Sheets
+      fetchBotrLiveStats().then(stats => { if (stats) setLiveStats(stats); }).catch(() => {});
     }).catch(() => {
       setDataError('Could not load church data. Please open this file from a web server.');
     });
@@ -841,7 +919,7 @@ function App() {
           model,
           max_tokens: 2048,
           stream: true,
-          system: appData.systemPrompt,
+          system: systemPrompt,
           messages: history,
         }),
         signal: controller.signal,
