@@ -4,6 +4,30 @@
     "publishedAt": "2026-05-30T13:57:52.786Z",
     "version": "1.0"
   },
+  "botrChurch": {
+    "name": "FLCC - BOTR Church Network",
+    "network": "N.E.C.K. Kuwait",
+    "missionTarget": "Introduce 270,000 people to Jesus Christ by 2030",
+    "totalChurches": "12",
+    "leadPastor": {
+      "name": "Rev. Jopet Alim",
+      "title": "Lead Pastor, FLCC BOTR Network",
+      "whatsapp": "",
+      "messenger": "",
+      "phone": "",
+      "email": ""
+    },
+    "evangelismMinistryHead": {
+      "name": "Sis. Lizel Ocenar",
+      "title": "Evangelism Ministry Head"
+    },
+    "sectorLeaders": [
+      { "name": "", "sector": "Sector A", "title": "Sector Leader", "evangelismCoordinator": "", "churches": [], "whatsapp": "", "phone": "" },
+      { "name": "", "sector": "Sector B", "title": "Sector Leader", "evangelismCoordinator": "", "churches": [], "whatsapp": "", "phone": "" },
+      { "name": "", "sector": "Sector C", "title": "Sector Leader", "evangelismCoordinator": "", "churches": [], "whatsapp": "", "phone": "" }
+    ],
+    "satelliteChurches": []
+  },
   "ministry": {
     "headName": "Sis. Amazelle De Jesus",
     "headTitle": "Fellowship Ministry Head",

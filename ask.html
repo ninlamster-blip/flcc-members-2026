@@ -721,8 +721,13 @@ function App() {
       fetch('music.json').then(r => r.json()),
       fetch('prayer.json').then(r => r.json()),
       fetch('equip.json').then(r => r.json()).catch(() => ({})),
-      fetch('https://ninlamster-blip.github.io/flcc-botr-2026/data.json').catch(() => ({})),
-    ]).then(([data, music, prayer, equip, botrData]) => {
+      // Try live BOTR app; fall back to embedded data.botrChurch
+      fetch('https://ninlamster-blip.github.io/flcc-botr-2026/data.json').catch(() => null),
+    ]).then(([data, music, prayer, equip, externalBotr]) => {
+      // Prefer live BOTR fetch; fall back to botrChurch embedded in data.json
+      const botrData = (externalBotr && Object.keys(externalBotr).length > 0)
+        ? externalBotr
+        : (data.botrChurch || {});
       setAppData({ data, music, prayer, equip, botrData, systemPrompt: buildSystemPrompt(data, music, prayer, equip, botrData) });
     }).catch(() => {
       setDataError('Could not load church data. Please open this file from a web server.');
