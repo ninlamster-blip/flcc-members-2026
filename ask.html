@@ -416,7 +416,7 @@ const SUGGESTIONS = [
 ];
 
 // ─── System prompt ───────────────────────────────────────────────────────────
-function buildSystemPrompt(data, music, prayer, equip) {
+function buildSystemPrompt(data, music, prayer, equip, botrData = {}) {
   const today = new Date().toISOString().split('T')[0];
 
   const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
@@ -504,19 +504,38 @@ function buildSystemPrompt(data, music, prayer, equip) {
     .map(t => `  • ${t.name}${t.leader ? ' — ' + t.leader : ''}`)
     .join('\n');
 
-  // ── BOTR Network ──
-  const botr = data.botrChurch || {};
+  // ── BOTR Network (live-fetched from flcc-botr-2026 app) ──
+  const botr = botrData || {};
   const botrSectors = (botr.sectorLeaders || []).filter(s => s.name).map(s =>
     `  • ${s.sector}: ${s.name} | Coord: ${s.evangelismCoordinator || '—'} | Churches: ${(s.churches || []).join(', ')}`
   ).join('\n');
   const botrChurches = (botr.satelliteChurches || []).map(s => `  • ${s.church} (${s.sector} Sector)`).join('\n');
 
-  // ── Worker Roster 2026 ──
-  const roster = data.workerRoster2026 || {};
-  const allMonthlyThemes = (roster.monthlyThemes || []).map(t => `  • ${t.month}: ${t.theme}`).join('\n');
-  const preachingSchedule = (roster.fullSchedule || []).map(s =>
-    `  ${s.date}: Preacher=${s.preacher || '—'}, Pastoral Prayer=${s.prayer || '—'}, EMCEE=${s.emcee || '—'}${s.event ? ', Event=' + s.event : ''}`
-  ).join('\n');
+  // ── Role groups derived from active workers ──
+  const byRole = role => data.workers
+    .filter(w => w.status === 'active' && w.eligibleRoles?.includes(role))
+    .map(w => [w.title, w.name].filter(Boolean).join(' '))
+    .join(', ');
+
+  // ── Full service schedule with all worker IDs resolved to names ──
+  const fullScheduleLines = data.schedule
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map(s => {
+      const r = s.roles || {};
+      const parts = [
+        r.preacher           ? `Preacher: ${wn(r.preacher, workersById)}` : null,
+        r.pastoralPrayer     ? `Prayer: ${wn(r.pastoralPrayer, workersById)}` : null,
+        r.presider           ? `Presider: ${wn(r.presider, workersById)}` : null,
+        r.songLeader         ? `Song Leader: ${wn(r.songLeader, workersById)}` : null,
+        r.communionAssistant1 ? `Communion: ${wn(r.communionAssistant1, workersById)}` : null,
+        r.communionAssistant2 ? `& ${wn(r.communionAssistant2, workersById)}` : null,
+        r.foodInCharge       ? `Food: ${wn(r.foodInCharge, workersById)}` : null,
+      ].filter(Boolean).join(' | ');
+      const flag = s.isSpecial ? ` ★ ${s.specialNote}` : '';
+      return `  ${s.date} [${s.service}]${flag}: ${parts || '(roles not yet assigned)'}`;
+    })
+    .join('\n');
 
   // ── Equip courses ──
   const equipCourses = (equip?.courses || []).map(c =>
@@ -543,29 +562,29 @@ ${today}
 - **Network Name**: ${botr.name || 'FLCC - BOTR Church Network'}
 - **Network**: ${botr.network || 'N.E.C.K. Kuwait'}
 - **Lead Pastor**: ${botr.leadPastor?.name || 'Rev. Jopet Alim'} — ${botr.leadPastor?.title || 'Lead Pastor, FLCC BOTR Network'}
-- **Evangelism Ministry Head**: ${botr.evangelismMinistryHead?.name || 'Lizel Ocenar'}
+- **Evangelism Ministry Head**: ${botr.evangelismMinistryHead?.name || 'Sis. Lizel Ocenar'}
 - **Mission Target**: ${botr.missionTarget || 'Introduce 270,000 people to Jesus Christ by 2030'}
 - **Total Satellite Locations**: ${botr.totalChurches || '12'} + Virtual Platform
 
 **Sector Leaders:**
-${botrSectors || '  (data not loaded)'}
+${botrSectors || '  (live data not yet available — contact Pastor Jopet Alim)'}
 
 **Satellite Churches:**
-${botrChurches || '  (data not loaded)'}
+${botrChurches || '  (live data not yet available)'}
 
 ---
 
-## 2026 Preaching Workers
-- **Preachers**: ${(roster.preachers || []).join(', ')}
-- **Pastoral Prayer Ministers**: ${(roster.pastoralPrayer || []).join(', ')}
-- **EMCEE / Presiders**: ${(roster.emcee || []).join(', ')}
-- **Guest Speakers**: ${(roster.guestSpeakers || []).join(', ')}
+## 2026 Active Workers by Role
+- **Preachers**: ${byRole('preacher') || '(none listed)'}
+- **Pastoral Prayer Ministers**: ${byRole('pastoralPrayer') || '(none listed)'}
+- **Presiders / EMCEEs**: ${byRole('presider') || '(none listed)'}
+- **Song Leaders**: ${byRole('songLeader') || '(none listed)'}
 
-## 2026 Monthly Sermon Themes (Complete)
-${allMonthlyThemes}
+## 2026 Monthly Sermon Themes
+${themes}
 
-## Full 2026 Preaching Schedule (All 52 Fridays)
-${preachingSchedule || '  (data not loaded)'}
+## Full 2026 Service Schedule (all services, roles resolved)
+${fullScheduleLines || '  (no schedule data loaded)'}
 
 ---
 
@@ -582,9 +601,6 @@ ${membersList}
 
 ## Food Ministry (Families & Pairs serving food)
 ${foodList}
-
-## Monthly Service Themes (from schedule data)
-${themes}
 
 ## Upcoming Service Schedule — Fellowship Ministry (next 14)
 ${upcomingSchedule || '  (none loaded)'}
@@ -705,8 +721,9 @@ function App() {
       fetch('music.json').then(r => r.json()),
       fetch('prayer.json').then(r => r.json()),
       fetch('equip.json').then(r => r.json()).catch(() => ({})),
-    ]).then(([data, music, prayer, equip]) => {
-      setAppData({ data, music, prayer, equip, systemPrompt: buildSystemPrompt(data, music, prayer, equip) });
+      fetch('https://ninlamster-blip.github.io/flcc-botr-2026/data.json').catch(() => ({})),
+    ]).then(([data, music, prayer, equip, botrData]) => {
+      setAppData({ data, music, prayer, equip, botrData, systemPrompt: buildSystemPrompt(data, music, prayer, equip, botrData) });
     }).catch(() => {
       setDataError('Could not load church data. Please open this file from a web server.');
     });

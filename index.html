@@ -6352,23 +6352,40 @@ const ASK_KEY        = 'flcc-claude-api-key-v1';
 const ASK_PROXY_KEY  = 'flcc-ask-proxy-url-v1';
 const ASK_MODEL      = 'claude-haiku-4-5-20251001';
 
-function buildChurchContext(data, prayerData, musicData, equipData) {
+function buildChurchContext(data, prayerData, musicData, equipData, botrData = {}) {
   const workers  = data.workers  || [];
   const schedule = data.schedule || [];
-  const botr     = data.botrChurch || {};
-  const roster   = data.workerRoster2026 || {};
+  const botr     = botrData || {};
   const pm = prayerData?.ministry || {};
   const mm = musicData?.ministry  || {};
+
+  const wn = id => { const w = workers.find(x=>x.id===id); return w ? [w.title,w.name].filter(Boolean).join(' ') : id||'—'; };
 
   const workerLines = workers.map(w =>
     `  - ${[w.title,w.name].filter(Boolean).join(' ')}${w.eligibleRoles?.length ? ` (${w.eligibleRoles.join(', ')})` : ''}`
   ).join('\n');
 
-  const find = id => { const w = workers.find(x=>x.id===id); return w ? [w.title,w.name].filter(Boolean).join(' ') : id||'—'; };
-  const scheduleLines = schedule.map(s => {
-    const r = s.roles||{};
-    return `  ${s.date} ${s.service}: Presider=${find(r.presider)}, Preacher=${find(r.preacher)}, SongLeader=${find(r.songLeader)}, Food=${r.foodInCharge||'—'}${s.specialNote?` [${s.specialNote}]`:''}`;
-  }).join('\n');
+  const byRole = role => workers
+    .filter(w => w.status==='active' && w.eligibleRoles?.includes(role))
+    .map(w => [w.title,w.name].filter(Boolean).join(' '))
+    .join(', ');
+
+  const scheduleLines = schedule
+    .slice().sort((a,b)=>a.date.localeCompare(b.date))
+    .map(s => {
+      const r = s.roles||{};
+      const parts = [
+        r.preacher           ? `Preacher: ${wn(r.preacher)}` : null,
+        r.pastoralPrayer     ? `Prayer: ${wn(r.pastoralPrayer)}` : null,
+        r.presider           ? `Presider: ${wn(r.presider)}` : null,
+        r.songLeader         ? `Song Leader: ${wn(r.songLeader)}` : null,
+        r.communionAssistant1 ? `Communion: ${wn(r.communionAssistant1)}` : null,
+        r.communionAssistant2 ? `& ${wn(r.communionAssistant2)}` : null,
+        r.foodInCharge       ? `Food: ${wn(r.foodInCharge)}` : null,
+      ].filter(Boolean).join(' | ');
+      const flag = s.isSpecial ? ` ★ ${s.specialNote}` : '';
+      return `  ${s.date} [${s.service}]${flag}: ${parts||'(not assigned)'}`;
+    }).join('\n');
 
   const themeLines  = Object.entries(data.themes||{}).map(([m,t])=>`  ${m}: ${t||'(TBD)'}`).join('\n');
   const equipMin    = (equipData?.ministries||[]).map(em=>`  ${em.name}: ${em.headName}`).join('\n');
@@ -6380,12 +6397,7 @@ function buildChurchContext(data, prayerData, musicData, equipData) {
   ).join('\n');
   const botrChurches = (botr.satelliteChurches||[]).map(s=>`  ${s.church} (${s.sector})`).join('\n');
 
-  const monthlyThemeLines = (roster.monthlyThemes||[]).map(t=>`  ${t.month}: ${t.theme}`).join('\n');
-  const preachingScheduleLines = (roster.fullSchedule||[]).map(s=>
-    `  ${s.date}${s.service?` (${s.service})`:''}: Preacher=${s.preacher||'—'}, Prayer=${s.prayer||'—'}, Presider=${s.presider||s.emcee||'—'}, SongLeader=${s.songLeader||'—'}${s.communionAssistant?`, Communion=${s.communionAssistant}`:''}${s.foodInCharge?`, Food=${s.foodInCharge}`:''}${s.event?`, Event=${s.event}`:''}`
-  ).join('\n');
-
-  return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta.churchName} (Full Life Christian Church).
+  return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta?.churchName||'FLCC - Abundance Church'} (Full Life Christian Church).
 You have complete knowledge of the church: members, schedules, ministries, events, BOTR network, and more.
 Be warm, encouraging, and helpful. Address members by their proper titles (Bro./Sis./Ptr./Rev.).
 You know the Bible deeply and can answer Christian faith questions. When quoting Scripture, give the reference.
@@ -6393,16 +6405,16 @@ You know the Bible deeply and can answer Christian faith questions. When quoting
 === FLCC BOTR CHURCH NETWORK ===
 Name: ${botr.name||'FLCC - BOTR Church Network'}
 Network: ${botr.network||'N.E.C.K. Kuwait'}
-Lead Pastor: ${botr.leadPastor?.name||'(to be updated)'}  Title: ${botr.leadPastor?.title||''}
-Evangelism Ministry Head: ${botr.evangelismMinistryHead?.name||'—'}
-Mission Target: ${botr.missionTarget||''}
+Lead Pastor: ${botr.leadPastor?.name||'Rev. Jopet Alim'}  Title: ${botr.leadPastor?.title||'Lead Pastor, FLCC BOTR Network'}
+Evangelism Ministry Head: ${botr.evangelismMinistryHead?.name||'Sis. Lizel Ocenar'}
+Mission Target: ${botr.missionTarget||'Introduce 270,000 people to Jesus Christ by 2030'}
 Total Churches: ${botr.totalChurches||'12'} satellite locations + virtual platform
 
 Sector Leaders:
-${botrSectors}
+${botrSectors||'  (data not yet loaded from BOTR app)'}
 
 Satellite Churches:
-${botrChurches}
+${botrChurches||'  (data not yet loaded from BOTR app)'}
 
 === FLCC ABUNDANCE — FELLOWSHIP MINISTRY ===
 Head: ${data.ministry?.headName||'N/A'} (${data.ministry?.headTitle||''}) · WhatsApp: ${data.ministry?.whatsapp||'N/A'}
@@ -6422,25 +6434,16 @@ ${courses||'(none listed)'}
 === MEMBERS (${workers.length} total) ===
 ${workerLines}
 
-=== 2026 PREACHERS ===
-${(roster.preachers||[]).join(', ')}
-
-=== 2026 PASTORAL PRAYER MINISTERS ===
-${(roster.pastoralPrayer||[]).join(', ')}
-
-=== 2026 EMCEE / PRESIDERS ===
-${(roster.emcee||[]).join(', ')}
-
-=== 2026 GUEST SPEAKERS ===
-${(roster.guestSpeakers||[]).join(', ')}
+=== 2026 ACTIVE WORKERS BY ROLE ===
+Preachers: ${byRole('preacher')||'(none listed)'}
+Pastoral Prayer: ${byRole('pastoralPrayer')||'(none listed)'}
+Presiders/EMCEEs: ${byRole('presider')||'(none listed)'}
+Song Leaders: ${byRole('songLeader')||'(none listed)'}
 
 === 2026 MONTHLY SERMON THEMES ===
-${monthlyThemeLines||themeLines}
+${themeLines}
 
-=== 2026 FULL PREACHING SCHEDULE (52 services) ===
-${preachingScheduleLines}
-
-=== INTERNAL SCHEDULE (role IDs) ===
+=== 2026 FULL SERVICE SCHEDULE (names resolved) ===
 ${scheduleLines}
 
 === EVENTS ===
