@@ -416,7 +416,7 @@ const SUGGESTIONS = [
 ];
 
 // ─── System prompt ───────────────────────────────────────────────────────────
-function buildSystemPrompt(data, music, prayer, equip, botrData = {}) {
+function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}) {
   const today = new Date().toISOString().split('T')[0];
 
   const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
@@ -504,12 +504,36 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}) {
     .map(t => `  • ${t.name}${t.leader ? ' — ' + t.leader : ''}`)
     .join('\n');
 
-  // ── BOTR Network (live-fetched from flcc-botr-2026 app) ──
+  // ── BOTR Network ──
   const botr = botrData || {};
   const botrSectors = (botr.sectorLeaders || []).filter(s => s.name).map(s =>
-    `  • ${s.sector}: ${s.name} | Coord: ${s.evangelismCoordinator || '—'} | Churches: ${(s.churches || []).join(', ')}`
+    `  • ${s.sector} Sector: ${s.name} | Evangelism Coord: ${s.evangelismCoordinator || '—'} | Churches: ${(s.churches || []).join(', ')}`
   ).join('\n');
   const botrChurches = (botr.satelliteChurches || []).map(s => `  • ${s.church} (${s.sector} Sector)`).join('\n');
+  const botrYearTargets = (botr.yearTargets || [])
+    .map(t => `  • ${t.year}: ${t.target.toLocaleString()} people`)
+    .join('\n');
+
+  // ── Attendance records ──
+  const attendanceSummary = (attendance.sessions || [])
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5)
+    .map(s => {
+      const present = s.records.filter(r => r.status === 'present').map(r => r.memberName).join(', ');
+      return `  ${s.date} [${s.serviceLabel}] — ${s.summary.present} present / ${s.summary.total} total\n    ${present}`;
+    })
+    .join('\n\n');
+
+  // ── Intercessory prayer schedule ──
+  const upcomingIntercessory = (prayer.intercessory || [])
+    .filter(ip => ip.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 12)
+    .map(ip => {
+      const team = (prayer.teams || []).find(t => t.id === ip.teamId);
+      return `  ${ip.date} ${ip.startTime}–${ip.endTime} [${ip.service}]: ${team?.name || ip.teamId}`;
+    })
+    .join('\n');
 
   // ── Role groups derived from active workers ──
   const byRole = role => data.workers
@@ -564,13 +588,16 @@ ${today}
 - **Lead Pastor**: ${botr.leadPastor?.name || 'Rev. Jopet Alim'} — ${botr.leadPastor?.title || 'Lead Pastor, FLCC BOTR Network'}
 - **Evangelism Ministry Head**: ${botr.evangelismMinistryHead?.name || 'Sis. Lizel Ocenar'}
 - **Mission Target**: ${botr.missionTarget || 'Introduce 270,000 people to Jesus Christ by 2030'}
-- **Total Satellite Locations**: ${botr.totalChurches || '12'} + Virtual Platform
+- **Total Satellite Locations**: ${botr.totalChurches || '13'} (including Virtual Church)
+
+**Annual Gospel Outreach Milestones:**
+${botrYearTargets || '  2026: 54,000 · 2027: 108,000 · 2028: 162,000 · 2029: 216,000 · 2030: 270,000'}
 
 **Sector Leaders:**
-${botrSectors || '  (live data not yet available — contact Pastor Jopet Alim)'}
+${botrSectors || '  (data not available)'}
 
-**Satellite Churches:**
-${botrChurches || '  (live data not yet available)'}
+**Satellite Churches (all 13):**
+${botrChurches || '  (data not available)'}
 
 ---
 
@@ -611,11 +638,20 @@ ${upcomingMusic || '  (none loaded)'}
 ## Upcoming Prayer Meetings (next 8)
 ${upcomingPrayer || '  (none loaded)'}
 
+## Upcoming Intercessory Prayer Assignments (next 12)
+(Intercessory prayer takes place before each service — Fridays 4:15–4:30 PM, Sundays 6:15–6:30 PM)
+${upcomingIntercessory || '  (none loaded)'}
+
 ## Prayer Intercession Teams
 ${prayerTeams}
 
 ## Upcoming Events
 ${events || '  (none)'}
+
+---
+
+## Recent Attendance Records
+${attendanceSummary || '  (none loaded)'}
 
 ---
 
@@ -721,9 +757,10 @@ function App() {
       fetch('music.json').then(r => r.json()),
       fetch('prayer.json').then(r => r.json()),
       fetch('equip.json').then(r => r.json()).catch(() => ({})),
-      fetch('https://ninlamster-blip.github.io/flcc-botr-2026/data.json').catch(() => ({})),
-    ]).then(([data, music, prayer, equip, botrData]) => {
-      setAppData({ data, music, prayer, equip, botrData, systemPrompt: buildSystemPrompt(data, music, prayer, equip, botrData) });
+      fetch('botr.json').then(r => r.json()).catch(() => ({})),
+      fetch('attendance.json').then(r => r.json()).catch(() => ({})),
+    ]).then(([data, music, prayer, equip, botrData, attendance]) => {
+      setAppData({ data, music, prayer, equip, botrData, attendance, systemPrompt: buildSystemPrompt(data, music, prayer, equip, botrData, attendance) });
     }).catch(() => {
       setDataError('Could not load church data. Please open this file from a web server.');
     });
