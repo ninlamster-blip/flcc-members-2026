@@ -165,6 +165,7 @@ const TABS = [
   { id:'workers',  icon:'👥', label:'Workers'  },
   { id:'themes',   icon:'📖', label:'Themes'   },
   { id:'events',   icon:'🗓', label:'Events'   },
+  { id:'botr',     icon:'⛪', label:'BOTR'     },
 ];
 
 const EVT_COLORS = {
@@ -563,6 +564,225 @@ function EventsTab({events,onChange,onDirty}){
   );
 }
 
+// ─── BOTR Tab ─────────────────────────────────────────────────────────────────
+function BOTRTab({botr,onChange,onDirty}){
+  const [expSector,setExpSector]=useState(null);
+
+  const setTop=(k,v)=>{onChange({...botr,[k]:v});onDirty();};
+  const setNested=(key,sub,val)=>{onChange({...botr,[key]:{...(botr[key]||{}),[sub]:val}});onDirty();};
+
+  const addSector=()=>{
+    const letter=String.fromCharCode(65+(botr.sectorLeaders||[]).length);
+    const s={name:'',sector:`Sector ${letter}`,title:'Sector Leader',evangelismCoordinator:'',churches:[],whatsapp:'',phone:''};
+    const next=[...(botr.sectorLeaders||[]),s];
+    onChange({...botr,sectorLeaders:next});onDirty();setExpSector(next.length-1);
+  };
+  const updateSector=(i,upd)=>{onChange({...botr,sectorLeaders:(botr.sectorLeaders||[]).map((s,j)=>j===i?upd:s)});onDirty();};
+  const deleteSector=i=>{if(!confirm('Remove this sector leader?'))return;onChange({...botr,sectorLeaders:(botr.sectorLeaders||[]).filter((_,j)=>j!==i)});onDirty();setExpSector(null);};
+
+  const addChurch=()=>{
+    const c={church:'',sector:'',whatsapp:'',phone:''};
+    onChange({...botr,satelliteChurches:[...(botr.satelliteChurches||[]),c]});onDirty();
+  };
+  const updateChurch=(i,upd)=>{onChange({...botr,satelliteChurches:(botr.satelliteChurches||[]).map((c,j)=>j===i?upd:c)});onDirty();};
+  const deleteChurch=i=>{if(!confirm('Remove this church?'))return;onChange({...botr,satelliteChurches:(botr.satelliteChurches||[]).filter((_,j)=>j!==i)});onDirty();};
+
+  const lp=botr.leadPastor||{};
+  const emh=botr.evangelismMinistryHead||{};
+
+  const section=(label,delay,children)=>(
+    <div className="service-card fade-up" style={{padding:'18px 20px',marginBottom:14,animationDelay:delay}}>
+      <div className="field-label" style={{marginBottom:14}}>{label}</div>
+      {children}
+    </div>
+  );
+
+  return (
+    <div style={{maxWidth:680}}>
+
+      {/* Network Info */}
+      {section('Network Info','0ms',(
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 14px'}}>
+          <div style={{gridColumn:'1/-1'}}>
+            <div className="field-label">Network Name</div>
+            <input className="field-input" value={botr.name||''} onChange={e=>setTop('name',e.target.value)} placeholder="FLCC - BOTR Church Network"/>
+          </div>
+          <div>
+            <div className="field-label">Affiliation</div>
+            <input className="field-input" value={botr.network||''} onChange={e=>setTop('network',e.target.value)} placeholder="N.E.C.K. Kuwait"/>
+          </div>
+          <div>
+            <div className="field-label">Total Churches</div>
+            <input className="field-input" value={botr.totalChurches||''} onChange={e=>setTop('totalChurches',e.target.value)} placeholder="12"/>
+          </div>
+          <div style={{gridColumn:'1/-1'}}>
+            <div className="field-label">Mission Target</div>
+            <input className="field-input" value={botr.missionTarget||''} onChange={e=>setTop('missionTarget',e.target.value)} placeholder="Mission statement…"/>
+          </div>
+        </div>
+      ))}
+
+      {/* Lead Pastor */}
+      {section('Lead Pastor','45ms',(
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 14px'}}>
+          <div>
+            <div className="field-label">Name</div>
+            <input className="field-input" value={lp.name||''} onChange={e=>setNested('leadPastor','name',e.target.value)} placeholder="Rev. Jopet Alim"/>
+          </div>
+          <div>
+            <div className="field-label">Title</div>
+            <input className="field-input" value={lp.title||''} onChange={e=>setNested('leadPastor','title',e.target.value)} placeholder="Lead Pastor, FLCC BOTR Network"/>
+          </div>
+          <div>
+            <div className="field-label">WhatsApp</div>
+            <input className="field-input" value={lp.whatsapp||''} onChange={e=>setNested('leadPastor','whatsapp',e.target.value)} placeholder="+965…"/>
+          </div>
+          <div>
+            <div className="field-label">Messenger</div>
+            <input className="field-input" value={lp.messenger||''} onChange={e=>setNested('leadPastor','messenger',e.target.value)} placeholder="@username"/>
+          </div>
+          <div>
+            <div className="field-label">Phone</div>
+            <input className="field-input" value={lp.phone||''} onChange={e=>setNested('leadPastor','phone',e.target.value)}/>
+          </div>
+          <div>
+            <div className="field-label">Email</div>
+            <input className="field-input" value={lp.email||''} onChange={e=>setNested('leadPastor','email',e.target.value)}/>
+          </div>
+        </div>
+      ))}
+
+      {/* Evangelism Ministry Head */}
+      {section('Evangelism Ministry Head','90ms',(
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 14px'}}>
+          <div>
+            <div className="field-label">Name</div>
+            <input className="field-input" value={emh.name||''} onChange={e=>setNested('evangelismMinistryHead','name',e.target.value)} placeholder="Sis. Lizel Ocenar"/>
+          </div>
+          <div>
+            <div className="field-label">Title</div>
+            <input className="field-input" value={emh.title||''} onChange={e=>setNested('evangelismMinistryHead','title',e.target.value)} placeholder="Evangelism Ministry Head"/>
+          </div>
+        </div>
+      ))}
+
+      {/* Sector Leaders */}
+      <div className="fade-up" style={{marginBottom:14,animationDelay:'135ms'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+          <div className="field-label">Sector Leaders</div>
+          <button onClick={addSector} style={{padding:'.35rem .85rem',borderRadius:8,background:'var(--accent)',color:'#fff',border:'none',fontWeight:700,fontSize:'.8125rem',cursor:'pointer',fontFamily:'Geist,sans-serif'}}>
+            + Add Sector
+          </button>
+        </div>
+        {(botr.sectorLeaders||[]).length===0?(
+          <div style={{textAlign:'center',padding:'24px 20px',background:'var(--surface)',borderRadius:14,border:'1.5px dashed var(--border-2)',color:'var(--ink-4)',fontSize:'.875rem'}}>
+            No sector leaders yet. Tap <strong>+ Add Sector</strong> to begin.
+          </div>
+        ):(botr.sectorLeaders||[]).map((s,i)=>{
+          const isOpen=expSector===i;
+          return (
+            <div key={i} className={`service-card ${isOpen?'expanded':''}`} style={{marginBottom:10,borderLeft:'3px solid #7C3AED'}}>
+              <div onClick={()=>setExpSector(isOpen?null:i)} style={{padding:'13px 16px',cursor:'pointer',display:'flex',alignItems:'center',gap:12}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:600,fontSize:'.9375rem',color:s.name?'var(--ink)':'var(--ink-4)'}}>{s.name||'— Name not set —'}</div>
+                  <div style={{fontSize:'.8125rem',color:'var(--ink-3)',marginTop:2}}>
+                    {s.sector}{s.evangelismCoordinator?` · Coord: ${s.evangelismCoordinator}`:''}
+                  </div>
+                  {(s.churches||[]).length>0&&(
+                    <div style={{fontSize:'.75rem',color:'var(--ink-4)',marginTop:1}}>{s.churches.join(', ')}</div>
+                  )}
+                </div>
+                <span className={`chevron ${isOpen?'up':''}`} style={{color:'var(--ink-4)',fontSize:'.875rem'}}>▾</span>
+              </div>
+              <div className={`card-body ${isOpen?'open':''}`}>
+                <div style={{padding:'0 16px 16px',borderTop:'1px solid var(--border)',paddingTop:14}}>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px 12px',marginBottom:8}}>
+                    <div>
+                      <div className="field-label">Name</div>
+                      <input className="field-input" value={s.name||''} onChange={e=>updateSector(i,{...s,name:e.target.value})}/>
+                    </div>
+                    <div>
+                      <div className="field-label">Sector</div>
+                      <input className="field-input" value={s.sector||''} onChange={e=>updateSector(i,{...s,sector:e.target.value})}/>
+                    </div>
+                    <div>
+                      <div className="field-label">Title</div>
+                      <input className="field-input" value={s.title||''} onChange={e=>updateSector(i,{...s,title:e.target.value})} placeholder="Sector Leader"/>
+                    </div>
+                    <div>
+                      <div className="field-label">Evangelism Coordinator</div>
+                      <input className="field-input" value={s.evangelismCoordinator||''} onChange={e=>updateSector(i,{...s,evangelismCoordinator:e.target.value})}/>
+                    </div>
+                    <div>
+                      <div className="field-label">WhatsApp</div>
+                      <input className="field-input" value={s.whatsapp||''} onChange={e=>updateSector(i,{...s,whatsapp:e.target.value})} placeholder="+965…"/>
+                    </div>
+                    <div>
+                      <div className="field-label">Phone</div>
+                      <input className="field-input" value={s.phone||''} onChange={e=>updateSector(i,{...s,phone:e.target.value})}/>
+                    </div>
+                    <div style={{gridColumn:'1/-1'}}>
+                      <div className="field-label">Churches (comma-separated)</div>
+                      <input className="field-input"
+                        value={(s.churches||[]).join(', ')}
+                        onChange={e=>updateSector(i,{...s,churches:e.target.value.split(',').map(c=>c.trim()).filter(Boolean)})}
+                        placeholder="Grace Church, Hope Church…"/>
+                    </div>
+                  </div>
+                  <div style={{display:'flex',justifyContent:'flex-end'}}>
+                    <button onClick={()=>deleteSector(i)} style={{background:'none',border:'none',cursor:'pointer',fontSize:'.8125rem',color:'var(--danger)',padding:'4px 8px',borderRadius:6,fontWeight:500,fontFamily:'Geist,sans-serif'}}>🗑 Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Satellite Churches */}
+      <div className="fade-up" style={{animationDelay:'180ms'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+          <div className="field-label">Satellite Churches</div>
+          <button onClick={addChurch} style={{padding:'.35rem .85rem',borderRadius:8,background:'var(--accent)',color:'#fff',border:'none',fontWeight:700,fontSize:'.8125rem',cursor:'pointer',fontFamily:'Geist,sans-serif'}}>
+            + Add Church
+          </button>
+        </div>
+        {(botr.satelliteChurches||[]).length===0?(
+          <div style={{textAlign:'center',padding:'24px 20px',background:'var(--surface)',borderRadius:14,border:'1.5px dashed var(--border-2)',color:'var(--ink-4)',fontSize:'.875rem'}}>
+            No satellite churches yet. Tap <strong>+ Add Church</strong> to add one.
+          </div>
+        ):(
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {(botr.satelliteChurches||[]).map((c,i)=>(
+              <div key={i} className="service-card" style={{padding:'12px 16px'}}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr auto',gap:'8px 12px',alignItems:'end'}}>
+                  <div>
+                    <div className="field-label">Church Name</div>
+                    <input className="field-input" value={c.church||''} onChange={e=>updateChurch(i,{...c,church:e.target.value})} placeholder="Grace Church"/>
+                  </div>
+                  <div>
+                    <div className="field-label">Sector</div>
+                    <input className="field-input" value={c.sector||''} onChange={e=>updateChurch(i,{...c,sector:e.target.value})} placeholder="Sector A"/>
+                  </div>
+                  <button onClick={()=>deleteChurch(i)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--danger)',fontSize:'1rem',padding:'6px',borderRadius:6,marginBottom:1}}>🗑</button>
+                  <div>
+                    <div className="field-label">WhatsApp</div>
+                    <input className="field-input" value={c.whatsapp||''} onChange={e=>updateChurch(i,{...c,whatsapp:e.target.value})} placeholder="+965…"/>
+                  </div>
+                  <div>
+                    <div className="field-label">Phone</div>
+                    <input className="field-input" value={c.phone||''} onChange={e=>updateChurch(i,{...c,phone:e.target.value})}/>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Token Modal ──────────────────────────────────────────────────────────────
 function TokenModal({onSave,onClose}){
   const [val,setVal]=useState('');
@@ -609,6 +829,7 @@ function App(){
   const [workers,     setWorkers]     = useState([]);
   const [themes,      setThemes]      = useState({});
   const [events,      setEvents]      = useState([]);
+  const [botrChurch,  setBotrChurch]  = useState({});
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState('');
   const [activeTab,   setActiveTab]   = useState('schedule');
@@ -631,6 +852,7 @@ function App(){
         setWorkers(data.workers||[]);
         setThemes(data.themes||{});
         setEvents(data.events||[]);
+        setBotrChurch(data.botrChurch||{});
         setLoading(false);
       })
       .catch(e=>{setError('Could not load data.json: '+e.message);setLoading(false);});
@@ -684,7 +906,7 @@ function App(){
     if(!ghToken){setShowSetup(true);return;}
     setGhPublishing(true);setGhStatus('');
     try{
-      const updatedData={...fullData,schedule,workers,themes,events};
+      const updatedData={...fullData,schedule,workers,themes,events,botrChurch};
       const content=JSON.stringify(updatedData,null,2);
       const encoded=btoa(unescape(encodeURIComponent(content)));
       const getR=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
@@ -714,7 +936,7 @@ function App(){
   );
   if(error) return <div style={{padding:32,color:'var(--danger)'}}>{error}</div>;
 
-  const TAB_TITLES={schedule:`Schedule · ${activeMonth} 2026`,workers:'Workers',themes:'Monthly Themes',events:'Events'};
+  const TAB_TITLES={schedule:`Schedule · ${activeMonth} 2026`,workers:'Workers',themes:'Monthly Themes',events:'Events',botr:'BOTR Network'};
 
   return (
     <div className="app-shell">
@@ -854,9 +1076,10 @@ function App(){
           </>
         )}
 
-        {activeTab==='workers'&&<WorkersTab workers={workers} onChange={setWorkers} onDirty={markDirty}/>}
-        {activeTab==='themes' &&<ThemesTab  themes={themes}   onChange={setThemes}  onDirty={markDirty}/>}
-        {activeTab==='events' &&<EventsTab  events={events}   onChange={setEvents}  onDirty={markDirty}/>}
+        {activeTab==='workers'&&<WorkersTab workers={workers}    onChange={setWorkers}    onDirty={markDirty}/>}
+        {activeTab==='themes' &&<ThemesTab  themes={themes}     onChange={setThemes}     onDirty={markDirty}/>}
+        {activeTab==='events' &&<EventsTab  events={events}     onChange={setEvents}     onDirty={markDirty}/>}
+        {activeTab==='botr'   &&<BOTRTab    botr={botrChurch}   onChange={setBotrChurch} onDirty={markDirty}/>}
       </main>
 
       {showSetup&&<TokenModal onSave={saveToken} onClose={()=>setShowSetup(false)}/>}
