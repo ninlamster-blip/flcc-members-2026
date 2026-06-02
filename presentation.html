@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLCC Abundance Church — 2026</title>
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  background: #050510;
+  color: #fff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  cursor: default;
+  user-select: none;
+}
+
+/* ─── CANVAS BACKGROUND ────────────────────────────────────── */
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ─── SCENE CONTAINER ──────────────────────────────────────── */
+#scene {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  overflow: hidden;
+}
+
+/* ─── SLIDES ───────────────────────────────────────────────── */
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1),
+              opacity 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform, opacity;
+  padding: 40px;
+  pointer-events: none;
+}
+.slide.active {
+  pointer-events: all;
+  transform: translateZ(0) scale(1);
+  opacity: 1;
+}
+.slide.before {
+  transform: translateZ(600px) scale(1.4);
+  opacity: 0;
+}
+.slide.after {
+  transform: translateZ(-600px) scale(0.6);
+  opacity: 0;
+}
+
+/* ─── PARALLAX LAYERS ──────────────────────────────────────── */
+.p-layer {
+  position: absolute;
+  inset: -60px;
+  pointer-events: none;
+  will-change: transform;
+}
+.p-layer-1 { z-index: 1; }
+.p-layer-2 { z-index: 2; }
+.p-layer-3 { z-index: 3; }
+.slide-content { position: relative; z-index: 10; text-align: center; max-width: 900px; width: 100%; }
+
+/* ─── FLOATING ORBS ────────────────────────────────────────── */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  animation: orb-drift 8s ease-in-out infinite alternate;
+}
+@keyframes orb-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(30px, -20px) scale(1.1); }
+}
+
+/* ─── TYPOGRAPHY ───────────────────────────────────────────── */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 16px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
+}
+.slide.active .eyebrow { opacity: 1; transform: translateY(0); }
+
+h1.hero-title {
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  background: linear-gradient(135deg, #fff 0%, #c9b4ff 40%, #f5a623 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 24px;
+  opacity: 0;
+  transform: translateY(40px) scale(0.96);
+  transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+}
+.slide.active h1.hero-title { opacity: 1; transform: translateY(0) scale(1); }
+
+h2.slide-title {
+  font-size: clamp(1.8rem, 4.5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease 0.25s, transform 0.7s ease 0.25s;
+}
+.slide.active h2.slide-title { opacity: 1; transform: translateY(0); }
+
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  color: rgba(255,255,255,0.65);
+  max-width: 560px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s ease 0.5s, transform 0.7s ease 0.5s;
+}
+.slide.active .hero-sub { opacity: 1; transform: translateY(0); }
+
+/* ─── GOLD DIVIDER ─────────────────────────────────────────── */
+.gold-line {
+  width: 80px; height: 3px;
+  background: linear-gradient(90deg, #f5a623, #c9b4ff);
+  border-radius: 2px;
+  margin: 0 auto 28px;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.4s, width 0.8s ease 0.4s;
+}
+.slide.active .gold-line { opacity: 1; }
+
+/* ─── CARDS GRID ───────────────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  opacity: 0;
+  transform: translateY(30px) scale(0.96);
+}
+.card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(108,99,255,0.5);
+  background: rgba(108,99,255,0.1);
+}
+.slide.active .card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.slide.active .card:nth-child(1)  { transition-delay: 0.1s; }
+.slide.active .card:nth-child(2)  { transition-delay: 0.15s; }
+.slide.active .card:nth-child(3)  { transition-delay: 0.2s; }
+.slide.active .card:nth-child(4)  { transition-delay: 0.25s; }
+.slide.active .card:nth-child(5)  { transition-delay: 0.3s; }
+.slide.active .card:nth-child(6)  { transition-delay: 0.35s; }
+.slide.active .card:nth-child(7)  { transition-delay: 0.4s; }
+.slide.active .card:nth-child(8)  { transition-delay: 0.45s; }
+.card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.card-title { font-size: 0.9rem; font-weight: 700; color: #fff; }
+.card-sub   { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+/* ─── MEMBERS LIST ─────────────────────────────────────────── */
+.members-scroll {
+  width: 100%;
+  max-width: 800px;
+  max-height: 55vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(108,99,255,0.5) transparent;
+}
+.members-scroll::-webkit-scrollbar { width: 4px; }
+.members-scroll::-webkit-scrollbar-track { background: transparent; }
+.members-scroll::-webkit-scrollbar-thumb { background: rgba(108,99,255,0.5); border-radius: 2px; }
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s ease;
+  opacity: 0;
+  transform: translateX(-20px);
+}
+.member-row:hover { background: rgba(108,99,255,0.08); }
+.slide.active .member-row { opacity: 1; transform: translateX(0); }
+.member-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.member-name { font-size: 0.9rem; font-weight: 600; }
+.member-roles { font-size: 0.72rem; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin: 2px 2px 0 0;
+}
+.rb-presider   { background: rgba(108,99,255,0.2); color: #c9b4ff; border: 1px solid rgba(108,99,255,0.4); }
+.rb-preacher   { background: rgba(245,166,35,0.2); color: #f5c87a; border: 1px solid rgba(245,166,35,0.4); }
+.rb-songleader { background: rgba(34,197,94,0.2);  color: #86efac; border: 1px solid rgba(34,197,94,0.4); }
+.rb-pastor     { background: rgba(239,68,68,0.2);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+.rb-prayer     { background: rgba(14,165,233,0.2); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.4); }
+.rb-communion  { background: rgba(168,85,247,0.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.4); }
+
+/* ─── MONTH THEMES ─────────────────────────────────────────── */
+.months-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 860px;
+}
+.month-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 18px 12px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(40px) scale(0.9);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+.month-card:hover { transform: translateY(-6px) scale(1.03); background: rgba(255,255,255,0.08); }
+.slide.active .month-card { opacity: 1; transform: translateY(0) scale(1); }
+.slide.active .month-card:nth-child(1) { transition-delay: 0.05s; }
+.slide.active .month-card:nth-child(2) { transition-delay: 0.1s; }
+.slide.active .month-card:nth-child(3) { transition-delay: 0.15s; }
+.slide.active .month-card:nth-child(4) { transition-delay: 0.2s; }
+.slide.active .month-card:nth-child(5) { transition-delay: 0.25s; }
+.month-name { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+.month-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+.month-theme { font-size: 0.78rem; font-weight: 600; color: #fff; line-height: 1.3; }
+
+/* ─── SCHEDULE SECTION ─────────────────────────────────────── */
+.schedule-list {
+  width: 100%;
+  max-width: 700px;
+  max-height: 52vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245,166,35,0.5) transparent;
+}
+.schedule-list::-webkit-scrollbar { width: 3px; }
+.schedule-list::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.5); }
+.sched-item {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid rgba(245,166,35,0.4);
+  opacity: 0;
+  transform: translateX(-16px);
+}
+.slide.active .sched-item { opacity: 1; transform: translateX(0); }
+.sched-date { font-size: 0.75rem; font-weight: 700; color: #f5a623; line-height: 1.4; }
+.sched-roles { display: flex; flex-wrap: wrap; gap: 4px; }
+.sched-role { font-size: 0.7rem; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 4px; }
+.sched-role span { color: rgba(255,255,255,0.45); }
+
+/* ─── MINISTRY STAT BOXES ──────────────────────────────────── */
+.stat-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+.stat-box {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 20px 28px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.slide.active .stat-box { opacity: 1; transform: translateY(0); }
+.slide.active .stat-box:nth-child(1) { transition-delay: 0.3s; }
+.slide.active .stat-box:nth-child(2) { transition-delay: 0.4s; }
+.slide.active .stat-box:nth-child(3) { transition-delay: 0.5s; }
+.stat-num { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg,#f5a623,#c9b4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+
+/* ─── SCRIPTURE QUOTE ──────────────────────────────────────── */
+.scripture {
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  font-style: italic;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.7;
+  max-width: 680px;
+  margin: 0 auto 16px;
+  position: relative;
+  padding: 0 40px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s;
+}
+.slide.active .scripture { opacity: 1; transform: translateY(0); }
+.scripture::before { content: '\201C'; position: absolute; left: 0; top: -10px; font-size: 4rem; color: rgba(245,166,35,0.4); font-style: normal; line-height: 1; }
+.scripture::after  { content: '\201D'; position: absolute; right: 0; bottom: -30px; font-size: 4rem; color: rgba(245,166,35,0.4); font-style: normal; line-height: 1; }
+.scripture-ref {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #f5a623;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.9s;
+}
+.slide.active .scripture-ref { opacity: 1; }
+
+/* ─── CLOSING SECTION ──────────────────────────────────────── */
+.glow-text {
+  font-size: clamp(2rem, 6vw, 5rem);
+  font-weight: 900;
+  text-align: center;
+  background: linear-gradient(135deg, #fff 0%, #f5a623 50%, #c9b4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 40px rgba(245,166,35,0.3));
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 1s ease 0.2s, transform 1s cubic-bezier(0.34,1.56,0.64,1) 0.2s;
+}
+.slide.active .glow-text { opacity: 1; transform: scale(1); }
+
+/* ─── NAVIGATION ───────────────────────────────────────────── */
+#nav-dots {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, height 0.3s ease;
+  border: none;
+  outline: none;
+}
+.dot.active {
+  background: #f5a623;
+  height: 24px;
+  border-radius: 4px;
+  transform: scaleX(1.2);
+}
+.dot:hover:not(.active) { background: rgba(255,255,255,0.6); transform: scale(1.3); }
+
+/* ─── ARROW BUTTONS ────────────────────────────────────────── */
+.arrow-btn {
+  position: fixed;
+  z-index: 100;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.3s ease, transform 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+.arrow-btn:hover { background: rgba(245,166,35,0.3); transform: scale(1.1); }
+#btn-prev { bottom: 36px; left: calc(50% - 56px); }
+#btn-next { bottom: 36px; right: calc(50% - 56px); }
+
+/* ─── SLIDE COUNTER ────────────────────────────────────────── */
+#slide-counter {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.35);
+  z-index: 100;
+}
+
+/* ─── PROGRESS BAR ─────────────────────────────────────────── */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6c63ff, #f5a623);
+  z-index: 200;
+  transition: width 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+  box-shadow: 0 0 12px rgba(245,166,35,0.6);
+}
+
+/* ─── CHURCH LOGO AREA ─────────────────────────────────────── */
+#top-logo {
+  position: fixed;
+  top: 20px;
+  left: 28px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.7;
+}
+.logo-cross { font-size: 1.4rem; }
+.logo-text { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+
+/* ─── HINT PULSE ───────────────────────────────────────────── */
+.hint {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  animation: hint-pulse 2s ease-in-out infinite;
+  z-index: 100;
+}
+@keyframes hint-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* ─── WIPE OVERLAY ─────────────────────────────────────────── */
+#wipe {
+  position: fixed;
+  inset: 0;
+  background: #050510;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+#wipe.flash { opacity: 0.6; }
+
+/* ─── TRANSITION RING ──────────────────────────────────────── */
+#ring {
+  position: fixed;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(245,166,35,0.6);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 51;
+  pointer-events: none;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+  opacity: 0;
+}
+#ring.expand {
+  transform: translate(-50%, -50%) scale(60);
+  opacity: 0;
+}
+
+/* ─── SCROLL-DOWN INDICATOR (slide 1) ─────────────────────── */
+.scroll-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.6s ease 1.2s;
+}
+.slide.active .scroll-indicator { opacity: 1; }
+.scroll-arrow { width: 20px; height: 20px; border-right: 2px solid rgba(255,255,255,0.4); border-bottom: 2px solid rgba(255,255,255,0.4); transform: rotate(45deg); animation: bob 1.4s ease infinite; }
+@keyframes bob { 0%,100% { transform: rotate(45deg) translateY(0); } 50% { transform: rotate(45deg) translateY(4px); } }
+
+/* ─── SLIDE-SPECIFIC COLORS ────────────────────────────────── */
+#slide-1 .orb.a { width: 500px; height: 500px; background: rgba(108,99,255,0.12); top: -100px; right: -100px; animation-delay: 0s; }
+#slide-1 .orb.b { width: 400px; height: 400px; background: rgba(245,166,35,0.08); bottom: -80px; left: -80px; animation-delay: -4s; }
+
+#slide-2 .orb.a { width: 450px; height: 450px; background: rgba(34,197,94,0.1); top: -120px; left: -60px; animation-delay: -2s; }
+#slide-2 .orb.b { width: 350px; height: 350px; background: rgba(108,99,255,0.1); bottom: -60px; right: -60px; animation-delay: -5s; }
+
+#slide-3 .orb.a { width: 600px; height: 600px; background: rgba(245,166,35,0.08); top: -180px; right: -180px; animation-delay: -1s; }
+#slide-3 .orb.b { width: 300px; height: 300px; background: rgba(108,99,255,0.12); bottom: -60px; left: 20%; animation-delay: -3s; }
+
+#slide-4 .orb.a { width: 500px; height: 500px; background: rgba(239,68,68,0.08); top: -100px; left: -100px; animation-delay: -2s; }
+#slide-4 .orb.b { width: 400px; height: 400px; background: rgba(14,165,233,0.09); bottom: -100px; right: -80px; animation-delay: -6s; }
+
+#slide-5 .orb.a { width: 600px; height: 600px; background: rgba(168,85,247,0.1); top: -200px; right: -100px; animation-delay: -1s; }
+
+#slide-6 .orb.a { width: 500px; height: 500px; background: rgba(245,166,35,0.1); bottom: -120px; left: -80px; animation-delay: -3s; }
+#slide-6 .orb.b { width: 300px; height: 300px; background: rgba(108,99,255,0.08); top: -60px; right: 10%; animation-delay: -7s; }
+
+#slide-7 .orb.a { width: 700px; height: 700px; background: rgba(108,99,255,0.15); top: -300px; left: -200px; animation-delay: 0s; }
+#slide-7 .orb.b { width: 500px; height: 500px; background: rgba(245,166,35,0.1); bottom: -200px; right: -200px; animation-delay: -4s; }
+
+/* ─── MOBILE ───────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .months-grid { grid-template-columns: repeat(3, 1fr); }
+  .stat-row { flex-wrap: wrap; }
+  #btn-prev { left: 16px; bottom: 28px; }
+  #btn-next { right: 16px; bottom: 28px; }
+  #slide-counter { display: none; }
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- Star/particle canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Progress bar -->
+<div id="progress-bar" style="width:14.3%"></div>
+
+<!-- Wipe overlay for transitions -->
+<div id="wipe"></div>
+<div id="ring"></div>
+
+<!-- Top logo -->
+<div id="top-logo">
+  <span class="logo-cross">✝</span>
+  <div class="logo-text">FLCC · Abundance Church</div>
+</div>
+
+<!-- Navigation dots -->
+<div id="nav-dots">
+  <button class="dot active" data-slide="0" title="Welcome"></button>
+  <button class="dot" data-slide="1" title="Ministry"></button>
+  <button class="dot" data-slide="2" title="Members"></button>
+  <button class="dot" data-slide="3" title="Themes"></button>
+  <button class="dot" data-slide="4" title="Roles"></button>
+  <button class="dot" data-slide="5" title="Schedule"></button>
+  <button class="dot" data-slide="6" title="Together"></button>
+</div>
+
+<!-- Arrows -->
+<button class="arrow-btn" id="btn-prev">&#8592;</button>
+<span id="slide-counter">1 / 7</span>
+<button class="arrow-btn" id="btn-next">&#8594;</button>
+
+<div class="hint" id="hint">Press → or click arrow to continue</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDES
+═══════════════════════════════════════════════════════════ -->
+<div id="scene">
+
+  <!-- SLIDE 1: HERO -->
+  <div class="slide active" id="slide-1">
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="p-layer p-layer-1" data-depth="0.06"></div>
+    <div class="p-layer p-layer-2" data-depth="0.12"></div>
+    <div class="slide-content">
+      <div class="eyebrow">Farwaniya · Kuwait · 2026</div>
+      <h1 class="hero-title">FLCC<br>Abundance Church</h1>
+      <div class="gold-line"></div>
+      <p class="hero-sub">
+        A community of faith, worship, and fellowship — serving God and one another with joy.
+      </p>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-num">32</div>
+          <div class="stat-lbl">Members</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">11</div>
+          <div class="stat-lbl">Families</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">2×</div>
+          <div class="stat-lbl">Weekly Service</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <div class="scroll-arrow"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: MINISTRY & LEADERSHIP -->
+  <div class="slide after" id="slide-2">
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="p-layer p-layer-1" data-depth="0.05"></div>
+    <div class="slide-content">
+      <div class="eyebrow">Fellowship Ministry</div>
+      <h2 class="slide-title">Our Leadership &amp; Heart</h2>
+      <div class="gold-line"></div>
+      <p class="hero-sub" style="margin-bottom:28px;">
+        Led by <strong style="color:#f5a623;">Sis. Amazelle De Jesus</strong> — Fellowship Ministry Head — our church gathers every Friday &amp; Sunday to worship, learn, and grow together in Christ.
+      </p>
+      <div class="cards-grid" style="grid-template-columns: repeat(4,1fr);">
+        <div class="card">
+          <div class="card-icon">🎤</div>
+          <div class="card-title">Presiders</div>
+          <div class="card-sub">20 members</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📖</div>
+          <div class="card-title">Preachers</div>
+          <div class="card-sub">10 members</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🎵</div>
+          <div class="card-title">Song Leaders</div>
+          <div class="card-sub">8 members</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🙏</div>
+          <div class="card-title">Pastors</div>
+          <div class="card-sub">3 pastors</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🕊️</div>
+          <div class="card-title">Pastoral Prayer</div>
+          <div class="card-sub">7 members</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🍞</div>
+          <div class="card-title">Communion</div>
+          <div class="card-sub">7 assistants</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🏡</div>
+          <div class="card-title">Families</div>
+          <div class="card-sub">11 family groups</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">👫</div>
+          <div class="card-title">Pairs</div>
+          <div class="card-sub">9 food-in-charge pairs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: MEMBERS -->
+  <div class="slide after" id="slide-3">
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="p-layer p-layer-1" data-depth="0.07"></div>
+    <div class="slide-content" style="max-width:780px;">
+      <div class="eyebrow">Our People</div>
+      <h2 class="slide-title">Every Name, Every Gift</h2>
+      <div class="gold-line"></div>
+      <div class="members-scroll" id="members-list"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: MONTHLY THEMES -->
+  <div class="slide after" id="slide-4">
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="p-layer p-layer-1" data-depth="0.05"></div>
+    <div class="slide-content">
+      <div class="eyebrow">2026 Journey</div>
+      <h2 class="slide-title">Monthly Themes</h2>
+      <div class="gold-line"></div>
+      <div class="months-grid">
+        <div class="month-card" style="border-top: 3px solid #e879a0;">
+          <span class="month-icon">❤️</span>
+          <div class="month-name">February</div>
+          <div class="month-theme">Love</div>
+        </div>
+        <div class="month-card" style="border-top: 3px solid #7dd3fc;">
+          <span class="month-icon">🙏</span>
+          <div class="month-name">March</div>
+          <div class="month-theme">Prayer &amp; Fasting</div>
+        </div>
+        <div class="month-card" style="border-top: 3px solid #86efac;">
+          <span class="month-icon">🔥</span>
+          <div class="month-name">April</div>
+          <div class="month-theme">Works of the Holy Spirit &amp; Church Growth</div>
+        </div>
+        <div class="month-card" style="border-top: 3px solid #f5a623;">
+          <span class="month-icon">🌾</span>
+          <div class="month-name">May</div>
+          <div class="month-theme">You Are What You Eat</div>
+        </div>
+        <div class="month-card" style="border-top: 3px solid #c9b4ff;">
+          <span class="month-icon">✨</span>
+          <div class="month-name">June</div>
+          <div class="month-theme">To Be Announced</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: ROLES EXPLAINED -->
+  <div class="slide after" id="slide-5">
+    <div class="orb a"></div>
+    <div class="p-layer p-layer-1" data-depth="0.06"></div>
+    <div class="slide-content">
+      <div class="eyebrow">How We Serve</div>
+      <h2 class="slide-title">Roles in Every Service</h2>
+      <div class="gold-line"></div>
+      <div class="cards-grid" style="grid-template-columns:repeat(3,1fr); max-width:680px; margin:0 auto;">
+        <div class="card" style="border-top:3px solid #c9b4ff;">
+          <div class="card-icon">🎤</div>
+          <div class="card-title">Presider</div>
+          <div class="card-sub">Opens &amp; leads the service flow</div>
+        </div>
+        <div class="card" style="border-top:3px solid #86efac;">
+          <div class="card-icon">🎵</div>
+          <div class="card-title">Song Leader</div>
+          <div class="card-sub">Leads the congregation in worship</div>
+        </div>
+        <div class="card" style="border-top:3px solid #f5c87a;">
+          <div class="card-icon">📖</div>
+          <div class="card-title">Preacher</div>
+          <div class="card-sub">Delivers the message of the Word</div>
+        </div>
+        <div class="card" style="border-top:3px solid #7dd3fc;">
+          <div class="card-icon">🕊️</div>
+          <div class="card-title">Pastoral Prayer</div>
+          <div class="card-sub">Intercedes for the congregation</div>
+        </div>
+        <div class="card" style="border-top:3px solid #d8b4fe;">
+          <div class="card-icon">🍞</div>
+          <div class="card-title">Communion Asst 1 &amp; 2</div>
+          <div class="card-sub">Serves the Lord's Supper</div>
+        </div>
+        <div class="card" style="border-top:3px solid #fca5a5;">
+          <div class="card-icon">🍱</div>
+          <div class="card-title">Food In Charge</div>
+          <div class="card-sub">Families &amp; pairs bring fellowship meals</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: SCHEDULE HIGHLIGHT -->
+  <div class="slide after" id="slide-6">
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="p-layer p-layer-1" data-depth="0.04"></div>
+    <div class="slide-content" style="max-width:720px;">
+      <div class="eyebrow">Service Schedule</div>
+      <h2 class="slide-title">Feb – Jun 2026</h2>
+      <div class="gold-line"></div>
+      <div class="schedule-list" id="schedule-list"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: CLOSING -->
+  <div class="slide after" id="slide-7">
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="p-layer p-layer-1" data-depth="0.1"></div>
+    <div class="p-layer p-layer-2" data-depth="0.18"></div>
+    <div class="slide-content">
+      <div class="eyebrow">In Christ Together</div>
+      <p class="scripture">
+        For where two or three gather in my name, there am I with them.
+      </p>
+      <p class="scripture-ref">Matthew 18:20</p>
+      <br><br>
+      <div class="glow-text">One Body.<br>One Spirit.<br>One Church.</div>
+      <p class="hero-sub" style="transition-delay:1s;">
+        FLCC – Abundance Church, Farwaniya 1 · Kuwait · 2026
+      </p>
+    </div>
+  </div>
+
+</div><!-- /#scene -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   STAR / PARTICLE CANVAS
+═══════════════════════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [], nebulas = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  // Build stars
+  for (let i = 0; i < 280; i++) {
+    stars.push({
+      x: Math.random(),
+      y: Math.random(),
+      r: rand(0.3, 1.4),
+      a: rand(0.2, 0.9),
+      speed: rand(0.00003, 0.00012),
+      phase: rand(0, Math.PI * 2)
+    });
+  }
+
+  // Build nebula blobs
+  const colors = [
+    'rgba(108,99,255,',
+    'rgba(245,166,35,',
+    'rgba(34,197,94,',
+    'rgba(239,68,68,'
+  ];
+  for (let i = 0; i < 6; i++) {
+    nebulas.push({
+      x: rand(0.05, 0.95),
+      y: rand(0.05, 0.95),
+      r: rand(80, 200),
+      color: colors[Math.floor(Math.random() * colors.length)],
+      a: rand(0.03, 0.07),
+      driftX: rand(-0.00004, 0.00004),
+      driftY: rand(-0.00003, 0.00003),
+    });
+  }
+
+  let t = 0;
+  function draw() {
+    t++;
+    ctx.clearRect(0, 0, W, H);
+
+    // Nebulas
+    nebulas.forEach(n => {
+      n.x += n.driftX;
+      n.y += n.driftY;
+      if (n.x < 0) n.x = 1; if (n.x > 1) n.x = 0;
+      if (n.y < 0) n.y = 1; if (n.y > 1) n.y = 0;
+      const grd = ctx.createRadialGradient(n.x*W, n.y*H, 0, n.x*W, n.y*H, n.r);
+      grd.addColorStop(0, n.color + n.a + ')');
+      grd.addColorStop(1, n.color + '0)');
+      ctx.beginPath();
+      ctx.arc(n.x*W, n.y*H, n.r, 0, Math.PI*2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+    });
+
+    // Stars
+    stars.forEach(s => {
+      const flicker = s.a * (0.6 + 0.4 * Math.sin(t * s.speed * 1000 + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${flicker})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   MEMBERS DATA
+═══════════════════════════════════════════════════════════ */
+const members = [
+  { name: 'Bless De Jesus',    title: 'Sis.', roles: ['presider'] },
+  { name: 'Hasmin Treseni',    title: 'Sis.', roles: ['presider'] },
+  { name: 'Mae De Jesus',      title: 'Sis.', roles: ['presider'] },
+  { name: 'Lizel Ocenar',      title: 'Sis.', roles: ['presider'] },
+  { name: 'Fretz Guerzon',     title: 'Sis.', roles: ['presider','preacher'] },
+  { name: 'Dolly Cas',         title: 'Sis.', roles: ['presider','songleader'] },
+  { name: 'Rona Vergara',      title: 'Sis.', roles: ['presider'] },
+  { name: 'Sandra Gabriel',    title: 'Sis.', roles: ['presider'] },
+  { name: 'Christine Santos',  title: 'Sis.', roles: ['presider'] },
+  { name: 'Celsa Sario',       title: 'Sis.', roles: ['presider'] },
+  { name: 'Jhem Tulagan',      title: 'Sis.', roles: ['presider'] },
+  { name: 'Juneth Atienza',    title: 'Sis.', roles: ['presider'] },
+  { name: 'Alma Flores',       title: 'Sis.', roles: ['presider','preacher'] },
+  { name: 'Almira Dela Paz',   title: 'Sis.', roles: ['presider'] },
+  { name: 'Grace Siangco',     title: 'Sis.', roles: ['presider','songleader'] },
+  { name: 'Annabelle Arciaga', title: 'Sis.', roles: ['presider'] },
+  { name: 'Jenarlyn Culao',    title: 'Sis.', roles: ['presider','songleader'] },
+  { name: 'Laidz Pascual',     title: 'Sis.', roles: ['presider','songleader','preacher','prayer','communion'] },
+  { name: 'Irene Sabangan',    title: 'Sis.', roles: ['preacher'] },
+  { name: 'Thara Embo',        title: 'Sis.', roles: ['presider'] },
+  { name: 'Dandreb Serna',     title: 'Bro.', roles: ['songleader'] },
+  { name: 'Bong Cas',          title: 'Bro.', roles: ['songleader'] },
+  { name: 'Elbert Siangco',    title: 'Bro.', roles: ['songleader'] },
+  { name: 'Wilson Guerzon',    title: 'Bro.', roles: ['preacher','prayer','communion'] },
+  { name: 'Allen Santos',      title: 'Bro.', roles: ['preacher','prayer','communion'] },
+  { name: 'Ferdie Gajeton',    title: 'Bro.', roles: ['preacher','prayer','communion'] },
+  { name: 'Edmund Gabriel',    title: 'Bro.', roles: ['songleader','preacher','prayer','communion'] },
+  { name: 'Edward Sario',      title: 'Bro.', roles: ['preacher'] },
+  { name: 'Dave Vergara',      title: 'Bro.', roles: ['presider','songleader'] },
+  { name: 'Justin Flores',     title: 'Ptr.', roles: ['pastor','prayer'] },
+  { name: 'Doddie Arciaga',    title: 'Ptr.', roles: ['pastor','prayer'] },
+  { name: 'Nerwin Suelo',      title: 'Ptr.', roles: ['pastor','preacher'] },
+];
+
+const roleLabels = { presider:'Presider', preacher:'Preacher', songleader:'Song Leader', pastor:'Pastor', prayer:'Pastoral Prayer', communion:'Communion Asst' };
+const avatarColors = [
+  ['#6c63ff','#c9b4ff'], ['#f5a623','#fde68a'], ['#22c55e','#86efac'],
+  ['#ef4444','#fca5a5'], ['#0ea5e9','#7dd3fc'], ['#a855f7','#d8b4fe'],
+];
+
+function buildMembers() {
+  const list = document.getElementById('members-list');
+  members.forEach((m, i) => {
+    const [bg, fg] = avatarColors[i % avatarColors.length];
+    const initials = m.name.split(' ').map(w => w[0]).slice(0,2).join('');
+    const row = document.createElement('div');
+    row.className = 'member-row';
+    row.style.transitionDelay = (0.02 * i + 0.2) + 's';
+    row.innerHTML = `
+      <div class="member-avatar" style="background:${bg}22; color:${fg}; border:1px solid ${bg}66;">${initials}</div>
+      <div style="flex:1; min-width:0;">
+        <div class="member-name">${m.title} ${m.name}</div>
+        <div class="member-roles">${m.roles.map(r => `<span class="role-badge rb-${r}">${roleLabels[r]}</span>`).join('')}</div>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+buildMembers();
+
+/* ═══════════════════════════════════════════════════════════
+   SCHEDULE DATA
+═══════════════════════════════════════════════════════════ */
+const schedule = [
+  { date:'Sun, Feb 1',  presider:'Sis. Fretz Guerzon',    leader:'Bro. Dave Vergara',   preacher:'Ptr. Doddie Arciaga',  food:'Cas Family' },
+  { date:'Fri, Feb 6',  presider:'Sis. Bless De Jesus',   leader:'Sis. Dolly Cas',      preacher:'Ptr. Justin Flores',   food:'Arciaga Family' },
+  { date:'Sun, Feb 8',  presider:'Sis. Dolly Cas',        leader:'Sis. Laidz Pascual',  preacher:'Bro. Ferdie Gajeton',  food:'Vergara Family' },
+  { date:'Fri, Feb 13', presider:'Sis. Hasmin Treseni',   leader:'Bro. Bong Cas',       preacher:'Bro. Wilson Guerzon',  food:'Lizel & Irene' },
+  { date:'Sun, Feb 15', presider:'Sis. Rona Vergara',     leader:'Sis. Grace Siangco',  preacher:'Sis. Laidz Pascual',   food:'Gabriel Family' },
+  { date:'Fri, Feb 20', presider:'Sis. Mae De Jesus',     leader:'Sis. Jenarlyn Culao', preacher:'Bro. Allen Santos',    food:'Jhem & Kamille' },
+  { date:'Sun, Feb 22', presider:'Sis. Sandra Gabriel',   leader:'Bro. Bong Cas',       preacher:'Bro. Edward Sario',    food:'Almira & Kitzie' },
+  { date:'Fri, Feb 27', presider:'Sis. Lizel Ocenar',     leader:'Bro. Elbert Siangco', preacher:'Bro. Edmund Gabriel',  food:'Santos Family' },
+  { date:'Sun, Mar 1',  presider:'Sis. Alma Flores',      leader:'Sis. Grace Siangco',  preacher:'Ptr. Justin Flores',   food:'Ptr. Nerwin & Ferdie' },
+  { date:'Fri, Mar 6',  presider:'Sis. Christine Santos', leader:'Bro. Dandreb Serna',  preacher:'Ptr. Doddie Arciaga',  food:'Tharah & Juneth' },
+  { date:'Sun, Mar 8',  presider:'Sis. Almira Dela Paz',  leader:'Bro. Bong Cas',       preacher:'Bro. Allen Santos',    food:'Siangco Family' },
+  { date:'Fri, Mar 13', presider:'Sis. Celsa Sario',      leader:'Bro. Elbert Siangco', preacher:'Bro. Ferdie Gajeton',  food:'Guerzon Family' },
+  { date:'Sun, Mar 15', presider:'Bro. Dave Vergara',     leader:'Sis. Dolly Cas',      preacher:'Bro. Wilson Guerzon',  food:'Flores Family' },
+  { date:'Fri, Mar 20', presider:'Sis. Jhem Tulagan',     leader:'Sis. Jenarlyn Culao', preacher:'Sis. Laidz Pascual',   food:'Treseni Family' },
+  { date:'Sun, Mar 22', presider:'Sis. Grace Siangco',    leader:'Bro. Elbert Siangco', preacher:'Bro. Edmund Gabriel',  food:'Pascual Family' },
+  { date:'Fri, Mar 28', presider:'Sis. Juneth Atienza',   leader:'Bro. Bong Cas',       preacher:'Sis. Irene Sabangan',  food:'Jen & Sheng' },
+  { date:'Sun, Mar 29', presider:'Sis. Annabelle Arciaga',leader:'Sis. Laidz Pascual',  preacher:'Ptr. Nerwin Suelo',    food:'Sario Family' },
+  { date:'Fri, Apr 3 ★',presider:'Sis. Lizel Ocenar',    leader:'Sis. Jenarlyn Culao', preacher:'Seven Last Words',     food:'Tharah & Juneth' },
+  { date:'Sun, Apr 5',  presider:'Sis. Laidz Pascual',   leader:'Bro. Bong Cas',       preacher:'Ptr. Doddie Arciaga',  food:'Siangco Family' },
+  { date:'Fri, Apr 10', presider:'Sis. Thara Embo',       leader:'Bro. Dandreb Serna',  preacher:'Ptr. Justin Flores',   food:'Bless & Mae' },
+  { date:'Sun, Apr 12', presider:'Sis. Rona Vergara',     leader:'Bro. Elbert Siangco', preacher:'Sis. Irene Sabangan',  food:'Ptr. Nerwin & Ferdie' },
+];
+
+function buildSchedule() {
+  const list = document.getElementById('schedule-list');
+  schedule.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'sched-item';
+    row.style.transitionDelay = (0.03 * i + 0.2) + 's';
+    row.innerHTML = `
+      <div class="sched-date">${s.date}</div>
+      <div class="sched-roles">
+        <span class="sched-role">🎤 <span>Presider:</span> ${s.presider}</span>
+        <span class="sched-role">🎵 <span>Leader:</span> ${s.leader}</span>
+        <span class="sched-role">📖 <span>Preacher:</span> ${s.preacher}</span>
+        <span class="sched-role">🍱 <span>Food:</span> ${s.food}</span>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+buildSchedule();
+
+/* ═══════════════════════════════════════════════════════════
+   SLIDE ENGINE
+═══════════════════════════════════════════════════════════ */
+const slides = Array.from(document.querySelectorAll('.slide'));
+const dots   = Array.from(document.querySelectorAll('.dot'));
+const total  = slides.length;
+let current  = 0;
+let animating = false;
+
+function goTo(idx, direction) {
+  if (animating || idx === current || idx < 0 || idx >= total) return;
+  animating = true;
+
+  const wipe = document.getElementById('wipe');
+  const ring = document.getElementById('ring');
+
+  // Flash wipe
+  wipe.classList.add('flash');
+  // Expand ring
+  ring.style.opacity = '0.4';
+  ring.classList.add('expand');
+
+  const prev = current;
+  current = idx;
+
+  setTimeout(() => {
+    // Update classes
+    slides[prev].classList.remove('active', 'before', 'after');
+    slides[prev].classList.add(direction > 0 ? 'before' : 'after');
+
+    slides[current].classList.remove('active', 'before', 'after');
+    slides[current].classList.add('active');
+
+    // Update dots
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+
+    // Progress bar
+    document.getElementById('progress-bar').style.width = ((current + 1) / total * 100) + '%';
+
+    // Counter
+    document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+
+    // Hide hint after first navigation
+    if (current > 0) document.getElementById('hint').style.opacity = '0';
+
+    wipe.classList.remove('flash');
+    ring.classList.remove('expand');
+    ring.style.transform = 'translate(-50%, -50%) scale(0)';
+
+    setTimeout(() => {
+      ring.style.opacity = '0';
+      animating = false;
+    }, 300);
+  }, 220);
+}
+
+// Dots
+dots.forEach((d, i) => d.addEventListener('click', () => goTo(i, i > current ? 1 : -1)));
+
+// Arrows
+document.getElementById('btn-prev').addEventListener('click', () => goTo(current - 1, -1));
+document.getElementById('btn-next').addEventListener('click', () => goTo(current + 1, 1));
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); goTo(current + 1, 1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); goTo(current - 1, -1); }
+});
+
+// Touch / swipe
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, {passive:true});
+document.addEventListener('touchend', e => {
+  const dx = touchStartX - e.changedTouches[0].clientX;
+  const dy = touchStartY - e.changedTouches[0].clientY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    goTo(current + (dx > 0 ? 1 : -1), dx > 0 ? 1 : -1);
+  } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 50) {
+    goTo(current + (dy > 0 ? 1 : -1), dy > 0 ? 1 : -1);
+  }
+}, {passive:true});
+
+// Mouse wheel
+let wheelLocked = false;
+document.addEventListener('wheel', e => {
+  if (wheelLocked) return;
+  wheelLocked = true;
+  setTimeout(() => wheelLocked = false, 900);
+  goTo(current + (e.deltaY > 0 ? 1 : -1), e.deltaY > 0 ? 1 : -1);
+}, {passive:true});
+
+/* ═══════════════════════════════════════════════════════════
+   MOUSE PARALLAX
+═══════════════════════════════════════════════════════════ */
+let mouseX = 0, mouseY = 0;
+let targetX = 0, targetY = 0;
+
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+function parallaxTick() {
+  targetX += (mouseX - targetX) * 0.06;
+  targetY += (mouseY - targetY) * 0.06;
+
+  document.querySelectorAll('.p-layer').forEach(layer => {
+    const depth = parseFloat(layer.dataset.depth || 0.1);
+    const tx = targetX * depth * 80;
+    const ty = targetY * depth * 60;
+    layer.style.transform = `translate(${tx}px, ${ty}px)`;
+  });
+
+  // Subtle 3D tilt on active slide content
+  const activeSlide = slides[current];
+  if (activeSlide) {
+    const content = activeSlide.querySelector('.slide-content');
+    if (content) {
+      content.style.transform = `rotateY(${targetX * 2}deg) rotateX(${-targetY * 1.5}deg)`;
+    }
+  }
+
+  requestAnimationFrame(parallaxTick);
+}
+parallaxTick();
+
+/* ═══════════════════════════════════════════════════════════
+   AUTO INITIAL ANIMATION
+═══════════════════════════════════════════════════════════ */
+// Make remaining slides properly positioned
+slides.slice(1).forEach(s => s.classList.add('after'));
+</script>
+</body>
+</html>
