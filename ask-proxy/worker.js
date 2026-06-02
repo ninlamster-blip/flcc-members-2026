@@ -32,8 +32,9 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
+    // Non-POST requests: serve static assets (HTML, JSON, etc.)
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+      return env.ASSETS.fetch(request);
     }
 
     if (!env.ANTHROPIC_API_KEY) {

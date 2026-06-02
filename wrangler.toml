@@ -1,3 +1,6 @@
 name = "flcc-members-2026"
 main = "ask-proxy/worker.js"
 compatibility_date = "2024-01-01"
+
+[assets]
+directory = "."
