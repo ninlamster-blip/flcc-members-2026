@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLCC · Abundance Church — 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,0,600;9..144,0,700;9..144,1,400&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #D4AF37;
+  --gold-light: #F0D875;
+  --gold-dim: rgba(212,175,55,0.15);
+  --gold-glow: rgba(212,175,55,0.4);
+  --white: #FFFFFF;
+  --cream: #F5EDD8;
+  --text: rgba(255,255,255,0.92);
+  --text-muted: rgba(255,255,255,0.55);
+  --text-dim: rgba(255,255,255,0.32);
+
+  --bg-0: #080C18;
+  --bg-1: #0C1022;
+  --bg-2: #0A0D1C;
+  --bg-3: #090C1A;
+  --bg-4: #0B0E20;
+  --bg-5: #080B18;
+  --bg-6: #09101E;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Geist', system-ui, sans-serif;
+  background: var(--bg-0);
+  color: var(--text);
+  overscroll-behavior: none;
+}
+
+/* ── Scroll snap sections ── */
+.scene {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100dvh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Typography ── */
+.f-display {
+  font-family: 'Fraunces', Georgia, serif;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.f-italic { font-style: italic; }
+
+/* ── Side nav dots ── */
+#sidenav {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  mix-blend-mode: normal;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.dot::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gold);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  font-family: 'Geist', sans-serif;
+}
+.dot:hover::after { opacity: 1; }
+.dot.active { background: var(--gold); transform: scale(1.5); }
+.dot:hover { background: rgba(212,175,55,0.6); }
+
+/* ── Entrance animations ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+/* ── Gold divider ── */
+.gold-line {
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════
+   SCENE 0 · HERO
+══════════════════════════════ */
+#scene-0 { background: var(--bg-0); }
+
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 40px 24px;
+  max-width: 900px;
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 1s 0.3s forwards cubic-bezier(0.16,1,0.3,1);
+}
+
+.hero-title {
+  font-size: clamp(56px, 10vw, 120px);
+  font-weight: 700;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp 1s 0.55s forwards cubic-bezier(0.16,1,0.3,1);
+  color: var(--white);
+}
+.hero-title .accent-word {
+  color: var(--gold);
+  display: block;
+}
+
+.hero-subtitle {
+  font-size: clamp(16px, 2.5vw, 22px);
+  font-weight: 300;
+  color: var(--text-muted);
+  max-width: 480px;
+  margin: 0 auto 48px;
+  line-height: 1.6;
+  opacity: 0;
+  animation: fadeUp 1s 0.75s forwards cubic-bezier(0.16,1,0.3,1);
+}
+
+.hero-badges {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 64px;
+  opacity: 0;
+  animation: fadeUp 1s 0.9s forwards cubic-bezier(0.16,1,0.3,1);
+}
+.hero-badge {
+  padding: 6px 16px;
+  border: 1px solid rgba(212,175,55,0.3);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gold-light);
+  background: rgba(212,175,55,0.06);
+  letter-spacing: 0.03em;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: fadeIn 1s 1.4s forwards;
+  z-index: 2;
+}
+.scroll-hint span {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.scroll-arrow {
+  width: 20px; height: 20px;
+  border-right: 1.5px solid var(--gold-dim);
+  border-bottom: 1.5px solid var(--gold-dim);
+  transform: rotate(45deg);
+  animation: arrowBounce 2s infinite ease-in-out;
+}
+
+/* ══════════════════════════════
+   SCENE 1 · ABOUT / MINISTRY
+══════════════════════════════ */
+#scene-1 {
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(212,175,55,0.07) 0%, transparent 70%),
+              linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  max-width: 1000px;
+  width: 100%;
+  padding: 60px 40px;
+  align-items: center;
+}
+@media (max-width: 760px) {
+  .about-grid { grid-template-columns: 1fr; padding: 48px 24px; gap: 32px; }
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.08;
+}
+.section-body {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+.stat-num {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+  margin-top: 4px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.head-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+.head-card::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.head-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-dim), rgba(212,175,55,0.25));
+  border: 2px solid rgba(212,175,55,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  color: var(--gold);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+.head-name {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.head-title-text {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+}
+.contact-list { display: flex; flex-direction: column; gap: 10px; }
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.contact-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(212,175,55,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+/* ══════════════════════════════
+   SCENE 2 · MEMBERS
+══════════════════════════════ */
+#scene-2 {
+  justify-content: flex-start;
+  padding: 80px 32px 80px;
+  background: radial-gradient(ellipse 60% 50% at 20% 50%, rgba(50,30,100,0.3) 0%, transparent 60%),
+              linear-gradient(180deg, var(--bg-2) 0%, var(--bg-3) 100%);
+  min-height: 100dvh;
+}
+
+.members-header {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 48px;
+  width: 100%;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.filter-tab {
+  padding: 7px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.filter-tab:hover { border-color: rgba(212,175,55,0.4); color: var(--gold-light); }
+.filter-tab.active {
+  background: var(--gold-dim);
+  border-color: rgba(212,175,55,0.5);
+  color: var(--gold-light);
+}
+
+#members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.member-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+  transition: all 0.25s ease;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+.member-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.member-card:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-2px);
+}
+.member-card:hover::after { opacity: 1; }
+.member-card.type-sis::after { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.member-card.type-bro::after { background: linear-gradient(90deg, #4D8CFF, #7AB4FF); }
+.member-card.type-ptr::after { background: linear-gradient(90deg, #A855F7, #D8B4FE); }
+
+.member-card.hidden { display: none; }
+
+.member-initials {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.type-sis .member-initials { background: rgba(212,175,55,0.15); color: var(--gold-light); }
+.type-bro .member-initials { background: rgba(77,140,255,0.15); color: #7AB4FF; }
+.type-ptr .member-initials { background: rgba(168,85,247,0.15); color: #D8B4FE; }
+
+.member-name {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  line-height: 1.3;
+  color: var(--text);
+}
+.member-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.role-chip {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid;
+  letter-spacing: 0.03em;
+}
+.type-sis .role-chip { border-color: rgba(212,175,55,0.3); color: rgba(212,175,55,0.7); }
+.type-bro .role-chip { border-color: rgba(77,140,255,0.3); color: rgba(122,180,255,0.7); }
+.type-ptr .role-chip { border-color: rgba(168,85,247,0.3); color: rgba(216,180,254,0.7); }
+
+/* ══════════════════════════════
+   SCENE 3 · MONTHLY THEMES
+══════════════════════════════ */
+#scene-3 {
+  background: radial-gradient(ellipse 70% 50% at 80% 50%, rgba(212,175,55,0.07) 0%, transparent 65%),
+              linear-gradient(180deg, var(--bg-3) 0%, var(--bg-4) 100%);
+  padding: 80px 32px;
+  justify-content: center;
+}
+
+.themes-inner {
+  max-width: 900px;
+  width: 100%;
+}
+.themes-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 28px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(212,175,55,0.35) 15%, rgba(212,175,55,0.35) 85%, transparent);
+}
+
+.timeline-item {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  padding: 0 0 40px;
+  position: relative;
+}
+.timeline-dot-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 57px;
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+.timeline-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--bg-4);
+  border: 2px solid var(--gold);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s;
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+.timeline-item:hover .timeline-dot {
+  background: var(--gold);
+  transform: scale(1.3);
+}
+
+.timeline-body {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(212,175,55,0.12);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.timeline-body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold-glow), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.timeline-item:hover .timeline-body {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(212,175,55,0.25);
+}
+.timeline-item:hover .timeline-body::before { opacity: 1; }
+
+.timeline-month {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.timeline-theme {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.2;
+}
+.theme-num {
+  position: absolute;
+  bottom: 16px; right: 20px;
+  font-family: 'Fraunces', serif;
+  font-size: 64px;
+  font-weight: 700;
+  color: rgba(212,175,55,0.05);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════
+   SCENE 4 · SERVICE ROLES
+══════════════════════════════ */
+#scene-4 {
+  background: radial-gradient(ellipse 60% 60% at 30% 50%, rgba(30,50,120,0.35) 0%, transparent 65%),
+              linear-gradient(180deg, var(--bg-4) 0%, var(--bg-5) 100%);
+  padding: 80px 32px;
+}
+
+.roles-inner {
+  max-width: 1000px;
+  width: 100%;
+}
+.roles-header { text-align: center; margin-bottom: 52px; }
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.role-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.role-card:hover {
+  background: rgba(255,255,255,0.05);
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,0.13);
+}
+.role-icon {
+  font-size: 28px;
+  margin-bottom: 16px;
+  display: block;
+}
+.role-name {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--white);
+}
+.role-count {
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.role-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+.role-members-list {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.role-member-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: var(--text-muted);
+}
+
+/* ══════════════════════════════
+   SCENE 5 · FAMILIES
+══════════════════════════════ */
+#scene-5 {
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(212,175,55,0.06) 0%, transparent 60%),
+              linear-gradient(180deg, var(--bg-5) 0%, var(--bg-6) 100%);
+  padding: 80px 32px;
+}
+
+.families-inner {
+  max-width: 900px;
+  width: 100%;
+}
+.families-header { text-align: center; margin-bottom: 52px; }
+
+.families-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+@media (max-width: 640px) { .families-split { grid-template-columns: 1fr; } }
+
+.family-group-block {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(212,175,55,0.12);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+}
+.family-group-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+.family-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.family-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.family-item:last-child { border-bottom: none; }
+.family-num {
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(212,175,55,0.5);
+  width: 24px;
+  flex-shrink: 0;
+}
+.family-name {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ══════════════════════════════
+   SCENE 6 · CONNECT / CLOSE
+══════════════════════════════ */
+#scene-6 {
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(212,175,55,0.1) 0%, transparent 70%),
+              linear-gradient(180deg, var(--bg-6) 0%, var(--bg-0) 100%);
+  text-align: center;
+  padding: 80px 32px;
+}
+
+.close-inner {
+  max-width: 640px;
+  width: 100%;
+}
+.close-scripture {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight: 400;
+  color: var(--cream);
+  line-height: 1.65;
+  margin: 32px 0 16px;
+}
+.scripture-ref {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 56px;
+}
+
+.connect-cards {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+.connect-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  min-width: 180px;
+  transition: all 0.25s;
+}
+.connect-card:hover {
+  background: rgba(212,175,55,0.08);
+  transform: translateY(-2px);
+}
+.connect-card-icon { font-size: 24px; margin-bottom: 10px; }
+.connect-card-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.connect-card-val {
+  font-size: 14px;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+a.connect-card { text-decoration: none; display: block; }
+a.connect-card:hover { border-color: rgba(212,175,55,0.45); }
+
+.close-footer {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+.close-footer strong { color: var(--gold); font-weight: 600; }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes arrowBounce {
+  0%, 100% { transform: rotate(45deg) translateY(0); }
+  50%       { transform: rotate(45deg) translateY(6px); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.25); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ─── Side Navigation ─── -->
+<nav id="sidenav" aria-label="Section navigation">
+  <div class="dot active" data-section="0" data-label="Home" onclick="scrollTo(0)"></div>
+  <div class="dot" data-section="1" data-label="Ministry" onclick="scrollTo(1)"></div>
+  <div class="dot" data-section="2" data-label="Members" onclick="scrollTo(2)"></div>
+  <div class="dot" data-section="3" data-label="Themes" onclick="scrollTo(3)"></div>
+  <div class="dot" data-section="4" data-label="Service Roles" onclick="scrollTo(4)"></div>
+  <div class="dot" data-section="5" data-label="Families" onclick="scrollTo(5)"></div>
+  <div class="dot" data-section="6" data-label="Connect" onclick="scrollTo(6)"></div>
+</nav>
+
+<!-- ══════════════════ SCENE 0 · HERO ══════════════════ -->
+<section class="scene" id="scene-0">
+  <canvas id="particle-canvas"></canvas>
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Farwaniya Fellowship · Kuwait · 2026</p>
+    <h1 class="hero-title f-display">
+      FLCC ·
+      <span class="accent-word">Abundance</span>
+      Church
+    </h1>
+    <p class="hero-subtitle">One family, one faith — walking together in love, prayer, and purpose.</p>
+    <div class="hero-badges">
+      <span class="hero-badge">32 Workers &amp; Pastors</span>
+      <span class="hero-badge">11 Family Groups</span>
+      <span class="hero-badge">5 Monthly Themes</span>
+      <span class="hero-badge">Feb – Jun 2026</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll to explore</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ SCENE 1 · MINISTRY ══════════════════ -->
+<section class="scene" id="scene-1">
+  <div class="about-grid">
+    <div>
+      <p class="section-label reveal">Fellowship Ministry</p>
+      <h2 class="section-title f-display reveal reveal-delay-1">Growing<br>Together<br><em class="f-italic" style="color:var(--gold)">in Faith</em></h2>
+      <p class="section-body reveal reveal-delay-2">FLCC – Abundance Church is a vibrant Filipino fellowship community in Farwaniya, Kuwait, committed to worship, discipleship, and serving one another with joy and dedication.</p>
+      <div class="stat-row reveal reveal-delay-3">
+        <div class="stat">
+          <span class="stat-num" data-count="32">32</span>
+          <span class="stat-label">Workers</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" data-count="11">11</span>
+          <span class="stat-label">Families</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" data-count="3">3</span>
+          <span class="stat-label">Pastors</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" data-count="34">34</span>
+          <span class="stat-label">Members</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="head-card reveal reveal-delay-2">
+      <div class="head-avatar" id="head-avatar">A</div>
+      <div class="head-name" id="head-name">Sis. Amazelle De Jesus</div>
+      <div class="head-title-text" id="head-title">Fellowship Ministry Head</div>
+      <div class="contact-list">
+        <div class="contact-item">
+          <span class="contact-icon">📞</span>
+          <span id="head-phone">+965 9559 0217</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-icon">💬</span>
+          <span id="head-wa">WhatsApp: +96595590217</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-icon">✉️</span>
+          <span id="head-email">amazelle@yahoo.com</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ SCENE 2 · MEMBERS ══════════════════ -->
+<section class="scene" id="scene-2">
+  <div class="members-header reveal">
+    <p class="section-label">Our People</p>
+    <h2 class="section-title f-display" style="margin-bottom:0">Our <em class="f-italic" style="color:var(--gold)">Family</em></h2>
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="sis" style="color:#D4AF37">Sisters</button>
+      <button class="filter-tab" data-filter="bro" style="color:#7AB4FF">Brothers</button>
+      <button class="filter-tab" data-filter="ptr" style="color:#D8B4FE">Pastors</button>
+    </div>
+  </div>
+  <div id="members-grid"></div>
+</section>
+
+<!-- ══════════════════ SCENE 3 · THEMES ══════════════════ -->
+<section class="scene" id="scene-3">
+  <div class="themes-inner">
+    <div class="themes-header">
+      <p class="section-label reveal">2026 Journey</p>
+      <h2 class="section-title f-display reveal reveal-delay-1">Monthly <em class="f-italic" style="color:var(--gold)">Themes</em></h2>
+      <p style="font-size:15px; color:var(--text-muted); margin-top:12px;" class="reveal reveal-delay-2">Each month a new focus — deepening our walk with God and with one another.</p>
+    </div>
+    <div class="timeline" id="timeline-container"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ SCENE 4 · SERVICE ROLES ══════════════════ -->
+<section class="scene" id="scene-4">
+  <div class="roles-inner">
+    <div class="roles-header">
+      <p class="section-label reveal">Serving Together</p>
+      <h2 class="section-title f-display reveal reveal-delay-1">Service <em class="f-italic" style="color:var(--gold)">Roles</em></h2>
+      <p style="font-size:15px; color:var(--text-muted); margin-top:12px; max-width:480px; margin-left:auto; margin-right:auto;" class="reveal reveal-delay-2">Every member contributes their gifts to make each service a meaningful act of worship.</p>
+    </div>
+    <div class="roles-grid" id="roles-grid"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ SCENE 5 · FAMILIES ══════════════════ -->
+<section class="scene" id="scene-5">
+  <div class="families-inner">
+    <div class="families-header">
+      <p class="section-label reveal">Food In Charge Rotation</p>
+      <h2 class="section-title f-display reveal reveal-delay-1">Family <em class="f-italic" style="color:var(--gold)">Groups</em></h2>
+      <p style="font-size:15px; color:var(--text-muted); margin-top:12px;" class="reveal reveal-delay-2">Sharing meals, sharing life — families and pairs who serve our fellowship table.</p>
+    </div>
+    <div class="families-split reveal reveal-delay-2" id="families-container"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ SCENE 6 · CONNECT ══════════════════ -->
+<section class="scene" id="scene-6">
+  <div class="close-inner">
+    <p class="section-label reveal">Come as You Are</p>
+    <h2 class="section-title f-display reveal reveal-delay-1">Let's <em class="f-italic" style="color:var(--gold)">Connect</em></h2>
+    <div class="gold-line" style="margin:20px auto;"></div>
+    <p class="close-scripture reveal reveal-delay-2">"And let us consider how we may spur one another on toward love and good deeds, not giving up meeting together..."</p>
+    <p class="scripture-ref reveal reveal-delay-3">Hebrews 10:24–25</p>
+    <div class="connect-cards reveal reveal-delay-4" id="connect-cards"></div>
+    <div class="gold-line" style="margin:32px auto;"></div>
+    <p class="close-footer reveal reveal-delay-5">
+      <strong>FLCC · Abundance Church</strong> · Farwaniya, Kuwait · 2026
+    </p>
+  </div>
+</section>
+
+<script>
+// ─── Data ──────────────────────────────────────────────────────────────
+const FALLBACK = {
+  ministry: {
+    headName: "Sis. Amazelle De Jesus",
+    headTitle: "Fellowship Ministry Head",
+    whatsapp: "+96595590217",
+    phone: "+96595590217",
+    email: "amazelle@yahoo.com"
+  },
+  workers: [
+    {id:"sis-01",name:"Bless De Jesus",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-02",name:"Hasmin Treseni",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-03",name:"Mae De Jesus",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-04",name:"Lizel Ocenar",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-05",name:"Fretz Guerzon",title:"Sis.",eligibleRoles:["presider","preacher"]},
+    {id:"sis-06",name:"Dolly Cas",title:"Sis.",eligibleRoles:["presider","songLeader"]},
+    {id:"sis-07",name:"Rona Vergara",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-08",name:"Sandra Gabriel",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-09",name:"Christine Santos",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-10",name:"Celsa Sario",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-11",name:"Jhem Tulagan",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-12",name:"Juneth Atienza",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-13",name:"Alma Flores",title:"Sis.",eligibleRoles:["presider","preacher"]},
+    {id:"sis-14",name:"Almira Dela Paz",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-15",name:"Grace Siangco",title:"Sis.",eligibleRoles:["presider","songLeader"]},
+    {id:"sis-16",name:"Annabelle Arciaga",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"sis-17",name:"Jenarlyn Culao",title:"Sis.",eligibleRoles:["presider","songLeader"]},
+    {id:"sis-18",name:"Laidz Pascual",title:"Sis.",eligibleRoles:["presider","songLeader","preacher","pastoralPrayer","communionAssistant1","communionAssistant2"]},
+    {id:"sis-19",name:"Irene Sabangan",title:"Sis.",eligibleRoles:["preacher"]},
+    {id:"sis-20",name:"Thara Embo",title:"Sis.",eligibleRoles:["presider"]},
+    {id:"bro-01",name:"Dandreb Serna",title:"Bro.",eligibleRoles:["songLeader"]},
+    {id:"bro-02",name:"Bong Cas",title:"Bro.",eligibleRoles:["songLeader"]},
+    {id:"bro-03",name:"Elbert Siangco",title:"Bro.",eligibleRoles:["songLeader"]},
+    {id:"bro-04",name:"Wilson Guerzon",title:"Bro.",eligibleRoles:["preacher","pastoralPrayer","communionAssistant1","communionAssistant2"]},
+    {id:"bro-05",name:"Allen Santos",title:"Bro.",eligibleRoles:["preacher","pastoralPrayer","communionAssistant1","communionAssistant2"]},
+    {id:"bro-06",name:"Ferdie Gajeton",title:"Bro.",eligibleRoles:["preacher","pastoralPrayer","communionAssistant1","communionAssistant2"]},
+    {id:"bro-07",name:"Edmund Gabriel",title:"Bro.",eligibleRoles:["songLeader","preacher","pastoralPrayer","communionAssistant1","communionAssistant2"]},
+    {id:"bro-08",name:"Edward Sario",title:"Bro.",eligibleRoles:["preacher"]},
+    {id:"bro-09",name:"Dave Vergara",title:"Bro.",eligibleRoles:["presider","songLeader"]},
+    {id:"ptr-01",name:"Justin Flores",title:"Ptr.",eligibleRoles:["preacher","pastoralPrayer"]},
+    {id:"ptr-02",name:"Doddie Arciaga",title:"Ptr.",eligibleRoles:["preacher","pastoralPrayer"]},
+    {id:"ptr-03",name:"Nerwin Suelo",title:"Ptr.",eligibleRoles:["preacher"]}
+  ],
+  familyGroups: [
+    {id:"fam-01",name:"Cas Family"},
+    {id:"fam-02",name:"Santos Family"},
+    {id:"fam-03",name:"Pascual Family"},
+    {id:"fam-04",name:"Vergara Family"},
+    {id:"fam-05",name:"Gabriel Family"},
+    {id:"fam-06",name:"Sario Family"},
+    {id:"fam-07",name:"Arciaga Family"},
+    {id:"fam-08",name:"Treseni Family"},
+    {id:"fam-09",name:"Guerzon Family"},
+    {id:"fam-10",name:"Siangco Family"},
+    {id:"fam-11",name:"Flores Family"}
+  ],
+  pairs: [
+    {id:"pair-01",name:"Tharah & Juneth"},
+    {id:"pair-02",name:"Bless & Mae"},
+    {id:"pair-03",name:"Lizel & Irene"},
+    {id:"pair-04",name:"Jhem & Kamille"},
+    {id:"pair-05",name:"Almira & Kitzie"},
+    {id:"pair-06",name:"Jen & Sheng"},
+    {id:"pair-07",name:"Jen & Lizel"},
+    {id:"pair-08",name:"Ptr. Nerwin & Ferdie"},
+    {id:"pair-09",name:"May & Danica"}
+  ],
+  themes: {
+    "2026-02": "LOVE",
+    "2026-03": "PRAYER AND FASTING",
+    "2026-04": "WORKS OF THE HOLY SPIRIT / CHURCH GROWTH",
+    "2026-05": "YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)",
+    "2026-06": "WORSHIP / EVANGELISM / DISCIPLESHIP / FELLOWSHIP"
+  }
+};
+
+async function loadData() {
+  try {
+    const r = await fetch('./data.json');
+    if (!r.ok) throw new Error();
+    return await r.json();
+  } catch { return FALLBACK; }
+}
+
+// ─── Particles ─────────────────────────────────────────────────────────
+function initParticles() {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const GOLD = [212, 175, 55];
+  const BLUE = [100, 140, 255];
+  const WHITE = [255, 255, 255];
+
+  function mkParticle() {
+    const palette = Math.random() < 0.6 ? GOLD : Math.random() < 0.7 ? BLUE : WHITE;
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.4 + 0.3,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25 - 0.05,
+      alpha: Math.random() * 0.6 + 0.1,
+      da: (Math.random() * 0.004 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
+      color: palette
+    };
+  }
+
+  particles = Array.from({length: 140}, mkParticle);
+
+  let mouse = {x: W/2, y: H/2};
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Radial gradient bg
+    const grd = ctx.createRadialGradient(W/2, H*0.4, 0, W/2, H*0.4, W*0.65);
+    grd.addColorStop(0, 'rgba(20,12,40,0.95)');
+    grd.addColorStop(1, 'rgba(8,12,24,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+
+    // Mouse glow
+    const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 220);
+    mg.addColorStop(0, 'rgba(212,175,55,0.06)');
+    mg.addColorStop(1, 'rgba(212,175,55,0)');
+    ctx.fillStyle = mg;
+    ctx.fillRect(0, 0, W, H);
+
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha += p.da;
+      if (p.alpha <= 0.05 || p.alpha >= 0.75) p.da *= -1;
+      if (p.x < -5) p.x = W + 5;
+      if (p.x > W + 5) p.x = -5;
+      if (p.y < -5) p.y = H + 5;
+      if (p.y > H + 5) p.y = -5;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.alpha})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ─── Role metadata ──────────────────────────────────────────────────────
+const ROLE_META = {
+  presider:           { label: 'Presider',           icon: '🎙️', desc: 'Leads and guides the congregation through the service order.' },
+  songLeader:         { label: 'Song Leader',         icon: '🎵', desc: 'Leads worship through song, setting the tone for the service.' },
+  preacher:           { label: 'Preacher',             icon: '📖', desc: 'Delivers the Word of God with insight and conviction.' },
+  pastoralPrayer:     { label: 'Pastoral Prayer',     icon: '🙏', desc: 'Leads the congregation in a time of intercessory prayer.' },
+  communionAssistant1:{ label: 'Communion Asst. 1',  icon: '🍞', desc: 'Assists in the serving and preparation of the Lord\'s Supper.' },
+  communionAssistant2:{ label: 'Communion Asst. 2',  icon: '🍷', desc: 'Assists alongside the first communion assistant during service.' }
+};
+
+const MONTH_LABELS = {
+  '2026-02': 'February 2026',
+  '2026-03': 'March 2026',
+  '2026-04': 'April 2026',
+  '2026-05': 'May 2026',
+  '2026-06': 'June 2026'
+};
+
+// ─── Build Members Grid ─────────────────────────────────────────────────
+function buildMembers(workers) {
+  const grid = document.getElementById('members-grid');
+  grid.innerHTML = '';
+
+  function typeOf(id) {
+    if (id.startsWith('ptr')) return 'ptr';
+    if (id.startsWith('bro')) return 'bro';
+    return 'sis';
+  }
+
+  function initials(name) {
+    return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+  }
+
+  function roleLabel(r) {
+    return ROLE_META[r]?.label || r;
+  }
+
+  workers.forEach((w, i) => {
+    const t = typeOf(w.id);
+    const card = document.createElement('div');
+    card.className = `member-card type-${t} reveal`;
+    card.style.transitionDelay = `${(i % 12) * 0.04}s`;
+    card.dataset.type = t;
+    card.innerHTML = `
+      <div class="member-initials">${initials(w.name)}</div>
+      <div class="member-name">${w.title} ${w.name}</div>
+      <div class="member-roles">
+        ${(w.eligibleRoles || []).map(r => `<span class="role-chip">${roleLabel(r)}</span>`).join('')}
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ─── Filter tabs ────────────────────────────────────────────────────────
+function initFilters() {
+  document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.member-card').forEach(c => {
+        if (f === 'all' || c.dataset.type === f) c.classList.remove('hidden');
+        else c.classList.add('hidden');
+      });
+    });
+  });
+}
+
+// ─── Build Timeline ─────────────────────────────────────────────────────
+function buildTimeline(themes) {
+  const container = document.getElementById('timeline-container');
+  container.innerHTML = '';
+  const entries = Object.entries(themes);
+  entries.forEach(([key, theme], i) => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item reveal';
+    item.style.transitionDelay = `${i * 0.12}s`;
+    item.innerHTML = `
+      <div class="timeline-dot-wrap"><div class="timeline-dot"></div></div>
+      <div class="timeline-body">
+        <div class="timeline-month">${MONTH_LABELS[key] || key}</div>
+        <div class="timeline-theme">${theme}</div>
+        <div class="theme-num">${String(i + 1).padStart(2, '0')}</div>
+      </div>`;
+    container.appendChild(item);
+  });
+}
+
+// ─── Build Roles Grid ───────────────────────────────────────────────────
+function buildRoles(workers) {
+  const grid = document.getElementById('roles-grid');
+  grid.innerHTML = '';
+  const roleMap = {};
+  workers.forEach(w => {
+    (w.eligibleRoles || []).forEach(r => {
+      if (!roleMap[r]) roleMap[r] = [];
+      roleMap[r].push(`${w.title} ${w.name}`);
+    });
+  });
+
+  Object.entries(ROLE_META).forEach(([key, meta], i) => {
+    const members = roleMap[key] || [];
+    const card = document.createElement('div');
+    card.className = 'role-card reveal';
+    card.style.transitionDelay = `${i * 0.08}s`;
+    card.innerHTML = `
+      <span class="role-icon">${meta.icon}</span>
+      <div class="role-name">${meta.label}</div>
+      <div class="role-count">${members.length} member${members.length !== 1 ? 's' : ''}</div>
+      <div class="role-desc">${meta.desc}</div>
+      <div class="role-members-list">
+        ${members.slice(0, 6).map(m => `<span class="role-member-chip">${m}</span>`).join('')}
+        ${members.length > 6 ? `<span class="role-member-chip">+${members.length - 6} more</span>` : ''}
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ─── Build Families ─────────────────────────────────────────────────────
+function buildFamilies(familyGroups, pairs) {
+  const container = document.getElementById('families-container');
+  container.innerHTML = `
+    <div class="family-group-block">
+      <div class="family-group-title">Family Groups</div>
+      <div class="family-list">
+        ${familyGroups.map((f, i) => `
+          <div class="family-item">
+            <span class="family-num">F${i + 1}</span>
+            <span class="family-name">${f.name}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="family-group-block">
+      <div class="family-group-title">Pairs</div>
+      <div class="family-list">
+        ${pairs.map((p, i) => `
+          <div class="family-item">
+            <span class="family-num">P${i + 1}</span>
+            <span class="family-name">${p.name}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ─── Build Connect cards ─────────────────────────────────────────────────
+function buildConnect(ministry) {
+  const container = document.getElementById('connect-cards');
+  container.innerHTML = `
+    <a class="connect-card" href="https://wa.me/${(ministry.whatsapp||'').replace(/\D/g,'')}">
+      <div class="connect-card-icon">💬</div>
+      <div class="connect-card-label">WhatsApp</div>
+      <div class="connect-card-val">${ministry.whatsapp}</div>
+    </a>
+    <div class="connect-card">
+      <div class="connect-card-icon">📞</div>
+      <div class="connect-card-label">Phone</div>
+      <div class="connect-card-val">${ministry.phone}</div>
+    </div>
+    <div class="connect-card">
+      <div class="connect-card-icon">✉️</div>
+      <div class="connect-card-label">Email</div>
+      <div class="connect-card-val">${ministry.email}</div>
+    </div>`;
+}
+
+// ─── Populate about section ─────────────────────────────────────────────
+function populateAbout(ministry) {
+  document.getElementById('head-name').textContent = ministry.headName;
+  document.getElementById('head-title').textContent = ministry.headTitle;
+  document.getElementById('head-phone').textContent = ministry.phone;
+  document.getElementById('head-wa').textContent = `WhatsApp: ${ministry.whatsapp}`;
+  document.getElementById('head-email').textContent = ministry.email;
+  const name = ministry.headName || '';
+  const parts = name.replace(/^(Sis|Bro|Ptr)\.\s*/i, '').split(' ');
+  document.getElementById('head-avatar').textContent = parts.slice(0, 2).map(p => p[0]).join('').toUpperCase();
+}
+
+// ─── Side nav & scroll tracking ─────────────────────────────────────────
+function scrollTo(idx) {
+  document.getElementById(`scene-${idx}`).scrollIntoView({ behavior: 'smooth' });
+}
+
+function initScrollTracking() {
+  const scenes = document.querySelectorAll('.scene');
+  const dots = document.querySelectorAll('.dot');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio > 0.5) {
+        const idx = [...scenes].indexOf(e.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.5 });
+  scenes.forEach(s => obs.observe(s));
+}
+
+// ─── Reveal on scroll ───────────────────────────────────────────────────
+function initReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+// ─── Animated counters ──────────────────────────────────────────────────
+function initCounters() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const el = e.target;
+        const target = parseInt(el.dataset.count, 10);
+        let start = 0;
+        const step = () => {
+          start += Math.ceil((target - start) / 8);
+          el.textContent = start;
+          if (start < target) requestAnimationFrame(step);
+          else el.textContent = target;
+        };
+        step();
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────
+(async () => {
+  initParticles();
+
+  const data = await loadData();
+
+  buildMembers(data.workers || FALLBACK.workers);
+  buildTimeline(data.themes || FALLBACK.themes);
+  buildRoles(data.workers || FALLBACK.workers);
+  buildFamilies(
+    data.familyGroups || FALLBACK.familyGroups,
+    data.pairs || FALLBACK.pairs
+  );
+  buildConnect(data.ministry || FALLBACK.ministry);
+  populateAbout(data.ministry || FALLBACK.ministry);
+
+  initFilters();
+  initScrollTracking();
+  initReveal();
+  initCounters();
+})();
+</script>
+</body>
+</html>
