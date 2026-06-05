@@ -358,7 +358,7 @@
   }
   .icon-btn:hover { background: #F0F0EC; color: var(--ink); }
 
-  /* ── DYNAMIC UI LAYER ──────────────────────────────────────────────── */
+  /* ── DYNAMIC UI LAYER ──────────────────────────────────────────── */
   :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes gradientPulse { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
   @keyframes msgPop { from{opacity:0;transform:translateY(8px) scale(0.98)} to{opacity:1;transform:translateY(0) scale(1)} }
@@ -415,58 +415,40 @@ const SUGGESTIONS = [
   { icon: '📊', text: 'What is the BOTR gospel count so far?' },
 ];
 
-// ─── BOTR live stats (JSONP from Google Sheets) ───────────────────────────────
-const BOTR_SHEET_ID   = '1Z-nY7P4GWuXKwEQNLwvry42bzYgXrsCFpaZ2PE-uE1c';
+// ─── BOTR live stats (via Apps Script getLiveData endpoint) ─────────────────
 const BOTR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
 
-function readBotrSheet(sheetName) {
+function fetchBotrLiveStats() {
   return new Promise(resolve => {
-    const cbName = 'gviz_cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-    const script = document.createElement('script');
-    const timer  = setTimeout(() => { cleanup(); resolve([]); }, 12000);
-    function cleanup() {
+    const cbName = 'flccBotrAsk_' + Date.now();
+    const timer = setTimeout(() => { delete window[cbName]; resolve(null); }, 12000);
+    const apply = (data) => {
       clearTimeout(timer);
-      delete window[cbName];
-      try { document.head.removeChild(script); } catch(e) {}
-    }
-    window[cbName] = function(res) {
-      cleanup();
-      try {
-        const rows = (res?.table?.rows || []).map(r => (r.c || []).map(c => c?.v ?? null));
-        resolve(rows);
-      } catch(e) { resolve([]); }
+      if (data && (data.totalGospel != null || data.churchAgg)) {
+        resolve({
+          totalGospel:  Number(data.totalGospel)  || 0,
+          totalDisc:    Number(data.totalDisc)     || 0,
+          totalLeaders: Number(data.totalLeaders)  || 0,
+          churches: data.churchAgg || {},
+        });
+      } else { resolve(null); }
     };
-    script.src = 'https://docs.google.com/visualization/query'
-      + '?key=' + BOTR_SHEET_ID
-      + '&headers=1'
-      + '&tq=' + encodeURIComponent("SELECT * FROM '" + sheetName + "'")
-      + '&tqx=out:json;responseHandler:' + cbName
-      + '&_=' + Date.now();
-    document.head.appendChild(script);
+    fetch(BOTR_SCRIPT_URL + '?action=getLiveData&t=' + Date.now(), {
+      method: 'GET', headers: { 'Accept': 'application/json' }
+    })
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(apply)
+      .catch(() => {
+        window[cbName] = (d) => { delete window[cbName]; apply(d); };
+        const el = document.createElement('script');
+        el.src = BOTR_SCRIPT_URL + '?action=getLiveData&callback=' + cbName + '&t=' + Date.now();
+        el.onerror = () => { clearTimeout(timer); delete window[cbName]; resolve(null); };
+        document.head.appendChild(el);
+      });
   });
 }
 
-async function fetchBotrLiveStats() {
-  try {
-    // cols assumed: [timestamp, memberName, church, sector, actionType, actionLabel, pts, ...]
-    const rows = await readBotrSheet('Actions');
-    if (!rows.length) return null;
-    let totalGospel = 0, totalDisc = 0, totalLeaders = 0;
-    const churchMap = {};
-    rows.forEach(row => {
-      if (!row || row.length < 5) return;
-      const type   = String(row[4] || '');
-      const church = String(row[2] || 'Unknown');
-      if (!churchMap[church]) churchMap[church] = { gospel: 0, disciples: 0, leaders: 0 };
-      if (type === 'Evangelism')                                { totalGospel++;  churchMap[church].gospel++; }
-      else if (type === 'Discipleship')                         { totalDisc++;    churchMap[church].disciples++; }
-      else if (type === 'Leadership' || type === 'Multiplying') { totalLeaders++; churchMap[church].leaders++; }
-    });
-    return { totalGospel, totalDisc, totalLeaders, churches: churchMap };
-  } catch(e) { return null; }
-}
-
-// ─── System prompt ───────────────────────────────────────────────────────────
+// ─── System prompt ────────────────────────────────────────────────────────────────────────────────
 function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null) {
   const today = new Date().toISOString().split('T')[0];
 
@@ -736,7 +718,7 @@ ${attendanceSummary || '  (none loaded)'}
 8. **Formatting**: Use markdown (bold, lists, blockquotes for Bible verses) when it improves readability.`;
 }
 
-// ─── Markdown renderer ───────────────────────────────────────────────────────
+// ─── Markdown renderer ────────────────────────────────────────────────────────────────────────────────
 function Md({ text, streaming }) {
   const html = useMemo(() => {
     if (!text) return '';
@@ -751,7 +733,7 @@ function Md({ text, streaming }) {
   );
 }
 
-// ─── API Key Modal ────────────────────────────────────────────────────────────
+// ─── API Key Modal ───────────────────────────────────────────────────────────────────────────────
 function ApiKeyModal({ existingKey, onSave, onClose }) {
   const [key, setKey] = useState(existingKey || '');
   const inputRef = useRef(null);
@@ -799,7 +781,7 @@ function ApiKeyModal({ existingKey, onSave, onClose }) {
   );
 }
 
-// ─── Main App ─────────────────────────────────────────────────────────────────
+// ─── Main App ────────────────────────────────────────────────────────────────────────────────
 function App() {
   const [apiKey, setApiKey]     = useState(() => localStorage.getItem(STORAGE_KEY_API)   || '');
   const [model,  setModel]      = useState(() => localStorage.getItem(STORAGE_KEY_MODEL) || MODELS[0].id);
@@ -1006,7 +988,7 @@ function App() {
               flexShrink:0,
             }}
           >
-            <span style={{color:'var(--accent)', fontSize:'0.8125rem', fontWeight:700}}>✦</span>
+            <span style={{color:'var(--accent)', fontSize:'0.8125rem', fontWeight:700}}>❆</span>
           </div>
           <div className="min-w-0">
             <div className="font-display font-semibold leading-tight truncate" style={{fontSize:'0.9375rem', color:'var(--ink)'}}>
@@ -1081,7 +1063,7 @@ function App() {
                   display:'flex', alignItems:'center', justifyContent:'center',
                   margin:'0 auto 0.875rem',
                   fontSize:'1.375rem',
-                }}>✦</div>
+                }}>❆</div>
                 <h1 className="font-display font-semibold mb-1.5" style={{fontSize:'1.5rem', color:'var(--ink)'}}>
                   Ask FLCC anything
                 </h1>
@@ -1123,7 +1105,7 @@ function App() {
           {messages.map((msg, i) => (
             <div key={i} className={msg.role === 'user' ? 'msg-user' : 'msg-assistant'}>
               {msg.role === 'assistant' && (
-                <div className="avatar">✦</div>
+                <div className="avatar">❆</div>
               )}
               <div className="bubble">
                 {msg.role === 'user'
@@ -1137,7 +1119,7 @@ function App() {
           {/* Streaming response */}
           {isStreaming && (
             <div className="msg-assistant">
-              <div className="avatar">✦</div>
+              <div className="avatar">❆</div>
               <div className="bubble">
                 {streamingText
                   ? <Md text={streamingText} streaming={true} />
