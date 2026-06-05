@@ -1503,5 +1503,132 @@
       "recurrence": "none",
       "showOnDashboard": true
     }
-  ]
+  ],
+  "botrChurch": {
+    "name": "FLCC - BOTR Church Network",
+    "network": "N.E.C.K. Kuwait",
+    "leadPastor": {
+      "name": "Rev. Jopet Alim",
+      "title": "Lead Pastor, FLCC BOTR Network",
+      "church": "FB"
+    },
+    "evangelismMinistryHead": {
+      "name": "Sis. Lizel Ocenar",
+      "church": "Abundance"
+    },
+    "missionTarget": "Introduce 270,000 people to Jesus Christ by 2030",
+    "totalChurches": 13,
+    "yearTargets": [
+      {
+        "year": 2026,
+        "target": 54000
+      },
+      {
+        "year": 2027,
+        "target": 108000
+      },
+      {
+        "year": 2028,
+        "target": 162000
+      },
+      {
+        "year": 2029,
+        "target": 216000
+      },
+      {
+        "year": 2030,
+        "target": 270000
+      }
+    ],
+    "sectorLeaders": [
+      {
+        "sector": "Hope",
+        "name": "Rodel Comayingking",
+        "evangelismCoordinator": "Fretzie Guerzon",
+        "churches": [
+          "Abundance",
+          "FB",
+          "F&T",
+          "Cornerstone"
+        ]
+      },
+      {
+        "sector": "Faith",
+        "name": "Virgilio Monastrial",
+        "evangelismCoordinator": "Anne Sacueza",
+        "churches": [
+          "BOTR Fri/Sun",
+          "Shekinah",
+          "Agape",
+          "HOTK"
+        ]
+      },
+      {
+        "sector": "Love",
+        "name": "Oscar Tumambing",
+        "evangelismCoordinator": "Maricel De Grano",
+        "churches": [
+          "MTCC",
+          "GIL",
+          "JAOC",
+          "Harvester",
+          "Virtual Church"
+        ]
+      }
+    ],
+    "satelliteChurches": [
+      {
+        "church": "Abundance",
+        "sector": "Hope"
+      },
+      {
+        "church": "FB",
+        "sector": "Hope"
+      },
+      {
+        "church": "F&T",
+        "sector": "Hope"
+      },
+      {
+        "church": "Cornerstone",
+        "sector": "Hope"
+      },
+      {
+        "church": "BOTR Fri/Sun",
+        "sector": "Faith"
+      },
+      {
+        "church": "Shekinah",
+        "sector": "Faith"
+      },
+      {
+        "church": "Agape",
+        "sector": "Faith"
+      },
+      {
+        "church": "HOTK",
+        "sector": "Faith"
+      },
+      {
+        "church": "MTCC",
+        "sector": "Love"
+      },
+      {
+        "church": "GIL",
+        "sector": "Love"
+      },
+      {
+        "church": "JAOC",
+        "sector": "Love"
+      },
+      {
+        "church": "Harvester",
+        "sector": "Love"
+      },
+      {
+        "church": "Virtual Church",
+        "sector": "Love"
+      }
+    ]
+  }
 }
