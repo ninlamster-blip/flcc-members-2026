@@ -700,6 +700,8 @@ const MUSIC_DATA_URL     = './music.json';
 const EQUIP_DATA_URL     = './equip.json';
 const ATTENDANCE_DATA_URL = './attendance.json';
 const GIVING_DATA_URL    = './finance-members.json';
+const BOTR_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
+const BOTR_2026_TARGET   = 54000;
 const MUSIC_ACCENT = '#EA580C';
 
 const PRAYER_ROLES = [
@@ -2754,7 +2756,7 @@ function DayDetailSheet({ date, onClose, services, events, data, prayerData, mus
 }
 
 // --- About tab ---
-function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) {
+function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, botrLive, botrLiveStatus, onRefreshBotr }) {
   const m  = data.ministry || {};
   const pm = prayerData?.ministry || null;
   const mm = musicData?.ministry  || null;
@@ -2847,6 +2849,62 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName }) 
               </div>
             </>
           )}
+
+          {/* Live BOTR Network Stats */}
+          <div className="dotted-divider my-3" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs font-medium tracking-widest uppercase" style={{color:'#7C3AED'}}>📡 Live Ministry Progress</div>
+            <button
+              onClick={onRefreshBotr}
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{background:'#F5F3FF',color:'#7C3AED',border:'1px solid #DDD6FE'}}
+            >↻ Refresh</button>
+          </div>
+          {botrLiveStatus === 'idle' && (
+            <div className="text-xs ink-subtle py-1">Tap Refresh to load live network stats.</div>
+          )}
+          {botrLiveStatus === 'loading' && (
+            <div className="text-xs ink-subtle py-1">⏳ Loading live data…</div>
+          )}
+          {botrLiveStatus === 'error' && (
+            <div className="text-xs ink-subtle py-1">⚠ Could not load live data. Check connection.</div>
+          )}
+          {botrLiveStatus === 'ok' && botrLive && (() => {
+            const pct = Math.min(100, Math.round((botrLive.totalGospel / BOTR_2026_TARGET) * 100));
+            const sectors = [
+              { id: 'hope',  label: 'Hope',  color: '#7C3AED' },
+              { id: 'faith', label: 'Faith', color: '#0284C7' },
+              { id: 'love',  label: 'Love',  color: '#DB2777' },
+            ];
+            const minsAgo = Math.round((Date.now() - botrLive.updatedAt) / 60000);
+            return (
+              <div>
+                <div className="mb-3">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-semibold">{botrLive.totalGospel.toLocaleString()} gospel decisions</span>
+                    <span className="ink-subtle">/ {BOTR_2026_TARGET.toLocaleString()} 2026 goal</span>
+                  </div>
+                  <div className="rounded-full overflow-hidden" style={{height:'8px',background:'#EDE9FE'}}>
+                    <div style={{width:`${pct}%`,height:'100%',background:'linear-gradient(90deg,#7C3AED,#A855F7)',borderRadius:'9999px',transition:'width 0.6s ease'}} />
+                  </div>
+                  <div className="text-xs ink-subtle mt-1">{pct}% · {botrLive.totalDisc} disciples · {botrLive.totalLeaders} leaders</div>
+                </div>
+                <div className="flex gap-2 mb-2">
+                  {sectors.map(sec => {
+                    const s = botrLive.sectors[sec.id] || {};
+                    return (
+                      <div key={sec.id} className="flex-1 rounded-lg px-2 py-1.5 text-center" style={{background:'#F9F7FF',border:'1px solid #EDE9FE'}}>
+                        <div className="text-xs font-semibold" style={{color:sec.color}}>{sec.label}</div>
+                        <div className="text-sm font-bold" style={{color:'#1E1B4B'}}>{(Number(s.gospel)||0).toLocaleString()}</div>
+                        <div className="text-xs ink-subtle">gospel</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="text-xs ink-subtle">Updated {minsAgo < 1 ? 'just now' : `${minsAgo}m ago`}</div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -6851,6 +6909,9 @@ function App() {
   const [sermonNotes, setSermonNotesState]     = useState(loadSermonNotes);
   const [openingNote, setOpeningNote]          = useState(null);
   const [showGames,   setShowGames]            = useState(false);   // { id, meta }
+  const [botrLive, setBotrLive]               = useState(null);
+  const [botrLiveStatus, setBotrLiveStatus]   = useState('idle'); // 'idle'|'loading'|'ok'|'error'
+  const botrLiveFetching                      = useRef(false);
 
   const setPersonalEvents = (evs) => { savePersonalEvents(evs); setPersonalEventsState(evs); };
   const handleSaveSermonNote = (id, note) => {
@@ -6981,6 +7042,50 @@ function App() {
     }
   }, [data, meId, showPicker]);
 
+  const loadBOTRStats = () => {
+    if (botrLiveFetching.current) return;
+    botrLiveFetching.current = true;
+    setBotrLiveStatus('loading');
+    const cbName = 'flccBotr_' + Date.now();
+    const timer = setTimeout(() => {
+      botrLiveFetching.current = false;
+      setBotrLiveStatus('error');
+      delete window[cbName];
+    }, 12000);
+    const applyData = (d) => {
+      clearTimeout(timer);
+      botrLiveFetching.current = false;
+      if (d && (d.totalGospel != null || d.sectorAgg)) {
+        setBotrLive({
+          totalGospel:  Number(d.totalGospel)  || 0,
+          totalDisc:    Number(d.totalDisc)     || 0,
+          totalLeaders: Number(d.totalLeaders)  || 0,
+          sectors: d.sectorAgg || {},
+          updatedAt: Date.now(),
+        });
+        setBotrLiveStatus('ok');
+      } else {
+        setBotrLiveStatus('error');
+      }
+    };
+    fetch(BOTR_SCRIPT_URL + '?action=getLiveData&t=' + Date.now(), {
+      method: 'GET', headers: { 'Accept': 'application/json' }
+    })
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(applyData)
+      .catch(() => {
+        window[cbName] = (d) => { delete window[cbName]; applyData(d); };
+        const el = document.createElement('script');
+        el.src = BOTR_SCRIPT_URL + '?action=getLiveData&callback=' + cbName + '&t=' + Date.now();
+        el.onerror = () => { clearTimeout(timer); botrLiveFetching.current = false; setBotrLiveStatus('error'); delete window[cbName]; };
+        document.head.appendChild(el);
+      });
+  };
+
+  useEffect(() => {
+    if (activeTab === 'about') loadBOTRStats();
+  }, [activeTab]);
+
   const pickMe = (id) => {
     try { localStorage.setItem(ME_KEY, id); localStorage.removeItem(ME_KEY + '-skipped'); } catch {}
     setMeId(id);
@@ -7069,7 +7174,7 @@ function App() {
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
           {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
           {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
-          {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
+          {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} botrLive={botrLive} botrLiveStatus={botrLiveStatus} onRefreshBotr={loadBOTRStats} />}
         </div>
       </main>
 
