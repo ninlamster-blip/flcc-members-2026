@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Greetings — FLCC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: 'Geist', sans-serif; background: #f9fafb; }
+    .font-fraunces { font-family: 'Fraunces', serif; }
+    .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    const pad2 = n => String(n).padStart(2, '0');
+    const getTodayMMDD = () => { const d = new Date(); return `${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
+    const mmddLabel = mmdd => { if (!mmdd) return ''; const [mm,dd] = mmdd.split('-'); const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${M[+mm-1]} ${+dd}`; };
+    const daysUntil = mmdd => {
+      if (!mmdd) return null;
+      const now = new Date(); now.setHours(0,0,0,0);
+      const [mm,dd] = mmdd.split('-').map(Number);
+      let t = new Date(now.getFullYear(), mm-1, dd);
+      if (t < now) t = new Date(now.getFullYear()+1, mm-1, dd);
+      return Math.round((t - now) / 86400000);
+    };
+    const todayISO = () => new Date().toISOString().slice(0,10);
+    const dateISO = daysAhead => { const d = new Date(); d.setDate(d.getDate()+daysAhead); return d.toISOString().slice(0,10); };
+    const dateLong = iso => new Date(iso+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+    const dateWeekday = iso => new Date(iso+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'});
+    const encodeMsg = t => encodeURIComponent(t);
+
+    const ROLE_LABELS = {
+      presider: 'Presider',
+      songLeader: 'Song Leader',
+      preacher: 'Preacher / Exhorter',
+      pastoralPrayer: 'Pastoral Prayer',
+      communionAssistant1: 'Communion Assistant 1',
+      communionAssistant2: 'Communion Assistant 2',
+      foodInCharge: 'Food In Charge',
+    };
+
+    const DEFAULT_TPLS = {
+      birthday: `🎂 Happy Birthday, {name}!\n\nMay God shower you with His abundant blessings today and always. You are a cherished member of our FLCC family and we thank God for you! 🙏\n\nWith love and prayers,\nFLCC - Abundance Church 🕊️`,
+      anniversary: `💑 Happy Anniversary, {name}!\n\nMay God continue to bless and strengthen your marriage. Your love story reflects His grace and goodness. We celebrate with you today! 🙏\n\nWith love and prayers,\nFLCC - Abundance Church 🕊️`,
+      baptism: `✝️ Happy Baptism Anniversary, {name}!\n\nWhat a beautiful day to celebrate — the day you publicly declared your faith in Jesus! May your walk with God grow richer every year. 🙏\n\nWith love and prayers,\nFLCC - Abundance Church 🕊️`,
+      event: `🎉 {title}!\n\nWarmest greetings, {name}! May God fill this special day with His joy and peace. 🙏\n\nWith love and prayers,\nFLCC - Abundance Church 🕊️`,
+      reminder3day: `📋 Hi {name}!\n\nJust a gentle reminder that you are assigned as {role} for our {service} service this {dayofweek}, {date}.\n\nPlease prepare your heart and any materials needed. May God fill you with His wisdom and anointing! 🙏\n\nSee you there!\nFLCC - Abundance Church 🕊️`,
+      reminder1day: `⏰ Hi {name}!\n\nA quick reminder: you are assigned as {role} for our {service} service TOMORROW, {dayofweek} {date}.\n\nWe look forward to serving together! God bless your final preparations! 🙏\n\nFLCC - Abundance Church 🕊️`,
+    };
+    const fillTpl = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_,k) => vars[k] ?? '');
+
+    const WAIcon = () => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+      </svg>
+    );
+    const MsgIcon = () => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.374 0 0 4.975 0 11.111c0 3.498 1.744 6.614 4.469 8.654V24l4.088-2.242c1.092.3 2.246.464 3.443.464 6.626 0 12-4.975 12-11.111S18.626 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8.1l3.131 3.26 5.889-3.26-6.561 6.863z"/>
+      </svg>
+    );
+
+    // shared send-buttons logic
+    function ActionButtons({ waNum, messenger, msg, isSent, sentKey, onToggleSent, onAddContact }) {
+      const [copied, setCopied] = useState(false);
+      const copy = async () => {
+        try { await navigator.clipboard.writeText(msg); }
+        catch { const t=document.createElement('textarea'); t.value=msg; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); }
+        setCopied(true); setTimeout(()=>setCopied(false),2000);
+      };
+      return (
+        <div className="flex flex-wrap gap-2 items-center">
+          {waNum
+            ? <a href={`https://wa.me/${waNum}?text=${encodeMsg(msg)}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-3 py-2 rounded-xl transition-colors">
+                <WAIcon/> WhatsApp
+              </a>
+            : <button onClick={onAddContact} className="flex items-center gap-1.5 border border-green-300 text-green-600 text-sm font-medium px-3 py-2 rounded-xl hover:bg-green-50">
+                <WAIcon/> Add WhatsApp
+              </button>
+          }
+          {messenger
+            ? <a href={`https://m.me/${messenger}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-3 py-2 rounded-xl transition-colors">
+                <MsgIcon/> Messenger
+              </a>
+            : <button onClick={onAddContact} className="flex items-center gap-1.5 border border-blue-300 text-blue-600 text-sm font-medium px-3 py-2 rounded-xl hover:bg-blue-50">
+                <MsgIcon/> Add Messenger
+              </button>
+          }
+          <button onClick={copy}
+            className={`flex items-center gap-1.5 border text-sm font-medium px-3 py-2 rounded-xl transition-colors ${copied?'border-green-300 bg-green-50 text-green-600':'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+            {copied ? '✓ Copied!' : '⎋ Copy'}
+          </button>
+          <button onClick={()=>onToggleSent(sentKey)}
+            className={`ml-auto flex items-center gap-1 text-sm font-medium px-3 py-2 rounded-xl transition-colors ${isSent?'bg-gray-100 text-gray-400':'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'}`}>
+            {isSent ? '✓ Sent' : '✓ Mark Sent'}
+          </button>
+        </div>
+      );
+    }
+
+    function ContactEditor({ contact, memberId, onSave, onCancel }) {
+      const [form, setForm] = useState({ whatsapp: contact.whatsapp||'', messenger: contact.messenger||'' });
+      return (
+        <div className="bg-white/80 rounded-xl p-3 mb-3 space-y-2">
+          <p className="text-xs font-medium text-gray-500 mb-1">Contact Info</p>
+          {[['whatsapp','WhatsApp number','+96512345678','tel'],['messenger','Messenger username','facebook.username','text']].map(([k,lbl,ph,type]) => (
+            <label key={k} className="flex items-center gap-2">
+              <span className="text-xs text-gray-400 w-28 shrink-0">{lbl}</span>
+              <input type={type} placeholder={ph} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}
+                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            </label>
+          ))}
+          <div className="flex gap-2 pt-1">
+            <button onClick={()=>onSave(form)} className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-indigo-700">Save</button>
+            <button onClick={onCancel} className="text-sm text-gray-500 px-4 py-1.5 rounded-lg hover:bg-gray-100">Cancel</button>
+          </div>
+        </div>
+      );
+    }
+
+    function EventCard({ ev, contacts, tpls, isSent, onToggleSent, onSaveContact }) {
+      const [expanded, setExpanded] = useState(false);
+      const [editing, setEditing] = useState(false);
+      const ct = contacts[ev.memberId]||{};
+      const waNum = (ct.whatsapp||'').replace(/\D/g,'');
+      const messenger = ct.messenger||'';
+      const tplKey = ['birthday','anniversary','baptism'].includes(ev.type) ? ev.type : 'event';
+      const msg = fillTpl(tpls[tplKey]||tpls.event, { name:ev.displayName, title:ev.title });
+      const colors = {
+        birthday:    { bg:'bg-rose-50 border-rose-100',   badge:'bg-rose-100 text-rose-700',   av:'bg-rose-100' },
+        anniversary: { bg:'bg-purple-50 border-purple-100', badge:'bg-purple-100 text-purple-700', av:'bg-purple-100' },
+        baptism:     { bg:'bg-sky-50 border-sky-100',     badge:'bg-sky-100 text-sky-700',     av:'bg-sky-100' },
+      };
+      const c = colors[ev.type]||{ bg:'bg-emerald-50 border-emerald-100', badge:'bg-emerald-100 text-emerald-700', av:'bg-emerald-100' };
+      const emojiMap = { birthday:'🎂', anniversary:'💑', baptism:'✝️', 'bible-study':'📚' };
+      const emoji = emojiMap[ev.type]||'🎉';
+      return (
+        <div className={`rounded-2xl border p-5 transition-all ${isSent?'opacity-55 bg-gray-50 border-gray-200':c.bg}`}>
+          <div className="flex items-start gap-3 mb-3">
+            <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0 ${isSent?'bg-gray-100':c.av}`}>{emoji}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-gray-900">{ev.displayName}</span>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${c.badge}`}>{ev.type.charAt(0).toUpperCase()+ev.type.replace(/-/g,' ').slice(1)}</span>
+                {ev.daysUntil===0 && <span className="text-xs font-bold text-rose-600">Today!</span>}
+                {ev.daysUntil>0 && <span className="text-xs text-gray-400">in {ev.daysUntil}d</span>}
+              </div>
+              {ev.mmdd && <div className="text-xs text-gray-400 mt-0.5">{mmddLabel(ev.mmdd)}</div>}
+            </div>
+            {isSent && <span className="text-xs text-green-600 font-medium shrink-0 bg-green-50 px-2 py-1 rounded-full">✓ Sent</span>}
+          </div>
+          <div className="bg-white/80 rounded-xl p-3 mb-3 cursor-pointer" onClick={()=>setExpanded(!expanded)}>
+            <p className={`text-sm text-gray-700 whitespace-pre-wrap leading-relaxed ${!expanded?'line-clamp-3':''}`}>{msg}</p>
+            <span className="text-xs text-indigo-500 mt-1.5 font-medium inline-block">{expanded?'↑ Less':'↓ Full message'}</span>
+          </div>
+          {editing
+            ? <ContactEditor contact={ct} memberId={ev.memberId} onSave={d=>{onSaveContact(ev.memberId,d);setEditing(false);}} onCancel={()=>setEditing(false)} />
+            : (!ct.whatsapp&&!ct.messenger) && (
+              <div className="flex items-center justify-between text-xs text-gray-400 bg-white/60 rounded-lg px-3 py-2 mb-3">
+                <span>No contact info yet</span>
+                <button onClick={()=>setEditing(true)} className="text-indigo-500 font-medium hover:underline">+ Add contact</button>
+              </div>
+            )
+          }
+          {(ct.whatsapp||ct.messenger) && !editing && (
+            <button onClick={()=>setEditing(true)} className="text-xs text-gray-400 hover:text-gray-600 mb-2">✏️ Edit contact</button>
+          )}
+          <ActionButtons waNum={waNum} messenger={messenger} msg={msg} isSent={isSent} sentKey={ev.key} onToggleSent={onToggleSent} onAddContact={()=>setEditing(true)} />
+        </div>
+      );
+    }
+
+    function ReminderCard({ rem, contacts, tpls, isSent, onToggleSent, onSaveContact }) {
+      const [expanded, setExpanded] = useState(false);
+      const [editing, setEditing] = useState(false);
+      const ct = contacts[rem.memberId]||{};
+      const waNum = (ct.whatsapp||'').replace(/\D/g,'');
+      const messenger = ct.messenger||'';
+      const tplKey = rem.daysAhead===1 ? 'reminder1day' : 'reminder3day';
+      const msg = fillTpl(tpls[tplKey]||DEFAULT_TPLS[tplKey], {
+        name: rem.displayName,
+        role: rem.role,
+        service: rem.service,
+        dayofweek: dateWeekday(rem.date),
+        date: dateLong(rem.date),
+      });
+      const urgentBg = rem.daysAhead===1 ? 'bg-orange-50 border-orange-100' : 'bg-blue-50 border-blue-100';
+      const urgentAv = rem.daysAhead===1 ? 'bg-orange-100' : 'bg-blue-100';
+      const urgentEmoji = rem.daysAhead===1 ? '⏰' : '📋';
+      const urgentLabel = rem.daysAhead===1 ? '⏰ Tomorrow' : '📅 In 3 days';
+      return (
+        <div className={`rounded-2xl border p-5 transition-all ${isSent?'opacity-55 bg-gray-50 border-gray-200':urgentBg}`}>
+          <div className="flex items-start gap-3 mb-3">
+            <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0 ${isSent?'bg-gray-100':urgentAv}`}>{urgentEmoji}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-gray-900">{rem.displayName}</span>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">{rem.role}</span>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{rem.service}</span>
+              </div>
+              <div className="text-xs text-gray-400 mt-0.5">{urgentLabel} — {dateLong(rem.date)}</div>
+            </div>
+            {isSent && <span className="text-xs text-green-600 font-medium shrink-0 bg-green-50 px-2 py-1 rounded-full">✓ Sent</span>}
+          </div>
+          <div className="bg-white/80 rounded-xl p-3 mb-3 cursor-pointer" onClick={()=>setExpanded(!expanded)}>
+            <p className={`text-sm text-gray-700 whitespace-pre-wrap leading-relaxed ${!expanded?'line-clamp-3':''}`}>{msg}</p>
+            <span className="text-xs text-indigo-500 mt-1.5 font-medium inline-block">{expanded?'↑ Less':'↓ Full message'}</span>
+          </div>
+          {editing
+            ? <ContactEditor contact={ct} memberId={rem.memberId} onSave={d=>{onSaveContact(rem.memberId,d);setEditing(false);}} onCancel={()=>setEditing(false)} />
+            : (!ct.whatsapp&&!ct.messenger) && (
+              <div className="flex items-center justify-between text-xs text-gray-400 bg-white/60 rounded-lg px-3 py-2 mb-3">
+                <span>No contact info yet</span>
+                <button onClick={()=>setEditing(true)} className="text-indigo-500 font-medium hover:underline">+ Add contact</button>
+              </div>
+            )
+          }
+          {(ct.whatsapp||ct.messenger) && !editing && (
+            <button onClick={()=>setEditing(true)} className="text-xs text-gray-400 hover:text-gray-600 mb-2">✏️ Edit contact</button>
+          )}
+          <ActionButtons waNum={waNum} messenger={messenger} msg={msg} isSent={isSent} sentKey={rem.key} onToggleSent={onToggleSent} onAddContact={()=>setEditing(true)} />
+        </div>
+      );
+    }
+
+    function MemberRow({ worker, contact, onSave }) {
+      const [open, setOpen] = useState(false);
+      const [form, setForm] = useState({ whatsapp:contact.whatsapp||worker.whatsapp||'', messenger:contact.messenger||worker.messenger||'', birthday:contact.birthday||worker.birthday||'', anniversary:contact.anniversary||worker.anniversary||'', baptismDate:contact.baptismDate||worker.baptismDate||'' });
+      useEffect(()=>{ setForm({ whatsapp:contact.whatsapp||worker.whatsapp||'', messenger:contact.messenger||worker.messenger||'', birthday:contact.birthday||worker.birthday||'', anniversary:contact.anniversary||worker.anniversary||'', baptismDate:contact.baptismDate||worker.baptismDate||'' }); },[contact,worker]);
+      const hasData = Object.values(form).some(Boolean);
+      const displayName = `${worker.title?worker.title+' ':''}${worker.name}`;
+      const fields=[['whatsapp','WhatsApp number','+96512345678','tel'],['messenger','Messenger username','facebook.username','text'],['birthday','Birthday (MM-DD)','08-19','text'],['anniversary','Anniversary (MM-DD)','06-15','text'],['baptismDate','Baptism Date (MM-DD)','03-22','text']];
+      return (
+        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50" onClick={()=>setOpen(!open)}>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-sm font-bold text-indigo-500 shrink-0">{worker.name.charAt(0)}</div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">{displayName}</div>
+                {hasData ? (
+                  <div className="flex gap-2 mt-0.5 flex-wrap">
+                    {form.whatsapp && <span className="text-xs text-green-600">✓ WA</span>}
+                    {form.messenger && <span className="text-xs text-blue-600">✓ Msg</span>}
+                    {form.birthday && <span className="text-xs text-rose-500">🎂 {mmddLabel(form.birthday)}</span>}
+                    {form.anniversary && <span className="text-xs text-purple-500">💑 {mmddLabel(form.anniversary)}</span>}
+                    {form.baptismDate && <span className="text-xs text-sky-500">✝️ {mmddLabel(form.baptismDate)}</span>}
+                  </div>
+                ) : <div className="text-xs text-gray-400">No info added yet</div>}
+              </div>
+            </div>
+            <span className="text-gray-300 text-xs">{open?'▲':'▼'}</span>
+          </div>
+          {open && (
+            <div className="border-t border-gray-100 px-4 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                {fields.map(([k,lbl,ph,type])=>(
+                  <label key={k}>
+                    <div className="text-xs text-gray-500 mb-1">{lbl}</div>
+                    <input type={type} placeholder={ph} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                  </label>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button onClick={()=>{onSave(form);setOpen(false);}} className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-indigo-700">Save</button>
+                <button onClick={()=>setOpen(false)} className="text-sm text-gray-500 px-4 py-2 rounded-xl hover:bg-gray-100">Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      const [appData, setAppData] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [err, setErr] = useState(null);
+      const [tab, setTab] = useState('today');
+      const [contacts, setContacts] = useState(()=>{ try{return JSON.parse(localStorage.getItem('flcc_grt_contacts')||'{}');}catch{return{};} });
+      const [sent, setSent] = useState(()=>{ try{return JSON.parse(localStorage.getItem('flcc_grt_sent')||'{}');}catch{return{};} });
+      const [tpls, setTpls] = useState(()=>{ try{return JSON.parse(localStorage.getItem('flcc_grt_tpls')||'null')||DEFAULT_TPLS;}catch{return DEFAULT_TPLS;} });
+      const [editTpl, setEditTpl] = useState(null);
+      const [tplDraft, setTplDraft] = useState('');
+
+      useEffect(()=>{ fetch('data.json').then(r=>r.json()).then(d=>{setAppData(d);setLoading(false);}).catch(e=>{setErr(e.message);setLoading(false);}); },[]);
+      useEffect(()=>{ localStorage.setItem('flcc_grt_contacts',JSON.stringify(contacts)); },[contacts]);
+      useEffect(()=>{ localStorage.setItem('flcc_grt_sent',JSON.stringify(sent)); },[sent]);
+      useEffect(()=>{ localStorage.setItem('flcc_grt_tpls',JSON.stringify(tpls)); },[tpls]);
+
+      const today = new Date();
+      const todayStr = today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      const dateKey = todayISO();
+
+      const allEvents = useMemo(()=>{
+        if (!appData) return [];
+        const evs=[];
+        for (const w of appData.workers||[]) {
+          if (w.type!=='individual'||w.status!=='active') continue;
+          const merged={...w,...(contacts[w.id]||{})};
+          const name=`${w.title?w.title+' ':''}${w.name}`;
+          if (merged.birthday) evs.push({key:`${w.id}-bd`,memberId:w.id,displayName:name,type:'birthday',mmdd:merged.birthday,title:'Birthday',daysUntil:daysUntil(merged.birthday)});
+          if (merged.anniversary) evs.push({key:`${w.id}-an`,memberId:w.id,displayName:name,type:'anniversary',mmdd:merged.anniversary,title:'Wedding Anniversary',daysUntil:daysUntil(merged.anniversary)});
+          if (merged.baptismDate) evs.push({key:`${w.id}-bp`,memberId:w.id,displayName:name,type:'baptism',mmdd:merged.baptismDate,title:'Baptism Anniversary',daysUntil:daysUntil(merged.baptismDate)});
+        }
+        for (const ev of appData.events||[]) {
+          if (!ev.date) continue;
+          const evMMDD=ev.date.slice(5);
+          const d=ev.recurrence==='yearly'?daysUntil(evMMDD):(ev.date===dateKey?0:null);
+          if (d===null||d<0||d>365) continue;
+          const worker=(appData.workers||[]).find(w=>ev.title.toLowerCase().includes(w.name.toLowerCase()));
+          evs.push({key:`evt-${ev.id}`,memberId:worker?worker.id:`evt-${ev.id}`,displayName:worker?`${worker.title?worker.title+' ':''}${worker.name}`:ev.title,type:ev.type,mmdd:evMMDD,title:ev.title,daysUntil:d});
+        }
+        return evs.sort((a,b)=>a.daysUntil-b.daysUntil);
+      },[appData,contacts]);
+
+      const scheduleReminders = useMemo(()=>{
+        if (!appData) return [];
+        const rems=[];
+        for (const daysAhead of [1,3]) {
+          const targetDate = dateISO(daysAhead);
+          const service=(appData.schedule||[]).find(s=>s.date===targetDate);
+          if (!service) continue;
+          for (const [roleKey,workerId] of Object.entries(service.roles||{})) {
+            if (!workerId) continue;
+            const worker=(appData.workers||[]).find(w=>w.id===workerId);
+            if (!worker||worker.status!=='active') continue;
+            const merged={...worker,...(contacts[worker.id]||{})};
+            const name=`${worker.title?worker.title+' ':''}${worker.name}`;
+            rems.push({
+              key:`rem-${service.id}-${roleKey}`,
+              memberId:worker.id,
+              displayName:name,
+              role:ROLE_LABELS[roleKey]||roleKey,
+              roleKey,
+              service:service.service,
+              date:targetDate,
+              daysAhead,
+            });
+          }
+        }
+        return rems.sort((a,b)=>a.daysAhead-b.daysAhead);
+      },[appData,contacts]);
+
+      const todayEvs = useMemo(()=>allEvents.filter(e=>e.daysUntil===0),[allEvents]);
+      const upcomingEvs = useMemo(()=>allEvents.filter(e=>e.daysUntil>0&&e.daysUntil<=30),[allEvents]);
+      const rem1day = scheduleReminders.filter(r=>r.daysAhead===1);
+      const rem3day = scheduleReminders.filter(r=>r.daysAhead===3);
+      const totalRem = scheduleReminders.length;
+
+      const toggleSent=key=>setSent(prev=>{const day={...(prev[dateKey]||{})};day[key]?delete day[key]:(day[key]=1);return{...prev,[dateKey]:day};});
+      const isSent=key=>!!(sent[dateKey]||{})[key];
+      const saveContact=(id,data)=>setContacts(prev=>({...prev,[id]:{...(prev[id]||{}),...data}}));
+
+      const exportData=()=>{
+        if (!appData) return;
+        const updated={...appData,workers:appData.workers.map(w=>({...w,...(contacts[w.id]?{whatsapp:contacts[w.id].whatsapp||w.whatsapp||'',messenger:contacts[w.id].messenger||w.messenger||'',anniversary:contacts[w.id].anniversary||w.anniversary||'',baptismDate:contacts[w.id].baptismDate||w.baptismDate||'',birthday:contacts[w.id].birthday||w.birthday||''}:{})}))}
+        const blob=new Blob([JSON.stringify(updated,null,2)],{type:'application/json'});
+        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'data.json'});
+        a.click(); URL.revokeObjectURL(a.href);
+      };
+
+      const navLinks=[
+        {href:'index.html',label:'Schedule'},{href:'members.html',label:'Members'},
+        {href:'attendance.html',label:'Attendance'},{href:'prayer.html',label:'Prayer'},
+        {href:'music.html',label:'Music'},{href:'greetings.html',label:'🎉 Greetings',active:true},
+        {href:'ask.html',label:'Ask FLCC'},
+      ];
+      const tplTypes=[
+        ['birthday','🎂 Birthday'],['anniversary','💑 Anniversary'],['baptism','✝️ Baptism Anniversary'],
+        ['event','🎉 Other Events'],['reminder3day','📋 Assignment Reminder (3 days)'],['reminder1day','⏰ Assignment Reminder (1 day)'],
+      ];
+      const individuals=(appData?.workers||[]).filter(w=>w.type==='individual'&&w.status==='active');
+
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <nav className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
+            <div className="max-w-4xl mx-auto px-4">
+              <div className="flex items-center gap-4 h-14 overflow-x-auto">
+                <a href="index.html" className="font-fraunces font-bold text-gray-900 text-base whitespace-nowrap shrink-0 mr-1">⛪ FLCC</a>
+                {navLinks.map(({href,label,active})=>(
+                  <a key={href} href={href} className={`text-sm whitespace-nowrap shrink-0 pb-0.5 border-b-2 transition-colors ${active?'border-indigo-500 text-indigo-600 font-semibold':'border-transparent text-gray-500 hover:text-gray-800'}`}>{label}</a>
+                ))}
+              </div>
+            </div>
+          </nav>
+
+          <main className="max-w-4xl mx-auto px-4 py-6">
+            <div className="mb-6">
+              <h1 className="font-fraunces text-2xl font-bold text-gray-900">Member Greetings &amp; Reminders</h1>
+              <p className="text-sm text-gray-400 mt-0.5">{todayStr}</p>
+            </div>
+
+            {loading && <div className="text-center py-20 text-gray-400">Loading member data…</div>}
+            {err && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 text-sm">Could not load data.json: {err}</div>}
+
+            {!loading && !err && (
+              <>
+                <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 overflow-x-auto">
+                  {[
+                    ['today',`Today${todayEvs.length?` (${todayEvs.length})`:''}`],
+                    ['upcoming',`30 Days (${upcomingEvs.length})`],
+                    ['reminders',`📋 Reminders${totalRem?` (${totalRem})`:''}`],
+                    ['members','Contacts'],
+                    ['settings','⚙️ Settings'],
+                  ].map(([id,lbl])=>(
+                    <button key={id} onClick={()=>setTab(id)}
+                      className={`flex-1 text-sm font-medium py-2 px-2 rounded-lg transition-all whitespace-nowrap ${tab===id?'bg-white text-gray-900 shadow-sm':'text-gray-500 hover:text-gray-700'}`}>
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+
+                {tab==='today' && (
+                  todayEvs.length===0
+                    ? <div className="text-center py-20"><div className="text-5xl mb-3">🙏</div><h3 className="font-fraunces text-lg font-semibold text-gray-700">No events today</h3><p className="text-gray-400 text-sm mt-2 max-w-sm mx-auto">Add birthdays, anniversaries, and baptism dates in <strong>Contacts</strong> to see events here every morning.</p></div>
+                    : <div className="space-y-4"><p className="text-sm text-gray-400">{todayEvs.length} event{todayEvs.length>1?'s':''} to celebrate today 🎉</p>{todayEvs.map(ev=><EventCard key={ev.key} ev={ev} contacts={contacts} tpls={tpls} isSent={isSent(ev.key)} onToggleSent={toggleSent} onSaveContact={saveContact}/>)}</div>
+                )}
+
+                {tab==='upcoming' && (
+                  upcomingEvs.length===0
+                    ? <div className="text-center py-20"><div className="text-5xl mb-3">📅</div><h3 className="font-fraunces text-lg font-semibold text-gray-700">No events in the next 30 days</h3><p className="text-gray-400 text-sm mt-2">Fill in member dates in <strong>Contacts</strong> to populate this view.</p></div>
+                    : <div className="space-y-4"><p className="text-sm text-gray-400">{upcomingEvs.length} upcoming event{upcomingEvs.length>1?'s':''}</p>{upcomingEvs.map(ev=><EventCard key={ev.key} ev={ev} contacts={contacts} tpls={tpls} isSent={isSent(ev.key)} onToggleSent={toggleSent} onSaveContact={saveContact}/>)}</div>
+                )}
+
+                {tab==='reminders' && (
+                  <div className="space-y-6">
+                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-700">
+                      <strong>Schedule reminders</strong> are sent to members assigned to preach, preside, lead songs, pray, assist in communion, or handle food — <strong>3 days before</strong> and again <strong>1 day before</strong> their service date.
+                    </div>
+                    {scheduleReminders.length===0 ? (
+                      <div className="text-center py-16"><div className="text-5xl mb-3">📋</div><h3 className="font-fraunces text-lg font-semibold text-gray-700">No reminders to send today</h3><p className="text-gray-400 text-sm mt-2">Reminders appear when a service is scheduled 1 or 3 days from now.</p></div>
+                    ) : (
+                      <>
+                        {rem1day.length>0 && (
+                          <div>
+                            <h2 className="font-fraunces font-semibold text-gray-800 mb-3">⏰ Tomorrow’s Service — {dateLong(rem1day[0].date)}</h2>
+                            <p className="text-xs text-gray-400 mb-3">{rem1day.length} assignment{rem1day.length>1?'s':''} — send 1-day reminders</p>
+                            <div className="space-y-4">{rem1day.map(r=><ReminderCard key={r.key} rem={r} contacts={contacts} tpls={tpls} isSent={isSent(r.key)} onToggleSent={toggleSent} onSaveContact={saveContact}/>)}</div>
+                          </div>
+                        )}
+                        {rem3day.length>0 && (
+                          <div>
+                            <h2 className="font-fraunces font-semibold text-gray-800 mb-3">📋 Service in 3 Days — {dateLong(rem3day[0].date)}</h2>
+                            <p className="text-xs text-gray-400 mb-3">{rem3day.length} assignment{rem3day.length>1?'s':''} — send 3-day reminders</p>
+                            <div className="space-y-4">{rem3day.map(r=><ReminderCard key={r.key} rem={r} contacts={contacts} tpls={tpls} isSent={isSent(r.key)} onToggleSent={toggleSent} onSaveContact={saveContact}/>)}</div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {tab==='members' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4 gap-3">
+                      <p className="text-sm text-gray-400">Add WhatsApp, Messenger, birthday &amp; anniversary dates. Saved locally until you export.</p>
+                      <button onClick={exportData} className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-indigo-700 shrink-0">↓ Export data.json</button>
+                    </div>
+                    <div className="space-y-2">{individuals.map(w=><MemberRow key={w.id} worker={w} contact={contacts[w.id]||{}} onSave={d=>saveContact(w.id,d)}/>)}</div>
+                  </div>
+                )}
+
+                {tab==='settings' && (
+                  <div className="space-y-6">
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5">
+                      <h3 className="font-semibold text-indigo-900 mb-2">How this works</h3>
+                      <ul className="text-sm text-indigo-700 space-y-1.5 list-disc list-inside">
+                        <li>Open <strong>Contacts</strong>, fill in each member’s WhatsApp, Messenger, birthday, anniversary, baptism date</li>
+                        <li>Export data.json and commit it back to the repo to make contact info permanent</li>
+                        <li>Bookmark this page — check <strong>Today</strong> each morning for birthday/anniversary greetings</li>
+                        <li>Check <strong>Reminders</strong> daily — it shows who has a service assignment in 1 or 3 days</li>
+                        <li>For <strong>full automation</strong>, configure the Cloudflare Worker cron (see below)</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="font-fraunces font-semibold text-gray-900 text-lg mb-1">Message Templates</h3>
+                      <p className="text-sm text-gray-400 mb-4">Variables: <code className="bg-gray-100 px-1 rounded">{'{name}'}</code> <code className="bg-gray-100 px-1 rounded">{'{role}'}</code> <code className="bg-gray-100 px-1 rounded">{'{service}'}</code> <code className="bg-gray-100 px-1 rounded">{'{dayofweek}'}</code> <code className="bg-gray-100 px-1 rounded">{'{date}'}</code> <code className="bg-gray-100 px-1 rounded">{'{title}'}</code></p>
+                      <div className="space-y-3">
+                        {tplTypes.map(([type,label])=>(
+                          <div key={type} className="bg-white border border-gray-100 rounded-2xl p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-sm text-gray-800">{label}</span>
+                              <div className="flex gap-3">
+                                <button onClick={()=>setTpls(t=>({...t,[type]:DEFAULT_TPLS[type]}))} className="text-xs text-gray-400 hover:text-gray-600">Reset</button>
+                                <button onClick={()=>{setEditTpl(type);setTplDraft(tpls[type]||DEFAULT_TPLS[type]);}} className="text-xs text-indigo-600 font-medium">Edit</button>
+                              </div>
+                            </div>
+                            {editTpl===type ? (
+                              <div>
+                                <textarea rows={7} value={tplDraft} onChange={e=>setTplDraft(e.target.value)} className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 font-mono text-gray-700"/>
+                                <div className="flex gap-2 mt-2">
+                                  <button onClick={()=>{setTpls(t=>({...t,[type]:tplDraft}));setEditTpl(null);}} className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-xl font-medium hover:bg-indigo-700">Save</button>
+                                  <button onClick={()=>setEditTpl(null)} className="text-sm text-gray-500 px-4 py-1.5 rounded-xl hover:bg-gray-50">Cancel</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 rounded-xl p-3 cursor-pointer hover:bg-gray-100 line-clamp-3" onClick={()=>{setEditTpl(type);setTplDraft(tpls[type]||DEFAULT_TPLS[type]);}}>{tpls[type]||DEFAULT_TPLS[type]}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                      <h3 className="font-semibold text-amber-900 mb-2">🚀 Full Automation via WhatsApp Cloud API</h3>
+                      <p className="text-sm text-amber-800 mb-3">The cron fires at <strong>7 AM Kuwait time daily</strong>. It auto-sends birthday/anniversary greetings AND schedule reminders (3-day &amp; 1-day) to every member who has their WhatsApp number in data.json.</p>
+                      <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
+                        <li>Set up Meta Business Manager &amp; WhatsApp Business API</li>
+                        <li>In Cloudflare Dashboard → Worker → Settings → Variables &amp; Secrets, add:</li>
+                      </ol>
+                      <div className="mt-2 ml-5 font-mono text-xs bg-amber-100 rounded-xl p-3 space-y-1">
+                        <div>WHATSAPP_ACCESS_TOKEN = &lt;permanent token&gt;</div>
+                        <div>WHATSAPP_PHONE_NUMBER_ID = &lt;phone number id&gt;</div>
+                      </div>
+                      <p className="text-xs text-amber-600 mt-3">→ Check status: <code className="bg-amber-100 px-1 rounded">GET /api/greetings/today</code> on your worker URL</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
