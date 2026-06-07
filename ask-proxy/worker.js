@@ -26,10 +26,15 @@ const CORS = {
 
 // ── RSS feeds served via GET /news ────────────────────────────────────────────
 const RSS_FEEDS = [
-  { name: 'BBC News',     icon: '🌐', url: 'https://feeds.bbci.co.uk/news/rss.xml'    },
-  { name: 'The Guardian', icon: '🗞️', url: 'https://www.theguardian.com/world/rss'    },
-  { name: 'NPR News',     icon: '📻', url: 'https://feeds.npr.org/1001/rss.xml'       },
-  { name: 'Al Jazeera',  icon: '📡', url: 'https://www.aljazeera.com/xml/rss/all.xml'},
+  // International
+  { name: 'BBC News',     icon: '🌐', url: 'https://feeds.bbci.co.uk/news/rss.xml'             },
+  { name: 'The Guardian', icon: '🗞️', url: 'https://www.theguardian.com/world/rss'             },
+  { name: 'NPR News',     icon: '📻', url: 'https://feeds.npr.org/1001/rss.xml'                },
+  { name: 'Al Jazeera',  icon: '📡', url: 'https://www.aljazeera.com/xml/rss/all.xml'         },
+  // Philippines
+  { name: 'ABS-CBN',     icon: '🇵🇭', url: 'https://news.abs-cbn.com/rss/headlines'           },
+  { name: 'Inquirer',    icon: '📰', url: 'https://newsinfo.inquirer.net/feed'                 },
+  { name: 'GMA News',    icon: '📺', url: 'https://www.gmanetwork.com/news/rss/news/feed.xml' },
 ];
 
 const RSS2JSON = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
@@ -81,7 +86,7 @@ export default {
       const items = settled
         .filter(r => r.status === 'fulfilled')
         .flatMap(r => r.value)
-        .slice(0, 15);
+        .slice(0, 21);
       return new Response(JSON.stringify({ items }), {
         headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
       });
