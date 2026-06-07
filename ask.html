@@ -524,9 +524,14 @@ const RSS2JSON_API   = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
 const ALLORIGINS_API = 'https://api.allorigins.win/get?url=';
 
 const RSS_FEED_URLS = [
-  { name: 'BBC News',     icon: '🌐', url: 'https://feeds.bbci.co.uk/news/rss.xml'  },
-  { name: 'The Guardian', icon: '🗞️', url: 'https://www.theguardian.com/world/rss'  },
-  { name: 'NPR News',     icon: '📻', url: 'https://feeds.npr.org/1001/rss.xml'     },
+  // International
+  { name: 'BBC News',     icon: '🌐', url: 'https://feeds.bbci.co.uk/news/rss.xml'             },
+  { name: 'The Guardian', icon: '🗞️', url: 'https://www.theguardian.com/world/rss'             },
+  { name: 'NPR News',     icon: '📻', url: 'https://feeds.npr.org/1001/rss.xml'                },
+  // Philippines
+  { name: 'ABS-CBN',     icon: '🇵🇭', url: 'https://news.abs-cbn.com/rss/headlines'           },
+  { name: 'Inquirer',    icon: '📰', url: 'https://newsinfo.inquirer.net/feed'                 },
+  { name: 'GMA News',    icon: '📺', url: 'https://www.gmanetwork.com/news/rss/news/feed.xml' },
 ];
 
 function safeAbortSignal(ms) {
@@ -586,12 +591,12 @@ async function fetchAllExternalNews() {
   try {
     const s = await Promise.allSettled(RSS_FEED_URLS.map(fetchOneFeedViaRss2Json));
     const items = s.filter(r => r.status === 'fulfilled').flatMap(r => r.value);
-    if (items.length > 0) return items.slice(0, 15);
+    if (items.length > 0) return items.slice(0, 21);
   } catch {}
 
   // Tier 3: allorigins.win + DOMParser (different proxy, browser-native XML parsing)
   const s = await Promise.allSettled(RSS_FEED_URLS.map(fetchOneFeedViaDOMParser));
-  return s.filter(r => r.status === 'fulfilled').flatMap(r => r.value).slice(0, 15);
+  return s.filter(r => r.status === 'fulfilled').flatMap(r => r.value).slice(0, 21);
 }
 
 // ─── Generate FLCC news from live data ───────────────────────────────────────
@@ -948,7 +953,7 @@ ${events || '  (none)'}
 These are the most recent church announcements and highlights — summarise them conversationally when asked.
 ${newsItems || '  (none available)'}
 
-## Latest World News Headlines (Bite-size — BBC, Reuters, The Guardian)
+## Latest World & Philippines News Headlines (Bite-size — BBC, The Guardian, NPR, Al Jazeera, ABS-CBN, Inquirer, GMA News)
 Share these as brief, balanced summaries when members ask about current events.
 ${externalNews.length
   ? externalNews.map(n => `  • [${n.date}] ${n.source} — **${n.headline}**: ${n.summary}`).join('\n')
@@ -1373,11 +1378,11 @@ function App() {
                 </div>
               )}
 
-              {/* World News Feed */}
+              {/* World & Philippines News Feed */}
               {externalNews.length > 0 && (
                 <div>
                   <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'var(--ink-subtle)'}}>
-                    World News
+                    World &amp; Philippines News
                   </div>
                   <div className="newsfeed-scroll">
                     {externalNews.map((item, i) => (
