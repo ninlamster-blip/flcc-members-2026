@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "churchName": "FLCC - Abundance Church",
+    "updatedAt": "2026-06-07T00:00:00.000Z",
+    "version": "1.0"
+  },
+  "items": [
+    {
+      "id": "n001",
+      "date": "2026-06-07",
+      "headline": "BOTR Gospel Count Passes 28,000!",
+      "summary": "Praise God — our BOTR network has shared the gospel with over 28,000 people in 2026, keeping us on track toward the 54,000 year-end target.",
+      "category": "milestone",
+      "pinned": true
+    },
+    {
+      "id": "n002",
+      "date": "2026-06-06",
+      "headline": "Prayer Meeting This Friday — All Welcome",
+      "summary": "Our weekly Friday prayer meeting continues at 5 PM. Come ready to intercede for Kuwait and the BOTR church network.",
+      "category": "prayer",
+      "pinned": false
+    },
+    {
+      "id": "n003",
+      "date": "2026-06-05",
+      "headline": "New Equip Discipleship Track Begins June 14",
+      "summary": "Bro. Edmund Gabriel leads a fresh discipleship course starting June 14. Details in the Equip tab — sign up soon!",
+      "category": "equip",
+      "pinned": false
+    },
+    {
+      "id": "n004",
+      "date": "2026-06-04",
+      "headline": "Birthday Celebration for Bro. Allen This Sunday",
+      "summary": "Join us after the Sunday service to celebrate Bro. Allen's birthday. The De Jesus family will handle the food.",
+      "category": "celebration",
+      "pinned": false
+    },
+    {
+      "id": "n005",
+      "date": "2026-06-01",
+      "headline": "June Theme: 'Faith That Moves Mountains'",
+      "summary": "This month we anchor in Matthew 17:20 — practical sermons on trusting God in every season of life.",
+      "category": "announcement",
+      "pinned": false
+    },
+    {
+      "id": "n006",
+      "date": "2026-05-30",
+      "headline": "Attendance Record Updated for May",
+      "summary": "May's attendance records have been published. Check the Home tab for the latest summary from Sis. Amazelle.",
+      "category": "announcement",
+      "pinned": false
+    },
+    {
+      "id": "n007",
+      "date": "2026-05-28",
+      "headline": "Worship Team Practice — Saturdays 3 PM",
+      "summary": "Bro. Edmund reminds all worship team members that Saturday practice is at 3 PM. Please come prepared.",
+      "category": "music",
+      "pinned": false
+    },
+    {
+      "id": "n008",
+      "date": "2026-05-25",
+      "headline": "FLCC Bible Study — Book of Acts",
+      "summary": "Our ongoing Bible study through the Book of Acts continues every other Friday. Newcomers are warmly welcome.",
+      "category": "equip",
+      "pinned": false
+    }
+  ]
+}

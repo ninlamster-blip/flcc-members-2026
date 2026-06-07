@@ -343,6 +343,67 @@
     margin: 0 0.5rem 0.5rem;
   }
 
+  /* ── News Feed ── */
+  .newsfeed-scroll {
+    display: flex;
+    gap: 0.625rem;
+    overflow-x: auto;
+    padding: 0.25rem 0.25rem 0.5rem;
+    scrollbar-width: none;
+  }
+  .newsfeed-scroll::-webkit-scrollbar { display: none; }
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem;
+    min-width: 210px;
+    max-width: 230px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    text-align: left;
+    font-family: inherit;
+  }
+  .news-card:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 2px 8px rgba(163,59,42,0.1);
+  }
+  .news-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .news-headline {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 0.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .news-summary {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0.35rem;
+  }
+  .news-date { font-size: 0.6875rem; color: var(--ink-subtle); }
+
   /* ── Icon button ── */
   .icon-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
@@ -405,15 +466,25 @@ const MODELS = [
 ];
 
 const SUGGESTIONS = [
+  { icon: '📰', text: 'What is the latest church news?' },
+  { icon: '🌍', text: "What's happening in the world today?" },
   { icon: '📅', text: 'Who is preaching this Sunday?' },
   { icon: '🎵', text: 'Who leads worship this Friday?' },
   { icon: '🙏', text: 'When is the next prayer meeting?' },
   { icon: '📖', text: 'Give me John 3:16 NIV' },
   { icon: '✨', text: "What is this month's theme?" },
-  { icon: '❤️', text: 'What does the Bible say about love?' },
-  { icon: '🎂', text: 'Who has an upcoming birthday?' },
   { icon: '📊', text: 'What is the BOTR gospel count so far?' },
 ];
+
+const NEWS_CATEGORIES = {
+  milestone:    { bg: '#FEF3C7', color: '#B45309', icon: '🏆' },
+  prayer:       { bg: '#DBEAFE', color: '#1E40AF', icon: '🙏' },
+  equip:        { bg: '#DCFCE7', color: '#15803D', icon: '📚' },
+  celebration:  { bg: '#FDE8FF', color: '#7E22CE', icon: '🎉' },
+  announcement: { bg: '#FBEBE7', color: '#A33B2A', icon: '📢' },
+  music:        { bg: '#F0FDF4', color: '#166534', icon: '🎵' },
+  testimony:    { bg: '#F0FFFE', color: '#0F766E', icon: '✨' },
+};
 
 // ─── BOTR live stats (via Apps Script getLiveData endpoint) ─────────────────
 const BOTR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
@@ -448,8 +519,53 @@ function fetchBotrLiveStats() {
   });
 }
 
+// ─── External News via RSS (BBC, Reuters, The Guardian) ──────────────────────
+const RSS_FEEDS = [
+  { key: 'bbc',      name: 'BBC News',     url: 'https://feeds.bbci.co.uk/news/rss.xml',        icon: '🌐' },
+  { key: 'reuters',  name: 'Reuters',      url: 'https://feeds.reuters.com/reuters/topNews',     icon: '📡' },
+  { key: 'guardian', name: 'The Guardian', url: 'https://www.theguardian.com/world/rss',         icon: '🗞️' },
+];
+const RSS2JSON_API = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
+
+function stripHtml(str) {
+  return (str || '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+    .trim();
+}
+
+async function fetchOneFeed(feed) {
+  const url = RSS2JSON_API + encodeURIComponent(feed.url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error('feed-error');
+  const data = await res.json();
+  if (data.status !== 'ok' || !data.items?.length) throw new Error('feed-empty');
+  return data.items.slice(0, 5).map(item => {
+    const raw = stripHtml(item.description || '');
+    const summary = raw.length > 130 ? raw.slice(0, 130).trimEnd() + '…' : raw;
+    return {
+      id: item.guid || item.link || item.title,
+      headline: stripHtml(item.title),
+      summary,
+      date: item.pubDate ? item.pubDate.slice(0, 10) : '',
+      source: feed.name,
+      sourceIcon: feed.icon,
+      link: item.link || '',
+    };
+  });
+}
+
+async function fetchAllExternalNews() {
+  const settled = await Promise.allSettled(RSS_FEEDS.map(fetchOneFeed));
+  return settled
+    .filter(r => r.status === 'fulfilled')
+    .flatMap(r => r.value)
+    .slice(0, 15);
+}
+
 // ─── System prompt ────────────────────────────────────────────────────────────────────────────────
-function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null) {
+function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, newsData = {}, externalNews = []) {
   const today = new Date().toISOString().split('T')[0];
 
   const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
@@ -584,6 +700,13 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
       ].join('\n')
     : '  (Live data loading — check back or visit the BOTR Strategic Direction dashboard)';
 
+  // ── Latest news (bite-size summaries) ──
+  const newsItems = (newsData.items || [])
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 10)
+    .map(n => `  • [${n.date}] ${n.category.toUpperCase()} — **${n.headline}**: ${n.summary}`)
+    .join('\n');
+
   // ── Role groups derived from active workers ──
   const byRole = role => data.workers
     .filter(w => w.status === 'active' && w.eligibleRoles?.includes(role))
@@ -702,6 +825,18 @@ ${events || '  (none)'}
 
 ---
 
+## Latest Church News (Bite-size Summaries)
+These are the most recent church announcements and highlights — summarise them conversationally when asked.
+${newsItems || '  (none available)'}
+
+## Latest World News Headlines (Bite-size — BBC, Reuters, The Guardian)
+Share these as brief, balanced summaries when members ask about current events.
+${externalNews.length
+  ? externalNews.map(n => `  • [${n.date}] ${n.source} — **${n.headline}**: ${n.summary}`).join('\n')
+  : '  (live feed not yet loaded)'}
+
+---
+
 ## Recent Attendance Records
 ${attendanceSummary || '  (none loaded)'}
 
@@ -714,8 +849,10 @@ ${attendanceSummary || '  (none loaded)'}
 4. **Schedule questions**: Be specific — name the date, person, and role. If the date is past, say so.
 5. **BOTR questions**: You know all sector leaders, satellite churches, and the mission target.
 6. **Outside FLCC**: You can answer any question — theology, Bible, Christianity, general knowledge, prayer, devotion topics, etc.
-7. **Honesty**: If something about FLCC isn't in your data, say so and suggest contacting the ministry head.
-8. **Formatting**: Use markdown (bold, lists, blockquotes for Bible verses) when it improves readability.`;
+7. **Church news**: When sharing church news, give bite-size summaries — one or two sentences per item. Keep it conversational and upbeat.
+8. **World news**: Share world headlines as short, balanced, factual summaries. You may add a brief faith-based reflection if appropriate, but never inject opinion or bias.
+9. **Honesty**: If something about FLCC isn't in your data, say so and suggest contacting the ministry head.
+10. **Formatting**: Use markdown (bold, lists, blockquotes for Bible verses) when it improves readability.`;
 }
 
 // ─── Markdown renderer ────────────────────────────────────────────────────────────────────────────────
@@ -787,14 +924,16 @@ function App() {
   const [model,  setModel]      = useState(() => localStorage.getItem(STORAGE_KEY_MODEL) || MODELS[0].id);
   const [showKeyModal, setShowKeyModal] = useState(false);
 
-  const [appData,    setAppData]    = useState(null);
-  const [liveStats,  setLiveStats]  = useState(null);
-  const [dataError,  setDataError]  = useState(null);
+  const [appData,       setAppData]       = useState(null);
+  const [newsData,      setNewsData]      = useState(null);
+  const [externalNews,  setExternalNews]  = useState([]);
+  const [liveStats,     setLiveStats]     = useState(null);
+  const [dataError,     setDataError]     = useState(null);
 
   const systemPrompt = useMemo(() => {
     if (!appData) return null;
-    return buildSystemPrompt(appData.data, appData.music, appData.prayer, appData.equip, appData.botrData, appData.attendance, liveStats);
-  }, [appData, liveStats]);
+    return buildSystemPrompt(appData.data, appData.music, appData.prayer, appData.equip, appData.botrData, appData.attendance, liveStats, newsData || {}, externalNews);
+  }, [appData, liveStats, newsData, externalNews]);
 
   const [messages,       setMessages]       = useState([]);
   const [input,          setInput]          = useState('');
@@ -817,10 +956,14 @@ function App() {
       fetch('equip.json').then(r => r.json()).catch(() => ({})),
       fetch('botr.json').then(r => r.json()).catch(() => ({})),
       fetch('attendance.json').then(r => r.json()).catch(() => ({})),
-    ]).then(([data, music, prayer, equip, botrData, attendance]) => {
+      fetch('news.json').then(r => r.json()).catch(() => ({ items: [] })),
+    ]).then(([data, music, prayer, equip, botrData, attendance, news]) => {
       setAppData({ data, music, prayer, equip, botrData, attendance });
-      // Non-blocking: fetch live BOTR standings from Google Sheets
+      setNewsData(news);
+      // Non-blocking: live BOTR standings from Google Sheets
       fetchBotrLiveStats().then(stats => { if (stats) setLiveStats(stats); }).catch(() => {});
+      // Non-blocking: live world news from BBC / Reuters / The Guardian via RSS
+      fetchAllExternalNews().then(items => { if (items.length) setExternalNews(items); }).catch(() => {});
     }).catch(() => {
       setDataError('Could not load church data. Please open this file from a web server.');
     });
@@ -1077,6 +1220,69 @@ function App() {
                   </button>
                 )}
               </div>
+
+              {/* Latest News Feed */}
+              {newsData?.items?.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'var(--ink-subtle)'}}>
+                    Latest News
+                  </div>
+                  <div className="newsfeed-scroll">
+                    {[...(newsData.items)].sort((a, b) => {
+                      if (a.pinned && !b.pinned) return -1;
+                      if (!a.pinned && b.pinned) return 1;
+                      return b.date.localeCompare(a.date);
+                    }).map(item => {
+                      const cat = NEWS_CATEGORIES[item.category] || NEWS_CATEGORIES.announcement;
+                      return (
+                        <button
+                          key={item.id}
+                          className="news-card"
+                          onClick={() => sendMessage(`Tell me more about this news: ${item.headline}`)}
+                          disabled={!apiKey || !appData}
+                        >
+                          <div>
+                            <span className="news-badge" style={{background: cat.bg, color: cat.color}}>
+                              {cat.icon} {item.category}
+                            </span>
+                          </div>
+                          <div className="news-headline">{item.headline}</div>
+                          <div className="news-summary">{item.summary}</div>
+                          <div className="news-date">{item.date}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* World News Feed */}
+              {externalNews.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'var(--ink-subtle)'}}>
+                    World News
+                  </div>
+                  <div className="newsfeed-scroll">
+                    {externalNews.map((item, i) => (
+                      <button
+                        key={item.id || i}
+                        className="news-card"
+                        onClick={() => sendMessage(`Summarise this news for me: ${item.headline}`)}
+                        disabled={!apiKey || !appData}
+                      >
+                        <div>
+                          <span className="news-badge" style={{background:'#F1F5F9', color:'#475569'}}>
+                            {item.sourceIcon} {item.source}
+                          </span>
+                        </div>
+                        <div className="news-headline">{item.headline}</div>
+                        <div className="news-summary">{item.summary}</div>
+                        <div className="news-date">{item.date}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {apiKey && (
                 <div>
