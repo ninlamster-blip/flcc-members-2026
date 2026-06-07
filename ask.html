@@ -519,25 +519,33 @@ function fetchBotrLiveStats() {
   });
 }
 
-// ─── External News via RSS (BBC, Reuters, The Guardian) ──────────────────────
-const RSS_FEEDS = [
-  { key: 'bbc',      name: 'BBC News',     url: 'https://feeds.bbci.co.uk/news/rss.xml',        icon: '🌐' },
-  { key: 'reuters',  name: 'Reuters',      url: 'https://feeds.reuters.com/reuters/topNews',     icon: '📡' },
-  { key: 'guardian', name: 'The Guardian', url: 'https://www.theguardian.com/world/rss',         icon: '🗞️' },
-];
+// ─── External News: worker /news (primary) + rss2json fallback ───────────────
 const RSS2JSON_API = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
+
+const RSS_FEED_URLS = [
+  { name: 'BBC News',     icon: '🌐', url: 'https://feeds.bbci.co.uk/news/rss.xml'  },
+  { name: 'The Guardian', icon: '🗞️', url: 'https://www.theguardian.com/world/rss'  },
+  { name: 'NPR News',     icon: '📻', url: 'https://feeds.npr.org/1001/rss.xml'     },
+];
+
+function safeAbortSignal(ms) {
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), ms);
+  return ctrl.signal;
+}
 
 function stripHtml(str) {
   return (str || '')
-    .replace(/<[^>]*>/g, '')
+    .replace(/<[^>]*>/g, ' ')
     .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
-async function fetchOneFeed(feed) {
+async function fetchOneFeedViaRss2Json(feed) {
   const url = RSS2JSON_API + encodeURIComponent(feed.url);
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  const res = await fetch(url, { signal: safeAbortSignal(8000) });
   if (!res.ok) throw new Error('feed-error');
   const data = await res.json();
   if (data.status !== 'ok' || !data.items?.length) throw new Error('feed-empty');
@@ -557,7 +565,17 @@ async function fetchOneFeed(feed) {
 }
 
 async function fetchAllExternalNews() {
-  const settled = await Promise.allSettled(RSS_FEEDS.map(fetchOneFeed));
+  // Primary: worker's /news endpoint — server-side RSS via rss2json, cached at edge
+  try {
+    const res = await fetch('./news', { signal: safeAbortSignal(8000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.items?.length > 0) return data.items;
+    }
+  } catch {}
+
+  // Fallback: call rss2json directly from browser
+  const settled = await Promise.allSettled(RSS_FEED_URLS.map(fetchOneFeedViaRss2Json));
   return settled
     .filter(r => r.status === 'fulfilled')
     .flatMap(r => r.value)
