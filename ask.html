@@ -467,12 +467,12 @@ const MODELS = [
 
 const SUGGESTIONS = [
   { icon: '📰', text: 'What is the latest church news?' },
+  { icon: '🌍', text: "What's happening in the world today?" },
   { icon: '📅', text: 'Who is preaching this Sunday?' },
   { icon: '🎵', text: 'Who leads worship this Friday?' },
   { icon: '🙏', text: 'When is the next prayer meeting?' },
   { icon: '📖', text: 'Give me John 3:16 NIV' },
   { icon: '✨', text: "What is this month's theme?" },
-  { icon: '🎂', text: 'Who has an upcoming birthday?' },
   { icon: '📊', text: 'What is the BOTR gospel count so far?' },
 ];
 
@@ -519,8 +519,53 @@ function fetchBotrLiveStats() {
   });
 }
 
+// ─── External News via RSS (BBC, Reuters, The Guardian) ──────────────────────
+const RSS_FEEDS = [
+  { key: 'bbc',      name: 'BBC News',     url: 'https://feeds.bbci.co.uk/news/rss.xml',        icon: '🌐' },
+  { key: 'reuters',  name: 'Reuters',      url: 'https://feeds.reuters.com/reuters/topNews',     icon: '📡' },
+  { key: 'guardian', name: 'The Guardian', url: 'https://www.theguardian.com/world/rss',         icon: '🗞️' },
+];
+const RSS2JSON_API = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
+
+function stripHtml(str) {
+  return (str || '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+    .trim();
+}
+
+async function fetchOneFeed(feed) {
+  const url = RSS2JSON_API + encodeURIComponent(feed.url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error('feed-error');
+  const data = await res.json();
+  if (data.status !== 'ok' || !data.items?.length) throw new Error('feed-empty');
+  return data.items.slice(0, 5).map(item => {
+    const raw = stripHtml(item.description || '');
+    const summary = raw.length > 130 ? raw.slice(0, 130).trimEnd() + '…' : raw;
+    return {
+      id: item.guid || item.link || item.title,
+      headline: stripHtml(item.title),
+      summary,
+      date: item.pubDate ? item.pubDate.slice(0, 10) : '',
+      source: feed.name,
+      sourceIcon: feed.icon,
+      link: item.link || '',
+    };
+  });
+}
+
+async function fetchAllExternalNews() {
+  const settled = await Promise.allSettled(RSS_FEEDS.map(fetchOneFeed));
+  return settled
+    .filter(r => r.status === 'fulfilled')
+    .flatMap(r => r.value)
+    .slice(0, 15);
+}
+
 // ─── System prompt ────────────────────────────────────────────────────────────────────────────────
-function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, newsData = {}) {
+function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, newsData = {}, externalNews = []) {
   const today = new Date().toISOString().split('T')[0];
 
   const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
@@ -784,6 +829,12 @@ ${events || '  (none)'}
 These are the most recent church announcements and highlights — summarise them conversationally when asked.
 ${newsItems || '  (none available)'}
 
+## Latest World News Headlines (Bite-size — BBC, Reuters, The Guardian)
+Share these as brief, balanced summaries when members ask about current events.
+${externalNews.length
+  ? externalNews.map(n => `  • [${n.date}] ${n.source} — **${n.headline}**: ${n.summary}`).join('\n')
+  : '  (live feed not yet loaded)'}
+
 ---
 
 ## Recent Attendance Records
@@ -798,9 +849,10 @@ ${attendanceSummary || '  (none loaded)'}
 4. **Schedule questions**: Be specific — name the date, person, and role. If the date is past, say so.
 5. **BOTR questions**: You know all sector leaders, satellite churches, and the mission target.
 6. **Outside FLCC**: You can answer any question — theology, Bible, Christianity, general knowledge, prayer, devotion topics, etc.
-7. **News**: When sharing church news, give bite-size summaries — one or two sentences per item. Keep it conversational and upbeat.
-8. **Honesty**: If something about FLCC isn't in your data, say so and suggest contacting the ministry head.
-9. **Formatting**: Use markdown (bold, lists, blockquotes for Bible verses) when it improves readability.`;
+7. **Church news**: When sharing church news, give bite-size summaries — one or two sentences per item. Keep it conversational and upbeat.
+8. **World news**: Share world headlines as short, balanced, factual summaries. You may add a brief faith-based reflection if appropriate, but never inject opinion or bias.
+9. **Honesty**: If something about FLCC isn't in your data, say so and suggest contacting the ministry head.
+10. **Formatting**: Use markdown (bold, lists, blockquotes for Bible verses) when it improves readability.`;
 }
 
 // ─── Markdown renderer ────────────────────────────────────────────────────────────────────────────────
@@ -872,15 +924,16 @@ function App() {
   const [model,  setModel]      = useState(() => localStorage.getItem(STORAGE_KEY_MODEL) || MODELS[0].id);
   const [showKeyModal, setShowKeyModal] = useState(false);
 
-  const [appData,    setAppData]    = useState(null);
-  const [newsData,   setNewsData]   = useState(null);
-  const [liveStats,  setLiveStats]  = useState(null);
-  const [dataError,  setDataError]  = useState(null);
+  const [appData,       setAppData]       = useState(null);
+  const [newsData,      setNewsData]      = useState(null);
+  const [externalNews,  setExternalNews]  = useState([]);
+  const [liveStats,     setLiveStats]     = useState(null);
+  const [dataError,     setDataError]     = useState(null);
 
   const systemPrompt = useMemo(() => {
     if (!appData) return null;
-    return buildSystemPrompt(appData.data, appData.music, appData.prayer, appData.equip, appData.botrData, appData.attendance, liveStats, newsData || {});
-  }, [appData, liveStats, newsData]);
+    return buildSystemPrompt(appData.data, appData.music, appData.prayer, appData.equip, appData.botrData, appData.attendance, liveStats, newsData || {}, externalNews);
+  }, [appData, liveStats, newsData, externalNews]);
 
   const [messages,       setMessages]       = useState([]);
   const [input,          setInput]          = useState('');
@@ -907,8 +960,10 @@ function App() {
     ]).then(([data, music, prayer, equip, botrData, attendance, news]) => {
       setAppData({ data, music, prayer, equip, botrData, attendance });
       setNewsData(news);
-      // Non-blocking: fetch live BOTR standings from Google Sheets
+      // Non-blocking: live BOTR standings from Google Sheets
       fetchBotrLiveStats().then(stats => { if (stats) setLiveStats(stats); }).catch(() => {});
+      // Non-blocking: live world news from BBC / Reuters / The Guardian via RSS
+      fetchAllExternalNews().then(items => { if (items.length) setExternalNews(items); }).catch(() => {});
     }).catch(() => {
       setDataError('Could not load church data. Please open this file from a web server.');
     });
@@ -1197,6 +1252,34 @@ function App() {
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+
+              {/* World News Feed */}
+              {externalNews.length > 0 && (
+                <div>
+                  <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'var(--ink-subtle)'}}>
+                    World News
+                  </div>
+                  <div className="newsfeed-scroll">
+                    {externalNews.map((item, i) => (
+                      <button
+                        key={item.id || i}
+                        className="news-card"
+                        onClick={() => sendMessage(`Summarise this news for me: ${item.headline}`)}
+                        disabled={!apiKey || !appData}
+                      >
+                        <div>
+                          <span className="news-badge" style={{background:'#F1F5F9', color:'#475569'}}>
+                            {item.sourceIcon} {item.source}
+                          </span>
+                        </div>
+                        <div className="news-headline">{item.headline}</div>
+                        <div className="news-summary">{item.summary}</div>
+                        <div className="news-date">{item.date}</div>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
