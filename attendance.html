@@ -269,24 +269,27 @@ function getSessionSummary(session, totalMembers) {
 }
 
 function computeCareFlags(sessions, members) {
-  // Pastoral care only applies to Friday and Sunday worship services
+  // Pastoral care: Friday+Sunday for all members; Sunday-only members checked against Sunday sessions only
   const worshipSessions = [...sessions]
     .filter(s => PASTORAL_CARE_SERVICES.has(s.service))
     .sort((a,b) => b.date.localeCompare(a.date));
   const recent = worshipSessions.slice(0, 8);
   if (recent.length < 3) return [];
   return members.filter(w=>w.status==='active').reduce((flags,m)=>{
-    const statuses = recent.map(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status||null);
+    const memberRecent = m.sundayOnly ? recent.filter(s=>s.service==='Sunday') : recent;
+    if (memberRecent.length < 3) return flags;
+    const statuses = memberRecent.map(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status||null);
     let streak=0, maxStreak=0;
     for (const st of statuses) {
       if (st !== 'present') { streak++; maxStreak=Math.max(maxStreak,streak); }
       else streak=0;
     }
     if (maxStreak >= 3) {
-      const lastPresent = recent.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
-      const allWorshipSessions = worshipSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
-      const pct = allWorshipSessions.length
-        ? Math.round(allWorshipSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / allWorshipSessions.length * 100)
+      const lastPresent = memberRecent.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
+      const relevantSessions = (m.sundayOnly ? worshipSessions.filter(s=>s.service==='Sunday') : worshipSessions)
+        .filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
+      const pct = relevantSessions.length
+        ? Math.round(relevantSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / relevantSessions.length * 100)
         : 0;
       const level = maxStreak >= 5 ? 'priority' : 'gentle';
       flags.push({
@@ -296,7 +299,7 @@ function computeCareFlags(sessions, members) {
         lastPresent:   lastPresent?.date || null,
         lastService:   lastPresent?.service || null,
         overallPct:    pct,
-        totalSessions: allWorshipSessions.length,
+        totalSessions: relevantSessions.length,
       });
     }
     return flags;
@@ -472,16 +475,24 @@ function TodayTab({ members, state, dispatch, schedule }) {
   const doneTimer = useRef(null);
 
   const todayVisitors = state.customMembers.filter(m=>m.sessionDate===today||m.permanent);
-  const allMembers = useMemo(()=>[...members,...todayVisitors],[members,todayVisitors]);
+  const currentService = session?.service;
+  const allMembers = useMemo(()=>{
+    const base = (currentService && currentService !== 'Sunday')
+      ? members.filter(m => !m.sundayOnly)
+      : members;
+    return [...base, ...todayVisitors];
+  },[members, todayVisitors, currentService]);
 
   // Auto-detect service
   const detectedService = useMemo(()=>detectTodayService(schedule),[schedule]);
 
   const startSession = serviceKey => {
-    // Warn if a session for this exact service type already has records
+    const sessionList = serviceKey !== 'Sunday'
+      ? [...members.filter(m => !m.sundayOnly), ...todayVisitors]
+      : [...members, ...todayVisitors];
     const dup = state.sessions.find(s=>s.date===today && s.service===serviceKey && (s.records||[]).length>0);
     if (dup) {
-      const sum = getSessionSummary(dup, allMembers.length);
+      const sum = getSessionSummary(dup, sessionList.length);
       if (!confirm(`A ${dup.serviceLabel} session for today already has ${sum.present} present recorded.\n\nContinue and start a duplicate session?`)) return;
     }
     const svcLabel = SERVICE_TYPES.find(s=>s.key===serviceKey)?.label || serviceKey;
@@ -489,7 +500,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
       id: uid(), date: today, service: serviceKey, serviceLabel: svcLabel,
       recordedBy: state.meta.stewardName || 'Attendance Steward',
       createdAt: new Date().toISOString(),
-      totalMembers: allMembers.length,
+      totalMembers: sessionList.length,
       records: [], synced: false,
     };
     setSession(sess);
@@ -1195,6 +1206,7 @@ function MembersTab({ members, state, dispatch }) {
                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                   <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.fullName||m.name}</div>
                   {isCustom && <span className="pill" style={{ background:ATT_ACCENT+'20', color:ATT_ACCENT, fontSize:'0.6rem', padding:'1px 5px' }}>custom</span>}
+                  {m.sundayOnly && <span className="pill" style={{ background:'#7C3AED20', color:'#7C3AED', fontSize:'0.6rem', padding:'1px 5px' }}>Sun only</span>}
                 </div>
                 <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{m.ministry||'Ministry'}</div>
               </div>
@@ -2043,22 +2055,22 @@ function App() {
       .catch(()=>setDataLoaded(true));
   },[]);
 
-  // Members list = data.json workers + custom permanent members
+  // Members list = data.json workers (deduplicated by name) + sundayOnly flag
   const members = useMemo(()=>{
-    const base = (mainData?.workers||[])
-      // Only individual members — exclude families, pairs, food-rotation combos
+    const seen = new Set();
+    return (mainData?.workers||[])
       .filter(w => w.status === 'active' && w.type === 'individual')
+      .filter(w => { const k = w.name.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
       .map(w => ({
-        id:       w.id,
-        // Store plain name (no title) for display; title kept separately
-        name:     w.name,
-        title:    w.title || '',
-        fullName: w.title ? `${w.title} ${w.name}` : w.name,
-        type:     'individual',
-        status:   'active',
-        ministry: deriveMinistry(w),
+        id:         w.id,
+        name:       w.name,
+        title:      w.title || '',
+        fullName:   w.title ? `${w.title} ${w.name}` : w.name,
+        type:       'individual',
+        status:     'active',
+        ministry:   deriveMinistry(w),
+        sundayOnly: w.sundayOnly || false,
       }));
-    return base;
   },[mainData]);
 
   const schedule = mainData?.schedule || [];

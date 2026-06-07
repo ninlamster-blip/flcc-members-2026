@@ -112,7 +112,7 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "08-19"
     },
     {
       "id": "sis-10",
@@ -168,7 +168,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "",
+      "sundayOnly": true
     },
     {
       "id": "sis-15",
@@ -230,7 +231,7 @@
         "preacher"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "05-04"
     },
     {
       "id": "sis-20",
@@ -354,7 +355,8 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "",
+      "sundayOnly": true
     },
     {
       "id": "ptr-01",
@@ -612,28 +614,6 @@
       "birthday": ""
     },
     {
-      "id": "w-1778531822050",
-      "name": "Christine Santos",
-      "title": "Sis.",
-      "type": "individual",
-      "eligibleRoles": [
-        "presider"
-      ],
-      "status": "active",
-      "birthday": "08-19"
-    },
-    {
-      "id": "w-1778531881868",
-      "name": "Irene Sabangan",
-      "title": "Sis.",
-      "type": "individual",
-      "eligibleRoles": [
-        "preacher"
-      ],
-      "status": "active",
-      "birthday": "05-04"
-    },
-    {
       "id": "w-1780148789141",
       "name": "C/O Fellowship",
       "title": "",
@@ -650,6 +630,96 @@
         "foodInCharge"
       ],
       "status": "active"
+    },
+    {
+      "id": "sun-01",
+      "name": "Nancy Aman",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-02",
+      "name": "Sheena",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-03",
+      "name": "Alvin",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-04",
+      "name": "Arnel",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-05",
+      "name": "Shane",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-06",
+      "name": "Sherwin",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-07",
+      "name": "Rodel",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-08",
+      "name": "Jen Tanlangco",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
+    },
+    {
+      "id": "sun-09",
+      "name": "Jennifer Lopez",
+      "title": "",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true
     }
   ],
   "themes": {
