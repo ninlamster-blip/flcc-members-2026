@@ -519,8 +519,9 @@ function fetchBotrLiveStats() {
   });
 }
 
-// ─── External News: worker /news (primary) + rss2json fallback ───────────────
-const RSS2JSON_API = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
+// ─── External News: 3-tier fallback ──────────────────────────────────────────
+const RSS2JSON_API   = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
+const ALLORIGINS_API = 'https://api.allorigins.win/get?url=';
 
 const RSS_FEED_URLS = [
   { name: 'BBC News',     icon: '🌐', url: 'https://feeds.bbci.co.uk/news/rss.xml'  },
@@ -543,43 +544,54 @@ function stripHtml(str) {
     .trim();
 }
 
+// Tier 2 — rss2json.com (browser → rss2json)
 async function fetchOneFeedViaRss2Json(feed) {
   const url = RSS2JSON_API + encodeURIComponent(feed.url);
-  const res = await fetch(url, { signal: safeAbortSignal(8000) });
-  if (!res.ok) throw new Error('feed-error');
+  const res = await fetch(url, { signal: safeAbortSignal(9000) });
+  if (!res.ok) throw new Error('r2j-error');
   const data = await res.json();
-  if (data.status !== 'ok' || !data.items?.length) throw new Error('feed-empty');
+  if (data.status !== 'ok' || !data.items?.length) throw new Error('r2j-empty');
   return data.items.slice(0, 5).map(item => {
     const raw = stripHtml(item.description || '');
     const summary = raw.length > 130 ? raw.slice(0, 130).trimEnd() + '…' : raw;
-    return {
-      id: item.guid || item.link || item.title,
-      headline: stripHtml(item.title),
-      summary,
-      date: item.pubDate ? item.pubDate.slice(0, 10) : '',
-      source: feed.name,
-      sourceIcon: feed.icon,
-      link: item.link || '',
-    };
+    return { id: item.guid||item.link||item.title, headline: stripHtml(item.title),
+      summary, date: (item.pubDate||'').slice(0,10), source: feed.name, sourceIcon: feed.icon, link: item.link||'' };
   });
 }
 
+// Tier 3 — allorigins.win CORS proxy + browser DOMParser
+async function fetchOneFeedViaDOMParser(feed) {
+  const res = await fetch(ALLORIGINS_API + encodeURIComponent(feed.url), { signal: safeAbortSignal(10000) });
+  if (!res.ok) throw new Error('ao-error');
+  const { contents } = await res.json();
+  if (!contents) throw new Error('ao-empty');
+  const doc = new DOMParser().parseFromString(contents, 'application/xml');
+  return Array.from(doc.querySelectorAll('item')).slice(0, 5).map(el => {
+    const txt = tag => el.querySelector(tag)?.textContent?.trim() || '';
+    const desc = stripHtml(txt('description'));
+    return { id: txt('guid')||txt('link')||txt('title'), headline: stripHtml(txt('title')),
+      summary: desc.length > 130 ? desc.slice(0,130).trimEnd()+'…' : desc,
+      date: txt('pubDate').slice(0,10), source: feed.name, sourceIcon: feed.icon, link: txt('link') };
+  }).filter(i => i.headline);
+}
+
 async function fetchAllExternalNews() {
-  // Primary: worker's /news endpoint — server-side RSS via rss2json, cached at edge
+  // Tier 1: Cloudflare Worker /news — server-side rss2json, cached 5 min at edge
   try {
-    const res = await fetch('./news', { signal: safeAbortSignal(8000) });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.items?.length > 0) return data.items;
-    }
+    const res = await fetch('./news?t=' + Date.now(), { signal: safeAbortSignal(8000) });
+    if (res.ok) { const d = await res.json(); if (d.items?.length > 0) return d.items; }
   } catch {}
 
-  // Fallback: call rss2json directly from browser
-  const settled = await Promise.allSettled(RSS_FEED_URLS.map(fetchOneFeedViaRss2Json));
-  return settled
-    .filter(r => r.status === 'fulfilled')
-    .flatMap(r => r.value)
-    .slice(0, 15);
+  // Tier 2: rss2json.com directly from browser
+  try {
+    const s = await Promise.allSettled(RSS_FEED_URLS.map(fetchOneFeedViaRss2Json));
+    const items = s.filter(r => r.status === 'fulfilled').flatMap(r => r.value);
+    if (items.length > 0) return items.slice(0, 15);
+  } catch {}
+
+  // Tier 3: allorigins.win + DOMParser (different proxy, browser-native XML parsing)
+  const s = await Promise.allSettled(RSS_FEED_URLS.map(fetchOneFeedViaDOMParser));
+  return s.filter(r => r.status === 'fulfilled').flatMap(r => r.value).slice(0, 15);
 }
 
 // ─── System prompt ────────────────────────────────────────────────────────────────────────────────
