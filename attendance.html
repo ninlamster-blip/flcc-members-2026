@@ -269,39 +269,60 @@ function getSessionSummary(session, totalMembers) {
 }
 
 function computeCareFlags(sessions, members) {
-  // Pastoral care: Friday+Sunday for all members; Sunday-only members checked against Sunday sessions only
   const worshipSessions = [...sessions]
     .filter(s => PASTORAL_CARE_SERVICES.has(s.service))
     .sort((a,b) => b.date.localeCompare(a.date));
-  const recent = worshipSessions.slice(0, 8);
-  if (recent.length < 3) return [];
+  const recentFridays = worshipSessions.filter(s=>s.service==='Friday').slice(0, 8);
+  const recentSundays = worshipSessions.filter(s=>s.service==='Sunday').slice(0, 8);
+
+  if (worshipSessions.length < 3) return [];
+
+  function calcStreak(sessionList, memberId) {
+    let streak = 0, max = 0;
+    for (const s of sessionList) {
+      const st = (s.records||[]).find(r=>r.memberId===memberId)?.status || null;
+      if (st !== 'present') { streak++; max = Math.max(max, streak); } else streak = 0;
+    }
+    return max;
+  }
+
   return members.filter(w=>w.status==='active').reduce((flags,m)=>{
-    const memberRecent = m.sundayOnly ? recent.filter(s=>s.service==='Sunday') : recent;
-    if (memberRecent.length < 3) return flags;
-    const statuses = memberRecent.map(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status||null);
-    let streak=0, maxStreak=0;
-    for (const st of statuses) {
-      if (st !== 'present') { streak++; maxStreak=Math.max(maxStreak,streak); }
-      else streak=0;
+    let maxStreak = 0, missedService = null;
+
+    if (m.sundayOnly) {
+      // Sunday-only members: only Sunday sessions count
+      if (recentSundays.length < 3) return flags;
+      maxStreak = calcStreak(recentSundays, m.id);
+      missedService = 'Sunday';
+    } else {
+      // Regular members: track Friday and Sunday streaks independently.
+      // Flag if either reaches 3 — someone who attends Sunday but skips every
+      // Friday (or vice versa) should still receive pastoral follow-up.
+      const fridayStreak = recentFridays.length >= 3 ? calcStreak(recentFridays, m.id) : 0;
+      const sundayStreak = recentSundays.length >= 3 ? calcStreak(recentSundays, m.id) : 0;
+      if (fridayStreak >= sundayStreak) { maxStreak = fridayStreak; missedService = 'Friday'; }
+      else                              { maxStreak = sundayStreak; missedService = 'Sunday'; }
     }
-    if (maxStreak >= 3) {
-      const lastPresent = memberRecent.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
-      const relevantSessions = (m.sundayOnly ? worshipSessions.filter(s=>s.service==='Sunday') : worshipSessions)
-        .filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
-      const pct = relevantSessions.length
-        ? Math.round(relevantSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / relevantSessions.length * 100)
-        : 0;
-      const level = maxStreak >= 5 ? 'priority' : 'gentle';
-      flags.push({
-        member:        m,
-        streak:        maxStreak,
-        level,
-        lastPresent:   lastPresent?.date || null,
-        lastService:   lastPresent?.service || null,
-        overallPct:    pct,
-        totalSessions: relevantSessions.length,
-      });
-    }
+
+    if (maxStreak < 3) return flags;
+
+    const scopedSessions = worshipSessions.filter(s=>s.service===missedService);
+    const lastPresent = scopedSessions.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
+    const recorded = worshipSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
+    const pct = recorded.length
+      ? Math.round(recorded.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / recorded.length * 100)
+      : 0;
+
+    flags.push({
+      member:        m,
+      streak:        maxStreak,
+      level:         maxStreak >= 5 ? 'priority' : 'gentle',
+      lastPresent:   lastPresent?.date || null,
+      lastService:   missedService,
+      overallPct:    pct,
+      totalSessions: recorded.length,
+      missedService,
+    });
     return flags;
   }, []).sort((a,b) => b.streak - a.streak);
 }
@@ -1810,7 +1831,7 @@ function CareTab({ state, members }) {
           Members absent for <strong>3 or more consecutive sessions</strong> are flagged here. Strictly for pastoral follow-up — not visible to general members.
         </p>
         <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'5px 12px',borderRadius:999,background:'#EFF6FF',border:'1px solid #BAE6FD',fontSize:'0.75rem',color:'#0369A1',fontWeight:500,lineHeight:1.5}}>
-          ✝️ Based on <strong style={{margin:'0 3px'}}>Friday &amp; Sunday worship services only</strong> — Prayer Meetings, Training, Fellowship, and other gatherings do not affect this flag
+          ✝️ <strong style={{margin:'0 3px'}}>Friday and Sunday tracked separately</strong> — missing 3+ consecutive Fridays OR 3+ consecutive Sundays triggers a flag, even if the other service is attended
         </div>
       </div>
 
