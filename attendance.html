@@ -334,6 +334,44 @@ function getMemberAttendancePct(memberId, sessions) {
   return Math.round((present/relevant.length)*100);
 }
 
+// ─── GitHub publish helpers (shared by SettingsTab and App auto-sync) ──────────
+function buildAttendanceJSON(state) {
+  const sorted = [...state.sessions].sort((a,b) => b.date.localeCompare(a.date));
+  return {
+    meta: {
+      churchName:    state.meta.churchName || 'FLCC - Farwaniya 1',
+      publishedAt:   new Date().toISOString(),
+      totalSessions: sorted.length,
+    },
+    sessions: sorted.map(s => ({
+      id:           s.id,
+      date:         s.date,
+      service:      s.service,
+      serviceLabel: s.serviceLabel || s.service,
+      summary:      getSessionSummary(s),
+      records:      (s.records || []).map(r => ({ memberId: r.memberId, memberName: r.memberName, status: r.status })),
+    })),
+  };
+}
+
+async function ghPublishAttendance(token, state) {
+  if (!token || !state.sessions.length) return;
+  const content = JSON.stringify(buildAttendanceJSON(state), null, 2);
+  const encoded = btoa(unescape(encodeURIComponent(content)));
+  const hdrs = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  const getResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, { headers: hdrs });
+  const sha = getResp.ok ? (await getResp.json())?.sha : undefined;
+  const putResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+    method: 'PUT', headers: hdrs,
+    body: JSON.stringify({
+      message: `Update attendance.json — ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`,
+      content: encoded,
+      ...(sha ? { sha } : {}),
+    }),
+  });
+  if (!putResp.ok) { const e = await putResp.json().catch(()=>({})); throw new Error(e.message||`HTTP ${putResp.status}`); }
+}
+
 function detectTodayService(schedule) {
   const today = todayISO();
   const dow   = dayOfWeekStr(today);
@@ -714,16 +752,6 @@ function TodayTab({ members, state, dispatch, schedule }) {
           ))
         }
 
-        {/* Big Sync button — always visible at bottom */}
-        {session && state.meta.gasUrl && (
-          <SyncButton session={session} state={state} dispatch={dispatch} />
-        )}
-        {session && !state.meta.gasUrl && (
-          <div style={{ margin:'20px 16px', padding:'14px 16px', borderRadius:12, background:'#F0F9FF', border:'1px solid #BAE6FD', textAlign:'center' }}>
-            <div style={{ fontSize:'0.8125rem', color:'#0369A1', marginBottom:8 }}>Set up Google Sheets sync in Settings to save attendance to the cloud.</div>
-            <div style={{ fontSize:'0.75rem', color:ATT_ACCENT }}>All data is already saved on this device. ✓</div>
-          </div>
-        )}
         <div style={{ height:100 }} />
       </div>
 
@@ -1255,7 +1283,7 @@ function MembersTab({ members, state, dispatch }) {
 }
 
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
-function SettingsTab({ state, dispatch }) {
+function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus }) {
   const m = state.meta;
   const set = payload => dispatch({ type:'UPDATE_META', payload });
   const [gasGuide, setGasGuide] = useState(false);
@@ -1294,42 +1322,7 @@ function SettingsTab({ state, dispatch }) {
     r.readAsText(f);
   };
 
-  const buildAttendanceJSON = () => {
-    const sorted = [...state.sessions].sort((a,b) => b.date.localeCompare(a.date));
-    return {
-      meta: {
-        churchName: m.churchName || 'FLCC - Farwaniya 1',
-        publishedAt: new Date().toISOString(),
-        totalSessions: sorted.length,
-      },
-      sessions: sorted.map(s => ({
-        id:           s.id,
-        date:         s.date,
-        service:      s.service,
-        serviceLabel: s.serviceLabel || s.service,
-        summary:      getSessionSummary(s),
-        records:      (s.records || []).map(r => ({
-          memberId:   r.memberId,
-          memberName: r.memberName,
-          status:     r.status,
-        })),
-      })),
-    };
-  };
-
-  const publishAttendanceJSON = () => {
-    const out  = buildAttendanceJSON();
-    const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = 'attendance.json'; a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const [ghToken, setGhToken]     = useState(() => { try { return localStorage.getItem(GH_TOKEN_KEY)||''; } catch { return ''; } });
   const [ghTokenInput, setGhTokenInput] = useState('');
-  const [ghPublishing, setGhPublishing] = useState(false);
-  const [ghStatus, setGhStatus]   = useState(''); // 'ok' | 'err' | ''
 
   const saveGhToken = () => {
     const v = ghTokenInput.trim();
@@ -1342,38 +1335,13 @@ function SettingsTab({ state, dispatch }) {
     setGhToken(''); try { localStorage.removeItem(GH_TOKEN_KEY); } catch {}
   };
 
-  const publishToGitHub = async () => {
-    if (!ghToken) { alert('Enter your GitHub token first.'); return; }
-    if (!state.sessions.length) { alert('No sessions to publish yet.'); return; }
-    setGhPublishing(true); setGhStatus('');
-    try {
-      const content = JSON.stringify(buildAttendanceJSON(), null, 2);
-      const encoded = btoa(unescape(encodeURIComponent(content)));
-      // Get current file SHA (needed for updates)
-      const getResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
-        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json' },
-      });
-      const existing = getResp.ok ? await getResp.json() : null;
-      const sha = existing?.sha;
-      // Commit the new file
-      const putResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: `Update attendance.json — ${new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`,
-          content: encoded,
-          ...(sha ? { sha } : {}),
-        }),
-      });
-      if (!putResp.ok) {
-        const err = await putResp.json().catch(() => ({}));
-        throw new Error(err.message || `HTTP ${putResp.status}`);
-      }
-      setGhStatus('ok'); setTimeout(() => setGhStatus(''), 4000);
-    } catch (e) {
-      alert(`Publish failed: ${e.message}`);
-      setGhStatus('err'); setTimeout(() => setGhStatus(''), 4000);
-    } finally { setGhPublishing(false); }
+  const publishAttendanceJSON = () => {
+    const out  = buildAttendanceJSON(state);
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'attendance.json'; a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Weekly summary for Ptr. Justin — formatted for Messenger
@@ -1579,29 +1547,27 @@ function SettingsTab({ state, dispatch }) {
       <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#16A34A' }}>
         <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#16A34A' }}>Auto-Sync to Members Dashboard</div>
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:12, lineHeight:1.5 }}>
-          One tap publishes attendance directly to GitHub — members see their history instantly. No manual download or upload needed.
+          Attendance uploads to GitHub automatically a few seconds after each tap — no button needed.
         </p>
         {ghToken ? (
           <div>
-            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12, padding:'8px 12px', borderRadius:10, background:'#F0FDF4', border:'1px solid #BBF7D0' }}>
-              <div className="sync-dot sync-dot-ok" />
-              <span style={{ fontSize:'0.8125rem', color:'#16A34A', fontWeight:500 }}>GitHub token connected</span>
-              <button onClick={clearGhToken} style={{ marginLeft:'auto', fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer' }}>Remove</button>
+            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:10,
+              background: syncStatus==='error' ? '#FEF2F2' : '#F0FDF4',
+              border: `1px solid ${syncStatus==='error' ? '#FECACA' : '#BBF7D0'}` }}>
+              <div className={`sync-dot ${syncStatus==='syncing'?'sync-dot-pend':syncStatus==='error'?'sync-dot-err':'sync-dot-ok'}`} />
+              <span style={{ fontSize:'0.8125rem', fontWeight:500, color: syncStatus==='error'?'#DC2626':'#16A34A', flex:1 }}>
+                {syncStatus==='syncing' ? 'Uploading to dashboard…'
+                  : syncStatus==='saved'  ? '✓ Dashboard updated'
+                  : syncStatus==='error'  ? '⚠ Upload failed — will retry on next change'
+                  : '✓ Auto-sync active — uploads after every service'}
+              </span>
+              <button onClick={clearGhToken} style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>Remove</button>
             </div>
-            <button
-              className="btn"
-              style={{ width:'100%', justifyContent:'center', padding:'13px', fontSize:'0.9375rem', fontWeight:700, borderRadius:12, background: ghStatus==='ok'?'#16A34A': ghStatus==='err'?'#DC2626':'#16A34A', color:'white' }}
-              onClick={publishToGitHub}
-              disabled={ghPublishing || !state.sessions.length}
-            >
-              {ghPublishing ? '↻ Publishing…' : ghStatus==='ok' ? '✓ Published! Members can see it now' : ghStatus==='err' ? '⚠ Failed — try again' : '☁ Publish attendance to GitHub'}
-            </button>
-            {!state.sessions.length && <div style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', marginTop:6, textAlign:'center' }}>Record at least one session first.</div>}
           </div>
         ) : (
           <div>
             <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.6 }}>
-              <strong>One-time setup:</strong> Create a free GitHub Personal Access Token (fine-grained), give it <em>Contents: Read &amp; write</em> permission for this repo only, then paste it below.
+              <strong>One-time setup:</strong> Create a GitHub Personal Access Token (fine-grained) with <em>Contents: Read &amp; write</em> for this repo, then paste it below. After that, everything uploads automatically.
             </div>
             <ol style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', paddingLeft:18, lineHeight:1.9, marginBottom:12 }}>
               <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens → Fine-grained tokens</li>
@@ -1647,69 +1613,6 @@ function SettingsTab({ state, dispatch }) {
   );
 }
 
-// ─── SYNC BUTTON — big, simple, used inside TodayTab ─────────────────────────
-function SyncButton({ session, state, dispatch }) {
-  const [syncing,  setSyncing]  = useState(false);
-  const [done,     setDone]     = useState(false);
-  const [err,      setErr]      = useState(false);
-
-  const alreadySynced = session?.synced;
-  const summary = getSessionSummary(session, null);
-
-  const syncNow = async () => {
-    if (!state.meta.gasUrl) return;
-    setSyncing(true); setDone(false); setErr(false);
-    try {
-      await fetch(state.meta.gasUrl, {
-        method: 'POST', mode: 'no-cors',
-        body: JSON.stringify({ action: 'logAttendance', session }),
-      });
-      dispatch({ type:'UPSERT_SESSION', session:{ ...session, synced:true, syncedAt:new Date().toISOString() } });
-      dispatch({ type:'UPDATE_META', payload:{ lastSync: new Date().toISOString() } });
-      setDone(true);
-    } catch {
-      setErr(true);
-    }
-    setSyncing(false);
-    setTimeout(() => { setDone(false); setErr(false); }, 4000);
-  };
-
-  return (
-    <div style={{ margin:'20px 16px' }}>
-      <button
-        onClick={syncNow}
-        disabled={syncing}
-        style={{
-          width: '100%', padding: '18px', borderRadius: 16,
-          background: done ? '#16A34A' : err ? '#DC2626' : alreadySynced ? '#F0FDF4' : ATT_ACCENT,
-          color: alreadySynced && !done && !err ? ATT_ACCENT : 'white',
-          border: `2px solid ${alreadySynced && !done && !err ? '#BAE6FD' : 'transparent'}`,
-          cursor: syncing ? 'wait' : 'pointer',
-          fontSize: '1.0625rem', fontWeight: 700,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          transition: 'all .25s cubic-bezier(.34,1.56,.64,1)',
-          boxShadow: done || alreadySynced ? 'none' : `0 6px 24px rgba(2,132,199,0.35)`,
-        }}
-      >
-        <span style={{ fontSize: '1.25rem' }}>
-          {syncing ? '↻' : done ? '✓' : err ? '⚠' : '☁'}
-        </span>
-        <span>
-          {syncing ? 'Syncing to Google Sheets…'
-            : done  ? 'Synced successfully!'
-            : err   ? 'Sync failed — tap to retry'
-            : alreadySynced ? `Already synced · ${summary.present} present, ${summary.absent} absent`
-            : `Sync to Google Sheets · ${summary.present} present, ${summary.absent} absent`}
-        </span>
-      </button>
-      {state.meta.lastSync && !done && (
-        <div style={{ textAlign:'center', fontSize:'0.6875rem', color:'var(--ink-subtle)', marginTop:8 }}>
-          Last synced: {new Date(state.meta.lastSync).toLocaleString()}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── CARE TAB — Full Pastoral Follow-Up Dashboard ────────────────────────────
 
@@ -2064,9 +1967,32 @@ const TABS = [
 
 function App() {
   const [state, dispatch] = useReducer(reducer, null, ()=>migrate(loadState())||defaultState());
-  const [tab,       setTab]     = useState('today');
+  const [tab,       setTab]      = useState('today');
   const [mainData,  setMainData] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [ghToken, setGhToken]    = useState(() => { try { return localStorage.getItem(GH_TOKEN_KEY)||''; } catch { return ''; } });
+  const [syncStatus, setSyncStatus] = useState(''); // '' | 'syncing' | 'saved' | 'error'
+  const syncTimer  = useRef(null);
+  const stateRef   = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
+
+  // Auto-publish to GitHub 5 s after the last attendance change
+  useEffect(() => {
+    if (!ghToken || !state.sessions.length) return;
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(async () => {
+      setSyncStatus('syncing');
+      try {
+        await ghPublishAttendance(ghToken, stateRef.current);
+        setSyncStatus('saved');
+        setTimeout(() => setSyncStatus(''), 4000);
+      } catch {
+        setSyncStatus('error');
+        setTimeout(() => setSyncStatus(''), 8000);
+      }
+    }, 5000);
+    return () => clearTimeout(syncTimer.current);
+  }, [state.sessions, ghToken]);
 
   // Fetch data.json for workers + schedule
   useEffect(()=>{
@@ -2096,7 +2022,6 @@ function App() {
 
   const schedule = mainData?.schedule || [];
   const todayStr = todayISO();
-  const unsynced = state.sessions.filter(s=>!s.synced).length;
 
   return (
     <div style={{ minHeight:'100vh', background:'var(--bg)' }}>
@@ -2116,7 +2041,9 @@ function App() {
             <div style={{ textAlign:'right', fontSize:'0.75rem', color:'var(--ink-subtle)' }}>
               {state.meta.stewardName && <div style={{ fontWeight:500, color:'var(--ink-muted)' }}>{state.meta.stewardName}</div>}
               <div>{todayStr}</div>
-              {unsynced>0 && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#D97706', fontWeight:500 }}>{unsynced} unsynced</span></div>}
+              {syncStatus==='syncing' && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#D97706', fontWeight:500 }}>Saving…</span></div>}
+              {syncStatus==='saved'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-ok"/><span style={{ color:'#16A34A', fontWeight:500 }}>Saved ✓</span></div>}
+              {syncStatus==='error'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-err"/><span style={{ color:'#DC2626', fontWeight:500 }}>Sync error</span></div>}
             </div>
           </div>
           <nav style={{ display:'flex', overflowX:'auto', scrollbarWidth:'none' }}>
@@ -2149,7 +2076,7 @@ function App() {
           {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
           {tab==='care'      && <CareTab      state={state} members={members} />}
           {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
-          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} />}
+          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} ghToken={ghToken} setGhToken={setGhToken} syncStatus={syncStatus} />}
         </div>
       </main>
 
