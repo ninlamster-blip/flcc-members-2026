@@ -1275,7 +1275,7 @@ function App() {
     } finally {
       setIsStreaming(false);
     }
-  }, [messages, input, apiKey, model, appData, isStreaming]);
+  }, [messages, input, apiKey, proxyUrl, model, appData, isStreaming]);
 
   const handleKeyDown = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
