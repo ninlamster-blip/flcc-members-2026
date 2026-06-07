@@ -594,8 +594,98 @@ async function fetchAllExternalNews() {
   return s.filter(r => r.status === 'fulfilled').flatMap(r => r.value).slice(0, 15);
 }
 
+// ─── Generate FLCC news from live data ───────────────────────────────────────
+function generateFlccNews(data, prayer, botrData, liveStats) {
+  const today = new Date().toISOString().split('T')[0];
+  const yearMonth = today.slice(0, 7); // YYYY-MM
+  const items = [];
+
+  const workersById = Object.fromEntries((data.workers || []).map(w => [w.id, w]));
+  const wn = id => { const w = workersById[id]; return w ? (w.title ? w.title + ' ' : '') + w.name : ''; };
+
+  // 1. Current month theme
+  const theme = (data.themes || {})[yearMonth];
+  if (theme) {
+    const monthLabel = new Date(yearMonth + '-01').toLocaleString('en', { month: 'long', year: 'numeric' });
+    items.push({
+      id: 'theme-' + yearMonth, date: today, category: 'announcement', pinned: true,
+      headline: `${monthLabel} Theme: ${theme}`,
+      summary: `This month's theme is "${theme}". Come ready to grow in God's Word together.`,
+    });
+  }
+
+  // 2. Next 2 upcoming services with real member names
+  (data.schedule || [])
+    .filter(s => s.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 2)
+    .forEach(s => {
+      const r = s.roles || {};
+      const preacher = r.preacher ? wn(r.preacher) : '';
+      const presider  = r.presider  ? wn(r.presider)  : '';
+      const svcLabel  = s.service === 'sunday' ? 'Sunday Service' : s.service === 'friday' ? 'Friday Service' : s.service;
+      const parts = [preacher ? `Preacher: ${preacher}` : null, presider ? `Presider: ${presider}` : null].filter(Boolean);
+      items.push({
+        id: `service-${s.date}`, date: s.date, category: s.isSpecial ? 'celebration' : 'announcement', pinned: false,
+        headline: `${svcLabel} · ${s.date}${s.isSpecial ? ' ★' : ''}`,
+        summary: parts.length ? parts.join(' · ') : 'Assignments coming soon — check the schedule tab.',
+      });
+    });
+
+  // 3. Upcoming events (handle yearly recurrence)
+  const futureDate = new Date(); futureDate.setDate(futureDate.getDate() + 60);
+  const futureCutoff = futureDate.toISOString().split('T')[0];
+  const seenEvents = new Set();
+  (data.events || []).forEach(e => {
+    let eventDate = e.date;
+    if (e.recurrence === 'yearly' && eventDate < today) {
+      eventDate = today.slice(0, 5) + e.date.slice(5); // same MM-DD, current year
+      if (eventDate < today) eventDate = (parseInt(today.slice(0,4)) + 1) + '-' + e.date.slice(5);
+    }
+    if (eventDate >= today && eventDate <= futureCutoff && !seenEvents.has(e.id)) {
+      seenEvents.add(e.id);
+      const locationPart = e.location ? ` at ${e.location}` : '';
+      items.push({
+        id: `event-${e.id}`, date: eventDate, category: 'celebration', pinned: false,
+        headline: e.title,
+        summary: (e.notes || `${e.type.replace(/-/g,' ')} on ${eventDate}${locationPart}.`).slice(0, 130),
+      });
+    }
+  });
+
+  // 4. Next prayer meeting
+  const nextPrayer = (prayer.meetings || [])
+    .filter(m => m.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))[0];
+  if (nextPrayer) {
+    const venue = nextPrayer.venue + (nextPrayer.isVirtual ? ' (Virtual)' : '');
+    items.push({
+      id: `prayer-${nextPrayer.date}`, date: nextPrayer.date, category: 'prayer', pinned: false,
+      headline: `Prayer Meeting · ${nextPrayer.date} at ${nextPrayer.startTime}`,
+      summary: `${nextPrayer.type || 'Prayer meeting'} at ${venue}. All members are encouraged to join.`,
+    });
+  }
+
+  // 5. BOTR live milestone
+  if (liveStats?.totalGospel > 0) {
+    const target = (botrData?.yearTargets || []).find(t => t.year === 2026)?.target || 54000;
+    const pct = Math.round(liveStats.totalGospel / target * 100);
+    items.push({
+      id: 'botr-live', date: today, category: 'milestone', pinned: false,
+      headline: `BOTR 2026: ${liveStats.totalGospel.toLocaleString()} Gospel Shared`,
+      summary: `${pct}% of our ${target.toLocaleString()} year target reached! ${liveStats.totalDisc.toLocaleString()} disciples made, ${liveStats.totalLeaders.toLocaleString()} leaders developed.`,
+    });
+  }
+
+  return items.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return a.date.localeCompare(b.date);
+  });
+}
+
 // ─── System prompt ────────────────────────────────────────────────────────────────────────────────
-function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, newsData = {}, externalNews = []) {
+function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, flccNews = [], externalNews = []) {
   const today = new Date().toISOString().split('T')[0];
 
   const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
@@ -730,11 +820,10 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
       ].join('\n')
     : '  (Live data loading — check back or visit the BOTR Strategic Direction dashboard)';
 
-  // ── Latest news (bite-size summaries) ──
-  const newsItems = (newsData.items || [])
-    .sort((a, b) => b.date.localeCompare(a.date))
+  // ── Latest FLCC news (generated from live data) ──
+  const newsItems = (flccNews || [])
     .slice(0, 10)
-    .map(n => `  • [${n.date}] ${n.category.toUpperCase()} — **${n.headline}**: ${n.summary}`)
+    .map(n => `  • [${n.date}] ${(n.category||'').toUpperCase()} — **${n.headline}**: ${n.summary}`)
     .join('\n');
 
   // ── Role groups derived from active workers ──
@@ -955,15 +1044,19 @@ function App() {
   const [showKeyModal, setShowKeyModal] = useState(false);
 
   const [appData,       setAppData]       = useState(null);
-  const [newsData,      setNewsData]      = useState(null);
   const [externalNews,  setExternalNews]  = useState([]);
   const [liveStats,     setLiveStats]     = useState(null);
   const [dataError,     setDataError]     = useState(null);
 
+  const flccNews = useMemo(() => {
+    if (!appData) return [];
+    return generateFlccNews(appData.data, appData.prayer, appData.botrData, liveStats);
+  }, [appData, liveStats]);
+
   const systemPrompt = useMemo(() => {
     if (!appData) return null;
-    return buildSystemPrompt(appData.data, appData.music, appData.prayer, appData.equip, appData.botrData, appData.attendance, liveStats, newsData || {}, externalNews);
-  }, [appData, liveStats, newsData, externalNews]);
+    return buildSystemPrompt(appData.data, appData.music, appData.prayer, appData.equip, appData.botrData, appData.attendance, liveStats, flccNews, externalNews);
+  }, [appData, liveStats, flccNews, externalNews]);
 
   const [messages,       setMessages]       = useState([]);
   const [input,          setInput]          = useState('');
@@ -986,10 +1079,8 @@ function App() {
       fetch('equip.json').then(r => r.json()).catch(() => ({})),
       fetch('botr.json').then(r => r.json()).catch(() => ({})),
       fetch('attendance.json').then(r => r.json()).catch(() => ({})),
-      fetch('news.json').then(r => r.json()).catch(() => ({ items: [] })),
-    ]).then(([data, music, prayer, equip, botrData, attendance, news]) => {
+    ]).then(([data, music, prayer, equip, botrData, attendance]) => {
       setAppData({ data, music, prayer, equip, botrData, attendance });
-      setNewsData(news);
       // Non-blocking: live BOTR standings from Google Sheets
       fetchBotrLiveStats().then(stats => { if (stats) setLiveStats(stats); }).catch(() => {});
       // Non-blocking: live world news from BBC / Reuters / The Guardian via RSS
@@ -1252,17 +1343,13 @@ function App() {
               </div>
 
               {/* Latest News Feed */}
-              {newsData?.items?.length > 0 && (
+              {flccNews.length > 0 && (
                 <div>
                   <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'var(--ink-subtle)'}}>
-                    Latest News
+                    FLCC News
                   </div>
                   <div className="newsfeed-scroll">
-                    {[...(newsData.items)].sort((a, b) => {
-                      if (a.pinned && !b.pinned) return -1;
-                      if (!a.pinned && b.pinned) return 1;
-                      return b.date.localeCompare(a.date);
-                    }).map(item => {
+                    {flccNews.map(item => {
                       const cat = NEWS_CATEGORIES[item.category] || NEWS_CATEGORIES.announcement;
                       return (
                         <button
