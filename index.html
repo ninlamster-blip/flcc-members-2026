@@ -1131,9 +1131,9 @@ function serviceToVEvent(entry, workers, churchName) {
   const lines = ['BEGIN:VEVENT'];
   lines.push(`UID:${entry.id}@flcc-schedule-os`);
   lines.push(`DTSTAMP:${formatICSStamp()}`);
-  // Default service times: 7 PM Friday, 6:30 PM Sunday (typical for FLCC)
-  const startHour = entry.service === 'Sunday' ? 18 : 19;
-  const startMin = entry.service === 'Sunday' ? 30 : 0;
+  // Default service times: 4:30 PM Friday, 6:30 PM Sunday
+  const startHour = entry.service === 'Sunday' ? 18 : 16;
+  const startMin = 30;
   const [y, m, d] = entry.date.split('-').map(Number);
   lines.push(`DTSTART:${formatICSDateTime(y, m, d, startHour, startMin)}`);
   lines.push(`DTEND:${formatICSDateTime(y, m, d, startHour + 2, startMin)}`);
