@@ -3357,7 +3357,7 @@ function getCourseProgress(courseId, progress, courses) {
   const total = c.lessons.length;
   const percent = total ? Math.round((done / total) * 100) : 0;
   const status = done === total && total > 0 ? 'completed' : done > 0 ? 'in_progress' : 'not_started';
-  return { status, percent, completedLessons: p.completedLessons || [], startedAt: p.startedAt, completedAt: p.completedAt, notes: p.notes || '', mentor: p.mentor || '', lastActivityAt: p.lastActivityAt };
+  return { status, percent, completedLessons: p.completedLessons || [], lessonDates: p.lessonDates || {}, startedAt: p.startedAt, completedAt: p.completedAt, notes: p.notes || '', mentor: p.mentor || '', lastActivityAt: p.lastActivityAt };
 }
 
 function computeStreak(activityDates) {
@@ -3430,14 +3430,17 @@ function EquipTab({ equipData }) {
     const course = allCourses.find(c => c.id === courseId);
     const prev = progress[courseId] || {};
     const done = [...(prev.completedLessons || [])];
+    const lessonDates = { ...(prev.lessonDates || {}) };
     const idx = done.indexOf(lessonId);
-    if (idx === -1) done.push(lessonId); else done.splice(idx, 1);
+    if (idx === -1) { done.push(lessonId); lessonDates[lessonId] = today; }
+    else            { done.splice(idx, 1); delete lessonDates[lessonId]; }
     const full = course && done.length === course.lessons.length;
     setProgress({
       ...progress,
       [courseId]: {
         ...prev,
         completedLessons: done,
+        lessonDates,
         status: full ? 'completed' : done.length ? 'in_progress' : 'not_started',
         startedAt:   prev.startedAt   || (done.length ? today : null),
         completedAt: full ? (prev.completedAt || today) : null,
@@ -3741,6 +3744,7 @@ function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClo
             <div className="space-y-2">
               {course.lessons.map((lesson, idx) => {
                 const done = p.completedLessons.includes(lesson.id);
+                const takenDate = p.lessonDates?.[lesson.id];
                 const isOpen = openLesson === lesson.id;
                 return (
                   <div key={lesson.id}>
@@ -3751,6 +3755,7 @@ function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClo
                         <div className="text-xs ink-muted flex gap-2 mt-0.5">
                           <span>⏱ {lesson.duration} min</span>
                           {lesson.hasQuiz && <span>📝 Reflection</span>}
+                          {done && takenDate && <span style={{ color: EQUIP_ACCENT }}>✓ {formatDateShort(takenDate)}</span>}
                         </div>
                       </div>
                       {lesson.hasQuiz && (
