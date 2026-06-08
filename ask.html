@@ -994,49 +994,98 @@ function Md({ text, streaming }) {
   );
 }
 
-// ─── API Key Modal ───────────────────────────────────────────────────────────────────────────────
-function ApiKeyModal({ existingKey, onSave, onClose }) {
-  const [key, setKey] = useState(existingKey || '');
-  const inputRef = useRef(null);
-  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 60); }, []);
+// ─── Setup Modal (proxy URL or API key) ──────────────────────────────────────
+function ApiKeyModal({ existingKey, existingProxy, onSave, onClose }) {
+  const [tab,   setTab]   = useState(existingProxy ? 'proxy' : 'key');
+  const [proxy, setProxy] = useState(existingProxy || '');
+  const [key,   setKey]   = useState(existingKey   || '');
+  const proxyRef = useRef(null);
+  const keyRef   = useRef(null);
+  useEffect(() => { setTimeout(() => (tab === 'proxy' ? proxyRef : keyRef).current?.focus(), 60); }, [tab]);
+
+  const hasAny = existingKey || existingProxy;
 
   return (
     <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose && onClose()}>
       <div className="modal">
-        <div className="font-display text-xl font-semibold mb-1" style={{color:'var(--ink)'}}>
-          Anthropic API Key
+        <div className="font-display text-xl font-semibold mb-3" style={{color:'var(--ink)'}}>
+          Connect to AI
         </div>
-        <p className="text-sm mb-4" style={{color:'var(--ink-muted)', lineHeight:1.55}}>
-          Your key is saved locally in your browser and sent directly to Anthropic — it never passes through any other server.
-        </p>
 
-        <label className="block text-xs font-medium mb-1.5" style={{color:'var(--ink-muted)'}}>API KEY</label>
-        <input
-          ref={inputRef}
-          type="password"
-          className="w-full px-3 py-2 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 font-mono"
-          style={{borderColor:'var(--border-strong)', fontFamily:'Geist Mono, monospace', '--tw-ring-color':'rgba(24,24,27,0.08)'}}
-          placeholder="sk-ant-api03-…"
-          value={key}
-          onChange={e => setKey(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && key.trim() && onSave(key.trim())}
-        />
-        <p className="text-xs mt-2 mb-4" style={{color:'var(--ink-subtle)'}}>
-          Get yours at <strong style={{color:'var(--ink-muted)'}}>console.anthropic.com</strong>
-        </p>
-
-        <div className="flex gap-2 justify-end">
-          {existingKey && (
-            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          )}
-          <button
-            className="btn btn-primary"
-            onClick={() => key.trim() && onSave(key.trim())}
-            disabled={!key.trim()}
-          >
-            Save &amp; Start Chatting
-          </button>
+        {/* Tab switcher */}
+        <div className="flex gap-1 mb-4 p-0.5 rounded-lg" style={{background:'var(--surface)', border:'1px solid var(--border)'}}>
+          {[['proxy','Church Proxy'],['key','My API Key']].map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setTab(v)}
+              className="flex-1 text-xs font-medium py-1.5 px-2 rounded-md"
+              style={tab === v
+                ? {background:'white', color:'var(--ink)', boxShadow:'0 1px 3px rgba(0,0,0,0.08)', border:'1px solid var(--border)'}
+                : {color:'var(--ink-muted)', background:'transparent', border:'1px solid transparent'}}
+            >{label}</button>
+          ))}
         </div>
+
+        {tab === 'proxy' ? (
+          <>
+            <p className="text-sm mb-1" style={{color:'var(--ink-muted)', lineHeight:1.55}}>
+              Ask your church admin for the Worker URL. One URL connects everyone — no personal API key needed.
+            </p>
+            <p className="text-xs mb-3" style={{color:'var(--ink-subtle)'}}>
+              e.g. <span style={{fontFamily:'Geist Mono, monospace'}}>https://flcc-ask.yourname.workers.dev</span>
+            </p>
+            <label className="block text-xs font-medium mb-1.5" style={{color:'var(--ink-muted)'}}>WORKER URL</label>
+            <input
+              ref={proxyRef}
+              type="url"
+              className="w-full px-3 py-2 text-sm border rounded-lg bg-white focus:outline-none"
+              style={{borderColor:'var(--border-strong)', fontFamily:'Geist Mono, monospace'}}
+              placeholder="https://flcc-ask.yourname.workers.dev"
+              value={proxy}
+              onChange={e => setProxy(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && proxy.trim() && onSave({ proxy: proxy.trim() })}
+            />
+            {existingProxy && (
+              <p className="text-xs mt-1.5" style={{color:'#15803D'}}>✓ Proxy connected</p>
+            )}
+            <div className="flex gap-2 justify-end mt-4">
+              {hasAny && <button className="btn btn-ghost" onClick={onClose}>Cancel</button>}
+              <button
+                className="btn btn-primary"
+                onClick={() => proxy.trim() && onSave({ proxy: proxy.trim() })}
+                disabled={!proxy.trim()}
+              >Save &amp; Connect</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm mb-4" style={{color:'var(--ink-muted)', lineHeight:1.55}}>
+              Your key is saved locally in your browser and sent directly to Anthropic — it never passes through any other server.
+            </p>
+            <label className="block text-xs font-medium mb-1.5" style={{color:'var(--ink-muted)'}}>API KEY</label>
+            <input
+              ref={keyRef}
+              type="password"
+              className="w-full px-3 py-2 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 font-mono"
+              style={{borderColor:'var(--border-strong)', fontFamily:'Geist Mono, monospace', '--tw-ring-color':'rgba(24,24,27,0.08)'}}
+              placeholder="sk-ant-api03-…"
+              value={key}
+              onChange={e => setKey(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && key.trim() && onSave({ key: key.trim() })}
+            />
+            <p className="text-xs mt-2 mb-4" style={{color:'var(--ink-subtle)'}}>
+              Get yours at <strong style={{color:'var(--ink-muted)'}}>console.anthropic.com</strong>
+            </p>
+            <div className="flex gap-2 justify-end">
+              {hasAny && <button className="btn btn-ghost" onClick={onClose}>Cancel</button>}
+              <button
+                className="btn btn-primary"
+                onClick={() => key.trim() && onSave({ key: key.trim() })}
+                disabled={!key.trim()}
+              >Save &amp; Start Chatting</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1108,9 +1157,15 @@ function App() {
     ta.style.height = Math.min(ta.scrollHeight, 150) + 'px';
   };
 
-  const saveKey = key => {
-    setApiKey(key);
-    localStorage.setItem(STORAGE_KEY_API, key);
+  const saveKey = ({ key, proxy } = {}) => {
+    if (proxy !== undefined) {
+      setProxyUrl(proxy);
+      localStorage.setItem(ASK_PROXY_KEY, proxy);
+    }
+    if (key !== undefined) {
+      setApiKey(key);
+      localStorage.setItem(STORAGE_KEY_API, key);
+    }
     setShowKeyModal(false);
   };
 
@@ -1140,7 +1195,7 @@ function App() {
   const sendMessage = useCallback(async (overrideText) => {
     const text = (overrideText || input).trim();
     if (!text || isStreaming) return;
-    if (!apiKey) { setShowKeyModal(true); return; }
+    if (!apiKey && !proxyUrl) { setShowKeyModal(true); return; }
     if (!appData) return;
 
     const userMsg = { role: 'user', content: text };
@@ -1220,7 +1275,7 @@ function App() {
     } finally {
       setIsStreaming(false);
     }
-  }, [messages, input, apiKey, model, appData, isStreaming]);
+  }, [messages, input, apiKey, proxyUrl, model, appData, isStreaming]);
 
   const handleKeyDown = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1294,17 +1349,17 @@ function App() {
             </button>
           )}
 
-          {/* Settings / key */}
+          {/* Settings / setup */}
           <button
             className="icon-btn"
             onClick={() => setShowKeyModal(true)}
-            title={apiKey ? 'API Key settings' : 'Set API Key'}
-            style={!apiKey ? {color:'var(--accent)', fontWeight:600} : {}}
+            title={apiKey || proxyUrl ? 'Connection settings' : 'Connect to AI'}
+            style={!apiKey && !proxyUrl ? {color:'var(--accent)', fontWeight:600} : {}}
           >
             <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
-            {apiKey ? 'Key' : 'Set Key'}
+            {apiKey || proxyUrl ? 'Setup' : 'Connect'}
           </button>
         </div>
       </header>
@@ -1340,9 +1395,9 @@ function App() {
                   Ask about the schedule, members, Bible verses (NIV),
                   prayer meetings, or anything about the Christian faith.
                 </p>
-                {!apiKey && (
+                {!apiKey && !proxyUrl && (
                   <button className="btn btn-accent mt-4" onClick={() => setShowKeyModal(true)}>
-                    Set API Key to start
+                    Connect to get started
                   </button>
                 )}
               </div>
@@ -1361,7 +1416,7 @@ function App() {
                           key={item.id}
                           className="news-card"
                           onClick={() => sendMessage(`Tell me more about this news: ${item.headline}`)}
-                          disabled={!apiKey || !appData}
+                          disabled={(!apiKey && !proxyUrl) || !appData}
                         >
                           <div>
                             <span className="news-badge" style={{background: cat.bg, color: cat.color}}>
@@ -1390,7 +1445,7 @@ function App() {
                         key={item.id || i}
                         className="news-card"
                         onClick={() => sendMessage(`Summarise this news for me: ${item.headline}`)}
-                        disabled={!apiKey || !appData}
+                        disabled={(!apiKey && !proxyUrl) || !appData}
                       >
                         <div>
                           <span className="news-badge" style={{background:'#F1F5F9', color:'#475569'}}>
@@ -1517,12 +1572,13 @@ function App() {
         </div>
       </div>
 
-      {/* API Key Modal */}
+      {/* Setup Modal */}
       {showKeyModal && (
         <ApiKeyModal
           existingKey={apiKey}
+          existingProxy={proxyUrl}
           onSave={saveKey}
-          onClose={apiKey ? () => setShowKeyModal(false) : null}
+          onClose={(apiKey || proxyUrl) ? () => setShowKeyModal(false) : null}
         />
       )}
     </>
