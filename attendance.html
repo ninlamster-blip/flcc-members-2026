@@ -1283,7 +1283,7 @@ function MembersTab({ members, state, dispatch }) {
 }
 
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
-function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, onSyncNow }) {
+function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, syncErrMsg, onSyncNow }) {
   const m = state.meta;
   const set = payload => dispatch({ type:'UPDATE_META', payload });
   const [gasGuide, setGasGuide] = useState(false);
@@ -1558,11 +1558,19 @@ function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, onSyncN
               <span style={{ fontSize:'0.8125rem', fontWeight:500, color: syncStatus==='error'?'#DC2626':'#16A34A', flex:1 }}>
                 {syncStatus==='syncing' ? 'Uploading to dashboard…'
                   : syncStatus==='saved'  ? '✓ Dashboard updated'
-                  : syncStatus==='error'  ? '⚠ Upload failed — will retry on next change'
+                  : syncStatus==='error'  ? '⚠ Upload failed'
                   : '✓ Auto-sync active — uploads after every service'}
               </span>
               <button onClick={clearGhToken} style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>Remove</button>
             </div>
+            {syncStatus==='error' && syncErrMsg && (
+              <div style={{ marginTop:6, padding:'8px 12px', borderRadius:8, background:'#FEF2F2', border:'1px solid #FECACA', fontSize:'0.75rem', color:'#DC2626', lineHeight:1.5 }}>
+                <strong>Error:</strong> {syncErrMsg}
+                {(syncErrMsg.toLowerCase().includes('bad credentials') || syncErrMsg.includes('401')) && (
+                  <div style={{ marginTop:4, color:'#991B1B' }}>Token expired or invalid — tap <strong>Remove</strong> above and reconnect a new token.</div>
+                )}
+              </div>
+            )}
             <button
               onClick={onSyncNow}
               disabled={syncStatus==='syncing' || !state.sessions.length}
@@ -1980,41 +1988,42 @@ function App() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [ghToken, setGhToken]    = useState(() => { try { return localStorage.getItem(GH_TOKEN_KEY)||''; } catch { return ''; } });
   const [syncStatus, setSyncStatus] = useState(''); // '' | 'syncing' | 'saved' | 'error'
-  const syncTimer  = useRef(null);
-  const stateRef   = useRef(state);
+  const [syncErrMsg, setSyncErrMsg] = useState('');
+  const syncTimer   = useRef(null);
+  const syncLock    = useRef(false);
+  const stateRef    = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
+
+  const runSync = useCallback(async () => {
+    if (syncLock.current || !ghToken || !stateRef.current.sessions.length) return;
+    syncLock.current = true;
+    setSyncStatus('syncing'); setSyncErrMsg('');
+    try {
+      await ghPublishAttendance(ghToken, stateRef.current);
+      setSyncStatus('saved');
+      setTimeout(() => setSyncStatus(''), 4000);
+    } catch (e) {
+      const msg = e.message || 'Unknown error';
+      setSyncErrMsg(msg);
+      setSyncStatus('error');
+      setTimeout(() => { setSyncStatus(''); setSyncErrMsg(''); }, 12000);
+    } finally {
+      syncLock.current = false;
+    }
+  }, [ghToken]);
 
   // Auto-publish to GitHub 5 s after the last attendance change
   useEffect(() => {
     if (!ghToken || !state.sessions.length) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
-      setSyncStatus('syncing');
-      try {
-        await ghPublishAttendance(ghToken, stateRef.current);
-        setSyncStatus('saved');
-        setTimeout(() => setSyncStatus(''), 4000);
-      } catch {
-        setSyncStatus('error');
-        setTimeout(() => setSyncStatus(''), 8000);
-      }
-    }, 5000);
+    syncTimer.current = setTimeout(runSync, 5000);
     return () => clearTimeout(syncTimer.current);
-  }, [state.sessions, ghToken]);
+  }, [state.sessions, ghToken, runSync]);
 
-  const syncNow = useCallback(async () => {
-    if (!ghToken || !stateRef.current.sessions.length) return;
+  const syncNow = useCallback(() => {
     if (syncTimer.current) clearTimeout(syncTimer.current);
-    setSyncStatus('syncing');
-    try {
-      await ghPublishAttendance(ghToken, stateRef.current);
-      setSyncStatus('saved');
-      setTimeout(() => setSyncStatus(''), 4000);
-    } catch {
-      setSyncStatus('error');
-      setTimeout(() => setSyncStatus(''), 8000);
-    }
-  }, [ghToken]);
+    runSync();
+  }, [runSync]);
 
   // Fetch data.json for workers + schedule
   useEffect(()=>{
@@ -2098,7 +2107,7 @@ function App() {
           {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
           {tab==='care'      && <CareTab      state={state} members={members} />}
           {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
-          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} ghToken={ghToken} setGhToken={setGhToken} syncStatus={syncStatus} onSyncNow={syncNow} />}
+          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} ghToken={ghToken} setGhToken={setGhToken} syncStatus={syncStatus} syncErrMsg={syncErrMsg} onSyncNow={syncNow} />}
         </div>
       </main>
 
