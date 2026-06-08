@@ -787,6 +787,9 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
   const botrYearTargets = (botr.yearTargets || [])
     .map(t => `  • ${t.year}: ${t.target.toLocaleString()} people`)
     .join('\n');
+  const botrMainChurch = botr.mainChurch
+    ? `${botr.mainChurch.name}, ${botr.mainChurch.location} — Friday Main Worship Service: ${botr.mainChurch.fridayMainServiceTime}`
+    : 'National Evangelical Church in Kuwait, Kuwait City — Friday Main Worship Service: 10:00 AM – 12:00 PM';
 
   // ── Attendance records ──
   const attendanceSummary = (attendance.sessions || [])
@@ -885,8 +888,18 @@ ${today}
 - **Network**: ${botr.network || 'N.E.C.K. Kuwait'}
 - **Lead Pastor**: ${botr.leadPastor?.name || 'Rev. Jopet Alim'} — ${botr.leadPastor?.title || 'Lead Pastor, FLCC BOTR Network'}
 - **Evangelism Ministry Head**: ${botr.evangelismMinistryHead?.name || 'Sis. Lizel Ocenar'}
+- **Main Church**: ${botrMainChurch}
 - **Mission Target**: ${botr.missionTarget || 'Introduce 270,000 people to Jesus Christ by 2030'}
 - **Total Satellite Locations**: ${botr.totalChurches || '13'} (including Virtual Church)
+
+**Vision:**
+${botr.vision || 'We envision FLCC as a family of prayer and worshippers raised up from its own harvest of born-again believers, discipled and trained to maturity, committed to multiply themselves into the lives of others, guided by the Great Commandment and mobilised for the fulfillment of the Great Commission.'}
+
+**Purpose (Layunin):**
+${botr.purpose || '(see botr.json)'}
+
+**Statement of Faith:**
+${botr.statementOfFaith || '(see botr.json)'}
 
 **Annual Gospel Outreach Milestones:**
 ${botrYearTargets || '  2026: 54,000 · 2027: 108,000 · 2028: 162,000 · 2029: 216,000 · 2030: 270,000'}
