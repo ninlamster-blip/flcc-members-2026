@@ -1283,7 +1283,7 @@ function MembersTab({ members, state, dispatch }) {
 }
 
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
-function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus }) {
+function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, onSyncNow }) {
   const m = state.meta;
   const set = payload => dispatch({ type:'UPDATE_META', payload });
   const [gasGuide, setGasGuide] = useState(false);
@@ -1563,6 +1563,14 @@ function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus }) {
               </span>
               <button onClick={clearGhToken} style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>Remove</button>
             </div>
+            <button
+              onClick={onSyncNow}
+              disabled={syncStatus==='syncing' || !state.sessions.length}
+              style={{ marginTop:8, width:'100%', padding:'10px', borderRadius:10, border:'1px solid #BBF7D0', background:'#F0FDF4', color:'#16A34A', fontWeight:600, fontSize:'0.875rem', cursor: (!state.sessions.length || syncStatus==='syncing') ? 'not-allowed' : 'pointer', opacity: !state.sessions.length ? 0.5 : 1 }}
+            >
+              {syncStatus==='syncing' ? '↻ Uploading…' : '☁ Sync to dashboard now'}
+            </button>
+            {!state.sessions.length && <div style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', marginTop:4, textAlign:'center' }}>Record at least one session first.</div>}
           </div>
         ) : (
           <div>
@@ -1994,6 +2002,20 @@ function App() {
     return () => clearTimeout(syncTimer.current);
   }, [state.sessions, ghToken]);
 
+  const syncNow = useCallback(async () => {
+    if (!ghToken || !stateRef.current.sessions.length) return;
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    setSyncStatus('syncing');
+    try {
+      await ghPublishAttendance(ghToken, stateRef.current);
+      setSyncStatus('saved');
+      setTimeout(() => setSyncStatus(''), 4000);
+    } catch {
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus(''), 8000);
+    }
+  }, [ghToken]);
+
   // Fetch data.json for workers + schedule
   useEffect(()=>{
     fetch(`${DATA_URL}?t=${Date.now()}`)
@@ -2076,7 +2098,7 @@ function App() {
           {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
           {tab==='care'      && <CareTab      state={state} members={members} />}
           {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
-          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} ghToken={ghToken} setGhToken={setGhToken} syncStatus={syncStatus} />}
+          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} ghToken={ghToken} setGhToken={setGhToken} syncStatus={syncStatus} onSyncNow={syncNow} />}
         </div>
       </main>
 
