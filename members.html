@@ -3694,7 +3694,8 @@ function EquipCourseCard({ course, progress, onClick }) {
 
 // --- Course Detail Modal ---
 function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClose }) {
-  const p   = getCourseProgress(course.id, progress);
+  const COURSES = useEquipCourses();
+  const p   = getCourseProgress(course.id, progress, COURSES);
   const tr  = TRACK_META[course.track];
   const [notes, setNotes]   = useState(p.notes);
   const [mentor, setMentor] = useState(p.mentor);
