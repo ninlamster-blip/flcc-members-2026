@@ -628,11 +628,13 @@ function generateFlccNews(data, prayer, botrData, liveStats) {
       const r = s.roles || {};
       const preacher = r.preacher ? wn(r.preacher) : '';
       const presider  = r.presider  ? wn(r.presider)  : '';
-      const svcLabel  = s.service === 'sunday' ? 'Sunday Service' : s.service === 'friday' ? 'Friday Service' : s.service;
+      const svcKey   = s.service || '';
+      const svcLabel = svcKey.toLowerCase() === 'sunday' ? 'Sunday Service' : svcKey.toLowerCase() === 'friday' ? 'Friday Service' : svcKey;
+      const svcTime  = (data.meta?.serviceTimes?.[svcKey]) || (svcKey.toLowerCase() === 'sunday' ? '6:30 PM' : '4:30 PM');
       const parts = [preacher ? `Preacher: ${preacher}` : null, presider ? `Presider: ${presider}` : null].filter(Boolean);
       items.push({
         id: `service-${s.date}`, date: s.date, category: s.isSpecial ? 'celebration' : 'announcement', pinned: false,
-        headline: `${svcLabel} · ${s.date}${s.isSpecial ? ' ★' : ''}`,
+        headline: `${svcLabel} · ${s.date} · ${svcTime}${s.isSpecial ? ' ★' : ''}`,
         summary: parts.length ? parts.join(' · ') : 'Assignments coming soon — check the schedule tab.',
       });
     });
@@ -722,7 +724,8 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
         .map(([role, id]) => `${rl(role)}: ${wn(id, workersById)}`)
         .join(' | ');
       const flag = s.isSpecial ? ` ★ ${s.specialNote}` : '';
-      return `  ${s.date} [${s.service}]${flag}\n    ${roles}`;
+      const svcTime = (data.meta?.serviceTimes?.[s.service]) || (s.service === 'Sunday' ? '6:30 PM' : '4:30 PM');
+      return `  ${s.date} [${s.service} · ${svcTime}]${flag}\n    ${roles}`;
     })
     .join('\n');
 
@@ -856,7 +859,8 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
         r.foodInCharge       ? `Food: ${wn(r.foodInCharge, workersById)}` : null,
       ].filter(Boolean).join(' | ');
       const flag = s.isSpecial ? ` ★ ${s.specialNote}` : '';
-      return `  ${s.date} [${s.service}]${flag}: ${parts || '(roles not yet assigned)'}`;
+      const svcTime = (data.meta?.serviceTimes?.[s.service]) || (s.service === 'Sunday' ? '6:30 PM' : '4:30 PM');
+      return `  ${s.date} [${s.service} · ${svcTime}]${flag}: ${parts || '(roles not yet assigned)'}`;
     })
     .join('\n');
 
