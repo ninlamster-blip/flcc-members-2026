@@ -114,15 +114,23 @@ export default {
       );
     }
 
-    const anthropicResp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':      'application/json',
-        'x-api-key':         env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify(body),
-    });
+    let anthropicResp;
+    try {
+      anthropicResp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type':      'application/json',
+          'x-api-key':         env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: { message: `Worker could not reach Anthropic API: ${err.message}` } }),
+        { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
 
     return new Response(anthropicResp.body, {
       status: anthropicResp.status,
