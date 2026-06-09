@@ -1944,6 +1944,24 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
     return list.sort((a, b) => a.daysAway - b.daysAway);
   }, [data.workers, today]);
 
+  // Upcoming anniversaries (next 30 days)
+  const upcomingAnniversaries = useMemo(() => {
+    const list = [];
+    const [todayMonth, todayDay] = today.slice(5).split('-').map(Number);
+    for (const w of (data.workers || [])) {
+      if (!w.anniversary || !/^\d{2}-\d{2}$/.test(w.anniversary)) continue;
+      const [aMonth, aDay] = w.anniversary.split('-').map(Number);
+      const thisYear = new Date().getFullYear();
+      let nextAnniv = new Date(thisYear, aMonth - 1, aDay);
+      if (nextAnniv < new Date(thisYear, todayMonth - 1, todayDay)) {
+        nextAnniv = new Date(thisYear + 1, aMonth - 1, aDay);
+      }
+      const daysAway = Math.floor((nextAnniv - new Date(thisYear, todayMonth - 1, todayDay)) / 86400000);
+      if (daysAway <= 30) list.push({ worker: w, date: nextAnniv, daysAway });
+    }
+    return list.sort((a, b) => a.daysAway - b.daysAway);
+  }, [data.workers, today]);
+
   // Upcoming events (next 60 days)
   const upcomingEvents = useMemo(() => {
     return getAllEventsInRange(data.events || [], data.workers, today, horizon).slice(0, 4);
@@ -2161,6 +2179,45 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     }}
                   >
                     🎂 Send Greeting
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming anniversaries */}
+      {upcomingAnniversaries.length > 0 && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">💍 Anniversaries this month</div>
+          <div className="home-grid">
+            {upcomingAnniversaries.slice(0, 4).map(a => (
+              <div key={a.worker.id} className="home-card" style={{ background: '#FFF7ED' }}>
+                <div className="home-card-eyebrow" style={{ color: '#C2410C' }}>
+                  {a.daysAway === 0 ? '🎉 Today!' : a.daysAway === 1 ? 'Tomorrow' : `In ${a.daysAway} days`}
+                </div>
+                <div className="home-card-title" style={{ fontSize: '1rem' }}>{workerDisplay(a.worker)}</div>
+                <div className="home-card-body text-xs ink-muted">
+                  {a.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </div>
+                <div className="home-card-actions">
+                  <button
+                    className="btn btn-soft text-xs"
+                    style={{ color: '#C2410C' }}
+                    onClick={() => {
+                      const name = `${a.worker.title ? a.worker.title + ' ' : ''}${a.worker.name}`;
+                      const msg = `💍 Happy Anniversary ${name}! 🎉\n\nWishing you and your family God's continued blessings! From the FLCC Family 🙏`;
+                      const church = data.ministry?.messenger;
+                      if (church) {
+                        window.open(`https://m.me/${church}?text=${encodeURIComponent(msg)}`, '_blank');
+                      } else {
+                        try { navigator.clipboard.writeText(msg); } catch {}
+                        alert('Anniversary greeting copied to clipboard!');
+                      }
+                    }}
+                  >
+                    💍 Send Greeting
                   </button>
                 </div>
               </div>
@@ -3108,6 +3165,11 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
         This members view is read-only and shows the latest schedule published by the admin.
       </SectionHeading>
 
+      {/* Ask the Pastor */}
+      <div className="mb-6">
+        <AskPastorTab data={data} />
+      </div>
+
       {/* BOTR Church Network Section */}
       {botr && (
         <div className="card p-6 mb-4">
@@ -3808,18 +3870,39 @@ function downloadMusicICS(entry, musicData, churchName) {
   downloadICS(`flcc-music-${entry.date}.ics`, lines.join('\r\n'));
 }
 
-function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConflict }) {
+function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConflict, worshipData }) {
+  const [musicSubTab, setMusicSubTab] = useState('schedule');
   const monthEntries = (musicData.entries || []).filter(e => monthKey(e.date) === currentMonth).sort((a, b) => a.date.localeCompare(b.date));
   const myMusicWorker = useMemo(() => musicData ? findMusicMatch(me, musicData.workers) : null, [me, musicData]);
   const primaryRoleKey = musicData.settings?.primaryRole || 'lead';
 
   return (
     <div className="fade-in">
-      <SectionHeading eyebrow={musicData.ministry?.headName || 'Music Ministry'} title="Music Schedule">
-        Who's leading worship and the music team for each service this month.
+      <SectionHeading eyebrow={musicData.ministry?.headName || 'Music Ministry'} title="Music">
+        Music schedule and worship song library.
       </SectionHeading>
 
-      <div className="card p-4 mb-6 flex items-center justify-center gap-3">
+      {/* Sub-tab nav */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        {[{ key: 'schedule', label: '📅 Schedule' }, { key: 'worship', label: '🎵 Worship Library' }].map(t => (
+          <button
+            key={t.key}
+            onClick={() => setMusicSubTab(t.key)}
+            className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full"
+            style={{
+              background: musicSubTab === t.key ? 'var(--accent)' : 'var(--surface)',
+              color: musicSubTab === t.key ? 'white' : 'var(--ink-muted)',
+              border: `1px solid ${musicSubTab === t.key ? 'var(--accent)' : 'var(--border)'}`,
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {musicSubTab === 'worship' && <WorshipTab worshipData={worshipData} />}
+
+      {musicSubTab === 'schedule' && <div className="card p-4 mb-6 flex items-center justify-center gap-3">
         <button className="btn btn-ghost" onClick={() => setCurrentMonth(prevMonth(currentMonth))}>←</button>
         <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
         <button className="btn btn-ghost" onClick={() => setCurrentMonth(nextMonth(currentMonth))}>→</button>
@@ -3909,6 +3992,7 @@ function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConfli
       {monthEntries.length === 0 && (
         <div className="card p-6 text-center ink-subtle italic text-sm">No music assignments for {formatMonthLabel(currentMonth)} yet.</div>
       )}
+      </div>}
     </div>
   );
 }
@@ -7166,7 +7250,7 @@ function AskPastorTab({ data }) {
   const setQs = q => { savePastorQuestions(q); setQsState(q); };
 
   const pastors = useMemo(() =>
-    (data.workers || []).filter(w => w.title === 'Ptr.' || w.title === 'Rev.'),
+    (data.workers || []).filter(w => w.id === 'ptr-01' || w.id === 'ptr-02'),
     [data.workers]
   );
 
@@ -7589,10 +7673,8 @@ const TABS = [
   { key: 'mine',     label: 'My Schedule', requiresMe: true },
   { key: 'month',    label: 'This Month' },
   { key: 'calendar', label: 'Calendar' },
-  { key: 'prayer',   label: 'Prayer',   requiresPrayer:  true },
-  { key: 'music',    label: 'Music',    requiresMusic:   true },
-  { key: 'worship',  label: '🎵 Worship', requiresWorship: true },
-  { key: 'pastor',   label: '🙋 Ask Pastor' },
+  { key: 'prayer',   label: 'Prayer',   requiresPrayer: true },
+  { key: 'music',    label: 'Music',    requiresMusic:  true },
   { key: 'equip',    label: 'Equip' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
@@ -8040,7 +8122,6 @@ function App() {
     if (t.requiresPrayer && !prayerData) return false;
     if (t.requiresMusic && !musicData) return false;
     if (t.requiresGiving && !givingData) return false;
-    if (t.requiresWorship && !worshipData) return false;
     return true;
   });
   const currentTab = visibleTabs.find(t => t.key === activeTab) ? activeTab : 'home';
@@ -8101,9 +8182,8 @@ function App() {
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-          {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-          {currentTab === 'worship' && worshipData && <WorshipTab worshipData={worshipData} />}
-          {currentTab === 'pastor' && <AskPastorTab data={data} />}
+          {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} worshipData={worshipData} />}
+
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
           {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
           {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
