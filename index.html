@@ -1988,6 +1988,11 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
     return getAllEventsInRange(data.events || [], data.workers, today, horizon).slice(0, 4);
   }, [data.events, data.workers, today, horizon]);
 
+  // Is today my birthday or anniversary?
+  const todayMMDD = today.slice(5); // "MM-DD"
+  const isMyBirthday   = me && me.birthday   === todayMMDD;
+  const isMyAnniversary = me && me.anniversary === todayMMDD;
+
   const daysAway = (dateStr) => {
     const d = Math.floor((parseISODate(dateStr) - parseISODate(today)) / 86400000);
     if (d === 0) return 'Today';
@@ -2006,6 +2011,24 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       <SectionHeading eyebrow={me ? `Hello, ${me.title || ''} ${me.name}` : 'Welcome'} title="Today">
         {me ? `Your upcoming services, prayer meetings, and what's coming up at ${data.meta.churchName}.` : `What's coming up at ${data.meta.churchName}.`}
       </SectionHeading>
+
+      {/* Personal birthday / anniversary greeting */}
+      {(isMyBirthday || isMyAnniversary) && (
+        <div className="mb-5 rounded-2xl p-5 text-center" style={{
+          background: isMyBirthday ? 'linear-gradient(135deg,#FDF2F8,#FCE7F3)' : 'linear-gradient(135deg,#FFF7ED,#FFEDD5)',
+          border: isMyBirthday ? '2px solid #F9A8D4' : '2px solid #FED7AA',
+        }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{isMyBirthday ? '🎂🎉' : '💍🎉'}</div>
+          <div className="font-bold" style={{ fontSize: '1.25rem', color: isMyBirthday ? '#BE185D' : '#C2410C', marginBottom: '0.5rem' }}>
+            {isMyBirthday ? `Happy Birthday, ${me.name.split(' ')[0]}!` : `Happy Anniversary, ${me.name.split(' ')[0]}!`}
+          </div>
+          <div className="text-sm" style={{ color: isMyBirthday ? '#9D174D' : '#9A3412', lineHeight: 1.6 }}>
+            {isMyBirthday
+              ? `Today is YOUR special day and the whole FLCC family celebrates YOU! 🙏 May God shower you with His blessings, fill your heart with joy, and surround you with His love all year long. We are so grateful you are part of our family — from FLCC - Abundance Family!`
+              : `Today is YOUR special day and the whole FLCC family celebrates your marriage! 🙏 May God continue to strengthen your bond, fill your home with joy, and let your love grow deeper every single day. You are a beautiful blessing to our family — from FLCC - Abundance Family!`}
+          </div>
+        </div>
+      )}
 
       {/* My assignments - top priority cards */}
       {me && (myNextService || myNextPrayer || myNextMusic) && (
@@ -2190,9 +2213,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     onClick={() => {
                       const name = `${b.worker.title ? b.worker.title + ' ' : ''}${b.worker.name}`;
                       const msg = `🎂 Happy Birthday, ${name}! 🎉\n\nMay this special day be filled with joy, love, and God's abundant grace. We thank God for the gift of your life and the blessing you are to our church family.\n\nWith love and prayers, from FLCC - Abundance Family! 🙏`;
-                      const church = data.ministry?.messenger;
-                      if (church) {
-                        window.open(`https://m.me/${church}?text=${encodeURIComponent(msg)}`, '_blank');
+                      const recipient = b.worker.messenger || data.ministry?.messenger;
+                      if (recipient) {
+                        window.open(`https://m.me/${recipient}?text=${encodeURIComponent(msg)}`, '_blank');
                       } else {
                         try { navigator.clipboard.writeText(msg); } catch {}
                         alert('Birthday greeting copied to clipboard!');
@@ -2229,9 +2252,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     onClick={() => {
                       const name = `${a.worker.title ? a.worker.title + ' ' : ''}${a.worker.name}`;
                       const msg = `💍 Happy Anniversary, ${name}! 🎉\n\nMay God continue to bless your marriage with love, faith, and joy that grows stronger every year. We are grateful for the beautiful example you are to our church family.\n\nWith love and prayers, from FLCC - Abundance Family! 🙏`;
-                      const church = data.ministry?.messenger;
-                      if (church) {
-                        window.open(`https://m.me/${church}?text=${encodeURIComponent(msg)}`, '_blank');
+                      const recipient = a.worker.messenger || data.ministry?.messenger;
+                      if (recipient) {
+                        window.open(`https://m.me/${recipient}?text=${encodeURIComponent(msg)}`, '_blank');
                       } else {
                         try { navigator.clipboard.writeText(msg); } catch {}
                         alert('Anniversary greeting copied to clipboard!');
