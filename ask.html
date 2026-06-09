@@ -1229,7 +1229,9 @@ function App() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+    const endpoint = proxyUrl
+      ? proxyUrl.replace(/\/+$/, '') + '/proxy'
+      : 'https://api.anthropic.com/v1/messages';
 
     try {
       const headers  = { 'Content-Type': 'application/json' };
