@@ -4295,6 +4295,12 @@ function EquipTab({ equipData }) {
     setProgress({ ...progress, [courseId]: { ...prev, notes, mentor } });
   };
 
+  const updateLessonDate = (courseId, lessonId, date) => {
+    const prev = progress[courseId] || {};
+    const dates = { ...(prev.lessonDates || {}), [lessonId]: date };
+    setProgress({ ...progress, [courseId]: { ...prev, lessonDates: dates } });
+  };
+
   const toggleBookmark = id => setBookmarks(bookmarks.includes(id) ? bookmarks.filter(b => b !== id) : [...bookmarks, id]);
 
   const streak      = useMemo(() => computeStreak(activity), [activity]);
@@ -4361,7 +4367,7 @@ function EquipTab({ equipData }) {
       {subTab === 'admin'     && <EquipAdmin      progress={progress} />}
 
       {selectedCourse && (
-        <EquipCourseModal course={selectedCourse} progress={progress} onToggleLesson={toggleLesson} onSaveNotes={saveNotesMentor} onClose={() => setSelectedCourse(null)} />
+        <EquipCourseModal course={selectedCourse} progress={progress} onToggleLesson={toggleLesson} onSaveNotes={saveNotesMentor} onUpdateLessonDate={updateLessonDate} onClose={() => setSelectedCourse(null)} />
       )}
     </div>
     </EquipCoursesCtx.Provider>
@@ -4539,7 +4545,7 @@ function EquipCourseCard({ course, progress, onClick }) {
 }
 
 // --- Course Detail Modal ---
-function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClose }) {
+function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onUpdateLessonDate, onClose }) {
   const COURSES = useEquipCourses();
   const p   = getCourseProgress(course.id, progress, COURSES);
   const tr  = TRACK_META[course.track];
@@ -4594,10 +4600,21 @@ function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClo
                       <button onClick={() => onToggleLesson(course.id, lesson.id)} className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm" style={{ background: done ? EQUIP_ACCENT : 'white', border: `2px solid ${done ? EQUIP_ACCENT : 'var(--border-strong)'}`, color: done ? 'white' : 'transparent', cursor: 'pointer' }}>✓</button>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate" style={{ color: done ? EQUIP_ACCENT : 'var(--ink)' }}>{idx + 1}. {lesson.title}</div>
-                        <div className="text-xs ink-muted flex gap-2 mt-0.5">
+                        <div className="text-xs ink-muted flex flex-wrap gap-2 mt-0.5 items-center">
                           <span>⏱ {lesson.duration} min</span>
                           {lesson.hasQuiz && <span>📝 Reflection</span>}
-                          {done && p.lessonDates?.[lesson.id] && <span style={{ color: EQUIP_ACCENT }}>✓ {formatDateShort(p.lessonDates[lesson.id])}</span>}
+                          {done && (
+                            <input
+                              type="date"
+                              value={p.lessonDates?.[lesson.id] || ''}
+                              onChange={e => onUpdateLessonDate(course.id, lesson.id, e.target.value)}
+                              style={{
+                                fontSize: '0.7rem', border: 'none', background: 'transparent',
+                                color: 'var(--accent)', cursor: 'pointer', padding: 0,
+                                fontFamily: 'inherit', outline: 'none',
+                              }}
+                            />
+                          )}
                         </div>
                       </div>
                       {lesson.hasQuiz && (
