@@ -1229,8 +1229,9 @@ function App() {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+
     try {
-      const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
       const headers  = { 'Content-Type': 'application/json' };
       if (!proxyUrl) {
         headers['x-api-key'] = apiKey;
@@ -1290,7 +1291,7 @@ function App() {
       setStreamingText('');
     } catch (err) {
       if (err.name === 'AbortError') return;
-      setError(err.message);
+      setError(`${err.message} — calling: ${endpoint}`);
     } finally {
       setIsStreaming(false);
     }
