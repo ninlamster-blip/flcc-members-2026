@@ -752,6 +752,25 @@
       "status": "active",
       "birthday": "",
       "sundayOnly": true
+    },
+    {
+      "id": "bro-10",
+      "name": "Benedict Treseni",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-21",
+      "anniversary": "03-03"
+    },
+    {
+      "id": "sis-21",
+      "name": "Shannie Sadia",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-05"
     }
   ],
   "themes": {
