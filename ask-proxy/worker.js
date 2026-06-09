@@ -73,71 +73,91 @@ async function fetchNewsFeed(feed) {
 
 export default {
   async fetch(request, env) {
-    // CORS preflight
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS });
-    }
-
-    const url = new URL(request.url);
-
-    // ── GET /news — live RSS headlines via rss2json (cached 5 min at edge) ────
-    if (request.method === 'GET' && url.pathname === '/news') {
-      const settled = await Promise.allSettled(RSS_FEEDS.map(fetchNewsFeed));
-      const items = settled
-        .filter(r => r.status === 'fulfilled')
-        .flatMap(r => r.value)
-        .slice(0, 21);
-      return new Response(JSON.stringify({ items }), {
-        headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
-      });
-    }
-
-    // ── All other non-POST requests → static assets ───────────────────────────
-    if (request.method !== 'POST') {
-      return env.ASSETS.fetch(request);
-    }
-
-    if (!env.ANTHROPIC_API_KEY) {
+    // Top-level catch — every response gets CORS headers, nothing escapes as a bare Cloudflare error
+    try {
+      return await handleRequest(request, env);
+    } catch (err) {
       return new Response(
-        JSON.stringify({ error: { message: 'ANTHROPIC_API_KEY secret not set on the Worker. See setup instructions.' } }),
+        JSON.stringify({ error: { message: `Worker error: ${err.message}` } }),
         { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } }
       );
     }
-
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return new Response(
-        JSON.stringify({ error: { message: 'Invalid JSON body' } }),
-        { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    let anthropicResp;
-    try {
-      anthropicResp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type':      'application/json',
-          'x-api-key':         env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify(body),
-      });
-    } catch (err) {
-      return new Response(
-        JSON.stringify({ error: { message: `Worker could not reach Anthropic API: ${err.message}` } }),
-        { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    return new Response(anthropicResp.body, {
-      status: anthropicResp.status,
-      headers: {
-        ...CORS,
-        'Content-Type': anthropicResp.headers.get('Content-Type') || 'application/json',
-      },
-    });
   },
 };
+
+async function handleRequest(request, env) {
+  // CORS preflight
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS });
+  }
+
+  const url = new URL(request.url);
+
+  // ── GET /ping — health check ──────────────────────────────────────────────
+  if (request.method === 'GET' && url.pathname === '/ping') {
+    return new Response(JSON.stringify({ ok: true, keySet: !!env.ANTHROPIC_API_KEY }), {
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // ── GET /news — live RSS headlines via rss2json (cached 5 min at edge) ────
+  if (request.method === 'GET' && url.pathname === '/news') {
+    const settled = await Promise.allSettled(RSS_FEEDS.map(fetchNewsFeed));
+    const items = settled
+      .filter(r => r.status === 'fulfilled')
+      .flatMap(r => r.value)
+      .slice(0, 21);
+    return new Response(JSON.stringify({ items }), {
+      headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
+    });
+  }
+
+  // ── All other non-POST requests → static assets ───────────────────────────
+  if (request.method !== 'POST') {
+    return env.ASSETS.fetch(request);
+  }
+
+  // ── POST → Anthropic proxy ────────────────────────────────────────────────
+  if (!env.ANTHROPIC_API_KEY) {
+    return new Response(
+      JSON.stringify({ error: { message: 'ANTHROPIC_API_KEY secret not set on the Worker. See setup instructions.' } }),
+      { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ error: { message: 'Invalid JSON body' } }),
+      { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  let anthropicResp;
+  try {
+    anthropicResp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    return new Response(
+      JSON.stringify({ error: { message: `Worker could not reach Anthropic API: ${err.message}` } }),
+      { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  return new Response(anthropicResp.body, {
+    status: anthropicResp.status,
+    headers: {
+      ...CORS,
+      'Content-Type': anthropicResp.headers.get('Content-Type') || 'application/json',
+    },
+  });
+}
