@@ -2189,7 +2189,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     style={{ color: '#BE185D' }}
                     onClick={() => {
                       const name = `${b.worker.title ? b.worker.title + ' ' : ''}${b.worker.name}`;
-                      const msg = `🎂 Happy Birthday ${name}! 🎉\n\nWishing you God's blessings on your special day! From the FLCC Family 🙏`;
+                      const msg = `🎂 Happy Birthday, ${name}! 🎉\n\nMay this special day be filled with joy, love, and God's abundant grace. We thank God for the gift of your life and the blessing you are to our church family.\n\nWith love and prayers, from FLCC - Abundance Family! 🙏`;
                       const church = data.ministry?.messenger;
                       if (church) {
                         window.open(`https://m.me/${church}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -2228,7 +2228,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     style={{ color: '#C2410C' }}
                     onClick={() => {
                       const name = `${a.worker.title ? a.worker.title + ' ' : ''}${a.worker.name}`;
-                      const msg = `💍 Happy Anniversary ${name}! 🎉\n\nWishing you and your family God's continued blessings! From the FLCC Family 🙏`;
+                      const msg = `💍 Happy Anniversary, ${name}! 🎉\n\nMay God continue to bless your marriage with love, faith, and joy that grows stronger every year. We are grateful for the beautiful example you are to our church family.\n\nWith love and prayers, from FLCC - Abundance Family! 🙏`;
                       const church = data.ministry?.messenger;
                       if (church) {
                         window.open(`https://m.me/${church}?text=${encodeURIComponent(msg)}`, '_blank');
