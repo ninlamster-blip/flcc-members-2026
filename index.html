@@ -1763,7 +1763,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           <div className="home-grid">
             {myNextService && (
               <div className="home-card home-card-mine" onClick={() => setActiveTab('mine')}>
-                <div className="home-card-eyebrow">{daysAway(myNextService.date)} · {myNextService.service}</div>
+                <div className="home-card-eyebrow">{daysAway(myNextService.date)} · {myNextService.service} · {data.meta?.serviceTimes?.[myNextService.service] || ''}</div>
                 <div className="home-card-title">{formatDateLong(myNextService.date)}</div>
                 <div className="home-card-body">
                   {ROLES.filter(r => myNextService.roles[r.key] === me.id).map(r => (
@@ -1824,7 +1824,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           <div className="home-grid">
             {nextFriday && (
               <div className="home-card" onClick={() => { setCurrentMonth(monthKey(nextFriday.date)); setActiveTab('month'); }}>
-                <div className="home-card-eyebrow">{daysAway(nextFriday.date)} · Friday</div>
+                <div className="home-card-eyebrow">{daysAway(nextFriday.date)} · Friday · {data.meta?.serviceTimes?.Friday || '4:30 PM'}</div>
                 <div className="home-card-title">{formatDateLong(nextFriday.date)}</div>
                 <div className="home-card-body text-xs ink-muted">
                   {(() => {
@@ -1845,7 +1845,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
             )}
             {nextSunday && (
               <div className="home-card" onClick={() => { setCurrentMonth(monthKey(nextSunday.date)); setActiveTab('month'); }}>
-                <div className="home-card-eyebrow">{daysAway(nextSunday.date)} · Sunday</div>
+                <div className="home-card-eyebrow">{daysAway(nextSunday.date)} · Sunday · {data.meta?.serviceTimes?.Sunday || '6:30 PM'}</div>
                 <div className="home-card-title">{formatDateLong(nextSunday.date)}</div>
                 <div className="home-card-body text-xs ink-muted">
                   {(() => {
@@ -2977,7 +2977,7 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
                     return (
                       <div key={i} className="pb-3" style={{ borderBottom: i < upcoming.length - 1 ? '1px solid var(--border)' : 'none' }}>
                         <div className="text-xs ink-subtle mb-1">
-                          {svcLabel && <span style={{ fontWeight:600, color:'var(--accent)' }}>{svcLabel} · </span>}
+                          {svcLabel && <span style={{ fontWeight:600, color:'var(--accent)' }}>{svcLabel}{s.service && data.meta?.serviceTimes?.[s.service] ? ` · ${data.meta.serviceTimes[s.service]}` : ''} · </span>}
                           {label}{s.event ? ` · ${s.event}` : ''}
                         </div>
                         {s.preacher    && <div className="text-sm"><span className="ink-muted text-xs">Preacher · </span>{s.preacher}</div>}
