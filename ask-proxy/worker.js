@@ -95,7 +95,11 @@ async function handleRequest(request, env) {
 
   // ── GET /ping — health check ──────────────────────────────────────────────
   if (request.method === 'GET' && url.pathname === '/ping') {
-    return new Response(JSON.stringify({ ok: true, keySet: !!env.ANTHROPIC_API_KEY }), {
+    return new Response(JSON.stringify({
+      ok: true,
+      keySet: !!env.ANTHROPIC_API_KEY,
+      assetsBinding: !!env.ASSETS,
+    }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }
@@ -112,9 +116,12 @@ async function handleRequest(request, env) {
     });
   }
 
-  // ── All other non-POST requests → static assets ───────────────────────────
+  // ── All other non-POST requests ──────────────────────────────────────────
+  // Static files (HTML, JSON, etc.) are served directly by Cloudflare's edge
+  // before the Worker runs, so env.ASSETS is not available here.
   if (request.method !== 'POST') {
-    return env.ASSETS.fetch(request);
+    if (env.ASSETS) return env.ASSETS.fetch(request);
+    return new Response('Not found', { status: 404, headers: CORS });
   }
 
   // ── POST → Anthropic proxy ────────────────────────────────────────────────
