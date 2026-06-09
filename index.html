@@ -4069,13 +4069,13 @@ function recordEquipActivity(date) {
 function getCourseProgress(courseId, progress, courses) {
   const list = courses || EQUIP_COURSES;
   const c = list.find(x => x.id === courseId);
-  if (!c) return { status: 'not_started', percent: 0, completedLessons: [] };
+  if (!c) return { status: 'not_started', percent: 0, completedLessons: [], lessonDates: {} };
   const p = progress[courseId] || {};
   const done = (p.completedLessons || []).length;
   const total = c.lessons.length;
   const percent = total ? Math.round((done / total) * 100) : 0;
   const status = done === total && total > 0 ? 'completed' : done > 0 ? 'in_progress' : 'not_started';
-  return { status, percent, completedLessons: p.completedLessons || [], startedAt: p.startedAt, completedAt: p.completedAt, notes: p.notes || '', mentor: p.mentor || '', lastActivityAt: p.lastActivityAt };
+  return { status, percent, completedLessons: p.completedLessons || [], lessonDates: p.lessonDates || {}, startedAt: p.startedAt, completedAt: p.completedAt, notes: p.notes || '', mentor: p.mentor || '', lastActivityAt: p.lastActivityAt };
 }
 
 function computeStreak(activityDates) {
@@ -4271,14 +4271,17 @@ function EquipTab({ equipData }) {
     const course = allCourses.find(c => c.id === courseId);
     const prev = progress[courseId] || {};
     const done = [...(prev.completedLessons || [])];
+    const dates = { ...(prev.lessonDates || {}) };
     const idx = done.indexOf(lessonId);
-    if (idx === -1) done.push(lessonId); else done.splice(idx, 1);
+    if (idx === -1) { done.push(lessonId); dates[lessonId] = today; }
+    else            { done.splice(idx, 1); delete dates[lessonId]; }
     const full = course && done.length === course.lessons.length;
     setProgress({
       ...progress,
       [courseId]: {
         ...prev,
         completedLessons: done,
+        lessonDates: dates,
         status: full ? 'completed' : done.length ? 'in_progress' : 'not_started',
         startedAt:   prev.startedAt   || (done.length ? today : null),
         completedAt: full ? (prev.completedAt || today) : null,
@@ -4594,6 +4597,7 @@ function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClo
                         <div className="text-xs ink-muted flex gap-2 mt-0.5">
                           <span>⏱ {lesson.duration} min</span>
                           {lesson.hasQuiz && <span>📝 Reflection</span>}
+                          {done && p.lessonDates?.[lesson.id] && <span style={{ color: EQUIP_ACCENT }}>✓ {formatDateShort(p.lessonDates[lesson.id])}</span>}
                         </div>
                       </div>
                       {lesson.hasQuiz && (
