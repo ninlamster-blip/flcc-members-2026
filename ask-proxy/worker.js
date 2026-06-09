@@ -124,7 +124,8 @@ async function handleRequest(request, env) {
     return new Response('Not found', { status: 404, headers: CORS });
   }
 
-  // ── POST → Anthropic proxy ────────────────────────────────────────────────
+  // ── POST /proxy → Anthropic proxy (explicit path avoids asset-routing conflicts) ──
+  // Also accept POST to any path for backwards compatibility
   if (!env.ANTHROPIC_API_KEY) {
     return new Response(
       JSON.stringify({ error: { message: 'ANTHROPIC_API_KEY secret not set on the Worker. See setup instructions.' } }),
