@@ -724,6 +724,8 @@ const GIVING_DATA_URL    = './finance-members.json';
 const WORSHIP_DATA_URL   = './worship.json';
 const ASK_PASTOR_KEY     = 'flcc-ask-pastor-v1';
 const SELF_BIRTHDAY_KEY  = 'flcc-self-birthday-v1';
+const PRAYER_LOG_KEY     = 'flcc-prayer-log-v1';
+const GOSPEL_KEY         = 'flcc-gospel-count-v1';
 const BOTR_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
 const BOTR_2026_TARGET   = 54000;
 const MUSIC_ACCENT = '#EA580C';
@@ -754,6 +756,33 @@ const NT_BOOKS = [
   ['1 John',5],['2 John',1],['3 John',1],['Jude',1],['Revelation',22],
 ]; // 260 chapters total
 const NT_TOTAL = NT_BOOKS.reduce((s, [, c]) => s + c, 0);
+
+// ── Daily Devotional (keyed by day of week: 0=Sun … 6=Sat) ──────────────────
+const DAILY_DEVOTIONAL = [
+  { icon: '🙏', theme: 'Worship',       verse: 'Psalm 95:1-2',          text: '"Come, let us sing for joy to the Lord; let us shout aloud to the Rock of our salvation."',                                 mission: 'Start your day by singing your favorite hymn — even just one verse. Offer pure worship to God.' },
+  { icon: '🌅', theme: 'New Week',      verse: 'Lamentations 3:22-23',  text: '"His mercies are new every morning; great is his faithfulness."',                                                           mission: 'Dedicate this new week to God. Pray for one specific goal to accomplish for His glory.' },
+  { icon: '⛪', theme: 'Church Family', verse: 'Hebrews 10:24-25',      text: '"Let us consider how we may spur one another on toward love and good deeds."',                                              mission: 'Reach out to one fellow church member today with a sincere word of encouragement.' },
+  { icon: '📖', theme: 'Scripture',     verse: 'Psalm 119:105',         text: '"Your word is a lamp for my feet, a light on my path."',                                                                    mission: 'Read and meditate on one passage today. Write down one thing God speaks to your heart.' },
+  { icon: '✝️', theme: 'Gospel',        verse: 'Romans 1:16',           text: '"I am not ashamed of the gospel, because it is the power of God that brings salvation."',                                  mission: 'Pray for one unsaved friend by name. Ask God to open a door for you to share with them.' },
+  { icon: '🌻', theme: 'Gratitude',     verse: '1 Thessalonians 5:18',  text: '"Give thanks in all circumstances; for this is God\'s will for you in Christ Jesus."',                                     mission: 'Write down 5 specific blessings from this week and thank God for each one out loud.' },
+  { icon: '✨', theme: 'Sabbath Rest',  verse: 'Matthew 11:28',         text: '"Come to me, all you who are weary and burdened, and I will give you rest."',                                               mission: 'Rest in God\'s presence today. Take a quiet moment to be still and let God restore your soul.' },
+];
+
+const PRAYER_PROMPTS = [
+  { at: 0,   text: 'Begin in silence. Open your heart to God and set aside all distractions.' },
+  { at: 60,  text: '🙌 Praise — Thank God for who He is. His love, His faithfulness, His grace.' },
+  { at: 120, text: '🕊️ Confession — Lay down any burden or sin. Receive His forgiveness and peace.' },
+  { at: 180, text: '🏛️ Intercession — Pray for your church family, your leaders, and those in need.' },
+  { at: 240, text: '🌿 Petition — Bring your personal needs and requests before God.' },
+  { at: 290, text: '🌟 Almost done — Close with gratitude. Thank God for hearing your prayer.' },
+];
+
+const ENCOURAGE_PRESETS = [
+  '🙏 Praying for you today! God sees your faithfulness and He is always with you.',
+  '🔥 What a blessing you are to our church! Your service and sacrifice mean so much to all of us.',
+  '❤️ You are a true gift to FLCC - Abundance Family! We thank God for you every single day.',
+  '✨ Keep shining for Jesus! The way you serve and love others is a true inspiration to us all.',
+];
 function getBibleReadingForDay(dayOfYear) {
   const idx = ((dayOfYear - 1) % NT_TOTAL + NT_TOTAL) % NT_TOTAL;
   let n = 0;
@@ -1474,6 +1503,74 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
         Your upcoming service and prayer assignments. Tap 📅 to save to your phone calendar, or "Report conflict" if you can't make it.
       </SectionHeading>
 
+      {/* Ministry Identity Card */}
+      <div className="card p-5 mb-5" style={{ background: 'linear-gradient(135deg,#18181B,#27272A)', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -30, left: -10, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' }} />
+        <div className="flex items-start justify-between mb-3 gap-2" style={{ position: 'relative' }}>
+          <div>
+            <div className="text-xs tracking-widest uppercase mb-1" style={{ color: '#71717A' }}>Ministry Card</div>
+            <div className="font-bold" style={{ fontSize: '1.1rem', letterSpacing: '0.03em' }}>🙏 {me.title ? me.title.toUpperCase() + ' ' : ''}{me.name.toUpperCase()}</div>
+            {me.eligibleRoles?.length > 0 && (
+              <div className="text-sm mt-1" style={{ color: '#A1A1AA' }}>
+                {ROLES.find(r => r.key === me.eligibleRoles[0])?.label || me.eligibleRoles[0]}
+              </div>
+            )}
+            <div className="text-xs mt-1" style={{ color: '#52525B' }}>{data.meta?.churchName || 'FLCC - Abundance Church'}</div>
+          </div>
+          <button className="text-xs px-3 py-1 rounded-lg flex-shrink-0"
+            style={{ background: 'rgba(255,255,255,0.1)', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer' }}
+            onClick={() => {
+              const roleList = (me.eligibleRoles || []).map(r => ROLES.find(x => x.key === r)?.label || r).join('\n  ');
+              const card = `🙏 ${me.title ? me.title + ' ' : ''}${me.name}\n${ROLES.find(r => r.key === me.eligibleRoles?.[0])?.label || 'Member'}\n${data.meta?.churchName || 'FLCC - Abundance Church'}\n\nRoles:\n  ${roleList}\n\n#FLCC #AbundanceFamily`;
+              try { navigator.clipboard.writeText(card); alert('Ministry card copied!'); } catch {}
+            }}>
+            📋 Copy
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-4" style={{ position: 'relative' }}>
+          {(me.eligibleRoles || []).map(rk => {
+            const role = ROLES.find(r => r.key === rk);
+            const icons = { presider: '✝️', songLeader: '🎤', preacher: '📖', pastoralPrayer: '🙏', communionAssistant1: '🍞', communionAssistant2: '🍞', foodInCharge: '🍽️' };
+            return (
+              <span key={rk} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.1)', color: '#D4D4D8' }}>
+                {icons[rk] || '•'} {role?.label || rk}
+              </span>
+            );
+          })}
+        </div>
+        <div className="flex gap-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}>
+          {(() => {
+            const log = (() => { try { return JSON.parse(localStorage.getItem(PRAYER_LOG_KEY)) || []; } catch { return []; } })();
+            const totalMins = log.reduce((s, e) => s + (e.minutes || 0), 0);
+            const gospelCount = (() => { try { return parseInt(localStorage.getItem(GOSPEL_KEY)) || 0; } catch { return 0; } })();
+            return (
+              <React.Fragment>
+                <div className="text-center flex-1">
+                  <div className="text-xl font-bold" style={{ color: '#4ADE80' }}>{log.length}</div>
+                  <div className="text-xs" style={{ color: '#71717A' }}>prayers logged</div>
+                </div>
+                <div className="text-center flex-1">
+                  <div className="text-xl font-bold" style={{ color: '#4ADE80' }}>{totalMins}</div>
+                  <div className="text-xs" style={{ color: '#71717A' }}>min prayed</div>
+                </div>
+                <div className="text-center flex-1">
+                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    onClick={() => {
+                      const newCount = gospelCount + 1;
+                      try { localStorage.setItem(GOSPEL_KEY, String(newCount)); } catch {}
+                      alert(`Gospel shared! Total: ${newCount} 🙏 God bless you!`);
+                    }}>
+                    <div className="text-xl font-bold" style={{ color: '#A78BFA' }}>{gospelCount}</div>
+                    <div className="text-xs" style={{ color: '#71717A' }}>gospel shared ➕</div>
+                  </button>
+                </div>
+              </React.Fragment>
+            );
+          })()}
+        </div>
+      </div>
+
       {/* Personal attendance record — full card */}
       {attendanceData && (
         <PersonalAttendanceCard me={me} attendanceData={attendanceData} compact={false} />
@@ -1878,8 +1975,65 @@ function BibleReadingCard({ setActiveTab }) {
 // =============================================================================
 // HOME TAB
 // =============================================================================
+// ── Encourage Modal ──────────────────────────────────────────────────────────
+function EncourageModal({ worker, data, onClose }) {
+  const [selected, setSelected] = React.useState(null);
+  const [custom, setCustom] = React.useState('');
+  const name = `${worker.title ? worker.title + ' ' : ''}${worker.name}`;
+  const firstName = worker.name.split(' ')[0];
+
+  function send() {
+    const msg = selected !== null ? ENCOURAGE_PRESETS[selected] : custom.trim();
+    if (!msg) return;
+    const full = `Hi ${name}! 👋\n\n${msg}\n\n— From FLCC - Abundance Family 🙏`;
+    const recipient = worker.messenger || data.ministry?.messenger;
+    if (recipient) {
+      window.open(`https://m.me/${recipient}?text=${encodeURIComponent(full)}`, '_blank');
+    } else {
+      try { navigator.clipboard.writeText(full); } catch {}
+      alert('Message copied to clipboard!');
+    }
+    onClose();
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }} onClick={onClose}>
+      <div className="card p-5" style={{ maxWidth: 400, width: '100%' }} onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="font-semibold">💌 Encourage {firstName}</div>
+          <button className="btn btn-soft text-xs" onClick={onClose}>✕</button>
+        </div>
+        <div className="space-y-2 mb-4">
+          {ENCOURAGE_PRESETS.map((msg, i) => (
+            <button key={i} className="w-full text-left text-sm p-3 rounded-xl"
+              style={{ border: selected === i ? '2px solid #93C5FD' : '1px solid #E4E4E7', background: selected === i ? '#EFF6FF' : '#FAFAFA', cursor: 'pointer', display: 'block', lineHeight: 1.5 }}
+              onClick={() => { setSelected(i); setCustom(''); }}>
+              {msg}
+            </button>
+          ))}
+        </div>
+        <div className="mb-4">
+          <div className="text-xs ink-muted mb-1">Or write a custom message:</div>
+          <textarea className="w-full text-sm p-3 rounded-xl"
+            style={{ border: '1px solid #E4E4E7', minHeight: 72, resize: 'vertical', fontFamily: 'inherit' }}
+            placeholder="Type your encouragement..."
+            value={custom}
+            onChange={e => { setCustom(e.target.value); setSelected(null); }} />
+        </div>
+        <button className="btn btn-primary w-full"
+          style={{ opacity: (selected === null && !custom.trim()) ? 0.5 : 1 }}
+          disabled={selected === null && !custom.trim()}
+          onClick={send}>
+          💬 Send via Messenger
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData }) {
   const today = todayISO();
+  const [encourageTarget, setEncourageTarget] = useState(null);
   const nextWeekStart = today;
   const horizon = addDays(today, 60);
 
@@ -2224,6 +2378,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                   >
                     🎂 Send Greeting
                   </button>
+                  <button className="btn btn-soft text-xs" style={{ color: '#7C3AED' }} onClick={() => setEncourageTarget(b.worker)}>
+                    💌 Encourage
+                  </button>
                 </div>
               </div>
             ))}
@@ -2262,6 +2419,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     }}
                   >
                     💍 Send Greeting
+                  </button>
+                  <button className="btn btn-soft text-xs" style={{ color: '#7C3AED' }} onClick={() => setEncourageTarget(a.worker)}>
+                    💌 Encourage
                   </button>
                 </div>
               </div>
@@ -2351,6 +2511,10 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           <p className="text-xs ink-muted mb-3">Get conflict reporting, "save my assignments" buttons, and personalized highlights.</p>
           <button className="btn btn-accent text-sm" onClick={() => setActiveTab('about')}>Get started</button>
         </div>
+      )}
+
+      {encourageTarget && (
+        <EncourageModal worker={encourageTarget} data={data} onClose={() => setEncourageTarget(null)} />
       )}
     </div>
   );
@@ -7710,12 +7874,218 @@ function WorshipTab({ worshipData }) {
 }
 
 // =============================================================================
+// DEVOTIONAL TAB
+// =============================================================================
+
+function DevotionalTab({ me, data }) {
+  const nowDate = new Date();
+  const plan = DAILY_DEVOTIONAL[nowDate.getDay()];
+  const greetingTime = nowDate.getHours() < 12 ? 'morning' : nowDate.getHours() < 17 ? 'afternoon' : 'evening';
+
+  const [timerActive, setTimerActive] = useState(false);
+  const [timerDone, setTimerDone] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(300);
+  const [currentPrompt, setCurrentPrompt] = useState(PRAYER_PROMPTS[0]);
+  const audioCtxRef = useRef(null);
+  const intervalRef = useRef(null);
+
+  const [prayerLog, setPrayerLog] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(PRAYER_LOG_KEY)) || []; } catch { return []; }
+  });
+
+  const monthKey = todayISO().slice(0, 7);
+  const monthlyMinutes = useMemo(() =>
+    prayerLog.filter(s => s.date.startsWith(monthKey)).reduce((sum, s) => sum + (s.minutes || 0), 0),
+    [prayerLog, monthKey]
+  );
+
+  const [encourageTarget, setEncourageTarget] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      clearInterval(intervalRef.current);
+      if (audioCtxRef.current) { try { audioCtxRef.current.close(); } catch {} audioCtxRef.current = null; }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!timerActive) return;
+    intervalRef.current = setInterval(() => {
+      setSecondsLeft(prev => {
+        const next = prev - 1;
+        const elapsed = 300 - next;
+        const prompt = [...PRAYER_PROMPTS].reverse().find(p => elapsed >= p.at) || PRAYER_PROMPTS[0];
+        setCurrentPrompt(prompt);
+        if (next <= 0) {
+          clearInterval(intervalRef.current);
+          setTimerActive(false);
+          setTimerDone(true);
+          if (audioCtxRef.current) { try { audioCtxRef.current.close(); } catch {} audioCtxRef.current = null; }
+          const entry = { date: todayISO(), minutes: 5 };
+          setPrayerLog(prev => {
+            const updated = [...prev, entry];
+            try { localStorage.setItem(PRAYER_LOG_KEY, JSON.stringify(updated)); } catch {}
+            return updated;
+          });
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current);
+  }, [timerActive]);
+
+  function startTimer() {
+    setSecondsLeft(300);
+    setTimerDone(false);
+    setCurrentPrompt(PRAYER_PROMPTS[0]);
+    setTimerActive(true);
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 174;
+      gain.gain.value = 0.04;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      audioCtxRef.current = ctx;
+    } catch {}
+  }
+
+  function stopTimer() {
+    clearInterval(intervalRef.current);
+    setTimerActive(false);
+    if (audioCtxRef.current) { try { audioCtxRef.current.close(); } catch {} audioCtxRef.current = null; }
+  }
+
+  const mins = Math.floor(secondsLeft / 60);
+  const secs = secondsLeft % 60;
+  const progress = (300 - secondsLeft) / 300;
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="Daily Devotional" title="Prayer & Mission">
+        Your daily mission, guided prayer time, and a way to encourage a fellow member.
+      </SectionHeading>
+
+      {/* Daily Mission Card */}
+      <div className="card p-5 mb-5" style={{ background: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', border: '1.5px solid #BFDBFE' }}>
+        <div className="flex items-center gap-3 mb-3">
+          <span style={{ fontSize: '1.75rem' }}>{plan.icon}</span>
+          <div>
+            <div className="text-xs font-medium tracking-widest uppercase" style={{ color: '#1D4ED8' }}>Today's Theme</div>
+            <div className="font-bold text-lg" style={{ color: '#1E40AF' }}>{plan.theme}</div>
+          </div>
+        </div>
+        <div className="text-sm mb-1" style={{ color: '#1E3A8A' }}>📖 {plan.verse}</div>
+        <div className="text-sm italic mb-4" style={{ color: '#1D4ED8', lineHeight: 1.6 }}>{plan.text}</div>
+        <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(255,255,255,0.7)' }}>
+          <div className="text-xs font-medium mb-1" style={{ color: '#1E40AF' }}>🎯 Today's Mission</div>
+          <div className="text-sm" style={{ color: '#1E3A8A', lineHeight: 1.5 }}>{plan.mission}</div>
+        </div>
+        {me && (
+          <div className="text-xs text-center" style={{ color: '#3B82F6' }}>
+            Good {greetingTime}, {me.title ? me.title + ' ' : ''}{me.name.split(' ')[0]}! Keep shining for God today. 🌟
+          </div>
+        )}
+      </div>
+
+      {/* Prayer Timer */}
+      <div className="card p-5 mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">📿 Daily Prayer Timer</div>
+
+        {!timerActive && !timerDone && (
+          <div className="text-center">
+            <div className="font-bold mb-1" style={{ fontSize: '3rem', color: '#16A34A', fontVariantNumeric: 'tabular-nums' }}>5:00</div>
+            <div className="text-sm ink-muted mb-4">Guided 5-minute prayer with soft tone &amp; Scripture prompts</div>
+            <button className="btn btn-primary" style={{ background: '#16A34A', borderColor: '#15803D' }} onClick={startTimer}>
+              🙏 Begin Prayer
+            </button>
+          </div>
+        )}
+
+        {timerActive && (
+          <div className="text-center">
+            <div className="relative mx-auto mb-3" style={{ width: 130, height: 130 }}>
+              <svg width="130" height="130" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+                <circle cx="65" cy="65" r="56" fill="none" stroke="#D1FAE5" strokeWidth="8" />
+                <circle cx="65" cy="65" r="56" fill="none" stroke="#16A34A" strokeWidth="8"
+                  strokeDasharray={String(2 * Math.PI * 56)}
+                  strokeDashoffset={String(2 * Math.PI * 56 * (1 - progress))}
+                  style={{ transition: 'stroke-dashoffset 1s linear' }} />
+              </svg>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
+                <div className="font-bold" style={{ fontSize: '1.5rem', color: '#16A34A', fontVariantNumeric: 'tabular-nums' }}>
+                  {mins}:{secs.toString().padStart(2, '0')}
+                </div>
+                <div className="text-xs" style={{ color: '#4ADE80' }}>🎵 ♪</div>
+              </div>
+            </div>
+            <div className="text-sm p-3 rounded-xl mb-4" style={{ background: '#F0FDF4', color: '#166534', lineHeight: 1.6 }}>
+              {currentPrompt.text}
+            </div>
+            <button className="btn btn-soft text-sm" onClick={stopTimer}>⏹ Stop</button>
+          </div>
+        )}
+
+        {timerDone && (
+          <div className="text-center">
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🙏</div>
+            <div className="font-semibold text-lg mb-1" style={{ color: '#16A34A' }}>Amen! Prayer complete.</div>
+            <div className="text-sm ink-muted mb-4">5 minutes logged to your prayer record.</div>
+            <button className="btn btn-soft" onClick={() => { setTimerDone(false); setSecondsLeft(300); setCurrentPrompt(PRAYER_PROMPTS[0]); }}>
+              🔄 Pray Again
+            </button>
+          </div>
+        )}
+
+        <div className="flex gap-6 mt-4 pt-4 justify-center" style={{ borderTop: '1px solid #E4E4E7' }}>
+          <div className="text-center">
+            <div className="text-2xl font-bold" style={{ color: '#16A34A' }}>{monthlyMinutes}</div>
+            <div className="text-xs ink-muted">min this month</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold" style={{ color: '#16A34A' }}>{prayerLog.length}</div>
+            <div className="text-xs ink-muted">sessions total</div>
+          </div>
+        </div>
+        {monthlyMinutes > 0 && (
+          <div className="text-xs text-center mt-2" style={{ color: '#16A34A' }}>
+            You prayed {monthlyMinutes} min{monthlyMinutes !== 1 ? 's' : ''} in {nowDate.toLocaleDateString('en-US', { month: 'long' })}! 🙏
+          </div>
+        )}
+      </div>
+
+      {/* Encourage a Member */}
+      <div className="card p-5 mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">💌 Encourage a Member</div>
+        <div className="text-sm ink-muted mb-3">Choose a member and send them an encouragement through Messenger.</div>
+        <div className="flex flex-wrap gap-2">
+          {(data.workers || []).filter(w => w.status === 'active' && w.type === 'individual').map(w => (
+            <button key={w.id} className="btn btn-soft text-xs" onClick={() => setEncourageTarget(w)}>
+              {w.title ? w.title + ' ' : ''}{w.name.split(' ')[0]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {encourageTarget && (
+        <EncourageModal worker={encourageTarget} data={data} onClose={() => setEncourageTarget(null)} />
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
 const TABS = [
-  { key: 'home',     label: 'Home' },
-  { key: 'mine',     label: 'My Schedule', requiresMe: true },
+  { key: 'home',        label: 'Home' },
+  { key: 'devotional',  label: '🙏 Devotional' },
+  { key: 'mine',        label: 'My Schedule', requiresMe: true },
   { key: 'month',    label: 'This Month' },
   { key: 'calendar', label: 'Calendar' },
   { key: 'prayer',   label: 'Prayer',   requiresPrayer: true },
@@ -8224,6 +8594,7 @@ function App() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div key={currentTab} className="tab-content-area">
           {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
+          {currentTab === 'devotional' && <DevotionalTab me={me} data={data} />}
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
