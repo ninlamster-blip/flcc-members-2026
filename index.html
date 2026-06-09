@@ -7852,7 +7852,7 @@ function App() {
     let pendingDone = 0;
     const checkDone = () => {
       pendingDone += 1;
-      if (pendingDone >= 8) setRefreshing(false);
+      if (pendingDone >= 7) setRefreshing(false);
     };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
