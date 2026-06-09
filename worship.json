@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "churchName": "Abundance Church FLCC",
+    "publishedAt": "2026-06-09",
+    "version": 1
+  },
+  "songs": [
+    {
+      "id": "ws-001",
+      "title": "Great Are You Lord",
+      "artist": "All Sons & Daughters",
+      "key": "D",
+      "capo": 0,
+      "tempo": "Slow",
+      "tags": ["worship", "offering"],
+      "chords": "Verse:\nD  A  Bm  G  (x2)\n\nPre-Chorus:\nA  G  A  G\n\nChorus:\nD  A  Bm  G  (x2)\nD  A  G",
+      "link": ""
+    },
+    {
+      "id": "ws-002",
+      "title": "Way Maker",
+      "artist": "Sinach",
+      "key": "G",
+      "capo": 0,
+      "tempo": "Moderate",
+      "tags": ["worship", "opening"],
+      "chords": "Verse:\nG  D  Em  C  (x2)\n\nChorus:\nG  D  Em  C\nG  D  C",
+      "link": ""
+    },
+    {
+      "id": "ws-003",
+      "title": "Glorious",
+      "artist": "Paul Baloche",
+      "key": "A",
+      "capo": 0,
+      "tempo": "Upbeat",
+      "tags": ["praise", "opening"],
+      "chords": "Verse:\nA  E  F#m  D  (x2)\n\nChorus:\nA  E  D  A\nF#m  E  D  E",
+      "link": ""
+    }
+  ],
+  "songSets": [],
+  "playlists": []
+}

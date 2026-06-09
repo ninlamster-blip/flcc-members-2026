@@ -700,6 +700,9 @@ const MUSIC_DATA_URL     = './music.json';
 const EQUIP_DATA_URL     = './equip.json';
 const ATTENDANCE_DATA_URL = './attendance.json';
 const GIVING_DATA_URL    = './finance-members.json';
+const WORSHIP_DATA_URL   = './worship.json';
+const ASK_PASTOR_KEY     = 'flcc-ask-pastor-v1';
+const SELF_BIRTHDAY_KEY  = 'flcc-self-birthday-v1';
 const BOTR_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
 const BOTR_2026_TARGET   = 54000;
 const MUSIC_ACCENT = '#EA580C';
@@ -2140,6 +2143,25 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                 <div className="home-card-title" style={{ fontSize: '1rem' }}>{workerDisplay(b.worker)}</div>
                 <div className="home-card-body text-xs ink-muted">
                   {b.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </div>
+                <div className="home-card-actions">
+                  <button
+                    className="btn btn-soft text-xs"
+                    style={{ color: '#BE185D' }}
+                    onClick={() => {
+                      const name = `${b.worker.title ? b.worker.title + ' ' : ''}${b.worker.name}`;
+                      const msg = `🎂 Happy Birthday ${name}! 🎉\n\nWishing you God's blessings on your special day! From the FLCC Family 🙏`;
+                      const church = data.ministry?.messenger;
+                      if (church) {
+                        window.open(`https://m.me/${church}?text=${encodeURIComponent(msg)}`, '_blank');
+                      } else {
+                        try { navigator.clipboard.writeText(msg); } catch {}
+                        alert('Birthday greeting copied to clipboard!');
+                      }
+                    }}
+                  >
+                    🎂 Send Greeting
+                  </button>
                 </div>
               </div>
             ))}
@@ -4054,6 +4076,11 @@ const EQUIP_RESOURCES = [
   { id: 'r14', title: '30 Days of Prayer Guide',      type: 'devotional',     url: '#', description: 'A focused 30-day prayer devotional for personal and corporate intercession.', category: 'spiritual-growth', courseId: null, featured: false },
   { id: 'r15', title: 'Cost of Discipleship (Video)', type: 'video',          url: '#', description: 'A teaching on counting the cost of following Christ in the modern world.', category: 'discipleship', courseId: 'discipleship', featured: false },
 ];
+
+function loadPastorQuestions() { try { return JSON.parse(localStorage.getItem(ASK_PASTOR_KEY) || '[]'); } catch { return []; } }
+function savePastorQuestions(q) { try { localStorage.setItem(ASK_PASTOR_KEY, JSON.stringify(q)); } catch {} }
+function loadSelfBirthday() { try { return JSON.parse(localStorage.getItem(SELF_BIRTHDAY_KEY) || '{}'); } catch { return {}; } }
+function saveSelfBirthday(b) { try { localStorage.setItem(SELF_BIRTHDAY_KEY, JSON.stringify(b)); } catch {} }
 
 // --- Equip storage helpers ---
 function loadEquipProgress()  { try { return JSON.parse(localStorage.getItem(EQUIP_PROGRESS_KEY)  || '{}'); } catch { return {}; } }
@@ -7128,6 +7155,432 @@ function AskTab({ data, prayerData, musicData, equipData }) {
 }
 
 // =============================================================================
+// ASK THE PASTOR TAB
+// =============================================================================
+function AskPastorTab({ data }) {
+  const [questions, setQsState] = useState(loadPastorQuestions);
+  const [text, setText]         = useState('');
+  const [pastorId, setPastorId] = useState('');
+  const [copied, setCopied]     = useState(null);
+
+  const setQs = q => { savePastorQuestions(q); setQsState(q); };
+
+  const pastors = useMemo(() =>
+    (data.workers || []).filter(w => w.title === 'Ptr.' || w.title === 'Rev.'),
+    [data.workers]
+  );
+
+  useEffect(() => {
+    if (pastors.length && !pastorId) setPastorId(pastors[0].id);
+  }, [pastors, pastorId]);
+
+  const submit = () => {
+    if (!text.trim()) return;
+    const p = pastors.find(w => w.id === pastorId);
+    const entry = {
+      id: `q-${Date.now()}`,
+      text: text.trim(),
+      pastorId,
+      pastorName: p ? `${p.title} ${p.name}` : 'Pastor',
+      date: todayISO(),
+      answered: false,
+    };
+    setQs([entry, ...questions]);
+    setText('');
+  };
+
+  const copyText = (q) => {
+    const msg = `(Ask the Pastor — anonymous)\n\nFor ${q.pastorName}:\n"${q.text}"`;
+    try { navigator.clipboard.writeText(msg); } catch {}
+    setCopied(q.id);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const messengerUrl = (q) => {
+    const p = pastors.find(w => w.id === q.pastorId);
+    const messenger = p?.messenger || data.ministry?.messenger;
+    if (!messenger) return null;
+    const msg = `(Anonymous question for ${q.pastorName}): ${q.text}`;
+    return `https://m.me/${messenger}?text=${encodeURIComponent(msg)}`;
+  };
+
+  const toggleAnswered = (id) => {
+    setQs(questions.map(q => q.id === id ? { ...q, answered: !q.answered } : q));
+  };
+
+  const deleteQ = (id) => setQs(questions.filter(q => q.id !== id));
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="FLCC · Pastoral" title="Ask the Pastor">
+        Submit your question anonymously. Ptr. Justin or Ptr. Doddie will answer during the weekly Q&amp;A.
+      </SectionHeading>
+
+      {/* Submit form */}
+      <div className="card p-5 mb-6">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Submit a question</div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs ink-muted">Choose a pastor</label>
+            <select
+              className="input mt-1"
+              value={pastorId}
+              onChange={e => setPastorId(e.target.value)}
+            >
+              {pastors.map(p => (
+                <option key={p.id} value={p.id}>{p.title} {p.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs ink-muted">Your question <span className="ink-subtle">(submitted anonymously)</span></label>
+            <textarea
+              className="input mt-1"
+              rows={4}
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder="Type your question here…"
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={submit}
+            disabled={!text.trim() || !pastorId}
+          >
+            Submit Question
+          </button>
+        </div>
+      </div>
+
+      {/* Submitted questions */}
+      {questions.length > 0 && (
+        <div>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Submitted questions</div>
+          <div className="space-y-3">
+            {questions.map(q => {
+              const mUrl = messengerUrl(q);
+              return (
+                <div
+                  key={q.id}
+                  className="card p-4"
+                  style={{
+                    borderLeft: `3px solid ${q.answered ? '#16A34A' : 'var(--accent)'}`,
+                    opacity: q.answered ? 0.7 : 1,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="text-xs ink-muted">
+                      For <strong>{q.pastorName}</strong> · {formatDateShort(q.date)}
+                      {q.answered && <span className="ml-2" style={{ color: '#16A34A' }}>✓ Answered</span>}
+                    </div>
+                    <button className="text-xs ink-subtle hover:ink" onClick={() => deleteQ(q.id)}>✕</button>
+                  </div>
+                  <div className="text-sm" style={{ color: 'var(--ink)', lineHeight: 1.6 }}>"{q.text}"</div>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <button
+                      className="btn btn-soft text-xs"
+                      onClick={() => copyText(q)}
+                    >
+                      {copied === q.id ? '✓ Copied!' : '📋 Copy message'}
+                    </button>
+                    {mUrl && (
+                      <a
+                        href={mUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-soft text-xs"
+                      >
+                        💬 Send via Messenger
+                      </a>
+                    )}
+                    <button
+                      className="btn btn-soft text-xs"
+                      onClick={() => toggleAnswered(q.id)}
+                      style={q.answered ? { color: '#16A34A' } : {}}
+                    >
+                      {q.answered ? '↩ Mark unanswered' : '✓ Mark answered'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {questions.length === 0 && (
+        <div className="text-center py-10 ink-muted text-sm">
+          <div className="text-3xl mb-3">🙋</div>
+          No questions yet — be the first to ask!
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// WORSHIP TAB
+// =============================================================================
+const WORSHIP_ACCENT = '#7C3AED';
+const WORSHIP_SOFT   = '#EDE9FE';
+const WORSHIP_TINT   = '#F5F3FF';
+
+function WorshipTab({ worshipData }) {
+  const [subTab, setSubTab]     = useState('songs');
+  const [search, setSearch]     = useState('');
+  const [keyFilter, setKeyFilter] = useState('all');
+  const [openSong, setOpenSong] = useState(null);
+
+  const songs      = worshipData?.songs     || [];
+  const songSets   = worshipData?.songSets  || [];
+  const playlists  = worshipData?.playlists || [];
+
+  const keys = useMemo(() => {
+    const ks = [...new Set(songs.map(s => s.key).filter(Boolean))].sort();
+    return ['all', ...ks];
+  }, [songs]);
+
+  const filtered = useMemo(() => {
+    return songs.filter(s => {
+      if (keyFilter !== 'all' && s.key !== keyFilter) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        return s.title.toLowerCase().includes(q) || (s.artist || '').toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [songs, search, keyFilter]);
+
+  const subTabs = [
+    { key: 'songs',    label: '🎵 Songs' },
+    { key: 'sets',     label: '📋 Song Sets' },
+    { key: 'playlists', label: '▶ Playlists' },
+  ];
+
+  return (
+    <div className="fade-in">
+      <SectionHeading eyebrow="FLCC · Worship" title="Worship">
+        Song library, chord charts, upcoming song sets, and worship playlists.
+      </SectionHeading>
+
+      {/* Sub-tab nav */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        {subTabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setSubTab(t.key)}
+            className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full"
+            style={{
+              background: subTab === t.key ? WORSHIP_ACCENT : 'var(--surface)',
+              color: subTab === t.key ? 'white' : 'var(--ink-muted)',
+              border: `1px solid ${subTab === t.key ? WORSHIP_ACCENT : 'var(--border)'}`,
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Songs sub-tab */}
+      {subTab === 'songs' && (
+        <div>
+          {/* Search + key filter */}
+          <div className="flex gap-2 mb-4">
+            <input
+              className="input flex-1"
+              placeholder="Search songs or artist…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            <select
+              className="input"
+              value={keyFilter}
+              onChange={e => setKeyFilter(e.target.value)}
+              style={{ maxWidth: 80 }}
+            >
+              {keys.map(k => (
+                <option key={k} value={k}>{k === 'all' ? 'Key' : k}</option>
+              ))}
+            </select>
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-10 ink-muted text-sm">
+              <div className="text-3xl mb-3">🎵</div>
+              {songs.length === 0 ? 'No songs added yet.' : 'No songs match your filter.'}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {filtered.map(song => {
+              const isOpen = openSong === song.id;
+              return (
+                <div
+                  key={song.id}
+                  className="card overflow-hidden"
+                  style={{ borderLeft: `3px solid ${WORSHIP_ACCENT}` }}
+                >
+                  <button
+                    className="w-full text-left p-4 flex items-center justify-between gap-3"
+                    onClick={() => setOpenSong(isOpen ? null : song.id)}
+                  >
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm truncate">{song.title}</div>
+                      <div className="text-xs ink-muted mt-0.5">
+                        {song.artist && <span>{song.artist}</span>}
+                        {song.key && <span className="ml-2 font-mono" style={{ color: WORSHIP_ACCENT }}>Key: {song.key}</span>}
+                        {song.capo > 0 && <span className="ml-2 ink-subtle">Capo {song.capo}</span>}
+                        {song.tempo && <span className="ml-2 ink-subtle">{song.tempo}</span>}
+                      </div>
+                      {song.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {song.tags.map(tag => (
+                            <span
+                              key={tag}
+                              className="text-xs px-2 py-0.5 rounded-full"
+                              style={{ background: WORSHIP_SOFT, color: WORSHIP_ACCENT }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs ink-subtle flex-shrink-0">{isOpen ? '▲' : '▼'}</span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-4 pb-4 space-y-3 border-t" style={{ borderColor: WORSHIP_SOFT }}>
+                      {song.chords && (
+                        <div className="mt-3">
+                          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: WORSHIP_ACCENT }}>Chords</div>
+                          <pre
+                            className="text-sm rounded-xl p-3 overflow-x-auto"
+                            style={{
+                              background: WORSHIP_TINT,
+                              fontFamily: "'Geist Mono', monospace",
+                              lineHeight: 1.8,
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                            }}
+                          >{song.chords}</pre>
+                        </div>
+                      )}
+                      {song.link && (
+                        <a
+                          href={song.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-soft text-xs inline-flex items-center gap-1"
+                        >
+                          📄 View full chart
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Song Sets sub-tab */}
+      {subTab === 'sets' && (
+        <div>
+          {songSets.length === 0 ? (
+            <div className="text-center py-10 ink-muted text-sm">
+              <div className="text-3xl mb-3">📋</div>
+              No song sets planned yet.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {songSets.map(set => {
+                const setSongs = (set.songs || [])
+                  .map(id => songs.find(s => s.id === id))
+                  .filter(Boolean);
+                return (
+                  <div key={set.id} className="card p-5" style={{ borderTop: `3px solid ${WORSHIP_ACCENT}` }}>
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div>
+                        <div className="font-display text-lg font-semibold">{formatDateShort(set.date)} · {set.service}</div>
+                        {set.theme && <div className="text-xs ink-muted mt-0.5">Theme: {set.theme}</div>}
+                        {set.leader && <div className="text-xs ink-muted">Led by: {set.leader}</div>}
+                      </div>
+                      <span className="text-xs px-2 py-1 rounded-full" style={{ background: WORSHIP_SOFT, color: WORSHIP_ACCENT }}>
+                        {setSongs.length} songs
+                      </span>
+                    </div>
+                    {setSongs.length > 0 ? (
+                      <ol className="space-y-1">
+                        {setSongs.map((song, i) => (
+                          <li key={song.id} className="flex items-center gap-2 text-sm">
+                            <span className="text-xs ink-subtle w-5">{i + 1}.</span>
+                            <span className="font-medium">{song.title}</span>
+                            <span className="text-xs ink-muted">{song.artist}</span>
+                            <span className="text-xs font-mono ml-auto" style={{ color: WORSHIP_ACCENT }}>{song.key}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <div className="text-xs ink-muted italic">Songs not yet assigned.</div>
+                    )}
+                    {set.notes && (
+                      <div className="mt-3 text-xs ink-muted italic border-t pt-2" style={{ borderColor: 'var(--border)' }}>
+                        {set.notes}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Playlists sub-tab */}
+      {subTab === 'playlists' && (
+        <div>
+          {playlists.length === 0 ? (
+            <div className="text-center py-10 ink-muted text-sm">
+              <div className="text-3xl mb-3">▶</div>
+              No playlists added yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {playlists.map(pl => (
+                <a
+                  key={pl.id}
+                  href={pl.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="card p-4 flex items-center gap-4 no-underline"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <div
+                    className="text-2xl flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ background: WORSHIP_SOFT }}
+                  >
+                    {pl.type === 'spotify' ? '🎧' : pl.type === 'youtube' ? '▶' : '🎵'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm">{pl.title}</div>
+                    {pl.description && <div className="text-xs ink-muted mt-0.5">{pl.description}</div>}
+                    <div className="text-xs mt-1" style={{ color: WORSHIP_ACCENT }}>{pl.type}</div>
+                  </div>
+                  <span className="ml-auto text-xs ink-subtle flex-shrink-0">↗</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
@@ -7136,9 +7589,11 @@ const TABS = [
   { key: 'mine',     label: 'My Schedule', requiresMe: true },
   { key: 'month',    label: 'This Month' },
   { key: 'calendar', label: 'Calendar' },
-  { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
-  { key: 'music',    label: 'Music',   requiresMusic:  true },
-  { key: 'equip',    label: 'Equip'   },
+  { key: 'prayer',   label: 'Prayer',   requiresPrayer:  true },
+  { key: 'music',    label: 'Music',    requiresMusic:   true },
+  { key: 'worship',  label: '🎵 Worship', requiresWorship: true },
+  { key: 'pastor',   label: '🙋 Ask Pastor' },
+  { key: 'equip',    label: 'Equip' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
 ];
@@ -7352,6 +7807,7 @@ function App() {
   const [equipData, setEquipData] = useState(null);
   const [attendanceData, setAttendanceData] = useState(null);
   const [givingData, setGivingData] = useState(null);
+  const [worshipData, setWorshipData] = useState(null);
   const [error, setError] = useState(null);
   const [me, setMe] = useState(null);
   const [meId, setMeId] = useState(() => {
@@ -7396,7 +7852,7 @@ function App() {
     let pendingDone = 0;
     const checkDone = () => {
       pendingDone += 1;
-      if (pendingDone >= 6) setRefreshing(false);
+      if (pendingDone >= 8) setRefreshing(false);
     };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
@@ -7457,6 +7913,15 @@ function App() {
         else setGivingData(false);
       })
       .catch(() => setGivingData(false))
+      .finally(checkDone);
+    // Optional: worship.json
+    fetch(`${WORSHIP_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(w => {
+        if (w && Array.isArray(w.songs)) setWorshipData(w);
+        else setWorshipData(false);
+      })
+      .catch(() => setWorshipData(false))
       .finally(checkDone);
   };
 
@@ -7575,6 +8040,7 @@ function App() {
     if (t.requiresPrayer && !prayerData) return false;
     if (t.requiresMusic && !musicData) return false;
     if (t.requiresGiving && !givingData) return false;
+    if (t.requiresWorship && !worshipData) return false;
     return true;
   });
   const currentTab = visibleTabs.find(t => t.key === activeTab) ? activeTab : 'home';
@@ -7636,6 +8102,8 @@ function App() {
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+          {currentTab === 'worship' && worshipData && <WorshipTab worshipData={worshipData} />}
+          {currentTab === 'pastor' && <AskPastorTab data={data} />}
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
           {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
           {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
