@@ -1334,7 +1334,7 @@ function App() {
               flexShrink:0,
             }}
           >
-            <span style={{color:'var(--accent)', fontSize:'0.8125rem', fontWeight:700}}>❆</span>
+            <span style={{color:'var(--accent)', fontSize:'0.8125rem', fontWeight:700}}>🧠</span>
           </div>
           <div className="min-w-0">
             <div className="font-display font-semibold leading-tight truncate" style={{fontSize:'0.9375rem', color:'var(--ink)'}}>
@@ -1409,7 +1409,7 @@ function App() {
                   display:'flex', alignItems:'center', justifyContent:'center',
                   margin:'0 auto 0.875rem',
                   fontSize:'1.375rem',
-                }}>❆</div>
+                }}>🧠</div>
                 <h1 className="font-display font-semibold mb-1.5" style={{fontSize:'1.5rem', color:'var(--ink)'}}>
                   Ask FLCC anything
                 </h1>
@@ -1510,7 +1510,7 @@ function App() {
           {messages.map((msg, i) => (
             <div key={i} className={msg.role === 'user' ? 'msg-user' : 'msg-assistant'}>
               {msg.role === 'assistant' && (
-                <div className="avatar">❆</div>
+                <div className="avatar">🧠</div>
               )}
               <div className="bubble">
                 {msg.role === 'user'
@@ -1524,7 +1524,7 @@ function App() {
           {/* Streaming response */}
           {isStreaming && (
             <div className="msg-assistant">
-              <div className="avatar">❆</div>
+              <div className="avatar">🧠</div>
               <div className="bubble">
                 {streamingText
                   ? <Md text={streamingText} streaming={true} />
