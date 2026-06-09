@@ -1555,7 +1555,7 @@ function App() {
               ref={textareaRef}
               className="chat-textarea"
               placeholder={
-                !apiKey        ? 'Set your API key above to start…' :
+                (!apiKey && !proxyUrl) ? 'Tap Connect above to get started…' :
                 !appData       ? 'Loading church data…' :
                 'Ask about the schedule, Bible, or anything…'
               }
@@ -1563,7 +1563,7 @@ function App() {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               rows={1}
-              disabled={isStreaming || !apiKey || !appData}
+              disabled={isStreaming || (!apiKey && !proxyUrl) || !appData}
             />
             {isStreaming ? (
               <button className="send-btn stop" onClick={stopStream} title="Stop">
@@ -1575,7 +1575,7 @@ function App() {
               <button
                 className="send-btn"
                 onClick={() => sendMessage()}
-                disabled={!input.trim() || !apiKey || !appData}
+                disabled={!input.trim() || (!apiKey && !proxyUrl) || !appData}
                 title="Send (Enter)"
               >
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
