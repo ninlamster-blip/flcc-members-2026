@@ -2,7 +2,11 @@
   "meta": {
     "churchName": "FLCC - Abundance Church",
     "publishedAt": "2026-05-30T13:57:52.786Z",
-    "version": "1.0"
+    "version": "1.0",
+    "serviceTimes": {
+      "Friday": "4:30 PM",
+      "Sunday": "6:30 PM"
+    }
   },
   "ministry": {
     "headName": "Sis. Amazelle De Jesus",
