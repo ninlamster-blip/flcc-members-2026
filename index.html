@@ -4330,7 +4330,7 @@ function EquipTab({ equipData }) {
         </div>
         <div className="card p-3 text-center">
           <div className="font-display text-2xl font-semibold">
-            {allCourses.filter(c => getCourseProgress(c.id, progress).percent === 100).length}<span className="text-sm ink-muted">/{allCourses.length}</span>
+            {allCourses.filter(c => getCourseProgress(c.id, progress, allCourses).percent === 100).length}<span className="text-sm ink-muted">/{allCourses.length}</span>
           </div>
           <div className="text-xs ink-muted">Completed</div>
         </div>
@@ -4403,7 +4403,7 @@ function EquipOverview({ progress, streak, badges, pathwayStage, setSubTab, setS
           <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">▸ Continue Learning</div>
           <div className="space-y-2">
             {inProgress.map(c => {
-              const p = getCourseProgress(c.id, progress);
+              const p = getCourseProgress(c.id, progress, COURSES);
               const tr = TRACK_META[c.track];
               return (
                 <div key={c.id} className="card p-4 cursor-pointer" onClick={() => setSelectedCourse(c)} style={{ borderLeft: `3px solid ${tr.color}` }}>
@@ -4537,7 +4537,8 @@ function EquipCourseCard({ course, progress, onClick }) {
 
 // --- Course Detail Modal ---
 function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onClose }) {
-  const p   = getCourseProgress(course.id, progress);
+  const COURSES = useEquipCourses();
+  const p   = getCourseProgress(course.id, progress, COURSES);
   const tr  = TRACK_META[course.track];
   const [notes, setNotes]   = useState(p.notes);
   const [mentor, setMentor] = useState(p.mentor);
