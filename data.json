@@ -26,7 +26,7 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "10-25"
     },
     {
       "id": "sis-02",
@@ -37,7 +37,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "09-14",
+      "anniversary": "03-03"
     },
     {
       "id": "sis-03",
@@ -48,7 +49,7 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "10-19"
     },
     {
       "id": "sis-04",
@@ -59,7 +60,7 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "11-20"
     },
     {
       "id": "sis-05",
@@ -71,7 +72,8 @@
         "preacher"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "12-23",
+      "anniversary": "04-24"
     },
     {
       "id": "sis-06",
@@ -83,7 +85,8 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "08-25",
+      "anniversary": "06-27"
     },
     {
       "id": "sis-07",
@@ -94,7 +97,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "01-30",
+      "anniversary": "01-25"
     },
     {
       "id": "sis-08",
@@ -105,7 +109,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "08-24",
+      "anniversary": "01-24"
     },
     {
       "id": "sis-09",
@@ -116,7 +121,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": "08-19"
+      "birthday": "08-19",
+      "anniversary": "07-09"
     },
     {
       "id": "sis-10",
@@ -127,7 +133,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "11-21",
+      "anniversary": "02-14"
     },
     {
       "id": "sis-11",
@@ -138,7 +145,7 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "04-24"
     },
     {
       "id": "sis-12",
@@ -149,7 +156,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "05-16",
+      "anniversary": "02-07"
     },
     {
       "id": "sis-13",
@@ -161,7 +169,8 @@
         "preacher"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "02-18",
+      "anniversary": "01-18"
     },
     {
       "id": "sis-14",
@@ -172,7 +181,7 @@
         "presider"
       ],
       "status": "active",
-      "birthday": "",
+      "birthday": "08-17",
       "sundayOnly": true
     },
     {
@@ -185,7 +194,8 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "03-29",
+      "anniversary": "05-23"
     },
     {
       "id": "sis-16",
@@ -196,7 +206,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "06-28",
+      "anniversary": "09-08"
     },
     {
       "id": "sis-17",
@@ -208,7 +219,7 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "06-03"
     },
     {
       "id": "sis-18",
@@ -224,7 +235,8 @@
         "communionAssistant2"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "10-18",
+      "anniversary": "07-29"
     },
     {
       "id": "sis-19",
@@ -235,7 +247,8 @@
         "preacher"
       ],
       "status": "active",
-      "birthday": "05-04"
+      "birthday": "05-04",
+      "anniversary": "08-03"
     },
     {
       "id": "sis-20",
@@ -246,7 +259,7 @@
         "presider"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "04-28"
     },
     {
       "id": "bro-01",
@@ -257,7 +270,8 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "12-13",
+      "anniversary": "02-04"
     },
     {
       "id": "bro-02",
@@ -268,7 +282,8 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "10-10",
+      "anniversary": "06-27"
     },
     {
       "id": "bro-03",
@@ -279,7 +294,8 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "",
+      "anniversary": "05-23"
     },
     {
       "id": "bro-04",
@@ -293,7 +309,8 @@
         "communionAssistant2"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "01-21",
+      "anniversary": "04-24"
     },
     {
       "id": "bro-05",
@@ -307,7 +324,8 @@
         "communionAssistant2"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "05-19",
+      "anniversary": "07-09"
     },
     {
       "id": "bro-06",
@@ -321,7 +339,8 @@
         "communionAssistant2"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "09-17",
+      "anniversary": "07-10"
     },
     {
       "id": "bro-07",
@@ -336,7 +355,8 @@
         "communionAssistant2"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "08-07",
+      "anniversary": "01-24"
     },
     {
       "id": "bro-08",
@@ -347,7 +367,8 @@
         "preacher"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "09-16",
+      "anniversary": "02-14"
     },
     {
       "id": "bro-09",
@@ -359,8 +380,9 @@
         "songLeader"
       ],
       "status": "active",
-      "birthday": "",
-      "sundayOnly": true
+      "birthday": "09-22",
+      "sundayOnly": true,
+      "anniversary": "01-25"
     },
     {
       "id": "ptr-01",
@@ -372,7 +394,8 @@
         "pastoralPrayer"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "09-26",
+      "anniversary": "01-28"
     },
     {
       "id": "ptr-02",
@@ -384,7 +407,8 @@
         "pastoralPrayer"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "02-02",
+      "anniversary": "09-08"
     },
     {
       "id": "ptr-03",
@@ -395,7 +419,8 @@
         "preacher"
       ],
       "status": "active",
-      "birthday": ""
+      "birthday": "07-10",
+      "anniversary": "10-28"
     },
     {
       "id": "fam-01",
@@ -652,8 +677,9 @@
       "type": "individual",
       "eligibleRoles": [],
       "status": "active",
-      "birthday": "",
-      "sundayOnly": true
+      "birthday": "05-16",
+      "sundayOnly": true,
+      "anniversary": "08-08"
     },
     {
       "id": "sun-03",
@@ -662,8 +688,9 @@
       "type": "individual",
       "eligibleRoles": [],
       "status": "active",
-      "birthday": "",
-      "sundayOnly": true
+      "birthday": "10-07",
+      "sundayOnly": true,
+      "anniversary": "08-10"
     },
     {
       "id": "sun-04",
@@ -702,8 +729,9 @@
       "type": "individual",
       "eligibleRoles": [],
       "status": "active",
-      "birthday": "",
-      "sundayOnly": true
+      "birthday": "08-24",
+      "sundayOnly": true,
+      "anniversary": "01-11"
     },
     {
       "id": "sun-08",
@@ -712,7 +740,7 @@
       "type": "individual",
       "eligibleRoles": [],
       "status": "active",
-      "birthday": "",
+      "birthday": "07-09",
       "sundayOnly": true
     },
     {
