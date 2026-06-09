@@ -3902,7 +3902,8 @@ function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConfli
 
       {musicSubTab === 'worship' && <WorshipTab worshipData={worshipData} />}
 
-      {musicSubTab === 'schedule' && <div className="card p-4 mb-6 flex items-center justify-center gap-3">
+      {musicSubTab === 'schedule' && <React.Fragment>
+      <div className="card p-4 mb-6 flex items-center justify-center gap-3">
         <button className="btn btn-ghost" onClick={() => setCurrentMonth(prevMonth(currentMonth))}>←</button>
         <div className="font-display text-xl font-semibold">{formatMonthLabel(currentMonth)}</div>
         <button className="btn btn-ghost" onClick={() => setCurrentMonth(nextMonth(currentMonth))}>→</button>
@@ -3992,7 +3993,7 @@ function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConfli
       {monthEntries.length === 0 && (
         <div className="card p-6 text-center ink-subtle italic text-sm">No music assignments for {formatMonthLabel(currentMonth)} yet.</div>
       )}
-      </div>}
+      </React.Fragment>}
     </div>
   );
 }
