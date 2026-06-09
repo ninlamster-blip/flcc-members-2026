@@ -704,6 +704,14 @@ const BOTR_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY
 const BOTR_2026_TARGET   = 54000;
 const MUSIC_ACCENT = '#EA580C';
 
+// ── Messenger notification message generator ──────────────────────────────────
+function generateAssignmentMessage(entry, worker, roleLabel, churchName, serviceTimes) {
+  const svcTime = (serviceTimes && serviceTimes[entry.service]) || '';
+  const timePart = svcTime ? `⏰ Time: ${svcTime}\n` : '';
+  const name = [(worker.title || ''), worker.name].filter(Boolean).join(' ');
+  return `📢 Hi ${name}!\n\nYou have a service assignment at ${churchName}:\n\n📅 ${entry.service} Service — ${formatDateLong(entry.date)}\n${timePart}✝️ Your role: ${roleLabel}${entry.isSpecial ? `\n★ Special service: ${entry.specialNote}` : ''}\n\nPlease confirm your availability or report a conflict in the FLCC Members app. God bless! 🙏\n– FLCC Fellowship Ministry`;
+}
+
 // ── Assignment Notifications ──────────────────────────────────────────────────
 const NOTIF_KEY = 'flcc-notifs-seen-v1';
 const loadNotifSeen = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) || []; } catch { return []; } };
@@ -2399,8 +2407,8 @@ function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurren
         </div>
       ) : (
         <>
-          <ServiceListSection title="Friday Service" entries={fridays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} sermonNotes={sermonNotes} onOpenNote={onOpenNote} />
-          <ServiceListSection title="Sunday Service" entries={sundays} workers={data.workers} me={me} churchName={data.meta.churchName} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} sermonNotes={sermonNotes} onOpenNote={onOpenNote} />
+          <ServiceListSection title="Friday Service" entries={fridays} workers={data.workers} me={me} churchName={data.meta.churchName} serviceTimes={data.meta?.serviceTimes} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} sermonNotes={sermonNotes} onOpenNote={onOpenNote} />
+          <ServiceListSection title="Sunday Service" entries={sundays} workers={data.workers} me={me} churchName={data.meta.churchName} serviceTimes={data.meta?.serviceTimes} onConflict={onConflict} prayerData={prayerData} intercessoryByKey={intercessoryByKey} musicData={musicData} musicByKey={musicByKey} sermonNotes={sermonNotes} onOpenNote={onOpenNote} />
         </>
       )}
 
@@ -2439,8 +2447,92 @@ function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurren
   );
 }
 
-function ServiceListSection({ title, entries, workers, me, churchName, onConflict, prayerData, intercessoryByKey, musicData, musicByKey, sermonNotes, onOpenNote }) {
+// ── Notify Members panel (per service card) ───────────────────────────────────
+function NotifyMembersPanel({ entry, workers, churchName, serviceTimes }) {
+  const [copied, setCopied] = useState(null); // workerId that was just copied
+  const [shared, setShared]  = useState(null);
+
+  const assigned = ROLES.map(r => {
+    const workerId = entry.roles[r.key];
+    if (!workerId) return null;
+    const worker = workers.find(w => w.id === workerId);
+    if (!worker) return null;
+    return { worker, roleLabel: r.label, workerId };
+  }).filter(Boolean);
+
+  if (assigned.length === 0) return <div className="text-xs ink-muted mt-1">No roles assigned yet.</div>;
+
+  const handleCopy = (workerId, msg) => {
+    try {
+      navigator.clipboard.writeText(msg).then(() => {
+        setCopied(workerId);
+        setTimeout(() => setCopied(null), 2000);
+      });
+    } catch {
+      // fallback: textarea select
+      const ta = document.createElement('textarea');
+      ta.value = msg; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      setCopied(workerId); setTimeout(() => setCopied(null), 2000);
+    }
+  };
+
+  const handleShare = async (workerId, worker, msg) => {
+    const name = [(worker.title || ''), worker.name].filter(Boolean).join(' ');
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `FLCC Assignment — ${name}`, text: msg });
+        setShared(workerId); setTimeout(() => setShared(null), 2000);
+      } catch {}
+    } else {
+      // Fallback: open Messenger on desktop
+      window.open(`https://www.messenger.com/`, '_blank');
+    }
+  };
+
+  return (
+    <div className="space-y-3 mt-2">
+      {assigned.map(({ worker, roleLabel, workerId }) => {
+        const msg = generateAssignmentMessage(entry, worker, roleLabel, churchName, serviceTimes);
+        const name = [(worker.title || ''), worker.name].filter(Boolean).join(' ');
+        return (
+          <div key={workerId} style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px' }}>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <div className="text-sm font-semibold">{name}</div>
+                <div className="text-xs ink-muted">{roleLabel}</div>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  className="btn btn-soft text-xs"
+                  onClick={() => handleCopy(workerId, msg)}
+                >
+                  {copied === workerId ? '✓ Copied!' : '📋 Copy message'}
+                </button>
+                <button
+                  className="btn btn-accent text-xs"
+                  onClick={() => handleShare(workerId, worker, msg)}
+                  title="Share via Messenger or any app"
+                >
+                  {shared === workerId ? '✓ Shared!' : '💬 Share'}
+                </button>
+              </div>
+            </div>
+            <details className="mt-2">
+              <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
+              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+            </details>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ServiceListSection({ title, entries, workers, me, churchName, serviceTimes, onConflict, prayerData, intercessoryByKey, musicData, musicByKey, sermonNotes, onOpenNote }) {
   if (entries.length === 0) return null;
+  const [notifyOpen, setNotifyOpen] = useState({});
+  const toggleNotify = id => setNotifyOpen(prev => ({ ...prev, [id]: !prev[id] }));
   return (
     <div className="mb-6">
       <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">{title}</div>
@@ -2514,6 +2606,18 @@ function ServiceListSection({ title, entries, workers, me, churchName, onConflic
                   ))}
                 </div>
               )}
+              {/* Notify Members */}
+              <div className="mt-3 pt-3" style={{ borderTop: '1px dashed var(--border-strong)' }}>
+                <button
+                  className="btn btn-soft text-xs"
+                  onClick={() => toggleNotify(entry.id)}
+                >
+                  {notifyOpen[entry.id] ? '▲ Hide notify' : '📢 Notify members'}
+                </button>
+                {notifyOpen[entry.id] && (
+                  <NotifyMembersPanel entry={entry} workers={workers} churchName={churchName} serviceTimes={serviceTimes} />
+                )}
+              </div>
             </div>
           );
         })}
