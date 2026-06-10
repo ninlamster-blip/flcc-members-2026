@@ -2077,13 +2077,25 @@ function HomeTopCard({ setActiveTab }) {
     if (c <= 82) return 'Showers';
     return 'Thunderstorm';
   }
+  function spiritualMessage(c) {
+    if (c === 0) return "Today is a beautiful sunny day — let the love of God shine brightly through you!";
+    if (c <= 2)  return "Sunshine breaks through the clouds, just like God's grace breaks through every challenge. Keep shining!";
+    if (c === 3) return "Even on an overcast day, God's love fully covers you. Walk boldly in His light today!";
+    if (c <= 48) return "Through every fog and uncertainty, God is your compass. Trust His direction — He will never lead you astray.";
+    if (c <= 55) return "Like gentle drizzle that refreshes the earth, may God's Word refresh and nourish your soul today.";
+    if (c <= 67) return "Even in the rain you walk under God's covering. His grace is your shelter and His love your strength!";
+    if (c <= 77) return "As snow blankets the earth in stillness, may God's perfect peace fill your heart and quiet every worry.";
+    if (c <= 82) return "After every shower comes growth. God is watering the seeds of faith He has planted in you!";
+    return "Even in the storm, God is your anchor. Be still and know that He is God — you are safe in His hands!";
+  }
 
   const verseText = (votd?.verses?.[0]?.text || votd?.text || '').trim();
 
   return (
-    <div className="card mb-5" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)', overflow: 'hidden' }}>
-      <div className="p-4 flex items-start gap-4">
-        <div className="flex-1 min-w-0">
+    <React.Fragment>
+      {/* Verse of the Day card */}
+      <div className="card mb-3" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)' }}>
+        <div className="p-4">
           <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#A33B2A' }}>Verse of the Day</div>
           {verseText ? (
             <>
@@ -2101,16 +2113,26 @@ function HomeTopCard({ setActiveTab }) {
             Open Bible →
           </button>
         </div>
-        {weather && (
-          <div className="text-center flex-shrink-0" style={{ minWidth: 68 }}>
-            <div style={{ fontSize: '1.75rem' }}>{weatherEmoji(weather.code)}</div>
-            <div className="font-bold" style={{ fontSize: '1.4rem', color: '#18181B' }}>{Math.round(weather.temp)}°C</div>
-            {weather.city && <div className="text-xs mt-1" style={{ color: '#52525B', lineHeight: 1.3 }}>{weather.city}</div>}
-            <div className="text-xs" style={{ color: '#A33B2A' }}>{weatherLabel(weather.code)}</div>
-          </div>
-        )}
       </div>
-    </div>
+
+      {/* Weather + Spiritual message */}
+      {weather && (
+        <div className="card mb-5 p-4" style={{ border: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-4">
+            <div className="text-center flex-shrink-0" style={{ minWidth: 72 }}>
+              <div style={{ fontSize: '2rem' }}>{weatherEmoji(weather.code)}</div>
+              <div className="font-bold" style={{ fontSize: '1.3rem', color: '#18181B' }}>{Math.round(weather.temp)}°C</div>
+              {weather.city && <div className="text-xs mt-0.5" style={{ color: '#52525B', lineHeight: 1.3 }}>{weather.city}</div>}
+              <div className="text-xs font-medium mt-0.5" style={{ color: '#A33B2A' }}>{weatherLabel(weather.code)}</div>
+            </div>
+            <div className="flex-1">
+              <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#A33B2A' }}>Today's Encouragement</div>
+              <div className="text-sm" style={{ color: '#18181B', lineHeight: 1.65 }}>{spiritualMessage(weather.code)}</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </React.Fragment>
   );
 }
 
@@ -2464,9 +2486,6 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                   >
                     🎂 Send Greeting
                   </button>
-                  <button className="btn btn-soft text-xs" style={{ color: '#7C3AED' }} onClick={() => setEncourageTarget(b.worker)}>
-                    💌 Encourage
-                  </button>
                 </div>
               </div>
             ))}
@@ -2505,9 +2524,6 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     }}
                   >
                     💍 Send Greeting
-                  </button>
-                  <button className="btn btn-soft text-xs" style={{ color: '#7C3AED' }} onClick={() => setEncourageTarget(a.worker)}>
-                    💌 Encourage
                   </button>
                 </div>
               </div>
@@ -8649,25 +8665,25 @@ function App() {
       <header style={{ backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 20, borderBottom: '1px solid var(--border)' }}>
         <div className="hdr-strip" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-0">
-          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+          <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{data.meta.churchName}</div>
               <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1 greeting-h1">
                 {me ? `Hello, ${me.name}` : 'Schedule'}
               </h1>
             </div>
-            <div className="text-xs ink-muted text-right flex flex-col items-end gap-1">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <a href="ask.html" className="ask-pill">💬 Ask FLCC</a>
-                {me && <NotificationBell me={me} data={data} notifSeen={notifSeen} onMarkSeen={handleMarkNotifSeen} />}
-              </div>
-              {data.meta.publishedAt && (
-                <div>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</div>
-              )}
-              <button className="text-xs underline ink-muted hover:ink" onClick={() => loadData(false)} disabled={refreshing}>
-                {refreshing ? '↻ refreshing…' : `↻ ${formatLoadedAgo() || 'refresh'}`}
-              </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <a href="ask.html" className="ask-pill">💬 Ask FLCC</a>
+              {me && <NotificationBell me={me} data={data} notifSeen={notifSeen} onMarkSeen={handleMarkNotifSeen} />}
             </div>
+          </div>
+          <div className="flex items-center gap-3 mt-1" style={{ color: 'var(--ink-muted)', fontSize: '0.75rem' }}>
+            {data.meta.publishedAt && (
+              <span>Published {new Date(data.meta.publishedAt).toLocaleDateString()}</span>
+            )}
+            <button style={{ textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-muted)', fontSize: 'inherit', padding: 0 }} onClick={() => loadData(false)} disabled={refreshing}>
+              {refreshing ? '↻ refreshing…' : `↻ ${formatLoadedAgo() || 'refresh'}`}
+            </button>
           </div>
           <div style={{ position: 'relative' }}>
             <nav style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', overflowY: 'visible', marginTop: '1rem', paddingBottom: '3px', paddingRight: '32px', msOverflowStyle: 'none', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
