@@ -757,6 +757,26 @@ const NT_BOOKS = [
 ]; // 260 chapters total
 const NT_TOTAL = NT_BOOKS.reduce((s, [, c]) => s + c, 0);
 
+// ── Bible translations & book list ────────────────────────────────────────────
+const BIBLE_BOOKS = [
+  [1,'Genesis'],[2,'Exodus'],[3,'Leviticus'],[4,'Numbers'],[5,'Deuteronomy'],
+  [6,'Joshua'],[7,'Judges'],[8,'Ruth'],[9,'1 Samuel'],[10,'2 Samuel'],
+  [11,'1 Kings'],[12,'2 Kings'],[13,'1 Chronicles'],[14,'2 Chronicles'],[15,'Ezra'],
+  [16,'Nehemiah'],[17,'Esther'],[18,'Job'],[19,'Psalms'],[20,'Proverbs'],
+  [21,'Ecclesiastes'],[22,'Song of Solomon'],[23,'Isaiah'],[24,'Jeremiah'],[25,'Lamentations'],
+  [26,'Ezekiel'],[27,'Daniel'],[28,'Hosea'],[29,'Joel'],[30,'Amos'],
+  [31,'Obadiah'],[32,'Jonah'],[33,'Micah'],[34,'Nahum'],[35,'Habakkuk'],
+  [36,'Zephaniah'],[37,'Haggai'],[38,'Zechariah'],[39,'Malachi'],
+  [40,'Matthew'],[41,'Mark'],[42,'Luke'],[43,'John'],[44,'Acts'],
+  [45,'Romans'],[46,'1 Corinthians'],[47,'2 Corinthians'],[48,'Galatians'],[49,'Ephesians'],
+  [50,'Philippians'],[51,'Colossians'],[52,'1 Thessalonians'],[53,'2 Thessalonians'],[54,'1 Timothy'],
+  [55,'2 Timothy'],[56,'Titus'],[57,'Philemon'],[58,'Hebrews'],[59,'James'],
+  [60,'1 Peter'],[61,'2 Peter'],[62,'1 John'],[63,'2 John'],[64,'3 John'],
+  [65,'Jude'],[66,'Revelation'],
+];
+// Max chapter count per book (index 0 = Genesis)
+const BOOK_CHAPTERS = [50,40,27,36,34,24,21,4,31,24,22,25,29,36,10,13,10,42,150,31,12,8,66,52,5,48,12,14,3,9,1,4,7,3,3,3,2,14,4,28,16,24,21,28,16,16,13,6,6,4,4,5,3,6,4,3,1,13,5,5,3,5,1,1,1,22];
+
 // ── Daily Devotional (keyed by day of week: 0=Sun … 6=Sat) ──────────────────
 const DAILY_DEVOTIONAL = [
   { icon: '🙏', theme: 'Worship',       verse: 'Psalm 95:1-2',          text: '"Come, let us sing for joy to the Lord; let us shout aloud to the Rock of our salvation."',                                 mission: 'Start your day by singing your favorite hymn — even just one verse. Offer pure worship to God.' },
@@ -2031,6 +2051,101 @@ function EncourageModal({ worker, data, onClose }) {
   );
 }
 
+// ── Home Top Card: Verse of the Day + Weather ────────────────────────────────
+function HomeTopCard({ setActiveTab }) {
+  const [votd, setVotd] = useState(null);
+  const [weather, setWeather] = useState(null);
+
+  const dayRef = useMemo(() => {
+    const start = new Date(new Date().getFullYear(), 0, 0);
+    const day = Math.floor((Date.now() - start) / 86400000);
+    return VOTD_REFS[day % VOTD_REFS.length];
+  }, []);
+
+  useEffect(() => {
+    fetch(`https://bible-api.com/${encodeURIComponent(dayRef)}?translation=kjv`)
+      .then(r => r.json()).then(d => setVotd(d)).catch(() => {});
+  }, [dayRef]);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async pos => {
+      try {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const [wRes, gRes] = await Promise.all([
+          fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`),
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`),
+        ]);
+        const wData = await wRes.json();
+        const gData = await gRes.json();
+        setWeather({
+          temp: wData.current.temperature_2m,
+          code: wData.current.weather_code,
+          city: gData.address?.city || gData.address?.town || gData.address?.village || gData.address?.suburb || '',
+        });
+      } catch {}
+    }, () => {});
+  }, []);
+
+  function weatherEmoji(c) {
+    if (c === 0) return '☀️';
+    if (c <= 2)  return '🌤️';
+    if (c === 3) return '☁️';
+    if (c <= 48) return '🌫️';
+    if (c <= 55) return '🌦️';
+    if (c <= 67) return '🌧️';
+    if (c <= 77) return '❄️';
+    if (c <= 82) return '🌧️';
+    return '⛈️';
+  }
+  function weatherLabel(c) {
+    if (c === 0) return 'Clear sky';
+    if (c <= 2)  return 'Partly cloudy';
+    if (c === 3) return 'Overcast';
+    if (c <= 48) return 'Foggy';
+    if (c <= 55) return 'Drizzle';
+    if (c <= 67) return 'Rainy';
+    if (c <= 77) return 'Snowy';
+    if (c <= 82) return 'Showers';
+    return 'Thunderstorm';
+  }
+
+  const verseText = (votd?.verses?.[0]?.text || votd?.text || '').trim();
+
+  return (
+    <div className="card mb-5" style={{ background: 'linear-gradient(135deg,#1E3A8A,#1D4ED8)', color: 'white', overflow: 'hidden' }}>
+      <div className="p-4 flex items-start gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#93C5FD' }}>📖 Verse of the Day</div>
+          {verseText ? (
+            <>
+              <div className="text-sm italic mb-2" style={{ color: '#DBEAFE', lineHeight: 1.65 }}>
+                "{verseText.length > 140 ? verseText.slice(0, 140).trimEnd() + '…' : verseText}"
+              </div>
+              <div className="text-xs font-medium" style={{ color: '#93C5FD' }}>— {votd.reference} · KJV</div>
+            </>
+          ) : (
+            <div className="text-xs" style={{ color: '#93C5FD' }}>Loading verse…</div>
+          )}
+          <button className="text-xs mt-3 px-2 py-1 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.15)', color: '#BFDBFE', border: 'none', cursor: 'pointer' }}
+            onClick={() => setActiveTab('bible')}>
+            Open Bible →
+          </button>
+        </div>
+        {weather && (
+          <div className="text-center flex-shrink-0" style={{ minWidth: 68 }}>
+            <div style={{ fontSize: '1.75rem' }}>{weatherEmoji(weather.code)}</div>
+            <div className="font-bold" style={{ fontSize: '1.4rem' }}>{Math.round(weather.temp)}°C</div>
+            {weather.city && <div className="text-xs mt-1" style={{ color: '#93C5FD', lineHeight: 1.3 }}>{weather.city}</div>}
+            <div className="text-xs" style={{ color: '#60A5FA' }}>{weatherLabel(weather.code)}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData }) {
   const today = todayISO();
   const [encourageTarget, setEncourageTarget] = useState(null);
@@ -2165,6 +2280,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       <SectionHeading eyebrow={me ? `Hello, ${me.title || ''} ${me.name}` : 'Welcome'} title="Today">
         {me ? `Your upcoming services, prayer meetings, and what's coming up at ${data.meta.churchName}.` : `What's coming up at ${data.meta.churchName}.`}
       </SectionHeading>
+
+      {/* Verse of the Day + Weather */}
+      <HomeTopCard setActiveTab={setActiveTab} />
 
       {/* Personal birthday / anniversary greeting */}
       {(isMyBirthday || isMyAnniversary) && (
@@ -2497,12 +2615,6 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
         <div className="home-grid">
           <BibleReadingCard setActiveTab={setActiveTab} />
         </div>
-      </div>
-
-      {/* Bible — Verse of the Day + Lookup */}
-      <div className="mb-5">
-        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📖 God's Word</div>
-        <BibleSection />
       </div>
 
       {!me && (
@@ -7064,120 +7176,135 @@ const VOTD_DEVOTIONS = {
 };
 
 function BibleTab() {
-  const [translation, setTranslation] = React.useState(() => {
-    try { return localStorage.getItem(BIBLE_KEY) || 'web'; } catch { return 'web'; }
+  const TRANS = [
+    { key: 'NIV',    label: 'NIV',    full: 'New International Version' },
+    { key: 'KJV',    label: 'KJV',    full: 'King James Version' },
+    { key: 'NLT',    label: 'NLT',    full: 'New Living Translation' },
+    { key: 'MBBTAG', label: 'MB',     full: 'Magandang Balita Bibliya' },
+  ];
+
+  const [trans, setTrans] = useState(() => {
+    try { return localStorage.getItem(BIBLE_KEY) || 'NIV'; } catch { return 'NIV'; }
   });
-  const [votd, setVotd] = React.useState(null);
-  const [votdLoading, setVotdLoading] = React.useState(true);
-  const [votdError, setVotdError] = React.useState(null);
-  const [query, setQuery] = React.useState('');
-  const [result, setResult] = React.useState(null);
-  const [searchLoading, setSearchLoading] = React.useState(false);
-  const [searchError, setSearchError] = React.useState(null);
+  const [bookIdx, setBookIdx] = useState(42); // John (0-indexed)
+  const [chapter, setChapter] = useState(3);
+  const [verses, setVerses] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const dayRef = React.useMemo(() => {
-    const start = new Date(new Date().getFullYear(), 0, 0);
-    const day = Math.floor((Date.now() - start) / 86400000);
-    return VOTD_REFS[day % VOTD_REFS.length];
-  }, []);
+  // Quick-jump search (e.g. "John 3")
+  const [jump, setJump] = useState('');
+  const [jumpError, setJumpError] = useState('');
 
-  const devotion = VOTD_DEVOTIONS[dayRef] || null;
+  const book = BIBLE_BOOKS[bookIdx];
+  const maxChapter = BOOK_CHAPTERS[bookIdx];
 
-  const fetchVerse = async (ref, trans) => {
-    const url = `https://bible-api.com/${encodeURIComponent(ref)}?translation=${trans}`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('Verse not found');
-    return resp.json();
-  };
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setVerses(null);
+    fetch(`https://bolls.life/get-verses/${trans}/${book[0]}/${chapter}/`)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(data => {
+        if (!Array.isArray(data) || !data.length) throw new Error('No verses found for this passage.');
+        setVerses(data);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [trans, bookIdx, chapter]);
 
-  React.useEffect(() => {
-    setVotdLoading(true); setVotdError(null);
-    fetchVerse(dayRef, translation)
-      .then(d => setVotd(d))
-      .catch(() => setVotdError('Could not load verse. Check your connection.'))
-      .finally(() => setVotdLoading(false));
-  }, [dayRef, translation]);
-
-  const changeTranslation = t => {
-    setTranslation(t);
+  function changeTrans(t) {
+    setTrans(t);
     try { localStorage.setItem(BIBLE_KEY, t); } catch {}
-    setResult(null);
-  };
+  }
 
-  const handleSearch = async e => {
-    e?.preventDefault();
-    if (!query.trim()) return;
-    setSearchLoading(true); setSearchError(null); setResult(null);
-    try { setResult(await fetchVerse(query.trim(), translation)); }
-    catch { setSearchError('Verse not found. Try a reference like "John 3:16", "Psalm 23", or "Romans 8:28-30".'); }
-    finally { setSearchLoading(false); }
-  };
+  function handleJump(e) {
+    e.preventDefault();
+    setJumpError('');
+    const parts = jump.trim().match(/^(.+?)\s+(\d+)(?::(\d+))?$/);
+    if (!parts) { setJumpError('Try "John 3" or "Psalms 23"'); return; }
+    const bookName = parts[1].toLowerCase();
+    const idx = BIBLE_BOOKS.findIndex(([, n]) => n.toLowerCase().startsWith(bookName));
+    if (idx < 0) { setJumpError('Book not found. Try the full name.'); return; }
+    setBookIdx(idx);
+    setChapter(Math.max(1, Math.min(BOOK_CHAPTERS[idx], +parts[2])));
+    setJump('');
+  }
+
+  const activeMeta = TRANS.find(t => t.key === trans);
 
   return (
     <div className="fade-in">
-      <SectionHeading eyebrow="God's Word" title="Bible">
-        Verse of the day and reference lookup.
+      <SectionHeading eyebrow="Holy Scripture" title="Bible">
+        Read God's Word in NIV, KJV, NLT, or Magandang Balita Bibliya.
       </SectionHeading>
 
-      <div className="flex gap-2 mb-5 flex-wrap">
-        {[{key:'web',label:'WEB (Modern)'},{key:'kjv',label:'KJV (Classic)'}].map(t => (
-          <button key={t.key} className={`btn text-xs ${translation===t.key?'btn-primary':'btn-ghost'}`} onClick={() => changeTranslation(t.key)}>{t.label}</button>
+      {/* Translation tabs */}
+      <div className="flex gap-2 mb-1 flex-wrap">
+        {TRANS.map(t => (
+          <button key={t.key}
+            className={`btn text-sm ${trans === t.key ? 'btn-primary' : 'btn-soft'}`}
+            onClick={() => changeTrans(t.key)}>
+            {t.label}
+          </button>
         ))}
-        <span className="text-xs ink-subtle self-center ml-2 italic">NIV requires a Scripture API key (coming soon)</span>
+      </div>
+      <div className="text-xs ink-muted mb-4">{activeMeta?.full}</div>
+
+      {/* Book + Chapter nav + Quick jump */}
+      <div className="card p-4 mb-4">
+        <div className="flex items-center gap-2 flex-wrap mb-3">
+          <select className="text-sm rounded-lg px-3 py-2 flex-1"
+            style={{ border: '1px solid #E4E4E7', minWidth: 130, maxWidth: 240, fontFamily: 'inherit' }}
+            value={bookIdx}
+            onChange={e => { setBookIdx(+e.target.value); setChapter(1); }}>
+            {BIBLE_BOOKS.map(([n, name], i) => (
+              <option key={n} value={i}>{name}</option>
+            ))}
+          </select>
+          <div className="flex items-center gap-1">
+            <button className="btn btn-soft px-3" disabled={chapter <= 1} onClick={() => setChapter(c => c - 1)}>‹</button>
+            <span className="text-sm font-medium px-2">Ch. {chapter}/{maxChapter}</span>
+            <button className="btn btn-soft px-3" disabled={chapter >= maxChapter} onClick={() => setChapter(c => c + 1)}>›</button>
+          </div>
+        </div>
+        <form className="flex gap-2" onSubmit={handleJump}>
+          <input className="input flex-1 text-sm" placeholder="Jump to… e.g. John 3"
+            value={jump} onChange={e => setJump(e.target.value)} />
+          <button type="submit" className="btn btn-soft text-sm">Go</button>
+        </form>
+        {jumpError && <div className="text-xs mt-1" style={{ color: '#DC2626' }}>{jumpError}</div>}
       </div>
 
-      {/* Verse of the Day */}
-      <div className="card p-6 mb-6" style={{background:'linear-gradient(135deg,#1E1B4B 0%,#312E81 100%)',border:'none',color:'white'}}>
-        <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{color:'#A5B4FC'}}>📖 Verse of the Day</div>
-        {votdLoading && <div className="text-sm" style={{color:'#C7D2FE'}}>Loading…</div>}
-        {votdError  && <div className="text-sm" style={{color:'#FCA5A5'}}>{votdError}</div>}
-        {votd && !votdLoading && (
-          <>
-            <blockquote className="font-display text-lg leading-relaxed mb-4" style={{color:'#EEF2FF',fontStyle:'italic'}}>
-              "{votd.text?.trim()}"
-            </blockquote>
-            <div className="text-sm font-semibold" style={{color:'#A5B4FC'}}>
-              {votd.reference} <span className="font-normal" style={{color:'#818CF8'}}>· {translation.toUpperCase()}</span>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Daily Devotion */}
-      {devotion && (
-        <div className="card p-6 mb-6">
-          <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{color:'var(--accent)'}}>🕊️ Today's Devotion</div>
-          <div className="text-sm ink-muted mb-2 font-medium">{dayRef}</div>
-          <p className="text-sm ink leading-relaxed" style={{lineHeight:1.8}}>{devotion}</p>
+      {/* Reading pane */}
+      {loading && (
+        <div className="card p-8 text-center ink-muted text-sm">Loading {book[1]} {chapter}…</div>
+      )}
+      {error && (
+        <div className="card p-5 text-center" style={{ background: '#FEF2F2', color: '#DC2626' }}>
+          <div className="font-semibold mb-1">Could not load this passage</div>
+          <div className="text-sm">{error}</div>
         </div>
       )}
-
-      {/* Search */}
-      <div className="card p-6">
-        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Look Up a Verse</div>
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <input className="input flex-1" placeholder='e.g. John 3:16, Psalm 23, Romans 8:28-30' value={query} onChange={e => setQuery(e.target.value)} />
-          <button type="submit" className="btn btn-accent" disabled={searchLoading || !query.trim()}>{searchLoading ? '…' : 'Go'}</button>
-        </form>
-        {searchError && <div className="text-sm mt-3" style={{color:'var(--danger)'}}>{searchError}</div>}
-        {result && (
-          <div className="mt-5">
-            <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">{result.reference} · {translation.toUpperCase()}</div>
-            {(result.verses||[]).length > 1 ? (
-              <div className="space-y-2">
-                {result.verses.map(v => (
-                  <div key={v.verse} className="flex gap-2 text-sm leading-relaxed">
-                    <span className="font-mono text-xs ink-subtle mt-0.5" style={{minWidth:20}}>{v.verse}</span>
-                    <span className="ink">{v.text?.trim()}</span>
-                  </div>
-                ))}
+      {!loading && !error && verses && (
+        <div className="card p-4">
+          <div className="font-semibold mb-4" style={{ color: '#1E40AF' }}>{book[1]} {chapter} · {activeMeta?.full}</div>
+          <div className="space-y-1">
+            {verses.map(v => (
+              <div key={v.verse} className="flex gap-2 text-sm" style={{ lineHeight: 1.75 }}>
+                <span className="font-bold flex-shrink-0 select-none" style={{ color: '#9CA3AF', minWidth: 22 }}>{v.verse}</span>
+                <span style={{ color: '#18181B' }}>{v.text}</span>
               </div>
-            ) : (
-              <div className="text-sm ink leading-relaxed">{result.text?.trim()}</div>
-            )}
+            ))}
           </div>
-        )}
-      </div>
+          <div className="flex justify-between mt-5 pt-4" style={{ borderTop: '1px solid #F4F4F5' }}>
+            <button className="btn btn-soft text-sm" disabled={chapter <= 1}
+              onClick={() => setChapter(c => c - 1)}>‹ Previous</button>
+            <button className="btn btn-soft text-sm" disabled={chapter >= maxChapter}
+              onClick={() => setChapter(c => c + 1)}>Next ›</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -7873,10 +8000,6 @@ function WorshipTab({ worshipData }) {
   );
 }
 
-// =============================================================================
-// DEVOTIONAL TAB
-// =============================================================================
-
 function DevotionalTab({ me, data }) {
   const nowDate = new Date();
   const plan = DAILY_DEVOTIONAL[nowDate.getDay()];
@@ -8083,11 +8206,11 @@ function DevotionalTab({ me, data }) {
 // =============================================================================
 
 const TABS = [
-  { key: 'home',        label: 'Home' },
-  { key: 'devotional',  label: '🙏 Devotional' },
-  { key: 'mine',        label: 'My Schedule', requiresMe: true },
+  { key: 'home',     label: 'Home' },
+  { key: 'mine',     label: 'My Schedule', requiresMe: true },
   { key: 'month',    label: 'This Month' },
   { key: 'calendar', label: 'Calendar' },
+  { key: 'bible',    label: '📖 Bible' },
   { key: 'prayer',   label: 'Prayer',   requiresPrayer: true },
   { key: 'music',    label: 'Music',    requiresMusic:  true },
   { key: 'equip',    label: 'Equip' },
@@ -8594,7 +8717,7 @@ function App() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div key={currentTab} className="tab-content-area">
           {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
-          {currentTab === 'devotional' && <DevotionalTab me={me} data={data} />}
+          {currentTab === 'bible' && <BibleTab />}
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
