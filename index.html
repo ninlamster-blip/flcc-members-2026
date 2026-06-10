@@ -2154,8 +2154,7 @@ function LiftingUpCard({ data, me, attendanceData }) {
     const absentSet = new Set();
 
     [friSessions, sunSessions].forEach(sessions => {
-      if (!sessions.length) return;
-      const threshold = sessions.length; // must have missed ALL available sessions of this type
+      if (sessions.length < 3) return; // need 3 sessions before flagging anyone
 
       const absentCounts = {};
       sessions.forEach(session => {
@@ -2166,7 +2165,7 @@ function LiftingUpCard({ data, me, attendanceData }) {
       });
 
       Object.entries(absentCounts).forEach(([id, count]) => {
-        if (count >= threshold) absentSet.add(id);
+        if (count >= 3) absentSet.add(id);
       });
     });
 
