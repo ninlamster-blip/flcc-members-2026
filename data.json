@@ -1496,7 +1496,11 @@
       "specialNote": "",
       "swapped": false,
       "swapPartner": null,
-      "swapNote": ""
+      "swapNote": "",
+      "absent": [
+        "bro-08",
+        "sis-11"
+      ]
     },
     {
       "id": "2026-06-19-friday",
