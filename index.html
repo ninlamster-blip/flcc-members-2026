@@ -2136,17 +2136,47 @@ function HomeTopCard({ setActiveTab }) {
   );
 }
 
-function LiftingUpCard({ data, me }) {
-  const today = todayISO();
-  const next = useMemo(() => {
-    return (data.schedule || [])
-      .filter(s => s.date >= today && (s.absent || []).length > 0)
-      .sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-  }, [data.schedule, today]);
+function LiftingUpCard({ data, me, attendanceData }) {
+  const absentMembers = useMemo(() => {
+    if (!attendanceData?.sessions?.length) return [];
 
-  if (!next) return null;
-  const absentWorkers = (next.absent || []).map(id => data.workers.find(w => w.id === id)).filter(Boolean);
-  if (!absentWorkers.length) return null;
+    // Only track individual members (not families, pairs, or visitors)
+    const eligibleIds = new Set(
+      (data.workers || [])
+        .filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id))
+        .map(w => w.id)
+    );
+
+    const allSessions = [...(attendanceData.sessions || [])].sort((a, b) => b.date.localeCompare(a.date));
+    const friSessions = allSessions.filter(s => s.service === 'Friday').slice(0, 3);
+    const sunSessions = allSessions.filter(s => s.service === 'Sunday').slice(0, 3);
+
+    const absentSet = new Set();
+
+    [friSessions, sunSessions].forEach(sessions => {
+      if (!sessions.length) return;
+      const threshold = sessions.length; // must have missed ALL available sessions of this type
+
+      const absentCounts = {};
+      sessions.forEach(session => {
+        const presentIds = new Set(session.records.map(r => r.memberId));
+        eligibleIds.forEach(id => {
+          if (!presentIds.has(id)) absentCounts[id] = (absentCounts[id] || 0) + 1;
+        });
+      });
+
+      Object.entries(absentCounts).forEach(([id, count]) => {
+        if (count >= threshold) absentSet.add(id);
+      });
+    });
+
+    return [...absentSet]
+      .map(id => data.workers.find(w => w.id === id))
+      .filter(Boolean)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [attendanceData, data.workers]);
+
+  if (!absentMembers.length) return null;
 
   const senderName = me ? `${me.title ? me.title + ' ' : ''}${me.name}` : 'FLCC Family';
 
@@ -2156,20 +2186,17 @@ function LiftingUpCard({ data, me }) {
         Lifting Up Our Brethren
       </div>
       <div className="text-sm ink-muted mb-4" style={{ lineHeight: 1.5 }}>
-        The following {absentWorkers.length === 1 ? 'member' : 'members'} won't be with us for <strong>{next.service}</strong> service on <strong>{formatDateShort(next.date)}</strong>. Send them some love!
+        {absentMembers.length === 1 ? 'This member has' : `These ${absentMembers.length} members have`} been missing from our recent services. Reach out and let them know they are loved!
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {absentWorkers.map(w => {
+        {absentMembers.map((w, i) => {
           const name = `${w.title ? w.title + ' ' : ''}${w.name}`;
           const firstName = w.name.split(' ')[0];
-          const msg = `Hi ${firstName}! 👋\n\nWe missed you at our ${next.service} service on ${formatDateLong(next.date)}! Just want you to know you are always in our prayers and thoughts. The FLCC family is stronger with you in it — we hope to see you at our next service!\n\nWith love from FLCC - Abundance Family 🙏\n— ${senderName}`;
+          const msg = `Hi ${firstName}! 👋\n\nWe've been missing you at our services! Just want you to know you are always in our prayers and we care about you. The FLCC family is stronger with you in it — we hope to see you soon!\n\nWith love from FLCC - Abundance Family 🙏\n— ${senderName}`;
           return (
             <div key={w.id} className="flex items-center justify-between gap-3 flex-wrap"
-              style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--border)' }}
-            >
-              <div>
-                <div className="font-medium">{name}</div>
-              </div>
+              style={{ paddingBottom: i < absentMembers.length - 1 ? '0.75rem' : 0, borderBottom: i < absentMembers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <div className="font-medium">{name}</div>
               <button
                 className="btn btn-soft flex-shrink-0"
                 style={{ color: 'var(--accent)', fontSize: '0.8rem' }}
@@ -2179,7 +2206,7 @@ function LiftingUpCard({ data, me }) {
                     window.open(`https://m.me/${messenger}?text=${encodeURIComponent(msg)}`, '_blank');
                   } else {
                     try { navigator.clipboard.writeText(msg); } catch {}
-                    alert(`Message copied to clipboard! Paste it and send to ${name} on Messenger.`);
+                    alert(`Message copied! Paste and send to ${name} on Messenger.`);
                   }
                 }}
               >
@@ -2188,9 +2215,6 @@ function LiftingUpCard({ data, me }) {
             </div>
           );
         })}
-      </div>
-      <div className="text-xs ink-subtle mt-3" style={{ lineHeight: 1.5 }}>
-        Members are added to this list by the app admin when conflicts are reported.
       </div>
     </div>
   );
@@ -2335,7 +2359,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       <HomeTopCard setActiveTab={setActiveTab} />
 
       {/* Lifting Up Our Brethren */}
-      <LiftingUpCard data={data} me={me} />
+      <LiftingUpCard data={data} me={me} attendanceData={attendanceData} />
 
       {/* Personal birthday / anniversary greeting */}
       {(isMyBirthday || isMyAnniversary) && (
