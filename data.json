@@ -236,7 +236,8 @@
       ],
       "status": "active",
       "birthday": "10-18",
-      "anniversary": "07-29"
+      "anniversary": "07-29",
+      "designation": "CSL"
     },
     {
       "id": "sis-19",
@@ -310,7 +311,8 @@
       ],
       "status": "active",
       "birthday": "01-21",
-      "anniversary": "04-24"
+      "anniversary": "04-24",
+      "designation": "CSL"
     },
     {
       "id": "bro-05",
@@ -340,7 +342,8 @@
       ],
       "status": "active",
       "birthday": "09-17",
-      "anniversary": "07-10"
+      "anniversary": "07-10",
+      "designation": "CSL"
     },
     {
       "id": "bro-07",
@@ -356,7 +359,8 @@
       ],
       "status": "active",
       "birthday": "08-07",
-      "anniversary": "01-24"
+      "anniversary": "01-24",
+      "designation": "CSL"
     },
     {
       "id": "bro-08",
@@ -395,7 +399,8 @@
       ],
       "status": "active",
       "birthday": "09-26",
-      "anniversary": "01-28"
+      "anniversary": "01-28",
+      "designation": "Lead Pastor"
     },
     {
       "id": "ptr-02",
@@ -408,7 +413,8 @@
       ],
       "status": "active",
       "birthday": "02-02",
-      "anniversary": "09-08"
+      "anniversary": "09-08",
+      "designation": "Pastor"
     },
     {
       "id": "ptr-03",
@@ -690,7 +696,8 @@
       "status": "active",
       "birthday": "10-07",
       "sundayOnly": true,
-      "anniversary": "08-10"
+      "anniversary": "08-10",
+      "hideMinistryCard": true
     },
     {
       "id": "sun-04",
@@ -700,7 +707,8 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "",
-      "sundayOnly": true
+      "sundayOnly": true,
+      "hideMinistryCard": true
     },
     {
       "id": "sun-05",
@@ -720,7 +728,8 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "",
-      "sundayOnly": true
+      "sundayOnly": true,
+      "hideMinistryCard": true
     },
     {
       "id": "sun-07",
@@ -731,7 +740,8 @@
       "status": "active",
       "birthday": "08-24",
       "sundayOnly": true,
-      "anniversary": "01-11"
+      "anniversary": "01-11",
+      "hideMinistryCard": true
     },
     {
       "id": "sun-08",
@@ -741,7 +751,8 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "07-09",
-      "sundayOnly": true
+      "sundayOnly": true,
+      "hideMinistryCard": true
     },
     {
       "id": "sun-09",
@@ -751,7 +762,8 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "",
-      "sundayOnly": true
+      "sundayOnly": true,
+      "hideMinistryCard": true
     },
     {
       "id": "bro-10",
@@ -770,7 +782,8 @@
       "type": "individual",
       "eligibleRoles": [],
       "status": "active",
-      "birthday": "08-05"
+      "birthday": "08-05",
+      "hideMinistryCard": true
     }
   ],
   "themes": {
@@ -1118,7 +1131,7 @@
         "foodInCharge": "par-01"
       },
       "isSpecial": true,
-      "specialNote": "Seven Last Words — Holy Week multi-speaker exhortation",
+      "specialNote": "Seven Last Words \u2014 Holy Week multi-speaker exhortation",
       "swapped": false,
       "swapPartner": null,
       "swapNote": ""
