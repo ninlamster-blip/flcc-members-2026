@@ -1524,42 +1524,39 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
       </SectionHeading>
 
       {/* Ministry Identity Card */}
-      <div className="card p-5 mb-5" style={{ background: 'linear-gradient(135deg,#6B2416,#A33B2A)', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -30, left: -10, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-        <div className="flex items-start justify-between mb-3 gap-2" style={{ position: 'relative' }}>
+      <div className="card p-5 mb-5" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)', position: 'relative', overflow: 'hidden' }}>
+        <div className="flex items-start justify-between mb-3 gap-2">
           <div>
-            <div className="text-xs tracking-widest uppercase mb-1" style={{ color: '#FBBCAD' }}>Ministry Card</div>
-            <div className="font-bold" style={{ fontSize: '1.1rem', letterSpacing: '0.03em' }}>{me.title ? me.title.toUpperCase() + ' ' : ''}{me.name.toUpperCase()}</div>
+            <div className="text-xs tracking-widest uppercase mb-1" style={{ color: '#A33B2A' }}>Ministry Card</div>
+            <div className="font-bold" style={{ fontSize: '1.1rem', letterSpacing: '0.03em', color: '#18181B' }}>{me.title ? me.title.toUpperCase() + ' ' : ''}{me.name.toUpperCase()}</div>
             {me.eligibleRoles?.length > 0 && (
-              <div className="text-sm mt-1" style={{ color: '#FEE2D5' }}>
+              <div className="text-sm mt-1" style={{ color: '#52525B' }}>
                 {ROLES.find(r => r.key === me.eligibleRoles[0])?.label || me.eligibleRoles[0]}
               </div>
             )}
-            <div className="text-xs mt-1" style={{ color: '#FBBCAD' }}>{data.meta?.churchName || 'FLCC - Abundance Church'}</div>
+            <div className="text-xs mt-1" style={{ color: '#52525B' }}>{data.meta?.churchName || 'FLCC - Abundance Church'}</div>
           </div>
           <button className="text-xs px-3 py-1 rounded-lg flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.15)', color: '#FEE2D5', border: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer' }}
+            style={{ background: 'rgba(163,59,42,0.1)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.2)', cursor: 'pointer' }}
             onClick={() => {
               const roleList = (me.eligibleRoles || []).map(r => ROLES.find(x => x.key === r)?.label || r).join('\n  ');
               const card = `${me.title ? me.title + ' ' : ''}${me.name}\n${ROLES.find(r => r.key === me.eligibleRoles?.[0])?.label || 'Member'}\n${data.meta?.churchName || 'FLCC - Abundance Church'}\n\nRoles:\n  ${roleList}\n\n#FLCC #AbundanceFamily`;
               try { navigator.clipboard.writeText(card); alert('Ministry card copied!'); } catch {}
             }}>
-            📋 Copy
+            Copy
           </button>
         </div>
-        <div className="flex flex-wrap gap-2 mb-4" style={{ position: 'relative' }}>
+        <div className="flex flex-wrap gap-2 mb-4">
           {(me.eligibleRoles || []).map(rk => {
             const role = ROLES.find(r => r.key === rk);
-            const icons = { presider: '✝️', songLeader: '🎤', preacher: '📖', pastoralPrayer: '🙏', communionAssistant1: '🍞', communionAssistant2: '🍞', foodInCharge: '🍽️' };
             return (
-              <span key={rk} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.15)', color: '#FEE2D5' }}>
-                {icons[rk] || '•'} {role?.label || rk}
+              <span key={rk} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(163,59,42,0.08)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.15)' }}>
+                {role?.label || rk}
               </span>
             );
           })}
         </div>
-        <div className="flex gap-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.2)', position: 'relative' }}>
+        <div className="flex gap-4 pt-3" style={{ borderTop: '1px solid rgba(163,59,42,0.15)' }}>
           {(() => {
             const log = (() => { try { return JSON.parse(localStorage.getItem(PRAYER_LOG_KEY)) || []; } catch { return []; } })();
             const totalMins = log.reduce((s, e) => s + (e.minutes || 0), 0);
@@ -1567,22 +1564,22 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
             return (
               <React.Fragment>
                 <div className="text-center flex-1">
-                  <div className="text-xl font-bold" style={{ color: '#FEEEE8' }}>{log.length}</div>
-                  <div className="text-xs" style={{ color: '#FBBCAD' }}>prayers logged</div>
+                  <div className="text-xl font-bold" style={{ color: '#A33B2A' }}>{log.length}</div>
+                  <div className="text-xs" style={{ color: '#52525B' }}>prayers logged</div>
                 </div>
                 <div className="text-center flex-1">
-                  <div className="text-xl font-bold" style={{ color: '#FEEEE8' }}>{totalMins}</div>
-                  <div className="text-xs" style={{ color: '#FBBCAD' }}>min prayed</div>
+                  <div className="text-xl font-bold" style={{ color: '#A33B2A' }}>{totalMins}</div>
+                  <div className="text-xs" style={{ color: '#52525B' }}>min prayed</div>
                 </div>
                 <div className="text-center flex-1">
                   <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                     onClick={() => {
                       const newCount = gospelCount + 1;
                       try { localStorage.setItem(GOSPEL_KEY, String(newCount)); } catch {}
-                      alert(`Gospel shared! Total: ${newCount} 🙏 God bless you!`);
+                      alert(`Gospel shared! Total: ${newCount} God bless you!`);
                     }}>
-                    <div className="text-xl font-bold" style={{ color: '#FEEEE8' }}>{gospelCount}</div>
-                    <div className="text-xs" style={{ color: '#FBBCAD' }}>gospel shared ➕</div>
+                    <div className="text-xl font-bold" style={{ color: '#A33B2A' }}>{gospelCount}</div>
+                    <div className="text-xs" style={{ color: '#52525B' }}>gospel shared +</div>
                   </button>
                 </div>
               </React.Fragment>
@@ -2113,22 +2110,22 @@ function HomeTopCard({ setActiveTab }) {
   const verseText = (votd?.verses?.[0]?.text || votd?.text || '').trim();
 
   return (
-    <div className="card mb-5" style={{ background: 'linear-gradient(135deg,#6B2416,#A33B2A)', color: 'white', overflow: 'hidden' }}>
+    <div className="card mb-5" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)', overflow: 'hidden' }}>
       <div className="p-4 flex items-start gap-4">
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#FBBCAD' }}>📖 Verse of the Day</div>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#A33B2A' }}>Verse of the Day</div>
           {verseText ? (
             <>
-              <div className="text-sm italic mb-2" style={{ color: '#FEEEE8', lineHeight: 1.65 }}>
+              <div className="text-sm italic mb-2" style={{ color: '#18181B', lineHeight: 1.65 }}>
                 "{verseText.length > 140 ? verseText.slice(0, 140).trimEnd() + '…' : verseText}"
               </div>
-              <div className="text-xs font-medium" style={{ color: '#FBBCAD' }}>— {votd.reference} · KJV</div>
+              <div className="text-xs font-medium" style={{ color: '#52525B' }}>— {votd.reference} · KJV</div>
             </>
           ) : (
-            <div className="text-xs" style={{ color: '#FBBCAD' }}>Loading verse…</div>
+            <div className="text-xs" style={{ color: '#52525B' }}>Loading verse…</div>
           )}
           <button className="text-xs mt-3 px-2 py-1 rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.15)', color: '#FEE2D5', border: 'none', cursor: 'pointer' }}
+            style={{ background: 'rgba(163,59,42,0.1)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.2)', cursor: 'pointer' }}
             onClick={() => setActiveTab('bible')}>
             Open Bible →
           </button>
@@ -2136,9 +2133,9 @@ function HomeTopCard({ setActiveTab }) {
         {weather && (
           <div className="text-center flex-shrink-0" style={{ minWidth: 68 }}>
             <div style={{ fontSize: '1.75rem' }}>{weatherEmoji(weather.code)}</div>
-            <div className="font-bold" style={{ fontSize: '1.4rem' }}>{Math.round(weather.temp)}°C</div>
-            {weather.city && <div className="text-xs mt-1" style={{ color: '#FBBCAD', lineHeight: 1.3 }}>{weather.city}</div>}
-            <div className="text-xs" style={{ color: '#FCA5A5' }}>{weatherLabel(weather.code)}</div>
+            <div className="font-bold" style={{ fontSize: '1.4rem', color: '#18181B' }}>{Math.round(weather.temp)}°C</div>
+            {weather.city && <div className="text-xs mt-1" style={{ color: '#52525B', lineHeight: 1.3 }}>{weather.city}</div>}
+            <div className="text-xs" style={{ color: '#A33B2A' }}>{weatherLabel(weather.code)}</div>
           </div>
         )}
       </div>
@@ -7203,7 +7200,7 @@ function BibleTab() {
     setLoading(true);
     setError(null);
     setVerses(null);
-    fetch(`https://getbible.net/v2/${trans}/${book[0]}/${chapter}.json`)
+    fetch(`https://cdn.jsdelivr.net/gh/getbible/v2@master/${trans}/${book[0]}/${chapter}.json`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(data => {
         const arr = Object.values(data.verses || {}).sort((a, b) => +a.verse - +b.verse);
