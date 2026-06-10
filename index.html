@@ -38,6 +38,7 @@
   }
 
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html { font-size: 17px; }
   html, body { background: var(--bg); color: var(--ink); }
   body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-feature-settings: "ss01", "ss03"; }
 
@@ -1524,69 +1525,39 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
       </SectionHeading>
 
       {/* Ministry Identity Card */}
-      <div className="card p-5 mb-5" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)', position: 'relative', overflow: 'hidden' }}>
+      {!me.hideMinistryCard && (
+      <div className="card p-5 mb-5" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)' }}>
         <div className="flex items-start justify-between mb-3 gap-2">
           <div>
             <div className="text-xs tracking-widest uppercase mb-1" style={{ color: '#A33B2A' }}>Ministry Card</div>
-            <div className="font-bold" style={{ fontSize: '1.1rem', letterSpacing: '0.03em', color: '#18181B' }}>{me.title ? me.title.toUpperCase() + ' ' : ''}{me.name.toUpperCase()}</div>
-            {me.eligibleRoles?.length > 0 && (
-              <div className="text-sm mt-1" style={{ color: '#52525B' }}>
-                {ROLES.find(r => r.key === me.eligibleRoles[0])?.label || me.eligibleRoles[0]}
-              </div>
-            )}
+            <div className="font-bold" style={{ fontSize: '1.15rem', letterSpacing: '0.02em', color: '#18181B' }}>{me.title ? me.title + ' ' : ''}{me.name}</div>
+            <div className="text-sm font-medium mt-0.5" style={{ color: '#A33B2A' }}>{me.designation || 'Church Leader'}</div>
             <div className="text-xs mt-1" style={{ color: '#52525B' }}>{data.meta?.churchName || 'FLCC - Abundance Church'}</div>
           </div>
           <button className="text-xs px-3 py-1 rounded-lg flex-shrink-0"
             style={{ background: 'rgba(163,59,42,0.1)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.2)', cursor: 'pointer' }}
             onClick={() => {
-              const roleList = (me.eligibleRoles || []).map(r => ROLES.find(x => x.key === r)?.label || r).join('\n  ');
-              const card = `${me.title ? me.title + ' ' : ''}${me.name}\n${ROLES.find(r => r.key === me.eligibleRoles?.[0])?.label || 'Member'}\n${data.meta?.churchName || 'FLCC - Abundance Church'}\n\nRoles:\n  ${roleList}\n\n#FLCC #AbundanceFamily`;
+              const roleList = (me.eligibleRoles || []).map(r => ROLES.find(x => x.key === r)?.label || r).join(', ');
+              const card = `${me.title ? me.title + ' ' : ''}${me.name}\n${me.designation || 'Church Leader'}\n${data.meta?.churchName || 'FLCC - Abundance Church'}${roleList ? '\n\nService Roles: ' + roleList : ''}\n\n#FLCC #AbundanceFamily`;
               try { navigator.clipboard.writeText(card); alert('Ministry card copied!'); } catch {}
             }}>
             Copy
           </button>
         </div>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {(me.eligibleRoles || []).map(rk => {
-            const role = ROLES.find(r => r.key === rk);
-            return (
-              <span key={rk} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(163,59,42,0.08)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.15)' }}>
-                {role?.label || rk}
-              </span>
-            );
-          })}
-        </div>
-        <div className="flex gap-4 pt-3" style={{ borderTop: '1px solid rgba(163,59,42,0.15)' }}>
-          {(() => {
-            const log = (() => { try { return JSON.parse(localStorage.getItem(PRAYER_LOG_KEY)) || []; } catch { return []; } })();
-            const totalMins = log.reduce((s, e) => s + (e.minutes || 0), 0);
-            const gospelCount = (() => { try { return parseInt(localStorage.getItem(GOSPEL_KEY)) || 0; } catch { return 0; } })();
-            return (
-              <React.Fragment>
-                <div className="text-center flex-1">
-                  <div className="text-xl font-bold" style={{ color: '#A33B2A' }}>{log.length}</div>
-                  <div className="text-xs" style={{ color: '#52525B' }}>prayers logged</div>
-                </div>
-                <div className="text-center flex-1">
-                  <div className="text-xl font-bold" style={{ color: '#A33B2A' }}>{totalMins}</div>
-                  <div className="text-xs" style={{ color: '#52525B' }}>min prayed</div>
-                </div>
-                <div className="text-center flex-1">
-                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                    onClick={() => {
-                      const newCount = gospelCount + 1;
-                      try { localStorage.setItem(GOSPEL_KEY, String(newCount)); } catch {}
-                      alert(`Gospel shared! Total: ${newCount} God bless you!`);
-                    }}>
-                    <div className="text-xl font-bold" style={{ color: '#A33B2A' }}>{gospelCount}</div>
-                    <div className="text-xs" style={{ color: '#52525B' }}>gospel shared +</div>
-                  </button>
-                </div>
-              </React.Fragment>
-            );
-          })()}
-        </div>
+        {(me.eligibleRoles || []).length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {(me.eligibleRoles || []).map(rk => {
+              const role = ROLES.find(r => r.key === rk);
+              return (
+                <span key={rk} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(163,59,42,0.08)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.15)' }}>
+                  {role?.label || rk}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
+      )}
 
       {/* Personal attendance record — full card */}
       {attendanceData && (
@@ -7174,59 +7145,74 @@ const VOTD_DEVOTIONS = {
 
 function BibleTab() {
   const TRANS = [
-    { key: 'web',     label: 'NIV',   full: 'World English Bible (NIV equivalent)' },
-    { key: 'kjv',     label: 'KJV',   full: 'King James Version' },
-    { key: 'bbe',     label: 'NLT',   full: 'Bible in Basic English (NLT equivalent)' },
-    { key: 'tagalog', label: 'MB',    full: 'Magandang Balita Bibliya' },
+    { key: 'web',     label: 'NIV',  full: 'World English Bible (NIV equivalent)' },
+    { key: 'kjv',     label: 'KJV',  full: 'King James Version' },
+    { key: 'bbe',     label: 'NLT',  full: 'Bible in Basic English (NLT equivalent)' },
+    { key: 'tagalog', label: 'MB',   full: 'Magandang Balita Bibliya' },
   ];
 
   const [trans, setTrans] = useState(() => {
     try { return localStorage.getItem(BIBLE_KEY) || 'web'; } catch { return 'web'; }
   });
-  const [bookIdx, setBookIdx] = useState(42); // John (0-indexed)
-  const [chapter, setChapter] = useState(3);
+  const [query, setQuery] = useState('');
   const [verses, setVerses] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [refLabel, setRefLabel] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Quick-jump search (e.g. "John 3")
-  const [jump, setJump] = useState('');
-  const [jumpError, setJumpError] = useState('');
+  function parseRef(q) {
+    const m = q.trim().match(/^(.+?)\s+(\d+)(?::(\d+)(?:-(\d+))?)?$/i);
+    if (!m) return null;
+    const idx = BIBLE_BOOKS.findIndex(([, n]) => n.toLowerCase().startsWith(m[1].toLowerCase()));
+    if (idx < 0) return null;
+    const [bookNum, bookName] = BIBLE_BOOKS[idx];
+    const chapter = parseInt(m[2]);
+    const v1 = m[3] ? parseInt(m[3]) : null;
+    const v2 = m[4] ? parseInt(m[4]) : v1;
+    return { bookNum, bookName, chapter, v1, v2 };
+  }
 
-  const book = BIBLE_BOOKS[bookIdx];
-  const maxChapter = BOOK_CHAPTERS[bookIdx];
+  function doLookup(q, t) {
+    const p = parseRef(q);
+    if (!p) { setError('Try "John 3:16" or "Psalm 23:1-6" or "1 Corinthians 13"'); return; }
+    setLoading(true); setError(null); setVerses(null);
+    const label = `${p.bookName} ${p.chapter}${p.v1 ? ':' + p.v1 : ''}${p.v2 && p.v2 !== p.v1 ? '-' + p.v2 : ''}`;
+    setRefLabel(label);
+    if (t === 'tagalog') {
+      fetch(`https://cdn.jsdelivr.net/gh/getbible/v2@master/tagalog/${p.bookNum}/${p.chapter}.json`)
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+        .then(data => {
+          let arr = Object.values(data.verses || {}).sort((a, b) => +a.verse - +b.verse);
+          if (p.v1) arr = arr.filter(v => +v.verse >= p.v1 && (!p.v2 || +v.verse <= p.v2));
+          if (!arr.length) throw new Error('Verses not found. Check the reference and try again.');
+          setVerses(arr);
+        })
+        .catch(err => setError(err.message))
+        .finally(() => setLoading(false));
+    } else {
+      const ref = encodeURIComponent(`${p.bookName} ${p.chapter}${p.v1 ? ':' + p.v1 : ''}${p.v2 && p.v2 !== p.v1 ? '-' + p.v2 : ''}`);
+      fetch(`https://bible-api.com/${ref}?translation=${t}`)
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+        .then(data => {
+          const arr = data.verses || [];
+          if (!arr.length) throw new Error('Verses not found. Check the reference and try again.');
+          setVerses(arr);
+        })
+        .catch(err => setError(err.message))
+        .finally(() => setLoading(false));
+    }
+  }
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    setVerses(null);
-    fetch(`https://cdn.jsdelivr.net/gh/getbible/v2@master/${trans}/${book[0]}/${chapter}.json`)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(data => {
-        const arr = Object.values(data.verses || {}).sort((a, b) => +a.verse - +b.verse);
-        if (!arr.length) throw new Error('No verses found for this passage.');
-        setVerses(arr);
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [trans, bookIdx, chapter]);
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    doLookup(query, trans);
+  }
 
   function changeTrans(t) {
     setTrans(t);
     try { localStorage.setItem(BIBLE_KEY, t); } catch {}
-  }
-
-  function handleJump(e) {
-    e.preventDefault();
-    setJumpError('');
-    const parts = jump.trim().match(/^(.+?)\s+(\d+)(?::(\d+))?$/);
-    if (!parts) { setJumpError('Try "John 3" or "Psalms 23"'); return; }
-    const bookName = parts[1].toLowerCase();
-    const idx = BIBLE_BOOKS.findIndex(([, n]) => n.toLowerCase().startsWith(bookName));
-    if (idx < 0) { setJumpError('Book not found. Try the full name.'); return; }
-    setBookIdx(idx);
-    setChapter(Math.max(1, Math.min(BOOK_CHAPTERS[idx], +parts[2])));
-    setJump('');
+    if (query.trim() && verses) doLookup(query, t);
   }
 
   const activeMeta = TRANS.find(t => t.key === trans);
@@ -7234,14 +7220,14 @@ function BibleTab() {
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="Holy Scripture" title="Bible">
-        Read God's Word in NIV, KJV, NLT, or Magandang Balita Bibliya.
+        Look up any verse or passage by reference.
       </SectionHeading>
 
-      {/* Translation tabs */}
+      {/* Translation selector */}
       <div className="flex gap-2 mb-1 flex-wrap">
         {TRANS.map(t => (
           <button key={t.key}
-            className={`btn text-sm ${trans === t.key ? 'btn-primary' : 'btn-soft'}`}
+            className={`btn ${trans === t.key ? 'btn-primary' : 'btn-soft'}`}
             onClick={() => changeTrans(t.key)}>
             {t.label}
           </button>
@@ -7249,58 +7235,43 @@ function BibleTab() {
       </div>
       <div className="text-xs ink-muted mb-4">{activeMeta?.full}</div>
 
-      {/* Book + Chapter nav + Quick jump */}
-      <div className="card p-4 mb-4">
-        <div className="flex items-center gap-2 flex-wrap mb-3">
-          <select className="text-sm rounded-lg px-3 py-2 flex-1"
-            style={{ border: '1px solid #E4E4E7', minWidth: 130, maxWidth: 240, fontFamily: 'inherit' }}
-            value={bookIdx}
-            onChange={e => { setBookIdx(+e.target.value); setChapter(1); }}>
-            {BIBLE_BOOKS.map(([n, name], i) => (
-              <option key={n} value={i}>{name}</option>
-            ))}
-          </select>
-          <div className="flex items-center gap-1">
-            <button className="btn btn-soft px-3" disabled={chapter <= 1} onClick={() => setChapter(c => c - 1)}>‹</button>
-            <span className="text-sm font-medium px-2">Ch. {chapter}/{maxChapter}</span>
-            <button className="btn btn-soft px-3" disabled={chapter >= maxChapter} onClick={() => setChapter(c => c + 1)}>›</button>
-          </div>
+      {/* Lookup form */}
+      <form onSubmit={handleSubmit} className="card p-4 mb-4">
+        <div className="text-xs font-medium ink-muted mb-2 tracking-wide uppercase">Look up a verse</div>
+        <div className="flex gap-2">
+          <input
+            style={{ flex: 1, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--ink)', fontSize: 'inherit', outline: 'none', borderRadius: 8, padding: '0.5rem 0.75rem', fontFamily: 'inherit' }}
+            placeholder="e.g. John 3:16 · Psalm 23 · Romans 8:28-30"
+            value={query}
+            onChange={e => { setQuery(e.target.value); setError(null); }}
+          />
+          <button type="submit" className="btn btn-accent">Look Up</button>
         </div>
-        <form className="flex gap-2" onSubmit={handleJump}>
-          <input className="input flex-1 text-sm" placeholder="Jump to… e.g. John 3"
-            value={jump} onChange={e => setJump(e.target.value)} />
-          <button type="submit" className="btn btn-soft text-sm">Go</button>
-        </form>
-        {jumpError && <div className="text-xs mt-1" style={{ color: '#DC2626' }}>{jumpError}</div>}
-      </div>
+        {error && <div className="text-sm mt-2" style={{ color: 'var(--danger)' }}>{error}</div>}
+      </form>
 
-      {/* Reading pane */}
       {loading && (
-        <div className="card p-8 text-center ink-muted text-sm">Loading {book[1]} {chapter}…</div>
+        <div className="card p-8 text-center ink-muted">Loading…</div>
       )}
-      {error && (
-        <div className="card p-5 text-center" style={{ background: '#FEF2F2', color: '#DC2626' }}>
-          <div className="font-semibold mb-1">Could not load this passage</div>
-          <div className="text-sm">{error}</div>
-        </div>
-      )}
-      {!loading && !error && verses && (
-        <div className="card p-4">
-          <div className="font-semibold mb-4" style={{ color: '#1E40AF' }}>{book[1]} {chapter} · {activeMeta?.full}</div>
-          <div className="space-y-1">
-            {verses.map(v => (
-              <div key={v.verse} className="flex gap-2 text-sm" style={{ lineHeight: 1.75 }}>
-                <span className="font-bold flex-shrink-0 select-none" style={{ color: '#9CA3AF', minWidth: 22 }}>{v.verse}</span>
-                <span style={{ color: '#18181B' }}>{v.text}</span>
+
+      {!loading && verses && (
+        <div className="card p-5">
+          <div className="font-semibold mb-4" style={{ color: 'var(--accent)' }}>{refLabel} · {activeMeta?.label}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {verses.map((v, i) => (
+              <div key={i} style={{ display: 'flex', gap: '0.75rem', lineHeight: 1.75 }}>
+                <span className="font-bold flex-shrink-0" style={{ color: 'var(--accent)', minWidth: '1.5rem', paddingTop: 2 }}>{v.verse}</span>
+                <span>{(v.text || '').trim()}</span>
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-5 pt-4" style={{ borderTop: '1px solid #F4F4F5' }}>
-            <button className="btn btn-soft text-sm" disabled={chapter <= 1}
-              onClick={() => setChapter(c => c - 1)}>‹ Previous</button>
-            <button className="btn btn-soft text-sm" disabled={chapter >= maxChapter}
-              onClick={() => setChapter(c => c + 1)}>Next ›</button>
-          </div>
+        </div>
+      )}
+
+      {!loading && !verses && !error && (
+        <div className="card p-8 text-center">
+          <div className="ink-muted font-medium mb-1">Enter a verse reference above</div>
+          <div className="text-sm ink-subtle">John 3:16 · Psalm 23:1-6 · 1 Corinthians 13 · Mateo 5:3</div>
         </div>
       )}
     </div>
