@@ -2246,7 +2246,7 @@ function BOTRScheduleCard({ botrData }) {
   const d = Math.floor((parseISODate(next.date) - parseISODate(today)) / 86400000);
   const when = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : `In ${d} days`;
   const serviceTime = botrData.meta?.serviceTime || '9:30 AM';
-  const hasRoles = next.preacher || next.pastoralPrayer || next.emcee || next.guest;
+  const hasRoles = next.preacher || next.pastoralPrayer || next.emcee || next.event;
 
   return (
     <div className="mb-5">
@@ -2259,7 +2259,7 @@ function BOTRScheduleCard({ botrData }) {
             {next.preacher && <div>Preacher · {next.preacher}</div>}
             {next.pastoralPrayer && <div>Pastoral Prayer · {next.pastoralPrayer}</div>}
             {next.emcee && <div>EMCEE · {next.emcee}</div>}
-            {next.guest && <div>Guest · {next.guest}</div>}
+            {next.event && <div style={{ color: 'var(--accent)', fontWeight: 500 }}>{next.event}</div>}
           </div>
         )}
       </div>
