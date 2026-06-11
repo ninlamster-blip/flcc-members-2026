@@ -4296,6 +4296,39 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
           </div>
         )}
       </div>
+
+      {/* World Watch List */}
+      <div className="mb-6">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">🌍 World Watch List 2026</div>
+        <WWLEmbed />
+      </div>
+    </div>
+  );
+}
+
+function WWLEmbed() {
+  const iframeRef = useRef(null);
+  const [height, setHeight] = useState(600);
+
+  useEffect(() => {
+    const onMsg = (e) => {
+      if (e.data && e.data.flccMap === 'height' && typeof e.data.h === 'number') {
+        setHeight(Math.max(400, e.data.h));
+      }
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  return (
+    <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
+      <iframe
+        ref={iframeRef}
+        src="./wwl2026.html?embed=1"
+        title="World Watch List 2026 — Prayer Map"
+        style={{ width: '100%', height, border: 'none', display: 'block' }}
+        loading="lazy"
+      />
     </div>
   );
 }
