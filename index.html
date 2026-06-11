@@ -4302,12 +4302,12 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
 }
 
 function WWLTab() {
-  const [height, setHeight] = useState(600);
+  const [height, setHeight] = useState(800);
 
   useEffect(() => {
     const onMsg = (e) => {
       if (e.data && e.data.flccMap === 'height' && typeof e.data.h === 'number') {
-        setHeight(Math.max(400, e.data.h));
+        setHeight(Math.max(600, e.data.h));
       }
     };
     window.addEventListener('message', onMsg);
@@ -4316,12 +4316,9 @@ function WWLTab() {
 
   return (
     <div className="fade-in">
-      <SectionHeading eyebrow="Open Doors" title="World Watch List 2026">
-        The 50 countries where it is most dangerous to follow Jesus. Pray for our persecuted brothers and sisters.
-      </SectionHeading>
       <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
         <iframe
-          src="./wwl2026.html?embed=1"
+          src="./wwl2026.html"
           title="World Watch List 2026 Prayer Map"
           style={{ width: '100%', height, border: 'none', display: 'block' }}
           loading="lazy"
