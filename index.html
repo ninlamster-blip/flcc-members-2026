@@ -1560,6 +1560,26 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
       </div>
       )}
 
+      {/* Quick access to sermon notes journal */}
+      {(() => {
+        const noteCount = Object.keys(sermonNotes || {}).length;
+        return (
+          <div className="card p-4 mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span style={{ fontSize: '1.5rem' }}>📓</span>
+              <div>
+                <div className="text-sm font-semibold">My Sermon Notes</div>
+                <div className="text-xs ink-muted">{noteCount > 0 ? `${noteCount} note${noteCount !== 1 ? 's' : ''} saved` : 'No notes yet — tap to start'}</div>
+              </div>
+            </div>
+            <button
+              className="btn btn-soft text-xs"
+              onClick={() => onOpenNote({ id: makeNoteId(todayISO(), 'journal-browse'), meta: { date: todayISO(), service: 'Journal', dateLabel: 'My Sermon Notes' }, initialView: 'journal' })}
+            >Open Journal</button>
+          </div>
+        );
+      })()}
+
       {/* Personal attendance record — full card */}
       {attendanceData && (
         <PersonalAttendanceCard me={me} attendanceData={attendanceData} compact={false} />
@@ -5625,7 +5645,7 @@ function SermonNoteBtn({ noteId, sermonNotes, onClick, compact }) {
 }
 
 // ── Sermon Notes Modal ────────────────────────────────────────────
-function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose }) {
+function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose, onOpenNote, initialView }) {
   const existing  = sermonNotes[noteId] || {};
   const formRef   = useRef({
     title: existing.title || '', body: existing.body || '',
@@ -5635,7 +5655,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
   const [form, setFormState] = useState(formRef.current);
   const setForm = patch => { formRef.current = { ...formRef.current, ...patch }; setFormState(f => ({ ...f, ...patch })); };
 
-  const [view,       setView]        = useState('editor');
+  const [view,       setView]        = useState(initialView || 'editor');
   const [sectOpen,   setSectOpen]    = useState(!!(existing.keyVerse || existing.prayerRequests || existing.actionPoints || existing.favoriteQuote));
   const [saveStatus, setSaveStatus]  = useState('');
   const [closing,    setClosing]     = useState(false);
@@ -6330,7 +6350,12 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                         const preview   = (n.body || '').slice(0, 110).trim();
                         const isCurrent = n.id === noteId;
                         return (
-                          <div key={n.id} style={{ padding: '14px 16px', borderRadius: 14, background: isCurrent ? SN_NOTES_TINT : 'var(--bg)', border: `1px solid ${isCurrent ? SN_NOTES_GREEN + '50' : 'var(--border)'}`, transition: 'border-color .2s' }}>
+                          <div key={n.id}
+                            onClick={() => { if (!isCurrent && onOpenNote) { onOpenNote({ id: n.id, meta: { date: n.date, service: n.service, dateLabel: formatDateLong(n.date) } }); } }}
+                            style={{ padding: '14px 16px', borderRadius: 14, background: isCurrent ? SN_NOTES_TINT : 'var(--bg)', border: `1px solid ${isCurrent ? SN_NOTES_GREEN + '50' : 'var(--border)'}`, transition: 'border-color .2s, background .15s', cursor: isCurrent ? 'default' : 'pointer' }}
+                            onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = '#FAFAF9'; }}
+                            onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = 'var(--bg)'; }}
+                          >
                             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                               <div style={{ fontWeight: 600, fontSize: '0.875rem', color: isCurrent ? SN_NOTES_GREEN : 'var(--ink)' }}>
                                 {n.title || <span style={{ fontStyle: 'italic', color: 'var(--ink-subtle)', fontWeight: 400 }}>Untitled</span>}
@@ -6354,7 +6379,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                   </div>
                 ))}
                 <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--ink-subtle)', marginTop: 12 }}>
-                  {allNotes.length} note{allNotes.length !== 1 ? 's' : ''} · tap a service card to edit
+                  {allNotes.length} note{allNotes.length !== 1 ? 's' : ''} · tap any entry to open and edit
                 </div>
               </div>
             )}
@@ -8917,12 +8942,15 @@ function App() {
       {/* Sermon Notes Modal */}
       {openingNote && (
         <SermonNotesModal
+          key={openingNote.id}
           noteId={openingNote.id}
           meta={openingNote.meta}
+          initialView={openingNote.initialView}
           sermonNotes={sermonNotes}
           onSave={handleSaveSermonNote}
           onDelete={handleDeleteSermonNote}
           onClose={() => setOpeningNote(null)}
+          onOpenNote={setOpeningNote}
         />
       )}
 
