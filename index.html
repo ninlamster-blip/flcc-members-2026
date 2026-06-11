@@ -4297,17 +4297,11 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
         )}
       </div>
 
-      {/* World Watch List */}
-      <div className="mb-6">
-        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">🌍 World Watch List 2026</div>
-        <WWLEmbed />
-      </div>
     </div>
   );
 }
 
-function WWLEmbed() {
-  const iframeRef = useRef(null);
+function WWLTab() {
   const [height, setHeight] = useState(600);
 
   useEffect(() => {
@@ -4321,14 +4315,18 @@ function WWLEmbed() {
   }, []);
 
   return (
-    <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
-      <iframe
-        ref={iframeRef}
-        src="./wwl2026.html?embed=1"
-        title="World Watch List 2026 — Prayer Map"
-        style={{ width: '100%', height, border: 'none', display: 'block' }}
-        loading="lazy"
-      />
+    <div className="fade-in">
+      <SectionHeading eyebrow="Open Doors" title="World Watch List 2026">
+        The 50 countries where it is most dangerous to follow Jesus. Pray for our persecuted brothers and sisters.
+      </SectionHeading>
+      <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
+        <iframe
+          src="./wwl2026.html?embed=1"
+          title="World Watch List 2026 Prayer Map"
+          style={{ width: '100%', height, border: 'none', display: 'block' }}
+          loading="lazy"
+        />
+      </div>
     </div>
   );
 }
@@ -8388,7 +8386,8 @@ const TABS = [
   { key: 'bible',    label: 'Bible' },
   { key: 'month',    label: 'This Month' },
   { key: 'calendar', label: 'Calendar' },
-  { key: 'prayer',   label: 'Prayer',   requiresPrayer: true },
+  { key: 'prayer',   label: 'Prayer',      requiresPrayer: true },
+  { key: 'wwl',      label: 'World Watch' },
   { key: 'music',    label: 'Music',    requiresMusic:  true },
   { key: 'equip',    label: 'Equip' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
@@ -8908,6 +8907,7 @@ function App() {
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+          {currentTab === 'wwl' && <WWLTab />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} worshipData={worshipData} />}
 
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
