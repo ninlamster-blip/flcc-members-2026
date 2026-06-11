@@ -2037,18 +2037,10 @@ function HomeTopCard({ setActiveTab }) {
   }, [dayRef]);
 
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(async pos => {
+    const loadWeather = async (lat, lon, city = '') => {
       try {
-        const { latitude: lat, longitude: lon } = pos.coords;
         const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day`);
         const wData = await wRes.json();
-        let city = '';
-        try {
-          const gRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
-          const gData = await gRes.json();
-          city = gData.address?.city || gData.address?.town || gData.address?.village || gData.address?.suburb || '';
-        } catch {}
         setWeather({
           temp: wData.current.temperature_2m,
           code: wData.current.weather_code,
@@ -2056,7 +2048,35 @@ function HomeTopCard({ setActiveTab }) {
           city,
         });
       } catch {}
-    }, () => {});
+    };
+
+    const ipFallback = async () => {
+      try {
+        const ipRes = await fetch('https://ipwho.is/');
+        const ipData = await ipRes.json();
+        if (ipData.success && ipData.latitude) {
+          loadWeather(ipData.latitude, ipData.longitude, ipData.city || '');
+        }
+      } catch {}
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const { latitude: lat, longitude: lon } = pos.coords;
+          let city = '';
+          try {
+            const gRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+            const gData = await gRes.json();
+            city = gData.address?.city || gData.address?.town || gData.address?.village || gData.address?.suburb || '';
+          } catch {}
+          loadWeather(lat, lon, city);
+        },
+        ipFallback  // permission denied → fall back to IP
+      );
+    } else {
+      ipFallback();
+    }
   }, []);
 
   function weatherEmoji(c, isDay) {
