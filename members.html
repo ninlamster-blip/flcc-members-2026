@@ -1372,6 +1372,26 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
         Your upcoming service and prayer assignments. Tap 📅 to save to your phone calendar, or "Report conflict" if you can't make it.
       </SectionHeading>
 
+      {/* Quick access to sermon notes journal */}
+      {(() => {
+        const noteCount = Object.keys(sermonNotes || {}).length;
+        return (
+          <div className="card p-4 mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span style={{ fontSize: '1.5rem' }}>📓</span>
+              <div>
+                <div className="text-sm font-semibold">My Sermon Notes</div>
+                <div className="text-xs ink-muted">{noteCount > 0 ? `${noteCount} note${noteCount !== 1 ? 's' : ''} saved` : 'No notes yet — tap to start'}</div>
+              </div>
+            </div>
+            <button
+              className="btn btn-soft text-xs"
+              onClick={() => onOpenNote({ id: makeNoteId(todayISO(), 'journal-browse'), meta: { date: todayISO(), service: 'Journal', dateLabel: 'My Sermon Notes' }, initialView: 'journal' })}
+            >Open Journal</button>
+          </div>
+        );
+      })()}
+
       {/* Personal attendance record — full card */}
       {attendanceData && (
         <PersonalAttendanceCard me={me} attendanceData={attendanceData} compact={false} />
@@ -4163,7 +4183,7 @@ function SermonNoteBtn({ noteId, sermonNotes, onClick, compact }) {
 }
 
 // ── Sermon Notes Modal ────────────────────────────────────────────
-function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose, onOpenNote }) {
+function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose, onOpenNote, initialView }) {
   const existing  = sermonNotes[noteId] || {};
   const formRef   = useRef({
     title: existing.title || '', body: existing.body || '',
@@ -4173,7 +4193,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
   const [form, setFormState] = useState(formRef.current);
   const setForm = patch => { formRef.current = { ...formRef.current, ...patch }; setFormState(f => ({ ...f, ...patch })); };
 
-  const [view,       setView]        = useState('editor');
+  const [view,       setView]        = useState(initialView || 'editor');
   const [sectOpen,   setSectOpen]    = useState(!!(existing.keyVerse || existing.prayerRequests || existing.actionPoints || existing.favoriteQuote));
   const [saveStatus, setSaveStatus]  = useState('');
   const [closing,    setClosing]     = useState(false);
@@ -6111,6 +6131,7 @@ function App() {
           key={openingNote.id}
           noteId={openingNote.id}
           meta={openingNote.meta}
+          initialView={openingNote.initialView}
           sermonNotes={sermonNotes}
           onSave={handleSaveSermonNote}
           onDelete={handleDeleteSermonNote}
