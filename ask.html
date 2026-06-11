@@ -115,14 +115,16 @@
   .msg-assistant { display: flex; gap: 0.625rem; align-items: flex-start; }
   .msg-assistant .avatar {
     width: 28px; height: 28px;
-    border-radius: 50%;
-    background: var(--accent-soft);
-    border: 1.5px solid var(--accent);
+    border-radius: 7px;
+    background: #1E40AF;
+    border: none;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.8125rem;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     flex-shrink: 0;
     margin-top: 2px;
-    color: var(--accent);
+    color: #fff;
   }
   .msg-assistant .bubble {
     background: var(--surface);
@@ -1403,12 +1405,12 @@ function App() {
               <div className="text-center px-2">
                 <div style={{
                   width:52, height:52, borderRadius:14,
-                  background:'var(--accent-soft)',
-                  border:'1.5px solid var(--accent)',
+                  background:'#1E40AF',
+                  border:'none',
                   display:'flex', alignItems:'center', justifyContent:'center',
                   margin:'0 auto 0.875rem',
-                  fontSize:'1.375rem',
-                }}>🧠</div>
+                  fontSize:'0.7rem', fontWeight:800, letterSpacing:'0.04em', color:'#fff',
+                }}>FLCC</div>
                 <h1 className="font-display font-semibold mb-1.5" style={{fontSize:'1.5rem', color:'var(--ink)'}}>
                   Ask FLCC anything
                 </h1>
@@ -1509,7 +1511,7 @@ function App() {
           {messages.map((msg, i) => (
             <div key={i} className={msg.role === 'user' ? 'msg-user' : 'msg-assistant'}>
               {msg.role === 'assistant' && (
-                <div className="avatar">🧠</div>
+                <div className="avatar">FLCC</div>
               )}
               <div className="bubble">
                 {msg.role === 'user'
