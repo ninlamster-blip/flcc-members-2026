@@ -723,6 +723,7 @@ const EQUIP_DATA_URL     = './equip.json';
 const ATTENDANCE_DATA_URL = './attendance.json';
 const GIVING_DATA_URL    = './finance-members.json';
 const WORSHIP_DATA_URL   = './worship.json';
+const BOTR_SCHEDULE_URL  = './botr-schedule.json';
 const ASK_PASTOR_KEY     = 'flcc-ask-pastor-v1';
 const SELF_BIRTHDAY_KEY  = 'flcc-self-birthday-v1';
 const PRAYER_LOG_KEY     = 'flcc-prayer-log-v1';
@@ -2231,7 +2232,42 @@ function LiftingUpCard({ data, me, attendanceData }) {
   );
 }
 
-function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData }) {
+function BOTRScheduleCard({ botrData }) {
+  const today = todayISO();
+  const next = useMemo(() => {
+    if (!botrData?.schedule) return null;
+    return [...botrData.schedule]
+      .filter(e => e.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+  }, [botrData, today]);
+
+  if (!next) return null;
+
+  const d = Math.floor((parseISODate(next.date) - parseISODate(today)) / 86400000);
+  const when = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : `In ${d} days`;
+  const serviceTime = botrData.meta?.serviceTime || '9:30 AM';
+  const hasRoles = next.preacher || next.pastoralPrayer || next.emcee || next.guest;
+
+  return (
+    <div className="mb-5">
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">⛪ FLCC BOTR · Friday Morning</div>
+      <div className="home-card">
+        <div className="home-card-eyebrow">{when} · Friday · {serviceTime}</div>
+        <div className="home-card-title">{formatDateLong(next.date)}</div>
+        {hasRoles && (
+          <div className="home-card-body text-xs ink-muted">
+            {next.preacher && <div>Preacher · {next.preacher}</div>}
+            {next.pastoralPrayer && <div>Pastoral Prayer · {next.pastoralPrayer}</div>}
+            {next.emcee && <div>EMCEE · {next.emcee}</div>}
+            {next.guest && <div>Guest · {next.guest}</div>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData }) {
   const today = todayISO();
   const [encourageTarget, setEncourageTarget] = useState(null);
   const nextWeekStart = today;
@@ -2501,6 +2537,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           </div>
         </div>
       )}
+
+      {/* FLCC BOTR Friday Morning Service */}
+      {botrScheduleData && <BOTRScheduleCard botrData={botrScheduleData} />}
 
       {/* Next prayer meeting */}
       {nextPrayerMeeting && (
@@ -8511,6 +8550,7 @@ function App() {
   const [attendanceData, setAttendanceData] = useState(null);
   const [givingData, setGivingData] = useState(null);
   const [worshipData, setWorshipData] = useState(null);
+  const [botrScheduleData, setBotrScheduleData] = useState(null);
   const [error, setError] = useState(null);
   const [me, setMe] = useState(null);
   const [meId, setMeId] = useState(() => {
@@ -8555,7 +8595,7 @@ function App() {
     let pendingDone = 0;
     const checkDone = () => {
       pendingDone += 1;
-      if (pendingDone >= 7) setRefreshing(false);
+      if (pendingDone >= 8) setRefreshing(false);
     };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
@@ -8625,6 +8665,15 @@ function App() {
         else setWorshipData(false);
       })
       .catch(() => setWorshipData(false))
+      .finally(checkDone);
+    // Optional: botr-schedule.json
+    fetch(`${BOTR_SCHEDULE_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(b => {
+        if (b && Array.isArray(b.schedule)) setBotrScheduleData(b);
+        else setBotrScheduleData(false);
+      })
+      .catch(() => setBotrScheduleData(false))
       .finally(checkDone);
   };
 
@@ -8799,7 +8848,7 @@ function App() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div key={currentTab} className="tab-content-area">
-          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} />}
+          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} />}
           {currentTab === 'bible' && <BibleTab />}
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
