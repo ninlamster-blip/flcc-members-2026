@@ -5,8 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Global Faith &amp; Intercession — FLCC</title>
 
-  <!-- Same fonts as the main FLCC app -->
+  <!-- Pre-connect to CDNs so DNS + TLS is ready before scripts/data are requested -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://d3js.org" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <!-- Preload the world-atlas JSON so it's in-flight while D3 is still parsing -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json" as="fetch" crossorigin />
+
+  <!-- Same fonts as the main FLCC app -->
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <script src="https://d3js.org/d3.v7.min.js"></script>

@@ -4364,7 +4364,6 @@ function FaithMapTab() {
           src="./faith-map.html"
           title="Global Faith & Intercession"
           style={{ width: '100%', height: iframeH, border: 'none', display: 'block' }}
-          loading="lazy"
         />
       </div>
     </div>
@@ -8947,6 +8946,12 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        {/* Faith Map is always mounted so the iframe warms up in the background;
+            hidden via CSS rather than unmounted so loading is done before tab is clicked */}
+        <div style={{ display: currentTab === 'faithmap' ? 'block' : 'none' }}>
+          <FaithMapTab />
+        </div>
+
         <div key={currentTab} className="tab-content-area">
           {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} />}
           {currentTab === 'bible' && <BibleTab />}
@@ -8954,7 +8959,6 @@ function App() {
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'wwl' && <WWLTab />}
-          {currentTab === 'faithmap' && <FaithMapTab />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} worshipData={worshipData} />}
 
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
