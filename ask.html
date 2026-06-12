@@ -1143,7 +1143,14 @@ function App() {
   const textareaRef    = useRef(null);
   const abortRef       = useRef(null);
 
-  const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem(ASK_PROXY_KEY) || '');
+  const [proxyUrl, setProxyUrl] = useState(() => {
+    const urlProxy = new URLSearchParams(window.location.search).get('proxy');
+    if (urlProxy) {
+      localStorage.setItem(ASK_PROXY_KEY, urlProxy);
+      return urlProxy;
+    }
+    return localStorage.getItem(ASK_PROXY_KEY) || '';
+  });
 
   // Load static JSON data, then fetch live BOTR stats in the background
   useEffect(() => {
