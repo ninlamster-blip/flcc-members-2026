@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global Faith & Intercession: Visualizing Global Christianity and Persecuted Communities</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:      #080c12;
+      --bg-mid:       #0d1520;
+      --bg-surface:   #111d2e;
+      --bg-card:      rgba(17,29,46,0.85);
+      --gold-bright:  #d4a53a;
+      --gold-mid:     #a87c28;
+      --gold-dim:     #5e4415;
+      --ember:        #c0390f;
+      --ember-dim:    #6b1e07;
+      --text-main:    #e8dfc8;
+      --text-muted:   #7a8a9a;
+      --text-subtle:  #3a4a5a;
+      --border:       #1e2d3e;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Lato', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Fonts ────────────────────────────────────────────────── */
+    .font-cinzel   { font-family: 'Cinzel', serif; }
+    .font-crimson  { font-family: 'Crimson Pro', serif; }
+
+    /* ── Particle Canvas ──────────────────────────────────────── */
+    #particle-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── App Shell ────────────────────────────────────────────── */
+    #app {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    #header {
+      flex-shrink: 0;
+      padding: 14px 20px 10px;
+      background: linear-gradient(180deg, rgba(8,12,18,0.98) 0%, rgba(8,12,18,0) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1rem, 2.2vw, 1.6rem);
+      color: var(--gold-bright);
+      letter-spacing: 0.12em;
+      text-align: center;
+    }
+
+    #header p {
+      font-family: 'Crimson Pro', serif;
+      font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      font-style: italic;
+    }
+
+    .gold-line {
+      width: min(480px, 80vw);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-mid), transparent);
+    }
+
+    /* ── Mode Toggle Buttons ──────────────────────────────────── */
+    #mode-toggle {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .mode-btn {
+      font-family: 'Lato', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      padding: 5px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.35s ease;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, rgba(139,94,60,0.3), rgba(201,168,76,0.25));
+      border-color: var(--gold-mid);
+      color: var(--gold-bright);
+    }
+
+    .mode-btn:hover:not(.active) {
+      border-color: var(--gold-dim);
+      color: var(--text-main);
+    }
+
+    /* ── Legend ───────────────────────────────────────────────── */
+    #legend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .legend-swatch {
+      display: inline-block;
+      width: 20px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    /* ── Map Container ────────────────────────────────────────── */
+    #map-wrap {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #world-map {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ── Country SVG paths ────────────────────────────────────── */
+    .country {
+      stroke: #1a2535;
+      stroke-width: 0.4;
+      cursor: pointer;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+
+    .country:hover {
+      stroke: var(--gold-bright);
+      stroke-width: 1.2;
+    }
+
+    /* Persecution pulse keyframe — applied via JS class */
+    @keyframes persecutionPulse {
+      0%   { filter: drop-shadow(0 0 1px rgba(192,57,15,0.3)); }
+      50%  { filter: drop-shadow(0 0 8px rgba(220,80,20,0.85)) drop-shadow(0 0 18px rgba(180,40,0,0.45)); }
+      100% { filter: drop-shadow(0 0 1px rgba(192,57,15,0.3)); }
+    }
+
+    .glow-extreme  { animation: persecutionPulse 2.4s ease-in-out infinite; }
+    .glow-veryhigh { animation: persecutionPulse 3.2s ease-in-out infinite; }
+    .glow-high     { animation: persecutionPulse 4.0s ease-in-out infinite; }
+
+    /* ── Tooltip ──────────────────────────────────────────────── */
+    #tooltip {
+      position: fixed;
+      background: rgba(10,16,26,0.95);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 11px;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      pointer-events: none;
+      z-index: 500;
+      display: none;
+      max-width: 200px;
+      line-height: 1.5;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+
+    /* ── Sidebar Panel ────────────────────────────────────────── */
+    #detail-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: min(380px, 96vw);
+      height: 100vh;
+      background: linear-gradient(180deg, #0c1620 0%, #080e18 100%);
+      border-left: 1px solid var(--border);
+      z-index: 300;
+      transition: right 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #detail-panel.open { right: 0; }
+
+    #panel-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 18px 80px;
+    }
+
+    #panel-scroll::-webkit-scrollbar { width: 4px; }
+    #panel-scroll::-webkit-scrollbar-track { background: transparent; }
+    #panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    #close-panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    #close-panel:hover { background: rgba(255,255,255,0.14); color: var(--text-main); }
+
+    /* Panel inner elements */
+    .panel-country-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.25rem;
+      color: var(--gold-bright);
+      line-height: 1.3;
+      padding-right: 32px;
+    }
+
+    .persecution-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-top: 6px;
+    }
+
+    .badge-extreme  { background: rgba(192,57,15,0.18); color: #f87060; border: 1px solid rgba(192,57,15,0.4); }
+    .badge-veryhigh { background: rgba(220,100,20,0.15); color: #fb8c50; border: 1px solid rgba(220,100,20,0.35); }
+    .badge-high     { background: rgba(200,160,20,0.15); color: #f5c842; border: 1px solid rgba(200,160,20,0.35); }
+    .badge-moderate { background: rgba(80,140,100,0.15); color: #72c28a; border: 1px solid rgba(80,140,100,0.3); }
+    .badge-low      { background: rgba(80,100,120,0.15); color: #90a8b8; border: 1px solid rgba(80,100,120,0.3); }
+
+    .section-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      color: var(--gold-mid);
+      margin-bottom: 8px;
+      margin-top: 14px;
+    }
+
+    .summary-text {
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #c0ccd8;
+    }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 7px;
+      padding: 8px 10px;
+    }
+
+    .stat-label { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 3px; }
+    .stat-value { font-size: 1.05rem; font-weight: 700; color: var(--text-main); }
+    .stat-value.gold  { color: var(--gold-bright); }
+    .stat-value.amber { color: #fbbf24; }
+
+    .persecution-bar-track {
+      height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .persecution-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #7a2010, #c0390f);
+      transition: width 1s ease;
+    }
+
+    .prayer-req-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .prayer-req-item:last-child { border-bottom: none; }
+
+    .prayer-dot {
+      flex-shrink: 0;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--gold-mid);
+      margin-top: 6px;
+    }
+
+    .prayer-req-text {
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: #b8c8d4;
+    }
+
+    /* Prayer counter */
+    .prayer-counter-wrap {
+      text-align: center;
+      padding: 12px 0 4px;
+    }
+
+    .prayer-number {
+      font-family: 'Cinzel', serif;
+      font-size: 2.2rem;
+      color: var(--gold-bright);
+      transition: transform 0.25s ease, color 0.25s ease;
+    }
+
+    .prayer-number.pulse {
+      transform: scale(1.3);
+      color: #fde68a;
+    }
+
+    .join-prayer-btn {
+      width: 100%;
+      padding: 11px 0;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #7a4e20 0%, #c9a84c 100%);
+      color: #fff;
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 12px;
+    }
+
+    .join-prayer-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(201,168,76,0.45);
+    }
+
+    .join-prayer-btn:active { transform: translateY(0); }
+
+    /* ── Scripture Banner ─────────────────────────────────────── */
+    #scripture-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      background: linear-gradient(90deg, #080c12, #0d1826, #080c12);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      z-index: 200;
+    }
+
+    #scripture-track {
+      display: flex;
+      align-items: center;
+      gap: 3.5rem;
+      white-space: nowrap;
+      /* Width/animation set by JS after content is measured */
+      will-change: transform;
+    }
+
+    .scripture-item {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      font-size: 0.8rem;
+      color: var(--gold-mid);
+      opacity: 0.85;
+    }
+
+    .scripture-ref {
+      font-style: normal;
+      color: var(--gold-bright);
+      margin-left: 4px;
+    }
+
+    .stream-prayer-item {
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      color: #5a8aaa;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Cross icon in loading screen ────────────────────────── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-deep);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.9s ease;
+    }
+
+    @keyframes crossGlow {
+      0%, 100% { filter: drop-shadow(0 0 4px rgba(212,165,58,0.4)); }
+      50%       { filter: drop-shadow(0 0 14px rgba(212,165,58,0.9)); }
+    }
+
+    #loading-cross { animation: crossGlow 2.5s ease-in-out infinite; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in-up { animation: fadeSlideUp 0.6s ease both; }
+
+    /* ── Responsive panel close on small screens ──────────────── */
+    @media (max-width: 480px) {
+      #detail-panel { width: 96vw; }
+    }
+
+    /* ── Custom scrollbars for body ───────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     LOADING SCREEN
+════════════════════════════════════════════════════════════ -->
+<div id="loading">
+  <svg id="loading-cross" width="56" height="56" viewBox="0 0 56 56" fill="none">
+    <rect x="22" y="4"  width="12" height="48" rx="3" fill="#d4a53a" opacity="0.92"/>
+    <rect x="6"  y="18" width="44" height="12" rx="3" fill="#d4a53a" opacity="0.92"/>
+  </svg>
+  <p class="font-cinzel text-xl mt-5" style="color:#d4a53a; letter-spacing:0.1em;">Global Faith &amp; Intercession</p>
+  <p class="text-sm mt-2" style="color:#3a5060; font-style:italic;">Loading the world…</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     PARTICLE BACKGROUND
+════════════════════════════════════════════════════════════ -->
+<canvas id="particle-canvas"></canvas>
+
+<!-- ════════════════════════════════════════════════════════════
+     TOOLTIP
+════════════════════════════════════════════════════════════ -->
+<div id="tooltip"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Header -->
+  <div id="header">
+    <h1>Global Faith &amp; Intercession</h1>
+    <p>Visualizing Global Christianity &amp; Persecuted Communities</p>
+    <div class="gold-line"></div>
+    <div id="mode-toggle">
+      <button class="mode-btn active" id="btn-presence" onclick="setMode('presence')">
+        ✦ Christian Presence
+      </button>
+      <button class="mode-btn" id="btn-persecution" onclick="setMode('persecution')">
+        🔥 Persecution Alert
+      </button>
+    </div>
+    <div id="legend"></div>
+  </div>
+
+  <!-- Map -->
+  <div id="map-wrap">
+    <svg id="world-map"></svg>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DETAIL SIDEBAR
+════════════════════════════════════════════════════════════ -->
+<div id="detail-panel">
+  <button id="close-panel" onclick="closePanel()" title="Close">✕</button>
+  <div id="panel-scroll">
+    <div id="panel-content"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SCRIPTURE / PRAYER STREAM BANNER
+════════════════════════════════════════════════════════════ -->
+<div id="scripture-banner">
+  <div id="scripture-track"></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>
+/* ============================================================
+   DATA: Country demographics, persecution data, prayer requests
+   Sources: Open Doors World Watch List 2024 concepts,
+            Pew Research Center, Operation World 2023
+   ISO 3166-1 numeric codes used as keys (matching TopoJSON)
+============================================================ */
+const COUNTRY_DATA = {
+  // ── EXTREME PERSECUTION (Index 80–100) ──────────────────────
+
+  "408": {
+    name: "North Korea",
+    population: 26000000,
+    christianPercent: 1.5,
+    persecutionIndex: 100,
+    persecutionLevel: "extreme",
+    summary: "The most dangerous place on earth to follow Christ. An estimated 400,000 secret believers endure a totalitarian state that treats Christianity as a political crime. Fifty thousand to seventy thousand believers languish in brutal concentration camps.",
+    prayerRequests: [
+      "Miraculous protection for an estimated 400,000 underground believers",
+      "Divine courage for those risking everything to smuggle Bibles",
+      "Strength, nourishment, and healing for Christians in labor camps",
+      "A sovereign move of God that opens this hermit kingdom",
+      "Comfort for families separated and torn apart by the regime"
+    ]
+  },
+  "706": {
+    name: "Somalia",
+    population: 17000000,
+    christianPercent: 0.1,
+    persecutionIndex: 97,
+    persecutionLevel: "extreme",
+    summary: "Al-Shabaab enforces brutal sharia across vast territories. Conversion from Islam is punishable by death. Even possession of a Bible is fatal. A tiny remnant of secret believers survives in constant mortal danger.",
+    prayerRequests: [
+      "Protection for the virtually invisible remnant of secret believers",
+      "Courage for anyone sharing the Gospel at mortal risk",
+      "Peace to break decades of devastating civil conflict",
+      "Breakthrough in the hearts of Al-Shabaab commanders",
+      "Safety for humanitarian workers serving in Christ's name"
+    ]
+  },
+  "434": {
+    name: "Libya",
+    population: 7000000,
+    christianPercent: 2.8,
+    persecutionIndex: 95,
+    persecutionLevel: "extreme",
+    summary: "Lawlessness following the 2011 civil war handed power to extremist militias. Christians risk kidnapping, torture, and execution. Migrant believers from sub-Saharan Africa are particularly vulnerable to abuse and slavery.",
+    prayerRequests: [
+      "Protection for migrant Christians trapped in conflict zones",
+      "Wisdom for secret believers navigating daily life under threat",
+      "An end to lawlessness and the rise of just governance",
+      "Healing for those traumatized by violence and displacement",
+      "A hunger for truth spreading among the Libyan people"
+    ]
+  },
+  "232": {
+    name: "Eritrea",
+    population: 3600000,
+    christianPercent: 48,
+    persecutionIndex: 93,
+    persecutionLevel: "extreme",
+    summary: "Only Orthodox, Catholic, and Lutheran churches are state-permitted. Hundreds of evangelical believers are imprisoned without charge in metal shipping containers in scorching desert conditions. One of the most secretive persecutions on earth.",
+    prayerRequests: [
+      "Release for all imprisoned without charge in container jails",
+      "Perseverance for believers suffering forced military service",
+      "Wisdom for evangelical church leaders under severe restriction",
+      "Protection for believers fleeing across borders to safety",
+      "Softening of President Isaias Afwerki's heart toward the church"
+    ]
+  },
+  "887": {
+    name: "Yemen",
+    population: 34000000,
+    christianPercent: 0.1,
+    persecutionIndex: 92,
+    persecutionLevel: "extreme",
+    summary: "Houthi control, tribal law, and ongoing civil war make Yemen devastatingly dangerous for the tiny remnant of secret believers. Apostasy from Islam carries a death sentence. Over 21 million face humanitarian crisis.",
+    prayerRequests: [
+      "Miraculous protection for the tiny remnant of secret believers",
+      "An end to the catastrophic civil war destroying millions of lives",
+      "Provision for the 21 million facing severe humanitarian crisis",
+      "Divine dreams and visions reaching those with no Gospel access",
+      "Courage for the few believers to quietly bear witness"
+    ]
+  },
+  "4": {
+    name: "Afghanistan",
+    population: 41000000,
+    christianPercent: 0.3,
+    persecutionIndex: 91,
+    persecutionLevel: "extreme",
+    summary: "Under Taliban rule since 2021, Afghanistan became the world's most dangerous country for Christians. An estimated 10,000–12,000 secret believers live under constant threat of discovery, which means death. Women and girls face additional oppression.",
+    prayerRequests: [
+      "Divine protection for an estimated 10,000–12,000 secret believers",
+      "Safe passage for believers and families urgently seeking escape",
+      "Provision for women and girls stripped of education and rights",
+      "Courage for those continuing underground church fellowship",
+      "A sovereign move of God in the hearts of Taliban leadership"
+    ]
+  },
+  "586": {
+    name: "Pakistan",
+    population: 231000000,
+    christianPercent: 1.8,
+    persecutionIndex: 88,
+    persecutionLevel: "extreme",
+    summary: "Blasphemy laws are routinely weaponized against Christians. Mob violence, forced conversions of Christian girls, church attacks, and employment discrimination are widespread. Over 4 million Pakistani Christians navigate these dangers daily.",
+    prayerRequests: [
+      "Reform of blasphemy laws weaponized to imprison innocent believers",
+      "Protection for Christian girls facing abduction and forced marriage",
+      "Strength for 4 million Christians facing daily discrimination",
+      "Courage for pastors and church leaders under constant threat",
+      "Justice for Christians falsely accused by hostile neighbors"
+    ]
+  },
+  "682": {
+    name: "Saudi Arabia",
+    population: 36000000,
+    christianPercent: 4.4,
+    persecutionIndex: 82,
+    persecutionLevel: "extreme",
+    summary: "No churches exist. Public worship is completely banned. Foreign Christians — over 1.4 million workers — can worship only in extreme secrecy. Conversion from Islam is apostasy, legally punishable by death. Saudi converts risk their lives daily.",
+    prayerRequests: [
+      "Protection for 1.4 million foreign Christian workers",
+      "Private spiritual nourishment for secret Saudi believers",
+      "Continued cultural softening through economic reform",
+      "Courage for the handful of known Saudi Christian converts",
+      "Divine dreams and visions reaching hearts closed to the Gospel"
+    ]
+  },
+  "462": {
+    name: "Maldives",
+    population: 540000,
+    christianPercent: 0.1,
+    persecutionIndex: 80,
+    persecutionLevel: "extreme",
+    summary: "Islam is legally inseparable from Maldivian citizenship. Apostasy is grounds for loss of citizenship and deportation. Virtually no known indigenous Christians exist. The constitution of the nation leaves no room for any other faith.",
+    prayerRequests: [
+      "A miraculous breakthrough in this seemingly impenetrable nation",
+      "Divine encounters and dreams for seeking Maldivians",
+      "Protection for the vanishingly small number of secret believers",
+      "Wisdom for foreign Christians quietly serving in the islands",
+      "Softening of laws that equate citizenship with Islamic faith"
+    ]
+  },
+
+  // ── VERY HIGH PERSECUTION (Index 60–79) ─────────────────────
+
+  "729": {
+    name: "Sudan",
+    population: 48000000,
+    christianPercent: 4,
+    persecutionIndex: 77,
+    persecutionLevel: "veryhigh",
+    summary: "The catastrophic 2023 civil war between military factions has devastated Christian communities. Churches are demolished, leaders are targeted, and millions are displaced. Sudan's Christians number over 2 million and face extraordinary danger.",
+    prayerRequests: [
+      "An end to the devastating civil war tearing the nation apart",
+      "Provision for millions of displaced Christians and civilians",
+      "Rebuilding of destroyed churches in Khartoum and Darfur",
+      "Protection for aid workers serving in Christ's name",
+      "Healing for trauma survivors enduring systematic violence"
+    ]
+  },
+  "364": {
+    name: "Iran",
+    population: 87000000,
+    christianPercent: 0.4,
+    persecutionIndex: 86,
+    persecutionLevel: "extreme",
+    summary: "Iran hosts one of the fastest-growing underground churches in world history — an extraordinary move of God. The government relentlessly raids house churches, imprisons leaders, and tortures members to force renunciation of faith.",
+    prayerRequests: [
+      "Protection for an estimated 800,000+ secret Iranian believers",
+      "Release of pastors and church leaders imprisoned for faith",
+      "Continued supernatural growth of the underground church",
+      "Wisdom for home church leaders navigating a surveillance state",
+      "A spiritual awakening among millions disillusioned with Islam"
+    ]
+  },
+  "760": {
+    name: "Syria",
+    population: 21000000,
+    christianPercent: 5,
+    persecutionIndex: 80,
+    persecutionLevel: "extreme",
+    summary: "The Christian population collapsed from 10% to under 5% due to the civil war and ISIS persecution. Ancient church communities that trace roots to the first century face potential extinction. Hundreds of thousands of Christian refugees remain displaced.",
+    prayerRequests: [
+      "Rebuilding of ancient Christian communities in Aleppo and Damascus",
+      "Safe and dignified return for millions of Christian refugees",
+      "Protection for church leaders navigating a complex political landscape",
+      "Healing from profound trauma of war, displacement, and loss",
+      "Preservation of 2,000-year-old Christian presence in the Levant"
+    ]
+  },
+  "368": {
+    name: "Iraq",
+    population: 42000000,
+    christianPercent: 1.2,
+    persecutionIndex: 78,
+    persecutionLevel: "very high",
+    summary: "Iraq's ancient Assyrian, Chaldean, and Armenian Christian communities — some tracing their history to Pentecost — face extinction. ISIS reduced the Christian population from 1.5 million to under 250,000. The Nineveh Plain was devastated.",
+    prayerRequests: [
+      "Return of hundreds of thousands of displaced Assyrian Christians",
+      "Rebuilding of Nineveh Plain churches destroyed by ISIS",
+      "Healing for deep trauma of the ISIS genocidal campaign",
+      "Preservation of the world's oldest continuous Christian communities",
+      "Protection and provision for the brave few who returned to rebuild"
+    ]
+  },
+  "818": {
+    name: "Egypt",
+    population: 105000000,
+    christianPercent: 10,
+    persecutionIndex: 70,
+    persecutionLevel: "veryhigh",
+    summary: "Coptic Christians are the oldest Christian community on earth — heirs of the apostle Mark. They face systemic discrimination, church bombings, and kidnapping of girls for forced conversion. The 21 Coptic martyrs beheaded by ISIS on a Libyan beach inspired the global church.",
+    prayerRequests: [
+      "Protection for 10+ million Coptic Christians facing daily discrimination",
+      "Equal rights and justice in employment, law, and church permits",
+      "Healing for communities repeatedly targeted by extremist attacks",
+      "Courage for Coptic Pope and bishops advocating prophetically",
+      "A spirit of reconciliation between Egypt's Muslim and Christian families"
+    ]
+  },
+  "104": {
+    name: "Myanmar",
+    population: 54000000,
+    christianPercent: 8.2,
+    persecutionIndex: 72,
+    persecutionLevel: "veryhigh",
+    summary: "Following the 2021 military coup, Christian ethnic minorities — Kachin, Karen, Chin — face targeted military airstrikes on villages and churches. Thousands have been killed. Two million are internally displaced. Churches serve as the backbone of resistance and humanitarian care.",
+    prayerRequests: [
+      "Protection for Kachin, Karen, and Chin Christian communities",
+      "End to military airstrikes deliberately targeting civilian villages",
+      "Provision for 2+ million internally displaced people",
+      "Healing and resilience for trauma-devastated communities",
+      "Courage for pastors ministering under extraordinary danger"
+    ]
+  },
+  "566": {
+    name: "Nigeria",
+    population: 224000000,
+    christianPercent: 49,
+    persecutionIndex: 73,
+    persecutionLevel: "veryhigh",
+    summary: "Boko Haram and Fulani militant herdsmen systematically slaughter Christians in the Middle Belt. Over 50,000 Christians have been killed in 20 years. Churches are burned weekly. Northern states enforce sharia law that subjugates Christian minorities.",
+    prayerRequests: [
+      "End to Fulani herdsmen attacks on Christian farming communities",
+      "Release of kidnapped Christian children and girls",
+      "Healing for communities in Kaduna, Plateau, and Benue states",
+      "Justice and effective government response to Christian killings",
+      "Courage and resilience of Nigeria's vast, vibrant church",
+      "Reconciliation and peace between Muslim and Christian communities"
+    ]
+  },
+  "156": {
+    name: "China",
+    population: 1412000000,
+    christianPercent: 5.5,
+    persecutionIndex: 68,
+    persecutionLevel: "veryhigh",
+    summary: "China hosts the largest underground church in world history — an estimated 97 million unregistered believers. Crackdowns under Xi Jinping have intensified sharply. Unapproved churches are raided, crosses demolished, and leaders given multi-year sentences.",
+    prayerRequests: [
+      "Protection for 97 million+ unregistered house church believers",
+      "Release of imprisoned pastors serving long sentences for faith",
+      "Courage for leaders refusing the CCP's 'Sinicization' demands",
+      "Continued explosive growth despite intense surveillance",
+      "Wisdom for the Chinese church rising as a global missions force",
+      "Comfort for Uyghur Christians facing double persecution"
+    ]
+  },
+  "356": {
+    name: "India",
+    population: 1430000000,
+    christianPercent: 2.4,
+    persecutionIndex: 75,
+    persecutionLevel: "veryhigh",
+    summary: "Hindu nationalist (Hindutva) groups have violently attacked thousands of Christians, churches, and pastors. Anti-conversion laws in multiple states criminalize sharing of faith. Dalit Christians face dual discrimination: persecution for both caste and belief.",
+    prayerRequests: [
+      "Protection for Christians in states enforcing anti-conversion laws",
+      "Courage for Dalit Christians facing both caste and faith persecution",
+      "Healing for survivors of mob attacks on churches",
+      "Justice through the courts for falsely imprisoned believers",
+      "Restraint and accountability for Hindutva extremist organizations",
+      "Bold witness from India's 65+ million Christians"
+    ]
+  },
+
+  // ── HIGH PERSECUTION (Index 40–59) ──────────────────────────
+
+  "12": {
+    name: "Algeria",
+    population: 46000000,
+    christianPercent: 0.5,
+    persecutionIndex: 65,
+    persecutionLevel: "high",
+    summary: "Since 2000, Algeria has seen an extraordinary church-growth movement, especially among Kabyle Berbers. The government's response has been to close dozens of churches and prosecute believers under laws restricting non-Muslim worship.",
+    prayerRequests: [
+      "Protection for the rapidly growing Kabyle Berber church",
+      "Reopening of churches sealed by authorities",
+      "Legal protection for believers prosecuted for sharing faith",
+      "Continued harvest among those disillusioned with extremism",
+      "Wisdom for pastors leading growing but pressured congregations"
+    ]
+  },
+  "50": {
+    name: "Bangladesh",
+    population: 170000000,
+    christianPercent: 0.4,
+    persecutionIndex: 62,
+    persecutionLevel: "high",
+    summary: "Muslim converts to Christianity face extreme family pressure, social persecution, and violence from extremist groups. Churches face attacks during Islamic holy seasons. The growing church of 700,000 navigates constant societal pressure.",
+    prayerRequests: [
+      "Protection for converts from Islam facing family rejection and threats",
+      "Courage for the growing but tiny church of approximately 700,000",
+      "Strength for tribal Christians in the Chittagong Hill Tracts",
+      "Wisdom for church leaders navigating political and social pressure",
+      "A hunger for truth spreading across Bangladesh's 170 million people"
+    ]
+  },
+  "504": {
+    name: "Morocco",
+    population: 37000000,
+    christianPercent: 0.1,
+    persecutionIndex: 68,
+    persecutionLevel: "veryhigh",
+    summary: "Converts from Islam face criminal prosecution, family rejection, and social destruction. Foreign Christian workers were expelled en masse in 2010. The tiny underground church meets in complete secrecy, but stories of remarkable faith conversion are growing.",
+    prayerRequests: [
+      "Protection for isolated secret believers across the country",
+      "Divine comfort for converts facing family rejection and legal threat",
+      "Boldness among Morocco's small but growing underground church",
+      "Continued harvest among disillusioned young Moroccans",
+      "Wisdom for foreign believers serving quietly in the country"
+    ]
+  },
+  "704": {
+    name: "Vietnam",
+    population: 98000000,
+    christianPercent: 8,
+    persecutionIndex: 55,
+    persecutionLevel: "high",
+    summary: "Unregistered churches face government raids and pastoral arrests. Hmong, Montagnard, and other ethnic minority Christians face targeted land seizures, forced renunciations of faith, and village expulsion in the highlands.",
+    prayerRequests: [
+      "Protection for Montagnard and Hmong Christians in the highlands",
+      "Release of house church leaders imprisoned for their faith",
+      "Wisdom for churches navigating complex registration requirements",
+      "Legal protection for Christians forced to renounce their faith",
+      "Continued growth of Vietnam's resilient church of 8+ million"
+    ]
+  },
+  "418": {
+    name: "Laos",
+    population: 7400000,
+    christianPercent: 2.5,
+    persecutionIndex: 58,
+    persecutionLevel: "high",
+    summary: "Village and provincial authorities routinely expel Christian families, demolish church buildings, and imprison believers for evangelism. Despite this, the Lao church is quietly growing with remarkable tenacity.",
+    prayerRequests: [
+      "End to forced expulsion of Christian families from villages",
+      "Release of prisoners of conscience jailed for sharing faith",
+      "Protection for house churches meeting under intense pressure",
+      "Provision for families who lost land and homes due to faith",
+      "Growth of the Lao church in the face of sustained opposition"
+    ]
+  },
+  "144": {
+    name: "Sri Lanka",
+    population: 22000000,
+    christianPercent: 7.5,
+    persecutionIndex: 55,
+    persecutionLevel: "high",
+    summary: "Buddhist nationalist groups (BBS) routinely disrupt church services with mobs and violence. Evangelical churches face severe community pressure and physical attacks. Multiple anti-conversion bills have been proposed in parliament.",
+    prayerRequests: [
+      "Protection for evangelical churches facing mob disruption",
+      "Defeat of anti-conversion legislation in parliament",
+      "Healing for survivors of the 2019 Easter Sunday church bombings",
+      "Wisdom for pastors navigating Buddhist nationalist opposition",
+      "Unity among Sri Lanka's Catholic, evangelical, and mainline Christians"
+    ]
+  },
+  "792": {
+    name: "Turkey",
+    population: 85000000,
+    christianPercent: 0.2,
+    persecutionIndex: 55,
+    persecutionLevel: "high",
+    summary: "The land of the seven churches of Revelation is less than 0.2% Christian — down from Christian-majority cities a century ago. Church properties remain confiscated. Clergy have been assassinated. Turkish converts from Islam face death threats.",
+    prayerRequests: [
+      "Protection for believers in the ancient cities of Revelation",
+      "Return of confiscated church properties across the country",
+      "Courage for Turkish converts facing death threats from families",
+      "Restoration and access to ancient Christian heritage sites",
+      "Revival in the land of Smyrna, Ephesus, Antioch, and Nicaea"
+    ]
+  },
+  "231": {
+    name: "Ethiopia",
+    population: 127000000,
+    christianPercent: 63,
+    persecutionIndex: 45,
+    persecutionLevel: "high",
+    summary: "The Tigray civil war (2020–2022) devastated ancient Orthodox Christian communities with mass atrocities and church desecration. In Oromia and Somali regions, evangelical Christians face rising Islamic extremist violence.",
+    prayerRequests: [
+      "Healing and reconciliation after the brutal Tigray civil war",
+      "Restoration of ancient Orthodox churches desecrated in conflict",
+      "Protection for evangelical Christians in Oromia and Somali regions",
+      "Wise, just leadership for this pivotal African nation",
+      "Spiritual renewal and unity across Ethiopia's diverse church"
+    ]
+  },
+  "360": {
+    name: "Indonesia",
+    population: 277000000,
+    christianPercent: 9.9,
+    persecutionIndex: 40,
+    persecutionLevel: "high",
+    summary: "Hundreds of churches have been closed under religious intolerance regulations. Christian minorities in Muslim-majority Aceh and other regions face severe restrictions, mosque-incited violence, and imprisonment under blasphemy laws.",
+    prayerRequests: [
+      "Protection for Christians in Aceh and sharia-governed provinces",
+      "Justice for Christians falsely imprisoned under blasphemy laws",
+      "Peaceful coexistence between Indonesia's diverse religious communities",
+      "Courage for pastors in regions facing extremist intimidation",
+      "Revival across the largest Muslim-majority nation on earth"
+    ]
+  },
+
+  // ── MODERATE PRESSURE (Index 20–39) ─────────────────────────
+
+  "192": {
+    name: "Cuba",
+    population: 11000000,
+    christianPercent: 59,
+    persecutionIndex: 42,
+    persecutionLevel: "moderate",
+    summary: "Independent evangelical churches face raids, pastoral imprisonment, and property seizure. The 2021 crackdowns following mass protests saw many pastors arrested. Yet Cuba's church is experiencing remarkable revival beneath the pressure.",
+    prayerRequests: [
+      "Freedom for imprisoned pastors and church leaders",
+      "Protection for independent house churches under surveillance",
+      "Provision for churches whose properties have been seized",
+      "Courage amid the growing evangelical revival on the island",
+      "Justice, freedom, and restoration for the Cuban people"
+    ]
+  },
+  "643": {
+    name: "Russia",
+    population: 144000000,
+    christianPercent: 73,
+    persecutionIndex: 38,
+    persecutionLevel: "moderate",
+    summary: "Jehovah's Witnesses have been classified as 'extremists' and hundreds imprisoned and tortured. The Yarovaya Law severely restricts evangelical outreach. The Ukraine war has created a deep crisis of conscience for Russian pastors and believers.",
+    prayerRequests: [
+      "Release of Jehovah's Witnesses and other imprisoned believers",
+      "Protection for evangelical churches under tightening restrictions",
+      "Wisdom for the Russian church navigating wartime moral complicity",
+      "Courage for pastors speaking prophetically against the Ukraine war",
+      "A true spiritual revival independent of nationalist state Orthodoxy"
+    ]
+  },
+  "484": {
+    name: "Mexico",
+    population: 130000000,
+    christianPercent: 83,
+    persecutionIndex: 30,
+    persecutionLevel: "moderate",
+    summary: "Indigenous evangelical Christians in Oaxaca, Chiapas, and Hidalgo face expulsion and violent persecution from traditional communities protecting folk Catholicism. Cartel violence targets pastors who confront criminal power in their communities.",
+    prayerRequests: [
+      "Protection for evangelical Christians expelled from indigenous villages",
+      "Safety for pastors and missionaries in cartel-controlled territories",
+      "An end to cartel violence devastating millions of Mexican families",
+      "Healing for communities broken by organized crime",
+      "A true Gospel revival across Mexico's nominally Catholic majority"
+    ]
+  },
+  "170": {
+    name: "Colombia",
+    population: 52000000,
+    christianPercent: 94,
+    persecutionIndex: 28,
+    persecutionLevel: "moderate",
+    summary: "Evangelical pastors are killed by FARC and ELN guerrillas in conflict zones. Indigenous Christians face intense pressure from shamanic traditional leaders. Urban churches serve millions of displaced people with remarkable courage.",
+    prayerRequests: [
+      "Protection for pastors in guerrilla-controlled territories",
+      "Healing for communities devastated by decades of armed conflict",
+      "Strength for churches serving millions of internally displaced",
+      "Provision for Christian communities along conflict frontlines",
+      "A harvest among cartel members and gang leaders"
+    ]
+  },
+
+  // ── MAJOR CHRISTIAN MAJORITY NATIONS (for Mode A) ───────────
+
+  "840": {
+    name: "United States",
+    population: 335000000,
+    christianPercent: 64,
+    persecutionIndex: 6,
+    persecutionLevel: "low",
+    summary: "The world's largest missionary-sending nation with the most influential Christian media infrastructure on earth. Rapid secularization among younger generations presents one of the most significant missional challenges of the 21st century.",
+    prayerRequests: [
+      "Spiritual awakening among the rising unchurched generation",
+      "Unity across deeply divided racial and political lines in the church",
+      "Courage for Christians to stand for truth in a secular culture",
+      "Renewed commitment to global missions and persecuted believers",
+      "Revival in America's universities, cities, and prisons"
+    ]
+  },
+  "76": {
+    name: "Brazil",
+    population: 215000000,
+    christianPercent: 88,
+    persecutionIndex: 15,
+    persecutionLevel: "low",
+    summary: "Home to the world's largest Catholic population and an explosive Pentecostal movement, Brazil sends thousands of missionaries globally and is becoming a leading global missions power from the Global South.",
+    prayerRequests: [
+      "Protection for pastors ministering in favelas and gang territories",
+      "Integrity and genuine discipleship among nominal believers",
+      "Justice and mercy for Brazil's enormous prison population",
+      "Wisdom for the church in a deeply politically polarized nation",
+      "Continued mission sending to unreached peoples worldwide"
+    ]
+  },
+  "608": {
+    name: "Philippines",
+    population: 114000000,
+    christianPercent: 92,
+    persecutionIndex: 22,
+    persecutionLevel: "low",
+    summary: "Among Asia's most devout Christian nations. Filipino diaspora workers spread the Gospel across the Muslim world. Christians in Mindanao face pressure from Islamic separatist groups, including kidnapping and targeted violence.",
+    prayerRequests: [
+      "Protection for Filipino Christians working in Muslim-majority countries",
+      "Peace and reconciliation in Muslim-Christian conflict in Mindanao",
+      "Spiritual depth matching the Philippines' impressive church breadth",
+      "Protection for Overseas Filipino Workers sharing faith abroad",
+      "Healing for communities affected by natural disasters and poverty"
+    ]
+  },
+  "894": {
+    name: "Zambia",
+    population: 20000000,
+    christianPercent: 95,
+    persecutionIndex: 5,
+    persecutionLevel: "low",
+    summary: "Declared a Christian nation in 1991, Zambia has a deeply devout Christian culture. The church serves as the nation's primary provider of healthcare and education, and Zambia sends missionaries across the African continent.",
+    prayerRequests: [
+      "Genuine discipleship rooting beyond nominal Christianity",
+      "Wisdom for Christian leaders in government to govern justly",
+      "Provision for the 1 in 5 Zambians living in extreme poverty",
+      "Strong families built on deep biblical foundations",
+      "Bold witness reaching nations with less Gospel access"
+    ]
+  },
+  "404": {
+    name: "Kenya",
+    population: 55000000,
+    christianPercent: 85,
+    persecutionIndex: 20,
+    persecutionLevel: "low",
+    summary: "A deeply Christian nation with vibrant evangelical churches. Al-Shabaab attacks in northeastern Kenya specifically target Christians. Kenya sends missionaries across Africa and is a rising force in global missions.",
+    prayerRequests: [
+      "Protection for Christians in northeastern Kenya from Al-Shabaab",
+      "Healing for survivors of terrorist attacks on churches and schools",
+      "Wisdom for Christian political leaders to govern with integrity",
+      "Bold witness to Kenya's large Muslim minority in coastal regions",
+      "A harvest among the Somali diaspora in Nairobi"
+    ]
+  },
+  "380": {
+    name: "Italy",
+    population: 60000000,
+    christianPercent: 74,
+    persecutionIndex: 5,
+    persecutionLevel: "low",
+    summary: "Home to the Vatican and millennia of Christian civilization. Yet secularization is emptying churches at alarming speed, especially among youth. Italy remains a strategic spiritual heartland with growing immigrant-led congregations.",
+    prayerRequests: [
+      "Spiritual awakening among Italy's deeply secular youth generation",
+      "Renewal of the ancient Catholic church in its very homeland",
+      "Growth of evangelical communities throughout the peninsula",
+      "Bold pastoral witness in an increasingly post-Christian culture",
+      "Compassionate ministry to migrants arriving on Italian shores"
+    ]
+  },
+  "276": {
+    name: "Germany",
+    population: 84000000,
+    christianPercent: 57,
+    persecutionIndex: 4,
+    persecutionLevel: "low",
+    summary: "The birthplace of the Protestant Reformation faces historic church decline. Yet immigrant-led congregations (Ethiopian, Korean, Nigerian, Iranian) are among the most vibrant in Europe, bringing new life to the land of Luther and Bonhoeffer.",
+    prayerRequests: [
+      "Spiritual renewal in a deeply post-Christian society",
+      "Growth of vibrant immigrant-led churches across the nation",
+      "Courage for Christians to speak truth in a secular public square",
+      "A new Reformation spirit in the land of Luther and Bonhoeffer",
+      "Bold ministry to Germany's large Muslim immigrant community"
+    ]
+  },
+  "826": {
+    name: "United Kingdom",
+    population: 68000000,
+    christianPercent: 46,
+    persecutionIndex: 5,
+    persecutionLevel: "low",
+    summary: "Britain sent missionaries across the globe but now faces rapid de-Christianization. Yet African and Asian immigrant churches are revitalizing cities, and new movements among young people show signs of authentic revival.",
+    prayerRequests: [
+      "Spiritual awakening across a deeply secularized nation",
+      "Growth and empowerment of multicultural immigrant churches",
+      "Courage for Christians facing legal challenges to religious expression",
+      "Renewed mission engagement from this historic sending nation",
+      "Revival among British young people, students, and artists"
+    ]
+  },
+  "710": {
+    name: "South Africa",
+    population: 59000000,
+    christianPercent: 79,
+    persecutionIndex: 12,
+    persecutionLevel: "low",
+    summary: "South Africa's churches played a prophetic role in ending apartheid. Today they serve the poor at extraordinary scale while facing the challenges of corruption, inequality, and rising violent crime.",
+    prayerRequests: [
+      "Justice and healing for the ongoing wounds of apartheid's legacy",
+      "Protection for Christians suffering violent crime",
+      "Courage for the church to challenge pervasive government corruption",
+      "Provision for millions living in poverty across townships",
+      "Bold witness in South Africa's increasingly secular urban centers"
+    ]
+  },
+  "32": {
+    name: "Argentina",
+    population: 46000000,
+    christianPercent: 76,
+    persecutionIndex: 8,
+    persecutionLevel: "low",
+    summary: "Home to a rich Catholic heritage and a booming Pentecostal revival, Argentina is a growing global missions sender in the Spanish-speaking world. The church navigates severe economic crisis with resilient faith.",
+    prayerRequests: [
+      "Wisdom for the church navigating severe and prolonged economic crisis",
+      "Genuine spiritual depth beneath widespread Pentecostal growth",
+      "Justice for the poor amid persistent inequality",
+      "Continued sending of Argentine missionaries across Latin America",
+      "Revival among Buenos Aires' unchurched urban youth"
+    ]
+  },
+  "800": {
+    name: "Uganda",
+    population: 48000000,
+    christianPercent: 85,
+    persecutionIndex: 18,
+    persecutionLevel: "low",
+    summary: "A deeply Christian nation with bold evangelical faith. Uganda bears the scars of LRA terrorism and grapples with governance challenges, yet its church is vibrant, growing, and increasingly engaging in global missions.",
+    prayerRequests: [
+      "Healing and restoration for communities scarred by LRA violence",
+      "Wisdom for Christian leaders in government to oppose corruption",
+      "Provision for children orphaned by AIDS, violence, and poverty",
+      "Courage for the church to confront injustice prophetically",
+      "A growing missionary sending movement from East Africa"
+    ]
+  },
+  "410": {
+    name: "South Korea",
+    population: 52000000,
+    christianPercent: 29,
+    persecutionIndex: 5,
+    persecutionLevel: "low",
+    summary: "South Korea is the world's second-largest missionary-sending nation. Korean missionaries serve on every continent, including the world's most hostile territories. The Korean church faces declining attendance among youth at home.",
+    prayerRequests: [
+      "Safety for Korean missionaries in high-risk countries worldwide",
+      "Renewal among South Korean churches facing declining attendance",
+      "Boldness to continue pioneering missions to unreached peoples",
+      "Wisdom for Christians engaging North Korean defectors",
+      "Revival among the generation abandoning the faith at home"
+    ]
+  },
+  "24": {
+    name: "Angola",
+    population: 35000000,
+    christianPercent: 93,
+    persecutionIndex: 10,
+    persecutionLevel: "low",
+    summary: "One of Africa's most Christian nations with a remarkably vibrant and growing church. Post-civil war Angola is experiencing genuine evangelical revival and is beginning to send missionaries across southern Africa.",
+    prayerRequests: [
+      "True spiritual depth rooting Angola's Christian majority",
+      "Justice and reconciliation continuing after decades of civil war",
+      "Provision for millions still living without basic resources",
+      "Wisdom for Christian leaders in government and business",
+      "Bold witness reaching Angola's remaining unreached communities"
+    ]
+  },
+  "598": {
+    name: "Papua New Guinea",
+    population: 10000000,
+    christianPercent: 96,
+    persecutionIndex: 10,
+    persecutionLevel: "low",
+    summary: "Constitutionally Christian with an extraordinary church presence. Yet intense spiritual warfare continues as syncretism with tribal religion and sorcery-related violence remain serious challenges in many regions.",
+    prayerRequests: [
+      "Deep discipleship overcoming syncretism with tribal spiritual practices",
+      "Protection for believers in regions affected by sorcery violence",
+      "Strengthening of Christian families amid rising social problems",
+      "Wise governance honoring PNG's Christian national identity",
+      "Growth of local missionaries reaching isolated tribal groups"
+    ]
+  }
+};
+
+/* ============================================================
+   SCRIPTURE VERSES for the prayer stream banner
+   Key perseverance, peace, and unity passages
+============================================================ */
+const SCRIPTURES = [
+  { ref: "Hebrews 13:3",       text: "Continue to remember those in prison as if you were together with them in prison, and those who are mistreated as if you yourselves were suffering." },
+  { ref: "Matthew 5:10",       text: "Blessed are those who are persecuted because of righteousness, for theirs is the kingdom of heaven." },
+  { ref: "1 Corinthians 12:26", text: "If one part suffers, every part suffers with it; if one part is honored, every part rejoices with it." },
+  { ref: "Romans 8:18",        text: "I consider that our present sufferings are not worth comparing with the glory that will be revealed in us." },
+  { ref: "Psalm 9:9",          text: "The LORD is a refuge for the oppressed, a stronghold in times of trouble." },
+  { ref: "Isaiah 41:10",       text: "Do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you." },
+  { ref: "Revelation 2:10",    text: "Do not be afraid of what you are about to suffer. Be faithful, even to the point of death, and I will give you life as your victor's crown." },
+  { ref: "Psalm 46:1",         text: "God is our refuge and strength, an ever-present help in trouble." },
+  { ref: "Acts 4:29",          text: "Now, Lord, consider their threats and enable your servants to speak your word with great boldness." },
+  { ref: "Romans 12:12",       text: "Be joyful in hope, patient in affliction, faithful in prayer." }
+];
+
+/* ============================================================
+   APP STATE
+============================================================ */
+let currentMode    = 'presence';
+let selectedId     = null;
+let prayerCounts   = {};       // countryId → local count
+let globalPrayers  = 0;
+let worldData      = null;
+let svg, g, projection, pathGen;
+let streamItems    = [];       // live prayer items added to banner
+
+/* ============================================================
+   COLOR SCALES
+   Threshold scales mapping data → fill color
+============================================================ */
+// Mode A: Christian presence % → warm tones (dark blue → gold)
+const presenceScale = d3.scaleThreshold()
+  .domain([3, 10, 25, 45, 65, 80])
+  .range([
+    '#0e1620',  // 0–3%:   near black
+    '#132030',  // 3–10%:  deep midnight
+    '#1a3050',  // 10–25%: dark blue
+    '#1e4570',  // 25–45%: medium blue
+    '#4a4018',  // 45–65%: olive-gold
+    '#7a6020',  // 65–80%: warm gold
+    '#a88030'   // 80%+:   bright gold
+  ]);
+
+// Mode B: Persecution index → ember tones (dark → deep red)
+const persecutionScale = d3.scaleThreshold()
+  .domain([15, 35, 55, 75])
+  .range([
+    '#0e1620',  // 0–15:   peaceful
+    '#1a1a20',  // 15–35:  low concern
+    '#3a1e18',  // 35–55:  moderate
+    '#6a1a10',  // 55–75:  high persecution
+    '#a01010'   // 75+:    extreme
+  ]);
+
+/* ============================================================
+   INIT
+============================================================ */
+async function init() {
+  try {
+    worldData = await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+    buildMap();
+    buildLegend();
+    buildScriptureBanner();
+    startParticles();
+
+    // Fade out loading screen
+    const lo = document.getElementById('loading');
+    lo.style.opacity = '0';
+    setTimeout(() => { lo.style.display = 'none'; }, 900);
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      `<p style="color:#f87171;font-family:Lato,sans-serif;padding:2rem;text-align:center;">
+        Failed to load world data.<br>Please check your internet connection.
+      </p>`;
+    console.error(e);
+  }
+}
+
+/* ============================================================
+   MAP BUILD
+============================================================ */
+function buildMap() {
+  const wrap  = document.getElementById('map-wrap');
+  const W     = wrap.clientWidth;
+  const H     = wrap.clientHeight;
+
+  d3.select('#world-map').selectAll('*').remove();
+
+  svg = d3.select('#world-map')
+    .attr('width', W)
+    .attr('height', H);
+
+  // Ocean fill
+  svg.append('rect')
+    .attr('width', W).attr('height', H)
+    .attr('fill', '#06090f');
+
+  // Graticule (subtle grid)
+  const graticule = d3.geoGraticule();
+  projection = d3.geoNaturalEarth1()
+    .scale(W / 6.3)
+    .translate([W / 2, H / 2]);
+  pathGen = d3.geoPath().projection(projection);
+
+  svg.append('path')
+    .datum(graticule())
+    .attr('d', pathGen)
+    .attr('fill', 'none')
+    .attr('stroke', '#0c1520')
+    .attr('stroke-width', 0.4);
+
+  // Sphere outline
+  svg.append('path')
+    .datum({ type: 'Sphere' })
+    .attr('d', pathGen)
+    .attr('fill', 'none')
+    .attr('stroke', '#1a2535')
+    .attr('stroke-width', 0.8);
+
+  g = svg.append('g').attr('class', 'countries-layer');
+
+  const features = topojson.feature(worldData, worldData.objects.countries).features;
+  const tooltip  = document.getElementById('tooltip');
+
+  g.selectAll('.country')
+    .data(features)
+    .enter()
+    .append('path')
+    .attr('class', 'country')
+    .attr('id', d => `c${d.id}`)
+    .attr('d', pathGen)
+    .attr('fill', d => colorForCountry(d.id))
+    .on('mouseover', function(event, d) {
+      const cd = COUNTRY_DATA[String(d.id)];
+      if (!cd) return;
+      tooltip.style.display = 'block';
+      tooltip.innerHTML =
+        `<strong style="color:#d4a53a;">${cd.name}</strong><br/>` +
+        (currentMode === 'presence'
+          ? `Christian pop: <span style="color:#fbbf24;">${cd.christianPercent}%</span>`
+          : `Persecution index: <span style="color:#f87171;">${cd.persecutionIndex}/100</span>`);
+      d3.select(this)
+        .raise()
+        .attr('stroke', '#d4a53a')
+        .attr('stroke-width', 1.4);
+    })
+    .on('mousemove', event => {
+      tooltip.style.left = (event.clientX + 14) + 'px';
+      tooltip.style.top  = (event.clientY - 30) + 'px';
+    })
+    .on('mouseout', function() {
+      tooltip.style.display = 'none';
+      d3.select(this)
+        .attr('stroke', '#1a2535')
+        .attr('stroke-width', 0.4);
+    })
+    .on('click', (event, d) => {
+      const cd = COUNTRY_DATA[String(d.id)];
+      if (cd) showPanel(String(d.id));
+    });
+
+  // Zoom & pan
+  const zoom = d3.zoom()
+    .scaleExtent([1, 10])
+    .on('zoom', e => g.attr('transform', e.transform));
+  svg.call(zoom);
+
+  applyGlowClasses();
+}
+
+function colorForCountry(rawId) {
+  const cd = COUNTRY_DATA[String(rawId)];
+  if (!cd) return '#0d1522';
+  return currentMode === 'presence'
+    ? presenceScale(cd.christianPercent || 0)
+    : persecutionScale(cd.persecutionIndex || 0);
+}
+
+/* Apply CSS glow animation classes to persecuted countries */
+function applyGlowClasses() {
+  // Remove all glow classes first
+  d3.selectAll('.country')
+    .classed('glow-extreme', false)
+    .classed('glow-veryhigh', false)
+    .classed('glow-high', false);
+
+  if (currentMode !== 'persecution') return;
+
+  Object.entries(COUNTRY_DATA).forEach(([id, cd]) => {
+    const sel = d3.select(`#c${id}`);
+    if (sel.empty()) return;
+    if (cd.persecutionIndex >= 85)      sel.classed('glow-extreme', true);
+    else if (cd.persecutionIndex >= 65) sel.classed('glow-veryhigh', true);
+    else if (cd.persecutionIndex >= 45) sel.classed('glow-high', true);
+  });
+}
+
+/* ============================================================
+   MODE TOGGLE
+============================================================ */
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-presence').classList.toggle('active', mode === 'presence');
+  document.getElementById('btn-persecution').classList.toggle('active', mode === 'persecution');
+
+  d3.selectAll('.country')
+    .transition()
+    .duration(900)
+    .ease(d3.easeCubicInOut)
+    .attr('fill', d => colorForCountry(d.id));
+
+  applyGlowClasses();
+  buildLegend();
+}
+
+/* ============================================================
+   LEGEND
+============================================================ */
+function buildLegend() {
+  const el = document.getElementById('legend');
+  const swatches = currentMode === 'presence'
+    ? ['#0e1620','#132030','#1a3050','#1e4570','#4a4018','#7a6020','#a88030']
+    : ['#0e1620','#1a1a20','#3a1e18','#6a1a10','#a01010'];
+
+  const [leftLabel, rightLabel] = currentMode === 'presence'
+    ? ['Fewer Christians', 'More Christians']
+    : ['Peaceful', 'Extreme Persecution'];
+
+  el.innerHTML =
+    `<span>${leftLabel}</span>` +
+    swatches.map(c =>
+      `<span class="legend-swatch" style="background:${c};"></span>`
+    ).join('') +
+    `<span style="color:${currentMode === 'presence' ? '#d4a53a' : '#f87171'}">${rightLabel}</span>`;
+}
+
+/* ============================================================
+   COUNTRY DETAIL PANEL
+============================================================ */
+function showPanel(id) {
+  const cd = COUNTRY_DATA[id];
+  if (!cd) return;
+  selectedId = id;
+  if (!prayerCounts[id]) prayerCounts[id] = 0;
+
+  const badgeMap = {
+    extreme:  ['badge-extreme',  'Extreme Persecution'],
+    veryhigh: ['badge-veryhigh', 'Very High Persecution'],
+    high:     ['badge-high',     'High Persecution'],
+    moderate: ['badge-moderate', 'Moderate Pressure'],
+    low:      ['badge-low',      'Low Restriction']
+  };
+  const [badgeClass, badgeText] = badgeMap[cd.persecutionLevel] || badgeMap.low;
+
+  const christianCount = Math.round((cd.population * cd.christianPercent) / 100);
+
+  document.getElementById('panel-content').innerHTML = `
+    <div class="fade-in-up">
+      <div class="panel-country-name">${cd.name}</div>
+      <span class="persecution-badge ${badgeClass}">${badgeText}</span>
+
+      <div class="gold-line" style="width:100%;margin:12px 0;"></div>
+
+      <p class="summary-text">${cd.summary}</p>
+
+      <p class="section-label">DEMOGRAPHICS</p>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Population</div>
+          <div class="stat-value">${fmtNum(cd.population)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Christian %</div>
+          <div class="stat-value gold">${cd.christianPercent}%</div>
+        </div>
+        <div class="stat-card" style="grid-column:span 2;">
+          <div class="stat-label">Estimated Believers</div>
+          <div class="stat-value amber">${fmtNum(christianCount)}</div>
+        </div>
+      </div>
+
+      ${cd.persecutionIndex > 5 ? `
+      <div style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-muted);margin-bottom:4px;">
+          <span>Persecution Index</span>
+          <span>${cd.persecutionIndex} / 100</span>
+        </div>
+        <div class="persecution-bar-track">
+          <div class="persecution-bar-fill" style="width:${cd.persecutionIndex}%;"></div>
+        </div>
+      </div>
+      ` : ''}
+
+      <p class="section-label">PRAYER REQUESTS</p>
+      <div>
+        ${cd.prayerRequests.map(r => `
+          <div class="prayer-req-item">
+            <span class="prayer-dot"></span>
+            <span class="prayer-req-text">${r}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="gold-line" style="width:100%;margin:14px 0;"></div>
+
+      <div class="prayer-counter-wrap">
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px;letter-spacing:0.06em;">
+          STANDING IN SOLIDARITY
+        </div>
+        <div class="prayer-number" id="prayer-num">${prayerCounts[id].toLocaleString()}</div>
+        <div style="font-size:0.68rem;color:var(--text-muted);margin-top:2px;">prayers joined</div>
+      </div>
+
+      <button class="join-prayer-btn" onclick="joinPrayer('${id}')">
+        ✦ &nbsp; Join in Prayer
+      </button>
+
+      <div style="text-align:center;font-size:0.65rem;color:var(--text-subtle);margin-top:10px;">
+        ${globalPrayers.toLocaleString()} total prayers across all nations
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+  selectedId = null;
+}
+
+function joinPrayer(id) {
+  if (!prayerCounts[id]) prayerCounts[id] = 0;
+  prayerCounts[id]++;
+  globalPrayers++;
+
+  const el = document.getElementById('prayer-num');
+  if (el) {
+    el.textContent = prayerCounts[id].toLocaleString();
+    el.classList.add('pulse');
+    setTimeout(() => el.classList.remove('pulse'), 350);
+  }
+
+  // Update global count footer
+  const footer = document.querySelector('.join-prayer-btn + div');
+  if (footer) footer.textContent = `${globalPrayers.toLocaleString()} total prayers across all nations`;
+
+  // Add to live stream
+  pushToStream(`🙏 Someone just prayed for ${COUNTRY_DATA[id]?.name || 'a nation'}`);
+}
+
+/* ============================================================
+   SCRIPTURE BANNER
+   Smooth infinite-scroll using JS animation for reliability
+============================================================ */
+function buildScriptureBanner() {
+  const track = document.getElementById('scripture-track');
+
+  // Build items: scriptural verses + a few live-prayer placeholders
+  const itemsHTML = SCRIPTURES.map(s =>
+    `<span class="scripture-item">"${s.text}" <span class="scripture-ref">— ${s.ref}</span></span>`
+  ).join('');
+
+  // Duplicate for seamless loop
+  track.innerHTML = itemsHTML + itemsHTML;
+
+  // Animate with JS requestAnimationFrame (more reliable than pure CSS for dynamic content)
+  let offset = 0;
+  const speed = 0.35; // px per frame
+
+  function scrollBanner() {
+    offset += speed;
+    const half = track.scrollWidth / 2;
+    if (offset >= half) offset = 0;
+    track.style.transform = `translateX(-${offset}px)`;
+    requestAnimationFrame(scrollBanner);
+  }
+
+  requestAnimationFrame(scrollBanner);
+}
+
+function pushToStream(text) {
+  const track = document.getElementById('scripture-track');
+  const span = document.createElement('span');
+  span.className = 'stream-prayer-item';
+  span.textContent = text;
+  track.appendChild(span);
+  // Clone into the duplicate half for seamless loop
+  track.appendChild(span.cloneNode(true));
+}
+
+/* ============================================================
+   PARTICLE SYSTEM
+   Ambient floating particles — two hues: gold & deep blue
+============================================================ */
+function startParticles() {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Spawn particles
+  const particles = Array.from({ length: 90 }, () => ({
+    x:     Math.random() * canvas.width,
+    y:     Math.random() * canvas.height,
+    r:     Math.random() * 1.4 + 0.3,
+    vx:    (Math.random() - 0.5) * 0.25,
+    vy:    (Math.random() - 0.5) * 0.25,
+    alpha: Math.random() * 0.45 + 0.07,
+    hue:   Math.random() > 0.65 ? 42 : 215  // gold | steel-blue
+  }));
+
+  function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width)  p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue}, 55%, 55%, ${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   UTILITY
+============================================================ */
+function fmtNum(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return Math.round(n / 1e3) + 'K';
+  return n.toLocaleString();
+}
+
+// Rebuild map on window resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (worldData) buildMap(); }, 300);
+});
+
+/* ── Boot ── */
+init();
+</script>
+</body>
+</html>
