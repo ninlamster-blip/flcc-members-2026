@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-12T13:46:02.025Z",
+    "publishedAt": "2026-06-12T14:05:24.801Z",
     "totalSessions": 3
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 24,
-        "absent": 13,
+        "present": 25,
+        "absent": 12,
         "total": 37
       },
       "records": [
@@ -134,6 +134,11 @@
         {
           "memberId": "bro-04",
           "memberName": "Bro. Wilson Guerzon",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-01",
+          "memberName": "Bro. Dandreb Serna",
           "status": "present"
         }
       ]
