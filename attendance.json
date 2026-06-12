@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-12T13:44:52.609Z",
+    "publishedAt": "2026-06-12T13:45:01.999Z",
     "totalSessions": 3
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 7,
-        "absent": 30,
+        "present": 9,
+        "absent": 28,
         "total": 37
       },
       "records": [
@@ -49,6 +49,16 @@
         {
           "memberId": "vis-1780825146907",
           "memberName": "Bro. Edward Pascal",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-10",
+          "memberName": "Sis. Celsa Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
           "status": "present"
         }
       ]
