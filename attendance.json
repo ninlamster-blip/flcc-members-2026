@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-12T13:45:14.022Z",
+    "publishedAt": "2026-06-12T13:45:54.149Z",
     "totalSessions": 3
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 11,
-        "absent": 26,
+        "present": 22,
+        "absent": 15,
         "total": 37
       },
       "records": [
@@ -69,6 +69,61 @@
         {
           "memberId": "bro-07",
           "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-08",
+          "memberName": "Bro. Edward Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-05",
+          "memberName": "Sis. Fretz Guerzon",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-02",
+          "memberName": "Sis. Hasmin Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-17",
+          "memberName": "Sis. Jenarlyn Culao",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-11",
+          "memberName": "Sis. Jhem Tulagan",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-12",
+          "memberName": "Sis. Juneth Atienza",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-18",
+          "memberName": "Sis. Laidz Pascual",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-04",
+          "memberName": "Sis. Lizel Ocenar",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-03",
+          "memberName": "Sis. Mae De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-08",
+          "memberName": "Sis. Sandra Gabriel",
           "status": "present"
         }
       ]
