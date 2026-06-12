@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-12T13:45:54.149Z",
+    "publishedAt": "2026-06-12T13:46:02.025Z",
     "totalSessions": 3
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 22,
-        "absent": 15,
+        "present": 24,
+        "absent": 13,
         "total": 37
       },
       "records": [
@@ -124,6 +124,16 @@
         {
           "memberId": "sis-08",
           "memberName": "Sis. Sandra Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-20",
+          "memberName": "Sis. Thara Embo",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-04",
+          "memberName": "Bro. Wilson Guerzon",
           "status": "present"
         }
       ]
