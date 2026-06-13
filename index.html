@@ -1750,15 +1750,14 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
                     </div>
                   </div>
                   <div className="dotted-divider my-3" />
-                  {isCoord ? (
-                    <div className="text-sm"><span className="ink-muted text-xs">Coordinated by · </span>{m.coordinator || 'TBD'}</div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
-                      <div><span className="ink-muted text-xs">Presider · </span>{presider ? <span style={{ color: myPrayerWorker?.id === presider.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === presider.id ? 600 : 400 }}>{workerShort(presider)}{myPrayerWorker?.id === presider.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
-                      <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? <span style={{ color: myPrayerWorker?.id === exhorter.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === exhorter.id ? 600 : 400 }}>{workerShort(exhorter)}{myPrayerWorker?.id === exhorter.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
-                      <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? <span style={{ color: myPrayerWorker?.id === songLeader.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === songLeader.id ? 600 : 400 }}>{workerShort(songLeader)}{myPrayerWorker?.id === songLeader.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
-                    </div>
+                  {isCoord && m.coordinator && (
+                    <div className="text-sm mb-2"><span className="ink-muted text-xs">Coordinated by · </span>{m.coordinator}</div>
                   )}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                    <div><span className="ink-muted text-xs">Presider · </span>{presider ? <span style={{ color: myPrayerWorker?.id === presider.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === presider.id ? 600 : 400 }}>{workerShort(presider)}{myPrayerWorker?.id === presider.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                    <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? <span style={{ color: myPrayerWorker?.id === exhorter.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === exhorter.id ? 600 : 400 }}>{workerShort(exhorter)}{myPrayerWorker?.id === exhorter.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                    <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? <span style={{ color: myPrayerWorker?.id === songLeader.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === songLeader.id ? 600 : 400 }}>{workerShort(songLeader)}{myPrayerWorker?.id === songLeader.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                  </div>
                   {m.foodInChargeText && (
                     <div className="text-xs ink-muted mt-3"><strong>Food in charge:</strong> {m.foodInChargeText}</div>
                   )}
@@ -4131,13 +4130,12 @@ function downloadPrayerMeetingICS(meeting, prayerData, churchName) {
   lines.push(`SUMMARY:${escapeICS(`${churchName} · ${meta.label}`)}`);
   if (meeting.venue) lines.push(`LOCATION:${escapeICS(meeting.venue)}`);
   let desc = `${meta.label}`;
-  if (['sectoral', 'corporate'].includes(meeting.type)) {
-    desc += `\\nC/O ${meeting.coordinator || 'TBD'}`;
-  } else {
-    if (presider)   desc += `\\nPresider: ${workerDisplay(presider)}`;
-    if (exhorter)   desc += `\\nExhorter: ${workerDisplay(exhorter)}`;
-    if (songLeader) desc += `\\nSong Leader: ${workerDisplay(songLeader)}`;
+  if (['sectoral', 'corporate'].includes(meeting.type) && meeting.coordinator) {
+    desc += `\\nC/O ${meeting.coordinator}`;
   }
+  if (presider)   desc += `\\nPresider: ${workerDisplay(presider)}`;
+  if (exhorter)   desc += `\\nExhorter: ${workerDisplay(exhorter)}`;
+  if (songLeader) desc += `\\nSong Leader: ${workerDisplay(songLeader)}`;
   if (meeting.foodInChargeText) desc += `\\nFood in charge: ${meeting.foodInChargeText}`;
   lines.push(`DESCRIPTION:${desc}`);
   lines.push('END:VEVENT', 'END:VCALENDAR');
@@ -4281,17 +4279,14 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
 
                   <div className="dotted-divider my-3" />
 
-                  {isCoord ? (
-                    <div className="text-sm">
-                      <span className="ink-muted text-xs">Coordinated by · </span>{m.coordinator || <span className="ink-subtle italic">TBD</span>}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
-                      <div><span className="ink-muted text-xs">Presider · </span>{presider ? <span style={{ color: myPrayerWorker?.id === presider.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === presider.id ? 600 : 400 }}>{workerShort(presider)}{myPrayerWorker?.id === presider.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
-                      <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? <span style={{ color: myPrayerWorker?.id === exhorter.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === exhorter.id ? 600 : 400 }}>{workerShort(exhorter)}{myPrayerWorker?.id === exhorter.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
-                      <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? <span style={{ color: myPrayerWorker?.id === songLeader.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === songLeader.id ? 600 : 400 }}>{workerShort(songLeader)}{myPrayerWorker?.id === songLeader.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
-                    </div>
+                  {isCoord && m.coordinator && (
+                    <div className="text-sm mb-2"><span className="ink-muted text-xs">Coordinated by · </span>{m.coordinator}</div>
                   )}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                    <div><span className="ink-muted text-xs">Presider · </span>{presider ? <span style={{ color: myPrayerWorker?.id === presider.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === presider.id ? 600 : 400 }}>{workerShort(presider)}{myPrayerWorker?.id === presider.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                    <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? <span style={{ color: myPrayerWorker?.id === exhorter.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === exhorter.id ? 600 : 400 }}>{workerShort(exhorter)}{myPrayerWorker?.id === exhorter.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                    <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? <span style={{ color: myPrayerWorker?.id === songLeader.id ? 'var(--accent)' : 'inherit', fontWeight: myPrayerWorker?.id === songLeader.id ? 600 : 400 }}>{workerShort(songLeader)}{myPrayerWorker?.id === songLeader.id ? ' (you)' : ''}</span> : <span className="ink-subtle italic">TBD</span>}</div>
+                  </div>
 
                   {m.foodInChargeText && (
                     <div className="text-xs ink-muted mt-3"><strong>Food in charge:</strong> {m.foodInChargeText}</div>
