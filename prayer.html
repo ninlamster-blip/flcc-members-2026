@@ -208,10 +208,13 @@
     .print-section, .print-section * { visibility: visible; }
     .print-section {
       position: absolute; left: 0; top: 0; width: 100%;
-      padding: 0; background: white;
+      padding: 16px; background: white;
     }
     .no-print { display: none !important; }
-    .print-table { font-size: 11px; }
+    .print-table { font-size: 10px; width: 100%; border-collapse: collapse; }
+    .print-table th, .print-table td { border: 1px solid #999; padding: 5px 7px; }
+    .print-table thead tr:first-child th { font-size: 11px; }
+    @page { margin: 1.5cm; size: A4 landscape; }
   }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -844,11 +847,7 @@ function DashboardTab({ state, dispatch, mainData }) {
                       <Pill tone={meta.pill}>{meta.label.split(' ')[0]}</Pill>
                     </div>
                     <div className="text-sm mt-0.5">
-                      {['sectoral', 'corporate'].includes(m.type) ? (
-                        <span>{meta.label} · C/O {m.coordinator || 'TBD'}</span>
-                      ) : (
-                        <span>{presider ? workerShort(presider) : <span className="ink-subtle italic">Presider TBD</span>}</span>
-                      )}
+                      <span>{presider ? workerShort(presider) : <span className="ink-subtle italic">Presider TBD</span>}</span>
                     </div>
                     <div className="text-xs ink-subtle mt-0.5">{formatTime12(m.startTime)} · {m.venue || 'Venue TBD'}</div>
                   </div>
@@ -897,7 +896,7 @@ function IntercessoryTab({ state, dispatch, mainData }) {
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="Pre-service prayer · 15 mins before each service" title="Intercessory Prayer">
-        Assign a team for each Friday and Sunday service. {mainData ? 'The Service Coordinator and Presider from the main schedule are shown beside each date — they should join too.' : 'The Service Coordinator and Presider from the main schedule join automatically.'}
+        Assign a team for each Friday and Sunday service.
       </SectionHeading>
 
       <div className="card p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
@@ -921,8 +920,7 @@ function IntercessoryTab({ state, dispatch, mainData }) {
       ))}
 
       <div className="card p-4 mt-4 text-xs ink-muted" style={{ borderColor: 'var(--info-soft)', background: '#FAFCFF' }}>
-        <strong>📌 Reminder:</strong> The Service Coordinator and Presider assigned on each date should also join the intercessory prayer. (PS from original schedule.)
-        {!mainData && <div className="mt-1 italic">Once <code className="font-mono">data.json</code> is uploaded to the same folder, their names will appear here automatically.</div>}
+        <strong>📌 Reminder:</strong> Each team leads the 15-minute intercessory prayer before the service.
       </div>
 
       {addOpen && <AddIntercessoryModal month={month} state={state} dispatch={dispatch} onClose={() => setAddOpen(false)} />}
@@ -948,8 +946,6 @@ function IntercessorySection({ service, entries, state, dispatch, mainData }) {
               <tr>
                 <th>Date</th>
                 <th>Team</th>
-                {mainData && <th>Coordinator</th>}
-                {mainData && <th>Presider</th>}
                 <th>Time</th>
                 <th></th>
               </tr>
@@ -970,16 +966,6 @@ function IntercessoryRow({ entry, state, dispatch, mainData }) {
   const team = teamMeta(state, entry.teamId);
 
   const onSelectTeam = (teamId) => dispatch({ type: 'SET_INTERCESSORY_TEAM', id: entry.id, teamId });
-
-  // Match against main schedule
-  const mainEntry = mainData ? mainData.schedule.find(s => s.date === entry.date && s.service === entry.service) : null;
-  const wd = (id) => {
-    if (!mainData || !id) return null;
-    const w = mainData.workers.find(x => x.id === id);
-    return w ? `${w.title || ''} ${w.name}`.trim() : null;
-  };
-  const coord    = mainEntry ? wd(mainEntry.roles?.serviceCoordinator) : null;
-  const presider = mainEntry ? wd(mainEntry.roles?.presider) : null;
 
   return (
     <tr>
@@ -1003,16 +989,6 @@ function IntercessoryRow({ entry, state, dispatch, mainData }) {
           />
         )}
       </td>
-      {mainData && (
-        <td className="text-xs">
-          {coord ? <span style={{ color: 'var(--ink-muted)' }}>{coord}</span> : <span className="ink-subtle italic">—</span>}
-        </td>
-      )}
-      {mainData && (
-        <td className="text-xs">
-          {presider ? <span style={{ color: 'var(--ink-muted)' }}>{presider}</span> : <span className="ink-subtle italic">—</span>}
-        </td>
-      )}
       <td className="font-mono text-xs ink-muted">{formatTime12(entry.startTime)}{entry.endTime ? ` – ${formatTime12(entry.endTime)}` : ''}</td>
       <td>
         <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => {
@@ -1155,17 +1131,16 @@ function MeetingCard({ meeting, state, onEdit }) {
         <button className="btn btn-soft text-xs" onClick={onEdit}>Edit</button>
       </div>
 
-      {isCoordinated ? (
-        <div className="text-sm">
-          <span className="ink-muted text-xs">Coordinated by · </span>{meeting.coordinator || <span className="ink-subtle italic">TBD</span>}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
-          <div><span className="ink-muted text-xs">Presider · </span>{presider ? workerShort(presider) : <span className="ink-subtle italic">TBD</span>}</div>
-          <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? workerShort(exhorter) : <span className="ink-subtle italic">TBD</span>}</div>
-          <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? workerShort(songLeader) : <span className="ink-subtle italic">TBD</span>}</div>
+      {isCoordinated && meeting.coordinator && (
+        <div className="text-sm mb-2">
+          <span className="ink-muted text-xs">Coordinated by · </span>{meeting.coordinator}
         </div>
       )}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+        <div><span className="ink-muted text-xs">Presider · </span>{presider ? workerShort(presider) : <span className="ink-subtle italic">TBD</span>}</div>
+        <div><span className="ink-muted text-xs">Exhorter · </span>{exhorter ? workerShort(exhorter) : <span className="ink-subtle italic">TBD</span>}</div>
+        <div><span className="ink-muted text-xs">Song Leader · </span>{songLeader ? workerShort(songLeader) : <span className="ink-subtle italic">TBD</span>}</div>
+      </div>
 
       {meeting.foodInChargeText && (
         <div className="text-xs ink-muted mt-3"><strong>Food in charge:</strong> {meeting.foodInChargeText}</div>
@@ -1242,27 +1217,26 @@ function MeetingModal({ meeting, state, onSave, onDelete, onClose }) {
             </div>
           </div>
 
-          {isCoordinated ? (
+          {isCoordinated && (
             <div>
               <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Coordinator</label>
               <input className="input mt-1" value={m.coordinator || ''} onChange={e => setM({ ...m, coordinator: e.target.value })} placeholder={m.type === 'sectoral' ? 'e.g. F&T' : 'e.g. JAOC'} />
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div>
-                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Presider</label>
-                <div className="mt-1"><PickerCell role="presider" fieldKey="presiderId" /></div>
-              </div>
-              <div>
-                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Exhorter</label>
-                <div className="mt-1"><PickerCell role="exhorter" fieldKey="exhorterId" /></div>
-              </div>
-              <div>
-                <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Song Leader</label>
-                <div className="mt-1"><PickerCell role="songLeader" fieldKey="songLeaderId" /></div>
-              </div>
-            </div>
           )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Presider</label>
+              <div className="mt-1"><PickerCell role="presider" fieldKey="presiderId" /></div>
+            </div>
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Exhorter</label>
+              <div className="mt-1"><PickerCell role="exhorter" fieldKey="exhorterId" /></div>
+            </div>
+            <div>
+              <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Song Leader</label>
+              <div className="mt-1"><PickerCell role="songLeader" fieldKey="songLeaderId" /></div>
+            </div>
+          </div>
 
           <div>
             <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Venue</label>
@@ -1506,24 +1480,6 @@ function PrintTab({ state, mainData }) {
   const sundays = monthIntercessory.filter(e => e.service === 'Sunday');
   const botr = monthIntercessory.filter(e => e.service === 'BOTR-NECK');
 
-  // Build "who else joins" lookup from main schedule
-  const joinReminders = useMemo(() => {
-    if (!mainData) return [];
-    const out = [];
-    for (const ip of monthIntercessory) {
-      const main = mainData.schedule.find(s => s.date === ip.date && s.service === ip.service);
-      if (!main) continue;
-      const wd = (id) => {
-        const w = mainData.workers.find(x => x.id === id);
-        return w ? `${w.title || ''} ${w.name}`.trim() : null;
-      };
-      const coord = wd(main.roles?.serviceCoordinator);
-      const presider = wd(main.roles?.presider);
-      if (coord || presider) out.push({ date: ip.date, service: ip.service, coord, presider });
-    }
-    return out;
-  }, [monthIntercessory, mainData]);
-
   return (
     <div className="fade-in">
       <div className="no-print">
@@ -1577,27 +1533,7 @@ function PrintTab({ state, mainData }) {
             ))}
           </tbody>
         </table>
-        <div className="text-xs italic mb-2" style={{ color: 'var(--danger)' }}>
-          PS: ANG SERVICE COORDINATOR AT PRESIDER NA NAKA ASSIGN ON THE ABOVE DATE AY KAILANGAN PONG MAG JOIN DITO. - THANKS!
-        </div>
-
-        {joinReminders.length > 0 && (
-          <div className="mb-8 p-3" style={{ border: '1px solid #999', background: '#FFF7ED' }}>
-            <div className="text-xs font-semibold mb-2" style={{ letterSpacing: '0.05em' }}>WHO ALSO JOINS (FROM MAIN SCHEDULE):</div>
-            <table className="print-table w-full" style={{ borderCollapse: 'collapse' }}>
-              <tbody>
-                {joinReminders.map((j, i) => (
-                  <tr key={i}>
-                    <td style={{ ...td, width: 110 }}>{formatDateShort(j.date).toUpperCase().replace('-',' ')} ({j.service.slice(0,3).toUpperCase()})</td>
-                    <td style={td}><strong>Coord:</strong> {j.coord || '—'}</td>
-                    <td style={td}><strong>Presider:</strong> {j.presider || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {!joinReminders.length && <div className="mb-8" />}
+        <div className="mb-8" />
 
         {/* Prayer Meeting Schedule (Image 3) */}
         <div className="text-center mb-2">
@@ -1631,24 +1567,18 @@ function PrintTab({ state, mainData }) {
                   <tr>
                     <td style={td}>{formatDateShort(m.date).toUpperCase().replace('-',' ')} ({dayShort(m.date).slice(0,2)})</td>
                     <td style={td}>{formatTime12(m.startTime)}</td>
-                    {isCoord ? (
-                      <td colSpan="3" style={{ ...td, fontStyle: 'italic' }}>{meta.label.toUpperCase()} (C/O {m.coordinator || 'TBD'})</td>
-                    ) : (
-                      <>
+                    <>
                         <td style={td}>{presider ? workerDisplay(presider).toUpperCase() : 'TBD'}</td>
                         <td style={td}>{exhorter ? workerDisplay(exhorter).toUpperCase() : 'TBD'}</td>
                         <td style={td}>{songLeader ? workerDisplay(songLeader).toUpperCase() : 'TBD'}</td>
                       </>
-                    )}
                     <td style={td}>{m.venue || ''}</td>
                   </tr>
-                  {!isCoord && (
-                    <tr>
-                      <td colSpan="6" style={{ ...td, textAlign: 'center', fontWeight: 600, letterSpacing: '0.1em' }}>
-                        {meta.label.toUpperCase()}{m.foodInChargeText ? ` · Food in Charge: ${m.foodInChargeText}` : ''}
-                      </td>
-                    </tr>
-                  )}
+                  <tr>
+                    <td colSpan="6" style={{ ...td, textAlign: 'center', fontWeight: 600, letterSpacing: '0.1em', background: '#FAFAFA' }}>
+                      {meta.label.toUpperCase()}{isCoord && m.coordinator ? ` · C/O ${m.coordinator}` : ''}{m.foodInChargeText ? ` · Food in Charge: ${m.foodInChargeText}` : ''}
+                    </td>
+                  </tr>
                 </React.Fragment>
               );
             })}
@@ -1683,14 +1613,13 @@ function generateMessengerText(state, month) {
     const meta = meetingTypeMeta(m.type);
     out += `\n${formatDateShort(m.date)} (${dayOfWeek(m.date)}) ${formatTime12(m.startTime)}\n`;
     out += `• ${meta.label}\n`;
-    if (['sectoral','corporate'].includes(m.type)) {
-      out += `• C/O ${m.coordinator || 'TBD'}\n`;
-    } else {
-      const wd = (id) => { const w = state.workers.find(x => x.id === id); return w ? workerDisplay(w) : 'TBD'; };
-      out += `• Presider: ${wd(m.presiderId)}\n`;
-      out += `• Exhorter: ${wd(m.exhorterId)}\n`;
-      out += `• Song Leader: ${wd(m.songLeaderId)}\n`;
+    if (['sectoral','corporate'].includes(m.type) && m.coordinator) {
+      out += `• C/O ${m.coordinator}\n`;
     }
+    const wd = (id) => { const w = state.workers.find(x => x.id === id); return w ? workerDisplay(w) : 'TBD'; };
+    out += `• Presider: ${wd(m.presiderId)}\n`;
+    out += `• Exhorter: ${wd(m.exhorterId)}\n`;
+    out += `• Song Leader: ${wd(m.songLeaderId)}\n`;
     out += `• Venue: ${m.venue || 'TBD'}\n`;
     if (m.foodInChargeText) out += `• Food: ${m.foodInChargeText}\n`;
   }
