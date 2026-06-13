@@ -922,13 +922,22 @@ function showPanel(id, fallbackName) {
       <div class="panel-title">${name}</div>
       ${cd ? `<span class="persecution-badge ${badgeClass}">${badgeText}</span>` : ''}
       <div class="divider"></div>
-      ${cd?.summary ? `<p class="summary-text">${cd.summary}</p>` : '<p class="summary-text" style="color:var(--ink-subtle);font-style:italic;">Detailed data not yet available. You can still stand in prayer.</p>'}
+
+      <p class="section-label">How to Pray</p>
+      <div>${(hasPrayers ? cd.prayerRequests : genericPrayers).map(r =>
+        `<div class="prayer-req-item"><span class="prayer-dot"></span><span class="prayer-req-text">${r}</span></div>`
+      ).join('')}</div>
+      <button class="join-prayer-btn" style="margin-top:14px;" onclick="joinPrayer('${id}','${name.replace(/'/g,"\\'")}')">✦ &nbsp; Join in Prayer</button>
+
+      <div class="divider" style="margin-top:14px;"></div>
+
+      ${cd?.summary ? `<p class="section-label">Background</p><p class="summary-text">${cd.summary}</p>` : ''}
       ${pop != null ? `
         <p class="section-label">Demographics</p>
         <div class="stat-grid">
           <div class="stat-card"><div class="stat-label">Total Population</div><div class="stat-value">${fmt(pop)}</div></div>
-          <div class="stat-card"><div class="stat-label">Christian</div><div class="stat-value accent">${pct != null ? pct + '%' : '—'}</div></div>
-          <div class="stat-card" style="grid-column:span 2;"><div class="stat-label">Estimated Believers</div><div class="stat-value">${est != null ? fmt(est) : '—'}</div></div>
+          <div class="stat-card"><div class="stat-label">Christian</div><div class="stat-value accent">${pct != null ? pct + '%' : '\u2014'}</div></div>
+          <div class="stat-card" style="grid-column:span 2;"><div class="stat-label">Estimated Believers</div><div class="stat-value">${est != null ? fmt(est) : '\u2014'}</div></div>
         </div>
       ` : ''}
       ${pidx > 5 ? `
@@ -938,17 +947,11 @@ function showPanel(id, fallbackName) {
           <div class="persecution-bar-track"><div class="persecution-bar-fill" style="width:${pidx}%;"></div></div>
         </div>
       ` : ''}
-      <p class="section-label">Prayer Requests</p>
-      <div>${(hasPrayers ? cd.prayerRequests : genericPrayers).map(r =>
-        `<div class="prayer-req-item"><span class="prayer-dot"></span><span class="prayer-req-text">${r}</span></div>`
-      ).join('')}</div>
-      <div class="divider"></div>
-      <div class="prayer-counter-wrap">
+      <div class="prayer-counter-wrap" style="margin-top:16px;">
         <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.08em;color:var(--ink-subtle);margin-bottom:4px;">STANDING IN SOLIDARITY</div>
         <div class="prayer-number" id="prayer-num">${prayerCounts[id].toLocaleString()}</div>
         <div style="font-size:0.68rem;color:var(--ink-subtle);margin-top:2px;">prayers joined</div>
       </div>
-      <button class="join-prayer-btn" onclick="joinPrayer('${id}','${name.replace(/'/g,"\\'")}')" >✦ &nbsp; Join in Prayer</button>
       <div style="text-align:center;font-size:0.65rem;color:var(--ink-subtle);margin-top:8px;" id="global-count">
         ${globalPrayers.toLocaleString()} prayers across all nations
       </div>
