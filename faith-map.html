@@ -761,10 +761,14 @@ function setupZoom(svgEl, gEl, wrapEl) {
 
   // Touch pinch + drag
   let touches = {};
+  let tapStart = null;
   svgEl.addEventListener('touchstart', e => {
     e.preventDefault();
     for (const t of e.changedTouches) touches[t.identifier] = { x: t.clientX, y: t.clientY };
-    if (e.touches.length === 2) {
+    if (e.touches.length === 1) {
+      tapStart = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+    } else {
+      tapStart = null;
       const ts = Object.values(touches);
       pinchDist = Math.hypot(ts[1].x - ts[0].x, ts[1].y - ts[0].y);
     }
@@ -803,6 +807,22 @@ function setupZoom(svgEl, gEl, wrapEl) {
 
   svgEl.addEventListener('touchend', e => {
     for (const t of e.changedTouches) delete touches[t.identifier];
+    // Single-tap detection (preventDefault on touchstart blocks synthetic click)
+    if (tapStart && e.changedTouches.length === 1 && Object.keys(touches).length === 0) {
+      const t = e.changedTouches[0];
+      const moved = Math.hypot(t.clientX - tapStart.x, t.clientY - tapStart.y);
+      if (moved < 12 && Date.now() - tapStart.t < 350) {
+        const el = document.elementFromPoint(t.clientX, t.clientY);
+        const p = el && (el.classList.contains('country') ? el : el.closest('.country'));
+        if (p) {
+          const id = p.dataset.id;
+          const cd = COUNTRY_DATA[id];
+          const name = cd?.name || COUNTRY_NAMES[+id];
+          if (name) showPanel(id, name);
+        }
+      }
+    }
+    tapStart = null;
     pinchDist = 0;
   });
 }
