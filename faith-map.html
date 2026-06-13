@@ -740,10 +740,13 @@ function setupZoom(svgEl, gEl, wrapEl) {
   }, { passive: false });
 
   // Pointer drag
+  let clickTarget = null;
   svgEl.addEventListener('pointerdown', e => {
     if (e.pointerType === 'touch') return; // handled by touch events
     dragging = true;
     lastX = e.clientX; lastY = e.clientY;
+    // Track which country path was under the pointer before capture redirects events
+    clickTarget = e.target.closest('.country');
     svgEl.setPointerCapture(e.pointerId);
     wrapEl.classList.add('dragging');
   });
@@ -751,6 +754,7 @@ function setupZoom(svgEl, gEl, wrapEl) {
     if (!dragging || e.pointerType === 'touch') return;
     const dx = (e.clientX - lastX) / svgEl.getBoundingClientRect().width  * 960;
     const dy = (e.clientY - lastY) / svgEl.getBoundingClientRect().height * 500;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) clickTarget = null; // user is dragging, not clicking
     tx += dx; ty += dy;
     lastX = e.clientX; lastY = e.clientY;
     constrain(); apply();
@@ -861,7 +865,8 @@ function setupHover(svgEl) {
     tip.style.top  = (e.clientY - 28) + 'px';
   });
   svgEl.addEventListener('click', e => {
-    const p = e.target.closest('.country');
+    const p = clickTarget || e.target.closest('.country');
+    clickTarget = null;
     if (!p) return;
     const id = p.dataset.id;
     const cd = COUNTRY_DATA[id];
