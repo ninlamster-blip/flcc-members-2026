@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-14T16:22:38.602Z",
+    "publishedAt": "2026-06-14T16:22:51.418Z",
     "totalSessions": 4
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 26,
-        "absent": 22,
+        "present": 27,
+        "absent": 21,
         "total": 48
       },
       "records": [
@@ -144,6 +144,11 @@
         {
           "memberId": "vis-1780825579699",
           "memberName": "Sis. Rosemarie Quario",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-04",
+          "memberName": "Bro. Wilson Guerzon",
           "status": "present"
         }
       ]
