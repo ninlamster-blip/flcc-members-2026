@@ -602,10 +602,19 @@ async function fetchAllExternalNews() {
 }
 
 // ─── Generate FLCC news from live data ───────────────────────────────────────
-function generateFlccNews(data, prayer, botrData, liveStats) {
+function generateFlccNews(data, prayer, botrData, liveStats, staticNews = []) {
   const today = new Date().toISOString().split('T')[0];
   const yearMonth = today.slice(0, 7); // YYYY-MM
   const items = [];
+
+  // Include static news items from news.json (deduplicated by id)
+  const seenIds = new Set();
+  for (const item of staticNews) {
+    if (item.id && item.headline) {
+      items.push(item);
+      seenIds.add(item.id);
+    }
+  }
 
   const workersById = Object.fromEntries((data.workers || []).map(w => [w.id, w]));
   const wn = id => { const w = workersById[id]; return w ? (w.title ? w.title + ' ' : '') + w.name : ''; };
@@ -1125,7 +1134,7 @@ function App() {
 
   const flccNews = useMemo(() => {
     if (!appData) return [];
-    return generateFlccNews(appData.data, appData.prayer, appData.botrData, liveStats);
+    return generateFlccNews(appData.data, appData.prayer, appData.botrData, liveStats, appData.newsData?.items || []);
   }, [appData, liveStats]);
 
   const systemPrompt = useMemo(() => {
@@ -1154,8 +1163,9 @@ function App() {
       fetch('equip.json').then(r => r.json()).catch(() => ({})),
       fetch('botr.json').then(r => r.json()).catch(() => ({})),
       fetch('attendance.json').then(r => r.json()).catch(() => ({})),
-    ]).then(([data, music, prayer, equip, botrData, attendance]) => {
-      setAppData({ data, music, prayer, equip, botrData, attendance });
+      fetch('news.json').then(r => r.json()).catch(() => ({ items: [] })),
+    ]).then(([data, music, prayer, equip, botrData, attendance, newsData]) => {
+      setAppData({ data, music, prayer, equip, botrData, attendance, newsData });
       // Non-blocking: live BOTR standings from Google Sheets
       fetchBotrLiveStats().then(stats => { if (stats) setLiveStats(stats); }).catch(() => {});
       // Non-blocking: live world news from BBC / Reuters / The Guardian via RSS
