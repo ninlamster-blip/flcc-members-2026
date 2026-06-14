@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-14T16:22:05.338Z",
+    "publishedAt": "2026-06-14T16:22:18.720Z",
     "totalSessions": 4
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 19,
-        "absent": 29,
+        "present": 22,
+        "absent": 26,
         "total": 48
       },
       "records": [
@@ -109,6 +109,21 @@
         {
           "memberId": "sis-02",
           "memberName": "Sis. Hasmin Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-11",
+          "memberName": "Sis. Jhem Tulagan",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-18",
+          "memberName": "Sis. Laidz Pascual",
           "status": "present"
         }
       ]
