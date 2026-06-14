@@ -398,6 +398,7 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 const STORAGE_KEY_API   = 'flcc_ask_apikey';
 const STORAGE_KEY_MODEL = 'flcc_ask_model';
 const ASK_PROXY_KEY     = 'flcc-ask-proxy-url-v1';
+const DEFAULT_PROXY_URL = 'https://flcc-members-2026.ninlamster.workers.dev';
 
 const MODELS = [
   { id: 'claude-haiku-4-5-20251001', label: 'Haiku · Fast' },
@@ -824,7 +825,7 @@ function App() {
   const textareaRef    = useRef(null);
   const abortRef       = useRef(null);
 
-  const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem(ASK_PROXY_KEY) || '');
+  const [proxyUrl, setProxyUrl] = useState(() => localStorage.getItem(ASK_PROXY_KEY) || DEFAULT_PROXY_URL);
 
   // Load static JSON data, then fetch live BOTR stats in the background
   useEffect(() => {
