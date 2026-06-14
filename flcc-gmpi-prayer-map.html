@@ -1,232 +1,750 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FLCC-GMPI Prayer Map Philippines</title>
-  <meta name="description" content="Interactive prayer map of FLCC-GMPI churches, mission works, and outreach locations across the Philippines.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLCC-GMPI Prayer Map Philippines</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<!-- Leaflet — jsDelivr, no SRI so it can't be blocked by hash mismatch -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
 
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- App styles -->
-  <link rel="stylesheet" href="flcc-gmpi-styles.css">
+<style>
+/* ── Variables ─────────────────────────────────────────────────── */
+:root{
+  --bg:#F8F7F4;--bg-card:#fff;--border:#E5E4E0;--border-lt:#EFEFEB;
+  --ink:#1C1917;--ink-2:#78716C;--ink-3:#A8A29E;
+  --accent:#DC6B19;--accent-lt:#FEF3E7;
+  --green:#16A34A;--green-bg:#DCFCE7;--green-dot:#22C55E;
+  --yellow:#CA8A04;--yellow-bg:#FEF9C3;--yellow-dot:#EAB308;
+  --red:#DC2626;--red-bg:#FEE2E2;--red-dot:#EF4444;
+  --sh-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --sh-md:0 4px 12px rgba(0,0,0,.09),0 2px 4px rgba(0,0,0,.05);
+  --sh-lg:0 12px 32px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.06);
+  --sidebar-w:288px;--panel-w:360px;--hdr:60px;
+  --r:10px;--r-sm:6px;
+  --font:'Inter',system-ui,sans-serif;
+  --tr:.22s cubic-bezier(.4,0,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+#hdr{
+  position:fixed;top:0;left:0;right:0;height:var(--hdr);
+  background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:0 16px;
+  z-index:1000;box-shadow:var(--sh-sm);
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#B8530F);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.logo-text{display:flex;flex-direction:column;line-height:1.2}
+.logo-title{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-.2px}
+.logo-sub{font-size:10px;color:var(--ink-2);font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.search-wrap{flex:1;max-width:360px;position:relative}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+#search-input{width:100%;height:36px;padding:0 12px 0 34px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:13px;outline:none;transition:var(--tr)}
+#search-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(220,107,25,.12)}
+#search-input::placeholder{color:var(--ink-3)}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.hdr-btn{height:34px;padding:0 12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-card);color:var(--ink-2);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;text-decoration:none;white-space:nowrap;transition:var(--tr)}
+.hdr-btn:hover{background:var(--bg);border-color:#ccc;color:var(--ink)}
+.hdr-btn.admin{background:var(--accent-lt);border-color:rgba(220,107,25,.3);color:var(--accent)}
+.hdr-btn.admin:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+#sb-toggle{display:none}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+#layout{
+  display:flex;
+  /* Use calc to avoid height:100vh+padding adding extra space */
+  position:fixed;top:var(--hdr);left:0;right:0;bottom:0;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+#sidebar{
+  width:var(--sidebar-w);background:#fff;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  transition:width var(--tr);
+}
+#sidebar.collapsed{width:0;border-right:none}
+.sb-inner{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+
+/* Stats */
+.stats-card{background:var(--accent-lt);border:1px solid rgba(220,107,25,.15);border-radius:var(--r);padding:14px}
+.stats-title{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.stat-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0}
+.stat-label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);font-weight:500}
+.s-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.s-dot.all{background:var(--accent)}.s-dot.stable{background:var(--green-dot)}.s-dot.needs{background:var(--yellow-dot)}.s-dot.urgent{background:var(--red-dot)}
+.stat-count{font-size:13px;font-weight:700;color:var(--ink)}
+
+/* Section */
+.sb-section{display:flex;flex-direction:column;gap:8px}
+.sb-title{font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px}
+.divider{height:1px;background:var(--border-lt);margin:0 -16px}
+
+/* Filter pills */
+.pills{display:flex;flex-wrap:wrap;gap:5px}
+.pill{height:26px;padding:0 10px;border-radius:13px;border:1px solid var(--border);background:var(--bg);color:var(--ink-2);font-size:11px;font-weight:500;cursor:pointer;transition:var(--tr);white-space:nowrap;display:flex;align-items:center;gap:4px}
+.pill:hover{border-color:var(--accent);color:var(--accent)}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill.ps.active{background:var(--green);border-color:var(--green)}
+.pill.pn.active{background:var(--yellow);border-color:var(--yellow);color:#fff}
+.pill.pu.active{background:var(--red);border-color:var(--red)}
+
+/* Prayer focus */
+.pf-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:var(--tr)}
+.pf-card:hover{border-color:var(--accent);box-shadow:var(--sh-sm)}
+.pf-hdr{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.pf-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--accent)}
+.pf-date{font-size:10px;color:var(--ink-3);margin-left:auto}
+.pf-church{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.pf-pastor{font-size:11px;color:var(--ink-2);margin-bottom:8px}
+.pf-req{font-size:11px;color:var(--ink-2);display:flex;align-items:flex-start;gap:5px;line-height:1.4;margin-bottom:3px}
+.pf-req::before{content:"•";color:var(--accent);flex-shrink:0;margin-top:1px}
+
+/* Urgent list */
+.urg-list{display:flex;flex-direction:column;gap:5px}
+.urg-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff5f5;border:1px solid #fee2e2;border-radius:var(--r-sm);cursor:pointer;transition:var(--tr)}
+.urg-item:hover{background:#fee2e2;border-color:var(--red)}
+.urg-pulse{width:8px;height:8px;border-radius:50%;background:var(--red-dot);flex-shrink:0;animation:pulse-r 1.8s infinite}
+@keyframes pulse-r{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.urg-name{font-size:12px;font-weight:600;color:#991b1b;flex:1}
+.urg-region{font-size:10px;color:var(--red)}
+.no-res{padding:20px;text-align:center;color:var(--ink-3);font-size:12px}
+
+/* ── Map ────────────────────────────────────────────────────────── */
+#map-area{
+  flex:1;
+  position:relative;
+  min-width:0;min-height:0; /* critical for flex children */
+  overflow:hidden;
+}
+#map{
+  /* Use absolute fill — Leaflet needs a pixel size at init */
+  position:absolute;top:0;left:0;right:0;bottom:0;
+}
+
+/* Leaflet overrides */
+.leaflet-container{font-family:var(--font)!important;background:#e8e0d5}
+.leaflet-control-zoom{border:1px solid var(--border)!important;border-radius:var(--r-sm)!important;box-shadow:var(--sh-md)!important;overflow:hidden}
+.leaflet-control-zoom-in,.leaflet-control-zoom-out{background:#fff!important;color:var(--ink-2)!important;font-size:16px!important;width:30px!important;height:30px!important;line-height:30px!important;border-bottom:1px solid var(--border)!important}
+.leaflet-control-zoom-in:hover,.leaflet-control-zoom-out:hover{background:var(--bg)!important}
+.leaflet-tooltip{font-family:var(--font)!important;font-size:11px!important;font-weight:600!important;padding:4px 8px!important;border:none!important;border-radius:5px!important;box-shadow:var(--sh-md)!important}
+
+/* Legend */
+#map-legend{position:absolute;bottom:28px;left:12px;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;box-shadow:var(--sh-md);z-index:500;display:flex;flex-direction:column;gap:6px}
+.leg-title{font-size:10px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink-2);font-weight:500}
+.leg-dot{width:10px;height:10px;border-radius:50%;border:2px solid rgba(0,0,0,.2);flex-shrink:0}
+.leg-dot.stable{background:var(--green-dot);border-color:var(--green)}
+.leg-dot.needs{background:var(--yellow-dot);border-color:var(--yellow)}
+.leg-dot.urgent{background:var(--red-dot);border-color:var(--red)}
+
+/* Search results */
+#search-res{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:#fff;border:1px solid var(--border);border-radius:var(--r);
+  box-shadow:var(--sh-lg);z-index:2000;max-height:280px;overflow-y:auto;display:none;
+}
+#search-res.show{display:block}
+.sr-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-lt);transition:background var(--tr)}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:var(--bg)}
+.sr-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sr-dot.stable{background:var(--green-dot)}.sr-dot.needs_support{background:var(--yellow-dot)}.sr-dot.urgent{background:var(--red-dot)}
+.sr-name{font-size:13px;font-weight:600;color:var(--ink)}
+.sr-meta{font-size:11px;color:var(--ink-2)}
+
+/* ── Church Panel ───────────────────────────────────────────────── */
+#church-panel{
+  /* Width-based — takes ZERO flex space when closed */
+  width:0;min-width:0;
+  background:#fff;display:flex;flex-direction:column;
+  overflow:hidden;flex-shrink:0;
+  transition:width var(--tr),min-width var(--tr);
+  position:relative;z-index:200;
+}
+#church-panel.open{width:var(--panel-w);min-width:var(--panel-w);border-left:1px solid var(--border)}
+.pnl-hdr{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.pnl-back{width:30px;height:30px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-2);transition:var(--tr);flex-shrink:0}
+.pnl-back:hover{background:var(--border);color:var(--ink)}
+.pnl-hdr-title{font-size:13px;font-weight:600;color:var(--ink-2)}
+.pnl-body{flex:1;overflow-y:auto}
+.pnl-hero{padding:20px 20px 16px;border-bottom:1px solid var(--border-lt)}
+.pnl-name{font-size:20px;font-weight:800;color:var(--ink);line-height:1.2;margin-bottom:6px;letter-spacing:-.3px}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:10px}
+.status-badge.stable{background:var(--green-bg);color:var(--green)}
+.status-badge.needs_support{background:var(--yellow-bg);color:var(--yellow)}
+.status-badge.urgent{background:var(--red-bg);color:var(--red);animation:bdg-pulse 2s infinite}
+@keyframes bdg-pulse{0%,100%{opacity:1}50%{opacity:.75}}
+.pnl-loc{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:5px;margin-top:6px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-lt);border-top:1px solid var(--border-lt);border-bottom:1px solid var(--border-lt)}
+.meta-item{background:#fff;padding:12px 16px}
+.meta-label{font-size:10px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.meta-value{font-size:13px;font-weight:600;color:var(--ink)}
+.pnl-sec{padding:16px 20px;border-bottom:1px solid var(--border-lt)}
+.pnl-sec:last-child{border-bottom:none}
+.pnl-sec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3);margin-bottom:10px}
+.pastor-card{display:flex;align-items:center;gap:12px}
+.pastor-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#B8530F);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.pastor-name{font-size:14px;font-weight:700;color:var(--ink)}
+.pastor-sub{font-size:11px;color:var(--ink-2)}
+.contact-links{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.contact-link{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);text-decoration:none;padding:4px 0}
+.contact-link:hover{color:var(--accent)}
+.needs-list,.prayer-list{display:flex;flex-direction:column;gap:5px}
+.need-item,.prayer-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink-2);line-height:1.5;padding:5px 10px;border-radius:var(--r-sm);background:var(--bg)}
+.need-item.urg-hi{background:#fff5f5;color:#991b1b;font-weight:500}
+.prayer-item{background:#F0F9FF;color:#0C4A6E}
+.prayer-item.urg-prayer{background:#FFF5F5;color:#7F1D1D;font-weight:600;border-left:2px solid var(--red)}
+.need-bul{color:var(--accent);flex-shrink:0;margin-top:2px}
+.prayer-bul{color:#0EA5E9;flex-shrink:0;margin-top:2px}
+.prayer-bul.urg{color:var(--red)}
+.type-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.type-chip.church{background:#EDE9FE;color:#5B21B6}
+.type-chip.mission{background:#E0F2FE;color:#0369A1}
+.type-chip.outreach{background:#ECFDF5;color:#065F46}
+
+/* ── Markers ────────────────────────────────────────────────────── */
+.mk-wrap{position:relative;cursor:pointer}
+.mk-pin{width:28px;height:28px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25);transition:transform .15s ease;position:relative}
+.mk-pin::after{content:'';position:absolute;inset:0;border-radius:inherit;background:rgba(255,255,255,.2)}
+.mk-inner{transform:rotate(45deg);font-size:11px;line-height:1;z-index:1}
+.mk-wrap:hover .mk-pin{transform:rotate(-45deg) scale(1.15)}
+.mk-pulse{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:28px;height:28px;border-radius:50%;animation:mk-pulse 2s infinite;pointer-events:none}
+@keyframes mk-pulse{0%{transform:translate(-50%,-60%) scale(1);opacity:.7}100%{transform:translate(-50%,-60%) scale(2.2);opacity:0}}
+
+/* ── Sidebar overlay (mobile) ───────────────────────────────────── */
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:250;backdrop-filter:blur(2px)}
+#sb-overlay.show{display:block}
+
+/* ── Mobile ────────────────────────────────────────────────────── */
+@media(max-width:768px){
+  #sb-toggle{display:flex}
+  #sidebar{
+    position:fixed;top:var(--hdr);left:0;bottom:0;z-index:300;
+    transform:translateX(-100%);box-shadow:var(--sh-lg);
+    width:min(var(--sidebar-w),90vw)!important;transition:transform var(--tr);
+  }
+  #sidebar.m-open{transform:translateX(0)}
+  /* panel: fixed, full-width slide-in on mobile */
+  #church-panel{
+    position:fixed;top:var(--hdr);right:0;bottom:0;
+    width:min(var(--panel-w),100vw)!important;min-width:0!important;
+    transform:translateX(100%);transition:transform var(--tr);
+    box-shadow:var(--sh-lg);border-left:1px solid var(--border);
+  }
+  #church-panel.open{transform:translateX(0);width:min(var(--panel-w),100vw)!important}
+  .logo-text{display:none}
+  .search-wrap{max-width:none}
+  #map-legend{bottom:56px}
+}
+@media(max-width:480px){
+  :root{--panel-w:100vw}
+  .search-wrap{display:none}
+}
+
+.fade-in{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     HEADER
-     ═══════════════════════════════════════════════════════════════════ -->
-<header id="app-header">
-  <!-- Logo -->
-  <a class="header-logo" href="#">
-    <div class="header-logo-icon">🗺️</div>
-    <div class="header-logo-text">
-      <span class="header-logo-title">FLCC-GMPI Prayer Map</span>
-      <span class="header-logo-sub">Philippines</span>
+<!-- Header -->
+<header id="hdr">
+  <a class="logo" href="#">
+    <div class="logo-icon">🗺️</div>
+    <div class="logo-text">
+      <span class="logo-title">FLCC-GMPI Prayer Map</span>
+      <span class="logo-sub">Philippines</span>
     </div>
   </a>
 
-  <!-- Search -->
-  <div class="header-search" style="position:relative;">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input id="search-input" type="text" placeholder="Search church, pastor, city…" autocomplete="off">
-    <div id="search-results"></div>
+    <div id="search-res"></div>
   </div>
 
-  <!-- Actions -->
-  <div class="header-actions">
-    <!-- Sidebar toggle (mobile) -->
-    <button id="sidebar-toggle" class="header-btn" aria-label="Toggle sidebar">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
+  <div class="hdr-actions">
+    <button id="sb-toggle" class="hdr-btn" aria-label="Filters">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       Filters
     </button>
-
-    <!-- Admin link -->
-    <a href="flcc-gmpi-admin.html" class="header-btn admin-btn">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
-      </svg>
+    <a href="flcc-gmpi-admin.html" class="hdr-btn admin">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
       Admin
     </a>
   </div>
 </header>
 
-<!-- Sidebar overlay (mobile) -->
-<div id="sidebar-overlay"></div>
+<div id="sb-overlay"></div>
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     MAIN LAYOUT
-     ═══════════════════════════════════════════════════════════════════ -->
+<!-- Layout -->
 <div id="layout">
 
-  <!-- ── LEFT SIDEBAR ───────────────────────────────────────────────── -->
+  <!-- Sidebar -->
   <aside id="sidebar">
-    <div class="sidebar-inner">
+    <div class="sb-inner">
 
-      <!-- Overview Stats -->
       <div class="stats-card">
-        <div class="stats-card-title">📊 Overview</div>
-        <div class="stats-row">
-          <div class="stat-item">
-            <span class="stat-label">
-              <span class="stat-dot all"></span>Showing Churches
-            </span>
-            <span class="stat-count" id="stat-total">—</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">
-              <span class="stat-dot stable"></span>Stable
-            </span>
-            <span class="stat-count" id="stat-stable">—</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">
-              <span class="stat-dot needs"></span>Needs Support
-            </span>
-            <span class="stat-count" id="stat-needs">—</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">
-              <span class="stat-dot urgent"></span>Urgent Prayer
-            </span>
-            <span class="stat-count" id="stat-urgent">—</span>
-          </div>
+        <div class="stats-title">📊 Overview</div>
+        <div class="stat-item"><span class="stat-label"><span class="s-dot all"></span>Showing</span><span class="stat-count" id="stat-total">—</span></div>
+        <div class="stat-item"><span class="stat-label"><span class="s-dot stable"></span>Stable</span><span class="stat-count" id="stat-stable">—</span></div>
+        <div class="stat-item"><span class="stat-label"><span class="s-dot needs"></span>Needs Support</span><span class="stat-count" id="stat-needs">—</span></div>
+        <div class="stat-item"><span class="stat-label"><span class="s-dot urgent"></span>Urgent</span><span class="stat-count" id="stat-urgent">—</span></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">📍 Region</div>
+        <div class="pills">
+          <button class="pill active" data-region="all">All</button>
+          <button class="pill" data-region="Luzon">🏔 Luzon</button>
+          <button class="pill" data-region="Visayas">🏝 Visayas</button>
+          <button class="pill" data-region="Mindanao">🌴 Mindanao</button>
         </div>
       </div>
 
-      <!-- Region Filter -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">📍 Filter by Region</div>
-        <div class="filter-group">
-          <button class="filter-pill active" data-filter-region="all">All</button>
-          <button class="filter-pill" data-filter-region="Luzon">🏔 Luzon</button>
-          <button class="filter-pill" data-filter-region="Visayas">🏝 Visayas</button>
-          <button class="filter-pill" data-filter-region="Mindanao">🌴 Mindanao</button>
+      <div class="sb-section">
+        <div class="sb-title">🔵 Status</div>
+        <div class="pills">
+          <button class="pill active" data-status="all">All</button>
+          <button class="pill ps" data-status="stable">🟢 Stable</button>
+          <button class="pill pn" data-status="needs_support">🟡 Needs Support</button>
+          <button class="pill pu" data-status="urgent">🔴 Urgent</button>
         </div>
       </div>
 
-      <!-- Status Filter -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">🔵 Filter by Status</div>
-        <div class="filter-group">
-          <button class="filter-pill active" data-filter-status="all">All</button>
-          <button class="filter-pill status-stable" data-filter-status="stable">🟢 Stable</button>
-          <button class="filter-pill status-needs" data-filter-status="needs_support">🟡 Needs Support</button>
-          <button class="filter-pill status-urgent" data-filter-status="urgent">🔴 Urgent</button>
-        </div>
-      </div>
-
-      <!-- Ministry Type Filter -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">⛪ Filter by Ministry</div>
-        <div class="filter-group">
-          <button class="filter-pill active" data-filter-type="all">All</button>
-          <button class="filter-pill" data-filter-type="church">⛪ Church</button>
-          <button class="filter-pill" data-filter-type="mission">✝ Mission</button>
-          <button class="filter-pill" data-filter-type="outreach">🤝 Outreach</button>
+      <div class="sb-section">
+        <div class="sb-title">⛪ Ministry</div>
+        <div class="pills">
+          <button class="pill active" data-type="all">All</button>
+          <button class="pill" data-type="church">⛪ Church</button>
+          <button class="pill" data-type="mission">✝ Mission</button>
+          <button class="pill" data-type="outreach">🤝 Outreach</button>
         </div>
       </div>
 
       <div class="divider"></div>
 
-      <!-- Today's Prayer Focus -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">🙏 Today's Prayer Focus</div>
-        <div class="prayer-focus-card">
-          <div class="prayer-focus-header">
-            <span class="prayer-focus-icon">🕯</span>
-            <span class="prayer-focus-label">Daily Intercession</span>
-            <span class="prayer-focus-date" id="prayer-focus-date"></span>
+      <div class="sb-section">
+        <div class="sb-title">🙏 Today's Prayer Focus</div>
+        <div class="pf-card" id="pf-card">
+          <div class="pf-hdr">
+            <span>🕯</span>
+            <span class="pf-label">Daily Intercession</span>
+            <span class="pf-date" id="pf-date"></span>
           </div>
-          <div id="prayer-focus-container">
-            <!-- Populated by JS -->
-          </div>
+          <div id="pf-body"></div>
         </div>
       </div>
 
       <div class="divider"></div>
 
-      <!-- Urgent Prayer List -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">🚨 Urgent Prayer Needed</div>
-        <div id="urgent-list" class="urgent-list">
-          <!-- Populated by JS -->
-        </div>
+      <div class="sb-section">
+        <div class="sb-title">🚨 Urgent Prayer Needed</div>
+        <div id="urgent-list" class="urg-list"></div>
       </div>
 
-    </div><!-- /sidebar-inner -->
+    </div>
   </aside>
 
-  <!-- ── MAP AREA ───────────────────────────────────────────────────── -->
+  <!-- Map -->
   <div id="map-area">
     <div id="map"></div>
-
-    <!-- Legend -->
     <div id="map-legend">
-      <div class="legend-title">Status</div>
-      <div class="legend-item">
-        <div class="legend-dot stable"></div> Stable
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot needs"></div> Needs Support
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot urgent"></div> Urgent Prayer
-      </div>
-      <div style="height:6px;"></div>
-      <div class="legend-title">Ministry</div>
-      <div class="legend-item">⛪ Church</div>
-      <div class="legend-item">✝ Mission</div>
-      <div class="legend-item">🤝 Outreach</div>
+      <div class="leg-title">Status</div>
+      <div class="leg-item"><div class="leg-dot stable"></div>Stable</div>
+      <div class="leg-item"><div class="leg-dot needs"></div>Needs Support</div>
+      <div class="leg-item"><div class="leg-dot urgent"></div>Urgent Prayer</div>
+      <div style="height:6px"></div>
+      <div class="leg-title">Ministry</div>
+      <div class="leg-item">⛪ Church</div>
+      <div class="leg-item">✝ Mission</div>
+      <div class="leg-item">🤝 Outreach</div>
     </div>
   </div>
 
-  <!-- ── CHURCH DETAIL PANEL ───────────────────────────────────────── -->
+  <!-- Church panel -->
   <div id="church-panel">
-    <div class="panel-header">
-      <button class="panel-back-btn" id="panel-back-btn" title="Close panel">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="15,18 9,12 15,6"/>
-        </svg>
+    <div class="pnl-hdr">
+      <button class="pnl-back" id="pnl-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
       </button>
-      <span class="panel-header-title">Church Details</span>
+      <span class="pnl-hdr-title">Church Details</span>
     </div>
-    <div class="panel-body" id="panel-body">
-      <!-- Populated by JS when a marker is clicked -->
-    </div>
+    <div class="pnl-body" id="pnl-body"></div>
   </div>
 
 </div><!-- /layout -->
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     SCRIPTS
-     ═══════════════════════════════════════════════════════════════════ -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPcM=" crossorigin="anonymous"></script>
-<script src="flcc-gmpi-data.js"></script>
-<script src="flcc-gmpi-app.js"></script>
+<!-- ── Scripts ────────────────────────────────────────────────── -->
+<!-- Leaflet from jsDelivr — no integrity attribute to avoid SRI blocking -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 
 <script>
-  // Inject today's date into the prayer focus header
-  (function () {
-    const el = document.getElementById('prayer-focus-date');
-    if (el) {
-      el.textContent = new Date().toLocaleDateString('en-PH', {
-        month: 'short', day: 'numeric'
-      });
+// ── Church data ────────────────────────────────────────────────────────────
+const INITIAL_CHURCHES = [
+  {id:1,name:"FLCC Sampaloc",city:"Manila",province:"Metro Manila",region:"NCR",island_group:"Luzon",coordinates:[14.606,120.992],lead_pastor:"Rev. Jose Santos",contact_phone:"+63 917 123 4501",contact_email:"flcc.sampaloc@gmail.com",year_established:1998,members:285,status:"stable",ministry_type:"church",needs:["Projector upgrade","Nursery volunteers"],prayer_requests:["Continued growth and discipleship","Youth ministry expansion","Building renovation fund"]},
+  {id:2,name:"FLCC Cubao",city:"Quezon City",province:"Metro Manila",region:"NCR",island_group:"Luzon",coordinates:[14.618,121.055],lead_pastor:"Rev. Andrew Villanueva",contact_phone:"+63 918 234 5602",contact_email:"flcc.cubao@gmail.com",year_established:2005,members:190,status:"stable",ministry_type:"church",needs:["Sound system repair","Children's ministry materials"],prayer_requests:["Church multiplication strategy","City-wide outreach campaign","Pastoral staff support"]},
+  {id:3,name:"FLCC San Fernando",city:"San Fernando",province:"Pampanga",region:"Region III",island_group:"Luzon",coordinates:[15.029,120.690],lead_pastor:"Ptr. Sarah Dizon",contact_phone:"+63 919 345 6703",contact_email:"flcc.sanfernando@gmail.com",year_established:2010,members:120,status:"needs_support",ministry_type:"church",needs:["Worship instruments (drums, bass guitar)","Chairs (50 units)","AC unit for main hall"],prayer_requests:["New families to join the congregation","Financial provision for rent","Outreach to nearby barangays"]},
+  {id:4,name:"GMPI Mission Tarlac",city:"Tarlac City",province:"Tarlac",region:"Region III",island_group:"Luzon",coordinates:[15.488,120.596],lead_pastor:"Ptr. Cornelio Reyes",contact_phone:"+63 920 456 7804",contact_email:"gmpi.tarlac@gmail.com",year_established:2018,members:45,status:"needs_support",ministry_type:"mission",needs:["Monthly support (₱8,000)","Bible study materials","Transportation assistance"],prayer_requests:["Stable meeting place","More committed members","Partner churches for support"]},
+  {id:5,name:"FLCC Batangas City",city:"Batangas City",province:"Batangas",region:"Region IV-A",island_group:"Luzon",coordinates:[13.757,121.058],lead_pastor:"Ptr. James Garcia",contact_phone:"+63 921 567 8905",contact_email:"flcc.batangas@gmail.com",year_established:2003,members:165,status:"stable",ministry_type:"church",needs:["Sound system upgrade","Baptismal facility"],prayer_requests:["Soul winning in harbor communities","Leadership training program","Children's church building"]},
+  {id:6,name:"FLCC Lucena City",city:"Lucena City",province:"Quezon",region:"Region IV-A",island_group:"Luzon",coordinates:[13.932,121.617],lead_pastor:"Ptr. Joel Flores",contact_phone:"+63 922 678 9006",contact_email:"flcc.lucena@gmail.com",year_established:2008,members:98,status:"needs_support",ministry_type:"church",needs:["Keyboard / piano","Ministry vehicle","Financial workers needed"],prayer_requests:["Healing for lead pastor (hypertension)","Breakthrough in membership growth","Outreach in Quezon province towns"]},
+  {id:7,name:"FLCC Baguio City",city:"Baguio City",province:"Benguet",region:"CAR",island_group:"Luzon",coordinates:[16.402,120.596],lead_pastor:"Ptr. David Aguilar",contact_phone:"+63 923 789 1107",contact_email:"flcc.baguio@gmail.com",year_established:2001,members:210,status:"stable",ministry_type:"church",needs:["Heaters for winter season","Outreach funds for mountain communities"],prayer_requests:["Student ministry at UP Baguio and SLU","Mission to Cordillera tribes","Building expansion for growing congregation"]},
+  {id:8,name:"FLCC Legazpi City",city:"Legazpi City",province:"Albay",region:"Region V",island_group:"Luzon",coordinates:[13.139,123.744],lead_pastor:"Ptr. Rachel Bautista",contact_phone:"+63 924 890 2208",contact_email:"flcc.legazpi@gmail.com",year_established:2012,members:75,status:"needs_support",ministry_type:"church",needs:["Typhoon preparedness fund","Disaster relief materials","Generator"],prayer_requests:["Protection from Mayon Volcano hazards","Rebuilding after typhoon damage","Evangelism in Bikol communities"]},
+  {id:9,name:"FLCC Iloilo City",city:"Iloilo City",province:"Iloilo",region:"Region VI",island_group:"Visayas",coordinates:[10.720,122.562],lead_pastor:"Ptr. Emmanuel Cruz",contact_phone:"+63 925 901 3309",contact_email:"flcc.iloilo@gmail.com",year_established:2007,members:88,status:"urgent",ministry_type:"church",needs:["URGENT: Emergency financial support","Temporary worship space","Volunteer workers urgently needed"],prayer_requests:["URGENT: Church building lease not renewed — needs new location","Lead pastor's wife hospitalized (cancer)","Flock unity during this crisis","Provision of miracle location within 30 days"]},
+  {id:10,name:"GMPI Mission Roxas City",city:"Roxas City",province:"Capiz",region:"Region VI",island_group:"Visayas",coordinates:[11.585,122.751],lead_pastor:"Ptr. Mark Evangelista",contact_phone:"+63 926 012 4410",contact_email:"gmpi.roxas@gmail.com",year_established:2020,members:32,status:"needs_support",ministry_type:"mission",needs:["Monthly missionary support (₱6,000)","Bibles (100 copies)","Children's curriculum"],prayer_requests:["Mission house construction","Reaching fisherfolk communities","New believers' discipleship"]},
+  {id:11,name:"FLCC Cebu City",city:"Cebu City",province:"Cebu",region:"Region VII",island_group:"Visayas",coordinates:[10.316,123.885],lead_pastor:"Ptr. Grace Lim",contact_phone:"+63 927 123 5511",contact_email:"flcc.cebu@gmail.com",year_established:1999,members:320,status:"stable",ministry_type:"church",needs:["Worship team training","Livestream equipment"],prayer_requests:["Church planting in Mandaue and Lapu-Lapu","Urban poor ministry expansion","Annual conventions and conferences"]},
+  {id:12,name:"GMPI Mission Tagbilaran",city:"Tagbilaran City",province:"Bohol",region:"Region VII",island_group:"Visayas",coordinates:[9.657,123.854],lead_pastor:"Ptr. Noah Torres",contact_phone:"+63 928 234 6612",contact_email:"gmpi.bohol@gmail.com",year_established:2016,members:55,status:"needs_support",ministry_type:"mission",needs:["Island boat transport for outreach","Solar panels for remote chapel","Medical mission funds"],prayer_requests:["Reaching Chocolate Hills communities","Discipleship of new converts","Partnerships with local government"]},
+  {id:13,name:"FLCC Tacloban City",city:"Tacloban City",province:"Leyte",region:"Region VIII",island_group:"Visayas",coordinates:[11.254,125.000],lead_pastor:"Ptr. Ruth Mendoza",contact_phone:"+63 929 345 7713",contact_email:"flcc.tacloban@gmail.com",year_established:2006,members:110,status:"urgent",ministry_type:"church",needs:["URGENT: Typhoon-damaged roof repair (₱250,000)","Counseling resources","Food packs for members"],prayer_requests:["URGENT: 3 church families lost homes in recent typhoon","Healing and recovery for trauma survivors","Miracle provision for roof rebuilding","Strength for lead pastor during hardship"]},
+  {id:14,name:"GMPI Mission Ormoc City",city:"Ormoc City",province:"Leyte",region:"Region VIII",island_group:"Visayas",coordinates:[11.005,124.608],lead_pastor:"Ptr. Esther Ocampo",contact_phone:"+63 930 456 8814",contact_email:"gmpi.ormoc@gmail.com",year_established:2019,members:28,status:"needs_support",ministry_type:"mission",needs:["Church planter monthly support","Transport for cell group visits","Musical instruments"],prayer_requests:["Breakthrough in traditional Catholic barangays","Cell group leaders raised up","Finances for missionary family"]},
+  {id:15,name:"FLCC Cagayan de Oro",city:"Cagayan de Oro City",province:"Misamis Oriental",region:"Region X",island_group:"Mindanao",coordinates:[8.454,124.632],lead_pastor:"Ptr. Maria Santos",contact_phone:"+63 931 567 9915",contact_email:"flcc.cdo@gmail.com",year_established:2004,members:240,status:"stable",ministry_type:"church",needs:["Youth hall renovation","Campus ministry budget"],prayer_requests:["Gateway city for Mindanao church planting","CDO University outreach","Revival in Northern Mindanao"]},
+  {id:16,name:"GMPI Mission Iligan City",city:"Iligan City",province:"Lanao del Norte",region:"Region X",island_group:"Mindanao",coordinates:[8.228,124.245],lead_pastor:"Ptr. Lydia Tan",contact_phone:"+63 932 678 0016",contact_email:"gmpi.iligan@gmail.com",year_established:2015,members:62,status:"needs_support",ministry_type:"mission",needs:["Security funds for sensitive area","Maranao language Bibles","Intercultural training"],prayer_requests:["Peaceful coexistence and witness among Muslim neighbors","Protection for missionary family","Breakthrough conversions in Maranao community"]},
+  {id:17,name:"FLCC Davao City",city:"Davao City",province:"Davao del Sur",region:"Region XI",island_group:"Mindanao",coordinates:[7.191,125.455],lead_pastor:"Rev. Michael Reyes",contact_phone:"+63 933 789 1117",contact_email:"flcc.davao@gmail.com",year_established:1997,members:380,status:"stable",ministry_type:"church",needs:["Building expansion (Phase 3)","Seminary scholarship fund"],prayer_requests:["Regional leadership hub for Mindanao","Planting 10 churches in Davao Region by 2028","Annual GMPI Mindanao Conference"]},
+  {id:18,name:"FLCC General Santos City",city:"General Santos City",province:"South Cotabato",region:"Region XII",island_group:"Mindanao",coordinates:[6.116,125.172],lead_pastor:"Rev. Paul Aquino",contact_phone:"+63 934 890 2218",contact_email:"flcc.gensan@gmail.com",year_established:2002,members:175,status:"stable",ministry_type:"church",needs:["Tuna port community outreach budget","Church van"],prayer_requests:["Fishing community evangelism","Youth ministry multiplication","Missions to Lake Sebu tribes"]},
+  {id:19,name:"GMPI Mission Koronadal",city:"Koronadal City",province:"South Cotabato",region:"Region XII",island_group:"Mindanao",coordinates:[6.503,124.847],lead_pastor:"Ptr. Samuel Perez",contact_phone:"+63 935 901 3319",contact_email:"gmpi.koronadal@gmail.com",year_established:2017,members:38,status:"needs_support",ministry_type:"mission",needs:["House of prayer / office space","Evangelism tracts","Children's feeding program"],prayer_requests:["Blaan and T'boli tribal missions","Monthly provision for pastor's family","Medical outreach support"]},
+  {id:20,name:"GMPI Mission Zamboanga City",city:"Zamboanga City",province:"Zamboanga del Sur",region:"Region IX",island_group:"Mindanao",coordinates:[6.921,122.079],lead_pastor:"Ptr. John Dela Cruz",contact_phone:"+63 936 012 4420",contact_email:"gmpi.zamboanga@gmail.com",year_established:2014,members:42,status:"urgent",ministry_type:"mission",needs:["URGENT: Security concerns require relocation","Emergency housing","Immediate financial aid"],prayer_requests:["URGENT: Missionary family received threats — seeking safe relocation","Divine protection and angels of God","Courage to continue the mission","Intercession from the whole FLCC-GMPI network"]},
+  {id:21,name:"GMPI Mission Butuan City",city:"Butuan City",province:"Agusan del Norte",region:"Region XIII",island_group:"Mindanao",coordinates:[8.948,125.541],lead_pastor:"Ptr. Timothy Ramos",contact_phone:"+63 937 123 5521",contact_email:"gmpi.butuan@gmail.com",year_established:2021,members:22,status:"urgent",ministry_type:"outreach",needs:["URGENT: No permanent meeting place","Monthly budget (₱7,000)","Discipleship mentor needed"],prayer_requests:["URGENT: Core group of 22 members meeting in a home — needs church space","Spiritual maturity for new believers","Partnership with mother church","Vision and direction for this new work"]},
+  {id:22,name:"GMPI Mission Cotabato City",city:"Cotabato City",province:"Maguindanao del Norte",region:"BARMM",island_group:"Mindanao",coordinates:[7.224,124.249],lead_pastor:"Ptr. Daniel Rivera",contact_phone:"+63 938 234 6622",contact_email:"gmpi.cotabato@gmail.com",year_established:2019,members:18,status:"urgent",ministry_type:"outreach",needs:["URGENT: Medical support for pastor (serious illness)","Security escorts","Maranao / Maguindanaon Bibles"],prayer_requests:["URGENT: Lead pastor hospitalized with serious condition","Protection and peace in conflict-affected area","Successor raised up if pastor cannot continue","Miracle healing for Ptr. Daniel"]}
+];
+
+function loadChurches(){
+  try{const s=localStorage.getItem('flcc_gmpi_churches_v1');if(s)return JSON.parse(s);}catch(e){}
+  return INITIAL_CHURCHES.map(c=>({...c}));
+}
+function saveChurches(d){localStorage.setItem('flcc_gmpi_churches_v1',JSON.stringify(d));}
+
+// ── App state ─────────────────────────────────────────────────────────────
+const APP = {
+  churches: [],
+  filtered: [],
+  selected: null,
+  map: null,
+  markers: {},
+  filters: { region:'all', status:'all', type:'all', search:'' },
+  searchTimer: null
+};
+
+const STATUS_LABEL = {stable:'Stable',needs_support:'Needs Support',urgent:'Urgent Prayer'};
+const STATUS_EM    = {stable:'🟢',needs_support:'🟡',urgent:'🔴'};
+const STATUS_C     = {
+  stable:       {bg:'#22C55E',bd:'#16A34A',glow:'rgba(34,197,94,.35)'},
+  needs_support:{bg:'#EAB308',bd:'#CA8A04',glow:'rgba(234,179,8,.35)'},
+  urgent:       {bg:'#EF4444',bd:'#DC2626',glow:'rgba(239,68,68,.4)'}
+};
+const TYPE_ICON  = {church:'⛪',mission:'✝',outreach:'🤝'};
+const TYPE_LABEL = {church:'Church',mission:'Mission',outreach:'Outreach'};
+const REGION_FLY = {
+  all:      {c:[12.0,122.0],z:6},
+  Luzon:    {c:[16.5,121.0],z:7},
+  Visayas:  {c:[10.8,123.5],z:8},
+  Mindanao: {c:[7.8,124.5], z:7}
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof L === 'undefined') {
+    document.getElementById('map').innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#78716C;font-size:14px;flex-direction:column;gap:8px">' +
+      '<div style="font-size:32px">⚠️</div>' +
+      '<div>Map library failed to load. Please check your internet connection and refresh.</div></div>';
+    return;
+  }
+  APP.churches = loadChurches();
+  APP.filtered = [...APP.churches];
+  initMap();
+  renderMarkers();
+  updateStats();
+  renderPrayerFocus();
+  renderUrgentList();
+  bindEvents();
+});
+
+// ── Map init ──────────────────────────────────────────────────────────────
+function initMap(){
+  APP.map = L.map('map', {
+    center: [12.0, 122.0],
+    zoom: 6,
+    zoomControl: false,
+    preferCanvas: true
+  });
+
+  // OpenStreetMap tiles — free, no API key, maximum reliability
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+    subdomains: 'abc'
+  }).addTo(APP.map);
+
+  L.control.zoom({ position:'bottomright' }).addTo(APP.map);
+
+  APP.map.on('click', () => { if (APP.selected) closePanel(); });
+}
+
+// ── Markers ───────────────────────────────────────────────────────────────
+function mkIcon(church){
+  const c = STATUS_C[church.status] || STATUS_C.stable;
+  const ic = TYPE_ICON[church.ministry_type] || '⛪';
+  const pulse = church.status === 'urgent'
+    ? `<div class="mk-pulse" style="background:${c.glow}"></div>` : '';
+  return L.divIcon({
+    className:'',
+    html:`<div class="mk-wrap">${pulse}<div class="mk-pin" style="background:${c.bg};border:2.5px solid ${c.bd};box-shadow:0 2px 8px ${c.glow},0 1px 3px rgba(0,0,0,.25)"><span class="mk-inner">${ic}</span></div></div>`,
+    iconSize:[28,34],iconAnchor:[14,34],popupAnchor:[0,-36]
+  });
+}
+
+function renderMarkers(){
+  Object.values(APP.markers).forEach(m=>m.remove());
+  APP.markers = {};
+  APP.filtered.forEach(ch => {
+    const mk = L.marker(ch.coordinates, { icon:mkIcon(ch), title:ch.name });
+    mk.bindTooltip(
+      `<b>${ch.name}</b><br><span style="color:#78716C;font-weight:400">${ch.city}, ${ch.region}</span>`,
+      {direction:'top',offset:[0,-34]}
+    );
+    mk.on('click', e => { L.DomEvent.stopPropagation(e); openPanel(ch); });
+    mk.addTo(APP.map);
+    APP.markers[ch.id] = mk;
+  });
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────
+function applyFilters(){
+  const {region,status,type,search} = APP.filters;
+  const q = search.toLowerCase().trim();
+  APP.filtered = APP.churches.filter(c => {
+    if (region !== 'all' && c.island_group !== region) return false;
+    if (status !== 'all' && c.status !== status) return false;
+    if (type   !== 'all' && c.ministry_type !== type) return false;
+    if (q) {
+      const h = [c.name,c.city,c.province,c.region,c.lead_pastor,c.island_group].join(' ').toLowerCase();
+      if (!h.includes(q)) return false;
     }
-  })();
+    return true;
+  });
+  renderMarkers();
+  updateStats();
+  renderUrgentList();
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+function updateStats(){
+  const f = APP.filtered;
+  setText('stat-total', f.length);
+  setText('stat-stable', f.filter(c=>c.status==='stable').length);
+  setText('stat-needs',  f.filter(c=>c.status==='needs_support').length);
+  setText('stat-urgent', f.filter(c=>c.status==='urgent').length);
+}
+function setText(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
+
+// ── Prayer focus ─────────────────────────────────────────────────────────
+function renderPrayerFocus(){
+  const now = new Date();
+  const doy = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
+  const ch = APP.churches[doy % APP.churches.length];
+  if (!ch) return;
+
+  document.getElementById('pf-date').textContent =
+    now.toLocaleDateString('en-PH',{month:'short',day:'numeric'});
+
+  document.getElementById('pf-body').innerHTML =
+    `<div class="pf-church">${ch.name}</div>
+     <div class="pf-pastor">${ch.lead_pastor} · ${ch.city}</div>
+     ${ch.prayer_requests.slice(0,3).map(r=>`<div class="pf-req">${r}</div>`).join('')}`;
+
+  document.getElementById('pf-card').onclick = () => openPanel(ch);
+}
+
+// ── Urgent list ───────────────────────────────────────────────────────────
+function renderUrgentList(){
+  const urg = APP.filtered.filter(c=>c.status==='urgent');
+  const el = document.getElementById('urgent-list');
+  if (!el) return;
+  if (!urg.length){ el.innerHTML='<div class="no-res">None matching current filters</div>'; return; }
+  el.innerHTML = urg.map(c=>`
+    <div class="urg-item fade-in" data-id="${c.id}">
+      <div class="urg-pulse"></div>
+      <div><div class="urg-name">${c.name}</div><div class="urg-region">${c.city} · ${c.region}</div></div>
+    </div>`).join('');
+  el.querySelectorAll('.urg-item').forEach(el=>
+    el.addEventListener('click',()=>{
+      const ch=APP.churches.find(c=>c.id===+el.dataset.id);
+      if(ch) openPanel(ch);
+    })
+  );
+}
+
+// ── Panel ─────────────────────────────────────────────────────────────────
+function openPanel(ch){
+  APP.selected = ch;
+  const panel = document.getElementById('church-panel');
+  const body  = document.getElementById('pnl-body');
+  if (!panel||!body) return;
+
+  APP.map.flyTo(ch.coordinates, Math.max(APP.map.getZoom(),9), {duration:.8});
+
+  const ini = ch.lead_pastor.split(' ').map(w=>w[0]).filter(Boolean).slice(-2).join('');
+  const typeLabel = TYPE_LABEL[ch.ministry_type]||ch.ministry_type;
+
+  body.innerHTML = `
+    <div class="pnl-hero fade-in">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+        <h2 class="pnl-name">${ch.name}</h2>
+        <span class="type-chip ${ch.ministry_type}">${typeLabel}</span>
+      </div>
+      <div class="status-badge ${ch.status}">${STATUS_EM[ch.status]} ${STATUS_LABEL[ch.status]}</div>
+      <div class="pnl-loc" style="margin-top:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        ${ch.city}, ${ch.province} · <strong>${ch.region}</strong> · ${ch.island_group}
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Island Group</div><div class="meta-value">${ch.island_group}</div></div>
+      <div class="meta-item"><div class="meta-label">Est. Year</div><div class="meta-value">${ch.year_established}</div></div>
+      <div class="meta-item"><div class="meta-label">Members</div><div class="meta-value">${ch.members?ch.members.toLocaleString():'—'}</div></div>
+      <div class="meta-item"><div class="meta-label">Ministry</div><div class="meta-value">${typeLabel}</div></div>
+    </div>
+    <div class="pnl-sec">
+      <div class="pnl-sec-title">Lead Pastor</div>
+      <div class="pastor-card">
+        <div class="pastor-av">${ini}</div>
+        <div><div class="pastor-name">${ch.lead_pastor}</div><div class="pastor-sub">Lead Pastor / Church Planter</div></div>
+      </div>
+      <div class="contact-links">
+        ${ch.contact_phone?`<a href="tel:${ch.contact_phone.replace(/\s/g,'')}" class="contact-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          ${ch.contact_phone}</a>`:''}
+        ${ch.contact_email?`<a href="mailto:${ch.contact_email}" class="contact-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          ${ch.contact_email}</a>`:''}
+      </div>
+    </div>
+    ${ch.needs.length?`<div class="pnl-sec"><div class="pnl-sec-title">Current Needs</div><div class="needs-list">
+      ${ch.needs.map(n=>`<div class="need-item ${n.startsWith('URGENT')?'urg-hi':''}"><span class="need-bul">◆</span>${n}</div>`).join('')}
+    </div></div>`:''}
+    ${ch.prayer_requests.length?`<div class="pnl-sec"><div class="pnl-sec-title">Prayer Requests</div><div class="prayer-list">
+      ${ch.prayer_requests.map(r=>`<div class="prayer-item ${r.startsWith('URGENT')?'urg-prayer':''}"><span class="prayer-bul ${r.startsWith('URGENT')?'urg':''}">🙏</span>${r}</div>`).join('')}
+    </div></div>`:''}
+  `;
+
+  panel.classList.add('open');
+  setTimeout(()=>APP.map&&APP.map.invalidateSize(), 240);
+  highlightMarker(ch.id);
+}
+
+function closePanel(){
+  APP.selected = null;
+  document.getElementById('church-panel').classList.remove('open');
+  setTimeout(()=>APP.map&&APP.map.invalidateSize(), 240);
+  APP.filtered.forEach(c=>{ if(APP.markers[c.id]) APP.markers[c.id].setIcon(mkIcon(c)); });
+}
+
+function highlightMarker(id){
+  APP.filtered.forEach(c=>{
+    if (!APP.markers[c.id]) return;
+    if (c.id===id){
+      const mc=STATUS_C[c.status]||STATUS_C.stable;
+      APP.markers[c.id].setIcon(L.divIcon({
+        className:'',
+        html:`<div class="mk-wrap"><div class="mk-pin" style="width:34px;height:34px;background:${mc.bg};border:3px solid ${mc.bd};box-shadow:0 0 0 4px ${mc.glow},0 3px 10px ${mc.glow}"><span class="mk-inner" style="font-size:14px">${TYPE_ICON[c.ministry_type]||'⛪'}</span></div></div>`,
+        iconSize:[34,40],iconAnchor:[17,40]
+      }));
+    } else {
+      APP.markers[c.id].setIcon(mkIcon(c));
+    }
+  });
+}
+
+// ── Search ────────────────────────────────────────────────────────────────
+function handleSearch(q){
+  const res = document.getElementById('search-res');
+  q = q.trim();
+  if (!q){ res.classList.remove('show'); APP.filters.search=''; applyFilters(); return; }
+  APP.filters.search = q.toLowerCase();
+  applyFilters();
+
+  const matches = APP.churches.filter(c=>{
+    const h=[c.name,c.city,c.province,c.region,c.lead_pastor].join(' ').toLowerCase();
+    return h.includes(q.toLowerCase());
+  }).slice(0,8);
+
+  res.innerHTML = matches.length
+    ? matches.map(c=>`<div class="sr-item" data-id="${c.id}">
+        <div class="sr-dot ${c.status}"></div>
+        <div><div class="sr-name">${c.name}</div><div class="sr-meta">${c.city}, ${c.region} · ${c.lead_pastor}</div></div>
+      </div>`).join('')
+    : '<div class="no-res">No churches found</div>';
+
+  res.classList.add('show');
+  res.querySelectorAll('.sr-item').forEach(el=>
+    el.addEventListener('click',()=>{
+      const ch=APP.churches.find(c=>c.id===+el.dataset.id);
+      if(ch){ res.classList.remove('show'); document.getElementById('search-input').value=''; APP.filters.search=''; applyFilters(); openPanel(ch); }
+    })
+  );
+}
+
+// ── Events ────────────────────────────────────────────────────────────────
+function bindEvents(){
+  const inp = document.getElementById('search-input');
+  const res = document.getElementById('search-res');
+
+  inp.addEventListener('input',  e=>{ clearTimeout(APP.searchTimer); APP.searchTimer=setTimeout(()=>handleSearch(e.target.value),200); });
+  inp.addEventListener('focus',  ()=>{ if(inp.value.trim()) handleSearch(inp.value); });
+  document.addEventListener('click', e=>{ if(!inp.contains(e.target)&&!res.contains(e.target)) res.classList.remove('show'); });
+
+  // Region pills
+  document.querySelectorAll('[data-region]').forEach(p=>p.addEventListener('click',()=>{
+    document.querySelectorAll('[data-region]').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    APP.filters.region = p.dataset.region;
+    applyFilters();
+    const t=REGION_FLY[APP.filters.region]||REGION_FLY.all;
+    APP.map.flyTo(t.c,t.z,{duration:1});
+  }));
+
+  // Status pills
+  document.querySelectorAll('[data-status]').forEach(p=>p.addEventListener('click',()=>{
+    document.querySelectorAll('[data-status]').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active'); APP.filters.status=p.dataset.status; applyFilters();
+  }));
+
+  // Type pills
+  document.querySelectorAll('[data-type]').forEach(p=>p.addEventListener('click',()=>{
+    document.querySelectorAll('[data-type]').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active'); APP.filters.type=p.dataset.type; applyFilters();
+  }));
+
+  // Panel close
+  document.getElementById('pnl-back').addEventListener('click', closePanel);
+
+  // Sidebar toggle
+  const sb  = document.getElementById('sidebar');
+  const ov  = document.getElementById('sb-overlay');
+  document.getElementById('sb-toggle').addEventListener('click',()=>{
+    if(window.innerWidth<=768){ sb.classList.toggle('m-open'); ov.classList.toggle('show'); }
+    else { sb.classList.toggle('collapsed'); setTimeout(()=>APP.map&&APP.map.invalidateSize(),240); }
+  });
+  ov.addEventListener('click',()=>{ sb.classList.remove('m-open'); ov.classList.remove('show'); });
+
+  // Keyboard
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+      if(APP.selected) closePanel();
+      res.classList.remove('show');
+      sb.classList.remove('m-open'); ov.classList.remove('show');
+    }
+  });
+}
 </script>
 </body>
 </html>
