@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — FLCC-GMPI Prayer Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Variables ──────────────────────────────────────────────── */
+    :root {
+      --bg: #F8F7F4;
+      --bg-card: #FFFFFF;
+      --border: #E5E4E0;
+      --border-light: #EFEFEB;
+      --text: #1C1917;
+      --text-2: #78716C;
+      --text-3: #A8A29E;
+      --accent: #DC6B19;
+      --accent-light: #FEF3E7;
+      --green: #16A34A;
+      --green-bg: #DCFCE7;
+      --yellow: #CA8A04;
+      --yellow-bg: #FEF9C3;
+      --red: #DC2626;
+      --red-bg: #FEE2E2;
+      --shadow: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.09);
+      --shadow-lg: 0 20px 40px rgba(0,0,0,.15);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --tr: 0.18s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* ── Login Gate ─────────────────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    .login-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--accent) 0%, #B8530F 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    .login-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: -0.3px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 28px;
+    }
+
+    .form-group { margin-bottom: 14px; text-align: left; }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      outline: none;
+      transition: var(--tr);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(220,107,25,.12);
+    }
+
+    .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+    .form-select { cursor: pointer; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 40px;
+      padding: 0 18px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--tr);
+      border: 1px solid transparent;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: #C45F14; }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text-2);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { border-color: #bbb; color: var(--text); }
+
+    .btn-danger {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: rgba(220,38,38,.25);
+    }
+    .btn-danger:hover { background: var(--red); color: #fff; }
+
+    .btn-success {
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: rgba(22,163,74,.3);
+    }
+    .btn-success:hover { background: var(--green); color: #fff; }
+
+    .btn-sm { height: 30px; padding: 0 12px; font-size: 11px; }
+    .btn-block { width: 100%; }
+
+    .error-msg {
+      background: var(--red-bg);
+      border: 1px solid rgba(220,38,38,.3);
+      color: var(--red);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* ── Admin Layout ───────────────────────────────────────────── */
+    #admin-screen { display: none; }
+
+    .admin-header {
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .admin-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.2px;
+      margin-right: auto;
+    }
+
+    .admin-logo-icon {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--accent), #B8530F);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .admin-main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    /* ── Toast ──────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1C1917;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      z-index: 9999;
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+      opacity: 0;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── Stats Bar ──────────────────────────────────────────────── */
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .stat-card-value { font-size: 22px; font-weight: 800; color: var(--text); }
+    .stat-card-label { font-size: 11px; color: var(--text-2); font-weight: 500; }
+
+    /* ── Toolbar ────────────────────────────────────────────────── */
+    .admin-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .admin-toolbar h2 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      margin-right: auto;
+    }
+
+    .search-input-sm {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      outline: none;
+      width: 200px;
+      transition: var(--tr);
+    }
+    .search-input-sm:focus { border-color: var(--accent); background: #fff; }
+
+    .select-sm {
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* ── Church Table ───────────────────────────────────────────── */
+    .table-wrap {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFAF8; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .status-badge.stable { background: var(--green-bg); color: var(--green); }
+    .status-badge.needs_support { background: var(--yellow-bg); color: var(--yellow); }
+    .status-badge.urgent { background: var(--red-bg); color: var(--red); }
+
+    .type-badge {
+      display: inline-flex;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .type-badge.church { background: #EDE9FE; color: #5B21B6; }
+    .type-badge.mission { background: #E0F2FE; color: #0369A1; }
+    .type-badge.outreach { background: #ECFDF5; color: #065F46; }
+
+    .table-actions { display: flex; gap: 5px; }
+
+    /* ── Modal ──────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: modalIn .2s cubic-bezier(.4,0,.2,1);
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .modal-title { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+    .modal-sub { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+    .modal-body { padding: 0 24px; }
+
+    .modal-footer {
+      padding: 20px 24px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      border-top: 1px solid var(--border-light);
+      margin-top: 20px;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .form-hint {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+
+    /* ── Confirm Dialog ─────────────────────────────────────────── */
+    #confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(4px);
+      z-index: 600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #confirm-overlay.open { display: flex; }
+
+    .confirm-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    .confirm-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .confirm-box p { font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
+    .confirm-actions { display: flex; gap: 8px; justify-content: center; }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .admin-stats { grid-template-columns: repeat(2, 1fr); }
+      .admin-main { padding: 16px; }
+      .form-row { grid-template-columns: 1fr; }
+      .stat-card-value { font-size: 18px; }
+      .admin-toolbar { flex-direction: column; align-items: stretch; }
+      .search-input-sm, .select-sm { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .admin-stats { grid-template-columns: 1fr 1fr; }
+      table { font-size: 11px; }
+      th, td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     LOGIN SCREEN
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Admin Panel</div>
+    <div class="login-sub">FLCC-GMPI Prayer Map Philippines</div>
+
+    <div class="form-group">
+      <label class="form-label" for="login-password">Password</label>
+      <input id="login-password" class="form-input" type="password"
+             placeholder="Enter admin password" autocomplete="current-password">
+    </div>
+
+    <button class="btn btn-primary btn-block" onclick="doLogin()">Sign In</button>
+    <div class="error-msg" id="login-error">Incorrect password. Please try again.</div>
+
+    <div style="margin-top:20px;">
+      <a href="flcc-gmpi-prayer-map.html" class="btn btn-secondary btn-block">
+        ← Back to Prayer Map
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     ADMIN SCREEN
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="admin-screen">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="admin-logo">
+      <div class="admin-logo-icon">🗺️</div>
+      FLCC-GMPI Admin
+    </div>
+    <a href="flcc-gmpi-prayer-map.html" class="btn btn-secondary btn-sm">← View Map</a>
+    <button class="btn btn-secondary btn-sm" onclick="resetToDefaults()">↺ Reset Data</button>
+    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Sign Out</button>
+  </div>
+
+  <div class="admin-main">
+
+    <!-- Stats bar -->
+    <div class="admin-stats" id="admin-stats">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- Toolbar -->
+    <div class="admin-toolbar">
+      <h2>All Churches &amp; Missions</h2>
+      <input type="text" class="search-input-sm" id="admin-search"
+             placeholder="Search…" oninput="filterTable()">
+      <select class="select-sm" id="admin-filter-island" onchange="filterTable()">
+        <option value="">All Regions</option>
+        <option value="Luzon">Luzon</option>
+        <option value="Visayas">Visayas</option>
+        <option value="Mindanao">Mindanao</option>
+      </select>
+      <select class="select-sm" id="admin-filter-status" onchange="filterTable()">
+        <option value="">All Statuses</option>
+        <option value="stable">Stable</option>
+        <option value="needs_support">Needs Support</option>
+        <option value="urgent">Urgent</option>
+      </select>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Church</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Church Name</th>
+            <th>Location</th>
+            <th>Region</th>
+            <th>Island</th>
+            <th>Lead Pastor</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>Members</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="church-table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     ADD / EDIT MODAL
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="church-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Add Church</div>
+        <div class="modal-sub" id="modal-sub">Fill in the church details below</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="field-id">
+
+      <!-- Row 1 -->
+      <div class="form-group">
+        <label class="form-label">Church / Mission Name *</label>
+        <input id="field-name" class="form-input" type="text" placeholder="e.g. FLCC Cebu City">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">City *</label>
+          <input id="field-city" class="form-input" type="text" placeholder="City">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Province *</label>
+          <input id="field-province" class="form-input" type="text" placeholder="Province">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Region *</label>
+          <input id="field-region" class="form-input" type="text" placeholder="e.g. Region VII, NCR, CAR">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Island Group *</label>
+          <select id="field-island" class="form-select">
+            <option value="Luzon">Luzon</option>
+            <option value="Visayas">Visayas</option>
+            <option value="Mindanao">Mindanao</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Latitude *</label>
+          <input id="field-lat" class="form-input" type="number" step="0.0001" placeholder="e.g. 10.3157">
+          <div class="form-hint">Find on Google Maps → right-click → "What's here?"</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Longitude *</label>
+          <input id="field-lng" class="form-input" type="number" step="0.0001" placeholder="e.g. 123.8854">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Lead Pastor *</label>
+        <input id="field-pastor" class="form-input" type="text" placeholder="Rev. / Ptr. Full Name">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Contact Phone</label>
+          <input id="field-phone" class="form-input" type="text" placeholder="+63 9XX XXX XXXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Email</label>
+          <input id="field-email" class="form-input" type="email" placeholder="church@example.com">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Year Established</label>
+          <input id="field-year" class="form-input" type="number" min="1900" max="2030" placeholder="e.g. 2010">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Number of Members</label>
+          <input id="field-members" class="form-input" type="number" min="0" placeholder="e.g. 120">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prayer Status *</label>
+          <select id="field-status" class="form-select">
+            <option value="stable">🟢 Stable</option>
+            <option value="needs_support">🟡 Needs Support</option>
+            <option value="urgent">🔴 Urgent Prayer Needed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ministry Type *</label>
+          <select id="field-type" class="form-select">
+            <option value="church">⛪ Church</option>
+            <option value="mission">✝ Mission Work</option>
+            <option value="outreach">🤝 Outreach</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Current Needs</label>
+        <textarea id="field-needs" class="form-textarea"
+          placeholder="One need per line, e.g.:&#10;Sound system upgrade&#10;Chairs (50 units)&#10;Youth volunteers"></textarea>
+        <div class="form-hint">Enter one need per line</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Prayer Requests</label>
+        <textarea id="field-prayers" class="form-textarea"
+          placeholder="One request per line, e.g.:&#10;Church growth&#10;Pastor's health&#10;Building project"></textarea>
+        <div class="form-hint">Enter one prayer request per line. Prefix urgent items with "URGENT:"</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveChurch()">Save Church</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CONFIRM DIALOG
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Delete Church?</h3>
+    <p id="confirm-msg">This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-yes-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ─── Data (same file as main app) ───────────────────────────────── -->
+<script src="flcc-gmpi-data.js"></script>
+
+<script>
+  /* ── Auth ─────────────────────────────────────────────────────── */
+  const ADMIN_PASSWORD = 'FLCC2026';
+  const SESSION_KEY = 'flcc_admin_session';
+
+  function doLogin() {
+    const pw = document.getElementById('login-password').value;
+    if (pw === ADMIN_PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      initAdmin();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+
+  function doLogout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    location.reload();
+  }
+
+  // Check existing session
+  if (sessionStorage.getItem(SESSION_KEY)) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+  }
+
+  // Allow Enter key on password field
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  /* ── Data ─────────────────────────────────────────────────────── */
+  let churches = [];
+
+  function initAdmin() {
+    churches = loadChurches();
+    renderStats();
+    renderTable(churches);
+  }
+
+  if (sessionStorage.getItem(SESSION_KEY)) initAdmin();
+
+  /* ── Stats ────────────────────────────────────────────────────── */
+  function renderStats() {
+    const total = churches.length;
+    const stable = churches.filter(c => c.status === 'stable').length;
+    const needs = churches.filter(c => c.status === 'needs_support').length;
+    const urgent = churches.filter(c => c.status === 'urgent').length;
+
+    document.getElementById('admin-stats').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#FEF3E7;">🗺️</div>
+        <div>
+          <div class="stat-card-value">${total}</div>
+          <div class="stat-card-label">Total Locations</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#DCFCE7;">🟢</div>
+        <div>
+          <div class="stat-card-value" style="color:#16A34A;">${stable}</div>
+          <div class="stat-card-label">Stable Churches</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#FEF9C3;">🟡</div>
+        <div>
+          <div class="stat-card-value" style="color:#CA8A04;">${needs}</div>
+          <div class="stat-card-label">Needs Support</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#FEE2E2;">🔴</div>
+        <div>
+          <div class="stat-card-value" style="color:#DC2626;">${urgent}</div>
+          <div class="stat-card-label">Urgent Prayer</div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ── Table ────────────────────────────────────────────────────── */
+  function renderTable(data) {
+    const STATUS_LABEL = { stable: 'Stable', needs_support: 'Needs Support', urgent: 'Urgent' };
+    const STATUS_EM = { stable: '🟢', needs_support: '🟡', urgent: '🔴' };
+    const tbody = document.getElementById('church-table-body');
+
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#A8A29E;padding:30px;">No churches found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map((c, i) => `
+      <tr>
+        <td style="color:#A8A29E;font-weight:500;">${c.id}</td>
+        <td style="font-weight:700;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</td>
+        <td style="color:#78716C;">${c.city}</td>
+        <td style="color:#78716C;white-space:nowrap;">${c.region}</td>
+        <td style="color:#78716C;">${c.island_group}</td>
+        <td style="white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;">${c.lead_pastor}</td>
+        <td>
+          <span class="status-badge ${c.status}">
+            ${STATUS_EM[c.status]} ${STATUS_LABEL[c.status]}
+          </span>
+        </td>
+        <td><span class="type-badge ${c.ministry_type}">${c.ministry_type}</span></td>
+        <td>${c.members || '—'}</td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openEditModal(${c.id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDelete(${c.id}, '${escHtml(c.name)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  }
+
+  function filterTable() {
+    const q = document.getElementById('admin-search').value.toLowerCase().trim();
+    const island = document.getElementById('admin-filter-island').value;
+    const status = document.getElementById('admin-filter-status').value;
+
+    const filtered = churches.filter(c => {
+      if (island && c.island_group !== island) return false;
+      if (status && c.status !== status) return false;
+      if (q) {
+        const hay = [c.name, c.city, c.province, c.region, c.lead_pastor].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    renderTable(filtered);
+  }
+
+  /* ── Modal ────────────────────────────────────────────────────── */
+  function openAddModal() {
+    document.getElementById('modal-title').textContent = 'Add Church / Mission';
+    document.getElementById('modal-sub').textContent = 'Fill in the details for the new location';
+    clearModal();
+    document.getElementById('field-id').value = '';
+    document.getElementById('church-modal').classList.add('open');
+  }
+
+  function openEditModal(id) {
+    const c = churches.find(x => x.id === id);
+    if (!c) return;
+
+    document.getElementById('modal-title').textContent = 'Edit Church';
+    document.getElementById('modal-sub').textContent = c.name;
+
+    document.getElementById('field-id').value = c.id;
+    document.getElementById('field-name').value = c.name;
+    document.getElementById('field-city').value = c.city;
+    document.getElementById('field-province').value = c.province;
+    document.getElementById('field-region').value = c.region;
+    document.getElementById('field-island').value = c.island_group;
+    document.getElementById('field-lat').value = c.coordinates[0];
+    document.getElementById('field-lng').value = c.coordinates[1];
+    document.getElementById('field-pastor').value = c.lead_pastor;
+    document.getElementById('field-phone').value = c.contact_phone || '';
+    document.getElementById('field-email').value = c.contact_email || '';
+    document.getElementById('field-year').value = c.year_established || '';
+    document.getElementById('field-members').value = c.members || '';
+    document.getElementById('field-status').value = c.status;
+    document.getElementById('field-type').value = c.ministry_type;
+    document.getElementById('field-needs').value = (c.needs || []).join('\n');
+    document.getElementById('field-prayers').value = (c.prayer_requests || []).join('\n');
+
+    document.getElementById('church-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('church-modal').classList.remove('open');
+  }
+
+  function clearModal() {
+    ['field-name','field-city','field-province','field-region',
+     'field-lat','field-lng','field-pastor','field-phone','field-email',
+     'field-year','field-members','field-needs','field-prayers'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('field-island').value = 'Luzon';
+    document.getElementById('field-status').value = 'stable';
+    document.getElementById('field-type').value = 'church';
+  }
+
+  function saveChurch() {
+    const name = document.getElementById('field-name').value.trim();
+    const city = document.getElementById('field-city').value.trim();
+    const province = document.getElementById('field-province').value.trim();
+    const region = document.getElementById('field-region').value.trim();
+    const lat = parseFloat(document.getElementById('field-lat').value);
+    const lng = parseFloat(document.getElementById('field-lng').value);
+    const pastor = document.getElementById('field-pastor').value.trim();
+
+    if (!name || !city || !province || !region || isNaN(lat) || isNaN(lng) || !pastor) {
+      showToast('⚠️ Please fill in all required fields');
+      return;
+    }
+
+    const idVal = document.getElementById('field-id').value;
+    const isEdit = !!idVal;
+
+    const church = {
+      id: isEdit ? +idVal : Date.now(),
+      name,
+      city,
+      province,
+      region,
+      island_group: document.getElementById('field-island').value,
+      coordinates: [lat, lng],
+      lead_pastor: pastor,
+      contact_phone: document.getElementById('field-phone').value.trim(),
+      contact_email: document.getElementById('field-email').value.trim(),
+      year_established: parseInt(document.getElementById('field-year').value) || null,
+      members: parseInt(document.getElementById('field-members').value) || null,
+      status: document.getElementById('field-status').value,
+      ministry_type: document.getElementById('field-type').value,
+      needs: document.getElementById('field-needs').value
+        .split('\n').map(s => s.trim()).filter(Boolean),
+      prayer_requests: document.getElementById('field-prayers').value
+        .split('\n').map(s => s.trim()).filter(Boolean)
+    };
+
+    if (isEdit) {
+      const idx = churches.findIndex(c => c.id === +idVal);
+      if (idx !== -1) churches[idx] = church;
+    } else {
+      churches.push(church);
+    }
+
+    saveChurches(churches);
+    closeModal();
+    renderStats();
+    filterTable();
+    showToast(isEdit ? '✅ Church updated successfully' : '✅ Church added successfully');
+  }
+
+  /* ── Delete ───────────────────────────────────────────────────── */
+  let pendingDeleteId = null;
+
+  function confirmDelete(id, name) {
+    pendingDeleteId = id;
+    document.getElementById('confirm-title').textContent = 'Delete Church?';
+    document.getElementById('confirm-msg').textContent =
+      `"${name}" will be permanently removed from the prayer map.`;
+    document.getElementById('confirm-overlay').classList.add('open');
+    document.getElementById('confirm-yes-btn').onclick = executeDelete;
+  }
+
+  function executeDelete() {
+    if (!pendingDeleteId) return;
+    churches = churches.filter(c => c.id !== pendingDeleteId);
+    saveChurches(churches);
+    closeConfirm();
+    renderStats();
+    filterTable();
+    showToast('🗑 Church removed');
+    pendingDeleteId = null;
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirm-overlay').classList.remove('open');
+  }
+
+  /* ── Reset ────────────────────────────────────────────────────── */
+  function resetToDefaults() {
+    pendingDeleteId = null;
+    document.getElementById('confirm-title').textContent = 'Reset All Data?';
+    document.getElementById('confirm-msg').textContent =
+      'This will restore all 22 sample churches and erase any custom changes.';
+    document.getElementById('confirm-overlay').classList.add('open');
+    document.getElementById('confirm-yes-btn').onclick = () => {
+      churches = resetChurches();
+      closeConfirm();
+      renderStats();
+      filterTable();
+      showToast('↺ Data reset to defaults');
+    };
+  }
+
+  /* ── Toast ────────────────────────────────────────────────────── */
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  /* ── Close modal on overlay click ─────────────────────────────── */
+  document.getElementById('church-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('church-modal')) closeModal();
+  });
+  document.getElementById('confirm-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('confirm-overlay')) closeConfirm();
+  });
+
+  /* ── Keyboard ─────────────────────────────────────────────────── */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal(); closeConfirm(); }
+  });
+</script>
+</body>
+</html>

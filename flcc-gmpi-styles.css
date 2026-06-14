@@ -1,0 +1,1042 @@
+/* ═══════════════════════════════════════════════════════════════════
+   FLCC-GMPI Prayer Map Philippines — Styles
+   Design: clean, warm minimalist inspired by Claude.ai
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Variables ─────────────────────────────────────────────────────── */
+:root {
+  --bg: #F8F7F4;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #FFFFFF;
+  --border: #E5E4E0;
+  --border-light: #EFEFEB;
+  --text-primary: #1C1917;
+  --text-secondary: #78716C;
+  --text-muted: #A8A29E;
+  --accent: #DC6B19;
+  --accent-hover: #C45F14;
+  --accent-light: #FEF3E7;
+
+  --green: #16A34A;
+  --green-bg: #DCFCE7;
+  --green-dot: #22C55E;
+  --yellow: #CA8A04;
+  --yellow-bg: #FEF9C3;
+  --yellow-dot: #EAB308;
+  --red: #DC2626;
+  --red-bg: #FEE2E2;
+  --red-dot: #EF4444;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.09), 0 2px 4px rgba(0,0,0,.05);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+
+  --sidebar-w: 288px;
+  --panel-w: 360px;
+  --header-h: 60px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset & Base ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbars ────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Header ────────────────────────────────────────────────────────── */
+#app-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.header-logo-icon {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--accent) 0%, #B8530F 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.header-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.header-logo-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.header-logo-sub {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* Search */
+.header-search {
+  flex: 1;
+  max-width: 360px;
+  position: relative;
+}
+
+.header-search svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+#search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 0 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+}
+
+#search-input:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(220, 107, 25, 0.12);
+}
+
+#search-input::placeholder { color: var(--text-muted); }
+
+/* Header actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.header-btn {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.header-btn:hover {
+  background: var(--bg);
+  border-color: #ccc;
+  color: var(--text-primary);
+}
+
+.header-btn.admin-btn {
+  background: var(--accent-light);
+  border-color: rgba(220, 107, 25, 0.3);
+  color: var(--accent);
+}
+
+.header-btn.admin-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+#sidebar-toggle {
+  display: none;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────── */
+#layout {
+  display: flex;
+  height: 100vh;
+  padding-top: var(--header-h);
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform var(--transition), width var(--transition);
+  z-index: 100;
+}
+
+#sidebar.collapsed {
+  width: 0;
+  border-right: none;
+}
+
+.sidebar-inner {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Stats card */
+.stats-card {
+  background: var(--accent-light);
+  border: 1px solid rgba(220, 107, 25, 0.15);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.stats-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+.stats-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stat-dot.all { background: var(--accent); }
+.stat-dot.stable { background: var(--green-dot); }
+.stat-dot.needs { background: var(--yellow-dot); }
+.stat-dot.urgent { background: var(--red-dot); }
+
+.stat-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Sidebar section */
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding-bottom: 2px;
+}
+
+/* Filter pills */
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.filter-pill {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.filter-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.filter-pill.status-stable.active { background: var(--green); border-color: var(--green); }
+.filter-pill.status-needs.active { background: var(--yellow); border-color: var(--yellow); color: #fff; }
+.filter-pill.status-urgent.active { background: var(--red); border-color: var(--red); }
+
+/* Prayer focus card */
+.prayer-focus-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
+}
+
+.prayer-focus-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.prayer-focus-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.prayer-focus-icon { font-size: 14px; }
+
+.prayer-focus-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+}
+
+.prayer-focus-date {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.prayer-focus-church {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.prayer-focus-pastor {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.prayer-focus-requests {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.prayer-focus-request {
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  line-height: 1.4;
+}
+
+.prayer-focus-request::before {
+  content: "•";
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Urgent list */
+.urgent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.urgent-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #fff5f5;
+  border: 1px solid #fee2e2;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.urgent-item:hover {
+  background: #fee2e2;
+  border-color: var(--red);
+}
+
+.urgent-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red-dot);
+  flex-shrink: 0;
+  animation: pulse-red 1.8s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.urgent-item-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #991b1b;
+  flex: 1;
+}
+
+.urgent-item-region {
+  font-size: 10px;
+  color: #DC2626;
+}
+
+/* ── Map Area ──────────────────────────────────────────────────────── */
+#map-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Leaflet overrides */
+.leaflet-container { font-family: var(--font) !important; }
+.leaflet-control-zoom {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-md) !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  background: #fff !important;
+  color: var(--text-secondary) !important;
+  font-size: 16px !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  border-bottom: 1px solid var(--border) !important;
+  transition: var(--transition) !important;
+}
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover { background: var(--bg) !important; }
+
+/* Map legend overlay */
+#map-legend {
+  position: absolute;
+  bottom: 28px;
+  left: 12px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-md);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.2);
+  flex-shrink: 0;
+}
+
+.legend-dot.stable { background: var(--green-dot); border-color: var(--green); }
+.legend-dot.needs { background: var(--yellow-dot); border-color: var(--yellow); }
+.legend-dot.urgent { background: var(--red-dot); border-color: var(--red); }
+
+/* Search results dropdown */
+#search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 2000;
+  max-height: 280px;
+  overflow-y: auto;
+  display: none;
+}
+
+#search-results.visible { display: block; }
+
+.search-result-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background var(--transition);
+}
+
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover { background: var(--bg); }
+
+.search-result-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.search-result-dot.stable { background: var(--green-dot); }
+.search-result-dot.needs_support { background: var(--yellow-dot); }
+.search-result-dot.urgent { background: var(--red-dot); }
+
+.search-result-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-result-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-result-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ── Church Panel ──────────────────────────────────────────────────── */
+#church-panel {
+  width: var(--panel-w);
+  background: #fff;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  transform: translateX(100%);
+  transition: transform var(--transition);
+  z-index: 200;
+  position: relative;
+}
+
+#church-panel.open {
+  transform: translateX(0);
+}
+
+.panel-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.panel-back-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.panel-back-btn:hover { background: var(--border); color: var(--text-primary); }
+
+.panel-header-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.panel-church-hero {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.panel-church-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.panel-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.panel-status-badge.stable { background: var(--green-bg); color: var(--green); }
+.panel-status-badge.needs_support { background: var(--yellow-bg); color: var(--yellow); }
+.panel-status-badge.urgent { background: var(--red-bg); color: var(--red); animation: badge-pulse 2s infinite; }
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.panel-location {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.panel-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border-light);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.panel-meta-item {
+  background: #fff;
+  padding: 12px 16px;
+}
+
+.panel-meta-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.panel-meta-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Pastor section */
+.panel-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.panel-section:last-child { border-bottom: none; }
+
+.panel-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.pastor-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pastor-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #B8530F);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.pastor-info { flex: 1; min-width: 0; }
+
+.pastor-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pastor-title {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.contact-links {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 4px 0;
+}
+
+.contact-link:hover { color: var(--accent); }
+
+/* Needs & Prayer Lists */
+.needs-list, .prayer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.need-item, .prayer-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.need-item.urgent-item-highlight {
+  background: #fff5f5;
+  color: #991b1b;
+  font-weight: 500;
+}
+
+.prayer-item {
+  background: #F0F9FF;
+  color: #0C4A6E;
+}
+
+.prayer-item.urgent-prayer {
+  background: #FFF5F5;
+  color: #7F1D1D;
+  font-weight: 600;
+  border-left: 2px solid var(--red);
+}
+
+.need-bullet {
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 14px;
+}
+
+.prayer-bullet {
+  color: #0EA5E9;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.prayer-bullet.urgent { color: var(--red); }
+
+/* ── Custom Map Markers ─────────────────────────────────────────────── */
+.map-marker-wrap { position: relative; cursor: pointer; }
+
+.map-marker-pin {
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  transition: transform 0.15s ease;
+  position: relative;
+}
+
+.map-marker-pin::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.2);
+}
+
+.map-marker-inner {
+  transform: rotate(45deg);
+  font-size: 12px;
+  line-height: 1;
+  z-index: 1;
+}
+
+.map-marker-wrap:hover .map-marker-pin { transform: rotate(-45deg) scale(1.15); }
+
+/* Pulse ring for urgent markers */
+.map-marker-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  animation: map-pulse 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes map-pulse {
+  0% { transform: translate(-50%, -60%) scale(1); opacity: 0.7; }
+  100% { transform: translate(-50%, -60%) scale(2.2); opacity: 0; }
+}
+
+/* ── Region View ───────────────────────────────────────────────────── */
+.region-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ── Tooltips (Leaflet) ────────────────────────────────────────────── */
+.leaflet-tooltip {
+  font-family: var(--font) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 8px !important;
+  border-radius: 5px !important;
+  border: none !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* ── No results ────────────────────────────────────────────────────── */
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ── Mobile (≤ 768px) ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #sidebar-toggle { display: flex; }
+
+  #sidebar {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    bottom: 0;
+    z-index: 300;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+    width: min(var(--sidebar-w), 90vw);
+  }
+
+  #sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  #sidebar.collapsed {
+    width: min(var(--sidebar-w), 90vw);
+    border-right: 1px solid var(--border);
+  }
+
+  #church-panel {
+    position: fixed;
+    top: var(--header-h);
+    right: 0;
+    bottom: 0;
+    width: min(var(--panel-w), 100vw);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .header-logo-text { display: none; }
+
+  .header-search { max-width: none; }
+
+  #map-legend { bottom: 56px; }
+}
+
+@media (max-width: 480px) {
+  :root { --panel-w: 100vw; }
+  .header-search { display: none; }
+}
+
+/* ── Sidebar overlay (mobile) ─────────────────────────────────────── */
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 250;
+  backdrop-filter: blur(2px);
+}
+
+#sidebar-overlay.visible { display: block; }
+
+/* ── Animations ────────────────────────────────────────────────────── */
+.fade-in {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Ministry type chips ───────────────────────────────────────────── */
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.type-chip.church { background: #EDE9FE; color: #5B21B6; }
+.type-chip.mission { background: #E0F2FE; color: #0369A1; }
+.type-chip.outreach { background: #ECFDF5; color: #065F46; }
+
+/* ── Count badge ───────────────────────────────────────────────────── */
+.count-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Divider ───────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 0 -16px;
+}

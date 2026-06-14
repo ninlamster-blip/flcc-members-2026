@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLCC-GMPI Prayer Map Philippines</title>
+  <meta name="description" content="Interactive prayer map of FLCC-GMPI churches, mission works, and outreach locations across the Philippines.">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="flcc-gmpi-styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════════════════════════ -->
+<header id="app-header">
+  <!-- Logo -->
+  <a class="header-logo" href="#">
+    <div class="header-logo-icon">🗺️</div>
+    <div class="header-logo-text">
+      <span class="header-logo-title">FLCC-GMPI Prayer Map</span>
+      <span class="header-logo-sub">Philippines</span>
+    </div>
+  </a>
+
+  <!-- Search -->
+  <div class="header-search" style="position:relative;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input id="search-input" type="text" placeholder="Search church, pastor, city…" autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="header-actions">
+    <!-- Sidebar toggle (mobile) -->
+    <button id="sidebar-toggle" class="header-btn" aria-label="Toggle sidebar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+      Filters
+    </button>
+
+    <!-- Admin link -->
+    <a href="flcc-gmpi-admin.html" class="header-btn admin-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
+      </svg>
+      Admin
+    </a>
+  </div>
+</header>
+
+<!-- Sidebar overlay (mobile) -->
+<div id="sidebar-overlay"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MAIN LAYOUT
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="layout">
+
+  <!-- ── LEFT SIDEBAR ───────────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <div class="sidebar-inner">
+
+      <!-- Overview Stats -->
+      <div class="stats-card">
+        <div class="stats-card-title">📊 Overview</div>
+        <div class="stats-row">
+          <div class="stat-item">
+            <span class="stat-label">
+              <span class="stat-dot all"></span>Showing Churches
+            </span>
+            <span class="stat-count" id="stat-total">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">
+              <span class="stat-dot stable"></span>Stable
+            </span>
+            <span class="stat-count" id="stat-stable">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">
+              <span class="stat-dot needs"></span>Needs Support
+            </span>
+            <span class="stat-count" id="stat-needs">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">
+              <span class="stat-dot urgent"></span>Urgent Prayer
+            </span>
+            <span class="stat-count" id="stat-urgent">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Region Filter -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">📍 Filter by Region</div>
+        <div class="filter-group">
+          <button class="filter-pill active" data-filter-region="all">All</button>
+          <button class="filter-pill" data-filter-region="Luzon">🏔 Luzon</button>
+          <button class="filter-pill" data-filter-region="Visayas">🏝 Visayas</button>
+          <button class="filter-pill" data-filter-region="Mindanao">🌴 Mindanao</button>
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">🔵 Filter by Status</div>
+        <div class="filter-group">
+          <button class="filter-pill active" data-filter-status="all">All</button>
+          <button class="filter-pill status-stable" data-filter-status="stable">🟢 Stable</button>
+          <button class="filter-pill status-needs" data-filter-status="needs_support">🟡 Needs Support</button>
+          <button class="filter-pill status-urgent" data-filter-status="urgent">🔴 Urgent</button>
+        </div>
+      </div>
+
+      <!-- Ministry Type Filter -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">⛪ Filter by Ministry</div>
+        <div class="filter-group">
+          <button class="filter-pill active" data-filter-type="all">All</button>
+          <button class="filter-pill" data-filter-type="church">⛪ Church</button>
+          <button class="filter-pill" data-filter-type="mission">✝ Mission</button>
+          <button class="filter-pill" data-filter-type="outreach">🤝 Outreach</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Today's Prayer Focus -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">🙏 Today's Prayer Focus</div>
+        <div class="prayer-focus-card">
+          <div class="prayer-focus-header">
+            <span class="prayer-focus-icon">🕯</span>
+            <span class="prayer-focus-label">Daily Intercession</span>
+            <span class="prayer-focus-date" id="prayer-focus-date"></span>
+          </div>
+          <div id="prayer-focus-container">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Urgent Prayer List -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">🚨 Urgent Prayer Needed</div>
+        <div id="urgent-list" class="urgent-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div><!-- /sidebar-inner -->
+  </aside>
+
+  <!-- ── MAP AREA ───────────────────────────────────────────────────── -->
+  <div id="map-area">
+    <div id="map"></div>
+
+    <!-- Legend -->
+    <div id="map-legend">
+      <div class="legend-title">Status</div>
+      <div class="legend-item">
+        <div class="legend-dot stable"></div> Stable
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot needs"></div> Needs Support
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot urgent"></div> Urgent Prayer
+      </div>
+      <div style="height:6px;"></div>
+      <div class="legend-title">Ministry</div>
+      <div class="legend-item">⛪ Church</div>
+      <div class="legend-item">✝ Mission</div>
+      <div class="legend-item">🤝 Outreach</div>
+    </div>
+  </div>
+
+  <!-- ── CHURCH DETAIL PANEL ───────────────────────────────────────── -->
+  <div id="church-panel">
+    <div class="panel-header">
+      <button class="panel-back-btn" id="panel-back-btn" title="Close panel">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15,18 9,12 15,6"/>
+        </svg>
+      </button>
+      <span class="panel-header-title">Church Details</span>
+    </div>
+    <div class="panel-body" id="panel-body">
+      <!-- Populated by JS when a marker is clicked -->
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPcM=" crossorigin="anonymous"></script>
+<script src="flcc-gmpi-data.js"></script>
+<script src="flcc-gmpi-app.js"></script>
+
+<script>
+  // Inject today's date into the prayer focus header
+  (function () {
+    const el = document.getElementById('prayer-focus-date');
+    if (el) {
+      el.textContent = new Date().toLocaleDateString('en-PH', {
+        month: 'short', day: 'numeric'
+      });
+    }
+  })();
+</script>
+</body>
+</html>
