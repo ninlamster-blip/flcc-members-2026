@@ -49,52 +49,6 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-    /* ── Login Gate ─────────────────────────────────────────────── */
-    #login-screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .login-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 40px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: var(--shadow-lg);
-      text-align: center;
-    }
-
-    .login-icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, var(--accent) 0%, #B8530F 100%);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin: 0 auto 20px;
-    }
-
-    .login-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 4px;
-      letter-spacing: -0.3px;
-    }
-
-    .login-sub {
-      font-size: 13px;
-      color: var(--text-2);
-      margin-bottom: 28px;
-    }
-
     .form-group { margin-bottom: 14px; text-align: left; }
 
     .form-label {
@@ -191,7 +145,7 @@
     }
 
     /* ── Admin Layout ───────────────────────────────────────────── */
-    #admin-screen { display: none; }
+    #admin-screen { display: block; }
 
     .admin-header {
       position: sticky;
@@ -512,33 +466,7 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     LOGIN SCREEN
-     ═══════════════════════════════════════════════════════════════════ -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-icon">🔐</div>
-    <div class="login-title">Admin Panel</div>
-    <div class="login-sub">FLCC-GMPI Prayer Map Philippines</div>
-
-    <div class="form-group">
-      <label class="form-label" for="login-password">Password</label>
-      <input id="login-password" class="form-input" type="password"
-             placeholder="Enter admin password" autocomplete="current-password">
-    </div>
-
-    <button class="btn btn-primary btn-block" onclick="doLogin()">Sign In</button>
-    <div class="error-msg" id="login-error">Incorrect password. Please try again.</div>
-
-    <div style="margin-top:20px;">
-      <a href="flcc-gmpi-prayer-map.html" class="btn btn-secondary btn-block">
-        ← Back to Prayer Map
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     ADMIN SCREEN
+     ADMIN PANEL (open access — no password required)
      ═══════════════════════════════════════════════════════════════════ -->
 <div id="admin-screen">
 
@@ -550,7 +478,6 @@
     </div>
     <a href="flcc-gmpi-prayer-map.html" class="btn btn-secondary btn-sm">← View Map</a>
     <button class="btn btn-secondary btn-sm" onclick="resetToDefaults()">↺ Reset Data</button>
-    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Sign Out</button>
   </div>
 
   <div class="admin-main">
@@ -753,40 +680,11 @@
 <script src="flcc-gmpi-data.js"></script>
 
 <script>
-  /* ── Auth ─────────────────────────────────────────────────────── */
-  const ADMIN_PASSWORD = 'FLCC2026';
-  const SESSION_KEY = 'flcc_admin_session';
-
-  function doLogin() {
-    const pw = document.getElementById('login-password').value;
-    if (pw === ADMIN_PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, '1');
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('admin-screen').style.display = 'block';
-      initAdmin();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-    }
-  }
-
-  function doLogout() {
-    sessionStorage.removeItem(SESSION_KEY);
-    location.reload();
-  }
-
-  // Check existing session
-  if (sessionStorage.getItem(SESSION_KEY)) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-screen').style.display = 'block';
-  }
-
-  // Allow Enter key on password field
-  document.getElementById('login-password').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
-  });
-
   /* ── Data ─────────────────────────────────────────────────────── */
   let churches = [];
+
+  // Auto-init on load — no login required
+  document.addEventListener('DOMContentLoaded', initAdmin);
 
   function initAdmin() {
     churches = loadChurches();
