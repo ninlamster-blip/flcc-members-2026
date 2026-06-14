@@ -4360,6 +4360,23 @@ function FaithMapTab() {
   );
 }
 
+function PrayerMapTab() {
+  const [iframeH, setIframeH] = useState(() => Math.max(600, window.innerHeight - 170));
+  useEffect(() => {
+    const onResize = () => setIframeH(Math.max(600, window.innerHeight - 170));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return (
+    <div className="fade-in">
+      <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
+        <iframe src="./flcc-gmpi-prayer-map.html" title="FLCC-GMPI Prayer Map Philippines"
+          style={{ width: '100%', height: iframeH, border: 'none', display: 'block' }} />
+      </div>
+    </div>
+  );
+}
+
 // =============================================================================
 // MUSIC TAB
 // =============================================================================
@@ -8422,8 +8439,9 @@ const TABS = [
   { key: 'calendar', label: 'Calendar' },
   { key: 'prayer',   label: 'Prayer',      requiresPrayer: true },
   { key: 'wwl',      label: 'World Watch' },
-  { key: 'faithmap', label: 'Faith Map' },
-  { key: 'music',    label: 'Music',    requiresMusic:  true },
+  { key: 'faithmap',  label: 'Faith Map' },
+  { key: 'prayermap', label: 'Prayer Map 🗺️' },
+  { key: 'music',     label: 'Music',    requiresMusic:  true },
   { key: 'equip',    label: 'Equip' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
@@ -8943,7 +8961,8 @@ function App() {
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'wwl' && <WWLTab />}
-          {currentTab === 'faithmap' && <FaithMapTab />}
+          {currentTab === 'faithmap'  && <FaithMapTab />}
+          {currentTab === 'prayermap' && <PrayerMapTab />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} worshipData={worshipData} />}
 
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
