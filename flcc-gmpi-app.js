@@ -166,7 +166,6 @@ function renderSidebarStats() {
   const needs = showing.filter(c => c.status === 'needs_support').length;
   const urgent = showing.filter(c => c.status === 'urgent').length;
 
-  const el = id => document.getElementById(el._cache = el._cache || {}, id);
   setTextSafe('stat-total', total);
   setTextSafe('stat-stable', stable);
   setTextSafe('stat-needs', needs);
@@ -341,6 +340,9 @@ function openPanel(church) {
 
   panel.classList.add('open');
 
+  // Leaflet must know its container resized after the CSS transition
+  setTimeout(() => state.map && state.map.invalidateSize(), 240);
+
   // Highlight active marker
   highlightMarker(church.id);
 }
@@ -349,6 +351,7 @@ function closePanel() {
   state.selected = null;
   const panel = document.getElementById('church-panel');
   if (panel) panel.classList.remove('open');
+  setTimeout(() => state.map && state.map.invalidateSize(), 240);
   // Reset marker highlights
   state.filtered.forEach(c => {
     if (state.markers[c.id]) {
