@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>GMPI Preaching &amp; Ministry Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+:root {
+  --bg:#F0F4FF; --surface:#FFFFFF; --surface2:#F8FAFF;
+  --ink:#1E2040; --ink2:#4B5280; --ink3:#8B93C0; --ink4:#B8BDD8;
+  --border:#E2E6F3; --border2:#C8CEEA;
+  --blue:#2563EB; --blue-hover:#1D4ED8; --blue-soft:#DBEAFE; --blue-mid:#BFDBFE;
+  --green:#16A34A; --green-soft:#DCFCE7;
+  --amber:#B45309; --amber-soft:#FEF3C7;
+  --red:#DC2626; --red-soft:#FEE2E2;
+  --purple:#7C3AED; --purple-soft:#EDE9FE;
+  --header-h:56px;
+}
+[data-theme="dark"] {
+  --bg:#0F1128; --surface:#1A1E3A; --surface2:#232748;
+  --ink:#E8EAFF; --ink2:#9DA5CC; --ink3:#5D6490; --ink4:#3D4270;
+  --border:#2D3258; --border2:#3D4270;
+  --blue-soft:#1E3A8A; --blue-mid:#1D4ED8;
+  --green-soft:#14532D; --amber-soft:#451A03; --red-soft:#450A0A; --purple-soft:#2E1065;
+}
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Geist',ui-sans-serif,system-ui,sans-serif;}
+.fd{font-family:'Fraunces',Georgia,serif;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;}
+.card2{background:var(--surface2);border:1px solid var(--border);border-radius:10px;}
+
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .875rem;border-radius:8px;font-size:.875rem;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all .15s;font-family:'Geist',sans-serif;white-space:nowrap;}
+.btn-blue{background:var(--blue);color:#fff;} .btn-blue:hover{background:var(--blue-hover);}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--border);} .btn-ghost:hover{background:var(--surface2);}
+.btn-soft{background:var(--surface2);color:var(--ink);border-color:var(--border);}
+.btn-danger{background:var(--red);color:#fff;} .btn-danger:hover{background:#B91C1C;}
+.btn-sm{padding:.3rem .65rem;font-size:.8125rem;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+.input,.sel{width:100%;padding:.5rem .75rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:.875rem;color:var(--ink);font-family:'Geist',sans-serif;}
+.input:focus,.sel:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+textarea.input{resize:vertical;}
+
+.pill{display:inline-flex;align-items:center;gap:.25rem;padding:.125rem .6rem;border-radius:999px;font-size:.75rem;font-weight:500;}
+.p-blue{background:var(--blue-soft);color:var(--blue);}
+.p-green{background:var(--green-soft);color:var(--green);}
+.p-amber{background:var(--amber-soft);color:var(--amber);}
+.p-red{background:var(--red-soft);color:var(--red);}
+.p-purple{background:var(--purple-soft);color:var(--purple);}
+.p-gray{background:var(--surface2);color:var(--ink2);}
+
+.tab{padding:.625rem 0;font-size:.8rem;font-weight:500;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:color .15s,border-color .15s;}
+.tab:hover{color:var(--ink);}
+.tab-active{color:var(--blue);border-bottom-color:var(--blue);}
+
+.modal-bg{position:fixed;inset:0;background:rgba(15,17,40,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:60;padding:1rem;}
+.modal{background:var(--surface);border-radius:18px;max-width:520px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 25px 60px -10px rgba(0,0,0,.3);}
+
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{background:var(--surface2);font-size:.75rem;font-weight:600;color:var(--ink2);padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);}
+.tbl td{padding:.6rem .75rem;border-bottom:1px solid var(--border);font-size:.85rem;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--surface2);}
+
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;}
+
+nav::-webkit-scrollbar{display:none;}
+
+.conflict-row td{background:rgba(220,38,38,.06) !important;}
+.holiday-row td{background:rgba(245,158,11,.06) !important;}
+
+@media print{
+  .no-print{display:none!important;}
+  body{background:#fff;}
+  .card,.stat-card{box-shadow:none;border:1px solid #ddd;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+// ── Kuwait 2026 public holidays ──────────────────────────────────────────────
+const KW_HOLIDAYS = [
+  { date:'2026-01-01', name:"New Year's Day" },
+  { date:'2026-02-25', name:'Kuwait National Day' },
+  { date:'2026-02-26', name:'Liberation Day' },
+  { date:'2026-03-20', name:'Eid al-Fitr Day 1 (est.)' },
+  { date:'2026-03-21', name:'Eid al-Fitr Day 2 (est.)' },
+  { date:'2026-03-22', name:'Eid al-Fitr Day 3 (est.)' },
+  { date:'2026-05-01', name:'Labour Day' },
+  { date:'2026-05-27', name:'Eid al-Adha Day 1 (est.)' },
+  { date:'2026-05-28', name:'Eid al-Adha Day 2 (est.)' },
+  { date:'2026-05-29', name:'Eid al-Adha Day 3 (est.)' },
+  { date:'2026-06-17', name:'Islamic New Year (est.)' },
+  { date:'2026-09-15', name:"Prophet's Birthday (est.)" },
+];
+const HOLIDAY_MAP = Object.fromEntries(KW_HOLIDAYS.map(h => [h.date, h.name]));
+
+// ── Storage ──────────────────────────────────────────────────────────────────
+const load = (key, def) => { try { return JSON.parse(localStorage.getItem(key)) ?? def; } catch { return def; } };
+const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} };
+
+const SK = { workers:'gmpi-workers-v1', schedule:'gmpi-schedule-v1', leaves:'gmpi-leaves-v1', events:'gmpi-events-v1' };
+
+// ── Seed data ────────────────────────────────────────────────────────────────
+const SEED_WORKERS = [
+  { id:'w01', name:'Justin Flores',    title:'Ptr.', roles:['preacher','pastoral-prayer'],         status:'active', phone:'', notes:'' },
+  { id:'w02', name:'Michelle Flores',  title:'Ptr.', roles:['preacher','pastoral-prayer','emcee'], status:'active', phone:'', notes:'Dashboard admin' },
+  { id:'w03', name:'Doddie Arciaga',   title:'Ptr.', roles:['preacher','pastoral-prayer'],         status:'active', phone:'', notes:'' },
+  { id:'w04', name:'Nerwin Suelo',     title:'Ptr.', roles:['preacher','pastoral-prayer'],         status:'active', phone:'', notes:'' },
+  { id:'w05', name:'Wilson Guerzon',   title:'Bro.', roles:['preacher','emcee'],                   status:'active', phone:'', notes:'' },
+  { id:'w06', name:'Allen Santos',     title:'Bro.', roles:['preacher'],                           status:'active', phone:'', notes:'' },
+  { id:'w07', name:'Ferdie Gajeton',   title:'Bro.', roles:['preacher','pastoral-prayer'],         status:'active', phone:'', notes:'' },
+  { id:'w08', name:'Edmund Gabriel',   title:'Bro.', roles:['preacher','emcee'],                   status:'active', phone:'', notes:'' },
+  { id:'w09', name:'Edward Sario',     title:'Bro.', roles:['preacher'],                           status:'active', phone:'', notes:'' },
+  { id:'w10', name:'Fretz Guerzon',    title:'Sis.', roles:['preacher','emcee'],                   status:'active', phone:'', notes:'' },
+  { id:'w11', name:'Alma Flores',      title:'Sis.', roles:['preacher','emcee'],                   status:'active', phone:'', notes:'' },
+  { id:'w12', name:'Laidz Pascual',    title:'Sis.', roles:['preacher','emcee'],                   status:'active', phone:'', notes:'' },
+  { id:'w13', name:'Amazelle De Jesus',title:'Sis.', roles:['emcee'],                              status:'active', phone:'', notes:'' },
+  { id:'w14', name:'Bless De Jesus',   title:'Sis.', roles:['emcee'],                              status:'active', phone:'', notes:'' },
+  { id:'w15', name:'Irene Sabangan',   title:'Sis.', roles:['preacher','emcee'],                   status:'active', phone:'', notes:'' },
+];
+
+function genScheduleSeed() {
+  const entries = [];
+  const preachers = ['w01','w03','w04','w05','w06','w07','w08'];
+  const pp = ['w01','w03','w04','w07'];
+  const emcees = ['w02','w05','w08','w10','w11','w12','w13','w14'];
+  let pi = 0, ppi = 0, ei = 0;
+  for (let m = 0; m < 6; m++) {
+    const year = 2026, month = 5 + m; // June–November
+    let d = new Date(year, month, 1);
+    while (d.getMonth() === month % 12) {
+      const dow = d.getDay();
+      const dateStr = d.toISOString().split('T')[0];
+      if (dow === 5 || dow === 0) {
+        const svc = dow === 5 ? 'Friday' : 'Sunday';
+        entries.push({
+          id: `svc-${dateStr}-${svc.toLowerCase()}`,
+          date: dateStr, service: svc,
+          preacher: preachers[pi++ % preachers.length],
+          pastoralPrayer: pp[ppi++ % pp.length],
+          emcee: emcees[ei++ % emcees.length],
+          theme: '', notes: '', isSpecial: false, specialLabel: '',
+        });
+      }
+      d.setDate(d.getDate() + 1);
+      if (month >= 12 && d.getMonth() === 0) break;
+    }
+  }
+  return entries.sort((a,b) => a.date.localeCompare(b.date));
+}
+
+const SEED_EVENTS = [
+  { id:'ev-mothers',    date:'2026-05-10', title:"Mother's Day",          type:'celebration', notes:'Honor all mothers in the congregation.' },
+  { id:'ev-fathers',    date:'2026-06-21', title:"Father's Day",          type:'celebration', notes:'Honor all fathers in the congregation.' },
+  { id:'ev-anniv',      date:'2026-09-06', title:"Church Anniversary",    type:'special',     notes:'Annual church anniversary service.' },
+  { id:'ev-thanks',     date:'2026-11-22', title:"Thanksgiving Service",  type:'special',     notes:'Annual thanksgiving celebration.' },
+  { id:'ev-christmas',  date:'2026-12-25', title:"Christmas Service",     type:'special',     notes:'Christmas Day celebration.' },
+  { id:'ev-pastor',     date:'2026-10-18', title:"Pastor's Appreciation", type:'celebration', notes:'Annual appreciation for pastoral team.' },
+];
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+const today = () => new Date().toISOString().split('T')[0];
+const uid = () => Math.random().toString(36).slice(2, 9);
+const fmtDate = d => { if (!d) return '—'; const dt = new Date(d + 'T12:00:00'); return dt.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); };
+const fmtDateShort = d => { if (!d) return '—'; const dt = new Date(d + 'T12:00:00'); return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' }); };
+const dayName = d => { if (!d) return ''; return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short' }); };
+
+function isOnLeave(workerId, date, leaves) {
+  return leaves.some(l => l.workerId === workerId && l.startDate <= date && l.endDate >= date);
+}
+
+function getConflicts(schedule, leaves, workers) {
+  const conflicts = [];
+  schedule.forEach(e => {
+    ['preacher','pastoralPrayer','emcee'].forEach(role => {
+      if (e[role] && isOnLeave(e[role], e.date, leaves)) {
+        const w = workers.find(x => x.id === e[role]);
+        conflicts.push({ entryId: e.id, date: e.date, service: e.service, role, workerId: e[role], workerName: w ? `${w.title} ${w.name}` : e[role] });
+      }
+    });
+  });
+  return conflicts;
+}
+
+function getAssignmentCounts(schedule, workers) {
+  const counts = {};
+  workers.forEach(w => { counts[w.id] = { preacher:0, pastoralPrayer:0, emcee:0, total:0 }; });
+  schedule.forEach(e => {
+    ['preacher','pastoralPrayer','emcee'].forEach(role => {
+      if (e[role] && counts[e[role]]) { counts[e[role]][role]++; counts[e[role]].total++; }
+    });
+  });
+  return counts;
+}
+
+function getAvailableWorkers(role, date, workers, leaves) {
+  return workers.filter(w => w.status === 'active' && w.roles.includes(role) && !isOnLeave(w.id, date, leaves));
+}
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+function Modal({ title, onClose, children, wide }) {
+  useEffect(() => {
+    const fn = e => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
+  }, [onClose]);
+  return (
+    <div className="modal-bg" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: wide ? 680 : 520 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1.25rem 1.5rem', borderBottom:'1px solid var(--border)' }}>
+          <div className="fd" style={{ fontSize:'1.1rem', fontWeight:600 }}>{title}</div>
+          <button onClick={onClose} className="btn btn-ghost btn-sm">✕</button>
+        </div>
+        <div style={{ padding:'1.25rem 1.5rem' }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── WorkerSelect ─────────────────────────────────────────────────────────────
+function WorkerSelect({ role, value, onChange, workers, leaves, date, label }) {
+  const avail = getAvailableWorkers(role, date, workers, leaves);
+  const onLeaveNow = workers.filter(w => w.roles.includes(role) && w.status === 'active' && isOnLeave(w.id, date, leaves));
+  const conflict = value && isOnLeave(value, date, leaves);
+  return (
+    <div>
+      <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>{label}</label>
+      <select className="sel" value={value} onChange={e => onChange(e.target.value)}
+        style={{ borderColor: conflict ? 'var(--red)' : undefined, background: conflict ? 'var(--red-soft)' : undefined }}>
+        <option value="">— Unassigned —</option>
+        {avail.map(w => <option key={w.id} value={w.id}>{w.title} {w.name}</option>)}
+        {onLeaveNow.length > 0 && <optgroup label="⚠ On Leave (conflict)">
+          {onLeaveNow.map(w => <option key={w.id} value={w.id} style={{ color:'var(--red)' }}>{w.title} {w.name} (on leave)</option>)}
+        </optgroup>}
+      </select>
+      {conflict && <div style={{ color:'var(--red)', fontSize:'.75rem', marginTop:3 }}>⚠ This person is on leave on {fmtDate(date)}</div>}
+    </div>
+  );
+}
+
+// ── Schedule Edit Modal ───────────────────────────────────────────────────────
+function ScheduleEditModal({ entry, workers, leaves, onSave, onDelete, onClose }) {
+  const [e, setE] = useState({ ...entry });
+  const set = p => setE(prev => ({ ...prev, ...p }));
+  const holiday = HOLIDAY_MAP[e.date];
+  return (
+    <Modal title={`${e.service} · ${fmtDate(e.date)}`} onClose={onClose}>
+      {holiday && <div style={{ background:'var(--amber-soft)', color:'var(--amber)', borderRadius:8, padding:'.5rem .75rem', marginBottom:'1rem', fontSize:'.85rem' }}>🏖 Kuwait Holiday: {holiday}</div>}
+      <div style={{ display:'grid', gap:'1rem' }}>
+        <WorkerSelect role="preacher" value={e.preacher} onChange={v => set({preacher:v})} workers={workers} leaves={leaves} date={e.date} label="Preacher" />
+        <WorkerSelect role="pastoral-prayer" value={e.pastoralPrayer} onChange={v => set({pastoralPrayer:v})} workers={workers} leaves={leaves} date={e.date} label="Pastoral Prayer" />
+        <WorkerSelect role="emcee" value={e.emcee} onChange={v => set({emcee:v})} workers={workers} leaves={leaves} date={e.date} label="EMCEE" />
+        <div>
+          <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Monthly Theme</label>
+          <input className="input" value={e.theme} onChange={x => set({theme:x.target.value})} placeholder="e.g. Faith That Moves Mountains" />
+        </div>
+        <div style={{ display:'flex', gap:'.75rem', alignItems:'center' }}>
+          <label style={{ display:'flex', gap:'.5rem', alignItems:'center', fontSize:'.875rem', cursor:'pointer' }}>
+            <input type="checkbox" checked={e.isSpecial} onChange={x => set({isSpecial:x.target.checked})} />
+            Special Service
+          </label>
+        </div>
+        {e.isSpecial && <div>
+          <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Event / Special Label</label>
+          <input className="input" value={e.specialLabel} onChange={x => set({specialLabel:x.target.value})} placeholder="e.g. Mother's Day, Anniversary" />
+        </div>}
+        <div>
+          <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Notes</label>
+          <textarea className="input" rows={2} value={e.notes} onChange={x => set({notes:x.target.value})} placeholder="Internal notes…" />
+        </div>
+        <div style={{ display:'flex', gap:'.5rem', justifyContent:'space-between', paddingTop:'.5rem' }}>
+          <button className="btn btn-danger btn-sm" onClick={() => { if (confirm('Remove this service entry?')) { onDelete(e.id); onClose(); } }}>Delete</button>
+          <div style={{ display:'flex', gap:'.5rem' }}>
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+            <button className="btn btn-blue btn-sm" onClick={() => { onSave(e); onClose(); }}>Save</button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ── Dashboard Tab ─────────────────────────────────────────────────────────────
+function DashboardTab({ workers, schedule, leaves, events }) {
+  const td = today();
+  const conflicts = useMemo(() => getConflicts(schedule, leaves, workers), [schedule, leaves, workers]);
+  const onLeaveNow = leaves.filter(l => l.startDate <= td && l.endDate >= td);
+  const upcoming = schedule.filter(e => e.date >= td).sort((a,b) => a.date.localeCompare(b.date)).slice(0,6);
+  const upcomingEvents = events.filter(e => e.date >= td).sort((a,b) => a.date.localeCompare(b.date)).slice(0,4);
+  const thisMonthConflicts = conflicts.filter(c => c.date.startsWith(td.slice(0,7)));
+  const upcomingHolidays = KW_HOLIDAYS.filter(h => h.date >= td).slice(0,3);
+  const unassigned = schedule.filter(e => e.date >= td && (!e.preacher || !e.emcee)).slice(0,5);
+
+  const stats = [
+    { label:'Total Services (2026)', value: schedule.length, color:'var(--blue)' },
+    { label:'Active Workers', value: workers.filter(w => w.status === 'active').length, color:'var(--green)' },
+    { label:'Currently On Leave', value: onLeaveNow.length, color:'var(--amber)' },
+    { label:'Scheduling Conflicts', value: conflicts.length, color: conflicts.length ? 'var(--red)' : 'var(--green)' },
+  ];
+
+  return (
+    <div style={{ display:'grid', gap:'1.25rem' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:'1rem' }}>
+        {stats.map(s => (
+          <div key={s.label} className="stat-card">
+            <div style={{ fontSize:'2rem', fontWeight:700, color:s.color, fontFamily:'Fraunces,Georgia,serif' }}>{s.value}</div>
+            <div style={{ fontSize:'.8125rem', color:'var(--ink2)', marginTop:2 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1.25rem' }}>
+        <div className="card" style={{ padding:'1.25rem' }}>
+          <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink3)', marginBottom:'.75rem' }}>Upcoming Services</div>
+          {upcoming.length === 0 && <div style={{ color:'var(--ink3)', fontSize:'.875rem' }}>No upcoming services.</div>}
+          {upcoming.map(e => {
+            const w = workers.find(x => x.id === e.preacher);
+            const hasConflict = conflicts.some(c => c.entryId === e.id);
+            const isHoliday = !!HOLIDAY_MAP[e.date];
+            return (
+              <div key={e.id} style={{ display:'flex', alignItems:'center', gap:'.625rem', padding:'.5rem 0', borderBottom:'1px solid var(--border)' }}>
+                <div style={{ width:36, height:36, borderRadius:8, background: e.service === 'Sunday' ? 'var(--blue-soft)' : 'var(--purple-soft)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <div style={{ fontSize:'.65rem', fontWeight:600, color: e.service === 'Sunday' ? 'var(--blue)' : 'var(--purple)', lineHeight:1 }}>{dayName(e.date)}</div>
+                  <div style={{ fontSize:'.75rem', fontWeight:700, color: e.service === 'Sunday' ? 'var(--blue)' : 'var(--purple)' }}>{new Date(e.date+'T12:00').getDate()}</div>
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:'.85rem', fontWeight:500 }}>{fmtDateShort(e.date)} <span style={{ color:'var(--ink3)', fontSize:'.78rem' }}>· {e.service}</span></div>
+                  <div style={{ fontSize:'.78rem', color:'var(--ink2)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {w ? `${w.title} ${w.name}` : <span style={{ color:'var(--ink3)', fontStyle:'italic' }}>No preacher</span>}
+                  </div>
+                </div>
+                {hasConflict && <span className="pill p-red">⚠</span>}
+                {isHoliday && <span className="pill p-amber">🏖</span>}
+                {e.isSpecial && <span className="pill p-blue">★</span>}
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display:'grid', gap:'1.25rem', alignContent:'start' }}>
+          {conflicts.length > 0 && (
+            <div className="card" style={{ padding:'1.25rem', borderColor:'var(--red)', background:'var(--red-soft)' }}>
+              <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--red)', marginBottom:'.75rem' }}>⚠ Scheduling Conflicts</div>
+              {conflicts.slice(0,4).map((c,i) => (
+                <div key={i} style={{ fontSize:'.8125rem', padding:'.35rem 0', borderBottom:'1px solid rgba(220,38,38,.2)' }}>
+                  <strong>{c.workerName}</strong> assigned as <em>{c.role}</em> on <strong>{fmtDate(c.date)}</strong> but is on leave.
+                </div>
+              ))}
+              {conflicts.length > 4 && <div style={{ fontSize:'.78rem', color:'var(--red)', marginTop:'.5rem' }}>+{conflicts.length-4} more conflicts</div>}
+            </div>
+          )}
+
+          {unassigned.length > 0 && (
+            <div className="card" style={{ padding:'1.25rem', borderColor:'var(--amber)', background:'var(--amber-soft)' }}>
+              <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--amber)', marginBottom:'.75rem' }}>⚡ Unassigned Services</div>
+              {unassigned.map(e => (
+                <div key={e.id} style={{ fontSize:'.8125rem', padding:'.3rem 0', borderBottom:'1px solid rgba(180,83,9,.2)' }}>
+                  {fmtDate(e.date)} · {e.service} {!e.preacher && <span style={{color:'var(--amber)'}}>— no preacher</span>}{!e.emcee && <span style={{color:'var(--amber)'}}>{!e.preacher?',':''} no EMCEE</span>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="card" style={{ padding:'1.25rem' }}>
+            <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink3)', marginBottom:'.75rem' }}>Kuwait Holidays Ahead</div>
+            {upcomingHolidays.map(h => (
+              <div key={h.date} style={{ display:'flex', justifyContent:'space-between', padding:'.4rem 0', borderBottom:'1px solid var(--border)', fontSize:'.8125rem' }}>
+                <span>{h.name}</span><span style={{ color:'var(--ink3)' }}>{fmtDateShort(h.date)}</span>
+              </div>
+            ))}
+          </div>
+
+          {upcomingEvents.length > 0 && (
+            <div className="card" style={{ padding:'1.25rem' }}>
+              <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink3)', marginBottom:'.75rem' }}>Special Events Ahead</div>
+              {upcomingEvents.map(e => (
+                <div key={e.id} style={{ display:'flex', justifyContent:'space-between', padding:'.4rem 0', borderBottom:'1px solid var(--border)', fontSize:'.8125rem' }}>
+                  <span>{e.title}</span><span style={{ color:'var(--ink3)' }}>{fmtDateShort(e.date)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Add Service Modal ─────────────────────────────────────────────────────────
+function AddServiceModal({ workers, leaves, onSave, onClose }) {
+  const [e, setE] = useState({ date:'', service:'Sunday', preacher:'', pastoralPrayer:'', emcee:'', theme:'', notes:'', isSpecial:false, specialLabel:'' });
+  const set = p => setE(prev => ({...prev, ...p}));
+  const valid = e.date && e.service;
+  return (
+    <Modal title="Add Service" onClose={onClose}>
+      <div style={{ display:'grid', gap:'1rem' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.75rem' }}>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Date *</label>
+            <input type="date" className="input" value={e.date} onChange={x => set({date:x.target.value})} />
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Service *</label>
+            <select className="sel" value={e.service} onChange={x => set({service:x.target.value})}>
+              <option>Sunday</option><option>Friday</option><option>Special</option>
+            </select>
+          </div>
+        </div>
+        <WorkerSelect role="preacher" value={e.preacher} onChange={v => set({preacher:v})} workers={workers} leaves={leaves} date={e.date} label="Preacher" />
+        <WorkerSelect role="pastoral-prayer" value={e.pastoralPrayer} onChange={v => set({pastoralPrayer:v})} workers={workers} leaves={leaves} date={e.date} label="Pastoral Prayer" />
+        <WorkerSelect role="emcee" value={e.emcee} onChange={v => set({emcee:v})} workers={workers} leaves={leaves} date={e.date} label="EMCEE" />
+        <div>
+          <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Theme</label>
+          <input className="input" value={e.theme} onChange={x => set({theme:x.target.value})} placeholder="Monthly or series theme" />
+        </div>
+        <div style={{ display:'flex', gap:'.75rem' }}>
+          <label style={{ display:'flex', gap:'.5rem', alignItems:'center', fontSize:'.875rem', cursor:'pointer' }}>
+            <input type="checkbox" checked={e.isSpecial} onChange={x => set({isSpecial:x.target.checked})} />Special
+          </label>
+        </div>
+        {e.isSpecial && <input className="input" value={e.specialLabel} onChange={x => set({specialLabel:x.target.value})} placeholder="Special occasion label" />}
+        <textarea className="input" rows={2} value={e.notes} onChange={x => set({notes:x.target.value})} placeholder="Notes…" />
+        <div style={{ display:'flex', gap:'.5rem', justifyContent:'flex-end' }}>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+          <button className="btn btn-blue btn-sm" disabled={!valid} onClick={() => { onSave({ ...e, id:`svc-${e.date}-${e.service.toLowerCase()}-${uid()}` }); onClose(); }}>Add Service</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ── Schedule Tab ──────────────────────────────────────────────────────────────
+function ScheduleTab({ workers, schedule, setSchedule, leaves }) {
+  const [month, setMonth] = useState(today().slice(0,7));
+  const [editing, setEditing] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const months = useMemo(() => {
+    const ms = new Set(schedule.map(e => e.date.slice(0,7)));
+    return [...ms].sort();
+  }, [schedule]);
+
+  const wName = id => { const w = workers.find(x => x.id === id); return w ? `${w.title} ${w.name}` : ''; };
+  const conflicts = useMemo(() => getConflicts(schedule, leaves, workers), [schedule, leaves, workers]);
+  const conflictIds = new Set(conflicts.map(c => c.entryId));
+
+  const filtered = schedule
+    .filter(e => e.date.startsWith(month))
+    .filter(e => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return e.date.includes(q) || e.service.toLowerCase().includes(q)
+        || wName(e.preacher).toLowerCase().includes(q)
+        || wName(e.pastoralPrayer).toLowerCase().includes(q)
+        || wName(e.emcee).toLowerCase().includes(q)
+        || (e.theme||'').toLowerCase().includes(q)
+        || (e.specialLabel||'').toLowerCase().includes(q);
+    })
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  const saveEntry = updated => setSchedule(prev => prev.map(e => e.id === updated.id ? updated : e));
+  const deleteEntry = id => setSchedule(prev => prev.filter(e => e.id !== id));
+  const addEntry = entry => setSchedule(prev => [...prev, entry].sort((a,b) => a.date.localeCompare(b.date)));
+
+  return (
+    <div style={{ display:'grid', gap:'1rem' }}>
+      <div style={{ display:'flex', gap:'.75rem', flexWrap:'wrap', alignItems:'center' }}>
+        <select className="sel" value={month} onChange={e => setMonth(e.target.value)} style={{ width:'auto' }}>
+          {months.map(m => <option key={m} value={m}>{new Date(m+'-01').toLocaleString('en',{month:'long',year:'numeric'})}</option>)}
+        </select>
+        <input className="input" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, date, theme…" style={{ maxWidth:240 }} />
+        <div style={{ flex:1 }} />
+        <button className="btn btn-soft btn-sm no-print" onClick={() => window.print()}>🖨 Print</button>
+        <button className="btn btn-blue btn-sm no-print" onClick={() => setAddOpen(true)}>+ Add Service</button>
+      </div>
+
+      <div className="card" style={{ overflow:'hidden' }}>
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>Date</th><th>Service</th><th>Preacher</th><th>Pastoral Prayer</th><th>EMCEE</th><th>Theme / Event</th><th>Flags</th><th className="no-print"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 && <tr><td colSpan={8} style={{ textAlign:'center', color:'var(--ink3)', padding:'2rem' }}>No services for this period.</td></tr>}
+            {filtered.map(e => {
+              const hasConflict = conflictIds.has(e.id);
+              const holiday = HOLIDAY_MAP[e.date];
+              return (
+                <tr key={e.id} className={hasConflict ? 'conflict-row' : holiday ? 'holiday-row' : ''}>
+                  <td style={{ fontWeight:500 }}>{fmtDateShort(e.date)} <span style={{ color:'var(--ink3)', fontSize:'.75rem' }}>{dayName(e.date)}</span></td>
+                  <td><span className="pill" style={{ background: e.service==='Sunday'?'var(--blue-soft)':'var(--purple-soft)', color: e.service==='Sunday'?'var(--blue)':'var(--purple)' }}>{e.service}</span></td>
+                  <td>{wName(e.preacher) || <span style={{ color:'var(--ink4)', fontStyle:'italic' }}>—</span>}</td>
+                  <td>{wName(e.pastoralPrayer) || <span style={{ color:'var(--ink4)', fontStyle:'italic' }}>—</span>}</td>
+                  <td>{wName(e.emcee) || <span style={{ color:'var(--ink4)', fontStyle:'italic' }}>—</span>}</td>
+                  <td style={{ color:'var(--ink2)', fontSize:'.8125rem' }}>{e.specialLabel || e.theme || '—'}</td>
+                  <td>
+                    {hasConflict && <span className="pill p-red" style={{ marginRight:3 }}>⚠ Conflict</span>}
+                    {holiday && <span className="pill p-amber" title={holiday}>🏖</span>}
+                    {e.isSpecial && <span className="pill p-blue">★</span>}
+                  </td>
+                  <td className="no-print">
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditing(e)}>Edit</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {editing && <ScheduleEditModal entry={editing} workers={workers} leaves={leaves} onSave={saveEntry} onDelete={deleteEntry} onClose={() => setEditing(null)} />}
+      {addOpen && <AddServiceModal workers={workers} leaves={leaves} onSave={addEntry} onClose={() => setAddOpen(false)} />}
+    </div>
+  );
+}
+
+// ── Workers Tab ───────────────────────────────────────────────────────────────
+function WorkersTab({ workers, setWorkers, schedule, leaves }) {
+  const [editing, setEditing] = useState(null);
+  const [search, setSearch] = useState('');
+  const counts = useMemo(() => getAssignmentCounts(schedule.filter(e => e.date >= '2026-01-01'), workers), [schedule, workers]);
+
+  const filtered = workers.filter(w => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return `${w.title} ${w.name}`.toLowerCase().includes(q) || w.roles.join(' ').includes(q);
+  });
+
+  function WorkerModal({ worker, onClose }) {
+    const isNew = !worker;
+    const [w, setW] = useState(worker || { id:'w'+uid(), name:'', title:'Bro.', roles:[], status:'active', phone:'', notes:'' });
+    const upd = p => setW(prev => ({...prev, ...p}));
+    const toggleRole = r => upd({ roles: w.roles.includes(r) ? w.roles.filter(x=>x!==r) : [...w.roles, r] });
+    const valid = w.name.trim() && w.roles.length;
+    const onSave = () => {
+      if (isNew) setWorkers(prev => [...prev, w]);
+      else setWorkers(prev => prev.map(x => x.id === w.id ? w : x));
+      onClose();
+    };
+    const ROLES = [['preacher','Preacher'],['pastoral-prayer','Pastoral Prayer'],['emcee','EMCEE']];
+    return (
+      <Modal title={isNew ? 'Add Worker' : `Edit — ${w.title} ${w.name}`} onClose={onClose}>
+        <div style={{ display:'grid', gap:'1rem' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'100px 1fr', gap:'.75rem' }}>
+            <div>
+              <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Title</label>
+              <select className="sel" value={w.title} onChange={e => upd({title:e.target.value})}>
+                {['Ptr.','Bro.','Sis.','Rev.','Dr.'].map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Full Name *</label>
+              <input className="input" value={w.name} onChange={e => upd({name:e.target.value})} placeholder="e.g. Justin Flores" autoFocus />
+            </div>
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.06em' }}>Roles *</label>
+            <div style={{ display:'flex', gap:'.5rem', flexWrap:'wrap' }}>
+              {ROLES.map(([key, lbl]) => (
+                <button key={key} type="button" onClick={() => toggleRole(key)} className="btn btn-sm"
+                  style={{ background: w.roles.includes(key) ? 'var(--blue)' : 'var(--surface2)', color: w.roles.includes(key) ? '#fff' : 'var(--ink2)', borderColor: w.roles.includes(key) ? 'var(--blue)' : 'var(--border)' }}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Status</label>
+            <select className="sel" value={w.status} onChange={e => upd({status:e.target.value})}>
+              <option value="active">Active</option><option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Phone / WhatsApp</label>
+            <input className="input" value={w.phone} onChange={e => upd({phone:e.target.value})} placeholder="+965 …" />
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Notes</label>
+            <textarea className="input" rows={2} value={w.notes} onChange={e => upd({notes:e.target.value})} placeholder="Availability notes, contact preferences…" />
+          </div>
+          <div style={{ display:'flex', gap:'.5rem', justifyContent:'space-between' }}>
+            {!isNew && <button className="btn btn-danger btn-sm" onClick={() => { if(confirm('Remove this worker?')) { setWorkers(prev=>prev.filter(x=>x.id!==w.id)); onClose(); } }}>Delete</button>}
+            <div style={{ flex:1 }} />
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+            <button className="btn btn-blue btn-sm" disabled={!valid} onClick={onSave}>Save</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <div style={{ display:'grid', gap:'1rem' }}>
+      <div style={{ display:'flex', gap:'.75rem', alignItems:'center' }}>
+        <input className="input" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search workers…" style={{ maxWidth:280 }} />
+        <div style={{ flex:1 }} />
+        <button className="btn btn-blue btn-sm" onClick={() => setEditing({})}>+ Add Worker</button>
+      </div>
+      <div className="card" style={{ overflow:'hidden' }}>
+        <table className="tbl">
+          <thead><tr><th>Name</th><th>Roles</th><th>Status</th><th>Preached</th><th>PP</th><th>EMCEE</th><th className="no-print"></th></tr></thead>
+          <tbody>
+            {filtered.map(w => {
+              const c = counts[w.id] || {};
+              const onLeave = leaves.some(l => l.workerId===w.id && l.startDate<=today() && l.endDate>=today());
+              return (
+                <tr key={w.id}>
+                  <td>
+                    <div style={{ fontWeight:500 }}>{w.title} {w.name}</div>
+                    {onLeave && <span className="pill p-amber" style={{ fontSize:'.7rem' }}>On Leave</span>}
+                    {w.status === 'inactive' && <span className="pill p-gray" style={{ fontSize:'.7rem' }}>Inactive</span>}
+                    {w.notes && <div style={{ fontSize:'.75rem', color:'var(--ink3)', marginTop:2 }}>{w.notes}</div>}
+                  </td>
+                  <td style={{ fontSize:'.8125rem' }}>
+                    {w.roles.map(r => (
+                      <span key={r} className="pill p-blue" style={{ marginRight:3, fontSize:'.7rem' }}>{r==='pastoral-prayer'?'PP':r==='preacher'?'Preacher':'EMCEE'}</span>
+                    ))}
+                  </td>
+                  <td><span className={`pill ${w.status==='active'?'p-green':'p-gray'}`}>{w.status}</span></td>
+                  <td style={{ fontWeight:600, textAlign:'center' }}>{c.preacher||0}</td>
+                  <td style={{ textAlign:'center' }}>{c.pastoralPrayer||0}</td>
+                  <td style={{ textAlign:'center' }}>{c.emcee||0}</td>
+                  <td className="no-print"><button className="btn btn-ghost btn-sm" onClick={() => setEditing(w)}>Edit</button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {editing !== null && <WorkerModal worker={Object.keys(editing).length ? editing : null} onClose={() => setEditing(null)} />}
+    </div>
+  );
+}
+
+// ── Leaves Tab ────────────────────────────────────────────────────────────────
+function LeavesTab({ leaves, setLeaves, workers, schedule }) {
+  const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const conflicts = useMemo(() => getConflicts(schedule, leaves, workers), [schedule, leaves, workers]);
+
+  function LeaveModal({ leave, onClose }) {
+    const isNew = !leave;
+    const [l, setL] = useState(leave || { id:'lv'+uid(), workerId:'', startDate:'', endDate:'', type:'vacation', notes:'' });
+    const upd = p => setL(prev => ({...prev,...p}));
+    const valid = l.workerId && l.startDate && l.endDate && l.startDate <= l.endDate;
+    const myConflicts = conflicts.filter(c => c.workerId === l.workerId && c.date >= l.startDate && c.date <= l.endDate);
+    const onSave = () => {
+      if (isNew) setLeaves(prev => [...prev, l]);
+      else setLeaves(prev => prev.map(x => x.id===l.id ? l : x));
+      onClose();
+    };
+    return (
+      <Modal title={isNew ? 'Record Leave' : 'Edit Leave'} onClose={onClose}>
+        <div style={{ display:'grid', gap:'1rem' }}>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Worker *</label>
+            <select className="sel" value={l.workerId} onChange={e => upd({workerId:e.target.value})}>
+              <option value="">— Select worker —</option>
+              {workers.filter(w=>w.status==='active').map(w => <option key={w.id} value={w.id}>{w.title} {w.name}</option>)}
+            </select>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.75rem' }}>
+            <div>
+              <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Start Date *</label>
+              <input type="date" className="input" value={l.startDate} onChange={e => upd({startDate:e.target.value})} />
+            </div>
+            <div>
+              <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>End Date *</label>
+              <input type="date" className="input" value={l.endDate} onChange={e => upd({endDate:e.target.value})} />
+            </div>
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Leave Type</label>
+            <select className="sel" value={l.type} onChange={e => upd({type:e.target.value})}>
+              {['vacation','travel','medical','personal','ministry'].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>)}
+            </select>
+          </div>
+          <textarea className="input" rows={2} value={l.notes} onChange={e => upd({notes:e.target.value})} placeholder="Notes (destination, reason, prayer requests…)" />
+          {myConflicts.length > 0 && (
+            <div style={{ background:'var(--red-soft)', borderRadius:8, padding:'.75rem', color:'var(--red)', fontSize:'.8125rem' }}>
+              <strong>⚠ {myConflicts.length} scheduling conflict{myConflicts.length>1?'s':''}:</strong>
+              {myConflicts.map((c,i) => <div key={i}>{fmtDate(c.date)} · {c.service} as {c.role}</div>)}
+            </div>
+          )}
+          <div style={{ display:'flex', gap:'.5rem', justifyContent:'space-between' }}>
+            {!isNew && <button className="btn btn-danger btn-sm" onClick={() => { setLeaves(prev=>prev.filter(x=>x.id!==l.id)); onClose(); }}>Delete</button>}
+            <div style={{flex:1}}/>
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+            <button className="btn btn-blue btn-sm" disabled={!valid} onClick={onSave}>Save</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  const sorted = [...leaves].sort((a,b) => a.startDate.localeCompare(b.startDate));
+  const TYPE_COLOR = { vacation:'p-blue', travel:'p-purple', medical:'p-red', personal:'p-gray', ministry:'p-green' };
+
+  return (
+    <div style={{ display:'grid', gap:'1rem' }}>
+      <div style={{ display:'flex', gap:'.75rem', justifyContent:'flex-end' }}>
+        <button className="btn btn-blue btn-sm" onClick={() => setAddOpen(true)}>+ Record Leave</button>
+      </div>
+
+      {conflicts.length > 0 && (
+        <div className="card" style={{ padding:'1rem', borderColor:'var(--red)', background:'var(--red-soft)' }}>
+          <div style={{ fontWeight:600, color:'var(--red)', marginBottom:'.5rem' }}>⚠ {conflicts.length} conflict{conflicts.length>1?'s':''} detected — these workers are scheduled while on leave:</div>
+          {conflicts.map((c,i) => {
+            const w = workers.find(x => x.id===c.workerId);
+            return <div key={i} style={{ fontSize:'.8125rem', padding:'.25rem 0' }}>{w?`${w.title} ${w.name}`:c.workerId} — {c.role} on <strong>{fmtDate(c.date)}</strong> ({c.service})</div>;
+          })}
+        </div>
+      )}
+
+      <div className="card" style={{ overflow:'hidden' }}>
+        <table className="tbl">
+          <thead><tr><th>Worker</th><th>Leave Period</th><th>Type</th><th>Days</th><th>Notes</th><th>Conflicts</th><th className="no-print"></th></tr></thead>
+          <tbody>
+            {sorted.length === 0 && <tr><td colSpan={7} style={{ textAlign:'center', color:'var(--ink3)', padding:'2rem' }}>No leaves recorded.</td></tr>}
+            {sorted.map(l => {
+              const w = workers.find(x => x.id===l.workerId);
+              const days = Math.round((new Date(l.endDate)-new Date(l.startDate))/(1000*60*60*24))+1;
+              const lConflicts = conflicts.filter(c => c.workerId===l.workerId && c.date>=l.startDate && c.date<=l.endDate);
+              const isCurrent = l.startDate <= today() && l.endDate >= today();
+              return (
+                <tr key={l.id}>
+                  <td>
+                    <div style={{ fontWeight:500 }}>{w?`${w.title} ${w.name}`:l.workerId}</div>
+                    {isCurrent && <span className="pill p-amber" style={{ fontSize:'.7rem' }}>Currently away</span>}
+                  </td>
+                  <td style={{ fontSize:'.8125rem' }}>{fmtDateShort(l.startDate)} – {fmtDateShort(l.endDate)}</td>
+                  <td><span className={`pill ${TYPE_COLOR[l.type]||'p-gray'}`}>{l.type}</span></td>
+                  <td style={{ textAlign:'center', fontWeight:500 }}>{days}d</td>
+                  <td style={{ fontSize:'.8125rem', color:'var(--ink2)' }}>{l.notes||'—'}</td>
+                  <td>{lConflicts.length>0 && <span className="pill p-red">{lConflicts.length} ⚠</span>}</td>
+                  <td className="no-print"><button className="btn btn-ghost btn-sm" onClick={() => setEditing(l)}>Edit</button></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {(addOpen || editing) && <LeaveModal leave={editing} onClose={() => { setAddOpen(false); setEditing(null); }} />}
+    </div>
+  );
+}
+
+// ── Events Tab ────────────────────────────────────────────────────────────────
+function EventsTab({ events, setEvents }) {
+  const [editing, setEditing] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
+
+  function EventModal({ ev, onClose }) {
+    const isNew = !ev;
+    const [e, setE] = useState(ev || { id:'ev'+uid(), date:'', title:'', type:'celebration', notes:'' });
+    const upd = p => setE(prev=>({...prev,...p}));
+    const valid = e.date && e.title.trim();
+    const onSave = () => {
+      if (isNew) setEvents(prev => [...prev, e]);
+      else setEvents(prev => prev.map(x => x.id===e.id?e:x));
+      onClose();
+    };
+    return (
+      <Modal title={isNew ? 'Add Event' : 'Edit Event'} onClose={onClose}>
+        <div style={{ display:'grid', gap:'1rem' }}>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Date *</label>
+            <input type="date" className="input" value={e.date} onChange={x => upd({date:x.target.value})} />
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Event Title *</label>
+            <input className="input" value={e.title} onChange={x => upd({title:x.target.value})} placeholder="e.g. Church Anniversary, Mother's Day" autoFocus />
+          </div>
+          <div>
+            <label style={{ display:'block', fontSize:'.7rem', fontWeight:600, color:'var(--ink2)', marginBottom:4, textTransform:'uppercase', letterSpacing:'.06em' }}>Type</label>
+            <select className="sel" value={e.type} onChange={x => upd({type:x.target.value})}>
+              {['celebration','special','outreach','prayer','conference','other'].map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <textarea className="input" rows={2} value={e.notes} onChange={x => upd({notes:x.target.value})} placeholder="Details, notes…" />
+          <div style={{ display:'flex', gap:'.5rem', justifyContent:'space-between' }}>
+            {!isNew && <button className="btn btn-danger btn-sm" onClick={() => { setEvents(prev=>prev.filter(x=>x.id!==e.id)); onClose(); }}>Delete</button>}
+            <div style={{flex:1}}/>
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+            <button className="btn btn-blue btn-sm" disabled={!valid} onClick={onSave}>Save</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  const TYPE_PILL = { celebration:'p-blue', special:'p-purple', outreach:'p-green', prayer:'p-amber', conference:'p-blue', other:'p-gray' };
+  const upcoming = events.filter(e => e.date >= today()).sort((a,b)=>a.date.localeCompare(b.date));
+  const past = events.filter(e => e.date < today()).sort((a,b)=>b.date.localeCompare(a.date));
+
+  return (
+    <div style={{ display:'grid', gap:'1rem' }}>
+      <div style={{ display:'flex', justifyContent:'flex-end' }}>
+        <button className="btn btn-blue btn-sm" onClick={() => setAddOpen(true)}>+ Add Event</button>
+      </div>
+      {[['Upcoming Events', upcoming], ['Past Events', past]].map(([label, list]) => list.length > 0 && (
+        <div key={label}>
+          <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink3)', marginBottom:'.5rem' }}>{label}</div>
+          <div className="card" style={{ overflow:'hidden' }}>
+            <table className="tbl">
+              <thead><tr><th>Date</th><th>Event</th><th>Type</th><th>Notes</th><th className="no-print"></th></tr></thead>
+              <tbody>
+                {list.map(e => (
+                  <tr key={e.id}>
+                    <td style={{ fontWeight:500, whiteSpace:'nowrap' }}>{fmtDate(e.date)}</td>
+                    <td style={{ fontWeight:500 }}>{e.title}</td>
+                    <td><span className={`pill ${TYPE_PILL[e.type]||'p-gray'}`}>{e.type}</span></td>
+                    <td style={{ fontSize:'.8125rem', color:'var(--ink2)' }}>{e.notes||'—'}</td>
+                    <td className="no-print"><button className="btn btn-ghost btn-sm" onClick={() => setEditing(e)}>Edit</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+      {(addOpen || editing) && <EventModal ev={editing} onClose={() => { setAddOpen(false); setEditing(null); }} />}
+    </div>
+  );
+}
+
+// ── Reports Tab ───────────────────────────────────────────────────────────────
+function ReportsTab({ workers, schedule, leaves }) {
+  const [month, setMonth] = useState(today().slice(0,7));
+  const months = useMemo(() => {
+    const ms = new Set(schedule.map(e => e.date.slice(0,7)));
+    return [...ms].sort();
+  }, [schedule]);
+
+  const monthSched = schedule.filter(e => e.date.startsWith(month));
+  const allTime = getAssignmentCounts(schedule, workers);
+  const monthCounts = getAssignmentCounts(monthSched, workers);
+  const wName = w => `${w.title} ${w.name}`;
+
+  const topPreachers = workers
+    .filter(w => w.roles.includes('preacher') && allTime[w.id]?.preacher > 0)
+    .sort((a,b) => (allTime[b.id]?.preacher||0) - (allTime[a.id]?.preacher||0));
+
+  const leaveDays = {};
+  workers.forEach(w => { leaveDays[w.id] = 0; });
+  leaves.forEach(l => {
+    if (leaveDays[l.workerId] !== undefined) {
+      leaveDays[l.workerId] += Math.round((new Date(l.endDate)-new Date(l.startDate))/(86400000))+1;
+    }
+  });
+
+  return (
+    <div style={{ display:'grid', gap:'1.25rem' }}>
+      <div style={{ display:'flex', gap:'.75rem', alignItems:'center' }}>
+        <select className="sel" value={month} onChange={e => setMonth(e.target.value)} style={{ width:'auto' }}>
+          {months.map(m => <option key={m} value={m}>{new Date(m+'-01').toLocaleString('en',{month:'long',year:'numeric'})}</option>)}
+        </select>
+        <div style={{flex:1}}/>
+        <button className="btn btn-soft btn-sm no-print" onClick={() => window.print()}>🖨 Print Report</button>
+      </div>
+
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:'1rem' }}>
+        {[
+          { label:'Services This Month', value: monthSched.length },
+          { label:'Fridays', value: monthSched.filter(e=>e.service==='Friday').length },
+          { label:'Sundays', value: monthSched.filter(e=>e.service==='Sunday').length },
+          { label:'Special Services', value: monthSched.filter(e=>e.isSpecial).length },
+        ].map(s => (
+          <div key={s.label} className="stat-card" style={{ textAlign:'center' }}>
+            <div className="fd" style={{ fontSize:'2rem', fontWeight:600, color:'var(--blue)' }}>{s.value}</div>
+            <div style={{ fontSize:'.8rem', color:'var(--ink2)' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1.25rem' }}>
+        <div className="card" style={{ padding:'1.25rem' }}>
+          <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink3)', marginBottom:'1rem' }}>Assignment Distribution (All Time)</div>
+          <table className="tbl" style={{ fontSize:'.8125rem' }}>
+            <thead><tr><th>Worker</th><th>Preached</th><th>PP</th><th>EMCEE</th><th>Total</th></tr></thead>
+            <tbody>
+              {workers.filter(w => allTime[w.id]?.total > 0).sort((a,b) => (allTime[b.id]?.total||0)-(allTime[a.id]?.total||0)).map(w => {
+                const c = allTime[w.id];
+                const maxTotal = Math.max(...workers.map(x => allTime[x.id]?.total||0), 1);
+                return (
+                  <tr key={w.id}>
+                    <td>{wName(w)}</td>
+                    <td style={{ textAlign:'center', fontWeight:600 }}>{c.preacher}</td>
+                    <td style={{ textAlign:'center' }}>{c.pastoralPrayer}</td>
+                    <td style={{ textAlign:'center' }}>{c.emcee}</td>
+                    <td style={{ textAlign:'center' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'.5rem' }}>
+                        <div style={{ flex:1, height:6, background:'var(--border)', borderRadius:99 }}>
+                          <div style={{ width:`${(c.total/maxTotal)*100}%`, height:6, background:'var(--blue)', borderRadius:99 }} />
+                        </div>
+                        <span style={{ fontWeight:600, minWidth:20 }}>{c.total}</span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{ display:'grid', gap:'1.25rem', alignContent:'start' }}>
+          <div className="card" style={{ padding:'1.25rem' }}>
+            <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink3)', marginBottom:'1rem' }}>Leave Summary</div>
+            {workers.filter(w => leaveDays[w.id] > 0).sort((a,b) => leaveDays[b.id]-leaveDays[a.id]).map(w => (
+              <div key={w.id} style={{ display:'flex', justifyContent:'space-between', padding:'.4rem 0', borderBottom:'1px solid var(--border)', fontSize:'.8125rem' }}>
+                <span>{wName(w)}</span>
+                <span style={{ fontWeight:500, color:'var(--amber)' }}>{leaveDays[w.id]} day{leaveDays[w.id]!==1?'s':''}</span>
+              </div>
+            ))}
+            {workers.every(w => !leaveDays[w.id]) && <div style={{ color:'var(--ink3)', fontSize:'.875rem' }}>No leave recorded.</div>}
+          </div>
+
+          <div className="card" style={{ padding:'1.25rem' }}>
+            <div style={{ fontSize:'.7rem', fontWeight:600, textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink3)', marginBottom:'1rem' }}>Top Preachers</div>
+            {topPreachers.slice(0,6).map((w,i) => (
+              <div key={w.id} style={{ display:'flex', justifyContent:'space-between', padding:'.4rem 0', borderBottom:'1px solid var(--border)', fontSize:'.8125rem' }}>
+                <span><strong style={{ color:'var(--ink3)' }}>#{i+1}</strong> {wName(w)}</span>
+                <span className="pill p-blue">{allTime[w.id]?.preacher} times</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App() {
+  const [dark, setDark] = useState(() => localStorage.getItem('gmpi-dark')==='1');
+  const [tab, setTab] = useState('dashboard');
+  const [workers, setWorkersRaw] = useState(() => load(SK.workers, null));
+  const [schedule, setScheduleRaw] = useState(() => load(SK.schedule, null));
+  const [leaves, setLeavesRaw] = useState(() => load(SK.leaves, []));
+  const [events, setEventsRaw] = useState(() => load(SK.events, null));
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    localStorage.setItem('gmpi-dark', dark ? '1' : '0');
+  }, [dark]);
+
+  // Initialise from seed if first run
+  useEffect(() => {
+    if (!load(SK.workers, null)) { save(SK.workers, SEED_WORKERS); setWorkersRaw(SEED_WORKERS); }
+    if (!load(SK.schedule, null)) { const s = genScheduleSeed(); save(SK.schedule, s); setScheduleRaw(s); }
+    if (!load(SK.events, null)) { save(SK.events, SEED_EVENTS); setEventsRaw(SEED_EVENTS); }
+  }, []);
+
+  const setWorkers = v => { const d = typeof v === 'function' ? v(workers) : v; setWorkersRaw(d); save(SK.workers, d); };
+  const setSchedule = v => { const d = typeof v === 'function' ? v(schedule) : v; setScheduleRaw(d); save(SK.schedule, d); };
+  const setLeaves = v => { const d = typeof v === 'function' ? v(leaves) : v; setLeavesRaw(d); save(SK.leaves, d); };
+  const setEvents = v => { const d = typeof v === 'function' ? v(events) : v; setEventsRaw(d); save(SK.events, d); };
+
+  if (!workers || !schedule || !events) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', color:'var(--ink3)' }}>Loading…</div>;
+
+  const conflicts = getConflicts(schedule, leaves, workers);
+  const TABS = [
+    { key:'dashboard', label:'Dashboard' },
+    { key:'schedule',  label:'Schedule' },
+    { key:'workers',   label:'Workers' },
+    { key:'leaves',    label:'Leaves' + (leaves.length ? ` (${leaves.length})` : '') },
+    { key:'events',    label:'Events' },
+    { key:'reports',   label:'Reports' },
+  ];
+
+  return (
+    <div style={{ minHeight:'100vh' }}>
+      {/* Header */}
+      <header className="no-print" style={{ background:'var(--blue)', color:'#fff', padding:'0 1.5rem', position:'sticky', top:0, zIndex:40, boxShadow:'0 2px 16px rgba(37,99,235,.25)' }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', gap:'1rem', height:56 }}>
+          <div style={{ flex:1 }}>
+            <span className="fd" style={{ fontSize:'1.05rem', fontWeight:600, letterSpacing:'-.01em' }}>GMPI Ministry Dashboard</span>
+            <span style={{ fontSize:'.78rem', opacity:.7, marginLeft:'.75rem' }}>Pastor Michelle · FLCC</span>
+          </div>
+          {conflicts.length > 0 && (
+            <button onClick={() => setTab('leaves')} style={{ background:'rgba(220,38,38,.85)', color:'#fff', border:'none', borderRadius:8, padding:'.35rem .75rem', fontSize:'.8rem', fontWeight:600, cursor:'pointer' }}>
+              ⚠ {conflicts.length} Conflict{conflicts.length>1?'s':''}
+            </button>
+          )}
+          <button onClick={() => setDark(d => !d)} style={{ background:'rgba(255,255,255,.15)', border:'none', borderRadius:8, padding:'.35rem .65rem', color:'#fff', cursor:'pointer', fontSize:'.875rem' }}>
+            {dark ? '☀' : '🌙'}
+          </button>
+        </div>
+      </header>
+
+      {/* Tab nav */}
+      <div className="no-print" style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:56, zIndex:30 }}>
+        <nav style={{ maxWidth:1200, margin:'0 auto', display:'flex', overflowX:'auto', paddingLeft:'1.5rem', paddingRight:'1.5rem', gap:'1.5rem' }}>
+          {TABS.map(t => (
+            <div key={t.key} className={`tab ${tab===t.key?'tab-active':''}`} onClick={() => setTab(t.key)}>{t.label}</div>
+          ))}
+        </nav>
+      </div>
+
+      {/* Main */}
+      <main style={{ maxWidth:1200, margin:'0 auto', padding:'1.5rem' }}>
+        {tab==='dashboard' && <DashboardTab workers={workers} schedule={schedule} leaves={leaves} events={events} />}
+        {tab==='schedule'  && <ScheduleTab  workers={workers} schedule={schedule} setSchedule={setSchedule} leaves={leaves} />}
+        {tab==='workers'   && <WorkersTab   workers={workers} setWorkers={setWorkers} schedule={schedule} leaves={leaves} />}
+        {tab==='leaves'    && <LeavesTab    workers={workers} leaves={leaves} setLeaves={setLeaves} schedule={schedule} />}
+        {tab==='events'    && <EventsTab    events={events} setEvents={setEvents} />}
+        {tab==='reports'   && <ReportsTab   workers={workers} schedule={schedule} leaves={leaves} />}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
