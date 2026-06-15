@@ -486,6 +486,13 @@
   }
   @keyframes snRipple { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.18)} }
   .sn-scan-result { animation: snSlideUp .3s cubic-bezier(.34,1.56,.64,1) both; }
+  .sn-body-edit:empty::before {
+    content: attr(data-placeholder);
+    color: #9CA3AF;
+    pointer-events: none;
+    display: block;
+    white-space: pre;
+  }
 
   /* ── DYNAMIC UI LAYER ──────────────────────────────────────────────── */
   :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -4145,7 +4152,7 @@ function exportNoteToPDF(note, meta) {
   const sec = (label, val) => val
     ? `<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${SN_NOTES_GREEN};margin-bottom:5px">${label}</div><div style="font-size:14px;line-height:1.7;white-space:pre-wrap;color:#18181B">${String(val).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>` : '';
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sermon Notes · ${meta.date}</title>
-  <style>*{box-sizing:border-box}body{font-family:Georgia,'Times New Roman',serif;max-width:580px;margin:48px auto;padding:0 28px;color:#18181B;line-height:1.65}h1{font-size:26px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}.sub{font-size:13px;color:#52525B;margin:0 0 22px}.meta{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#71717A;border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;padding:10px 0;margin-bottom:28px}.body-text{font-size:15px;line-height:1.8;white-space:pre-wrap;margin-bottom:28px;color:#18181B}.ftr{margin-top:48px;font-size:11px;color:#A1A1AA;border-top:1px solid #E5E7EB;padding-top:10px}@media print{body{margin:0;padding:20px}}</style>
+  <style>*{box-sizing:border-box}body{font-family:Georgia,'Times New Roman',serif;max-width:580px;margin:48px auto;padding:0 28px;color:#18181B;line-height:1.65}h1{font-size:26px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}.sub{font-size:13px;color:#52525B;margin:0 0 22px}.meta{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#71717A;border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;padding:10px 0;margin-bottom:28px}.body-text{font-size:15px;line-height:1.8;margin-bottom:28px;color:#18181B}.ftr{margin-top:48px;font-size:11px;color:#A1A1AA;border-top:1px solid #E5E7EB;padding-top:10px}@media print{body{margin:0;padding:20px}}</style>
   </head><body>
   <h1>${note.title || 'Sermon Notes'}</h1>
   <div class="sub">${meta.dateLabel} · ${meta.service} Service</div>
@@ -4154,11 +4161,7 @@ function exportNoteToPDF(note, meta) {
     ${meta.myRole   ? `<span>🎭 ${meta.myRole}</span>` : ''}
     ${note.updatedAt ? `<span>Last edited: ${new Date(note.updatedAt).toLocaleString()}</span>` : ''}
   </div>
-  ${note.body ? `<div class="body-text">${note.body.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>` : ''}
-  ${sec('✦ Key Verse', note.keyVerse)}
-  ${sec('🙏 Prayer Requests', note.prayerRequests)}
-  ${sec('⚡ Action Points / Application', note.actionPoints)}
-  ${note.favoriteQuote ? sec('💬 Favorite Quote', `"${note.favoriteQuote}"`) : ''}
+  ${note.body ? `<div class="body-text">${note.body}</div>` : ''}
   <div class="ftr">FLCC - Farwaniya 1 · Personal Sermon Journal</div>
   </body></html>`;
   const win = window.open('', '_blank');
@@ -4187,18 +4190,16 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
   const existing  = sermonNotes[noteId] || {};
   const formRef   = useRef({
     title: existing.title || '', body: existing.body || '',
-    keyVerse: existing.keyVerse || '', prayerRequests: existing.prayerRequests || '',
-    actionPoints: existing.actionPoints || '', favoriteQuote: existing.favoriteQuote || '',
   });
   const [form, setFormState] = useState(formRef.current);
   const setForm = patch => { formRef.current = { ...formRef.current, ...patch }; setFormState(f => ({ ...f, ...patch })); };
 
   const [view,       setView]        = useState(initialView || 'editor');
-  const [sectOpen,   setSectOpen]    = useState(!!(existing.keyVerse || existing.prayerRequests || existing.actionPoints || existing.favoriteQuote));
   const [saveStatus, setSaveStatus]  = useState('');
   const [closing,    setClosing]     = useState(false);
   const [jSearch,    setJSearch]     = useState('');
   const saveTimer   = useRef(null);
+  const bodyEditRef = useRef(null);
 
   // ── Camera / AI scan state ──────────────────────────────────────────────────
   const cameraInputRef = useRef(null);
@@ -4393,11 +4394,21 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
     }
   };
 
+  // Initialize contentEditable body on mount
+  useEffect(() => {
+    if (bodyEditRef.current) {
+      const content = existing.body || '';
+      const isHtml = /<[a-z][\s\S]*>/i.test(content);
+      bodyEditRef.current.innerHTML = isHtml ? content : content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+  }, []);
+
   const applyScan = (mode) => {
-    // mode: 'append' | 'replace'
+    const scanHtml = scanResult.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
     const newBody = mode === 'replace'
-      ? scanResult
-      : [formRef.current.body, scanResult].filter(Boolean).join('\n\n');
+      ? scanHtml
+      : [formRef.current.body, scanHtml].filter(Boolean).join('<br><br>');
+    if (bodyEditRef.current) bodyEditRef.current.innerHTML = newBody;
     setForm({ body: newBody });
     triggerSave({ body: newBody });
     setScanState('idle');
@@ -4425,7 +4436,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
     const q = jSearch.toLowerCase().trim();
     return Object.entries(sermonNotes)
       .map(([id, n]) => { const [d, s] = id.split('|'); return { id, date: d, service: s, ...n }; })
-      .filter(n => !q || [n.title, n.body, n.keyVerse, n.favoriteQuote].some(v => (v || '').toLowerCase().includes(q)))
+      .filter(n => !q || [n.title, (n.body || '').replace(/<[^>]*>/g, '')].some(v => (v || '').toLowerCase().includes(q)))
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [sermonNotes, jSearch]);
 
@@ -4439,8 +4450,8 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
     return m;
   }, [allNotes]);
 
-  const wordCount   = (form.body || '').trim().split(/\s+/).filter(Boolean).length;
-  const hasContent  = !!(form.body || form.keyVerse || form.prayerRequests || form.actionPoints || form.favoriteQuote || form.title);
+  const wordCount   = (form.body || '').replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length;
+  const hasContent  = !!(form.body || form.title);
   const hasExisting = !!(existing.body || existing.title);
 
   const inputStyle = (extra = {}) => ({
@@ -4449,13 +4460,6 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
     fontFamily: '"Geist", sans-serif', color: 'var(--ink)', boxSizing: 'border-box',
     transition: 'border-color .15s',
   });
-
-  const sectionFields = [
-    { key: 'keyVerse',       label: '✦ Key Verse',                   placeholder: '"For I can do all things through Christ…" — Phil 4:13', multi: false },
-    { key: 'prayerRequests', label: '🙏 Prayer Requests',             placeholder: 'People to pray for, personal needs…',                   multi: true  },
-    { key: 'actionPoints',   label: '⚡ Action Points / Application', placeholder: 'What will you do differently this week?',                multi: true  },
-    { key: 'favoriteQuote',  label: '💬 Favorite Quote',              placeholder: 'A line from the sermon that stayed with you…',           multi: false },
-  ];
 
   return ReactDOM.createPortal(
     <div
@@ -4609,47 +4613,39 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
               </div>
             )}
 
-            {/* Body textarea */}
+            {/* Body editor */}
             <div style={{ marginBottom: 8 }}>
-              <textarea
-                value={form.body}
-                onChange={e => { setForm({ body: e.target.value }); triggerSave({ body: e.target.value }); }}
-                placeholder={"Write your notes here…\n\nWhat spoke to you today?\nWhat is God saying through His Word?"}
-                style={{ ...inputStyle({ fontSize: '0.9375rem', lineHeight: 1.78, resize: 'none', minHeight: 152, padding: '4px 0 12px', borderBottom: '1px solid var(--border)' }) }}
-                onFocus={e => e.target.style.borderBottomColor = SN_NOTES_GREEN}
-                onBlur={e => e.target.style.borderBottomColor = 'var(--border)'}
+              {/* Formatting toolbar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+                <button
+                  onMouseDown={e => { e.preventDefault(); document.execCommand('hiliteColor', false, '#FEF08A'); }}
+                  title="Highlight selected text"
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 9px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFFBEB', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#92400E' }}
+                ><span style={{ background: '#FEF08A', padding: '1px 3px', borderRadius: 2 }}>A</span> Highlight</button>
+                <div style={{ width: 1, height: 14, background: 'var(--border)', margin: '0 2px' }} />
+                <button onMouseDown={e => { e.preventDefault(); document.execCommand('justifyLeft'); }} title="Align left"
+                  style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFF', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--ink-muted)' }}>Left</button>
+                <button onMouseDown={e => { e.preventDefault(); document.execCommand('justifyCenter'); }} title="Center"
+                  style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFF', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--ink-muted)' }}>Center</button>
+                <button onMouseDown={e => { e.preventDefault(); document.execCommand('justifyRight'); }} title="Align right"
+                  style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFF', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--ink-muted)' }}>Right</button>
+              </div>
+              <div
+                ref={bodyEditRef}
+                className="sn-body-edit"
+                contentEditable
+                suppressContentEditableWarning
+                data-placeholder="Write your sermon notes here…"
+                onFocus={e => e.currentTarget.style.borderBottomColor = SN_NOTES_GREEN}
+                onBlur={e => e.currentTarget.style.borderBottomColor = 'var(--border)'}
+                onInput={() => {
+                  const html = bodyEditRef.current?.innerHTML || '';
+                  setForm({ body: html });
+                  triggerSave({ body: html });
+                }}
+                style={{ outline: 'none', minHeight: 152, fontSize: '0.9375rem', lineHeight: 1.78, padding: '4px 0 12px', borderBottom: '1px solid var(--border)', color: 'var(--ink)', wordBreak: 'break-word', fontFamily: '"Geist", sans-serif', transition: 'border-color .15s', cursor: 'text' }}
               />
               {wordCount > 0 && <div style={{ textAlign: 'right', fontSize: '0.6875rem', color: 'var(--ink-subtle)', marginTop: 3 }}>{wordCount} words</div>}
-            </div>
-
-            {/* Optional sections toggle */}
-            <button
-              onClick={() => setSectOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'none', border: 'none', cursor: 'pointer', color: SN_NOTES_GREEN, fontSize: '0.8125rem', fontWeight: 500, padding: '13px 0', width: '100%', textAlign: 'left', borderTop: `1px dashed ${sectOpen ? SN_NOTES_GREEN + '30' : 'var(--border)'}`, borderBottom: sectOpen ? 'none' : `1px dashed var(--border)`, transition: 'border-color .2s' }}
-            >
-              <span style={{ display: 'inline-block', transition: 'transform .3s cubic-bezier(.34,1.56,.64,1)', transform: sectOpen ? 'rotate(90deg)' : 'rotate(0deg)', fontSize: '0.75rem' }}>▶</span>
-              {sectOpen ? 'Hide extra sections' : '+ Key Verse · Prayer Requests · Action Points · Favorite Quote'}
-            </button>
-
-            <div style={{ overflow: 'hidden', maxHeight: sectOpen ? 900 : 0, opacity: sectOpen ? 1 : 0, transition: 'max-height .42s cubic-bezier(.4,0,.2,1), opacity .3s ease' }}>
-              {sectionFields.map(({ key, label, placeholder, multi }) => (
-                <div key={key} style={{ borderBottom: '1px solid var(--border)', padding: '14px 0' }}>
-                  <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: SN_NOTES_GREEN, marginBottom: 7 }}>{label}</div>
-                  {multi ? (
-                    <textarea value={form[key]} rows={2}
-                      onChange={e => { setForm({ [key]: e.target.value }); triggerSave({ [key]: e.target.value }); }}
-                      placeholder={placeholder}
-                      style={{ ...inputStyle({ fontSize: '0.9375rem', lineHeight: 1.7, resize: 'none' }) }}
-                    />
-                  ) : (
-                    <input value={form[key]}
-                      onChange={e => { setForm({ [key]: e.target.value }); triggerSave({ [key]: e.target.value }); }}
-                      placeholder={placeholder}
-                      style={{ ...inputStyle({ fontSize: '0.9375rem' }) }}
-                    />
-                  )}
-                </div>
-              ))}
             </div>
 
             {/* Footer actions */}
@@ -4699,7 +4695,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {notes.map(n => {
-                        const preview   = (n.body || '').slice(0, 110).trim();
+                        const preview   = (n.body || '').replace(/<[^>]*>/g, '').slice(0, 110).trim();
                         const isCurrent = n.id === noteId;
                         return (
                           <div key={n.id}
@@ -4718,10 +4714,6 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                             </div>
                             {preview && <div style={{ fontSize: '0.8125rem', color: 'var(--ink-muted)', lineHeight: 1.55, marginBottom: 8 }}>{preview}{(n.body||'').length > 110 ? '…' : ''}</div>}
                             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                              {n.keyVerse       && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>✦ Verse</span>}
-                              {n.prayerRequests && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>🙏 Prayer</span>}
-                              {n.actionPoints   && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>⚡ Actions</span>}
-                              {n.favoriteQuote  && <span className="pill pill-default" style={{ fontSize: '0.6875rem' }}>💬 Quote</span>}
                               {isCurrent && <span className="pill" style={{ fontSize: '0.6875rem', background: SN_NOTES_SOFT, color: SN_NOTES_GREEN }}>← current</span>}
                             </div>
                           </div>
