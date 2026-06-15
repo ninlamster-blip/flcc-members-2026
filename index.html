@@ -6295,6 +6295,10 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
               {/* Formatting toolbar */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
                 <button
+                  onMouseDown={e => { e.preventDefault(); document.execCommand('bold'); }}
+                  title="Bold selected text"
+                  style={{ padding: '3px 9px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFF', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)' }}>B</button>
+                <button
                   onMouseDown={e => { e.preventDefault(); document.execCommand('hiliteColor', false, '#FEF08A'); }}
                   title="Highlight selected text"
                   style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 9px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFFBEB', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#92400E' }}
