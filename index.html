@@ -747,6 +747,14 @@ function generateAssignmentMessage(entry, worker, roleLabel, churchName, service
   return `📢 Hi ${name}!\n\nYou have a service assignment at ${churchName}:\n\n📅 ${entry.service} Service — ${formatDateLong(entry.date)}\n${timePart}✝️ Your role: ${roleLabel}${entry.isSpecial ? `\n★ Special service: ${entry.specialNote}` : ''}\n\nPlease confirm your availability or report a conflict in the FLCC Members app. God bless! 🙏\n– FLCC Fellowship Ministry`;
 }
 
+function generateIntercessoryMessage(entry, intercessory, teamName, churchName, serviceTimes) {
+  const svcTime = (serviceTimes && serviceTimes[entry.service]) || '';
+  const svcTimePart = svcTime ? `\n⏰ Service Time: ${svcTime}` : '';
+  const prayerTime = `${formatTime12(intercessory.startTime)}${intercessory.endTime ? `–${formatTime12(intercessory.endTime)}` : ''}`;
+  const notesPart = intercessory.notes ? `\n📝 ${intercessory.notes}` : '';
+  return `📢 Hi ${teamName}!\n\nYour team is assigned for Intercessory Prayer at ${churchName}:\n\n📅 ${entry.service} Service — ${formatDateLong(entry.date)}${svcTimePart}\n🙏 Intercessory Prayer: ${prayerTime} (before the service)${notesPart}\n\nPlease ensure your team is ready and present before the service starts. God bless! 🙏\n– FLCC Prayer Ministry`;
+}
+
 // ── Assignment Notifications ──────────────────────────────────────────────────
 const NOTIF_KEY = 'flcc-notifs-seen-v1';
 const loadNotifSeen = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) || []; } catch { return []; } };
@@ -1078,6 +1086,7 @@ function formatISODate(date) {
 function todayISO() { return formatISODate(new Date()); }
 function dayOfWeek(s) { return DAY_NAMES[parseISODate(s).getDay()]; }
 function monthKey(s) { return s.slice(0,7); }
+function isFirstOccurrenceInMonth(dateStr) { return parseISODate(dateStr).getDate() <= 7; }
 function formatDateShort(s) {
   const d = parseISODate(s);
   return `${String(d.getDate()).padStart(2,'0')}-${MONTH_NAMES[d.getMonth()].slice(0,3)}`;
@@ -3018,44 +3027,49 @@ function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurren
 }
 
 // ── Notify Members panel (per service card) ───────────────────────────────────
-function NotifyMembersPanel({ entry, workers, churchName, serviceTimes }) {
-  const [copied, setCopied] = useState(null); // workerId that was just copied
+function NotifyMembersPanel({ entry, workers, churchName, serviceTimes, intercessory, prayerData }) {
+  const [copied, setCopied] = useState(null);
   const [shared, setShared]  = useState(null);
+
+  // Communion only happens on the first Friday and first Sunday of the month
+  const isCommunionService = isFirstOccurrenceInMonth(entry.date);
 
   const assigned = ROLES.map(r => {
     const workerId = entry.roles[r.key];
     if (!workerId) return null;
+    if (!isCommunionService && (r.key === 'communionAssistant1' || r.key === 'communionAssistant2')) return null;
     const worker = workers.find(w => w.id === workerId);
     if (!worker) return null;
     return { worker, roleLabel: r.label, workerId };
   }).filter(Boolean);
 
-  if (assigned.length === 0) return <div className="text-xs ink-muted mt-1">No roles assigned yet.</div>;
+  const intercessoryTeam = intercessory && prayerData
+    ? (prayerData.teams || []).find(t => t.id === intercessory.teamId)
+    : null;
 
-  const handleCopy = (workerId, msg) => {
+  if (assigned.length === 0 && !intercessoryTeam) return <div className="text-xs ink-muted mt-1">No roles assigned yet.</div>;
+
+  const handleCopy = (key, msg) => {
     try {
       navigator.clipboard.writeText(msg).then(() => {
-        setCopied(workerId);
+        setCopied(key);
         setTimeout(() => setCopied(null), 2000);
       });
     } catch {
-      // fallback: textarea select
       const ta = document.createElement('textarea');
       ta.value = msg; document.body.appendChild(ta); ta.select();
       document.execCommand('copy'); document.body.removeChild(ta);
-      setCopied(workerId); setTimeout(() => setCopied(null), 2000);
+      setCopied(key); setTimeout(() => setCopied(null), 2000);
     }
   };
 
-  const handleShare = async (workerId, worker, msg) => {
-    const name = [(worker.title || ''), worker.name].filter(Boolean).join(' ');
+  const handleShare = async (key, title, msg) => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: `FLCC Assignment — ${name}`, text: msg });
-        setShared(workerId); setTimeout(() => setShared(null), 2000);
+        await navigator.share({ title, text: msg });
+        setShared(key); setTimeout(() => setShared(null), 2000);
       } catch {}
     } else {
-      // Fallback: open Messenger on desktop
       window.open(`https://www.messenger.com/`, '_blank');
     }
   };
@@ -3081,7 +3095,7 @@ function NotifyMembersPanel({ entry, workers, churchName, serviceTimes }) {
                 </button>
                 <button
                   className="btn btn-accent text-xs"
-                  onClick={() => handleShare(workerId, worker, msg)}
+                  onClick={() => handleShare(workerId, `FLCC Assignment — ${name}`, msg)}
                   title="Share via Messenger or any app"
                 >
                   {shared === workerId ? '✓ Shared!' : '💬 Share'}
@@ -3095,6 +3109,40 @@ function NotifyMembersPanel({ entry, workers, churchName, serviceTimes }) {
           </div>
         );
       })}
+      {intercessoryTeam && (() => {
+        const ipKey = `intercessory-${entry.id}`;
+        const teamName = intercessoryTeam.name;
+        const msg = generateIntercessoryMessage(entry, intercessory, teamName, churchName, serviceTimes);
+        return (
+          <div key={ipKey} style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #6366F1' }}>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <div className="text-sm font-semibold">🙏 {teamName}</div>
+                <div className="text-xs ink-muted">Intercessory Prayer · {formatTime12(intercessory.startTime)}{intercessory.endTime ? `–${formatTime12(intercessory.endTime)}` : ''}</div>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  className="btn btn-soft text-xs"
+                  onClick={() => handleCopy(ipKey, msg)}
+                >
+                  {copied === ipKey ? '✓ Copied!' : '📋 Copy message'}
+                </button>
+                <button
+                  className="btn btn-accent text-xs"
+                  onClick={() => handleShare(ipKey, `FLCC Intercessory Prayer — ${teamName}`, msg)}
+                  title="Share via Messenger or any app"
+                >
+                  {shared === ipKey ? '✓ Shared!' : '💬 Share'}
+                </button>
+              </div>
+            </div>
+            <details className="mt-2">
+              <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
+              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+            </details>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -3185,7 +3233,7 @@ function ServiceListSection({ title, entries, workers, me, churchName, serviceTi
                   {notifyOpen[entry.id] ? '▲ Hide notify' : '📢 Notify members'}
                 </button>
                 {notifyOpen[entry.id] && (
-                  <NotifyMembersPanel entry={entry} workers={workers} churchName={churchName} serviceTimes={serviceTimes} />
+                  <NotifyMembersPanel entry={entry} workers={workers} churchName={churchName} serviceTimes={serviceTimes} intercessory={intercessory} prayerData={prayerData} />
                 )}
               </div>
             </div>
