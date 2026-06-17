@@ -7585,9 +7585,10 @@ function BibleTab() {
 // ASK FLCC TAB
 // =============================================================================
 
-const ASK_KEY        = 'flcc-claude-api-key-v1';
-const ASK_PROXY_KEY  = 'flcc-ask-proxy-url-v1';
-const ASK_MODEL      = 'claude-haiku-4-5-20251001';
+const ASK_KEY             = 'flcc-claude-api-key-v1';
+const ASK_PROXY_KEY       = 'flcc-ask-proxy-url-v1';
+const ASK_PROXY_SECRET_KEY = 'flcc-ask-proxy-secret-v1';
+const ASK_MODEL           = 'claude-haiku-4-5-20251001';
 
 function buildChurchContext(data, prayerData, musicData, equipData, botrData = {}) {
   const workers  = data.workers  || [];
@@ -7688,10 +7689,12 @@ ${events||'(none listed)'}`;
 }
 
 function AskTab({ data, prayerData, musicData, equipData }) {
-  const [proxyUrl, setProxyUrl]   = React.useState(() => { try { return localStorage.getItem(ASK_PROXY_KEY)||''; } catch { return ''; } });
-  const [apiKey, setApiKey]       = React.useState(() => { try { return localStorage.getItem(ASK_KEY)||''; } catch { return ''; } });
-  const [setupInput, setSetupInput] = React.useState('');
-  const [setupMode, setSetupMode]   = React.useState('proxy'); // 'proxy' | 'key'
+  const [proxyUrl, setProxyUrl]       = React.useState(() => { try { return localStorage.getItem(ASK_PROXY_KEY)||''; } catch { return ''; } });
+  const [proxySecret, setProxySecret] = React.useState(() => { try { return localStorage.getItem(ASK_PROXY_SECRET_KEY)||''; } catch { return ''; } });
+  const [apiKey, setApiKey]           = React.useState(() => { try { return localStorage.getItem(ASK_KEY)||''; } catch { return ''; } });
+  const [setupInput, setSetupInput]   = React.useState('');
+  const [setupSecretInput, setSetupSecretInput] = React.useState('');
+  const [setupMode, setSetupMode]     = React.useState('proxy'); // 'proxy' | 'key'
   const [messages, setMessages] = React.useState([
     { role:'assistant', content:`Hello! I'm Ask FLCC — your church AI assistant.\n\nI know everything about ${data.meta.churchName}, the FLCC BOTR Network, all service schedules, members, and ministries. I can also answer Bible questions and give Christian guidance.\n\nWhat would you like to know?` }
   ]);
@@ -7710,16 +7713,19 @@ function AskTab({ data, prayerData, musicData, equipData }) {
     if (setupMode === 'proxy') {
       if (!v.startsWith('http')) { alert('Proxy URL should start with https://'); return; }
       setProxyUrl(v); try { localStorage.setItem(ASK_PROXY_KEY, v); } catch {}
+      const s = setupSecretInput.trim();
+      setProxySecret(s); try { s ? localStorage.setItem(ASK_PROXY_SECRET_KEY, s) : localStorage.removeItem(ASK_PROXY_SECRET_KEY); } catch {}
     } else {
       if (!v.startsWith('sk-ant-')) { alert("API key should start with sk-ant-"); return; }
       setApiKey(v); try { localStorage.setItem(ASK_KEY, v); } catch {}
     }
     setSetupInput('');
+    setSetupSecretInput('');
   };
 
   const clearSetup = () => {
-    setProxyUrl(''); setApiKey('');
-    try { localStorage.removeItem(ASK_PROXY_KEY); localStorage.removeItem(ASK_KEY); } catch {}
+    setProxyUrl(''); setProxySecret(''); setApiKey('');
+    try { localStorage.removeItem(ASK_PROXY_KEY); localStorage.removeItem(ASK_PROXY_SECRET_KEY); localStorage.removeItem(ASK_KEY); } catch {}
   };
 
   const send = async () => {
@@ -7734,6 +7740,8 @@ function AskTab({ data, prayerData, musicData, equipData }) {
         headers['x-api-key'] = apiKey;
         headers['anthropic-version'] = '2023-06-01';
         headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      } else if (proxySecret) {
+        headers['x-proxy-secret'] = proxySecret;
       }
       const resp = await fetch(endpoint, {
         method: 'POST', headers,
@@ -7781,8 +7789,12 @@ function AskTab({ data, prayerData, musicData, equipData }) {
             <div className="flex gap-2"><span className="pill pill-accent">3</span><span>Worker Settings → Variables → Add Secret: <code className="font-mono text-xs bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code></span></div>
             <div className="flex gap-2"><span className="pill pill-accent">4</span><span>Copy your Worker URL and paste it below</span></div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-2">
             <input className="input flex-1" placeholder="https://flcc-ask.yourname.workers.dev" value={setupInput} onChange={e=>setSetupInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveSetup()} />
+          </div>
+          <div className="text-xs ink-muted mb-1">Proxy Secret <span style={{fontWeight:400}}>(optional — only if your admin set one)</span></div>
+          <div className="flex gap-2">
+            <input type="password" className="input flex-1" placeholder="Leave blank if none" value={setupSecretInput} onChange={e=>setSetupSecretInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveSetup()} />
             <button className="btn btn-accent" onClick={saveSetup} disabled={!setupInput.trim()}>Activate</button>
           </div>
         </div>
