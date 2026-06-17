@@ -10,9 +10,12 @@
 //  4. Click "Add variable" → Type: Secret
 //     Name:  ANTHROPIC_API_KEY
 //     Value: your sk-ant-... key from console.anthropic.com
-//  5. Click Save and Deploy
-//  6. Copy your Worker URL  (e.g. https://flcc-ask.yourname.workers.dev)
-//  7. Open the app → Ask FLCC tab → enter that URL in "Proxy URL" setup
+//  5. (Recommended) Add another Secret to restrict who can use the proxy:
+//     Name:  PROXY_SECRET
+//     Value: any password you choose (share this with your members)
+//  6. Click Save and Deploy
+//  7. Copy your Worker URL  (e.g. https://flcc-ask.yourname.workers.dev)
+//  8. Open the app → Ask FLCC tab → enter the Worker URL + Proxy Secret
 //
 // That's it — all members can now use Ask FLCC with no API key setup.
 // The worker also serves GET /news — live RSS headlines from trusted sources.
@@ -21,7 +24,7 @@
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, x-proxy-secret',
 };
 
 // ── RSS feeds served via GET /news ────────────────────────────────────────────
@@ -131,6 +134,17 @@ async function handleRequest(request, env) {
       JSON.stringify({ error: { message: 'ANTHROPIC_API_KEY secret not set on the Worker. See setup instructions.' } }),
       { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } }
     );
+  }
+
+  // Optional shared-secret gate — only enforced when PROXY_SECRET is set
+  if (env.PROXY_SECRET) {
+    const incoming = request.headers.get('x-proxy-secret') || '';
+    if (incoming !== env.PROXY_SECRET) {
+      return new Response(
+        JSON.stringify({ error: { message: 'Invalid proxy secret. Ask your church admin for the correct password.' } }),
+        { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
   }
 
   let body;
