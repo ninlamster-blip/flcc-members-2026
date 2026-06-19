@@ -1,0 +1,15 @@
+# Next.js build artifacts written to universe/ by distDir: '../universe'
+universe/app-build-manifest.json
+universe/build-manifest.json
+universe/react-loadable-manifest.json
+universe/cache/
+universe/server/
+universe/static/
+universe/trace
+universe/types/
+universe/package.json
+
+# Node
+node_modules/
+bible-universe/node_modules/
+bible-universe/.next/
