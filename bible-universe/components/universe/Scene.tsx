@@ -12,6 +12,7 @@ import AllNodes        from '@/components/nodes/AllNodes';
 import ConnectionLayer    from './ConnectionLayer';
 import PaulsJourneyLayer  from '@/components/layers/PaulsJourneyLayer';
 import ProphecyLayer      from '@/components/layers/ProphecyLayer';
+import RevelationLayer   from '@/components/layers/RevelationLayer';
 import { INITIAL_CAMERA_POSITION } from '@/lib/cameraUtils';
 
 /**
@@ -63,6 +64,7 @@ export default function Scene() {
         <EraDiscs />
         <ConnectionLayer />
         <ProphecyLayer />
+        <RevelationLayer />
         <PaulsJourneyLayer />
         <AllNodes />
         <JesusNode />
