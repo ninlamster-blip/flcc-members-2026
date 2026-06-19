@@ -1,12 +1,6 @@
-/**
- * Root page — renders the full-screen Bible Universe application.
- *
- * BibleUniverse is dynamically imported (ssr: false) because:
- *   1. Three.js / WebGL cannot run on the server.
- *   2. @react-three/fiber uses browser-only APIs.
- *   3. Zustand store initialization expects browser globals.
- */
+'use client';
 import dynamic from 'next/dynamic';
+import { Component, type ReactNode } from 'react';
 
 const BibleUniverse = dynamic(
   () => import('@/components/universe/BibleUniverse'),
@@ -17,7 +11,38 @@ const BibleUniverse = dynamic(
 );
 
 export default function Home() {
-  return <BibleUniverse />;
+  return (
+    <ErrorBoundary>
+      <BibleUniverse />
+    </ErrorBoundary>
+  );
+}
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="fixed inset-0 bg-cosmos-950 flex flex-col items-center justify-center gap-4 p-8">
+          <h1 className="text-3xl font-serif text-red-400">Failed to load Bible Universe</h1>
+          <pre className="text-xs text-white/50 bg-white/5 p-4 rounded max-w-xl overflow-auto whitespace-pre-wrap">
+            {this.state.error.message}
+            {'\n\n'}
+            {this.state.error.stack}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function LoadingFallback() {
