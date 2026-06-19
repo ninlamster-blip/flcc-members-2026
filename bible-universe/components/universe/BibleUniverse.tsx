@@ -1,33 +1,76 @@
 'use client';
+import { useEffect } from 'react';
+import { useUniverseStore } from '@/store/universeStore';
+import { ERAS }             from '@/data/eras';
+import Scene          from './Scene';
+import LoadingScreen  from '../ui/LoadingScreen';
+import TopBar         from '../ui/TopBar';
+import LayerToggles   from '../ui/LayerToggles';
+import DetailPanel    from '../ui/DetailPanel';
+
 /**
  * BibleUniverse — root client component.
  *
- * Orchestration responsibilities:
- *   1. Initialize node/connection/era data into the Zustand store.
- *   2. Render the R3F <Scene /> (3D canvas).
- *   3. Render all 2D UI overlays (TopBar, DetailPanel, LayerToggles, etc.).
- *   4. Register global keyboard shortcuts (Escape = deselect, / = search, F = story).
- *   5. Manage loading state and transition to the live scene.
+ * Lifecycle:
+ *   1. Mount: load era data into store (nodes + connections added in Phase 4).
+ *   2. After 1.3s: mark loading complete → LoadingScreen fades out.
+ *   3. Keyboard shortcuts registered for global navigation.
  *
- * Phase 2 will implement the Scene + data initialization.
- * Phase 3 will add node rendering inside the Scene.
+ * Layout (z-stacking):
+ *   z-0  : Scene (R3F Canvas, full-screen)
+ *   z-10  : CSS2D labels (managed by drei Html)
+ *   z-20  : TopBar, LayerToggles, DetailPanel
+ *   z-50  : LoadingScreen
  */
-
-// ─── Placeholder until Phase 2 ───────────────────────────────────────────────
-
 export default function BibleUniverse() {
+  const { initializeData, setLoadingComplete } = useUniverseStore();
+
+  useEffect(() => {
+    // Phase 4 will add nodes + connections; eras are sufficient for Phase 2
+    initializeData([], [], ERAS);
+
+    const t = setTimeout(() => setLoadingComplete(), 1300);
+    return () => clearTimeout(t);
+  }, [initializeData, setLoadingComplete]);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const store = useUniverseStore.getState();
+      const tag   = (e.target as HTMLElement).tagName;
+
+      if (e.key === 'Escape') {
+        store.selectNode(null);
+        store.closeSearch();
+        if (store.isStoryPlaying) store.stopStory();
+      }
+
+      if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        e.preventDefault();
+        store.openSearch();
+      }
+
+      if (e.key === 'f' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        store.setMode('story');
+      }
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-cosmos-950 flex flex-col items-center justify-center gap-3">
-      <h2 className="text-gold-400 font-serif text-3xl tracking-wide"
-          style={{ textShadow: '0 0 30px rgba(251,191,36,0.5)' }}>
-        Bible Universe
-      </h2>
-      <p className="text-white/30 text-sm font-serif italic">
-        Architecture complete — Phase 2 will add the 3D scene.
-      </p>
-      <div className="mt-6 text-white/20 text-xs tracking-widest uppercase">
-        Phase 1 · Architecture
-      </div>
+    <div className="fixed inset-0 bg-cosmos-950 overflow-hidden">
+      {/* 3D Scene — full-screen canvas */}
+      <Scene />
+
+      {/* UI Overlays */}
+      <TopBar />
+      <LayerToggles />
+      <DetailPanel />
+
+      {/* Loading screen — fades out on completion */}
+      <LoadingScreen />
     </div>
   );
 }
