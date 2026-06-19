@@ -2,6 +2,8 @@
 import { useUniverseStore } from '@/store/universeStore';
 import type { AppMode } from '@/types/bible';
 
+const STORY_MODES: AppMode[] = ['story', 'learn', 'presentation'];
+
 const MODES: { id: AppMode; label: string; hint: string }[] = [
   { id: 'explore',      label: 'Explore',      hint: 'Free 3D navigation' },
   { id: 'story',        label: 'Story Mode',   hint: 'Cinematic tour from Creation to Revelation' },
@@ -10,7 +12,7 @@ const MODES: { id: AppMode; label: string; hint: string }[] = [
 ];
 
 export default function TopBar() {
-  const { mode, setMode, isLoadingComplete } = useUniverseStore();
+  const { mode, setMode, startStory, isLoadingComplete } = useUniverseStore();
 
   if (!isLoadingComplete) return null;
 
@@ -35,7 +37,6 @@ export default function TopBar() {
         >
           <span className="text-base leading-none">⌕</span>
           <span>Search people, places, events…</span>
-          <span className="ml-auto text-xs opacity-50 border border-white/10 rounded px-1">Phase 6</span>
         </div>
       </div>
 
@@ -47,9 +48,9 @@ export default function TopBar() {
           <button
             key={id}
             title={hint}
-            data-active={mode === id}
+            data-active={mode === id || (id === 'story' && STORY_MODES.includes(mode))}
             className="mode-button"
-            onClick={() => setMode(id)}
+            onClick={() => id === 'story' ? startStory() : setMode(id)}
           >
             {label}
           </button>

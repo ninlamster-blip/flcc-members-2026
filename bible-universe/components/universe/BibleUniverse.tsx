@@ -1,15 +1,17 @@
 'use client';
 import { useEffect } from 'react';
 import { useUniverseStore } from '@/store/universeStore';
-import { ERAS }       from '@/data/eras';
+import { ERAS }        from '@/data/eras';
 import { ALL_NODES }   from '@/data/allNodes';
 import { CONNECTIONS } from '@/data/connections';
+import { STORY_STOPS } from '@/data/storyStops';
 import { computeLayout } from '@/lib/graphLayout';
 import Scene          from './Scene';
 import LoadingScreen  from '../ui/LoadingScreen';
 import TopBar         from '../ui/TopBar';
 import LayerToggles   from '../ui/LayerToggles';
 import DetailPanel    from '../ui/DetailPanel';
+import StoryMode      from '../modes/StoryMode';
 
 /**
  * BibleUniverse — root client component.
@@ -31,6 +33,7 @@ export default function BibleUniverse() {
   useEffect(() => {
     const nodesWithPositions = computeLayout(ALL_NODES, ERAS);
     initializeData(nodesWithPositions, CONNECTIONS, ERAS);
+    useUniverseStore.getState().setStoryStops(STORY_STOPS);
 
     const t = setTimeout(() => setLoadingComplete(), 1300);
     return () => clearTimeout(t);
@@ -71,6 +74,7 @@ export default function BibleUniverse() {
       <TopBar />
       <LayerToggles />
       <DetailPanel />
+      <StoryMode />
 
       {/* Loading screen — fades out on completion */}
       <LoadingScreen />
