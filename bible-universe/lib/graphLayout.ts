@@ -68,12 +68,12 @@ export function getNeighborhood(
 
   for (let h = 0; h < hops; h++) {
     const next = new Set<string>();
-    for (const fid of frontier) {
-      for (const { fromId, toId } of connections) {
+    Array.from(frontier).forEach((fid) => {
+      connections.forEach(({ fromId, toId }) => {
         if (fromId === fid && !visited.has(toId))   next.add(toId);
         if (toId   === fid && !visited.has(fromId)) next.add(fromId);
-      }
-    }
+      });
+    });
     next.forEach((id) => visited.add(id));
     frontier = next;
   }

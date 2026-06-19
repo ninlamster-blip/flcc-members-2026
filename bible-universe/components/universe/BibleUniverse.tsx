@@ -1,7 +1,9 @@
 'use client';
 import { useEffect } from 'react';
 import { useUniverseStore } from '@/store/universeStore';
-import { ERAS }             from '@/data/eras';
+import { ERAS }       from '@/data/eras';
+import { ALL_NODES }  from '@/data/allNodes';
+import { computeLayout } from '@/lib/graphLayout';
 import Scene          from './Scene';
 import LoadingScreen  from '../ui/LoadingScreen';
 import TopBar         from '../ui/TopBar';
@@ -26,8 +28,8 @@ export default function BibleUniverse() {
   const { initializeData, setLoadingComplete } = useUniverseStore();
 
   useEffect(() => {
-    // Phase 4 will add nodes + connections; eras are sufficient for Phase 2
-    initializeData([], [], ERAS);
+    const nodesWithPositions = computeLayout(ALL_NODES, ERAS);
+    initializeData(nodesWithPositions, [], ERAS);
 
     const t = setTimeout(() => setLoadingComplete(), 1300);
     return () => clearTimeout(t);
