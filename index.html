@@ -4400,6 +4400,25 @@ function WWLTab() {
   );
 }
 
+function BibleExplorerTab() {
+  const [iframeH, setIframeH] = useState(() => Math.max(600, window.innerHeight - 120));
+  useEffect(() => {
+    const onResize = () => setIframeH(Math.max(600, window.innerHeight - 120));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return (
+    <div className="fade-in" style={{ margin: '0 -1rem' }}>
+      <iframe
+        src="./bible-timeline.html"
+        title="Bible Timeline & Paul's Journeys"
+        style={{ width: '100%', height: iframeH, border: 'none', display: 'block' }}
+        loading="lazy"
+      />
+    </div>
+  );
+}
+
 function FaithMapTab() {
   const [iframeH, setIframeH] = useState(() => Math.max(600, window.innerHeight - 170));
   useEffect(() => {
@@ -8498,6 +8517,7 @@ const TABS = [
   { key: 'prayer',   label: 'Prayer',      requiresPrayer: true },
   { key: 'wwl',      label: 'World Watch' },
   { key: 'faithmap',  label: 'Faith Map' },
+  { key: 'bible-explorer', label: 'Bible Explorer' },
   { key: 'prayermap', label: 'Prayer Map 🗺️' },
   { key: 'music',     label: 'Music',    requiresMusic:  true },
   { key: 'equip',    label: 'Equip' },
@@ -9020,6 +9040,7 @@ function App() {
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'wwl' && <WWLTab />}
           {currentTab === 'faithmap'  && <FaithMapTab />}
+          {currentTab === 'bible-explorer' && <BibleExplorerTab />}
           {currentTab === 'prayermap' && <PrayerMapTab />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} worshipData={worshipData} />}
 
