@@ -162,6 +162,10 @@ html,body{height:100%;font-family:system-ui,'Segoe UI',sans-serif;background:var
 ::-webkit-scrollbar-thumb{background:var(--gb);border-radius:3px}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes jesusPulse{0%,100%{opacity:1}50%{opacity:.82}}
+.jesus-hub{animation:jesusPulse 3s ease-in-out infinite}
+.jesus-arc{pointer-events:none}
+.christ-node{filter:drop-shadow(0 0 4px rgba(251,191,36,.6))}
 </style>
 </head>
 <body>
@@ -535,13 +539,29 @@ function buildSVG() {
   svg.setAttribute('height', SVG_H);
   svg.setAttribute('viewBox', `0 0 ${W} ${SVG_H}`);
 
+  // Jesus supernode — center of all Scripture
+  const lcEvs = evNodes.filter(n => n.era.id === 'life-christ');
+  const jx = lcEvs.length ? Math.round((lcEvs[0].x + lcEvs[lcEvs.length-1].x) / 2) : Math.round(W / 2);
+  const jy = 50;
+
   let h = `<defs>`;
   ERAS.forEach(e => {
     h += `<filter id="gf-${e.id}" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
   });
-  h += `</defs>`;
+  h += `
+    <radialGradient id="jg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffde7"/>
+      <stop offset="40%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </radialGradient>
+    <filter id="jglow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="9" result="b1"/>
+      <feGaussianBlur stdDeviation="4" result="b2"/>
+      <feMerge><feMergeNode in="b1"/><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
 
   // Axis background
   h += `<line x1="40" y1="${AY}" x2="${W-40}" y2="${AY}" stroke="rgba(255,255,255,.06)" stroke-width="2"/>`;
@@ -563,6 +583,25 @@ function buildSVG() {
     h += `<circle cx="${x}" cy="${AY}" r="3" fill="${era.color}" opacity=".55"/>`;
   });
 
+  // OT → Jesus arcs (prophecy & typology pointing to Christ)
+  ['creation','fall','abraham','moses','david','temple','isaiah','jeremiah','daniel'].forEach(id => {
+    const np = evNodes.find(n => n.ev.id === id);
+    if (!np) return;
+    const cp1y = np.y > AY ? np.y - 150 : np.y - 55;
+    const cp2y = jy + (np.y > AY ? 140 : 60);
+    h += `<path d="M ${np.x} ${np.y} C ${np.x} ${cp1y} ${jx} ${cp2y} ${jx} ${jy}"
+      stroke="rgba(251,191,36,.32)" stroke-width="1.3" fill="none" stroke-dasharray="5,4" class="jesus-arc"/>`;
+  });
+  // Jesus → NT arcs (fulfillment radiating outward)
+  ['pentecost','paul-conversion','missionary','seven-churches','new-creation'].forEach(id => {
+    const np = evNodes.find(n => n.ev.id === id);
+    if (!np) return;
+    const cp1y = jy + (np.y > AY ? 140 : 60);
+    const cp2y = np.y > AY ? np.y - 150 : np.y - 55;
+    h += `<path d="M ${jx} ${jy} C ${jx} ${cp1y} ${np.x} ${cp2y} ${np.x} ${np.y}"
+      stroke="rgba(251,191,36,.32)" stroke-width="1.3" fill="none" stroke-dasharray="5,4" class="jesus-arc"/>`;
+  });
+
   // Era anchors + labels
   eraAnchors.forEach(ep => {
     const { era, x } = ep;
@@ -582,9 +621,12 @@ function buildSVG() {
     const { ev, era, x, y, isAbove } = np;
     const tags = (ev.tags || []).join(',');
     const isMajor = ev.tags?.includes('major');
-    h += `<circle cx="${x}" cy="${y}" r="${NR}" fill="${era.color}"
-      stroke="var(--bg2)" stroke-width="2.5"
-      class="ev-node" data-id="${ev.id}" data-era="${era.id}" data-tags="${tags}"
+    const isChrist = era.id === 'life-christ';
+    const nodeR = isChrist ? NR + 4 : NR;
+    const strokeW = isChrist ? 3 : 2.5;
+    h += `<circle cx="${x}" cy="${y}" r="${nodeR}" fill="${era.color}"
+      stroke="${isChrist ? '#fff9c4' : 'var(--bg2)'}" stroke-width="${strokeW}"
+      class="ev-node${isChrist ? ' christ-node' : ''}" data-id="${ev.id}" data-era="${era.id}" data-tags="${tags}"
       style="cursor:pointer">
       <title>${ev.name} · ${ev.date}</title>
     </circle>`;
@@ -597,6 +639,23 @@ function buildSVG() {
         style="pointer-events:none">${lbl}</text>`;
     }
   });
+
+  // Jesus Christ supernode — drawn last so it sits above everything
+  h += `
+    <circle cx="${jx}" cy="${jy}" r="28" fill="url(#jg)" filter="url(#jglow)"
+      class="jesus-hub" style="cursor:pointer">
+      <title>Jesus Christ — The Center of Scripture</title>
+    </circle>
+    <path d="M ${jx} ${jy-16} L ${jx} ${jy+16} M ${jx-12} ${jy} L ${jx+12} ${jy}"
+      stroke="rgba(255,255,255,.94)" stroke-width="4" stroke-linecap="round"
+      style="pointer-events:none"/>
+    <text x="${jx}" y="${jy+47}" text-anchor="middle" font-size="12" font-weight="700"
+      fill="#fbbf24" font-family="system-ui,sans-serif" letter-spacing=".04em"
+      style="pointer-events:none">Jesus Christ</text>
+    <text x="${jx}" y="${jy+60}" text-anchor="middle" font-size="8.5"
+      fill="rgba(251,191,36,.65)" font-family="system-ui,sans-serif" font-style="italic"
+      style="pointer-events:none">The Word Made Flesh</text>
+  `;
 
   svg.innerHTML = h;
 
@@ -629,8 +688,64 @@ function buildSVG() {
     });
   });
 
+  // Jesus hub interaction
+  const hubEl = svg.querySelector('.jesus-hub');
+  if (hubEl) {
+    hubEl.addEventListener('click', () => {
+      svg.querySelectorAll('.ev-node').forEach(n => { n.removeAttribute('filter'); n.classList.remove('selected'); });
+      dpOpenJesus();
+    });
+    hubEl.addEventListener('mouseenter', () => {
+      document.getElementById('tl-infobar').textContent =
+        'Jesus Christ  ·  The Alpha and Omega  ·  All Scripture points to and flows from Him';
+    });
+    hubEl.addEventListener('mouseleave', () => {
+      document.getElementById('tl-infobar').textContent = 'Hover or click any node to explore';
+    });
+  }
+
   setupTLDrag();
   window._tlW = W;
+}
+
+function dpOpenJesus() {
+  document.getElementById('dp-era-bar').style.background = 'linear-gradient(90deg,#fbbf24,#f97316,#fbbf24)';
+  document.getElementById('dp-meta').textContent = 'The Center of All Scripture';
+  document.getElementById('dp-meta').style.color = '#fbbf24';
+  document.getElementById('dp-title').textContent = 'Jesus Christ';
+  document.getElementById('dp-date').textContent = 'Eternal — born ~4 BC, crucified ~AD 33, risen and reigning';
+  document.getElementById('dp-body').innerHTML = `
+    <div class="dp-block">
+      <div class="dp-block-title">The Word Incarnate</div>
+      <div class="dp-quote">In the beginning was the Word, and the Word was with God, and the Word was God... And the Word became flesh and dwelt among us. — John 1:1, 14</div>
+    </div>
+    <div class="dp-block">
+      <div class="dp-block-title">The Scarlet Thread</div>
+      <div class="dp-text">Every era on this timeline — from Creation to New Creation — finds its meaning in Jesus Christ. The Old Testament anticipates Him through promise, prophecy, and type. The Gospels reveal Him. The Epistles explain Him. Revelation glorifies Him as King of Kings. He is the Second Adam, the true Passover Lamb, the Son of David, the Suffering Servant, the Son of Man, and the eternal High Priest.</div>
+    </div>
+    <div class="dp-block">
+      <div class="dp-block-title">He fulfills every thread</div>
+      <div class="dp-chips">
+        <span class="dp-chip">Second Adam</span>
+        <span class="dp-chip">Seed of Abraham</span>
+        <span class="dp-chip">Greater Moses</span>
+        <span class="dp-chip">True Passover</span>
+        <span class="dp-chip">Son of David</span>
+        <span class="dp-chip">True Temple</span>
+        <span class="dp-chip">Isaiah's Servant</span>
+        <span class="dp-chip">New Covenant</span>
+        <span class="dp-chip">Son of Man</span>
+        <span class="dp-chip">Eternal Priest</span>
+        <span class="dp-chip">Lamb of God</span>
+        <span class="dp-chip">King of Kings</span>
+      </div>
+    </div>
+    <div class="dp-block">
+      <div class="dp-block-title">All promises find their Yes in Him</div>
+      <div class="dp-quote">For no matter how many promises God has made, they are "Yes" in Christ. — 2 Corinthians 1:20</div>
+    </div>
+  `;
+  document.getElementById('dp').classList.add('open');
 }
 
 function setupTLDrag() {
