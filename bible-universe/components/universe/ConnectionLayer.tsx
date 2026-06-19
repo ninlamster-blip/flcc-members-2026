@@ -57,6 +57,7 @@ export default function ConnectionLayer() {
 
   const valid = useMemo(
     () => connections.filter((c) => {
+      if (c.type === 'prophecy') return false; // ProphecyLayer renders these with enhanced visuals
       const f = nodeMap.get(c.fromId);
       const t = nodeMap.get(c.toId);
       return f?.position && t?.position;
