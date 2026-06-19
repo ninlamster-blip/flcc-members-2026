@@ -12,6 +12,7 @@ import TopBar         from '../ui/TopBar';
 import LayerToggles   from '../ui/LayerToggles';
 import DetailPanel    from '../ui/DetailPanel';
 import StoryMode      from '../modes/StoryMode';
+import SearchOverlay  from '../ui/SearchOverlay';
 
 /**
  * BibleUniverse — root client component.
@@ -75,6 +76,7 @@ export default function BibleUniverse() {
       <LayerToggles />
       <DetailPanel />
       <StoryMode />
+      <SearchOverlay />
 
       {/* Loading screen — fades out on completion */}
       <LoadingScreen />

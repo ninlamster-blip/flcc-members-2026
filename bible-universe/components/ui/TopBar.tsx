@@ -12,7 +12,7 @@ const MODES: { id: AppMode; label: string; hint: string }[] = [
 ];
 
 export default function TopBar() {
-  const { mode, setMode, startStory, isLoadingComplete } = useUniverseStore();
+  const { mode, setMode, startStory, openSearch, isLoadingComplete } = useUniverseStore();
 
   if (!isLoadingComplete) return null;
 
@@ -29,15 +29,18 @@ export default function TopBar() {
         Bible Universe
       </div>
 
-      {/* Search placeholder — Phase 6 */}
+      {/* Search */}
       <div className="flex-1 max-w-sm">
-        <div
-          className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5
-                     text-white/30 text-sm font-serif cursor-not-allowed"
+        <button
+          onClick={openSearch}
+          className="w-full flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5
+                     text-white/30 text-sm font-serif hover:border-white/25 hover:text-white/50
+                     transition-all duration-150 text-left"
         >
           <span className="text-base leading-none">⌕</span>
-          <span>Search people, places, events…</span>
-        </div>
+          <span className="flex-1">Search people, places, events…</span>
+          <kbd className="text-xs opacity-50 border border-white/10 rounded px-1 font-mono">/</kbd>
+        </button>
       </div>
 
       <div className="flex-1" />
