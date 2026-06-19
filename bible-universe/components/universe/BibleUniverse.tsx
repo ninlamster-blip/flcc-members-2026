@@ -13,6 +13,7 @@ import LayerToggles   from '../ui/LayerToggles';
 import DetailPanel    from '../ui/DetailPanel';
 import StoryMode      from '../modes/StoryMode';
 import SearchOverlay  from '../ui/SearchOverlay';
+import EraNavigator   from '../ui/EraNavigator';
 
 /**
  * BibleUniverse — root client component.
@@ -73,6 +74,7 @@ export default function BibleUniverse() {
 
       {/* UI Overlays */}
       <TopBar />
+      <EraNavigator />
       <LayerToggles />
       <DetailPanel />
       <StoryMode />
