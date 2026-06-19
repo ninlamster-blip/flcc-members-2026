@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cosmos-bg:    #020510;
+  --gold-primary: #fbbf24;
+  --gold-glow:    rgba(251, 191, 36, 0.30);
+  --panel-bg:     rgba(8, 8, 18, 0.95);
+  --panel-border: rgba(255, 255, 255, 0.10);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background:  var(--cosmos-bg);
+  color:       white;
+  overflow:    hidden;
+  user-select: none;
+  height:      100%;
+  width:       100%;
+}
+
+/* ─── Scrollbars ──────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar        { width: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.15); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.30); }
+
+/* ─── Text selection ─────────────────────────────────────────────────────── */
+
+::selection {
+  background: var(--gold-glow);
+  color:      white;
+}
+
+/* ─── Panel utility classes ──────────────────────────────────────────────── */
+
+@layer components {
+  .panel {
+    @apply bg-cosmos-950/95 border border-white/10 rounded-xl backdrop-blur-sm;
+  }
+
+  .panel-title {
+    @apply text-gold-400 font-serif text-sm uppercase tracking-widest;
+  }
+
+  .verse-chip {
+    @apply inline-block px-2.5 py-0.5 rounded-full text-xs border
+           border-gold-500/30 bg-gold-500/10 text-gold-400;
+  }
+
+  .node-badge {
+    @apply inline-block px-2.5 py-0.5 rounded-full text-xs uppercase tracking-wider;
+  }
+
+  .mode-button {
+    @apply px-3.5 py-1.5 rounded-full border border-white/20 text-white/60 text-sm
+           font-serif tracking-wide transition-all duration-200
+           hover:border-gold-400 hover:text-gold-400
+           data-[active=true]:border-gold-400 data-[active=true]:text-gold-400
+           data-[active=true]:bg-gold-400/10;
+  }
+}

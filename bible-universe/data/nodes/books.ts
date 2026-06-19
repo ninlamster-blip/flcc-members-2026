@@ -1,0 +1,66 @@
+import type { BibleNode } from '@/types/bible';
+
+export const BOOKS: BibleNode[] = [
+  {
+    id: 'book-genesis', label: 'Genesis', type: 'book', eraId: 'creation',
+    offsetX: -120, offsetY: 60,
+    description: 'The book of beginnings — creation, fall, flood, and the foundation of the covenant with Abraham. Every theme in Scripture finds its seed here.',
+    verses: ['Gen 1:1', 'Gen 3:15', 'Gen 12:1-3'],
+    tags: ['Torah', 'origins', 'covenant', 'creation', 'beginnings'],
+    isKeyNode: true,
+  },
+  {
+    id: 'book-psalms', label: 'Psalms', type: 'book', eraId: 'kingdom',
+    offsetX: -100, offsetY: 70,
+    description: 'One hundred and fifty songs of Israel — the prayer book of the Bible, the soul of worship, and a treasury of Messianic prophecy pointing to the rejected King, the suffering Servant, and the risen Lord.',
+    verses: ['Ps 22:1', 'Ps 23:1', 'Ps 110:1', 'Ps 118:22'],
+    tags: ['poetry', 'worship', 'Messianic', 'lament', 'praise'],
+    isKeyNode: true,
+  },
+  {
+    id: 'book-isaiah', label: 'Isaiah', type: 'book', eraId: 'divided-kingdom',
+    offsetX: 80, offsetY: 80,
+    description: 'The "Fifth Gospel" — Isaiah\'s 66 chapters mirror the 66 books of the Bible and contain the clearest OT portrait of the Suffering Servant, the Messianic King, and the coming new creation.',
+    verses: ['Isa 7:14', 'Isa 53:1-12', 'Isa 61:1-2', 'Isa 65:17'],
+    tags: ['prophecy', 'Suffering Servant', 'new creation', 'Messianic'],
+    isKeyNode: true,
+  },
+  {
+    id: 'book-daniel', label: 'Daniel', type: 'book', eraId: 'exile',
+    offsetX: 80, offsetY: -70,
+    description: 'Apocalyptic prophecy in the lion\'s den — Daniel\'s Seventy Weeks and the Son of Man vision are the backbone of NT prophetic expectation from Jesus through Revelation.',
+    verses: ['Dan 7:13-14', 'Dan 9:24-27', 'Matt 24:15'],
+    tags: ['prophecy', 'apocalyptic', 'Son of Man', 'Seventy Weeks'],
+  },
+  {
+    id: 'book-john', label: 'Gospel of John', type: 'book', eraId: 'life-of-christ',
+    offsetX: -110, offsetY: 40,
+    description: 'The theological gospel — seven signs, seven "I AM" statements, and the highest Christology: the eternal Word made flesh. Written that we might believe and have life in His name.',
+    verses: ['John 1:1', 'John 3:16', 'John 20:30-31', 'John 11:25'],
+    tags: ['gospel', 'Christology', 'Word', 'eternal life', 'signs'],
+    isKeyNode: true,
+  },
+  {
+    id: 'book-romans', label: 'Romans', type: 'book', eraId: 'early-church',
+    offsetX: -100, offsetY: 80,
+    description: 'Paul\'s magnum opus — the most systematic exposition of the gospel ever written, tracing humanity\'s guilt, God\'s grace, faith\'s power, and the ultimate future of all creation.',
+    verses: ['Rom 1:16-17', 'Rom 3:23-26', 'Rom 8:1', 'Rom 8:28'],
+    tags: ['gospel', 'justification', 'faith', 'grace', 'epistle'],
+    isKeyNode: true,
+  },
+  {
+    id: 'book-hebrews', label: 'Hebrews', type: 'book', eraId: 'early-church',
+    offsetX: 100, offsetY: 60,
+    description: 'The great theological commentary linking the Old and New Testaments — showing how Jesus is the fulfillment of every priest, sacrifice, covenant, and promise in the OT.',
+    verses: ['Heb 1:1-4', 'Heb 4:14-16', 'Heb 10:1', 'Heb 11:1'],
+    tags: ['fulfillment', 'priesthood', 'covenant', 'faith', 'better'],
+  },
+  {
+    id: 'book-revelation', label: 'Revelation', type: 'book', eraId: 'revelation',
+    offsetX: 0, offsetY: 0,
+    description: 'The Apocalypse of Jesus Christ — the unveiling of the Lamb who was slain, the Rider on the white horse, the New Jerusalem descending from heaven. The grand finale of all Scripture.',
+    verses: ['Rev 1:1-3', 'Rev 5:9-10', 'Rev 21:1-5', 'Rev 22:20'],
+    tags: ['apocalyptic', 'Lamb', 'New Jerusalem', 'second coming', 'consummation'],
+    isKeyNode: true,
+  },
+];
