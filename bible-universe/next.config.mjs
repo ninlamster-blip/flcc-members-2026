@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output:      'export',        // static HTML/JS/CSS — no Node server required
-  basePath:    '/universe',     // router base — served at domain.com/universe/
   assetPrefix: '.',             // relative asset paths: ./_next/... works at any subpath
   distDir:     '../universe',   // output to repo-root/universe/ for Cloudflare to serve
 
