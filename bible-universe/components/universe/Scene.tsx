@@ -7,8 +7,9 @@ import * as THREE from 'three';
 import Starfield  from './Starfield';
 import EraDiscs   from './EraDiscs';
 import CameraRig  from './CameraRig';
-import JesusNode  from '@/components/nodes/JesusNode';
-import AllNodes   from '@/components/nodes/AllNodes';
+import JesusNode       from '@/components/nodes/JesusNode';
+import AllNodes        from '@/components/nodes/AllNodes';
+import ConnectionLayer from './ConnectionLayer';
 import { INITIAL_CAMERA_POSITION } from '@/lib/cameraUtils';
 
 /**
@@ -58,6 +59,7 @@ export default function Scene() {
       <Suspense fallback={null}>
         <Starfield count={15000} />
         <EraDiscs />
+        <ConnectionLayer />
         <AllNodes />
         <JesusNode />
       </Suspense>

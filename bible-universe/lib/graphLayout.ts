@@ -95,8 +95,11 @@ export function arcPoints(
   to:          Vec3,
   type:        'flow' | 'prophecy' | 'family' | 'theme' | 'geography',
   segments = 40,
+  seed = 0,
 ): [number, number, number][] {
-  const midX = (from.x + to.x) / 2 + (Math.random() - 0.5) * 40;
+  // Deterministic jitter: no Math.random() so geometry is stable across renders
+  const jitter = Math.sin(seed * 7.3 + 1.57) * 40;
+  const midX = (from.x + to.x) / 2 + jitter;
   const midZ = (from.z + to.z) / 2;
 
   const liftY = type === 'prophecy'
