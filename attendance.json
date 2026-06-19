@@ -1,10 +1,93 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-19T14:10:34.496Z",
-    "totalSessions": 4
+    "publishedAt": "2026-06-19T14:11:46.716Z",
+    "totalSessions": 5
   },
   "sessions": [
+    {
+      "id": "a-1781878256828-3526",
+      "date": "2026-06-19",
+      "service": "Friday",
+      "serviceLabel": "Friday Service",
+      "summary": {
+        "present": 14,
+        "absent": 23,
+        "total": 37
+      },
+      "records": [
+        {
+          "memberId": "bro-05",
+          "memberName": "Bro. Allen Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-13",
+          "memberName": "Sis. Alma Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-10",
+          "memberName": "Bro. Benedict Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-02",
+          "memberName": "Bro. Bong Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1780825146907",
+          "memberName": "Bro. Edward Pascal",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-10",
+          "memberName": "Sis. Celsa Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-08",
+          "memberName": "Bro. Edward Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-03",
+          "memberName": "Bro. Elbert Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-05",
+          "memberName": "Sis. Fretz Guerzon",
+          "status": "present"
+        }
+      ]
+    },
     {
       "id": "a-1781454078176-rske",
       "date": "2026-06-14",
