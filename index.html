@@ -4401,19 +4401,14 @@ function WWLTab() {
 }
 
 function BibleExplorerTab() {
-  const [iframeH, setIframeH] = useState(() => Math.max(600, window.innerHeight - 120));
-  useEffect(() => {
-    const onResize = () => setIframeH(Math.max(600, window.innerHeight - 120));
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
   return (
-    <div className="fade-in" style={{ margin: '0 -1rem' }}>
+    <div className="fade-in" style={{ margin: '0 -1rem', height: 'calc(100vh - 112px)' }}>
       <iframe
-        src="./bible-timeline.html"
-        title="Bible Timeline & Paul's Journeys"
-        style={{ width: '100%', height: iframeH, border: 'none', display: 'block' }}
+        src="/universe/"
+        title="Bible Universe — 3D Biblical Knowledge Graph"
+        style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
         loading="lazy"
+        allow="accelerometer; autoplay"
       />
     </div>
   );
@@ -8517,7 +8512,7 @@ const TABS = [
   { key: 'prayer',   label: 'Prayer',      requiresPrayer: true },
   { key: 'wwl',      label: 'World Watch' },
   { key: 'faithmap',  label: 'Faith Map' },
-  { key: 'bible-explorer', label: 'Bible Explorer' },
+  { key: 'bible-explorer', label: 'Bible Universe' },
   { key: 'prayermap', label: 'Prayer Map 🗺️' },
   { key: 'music',     label: 'Music',    requiresMusic:  true },
   { key: 'equip',    label: 'Equip' },
