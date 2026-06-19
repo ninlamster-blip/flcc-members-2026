@@ -3,977 +3,1004 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bible Timeline & Paul's Journeys | FLCC</title>
+<title>Bible Explorer · FLCC</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-:root {
-  --bg: #0a0e1a;
-  --bg2: #111827;
-  --bg3: #1f2937;
-  --glass: rgba(255,255,255,0.05);
-  --glass-border: rgba(255,255,255,0.1);
-  --text: #f1f5f9;
-  --text2: #94a3b8;
-  --accent: #6366f1;
-  --accent2: #8b5cf6;
-  --gold: #f59e0b;
-  --radius: 12px;
-  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+:root{
+  --bg:#0a0e1a;--bg2:#111827;--bg3:#1f2937;
+  --glass:rgba(255,255,255,.05);--gb:rgba(255,255,255,.1);
+  --text:#f1f5f9;--text2:#94a3b8;
+  --accent:#6366f1;--accent2:#8b5cf6;--gold:#f59e0b;
+  --shadow:0 8px 32px rgba(0,0,0,.45);
 }
-[data-theme="light"] {
-  --bg: #f8fafc;
-  --bg2: #ffffff;
-  --bg3: #f1f5f9;
-  --glass: rgba(0,0,0,0.03);
-  --glass-border: rgba(0,0,0,0.1);
-  --text: #0f172a;
-  --text2: #475569;
-  --shadow: 0 8px 32px rgba(0,0,0,0.1);
+[data-theme="light"]{
+  --bg:#f1f5f9;--bg2:#fff;--bg3:#e2e8f0;
+  --glass:rgba(0,0,0,.03);--gb:rgba(0,0,0,.1);
+  --text:#0f172a;--text2:#475569;
+  --shadow:0 8px 32px rgba(0,0,0,.12);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
-/* NAV */
+html,body{height:100%;font-family:system-ui,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+
+/* ── APP SHELL ── */
 #app{display:flex;flex-direction:column;height:100vh}
-#topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--bg2);border-bottom:1px solid var(--glass-border);flex-shrink:0;z-index:100}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
-#tabs{display:flex;gap:4px;background:var(--bg3);padding:4px;border-radius:10px}
-.tab-btn{padding:8px 20px;border:none;background:transparent;color:var(--text2);border-radius:7px;cursor:pointer;font-size:.9rem;font-weight:500;transition:all .2s}
-.tab-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 12px rgba(99,102,241,.4)}
-#topbar-right{display:flex;gap:10px;align-items:center}
-.icon-btn{width:36px;height:36px;border:1px solid var(--glass-border);background:var(--glass);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text);transition:all .2s}
-.icon-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
-/* MODULES */
-.module{display:none;flex:1;overflow:hidden;flex-direction:column}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 22px;
+  background:var(--bg2);border-bottom:1px solid var(--gb);flex-shrink:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+.logo-mark{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent),var(--gold));flex-shrink:0}
+.logo-mark svg{width:18px;height:18px;fill:#fff}
+#tabs{display:flex;gap:3px;background:var(--bg3);padding:3px;border-radius:9px}
+.tab-btn{padding:7px 18px;border:none;background:transparent;color:var(--text2);border-radius:6px;
+  cursor:pointer;font-size:.85rem;font-weight:500;transition:all .2s;letter-spacing:.01em}
+.tab-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  box-shadow:0 2px 10px rgba(99,102,241,.4)}
+.topbar-actions{display:flex;gap:8px}
+.icon-btn{width:34px;height:34px;border:1px solid var(--gb);background:var(--glass);
+  border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--text2);font-size:.75rem;font-weight:600;letter-spacing:.02em;transition:all .2s}
+.icon-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--accent)}
+.module{display:none;flex:1;overflow:hidden;flex-direction:column;min-height:0}
 .module.active{display:flex}
 
-/* ===== TIMELINE MODULE ===== */
-#timeline-controls{display:flex;gap:10px;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--glass-border);align-items:center;flex-wrap:wrap;flex-shrink:0}
-#search-box{flex:1;min-width:160px;max-width:280px;padding:8px 14px;background:var(--bg3);border:1px solid var(--glass-border);border-radius:8px;color:var(--text);font-size:.9rem;outline:none}
-#search-box:focus{border-color:var(--accent)}
-.filter-group{display:flex;gap:4px;flex-wrap:wrap}
-.filter-btn{padding:5px 12px;font-size:.8rem;border:1px solid var(--glass-border);background:var(--glass);color:var(--text2);border-radius:20px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.zoom-btns{display:flex;gap:4px;margin-left:auto}
-.zoom-btn{padding:6px 12px;border:1px solid var(--glass-border);background:var(--glass);color:var(--text);border-radius:6px;cursor:pointer;font-size:1rem;transition:all .2s}
-.zoom-btn:hover{background:var(--accent);color:#fff}
-#timeline-wrap{flex:1;overflow:hidden;position:relative}
-#timeline-scroll{width:100%;height:100%;overflow-x:auto;overflow-y:hidden;cursor:grab;user-select:none}
-#timeline-scroll:active{cursor:grabbing}
-#timeline-inner{display:flex;align-items:stretch;min-height:100%;padding:30px 40px;gap:0;position:relative;transition:transform .1s}
-/* Era lane */
-.era{flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid var(--glass-border);padding:0 16px 0 0;margin-right:16px;min-width:160px}
-.era-header{writing-mode:horizontal-tb;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:8px 14px;border-radius:8px;margin-bottom:12px;text-align:center}
-.era-year{font-size:.7rem;color:var(--text2);text-align:center;margin-bottom:10px}
-.era-events{display:flex;flex-direction:column;gap:8px;flex:1}
-/* Event card */
-.event-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .25s;min-width:140px;position:relative;backdrop-filter:blur(10px)}
-.event-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--accent)}
-.event-card.highlighted{border-color:var(--gold);box-shadow:0 0 16px rgba(245,158,11,.3)}
-.event-card.hidden{display:none}
-.event-icon{font-size:1.4rem;margin-bottom:6px}
-.event-name{font-size:.85rem;font-weight:600;line-height:1.3;margin-bottom:3px}
-.event-date{font-size:.72rem;color:var(--text2)}
-.event-tag{display:inline-block;font-size:.65rem;padding:2px 7px;border-radius:20px;margin-top:5px;font-weight:600;text-transform:uppercase}
-/* Timeline ruler at bottom */
-#tl-ruler{height:32px;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--glass-border);position:relative;display:flex;align-items:center;padding:0 40px;overflow:hidden}
-/* Detail panel */
-#detail-panel{position:fixed;right:0;top:60px;bottom:0;width:360px;background:var(--bg2);border-left:1px solid var(--glass-border);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:200;overflow-y:auto;display:flex;flex-direction:column}
-#detail-panel.open{transform:translateX(0)}
-.dp-header{padding:20px;background:linear-gradient(135deg,var(--accent),var(--accent2));position:relative;flex-shrink:0}
-.dp-icon{font-size:2.5rem;margin-bottom:8px}
-.dp-title{font-size:1.2rem;font-weight:700}
-.dp-date{font-size:.85rem;opacity:.85;margin-top:2px}
-.dp-close{position:absolute;top:16px;right:16px;width:28px;height:28px;background:rgba(255,255,255,.2);border:none;border-radius:50%;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center}
-.dp-body{padding:20px;display:flex;flex-direction:column;gap:16px}
-.dp-section{background:var(--bg3);border-radius:10px;padding:14px}
-.dp-section-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);margin-bottom:8px}
-.dp-section p{font-size:.9rem;line-height:1.6;color:var(--text)}
-.dp-scripture{font-family:Georgia,serif;font-style:italic;font-size:.9rem;color:var(--accent);border-left:3px solid var(--accent);padding-left:10px;line-height:1.6}
-.dp-people{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.dp-tag{padding:4px 10px;background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;font-size:.75rem}
+/* ── TIMELINE CONTROLS ── */
+#tl-controls{display:flex;align-items:center;gap:10px;padding:10px 20px;
+  background:var(--bg2);border-bottom:1px solid var(--gb);flex-shrink:0;flex-wrap:wrap}
+#tl-search{flex:1;min-width:150px;max-width:260px;padding:7px 13px;
+  background:var(--bg3);border:1px solid var(--gb);border-radius:7px;
+  color:var(--text);font-size:.85rem;outline:none;font-family:inherit}
+#tl-search::placeholder{color:var(--text2)}
+#tl-search:focus{border-color:var(--accent)}
+.filter-row{display:flex;gap:4px;flex-wrap:wrap}
+.f-btn{padding:4px 11px;font-size:.77rem;border:1px solid var(--gb);background:var(--glass);
+  color:var(--text2);border-radius:20px;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:inherit}
+.f-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.zoom-row{display:flex;gap:3px;margin-left:auto}
+.z-btn{padding:5px 11px;border:1px solid var(--gb);background:var(--glass);
+  color:var(--text);border-radius:6px;cursor:pointer;font-size:.85rem;transition:all .2s;font-family:inherit}
+.z-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-/* ===== PAUL'S JOURNEYS MODULE ===== */
-#journey-sidebar{width:320px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--glass-border);display:flex;flex-direction:column;overflow:hidden}
-@media(max-width:768px){#journey-sidebar{width:100%;max-height:240px;border-right:none;border-bottom:1px solid var(--glass-border)}}
-#journey-map-area{flex:1;position:relative;display:flex;flex-direction:column}
-#map{flex:1}
-.journey-selector{padding:16px;flex-shrink:0}
-.journey-selector h3{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);margin-bottom:10px}
-.journey-btns{display:flex;flex-direction:column;gap:6px}
-.journey-btn{padding:10px 14px;border:1px solid var(--glass-border);background:var(--glass);color:var(--text);border-radius:8px;cursor:pointer;text-align:left;transition:all .2s;font-size:.85rem;display:flex;align-items:center;gap:10px}
-.journey-btn .j-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-.journey-btn.active,.journey-btn:hover{color:#fff}
-.journey-btn.active{box-shadow:0 2px 12px rgba(0,0,0,.3)}
-.journey-info{padding:16px;border-top:1px solid var(--glass-border);flex:1;overflow-y:auto}
-.journey-info h3{font-size:1rem;font-weight:700;margin-bottom:4px}
-.journey-info .ji-meta{font-size:.8rem;color:var(--text2);margin-bottom:12px}
-.waypoint-list{display:flex;flex-direction:column;gap:4px}
-.wp-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .2s;font-size:.85rem;border:1px solid transparent}
-.wp-item:hover{background:var(--bg3);border-color:var(--glass-border)}
-.wp-item.active-wp{background:var(--bg3);border-color:var(--accent)}
-.wp-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0}
-.playbar{padding:12px 16px;border-top:1px solid var(--glass-border);background:var(--bg2);flex-shrink:0}
-.playbar-btns{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.play-btn{flex:1;padding:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:.9rem;font-weight:600;transition:all .2s}
-.play-btn:hover{opacity:.9}
-.ctrl-btn{padding:8px 12px;border:1px solid var(--glass-border);background:var(--glass);color:var(--text);border-radius:6px;cursor:pointer;font-size:.85rem;transition:all .2s}
+/* ── TIMELINE VIEWPORT ── */
+#tl-viewport{flex:1;overflow:hidden;position:relative;min-height:0}
+#tl-scroll{width:100%;height:100%;overflow-x:auto;overflow-y:auto;cursor:grab;user-select:none;-webkit-overflow-scrolling:touch}
+#tl-scroll:active{cursor:grabbing}
+#tl-svg{display:block}
+
+/* ── TIMELINE INFOBAR ── */
+#tl-infobar{flex-shrink:0;height:30px;display:flex;align-items:center;padding:0 20px;
+  background:var(--bg2);border-top:1px solid var(--gb);font-size:.78rem;color:var(--text2);
+  letter-spacing:.02em}
+
+/* ── SVG NODE STYLES ── */
+.ev-node{transition:filter .15s}
+.ev-node:hover,.ev-node.selected{filter:brightness(1.4) drop-shadow(0 0 6px currentColor)}
+.era-anchor{pointer-events:none}
+
+/* ── DETAIL PANEL ── */
+#dp{position:fixed;right:0;top:52px;bottom:0;width:340px;
+  background:var(--bg2);border-left:1px solid var(--gb);
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  z-index:200;overflow-y:auto;display:flex;flex-direction:column}
+#dp.open{transform:translateX(0)}
+#dp-header{padding:20px;position:relative;flex-shrink:0}
+.dp-era-bar{height:3px;border-radius:3px;margin-bottom:16px}
+.dp-meta{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;opacity:.7}
+.dp-title{font-size:1.25rem;font-weight:700;line-height:1.3;margin-bottom:3px}
+.dp-date{font-size:.82rem;color:var(--text2)}
+.dp-close{position:absolute;top:16px;right:16px;width:28px;height:28px;
+  background:var(--bg3);border:none;border-radius:50%;cursor:pointer;
+  color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.dp-close:hover{background:var(--accent);color:#fff}
+#dp-body{padding:0 20px 20px;display:flex;flex-direction:column;gap:14px}
+.dp-block{background:var(--bg3);border-radius:9px;padding:13px}
+.dp-block-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text2);margin-bottom:8px}
+.dp-text{font-size:.88rem;line-height:1.65;color:var(--text)}
+.dp-quote{font-family:Georgia,serif;font-style:italic;font-size:.88rem;line-height:1.6;
+  border-left:3px solid var(--accent);padding-left:11px;color:var(--accent)}
+.dp-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.dp-chip{padding:3px 9px;background:var(--glass);border:1px solid var(--gb);
+  border-radius:20px;font-size:.73rem;color:var(--text2)}
+
+/* ── PAUL'S JOURNEYS ── */
+#mod-journeys{flex-direction:row}
+@media(max-width:700px){#mod-journeys{flex-direction:column}}
+#j-sidebar{width:300px;flex-shrink:0;display:flex;flex-direction:column;
+  background:var(--bg2);border-right:1px solid var(--gb);overflow:hidden}
+@media(max-width:700px){#j-sidebar{width:100%;max-height:230px;border-right:none;border-bottom:1px solid var(--gb)}}
+#j-map{flex:1;min-height:300px}
+.j-section{padding:14px;border-bottom:1px solid var(--gb);flex-shrink:0}
+.j-section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--text2);margin-bottom:9px}
+.j-btn{display:flex;align-items:center;gap:9px;width:100%;padding:9px 12px;
+  border:1px solid var(--gb);background:var(--glass);color:var(--text);
+  border-radius:7px;cursor:pointer;text-align:left;transition:all .2s;
+  font-size:.83rem;margin-bottom:5px;font-family:inherit}
+.j-btn:last-child{margin-bottom:0}
+.j-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.j-btn.on,.j-btn:hover{color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.j-btn small{margin-left:auto;opacity:.65;font-size:.72rem}
+.j-info{flex:1;overflow-y:auto;padding:14px}
+.j-info h3{font-size:.95rem;font-weight:700;margin-bottom:3px}
+.j-info p{font-size:.8rem;line-height:1.5;color:var(--text2);margin-bottom:11px}
+.wp-list{display:flex;flex-direction:column;gap:3px}
+.wp{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;
+  cursor:pointer;transition:all .2s;font-size:.82rem;border:1px solid transparent}
+.wp:hover{background:var(--bg3);border-color:var(--gb)}
+.wp.cur{background:var(--bg3);border-color:var(--accent)}
+.wp-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.68rem;font-weight:700;color:#fff;flex-shrink:0}
+.j-playbar{padding:12px 14px;border-top:1px solid var(--gb);flex-shrink:0}
+.playbar-row{display:flex;gap:6px;margin-bottom:8px}
+.play-btn{flex:1;padding:8px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:7px;color:#fff;cursor:pointer;font-size:.83rem;font-weight:600;
+  transition:opacity .2s;font-family:inherit}
+.play-btn:hover{opacity:.88}
+.ctrl-btn{padding:7px 10px;border:1px solid var(--gb);background:var(--glass);
+  color:var(--text);border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s;font-family:inherit}
 .ctrl-btn:hover{background:var(--bg3)}
-.progress-bar{height:4px;background:var(--bg3);border-radius:4px;cursor:pointer;position:relative;overflow:hidden}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:4px;transition:width .5s}
-.journey-module-inner{display:flex;flex:1;overflow:hidden}
-@media(max-width:768px){.journey-module-inner{flex-direction:column}}
-/* MAP POPUP CUSTOM */
-.leaflet-popup-content-wrapper{background:var(--bg2)!important;color:var(--text)!important;border:1px solid var(--glass-border)!important;border-radius:12px!important;box-shadow:var(--shadow)!important;padding:0!important}
-.leaflet-popup-content{margin:0!important;min-width:240px}
+.prog-track{height:4px;background:var(--bg3);border-radius:4px;cursor:pointer;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:4px;transition:width .4s}
+
+/* ── MAP POPUP ── */
+.leaflet-popup-content-wrapper{background:var(--bg2)!important;color:var(--text)!important;
+  border:1px solid var(--gb)!important;border-radius:10px!important;padding:0!important;box-shadow:var(--shadow)!important}
+.leaflet-popup-content{margin:0!important}
 .leaflet-popup-tip-container{display:none}
-.popup-inner{padding:16px}
-.popup-inner h4{font-size:1rem;font-weight:700;margin-bottom:2px}
-.popup-inner .p-ref{font-size:.75rem;color:var(--accent);margin-bottom:10px}
-.popup-inner .p-event{font-size:.82rem;line-height:1.5;color:var(--text);margin-bottom:8px}
-.popup-inner .p-modern{font-size:.75rem;color:var(--text2);font-style:italic}
-/* Overlay for guided tour */
-#tour-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center}
-#tour-overlay.show{display:flex}
-.tour-card{background:var(--bg2);border-radius:16px;padding:30px;max-width:480px;width:90%;border:1px solid var(--glass-border);box-shadow:var(--shadow)}
-.tour-card h2{font-size:1.4rem;font-weight:700;margin-bottom:10px}
-.tour-card p{color:var(--text2);line-height:1.6;margin-bottom:20px;font-size:.95rem}
-.tour-actions{display:flex;gap:10px;justify-content:flex-end}
-.btn-primary{padding:10px 22px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:.9rem;font-weight:600}
-.btn-secondary{padding:10px 22px;background:var(--bg3);border:1px solid var(--glass-border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.9rem}
-/* Scrollbar */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:3px}
-/* Animations */
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.era{animation:fadeIn .4s ease both}
-.event-card{animation:fadeIn .3s ease both}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.animating .wp-item.active-wp .wp-num{animation:pulse 1s infinite}
-/* Map dark theme */
-.leaflet-tile{filter:brightness(.8) saturate(.7)}
+.lp{padding:14px;min-width:220px}
+.lp h4{font-size:.9rem;font-weight:700;margin-bottom:2px}
+.lp .lp-ref{font-size:.72rem;color:var(--accent);margin-bottom:8px}
+.lp .lp-ev{font-size:.8rem;line-height:1.5;margin-bottom:7px}
+.lp .lp-loc{font-size:.72rem;color:var(--text2);font-style:italic}
+.leaflet-tile{filter:brightness(.75) saturate(.6)}
 [data-theme="light"] .leaflet-tile{filter:none}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gb);border-radius:3px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes jesusPulse{0%,100%{opacity:1}50%{opacity:.82}}
+.jesus-hub{animation:jesusPulse 3s ease-in-out infinite}
+.jesus-arc{pointer-events:none}
+.christ-node{filter:drop-shadow(0 0 4px rgba(251,191,36,.6))}
 </style>
 </head>
 <body>
 <div id="app">
+
   <!-- TOP BAR -->
-  <div id="topbar">
+  <header id="topbar">
     <div class="logo">
-      <div class="logo-icon">✝</div>
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10.5" y="2" width="3" height="20" rx="1.5"/>
+          <rect x="4" y="8.5" width="16" height="3" rx="1.5"/>
+        </svg>
+      </div>
       <span>Bible Explorer</span>
     </div>
     <div id="tabs">
-      <button class="tab-btn active" onclick="switchTab('timeline')">📜 Timeline</button>
-      <button class="tab-btn" onclick="switchTab('journeys')">🗺 Paul's Journeys</button>
+      <button class="tab-btn active" data-tab="timeline" onclick="switchTab('timeline')">Timeline</button>
+      <button class="tab-btn" data-tab="journeys" onclick="switchTab('journeys')">Paul's Journeys</button>
     </div>
-    <div id="topbar-right">
-      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">☀</button>
-      <button class="icon-btn" onclick="showTour()" title="Guided tour">?</button>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">AA</button>
     </div>
-  </div>
+  </header>
 
-  <!-- MODULE 1: TIMELINE -->
+  <!-- TIMELINE MODULE -->
   <div id="mod-timeline" class="module active">
-    <div id="timeline-controls">
-      <input type="text" id="search-box" placeholder="🔍 Search events, people, places..." oninput="searchTimeline(this.value)">
-      <div class="filter-group">
-        <button class="filter-btn active" data-filter="all" onclick="setFilter(this,'all')">All</button>
-        <button class="filter-btn" data-filter="ot" onclick="setFilter(this,'ot')">Old Testament</button>
-        <button class="filter-btn" data-filter="nt" onclick="setFilter(this,'nt')">New Testament</button>
-        <button class="filter-btn" data-filter="prophet" onclick="setFilter(this,'prophet')">Prophets</button>
-        <button class="filter-btn" data-filter="king" onclick="setFilter(this,'king')">Kings</button>
-        <button class="filter-btn" data-filter="apostle" onclick="setFilter(this,'apostle')">Apostles</button>
-        <button class="filter-btn" data-filter="major" onclick="setFilter(this,'major')">Major Events</button>
+    <div id="tl-controls">
+      <input type="text" id="tl-search" placeholder="Search events, people, places" oninput="tlSearch(this.value)">
+      <div class="filter-row">
+        <button class="f-btn on"  data-f="all"     onclick="tlFilter(this,'all')">All</button>
+        <button class="f-btn"     data-f="ot"      onclick="tlFilter(this,'ot')">Old Testament</button>
+        <button class="f-btn"     data-f="nt"      onclick="tlFilter(this,'nt')">New Testament</button>
+        <button class="f-btn"     data-f="prophet" onclick="tlFilter(this,'prophet')">Prophets</button>
+        <button class="f-btn"     data-f="king"    onclick="tlFilter(this,'king')">Kings</button>
+        <button class="f-btn"     data-f="apostle" onclick="tlFilter(this,'apostle')">Apostles</button>
+        <button class="f-btn"     data-f="major"   onclick="tlFilter(this,'major')">Major Events</button>
       </div>
-      <div class="zoom-btns">
-        <button class="zoom-btn" onclick="zoomTL(-1)">−</button>
-        <button class="zoom-btn" onclick="zoomTL(1)">+</button>
-        <button class="zoom-btn" style="font-size:.75rem;padding:6px 10px" onclick="zoomTL(0)">Reset</button>
-      </div>
-    </div>
-    <div id="timeline-wrap">
-      <div id="timeline-scroll">
-        <div id="timeline-inner" id="timeline-inner"></div>
+      <div class="zoom-row">
+        <button class="z-btn" onclick="tlZoom(-1)">−</button>
+        <button class="z-btn" onclick="tlZoom(1)">+</button>
+        <button class="z-btn" style="font-size:.72rem;padding:5px 9px" onclick="tlZoom(0)">Reset</button>
       </div>
     </div>
+    <div id="tl-viewport">
+      <div id="tl-scroll">
+        <svg id="tl-svg"></svg>
+      </div>
+    </div>
+    <div id="tl-infobar">Hover or click any node to explore</div>
   </div>
 
-  <!-- MODULE 2: PAUL'S JOURNEYS -->
+  <!-- PAUL'S JOURNEYS MODULE -->
   <div id="mod-journeys" class="module">
-    <div class="journey-module-inner">
-      <div id="journey-sidebar">
-        <div class="journey-selector">
-          <h3>Select Journey</h3>
-          <div class="journey-btns" id="journey-btns"></div>
-        </div>
-        <div class="journey-info" id="journey-info"></div>
-        <div class="playbar">
-          <div class="playbar-btns">
-            <button class="ctrl-btn" onclick="rewindJourney()" title="Rewind">⏮</button>
-            <button class="play-btn" id="play-btn" onclick="togglePlay()">▶ Animate Route</button>
-            <button class="ctrl-btn" onclick="changeSpeed()" title="Speed" id="speed-btn">1×</button>
-          </div>
-          <div class="progress-bar" onclick="seekProgress(event)">
-            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-          </div>
-        </div>
+    <div id="j-sidebar">
+      <div class="j-section">
+        <div class="j-section-title">Select Journey</div>
+        <div id="j-btns"></div>
       </div>
-      <div id="journey-map-area">
-        <div id="map"></div>
+      <div class="j-info" id="j-info"></div>
+      <div class="j-playbar">
+        <div class="playbar-row">
+          <button class="ctrl-btn" onclick="jRewind()" title="Restart">&#9198;</button>
+          <button class="play-btn" id="j-play-btn" onclick="jTogglePlay()">&#9654; Animate Route</button>
+          <button class="ctrl-btn" id="j-speed-btn" onclick="jCycleSpeed()">1&#215;</button>
+        </div>
+        <div class="prog-track" onclick="jSeek(event)">
+          <div class="prog-fill" id="j-prog" style="width:0%"></div>
+        </div>
       </div>
     </div>
+    <div id="j-map"></div>
   </div>
 </div>
 
-<!-- DETAIL PANEL (Timeline) -->
-<div id="detail-panel">
-  <div class="dp-header" id="dp-header">
-    <button class="dp-close" onclick="closeDetail()">✕</button>
-    <div class="dp-icon" id="dp-icon"></div>
+<!-- DETAIL PANEL -->
+<aside id="dp">
+  <div id="dp-header">
+    <button class="dp-close" onclick="dpClose()">&#10005;</button>
+    <div class="dp-era-bar" id="dp-era-bar"></div>
+    <div class="dp-meta" id="dp-meta"></div>
     <div class="dp-title" id="dp-title"></div>
     <div class="dp-date" id="dp-date"></div>
   </div>
-  <div class="dp-body" id="dp-body"></div>
-</div>
-
-<!-- TOUR OVERLAY -->
-<div id="tour-overlay">
-  <div class="tour-card">
-    <h2 id="tour-title"></h2>
-    <p id="tour-desc"></p>
-    <div class="tour-actions">
-      <button class="btn-secondary" onclick="hideTour()">Skip Tour</button>
-      <button class="btn-primary" id="tour-next-btn" onclick="tourNext()">Next →</button>
-    </div>
-  </div>
-</div>
+  <div id="dp-body"></div>
+</aside>
 
 <script>
-// ===================== TIMELINE DATA =====================
+/* =========================================================
+   DATA
+   ========================================================= */
 const ERAS = [
-  {
-    id:'creation',name:'Creation Era',color:'#10b981',gradient:'#059669',period:'~4000–2000 BC',testament:'ot',
-    events:[
-      {id:'creation',name:'Creation',icon:'🌍',date:'~4000 BC',tags:['ot','major'],scripture:'Genesis 1:1',
-       desc:'God created the heavens and the earth in six days, bringing order from void. Light, sky, land, seas, plants, animals, and humankind were formed by divine command.',
-       people:['God','Adam','Eve'],significance:'The foundation of all existence; establishes God as sovereign Creator.'},
-      {id:'adam-eve',name:'Adam & Eve',icon:'🌿',date:'~4000 BC',tags:['ot'],scripture:'Genesis 2:7–25',
-       desc:'God formed Adam from dust and breathed life into him. Eve was created from Adam\'s rib to be his companion in the Garden of Eden.',
-       people:['Adam','Eve'],significance:'The first humans, created in God\'s image.'},
-      {id:'fall',name:'The Fall',icon:'🍎',date:'~4000 BC',tags:['ot','major'],scripture:'Genesis 3',
-       desc:'Satan, disguised as a serpent, deceived Eve into eating the forbidden fruit. Adam followed. Sin entered the world, bringing death, suffering, and separation from God.',
-       people:['Adam','Eve','Satan'],significance:'The origin of human sin; necessitates the plan of redemption.'},
-      {id:'cain-abel',name:'Cain & Abel',icon:'⚔️',date:'~3900 BC',tags:['ot'],scripture:'Genesis 4',
-       desc:'Cain, jealous that God accepted Abel\'s sacrifice but not his own, murdered his brother—the first recorded homicide in Scripture.',
-       people:['Cain','Abel'],significance:'Illustrates the devastating consequences of unchecked sin.'},
-      {id:'flood',name:'Noah\'s Flood',icon:'🌊',date:'~2350 BC',tags:['ot','major'],scripture:'Genesis 6–9',
-       desc:'God, grieved by human wickedness, sent a global flood. Noah, found righteous, built an ark for his family and pairs of every animal. The rainbow became God\'s covenant of promise.',
-       people:['Noah','Shem','Ham','Japheth'],significance:'God\'s judgment and grace; foreshadows baptism and salvation.'},
-      {id:'babel',name:'Tower of Babel',icon:'🗼',date:'~2200 BC',tags:['ot','major'],scripture:'Genesis 11:1–9',
-       desc:'Humanity united to build a tower reaching heaven, driven by pride. God confused their language and scattered them across the earth, giving rise to the nations.',
-       people:['Nimrod'],significance:'Origin of nations and languages; counterpart to Pentecost.'}
-    ]
-  },
-  {
-    id:'patriarchs',name:'Patriarch Era',color:'#f59e0b',gradient:'#d97706',period:'~2000–1700 BC',testament:'ot',
-    events:[
-      {id:'abraham',name:'Abraham',icon:'⭐',date:'~2000 BC',tags:['ot','major'],scripture:'Genesis 12–25',
-       desc:'God called Abram from Ur to Canaan, promising to make him a great nation through whom all peoples would be blessed. His faith was counted as righteousness.',
-       people:['Abraham','Sarah','Lot'],significance:'Father of faith; the Abrahamic covenant is foundational to salvation history.'},
-      {id:'isaac',name:'Isaac',icon:'🐑',date:'~1900 BC',tags:['ot'],scripture:'Genesis 21–35',
-       desc:'The miracle son of Abraham and Sarah, born when they were very old. Abraham\'s willingness to sacrifice Isaac foreshadowed the sacrifice of God\'s own Son.',
-       people:['Isaac','Rebekah','Abraham'],significance:'Child of promise; typology of Christ as the sacrificial lamb.'},
-      {id:'jacob',name:'Jacob',icon:'🌙',date:'~1850 BC',tags:['ot'],scripture:'Genesis 25–50',
-       desc:'Jacob wrestled with God and received the name Israel. His twelve sons became the twelve tribes of Israel, the foundation of the Hebrew nation.',
-       people:['Jacob','Rachel','Leah'],significance:'His twelve sons become the nation of Israel.'},
-      {id:'joseph',name:'Joseph',icon:'🎨',date:'~1750 BC',tags:['ot','major'],scripture:'Genesis 37–50',
-       desc:'Joseph, sold into slavery by his jealous brothers, rose to become second-in-command of Egypt. He saved Egypt and his family from famine, reconciling with his brothers in grace.',
-       people:['Joseph','Pharaoh','Potiphar'],significance:'A powerful type of Christ: rejected, exalted, and saving his people.'}
-    ]
-  },
-  {
-    id:'exodus',name:'Exodus Era',color:'#ef4444',gradient:'#dc2626',period:'~1500–1400 BC',testament:'ot',
-    events:[
-      {id:'moses',name:'Moses',icon:'📜',date:'~1526 BC',tags:['ot','major','prophet'],scripture:'Exodus 2',
-       desc:'Born during Pharaoh\'s edict to kill Hebrew boys, Moses was placed in a basket on the Nile, found by Pharaoh\'s daughter, and raised in the palace.',
-       people:['Moses','Miriam','Jochebed'],significance:'The greatest prophet of the OT; mediator of the Mosaic covenant.'},
-      {id:'burning-bush',name:'Burning Bush',icon:'🔥',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 3–4',
-       desc:'God appeared to Moses in a bush that burned but was not consumed, revealing His name as "I AM WHO I AM" and commissioning Moses to deliver Israel from Egypt.',
-       people:['Moses','God'],significance:'God\'s self-revelation as the eternal, ever-present deliverer.'},
-      {id:'plagues',name:'Ten Plagues',icon:'🐸',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 7–12',
-       desc:'God sent ten devastating plagues upon Egypt—water to blood, frogs, lice, flies, livestock disease, boils, hail, locusts, darkness, and the death of firstborns—to compel Pharaoh to release Israel.',
-       people:['Moses','Pharaoh','Aaron'],significance:'Demonstrates God\'s power over all creation and Egypt\'s false gods.'},
-      {id:'exodus-event',name:'The Exodus',icon:'🏜️',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 12–14',
-       desc:'On the night of Passover, with the blood of a lamb on their doorposts protecting them, approximately two million Israelites left Egypt after 430 years of slavery.',
-       people:['Moses','Aaron','Miriam'],significance:'The central redemptive event of the OT; foreshadows salvation through Christ.'},
-      {id:'red-sea',name:'Red Sea Crossing',icon:'🌊',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 14',
-       desc:'Trapped between Pharaoh\'s army and the sea, God parted the waters for Israel to cross on dry ground. When Egypt pursued, the waters returned, destroying Pharaoh\'s army.',
-       people:['Moses','Miriam'],significance:'God\'s power to save and judge; Paul connects it to baptism (1 Cor 10).'},
-      {id:'ten-commandments',name:'Ten Commandments',icon:'📋',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 20',
-       desc:'God inscribed the Ten Commandments on stone tablets at Mount Sinai, establishing the moral foundation of the Mosaic covenant. These laws governed Israel\'s relationship with God and neighbor.',
-       people:['Moses','God'],significance:'The moral law; reveals God\'s holy character and human need for a Savior.'}
-    ]
-  },
-  {
-    id:'conquest',name:'Conquest Era',color:'#8b5cf6',gradient:'#7c3aed',period:'~1406–1380 BC',testament:'ot',
-    events:[
-      {id:'joshua',name:'Joshua',icon:'⚔️',date:'~1406 BC',tags:['ot','major'],scripture:'Joshua 1',
-       desc:'After Moses\' death, Joshua led Israel into the Promised Land. God commanded him to be strong and courageous, promising to be with him as He had been with Moses.',
-       people:['Joshua','Caleb','Rahab'],significance:'A type of Jesus (same name in Hebrew: Yeshua); leads God\'s people into inheritance.'},
-      {id:'jericho',name:'Battle of Jericho',icon:'🏰',date:'~1406 BC',tags:['ot','major'],scripture:'Joshua 6',
-       desc:'God commanded Israel to march around Jericho\'s walls once daily for six days and seven times on the seventh. When the trumpets sounded and the people shouted, the walls collapsed.',
-       people:['Joshua','Rahab'],significance:'Victory through obedience; faith over military might.'},
-      {id:'canaan',name:'Settlement of Canaan',icon:'🌿',date:'~1400 BC',tags:['ot'],scripture:'Joshua 14–21',
-       desc:'The land of Canaan was divided among the twelve tribes of Israel by lot. Each tribe received its territory as God had promised to Abraham centuries before.',
-       people:['Joshua','Eleazar','Caleb'],significance:'God\'s faithfulness to His covenant with Abraham.'}
-    ]
-  },
-  {
-    id:'judges',name:'Judges Era',color:'#06b6d4',gradient:'#0891b2',period:'~1380–1050 BC',testament:'ot',
-    events:[
-      {id:'deborah',name:'Deborah',icon:'🦁',date:'~1209 BC',tags:['ot','major'],scripture:'Judges 4–5',
-       desc:'Israel\'s only female judge and prophetess, Deborah led Israel to victory over the Canaanite general Sisera. She inspired the general Barak and composed a victory song.',
-       people:['Deborah','Barak','Jael','Sisera'],significance:'God uses unexpected leaders; the Song of Deborah is one of the oldest Hebrew poems.'},
-      {id:'gideon',name:'Gideon',icon:'🏺',date:'~1169 BC',tags:['ot'],scripture:'Judges 6–8',
-       desc:'Called by God while hiding from the Midianites, Gideon defeated an army of 135,000 with only 300 men armed with torches, jars, and trumpets.',
-       people:['Gideon'],significance:'God\'s strength through human weakness.'},
-      {id:'samson',name:'Samson',icon:'💪',date:'~1115 BC',tags:['ot'],scripture:'Judges 13–16',
-       desc:'A Nazirite judge with supernatural strength given by God through his uncut hair. His relationship with Delilah led to betrayal, blindness, and imprisonment—yet his final act of faith destroyed the Philistine temple.',
-       people:['Samson','Delilah'],significance:'Illustrates human weakness and God\'s redemptive use of broken vessels.'}
-    ]
-  },
-  {
-    id:'kingdom',name:'United Kingdom',color:'#f97316',gradient:'#ea580c',period:'~1050–930 BC',testament:'ot',
-    events:[
-      {id:'saul',name:'King Saul',icon:'👑',date:'~1050 BC',tags:['ot','king'],scripture:'1 Samuel 9–31',
-       desc:'Israel\'s first king, chosen for his stature and presence. Saul\'s reign began with promise but ended in disobedience, spiritism, and divine rejection. He died in battle on Mount Gilboa.',
-       people:['Saul','Samuel','Jonathan'],significance:'Shows the danger of outward appearance over a heart devoted to God.'},
-      {id:'david',name:'King David',icon:'🎸',date:'~1010 BC',tags:['ot','king','major'],scripture:'1 Samuel 16 – 1 Kings 2',
-       desc:'A shepherd boy anointed king, David defeated Goliath, united the twelve tribes, established Jerusalem as the capital, and wrote many Psalms. He was called "a man after God\'s own heart."',
-       people:['David','Nathan','Bathsheba','Solomon'],significance:'The Davidic covenant promises an eternal throne fulfilled in Jesus Christ.'},
-      {id:'solomon',name:'King Solomon',icon:'💎',date:'~970 BC',tags:['ot','king'],scripture:'1 Kings 1–11',
-       desc:'Renowned for his God-given wisdom, Solomon ruled at the peak of Israel\'s golden age. He wrote Proverbs, Ecclesiastes, and Song of Solomon. His wealth and fame were unparalleled in the ancient world.',
-       people:['Solomon','Queen of Sheba'],significance:'His wisdom and the temple point to Christ, the true Wisdom of God.'},
-      {id:'temple',name:'Temple Construction',icon:'⛪',date:'~966 BC',tags:['ot','major'],scripture:'1 Kings 6',
-       desc:'Solomon built the First Temple in Jerusalem over seven years, using 30,000 laborers and cedars from Lebanon. It housed the Ark of the Covenant and became the center of Israelite worship.',
-       people:['Solomon','Hiram of Tyre'],significance:'God\'s dwelling with His people; fulfilled and surpassed in Christ (John 2:19).'}
-    ]
-  },
-  {
-    id:'divided',name:'Divided Kingdom',color:'#ec4899',gradient:'#db2777',period:'~930–586 BC',testament:'ot',
-    events:[
-      {id:'div-kingdom',name:'Kingdom Divides',icon:'⚡',date:'~930 BC',tags:['ot','major'],scripture:'1 Kings 12',
-       desc:'After Solomon\'s death, ten northern tribes rebelled under Jeroboam, forming the Kingdom of Israel. Two tribes (Judah and Benjamin) remained as the Kingdom of Judah under Rehoboam.',
-       people:['Rehoboam','Jeroboam'],significance:'The consequences of unfaithfulness fracture God\'s people.'},
-      {id:'elijah',name:'Elijah',icon:'🌩️',date:'~875 BC',tags:['ot','prophet'],scripture:'1 Kings 17–19; 2 Kings 2',
-       desc:'A fiery prophet who challenged 450 prophets of Baal on Mount Carmel, calling down fire from heaven. He was taken to heaven in a whirlwind and chariot of fire without dying.',
-       people:['Elijah','Ahab','Jezebel','Elisha'],significance:'Forerunner to John the Baptist; appeared at the Transfiguration with Moses.'},
-      {id:'isaiah',name:'Isaiah',icon:'📢',date:'~740 BC',tags:['ot','prophet','major'],scripture:'Isaiah 1–66',
-       desc:'The "Fifth Gospel" prophet, Isaiah wrote of the Suffering Servant who would bear the sins of many (Isa 53), the virgin birth (Isa 7:14), and the coming kingdom of peace.',
-       people:['Isaiah','Hezekiah'],significance:'More NT quotes come from Isaiah than any other OT book.'},
-      {id:'jeremiah',name:'Jeremiah',icon:'😢',date:'~626 BC',tags:['ot','prophet'],scripture:'Jeremiah 1–52',
-       desc:'The "weeping prophet" who warned Judah of coming Babylonian captivity. He prophesied the New Covenant (Jer 31:31-34), which Jesus fulfilled at the Last Supper.',
-       people:['Jeremiah','Baruch'],significance:'His prophecy of a New Covenant is foundational to the entire NT.'},
-      {id:'fall-israel',name:'Israel Falls to Assyria',icon:'💔',date:'~722 BC',tags:['ot','major'],scripture:'2 Kings 17',
-       desc:'The northern kingdom of Israel fell to Assyria under Sargon II. The ten tribes were deported and largely assimilated—the "Lost Tribes" of Israel.',
-       people:['Hoshea','Sargon II'],significance:'Fulfillment of prophetic warnings about covenant unfaithfulness.'}
-    ]
-  },
-  {
-    id:'exile',name:'Exile Era',color:'#64748b',gradient:'#475569',period:'~605–539 BC',testament:'ot',
-    events:[
-      {id:'babylon',name:'Babylonian Exile',icon:'🌆',date:'~605–586 BC',tags:['ot','major'],scripture:'2 Kings 24–25; 2 Chronicles 36',
-       desc:'Nebuchadnezzar of Babylon conquered Jerusalem in three waves (605, 597, 586 BC), destroying Solomon\'s Temple and deporting thousands of Jews to Babylon.',
-       people:['Nebuchadnezzar','Jehoiachin','Zedekiah'],significance:'The darkest hour of OT Israel; teaches dependence on God alone.'},
-      {id:'daniel',name:'Daniel',icon:'🦁',date:'~605–530 BC',tags:['ot','prophet','major'],scripture:'Daniel 1–12',
-       desc:'Daniel served in Nebuchadnezzar\'s court with integrity, interpreting dreams and surviving the lions\' den. His visions of four kingdoms, the Son of Man, and the 70 weeks are pivotal in biblical prophecy.',
-       people:['Daniel','Shadrach','Meshach','Abednego'],significance:'His prophecies precisely predict the coming of the Messiah.'},
-      {id:'ezekiel',name:'Ezekiel',icon:'👁️',date:'~593–571 BC',tags:['ot','prophet'],scripture:'Ezekiel 1–48',
-       desc:'Ezekiel, exiled in Babylon, received dramatic visions including the valley of dry bones (national restoration) and a future temple. He declared God\'s glory would return to Israel.',
-       people:['Ezekiel'],significance:'His vision of the new temple and restored Israel anticipates the new creation.'}
-    ]
-  },
-  {
-    id:'restoration',name:'Restoration Era',color:'#84cc16',gradient:'#65a30d',period:'~539–400 BC',testament:'ot',
-    events:[
-      {id:'cyrus',name:'Cyrus Decree',icon:'📜',date:'~539 BC',tags:['ot','major'],scripture:'Ezra 1:1–4',
-       desc:'Cyrus the Great of Persia, in fulfillment of Isaiah\'s prophecy (Isa 44:28), issued a decree allowing all Jews to return to their homeland and rebuild the Temple.',
-       people:['Cyrus','Zerubbabel'],significance:'Isaiah named Cyrus 150 years before his birth—a stunning prophetic fulfillment.'},
-      {id:'ezra',name:'Ezra',icon:'📚',date:'~458 BC',tags:['ot','prophet'],scripture:'Ezra 7–10',
-       desc:'A skilled scribe and priest, Ezra led a second wave of returnees to Jerusalem. He reestablished the law of Moses and led a national revival, addressing the problem of intermarriage.',
-       people:['Ezra'],significance:'Restorer of God\'s Word to the returned community.'},
-      {id:'nehemiah',name:'Nehemiah',icon:'🧱',date:'~445 BC',tags:['ot','major'],scripture:'Nehemiah 1–13',
-       desc:'Cupbearer to the Persian king, Nehemiah received permission to rebuild Jerusalem\'s walls. Despite opposition from Sanballat and Tobiah, the walls were rebuilt in 52 days.',
-       people:['Nehemiah','Sanballat','Tobiah'],significance:'Leadership, prayer, and perseverance in the face of opposition.'}
-    ]
-  },
-  {
-    id:'intertestamental',name:'Intertestamental',color:'#a78bfa',gradient:'#8b5cf6',period:'~400–4 BC',testament:'ot',
-    events:[
-      {id:'persian-rule',name:'Persian Rule',icon:'🏛️',date:'~539–333 BC',tags:['ot'],scripture:'Ezra, Nehemiah, Esther',
-       desc:'The Persian Empire ruled the known world for over two centuries. Jews lived under relative tolerance. The books of Esther, Ezra, and Nehemiah are set in this period.',
-       people:['Cyrus','Darius','Artaxerxes','Esther'],significance:'Sets the stage for Alexander\'s conquest and Hellenistic influence.'},
-      {id:'greek-rule',name:'Greek Rule',icon:'🏺',date:'~333–63 BC',tags:['ot'],scripture:'Daniel 8 (prophesied)',
-       desc:'Alexander the Great conquered the Persian Empire, spreading Greek culture across the Middle East. After his death, his generals divided the empire. The Maccabean revolt (167 BC) reclaimed Jewish worship.',
-       people:['Alexander','Antiochus Epiphanes','Judas Maccabeus'],significance:'Greek language became universal—the language in which the NT was written.'},
-      {id:'roman-rule',name:'Roman Rule',icon:'⚔️',date:'~63 BC–AD 476',tags:['ot','nt'],scripture:'Luke 2:1; John 19:15',
-       desc:'Rome conquered Jerusalem in 63 BC under Pompey. The Pax Romana provided unprecedented peace and road infrastructure that would enable the rapid spread of the gospel.',
-       people:['Julius Caesar','Augustus','Herod the Great'],significance:'The Roman world\'s infrastructure was key to gospel expansion.'}
-    ]
-  },
-  {
-    id:'life-christ',name:'Life of Christ',color:'#fbbf24',gradient:'#f59e0b',period:'~4 BC–AD 33',testament:'nt',
-    events:[
-      {id:'birth-jesus',name:'Birth of Jesus',icon:'⭐',date:'~4 BC',tags:['nt','major'],scripture:'Matthew 1–2; Luke 1–2',
-       desc:'Jesus was born in Bethlehem to the Virgin Mary through the Holy Spirit. Angels announced His birth to shepherds, and Magi from the East followed a star to worship the newborn King.',
-       people:['Mary','Joseph','Herod','Magi'],significance:'The Incarnation: God became flesh to dwell among us (John 1:14).'},
-      {id:'baptism',name:'Baptism of Jesus',icon:'🕊️',date:'~AD 26',tags:['nt','major'],scripture:'Matthew 3:13–17',
-       desc:'At age 30, Jesus came to John the Baptist in the Jordan River. As Jesus was baptized, the Holy Spirit descended like a dove and the Father\'s voice declared, "This is my beloved Son."',
-       people:['Jesus','John the Baptist'],significance:'The Trinity revealed; Jesus publicly begins His ministry.'},
-      {id:'miracles',name:'Ministry & Miracles',icon:'✨',date:'~AD 27–30',tags:['nt','major'],scripture:'Matthew, Mark, Luke, John',
-       desc:'Jesus healed the sick, raised the dead, fed thousands, calmed storms, and cast out demons. He called twelve disciples, taught the Sermon on the Mount, and revealed the Kingdom of God.',
-       people:['Jesus','Twelve Disciples','Mary Magdalene'],significance:'Demonstrates the Kingdom of God breaking into the present age.'},
-      {id:'crucifixion',name:'Crucifixion',icon:'✝️',date:'~AD 30–33',tags:['nt','major'],scripture:'Matthew 27; John 19',
-       desc:'Jesus was betrayed by Judas, tried before Pilate and the Sanhedrin, and crucified at Golgotha between two criminals. In His death, He bore the sin of the world.',
-       people:['Jesus','Pilate','Mary','John','Judas'],significance:'The central event of all history; atonement for sin accomplished.'},
-      {id:'resurrection',name:'Resurrection',icon:'🌅',date:'~AD 30–33',tags:['nt','major'],scripture:'Matthew 28; John 20–21',
-       desc:'On the third day, Jesus rose bodily from the dead. He appeared to Mary Magdalene, the disciples, and over 500 people. His resurrection is the cornerstone of Christian faith.',
-       people:['Jesus','Mary Magdalene','Thomas','Peter'],significance:'Validates Christ\'s claims and guarantees the believer\'s resurrection.'},
-      {id:'ascension',name:'Ascension',icon:'☁️',date:'~AD 33',tags:['nt','major'],scripture:'Acts 1:9–11',
-       desc:'Forty days after His resurrection, Jesus ascended to heaven before His disciples\' eyes. Two angels announced He would return in the same manner.',
-       people:['Jesus','Eleven Disciples'],significance:'Christ\'s exaltation; He now intercedes for us at the Father\'s right hand.'}
-    ]
-  },
-  {
-    id:'early-church',name:'Early Church',color:'#34d399',gradient:'#10b981',period:'~AD 33–100',testament:'nt',
-    events:[
-      {id:'pentecost',name:'Pentecost',icon:'🔥',date:'~AD 33',tags:['nt','major'],scripture:'Acts 2',
-       desc:'Fifty days after Passover, the Holy Spirit fell on 120 believers in Jerusalem with wind and tongues of fire. Peter preached and 3,000 were baptized—the birth of the Church.',
-       people:['Peter','John','Mary','Holy Spirit'],significance:'The Church is born; the New Covenant community is established.'},
-      {id:'stephen',name:'Martyrdom of Stephen',icon:'💎',date:'~AD 34',tags:['nt'],scripture:'Acts 6–7',
-       desc:'Stephen, the first Christian martyr, was stoned after delivering a sweeping speech of Israel\'s history before the Sanhedrin. As he died, he saw Jesus standing at God\'s right hand and forgave his killers.',
-       people:['Stephen','Saul of Tarsus'],significance:'His death scattered believers and spread the gospel; Saul present and consenting.'},
-      {id:'paul-conversion',name:'Paul\'s Conversion',icon:'⚡',date:'~AD 35',tags:['nt','major','apostle'],scripture:'Acts 9',
-       desc:'Saul of Tarsus, a zealous Pharisee persecuting Christians, was struck down by a blinding light on the road to Damascus. The risen Jesus spoke to him, transforming the Church\'s greatest enemy into its greatest missionary.',
-       people:['Paul (Saul)','Ananias'],significance:'The most dramatic conversion in history; validates the resurrection.'},
-      {id:'missionary',name:'Missionary Expansion',icon:'🌍',date:'~AD 46–65',tags:['nt','major','apostle'],scripture:'Acts 13–28',
-       desc:'Paul\'s three missionary journeys and voyage to Rome carried the gospel from Jerusalem throughout Asia Minor, Greece, and eventually Rome. Churches were planted across the Mediterranean world.',
-       people:['Paul','Barnabas','Silas','Timothy','Luke'],significance:'Fulfills the Great Commission; gospel reaches the ends of the earth.'}
-    ]
-  },
-  {
-    id:'revelation',name:'Revelation Era',color:'#6366f1',gradient:'#4f46e5',period:'~AD 95',testament:'nt',
-    events:[
-      {id:'seven-churches',name:'Seven Churches',icon:'📧',date:'~AD 95',tags:['nt','major'],scripture:'Revelation 1–3',
-       desc:'The risen Christ dictated specific letters to seven churches in Asia Minor: Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, and Laodicea—each with unique commendations and warnings.',
-       people:['John','Jesus Christ'],significance:'Timeless messages about faithfulness, compromise, and perseverance.'},
-      {id:'apocalyptic',name:'Apocalyptic Visions',icon:'🌈',date:'~AD 95',tags:['nt','major'],scripture:'Revelation 4–19',
-       desc:'John received visions of the heavenly throne room, seven seals, trumpets, bowls of wrath, the great harlot Babylon, the beast, and the ultimate triumph of Christ over all evil.',
-       people:['John','Angels','Lamb of God'],significance:'Reveals ultimate reality: God\'s sovereignty over all history.'},
-      {id:'new-creation',name:'New Heaven & Earth',icon:'🌟',date:'Eternal',tags:['nt','major'],scripture:'Revelation 21–22',
-       desc:'John saw the New Jerusalem descending from heaven, radiant as a bride for her husband. God dwells with humanity, there is no more death or pain. The river of life and tree of life are restored.',
-       people:['God','Lamb','Bride of Christ'],significance:'The culmination of all Scripture: Eden restored and surpassed.'}
-    ]
-  }
+  {id:'creation',name:'Creation',period:'~4000–2200 BC',color:'#10b981',testament:'ot',events:[
+    {id:'creation',name:'Creation',date:'~4000 BC',tags:['ot','major'],scripture:'Genesis 1–2',
+     desc:'God created the heavens and the earth in six days: light, sky, land, seas, plants, animals, and humankind — all from nothing, all declared very good.',
+     people:['God','Adam','Eve'],significance:'The foundation of all existence; God is established as sovereign Creator and Sustainer.'},
+    {id:'adam-eve',name:'Adam & Eve',date:'~4000 BC',tags:['ot'],scripture:'Genesis 2:7–25',
+     desc:'God formed Adam from dust and breathed life into him. Eve was formed from Adam\'s rib to be his companion. Together they lived in the Garden of Eden.',
+     people:['Adam','Eve'],significance:'The first humans created in God\'s image, establishing the dignity of every person.'},
+    {id:'fall',name:'The Fall',date:'~4000 BC',tags:['ot','major'],scripture:'Genesis 3',
+     desc:'Deceived by the serpent, Eve and then Adam ate the forbidden fruit. Sin and death entered creation. God promised a future deliverer who would crush the serpent\'s head.',
+     people:['Adam','Eve','Satan'],significance:'Origin of human sin; launches the entire redemptive narrative of Scripture.'},
+    {id:'cain-abel',name:'Cain & Abel',date:'~3900 BC',tags:['ot'],scripture:'Genesis 4',
+     desc:'Cain\'s jealousy over God\'s acceptance of Abel\'s offering drove him to murder his brother — the first homicide in Scripture.',
+     people:['Cain','Abel'],significance:'Illustrates how unchecked sin spirals from anger to violence.'},
+    {id:'flood',name:'The Flood',date:'~2350 BC',tags:['ot','major'],scripture:'Genesis 6–9',
+     desc:'God, grieved by universal wickedness, sent a global flood. Noah, found righteous, built an ark for his family and pairs of every creature. God\'s covenant was sealed with a rainbow.',
+     people:['Noah','Shem','Ham','Japheth'],significance:'Divine judgment and mercy held together; foreshadows baptism and salvation.'},
+    {id:'babel',name:'Tower of Babel',date:'~2200 BC',tags:['ot','major'],scripture:'Genesis 11:1–9',
+     desc:'Humanity united in pride to build a tower to heaven. God confused their languages and scattered them across the earth, giving rise to the nations.',
+     people:['Nimrod'],significance:'Origin of nations and languages; Pentecost reverses this division.'}
+  ]},
+  {id:'patriarchs',name:'Patriarchs',period:'~2000–1700 BC',color:'#f59e0b',testament:'ot',events:[
+    {id:'abraham',name:'Abraham',date:'~2000 BC',tags:['ot','major'],scripture:'Genesis 12–25',
+     desc:'God called Abram from Ur to Canaan, promising land, descendants, and a blessing to all nations. His faith through trial — including the near-sacrifice of Isaac — was counted as righteousness.',
+     people:['Abraham','Sarah','Lot','Ishmael'],significance:'Father of faith; the Abrahamic covenant is foundational to all salvation history.'},
+    {id:'isaac',name:'Isaac',date:'~1900 BC',tags:['ot'],scripture:'Genesis 21–35',
+     desc:'The miracle child of Abraham and Sarah, born when both were very old. Isaac\'s binding on the altar foreshadowed the sacrifice of God\'s own Son.',
+     people:['Isaac','Rebekah','Abraham'],significance:'Child of promise; typology of Christ as the sacrificial lamb.'},
+    {id:'jacob',name:'Jacob',date:'~1850 BC',tags:['ot'],scripture:'Genesis 25–50',
+     desc:'Jacob wrestled with God through the night and received the name Israel, meaning "struggles with God." His twelve sons became the twelve tribes of Israel.',
+     people:['Jacob','Rachel','Leah'],significance:'His twelve sons are the foundation of the nation of Israel.'},
+    {id:'joseph',name:'Joseph',date:'~1750 BC',tags:['ot','major'],scripture:'Genesis 37–50',
+     desc:'Sold into slavery by his brothers, Joseph rose to second-in-command of Egypt through providential suffering. His forgiveness of his brothers and salvation of Egypt foreshadow Christ.',
+     people:['Joseph','Pharaoh','Judah'],significance:'A powerful type of Christ: rejected, exalted, and saving his people through grace.'}
+  ]},
+  {id:'exodus',name:'Exodus',period:'~1526–1400 BC',color:'#ef4444',testament:'ot',events:[
+    {id:'moses',name:'Moses',date:'~1526 BC',tags:['ot','major','prophet'],scripture:'Exodus 2',
+     desc:'Born during Pharaoh\'s genocide of Hebrew boys, Moses was hidden in a basket on the Nile, rescued by Pharaoh\'s daughter, and raised in the royal palace before fleeing to Midian.',
+     people:['Moses','Jochebed','Miriam','Pharaoh\'s daughter'],significance:'The greatest OT prophet; mediator of the Mosaic covenant.'},
+    {id:'burning-bush',name:'Burning Bush',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 3–4',
+     desc:'God appeared to Moses in a bush burning but unconsumed, revealing His name "I AM WHO I AM" and commissioning Moses to lead Israel out of Egypt.',
+     people:['Moses','God'],significance:'God\'s self-revelation as the eternal, ever-present One who acts to deliver.'},
+    {id:'plagues',name:'Ten Plagues',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 7–12',
+     desc:'God sent ten devastating plagues on Egypt — water to blood, frogs, lice, flies, livestock death, boils, hail, locusts, darkness, and the death of every firstborn — to break Pharaoh\'s grip.',
+     people:['Moses','Aaron','Pharaoh'],significance:'Demonstrates God\'s absolute power over creation and exposes Egypt\'s gods as powerless.'},
+    {id:'exodus-event',name:'The Exodus',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 12–14',
+     desc:'On Passover night, with lamb\'s blood on their doorposts, approximately two million Israelites left Egypt after 430 years of bondage — the central redemptive event of the Old Testament.',
+     people:['Moses','Aaron','Miriam'],significance:'The paradigm for all of God\'s acts of salvation; fulfilled in Christ our Passover lamb.'},
+    {id:'red-sea',name:'Red Sea Crossing',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 14',
+     desc:'Pinned between Pharaoh\'s army and the sea, God parted the waters. Israel crossed on dry ground. The waters returned, destroying Egypt\'s army.',
+     people:['Moses','Miriam'],significance:'Salvation through water; Paul connects it to baptism (1 Corinthians 10).'},
+    {id:'ten-commandments',name:'Ten Commandments',date:'~1446 BC',tags:['ot','major'],scripture:'Exodus 20',
+     desc:'God inscribed the Ten Commandments on stone tablets at Sinai — the moral foundation of the Mosaic covenant, governing Israel\'s relationship with God and neighbor.',
+     people:['Moses','God'],significance:'Reveals God\'s holy character and humanity\'s need for a Savior who fulfills the law.'}
+  ]},
+  {id:'conquest',name:'Conquest',period:'~1406–1380 BC',color:'#8b5cf6',testament:'ot',events:[
+    {id:'joshua',name:'Joshua',date:'~1406 BC',tags:['ot','major'],scripture:'Joshua 1',
+     desc:'God appointed Joshua as Moses\'s successor and commanded him to be strong and courageous. The promise: "As I was with Moses, so I will be with you — I will never leave or forsake you."',
+     people:['Joshua','Caleb','Rahab'],significance:'Joshua (Yeshua) is a type of Jesus who leads God\'s people into their inheritance.'},
+    {id:'jericho',name:'Jericho',date:'~1406 BC',tags:['ot','major'],scripture:'Joshua 6',
+     desc:'God commanded Israel to march around Jericho\'s walls for seven days. On the seventh day, after seven circuits and a great shout, the walls collapsed without a single weapon drawn.',
+     people:['Joshua','Rahab'],significance:'Victory through obedience and faith rather than military strategy.'},
+    {id:'canaan',name:'Canaan Settled',date:'~1400 BC',tags:['ot'],scripture:'Joshua 14–21',
+     desc:'The Promised Land was divided by lot among the twelve tribes, fulfilling God\'s centuries-old promise to Abraham.',
+     people:['Joshua','Eleazar','Caleb'],significance:'God\'s faithfulness across generations to His covenantal word.'}
+  ]},
+  {id:'judges',name:'Judges',period:'~1380–1050 BC',color:'#06b6d4',testament:'ot',events:[
+    {id:'deborah',name:'Deborah',date:'~1209 BC',tags:['ot','major'],scripture:'Judges 4–5',
+     desc:'Israel\'s only female judge and prophetess, Deborah led Israel to decisive victory over Canaanite general Sisera. Her victory song is one of the oldest Hebrew poems in existence.',
+     people:['Deborah','Barak','Jael','Sisera'],significance:'God raises unexpected leaders; the Song of Deborah predates Homer by centuries.'},
+    {id:'gideon',name:'Gideon',date:'~1169 BC',tags:['ot'],scripture:'Judges 6–8',
+     desc:'Called by God while hiding from Midianites, the reluctant Gideon defeated a 135,000-man army with only 300 men carrying torches, jars, and trumpets.',
+     people:['Gideon'],significance:'God\'s power is perfected in human weakness.'},
+    {id:'samson',name:'Samson',date:'~1115 BC',tags:['ot'],scripture:'Judges 13–16',
+     desc:'A Nazirite judge with supernatural God-given strength. Betrayed by Delilah, he was blinded and imprisoned by the Philistines — yet his final prayer brought down their temple.',
+     people:['Samson','Delilah'],significance:'Even broken vessels can be redeemed for God\'s purposes.'}
+  ]},
+  {id:'kingdom',name:'United Kingdom',period:'~1050–930 BC',color:'#f97316',testament:'ot',events:[
+    {id:'saul',name:'King Saul',date:'~1050 BC',tags:['ot','king'],scripture:'1 Samuel 9–31',
+     desc:'Israel\'s first king, chosen for his stature and presence. His reign began with promise but ended in disobedience, consultation of a medium, and death in battle at Mount Gilboa.',
+     people:['Saul','Samuel','Jonathan'],significance:'Outward appearance versus a heart devoted to God.'},
+    {id:'david',name:'King David',date:'~1010 BC',tags:['ot','king','major'],scripture:'1 Sam 16 – 1 Kings 2',
+     desc:'A shepherd-boy anointed king, David defeated Goliath, united the tribes, established Jerusalem as the capital, and wrote many Psalms. God called him "a man after my own heart."',
+     people:['David','Nathan','Bathsheba','Solomon'],significance:'The Davidic covenant guarantees an eternal throne fulfilled in Jesus Christ.'},
+    {id:'solomon',name:'King Solomon',date:'~970 BC',tags:['ot','king'],scripture:'1 Kings 1–11',
+     desc:'Solomon reigned at the height of Israel\'s golden age. Famous for divine wisdom, he wrote Proverbs, Ecclesiastes, and Song of Solomon, and received the Queen of Sheba.',
+     people:['Solomon','Queen of Sheba'],significance:'His wisdom and temple foreshadow Christ, the true Wisdom of God.'},
+    {id:'temple',name:'Temple Built',date:'~966 BC',tags:['ot','major'],scripture:'1 Kings 6',
+     desc:'Solomon\'s Temple was constructed over seven years using 30,000 laborers. At its dedication, God\'s glory filled the temple in a cloud, vindicating forty years of preparation.',
+     people:['Solomon','Hiram of Tyre'],significance:'God dwelling with His people; superseded by Christ, the true temple (John 2:19).'}
+  ]},
+  {id:'divided',name:'Divided Kingdom',period:'~930–586 BC',color:'#ec4899',testament:'ot',events:[
+    {id:'div-kingdom',name:'Kingdom Divides',date:'~930 BC',tags:['ot','major'],scripture:'1 Kings 12',
+     desc:'Ten northern tribes rebelled after Solomon\'s death, forming the Kingdom of Israel under Jeroboam. Two tribes remained as Judah under Rehoboam. The united monarchy never recovered.',
+     people:['Rehoboam','Jeroboam'],significance:'Covenant unfaithfulness fractures God\'s people.'},
+    {id:'elijah',name:'Elijah',date:'~875 BC',tags:['ot','prophet'],scripture:'1 Kings 17–19; 2 Kings 2',
+     desc:'A fiery prophet who challenged 450 prophets of Baal on Mount Carmel, calling down fire from heaven. He was taken to heaven in a whirlwind without dying.',
+     people:['Elijah','Ahab','Jezebel','Elisha'],significance:'Forerunner to John the Baptist; appears at the Transfiguration with Moses.'},
+    {id:'isaiah',name:'Isaiah',date:'~740 BC',tags:['ot','prophet','major'],scripture:'Isaiah 1–66',
+     desc:'The "Fifth Gospel" prophet foretold the Suffering Servant (Isaiah 53), the virgin birth (Isaiah 7:14), and the coming eternal Kingdom. More NT quotes are drawn from Isaiah than any other OT book.',
+     people:['Isaiah','Hezekiah'],significance:'Arguably the most messianic book in the Old Testament.'},
+    {id:'jeremiah',name:'Jeremiah',date:'~626 BC',tags:['ot','prophet'],scripture:'Jeremiah 1–52',
+     desc:'The "weeping prophet" warned Judah of Babylonian captivity for decades. He prophesied the New Covenant (Jeremiah 31:31–34), which Jesus fulfilled at the Last Supper.',
+     people:['Jeremiah','Baruch'],significance:'His New Covenant prophecy is the theological hinge between the Testaments.'},
+    {id:'fall-israel',name:'Israel Falls',date:'~722 BC',tags:['ot','major'],scripture:'2 Kings 17',
+     desc:'The northern kingdom fell to Assyria under Sargon II. The ten tribes were deported and dispersed, becoming the "Lost Tribes" of Israel.',
+     people:['Hoshea','Sargon II'],significance:'Fulfillment of every prophetic warning about covenant unfaithfulness.'}
+  ]},
+  {id:'exile',name:'Exile',period:'~605–539 BC',color:'#64748b',testament:'ot',events:[
+    {id:'babylon',name:'Babylonian Exile',date:'~605–586 BC',tags:['ot','major'],scripture:'2 Kings 24–25',
+     desc:'Nebuchadnezzar conquered Jerusalem in three waves, destroying Solomon\'s Temple in 586 BC and deporting thousands of Jews to Babylon — the darkest hour of Old Testament Israel.',
+     people:['Nebuchadnezzar','Jehoiachin','Zedekiah'],significance:'Teaches total dependence on God alone when all visible supports are gone.'},
+    {id:'daniel',name:'Daniel',date:'~605–530 BC',tags:['ot','prophet','major'],scripture:'Daniel 1–12',
+     desc:'Serving Babylon\'s kings with integrity, Daniel interpreted dreams, survived the lions\' den, and received visions of four empires, the Son of Man, and the seventy weeks — pivotal prophetic material.',
+     people:['Daniel','Shadrach','Meshach','Abednego'],significance:'His seventy-weeks prophecy precisely predicts the arrival of the Messiah.'},
+    {id:'ezekiel',name:'Ezekiel',date:'~593–571 BC',tags:['ot','prophet'],scripture:'Ezekiel 1–48',
+     desc:'Exiled in Babylon, Ezekiel received visions of God\'s departing and returning glory, the valley of dry bones restored to life, and a future temple of extraordinary proportions.',
+     people:['Ezekiel'],significance:'His visions of restoration and new creation anticipate the Book of Revelation.'}
+  ]},
+  {id:'restoration',name:'Restoration',period:'~539–400 BC',color:'#84cc16',testament:'ot',events:[
+    {id:'cyrus',name:'Cyrus Decree',date:'~539 BC',tags:['ot','major'],scripture:'Ezra 1:1–4',
+     desc:'Cyrus the Great of Persia issued a decree permitting Jews to return home and rebuild the Temple — fulfilling Isaiah\'s prophecy that named Cyrus 150 years before his birth.',
+     people:['Cyrus','Zerubbabel'],significance:'One of the most astonishing named-prophecy fulfillments in Scripture.'},
+    {id:'ezra',name:'Ezra',date:'~458 BC',tags:['ot','prophet'],scripture:'Ezra 7–10',
+     desc:'Priest and scribe Ezra led a second wave of returnees, reestablished the law of Moses, and led a national revival of faithfulness to the covenant.',
+     people:['Ezra'],significance:'Restorer of God\'s Word to the returned community.'},
+    {id:'nehemiah',name:'Nehemiah',date:'~445 BC',tags:['ot','major'],scripture:'Nehemiah 1–13',
+     desc:'Cupbearer to Artaxerxes, Nehemiah received permission to rebuild Jerusalem\'s walls. Despite fierce opposition, the walls were completed in 52 days — a work recognized as God\'s doing.',
+     people:['Nehemiah','Sanballat','Tobiah'],significance:'Prayer-driven leadership under opposition; a model for kingdom builders.'}
+  ]},
+  {id:'intertestamental',name:'Intertestamental',period:'~400–4 BC',color:'#a78bfa',testament:'ot',events:[
+    {id:'persian-rule',name:'Persian Rule',date:'~539–333 BC',tags:['ot'],scripture:'Esther; Ezra; Nehemiah',
+     desc:'For over two centuries Jews lived under Persian tolerance. The books of Esther, Ezra, and Nehemiah are set in this era. Persian royal decrees shaped Jewish identity.',
+     people:['Cyrus','Darius','Artaxerxes','Esther'],significance:'God\'s providence behind a pagan empire protecting His people.'},
+    {id:'greek-rule',name:'Greek Rule',date:'~333–63 BC',tags:['ot'],scripture:'Daniel 8 (prophesied)',
+     desc:'Alexander the Great swept through the Middle East, spreading Greek language and culture. After his death, the Maccabean revolt (167 BC) restored Jewish worship from Antiochus Epiphanes\' desecration.',
+     people:['Alexander','Antiochus IV','Judas Maccabeus'],significance:'Greek became the universal language — the tongue in which the NT was written.'},
+    {id:'roman-rule',name:'Roman Rule',date:'~63 BC–',tags:['ot','nt'],scripture:'Luke 2:1; John 19:15',
+     desc:'Rome conquered Jerusalem in 63 BC. The Pax Romana provided unprecedented peace and road infrastructure that would enable rapid gospel expansion.',
+     people:['Julius Caesar','Augustus','Herod the Great'],significance:'Roman roads and Koine Greek created the perfect conditions for the gospel.'}
+  ]},
+  {id:'life-christ',name:'Life of Christ',period:'~4 BC–AD 33',color:'#fbbf24',testament:'nt',events:[
+    {id:'birth-jesus',name:'Birth of Jesus',date:'~4 BC',tags:['nt','major'],scripture:'Matthew 1–2; Luke 1–2',
+     desc:'Jesus was born in Bethlehem to the virgin Mary by the Holy Spirit. Angels proclaimed the news to shepherds; Magi from the East followed a star to worship the King.',
+     people:['Mary','Joseph','Herod','Magi'],significance:'The Incarnation: the eternal Word became flesh to dwell among us (John 1:14).'},
+    {id:'baptism',name:'Baptism',date:'~AD 26',tags:['nt','major'],scripture:'Matthew 3:13–17',
+     desc:'At age 30, Jesus was baptized by John in the Jordan. The Spirit descended as a dove; the Father\'s voice declared: "This is my beloved Son, in whom I am well pleased."',
+     people:['Jesus','John the Baptist'],significance:'The Trinity revealed in one moment; Jesus\' public ministry begins.'},
+    {id:'miracles',name:'Ministry',date:'~AD 27–30',tags:['nt','major'],scripture:'Matthew, Mark, Luke, John',
+     desc:'Jesus healed the sick, raised the dead, fed thousands, calmed storms, and cast out demons. He taught the Sermon on the Mount and announced the arrival of God\'s Kingdom.',
+     people:['Jesus','Twelve Disciples','Mary Magdalene'],significance:'The Kingdom of God breaking into the present age in power.'},
+    {id:'crucifixion',name:'Crucifixion',date:'~AD 30–33',tags:['nt','major'],scripture:'Matthew 27; John 19',
+     desc:'Betrayed by Judas, tried before Pilate and the Sanhedrin, Jesus was crucified at Golgotha between two criminals. In dying, He bore the sin of the world.',
+     people:['Jesus','Pilate','Judas','Mary','John'],significance:'The central event of all history; atonement for human sin accomplished.'},
+    {id:'resurrection',name:'Resurrection',date:'~AD 30–33',tags:['nt','major'],scripture:'Matthew 28; John 20–21',
+     desc:'On the third day Jesus rose bodily from the dead. He appeared to Mary Magdalene, the disciples, and over 500 at one time. The empty tomb is the cornerstone of Christian faith.',
+     people:['Jesus','Mary Magdalene','Thomas','Peter'],significance:'Validates all of Christ\'s claims; guarantees the believer\'s resurrection.'},
+    {id:'ascension',name:'Ascension',date:'~AD 33',tags:['nt','major'],scripture:'Acts 1:9–11',
+     desc:'Forty days after the resurrection, Jesus ascended into heaven before the disciples. Angels announced He would return in the same way.',
+     people:['Jesus','Eleven Disciples'],significance:'Christ enthroned at the Father\'s right hand, interceding for believers.'}
+  ]},
+  {id:'early-church',name:'Early Church',period:'~AD 33–100',color:'#34d399',testament:'nt',events:[
+    {id:'pentecost',name:'Pentecost',date:'~AD 33',tags:['nt','major'],scripture:'Acts 2',
+     desc:'The Holy Spirit fell on 120 believers in Jerusalem with wind and tongues of fire. Peter preached; 3,000 were baptized in a single day. The Church was born.',
+     people:['Peter','John','Mary'],significance:'The new-covenant community is established; reverses Babel\'s division.'},
+    {id:'stephen',name:'Stephen',date:'~AD 34',tags:['nt'],scripture:'Acts 6–7',
+     desc:'Stephen, the first Christian martyr, was stoned after a sweeping speech before the Sanhedrin. As he died he saw Jesus standing at God\'s right hand and forgave his killers.',
+     people:['Stephen','Saul of Tarsus'],significance:'His death scattered believers and spread the gospel; Saul was present.'},
+    {id:'paul-conversion',name:'Paul Converted',date:'~AD 35',tags:['nt','major','apostle'],scripture:'Acts 9',
+     desc:'Saul of Tarsus, the Church\'s foremost persecutor, was blinded by a light and met the risen Jesus on the road to Damascus. Transformed, he became history\'s greatest missionary.',
+     people:['Paul (Saul)','Ananias'],significance:'The most dramatic conversion in history; validates the resurrection.'},
+    {id:'missionary',name:'Missionary Expansion',date:'~AD 46–65',tags:['nt','major','apostle'],scripture:'Acts 13–28',
+     desc:'Paul\'s three journeys and voyage to Rome carried the gospel throughout Asia Minor, Greece, and to the heart of the empire. Churches were planted across the Mediterranean world.',
+     people:['Paul','Barnabas','Silas','Timothy','Luke'],significance:'Fulfills the Great Commission; gospel reaches the ends of the earth.'}
+  ]},
+  {id:'revelation',name:'Revelation',period:'~AD 95',color:'#6366f1',testament:'nt',events:[
+    {id:'seven-churches',name:'Seven Churches',date:'~AD 95',tags:['nt','major'],scripture:'Revelation 1–3',
+     desc:'The risen Christ dictated letters to seven churches in Asia Minor — Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, and Laodicea — each with specific commendation and warning.',
+     people:['John','Jesus Christ'],significance:'Timeless diagnosis of church health across all eras.'},
+    {id:'apocalyptic',name:'Apocalyptic Visions',date:'~AD 95',tags:['nt','major'],scripture:'Revelation 4–19',
+     desc:'John received visions of the heavenly throne, seven seals, trumpets and bowls of wrath, the beast, Babylon, and the ultimate triumph of Christ over every power.',
+     people:['John','Angels','The Lamb'],significance:'Reveals ultimate reality: God is sovereign over all history.'},
+    {id:'new-creation',name:'New Creation',date:'Eternal',tags:['nt','major'],scripture:'Revelation 21–22',
+     desc:'John saw the New Jerusalem descending from heaven, radiant as a bride. God dwells with humanity; there is no more death, pain, or sea. The river and tree of life are restored.',
+     people:['God','The Lamb','Bride of Christ'],significance:'The culmination of all Scripture: Eden surpassed, God with His people forever.'}
+  ]}
 ];
 
-// ===================== PAUL'S JOURNEY DATA =====================
 const JOURNEYS = {
-  first: {
-    name:'First Missionary Journey',color:'#f59e0b',year:'~AD 46–48',
-    scripture:'Acts 13–14',
-    desc:'Paul and Barnabas traveled from Antioch through Cyprus and into Asia Minor, preaching in synagogues and planting the first Gentile churches.',
+  first:{name:'First Missionary Journey',color:'#f59e0b',year:'~AD 46–48',scripture:'Acts 13–14',
+    desc:'Paul and Barnabas traveled from Antioch through Cyprus and into Asia Minor, planting the first Gentile churches.',
     waypoints:[
-      {name:'Antioch (Syria)',coords:[36.20,36.16],ref:'Acts 13:1-3',
-       events:'Called by the Holy Spirit; sent out by the church. The first base of Gentile missions.',
-       modern:'Antakya, Turkey'},
-      {name:'Seleucia',coords:[36.12,36.34],ref:'Acts 13:4',
-       events:'Set sail for Cyprus from the port city of Seleucia.',
-       modern:'Samandağ, Turkey'},
-      {name:'Salamis (Cyprus)',coords:[33.90,35.17],ref:'Acts 13:5',
-       events:'Preached in the Jewish synagogues; John Mark accompanied as helper.',
-       modern:'Near Famagusta, Cyprus'},
-      {name:'Paphos (Cyprus)',coords:[32.41,34.77],ref:'Acts 13:6-12',
-       events:'Confronted the sorcerer Elymas; Sergius Paulus, the proconsul, believed.',
-       modern:'Paphos, Cyprus'},
-      {name:'Perga',coords:[30.85,36.96],ref:'Acts 13:13',
-       events:'John Mark left the team and returned to Jerusalem here.',
-       modern:'Murtina, Turkey'},
-      {name:'Pisidian Antioch',coords:[30.52,38.28],ref:'Acts 13:14-50',
-       events:'Paul\'s synagogue sermon summarizing redemptive history. Expelled by Jewish leaders; Gentiles rejoiced.',
-       modern:'Yalvaç, Turkey'},
-      {name:'Iconium',coords:[32.48,37.87],ref:'Acts 13:51-14:5',
-       events:'Many Jews and Gentiles believed; opposition forced them to flee.',
-       modern:'Konya, Turkey'},
-      {name:'Lystra',coords:[32.13,37.58],ref:'Acts 14:6-20',
-       events:'Healed a lame man; crowd called them gods (Zeus and Hermes). Paul stoned and left for dead, then resumed preaching.',
-       modern:'Hatunsaray, Turkey'},
-      {name:'Derbe',coords:[33.38,37.36],ref:'Acts 14:20-21',
-       events:'Preached the gospel and made many disciples before retracing their steps.',
-       modern:'Kerti Höyük, Turkey'},
-      {name:'Antioch (Syria)',coords:[36.20,36.18],ref:'Acts 14:26-28',
-       events:'Returned and reported to the church all that God had done with them, especially opening faith to the Gentiles.',
-       modern:'Antakya, Turkey'}
-    ]
-  },
-  second: {
-    name:'Second Missionary Journey',color:'#6366f1',year:'~AD 49–52',
-    scripture:'Acts 15:36–18:22',
-    desc:'Paul and Silas (later joined by Timothy and Luke) traveled overland and then into Europe for the first time, establishing churches in Philippi, Thessalonica, Berea, Athens, and Corinth.',
+      {name:'Antioch (Syria)',coords:[36.20,36.16],ref:'Acts 13:1–3',events:'Called by the Holy Spirit. The first base of Gentile missions.',modern:'Antakya, Turkey'},
+      {name:'Seleucia',coords:[36.12,36.34],ref:'Acts 13:4',events:'Sailed for Cyprus from this Antiochene port.',modern:'Samandağ, Turkey'},
+      {name:'Salamis, Cyprus',coords:[33.90,35.17],ref:'Acts 13:5',events:'Preached in Jewish synagogues; John Mark accompanied as helper.',modern:'Near Famagusta, Cyprus'},
+      {name:'Paphos, Cyprus',coords:[32.41,34.77],ref:'Acts 13:6–12',events:'Confronted sorcerer Elymas. Proconsul Sergius Paulus believed — a senior Roman official embracing the faith.',modern:'Paphos, Cyprus'},
+      {name:'Perga',coords:[30.85,36.96],ref:'Acts 13:13',events:'John Mark left the team here and returned to Jerusalem.',modern:'Murtina, Turkey'},
+      {name:'Pisidian Antioch',coords:[30.52,38.28],ref:'Acts 13:14–50',events:'Paul\'s landmark synagogue sermon. Expelled by Jewish leaders; Gentiles rejoiced and the Word spread through the region.',modern:'Yalvaç, Turkey'},
+      {name:'Iconium',coords:[32.48,37.87],ref:'Acts 13:51–14:5',events:'Many Jews and Gentiles believed. Growing opposition forced them to flee.',modern:'Konya, Turkey'},
+      {name:'Lystra',coords:[32.13,37.58],ref:'Acts 14:6–20',events:'Healed a lame man. Crowd called them gods; Paul stoned and left for dead — rose and continued preaching.',modern:'Hatunsaray, Turkey'},
+      {name:'Derbe',coords:[33.38,37.36],ref:'Acts 14:20–21',events:'Made many disciples before retracing their steps to strengthen the new churches.',modern:'Kerti Höyük, Turkey'},
+      {name:'Antioch (Syria)',coords:[36.20,36.18],ref:'Acts 14:26–28',events:'Returned and reported to the church how God had opened faith to the Gentiles.',modern:'Antakya, Turkey'}
+    ]},
+  second:{name:'Second Missionary Journey',color:'#6366f1',year:'~AD 49–52',scripture:'Acts 15:36–18:22',
+    desc:'Paul and Silas, later joined by Timothy and Luke, traveled overland into Europe — establishing churches in Philippi, Thessalonica, Athens, and Corinth.',
     waypoints:[
-      {name:'Antioch (Syria)',coords:[36.20,36.14],ref:'Acts 15:36-40',
-       events:'Paul and Barnabas split over John Mark; Paul takes Silas and departs.',
-       modern:'Antakya, Turkey'},
-      {name:'Derbe & Lystra',coords:[32.10,37.56],ref:'Acts 16:1-5',
-       events:'Paul circumcised Timothy to remove a barrier to Jewish ministry; strengthened the churches.',
-       modern:'South-central Turkey'},
-      {name:'Troas',coords:[26.17,39.77],ref:'Acts 16:8-10',
-       events:'Paul received the Macedonian vision: "Come over to Macedonia and help us." The gospel crosses into Europe.',
-       modern:'Alexandria Troas, Turkey'},
-      {name:'Philippi',coords:[24.28,41.01],ref:'Acts 16:12-40',
-       events:'Lydia, a purple cloth dealer, became Europe\'s first convert. Paul and Silas imprisoned; earthquake freed them; jailer converted.',
-       modern:'Krenides, Greece'},
-      {name:'Thessalonica',coords:[22.95,40.63],ref:'Acts 17:1-9',
-       events:'Preached three sabbaths; many believed. Accused of "turning the world upside down."',
-       modern:'Thessaloniki, Greece'},
-      {name:'Berea',coords:[22.20,40.47],ref:'Acts 17:10-14',
-       events:'Noble Bereans searched the scriptures daily to verify Paul\'s teaching; many believed.',
-       modern:'Veria, Greece'},
-      {name:'Athens',coords:[23.73,37.97],ref:'Acts 17:16-34',
-       events:'Preached at the Areopagus on the "Unknown God"; introduced resurrection to Greek philosophers.',
-       modern:'Athens, Greece'},
-      {name:'Corinth',coords:[22.93,37.90],ref:'Acts 18:1-18',
-       events:'Stayed 18 months; worked with Aquila and Priscilla as tentmakers. Wrote 1 & 2 Thessalonians here.',
-       modern:'Corinth, Greece'},
-      {name:'Ephesus',coords:[27.34,37.94],ref:'Acts 18:19-21',
-       events:'Brief stop; left Priscilla and Aquila; promised to return.',
-       modern:'Selçuk, Turkey'},
-      {name:'Jerusalem',coords:[35.22,31.77],ref:'Acts 18:22',
-       events:'Greeted the church before returning to Antioch.',
-       modern:'Jerusalem, Israel'}
-    ]
-  },
-  third: {
-    name:'Third Missionary Journey',color:'#10b981',year:'~AD 53–57',
-    scripture:'Acts 18:23–21:17',
-    desc:'Paul spent two and a half years in Ephesus before traveling through Macedonia and Greece collecting offerings for Jerusalem. He bade farewell to church leaders at Miletus.',
+      {name:'Antioch (Syria)',coords:[36.20,36.14],ref:'Acts 15:36–40',events:'Paul and Barnabas split over John Mark. Paul took Silas and departed.',modern:'Antakya, Turkey'},
+      {name:'Lystra / Derbe',coords:[32.10,37.56],ref:'Acts 16:1–5',events:'Paul circumcised Timothy to remove a ministry barrier; strengthened the churches.',modern:'South-central Turkey'},
+      {name:'Troas',coords:[26.17,39.77],ref:'Acts 16:8–10',events:'Paul received the Macedonian vision: "Come over to Macedonia and help us." The gospel crossed into Europe.',modern:'Alexandria Troas, Turkey'},
+      {name:'Philippi',coords:[24.28,41.01],ref:'Acts 16:12–40',events:'Lydia became Europe\'s first recorded convert. Paul and Silas imprisoned; earthquake; jailer converted.',modern:'Krenides, Greece'},
+      {name:'Thessalonica',coords:[22.95,40.63],ref:'Acts 17:1–9',events:'Preached three sabbaths; many believed. Accused of "turning the world upside down."',modern:'Thessaloniki, Greece'},
+      {name:'Berea',coords:[22.20,40.47],ref:'Acts 17:10–14',events:'Noble Bereans searched the scriptures daily to verify Paul\'s teaching.',modern:'Veria, Greece'},
+      {name:'Athens',coords:[23.73,37.97],ref:'Acts 17:16–34',events:'Preached at the Areopagus on the "Unknown God." Introduced resurrection to Greek philosophers.',modern:'Athens, Greece'},
+      {name:'Corinth',coords:[22.93,37.90],ref:'Acts 18:1–18',events:'Stayed 18 months; worked as a tentmaker with Aquila and Priscilla. Wrote 1 & 2 Thessalonians here.',modern:'Corinth, Greece'},
+      {name:'Ephesus',coords:[27.34,37.94],ref:'Acts 18:19–21',events:'Brief stop; left Priscilla and Aquila; promised to return.',modern:'Selçuk, Turkey'},
+      {name:'Jerusalem',coords:[35.22,31.77],ref:'Acts 18:22',events:'Greeted the church before returning to Antioch.',modern:'Jerusalem, Israel'}
+    ]},
+  third:{name:'Third Missionary Journey',color:'#10b981',year:'~AD 53–57',scripture:'Acts 18:23–21:17',
+    desc:'Paul spent two and a half years in Ephesus before traveling through Macedonia and Greece collecting for the Jerusalem church, bidding farewell to elders at Miletus.',
     waypoints:[
-      {name:'Antioch (Syria)',coords:[36.22,36.16],ref:'Acts 18:23',
-       events:'Departed after spending some time there; strengthened disciples throughout Galatia and Phrygia.',
-       modern:'Antakya, Turkey'},
-      {name:'Ephesus',coords:[27.34,37.94],ref:'Acts 19:1-41',
-       events:'Spent over 2 years. Extraordinary miracles; silversmiths\' riot over Artemis shrine trade. All Asia heard the Word of the Lord.',
-       modern:'Selçuk, Turkey'},
-      {name:'Macedonia',coords:[22.00,41.00],ref:'Acts 20:1-2',
-       events:'Traveled through Macedonia encouraging believers; wrote 2 Corinthians.',
-       modern:'Northern Greece'},
-      {name:'Corinth & Greece',coords:[22.93,37.88],ref:'Acts 20:2-3',
-       events:'Spent three months; wrote the letter to the Romans from here.',
-       modern:'Corinth, Greece'},
-      {name:'Troas',coords:[26.17,39.79],ref:'Acts 20:6-12',
-       events:'Preached all night; Eutychus fell from window and was raised from the dead.',
-       modern:'Alexandria Troas, Turkey'},
-      {name:'Miletus',coords:[27.28,37.53],ref:'Acts 20:17-38',
-       events:'Called Ephesian elders; gave an emotional farewell address, warning of false teachers.',
-       modern:'Balat, Turkey'},
-      {name:'Tyre',coords:[35.20,33.27],ref:'Acts 21:3-6',
-       events:'Disciples warned Paul through the Spirit not to go to Jerusalem; prayed together on the beach.',
-       modern:'Tyre (Sour), Lebanon'},
-      {name:'Caesarea',coords:[34.90,32.50],ref:'Acts 21:8-14',
-       events:'Philip the evangelist\'s house; Agabus prophesied Paul\'s arrest. Paul resolved to go to Jerusalem.',
-       modern:'Caesarea Maritima, Israel'},
-      {name:'Jerusalem',coords:[35.22,31.75],ref:'Acts 21:17',
-       events:'Welcomed by the church; soon arrested in the Temple and taken into Roman custody.',
-       modern:'Jerusalem, Israel'}
-    ]
-  },
-  rome: {
-    name:'Journey to Rome',color:'#ef4444',year:'~AD 59–61',
-    scripture:'Acts 27–28',
-    desc:'Paul, as a Roman prisoner appealing to Caesar, sailed from Caesarea through the Mediterranean. A catastrophic shipwreck at Malta prolonged the journey, but he arrived in Rome to preach freely.',
+      {name:'Antioch (Syria)',coords:[36.22,36.16],ref:'Acts 18:23',events:'Departed; strengthened disciples throughout Galatia and Phrygia on the way.',modern:'Antakya, Turkey'},
+      {name:'Ephesus',coords:[27.34,37.94],ref:'Acts 19:1–41',events:'Over 2 years of ministry. Extraordinary miracles; riot by silversmiths protecting Artemis trade. All of Asia heard the Word.',modern:'Selçuk, Turkey'},
+      {name:'Macedonia',coords:[22.00,41.00],ref:'Acts 20:1–2',events:'Traveled encouraging believers; wrote 2 Corinthians.',modern:'Northern Greece'},
+      {name:'Corinth & Greece',coords:[22.93,37.88],ref:'Acts 20:2–3',events:'Three months; wrote the letter to the Romans from here.',modern:'Corinth, Greece'},
+      {name:'Troas',coords:[26.17,39.79],ref:'Acts 20:6–12',events:'Preached until midnight. Eutychus fell from a window and was raised from the dead.',modern:'Alexandria Troas, Turkey'},
+      {name:'Miletus',coords:[27.28,37.53],ref:'Acts 20:17–38',events:'Summoned Ephesian elders; gave an emotional farewell address, warning of wolves entering the flock.',modern:'Balat, Turkey'},
+      {name:'Tyre',coords:[35.20,33.27],ref:'Acts 21:3–6',events:'Disciples urged Paul through the Spirit not to go to Jerusalem. They prayed together on the beach.',modern:'Tyre (Sour), Lebanon'},
+      {name:'Caesarea',coords:[34.90,32.50],ref:'Acts 21:8–14',events:'Prophet Agabus foretold Paul\'s arrest. Paul resolved: "I am ready not only to be bound but to die."',modern:'Caesarea Maritima, Israel'},
+      {name:'Jerusalem',coords:[35.22,31.75],ref:'Acts 21:17',events:'Welcomed by the church; soon arrested in the Temple and taken into Roman custody.',modern:'Jerusalem, Israel'}
+    ]},
+  rome:{name:'Journey to Rome',color:'#ef4444',year:'~AD 59–61',scripture:'Acts 27–28',
+    desc:'A prisoner appealing to Caesar, Paul sailed from Caesarea through the Mediterranean. A catastrophic shipwreck at Malta prolonged the journey, but he arrived to preach freely in Rome.',
     waypoints:[
-      {name:'Caesarea',coords:[34.90,32.52],ref:'Acts 27:1-2',
-       events:'Departed as a prisoner under Julius the centurion; Luke and Aristarchus accompanied.',
-       modern:'Caesarea Maritima, Israel'},
-      {name:'Sidon',coords:[35.37,33.56],ref:'Acts 27:3',
-       events:'Julius kindly allowed Paul to visit friends to be cared for.',
-       modern:'Sidon, Lebanon'},
-      {name:'Myra (Lycia)',coords:[29.98,36.27],ref:'Acts 27:5-6',
-       events:'Transferred to an Alexandrian grain ship bound for Italy.',
-       modern:'Demre, Turkey'},
-      {name:'Fair Havens (Crete)',coords:[24.90,35.05],ref:'Acts 27:8-12',
-       events:'Paul warned against sailing; the majority voted to continue. Ignored advice led to disaster.',
-       modern:'Near Heraklion, Crete, Greece'},
-      {name:'Malta (Shipwreck)',coords:[14.37,35.88],ref:'Acts 27:41-28:10',
-       events:'Catastrophic storm; ship wrecked. All 276 people survived. Paul bitten by viper without harm; healed many on the island. Stayed 3 months.',
-       modern:'Malta'},
-      {name:'Syracuse (Sicily)',coords:[15.29,37.07],ref:'Acts 28:12',
-       events:'Stayed three days.',
-       modern:'Syracuse, Sicily, Italy'},
-      {name:'Puteoli',coords:[14.06,40.83],ref:'Acts 28:13-14',
-       events:'Found brothers who urged Paul to stay seven days before proceeding to Rome.',
-       modern:'Pozzuoli, Italy'},
-      {name:'Rome',coords:[12.50,41.90],ref:'Acts 28:16-31',
-       events:'Lived two years under house arrest, welcoming all who came. Preached the Kingdom of God and taught about Jesus with complete openness.',
-       modern:'Rome, Italy'}
-    ]
-  }
+      {name:'Caesarea',coords:[34.90,32.52],ref:'Acts 27:1–2',events:'Departed as a prisoner under centurion Julius; Luke and Aristarchus accompanied.',modern:'Caesarea Maritima, Israel'},
+      {name:'Sidon',coords:[35.37,33.56],ref:'Acts 27:3',events:'Julius kindly allowed Paul to visit friends for care.',modern:'Sidon, Lebanon'},
+      {name:'Myra, Lycia',coords:[29.98,36.27],ref:'Acts 27:5–6',events:'Transferred to an Alexandrian grain ship bound for Italy.',modern:'Demre, Turkey'},
+      {name:'Fair Havens, Crete',coords:[24.90,35.05],ref:'Acts 27:8–12',events:'Paul warned against sailing on; the majority overruled him. The ignored warning led to disaster.',modern:'Near Heraklion, Crete'},
+      {name:'Malta — Shipwreck',coords:[14.37,35.88],ref:'Acts 27:41–28:10',events:'Catastrophic storm; all 276 aboard survived. Paul bitten by viper without harm. Healed many; stayed 3 months.',modern:'Malta'},
+      {name:'Syracuse, Sicily',coords:[15.29,37.07],ref:'Acts 28:12',events:'Stayed three days.',modern:'Syracuse, Italy'},
+      {name:'Puteoli',coords:[14.06,40.83],ref:'Acts 28:13–14',events:'Found believers who urged Paul to stay a week before proceeding to Rome.',modern:'Pozzuoli, Italy'},
+      {name:'Rome',coords:[12.50,41.90],ref:'Acts 28:16–31',events:'Two years under house arrest, welcoming all. Preached the Kingdom of God with complete openness.',modern:'Rome, Italy'}
+    ]}
 };
 
-// ===================== TIMELINE RENDERING =====================
-let tlScale = 1;
+/* =========================================================
+   TIMELINE — SVG MIND MAP
+   ========================================================= */
+const SP = 88;   // horizontal spacing between event nodes
+const EG = 58;   // gap between eras
+const AY = 242;  // axis Y
+const ABY = 108; // above-axis Y
+const BLY = 376; // below-axis Y
+const NR = 8;    // event node radius
+const ER = 13;   // era anchor radius
+const SVG_H = 490;
+
+let svgScale = 1;
+let tlDrag = false, tlDragX = 0, tlScrollX = 0;
 let activeFilter = 'all';
-let detailOpen = false;
-let isDragging = false, dragStartX = 0, scrollStartX = 0;
+let selectedEvId = null;
 
-function buildTimeline() {
-  const inner = document.getElementById('timeline-inner');
-  inner.innerHTML = '';
+function buildSVG() {
+  // Calculate positions
+  const eraAnchors = []; // {era, x}
+  const evNodes = [];    // {ev, era, x, y, isAbove}
+  let cx = 72;
+
   ERAS.forEach((era, ei) => {
-    const eraEl = document.createElement('div');
-    eraEl.className = 'era';
-    eraEl.style.animationDelay = `${ei * 0.05}s`;
-    const hdr = document.createElement('div');
-    hdr.className = 'era-header';
-    hdr.style.cssText = `background:${era.color}22;color:${era.color};border:1px solid ${era.color}44`;
-    hdr.textContent = era.name;
-    const yr = document.createElement('div');
-    yr.className = 'era-year';
-    yr.textContent = era.period;
-    const eventsWrap = document.createElement('div');
-    eventsWrap.className = 'era-events';
-    era.events.forEach((ev, evi) => {
-      const card = document.createElement('div');
-      card.className = 'event-card';
-      card.dataset.tags = ev.tags.join(',');
-      card.dataset.search = (ev.name + ' ' + ev.people?.join(' ') + ' ' + ev.desc).toLowerCase();
-      card.style.animationDelay = `${(ei * 0.05) + (evi * 0.03)}s`;
-      card.style.borderLeftColor = era.color;
-      card.style.borderLeftWidth = '3px';
-      card.innerHTML = `
-        <div class="event-icon">${ev.icon}</div>
-        <div class="event-name">${ev.name}</div>
-        <div class="event-date">${ev.date}</div>
-        <span class="event-tag" style="background:${era.color}22;color:${era.color}">${ev.tags.includes('major') ? '★ Major' : ev.tags.includes('prophet') ? 'Prophet' : ev.tags.includes('king') ? 'King' : ev.tags.includes('apostle') ? 'Apostle' : era.testament.toUpperCase()}</span>
-      `;
-      card.onclick = () => openDetail(ev, era);
-      eventsWrap.appendChild(card);
+    eraAnchors.push({ era, x: cx });
+    era.events.forEach((ev, j) => {
+      const isAbove = (j + ei) % 2 === 0;
+      evNodes.push({ ev, era, x: cx + (j + 1) * SP, y: isAbove ? ABY : BLY, isAbove });
     });
-    eraEl.appendChild(hdr);
-    eraEl.appendChild(yr);
-    eraEl.appendChild(eventsWrap);
-    inner.appendChild(eraEl);
+    cx += (era.events.length + 1) * SP + EG;
   });
-  setupDrag();
-}
 
-function setupDrag() {
-  const scroll = document.getElementById('timeline-scroll');
-  scroll.addEventListener('mousedown', e => { isDragging = true; dragStartX = e.clientX; scrollStartX = scroll.scrollLeft; scroll.style.cursor = 'grabbing'; });
-  scroll.addEventListener('mousemove', e => { if (!isDragging) return; scroll.scrollLeft = scrollStartX - (e.clientX - dragStartX); });
-  scroll.addEventListener('mouseup', () => { isDragging = false; scroll.style.cursor = 'grab'; });
-  scroll.addEventListener('mouseleave', () => { isDragging = false; scroll.style.cursor = 'grab'; });
-  scroll.addEventListener('wheel', e => { e.preventDefault(); scroll.scrollLeft += e.deltaY * 2; }, { passive: false });
-}
+  const W = cx + 72;
+  const svg = document.getElementById('tl-svg');
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', SVG_H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${SVG_H}`);
 
-function zoomTL(dir) {
-  const inner = document.getElementById('timeline-inner');
-  if (dir === 0) { tlScale = 1; }
-  else { tlScale = Math.min(2.5, Math.max(0.5, tlScale + dir * 0.2)); }
-  inner.style.transform = `scaleX(${tlScale})`;
-  inner.style.transformOrigin = 'left center';
-}
+  // Jesus supernode — center of all Scripture
+  const lcEvs = evNodes.filter(n => n.era.id === 'life-christ');
+  const jx = lcEvs.length ? Math.round((lcEvs[0].x + lcEvs[lcEvs.length-1].x) / 2) : Math.round(W / 2);
+  const jy = 50;
 
-function setFilter(btn, filter) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  activeFilter = filter;
-  applyFilter();
-}
-
-function applyFilter() {
-  document.querySelectorAll('.event-card').forEach(card => {
-    const tags = card.dataset.tags;
-    card.classList.remove('hidden');
-    if (activeFilter === 'all') return;
-    if (!tags.includes(activeFilter)) card.classList.add('hidden');
+  let h = `<defs>`;
+  ERAS.forEach(e => {
+    h += `<filter id="gf-${e.id}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
   });
-}
+  h += `
+    <radialGradient id="jg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffde7"/>
+      <stop offset="40%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </radialGradient>
+    <filter id="jglow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="9" result="b1"/>
+      <feGaussianBlur stdDeviation="4" result="b2"/>
+      <feMerge><feMergeNode in="b1"/><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
 
-function searchTimeline(q) {
-  q = q.toLowerCase();
-  document.querySelectorAll('.event-card').forEach(card => {
-    card.classList.remove('highlighted');
-    if (!q) { card.classList.remove('hidden'); return; }
-    if (card.dataset.search.includes(q)) {
-      card.classList.remove('hidden');
-      card.classList.add('highlighted');
-    } else {
-      card.classList.add('hidden');
+  // Axis background
+  h += `<line x1="40" y1="${AY}" x2="${W-40}" y2="${AY}" stroke="rgba(255,255,255,.06)" stroke-width="2"/>`;
+
+  // Era axis segments
+  eraAnchors.forEach((ep, i) => {
+    const nxt = eraAnchors[i + 1];
+    const ex = nxt ? nxt.x : W - 40;
+    h += `<line x1="${ep.x}" y1="${AY}" x2="${ex}" y2="${AY}" stroke="${ep.era.color}" stroke-width="3" opacity=".55"/>`;
+  });
+
+  // Connectors (draw before nodes so nodes appear on top)
+  evNodes.forEach(np => {
+    const { x, y, isAbove, era } = np;
+    const cp = isAbove ? AY - 55 : AY + 55;
+    h += `<path d="M ${x} ${y} C ${x} ${cp} ${x} ${cp} ${x} ${AY}"
+      stroke="${era.color}" stroke-width="1.5" fill="none" opacity=".3"
+      class="ev-conn" data-id="${np.ev.id}"/>`;
+    h += `<circle cx="${x}" cy="${AY}" r="3" fill="${era.color}" opacity=".55"/>`;
+  });
+
+  // OT → Jesus arcs (prophecy & typology pointing to Christ)
+  ['creation','fall','abraham','moses','david','temple','isaiah','jeremiah','daniel'].forEach(id => {
+    const np = evNodes.find(n => n.ev.id === id);
+    if (!np) return;
+    const cp1y = np.y > AY ? np.y - 150 : np.y - 55;
+    const cp2y = jy + (np.y > AY ? 140 : 60);
+    h += `<path d="M ${np.x} ${np.y} C ${np.x} ${cp1y} ${jx} ${cp2y} ${jx} ${jy}"
+      stroke="rgba(251,191,36,.32)" stroke-width="1.3" fill="none" stroke-dasharray="5,4" class="jesus-arc"/>`;
+  });
+  // Jesus → NT arcs (fulfillment radiating outward)
+  ['pentecost','paul-conversion','missionary','seven-churches','new-creation'].forEach(id => {
+    const np = evNodes.find(n => n.ev.id === id);
+    if (!np) return;
+    const cp1y = jy + (np.y > AY ? 140 : 60);
+    const cp2y = np.y > AY ? np.y - 150 : np.y - 55;
+    h += `<path d="M ${jx} ${jy} C ${jx} ${cp1y} ${np.x} ${cp2y} ${np.x} ${np.y}"
+      stroke="rgba(251,191,36,.32)" stroke-width="1.3" fill="none" stroke-dasharray="5,4" class="jesus-arc"/>`;
+  });
+
+  // Era anchors + labels
+  eraAnchors.forEach(ep => {
+    const { era, x } = ep;
+    h += `<circle cx="${x}" cy="${AY}" r="${ER}" fill="${era.color}" stroke="var(--bg2)" stroke-width="2" class="era-anchor"/>`;
+    // Era name
+    h += `<text x="${x + ER + 5}" y="${AY + ER + 14}"
+      font-size="10.5" font-weight="700" fill="${era.color}"
+      font-family="system-ui,sans-serif">${era.name}</text>`;
+    // Period
+    h += `<text x="${x + ER + 5}" y="${AY + ER + 27}"
+      font-size="9" fill="rgba(148,163,184,.75)"
+      font-family="system-ui,sans-serif">${era.period}</text>`;
+  });
+
+  // Event nodes + labels for major events
+  evNodes.forEach(np => {
+    const { ev, era, x, y, isAbove } = np;
+    const tags = (ev.tags || []).join(',');
+    const isMajor = ev.tags?.includes('major');
+    const isChrist = era.id === 'life-christ';
+    const nodeR = isChrist ? NR + 4 : NR;
+    const strokeW = isChrist ? 3 : 2.5;
+    h += `<circle cx="${x}" cy="${y}" r="${nodeR}" fill="${era.color}"
+      stroke="${isChrist ? '#fff9c4' : 'var(--bg2)'}" stroke-width="${strokeW}"
+      class="ev-node${isChrist ? ' christ-node' : ''}" data-id="${ev.id}" data-era="${era.id}" data-tags="${tags}"
+      style="cursor:pointer">
+      <title>${ev.name} · ${ev.date}</title>
+    </circle>`;
+    if (isMajor) {
+      const lbl = ev.name.length > 14 ? ev.name.slice(0,13) + '…' : ev.name;
+      const ly = isAbove ? y - NR - 7 : y + NR + 15;
+      h += `<text x="${x}" y="${ly}" text-anchor="middle"
+        font-size="9.5" fill="${era.color}" font-weight="600"
+        font-family="system-ui,sans-serif" class="ev-lbl" data-id="${ev.id}"
+        style="pointer-events:none">${lbl}</text>`;
     }
   });
+
+  // Jesus Christ supernode — drawn last so it sits above everything
+  h += `
+    <circle cx="${jx}" cy="${jy}" r="28" fill="url(#jg)" filter="url(#jglow)"
+      class="jesus-hub" style="cursor:pointer">
+      <title>Jesus Christ — The Center of Scripture</title>
+    </circle>
+    <path d="M ${jx} ${jy-16} L ${jx} ${jy+16} M ${jx-12} ${jy} L ${jx+12} ${jy}"
+      stroke="rgba(255,255,255,.94)" stroke-width="4" stroke-linecap="round"
+      style="pointer-events:none"/>
+    <text x="${jx}" y="${jy+47}" text-anchor="middle" font-size="12" font-weight="700"
+      fill="#fbbf24" font-family="system-ui,sans-serif" letter-spacing=".04em"
+      style="pointer-events:none">Jesus Christ</text>
+    <text x="${jx}" y="${jy+60}" text-anchor="middle" font-size="8.5"
+      fill="rgba(251,191,36,.65)" font-family="system-ui,sans-serif" font-style="italic"
+      style="pointer-events:none">The Word Made Flesh</text>
+  `;
+
+  svg.innerHTML = h;
+
+  // Attach events after DOM update
+  svg.querySelectorAll('.ev-node').forEach(node => {
+    node.addEventListener('click', () => {
+      const eraObj = ERAS.find(e => e.id === node.dataset.era);
+      const evObj = eraObj?.events.find(e => e.id === node.dataset.id);
+      if (!evObj) return;
+      svg.querySelectorAll('.ev-node').forEach(n => {
+        n.removeAttribute('filter'); n.classList.remove('selected');
+      });
+      node.setAttribute('filter', `url(#gf-${eraObj.id})`);
+      node.classList.add('selected');
+      selectedEvId = evObj.id;
+      dpOpen(evObj, eraObj);
+    });
+    node.addEventListener('mouseenter', () => {
+      if (!node.classList.contains('selected'))
+        node.setAttribute('filter', `url(#gf-${node.dataset.era})`);
+      const eraObj = ERAS.find(e => e.id === node.dataset.era);
+      const evObj = eraObj?.events.find(e => e.id === node.dataset.id);
+      if (evObj && eraObj)
+        document.getElementById('tl-infobar').textContent =
+          `${eraObj.name}  ›  ${evObj.name}  ·  ${evObj.date}`;
+    });
+    node.addEventListener('mouseleave', () => {
+      if (!node.classList.contains('selected')) node.removeAttribute('filter');
+      document.getElementById('tl-infobar').textContent = 'Hover or click any node to explore';
+    });
+  });
+
+  // Jesus hub interaction
+  const hubEl = svg.querySelector('.jesus-hub');
+  if (hubEl) {
+    hubEl.addEventListener('click', () => {
+      svg.querySelectorAll('.ev-node').forEach(n => { n.removeAttribute('filter'); n.classList.remove('selected'); });
+      dpOpenJesus();
+    });
+    hubEl.addEventListener('mouseenter', () => {
+      document.getElementById('tl-infobar').textContent =
+        'Jesus Christ  ·  The Alpha and Omega  ·  All Scripture points to and flows from Him';
+    });
+    hubEl.addEventListener('mouseleave', () => {
+      document.getElementById('tl-infobar').textContent = 'Hover or click any node to explore';
+    });
+  }
+
+  setupTLDrag();
+  window._tlW = W;
 }
 
-function openDetail(ev, era) {
-  document.getElementById('dp-icon').textContent = ev.icon;
-  document.getElementById('dp-title').textContent = ev.name;
-  document.getElementById('dp-date').textContent = ev.date;
-  document.getElementById('dp-header').style.background = `linear-gradient(135deg, ${era.color}, ${era.gradient})`;
-  const body = document.getElementById('dp-body');
-  body.innerHTML = `
-    <div class="dp-section">
-      <div class="dp-section-title">Scripture Reference</div>
-      <div class="dp-scripture">${ev.scripture}</div>
+function dpOpenJesus() {
+  document.getElementById('dp-era-bar').style.background = 'linear-gradient(90deg,#fbbf24,#f97316,#fbbf24)';
+  document.getElementById('dp-meta').textContent = 'The Center of All Scripture';
+  document.getElementById('dp-meta').style.color = '#fbbf24';
+  document.getElementById('dp-title').textContent = 'Jesus Christ';
+  document.getElementById('dp-date').textContent = 'Eternal — born ~4 BC, crucified ~AD 33, risen and reigning';
+  document.getElementById('dp-body').innerHTML = `
+    <div class="dp-block">
+      <div class="dp-block-title">The Word Incarnate</div>
+      <div class="dp-quote">In the beginning was the Word, and the Word was with God, and the Word was God... And the Word became flesh and dwelt among us. — John 1:1, 14</div>
     </div>
-    <div class="dp-section">
-      <div class="dp-section-title">Overview</div>
-      <p>${ev.desc}</p>
+    <div class="dp-block">
+      <div class="dp-block-title">The Scarlet Thread</div>
+      <div class="dp-text">Every era on this timeline — from Creation to New Creation — finds its meaning in Jesus Christ. The Old Testament anticipates Him through promise, prophecy, and type. The Gospels reveal Him. The Epistles explain Him. Revelation glorifies Him as King of Kings. He is the Second Adam, the true Passover Lamb, the Son of David, the Suffering Servant, the Son of Man, and the eternal High Priest.</div>
     </div>
-    ${ev.significance ? `<div class="dp-section"><div class="dp-section-title">Significance</div><p>${ev.significance}</p></div>` : ''}
-    ${ev.people?.length ? `<div class="dp-section"><div class="dp-section-title">Key People</div><div class="dp-people">${ev.people.map(p=>`<span class="dp-tag">${p}</span>`).join('')}</div></div>` : ''}
-    <div class="dp-section" style="background:${era.color}11;border:1px solid ${era.color}33">
-      <div class="dp-section-title" style="color:${era.color}">${era.name}</div>
-      <p style="font-size:.8rem;color:var(--text2)">${era.period}</p>
+    <div class="dp-block">
+      <div class="dp-block-title">He fulfills every thread</div>
+      <div class="dp-chips">
+        <span class="dp-chip">Second Adam</span>
+        <span class="dp-chip">Seed of Abraham</span>
+        <span class="dp-chip">Greater Moses</span>
+        <span class="dp-chip">True Passover</span>
+        <span class="dp-chip">Son of David</span>
+        <span class="dp-chip">True Temple</span>
+        <span class="dp-chip">Isaiah's Servant</span>
+        <span class="dp-chip">New Covenant</span>
+        <span class="dp-chip">Son of Man</span>
+        <span class="dp-chip">Eternal Priest</span>
+        <span class="dp-chip">Lamb of God</span>
+        <span class="dp-chip">King of Kings</span>
+      </div>
+    </div>
+    <div class="dp-block">
+      <div class="dp-block-title">All promises find their Yes in Him</div>
+      <div class="dp-quote">For no matter how many promises God has made, they are "Yes" in Christ. — 2 Corinthians 1:20</div>
     </div>
   `;
-  document.getElementById('detail-panel').classList.add('open');
-  detailOpen = true;
+  document.getElementById('dp').classList.add('open');
 }
 
-function closeDetail() {
-  document.getElementById('detail-panel').classList.remove('open');
-  detailOpen = false;
+function setupTLDrag() {
+  const scr = document.getElementById('tl-scroll');
+  scr.onmousedown = e => { tlDrag = true; tlDragX = e.clientX; tlScrollX = scr.scrollLeft; };
+  scr.onmousemove = e => { if (tlDrag) scr.scrollLeft = tlScrollX - (e.clientX - tlDragX); };
+  scr.onmouseup = scr.onmouseleave = () => tlDrag = false;
+  scr.onwheel = e => { e.preventDefault(); scr.scrollLeft += e.deltaY * 2.5; };
 }
 
-// ===================== MAP / PAUL'S JOURNEYS =====================
-let map, currentJourney = 'first', layers = {}, markers = {}, routeLines = {};
-let animating = false, animStep = 0, animTimer = null, animSpeed = 1;
-const speeds = [0.5, 1, 2, 4];
-let speedIdx = 1;
+function tlZoom(dir) {
+  if (dir === 0) svgScale = 1;
+  else svgScale = Math.min(2.5, Math.max(0.5, svgScale + dir * 0.2));
+  const svg = document.getElementById('tl-svg');
+  svg.style.transform = `scaleX(${svgScale})`;
+  svg.style.transformOrigin = 'left center';
+}
+
+function tlSearch(q) {
+  q = q.toLowerCase();
+  const svg = document.getElementById('tl-svg');
+  svg.querySelectorAll('.ev-node').forEach(node => {
+    const era = ERAS.find(e => e.id === node.dataset.era);
+    const ev = era?.events.find(e => e.id === node.dataset.id);
+    if (!ev) return;
+    const hay = (ev.name + ' ' + (ev.people || []).join(' ') + ' ' + (ev.desc || '')).toLowerCase();
+    const ok = !q || hay.includes(q);
+    node.style.opacity = ok ? '1' : '0.12';
+    const conn = svg.querySelector(`.ev-conn[data-id="${ev.id}"]`);
+    const lbl = svg.querySelector(`.ev-lbl[data-id="${ev.id}"]`);
+    if (conn) conn.style.opacity = ok ? '.3' : '.04';
+    if (lbl) lbl.style.opacity = ok ? '1' : '.12';
+  });
+}
+
+function tlFilter(btn, f) {
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  activeFilter = f;
+  const svg = document.getElementById('tl-svg');
+  svg.querySelectorAll('.ev-node').forEach(node => {
+    const tags = (node.dataset.tags || '').split(',');
+    const ok = f === 'all' || tags.includes(f);
+    node.style.opacity = ok ? '1' : '0.1';
+    const conn = svg.querySelector(`.ev-conn[data-id="${node.dataset.id}"]`);
+    const lbl = svg.querySelector(`.ev-lbl[data-id="${node.dataset.id}"]`);
+    if (conn) conn.style.opacity = ok ? '.3' : '.03';
+    if (lbl) lbl.style.opacity = ok ? '1' : '.1';
+  });
+}
+
+/* =========================================================
+   DETAIL PANEL
+   ========================================================= */
+function dpOpen(ev, era) {
+  document.getElementById('dp-era-bar').style.background = era.color;
+  document.getElementById('dp-meta').textContent = era.name + ' · ' + era.period;
+  document.getElementById('dp-meta').style.color = era.color;
+  document.getElementById('dp-title').textContent = ev.name;
+  document.getElementById('dp-date').textContent = ev.date;
+  const body = document.getElementById('dp-body');
+  body.innerHTML = `
+    <div class="dp-block">
+      <div class="dp-block-title">Scripture</div>
+      <div class="dp-quote">${ev.scripture}</div>
+    </div>
+    <div class="dp-block">
+      <div class="dp-block-title">Overview</div>
+      <div class="dp-text">${ev.desc}</div>
+    </div>
+    ${ev.significance ? `<div class="dp-block">
+      <div class="dp-block-title">Significance</div>
+      <div class="dp-text">${ev.significance}</div>
+    </div>` : ''}
+    ${ev.people?.length ? `<div class="dp-block">
+      <div class="dp-block-title">Key People</div>
+      <div class="dp-chips">${ev.people.map(p => `<span class="dp-chip">${p}</span>`).join('')}</div>
+    </div>` : ''}
+  `;
+  document.getElementById('dp').classList.add('open');
+}
+function dpClose() {
+  document.getElementById('dp').classList.remove('open');
+  document.getElementById('tl-svg').querySelectorAll('.ev-node').forEach(n => {
+    n.removeAttribute('filter'); n.classList.remove('selected');
+  });
+  selectedEvId = null;
+}
+
+/* =========================================================
+   PAUL'S JOURNEYS MAP
+   ========================================================= */
+let map = null, jKey = 'first', jLayers = {}, jMarkers = {}, jRoutes = {};
+let jPlaying = false, jStep = 0, jTimer = null;
+const jSpeeds = [0.5, 1, 2, 4]; let jSpeedIdx = 1;
 
 function initMap() {
-  map = L.map('map', { zoomControl: true, center: [38, 27], zoom: 5 });
+  if (map) { setTimeout(() => map.invalidateSize(), 60); return; }
+  map = L.map('j-map', { center: [35, 26], zoom: 5 });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
-    maxZoom: 18
+    attribution: '&copy; OpenStreetMap', maxZoom: 18
   }).addTo(map);
 
   Object.keys(JOURNEYS).forEach(jk => {
     const j = JOURNEYS[jk];
-    layers[jk] = L.layerGroup();
-    markers[jk] = [];
-    j.waypoints.forEach((wp, i) => {
-      const color = j.color;
+    jLayers[jk] = L.layerGroup();
+    jMarkers[jk] = j.waypoints.map((wp, i) => {
       const icon = L.divIcon({
         className: '',
-        html: `<div style="width:28px;height:28px;background:${color};border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;box-shadow:0 2px 8px rgba(0,0,0,.4)">${i+1}</div>`,
-        iconSize: [28, 28], iconAnchor: [14, 14]
+        html: `<div style="width:26px;height:26px;background:${j.color};border:2.5px solid #fff;border-radius:50%;
+                            display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+                            color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)">${i + 1}</div>`,
+        iconSize: [26, 26], iconAnchor: [13, 13]
       });
       const m = L.marker([wp.coords[1], wp.coords[0]], { icon }).bindPopup(`
-        <div class="popup-inner">
+        <div class="lp">
           <h4>${wp.name}</h4>
-          <div class="p-ref">${wp.ref} · ${j.year}</div>
-          <div class="p-event">${wp.events}</div>
-          <div class="p-modern">📍 ${wp.modern}</div>
-        </div>
-      `, { maxWidth: 280 });
-      markers[jk].push(m);
-      layers[jk].addLayer(m);
+          <div class="lp-ref">${wp.ref} &middot; ${j.year}</div>
+          <div class="lp-ev">${wp.events}</div>
+          <div class="lp-loc">${wp.modern}</div>
+        </div>`, { maxWidth: 270 });
+      jLayers[jk].addLayer(m);
+      return m;
     });
   });
-
-  selectJourney('first');
+  jSelect('first');
 }
 
-function selectJourney(jk) {
-  stopAnimation();
-  Object.values(layers).forEach(l => map.removeLayer(l));
-  Object.values(routeLines).forEach(l => { try { map.removeLayer(l); } catch(e){} });
-  currentJourney = jk;
+function jSelect(jk) {
+  jStop();
+  Object.values(jLayers).forEach(l => { try { map.removeLayer(l); } catch(e){} });
+  Object.values(jRoutes).forEach(l => { try { map.removeLayer(l); } catch(e){} });
+  jKey = jk; jStep = 0;
+  document.getElementById('j-prog').style.width = '0%';
+  jLayers[jk].addTo(map);
+  document.querySelectorAll('.j-btn').forEach(b => {
+    const active = b.dataset.jk === jk;
+    b.classList.toggle('on', active);
+    b.style.background = active ? JOURNEYS[jk].color : '';
+    b.style.borderColor = active ? JOURNEYS[jk].color : '';
+  });
+  renderJInfo();
   const j = JOURNEYS[jk];
-  layers[jk].addTo(map);
-  document.querySelectorAll('.journey-btn').forEach(b => {
-    b.classList.remove('active');
-    b.style.background = '';
-    b.style.borderColor = '';
-  });
-  const activeBtn = document.querySelector(`.journey-btn[data-key="${jk}"]`);
-  if (activeBtn) {
-    activeBtn.classList.add('active');
-    activeBtn.style.background = j.color;
-    activeBtn.style.borderColor = j.color;
-  }
-  updateJourneyInfo();
-  document.getElementById('progress-fill').style.width = '0%';
-  animStep = 0;
-  const bounds = L.latLngBounds(j.waypoints.map(wp => [wp.coords[1], wp.coords[0]]));
-  map.fitBounds(bounds, { padding: [40, 40] });
+  map.fitBounds(L.latLngBounds(j.waypoints.map(wp => [wp.coords[1], wp.coords[0]])), { padding: [40, 40] });
 }
 
-function updateJourneyInfo() {
-  const j = JOURNEYS[currentJourney];
-  const info = document.getElementById('journey-info');
-  info.innerHTML = `
-    <h3 style="color:${j.color}">${j.name}</h3>
-    <div class="ji-meta">${j.year} · ${j.scripture}</div>
-    <p style="font-size:.82rem;color:var(--text2);margin-bottom:12px;line-height:1.5">${j.desc}</p>
-    <div class="waypoint-list" id="wp-list">
-      ${j.waypoints.map((wp,i)=>`
-        <div class="wp-item" data-idx="${i}" onclick="flyToWaypoint(${i})">
-          <div class="wp-num" style="background:${j.color}">${i+1}</div>
-          <span>${wp.name}</span>
-        </div>
-      `).join('')}
-    </div>
-  `;
+function renderJInfo() {
+  const j = JOURNEYS[jKey];
+  document.getElementById('j-info').innerHTML = `
+    <h3 style="color:${j.color};margin-bottom:3px">${j.name}</h3>
+    <p style="font-size:.75rem;color:var(--text2);margin-bottom:4px">${j.year} &middot; ${j.scripture}</p>
+    <p>${j.desc}</p>
+    <div class="wp-list">${j.waypoints.map((wp, i) => `
+      <div class="wp" data-i="${i}" onclick="jFlyTo(${i})">
+        <div class="wp-num" style="background:${j.color}">${i + 1}</div>
+        <span>${wp.name}</span>
+      </div>`).join('')}
+    </div>`;
 }
 
-function flyToWaypoint(idx) {
-  const j = JOURNEYS[currentJourney];
-  const wp = j.waypoints[idx];
-  map.flyTo([wp.coords[1], wp.coords[0]], 8, { duration: 1.2 });
-  setTimeout(() => markers[currentJourney][idx].openPopup(), 1300);
-  document.querySelectorAll('.wp-item').forEach((el, i) => {
-    el.classList.toggle('active-wp', i === idx);
-  });
+function jFlyTo(i) {
+  const j = JOURNEYS[jKey];
+  const wp = j.waypoints[i];
+  map.flyTo([wp.coords[1], wp.coords[0]], 7, { duration: 1.1 });
+  setTimeout(() => jMarkers[jKey][i].openPopup(), 1200);
+  document.querySelectorAll('.wp').forEach((el, idx) => el.classList.toggle('cur', idx === i));
 }
 
-function togglePlay() {
-  if (animating) { stopAnimation(); } else { startAnimation(); }
+function jTogglePlay() {
+  jPlaying ? jStop() : jStart();
 }
-
-function startAnimation() {
-  animating = true;
-  document.getElementById('play-btn').textContent = '⏸ Pause';
-  document.querySelector('.journey-module-inner').classList.add('animating');
-  if (animStep === 0) clearRoutes();
-  animateStep();
+function jStart() {
+  jPlaying = true;
+  document.getElementById('j-play-btn').innerHTML = '&#9646;&#9646; Pause';
+  if (jStep === 0) jClearRoute();
+  jAnimate();
 }
-
-function clearRoutes() {
-  if (routeLines[currentJourney]) {
-    try { map.removeLayer(routeLines[currentJourney]); } catch(e){}
-  }
+function jStop() {
+  jPlaying = false;
+  if (jTimer) clearTimeout(jTimer);
+  document.getElementById('j-play-btn').innerHTML = '&#9654; Animate Route';
 }
-
-function animateStep() {
-  if (!animating) return;
-  const j = JOURNEYS[currentJourney];
+function jClearRoute() {
+  if (jRoutes[jKey]) { try { map.removeLayer(jRoutes[jKey]); } catch(e){} }
+}
+function jAnimate() {
+  if (!jPlaying) return;
+  const j = JOURNEYS[jKey];
   const total = j.waypoints.length;
-  if (animStep >= total - 1) {
-    stopAnimation();
-    document.getElementById('progress-fill').style.width = '100%';
-    return;
+  if (jStep >= total - 1) { jStop(); document.getElementById('j-prog').style.width = '100%'; return; }
+  jFlyTo(jStep);
+  document.getElementById('j-prog').style.width = ((jStep / (total - 1)) * 100) + '%';
+  if (jStep > 0) {
+    jClearRoute();
+    const pts = j.waypoints.slice(0, jStep + 1).map(wp => [wp.coords[1], wp.coords[0]]);
+    jRoutes[jKey] = L.polyline(pts, { color: j.color, weight: 3, opacity: .8, dashArray: '8,5' }).addTo(map);
   }
-  flyToWaypoint(animStep);
-  const pct = (animStep / (total - 1)) * 100;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  if (animStep > 0) {
-    const pts = j.waypoints.slice(0, animStep + 1).map(wp => [wp.coords[1], wp.coords[0]]);
-    clearRoutes();
-    routeLines[currentJourney] = L.polyline(pts, {
-      color: j.color, weight: 3, opacity: 0.8,
-      dashArray: '8, 6'
-    }).addTo(map);
-  }
-  animStep++;
-  const delay = 2500 / animSpeed;
-  animTimer = setTimeout(animateStep, delay);
+  jStep++;
+  jTimer = setTimeout(jAnimate, 2600 / jSpeeds[jSpeedIdx]);
+}
+function jRewind() {
+  jStop(); jStep = 0; jClearRoute();
+  document.getElementById('j-prog').style.width = '0%';
+  document.querySelectorAll('.wp').forEach(el => el.classList.remove('cur'));
+  const j = JOURNEYS[jKey];
+  map.fitBounds(L.latLngBounds(j.waypoints.map(wp => [wp.coords[1], wp.coords[0]])), { padding: [40, 40] });
+}
+function jCycleSpeed() {
+  jSpeedIdx = (jSpeedIdx + 1) % jSpeeds.length;
+  document.getElementById('j-speed-btn').textContent = jSpeeds[jSpeedIdx] + '×';
+}
+function jSeek(e) {
+  const pct = e.offsetX / e.currentTarget.offsetWidth;
+  const j = JOURNEYS[jKey];
+  jStep = Math.floor(pct * (j.waypoints.length - 1));
+  document.getElementById('j-prog').style.width = (pct * 100) + '%';
+  jFlyTo(jStep); jStop();
 }
 
-function stopAnimation() {
-  animating = false;
-  if (animTimer) clearTimeout(animTimer);
-  document.getElementById('play-btn').textContent = '▶ Animate Route';
-  document.querySelector('.journey-module-inner')?.classList.remove('animating');
-}
-
-function rewindJourney() {
-  stopAnimation();
-  animStep = 0;
-  clearRoutes();
-  document.getElementById('progress-fill').style.width = '0%';
-  const j = JOURNEYS[currentJourney];
-  const bounds = L.latLngBounds(j.waypoints.map(wp => [wp.coords[1], wp.coords[0]]));
-  map.fitBounds(bounds, { padding: [40, 40] });
-  document.querySelectorAll('.wp-item').forEach(el => el.classList.remove('active-wp'));
-}
-
-function changeSpeed() {
-  speedIdx = (speedIdx + 1) % speeds.length;
-  animSpeed = speeds[speedIdx];
-  document.getElementById('speed-btn').textContent = animSpeed + '×';
-}
-
-function seekProgress(e) {
-  const bar = e.currentTarget;
-  const pct = e.offsetX / bar.offsetWidth;
-  const j = JOURNEYS[currentJourney];
-  animStep = Math.floor(pct * (j.waypoints.length - 1));
-  document.getElementById('progress-fill').style.width = (pct * 100) + '%';
-  flyToWaypoint(animStep);
-  stopAnimation();
-}
-
-function buildJourneyBtns() {
-  const container = document.getElementById('journey-btns');
+function buildJBtns() {
+  const c = document.getElementById('j-btns');
   Object.keys(JOURNEYS).forEach(jk => {
     const j = JOURNEYS[jk];
     const btn = document.createElement('button');
-    btn.className = 'journey-btn';
-    btn.dataset.key = jk;
-    btn.innerHTML = `<span class="j-dot" style="background:${j.color}"></span>${j.name}<small style="margin-left:auto;opacity:.7;font-size:.72rem">${j.year}</small>`;
-    btn.onclick = () => selectJourney(jk);
-    container.appendChild(btn);
+    btn.className = 'j-btn'; btn.dataset.jk = jk;
+    btn.innerHTML = `<span class="j-dot" style="background:${j.color}"></span>
+      ${j.name}<small>${j.year}</small>`;
+    btn.onclick = () => jSelect(jk);
+    c.appendChild(btn);
   });
 }
 
-// ===================== TABS =====================
+/* =========================================================
+   TABS + THEME
+   ========================================================= */
 function switchTab(tab) {
   document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`mod-${tab}`).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b => { if (b.textContent.toLowerCase().includes(tab === 'timeline' ? 'timeline' : 'paul')) b.classList.add('active'); });
-  if (tab === 'journeys' && !map) { setTimeout(initMap, 100); }
-  if (tab === 'timeline') closeDetail();
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('mod-' + tab).classList.add('active');
+  if (tab === 'journeys') { setTimeout(initMap, 80); }
+  if (tab === 'timeline') dpClose();
 }
 
-// ===================== THEME =====================
 function toggleTheme() {
   const html = document.documentElement;
-  const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  document.querySelector('.icon-btn').textContent = isDark ? '🌙' : '☀';
+  const light = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', light ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = light ? 'AA' : 'AA';
 }
 
-// ===================== TOUR =====================
-const TOUR_STEPS = [
-  { title:'Welcome to Bible Explorer', desc:'This interactive experience covers the entire Biblical narrative—from Creation to Revelation—and traces Paul\'s missionary journeys across the ancient Mediterranean world.' },
-  { title:'Bible Timeline', desc:'Scroll horizontally through 4,000 years of Biblical history. Click any event card to open a detailed study panel with scripture references, key people, and historical significance.' },
-  { title:'Search & Filter', desc:'Use the search bar to find specific events, people, or places. Filter by Old Testament, New Testament, Prophets, Kings, Apostles, or Major Events.' },
-  { title:'Paul\'s Journeys', desc:'Switch to the Paul\'s Journeys tab to explore his four missionary expeditions on an interactive map. Click cities for Biblical context, or use the Animate Route button to watch the journey unfold step by step.' },
-];
-let tourStep = 0;
-function showTour() { tourStep = 0; renderTour(); document.getElementById('tour-overlay').classList.add('show'); }
-function hideTour() { document.getElementById('tour-overlay').classList.remove('show'); }
-function tourNext() {
-  tourStep++;
-  if (tourStep >= TOUR_STEPS.length) { hideTour(); return; }
-  renderTour();
-}
-function renderTour() {
-  const s = TOUR_STEPS[tourStep];
-  document.getElementById('tour-title').textContent = s.title;
-  document.getElementById('tour-desc').textContent = s.desc;
-  document.getElementById('tour-next-btn').textContent = tourStep === TOUR_STEPS.length - 1 ? 'Start Exploring →' : 'Next →';
-}
-
-// ===================== INIT =====================
-buildTimeline();
-buildJourneyBtns();
+/* =========================================================
+   INIT
+   ========================================================= */
+buildSVG();
+buildJBtns();
 </script>
 </body>
 </html>
