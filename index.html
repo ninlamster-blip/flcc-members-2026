@@ -9268,6 +9268,41 @@ function ArenaVictoryScreen({ zone, question, state, onContinue, onBattleAgain }
   );
 }
 
+// ── Phase 4: Member data & helpers ───────────────────────────────────────────
+
+const ARENA_MEMBER_NAMES = [
+  'Allen Santos','Bless De Jesus','Hasmin Treseni','Mae De Jesus','Lizel Ocenar',
+  'Fretz Guerzon','Dolly Cas','Rona Vergara','Sandra Gabriel','Christine Santos',
+  'Celsa Sario','Jhem Tulagan','Juneth Atienza','Alma Flores','Almira Dela Paz',
+  'Grace Siangco','Annabelle Arciaga','Jenarlyn Culao','Laidz Pascual','Irene Sabangan',
+  'Thara Embo','Dandreb Serna','Bong Cas','Elbert Siangco','Wilson Guerzon',
+  'Ferdie Gajeton','Edmund Gabriel','Edward Sario','Dave Vergara','Justin Flores',
+  'Doddie Arciaga','Nerwin Suelo','Nancy Aman','Sheena','Alvin','Arnel','Shane',
+  'Sherwin','Rodel','Jen Tanlangco','Jennifer Lopez','Benedict Treseni','Shannie Sadia',
+];
+
+function arenaMemberXP(name) {
+  let h = 7;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return (h % 7800) + 200;
+}
+
+const ARENA_ENCOURAGE_MSGS = [
+  "You're a mighty warrior of faith! Keep pressing on! 💪",
+  "The Lord sees your faithfulness. You inspire us all! 🙏",
+  "Fight the good fight! We're stronger together in Christ! ⚔️",
+  "Your love for God shines bright. Keep being a blessing! ✨",
+  "Press toward the prize! Your faith moves mountains! 🏔️",
+];
+
+const ARENA_GUILD_POWER_MILESTONES = [
+  { xp: 100,  rank: 'Recruit',  icon: '🌱', color: '#94A3B8' },
+  { xp: 500,  rank: 'Sentinel', icon: '🛡️', color: '#22C55E' },
+  { xp: 1000, rank: 'Paladin',  icon: '⚔️', color: '#60A5FA' },
+  { xp: 2500, rank: 'Champion', icon: '👑', color: '#F59E0B' },
+  { xp: 5000, rank: 'Legend',   icon: '✨', color: '#C084FC' },
+];
+
 // ── Phase 2: Ministry Guilds Screen ──────────────────────────────────────────
 
 function ArenaGuildsScreen({ state, onJoinGuild, onCompleteGuildMission, onBack }) {
@@ -9372,6 +9407,44 @@ function ArenaGuildsScreen({ state, onJoinGuild, onCompleteGuildMission, onBack 
               <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#D4AF37' }}>{state.guildMissionsCount || 0}</div>
             </div>
           </div>
+
+          {/* Guild Power Level */}
+          {(() => {
+            const gxp = state.guildXP || 0;
+            const reached = ARENA_GUILD_POWER_MILESTONES.filter(m => gxp >= m.xp);
+            const current = reached.length ? reached[reached.length - 1] : ARENA_GUILD_POWER_MILESTONES[0];
+            const next = ARENA_GUILD_POWER_MILESTONES.find(m => gxp < m.xp);
+            const pct = next ? Math.min(((gxp - (reached.length ? reached[reached.length-1].xp : 0)) / (next.xp - (reached.length ? reached[reached.length-1].xp : 0))) * 100, 100) : 100;
+            return (
+              <div style={{ marginTop: 14, background: 'rgba(255,255,255,0.03)', border: `1px solid ${currentGuild.color}30`, borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Guild Power Level</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: '1rem' }}>{current.icon}</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: current.color }}>{current.rank}</span>
+                  </div>
+                </div>
+                <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden', marginBottom: 6 }}>
+                  <div style={{ height: '100%', width: pct + '%', background: `linear-gradient(90deg, ${currentGuild.color}90, ${currentGuild.color})`, borderRadius: 4, transition: 'width 0.8s ease' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>
+                  <span>{gxp.toLocaleString()} XP contributed</span>
+                  {next ? <span>{(next.xp - gxp).toLocaleString()} XP → {next.rank}</span> : <span>Max Rank!</span>}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
+                  {ARENA_GUILD_POWER_MILESTONES.map(m => {
+                    const done = gxp >= m.xp;
+                    return (
+                      <div key={m.rank} style={{ textAlign: 'center', flex: 1 }}>
+                        <div style={{ fontSize: '0.85rem', opacity: done ? 1 : 0.3 }}>{m.icon}</div>
+                        <div style={{ fontSize: '0.52rem', color: done ? m.color : 'rgba(255,255,255,0.2)', fontWeight: done ? 700 : 400, marginTop: 2 }}>{m.rank}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -9504,12 +9577,210 @@ function ArenaLeaderboardScreen({ state, me, onBack }) {
         </div>
       </div>
 
-      {/* Phase 4 note */}
-      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)', lineHeight: 1.6 }}>
-          Full church-wide rankings coming in Phase 4<br/>when all members are connected ⛪
+      {/* Church Warriors Ranking */}
+      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Church Warriors Ranking</div>
+      {(() => {
+        const myXP = state.totalXP;
+        const myRealName = name;
+        const others = ARENA_MEMBER_NAMES
+          .filter(n => n !== myRealName)
+          .map(n => ({ name: n, xp: arenaMemberXP(n), isMe: false }));
+        const all = [...others, { name: myRealName, xp: myXP, isMe: true }]
+          .sort((a, b) => b.xp - a.xp);
+        const top10 = all.slice(0, 10);
+        const myRank = all.findIndex(m => m.isMe) + 1;
+        const medals = ['🥇', '🥈', '🥉'];
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {top10.map((m, i) => (
+              <div key={m.name} style={{
+                background: m.isMe ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${m.isMe ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                borderRadius: 12, padding: '12px 14px',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                <div style={{ width: 28, textAlign: 'center', fontSize: i < 3 ? '1.1rem' : '0.75rem', color: i < 3 ? 'inherit' : 'rgba(255,255,255,0.4)', fontWeight: 700 }}>
+                  {i < 3 ? medals[i] : `#${i + 1}`}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: m.isMe ? 700 : 500, color: m.isMe ? '#D4AF37' : 'white' }}>{m.name}{m.isMe ? ' (You)' : ''}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: m.isMe ? '#D4AF37' : 'rgba(255,255,255,0.6)' }}>{m.xp.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.25)' }}>Faith XP</div>
+                </div>
+              </div>
+            ))}
+            {myRank > 10 && (
+              <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 28, textAlign: 'center', fontSize: '0.75rem', color: '#D4AF37', fontWeight: 700 }}>#{myRank}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#D4AF37' }}>{myRealName} (You)</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#D4AF37' }}>{myXP.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.25)' }}>Faith XP</div>
+                </div>
+              </div>
+            )}
+            <div style={{ textAlign: 'center', marginTop: 6, fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>
+              {ARENA_MEMBER_NAMES.length} FLCC warriors · Battle more to climb the ranks! ⛪
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ── Phase 4: Warrior Encouragement Wall ──────────────────────────────────────
+
+function ArenaWarriorWallScreen({ me, state, onSend, onBack }) {
+  const [search, setSearch] = React.useState('');
+  const [selected, setSelected] = React.useState(null);
+  const [msgIdx, setMsgIdx] = React.useState(0);
+  const myName = me?.name || '';
+
+  const filtered = ARENA_MEMBER_NAMES.filter(n =>
+    n !== myName && n.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const sentToday = React.useMemo(() => {
+    const todayStr = new Date().toDateString();
+    return (state.warriorWall || [])
+      .filter(e => new Date(e.ts).toDateString() === todayStr)
+      .map(e => e.to);
+  }, [state.warriorWall]);
+
+  const recentSent = [...(state.warriorWall || [])].reverse().slice(0, 8);
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Warrior Wall" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>🛡️</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+          "Encourage one another and build each other up." — 1 Thess 5:11
         </div>
       </div>
+
+      {/* Search */}
+      <div style={{ position: 'relative', marginBottom: 16 }}>
+        <input
+          value={search}
+          onChange={e => { setSearch(e.target.value); setSelected(null); }}
+          placeholder="Search a church member..."
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 12, padding: '12px 16px', color: 'white',
+            fontSize: '0.85rem', outline: 'none',
+          }}
+        />
+      </div>
+
+      {/* Member list */}
+      {!selected && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22, maxHeight: 260, overflowY: 'auto' }}>
+          {filtered.map(name => {
+            const alreadySent = sentToday.includes(name);
+            return (
+              <div key={name} onClick={() => !alreadySent && setSelected(name)} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: alreadySent ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${alreadySent ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.09)'}`,
+                borderRadius: 12, padding: '12px 14px',
+                cursor: alreadySent ? 'default' : 'pointer',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>
+                    ⚔️
+                  </div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{name}</div>
+                </div>
+                {alreadySent ? (
+                  <div style={{ fontSize: '0.65rem', color: '#86EFAC', fontWeight: 700 }}>✓ Sent</div>
+                ) : (
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(212,175,55,0.7)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, padding: '4px 10px' }}>Encourage</div>
+                )}
+              </div>
+            );
+          })}
+          {filtered.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '20px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>No members found</div>
+          )}
+        </div>
+      )}
+
+      {/* Message composer */}
+      {selected && (
+        <div style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 16, padding: '18px', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>⚔️</div>
+            <div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Encouraging</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#D4AF37' }}>{selected}</div>
+            </div>
+            <button onClick={() => setSelected(null)} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '1.1rem', cursor: 'pointer' }}>✕</button>
+          </div>
+
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Choose a message</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 14 }}>
+            {ARENA_ENCOURAGE_MSGS.map((msg, i) => (
+              <div key={i} onClick={() => setMsgIdx(i)} style={{
+                background: msgIdx === i ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${msgIdx === i ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 10, padding: '10px 12px',
+                fontSize: '0.75rem', color: msgIdx === i ? '#F5E090' : 'rgba(255,255,255,0.5)',
+                cursor: 'pointer', lineHeight: 1.5,
+              }}>{msg}</div>
+            ))}
+          </div>
+
+          <button onClick={() => {
+            onSend(selected, ARENA_ENCOURAGE_MSGS[msgIdx]);
+            setSelected(null);
+            setSearch('');
+          }} style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #B8860B, #D4AF37)',
+            border: 'none', borderRadius: 12, padding: '14px',
+            color: '#060E1C', fontWeight: 800, fontSize: '0.9rem',
+            cursor: 'pointer',
+          }}>
+            Send Encouragement ✨
+          </button>
+        </div>
+      )}
+
+      {/* Recent sent */}
+      {recentSent.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Recent Encouragements Sent</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {recentSent.map((e, i) => {
+              const d = new Date(e.ts);
+              const timeStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+              return (
+                <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#D4AF37' }}>To: {e.to}</div>
+                    <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)' }}>{timeStr}</div>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>{e.msg}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {recentSent.length === 0 && !selected && (
+        <div style={{ textAlign: 'center', padding: '24px 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>
+          No encouragements sent yet — be the first to bless someone! 🙏
+        </div>
+      )}
     </div>
   );
 }
@@ -10094,6 +10365,8 @@ function ArenaTab({ me }) {
     battleStreak: 0, lastBattleDate: '',
     selectedGuild: null, guildXP: 0,
     guildMissions: {}, guildMissionsWeek: '', guildMissionsCount: 0,
+    // Phase 4
+    warriorWall: [],
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -10212,6 +10485,25 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
+  const sendEncouragement = useCallback((toName, msg) => {
+    const entry = { to: toName, msg, ts: Date.now() };
+    const newWall = [...(arenaState.warriorWall || []), entry];
+    const newState = {
+      ...arenaState,
+      warriorWall: newWall,
+      encourageCount: (arenaState.encourageCount || 0) + 1,
+      totalXP: arenaState.totalXP + 15,
+      fellowshipXP: (arenaState.fellowshipXP || 0) + 15,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) {
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    } else {
+      notify(`Encouragement sent to ${toName}! +15 Fellowship XP 💛`);
+    }
+    save(newState);
+  }, [arenaState, notify, save]);
+
   const startBattle = useCallback((zone, mode) => {
     setSelectedZone(zone);
     if (mode === '3d') {
@@ -10295,6 +10587,9 @@ function ArenaTab({ me }) {
       onQuestComplete={(quest) => completeQuest(quest)}
     />;
   }
+  if (screen === 'wall') {
+    return <ArenaWarriorWallScreen me={me} state={arenaState} onSend={sendEncouragement} onBack={() => setScreen('home')} />;
+  }
   if (screen === 'battle' && selectedZone && battleQuestion) {
     return <ArenaBattleScreen zone={selectedZone} question={battleQuestion} result={battleResult} selectedAnswer={selectedAnswer} onAnswer={answerQuestion} onBack={() => setScreen('arena')} />;
   }
@@ -10363,6 +10658,28 @@ function ArenaTab({ me }) {
             <div style={{ height: '100%', width: Math.min(xpProgress, 100) + '%', background: 'linear-gradient(90deg, #B8860B, #D4AF37, #F5C842)', borderRadius: 4, transition: 'width 1s ease', boxShadow: '0 0 8px rgba(212,175,55,0.6)' }} />
           </div>
         </div>
+
+        {/* Daily Quest Reminder */}
+        {questsDoneCount < ARENA_DAILY_QUESTS.length && (
+          <div onClick={() => setScreen('quests')} style={{
+            background: 'linear-gradient(135deg, rgba(52,211,153,0.12), rgba(16,185,129,0.06))',
+            border: '1px solid rgba(52,211,153,0.3)',
+            borderRadius: 12, padding: '10px 14px',
+            marginBottom: 18, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <div style={{ fontSize: '1.1rem' }}>📋</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#34D399' }}>
+                {ARENA_DAILY_QUESTS.length - questsDoneCount} quest{ARENA_DAILY_QUESTS.length - questsDoneCount !== 1 ? 's' : ''} remaining today
+              </div>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
+                Resets at midnight · Tap to complete quests
+              </div>
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#34D399', fontWeight: 700 }}>Go →</div>
+          </div>
+        )}
 
         {/* Warrior avatar */}
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
@@ -10508,6 +10825,29 @@ function ArenaTab({ me }) {
             </button>
           );
         })()}
+
+        {/* Warrior Wall button */}
+        <button onClick={() => setScreen('wall')} style={{
+          width: '100%',
+          background: 'linear-gradient(135deg, #120820, #2A1050)',
+          border: '1px solid rgba(212,175,55,0.28)',
+          borderRadius: 14, padding: '14px 16px',
+          color: 'white', cursor: 'pointer', textAlign: 'left',
+          display: 'flex', alignItems: 'center', gap: 12,
+          marginBottom: 12, transition: 'all 0.15s',
+          boxShadow: '0 2px 16px rgba(212,175,55,0.08)',
+        }}>
+          <div style={{ fontSize: '1.5rem' }}>🛡️</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 2, color: '#D4AF37' }}>Warrior Wall</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(arenaState.warriorWall || []).length > 0
+                ? `${(arenaState.warriorWall || []).length} encouragement${(arenaState.warriorWall || []).length !== 1 ? 's' : ''} sent · +15 XP each`
+                : 'Encourage your FLCC church family'}
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
+        </button>
 
         {/* Stats strip */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 8px', display: 'flex', justifyContent: 'space-around' }}>
