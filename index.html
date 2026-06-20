@@ -8807,6 +8807,12 @@ const ARENA_BADGES = [
   { id: 'nt_complete',  label: 'NT Champion',              desc: 'Read all 27 New Testament books',         icon: '🏆', check: s => (s.ntBooksRead||[]).length >= 27 },
   { id: 'grace_10',     label: 'Grace Catcher',            desc: 'Write 10 grace notes',                   icon: '🌸', check: s => (s.graceNoteCount||0) >= 10 },
   { id: 'grace_50',     label: 'Grace Overflow',           desc: 'Write 50 grace notes',                   icon: '💐', check: s => (s.graceNoteCount||0) >= 50 },
+  // Phase 11 (5)
+  { id: 'ot_half',        label: 'OT Journey',             desc: 'Read 20 Old Testament books',             icon: '📜', check: s => (s.otBooksRead||[]).length >= 20 },
+  { id: 'ot_complete',    label: 'OT Champion',            desc: 'Read all 39 Old Testament books',         icon: '🗺️', check: s => (s.otBooksRead||[]).length >= 39 },
+  { id: 'full_bible',     label: 'Bible Completionist',    desc: 'Read all 66 books of the Bible',          icon: '🌍', check: s => (s.ntBooksRead||[]).length >= 27 && (s.otBooksRead||[]).length >= 39 },
+  { id: 'ministry_1',     label: 'Servant Leader',         desc: 'Join a ministry team',                    icon: '🙋', check: s => (s.ministrySignups||[]).length >= 1 },
+  { id: 'prayer_timer_5', label: 'Devoted in Prayer',      desc: 'Complete 5 guided prayer sessions',       icon: '⏱️', check: s => (s.prayerTimerCount||0) >= 5 },
 ];
 
 const ARENA_GUILDS = [
@@ -10051,6 +10057,52 @@ const ARENA_GIFTS_QUESTIONS = [
   { text: 'Building up someone\'s confidence and faith brings me deep fulfillment', gift: 'encouragement' },
 ];
 
+// ── Phase 11 Constants ────────────────────────────────────────────────────────
+
+const ARENA_OT_BOOKS = [
+  { id: 'gen',   label: 'Genesis',        section: 'Law'             }, { id: 'exo',  label: 'Exodus',         section: 'Law'             },
+  { id: 'lev',   label: 'Leviticus',      section: 'Law'             }, { id: 'num',  label: 'Numbers',        section: 'Law'             },
+  { id: 'deu',   label: 'Deuteronomy',    section: 'Law'             },
+  { id: 'jos',   label: 'Joshua',         section: 'History'         }, { id: 'jdg',  label: 'Judges',         section: 'History'         },
+  { id: 'rut',   label: 'Ruth',           section: 'History'         }, { id: '1sa',  label: '1 Samuel',       section: 'History'         },
+  { id: '2sa',   label: '2 Samuel',       section: 'History'         }, { id: '1ki',  label: '1 Kings',        section: 'History'         },
+  { id: '2ki',   label: '2 Kings',        section: 'History'         }, { id: '1ch',  label: '1 Chronicles',   section: 'History'         },
+  { id: '2ch',   label: '2 Chronicles',   section: 'History'         }, { id: 'ezr',  label: 'Ezra',           section: 'History'         },
+  { id: 'neh',   label: 'Nehemiah',       section: 'History'         }, { id: 'est',  label: 'Esther',         section: 'History'         },
+  { id: 'job',   label: 'Job',            section: 'Poetry'          }, { id: 'psa',  label: 'Psalms',         section: 'Poetry'          },
+  { id: 'pro',   label: 'Proverbs',       section: 'Poetry'          }, { id: 'ecc',  label: 'Ecclesiastes',   section: 'Poetry'          },
+  { id: 'sos',   label: 'Song of Solomon',section: 'Poetry'          },
+  { id: 'isa',   label: 'Isaiah',         section: 'Major Prophets'  }, { id: 'jer',  label: 'Jeremiah',       section: 'Major Prophets'  },
+  { id: 'lam',   label: 'Lamentations',   section: 'Major Prophets'  }, { id: 'eze',  label: 'Ezekiel',        section: 'Major Prophets'  },
+  { id: 'dan',   label: 'Daniel',         section: 'Major Prophets'  },
+  { id: 'hos',   label: 'Hosea',          section: 'Minor Prophets'  }, { id: 'joe',  label: 'Joel',           section: 'Minor Prophets'  },
+  { id: 'amo',   label: 'Amos',           section: 'Minor Prophets'  }, { id: 'oba',  label: 'Obadiah',        section: 'Minor Prophets'  },
+  { id: 'jon',   label: 'Jonah',          section: 'Minor Prophets'  }, { id: 'mic',  label: 'Micah',          section: 'Minor Prophets'  },
+  { id: 'nah',   label: 'Nahum',          section: 'Minor Prophets'  }, { id: 'hab',  label: 'Habakkuk',       section: 'Minor Prophets'  },
+  { id: 'zep',   label: 'Zephaniah',      section: 'Minor Prophets'  }, { id: 'hag',  label: 'Haggai',         section: 'Minor Prophets'  },
+  { id: 'zec',   label: 'Zechariah',      section: 'Minor Prophets'  }, { id: 'mal',  label: 'Malachi',        section: 'Minor Prophets'  },
+];
+
+const ARENA_MINISTRIES = [
+  { id: 'worship',     label: 'Worship Team',       icon: '🎵', color: '#F59E0B', desc: 'Lead the congregation in Spirit-filled praise and worship on Sunday mornings.', xpType: 'fellowshipXP' },
+  { id: 'ushers',      label: 'Ushers & Greeters',  icon: '🤝', color: '#60A5FA', desc: 'Be the first face of welcome — create a warm experience for every visitor.',       xpType: 'serviceXP' },
+  { id: 'childrens',   label: "Children's Ministry", icon: '👶', color: '#34D399', desc: 'Invest in the next generation by teaching and loving the children of FLCC.',       xpType: 'serviceXP' },
+  { id: 'foodbank',    label: 'Food Bank',           icon: '🍞', color: '#F97316', desc: 'Serve the community by distributing food and demonstrating Christ\'s love.',        xpType: 'serviceXP' },
+  { id: 'media',       label: 'Media & Tech',        icon: '🎙️', color: '#8B5CF6', desc: 'Support worship through sound, livestream, visuals, and digital outreach.',        xpType: 'serviceXP' },
+  { id: 'hospitality', label: 'Hospitality',         icon: '☕', color: '#EC4899', desc: 'Create a welcoming atmosphere through meals, events, and church family care.',      xpType: 'fellowshipXP' },
+  { id: 'prayer',      label: 'Prayer Team',         icon: '🙏', color: '#A78BFA', desc: 'Intercede for the congregation, leadership, and community through prayer.',         xpType: 'prayerXP' },
+  { id: 'youth',       label: 'Youth Leaders',       icon: '🔥', color: '#EF4444', desc: 'Mentor and disciple FLCC youth — building the next generation of warriors.',        xpType: 'serviceXP' },
+];
+
+const ARENA_PRAYER_CATEGORIES = [
+  { id: 'praise',       label: 'Praise',       icon: '🙌', color: '#F59E0B', prompt: 'Begin by praising God for who He is — His power, love, holiness, and faithfulness. Worship Him simply because He is worthy.' },
+  { id: 'confession',   label: 'Confession',   icon: '🕊️', color: '#A78BFA', prompt: 'Bring any sin or shortcoming before God honestly. He is faithful and just to forgive. Receive His grace with a humble heart.' },
+  { id: 'thanksgiving', label: 'Thanksgiving', icon: '✨', color: '#34D399', prompt: 'Thank God specifically for what He has done — answered prayers, provision, protection, relationships, and daily grace.' },
+  { id: 'intercession', label: 'Intercession', icon: '🙏', color: '#60A5FA', prompt: 'Lift up the needs of others — family, church family, and community. Stand in the gap for those who need God\'s touch.' },
+  { id: 'petition',     label: 'Petition',     icon: '⚔️', color: '#EC4899', prompt: 'Bring your own needs and desires to God. Cast your anxieties on Him — He cares for you and delights in answering prayer.' },
+  { id: 'listening',    label: 'Listening',    icon: '🌿', color: '#6EE7B7', prompt: 'Be still. Put down words and simply listen. God speaks through Scripture, impressions, and peace. Rest in His presence.' },
+];
+
 // ── Phase 10 Constants ────────────────────────────────────────────────────────
 
 const ARENA_LIFE_VERSE_PRESETS = [
@@ -10082,6 +10134,233 @@ const ARENA_NT_BOOKS = [
   { id: '3jn',   label: '3 John',          ch: 1  }, { id: 'jude',  label: 'Jude',            ch: 1  },
   { id: 'rev',   label: 'Revelation',      ch: 22 },
 ];
+
+// ── Phase 11: OT Book Tracker, Ministry Sign-Up, Prayer Timer ────────────────
+
+function ArenaOTTrackerScreen({ state, onMark, onBack }) {
+  const done = new Set(state.otBooksRead || []);
+  const doneCount = done.size;
+  const pct = Math.round((doneCount / ARENA_OT_BOOKS.length) * 100);
+  const sections = ['Law', 'History', 'Poetry', 'Major Prophets', 'Minor Prophets'];
+  const sectionColors = { 'Law': '#F59E0B', 'History': '#60A5FA', 'Poetry': '#EC4899', 'Major Prophets': '#F97316', 'Minor Prophets': '#34D399' };
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #100A02 0%, #1E1404 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="OT Book Tracker" onBack={onBack} />
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>📜</div>
+        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>"All Scripture is God-breathed and useful for teaching." — 2 Tim 3:16</div>
+      </div>
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#F59E0B' }}>{doneCount} / {ARENA_OT_BOOKS.length} books read</div>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>{pct}% · +15 XP each</div>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, height: 8, overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #78350F, #F59E0B)', borderRadius: 6, transition: 'width 0.4s' }} />
+        </div>
+      </div>
+      {sections.map(section => {
+        const books = ARENA_OT_BOOKS.filter(b => b.section === section);
+        const secDone = books.filter(b => done.has(b.id)).length;
+        return (
+          <div key={section} style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: sectionColors[section], textTransform: 'uppercase', letterSpacing: '0.1em' }}>{section}</div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>{secDone}/{books.length}</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+              {books.map(book => {
+                const isRead = done.has(book.id);
+                return (
+                  <button key={book.id} onClick={() => !isRead && onMark(book.id)} style={{
+                    background: isRead ? `${sectionColors[section]}18` : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${isRead ? sectionColors[section] + '55' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 8, padding: '8px 4px', color: 'white',
+                    cursor: isRead ? 'default' : 'pointer', textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: isRead ? '0.85rem' : '0.55rem', marginBottom: 2 }}>{isRead ? '✅' : '📜'}</div>
+                    <div style={{ fontSize: '0.55rem', fontWeight: isRead ? 700 : 400, color: isRead ? sectionColors[section] : 'rgba(255,255,255,0.6)', lineHeight: 1.3 }}>{book.label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ArenaMinistryScreen({ state, onJoin, onServe, onBack }) {
+  const joined = new Set(state.ministrySignups || []);
+  const todayStr = new Date().toDateString();
+  const servedToday = state.lastMinistryServe === todayStr;
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #080A1A 0%, #101428 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Ministry Sign-Up" onBack={onBack} />
+      <div style={{ textAlign: 'center', marginBottom: 18 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>🙋</div>
+        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>"Each of you should use whatever gift you have received to serve others." — 1 Pet 4:10</div>
+      </div>
+      {joined.size > 0 && (
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>You serve in {joined.size} ministr{joined.size !== 1 ? 'ies' : 'y'}</div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.35)' }}>Tap "Serve Today" daily for +25 Service XP</div>
+            </div>
+            <button onClick={() => !servedToday && onServe()} disabled={servedToday} style={{
+              padding: '9px 16px', background: servedToday ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #1A3A6A, #3060B0)',
+              border: `1px solid ${servedToday ? 'rgba(255,255,255,0.1)' : 'rgba(96,165,250,0.45)'}`,
+              borderRadius: 10, color: servedToday ? 'rgba(255,255,255,0.35)' : 'white',
+              fontSize: '0.78rem', fontWeight: 700, cursor: servedToday ? 'default' : 'pointer', flexShrink: 0,
+            }}>
+              {servedToday ? '✅ Served' : '🙋 Serve Today'}
+            </button>
+          </div>
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {ARENA_MINISTRIES.map(m => {
+          const isJoined = joined.has(m.id);
+          return (
+            <div key={m.id} style={{ background: isJoined ? `${m.color}12` : 'rgba(255,255,255,0.04)', border: `1px solid ${isJoined ? m.color + '45' : 'rgba(255,255,255,0.09)'}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ fontSize: '1.5rem', flexShrink: 0 }}>{m.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isJoined ? m.color : 'white', marginBottom: 3 }}>{m.label}</div>
+                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.45 }}>{m.desc}</div>
+              </div>
+              <button onClick={() => !isJoined && onJoin(m.id)} disabled={isJoined} style={{
+                padding: '8px 14px', background: isJoined ? 'rgba(255,255,255,0.05)' : `${m.color}22`,
+                border: `1px solid ${isJoined ? 'rgba(255,255,255,0.08)' : m.color + '50'}`,
+                borderRadius: 10, color: isJoined ? m.color : 'white',
+                fontSize: '0.72rem', fontWeight: 700, cursor: isJoined ? 'default' : 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+              }}>
+                {isJoined ? '✅ Joined' : '+ Join'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ArenaPrayerTimerScreen({ state, onComplete, onBack }) {
+  const [step, setStep] = React.useState(0); // 0=intro, 1-6=prayer steps, 7=done
+  const todayStr = new Date().toDateString();
+  const alreadyToday = state.lastPrayerTimerDate === todayStr;
+
+  if (step === 0) {
+    return (
+      <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A0A20 0%, #101030 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+        <ArenaHeader title="Prayer Timer" onBack={onBack} />
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 10 }}>⏱️</div>
+          <div style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: 8 }}>Guided Prayer Session</div>
+          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65 }}>
+            Walk through 6 prayer categories — praise, confession, thanksgiving, intercession, petition, and listening. Spend unhurried time with God.
+          </div>
+          <div style={{ marginTop: 10, fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>"Be still, and know that I am God." — Psalm 46:10</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 28 }}>
+          {ARENA_PRAYER_CATEGORIES.map(c => (
+            <div key={c.id} style={{ background: `${c.color}14`, border: `1px solid ${c.color}35`, borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '1.3rem', marginBottom: 4 }}>{c.icon}</div>
+              <div style={{ fontSize: '0.62rem', fontWeight: 700, color: c.color }}>{c.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+          <div style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#D4AF37' }}>{state.prayerTimerCount || 0}</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Sessions</div>
+          </div>
+          <div style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#D4AF37' }}>+35 XP</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Per session</div>
+          </div>
+        </div>
+        <button onClick={() => setStep(1)} style={{
+          width: '100%', padding: '16px',
+          background: 'linear-gradient(135deg, #0A0A40, #2020A0)',
+          border: '1px solid rgba(160,160,255,0.45)', borderRadius: 14, color: 'white',
+          fontSize: '1rem', fontWeight: 800, cursor: 'pointer',
+          boxShadow: '0 4px 24px rgba(100,100,255,0.25)',
+        }}>
+          ⏱️ Begin Prayer Session
+        </button>
+      </div>
+    );
+  }
+
+  if (step > ARENA_PRAYER_CATEGORIES.length) {
+    return (
+      <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A0A20 0%, #101030 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40, textAlign: 'center' }}>
+        <ArenaHeader title="Session Complete" onBack={onBack} />
+        <div style={{ marginTop: 20, marginBottom: 28 }}>
+          <div style={{ fontSize: '3rem', marginBottom: 12 }}>🙏</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: 10 }}>Well done, faithful warrior!</div>
+          <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.65 }}>
+            You have sought God through all six dimensions of prayer. His ear is attentive to the prayer of the righteous.
+          </div>
+          <div style={{ marginTop: 14, fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>"The prayer of a righteous person is powerful and effective." — James 5:16</div>
+        </div>
+        {!alreadyToday ? (
+          <button onClick={() => { onComplete(); onBack(); }} style={{
+            width: '100%', padding: '16px',
+            background: 'linear-gradient(135deg, #0A0A40, #2020A0)',
+            border: '1px solid rgba(160,160,255,0.45)', borderRadius: 14, color: 'white',
+            fontSize: '1rem', fontWeight: 800, cursor: 'pointer',
+          }}>
+            ✅ Complete Session · +35 Prayer XP
+          </button>
+        ) : (
+          <div style={{ background: 'rgba(160,160,255,0.1)', border: '1px solid rgba(160,160,255,0.3)', borderRadius: 14, padding: '16px' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#A0A0FF' }}>XP already earned today — come back tomorrow!</div>
+            <button onClick={onBack} style={{ marginTop: 12, width: '100%', padding: '12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, color: 'rgba(255,255,255,0.55)', fontSize: '0.85rem', cursor: 'pointer' }}>Return Home</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const cat = ARENA_PRAYER_CATEGORIES[step - 1];
+  const pct = Math.round((step / ARENA_PRAYER_CATEGORIES.length) * 100);
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A0A20 0%, #101030 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title={`Prayer · ${step}/${ARENA_PRAYER_CATEGORIES.length}`} onBack={onBack} />
+      <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, height: 6, overflow: 'hidden', marginBottom: 26 }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, ${cat.color}80, ${cat.color})`, borderRadius: 6, transition: 'width 0.3s' }} />
+      </div>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ fontSize: '3rem', marginBottom: 10 }}>{cat.icon}</div>
+        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: cat.color, marginBottom: 6 }}>{cat.label}</div>
+      </div>
+      <div style={{ background: `${cat.color}12`, border: `1px solid ${cat.color}35`, borderRadius: 16, padding: '22px 18px', marginBottom: 28 }}>
+        <div style={{ fontSize: '0.88rem', lineHeight: 1.7, color: 'rgba(255,255,255,0.85)' }}>{cat.prompt}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 10 }}>
+        {step > 1 && (
+          <button onClick={() => setStep(step - 1)} style={{ flex: 1, padding: '14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: 'rgba(255,255,255,0.55)', fontSize: '0.88rem', cursor: 'pointer' }}>
+            ← Back
+          </button>
+        )}
+        <button onClick={() => setStep(step + 1)} style={{
+          flex: 3, padding: '15px',
+          background: `linear-gradient(135deg, ${cat.color}99, ${cat.color})`,
+          border: 'none', borderRadius: 12, color: 'white',
+          fontSize: '0.95rem', fontWeight: 800, cursor: 'pointer',
+          boxShadow: `0 4px 18px ${cat.color}40`,
+        }}>
+          {step === ARENA_PRAYER_CATEGORIES.length ? 'Complete Session ✅' : 'Next →'}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ── Phase 10: Life Verse, NT Book Tracker, Grace Notes ───────────────────────
 
@@ -12274,6 +12553,10 @@ function ArenaTab({ me }) {
     lifeVerse: null,
     ntBooksRead: [],
     graceNotes: [], graceNoteCount: 0, lastGraceNoteDate: '',
+    // Phase 11
+    otBooksRead: [],
+    ministrySignups: [], lastMinistryServe: '',
+    prayerTimerCount: 0, lastPrayerTimerDate: '',
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -12548,6 +12831,66 @@ function ArenaTab({ me }) {
     } else {
       notify('Praise God! +5 Fellowship XP 🙌');
     }
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const markOTBook = useCallback((bookId) => {
+    if ((arenaState.otBooksRead || []).includes(bookId)) return;
+    const newState = {
+      ...arenaState,
+      otBooksRead: [...(arenaState.otBooksRead || []), bookId],
+      totalXP: arenaState.totalXP + 15,
+      bibleXP: (arenaState.bibleXP || 0) + 15,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    const book = ARENA_OT_BOOKS.find(b => b.id === bookId);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify(`${book.label} read! +15 Bible XP 📜`);
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const joinMinistry = useCallback((ministryId) => {
+    if ((arenaState.ministrySignups || []).includes(ministryId)) return;
+    const ministry = ARENA_MINISTRIES.find(m => m.id === ministryId);
+    const xpField = ministry.xpType;
+    const newState = {
+      ...arenaState,
+      ministrySignups: [...(arenaState.ministrySignups || []), ministryId],
+      totalXP: arenaState.totalXP + 30,
+      [xpField]: (arenaState[xpField] || 0) + 30,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify(`Joined ${ministry.label}! +30 XP 🙋`);
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const serveMinistry = useCallback(() => {
+    const todayStr = new Date().toDateString();
+    if (arenaState.lastMinistryServe === todayStr) return;
+    const newState = {
+      ...arenaState,
+      lastMinistryServe: todayStr,
+      totalXP: arenaState.totalXP + 25,
+      serviceXP: (arenaState.serviceXP || 0) + 25,
+    };
+    notify('Served today! +25 Service XP 🙋');
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const completePrayerSession = useCallback(() => {
+    const todayStr = new Date().toDateString();
+    if (arenaState.lastPrayerTimerDate === todayStr) return;
+    const newState = {
+      ...arenaState,
+      prayerTimerCount: (arenaState.prayerTimerCount || 0) + 1,
+      lastPrayerTimerDate: todayStr,
+      totalXP: arenaState.totalXP + 35,
+      prayerXP: (arenaState.prayerXP || 0) + 35,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify('Prayer session complete! +35 Prayer XP ⏱️');
     save(newState);
   }, [arenaState, notify, save]);
 
@@ -12846,6 +13189,15 @@ function ArenaTab({ me }) {
       }}
       onQuestComplete={(quest) => completeQuest(quest)}
     />;
+  }
+  if (screen === 'ottracker') {
+    return <ArenaOTTrackerScreen state={arenaState} onMark={markOTBook} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'ministry') {
+    return <ArenaMinistryScreen state={arenaState} onJoin={joinMinistry} onServe={serveMinistry} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'prayertimer') {
+    return <ArenaPrayerTimerScreen state={arenaState} onComplete={completePrayerSession} onBack={() => setScreen('home')} />;
   }
   if (screen === 'lifeversescreen') {
     return <ArenaLifeVerseScreen state={arenaState} onSave={saveLifeVerse} onBack={() => setScreen('home')} />;
@@ -13336,6 +13688,62 @@ function ArenaTab({ me }) {
               {arenaState.warriorTitle
                 ? (() => { const wt = ARENA_WARRIOR_TITLES.find(t => t.id === arenaState.warriorTitle); return wt ? `${wt.icon} ${wt.label}` : 'Choose your title & shield'; })()
                 : 'Choose your title & shield · +50 XP'}
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
+        </button>
+
+        {/* OT Tracker + Prayer Timer + Ministry */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+          <button onClick={() => setScreen('ottracker')} style={{
+            background: 'linear-gradient(145deg, #140A00, #2A1800)',
+            border: '1px solid rgba(245,158,11,0.28)',
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>📜</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>OT Books</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(arenaState.otBooksRead||[]).length}/39 · +15 XP each
+            </div>
+          </button>
+
+          <button onClick={() => setScreen('prayertimer')} style={{
+            background: 'linear-gradient(145deg, #0A0A20, #181840)',
+            border: `1px solid rgba(160,160,255,${arenaState.lastPrayerTimerDate === new Date().toDateString() ? '0.2' : '0.38'})`,
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            position: 'relative',
+          }}>
+            {arenaState.lastPrayerTimerDate !== new Date().toDateString() && (
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: '50%', background: '#A0A0FF', boxShadow: '0 0 6px #A0A0FF' }} />
+            )}
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>⏱️</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Prayer Timer</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {arenaState.lastPrayerTimerDate === new Date().toDateString()
+                ? `Done today ✅`
+                : `6 categories · +35 XP`}
+            </div>
+          </button>
+        </div>
+
+        {/* Ministry Sign-Up */}
+        <button onClick={() => setScreen('ministry')} style={{
+          width: '100%', marginBottom: 10,
+          background: (arenaState.ministrySignups||[]).length > 0 ? 'linear-gradient(135deg, #0A0E24, #141C40)' : 'rgba(255,255,255,0.03)',
+          border: `1px solid rgba(96,165,250,${(arenaState.ministrySignups||[]).length > 0 ? '0.3' : '0.18'})`,
+          borderRadius: 14, padding: '14px 16px',
+          color: 'white', cursor: 'pointer', textAlign: 'left',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <div style={{ fontSize: '1.5rem' }}>🙋</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 2, color: '#60A5FA' }}>Ministry Teams</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(arenaState.ministrySignups||[]).length > 0
+                ? `${(arenaState.ministrySignups||[]).length} ministr${(arenaState.ministrySignups||[]).length !== 1 ? 'ies' : 'y'} · serve daily +25 XP`
+                : 'Join a ministry team · +30 XP each'}
             </div>
           </div>
           <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
