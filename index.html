@@ -8776,6 +8776,11 @@ const ARENA_BADGES = [
   { id: 'streak_7',     label: 'Unstoppable',       desc: 'Battle 7 days in a row',             icon: '⚡',  check: s => (s.battleStreak||0) >= 7 },
   { id: 'encourager_x10', label: 'Top Encourager', desc: 'Complete 10 encouragement quests',    icon: '❤️',  check: s => (s.encourageCount||0) >= 10 },
   { id: 'bible_x25',    label: 'Word Warrior',      desc: 'Win 25 Bible challenges',             icon: '📗',  check: s => s.battlesWon >= 25 },
+  // Phase 5
+  { id: 'pray_wall_post', label: 'Prayer Poster',  desc: 'Post your first prayer request',        icon: '🙏',  check: s => (s.prayRequestCount||0) >= 1 },
+  { id: 'intercessor',   label: 'Intercessor',     desc: 'Pray for 5 different requests',         icon: '✝️',  check: s => (s.prayedForCount||0) >= 5 },
+  { id: 'word_keeper',   label: 'Word Keeper',     desc: 'Complete 5 Scripture Memory challenges',icon: '🌿',  check: s => (s.memoryCount||0) >= 5 },
+  { id: 'verse_master',  label: 'Verse Master',    desc: 'Complete 20 Scripture Memory challenges',icon: '⭐', check: s => (s.memoryCount||0) >= 20 },
 ];
 
 const ARENA_GUILDS = [
@@ -9303,6 +9308,27 @@ const ARENA_GUILD_POWER_MILESTONES = [
   { xp: 5000, rank: 'Legend',   icon: '✨', color: '#C084FC' },
 ];
 
+// ── Phase 5: Scripture Memory & Prayer Wall data ──────────────────────────────
+
+const ARENA_SCRIPTURE_MEMORY = [
+  { ref: 'John 3:16',  verse: 'For God so loved the world that he gave his one and only ___, that whoever believes in him shall not perish but have eternal life.', ans: 'Son',           choices: ['Son','Word','Spirit','Light'] },
+  { ref: 'Phil 4:13',  verse: 'I can do all this through ___ who gives me strength.',                                                                             ans: 'Christ',        choices: ['Christ','God','faith','prayer'] },
+  { ref: 'Jer 29:11',  verse: '"For I know the plans I have for you," declares the Lord, "plans to ___ you and not to harm you."',                               ans: 'prosper',       choices: ['prosper','test','teach','bless'] },
+  { ref: 'Rom 8:28',   verse: 'And we know that in all things God works for the ___ of those who love him.',                                                      ans: 'good',          choices: ['good','glory','peace','joy'] },
+  { ref: 'Ps 23:1',    verse: 'The Lord is my ___, I lack nothing.',                                                                                              ans: 'shepherd',      choices: ['shepherd','rock','tower','light'] },
+  { ref: 'Prov 3:5',   verse: 'Trust in the Lord with all your heart and lean not on your own ___.',                                                             ans: 'understanding', choices: ['understanding','strength','wisdom','knowledge'] },
+  { ref: 'Matt 6:33',  verse: 'But seek first his ___ and his righteousness, and all these things will be given to you as well.',                                ans: 'kingdom',       choices: ['kingdom','presence','glory','peace'] },
+  { ref: 'Isa 40:31',  verse: 'But those who hope in the Lord will renew their ___.',                                                                             ans: 'strength',      choices: ['strength','faith','spirit','heart'] },
+  { ref: '1 Tim 6:12', verse: 'Fight the good fight of ___.',                                                                                                     ans: 'faith',         choices: ['faith','love','truth','hope'] },
+  { ref: 'Eph 6:11',   verse: "Put on the full ___ of God, so that you can take your stand against the devil's schemes.",                                        ans: 'armor',         choices: ['armor','strength','power','shield'] },
+];
+
+const ARENA_SIMULATED_PRAYERS = [
+  { id: 'sp1', name: 'Nerwin Suelo',   text: "Please pray for Sunday service — that hearts would be open to God's word and lives would be transformed.", prayCount: 8 },
+  { id: 'sp2', name: 'Alma Flores',    text: 'Lifting up all our youth in prayer — that God guides their steps, protects them, and draws them closer to Him.', prayCount: 12 },
+  { id: 'sp3', name: 'Edmund Gabriel', text: 'Praying for every family in FLCC — strength, unity, and God\'s peace over every home and relationship.', prayCount: 15 },
+];
+
 // ── Phase 2: Ministry Guilds Screen ──────────────────────────────────────────
 
 function ArenaGuildsScreen({ state, onJoinGuild, onCompleteGuildMission, onBack }) {
@@ -9629,6 +9655,229 @@ function ArenaLeaderboardScreen({ state, me, onBack }) {
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+// ── Phase 5: Prayer Wall ─────────────────────────────────────────────────────
+
+function ArenaPrayerWallScreen({ me, state, onPost, onPray, onBack }) {
+  const [inputText, setInputText] = React.useState('');
+  const MAX = 150;
+
+  const prayedIds = new Set(state.prayedForIds || []);
+  const userRequests = [...(state.prayerRequests || [])].reverse().slice(0, 5).map(r => ({
+    ...r,
+    name: me?.name || 'Anonymous Warrior',
+    prayCount: 3,
+  }));
+  const allRequests = [...ARENA_SIMULATED_PRAYERS, ...userRequests];
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Prayer Wall" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>🙏</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+          "The prayer of a righteous person is powerful and effective." — James 5:16
+        </div>
+      </div>
+
+      {/* Post a request */}
+      <div style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 16, padding: '16px', marginBottom: 22 }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Share a Prayer Request</div>
+        <textarea
+          value={inputText}
+          onChange={e => setInputText(e.target.value.slice(0, MAX))}
+          placeholder="Share what's on your heart..."
+          rows={3}
+          style={{
+            width: '100%', boxSizing: 'border-box', resize: 'none',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 10, padding: '10px 12px', color: 'white',
+            fontSize: '0.82rem', outline: 'none', lineHeight: 1.6,
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+          <div style={{ fontSize: '0.6rem', color: inputText.length > MAX * 0.85 ? '#F59E0B' : 'rgba(255,255,255,0.3)' }}>{inputText.length}/{MAX}</div>
+          <button
+            disabled={inputText.trim().length < 5}
+            onClick={() => { onPost(inputText.trim()); setInputText(''); }}
+            style={{
+              background: inputText.trim().length >= 5 ? 'linear-gradient(135deg, #6D28D9, #8B5CF6)' : 'rgba(255,255,255,0.08)',
+              border: 'none', borderRadius: 10, padding: '9px 18px',
+              color: inputText.trim().length >= 5 ? 'white' : 'rgba(255,255,255,0.3)',
+              fontWeight: 700, fontSize: '0.8rem',
+              cursor: inputText.trim().length >= 5 ? 'pointer' : 'default',
+            }}>
+            Post +10 XP 🙏
+          </button>
+        </div>
+      </div>
+
+      {/* Prayer requests list */}
+      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Church Prayer Requests</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {allRequests.map(req => {
+          const prayed = prayedIds.has(req.id);
+          const timeAgo = req.ts ? (() => {
+            const diff = Date.now() - req.ts;
+            if (diff < 3600000) return `${Math.max(1, Math.floor(diff / 60000))}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            return `${Math.floor(diff / 86400000)}d ago`;
+          })() : 'Recently';
+          return (
+            <div key={req.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>🙏</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{req.name}</div>
+                </div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)' }}>{timeAgo}</div>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 10 }}>{req.text}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>
+                  🙏 {req.prayCount + (prayed ? 1 : 0)} praying
+                </div>
+                <button
+                  onClick={() => !prayed && onPray(req.id)}
+                  style={{
+                    background: prayed ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.1)',
+                    border: `1px solid ${prayed ? '#8B5CF6' : 'rgba(139,92,246,0.3)'}`,
+                    borderRadius: 10, padding: '6px 14px',
+                    color: prayed ? '#C4B5FD' : 'rgba(255,255,255,0.5)',
+                    fontWeight: 700, fontSize: '0.7rem',
+                    cursor: prayed ? 'default' : 'pointer',
+                  }}>
+                  {prayed ? '✓ Praying' : "I'm Praying +5 XP"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Phase 5: Scripture Memory ─────────────────────────────────────────────────
+
+function ArenaMemoryScreen({ state, onComplete, onBack }) {
+  const [qIndex, setQIndex] = React.useState(() => Math.floor(Math.random() * ARENA_SCRIPTURE_MEMORY.length));
+  const [selected, setSelected] = React.useState(null);
+  const [result, setResult] = React.useState(null);
+
+  const q = ARENA_SCRIPTURE_MEMORY[qIndex];
+
+  const shuffled = React.useMemo(() => [...q.choices].sort(() => Math.random() - 0.5), [qIndex]);
+
+  const handleAnswer = (choice) => {
+    if (result) return;
+    setSelected(choice);
+    const correct = choice === q.ans;
+    setResult(correct ? 'correct' : 'wrong');
+    setTimeout(() => onComplete(correct), 1200);
+  };
+
+  const nextVerse = () => {
+    setQIndex((qIndex + 1) % ARENA_SCRIPTURE_MEMORY.length);
+    setSelected(null);
+    setResult(null);
+  };
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Scripture Memory" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 22 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>📖</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+          "I have hidden your word in my heart that I might not sin against you." — Ps 119:11
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 24 }}>
+        {[
+          { val: state.memoryCount || 0, label: 'Mastered', color: '#60A5FA' },
+          { val: state.memoryStreak || 0, label: 'Day Streak', color: '#F59E0B' },
+          { val: 25, label: 'XP / Verse', color: '#34D399' },
+        ].map(s => (
+          <div key={s.label} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: s.color }}>{s.val === 25 ? '+25' : s.val}</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Verse card */}
+      <div style={{ background: 'linear-gradient(135deg, rgba(96,165,250,0.12), rgba(59,130,246,0.06))', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 18, padding: '22px 18px', marginBottom: 22 }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#60A5FA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>{q.ref}</div>
+        <div style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'rgba(255,255,255,0.85)', fontStyle: 'italic' }}>
+          {q.verse.split('___').map((part, i, arr) => (
+            <React.Fragment key={i}>
+              {part}
+              {i < arr.length - 1 && (
+                <span style={{
+                  display: 'inline-block', minWidth: 80,
+                  borderBottom: '2px solid',
+                  borderColor: result === 'correct' ? '#34D399' : result === 'wrong' ? '#EF4444' : '#60A5FA',
+                  color: result ? (result === 'correct' ? '#34D399' : '#EF4444') : 'transparent',
+                  textAlign: 'center', fontStyle: 'normal', fontWeight: 800, transition: 'all 0.3s',
+                }}>
+                  {result ? q.ans : ''}
+                </span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* Answer choices */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+        {shuffled.map(choice => {
+          const isSelected = selected === choice;
+          const isCorrect = choice === q.ans;
+          let bg = 'rgba(255,255,255,0.05)';
+          let border = 'rgba(255,255,255,0.12)';
+          let color = 'white';
+          if (result && isSelected && result === 'correct') { bg = 'rgba(34,197,94,0.15)'; border = '#22C55E'; color = '#86EFAC'; }
+          if (result && isSelected && result === 'wrong')   { bg = 'rgba(239,68,68,0.15)';  border = '#EF4444'; color = '#FCA5A5'; }
+          if (result && !isSelected && isCorrect)           { bg = 'rgba(34,197,94,0.08)';  border = 'rgba(34,197,94,0.4)'; color = '#86EFAC'; }
+          return (
+            <button key={choice} onClick={() => handleAnswer(choice)} style={{
+              background: bg, border: `1.5px solid ${border}`,
+              borderRadius: 12, padding: '14px 10px',
+              color, fontWeight: 600, fontSize: '0.9rem',
+              cursor: result ? 'default' : 'pointer', transition: 'all 0.25s',
+            }}>
+              {choice}
+            </button>
+          );
+        })}
+      </div>
+
+      {result && (
+        <div style={{ textAlign: 'center', marginBottom: 14 }}>
+          {result === 'correct'
+            ? <div style={{ fontSize: '0.9rem', color: '#34D399', fontWeight: 700 }}>Correct! +25 Bible XP ✅</div>
+            : <div style={{ fontSize: '0.85rem', color: '#FCA5A5', fontWeight: 700 }}>The answer is "{q.ans}" — keep hiding God's Word in your heart!</div>
+          }
+        </div>
+      )}
+
+      {result && (
+        <button onClick={nextVerse} style={{
+          width: '100%',
+          background: 'linear-gradient(135deg, #1E3A8A, #3B82F6)',
+          border: 'none', borderRadius: 12, padding: '14px',
+          color: 'white', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer',
+        }}>
+          Next Verse →
+        </button>
+      )}
     </div>
   );
 }
@@ -10367,6 +10616,9 @@ function ArenaTab({ me }) {
     guildMissions: {}, guildMissionsWeek: '', guildMissionsCount: 0,
     // Phase 4
     warriorWall: [],
+    // Phase 5
+    prayerRequests: [], prayRequestCount: 0, prayedForIds: [], prayedForCount: 0,
+    memoryCount: 0, memoryStreak: 0, lastMemoryDate: '',
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -10504,6 +10756,65 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
+  const postPrayer = useCallback((text) => {
+    const entry = { id: 'u_' + Date.now(), text, ts: Date.now() };
+    const newState = {
+      ...arenaState,
+      prayerRequests: [...(arenaState.prayerRequests || []), entry],
+      prayRequestCount: (arenaState.prayRequestCount || 0) + 1,
+      totalXP: arenaState.totalXP + 10,
+      serviceXP: (arenaState.serviceXP || 0) + 10,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) {
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    } else {
+      notify('Prayer request posted! +10 Service XP 🙏');
+    }
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const prayFor = useCallback((id) => {
+    if ((arenaState.prayedForIds || []).includes(id)) return;
+    const newState = {
+      ...arenaState,
+      prayedForIds: [...(arenaState.prayedForIds || []), id],
+      prayedForCount: (arenaState.prayedForCount || 0) + 1,
+      totalXP: arenaState.totalXP + 5,
+      prayerXP: (arenaState.prayerXP || 0) + 5,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) {
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    } else {
+      notify('Standing in prayer with them! +5 Prayer XP 🙏');
+    }
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const completeMemory = useCallback((correct) => {
+    if (!correct) { notify("Not quite — keep seeking the Word! 📖"); return; }
+    const todayStr = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const last = arenaState.lastMemoryDate;
+    const newStreak = last === todayStr ? arenaState.memoryStreak : last === yesterday ? (arenaState.memoryStreak || 0) + 1 : 1;
+    const newState = {
+      ...arenaState,
+      memoryCount: (arenaState.memoryCount || 0) + 1,
+      memoryStreak: newStreak,
+      lastMemoryDate: todayStr,
+      totalXP: arenaState.totalXP + 25,
+      bibleXP: (arenaState.bibleXP || 0) + 25,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) {
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    } else {
+      notify('Correct! +25 Bible XP ✅');
+    }
+    save(newState);
+  }, [arenaState, notify, save]);
+
   const startBattle = useCallback((zone, mode) => {
     setSelectedZone(zone);
     if (mode === '3d') {
@@ -10586,6 +10897,12 @@ function ArenaTab({ me }) {
       }}
       onQuestComplete={(quest) => completeQuest(quest)}
     />;
+  }
+  if (screen === 'prayerwall') {
+    return <ArenaPrayerWallScreen me={me} state={arenaState} onPost={postPrayer} onPray={prayFor} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'memory') {
+    return <ArenaMemoryScreen state={arenaState} onComplete={completeMemory} onBack={() => setScreen('home')} />;
   }
   if (screen === 'wall') {
     return <ArenaWarriorWallScreen me={me} state={arenaState} onSend={sendEncouragement} onBack={() => setScreen('home')} />;
@@ -10848,6 +11165,41 @@ function ArenaTab({ me }) {
           </div>
           <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
         </button>
+
+        {/* Prayer Wall + Scripture Memory */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+          <button onClick={() => setScreen('prayerwall')} style={{
+            background: 'linear-gradient(145deg, #16083A, #2D1272)',
+            border: '1px solid rgba(139,92,246,0.4)',
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 18px rgba(139,92,246,0.18)',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>🙏</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Prayer Wall</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(state.prayedForIds || []).length > 0
+                ? `${(arenaState.prayedForIds || []).length} prayers lifted`
+                : 'Intercede & share'}
+            </div>
+          </button>
+
+          <button onClick={() => setScreen('memory')} style={{
+            background: 'linear-gradient(145deg, #0A2040, #1A3A72)',
+            border: '1px solid rgba(96,165,250,0.4)',
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 18px rgba(96,165,250,0.18)',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>📖</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Scripture Memory</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(arenaState.memoryCount || 0) > 0
+                ? `${arenaState.memoryCount} verses · ${arenaState.memoryStreak || 0}🔥 streak`
+                : 'Fill-in-the-blank · +25 XP'}
+            </div>
+          </button>
+        </div>
 
         {/* Stats strip */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 8px', display: 'flex', justifyContent: 'space-around' }}>
