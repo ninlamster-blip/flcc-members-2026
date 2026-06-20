@@ -14,6 +14,7 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 
 <style>
   :root {
@@ -581,6 +582,17 @@
     0%   { transform: translate(-50%,-50%) scale(0.8); opacity: 0.8; }
     100% { transform: translate(-50%,-50%) scale(2.2); opacity: 0; }
   }
+  @keyframes arenaButtonPop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
+  @keyframes arenaHUDFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .arena-action-btn:active { animation: arenaButtonPop 0.18s ease; }
+  .arena-game-canvas { display: block; width: 100% !important; height: 100% !important; }
 
   /* Animated header accent strip */
   .hdr-strip {
@@ -9010,7 +9022,7 @@ function ArenaQuestsScreen({ state, completedToday, onComplete, onBack, notifica
   );
 }
 
-function ArenaZonesScreen({ state, onSelectZone, onBack }) {
+function ArenaZonesScreen({ state, onSelectZone, onPlay3D, onBack }) {
   return (
     <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white' }}>
       <ArenaHeader title="Choose Your Battle" onBack={onBack} />
@@ -9066,8 +9078,13 @@ function ArenaZonesScreen({ state, onSelectZone, onBack }) {
                   <div style={{ fontSize: '0.7rem', color: locked ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)', marginBottom: 8 }}>{zone.theme}</div>
 
                   {!locked ? (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: zone.accent + '20', border: `1px solid ${zone.accent}40`, borderRadius: 8, padding: '2px 10px' }}>
-                      <span style={{ fontSize: '0.65rem', color: zone.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Boss: {zone.boss}</span>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: zone.accent + '20', border: `1px solid ${zone.accent}40`, borderRadius: 8, padding: '2px 10px' }}>
+                        <span style={{ fontSize: '0.65rem', color: zone.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Boss: {zone.boss}</span>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); onPlay3D && onPlay3D(zone); }} style={{ fontSize: '0.6rem', fontWeight: 800, background: 'rgba(139,92,246,0.25)', border: '1px solid rgba(139,92,246,0.5)', borderRadius: 8, padding: '2px 8px', color: '#A78BFA', cursor: 'pointer' }}>
+                        🎮 3D
+                      </button>
                     </div>
                   ) : (
                     <div>
@@ -9497,6 +9514,573 @@ function ArenaLeaderboardScreen({ state, me, onBack }) {
   );
 }
 
+// ── Phase 3: 3D Game Mode helpers ────────────────────────────────────────────
+
+function buildWarriorMesh() {
+  const g = new THREE.Group();
+  const skin  = new THREE.MeshPhongMaterial({ color: 0xC8956A });
+  const armor = new THREE.MeshPhongMaterial({ color: 0x1E3A8A, shininess: 90 });
+  const gold  = new THREE.MeshPhongMaterial({ color: 0xD4AF37, shininess: 120 });
+  const sword = new THREE.MeshPhongMaterial({ color: 0xC8D8E8, shininess: 140 });
+
+  const add = (geo, mat, x, y, z, rx, ry, rz) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x || 0, y || 0, z || 0);
+    if (rx) m.rotation.x = rx;
+    if (ry) m.rotation.y = ry;
+    if (rz) m.rotation.z = rz;
+    m.castShadow = true;
+    g.add(m);
+    return m;
+  };
+
+  // Head
+  add(new THREE.BoxGeometry(0.38, 0.38, 0.38), skin,  0, 1.65, 0);
+  // Helmet
+  add(new THREE.BoxGeometry(0.43, 0.18, 0.43), gold,  0, 1.82, 0);
+  // Visor
+  add(new THREE.BoxGeometry(0.30, 0.08, 0.06), gold,  0, 1.68, 0.19);
+  // Torso
+  add(new THREE.BoxGeometry(0.54, 0.58, 0.28), armor, 0, 1.18, 0);
+  // Chest plate ridge
+  add(new THREE.BoxGeometry(0.08, 0.44, 0.06), gold,  0, 1.18, 0.17);
+  // Shoulder pads
+  add(new THREE.BoxGeometry(0.22, 0.14, 0.28), gold, -0.38, 1.46, 0);
+  add(new THREE.BoxGeometry(0.22, 0.14, 0.28), gold,  0.38, 1.46, 0);
+  // Arms
+  add(new THREE.BoxGeometry(0.18, 0.46, 0.18), armor, -0.38, 1.12, 0);
+  add(new THREE.BoxGeometry(0.18, 0.46, 0.18), armor,  0.38, 1.12, 0);
+  // Gauntlets
+  add(new THREE.BoxGeometry(0.20, 0.16, 0.20), gold, -0.38, 0.84, 0);
+  add(new THREE.BoxGeometry(0.20, 0.16, 0.20), gold,  0.38, 0.84, 0);
+  // Legs
+  const legL = add(new THREE.BoxGeometry(0.22, 0.52, 0.22), armor, -0.15, 0.56, 0);
+  const legR = add(new THREE.BoxGeometry(0.22, 0.52, 0.22), armor,  0.15, 0.56, 0);
+  // Boots
+  add(new THREE.BoxGeometry(0.24, 0.14, 0.26), gold, -0.15, 0.23, 0.02);
+  add(new THREE.BoxGeometry(0.24, 0.14, 0.26), gold,  0.15, 0.23, 0.02);
+  // Sword (right hand)
+  const sw = new THREE.Group();
+  sw.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.72, 0.04), sword), { castShadow: true }));
+  const guard = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.05, 0.06), gold);
+  guard.position.y = -0.22; sw.add(guard);
+  sw.position.set(0.56, 1.08, 0.08);
+  sw.rotation.z = -0.25;
+  g.add(sw);
+  // Shield (left hand)
+  add(new THREE.BoxGeometry(0.32, 0.44, 0.06), armor, -0.60, 1.18, 0.10);
+  add(new THREE.BoxGeometry(0.28, 0.06, 0.08), gold,  -0.60, 1.18, 0.14);
+  add(new THREE.BoxGeometry(0.06, 0.38, 0.08), gold,  -0.60, 1.18, 0.14);
+
+  g.scale.setScalar(0.78);
+  g.userData.legL = legL;
+  g.userData.legR = legR;
+  g.userData.sword = sw;
+  return g;
+}
+
+function buildBossMesh(accentColor) {
+  const g = new THREE.Group();
+  const col = new THREE.Color(accentColor || '#60A5FA');
+  const coreMat = new THREE.MeshPhongMaterial({ color: col, emissive: col, emissiveIntensity: 0.4, transparent: true, opacity: 0.92, shininess: 60 });
+  const wireMat = new THREE.MeshBasicMaterial({ color: col, wireframe: true, transparent: true, opacity: 0.35 });
+  const darkMat = new THREE.MeshPhongMaterial({ color: 0x080808, emissive: col, emissiveIntensity: 0.15, shininess: 40 });
+
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.75, 1), coreMat);
+  g.add(core);
+  const outerWire = new THREE.Mesh(new THREE.IcosahedronGeometry(0.95, 1), wireMat);
+  g.add(outerWire);
+
+  // Orbiting rings
+  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.04, 8, 40), wireMat.clone());
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.03, 8, 40), wireMat.clone());
+  ring2.rotation.x = Math.PI / 2.5;
+  g.add(ring1, ring2);
+
+  // Eye orbs
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff2222 });
+  [-0.22, 0.22].forEach(x => {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), eyeMat);
+    eye.position.set(x, 0.18, 0.70);
+    g.add(eye);
+  });
+
+  g.userData.core = core;
+  g.userData.outerWire = outerWire;
+  g.userData.ring1 = ring1;
+  g.userData.ring2 = ring2;
+  return g;
+}
+
+function buildArenaEnvironment(scene, zone) {
+  const accentCol = new THREE.Color(zone.accent || '#60A5FA');
+  const bgCol = new THREE.Color(zone.bgFrom || '#060E1C');
+
+  // Floor
+  const floorMat = new THREE.MeshPhongMaterial({ color: bgCol, shininess: 20 });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // Floor grid
+  const grid = new THREE.GridHelper(24, 24, accentCol, new THREE.Color(zone.accent || '#60A5FA').multiplyScalar(0.25));
+  grid.position.y = 0.005;
+  scene.add(grid);
+
+  // Pillars
+  const pillarMat = new THREE.MeshPhongMaterial({ color: 0x0D1A2E, shininess: 30 });
+  const goldMat   = new THREE.MeshPhongMaterial({ color: 0xD4AF37, shininess: 80 });
+  [[-4.5,-4.5],[4.5,-4.5],[-4.5,4.5],[4.5,4.5]].forEach(([x,z]) => {
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.30, 4.5, 8), pillarMat);
+    pillar.position.set(x, 2.25, z);
+    pillar.castShadow = true;
+    scene.add(pillar);
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.22, 0.7), goldMat);
+    cap.position.set(x, 4.6, z);
+    scene.add(cap);
+    // Glow orb on pillar
+    const orb = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), new THREE.MeshBasicMaterial({ color: accentCol }));
+    orb.position.set(x, 4.85, z);
+    scene.add(orb);
+  });
+
+  // Barrier walls (low, translucent)
+  const wallMat = new THREE.MeshPhongMaterial({ color: accentCol, transparent: true, opacity: 0.12, side: THREE.DoubleSide });
+  [
+    [0, 0.5, -5.5, 11, 1, 0.15],
+    [0, 0.5,  5.5, 11, 1, 0.15],
+    [-5.5, 0.5, 0, 0.15, 1, 11],
+    [ 5.5, 0.5, 0, 0.15, 1, 11],
+  ].forEach(([x,y,z,w,h,d]) => {
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), wallMat);
+    wall.position.set(x,y,z);
+    scene.add(wall);
+  });
+
+  // Atmospheric particles
+  const particleCount = 120;
+  const positions = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount; i++) {
+    positions[i*3]   = (Math.random()-0.5)*18;
+    positions[i*3+1] = Math.random()*6;
+    positions[i*3+2] = (Math.random()-0.5)*18;
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const pMat = new THREE.PointsMaterial({ color: accentCol, size: 0.07, transparent: true, opacity: 0.6 });
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+}
+
+// ── Virtual Joystick ─────────────────────────────────────────────────────────
+
+function ArenaVirtualJoystick({ joystickRef }) {
+  const baseRef = useRef(null);
+  const touchId  = useRef(null);
+  const [knob, setKnob] = useState({ x: 0, y: 0, active: false });
+  const MAX = 38;
+
+  const onTouchStart = (e) => {
+    e.preventDefault();
+    if (touchId.current !== null) return;
+    touchId.current = e.changedTouches[0].identifier;
+    setKnob(k => ({ ...k, active: true }));
+  };
+
+  const onTouchMove = (e) => {
+    e.preventDefault();
+    const touch = Array.from(e.changedTouches).find(t => t.identifier === touchId.current);
+    if (!touch || !baseRef.current) return;
+    const r = baseRef.current.getBoundingClientRect();
+    let dx = touch.clientX - (r.left + r.width / 2);
+    let dy = touch.clientY - (r.top  + r.height / 2);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist > MAX) { dx = dx/dist*MAX; dy = dy/dist*MAX; }
+    setKnob({ x: dx, y: dy, active: true });
+    joystickRef.current = { x: dx/MAX, y: dy/MAX };
+  };
+
+  const onTouchEnd = (e) => {
+    if (Array.from(e.changedTouches).some(t => t.identifier === touchId.current)) {
+      touchId.current = null;
+      setKnob({ x: 0, y: 0, active: false });
+      joystickRef.current = { x: 0, y: 0 };
+    }
+  };
+
+  return (
+    <div ref={baseRef}
+      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+      style={{ width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(255,255,255,0.22)', position: 'relative', touchAction: 'none', userSelect: 'none' }}>
+      {/* Direction marks */}
+      {['↑','→','↓','←'].map((a,i) => {
+        const pos = [{ top:4,left:'50%',transform:'translateX(-50%)' },{ right:5,top:'50%',transform:'translateY(-50%)' },{ bottom:4,left:'50%',transform:'translateX(-50%)' },{ left:5,top:'50%',transform:'translateY(-50%)' }][i];
+        return <div key={a} style={{ position:'absolute', fontSize:'0.6rem', color:'rgba(255,255,255,0.25)', ...pos }}>{a}</div>;
+      })}
+      <div style={{
+        position: 'absolute', width: 38, height: 38, borderRadius: '50%',
+        background: knob.active ? 'rgba(212,175,55,0.85)' : 'rgba(255,255,255,0.28)',
+        border: '2px solid rgba(255,255,255,0.55)',
+        top: '50%', left: '50%',
+        transform: `translate(calc(-50% + ${knob.x}px), calc(-50% + ${knob.y}px))`,
+        transition: knob.active ? 'none' : 'transform 0.18s ease',
+        boxShadow: knob.active ? '0 0 14px rgba(212,175,55,0.7)' : 'none',
+        pointerEvents: 'none',
+      }} />
+    </div>
+  );
+}
+
+// ── Action Buttons ────────────────────────────────────────────────────────────
+
+function ArenaActionButtons({ onWordAttack, onShield, onHeal, onSpecial, activeBtn }) {
+  const btns = [
+    { key:'attack',  label:'WORD\nATTACK', icon:'⚔️', color:'#60A5FA', action: onWordAttack },
+    { key:'shield',  label:'SHIELD',       icon:'🛡️', color:'#A78BFA', action: onShield },
+    { key:'heal',    label:'HEAL',         icon:'❤️', color:'#34D399', action: onHeal },
+    { key:'special', label:'SPECIAL',      icon:'✨', color:'#F59E0B', action: onSpecial },
+  ];
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      {btns.map(b => (
+        <button key={b.key} className="arena-action-btn"
+          onTouchStart={(e) => { e.preventDefault(); b.action && b.action(); }}
+          onClick={b.action}
+          style={{
+            background: activeBtn === b.key ? b.color + '55' : b.color + '22',
+            border: `2px solid ${activeBtn === b.key ? b.color : b.color + '66'}`,
+            borderRadius: 14, padding: '10px 6px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            touchAction: 'manipulation', userSelect: 'none',
+            boxShadow: activeBtn === b.key ? `0 0 16px ${b.color}60` : 'none',
+            transition: 'all 0.15s',
+          }}>
+          <div style={{ fontSize: '1.35rem', lineHeight: 1 }}>{b.icon}</div>
+          <div style={{ fontSize: '0.5rem', fontWeight: 800, letterSpacing: '0.06em', color: b.color, marginTop: 4, whiteSpace: 'pre-line', lineHeight: 1.3 }}>{b.label}</div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── 3D Game Mode Screen ───────────────────────────────────────────────────────
+
+function ArenaGameModeScreen({ zone, me, state, onBack, onBattleWin, onQuestComplete }) {
+  const canvasRef = useRef(null);
+  const joystickRef = useRef({ x: 0, y: 0 });
+  const sceneDataRef = useRef(null);
+  const [hpBar, setHpBar] = useState(100);
+  const [bossHp, setBossHp] = useState(100);
+  const [activeBtn, setActiveBtn] = useState(null);
+  const [overlay, setOverlay] = useState(null); // 'battle'|'shield'|'heal'|'special'|'victory'
+  const [battleQ, setBattleQ] = useState(null);
+  const [battleResult, setBattleResult] = useState(null);
+  const [selectedAns, setSelectedAns] = useState(null);
+  const [xpFlyText, setXpFlyText] = useState(null);
+  const memberName = me?.name?.split(' ')[0] || 'Warrior';
+
+  // Init Three.js
+  useEffect(() => {
+    if (!canvasRef.current || typeof THREE === 'undefined') return;
+
+    const canvas = canvasRef.current;
+    const w = canvas.offsetWidth || window.innerWidth;
+    const h = canvas.offsetHeight || window.innerHeight;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(zone.bgFrom || '#060E1C');
+    scene.fog = new THREE.FogExp2(new THREE.Color(zone.bgFrom || '#060E1C'), 0.035);
+
+    const camera = new THREE.PerspectiveCamera(58, w / h, 0.1, 60);
+    camera.position.set(0, 3.5, 7);
+    camera.lookAt(0, 1.2, 0);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0x1A2840, 2.2));
+    const sun = new THREE.DirectionalLight(0xD4AF37, 1.8);
+    sun.position.set(4, 10, 4);
+    sun.castShadow = true;
+    sun.shadow.camera.near = 0.1;
+    sun.shadow.camera.far = 30;
+    sun.shadow.camera.left = sun.shadow.camera.bottom = -8;
+    sun.shadow.camera.right = sun.shadow.camera.top = 8;
+    scene.add(sun);
+    const bossLight = new THREE.PointLight(new THREE.Color(zone.accent || '#60A5FA'), 3, 10);
+    bossLight.position.set(0, 2.5, -3.5);
+    scene.add(bossLight);
+    const rimLight = new THREE.DirectionalLight(0x3B82F6, 0.8);
+    rimLight.position.set(-4, 2, -4);
+    scene.add(rimLight);
+
+    buildArenaEnvironment(scene, zone);
+
+    const warrior = buildWarriorMesh();
+    warrior.position.set(0, 0, 3.5);
+    scene.add(warrior);
+
+    const boss = buildBossMesh(zone.accent);
+    boss.position.set(0, 1.8, -3.5);
+    scene.add(boss);
+
+    sceneDataRef.current = { scene, camera, renderer, warrior, boss };
+
+    let raf, t = 0;
+    const animate = () => {
+      raf = requestAnimationFrame(animate);
+      t += 0.016;
+
+      // Move warrior from joystick
+      const jx = joystickRef.current.x;
+      const jy = joystickRef.current.y;
+      if (Math.abs(jx) > 0.05 || Math.abs(jy) > 0.05) {
+        warrior.position.x = Math.max(-4.5, Math.min(4.5, warrior.position.x + jx * 0.07));
+        warrior.position.z = Math.max(-2.5, Math.min(5.5, warrior.position.z + jy * 0.07));
+        warrior.rotation.y = Math.atan2(jx, jy);
+        // Walk animation — bob legs
+        if (warrior.userData.legL) {
+          warrior.userData.legL.rotation.x = Math.sin(t * 8) * 0.35;
+          warrior.userData.legR.rotation.x = -Math.sin(t * 8) * 0.35;
+        }
+        warrior.position.y = Math.abs(Math.sin(t * 8)) * 0.03;
+      } else {
+        warrior.position.y = 0;
+        if (warrior.userData.legL) {
+          warrior.userData.legL.rotation.x *= 0.85;
+          warrior.userData.legR.rotation.x *= 0.85;
+        }
+      }
+
+      // Camera follows warrior softly
+      camera.position.x += (warrior.position.x * 0.4 - camera.position.x) * 0.06;
+      camera.position.z = warrior.position.z + 6.5;
+      camera.lookAt(warrior.position.x * 0.5, 1.5, warrior.position.z - 1.5);
+
+      // Animate boss
+      boss.position.y = 1.8 + Math.sin(t * 1.8) * 0.22;
+      boss.rotation.y += 0.008;
+      if (boss.userData.ring1) boss.userData.ring1.rotation.z += 0.012;
+      if (boss.userData.ring2) boss.userData.ring2.rotation.x += 0.009;
+      if (boss.userData.core) boss.userData.core.rotation.y += 0.015;
+      if (boss.userData.outerWire) { boss.userData.outerWire.rotation.x += 0.006; boss.userData.outerWire.rotation.z -= 0.006; }
+      bossLight.intensity = 2.5 + Math.sin(t * 2.5) * 0.8;
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    const handleResize = () => {
+      const nw = canvas.offsetWidth, nh = canvas.offsetHeight;
+      renderer.setSize(nw, nh);
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', handleResize);
+      renderer.dispose();
+    };
+  }, [zone]);
+
+  // WORD ATTACK — opens Bible battle
+  const handleWordAttack = () => {
+    const pool = ARENA_BIBLE_QUESTIONS[zone.id] || ARENA_BIBLE_QUESTIONS.fear;
+    const q = pool[Math.floor(Math.random() * pool.length)];
+    setBattleQ(q);
+    setBattleResult(null);
+    setSelectedAns(null);
+    setActiveBtn('attack');
+    setOverlay('battle');
+  };
+
+  const answerBattle = (idx) => {
+    if (battleResult) return;
+    setSelectedAns(idx);
+    const correct = idx === battleQ.ans;
+    setBattleResult(correct ? 'correct' : 'wrong');
+    if (correct) {
+      setBossHp(hp => Math.max(0, hp - Math.floor(battleQ.xp / 3)));
+      setXpFlyText(`+${battleQ.xp} XP`);
+      setTimeout(() => setXpFlyText(null), 1800);
+      onBattleWin && onBattleWin(battleQ, zone);
+      setTimeout(() => { setOverlay(null); setActiveBtn(null); setBattleResult(null); }, 1800);
+    }
+  };
+
+  // SHIELD — prayer challenge
+  const handleShield = () => {
+    setActiveBtn('shield');
+    setOverlay('shield');
+  };
+
+  // HEAL — encouragement
+  const handleHeal = () => {
+    setActiveBtn('heal');
+    setOverlay('heal');
+    setHpBar(hp => Math.min(100, hp + 20));
+    setXpFlyText('+20 HP');
+    setTimeout(() => { setXpFlyText(null); setOverlay(null); setActiveBtn(null); }, 1400);
+    onQuestComplete && onQuestComplete({ id:'encourage', label:'Encourage', xpKey:'fellowshipXP', xp:20, icon:'❤️', cat:'Love' });
+  };
+
+  // SPECIAL — ministry mission
+  const handleSpecial = () => {
+    setActiveBtn('special');
+    setOverlay('special');
+  };
+
+  const closeOverlay = () => { setOverlay(null); setActiveBtn(null); };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 8000, display: 'flex', flexDirection: 'column' }}>
+      {/* THREE.JS CANVAS */}
+      <canvas ref={canvasRef} className="arena-game-canvas" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+
+      {/* ── HUD OVERLAY ── */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '12px 14px' }}>
+
+        {/* TOP BAR */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', animation: 'arenaHUDFade 0.4s ease', pointerEvents: 'auto' }}>
+          {/* Back + Player */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <button onClick={onBack} style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '6px 12px', color: 'white', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' }}>
+              ✕ Exit
+            </button>
+            <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: '6px 12px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginBottom: 2 }}>{memberName}</div>
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <span style={{ fontSize: '0.55rem', color: '#34D399' }}>HP</span>
+                <div style={{ width: 70, height: 5, background: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: hpBar + '%', background: hpBar > 50 ? '#34D399' : hpBar > 25 ? '#F59E0B' : '#EF4444', borderRadius: 3, transition: 'width 0.4s ease' }} />
+                </div>
+                <span style={{ fontSize: '0.55rem', color: '#34D399' }}>{hpBar}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Boss */}
+          <div style={{ background: 'rgba(0,0,0,0.6)', borderRadius: 10, padding: '8px 14px', backdropFilter: 'blur(4px)', textAlign: 'center', border: `1px solid ${zone.accent}44` }}>
+            <div style={{ fontSize: '1rem', lineHeight: 1 }}>{zone.icon}</div>
+            <div style={{ fontSize: '0.65rem', fontWeight: 900, color: zone.accent, letterSpacing: '0.08em', marginTop: 2 }}>{zone.boss}</div>
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 4 }}>
+              <span style={{ fontSize: '0.5rem', color: '#EF4444' }}>HP</span>
+              <div style={{ width: 64, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: bossHp + '%', background: '#EF4444', borderRadius: 2, transition: 'width 0.5s ease' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* XP Fly text */}
+        {xpFlyText && (
+          <div style={{ position: 'absolute', top: '35%', left: '50%', transform: 'translateX(-50%)', fontSize: '1.5rem', fontWeight: 900, color: '#D4AF37', textShadow: '0 0 12px rgba(212,175,55,0.8)', animation: 'arenaXpPop 1.8s ease forwards', pointerEvents: 'none' }}>
+            {xpFlyText}
+          </div>
+        )}
+
+        {/* BOTTOM CONTROLS */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', pointerEvents: 'auto' }}>
+          {/* Joystick */}
+          <ArenaVirtualJoystick joystickRef={joystickRef} />
+
+          {/* Zone + verse mini */}
+          <div style={{ textAlign: 'center', flex: 1, padding: '0 12px' }}>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic', lineHeight: 1.5, maxWidth: 160, margin: '0 auto', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
+              {zone.verse.substring(0, 60)}…
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <ArenaActionButtons onWordAttack={handleWordAttack} onShield={handleShield} onHeal={handleHeal} onSpecial={handleSpecial} activeBtn={activeBtn} />
+        </div>
+      </div>
+
+      {/* ── OVERLAYS ── */}
+      {overlay === 'battle' && battleQ && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.82)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 10 }}>
+          <div style={{ background: `linear-gradient(145deg, ${zone.bgFrom}, ${zone.bgTo})`, border: `1px solid ${zone.accent}55`, borderRadius: 20, padding: '24px 20px', width: '100%', maxWidth: 400, color: 'white' }}>
+            <div style={{ fontSize: '0.6rem', color: zone.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 6 }}>⚔️ Word Attack — Bible Challenge</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, lineHeight: 1.5, marginBottom: 18 }}>{battleQ.q}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {battleQ.opts.map((opt, i) => {
+                let bg = 'rgba(255,255,255,0.06)', border = 'rgba(255,255,255,0.15)', anim = '';
+                if (battleResult) {
+                  if (i === battleQ.ans) { bg = 'rgba(34,197,94,0.22)'; border = '#22C55E'; anim = 'arenaCorrect 0.4s ease'; }
+                  else if (i === selectedAns) { bg = 'rgba(239,68,68,0.22)'; border = '#EF4444'; anim = 'arenaShake 0.4s ease'; }
+                }
+                return (
+                  <button key={i} onClick={() => answerBattle(i)} disabled={!!battleResult} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 12, padding: '12px 14px', color: 'white', textAlign: 'left', cursor: battleResult ? 'default' : 'pointer', fontSize: '0.875rem', display: 'flex', gap: 10, alignItems: 'center', animation: anim }}>
+                    <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>{String.fromCharCode(65+i)}</span>
+                    {opt}
+                    {battleResult && i === battleQ.ans && <span style={{ marginLeft:'auto' }}>✅</span>}
+                    {battleResult && i === selectedAns && i !== battleQ.ans && <span style={{ marginLeft:'auto' }}>❌</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {!battleResult && (
+              <button onClick={closeOverlay} style={{ marginTop: 14, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '8px 16px', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', cursor: 'pointer', width: '100%' }}>Cancel</button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {overlay === 'shield' && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.80)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 10 }}>
+          <div style={{ background: 'linear-gradient(145deg, #1A0A3A, #2D1060)', border: '1px solid #A78BFA55', borderRadius: 20, padding: '28px 22px', width: '100%', maxWidth: 360, color: 'white', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🛡️</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 6, color: '#A78BFA' }}>Shield of Faith</div>
+            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: 20 }}>
+              "Take up the shield of faith, with which you can extinguish all the flaming arrows of the evil one." — Eph 6:16<br/><br/>
+              Spend a moment in prayer. When you're done, complete the challenge.
+            </div>
+            <button onClick={() => {
+              setHpBar(hp => Math.min(100, hp + 30));
+              setXpFlyText('+30 Prayer XP');
+              setTimeout(() => setXpFlyText(null), 1800);
+              onQuestComplete && onQuestComplete({ id:'pray_someone', label:'Pray for Someone', xpKey:'prayerXP', xp:20, icon:'🙏', cat:'Prayer' });
+              closeOverlay();
+            }} style={{ background: 'linear-gradient(135deg, #6D28D9, #A78BFA)', border: 'none', borderRadius: 12, padding: '14px 28px', color: 'white', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', width: '100%', marginBottom: 10 }}>
+              I Prayed! +30 XP
+            </button>
+            <button onClick={closeOverlay} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', cursor: 'pointer', width: '100%' }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {overlay === 'special' && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.80)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 10 }}>
+          <div style={{ background: 'linear-gradient(145deg, #1A1000, #3A2800)', border: '1px solid #F59E0B55', borderRadius: 20, padding: '28px 22px', width: '100%', maxWidth: 360, color: 'white', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>✨</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 6, color: '#F59E0B' }}>Special — Ministry Mission</div>
+            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: 20 }}>
+              "Each of you should use whatever gift you have to serve others." — 1 Pet 4:10<br/><br/>
+              Commit to a ministry act this week — serving, giving, or encouraging the body of Christ.
+            </div>
+            <button onClick={() => {
+              setXpFlyText('+50 Service XP ✨');
+              setTimeout(() => setXpFlyText(null), 2000);
+              onQuestComplete && onQuestComplete({ id:'attend_fship', label:'Attend Fellowship', xpKey:'fellowshipXP', xp:50, icon:'🏛️', cat:'Fellowship' });
+              closeOverlay();
+            }} style={{ background: 'linear-gradient(135deg, #B45309, #F59E0B)', border: 'none', borderRadius: 12, padding: '14px 28px', color: 'white', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', width: '100%', marginBottom: 10 }}>
+              I Commit! +50 XP
+            </button>
+            <button onClick={closeOverlay} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', cursor: 'pointer', width: '100%' }}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ArenaTab ─────────────────────────────────────────────────────────────
 
 function ArenaTab({ me }) {
@@ -9628,13 +10212,17 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
-  const startBattle = useCallback((zone) => {
+  const startBattle = useCallback((zone, mode) => {
+    setSelectedZone(zone);
+    if (mode === '3d') {
+      setScreen('gamemode');
+      return;
+    }
     const pool = ARENA_BIBLE_QUESTIONS[zone.id] || ARENA_BIBLE_QUESTIONS.fear;
     const q = pool[Math.floor(Math.random() * pool.length)];
     setBattleQuestion(q);
     setBattleResult(null);
     setSelectedAnswer(null);
-    setSelectedZone(zone);
     setScreen('battle');
   }, []);
 
@@ -9679,13 +10267,33 @@ function ArenaTab({ me }) {
     return <ArenaQuestsScreen state={arenaState} completedToday={completedToday} onComplete={completeQuest} onBack={() => setScreen('home')} notification={notification} />;
   }
   if (screen === 'arena') {
-    return <ArenaZonesScreen state={arenaState} onSelectZone={startBattle} onBack={() => setScreen('home')} />;
+    return <ArenaZonesScreen state={arenaState} onSelectZone={startBattle} onPlay3D={(zone) => startBattle(zone, '3d')} onBack={() => setScreen('home')} />;
   }
   if (screen === 'guilds') {
     return <ArenaGuildsScreen state={arenaState} onJoinGuild={joinGuild} onCompleteGuildMission={completeGuildMission} onBack={() => setScreen('home')} />;
   }
   if (screen === 'leaderboard') {
     return <ArenaLeaderboardScreen state={arenaState} me={me} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'gamemode' && selectedZone) {
+    return <ArenaGameModeScreen
+      zone={selectedZone}
+      me={me}
+      state={arenaState}
+      onBack={() => setScreen('home')}
+      onBattleWin={(q, zone) => {
+        const todayStr = new Date().toDateString();
+        const lastBattle = arenaState.lastBattleDate;
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const newStreak = lastBattle === todayStr ? arenaState.battleStreak : lastBattle === yesterday ? (arenaState.battleStreak||0)+1 : 1;
+        const newZones = { ...(arenaState.zonesConquered||{}), [zone.id]: ((arenaState.zonesConquered||{})[zone.id]||0)+1 };
+        const newState = { ...arenaState, totalXP: arenaState.totalXP+q.xp, bibleXP:(arenaState.bibleXP||0)+q.xp, battlesWon:arenaState.battlesWon+1, battleStreak:newStreak, lastBattleDate:todayStr, zonesConquered:newZones };
+        applyBadges(newState, arenaState);
+        save(newState);
+        notify(`${q.skill}! +${q.xp} XP`);
+      }}
+      onQuestComplete={(quest) => completeQuest(quest)}
+    />;
   }
   if (screen === 'battle' && selectedZone && battleQuestion) {
     return <ArenaBattleScreen zone={selectedZone} question={battleQuestion} result={battleResult} selectedAnswer={selectedAnswer} onAnswer={answerQuestion} onBack={() => setScreen('arena')} />;
@@ -9808,8 +10416,8 @@ function ArenaTab({ me }) {
             transition: 'transform 0.15s, box-shadow 0.15s',
           }}>
             <div style={{ fontSize: '1.75rem', marginBottom: 5 }}>⚔️</div>
-            <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>Enter Arena</div>
-            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Bible Battle</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>Bible Battle</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Choose Zone</div>
           </button>
 
           <button onClick={() => setScreen('quests')} style={{
@@ -9829,6 +10437,26 @@ function ArenaTab({ me }) {
             <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>{questsDoneCount}/{ARENA_DAILY_QUESTS.length} done</div>
           </button>
         </div>
+
+        {/* 3D Game Mode CTA */}
+        <button onClick={() => { setSelectedZone(ARENA_ZONES[0]); setScreen('gamemode'); }} style={{
+          width: '100%', marginBottom: 12,
+          background: 'linear-gradient(135deg, #1A0A3A, #3D1A6A, #1A0A3A)',
+          border: '1px solid rgba(167,139,250,0.55)',
+          borderRadius: 16, padding: '16px',
+          color: 'white', cursor: 'pointer', textAlign: 'center',
+          boxShadow: '0 4px 28px rgba(139,92,246,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+          position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 50%, rgba(139,92,246,0.15), transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ fontSize: '2rem' }}>🎮</div>
+          <div>
+            <div style={{ fontSize: '1rem', fontWeight: 800, letterSpacing: '-0.01em' }}>Play in 3D</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(167,139,250,0.8)', marginTop: 1 }}>Full 3D Arena · Joystick Controls · Boss Battle</div>
+          </div>
+          <div style={{ position: 'absolute', right: 14, fontSize: '0.7rem', color: 'rgba(167,139,250,0.6)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 6, padding: '2px 6px', fontWeight: 700 }}>NEW</div>
+        </button>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <button onClick={() => setScreen('character')} style={{
