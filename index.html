@@ -8801,6 +8801,12 @@ const ARENA_BADGES = [
   { id: 'gifted',          label: 'Gifted for the Kingdom', desc: 'Discover your spiritual gift',          icon: '🌟', check: s => !!s.spiritualGift },
   { id: 'fast_1',          label: 'Devoted Faster',     desc: 'Complete a fast',                          icon: '🕊️', check: s => (s.fastingCount||0) >= 1 },
   { id: 'fast_3',          label: 'Spiritual Discipline',desc: 'Complete 3 fasts',                        icon: '✨', check: s => (s.fastingCount||0) >= 3 },
+  // Phase 10 (5)
+  { id: 'life_verse',   label: 'Living Word',              desc: 'Set your personal life verse',            icon: '✝️',  check: s => !!s.lifeVerse },
+  { id: 'nt_half',      label: 'NT Journey',               desc: 'Read 14 New Testament books',             icon: '📖', check: s => (s.ntBooksRead||[]).length >= 14 },
+  { id: 'nt_complete',  label: 'NT Champion',              desc: 'Read all 27 New Testament books',         icon: '🏆', check: s => (s.ntBooksRead||[]).length >= 27 },
+  { id: 'grace_10',     label: 'Grace Catcher',            desc: 'Write 10 grace notes',                   icon: '🌸', check: s => (s.graceNoteCount||0) >= 10 },
+  { id: 'grace_50',     label: 'Grace Overflow',           desc: 'Write 50 grace notes',                   icon: '💐', check: s => (s.graceNoteCount||0) >= 50 },
 ];
 
 const ARENA_GUILDS = [
@@ -10044,6 +10050,235 @@ const ARENA_GIFTS_QUESTIONS = [
   { text: 'I enjoy casting vision and helping people see the bigger picture of what God wants to do', gift: 'leadership' },
   { text: 'Building up someone\'s confidence and faith brings me deep fulfillment', gift: 'encouragement' },
 ];
+
+// ── Phase 10 Constants ────────────────────────────────────────────────────────
+
+const ARENA_LIFE_VERSE_PRESETS = [
+  { ref: 'Jeremiah 29:11',     text: '"For I know the plans I have for you," declares the Lord, "plans to prosper you and not to harm you, plans to give you hope and a future."' },
+  { ref: 'Philippians 4:13',   text: '"I can do all this through him who gives me strength."' },
+  { ref: 'Romans 8:28',        text: '"And we know that in all things God works for the good of those who love him, who have been called according to his purpose."' },
+  { ref: 'Joshua 1:9',         text: '"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go."' },
+  { ref: 'Proverbs 3:5-6',     text: '"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight."' },
+  { ref: 'Isaiah 40:31',       text: '"But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint."' },
+  { ref: 'Matthew 6:33',       text: '"But seek first his kingdom and his righteousness, and all these things will be given to you as well."' },
+  { ref: 'Galatians 2:20',     text: '"I have been crucified with Christ and I no longer live, but Christ lives in me."' },
+  { ref: 'Psalm 23:1',         text: '"The Lord is my shepherd, I lack nothing."' },
+  { ref: '1 Timothy 6:12',     text: '"Fight the good fight of faith. Take hold of the eternal life to which you were called."' },
+];
+
+const ARENA_NT_BOOKS = [
+  { id: 'matt',  label: 'Matthew',         ch: 28 }, { id: 'mark',  label: 'Mark',           ch: 16 },
+  { id: 'luke',  label: 'Luke',            ch: 24 }, { id: 'john',  label: 'John',            ch: 21 },
+  { id: 'acts',  label: 'Acts',            ch: 28 }, { id: 'rom',   label: 'Romans',          ch: 16 },
+  { id: '1cor',  label: '1 Corinthians',   ch: 16 }, { id: '2cor',  label: '2 Corinthians',   ch: 13 },
+  { id: 'gal',   label: 'Galatians',       ch: 6  }, { id: 'eph',   label: 'Ephesians',       ch: 6  },
+  { id: 'phil',  label: 'Philippians',     ch: 4  }, { id: 'col',   label: 'Colossians',      ch: 4  },
+  { id: '1ths',  label: '1 Thessalonians', ch: 5  }, { id: '2ths',  label: '2 Thessalonians', ch: 3  },
+  { id: '1tim',  label: '1 Timothy',       ch: 6  }, { id: '2tim',  label: '2 Timothy',       ch: 4  },
+  { id: 'tit',   label: 'Titus',           ch: 3  }, { id: 'phlm',  label: 'Philemon',        ch: 1  },
+  { id: 'heb',   label: 'Hebrews',         ch: 13 }, { id: 'jas',   label: 'James',           ch: 5  },
+  { id: '1pet',  label: '1 Peter',         ch: 5  }, { id: '2pet',  label: '2 Peter',         ch: 3  },
+  { id: '1jn',   label: '1 John',          ch: 5  }, { id: '2jn',   label: '2 John',          ch: 1  },
+  { id: '3jn',   label: '3 John',          ch: 1  }, { id: 'jude',  label: 'Jude',            ch: 1  },
+  { id: 'rev',   label: 'Revelation',      ch: 22 },
+];
+
+// ── Phase 10: Life Verse, NT Book Tracker, Grace Notes ───────────────────────
+
+function ArenaLifeVerseScreen({ state, onSave, onBack }) {
+  const current = state.lifeVerse || null;
+  const [mode, setMode] = React.useState(current ? 'view' : 'pick'); // 'pick' | 'custom' | 'view'
+  const [selected, setSelected] = React.useState(current ? current.ref : null);
+  const [customRef, setCustomRef] = React.useState('');
+  const [customText, setCustomText] = React.useState('');
+
+  if (mode === 'view' && current) {
+    return (
+      <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1020 0%, #0D1630 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+        <ArenaHeader title="My Life Verse" onBack={onBack} />
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 10 }}>✝️</div>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Your Life Verse</div>
+        </div>
+        <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04))', border: '1px solid rgba(212,175,55,0.35)', borderRadius: 18, padding: '26px 22px', marginBottom: 22, textAlign: 'center' }}>
+          <div style={{ fontSize: '0.95rem', lineHeight: 1.75, color: 'rgba(255,255,255,0.92)', fontStyle: 'italic', marginBottom: 16 }}>{current.text}</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#D4AF37' }}>— {current.ref}</div>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '14px 16px', marginBottom: 18 }}>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
+            This verse is your anchor — a promise God has spoken over your life. Let it guide your daily walk with Him.
+          </div>
+        </div>
+        <button onClick={() => setMode('pick')} style={{
+          width: '100%', padding: '13px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 14, color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', cursor: 'pointer',
+        }}>
+          Change My Life Verse
+        </button>
+      </div>
+    );
+  }
+
+  if (mode === 'custom') {
+    return (
+      <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1020 0%, #0D1630 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+        <ArenaHeader title="Custom Life Verse" onBack={() => setMode('pick')} />
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Scripture Reference</div>
+          <input value={customRef} onChange={e => setCustomRef(e.target.value)} placeholder='e.g. "Isaiah 43:1"'
+            style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 10, padding: '12px 14px', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+        </div>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Verse Text</div>
+          <textarea value={customText} onChange={e => setCustomText(e.target.value)} placeholder="Type the verse that God has placed on your heart..."
+            rows={5} style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 10, padding: '12px 14px', color: 'white', fontSize: '0.88rem', outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6 }} />
+        </div>
+        <button onClick={() => { if (customRef.trim() && customText.trim()) { onSave({ ref: customRef.trim(), text: customText.trim(), custom: true }); onBack(); }}}
+          disabled={!customRef.trim() || !customText.trim()}
+          style={{ width: '100%', padding: '15px', background: customRef.trim() && customText.trim() ? 'linear-gradient(135deg, #3A2800, #7A5500)' : 'rgba(255,255,255,0.06)', border: `1px solid ${customRef.trim() && customText.trim() ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 14, color: customRef.trim() && customText.trim() ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.95rem', fontWeight: 800, cursor: customRef.trim() && customText.trim() ? 'pointer' : 'default' }}>
+          Set as My Life Verse ✝️
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1020 0%, #0D1630 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Choose Your Life Verse" onBack={onBack} />
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>✝️</div>
+        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>"Your word is a lamp to my feet and a light to my path." — Psalm 119:105</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+        {ARENA_LIFE_VERSE_PRESETS.map(v => {
+          const active = selected === v.ref;
+          return (
+            <button key={v.ref} onClick={() => setSelected(v.ref)} style={{
+              background: active ? 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.06))' : 'rgba(255,255,255,0.04)',
+              border: `1.5px solid ${active ? 'rgba(212,175,55,0.55)' : 'rgba(255,255,255,0.09)'}`,
+              borderRadius: 14, padding: '14px 16px', color: 'white', cursor: 'pointer', textAlign: 'left',
+              boxShadow: active ? '0 2px 14px rgba(212,175,55,0.15)' : 'none',
+            }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: active ? '#D4AF37' : 'rgba(255,255,255,0.5)', marginBottom: 5 }}>{v.ref}</div>
+              <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.55, fontStyle: 'italic' }}>{v.text.length > 100 ? v.text.slice(0, 100) + '…' : v.text}</div>
+            </button>
+          );
+        })}
+      </div>
+      <button onClick={() => setMode('custom')} style={{ width: '100%', marginBottom: 12, padding: '13px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: 'rgba(255,255,255,0.55)', fontSize: '0.85rem', cursor: 'pointer' }}>
+        + Enter a Custom Verse
+      </button>
+      <button onClick={() => { if (selected) { const v = ARENA_LIFE_VERSE_PRESETS.find(x => x.ref === selected); if (v) { onSave({ ref: v.ref, text: v.text, custom: false }); onBack(); }}}} disabled={!selected}
+        style={{ width: '100%', padding: '15px', background: selected ? 'linear-gradient(135deg, #3A2800, #7A5500)' : 'rgba(255,255,255,0.06)', border: `1px solid ${selected ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 14, color: selected ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.95rem', fontWeight: 800, cursor: selected ? 'pointer' : 'default' }}>
+        {selected ? 'Set as My Life Verse ✝️' : 'Select a verse above'}
+      </button>
+    </div>
+  );
+}
+
+function ArenaNTTrackerScreen({ state, onMark, onBack }) {
+  const done = new Set(state.ntBooksRead || []);
+  const doneCount = done.size;
+  const pct = Math.round((doneCount / ARENA_NT_BOOKS.length) * 100);
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1228 0%, #0D1A3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="NT Book Tracker" onBack={onBack} />
+      <div style={{ textAlign: 'center', marginBottom: 18 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>📚</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>"All Scripture is God-breathed and is useful for teaching." — 2 Tim 3:16</div>
+      </div>
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#60A5FA' }}>{doneCount} / {ARENA_NT_BOOKS.length} books read</div>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>{pct}% complete · +15 XP each</div>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, height: 8, overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #1E40AF, #60A5FA)', borderRadius: 6, transition: 'width 0.4s' }} />
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        {ARENA_NT_BOOKS.map((book, i) => {
+          const isRead = done.has(book.id);
+          return (
+            <button key={book.id} onClick={() => !isRead && onMark(book.id)} style={{
+              background: isRead ? 'linear-gradient(135deg, rgba(96,165,250,0.2), rgba(96,165,250,0.08))' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${isRead ? 'rgba(96,165,250,0.5)' : 'rgba(255,255,255,0.09)'}`,
+              borderRadius: 10, padding: '10px 8px', color: 'white',
+              cursor: isRead ? 'default' : 'pointer', textAlign: 'center',
+            }}>
+              <div style={{ fontSize: isRead ? '1rem' : '0.65rem', marginBottom: isRead ? 2 : 4 }}>{isRead ? '✅' : `${i + 1}`}</div>
+              <div style={{ fontSize: '0.68rem', fontWeight: isRead ? 700 : 400, color: isRead ? '#60A5FA' : 'rgba(255,255,255,0.65)', lineHeight: 1.3 }}>{book.label}</div>
+              {!isRead && <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{book.ch} ch</div>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ArenaGraceNotesScreen({ state, onAdd, onBack }) {
+  const [text, setText] = React.useState('');
+  const notes = state.graceNotes || [];
+  const todayStr = new Date().toDateString();
+  const todayCount = notes.filter(n => n.date === todayStr).length;
+  const canAdd = todayCount < 3;
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #14080A 0%, #280A14 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Grace Notes" onBack={onBack} />
+      <div style={{ textAlign: 'center', marginBottom: 18 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>🌸</div>
+        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>"Give thanks to the Lord, for he is good; his love endures forever." — Psalm 107:1</div>
+      </div>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+        {[
+          { label: 'Total Notes', value: state.graceNoteCount || 0, icon: '🌸' },
+          { label: 'Today', value: `${todayCount}/3`, icon: '✨' },
+        ].map(s => (
+          <div key={s.label} style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(244,114,182,0.2)', borderRadius: 12, padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.1rem', marginBottom: 4 }}>{s.icon}</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#F472B6' }}>{s.value}</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+          {canAdd ? 'Capture a Grace Moment' : "Today's 3 notes saved — come back tomorrow!"}
+        </div>
+        {canAdd && (
+          <>
+            <textarea value={text} onChange={e => setText(e.target.value)} placeholder="Where did you see God's grace today?"
+              rows={3} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(244,114,182,0.25)', borderRadius: 10, padding: '12px 14px', color: 'white', fontSize: '0.88rem', outline: 'none', resize: 'none', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6, marginBottom: 10 }} />
+            <button onClick={() => { if (text.trim()) { onAdd(text.trim()); setText(''); }}} disabled={!text.trim()} style={{
+              width: '100%', padding: '13px',
+              background: text.trim() ? 'linear-gradient(135deg, #5A0A28, #B01050)' : 'rgba(255,255,255,0.06)',
+              border: `1px solid ${text.trim() ? 'rgba(244,114,182,0.45)' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: 12, color: text.trim() ? 'white' : 'rgba(255,255,255,0.3)',
+              fontSize: '0.9rem', fontWeight: 700, cursor: text.trim() ? 'pointer' : 'default',
+            }}>
+              🌸 Save Grace Note · +10 XP
+            </button>
+          </>
+        )}
+      </div>
+      {notes.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Recent Grace Moments</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[...notes].reverse().slice(0, 20).map(n => (
+              <div key={n.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(244,114,182,0.14)', borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.55, marginBottom: 4 }}>{n.text}</div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>{n.date}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Phase 9: Sermon Notes, Spiritual Gifts Quiz, Fasting Journal ─────────────
 
@@ -12035,6 +12270,10 @@ function ArenaTab({ me }) {
     sermonNotes: [], sermonCount: 0, sermonStreak: 0, lastSermonDate: '',
     spiritualGift: null,
     fastingLog: [], fastingCount: 0, activeFast: null,
+    // Phase 10
+    lifeVerse: null,
+    ntBooksRead: [],
+    graceNotes: [], graceNoteCount: 0, lastGraceNoteDate: '',
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -12312,6 +12551,55 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
+  const saveLifeVerse = useCallback(({ ref, text, custom }) => {
+    const isFirst = !arenaState.lifeVerse;
+    const newState = {
+      ...arenaState,
+      lifeVerse: { ref, text, custom },
+      totalXP: isFirst ? arenaState.totalXP + 40 : arenaState.totalXP,
+      faithXP: isFirst ? (arenaState.faithXP || 0) + 40 : (arenaState.faithXP || 0),
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else if (isFirst) notify('Life verse set! +40 Faith XP ✝️');
+    else notify('Life verse updated! ✝️');
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const markNTBook = useCallback((bookId) => {
+    if ((arenaState.ntBooksRead || []).includes(bookId)) return;
+    const newState = {
+      ...arenaState,
+      ntBooksRead: [...(arenaState.ntBooksRead || []), bookId],
+      totalXP: arenaState.totalXP + 15,
+      bibleXP: (arenaState.bibleXP || 0) + 15,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    const book = ARENA_NT_BOOKS.find(b => b.id === bookId);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify(`${book.label} read! +15 Bible XP 📚`);
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const addGraceNote = useCallback((text) => {
+    const todayStr = new Date().toDateString();
+    const todayNotes = (arenaState.graceNotes || []).filter(n => n.date === todayStr);
+    if (todayNotes.length >= 3) return;
+    const entry = { id: 'gn_' + Date.now(), text, date: todayStr };
+    const newState = {
+      ...arenaState,
+      graceNotes: [...(arenaState.graceNotes || []), entry],
+      graceNoteCount: (arenaState.graceNoteCount || 0) + 1,
+      lastGraceNoteDate: todayStr,
+      totalXP: arenaState.totalXP + 10,
+      faithXP: (arenaState.faithXP || 0) + 10,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify('Grace note saved! +10 Faith XP 🌸');
+    save(newState);
+  }, [arenaState, notify, save]);
+
   const saveSermonNote = useCallback(({ title, scripture, note }) => {
     const todayStr = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -12559,6 +12847,15 @@ function ArenaTab({ me }) {
       onQuestComplete={(quest) => completeQuest(quest)}
     />;
   }
+  if (screen === 'lifeversescreen') {
+    return <ArenaLifeVerseScreen state={arenaState} onSave={saveLifeVerse} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'nttracker') {
+    return <ArenaNTTrackerScreen state={arenaState} onMark={markNTBook} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'gracenotes') {
+    return <ArenaGraceNotesScreen state={arenaState} onAdd={addGraceNote} onBack={() => setScreen('home')} />;
+  }
   if (screen === 'sermon') {
     return <ArenaSermonScreen state={arenaState} onSave={saveSermonNote} onBack={() => setScreen('home')} />;
   }
@@ -12742,9 +13039,18 @@ function ArenaTab({ me }) {
               <div style={{ marginTop: 8, fontSize: '0.78rem', color: wt.color, fontWeight: 700 }}>{wt.icon} {wt.label}</div>
             ) : null;
           })()}
-          <div style={{ marginTop: 14, fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
-            "Fight the good fight of faith" — 1 Tim 6:12
-          </div>
+          {arenaState.lifeVerse ? (
+            <div style={{ marginTop: 14, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)', borderRadius: 12, padding: '10px 14px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.72rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.75)', fontStyle: 'italic' }}>
+                {arenaState.lifeVerse.text.length > 90 ? arenaState.lifeVerse.text.slice(0, 90) + '…' : arenaState.lifeVerse.text}
+              </div>
+              <div style={{ fontSize: '0.62rem', color: '#D4AF37', fontWeight: 700, marginTop: 4 }}>— {arenaState.lifeVerse.ref}</div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 14, fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+              "Fight the good fight of faith" — 1 Tim 6:12
+            </div>
+          )}
         </div>
 
         {/* Primary action buttons */}
@@ -13030,6 +13336,61 @@ function ArenaTab({ me }) {
               {arenaState.warriorTitle
                 ? (() => { const wt = ARENA_WARRIOR_TITLES.find(t => t.id === arenaState.warriorTitle); return wt ? `${wt.icon} ${wt.label}` : 'Choose your title & shield'; })()
                 : 'Choose your title & shield · +50 XP'}
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
+        </button>
+
+        {/* Life Verse + NT Tracker + Grace Notes */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+          <button onClick={() => setScreen('lifeversescreen')} style={{
+            background: arenaState.lifeVerse ? 'linear-gradient(145deg, #2A1800, #5A3500)' : 'linear-gradient(145deg, #1A1000, #3A2500)',
+            border: `1px solid rgba(212,175,55,${arenaState.lifeVerse ? '0.45' : '0.28'})`,
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: arenaState.lifeVerse ? '0 4px 18px rgba(212,175,55,0.15)' : 'none',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>✝️</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Life Verse</div>
+            <div style={{ fontSize: '0.6rem', color: arenaState.lifeVerse ? '#D4AF37' : 'rgba(255,255,255,0.4)' }}>
+              {arenaState.lifeVerse ? arenaState.lifeVerse.ref : 'Set yours · +40 XP'}
+            </div>
+          </button>
+
+          <button onClick={() => setScreen('gracenotes')} style={{
+            background: 'linear-gradient(145deg, #1A0814, #320A24)',
+            border: '1px solid rgba(244,114,182,0.28)',
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 18px rgba(244,114,182,0.08)',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>🌸</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Grace Notes</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(arenaState.graceNoteCount || 0) > 0
+                ? `${arenaState.graceNoteCount} moments captured`
+                : '3/day · +10 XP each'}
+            </div>
+          </button>
+        </div>
+
+        {/* NT Book Tracker */}
+        <button onClick={() => setScreen('nttracker')} style={{
+          width: '100%', marginBottom: 10,
+          background: 'linear-gradient(135deg, #0A1228, #1A2040)',
+          border: '1px solid rgba(96,165,250,0.28)',
+          borderRadius: 14, padding: '14px 16px',
+          color: 'white', cursor: 'pointer', textAlign: 'left',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <div style={{ fontSize: '1.5rem' }}>📚</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 4, color: '#60A5FA' }}>NT Book Tracker</div>
+            <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 4, height: 5, overflow: 'hidden' }}>
+              <div style={{ width: `${Math.round(((arenaState.ntBooksRead||[]).length / 27) * 100)}%`, height: '100%', background: 'linear-gradient(90deg, #1E40AF, #60A5FA)', borderRadius: 4 }} />
+            </div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>
+              {(arenaState.ntBooksRead||[]).length}/27 NT books · +15 XP each
             </div>
           </div>
           <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
