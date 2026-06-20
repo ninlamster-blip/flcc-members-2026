@@ -8785,6 +8785,11 @@ const ARENA_BADGES = [
   { id: 'full_armor',      label: 'Full Armor',         desc: 'Equip all 6 armor pieces in one day',     icon: '🛡️', check: s => (s.fullArmorDays||0) >= 1 },
   { id: 'tournament_win',  label: 'Tournament Champion', desc: 'Complete your first weekly tournament',   icon: '🏆', check: s => (s.tournamentWins||0) >= 1 },
   { id: 'praise_reporter', label: 'Praise Reporter',    desc: 'Post your first praise report',            icon: '🙌', check: s => (s.praiseCount||0) >= 1 },
+  // Phase 7
+  { id: 'journal_5',      label: 'Faithful Scribe',   desc: 'Write 5 journal entries',                  icon: '📓', check: s => (s.journalCount||0) >= 5 },
+  { id: 'journal_30',     label: 'Daily Devotee',     desc: 'Write 30 journal entries',                 icon: '📔', check: s => (s.journalCount||0) >= 30 },
+  { id: 'reading_plan',   label: 'Word Seeker',       desc: 'Complete the 7-day reading plan',          icon: '📗', check: s => (s.readingCompleted||[]).length >= 7 },
+  { id: 'custom_warrior', label: 'My Identity',       desc: 'Customize your warrior title',             icon: '🎖️', check: s => !!s.warriorTitle },
 ];
 
 const ARENA_GUILDS = [
@@ -9346,6 +9351,46 @@ const ARENA_TOURNAMENT_QUESTIONS = [
   { ref: 'Eph 6:16',   q: 'In the Armor of God, what does the shield of faith extinguish?',                                            opts: ['Temptation','Fiery darts of the evil one','Pride','Fear'], ans: 1 },
 ];
 
+// ── Phase 7: Journal / Reading Plan / Customization data ─────────────────────
+
+const ARENA_JOURNAL_PROMPTS = [
+  'What is God teaching you through His Word today?',
+  'Where did you see God\'s hand at work this week?',
+  'What area of your life are you trusting God with right now?',
+  'Write a prayer of gratitude for three specific blessings today.',
+  'What challenge is God using to strengthen your faith?',
+  'How can you be a blessing to someone in your church family this week?',
+  'What does "fighting the good fight of faith" look like in your life today?',
+];
+
+const ARENA_READING_PLAN = [
+  { day: 1, ref: 'John 1',         title: 'The Word Became Flesh',    summary: '"In the beginning was the Word, and the Word was with God." — John 1:1' },
+  { day: 2, ref: 'Psalm 23',       title: 'The Lord is My Shepherd',  summary: '"The Lord is my shepherd, I lack nothing." — Ps 23:1' },
+  { day: 3, ref: 'Romans 8',       title: 'Life Through the Spirit',  summary: '"No condemnation for those who are in Christ Jesus." — Rom 8:1' },
+  { day: 4, ref: 'Ephesians 6',    title: 'Armor of God',             summary: '"Put on the full armor of God." — Eph 6:11' },
+  { day: 5, ref: 'Philippians 4',  title: 'Rejoice Always',           summary: '"I can do all things through Christ who strengthens me." — Phil 4:13' },
+  { day: 6, ref: '1 Timothy 6',    title: 'Fight the Good Fight',     summary: '"Fight the good fight of faith." — 1 Tim 6:12' },
+  { day: 7, ref: 'Revelation 21',  title: 'All Things New',           summary: '"I am making everything new!" — Rev 21:5' },
+];
+
+const ARENA_WARRIOR_TITLES = [
+  { id: 'seeker',    label: 'Seeker of Truth',     icon: '🌱', color: '#94A3B8' },
+  { id: 'crusader',  label: 'Crusader of Light',   icon: '⚡', color: '#60A5FA' },
+  { id: 'guardian',  label: 'Guardian of Faith',   icon: '🛡️', color: '#34D399' },
+  { id: 'champion',  label: 'Champion of Grace',   icon: '⚔️', color: '#F59E0B' },
+  { id: 'herald',    label: 'Herald of the Word',  icon: '📖', color: '#8B5CF6' },
+  { id: 'knight',    label: 'Knight of the Cross', icon: '✝️', color: '#EC4899' },
+];
+
+const ARENA_SHIELD_COLORS = [
+  { id: 'blue',    label: 'Royal Blue',   from: '#1E3A8A', to: '#4B7FCC', border: 'rgba(96,165,250,0.65)',   glow: 'rgba(59,130,246,0.5)' },
+  { id: 'gold',    label: 'Sacred Gold',  from: '#78350F', to: '#D4AF37', border: 'rgba(212,175,55,0.65)',   glow: 'rgba(212,175,55,0.5)' },
+  { id: 'purple',  label: 'Holy Purple',  from: '#4C1D95', to: '#8B5CF6', border: 'rgba(139,92,246,0.65)',   glow: 'rgba(139,92,246,0.5)' },
+  { id: 'green',   label: 'Eden Green',   from: '#064E3B', to: '#10B981', border: 'rgba(16,185,129,0.65)',   glow: 'rgba(16,185,129,0.5)' },
+  { id: 'crimson', label: 'Crimson Fire', from: '#7F1D1D', to: '#EF4444', border: 'rgba(239,68,68,0.65)',    glow: 'rgba(239,68,68,0.45)' },
+  { id: 'silver',  label: 'Silver Grace', from: '#1E293B', to: '#94A3B8', border: 'rgba(148,163,184,0.65)',  glow: 'rgba(148,163,184,0.4)' },
+];
+
 const ARENA_SIMULATED_PRAISES = [
   { id: 'pp1', name: 'Christine Santos', text: "Praise God! My prayers for my family were answered — we are all in good health and growing in faith together!", praiseCount: 14 },
   { id: 'pp2', name: 'Grace Siangco',    text: 'God provided for us in a miraculous way this week. His faithfulness never fails! All glory to Him! 🙌', praiseCount: 11 },
@@ -9684,6 +9729,216 @@ function ArenaLeaderboardScreen({ state, me, onBack }) {
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+// ── Phase 7: Faith Journal ────────────────────────────────────────────────────
+
+function ArenaJournalScreen({ state, onWrite, onBack }) {
+  const today = new Date().toDateString();
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  const todayPrompt = ARENA_JOURNAL_PROMPTS[dayOfYear % ARENA_JOURNAL_PROMPTS.length];
+  const [text, setText] = React.useState('');
+  const alreadyToday = state.lastJournalDate === today;
+  const recentEntries = [...(state.journalEntries || [])].reverse().slice(0, 5);
+  const canSubmit = text.trim().length >= 10;
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Faith Journal" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>📓</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+          "Let the message of Christ dwell among you richly." — Col 3:16
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 28, marginBottom: 22 }}>
+        {[
+          { val: state.journalCount || 0, label: 'Entries', color: '#8B5CF6' },
+          { val: state.journalStreak || 0, label: 'Day Streak', color: '#F59E0B' },
+          { val: 25, label: 'XP / Day', color: '#34D399' },
+        ].map(s => (
+          <div key={s.label} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: s.color }}>{s.val === 25 ? '+25' : s.val}</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Today's prompt */}
+      <div style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
+        <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Today's Reflection Prompt</div>
+        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, fontStyle: 'italic' }}>{todayPrompt}</div>
+      </div>
+
+      {/* Textarea */}
+      <textarea
+        value={text}
+        onChange={e => setText(e.target.value.slice(0, 600))}
+        placeholder="Write your reflection here (min 10 characters)..."
+        rows={5}
+        style={{ width: '100%', boxSizing: 'border-box', resize: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '12px 14px', color: 'white', fontSize: '0.85rem', outline: 'none', lineHeight: 1.7, marginBottom: 10 }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
+        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)' }}>{text.length}/600</div>
+        <button
+          disabled={!canSubmit}
+          onClick={() => { onWrite(text.trim(), todayPrompt); setText(''); }}
+          style={{ background: canSubmit ? 'linear-gradient(135deg, #4C1D95, #8B5CF6)' : 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 10, padding: '10px 20px', color: canSubmit ? 'white' : 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.82rem', cursor: canSubmit ? 'pointer' : 'default' }}>
+          {alreadyToday ? 'Save Entry' : 'Save Entry +25 XP ✨'}
+        </button>
+      </div>
+
+      {/* Past entries */}
+      {recentEntries.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Recent Entries</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {recentEntries.map((e, i) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ fontSize: '0.65rem', color: '#8B5CF6', fontWeight: 600 }}>{e.date}</div>
+                  <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>{e.prompt ? e.prompt.slice(0, 30) + '…' : ''}</div>
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{e.text.slice(0, 120)}{e.text.length > 120 ? '…' : ''}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Phase 7: Bible Reading Plan ───────────────────────────────────────────────
+
+function ArenaReadingScreen({ state, onMark, onBack }) {
+  const completed = new Set(state.readingCompleted || []);
+  const doneCount = completed.size;
+  const allDone = doneCount >= ARENA_READING_PLAN.length;
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Reading Plan" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>📖</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+          "Your word is a lamp to my feet and a light to my path." — Psalm 119:105
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div style={{ background: allDone ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${allDone ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 14, padding: '14px 16px', marginBottom: 22 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: allDone ? '#D4AF37' : 'white' }}>
+            {allDone ? '🎉 Reading Plan Complete!' : `${doneCount} / ${ARENA_READING_PLAN.length} passages read`}
+          </div>
+          <div style={{ fontSize: '0.7rem', color: '#34D399', fontWeight: 700 }}>+30 XP each</div>
+        </div>
+        <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${(doneCount / ARENA_READING_PLAN.length) * 100}%`, background: allDone ? 'linear-gradient(90deg, #B8860B, #D4AF37)' : 'linear-gradient(90deg, #10B981, #34D399)', borderRadius: 3, transition: 'width 0.6s ease' }} />
+        </div>
+      </div>
+
+      {/* Passage list */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {ARENA_READING_PLAN.map(passage => {
+          const done = completed.has(passage.day);
+          return (
+            <div key={passage.day} style={{ background: done ? 'rgba(16,185,129,0.07)' : 'rgba(255,255,255,0.04)', border: `1px solid ${done ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 14, padding: '14px', transition: 'all 0.3s' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 9, background: done ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.05)', border: `1px solid ${done ? '#10B981' : 'rgba(255,255,255,0.12)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: done ? '1.1rem' : '0.75rem', fontWeight: 700, color: done ? '#10B981' : 'rgba(255,255,255,0.4)', flexShrink: 0 }}>
+                  {done ? '✅' : `D${passage.day}`}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 2 }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: done ? '#86EFAC' : 'white' }}>{passage.ref}</div>
+                    <div style={{ fontSize: '0.65rem', color: done ? 'rgba(134,239,172,0.6)' : 'rgba(255,255,255,0.35)' }}>{passage.title}</div>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.4, fontStyle: 'italic' }}>{passage.summary}</div>
+                </div>
+                {!done && (
+                  <button onClick={() => onMark(passage.day)} style={{ background: 'linear-gradient(135deg, #065F46, #10B981)', border: 'none', borderRadius: 9, padding: '8px 12px', color: 'white', fontWeight: 700, fontSize: '0.7rem', cursor: 'pointer', flexShrink: 0 }}>
+                    Read ✓
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Phase 7: Warrior Customization ────────────────────────────────────────────
+
+function ArenaCustomizeScreen({ state, onSave, onBack }) {
+  const [selTitle, setSelTitle] = React.useState(state.warriorTitle || null);
+  const [selColor, setSelColor] = React.useState(state.shieldColor || 'blue');
+
+  const previewColor = ARENA_SHIELD_COLORS.find(c => c.id === selColor) || ARENA_SHIELD_COLORS[0];
+  const previewTitle = selTitle ? ARENA_WARRIOR_TITLES.find(t => t.id === selTitle) : null;
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Customize Warrior" onBack={onBack} />
+
+      {/* Preview avatar */}
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <div style={{ width: 90, height: 90, margin: '0 auto', background: `radial-gradient(circle at 38% 32%, ${previewColor.to}, ${previewColor.from} 60%, #0D1F3C)`, borderRadius: '50%', border: `3px solid ${previewColor.border}`, boxShadow: `0 0 24px ${previewColor.glow}, inset 0 2px 8px rgba(255,255,255,0.1)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', transition: 'all 0.4s' }}>
+            ⚔️
+          </div>
+        </div>
+        {previewTitle && (
+          <div style={{ marginTop: 10, fontSize: '0.85rem', fontWeight: 700, color: previewTitle.color }}>
+            {previewTitle.icon} {previewTitle.label}
+          </div>
+        )}
+        {!previewTitle && (
+          <div style={{ marginTop: 10, fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>Select a title below</div>
+        )}
+      </div>
+
+      {/* Title selection */}
+      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Warrior Title</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 22 }}>
+        {ARENA_WARRIOR_TITLES.map(wt => {
+          const active = selTitle === wt.id;
+          return (
+            <div key={wt.id} onClick={() => setSelTitle(wt.id)} style={{ background: active ? `${wt.color}15` : 'rgba(255,255,255,0.04)', border: `1.5px solid ${active ? wt.color : 'rgba(255,255,255,0.09)'}`, borderRadius: 12, padding: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
+              <div style={{ fontSize: '1.2rem', marginBottom: 4 }}>{wt.icon}</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: active ? wt.color : 'rgba(255,255,255,0.7)' }}>{wt.label}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Shield color selection */}
+      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Shield Color</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 28 }}>
+        {ARENA_SHIELD_COLORS.map(sc => {
+          const active = selColor === sc.id;
+          return (
+            <div key={sc.id} onClick={() => setSelColor(sc.id)} style={{ background: active ? `linear-gradient(135deg, ${sc.from}, ${sc.to})` : 'rgba(255,255,255,0.04)', border: `1.5px solid ${active ? sc.border : 'rgba(255,255,255,0.09)'}`, borderRadius: 12, padding: '10px 8px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', boxShadow: active ? `0 0 14px ${sc.glow}` : 'none' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: active ? 700 : 400, color: active ? 'white' : 'rgba(255,255,255,0.5)' }}>{sc.label}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        disabled={!selTitle}
+        onClick={() => { if (selTitle) { onSave(selTitle, selColor); onBack(); } }}
+        style={{ width: '100%', background: selTitle ? `linear-gradient(135deg, ${previewColor.from}, ${previewColor.to})` : 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 14, padding: '15px', color: selTitle ? 'white' : 'rgba(255,255,255,0.3)', fontWeight: 800, fontSize: '0.95rem', cursor: selTitle ? 'pointer' : 'default', transition: 'all 0.3s' }}>
+        {selTitle ? 'Save Warrior Identity 🎖️' : 'Choose a title first'}
+      </button>
     </div>
   );
 }
@@ -10965,6 +11220,10 @@ function ArenaTab({ me }) {
     armorChecked: {}, armorDate: '', fullArmorDays: 0,
     tournamentScore: 0, tournamentWins: 0, tournamentWeek: '',
     praiseReports: [], praiseCount: 0, praisedForIds: [],
+    // Phase 7
+    journalEntries: [], journalCount: 0, journalStreak: 0, lastJournalDate: '',
+    readingCompleted: [], lastReadingDate: '',
+    warriorTitle: null, shieldColor: 'blue',
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -11242,6 +11501,60 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
+  const writeJournal = useCallback((text, prompt) => {
+    const todayStr = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const last = arenaState.lastJournalDate;
+    const alreadyToday = last === todayStr;
+    const newStreak = alreadyToday ? arenaState.journalStreak
+      : last === yesterday ? (arenaState.journalStreak || 0) + 1 : 1;
+    const entry = { id: 'j_' + Date.now(), text, prompt, date: todayStr };
+    const newState = {
+      ...arenaState,
+      journalEntries: [...(arenaState.journalEntries || []), entry],
+      journalCount: (arenaState.journalCount || 0) + 1,
+      journalStreak: newStreak,
+      lastJournalDate: todayStr,
+      totalXP: alreadyToday ? arenaState.totalXP : arenaState.totalXP + 25,
+      faithXP: alreadyToday ? (arenaState.faithXP || 0) : (arenaState.faithXP || 0) + 25,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else if (!alreadyToday) notify('Journal entry saved! +25 Faith XP ✨');
+    else notify('Journal entry saved!');
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const markRead = useCallback((day) => {
+    if ((arenaState.readingCompleted || []).includes(day)) return;
+    const newState = {
+      ...arenaState,
+      readingCompleted: [...(arenaState.readingCompleted || []), day],
+      totalXP: arenaState.totalXP + 30,
+      bibleXP: (arenaState.bibleXP || 0) + 30,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify('Passage read! +30 Bible XP 📖');
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const saveCustomization = useCallback((titleId, colorId) => {
+    const isFirst = !arenaState.warriorTitle;
+    const newState = {
+      ...arenaState,
+      warriorTitle: titleId,
+      shieldColor: colorId,
+      totalXP: isFirst ? arenaState.totalXP + 50 : arenaState.totalXP,
+      faithXP: isFirst ? (arenaState.faithXP || 0) + 50 : (arenaState.faithXP || 0),
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else if (isFirst) notify('Warrior identity saved! +50 Faith XP 🎖️');
+    else notify('Warrior appearance updated! ✨');
+    save(newState);
+  }, [arenaState, notify, save]);
+
   const startBattle = useCallback((zone, mode) => {
     setSelectedZone(zone);
     if (mode === '3d') {
@@ -11324,6 +11637,15 @@ function ArenaTab({ me }) {
       }}
       onQuestComplete={(quest) => completeQuest(quest)}
     />;
+  }
+  if (screen === 'journal') {
+    return <ArenaJournalScreen state={arenaState} onWrite={writeJournal} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'reading') {
+    return <ArenaReadingScreen state={arenaState} onMark={markRead} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'customize') {
+    return <ArenaCustomizeScreen state={arenaState} onSave={saveCustomization} onBack={() => setScreen('home')} />;
   }
   if (screen === 'armor') {
     return <ArenaArmorScreen state={arenaState} onCheck={checkArmor} onBack={() => setScreen('home')} />;
@@ -11446,12 +11768,15 @@ function ArenaTab({ me }) {
               border: '1px solid rgba(212,175,55,0.3)',
               animation: 'arenaPulseRing 3s ease-out infinite',
             }} />
+            {(() => {
+              const sc = ARENA_SHIELD_COLORS.find(c => c.id === (arenaState.shieldColor || 'blue')) || ARENA_SHIELD_COLORS[0];
+              return (
             <div style={{
               width: 110, height: 110, margin: '0 auto',
-              background: 'radial-gradient(circle at 38% 32%, #4B7FCC, #1E3A8A 60%, #0D1F3C)',
+              background: `radial-gradient(circle at 38% 32%, ${sc.to}, ${sc.from} 60%, #0D1F3C)`,
               borderRadius: '50%',
-              border: '3px solid rgba(212,175,55,0.65)',
-              boxShadow: '0 0 30px rgba(59,130,246,0.5), 0 0 60px rgba(59,130,246,0.2), inset 0 2px 8px rgba(255,255,255,0.1)',
+              border: `3px solid ${sc.border}`,
+              boxShadow: `0 0 30px ${sc.glow}, 0 0 60px ${sc.glow.replace('0.5','0.2').replace('0.45','0.15').replace('0.4','0.12')}, inset 0 2px 8px rgba(255,255,255,0.1)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '3rem',
               animation: 'arenaGlow 4s ease-in-out infinite',
@@ -11469,7 +11794,15 @@ function ArenaTab({ me }) {
                 transformStyle: 'preserve-3d',
               }} />
             </div>
+              );
+            })()}
           </div>
+          {arenaState.warriorTitle && (() => {
+            const wt = ARENA_WARRIOR_TITLES.find(t => t.id === arenaState.warriorTitle);
+            return wt ? (
+              <div style={{ marginTop: 8, fontSize: '0.78rem', color: wt.color, fontWeight: 700 }}>{wt.icon} {wt.label}</div>
+            ) : null;
+          })()}
           <div style={{ marginTop: 14, fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
             "Fight the good fight of faith" — 1 Tim 6:12
           </div>
@@ -11699,6 +12032,69 @@ function ArenaTab({ me }) {
             </div>
           </button>
         </div>
+
+        {/* Faith Journal + Reading Plan */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+          <button onClick={() => setScreen('journal')} style={{
+            background: 'linear-gradient(145deg, #0A1A10, #1A3A22)',
+            border: '1px solid rgba(52,211,153,0.35)',
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 18px rgba(52,211,153,0.1)',
+            position: 'relative',
+          }}>
+            {arenaState.lastJournalDate !== new Date().toDateString() && (
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: '50%', background: '#34D399', boxShadow: '0 0 6px #34D399' }} />
+            )}
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>📓</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Faith Journal</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(arenaState.journalCount || 0) > 0
+                ? `${arenaState.journalCount} entries · ${arenaState.journalStreak || 0}🔥`
+                : 'Daily reflection · +25 XP'}
+            </div>
+          </button>
+
+          <button onClick={() => setScreen('reading')} style={{
+            background: 'linear-gradient(145deg, #0A1820, #1A3040)',
+            border: '1px solid rgba(96,165,250,0.35)',
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 18px rgba(96,165,250,0.1)',
+            position: 'relative',
+          }}>
+            {(arenaState.readingCompleted || []).length < 7 && (arenaState.readingCompleted || []).length > 0 && (
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: '50%', background: '#60A5FA', boxShadow: '0 0 6px #60A5FA' }} />
+            )}
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>📗</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Reading Plan</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {`${(arenaState.readingCompleted || []).length}/7 passages · +30 XP`}
+            </div>
+          </button>
+        </div>
+
+        {/* Customize Warrior */}
+        <button onClick={() => setScreen('customize')} style={{
+          width: '100%', marginBottom: 10,
+          background: 'linear-gradient(135deg, #1A0E30, #2D1858)',
+          border: '1px solid rgba(212,175,55,0.4)',
+          borderRadius: 14, padding: '14px 16px',
+          color: 'white', cursor: 'pointer', textAlign: 'left',
+          display: 'flex', alignItems: 'center', gap: 12,
+          boxShadow: '0 2px 16px rgba(212,175,55,0.1)',
+        }}>
+          <div style={{ fontSize: '1.5rem' }}>🎖️</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 2, color: '#D4AF37' }}>Customize Warrior</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
+              {arenaState.warriorTitle
+                ? (() => { const wt = ARENA_WARRIOR_TITLES.find(t => t.id === arenaState.warriorTitle); return wt ? `${wt.icon} ${wt.label}` : 'Choose your title & shield'; })()
+                : 'Choose your title & shield · +50 XP'}
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
+        </button>
 
         {/* Stats strip */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 8px', display: 'flex', justifyContent: 'space-around' }}>
