@@ -8567,7 +8567,7 @@ const ARENA_ZONES = [
     bgFrom: '#0B1E35', bgTo: '#1A3A5C',
     accent: '#60A5FA',
     icon: '⚡',
-    locked: false,
+    unlockXP: 0,
     verse: '"For God has not given us a spirit of fear, but of power, love and a sound mind." — 2 Tim 1:7',
   },
   {
@@ -8578,7 +8578,7 @@ const ARENA_ZONES = [
     bgFrom: '#2A0E00', bgTo: '#4A1800',
     accent: '#F97316',
     icon: '🔥',
-    locked: true,
+    unlockXP: 300,
     verse: '"No temptation has overtaken you except what is common to mankind." — 1 Cor 10:13',
   },
   {
@@ -8589,7 +8589,7 @@ const ARENA_ZONES = [
     bgFrom: '#0C0C1F', bgTo: '#1A1A3E',
     accent: '#8B5CF6',
     icon: '🌩️',
-    locked: true,
+    unlockXP: 800,
     verse: '"If any of you lacks wisdom, let him ask God, who gives generously." — James 1:5',
   },
   {
@@ -8600,7 +8600,7 @@ const ARENA_ZONES = [
     bgFrom: '#061410', bgTo: '#0D2A1E',
     accent: '#10B981',
     icon: '⛰️',
-    locked: true,
+    unlockXP: 2000,
     verse: '"All things are possible to him who believes." — Mark 9:23',
   },
 ];
@@ -8640,7 +8640,7 @@ const ARENA_BIBLE_QUESTIONS = {
   ],
   temptation: [
     {
-      q: 'How many days did Jesus fast in the wilderness before being tempted?',
+      q: 'How many days did Jesus fast in the wilderness before being tempted by the devil?',
       opts: ['20 days', '30 days', '40 days', '7 days'],
       ans: 2, skill: 'Endurance Strike', xp: 120,
     },
@@ -8649,29 +8649,89 @@ const ARENA_BIBLE_QUESTIONS = {
       opts: ['Ignore', 'Resist', 'Fight', 'Fear'],
       ans: 1, skill: 'Resistance', xp: 110,
     },
+    {
+      q: 'What was the first temptation the devil used against Jesus in the wilderness?',
+      opts: ['Worship me for kingdoms', 'Jump from the temple', 'Turn stones into bread', 'Call angels to save you'],
+      ans: 2, skill: 'Desert Shield', xp: 130,
+    },
+    {
+      q: '1 Corinthians 10:13 — "God is faithful; he will not let you be tempted beyond what you can ___."',
+      opts: ['ignore', 'bear', 'resist', 'overcome'],
+      ans: 1, skill: 'Promise Strike', xp: 115,
+    },
+    {
+      q: 'Joseph resisted temptation from Potiphar\'s wife and fled. What happened to him next?',
+      opts: ['He was promoted', 'He was thrown in prison', 'He was sent home', 'He was forgiven immediately'],
+      ans: 1, skill: 'Integrity Blade', xp: 125,
+    },
+    {
+      q: 'Ephesians 6:16 — "Take up the shield of ___, with which you can extinguish all the flaming arrows of the evil one."',
+      opts: ['prayer', 'truth', 'faith', 'peace'],
+      ans: 2, skill: 'Shield of Faith', xp: 120,
+    },
   ],
   doubt: [
     {
-      q: 'Which disciple doubted Jesus\'s resurrection until he saw the nail marks?',
+      q: 'Which disciple doubted Jesus\'s resurrection until he saw the nail marks with his own eyes?',
       opts: ['Peter', 'John', 'Thomas', 'James'],
       ans: 2, skill: 'Faith Anchor', xp: 130,
     },
     {
-      q: 'Hebrews 11:1 — "Now faith is the ___ of things hoped for."',
+      q: 'Hebrews 11:1 — "Now faith is the ___ of things hoped for, the evidence of things not seen."',
       opts: ['dream', 'substance', 'vision', 'promise'],
       ans: 1, skill: 'Substance Strike', xp: 110,
+    },
+    {
+      q: 'Which "Hall of Faith" hero in Hebrews 11 left his homeland not knowing where he was going?',
+      opts: ['Moses', 'Noah', 'Abraham', 'Elijah'],
+      ans: 2, skill: 'Abraham\'s Trust', xp: 135,
+    },
+    {
+      q: 'Romans 10:17 — "Faith comes from ___, and hearing through the word of Christ."',
+      opts: ['prayer', 'fasting', 'hearing', 'reading'],
+      ans: 2, skill: 'Word Resonance', xp: 120,
+    },
+    {
+      q: 'When John the Baptist was in prison and began to doubt, what did Jesus tell his disciples to report back?',
+      opts: ['John must trust me', 'Tell no one', 'The blind receive sight and the lame walk', 'Go and be baptised again'],
+      ans: 2, skill: 'Evidence Sword', xp: 140,
+    },
+    {
+      q: 'James 1:6 — "When you ask, believe and do not doubt, because the one who doubts is like ___ tossed by the wind."',
+      opts: ['a ship', 'a wave of the sea', 'a feather', 'a leaf'],
+      ans: 1, skill: 'Steadfast Stance', xp: 125,
     },
   ],
   unbelief: [
     {
-      q: 'Mark 9:23 — "All things are possible to him who ___."',
+      q: 'Mark 9:23 — "Everything is possible for one who ___."',
       opts: ['prays', 'fasts', 'believes', 'obeys'],
       ans: 2, skill: 'Belief Blast', xp: 140,
     },
     {
-      q: 'Which Old Testament prophet prayed for fire from heaven and God answered with fire?',
+      q: 'Which Old Testament prophet prayed for fire from heaven on Mount Carmel and God answered?',
       opts: ['Moses', 'Isaiah', 'Elijah', 'Jeremiah'],
       ans: 2, skill: 'Fire of Faith', xp: 130,
+    },
+    {
+      q: 'Jesus could not do many miracles in his hometown Nazareth because of their ___.',
+      opts: ['sins', 'lack of faith', 'opposition', 'hardness of heart'],
+      ans: 1, skill: 'Faith Unlock', xp: 145,
+    },
+    {
+      q: 'Matthew 17:20 — Jesus said faith as small as a ___ seed can move a mountain.',
+      opts: ['grain of wheat', 'olive', 'mustard', 'fig'],
+      ans: 2, skill: 'Mountain Mover', xp: 150,
+    },
+    {
+      q: 'Which city\'s walls fell down after the Israelites marched around it in faith for seven days?',
+      opts: ['Jerusalem', 'Jericho', 'Ai', 'Babylon'],
+      ans: 1, skill: 'Wall Breaker', xp: 135,
+    },
+    {
+      q: 'Hebrews 11:6 — "Without ___ it is impossible to please God, because anyone who comes to him must believe that he exists."',
+      opts: ['prayer', 'faith', 'works', 'obedience'],
+      ans: 1, skill: 'Champion Strike', xp: 155,
     },
   ],
 };
@@ -8685,14 +8745,50 @@ const ARENA_DAILY_QUESTS = [
 ];
 
 const ARENA_BADGES = [
-  { id: 'first_battle',  label: 'First Blood', desc: 'Win your first Bible battle',      icon: '⚔️',  check: s => s.battlesWon >= 1 },
-  { id: 'prayer_x5',    label: 'Prayer Warrior', desc: 'Complete 5 prayer quests',       icon: '🛡️',  check: s => (s.prayerQCount||0) >= 5 },
-  { id: 'bible_x10',    label: 'Scripture Master', desc: 'Win 10 Bible challenges',      icon: '📜',  check: s => s.battlesWon >= 10 },
-  { id: 'perfect_day',  label: 'Daily Warrior', desc: 'Complete all quests in one day',  icon: '🌟',  check: s => (s.perfectDays||0) >= 1 },
-  { id: 'level5',       label: 'Disciple', desc: 'Reach 500 total Faith XP',             icon: '📖',  check: s => s.totalXP >= 500 },
-  { id: 'level10',      label: 'Servant Heart', desc: 'Reach 1500 total Faith XP',       icon: '🏛️',  check: s => s.totalXP >= 1500 },
-  { id: 'level20',      label: 'Kingdom Builder', desc: 'Reach 3500 total Faith XP',     icon: '🏆',  check: s => s.totalXP >= 3500 },
+  // Phase 1
+  { id: 'first_battle',  label: 'First Blood',      desc: 'Win your first Bible battle',         icon: '⚔️',  check: s => s.battlesWon >= 1 },
+  { id: 'prayer_x5',    label: 'Prayer Warrior',    desc: 'Complete 5 prayer quests',            icon: '🛡️',  check: s => (s.prayerQCount||0) >= 5 },
+  { id: 'bible_x10',    label: 'Scripture Master',  desc: 'Win 10 Bible challenges',             icon: '📜',  check: s => s.battlesWon >= 10 },
+  { id: 'perfect_day',  label: 'Daily Warrior',     desc: 'Complete all daily quests in one day',icon: '🌟',  check: s => (s.perfectDays||0) >= 1 },
+  { id: 'level5',       label: 'Disciple',          desc: 'Reach 500 total Faith XP',            icon: '📖',  check: s => s.totalXP >= 500 },
+  { id: 'level10',      label: 'Servant Heart',     desc: 'Reach 1500 total Faith XP',           icon: '🏛️',  check: s => s.totalXP >= 1500 },
+  { id: 'level20',      label: 'Kingdom Builder',   desc: 'Reach 3500 total Faith XP',           icon: '🏆',  check: s => s.totalXP >= 3500 },
+  // Phase 2
+  { id: 'zone_tempt',   label: 'Desert Conqueror',  desc: 'Unlock the Desert of Temptation',     icon: '🔥',  check: s => s.totalXP >= 300 },
+  { id: 'zone_doubt',   label: 'Doubt Slayer',      desc: 'Unlock the Battlefield of Doubt',     icon: '🌩️',  check: s => s.totalXP >= 800 },
+  { id: 'zone_faith',   label: 'Mountain Climber',  desc: 'Unlock the Mountain of Faith',        icon: '⛰️',  check: s => s.totalXP >= 2000 },
+  { id: 'zone_master',  label: 'Arena Master',      desc: 'Win a battle in all 4 zones',         icon: '👑',  check: s => Object.keys(s.zonesConquered||{}).length >= 4 },
+  { id: 'guild_joined', label: 'Guild Member',      desc: 'Join a Ministry Guild',               icon: '🤝',  check: s => !!s.selectedGuild },
+  { id: 'guild_quest',  label: 'Guild Champion',    desc: 'Complete 3 Guild Missions',           icon: '🏰',  check: s => (s.guildMissionsCount||0) >= 3 },
+  { id: 'streak_3',     label: 'On Fire',           desc: 'Battle 3 days in a row',             icon: '💥',  check: s => (s.battleStreak||0) >= 3 },
+  { id: 'streak_7',     label: 'Unstoppable',       desc: 'Battle 7 days in a row',             icon: '⚡',  check: s => (s.battleStreak||0) >= 7 },
+  { id: 'encourager_x10', label: 'Top Encourager', desc: 'Complete 10 encouragement quests',    icon: '❤️',  check: s => (s.encourageCount||0) >= 10 },
+  { id: 'bible_x25',    label: 'Word Warrior',      desc: 'Win 25 Bible challenges',             icon: '📗',  check: s => s.battlesWon >= 25 },
 ];
+
+const ARENA_GUILDS = [
+  { id: 'mens',      label: "Men's Auxiliary",   icon: '⚔️', color: '#3B82F6', desc: 'Brotherly strength and discipleship', bg: '#0D2040' },
+  { id: 'womens',    label: "Women's Ministry",  icon: '💎', color: '#EC4899', desc: 'Grace, wisdom, and sisterhood',       bg: '#2D0A28' },
+  { id: 'youth',     label: 'Youth Ministry',    icon: '🔥', color: '#F59E0B', desc: 'Bold faith for the next generation',  bg: '#2A1800' },
+  { id: 'small',     label: 'Small Groups',      icon: '🏛️', color: '#10B981', desc: 'Growing together in community',       bg: '#062014' },
+];
+
+const ARENA_GUILD_MISSIONS = [
+  { id: 'gm_pray_together',  label: 'Pray Together',          desc: 'Spend time in prayer for your guild',         xp: 40,  icon: '🙏', xpKey: 'serviceXP' },
+  { id: 'gm_study_word',     label: 'Study the Word',         desc: 'Read a chapter and share a key verse',        xp: 35,  icon: '📖', xpKey: 'bibleXP' },
+  { id: 'gm_serve_church',   label: 'Serve the Church',       desc: 'Volunteer or help in a ministry activity',    xp: 60,  icon: '🤝', xpKey: 'serviceXP' },
+  { id: 'gm_invite_member',  label: 'Fellowship Builder',     desc: 'Connect with or invite a church member',      xp: 30,  icon: '👥', xpKey: 'fellowshipXP' },
+  { id: 'gm_memorize_psalm', label: 'Memorize a Psalm',       desc: 'Commit a full psalm to memory',               xp: 50,  icon: '✨', xpKey: 'bibleXP' },
+  { id: 'gm_fast_prayer',    label: 'Fasting Prayer',         desc: 'Dedicate a meal time to prayer and fasting',  xp: 70,  icon: '⚡', xpKey: 'prayerXP' },
+];
+
+function arenaGetISOWeek() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now - start;
+  const week = Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
+  return `${now.getFullYear()}-W${week}`;
+}
 
 function arenaGetLevel(totalXP) {
   for (let i = ARENA_LEVELS.length - 1; i >= 0; i--) {
@@ -8922,50 +9018,70 @@ function ArenaZonesScreen({ state, onSelectZone, onBack }) {
       <div style={{ textAlign: 'center', marginBottom: 22 }}>
         <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Select a spiritual arena to enter</div>
         <div style={{ fontSize: '0.7rem', fontStyle: 'italic', color: 'rgba(255,255,255,0.25)' }}>"Put on the full armor of God" — Eph 6:11</div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 12, padding: '4px 14px' }}>
+          <span style={{ fontSize: '0.7rem', color: '#D4AF37', fontWeight: 600 }}>Faith XP: {state.totalXP.toLocaleString()}</span>
+        </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {ARENA_ZONES.map(zone => {
-          const locked = zone.locked;
+          const locked = state.totalXP < zone.unlockXP;
+          const xpNeeded = zone.unlockXP - state.totalXP;
+          const unlockPct = zone.unlockXP === 0 ? 100 : Math.min(100, (state.totalXP / zone.unlockXP) * 100);
+          const zoneWins = (state.zonesConquered || {})[zone.id] || 0;
           return (
             <div key={zone.id} style={{
               background: locked ? 'rgba(255,255,255,0.03)' : `linear-gradient(135deg, ${zone.bgFrom}, ${zone.bgTo})`,
-              border: `1px solid ${locked ? 'rgba(255,255,255,0.08)' : zone.accent + '44'}`,
+              border: `1px solid ${locked ? 'rgba(255,255,255,0.08)' : zone.accent + '55'}`,
               borderRadius: 16, padding: '18px',
-              opacity: locked ? 0.5 : 1,
+              opacity: locked ? 0.65 : 1,
               position: 'relative', overflow: 'hidden',
               cursor: locked ? 'default' : 'pointer',
               transition: 'transform 0.15s, box-shadow 0.15s',
+              boxShadow: locked ? 'none' : `0 4px 20px ${zone.accent}18`,
             }} onClick={() => !locked && onSelectZone(zone)}>
               {!locked && (
-                <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 20% 50%, ${zone.accent}18, transparent 70%)`, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 20% 50%, ${zone.accent}14, transparent 70%)`, pointerEvents: 'none' }} />
               )}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 12, flexShrink: 0,
-                  background: locked ? 'rgba(255,255,255,0.05)' : `${zone.accent}22`,
-                  border: `1px solid ${locked ? 'rgba(255,255,255,0.1)' : zone.accent + '55'}`,
+                  width: 54, height: 54, borderRadius: 14, flexShrink: 0,
+                  background: locked ? 'rgba(255,255,255,0.04)' : `${zone.accent}20`,
+                  border: `1px solid ${locked ? 'rgba(255,255,255,0.1)' : zone.accent + '50'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '1.75rem',
+                  boxShadow: locked ? 'none' : `0 0 12px ${zone.accent}30`,
                 }}>{locked ? '🔒' : zone.icon}</div>
 
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 3, color: locked ? 'rgba(255,255,255,0.4)' : 'white' }}>{zone.name}</div>
-                  <div style={{ fontSize: '0.7rem', color: locked ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)', marginBottom: 6 }}>{zone.theme}</div>
-                  {!locked && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: zone.accent + '22', border: `1px solid ${zone.accent}44`, borderRadius: 8, padding: '2px 8px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: locked ? 'rgba(255,255,255,0.4)' : 'white' }}>{zone.name}</div>
+                    {zoneWins > 0 && !locked && (
+                      <div style={{ fontSize: '0.6rem', background: zone.accent + '30', border: `1px solid ${zone.accent}50`, borderRadius: 6, padding: '1px 6px', color: zone.accent, fontWeight: 700 }}>
+                        {zoneWins}W
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: locked ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)', marginBottom: 8 }}>{zone.theme}</div>
+
+                  {!locked ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: zone.accent + '20', border: `1px solid ${zone.accent}40`, borderRadius: 8, padding: '2px 10px' }}>
                       <span style={{ fontSize: '0.65rem', color: zone.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Boss: {zone.boss}</span>
                     </div>
-                  )}
-                  {locked && (
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)' }}>Unlock by progressing your faith journey</div>
+                  ) : (
+                    <div>
+                      <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', marginBottom: 5 }}>
+                        Unlock at {zone.unlockXP.toLocaleString()} XP · {xpNeeded.toLocaleString()} XP to go
+                      </div>
+                      <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: unlockPct + '%', background: `linear-gradient(90deg, ${zone.accent}80, ${zone.accent})`, borderRadius: 2, transition: 'width 0.6s ease' }} />
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {!locked && (
-                  <div style={{ color: zone.accent, fontSize: '1.25rem' }}>›</div>
-                )}
+                {!locked && <div style={{ color: zone.accent, fontSize: '1.4rem', flexShrink: 0 }}>›</div>}
               </div>
             </div>
           );
@@ -9135,14 +9251,265 @@ function ArenaVictoryScreen({ zone, question, state, onContinue, onBattleAgain }
   );
 }
 
+// ── Phase 2: Ministry Guilds Screen ──────────────────────────────────────────
+
+function ArenaGuildsScreen({ state, onJoinGuild, onCompleteGuildMission, onBack }) {
+  const currentGuild = state.selectedGuild ? ARENA_GUILDS.find(g => g.id === state.selectedGuild) : null;
+  const currentWeek = arenaGetISOWeek();
+  const weekMissions = state.guildMissionsWeek === currentWeek ? (state.guildMissions || {}) : {};
+  const missionsLeft = ARENA_GUILD_MISSIONS.filter(m => !weekMissions[m.id]).length;
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Ministry Guilds" onBack={onBack} />
+
+      {/* Guild header */}
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginBottom: 4 }}>"Two are better than one" — Eccl 4:9</div>
+        {currentGuild ? (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: currentGuild.color + '18', border: `1px solid ${currentGuild.color}40`, borderRadius: 20, padding: '6px 18px', marginTop: 8 }}>
+            <span style={{ fontSize: '1rem' }}>{currentGuild.icon}</span>
+            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: currentGuild.color }}>Member of {currentGuild.label}</span>
+          </div>
+        ) : (
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>Join a guild to unlock weekly missions and team XP</div>
+        )}
+      </div>
+
+      {/* Guild selection */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Choose Your Guild</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {ARENA_GUILDS.map(guild => {
+            const active = state.selectedGuild === guild.id;
+            return (
+              <div key={guild.id} onClick={() => onJoinGuild(guild.id)} style={{
+                background: active ? guild.color + '20' : 'rgba(255,255,255,0.04)',
+                border: `1.5px solid ${active ? guild.color : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 14, padding: '14px 12px',
+                cursor: 'pointer', transition: 'all 0.2s',
+                boxShadow: active ? `0 0 18px ${guild.color}25` : 'none',
+              }}>
+                <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{guild.icon}</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: active ? guild.color : 'white', marginBottom: 3 }}>{guild.label}</div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.4 }}>{guild.desc}</div>
+                {active && (
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: guild.color, boxShadow: `0 0 6px ${guild.color}` }} />
+                    <span style={{ fontSize: '0.6rem', color: guild.color, fontWeight: 700 }}>ACTIVE</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Weekly Guild Missions */}
+      {currentGuild && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Weekly Guild Missions</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>{missionsLeft} remaining this week</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {ARENA_GUILD_MISSIONS.map(mission => {
+              const done = !!weekMissions[mission.id];
+              return (
+                <div key={mission.id} style={{
+                  background: done ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${done ? 'rgba(34,197,94,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                  borderRadius: 12, padding: '14px',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                }}>
+                  <div style={{ fontSize: '1.5rem', flexShrink: 0 }}>{mission.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: done ? '#86EFAC' : 'white', marginBottom: 2 }}>{mission.label}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.4 }}>{mission.desc}</div>
+                    <div style={{ fontSize: '0.65rem', color: currentGuild.color, marginTop: 3, fontWeight: 600 }}>+{mission.xp} XP</div>
+                  </div>
+                  {done ? (
+                    <div style={{ fontSize: '1.3rem', flexShrink: 0 }}>✅</div>
+                  ) : (
+                    <button onClick={() => onCompleteGuildMission(mission)} style={{
+                      background: `linear-gradient(135deg, ${currentGuild.color}30, ${currentGuild.color}60)`,
+                      border: `1px solid ${currentGuild.color}50`,
+                      borderRadius: 10, padding: '8px 14px',
+                      color: 'white', fontWeight: 700, fontSize: '0.7rem',
+                      cursor: 'pointer', flexShrink: 0,
+                    }}>Complete</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Guild XP total */}
+          <div style={{ marginTop: 18, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginBottom: 2 }}>GUILD XP EARNED</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: currentGuild.color }}>{(state.guildXP || 0).toLocaleString()}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginBottom: 2 }}>MISSIONS COMPLETED</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#D4AF37' }}>{state.guildMissionsCount || 0}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!currentGuild && (
+        <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+          Select a guild above to see weekly missions
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Phase 2: Leaderboard Screen ───────────────────────────────────────────────
+
+function ArenaLeaderboardScreen({ state, me, onBack }) {
+  const name = me?.name || 'Warrior of Faith';
+  const charLevel = arenaGetLevel(state.totalXP);
+
+  const categories = [
+    {
+      title: 'Top Encourager',
+      desc: 'Most Fellowship & Love XP',
+      icon: '❤️',
+      color: '#EC4899',
+      value: (state.fellowshipXP || 0),
+      unit: 'Fellowship XP',
+      verse: '"Encourage one another and build each other up." — 1 Thess 5:11',
+    },
+    {
+      title: 'Bible Champion',
+      desc: 'Most Bible Battles Won',
+      icon: '📖',
+      color: '#60A5FA',
+      value: state.battlesWon,
+      unit: 'Battles Won',
+      verse: '"Your word is a lamp to my feet and a light to my path." — Psalm 119:105',
+    },
+    {
+      title: 'Prayer Supporter',
+      desc: 'Most Prayer XP',
+      icon: '🙏',
+      color: '#A78BFA',
+      value: (state.prayerXP || 0),
+      unit: 'Prayer XP',
+      verse: '"The prayer of a righteous person is powerful and effective." — James 5:16',
+    },
+    {
+      title: 'Ministry Contributor',
+      desc: 'Most Service XP',
+      icon: '🤝',
+      color: '#34D399',
+      value: (state.serviceXP || 0),
+      unit: 'Service XP',
+      verse: '"Each of you should use whatever gift you have received to serve others." — 1 Pet 4:10',
+    },
+  ];
+
+  const maxVal = Math.max(...categories.map(c => c.value), 1);
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Leaderboard" onBack={onBack} />
+
+      {/* Personal rank card */}
+      <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.05))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: '18px', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 12, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+            {charLevel.icon}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '1rem', fontWeight: 700 }}>{name}</div>
+            <div style={{ fontSize: '0.75rem', color: charLevel.color, fontWeight: 600, marginBottom: 2 }}>{charLevel.title}</div>
+            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>Total Faith XP: {state.totalXP.toLocaleString()}</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#D4AF37' }}>Lv.{charLevel.level}</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>Current Rank</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contribution category cards */}
+      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 14 }}>Your Contribution Rankings</div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+        {categories.map((cat, i) => {
+          const pct = (cat.value / maxVal) * 100;
+          const medals = ['🥇', '🥈', '🥉', '🏅'];
+          return (
+            <div key={cat.title} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ fontSize: '1.5rem' }}>{cat.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: cat.color }}>{cat.title}</div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{cat.desc}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: cat.color }}>{cat.value.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>{cat.unit}</div>
+                </div>
+              </div>
+              <div style={{ height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden', marginBottom: 10 }}>
+                <div style={{ height: '100%', width: Math.max(pct, 3) + '%', background: cat.color, borderRadius: 3, transition: 'width 0.8s ease' }} />
+              </div>
+              <div style={{ fontSize: '0.65rem', fontStyle: 'italic', color: 'rgba(255,255,255,0.25)', lineHeight: 1.5 }}>{cat.verse}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Streak */}
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '16px', marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Battle Streak</div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} style={{ width: 24, height: 24, borderRadius: 6, background: i < (state.battleStreak || 0) ? '#F59E0B' : 'rgba(255,255,255,0.07)', border: `1px solid ${i < (state.battleStreak || 0) ? '#F59E0BB0' : 'rgba(255,255,255,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                  {i < (state.battleStreak || 0) ? '🔥' : ''}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 900, color: (state.battleStreak || 0) > 0 ? '#F59E0B' : 'rgba(255,255,255,0.2)' }}>
+              {state.battleStreak || 0}
+            </div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>day streak</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Phase 4 note */}
+      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px', textAlign: 'center' }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)', lineHeight: 1.6 }}>
+          Full church-wide rankings coming in Phase 4<br/>when all members are connected ⛪
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main ArenaTab ─────────────────────────────────────────────────────────────
 
 function ArenaTab({ me }) {
   const defaultState = {
     totalXP: 0, bibleXP: 0, prayerXP: 0, fellowshipXP: 0, serviceXP: 0, faithXP: 0,
-    battlesWon: 0, prayerQCount: 0, perfectDays: 0,
+    battlesWon: 0, prayerQCount: 0, perfectDays: 0, encourageCount: 0,
     questsCompleted: {}, lastQuestDate: '',
     earnedBadges: [],
+    // Phase 2
+    zonesConquered: {},
+    battleStreak: 0, lastBattleDate: '',
+    selectedGuild: null, guildXP: 0,
+    guildMissions: {}, guildMissionsWeek: '', guildMissionsCount: 0,
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -9190,6 +9557,17 @@ function ArenaTab({ me }) {
     ? ((arenaState.totalXP - charLevel.min) / (nextLvl.min - charLevel.min)) * 100
     : 100;
 
+  const applyBadges = (newState, oldState) => {
+    const newBadges = ARENA_BADGES
+      .filter(b => !(oldState.earnedBadges || []).includes(b.id) && b.check(newState))
+      .map(b => b.id);
+    if (newBadges.length) {
+      newState.earnedBadges = [...(oldState.earnedBadges || []), ...newBadges];
+      return newBadges[0];
+    }
+    return null;
+  };
+
   const completeQuest = useCallback((quest) => {
     if (completedToday[quest.id]) { notify('Already completed today!'); return; }
     const newCompleted = { ...completedToday, [quest.id]: true };
@@ -9199,21 +9577,56 @@ function ArenaTab({ me }) {
       totalXP: arenaState.totalXP + quest.xp,
       [quest.xpKey]: (arenaState[quest.xpKey] || 0) + quest.xp,
       prayerQCount: quest.id === 'pray_someone' ? (arenaState.prayerQCount || 0) + 1 : (arenaState.prayerQCount || 0),
+      encourageCount: quest.id === 'encourage' ? (arenaState.encourageCount || 0) + 1 : (arenaState.encourageCount || 0),
       questsCompleted: newCompleted,
       lastQuestDate: today,
       perfectDays: allDone ? (arenaState.perfectDays || 0) + 1 : (arenaState.perfectDays || 0),
     };
-    const newBadges = ARENA_BADGES
-      .filter(b => !(arenaState.earnedBadges || []).includes(b.id) && b.check(newState))
-      .map(b => b.id);
-    if (newBadges.length) {
-      newState.earnedBadges = [...(arenaState.earnedBadges || []), ...newBadges];
-      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === newBadges[0]).label}! 🏅`);
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) {
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
     } else {
       notify(`+${quest.xp} ${quest.cat} XP earned!`);
     }
     save(newState);
   }, [arenaState, completedToday, today, notify, save]);
+
+  const joinGuild = useCallback((guildId) => {
+    if (arenaState.selectedGuild === guildId) return;
+    const guild = ARENA_GUILDS.find(g => g.id === guildId);
+    const newState = { ...arenaState, selectedGuild: guildId };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) {
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    } else {
+      notify(`Joined ${guild.label}!`);
+    }
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const completeGuildMission = useCallback((mission) => {
+    const currentWeek = arenaGetISOWeek();
+    const weekMissions = arenaState.guildMissionsWeek === currentWeek ? (arenaState.guildMissions || {}) : {};
+    if (weekMissions[mission.id]) { notify('Already completed this week!'); return; }
+    const newMissions = { ...weekMissions, [mission.id]: true };
+    const newState = {
+      ...arenaState,
+      totalXP: arenaState.totalXP + mission.xp,
+      [mission.xpKey]: (arenaState[mission.xpKey] || 0) + mission.xp,
+      serviceXP: mission.xpKey === 'serviceXP' ? (arenaState.serviceXP || 0) + mission.xp : (arenaState.serviceXP || 0),
+      guildXP: (arenaState.guildXP || 0) + mission.xp,
+      guildMissions: newMissions,
+      guildMissionsWeek: currentWeek,
+      guildMissionsCount: (arenaState.guildMissionsCount || 0) + 1,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) {
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    } else {
+      notify(`Guild Mission complete! +${mission.xp} XP`);
+    }
+    save(newState);
+  }, [arenaState, notify, save]);
 
   const startBattle = useCallback((zone) => {
     const pool = ARENA_BIBLE_QUESTIONS[zone.id] || ARENA_BIBLE_QUESTIONS.fear;
@@ -9232,23 +9645,31 @@ function ArenaTab({ me }) {
     setBattleResult(correct ? 'correct' : 'wrong');
     if (correct) {
       setTimeout(() => {
+        const todayStr = new Date().toDateString();
+        const lastBattle = arenaState.lastBattleDate;
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const newStreak = lastBattle === todayStr
+          ? arenaState.battleStreak
+          : lastBattle === yesterday
+            ? (arenaState.battleStreak || 0) + 1
+            : 1;
+        const newZonesConquered = { ...(arenaState.zonesConquered || {}), [selectedZone.id]: ((arenaState.zonesConquered || {})[selectedZone.id] || 0) + 1 };
         const newState = {
           ...arenaState,
           totalXP: arenaState.totalXP + battleQuestion.xp,
           bibleXP: (arenaState.bibleXP || 0) + battleQuestion.xp,
           battlesWon: arenaState.battlesWon + 1,
+          battleStreak: newStreak,
+          lastBattleDate: todayStr,
+          zonesConquered: newZonesConquered,
         };
-        const newBadges = ARENA_BADGES
-          .filter(b => !(arenaState.earnedBadges || []).includes(b.id) && b.check(newState))
-          .map(b => b.id);
-        if (newBadges.length) {
-          newState.earnedBadges = [...(arenaState.earnedBadges || []), ...newBadges];
-        }
+        const unlockedBadge = applyBadges(newState, arenaState);
+        if (unlockedBadge) newState._newBadge = unlockedBadge;
         save(newState);
         setScreen('victory');
       }, 1400);
     }
-  }, [arenaState, battleResult, battleQuestion, save]);
+  }, [arenaState, battleResult, battleQuestion, selectedZone, save]);
 
   // Screen routing
   if (screen === 'character') {
@@ -9259,6 +9680,12 @@ function ArenaTab({ me }) {
   }
   if (screen === 'arena') {
     return <ArenaZonesScreen state={arenaState} onSelectZone={startBattle} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'guilds') {
+    return <ArenaGuildsScreen state={arenaState} onJoinGuild={joinGuild} onCompleteGuildMission={completeGuildMission} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'leaderboard') {
+    return <ArenaLeaderboardScreen state={arenaState} me={me} onBack={() => setScreen('home')} />;
   }
   if (screen === 'battle' && selectedZone && battleQuestion) {
     return <ArenaBattleScreen zone={selectedZone} question={battleQuestion} result={battleResult} selectedAnswer={selectedAnswer} onAnswer={answerQuestion} onBack={() => setScreen('arena')} />;
@@ -9403,7 +9830,7 @@ function ArenaTab({ me }) {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 22 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <button onClick={() => setScreen('character')} style={{
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.12)',
@@ -9415,32 +9842,80 @@ function ArenaTab({ me }) {
             <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>My Character</div>
           </button>
 
-          <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.07)',
+          <button onClick={() => setScreen('leaderboard')} style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: 14, padding: '14px 12px',
-            color: 'rgba(255,255,255,0.35)', textAlign: 'center',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            transition: 'background 0.15s',
           }}>
             <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>🏆</div>
             <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>Leaderboard</div>
-            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.2)', marginTop: 1 }}>Phase 2</div>
-          </div>
+          </button>
         </div>
+
+        {/* Guilds row */}
+        {(() => {
+          const myGuild = arenaState.selectedGuild ? ARENA_GUILDS.find(g => g.id === arenaState.selectedGuild) : null;
+          return (
+            <button onClick={() => setScreen('guilds')} style={{
+              width: '100%', background: myGuild ? `linear-gradient(135deg, ${myGuild.bg || '#0D1F3C'}, rgba(13,31,60,0.8))` : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${myGuild ? myGuild.color + '40' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: 14, padding: '14px 16px',
+              color: 'white', cursor: 'pointer', textAlign: 'left',
+              display: 'flex', alignItems: 'center', gap: 12,
+              marginBottom: 22, transition: 'all 0.15s',
+              boxShadow: myGuild ? `0 2px 16px ${myGuild.color}15` : 'none',
+            }}>
+              <div style={{ fontSize: '1.5rem' }}>{myGuild ? myGuild.icon : '🤝'}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 2, color: myGuild ? myGuild.color : 'white' }}>
+                  {myGuild ? myGuild.label : 'Ministry Guilds'}
+                </div>
+                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
+                  {myGuild ? `${(arenaState.guildXP || 0).toLocaleString()} Guild XP · ${arenaState.guildMissionsCount || 0} missions done` : 'Join a guild and tackle weekly missions'}
+                </div>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
+            </button>
+          );
+        })()}
 
         {/* Stats strip */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 8px', display: 'flex', justifyContent: 'space-around' }}>
           {[
             { label: 'Battles', value: arenaState.battlesWon, icon: '⚔️' },
             { label: 'Bible XP', value: arenaState.bibleXP, icon: '📖' },
-            { label: 'Prayer XP', value: arenaState.prayerXP || 0, icon: '🙏' },
+            { label: 'Streak', value: arenaState.battleStreak || 0, icon: '🔥', color: (arenaState.battleStreak || 0) >= 3 ? '#F59E0B' : null },
             { label: 'Badges', value: (arenaState.earnedBadges || []).length, icon: '🏅' },
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '1rem' }}>{s.icon}</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#D4AF37', lineHeight: 1.2 }}>{s.value}</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: s.color || '#D4AF37', lineHeight: 1.2 }}>{s.value}</div>
               <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{s.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* Zone progress bar row */}
+        <div style={{ marginTop: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '12px 14px' }}>
+          <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Arena Zones</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {ARENA_ZONES.map(z => {
+              const unlocked = arenaState.totalXP >= z.unlockXP;
+              const wins = (arenaState.zonesConquered || {})[z.id] || 0;
+              return (
+                <div key={z.id} style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, margin: '0 auto 5px', background: unlocked ? z.accent + '25' : 'rgba(255,255,255,0.05)', border: `1px solid ${unlocked ? z.accent + '60' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', boxShadow: unlocked ? `0 0 8px ${z.accent}25` : 'none' }}>
+                    {unlocked ? z.icon : '🔒'}
+                  </div>
+                  <div style={{ fontSize: '0.55rem', color: unlocked ? z.accent : 'rgba(255,255,255,0.2)', lineHeight: 1.2, fontWeight: unlocked ? 600 : 400 }}>
+                    {wins > 0 ? `${wins}W` : unlocked ? 'Open' : `${z.unlockXP}xp`}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Level milestones */}
