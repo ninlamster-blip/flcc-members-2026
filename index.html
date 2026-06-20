@@ -538,6 +538,50 @@
     50%      { transform: translateY(-5px) scale(1.03); }
   }
 
+  /* ── Faith Arena animations ─────────────────────────────────── */
+  @keyframes arenaTwinkle {
+    0%,100% { opacity: 0.2; transform: scale(1); }
+    50%      { opacity: 0.9; transform: scale(1.4); }
+  }
+  @keyframes arenaFloat {
+    0%,100% { transform: translateY(0px) rotate(0deg); }
+    50%      { transform: translateY(-8px) rotate(3deg); }
+  }
+  @keyframes arenaGlow {
+    0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.4); }
+    50%      { box-shadow: 0 0 50px rgba(59,130,246,0.8), 0 0 80px rgba(212,175,55,0.3); }
+  }
+  @keyframes arenaShake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+  @keyframes arenaCorrect {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+  @keyframes arenaXpPop {
+    0%   { opacity: 0; transform: translateY(0) scale(0.8); }
+    30%  { opacity: 1; transform: translateY(-20px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1); }
+  }
+  @keyframes arenaVictoryBurst {
+    0%   { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+    60%  { opacity: 1; transform: scale(1.08) rotate(2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+  @keyframes arenaHaloSpin {
+    from { transform: translateX(-50%) rotateX(75deg) rotateZ(0deg); }
+    to   { transform: translateX(-50%) rotateX(75deg) rotateZ(360deg); }
+  }
+  @keyframes arenaPulseRing {
+    0%   { transform: translate(-50%,-50%) scale(0.8); opacity: 0.8; }
+    100% { transform: translate(-50%,-50%) scale(2.2); opacity: 0; }
+  }
+
   /* Animated header accent strip */
   .hdr-strip {
     height: 3px;
@@ -8500,6 +8544,940 @@ function DevotionalTab({ me, data }) {
 }
 
 // =============================================================================
+// FAITH ARENA — Phase 1: Foundation
+// "Fight the good fight of faith." — 1 Timothy 6:12
+// =============================================================================
+
+const ARENA_STORAGE_KEY = 'flcc-faith-arena-v1';
+
+const ARENA_LEVELS = [
+  { min: 0,    level: 1,  title: 'Seeker',           color: '#94A3B8', icon: '🌱' },
+  { min: 500,  level: 5,  title: 'Disciple',          color: '#22C55E', icon: '📖' },
+  { min: 1500, level: 10, title: 'Servant',            color: '#3B82F6', icon: '🛡️' },
+  { min: 3500, level: 20, title: 'Kingdom Builder',    color: '#F59E0B', icon: '⚔️' },
+  { min: 7500, level: 30, title: 'Kingdom Champion',   color: '#C084FC', icon: '👑' },
+];
+
+const ARENA_ZONES = [
+  {
+    id: 'fear',
+    name: 'Valley of Fear',
+    boss: 'FEAR',
+    theme: 'Overcoming anxiety and fear',
+    bgFrom: '#0B1E35', bgTo: '#1A3A5C',
+    accent: '#60A5FA',
+    icon: '⚡',
+    locked: false,
+    verse: '"For God has not given us a spirit of fear, but of power, love and a sound mind." — 2 Tim 1:7',
+  },
+  {
+    id: 'temptation',
+    name: 'Desert of Temptation',
+    boss: 'TEMPTATION',
+    theme: 'Resisting worldly temptations',
+    bgFrom: '#2A0E00', bgTo: '#4A1800',
+    accent: '#F97316',
+    icon: '🔥',
+    locked: true,
+    verse: '"No temptation has overtaken you except what is common to mankind." — 1 Cor 10:13',
+  },
+  {
+    id: 'doubt',
+    name: 'Battlefield of Doubt',
+    boss: 'DOUBT',
+    theme: 'Strengthening faith through trials',
+    bgFrom: '#0C0C1F', bgTo: '#1A1A3E',
+    accent: '#8B5CF6',
+    icon: '🌩️',
+    locked: true,
+    verse: '"If any of you lacks wisdom, let him ask God, who gives generously." — James 1:5',
+  },
+  {
+    id: 'unbelief',
+    name: 'Mountain of Faith',
+    boss: 'UNBELIEF',
+    theme: 'Conquering unbelief with faith',
+    bgFrom: '#061410', bgTo: '#0D2A1E',
+    accent: '#10B981',
+    icon: '⛰️',
+    locked: true,
+    verse: '"All things are possible to him who believes." — Mark 9:23',
+  },
+];
+
+const ARENA_BIBLE_QUESTIONS = {
+  fear: [
+    {
+      q: 'Who defeated the giant Goliath with a single stone?',
+      opts: ['Saul', 'David', 'Moses', 'Peter'],
+      ans: 1, skill: 'Faith Strike', xp: 100,
+    },
+    {
+      q: 'God told Joshua "Be strong and courageous" how many times in Joshua chapter 1?',
+      opts: ['Once', 'Twice', 'Three times', 'Four times'],
+      ans: 2, skill: 'Courage Surge', xp: 120,
+    },
+    {
+      q: 'When Peter walked on water and began to sink, what did Jesus say?',
+      opts: ['"Swim harder!"', '"You of little faith, why did you doubt?"', '"Fear the storm!"', '"Come back to the boat"'],
+      ans: 1, skill: 'Faith Step', xp: 110,
+    },
+    {
+      q: 'In Psalm 23, "even though I walk through the darkest valley" what should I not fear?',
+      opts: ['Giants', 'Evil', 'Death', 'My enemies'],
+      ans: 1, skill: 'Shield of Peace', xp: 90,
+    },
+    {
+      q: 'Isaiah 41:10 — "Fear not, for I am ___ you; I will strengthen you."',
+      opts: ['watching over', 'with', 'above', 'testing'],
+      ans: 1, skill: 'Word Strike', xp: 100,
+    },
+    {
+      q: 'Which disciple was known for his bold faith when he got out of the boat to walk on water?',
+      opts: ['John', 'James', 'Peter', 'Andrew'],
+      ans: 2, skill: 'Bold Faith', xp: 95,
+    },
+  ],
+  temptation: [
+    {
+      q: 'How many days did Jesus fast in the wilderness before being tempted?',
+      opts: ['20 days', '30 days', '40 days', '7 days'],
+      ans: 2, skill: 'Endurance Strike', xp: 120,
+    },
+    {
+      q: 'James 4:7 — "Submit to God. ___ the devil and he will flee from you."',
+      opts: ['Ignore', 'Resist', 'Fight', 'Fear'],
+      ans: 1, skill: 'Resistance', xp: 110,
+    },
+  ],
+  doubt: [
+    {
+      q: 'Which disciple doubted Jesus\'s resurrection until he saw the nail marks?',
+      opts: ['Peter', 'John', 'Thomas', 'James'],
+      ans: 2, skill: 'Faith Anchor', xp: 130,
+    },
+    {
+      q: 'Hebrews 11:1 — "Now faith is the ___ of things hoped for."',
+      opts: ['dream', 'substance', 'vision', 'promise'],
+      ans: 1, skill: 'Substance Strike', xp: 110,
+    },
+  ],
+  unbelief: [
+    {
+      q: 'Mark 9:23 — "All things are possible to him who ___."',
+      opts: ['prays', 'fasts', 'believes', 'obeys'],
+      ans: 2, skill: 'Belief Blast', xp: 140,
+    },
+    {
+      q: 'Which Old Testament prophet prayed for fire from heaven and God answered with fire?',
+      opts: ['Moses', 'Isaiah', 'Elijah', 'Jeremiah'],
+      ans: 2, skill: 'Fire of Faith', xp: 130,
+    },
+  ],
+};
+
+const ARENA_DAILY_QUESTS = [
+  { id: 'bible_read',   label: 'Read a Bible Chapter',        xpKey: 'bibleXP',     xp: 10,  icon: '📖', cat: 'Bible' },
+  { id: 'pray_someone', label: 'Pray for Someone',            xpKey: 'prayerXP',    xp: 20,  icon: '🙏', cat: 'Prayer' },
+  { id: 'attend_fship', label: 'Attend Fellowship',           xpKey: 'fellowshipXP',xp: 50,  icon: '🏛️', cat: 'Fellowship' },
+  { id: 'encourage',    label: 'Encourage a Brother/Sister',  xpKey: 'fellowshipXP',xp: 20,  icon: '❤️', cat: 'Love' },
+  { id: 'mem_verse',    label: 'Memorize a Scripture',        xpKey: 'bibleXP',     xp: 30,  icon: '✨', cat: 'Bible' },
+];
+
+const ARENA_BADGES = [
+  { id: 'first_battle',  label: 'First Blood', desc: 'Win your first Bible battle',      icon: '⚔️',  check: s => s.battlesWon >= 1 },
+  { id: 'prayer_x5',    label: 'Prayer Warrior', desc: 'Complete 5 prayer quests',       icon: '🛡️',  check: s => (s.prayerQCount||0) >= 5 },
+  { id: 'bible_x10',    label: 'Scripture Master', desc: 'Win 10 Bible challenges',      icon: '📜',  check: s => s.battlesWon >= 10 },
+  { id: 'perfect_day',  label: 'Daily Warrior', desc: 'Complete all quests in one day',  icon: '🌟',  check: s => (s.perfectDays||0) >= 1 },
+  { id: 'level5',       label: 'Disciple', desc: 'Reach 500 total Faith XP',             icon: '📖',  check: s => s.totalXP >= 500 },
+  { id: 'level10',      label: 'Servant Heart', desc: 'Reach 1500 total Faith XP',       icon: '🏛️',  check: s => s.totalXP >= 1500 },
+  { id: 'level20',      label: 'Kingdom Builder', desc: 'Reach 3500 total Faith XP',     icon: '🏆',  check: s => s.totalXP >= 3500 },
+];
+
+function arenaGetLevel(totalXP) {
+  for (let i = ARENA_LEVELS.length - 1; i >= 0; i--) {
+    if (totalXP >= ARENA_LEVELS[i].min) return ARENA_LEVELS[i];
+  }
+  return ARENA_LEVELS[0];
+}
+
+function arenaNextLevel(totalXP) {
+  return ARENA_LEVELS.find(l => l.min > totalXP) || null;
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function ArenaHeader({ title, onBack }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+      <button onClick={onBack} style={{
+        background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+        borderRadius: 10, padding: '8px 12px', color: 'white', cursor: 'pointer',
+        fontSize: '0.875rem', fontWeight: 600,
+      }}>← Back</button>
+      <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{title}</div>
+    </div>
+  );
+}
+
+function ArenaCharacterScreen({ me, state, onBack }) {
+  const charLevel = arenaGetLevel(state.totalXP);
+  const nextLvl = arenaNextLevel(state.totalXP);
+  const xpProgress = nextLvl
+    ? ((state.totalXP - charLevel.min) / (nextLvl.min - charLevel.min)) * 100
+    : 100;
+
+  const xpStats = [
+    { label: 'Bible',       key: 'bibleXP',      icon: '📖', color: '#60A5FA' },
+    { label: 'Prayer',      key: 'prayerXP',     icon: '🙏', color: '#A78BFA' },
+    { label: 'Fellowship',  key: 'fellowshipXP', icon: '🏛️', color: '#34D399' },
+    { label: 'Service',     key: 'serviceXP',    icon: '🤝', color: '#FBBF24' },
+    { label: 'Faith',       key: 'faithXP',      icon: '✨', color: '#F87171' },
+  ];
+
+  const maxXp = Math.max(...xpStats.map(s => state[s.key] || 0), 1);
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white' }}>
+      <ArenaHeader title="My Character" onBack={onBack} />
+
+      {/* Avatar card */}
+      <div style={{ textAlign: 'center', marginBottom: 28 }}>
+        <div style={{
+          width: 110, height: 110, margin: '0 auto 16px',
+          background: 'radial-gradient(circle at 40% 35%, #3B82F6, #1E3A8A)',
+          borderRadius: '50%',
+          border: '3px solid rgba(212,175,55,0.7)',
+          boxShadow: '0 0 40px rgba(59,130,246,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '2.75rem',
+          animation: 'arenaGlow 3s ease-in-out infinite',
+        }}>⚔️</div>
+
+        <div style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>{me?.name || 'Warrior of Faith'}</div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: 20, padding: '5px 18px' }}>
+          <span style={{ fontSize: '0.7rem', color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Level {charLevel.level}</span>
+          <span style={{ color: charLevel.color, fontWeight: 700 }}>{charLevel.icon} {charLevel.title}</span>
+        </div>
+
+        {/* XP progress bar */}
+        <div style={{ margin: '20px 0 4px', display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>
+          <span>Total Faith XP: {state.totalXP.toLocaleString()}</span>
+          {nextLvl && <span>Next: {nextLvl.title} at {nextLvl.min.toLocaleString()} XP</span>}
+        </div>
+        <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: xpProgress + '%', background: 'linear-gradient(90deg, #D4AF37, #F5C842)', borderRadius: 4, transition: 'width 0.8s ease' }} />
+        </div>
+      </div>
+
+      {/* XP breakdown */}
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
+        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 16 }}>XP Breakdown</div>
+        {xpStats.map(s => {
+          const val = state[s.key] || 0;
+          const pct = Math.round((val / maxXp) * 100);
+          return (
+            <div key={s.key} style={{ marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: 4 }}>
+                <span>{s.icon} {s.label} XP</span>
+                <span style={{ color: s.color, fontWeight: 600 }}>{val.toLocaleString()}</span>
+              </div>
+              <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: pct + '%', background: s.color, borderRadius: 3, transition: 'width 0.8s ease', opacity: 0.85 }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+        {[
+          { label: 'Battles Won', value: state.battlesWon, icon: '⚔️' },
+          { label: 'Badges Earned', value: (state.earnedBadges||[]).length, icon: '🏅' },
+          { label: 'Perfect Days', value: state.perfectDays || 0, icon: '🌟' },
+          { label: 'Prayer Quests', value: state.prayerQCount || 0, icon: '🙏' },
+        ].map(s => (
+          <div key={s.label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
+            <div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#D4AF37' }}>{s.value}</div>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Badges */}
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '18px 16px' }}>
+        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 14 }}>Badges</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {ARENA_BADGES.map(b => {
+            const earned = (state.earnedBadges || []).includes(b.id);
+            return (
+              <div key={b.id} style={{
+                background: earned ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${earned ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 10, padding: '8px 12px',
+                display: 'flex', alignItems: 'center', gap: 6,
+                opacity: earned ? 1 : 0.4,
+              }}>
+                <span style={{ fontSize: '1.1rem' }}>{b.icon}</span>
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: earned ? '#D4AF37' : 'rgba(255,255,255,0.5)' }}>{b.label}</div>
+                  <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>{b.desc}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArenaQuestsScreen({ state, completedToday, onComplete, onBack, notification }) {
+  const allDone = ARENA_DAILY_QUESTS.every(q => completedToday[q.id]);
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', position: 'relative' }}>
+      {notification && (
+        <div style={{
+          position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(212,175,55,0.95)', color: '#0A1628',
+          borderRadius: 20, padding: '10px 24px',
+          fontWeight: 700, fontSize: '0.875rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          zIndex: 9999, whiteSpace: 'nowrap',
+          animation: 'arenaCorrect 0.3s ease',
+        }}>{notification}</div>
+      )}
+
+      <ArenaHeader title="Daily Quests" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: allDone ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${allDone ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}`, borderRadius: 20, padding: '6px 18px' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: allDone ? '#D4AF37' : 'rgba(255,255,255,0.6)' }}>
+            {Object.keys(completedToday).length} / {ARENA_DAILY_QUESTS.length} Completed {allDone ? '🌟' : ''}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+        {ARENA_DAILY_QUESTS.map(quest => {
+          const done = !!completedToday[quest.id];
+          return (
+            <div key={quest.id} style={{
+              background: done ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${done ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: 14, padding: '16px',
+              display: 'flex', alignItems: 'center', gap: 14,
+              transition: 'all 0.2s',
+            }}>
+              <div style={{ fontSize: '1.75rem', flexShrink: 0 }}>{quest.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 2, color: done ? '#86EFAC' : 'white' }}>{quest.label}</div>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>+{quest.xp} {quest.cat} XP</div>
+              </div>
+              {done ? (
+                <div style={{ fontSize: '1.5rem' }}>✅</div>
+              ) : (
+                <button onClick={() => onComplete(quest)} style={{
+                  background: 'linear-gradient(135deg, #D4AF37, #F5C842)',
+                  border: 'none', borderRadius: 10,
+                  padding: '8px 16px',
+                  color: '#0A1628', fontWeight: 700, fontSize: '0.75rem',
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}>Complete</button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {allDone && (
+        <div style={{ textAlign: 'center', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 14, padding: '20px', animation: 'arenaVictoryBurst 0.5s ease' }}>
+          <div style={{ fontSize: '2rem', marginBottom: 8 }}>🌟</div>
+          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#D4AF37', marginBottom: 4 }}>All Quests Complete!</div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>You've earned the Daily Warrior badge qualifier</div>
+        </div>
+      )}
+
+      <div style={{ marginTop: 20, textAlign: 'center', fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic', lineHeight: 1.6 }}>
+        Quests reset daily at midnight
+      </div>
+    </div>
+  );
+}
+
+function ArenaZonesScreen({ state, onSelectZone, onBack }) {
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white' }}>
+      <ArenaHeader title="Choose Your Battle" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 22 }}>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Select a spiritual arena to enter</div>
+        <div style={{ fontSize: '0.7rem', fontStyle: 'italic', color: 'rgba(255,255,255,0.25)' }}>"Put on the full armor of God" — Eph 6:11</div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {ARENA_ZONES.map(zone => {
+          const locked = zone.locked;
+          return (
+            <div key={zone.id} style={{
+              background: locked ? 'rgba(255,255,255,0.03)' : `linear-gradient(135deg, ${zone.bgFrom}, ${zone.bgTo})`,
+              border: `1px solid ${locked ? 'rgba(255,255,255,0.08)' : zone.accent + '44'}`,
+              borderRadius: 16, padding: '18px',
+              opacity: locked ? 0.5 : 1,
+              position: 'relative', overflow: 'hidden',
+              cursor: locked ? 'default' : 'pointer',
+              transition: 'transform 0.15s, box-shadow 0.15s',
+            }} onClick={() => !locked && onSelectZone(zone)}>
+              {!locked && (
+                <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 20% 50%, ${zone.accent}18, transparent 70%)`, pointerEvents: 'none' }} />
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 12, flexShrink: 0,
+                  background: locked ? 'rgba(255,255,255,0.05)' : `${zone.accent}22`,
+                  border: `1px solid ${locked ? 'rgba(255,255,255,0.1)' : zone.accent + '55'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.75rem',
+                }}>{locked ? '🔒' : zone.icon}</div>
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 3, color: locked ? 'rgba(255,255,255,0.4)' : 'white' }}>{zone.name}</div>
+                  <div style={{ fontSize: '0.7rem', color: locked ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)', marginBottom: 6 }}>{zone.theme}</div>
+                  {!locked && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: zone.accent + '22', border: `1px solid ${zone.accent}44`, borderRadius: 8, padding: '2px 8px' }}>
+                      <span style={{ fontSize: '0.65rem', color: zone.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Boss: {zone.boss}</span>
+                    </div>
+                  )}
+                  {locked && (
+                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)' }}>Unlock by progressing your faith journey</div>
+                  )}
+                </div>
+
+                {!locked && (
+                  <div style={{ color: zone.accent, fontSize: '1.25rem' }}>›</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ArenaBattleScreen({ zone, question, result, selectedAnswer, onAnswer, onBack }) {
+  const [showHint, setShowHint] = useState(false);
+
+  if (!question) return null;
+
+  return (
+    <div style={{ minHeight: '80vh', background: `linear-gradient(180deg, ${zone.bgFrom} 0%, ${zone.bgTo} 50%, ${zone.bgFrom} 100%)`, borderRadius: 16, padding: '24px 20px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+      {/* Atmosphere */}
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 20%, ${zone.accent}18, transparent 70%)`, pointerEvents: 'none' }} />
+
+      <ArenaHeader title={`Arena: ${zone.name}`} onBack={onBack} />
+
+      {/* Boss card */}
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ fontSize: '0.7rem', letterSpacing: '0.2em', color: zone.accent, textTransform: 'uppercase', marginBottom: 8 }}>Facing</div>
+        <div style={{ fontSize: '2rem', marginBottom: 4, animation: 'arenaFloat 3s ease-in-out infinite' }}>{zone.icon}</div>
+        <div style={{ fontSize: '1.75rem', fontWeight: 900, color: zone.accent, letterSpacing: '0.08em', textShadow: `0 0 20px ${zone.accent}` }}>
+          {zone.boss}
+        </div>
+        <div style={{ marginTop: 6, fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic', maxWidth: 280, margin: '8px auto 0' }}>
+          {zone.verse}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: `linear-gradient(90deg, transparent, ${zone.accent}44, transparent)`, marginBottom: 24 }} />
+
+      {/* Question */}
+      <div style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${zone.accent}33`, borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
+        <div style={{ fontSize: '0.65rem', color: zone.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Bible Challenge</div>
+        <div style={{ fontSize: '1rem', fontWeight: 600, lineHeight: 1.5 }}>{question.q}</div>
+      </div>
+
+      {/* Answer options */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {question.opts.map((opt, i) => {
+          const isSelected = selectedAnswer === i;
+          const isCorrect = i === question.ans;
+          let bg = 'rgba(255,255,255,0.05)';
+          let border = 'rgba(255,255,255,0.12)';
+          let anim = '';
+          if (result) {
+            if (isCorrect) { bg = 'rgba(34,197,94,0.2)'; border = '#22C55E'; anim = 'arenaCorrect 0.4s ease'; }
+            else if (isSelected && !isCorrect) { bg = 'rgba(239,68,68,0.2)'; border = '#EF4444'; anim = 'arenaShake 0.4s ease'; }
+          }
+
+          return (
+            <button key={i} onClick={() => onAnswer(i)} disabled={!!result} style={{
+              background: bg,
+              border: `1px solid ${border}`,
+              borderRadius: 12, padding: '14px 16px',
+              color: 'white', textAlign: 'left',
+              cursor: result ? 'default' : 'pointer',
+              fontSize: '0.9rem', fontWeight: isSelected ? 600 : 400,
+              transition: 'all 0.2s',
+              animation: anim,
+              display: 'flex', alignItems: 'center', gap: 12,
+            }}>
+              <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0, fontWeight: 700 }}>
+                {String.fromCharCode(65 + i)}
+              </span>
+              {opt}
+              {result && isCorrect && <span style={{ marginLeft: 'auto' }}>✅</span>}
+              {result && isSelected && !isCorrect && <span style={{ marginLeft: 'auto' }}>❌</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {result === 'wrong' && (
+        <div style={{ marginTop: 18, textAlign: 'center', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12, padding: '14px' }}>
+          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#FCA5A5', marginBottom: 4 }}>Keep fighting! The correct answer is highlighted above.</div>
+          <button onClick={onBack} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '8px 16px', color: 'white', cursor: 'pointer', fontSize: '0.8rem', marginTop: 8 }}>
+            Try Another Battle
+          </button>
+        </div>
+      )}
+
+      {result === 'correct' && (
+        <div style={{ marginTop: 18, textAlign: 'center' }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#86EFAC', animation: 'arenaCorrect 0.4s ease' }}>
+            {question.skill} Activated! ⚡ +{question.xp} Faith XP incoming...
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ArenaVictoryScreen({ zone, question, state, onContinue, onBattleAgain }) {
+  const charLevel = arenaGetLevel(state.totalXP);
+
+  return (
+    <div style={{ minHeight: '80vh', background: `linear-gradient(180deg, #061020 0%, #0D1F3C 100%)`, borderRadius: 16, padding: '24px 20px', color: 'white', textAlign: 'center' }}>
+      {/* Victory burst */}
+      <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 120, height: 120, borderRadius: '50%', border: `2px solid ${zone.accent}`, animation: 'arenaPulseRing 1.5s ease-out infinite' }} />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 90, height: 90, borderRadius: '50%', border: `2px solid ${zone.accent}`, animation: 'arenaPulseRing 1.5s ease-out 0.4s infinite' }} />
+        <div style={{ width: 90, height: 90, borderRadius: '50%', background: `radial-gradient(circle, ${zone.accent}44, #0D1F3C)`, border: `2px solid ${zone.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', animation: 'arenaVictoryBurst 0.6s ease' }}>
+          ⚔️
+        </div>
+      </div>
+
+      <div style={{ fontSize: '0.7rem', letterSpacing: '0.25em', color: '#D4AF37', textTransform: 'uppercase', marginBottom: 8, animation: 'arenaVictoryBurst 0.5s 0.1s ease both' }}>Victory!</div>
+      <div style={{ fontSize: '2rem', fontWeight: 900, marginBottom: 4, animation: 'arenaVictoryBurst 0.5s 0.2s ease both' }}>Faith Strike!</div>
+      <div style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.6)', marginBottom: 24, animation: 'arenaVictoryBurst 0.5s 0.3s ease both' }}>
+        You defeated <span style={{ color: zone.accent, fontWeight: 700 }}>{zone.boss}</span> with the Word of God!
+      </div>
+
+      {/* XP reward */}
+      <div style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)', borderRadius: 16, padding: '20px', marginBottom: 24, animation: 'arenaVictoryBurst 0.5s 0.35s ease both' }}>
+        <div style={{ fontSize: '0.75rem', color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>Rewards Earned</div>
+        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#D4AF37', marginBottom: 4 }}>+{question.xp} XP</div>
+        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: 14 }}>Bible Faith XP</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '8px 14px' }}>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Skill Activated</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: zone.accent }}>{question.skill}</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '8px 14px' }}>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Total Battles</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#D4AF37' }}>{state.battlesWon}</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '8px 14px' }}>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Rank</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: charLevel.color }}>{charLevel.title}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scripture */}
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 16px', marginBottom: 28, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', lineHeight: 1.6 }}>
+        {zone.verse}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button onClick={onBattleAgain} style={{
+          background: `linear-gradient(135deg, ${zone.bgFrom}, ${zone.bgTo})`,
+          border: `1px solid ${zone.accent}55`,
+          borderRadius: 14, padding: '16px',
+          color: 'white', fontWeight: 700, fontSize: '0.95rem',
+          cursor: 'pointer',
+          boxShadow: `0 4px 20px ${zone.accent}33`,
+        }}>
+          ⚔️ Battle Again
+        </button>
+        <button onClick={onContinue} style={{
+          background: 'rgba(255,255,255,0.07)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          borderRadius: 14, padding: '14px',
+          color: 'white', fontWeight: 600, fontSize: '0.875rem',
+          cursor: 'pointer',
+        }}>
+          Return to Arena Home
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main ArenaTab ─────────────────────────────────────────────────────────────
+
+function ArenaTab({ me }) {
+  const defaultState = {
+    totalXP: 0, bibleXP: 0, prayerXP: 0, fellowshipXP: 0, serviceXP: 0, faithXP: 0,
+    battlesWon: 0, prayerQCount: 0, perfectDays: 0,
+    questsCompleted: {}, lastQuestDate: '',
+    earnedBadges: [],
+  };
+
+  const [arenaState, setArenaState] = useState(() => {
+    try {
+      const s = localStorage.getItem(ARENA_STORAGE_KEY);
+      return s ? { ...defaultState, ...JSON.parse(s) } : defaultState;
+    } catch { return defaultState; }
+  });
+
+  const [screen, setScreen] = useState('home');
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [battleQuestion, setBattleQuestion] = useState(null);
+  const [battleResult, setBattleResult] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  const stars = useMemo(() =>
+    Array.from({ length: 35 }, (_, i) => ({
+      id: i,
+      size: Math.random() * 2.5 + 0.5,
+      opacity: Math.random() * 0.6 + 0.15,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 4,
+      dur: Math.random() * 3 + 2,
+    })),
+  []);
+
+  const save = useCallback((newState) => {
+    setArenaState(newState);
+    try { localStorage.setItem(ARENA_STORAGE_KEY, JSON.stringify(newState)); } catch {}
+  }, []);
+
+  const notify = useCallback((msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 2800);
+  }, []);
+
+  const today = new Date().toDateString();
+  const completedToday = arenaState.lastQuestDate === today ? (arenaState.questsCompleted || {}) : {};
+
+  const charLevel = arenaGetLevel(arenaState.totalXP);
+  const nextLvl = arenaNextLevel(arenaState.totalXP);
+  const xpProgress = nextLvl
+    ? ((arenaState.totalXP - charLevel.min) / (nextLvl.min - charLevel.min)) * 100
+    : 100;
+
+  const completeQuest = useCallback((quest) => {
+    if (completedToday[quest.id]) { notify('Already completed today!'); return; }
+    const newCompleted = { ...completedToday, [quest.id]: true };
+    const allDone = ARENA_DAILY_QUESTS.every(q => newCompleted[q.id]);
+    const newState = {
+      ...arenaState,
+      totalXP: arenaState.totalXP + quest.xp,
+      [quest.xpKey]: (arenaState[quest.xpKey] || 0) + quest.xp,
+      prayerQCount: quest.id === 'pray_someone' ? (arenaState.prayerQCount || 0) + 1 : (arenaState.prayerQCount || 0),
+      questsCompleted: newCompleted,
+      lastQuestDate: today,
+      perfectDays: allDone ? (arenaState.perfectDays || 0) + 1 : (arenaState.perfectDays || 0),
+    };
+    const newBadges = ARENA_BADGES
+      .filter(b => !(arenaState.earnedBadges || []).includes(b.id) && b.check(newState))
+      .map(b => b.id);
+    if (newBadges.length) {
+      newState.earnedBadges = [...(arenaState.earnedBadges || []), ...newBadges];
+      notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === newBadges[0]).label}! 🏅`);
+    } else {
+      notify(`+${quest.xp} ${quest.cat} XP earned!`);
+    }
+    save(newState);
+  }, [arenaState, completedToday, today, notify, save]);
+
+  const startBattle = useCallback((zone) => {
+    const pool = ARENA_BIBLE_QUESTIONS[zone.id] || ARENA_BIBLE_QUESTIONS.fear;
+    const q = pool[Math.floor(Math.random() * pool.length)];
+    setBattleQuestion(q);
+    setBattleResult(null);
+    setSelectedAnswer(null);
+    setSelectedZone(zone);
+    setScreen('battle');
+  }, []);
+
+  const answerQuestion = useCallback((idx) => {
+    if (battleResult) return;
+    setSelectedAnswer(idx);
+    const correct = idx === battleQuestion.ans;
+    setBattleResult(correct ? 'correct' : 'wrong');
+    if (correct) {
+      setTimeout(() => {
+        const newState = {
+          ...arenaState,
+          totalXP: arenaState.totalXP + battleQuestion.xp,
+          bibleXP: (arenaState.bibleXP || 0) + battleQuestion.xp,
+          battlesWon: arenaState.battlesWon + 1,
+        };
+        const newBadges = ARENA_BADGES
+          .filter(b => !(arenaState.earnedBadges || []).includes(b.id) && b.check(newState))
+          .map(b => b.id);
+        if (newBadges.length) {
+          newState.earnedBadges = [...(arenaState.earnedBadges || []), ...newBadges];
+        }
+        save(newState);
+        setScreen('victory');
+      }, 1400);
+    }
+  }, [arenaState, battleResult, battleQuestion, save]);
+
+  // Screen routing
+  if (screen === 'character') {
+    return <ArenaCharacterScreen me={me} state={arenaState} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'quests') {
+    return <ArenaQuestsScreen state={arenaState} completedToday={completedToday} onComplete={completeQuest} onBack={() => setScreen('home')} notification={notification} />;
+  }
+  if (screen === 'arena') {
+    return <ArenaZonesScreen state={arenaState} onSelectZone={startBattle} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'battle' && selectedZone && battleQuestion) {
+    return <ArenaBattleScreen zone={selectedZone} question={battleQuestion} result={battleResult} selectedAnswer={selectedAnswer} onAnswer={answerQuestion} onBack={() => setScreen('arena')} />;
+  }
+  if (screen === 'victory' && selectedZone) {
+    return <ArenaVictoryScreen zone={selectedZone} question={battleQuestion} state={arenaState} charLevel={charLevel} onContinue={() => setScreen('home')} onBattleAgain={() => startBattle(selectedZone)} />;
+  }
+
+  // ── HOME screen ────────────────────────────────────────────────────────────
+  const memberName = me?.name || 'Warrior of Faith';
+  const questsDoneCount = Object.keys(completedToday).length;
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #060E1C 0%, #0A1628 40%, #0D1F3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+      {/* Stars */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        {stars.map(s => (
+          <div key={s.id} style={{
+            position: 'absolute',
+            width: s.size, height: s.size,
+            background: 'white',
+            borderRadius: '50%',
+            left: s.left + '%', top: s.top + '%',
+            animation: `arenaTwinkle ${s.dur}s ${s.delay}s ease-in-out infinite`,
+            opacity: s.opacity,
+          }} />
+        ))}
+      </div>
+
+      {/* Top gold accent line */}
+      <div style={{ position: 'absolute', top: 0, left: '15%', right: '15%', height: 2, background: 'linear-gradient(90deg, transparent, #D4AF37, transparent)', pointerEvents: 'none' }} />
+
+      {/* Notification toast */}
+      {notification && (
+        <div style={{
+          position: 'fixed', top: 72, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(212,175,55,0.97)', color: '#060E1C',
+          borderRadius: 20, padding: '10px 24px',
+          fontWeight: 700, fontSize: '0.875rem',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+          zIndex: 9999, whiteSpace: 'nowrap',
+          animation: 'arenaCorrect 0.3s ease',
+        }}>{notification}</div>
+      )}
+
+      <div style={{ position: 'relative' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ fontSize: '0.65rem', letterSpacing: '0.3em', color: '#D4AF37', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 }}>
+            ⚔️ FLCC FAITH ARENA ⚔️
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', marginBottom: 6 }}>Welcome back, Warrior</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{memberName}</div>
+          <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.35)', borderRadius: 20, padding: '5px 18px' }}>
+            <span style={{ fontSize: '0.65rem', color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Lv.{charLevel.level}</span>
+            <span style={{ fontSize: '0.9rem', color: charLevel.color, fontWeight: 700 }}>{charLevel.icon} {charLevel.title}</span>
+          </div>
+        </div>
+
+        {/* XP Progress bar */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>
+            <span>Faith XP: {arenaState.totalXP.toLocaleString()}</span>
+            {nextLvl ? <span>{(nextLvl.min - arenaState.totalXP).toLocaleString()} XP → {nextLvl.title}</span> : <span>Max Level!</span>}
+          </div>
+          <div style={{ height: 7, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: Math.min(xpProgress, 100) + '%', background: 'linear-gradient(90deg, #B8860B, #D4AF37, #F5C842)', borderRadius: 4, transition: 'width 1s ease', boxShadow: '0 0 8px rgba(212,175,55,0.6)' }} />
+          </div>
+        </div>
+
+        {/* Warrior avatar */}
+        <div style={{ textAlign: 'center', marginBottom: 26 }}>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            {/* Outer glow ring */}
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%',
+              width: 150, height: 150,
+              marginTop: -75, marginLeft: -75,
+              borderRadius: '50%',
+              border: '1px solid rgba(212,175,55,0.3)',
+              animation: 'arenaPulseRing 3s ease-out infinite',
+            }} />
+            <div style={{
+              width: 110, height: 110, margin: '0 auto',
+              background: 'radial-gradient(circle at 38% 32%, #4B7FCC, #1E3A8A 60%, #0D1F3C)',
+              borderRadius: '50%',
+              border: '3px solid rgba(212,175,55,0.65)',
+              boxShadow: '0 0 30px rgba(59,130,246,0.5), 0 0 60px rgba(59,130,246,0.2), inset 0 2px 8px rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '3rem',
+              animation: 'arenaGlow 4s ease-in-out infinite',
+              position: 'relative',
+            }}>
+              ⚔️
+              {/* Halo */}
+              <div style={{
+                position: 'absolute', top: -6, left: '50%',
+                width: 70, height: 14,
+                border: '1.5px solid rgba(212,175,55,0.6)',
+                borderRadius: '50%',
+                animation: 'arenaHaloSpin 4s linear infinite',
+                transformOrigin: 'center',
+                transformStyle: 'preserve-3d',
+              }} />
+            </div>
+          </div>
+          <div style={{ marginTop: 14, fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+            "Fight the good fight of faith" — 1 Tim 6:12
+          </div>
+        </div>
+
+        {/* Primary action buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <button onClick={() => setScreen('arena')} style={{
+            background: 'linear-gradient(145deg, #1A3A6A, #2D5FA6)',
+            border: '1px solid rgba(96,165,250,0.45)',
+            borderRadius: 16, padding: '18px 12px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 24px rgba(59,130,246,0.25), inset 0 1px 0 rgba(255,255,255,0.1)',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+          }}>
+            <div style={{ fontSize: '1.75rem', marginBottom: 5 }}>⚔️</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>Enter Arena</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Bible Battle</div>
+          </button>
+
+          <button onClick={() => setScreen('quests')} style={{
+            background: 'linear-gradient(145deg, #0E3B1A, #16613A)',
+            border: '1px solid rgba(52,211,153,0.4)',
+            borderRadius: 16, padding: '18px 12px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 24px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.08)',
+            position: 'relative',
+            transition: 'transform 0.15s',
+          }}>
+            {questsDoneCount < ARENA_DAILY_QUESTS.length && (
+              <div style={{ position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: '50%', background: '#34D399', boxShadow: '0 0 6px #34D399' }} />
+            )}
+            <div style={{ fontSize: '1.75rem', marginBottom: 5 }}>📋</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>Daily Quests</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>{questsDoneCount}/{ARENA_DAILY_QUESTS.length} done</div>
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 22 }}>
+          <button onClick={() => setScreen('character')} style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 14, padding: '14px 12px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            transition: 'background 0.15s',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>🧑‍💼</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>My Character</div>
+          </button>
+
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 14, padding: '14px 12px',
+            color: 'rgba(255,255,255,0.35)', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>🏆</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>Leaderboard</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.2)', marginTop: 1 }}>Phase 2</div>
+          </div>
+        </div>
+
+        {/* Stats strip */}
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 8px', display: 'flex', justifyContent: 'space-around' }}>
+          {[
+            { label: 'Battles', value: arenaState.battlesWon, icon: '⚔️' },
+            { label: 'Bible XP', value: arenaState.bibleXP, icon: '📖' },
+            { label: 'Prayer XP', value: arenaState.prayerXP || 0, icon: '🙏' },
+            { label: 'Badges', value: (arenaState.earnedBadges || []).length, icon: '🏅' },
+          ].map(s => (
+            <div key={s.label} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1rem' }}>{s.icon}</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#D4AF37', lineHeight: 1.2 }}>{s.value}</div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Level milestones */}
+        <div style={{ marginTop: 18, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Journey Milestones</div>
+          <div style={{ display: 'flex', gap: 0, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 10, left: 10, right: 10, height: 2, background: 'rgba(255,255,255,0.08)', zIndex: 0 }} />
+            {ARENA_LEVELS.map((lvl, i) => {
+              const reached = arenaState.totalXP >= lvl.min;
+              return (
+                <div key={lvl.level} style={{ flex: 1, textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', margin: '0 auto 6px',
+                    background: reached ? lvl.color : 'rgba(255,255,255,0.1)',
+                    border: `2px solid ${reached ? lvl.color : 'rgba(255,255,255,0.15)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.65rem',
+                    boxShadow: reached ? `0 0 8px ${lvl.color}` : 'none',
+                    transition: 'all 0.3s',
+                  }}>{reached ? '✓' : lvl.level}</div>
+                  <div style={{ fontSize: '0.55rem', color: reached ? lvl.color : 'rgba(255,255,255,0.2)', lineHeight: 1.3, fontWeight: reached ? 700 : 400 }}>{lvl.title}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom verse */}
+        <div style={{ marginTop: 18, textAlign: 'center', fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic', lineHeight: 1.6 }}>
+          "Put on the full armor of God, so that you can take your stand<br/>against the devil's schemes." — Ephesians 6:11
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
@@ -8517,6 +9495,7 @@ const TABS = [
   { key: 'music',     label: 'Music',    requiresMusic:  true },
   { key: 'equip',    label: 'Equip' },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
+  { key: 'arena',    label: '⚔️ Arena' },
   { key: 'about',    label: 'About' },
 ];
 
@@ -9042,6 +10021,7 @@ function App() {
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
           {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
           {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
+          {currentTab === 'arena'   && <ArenaTab me={me} />}
           {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} botrLive={botrLive} botrLiveStatus={botrLiveStatus} onRefreshBotr={loadBOTRStats} />}
         </div>
       </main>
