@@ -8819,6 +8819,12 @@ const ARENA_BADGES = [
   { id: 'milestone_5000',  label: 'Faith Champion',    desc: 'Reach 5000 total XP',            icon: '💫', check: s => (s.totalXP||0) >= 5000 },
   { id: 'milestone_10000', label: 'Faith Legend',      desc: 'Reach 10000 total XP',           icon: '🏆', check: s => (s.totalXP||0) >= 10000 },
   { id: 'seasonal_champ',  label: 'Seasonal Champion', desc: 'Complete 5 seasonal challenges', icon: '🎄', check: s => (s.seasonalCount||0) >= 5 },
+  // Phase 13 (5)
+  { id: 'onboarding_done', label: 'Warrior Born',       desc: 'Complete the Faith Arena onboarding',      icon: '🎖️', check: s => !!s.onboardingComplete },
+  { id: 'card_shared',     label: 'Faith Ambassador',   desc: 'Share your warrior card',                   icon: '📤', check: s => !!s.cardShared },
+  { id: 'today_streak_7',  label: 'Daily Champion',     desc: 'Use Today Dashboard 7 days in a row',       icon: '📅', check: s => (s.todayStreak||0) >= 7 },
+  { id: 'today_streak_30', label: 'Faithful Daily',     desc: 'Use Today Dashboard 30 days in a row',      icon: '🗓️', check: s => (s.todayStreak||0) >= 30 },
+  { id: 'faith_legend',    label: 'Faith Arena Legend', desc: 'Unlock 50 or more badges',                  icon: '👑', check: s => (s.earnedBadges||[]).length >= 50 },
 ];
 
 const ARENA_GUILDS = [
@@ -10063,6 +10069,17 @@ const ARENA_GIFTS_QUESTIONS = [
   { text: 'Building up someone\'s confidence and faith brings me deep fulfillment', gift: 'encouragement' },
 ];
 
+// ── Phase 13 Constants ────────────────────────────────────────────────────────
+const ARENA_TODAY_SCRIPTURES = [
+  { ref: 'Philippians 4:13', text: 'I can do all this through him who gives me strength.' },
+  { ref: 'Joshua 1:9',       text: 'Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.' },
+  { ref: 'Psalm 23:1',       text: 'The LORD is my shepherd, I lack nothing.' },
+  { ref: 'Romans 8:28',      text: 'And we know that in all things God works for the good of those who love him, who have been called according to his purpose.' },
+  { ref: 'Proverbs 3:5-6',   text: 'Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.' },
+  { ref: 'Isaiah 40:31',     text: 'But those who hope in the LORD will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.' },
+  { ref: 'John 3:16',        text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.' },
+];
+
 // ── Phase 12 Constants ────────────────────────────────────────────────────────
 const ARENA_XP_MILESTONES = [
   { xp: 100,   label: 'Seeker',     icon: '🌱', color: '#34D399' },
@@ -10201,6 +10218,229 @@ const ARENA_NT_BOOKS = [
   { id: '3jn',   label: '3 John',          ch: 1  }, { id: 'jude',  label: 'Jude',            ch: 1  },
   { id: 'rev',   label: 'Revelation',      ch: 22 },
 ];
+
+// ── Phase 13: Today Dashboard, Onboarding, Warrior Card ─────────────────────
+function ArenaOnboardingScreen({ onComplete }) {
+  const [step, setStep] = React.useState(0);
+  const steps = [
+    { icon: '⚔️', title: 'Welcome to Faith Arena', cta: 'Begin My Journey',
+      body: 'Grow in your faith through daily battles, prayer, Bible reading, and community — all as an exciting RPG adventure with your FLCC family.' },
+    { icon: '🗺️', title: 'What You Can Do', cta: 'Next',
+      body: 'Complete daily quests, battle through scripture zones, join a guild, track your Bible reading, log prayer requests, journal, fast, and discover your spiritual gift.' },
+    { icon: '🎖️', title: "You're Ready, Warrior!", cta: 'Enter the Arena',
+      body: 'Earn badges, level up, climb the leaderboard, and grow closer to God alongside your FLCC church family. Your faith journey starts now!' },
+  ];
+  const s = steps[step];
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #060E1C 0%, #0A1628 60%, #0D1F3C 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ textAlign: 'center', maxWidth: 340 }}>
+        <div style={{ fontSize: '4rem', marginBottom: 20 }}>{s.icon}</div>
+        <div style={{ fontSize: '0.6rem', letterSpacing: '0.3em', color: '#D4AF37', textTransform: 'uppercase', marginBottom: 10, fontWeight: 700 }}>FLCC FAITH ARENA</div>
+        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', marginBottom: 16, lineHeight: 1.2 }}>{s.title}</div>
+        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75, marginBottom: 32 }}>{s.body}</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 28 }}>
+          {steps.map((_, i) => (
+            <div key={i} style={{ width: i === step ? 20 : 8, height: 8, borderRadius: 4, background: i === step ? '#D4AF37' : 'rgba(255,255,255,0.2)', transition: 'all 0.3s' }} />
+          ))}
+        </div>
+        <button onClick={() => step < steps.length - 1 ? setStep(step + 1) : onComplete()} style={{
+          width: '100%', padding: '16px', borderRadius: 16, border: 'none',
+          background: 'linear-gradient(135deg, #B8860B, #D4AF37)',
+          color: '#060E1C', fontWeight: 800, fontSize: '1rem', cursor: 'pointer',
+          boxShadow: '0 4px 24px rgba(212,175,55,0.35)', marginBottom: 14,
+        }}>{s.cta}</button>
+        {step > 0 && (
+          <button onClick={() => setStep(step - 1)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', cursor: 'pointer', marginRight: 16 }}>← Back</button>
+        )}
+        {step === 0 && (
+          <button onClick={() => onComplete()} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem', cursor: 'pointer' }}>Skip</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ArenaTodayScreen({ state, completedToday, onCheckIn, onBack, setScreen }) {
+  const todayStr = new Date().toDateString();
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  const scripture = ARENA_TODAY_SCRIPTURES[dayOfYear % ARENA_TODAY_SCRIPTURES.length];
+  const alreadyCheckedIn = state.lastTodayDate === todayStr;
+  const dateLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const armorDone = state.armorDate === todayStr && Object.keys(state.armorChecked || {}).length >= 6;
+  const checklist = [
+    { icon: '📋', label: 'Daily Quests',  done: Object.keys(completedToday).length >= 5,          screen: 'quests' },
+    { icon: '📖', label: 'Memory Verse',  done: state.lastMemoryDate === todayStr,                screen: 'memory' },
+    { icon: '🛡️', label: 'Armor of God',  done: armorDone,                                        screen: 'armor' },
+    { icon: '⏱️', label: 'Prayer Timer',  done: state.lastPrayerTimerDate === todayStr,           screen: 'prayertimer' },
+    { icon: '📓', label: 'Journal Entry', done: state.lastJournalDate === todayStr,               screen: 'journal' },
+    { icon: '🌸', label: 'Grace Note',    done: state.lastGraceNoteDate === todayStr,             screen: 'gracenotes' },
+  ];
+  const doneCount = checklist.filter(c => c.done).length;
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0A0A14 0%, #0D0D1F 100%)', padding: '0 0 80px 0' }}>
+      <div style={{ padding: '20px 16px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, padding: '8px 14px', color: 'white', cursor: 'pointer', fontSize: '0.85rem' }}>← Back</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>Today</div>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{dateLabel}</div>
+        </div>
+        {(state.todayStreak || 0) > 0 && (
+          <div style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 20, padding: '4px 12px', fontSize: '0.7rem', color: '#D4AF37', fontWeight: 700 }}>
+            🔥 {state.todayStreak} day streak
+          </div>
+        )}
+      </div>
+
+      <div style={{ padding: '0 16px' }}>
+        <div style={{ background: 'linear-gradient(135deg, #1A1200, #2A2000)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: 18, marginBottom: 14 }}>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '0.15em', color: '#D4AF37', fontWeight: 700, marginBottom: 10, textTransform: 'uppercase' }}>📖 Verse of the Day</div>
+          <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.65, fontStyle: 'italic', marginBottom: 10 }}>"{scripture.text}"</div>
+          <div style={{ fontSize: '0.72rem', color: '#D4AF37', fontWeight: 700 }}>— {scripture.ref}</div>
+        </div>
+
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>Daily Activities</div>
+            <div style={{ fontSize: '0.7rem', color: doneCount === checklist.length ? '#34D399' : 'rgba(255,255,255,0.4)', fontWeight: 700 }}>{doneCount}/{checklist.length}</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, height: 6, overflow: 'hidden', marginBottom: 14 }}>
+            <div style={{ width: `${Math.round((doneCount / checklist.length) * 100)}%`, height: '100%', background: doneCount === checklist.length ? '#34D399' : 'linear-gradient(90deg, #D4AF37, #F5C842)', borderRadius: 6, transition: 'width 0.5s ease' }} />
+          </div>
+          {checklist.map(item => (
+            <div key={item.screen} onClick={() => !item.done && setScreen(item.screen)} style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              cursor: item.done ? 'default' : 'pointer',
+            }}>
+              <div style={{ fontSize: '1.1rem', filter: item.done ? 'none' : 'grayscale(0.5)' }}>{item.icon}</div>
+              <div style={{ flex: 1, fontSize: '0.82rem', color: item.done ? 'rgba(255,255,255,0.4)' : 'white', textDecoration: item.done ? 'line-through' : 'none', fontWeight: item.done ? 400 : 600 }}>{item.label}</div>
+              <div>{item.done ? '✅' : <span style={{ fontSize: '0.7rem', color: '#D4AF37' }}>tap →</span>}</div>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={() => !alreadyCheckedIn && onCheckIn()} disabled={alreadyCheckedIn} style={{
+          width: '100%', padding: '16px', borderRadius: 16, border: 'none', marginBottom: 10,
+          background: alreadyCheckedIn ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, #B8860B, #D4AF37)',
+          color: alreadyCheckedIn ? 'rgba(255,255,255,0.3)' : '#060E1C',
+          fontWeight: 800, fontSize: '0.95rem', cursor: alreadyCheckedIn ? 'default' : 'pointer',
+        }}>{alreadyCheckedIn ? '✅ Checked in today!' : '✝️ Check In Today · +10 XP'}</button>
+        {!alreadyCheckedIn && (
+          <div style={{ textAlign: 'center', fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', marginBottom: 16 }}>Resets at midnight · Builds daily streak</div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginTop: 6 }}>
+          {[
+            { label: 'Total XP', value: (state.totalXP||0).toLocaleString(), icon: '⚡' },
+            { label: 'Badges',   value: (state.earnedBadges||[]).length,     icon: '🏅' },
+            { label: 'Battles',  value: state.battlesWon||0,                 icon: '⚔️' },
+          ].map(stat => (
+            <div key={stat.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '1rem', marginBottom: 4 }}>{stat.icon}</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'white', marginBottom: 2 }}>{stat.value}</div>
+              <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArenaWarriorCardScreen({ me, state, charLevel, onShare, onBack }) {
+  const guild = state.selectedGuild ? ARENA_GUILDS.find(g => g.id === state.selectedGuild) : null;
+  const topBadges = (state.earnedBadges || []).slice(0, 6).map(id => ARENA_BADGES.find(b => b.id === id)).filter(Boolean);
+  const shieldColors = { blue: '#3B82F6', red: '#EF4444', gold: '#D4AF37', green: '#10B981', purple: '#8B5CF6' };
+  const sc = shieldColors[state.shieldColor] || '#3B82F6';
+  const name = me?.name || 'Faith Warrior';
+
+  const copyCard = () => {
+    const lines = [
+      '⚔️ FLCC FAITH ARENA — WARRIOR CARD ⚔️',
+      `Warrior: ${name}`,
+      `Title: ${state.warriorTitle || 'Warrior'}`,
+      `Level ${charLevel.level} — ${charLevel.icon} ${charLevel.title}`,
+      `Guild: ${guild ? guild.label : 'None'}`,
+      `Spiritual Gift: ${state.spiritualGift || 'Undiscovered'}`,
+      `Total XP: ${(state.totalXP||0).toLocaleString()}`,
+      `Badges Earned: ${(state.earnedBadges||[]).length}`,
+      `Battles Won: ${state.battlesWon||0}`,
+      '',
+      'Growing in faith at FLCC Abundance Church',
+    ];
+    try { navigator.clipboard.writeText(lines.join('\n')); } catch (_) {}
+    onShare();
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0A0A14 0%, #0D0D1F 100%)', padding: '0 0 80px 0' }}>
+      <div style={{ padding: '20px 16px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, padding: '8px 14px', color: 'white', cursor: 'pointer', fontSize: '0.85rem' }}>← Back</button>
+        <div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'white' }}>Warrior Card</div>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Your faith identity</div>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 16px' }}>
+        <div style={{
+          background: 'linear-gradient(145deg, #0D1220, #1A2440, #0D1220)',
+          border: `2px solid ${sc}66`, borderRadius: 20, padding: 24, marginBottom: 16,
+          boxShadow: `0 8px 40px ${sc}22, inset 0 1px 0 ${sc}33`, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.04, backgroundImage: 'repeating-linear-gradient(45deg, white 0, white 1px, transparent 0, transparent 50%)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
+
+          <div style={{ textAlign: 'center', marginBottom: 18, position: 'relative' }}>
+            <div style={{ fontSize: '0.55rem', letterSpacing: '0.35em', color: sc, textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 }}>⚔️ FLCC FAITH ARENA ⚔️</div>
+            <div style={{ width: 70, height: 70, borderRadius: '50%', background: `linear-gradient(135deg, ${sc}33, ${sc}11)`, border: `3px solid ${sc}88`, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', boxShadow: `0 0 20px ${sc}44` }}>
+              {charLevel.icon}
+            </div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'white', marginBottom: 4 }}>{name}</div>
+            <div style={{ fontSize: '0.75rem', color: sc, fontWeight: 700, marginBottom: 2 }}>{state.warriorTitle || 'Warrior'}</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Level {charLevel.level} · {charLevel.title}</div>
+          </div>
+
+          <div style={{ height: 1, background: `linear-gradient(90deg, transparent, ${sc}44, transparent)`, marginBottom: 16 }} />
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+            {[
+              { label: 'Total XP',      value: (state.totalXP||0).toLocaleString(), icon: '⚡' },
+              { label: 'Battles Won',   value: state.battlesWon||0,                 icon: '⚔️' },
+              { label: 'Guild',         value: guild ? guild.label : '—',           icon: guild ? guild.icon : '🏛️' },
+              { label: 'Spiritual Gift', value: state.spiritualGift || 'Undiscovered', icon: '🎁' },
+            ].map(stat => (
+              <div key={stat.label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{stat.icon} {stat.label}</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white' }}>{stat.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {topBadges.length > 0 && (
+            <>
+              <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>🏅 Badges ({(state.earnedBadges||[]).length} earned)</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {topBadges.map(b => (
+                  <div key={b.id} title={b.label} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '4px 8px', fontSize: '0.9rem' }}>{b.icon}</div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <button onClick={copyCard} style={{
+          width: '100%', padding: '16px', borderRadius: 16, border: 'none',
+          background: state.cardShared ? 'rgba(255,255,255,0.06)' : `linear-gradient(135deg, ${sc}CC, ${sc}88)`,
+          color: state.cardShared ? 'rgba(255,255,255,0.5)' : 'white',
+          fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginBottom: 10,
+        }}>{state.cardShared ? '✅ Card copied!' : '📤 Copy Card to Share'}</button>
+        <div style={{ textAlign: 'center', fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>Copies text to clipboard · Screenshot to share on social</div>
+      </div>
+    </div>
+  );
+}
 
 // ── Phase 12: Milestones + Seasonal Events ───────────────────────────────────
 function ArenaMilestonesScreen({ state, onBack }) {
@@ -12774,6 +13014,10 @@ function ArenaTab({ me }) {
     prayerTimerCount: 0, lastPrayerTimerDate: '',
     // Phase 12
     seasonalCompleted: {}, seasonalCount: 0,
+    // Phase 13
+    onboardingComplete: false,
+    cardShared: false,
+    todayStreak: 0, lastTodayDate: '',
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -13111,6 +13355,42 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
+  const checkInToday = useCallback(() => {
+    const todayStr = new Date().toDateString();
+    if (arenaState.lastTodayDate === todayStr) return;
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const isConsecutive = arenaState.lastTodayDate === yesterday.toDateString();
+    const newStreak = isConsecutive ? (arenaState.todayStreak || 0) + 1 : 1;
+    const newState = {
+      ...arenaState,
+      totalXP: (arenaState.totalXP || 0) + 10,
+      faithXP: (arenaState.faithXP || 0) + 10,
+      todayStreak: newStreak,
+      lastTodayDate: todayStr,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify(`+10 XP — Daily check-in! 🔥 Streak: ${newStreak}`);
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const shareCard = useCallback(() => {
+    if (arenaState.cardShared) return;
+    const newState = { ...arenaState, cardShared: true };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify('Warrior card shared! 📤');
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const completeOnboarding = useCallback(() => {
+    const newState = { ...arenaState, onboardingComplete: true };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify('Welcome, Warrior! Your faith journey begins! 🎖️');
+    save(newState);
+  }, [arenaState, notify, save]);
+
   const completeSeasonalChallenge = useCallback((challengeId, xp) => {
     if ((arenaState.seasonalCompleted || {})[challengeId]) return;
     const newState = {
@@ -13386,6 +13666,11 @@ function ArenaTab({ me }) {
     }
   }, [arenaState, battleResult, battleQuestion, selectedZone, save]);
 
+  // new-user onboarding — only shown when truly fresh (no XP, no badges)
+  if (!arenaState.onboardingComplete && (arenaState.earnedBadges||[]).length === 0 && (arenaState.totalXP||0) === 0) {
+    return <ArenaOnboardingScreen onComplete={() => { completeOnboarding(); }} />;
+  }
+
   // Screen routing
   if (screen === 'character') {
     return <ArenaCharacterScreen me={me} state={arenaState} onBack={() => setScreen('home')} />;
@@ -13430,6 +13715,15 @@ function ArenaTab({ me }) {
   }
   if (screen === 'prayertimer') {
     return <ArenaPrayerTimerScreen state={arenaState} onComplete={completePrayerSession} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'today') {
+    return <ArenaTodayScreen state={arenaState} completedToday={completedToday} onCheckIn={checkInToday} onBack={() => setScreen('home')} setScreen={setScreen} />;
+  }
+  if (screen === 'card') {
+    return <ArenaWarriorCardScreen me={me} state={arenaState} charLevel={charLevel} onShare={shareCard} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'onboarding') {
+    return <ArenaOnboardingScreen onComplete={() => { completeOnboarding(); setScreen('home'); }} />;
   }
   if (screen === 'milestones') {
     return <ArenaMilestonesScreen state={arenaState} onBack={() => setScreen('home')} />;
@@ -13558,6 +13852,32 @@ function ArenaTab({ me }) {
           <div style={{ height: 7, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: Math.min(xpProgress, 100) + '%', background: 'linear-gradient(90deg, #B8860B, #D4AF37, #F5C842)', borderRadius: 4, transition: 'width 1s ease', boxShadow: '0 0 8px rgba(212,175,55,0.6)' }} />
           </div>
+        </div>
+
+        {/* Today + Warrior Card */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 14 }}>
+          <button onClick={() => setScreen('today')} style={{
+            background: arenaState.lastTodayDate === today ? 'linear-gradient(135deg, rgba(52,211,153,0.12), rgba(16,185,129,0.06))' : 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.06))',
+            border: arenaState.lastTodayDate === today ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(212,175,55,0.35)',
+            borderRadius: 14, padding: '14px 14px', color: 'white', cursor: 'pointer',
+            textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <div style={{ fontSize: '1.3rem' }}>{arenaState.lastTodayDate === today ? '✅' : '📅'}</div>
+            <div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: arenaState.lastTodayDate === today ? '#34D399' : '#D4AF37', marginBottom: 2 }}>Today</div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+                {arenaState.lastTodayDate === today ? `🔥 ${arenaState.todayStreak||1} day streak` : 'Check in · Verse · +10 XP'}
+              </div>
+            </div>
+          </button>
+          <button onClick={() => setScreen('card')} style={{
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 14, padding: '14px 10px', color: 'white', cursor: 'pointer', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '1.3rem', marginBottom: 4 }}>🪪</div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700 }}>My Card</div>
+            <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>View & share</div>
+          </button>
         </div>
 
         {/* Daily Quest Reminder */}
