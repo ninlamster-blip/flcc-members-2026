@@ -8790,6 +8790,11 @@ const ARENA_BADGES = [
   { id: 'journal_30',     label: 'Daily Devotee',     desc: 'Write 30 journal entries',                 icon: '📔', check: s => (s.journalCount||0) >= 30 },
   { id: 'reading_plan',   label: 'Word Seeker',       desc: 'Complete the 7-day reading plan',          icon: '📗', check: s => (s.readingCompleted||[]).length >= 7 },
   { id: 'custom_warrior', label: 'My Identity',       desc: 'Customize your warrior title',             icon: '🎖️', check: s => !!s.warriorTitle },
+  // Phase 8 (4)
+  { id: 'devoted_heart',    label: 'Devoted Heart',      desc: 'Complete a devotional path',               icon: '📿', check: s => (s.devotionalCompleted||[]).length >= 1 },
+  { id: 'path_walker',      label: 'Path Walker',        desc: 'Complete 3 devotional paths',              icon: '🌿', check: s => (s.devotionalCompleted||[]).length >= 3 },
+  { id: 'community_champ',  label: 'Community Champion', desc: 'Participate in a community challenge',     icon: '🌍', check: s => (s.communityChallengeCount||0) >= 1 },
+  { id: 'mission_complete', label: 'Mission Complete',   desc: 'Complete 3 community challenges',          icon: '🎯', check: s => (s.communityChallengeCount||0) >= 3 },
 ];
 
 const ARENA_GUILDS = [
@@ -9391,6 +9396,71 @@ const ARENA_SHIELD_COLORS = [
   { id: 'silver',  label: 'Silver Grace', from: '#1E293B', to: '#94A3B8', border: 'rgba(148,163,184,0.65)',  glow: 'rgba(148,163,184,0.4)' },
 ];
 
+const ARENA_DEVOTIONAL_PATHS = [
+  {
+    id: 'faith', label: 'Walking in Faith', icon: '🌱', color: '#34D399',
+    desc: 'A 5-day journey through the foundations of faith',
+    days: [
+      { ref: 'Hebrews 11:1',     title: 'What Is Faith?',         verse: '"Now faith is confidence in what we hope for and assurance about what we do not see." — Heb 11:1',        reflection: 'Faith is not about certainty — it is about trust. Where is God asking you to trust Him today?' },
+      { ref: 'Romans 10:17',     title: 'Faith Comes by Hearing', verse: '"Faith comes from hearing the message, and the message is heard through the word about Christ." — Rom 10:17', reflection: 'How are you feeding your faith? Spend a moment with God\'s Word and let it strengthen your belief.' },
+      { ref: 'James 2:17',       title: 'Faith in Action',        verse: '"Faith by itself, if it is not accompanied by action, is dead." — James 2:17',                             reflection: 'What is one way you can put your faith into action this week? Write it down and commit to it.' },
+      { ref: 'Matthew 17:20',    title: 'Mustard Seed Faith',     verse: '"If you have faith as small as a mustard seed... nothing will be impossible for you." — Matt 17:20',       reflection: 'God doesn\'t need great faith — He needs willing faith. Offer Him whatever faith you have today.' },
+      { ref: '2 Corinthians 5:7',title: 'Walk by Faith',          verse: '"For we live by faith, not by sight." — 2 Cor 5:7',                                                        reflection: 'What situation are you facing where you must choose faith over what you see? Pray over it now.' },
+    ],
+  },
+  {
+    id: 'courage', label: 'Courage in Christ', icon: '⚡', color: '#F59E0B',
+    desc: 'Overcome fear and step boldly into God\'s calling',
+    days: [
+      { ref: 'Joshua 1:9',       title: 'Be Strong and Courageous', verse: '"Be strong and courageous. Do not be afraid... for the Lord your God will be with you." — Josh 1:9',    reflection: 'God commands courage because He knows fear is real. What fear can you surrender to Him today?' },
+      { ref: 'Psalm 27:1',       title: 'The Lord is My Light',     verse: '"The Lord is my light and my salvation — whom shall I fear?" — Psalm 27:1',                             reflection: 'Light exposes what darkness hides. Let God\'s presence reveal the path forward for you today.' },
+      { ref: 'Isaiah 41:10',     title: 'Fear Not',                 verse: '"Do not fear, for I am with you; do not be dismayed, for I am your God." — Isaiah 41:10',               reflection: 'God\'s "fear not" is a promise of His presence. In what area do you need to receive this promise?' },
+      { ref: 'Philippians 4:13', title: 'Strength Through Christ',  verse: '"I can do all this through him who gives me strength." — Phil 4:13',                                    reflection: 'Paul wrote this from prison. What impossible situation is God asking you to face with His strength?' },
+      { ref: '2 Timothy 1:7',    title: 'A Spirit of Power',        verse: '"God has not given us a spirit of fear, but of power, love, and a sound mind." — 2 Tim 1:7',           reflection: 'Fear is not from God. Power, love, and clarity are. Claim these gifts in prayer right now.' },
+    ],
+  },
+  {
+    id: 'prayer', label: 'Power of Prayer', icon: '🙏', color: '#8B5CF6',
+    desc: 'Deepen your prayer life over 5 transforming days',
+    days: [
+      { ref: 'Matthew 6:9-13',   title: 'How to Pray',            verse: '"Our Father in heaven, hallowed be your name, your kingdom come..." — Matt 6:9',                          reflection: 'Jesus gave us a model, not a script. Pray through each phrase of the Lord\'s Prayer slowly today.' },
+      { ref: 'Philippians 4:6',  title: 'Pray About Everything',  verse: '"Do not be anxious about anything, but in every situation, by prayer... present your requests to God." — Phil 4:6', reflection: 'Nothing is too small for God. Name three specific things — big or small — and lift them to Him.' },
+      { ref: '1 Thess 5:17',     title: 'Pray Without Ceasing',   verse: '"Pray continually." — 1 Thess 5:17',                                                                     reflection: 'Prayer is not only words — it is an attitude of dependence. How can you stay connected to God all day?' },
+      { ref: 'James 5:16',       title: 'Praying for Others',     verse: '"The prayer of a righteous person is powerful and effective." — James 5:16',                             reflection: 'Intercession changes lives. Write down the names of three people you will pray for today.' },
+      { ref: 'Romans 8:26',      title: 'The Spirit Intercedes',  verse: '"The Spirit himself intercedes for us through wordless groans." — Rom 8:26',                             reflection: 'When you don\'t know what to pray — the Spirit does. Rest in God\'s presence and let Him lead.' },
+    ],
+  },
+  {
+    id: 'serving', label: 'Called to Serve', icon: '🤲', color: '#60A5FA',
+    desc: 'Discover the joy of servant-hearted living',
+    days: [
+      { ref: 'Mark 10:45',       title: 'Servant of All',         verse: '"The Son of Man did not come to be served, but to serve, and to give his life as a ransom." — Mark 10:45', reflection: 'Jesus defined greatness as service. What would it look like to lead as a servant in your world today?' },
+      { ref: 'Galatians 5:13',   title: 'Serve One Another',      verse: '"Serve one another humbly in love." — Galatians 5:13',                                                   reflection: 'Humility is the posture of service. Who in your church family can you humbly serve this week?' },
+      { ref: '1 Peter 4:10',     title: 'Gifts for God\'s Glory', verse: '"Each of you should use whatever gift you have received to serve others." — 1 Peter 4:10',               reflection: 'Your gifts are not for you alone. How is God calling you to use your talents for His kingdom?' },
+      { ref: 'Colossians 3:23',  title: 'Work for the Lord',      verse: '"Whatever you do, work at it with all your heart, as working for the Lord." — Col 3:23',                 reflection: 'Every act of service is worship when done for God. Offer your everyday work to Him today.' },
+      { ref: 'Matthew 25:40',    title: 'Serving the Least',      verse: '"Whatever you did for one of the least of these brothers and sisters of mine, you did for me." — Matt 25:40', reflection: 'Jesus lives in the vulnerable. Who can you see, serve, and love in His name today?' },
+    ],
+  },
+  {
+    id: 'gratitude', label: 'Heart of Gratitude', icon: '🌟', color: '#EC4899',
+    desc: 'Cultivate thankfulness through God\'s goodness',
+    days: [
+      { ref: '1 Thess 5:18',     title: 'Give Thanks Always',     verse: '"Give thanks in all circumstances; for this is God\'s will for you in Christ Jesus." — 1 Thess 5:18',   reflection: 'Gratitude is a command — and also a gift. Name five things you are grateful for right now.' },
+      { ref: 'Psalm 100:4',      title: 'Enter with Thanksgiving', verse: '"Enter his gates with thanksgiving and his courts with praise." — Psalm 100:4',                         reflection: 'Begin your time with God today with praise before requests. Let gratitude open the door to worship.' },
+      { ref: 'Ephesians 5:20',   title: 'Always Giving Thanks',   verse: '"Always giving thanks to God the Father for everything, in the name of our Lord Jesus Christ." — Eph 5:20', reflection: 'Even in hard seasons, God is at work. What can you thank Him for in your current challenge?' },
+      { ref: 'Psalm 107:1',      title: 'His Love Endures',       verse: '"Give thanks to the Lord, for he is good; his love endures forever." — Ps 107:1',                       reflection: 'God\'s love is not temporary. Meditate on one evidence of God\'s love in your life this week.' },
+      { ref: 'Colossians 2:7',   title: 'Overflow with Gratitude', verse: '"Overflowing with thankfulness." — Col 2:7',                                                           reflection: 'Gratitude is contagious. Who can you express thankfulness to today — in God\'s name?' },
+    ],
+  },
+];
+
+const ARENA_COMMUNITY_CHALLENGES = [
+  { week: 0, title: 'Church Prayer Storm', icon: '🙏', goal: 500, unit: 'prayers', color: '#8B5CF6', desc: 'Together as FLCC, let\'s lift 500 prayers to the Lord this week!' },
+  { week: 1, title: 'Word Immersion Week', icon: '📖', goal: 300, unit: 'chapters read', color: '#60A5FA', desc: 'Read God\'s Word together — let\'s hit 300 chapters as a church family!' },
+  { week: 2, title: 'Generosity Drive',    icon: '🤲', goal: 200, unit: 'acts of service', color: '#34D399', desc: 'Serve and give — 200 acts of generosity across our congregation!' },
+  { week: 3, title: 'Praise Explosion',    icon: '🙌', goal: 400, unit: 'praise moments', color: '#F59E0B', desc: 'Let the praises ring — 400 worship and praise moments this week!' },
+];
+
 const ARENA_SIMULATED_PRAISES = [
   { id: 'pp1', name: 'Christine Santos', text: "Praise God! My prayers for my family were answered — we are all in good health and growing in faith together!", praiseCount: 14 },
   { id: 'pp2', name: 'Grace Siangco',    text: 'God provided for us in a miraculous way this week. His faithfulness never fails! All glory to Him! 🙌', praiseCount: 11 },
@@ -9939,6 +10009,341 @@ function ArenaCustomizeScreen({ state, onSave, onBack }) {
         style={{ width: '100%', background: selTitle ? `linear-gradient(135deg, ${previewColor.from}, ${previewColor.to})` : 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 14, padding: '15px', color: selTitle ? 'white' : 'rgba(255,255,255,0.3)', fontWeight: 800, fontSize: '0.95rem', cursor: selTitle ? 'pointer' : 'default', transition: 'all 0.3s' }}>
         {selTitle ? 'Save Warrior Identity 🎖️' : 'Choose a title first'}
       </button>
+    </div>
+  );
+}
+
+// ── Phase 8: Devotional Paths, Community Challenge, Warrior Profile ──────────
+
+function ArenaDevotionalScreen({ state, onComplete, onBack }) {
+  const [activePathId, setActivePathId] = React.useState(null);
+  const [activeDayIdx, setActiveDayIdx] = React.useState(null);
+  const progress = state.devotionalProgress || {};
+  const completed = new Set(state.devotionalCompleted || []);
+
+  if (activeDayIdx !== null && activePathId) {
+    const path = ARENA_DEVOTIONAL_PATHS.find(p => p.id === activePathId);
+    const day = path.days[activeDayIdx];
+    const daysDone = new Set(progress[activePathId] || []);
+    const isDone = daysDone.has(activeDayIdx);
+    return (
+      <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1A14 0%, #0D2A1E 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+        <ArenaHeader title={path.label} onBack={() => setActiveDayIdx(null)} />
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ fontSize: '2rem', marginBottom: 6 }}>{path.icon}</div>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: path.color, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Day {activeDayIdx + 1} of {path.days.length}</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, marginTop: 6 }}>{day.title}</div>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{day.ref}</div>
+        </div>
+
+        <div style={{ background: `linear-gradient(135deg, rgba(${path.color === '#34D399' ? '52,211,153' : path.color === '#F59E0B' ? '245,158,11' : path.color === '#8B5CF6' ? '139,92,246' : path.color === '#60A5FA' ? '96,165,250' : '236,72,153'},0.12), transparent)`, border: `1px solid ${path.color}30`, borderRadius: 14, padding: '18px 16px', marginBottom: 16 }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: path.color, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Today\'s Scripture</div>
+          <div style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)', fontStyle: 'italic' }}>{day.verse}</div>
+        </div>
+
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: '18px 16px', marginBottom: 22 }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Reflect</div>
+          <div style={{ fontSize: '0.85rem', lineHeight: 1.65, color: 'rgba(255,255,255,0.75)' }}>{day.reflection}</div>
+        </div>
+
+        {isDone ? (
+          <div style={{ textAlign: 'center', padding: '14px', background: `${path.color}18`, border: `1px solid ${path.color}40`, borderRadius: 12 }}>
+            <div style={{ fontSize: '1.5rem', marginBottom: 4 }}>✅</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: path.color }}>Completed! +40 XP earned</div>
+          </div>
+        ) : (
+          <button onClick={() => { onComplete(activePathId, activeDayIdx); setActiveDayIdx(null); }} style={{
+            width: '100%', padding: '16px',
+            background: `linear-gradient(135deg, ${path.color}cc, ${path.color})`,
+            border: 'none', borderRadius: 14, color: 'white',
+            fontSize: '1rem', fontWeight: 800, cursor: 'pointer',
+            boxShadow: `0 4px 20px ${path.color}50`,
+          }}>
+            ✅ Mark Day {activeDayIdx + 1} Complete · +40 XP
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (activePathId) {
+    const path = ARENA_DEVOTIONAL_PATHS.find(p => p.id === activePathId);
+    const daysDone = new Set(progress[activePathId] || []);
+    const isPathComplete = completed.has(activePathId);
+    return (
+      <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1A14 0%, #0D2A1E 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+        <ArenaHeader title="Devotional Path" onBack={() => setActivePathId(null)} />
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>{path.icon}</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{path.label}</div>
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>{path.desc}</div>
+          {isPathComplete && (
+            <div style={{ marginTop: 10, display: 'inline-block', background: `${path.color}25`, border: `1px solid ${path.color}50`, borderRadius: 20, padding: '4px 14px', fontSize: '0.72rem', fontWeight: 700, color: path.color }}>
+              🏅 Path Complete!
+            </div>
+          )}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {path.days.map((day, i) => {
+            const done = daysDone.has(i);
+            const prev = i === 0 || daysDone.has(i - 1);
+            return (
+              <button key={i} onClick={() => prev && setActiveDayIdx(i)} disabled={!prev} style={{
+                background: done ? `${path.color}18` : prev ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${done ? path.color + '55' : prev ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)'}`,
+                borderRadius: 14, padding: '14px 16px',
+                color: 'white', cursor: prev ? 'pointer' : 'default',
+                display: 'flex', alignItems: 'center', gap: 14,
+                opacity: prev ? 1 : 0.4,
+              }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: done ? path.color : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: done ? '1rem' : '0.8rem', fontWeight: 700, flexShrink: 0 }}>
+                  {done ? '✅' : i + 1}
+                </div>
+                <div style={{ textAlign: 'left', flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{day.title}</div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{day.ref} · {done ? 'Completed' : prev ? 'Tap to read' : 'Complete previous day first'}</div>
+                </div>
+                {done && <div style={{ fontSize: '0.7rem', color: path.color, fontWeight: 700 }}>+40 XP</div>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1A14 0%, #0D2A1E 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Devotional Paths" onBack={onBack} />
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 6 }}>📿</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+          "Your word is a lamp to my feet and a light to my path." — Psalm 119:105
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {ARENA_DEVOTIONAL_PATHS.map(path => {
+          const daysDone = (progress[path.id] || []).length;
+          const isComplete = completed.has(path.id);
+          const pct = Math.round((daysDone / path.days.length) * 100);
+          return (
+            <button key={path.id} onClick={() => setActivePathId(path.id)} style={{
+              background: isComplete ? `linear-gradient(135deg, ${path.color}20, ${path.color}10)` : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${isComplete ? path.color + '50' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: 16, padding: '16px', color: 'white', cursor: 'pointer', textAlign: 'left',
+              boxShadow: isComplete ? `0 2px 16px ${path.color}20` : 'none',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: daysDone > 0 ? 10 : 0 }}>
+                <div style={{ fontSize: '1.8rem', flexShrink: 0 }}>{path.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 3 }}>{path.label}</div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{path.desc}</div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  {isComplete ? (
+                    <div style={{ fontSize: '0.7rem', color: path.color, fontWeight: 700 }}>✅ Done</div>
+                  ) : (
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>{daysDone}/{path.days.length} days</div>
+                  )}
+                </div>
+              </div>
+              {daysDone > 0 && !isComplete && (
+                <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, height: 5, overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: path.color, borderRadius: 6, transition: 'width 0.4s' }} />
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ArenaCommunityScreen({ state, onComplete, onBack }) {
+  const weekNum = arenaGetISOWeek();
+  const challenge = ARENA_COMMUNITY_CHALLENGES[weekNum % ARENA_COMMUNITY_CHALLENGES.length];
+  const alreadyDone = state.communityChallengeWeek === weekNum;
+  const totalCount = state.communityChallengeCount || 0;
+
+  const simulatedProgress = React.useMemo(() => {
+    const base = Math.floor((Date.now() / 86400000) % 1000);
+    let n = 0;
+    ARENA_MEMBER_NAMES.forEach((name, i) => {
+      const seed = ((base * 17 + i * 31) >>> 0) % challenge.goal;
+      n += Math.min(Math.floor(seed / ARENA_MEMBER_NAMES.length) + 3, 15);
+    });
+    return Math.min(n + (alreadyDone ? 1 : 0), challenge.goal - 10);
+  }, [challenge, alreadyDone]);
+
+  const totalWithMe = alreadyDone ? simulatedProgress : simulatedProgress;
+  const pct = Math.min(Math.round((totalWithMe / challenge.goal) * 100), 99);
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1220 0%, #0D1A34 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Community Challenge" onBack={onBack} />
+
+      <div style={{ textAlign: 'center', marginBottom: 22 }}>
+        <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>{challenge.icon}</div>
+        <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{challenge.title}</div>
+        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 6, lineHeight: 1.5 }}>{challenge.desc}</div>
+        <div style={{ marginTop: 6, fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Week {weekNum} Challenge · Resets weekly</div>
+      </div>
+
+      <div style={{ background: `${challenge.color}12`, border: `1px solid ${challenge.color}35`, borderRadius: 16, padding: '20px', marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Church Progress</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: challenge.color, lineHeight: 1.1, marginTop: 4 }}>{totalWithMe.toLocaleString()} <span style={{ fontSize: '0.7rem', fontWeight: 400, color: 'rgba(255,255,255,0.4)' }}>/ {challenge.goal.toLocaleString()}</span></div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{challenge.unit}</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: challenge.color }}>{pct}%</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>of goal</div>
+          </div>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 8, height: 12, overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, ${challenge.color}80, ${challenge.color})`, borderRadius: 8, transition: 'width 0.6s', boxShadow: `0 0 10px ${challenge.color}60` }} />
+        </div>
+        <div style={{ marginTop: 8, fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>{ARENA_MEMBER_NAMES.length} FLCC warriors are contributing!</div>
+      </div>
+
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '14px 16px', marginBottom: 18 }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Top Contributors This Week</div>
+        {ARENA_MEMBER_NAMES.slice(0, 5).map((name, i) => {
+          const contrib = Math.floor(((i * 7 + weekNum * 3) % 12) + 3);
+          return (
+            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: challenge.color + '30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700, color: challenge.color, flexShrink: 0 }}>{i + 1}</div>
+              <div style={{ flex: 1, fontSize: '0.8rem' }}>{name}</div>
+              <div style={{ fontSize: '0.72rem', color: challenge.color, fontWeight: 700 }}>{contrib} {challenge.unit.split(' ')[0]}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {alreadyDone ? (
+        <div style={{ textAlign: 'center', background: `${challenge.color}18`, border: `1px solid ${challenge.color}40`, borderRadius: 14, padding: '18px' }}>
+          <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>✅</div>
+          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: challenge.color }}>You contributed this week!</div>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Total challenges completed: {totalCount}</div>
+        </div>
+      ) : (
+        <button onClick={onComplete} style={{
+          width: '100%', padding: '16px',
+          background: `linear-gradient(135deg, ${challenge.color}bb, ${challenge.color})`,
+          border: 'none', borderRadius: 14, color: 'white',
+          fontSize: '1rem', fontWeight: 800, cursor: 'pointer',
+          boxShadow: `0 4px 24px ${challenge.color}50`,
+        }}>
+          {challenge.icon} Join the Challenge · +75 XP
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ArenaProfileScreen({ me, state, charLevel, onBack }) {
+  const level = charLevel || 1;
+  const LEVELS = [
+    { level: 1, label: 'Seeker',            xpNeeded: 0,    color: '#94A3B8' },
+    { level: 2, label: 'Disciple',          xpNeeded: 500,  color: '#60A5FA' },
+    { level: 3, label: 'Servant',           xpNeeded: 1500, color: '#34D399' },
+    { level: 4, label: 'Kingdom Builder',   xpNeeded: 3500, color: '#F59E0B' },
+    { level: 5, label: 'Kingdom Champion',  xpNeeded: 7000, color: '#EC4899' },
+  ];
+  const lvlData = LEVELS[Math.min(level - 1, LEVELS.length - 1)];
+  const nextLvl = LEVELS[Math.min(level, LEVELS.length - 1)];
+  const xpForNext = nextLvl.xpNeeded;
+  const xpPrev = lvlData.xpNeeded;
+  const xpPct = level >= 5 ? 100 : Math.min(Math.round(((state.totalXP - xpPrev) / (xpForNext - xpPrev)) * 100), 100);
+
+  const earned = new Set(state.earnedBadges || []);
+  const myGuild = state.selectedGuild ? ARENA_GUILDS.find(g => g.id === state.selectedGuild) : null;
+  const myTitle = state.warriorTitle ? ARENA_WARRIOR_TITLES.find(t => t.id === state.warriorTitle) : null;
+  const myShield = ARENA_SHIELD_COLORS.find(c => c.id === (state.shieldColor || 'blue')) || ARENA_SHIELD_COLORS[0];
+
+  const cats = [
+    { label: 'Bible',       xp: state.bibleXP || 0,       icon: '📖', color: '#60A5FA' },
+    { label: 'Prayer',      xp: state.prayerXP || 0,      icon: '🙏', color: '#8B5CF6' },
+    { label: 'Fellowship',  xp: state.fellowshipXP || 0,  icon: '🤝', color: '#34D399' },
+    { label: 'Service',     xp: state.serviceXP || 0,     icon: '🤲', color: '#F59E0B' },
+    { label: 'Faith',       xp: state.faithXP || 0,       icon: '✝️', color: '#EC4899' },
+  ];
+  const maxXp = Math.max(...cats.map(c => c.xp), 1);
+
+  return (
+    <div style={{ minHeight: '80vh', background: 'linear-gradient(180deg, #0A1228 0%, #0D1A3C 100%)', borderRadius: 16, padding: '24px 20px', color: 'white', paddingBottom: 40 }}>
+      <ArenaHeader title="Warrior Profile" onBack={onBack} />
+
+      {/* Avatar + Identity */}
+      <div style={{ textAlign: 'center', marginBottom: 22 }}>
+        <div style={{ position: 'relative', display: 'inline-block', marginBottom: 10 }}>
+          <div style={{ width: 90, height: 90, margin: '0 auto', background: `radial-gradient(circle at 38% 32%, ${myShield.to}, ${myShield.from} 60%, #0D1F3C)`, borderRadius: '50%', border: `3px solid ${myShield.border}`, boxShadow: `0 0 24px ${myShield.glow}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem' }}>⚔️</div>
+        </div>
+        <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{me}</div>
+        {myTitle && <div style={{ marginTop: 4, fontSize: '0.8rem', color: myTitle.color, fontWeight: 700 }}>{myTitle.icon} {myTitle.label}</div>}
+        <div style={{ marginTop: 6, display: 'inline-block', background: `${lvlData.color}25`, border: `1px solid ${lvlData.color}50`, borderRadius: 20, padding: '3px 12px', fontSize: '0.72rem', fontWeight: 700, color: lvlData.color }}>Level {level} · {lvlData.label}</div>
+        {myGuild && <div style={{ marginTop: 6, fontSize: '0.7rem', color: myGuild.color }}>{myGuild.icon} {myGuild.label}</div>}
+      </div>
+
+      {/* XP Bar */}
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '16px', marginBottom: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: lvlData.color }}>Total XP: {(state.totalXP || 0).toLocaleString()}</div>
+          {level < 5 && <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)' }}>Next: {xpForNext.toLocaleString()} XP</div>}
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, height: 8, overflow: 'hidden', marginBottom: 12 }}>
+          <div style={{ width: `${xpPct}%`, height: '100%', background: `linear-gradient(90deg, ${lvlData.color}80, ${lvlData.color})`, borderRadius: 6 }} />
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {cats.map(c => (
+            <div key={c.label} style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', marginBottom: 3 }}>{c.icon}</div>
+              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 4, height: 40, display: 'flex', alignItems: 'flex-end', overflow: 'hidden', marginBottom: 3 }}>
+                <div style={{ width: '100%', height: `${Math.max(Math.round((c.xp / maxXp) * 100), 4)}%`, background: c.color, borderRadius: '3px 3px 0 0' }} />
+              </div>
+              <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.35)' }}>{c.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
+        {[
+          { label: 'Battles Won', value: state.battlesWon || 0, icon: '⚔️' },
+          { label: 'Battle Streak', value: state.battleStreak || 0, icon: '🔥' },
+          { label: 'Journals', value: state.journalCount || 0, icon: '📓' },
+          { label: 'Verses', value: state.memoryCount || 0, icon: '📖' },
+          { label: 'Prayers Lifted', value: state.prayedForCount || 0, icon: '🙏' },
+          { label: 'Badges', value: (state.earnedBadges || []).length, icon: '🏅' },
+        ].map(s => (
+          <div key={s.label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.1rem', marginBottom: 3 }}>{s.icon}</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#D4AF37' }}>{s.value}</div>
+            <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginTop: 2, lineHeight: 1.3 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Badges */}
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '16px' }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+          Badges ({(state.earnedBadges || []).length}/{ARENA_BADGES.length})
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8 }}>
+          {ARENA_BADGES.map(badge => {
+            const has = earned.has(badge.id);
+            return (
+              <div key={badge.id} title={badge.label} style={{ textAlign: 'center', opacity: has ? 1 : 0.25 }}>
+                <div style={{ fontSize: '1.4rem', filter: has ? 'none' : 'grayscale(1)' }}>{badge.icon}</div>
+                <div style={{ fontSize: '0.45rem', color: has ? '#D4AF37' : 'rgba(255,255,255,0.3)', marginTop: 2, lineHeight: 1.2 }}>{badge.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -11224,6 +11629,9 @@ function ArenaTab({ me }) {
     journalEntries: [], journalCount: 0, journalStreak: 0, lastJournalDate: '',
     readingCompleted: [], lastReadingDate: '',
     warriorTitle: null, shieldColor: 'blue',
+    // Phase 8
+    devotionalProgress: {}, devotionalCompleted: [],
+    communityChallengeWeek: '', communityChallengeCount: 0,
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -11501,6 +11909,47 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
+  const completeDevoDay = useCallback((pathId, dayIdx) => {
+    const prev = arenaState.devotionalProgress || {};
+    const pathDays = new Set(prev[pathId] || []);
+    if (pathDays.has(dayIdx)) return;
+    pathDays.add(dayIdx);
+    const path = ARENA_DEVOTIONAL_PATHS.find(p => p.id === pathId);
+    const isPathComplete = pathDays.size >= path.days.length;
+    const wasComplete = (arenaState.devotionalCompleted || []).includes(pathId);
+    const newCompleted = isPathComplete && !wasComplete
+      ? [...(arenaState.devotionalCompleted || []), pathId]
+      : (arenaState.devotionalCompleted || []);
+    const newState = {
+      ...arenaState,
+      devotionalProgress: { ...prev, [pathId]: [...pathDays] },
+      devotionalCompleted: newCompleted,
+      totalXP: arenaState.totalXP + 40,
+      faithXP: (arenaState.faithXP || 0) + 40,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else if (isPathComplete && !wasComplete) notify(`${path.label} complete! +40 Faith XP 📿`);
+    else notify(`Day ${dayIdx + 1} complete! +40 Faith XP 📿`);
+    save(newState);
+  }, [arenaState, notify, save]);
+
+  const completeCommunityChallenge = useCallback(() => {
+    const weekNum = arenaGetISOWeek();
+    if (arenaState.communityChallengeWeek === weekNum) return;
+    const newState = {
+      ...arenaState,
+      communityChallengeWeek: weekNum,
+      communityChallengeCount: (arenaState.communityChallengeCount || 0) + 1,
+      totalXP: arenaState.totalXP + 75,
+      fellowshipXP: (arenaState.fellowshipXP || 0) + 75,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify('Challenge joined! +75 Fellowship XP 🌍');
+    save(newState);
+  }, [arenaState, notify, save]);
+
   const writeJournal = useCallback((text, prompt) => {
     const todayStr = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -11637,6 +12086,15 @@ function ArenaTab({ me }) {
       }}
       onQuestComplete={(quest) => completeQuest(quest)}
     />;
+  }
+  if (screen === 'devotional') {
+    return <ArenaDevotionalScreen state={arenaState} onComplete={completeDevoDay} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'community') {
+    return <ArenaCommunityScreen state={arenaState} onComplete={completeCommunityChallenge} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'profile') {
+    return <ArenaProfileScreen me={me} state={arenaState} charLevel={charLevel} onBack={() => setScreen('home')} />;
   }
   if (screen === 'journal') {
     return <ArenaJournalScreen state={arenaState} onWrite={writeJournal} onBack={() => setScreen('home')} />;
@@ -12091,6 +12549,65 @@ function ArenaTab({ me }) {
               {arenaState.warriorTitle
                 ? (() => { const wt = ARENA_WARRIOR_TITLES.find(t => t.id === arenaState.warriorTitle); return wt ? `${wt.icon} ${wt.label}` : 'Choose your title & shield'; })()
                 : 'Choose your title & shield · +50 XP'}
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
+        </button>
+
+        {/* Devotional Paths + Community Challenge */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+          <button onClick={() => setScreen('devotional')} style={{
+            background: 'linear-gradient(145deg, #0A1A14, #1A3322)',
+            border: '1px solid rgba(52,211,153,0.32)',
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 18px rgba(52,211,153,0.1)',
+          }}>
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>📿</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Devotional Paths</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {(arenaState.devotionalCompleted || []).length > 0
+                ? `${(arenaState.devotionalCompleted || []).length}/5 paths done`
+                : '5 themes · +40 XP/day'}
+            </div>
+          </button>
+
+          <button onClick={() => setScreen('community')} style={{
+            background: 'linear-gradient(145deg, #0A1020, #1A2040)',
+            border: `1px solid ${arenaState.communityChallengeWeek === arenaGetISOWeek() ? 'rgba(96,165,250,0.2)' : 'rgba(96,165,250,0.4)'}`,
+            borderRadius: 14, padding: '14px 10px',
+            color: 'white', cursor: 'pointer', textAlign: 'center',
+            boxShadow: '0 4px 18px rgba(96,165,250,0.1)',
+            position: 'relative',
+          }}>
+            {arenaState.communityChallengeWeek !== arenaGetISOWeek() && (
+              <div style={{ position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: '50%', background: '#60A5FA', boxShadow: '0 0 6px #60A5FA' }} />
+            )}
+            <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>🌍</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Church Challenge</div>
+            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+              {arenaState.communityChallengeWeek === arenaGetISOWeek()
+                ? `Done this week ✅`
+                : 'Weekly · +75 XP'}
+            </div>
+          </button>
+        </div>
+
+        {/* Warrior Profile */}
+        <button onClick={() => setScreen('profile')} style={{
+          width: '100%', marginBottom: 10,
+          background: 'linear-gradient(135deg, #0D1228, #1A1E40)',
+          border: '1px solid rgba(212,175,55,0.28)',
+          borderRadius: 14, padding: '14px 16px',
+          color: 'white', cursor: 'pointer', textAlign: 'left',
+          display: 'flex', alignItems: 'center', gap: 12,
+          boxShadow: '0 2px 16px rgba(212,175,55,0.06)',
+        }}>
+          <div style={{ fontSize: '1.5rem' }}>👤</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: 2, color: '#D4AF37' }}>Warrior Profile</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
+              {`Lv.${charLevel} · ${(arenaState.totalXP||0).toLocaleString()} XP · ${(arenaState.earnedBadges||[]).length}/${ARENA_BADGES.length} badges`}
             </div>
           </div>
           <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
