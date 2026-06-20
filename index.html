@@ -8813,6 +8813,12 @@ const ARENA_BADGES = [
   { id: 'full_bible',     label: 'Bible Completionist',    desc: 'Read all 66 books of the Bible',          icon: '🌍', check: s => (s.ntBooksRead||[]).length >= 27 && (s.otBooksRead||[]).length >= 39 },
   { id: 'ministry_1',     label: 'Servant Leader',         desc: 'Join a ministry team',                    icon: '🙋', check: s => (s.ministrySignups||[]).length >= 1 },
   { id: 'prayer_timer_5', label: 'Devoted in Prayer',      desc: 'Complete 5 guided prayer sessions',       icon: '⏱️', check: s => (s.prayerTimerCount||0) >= 5 },
+  // Phase 12 (5)
+  { id: 'milestone_500',   label: 'Faith Apprentice',  desc: 'Reach 500 total XP',             icon: '⭐', check: s => (s.totalXP||0) >= 500 },
+  { id: 'milestone_2000',  label: 'Faith Warrior',     desc: 'Reach 2000 total XP',            icon: '🌟', check: s => (s.totalXP||0) >= 2000 },
+  { id: 'milestone_5000',  label: 'Faith Champion',    desc: 'Reach 5000 total XP',            icon: '💫', check: s => (s.totalXP||0) >= 5000 },
+  { id: 'milestone_10000', label: 'Faith Legend',      desc: 'Reach 10000 total XP',           icon: '🏆', check: s => (s.totalXP||0) >= 10000 },
+  { id: 'seasonal_champ',  label: 'Seasonal Champion', desc: 'Complete 5 seasonal challenges', icon: '🎄', check: s => (s.seasonalCount||0) >= 5 },
 ];
 
 const ARENA_GUILDS = [
@@ -10057,6 +10063,67 @@ const ARENA_GIFTS_QUESTIONS = [
   { text: 'Building up someone\'s confidence and faith brings me deep fulfillment', gift: 'encouragement' },
 ];
 
+// ── Phase 12 Constants ────────────────────────────────────────────────────────
+const ARENA_XP_MILESTONES = [
+  { xp: 100,   label: 'Seeker',     icon: '🌱', color: '#34D399' },
+  { xp: 500,   label: 'Apprentice', icon: '⭐', color: '#60A5FA' },
+  { xp: 1000,  label: 'Disciple',   icon: '📖', color: '#A78BFA' },
+  { xp: 2000,  label: 'Warrior',    icon: '🌟', color: '#F59E0B' },
+  { xp: 5000,  label: 'Champion',   icon: '💫', color: '#EC4899' },
+  { xp: 10000, label: 'Legend',     icon: '🏆', color: '#D4AF37' },
+];
+
+const ARENA_SEASONAL_EVENTS = [
+  { id: 'advent',    label: 'Advent Season',      icon: '🕯️',  color: '#8B5CF6', months: [11, 0],
+    desc: 'A season of waiting and expectation',
+    challenges: [
+      { id: 'adv_1', label: 'Light a Hope Candle',  desc: 'Read Isaiah 9:2 and write a reflection in your journal', xp: 30, icon: '🕯️' },
+      { id: 'adv_2', label: 'Generosity Act',        desc: 'Serve in the food bank or hospitality ministry team',    xp: 40, icon: '🎁' },
+      { id: 'adv_3', label: 'Advent Prayer',         desc: 'Complete 3 guided prayer timer sessions this season',    xp: 35, icon: '🙏' },
+    ],
+  },
+  { id: 'lent',      label: 'Lenten Journey',     icon: '✝️',   color: '#9CA3AF', months: [1, 2, 3],
+    desc: '40 days of fasting, prayer, and reflection',
+    challenges: [
+      { id: 'len_1', label: 'Fast & Pray',          desc: 'Complete a 24-hour fast and log it in Fasting',          xp: 50, icon: '✝️' },
+      { id: 'len_2', label: 'Scripture Immersion',  desc: 'Mark 5 OT books as read in the OT tracker',             xp: 40, icon: '📜' },
+      { id: 'len_3', label: 'Serve the Least',      desc: 'Perform the daily serve action in Ministry Teams 3 times', xp: 35, icon: '🤝' },
+    ],
+  },
+  { id: 'easter',    label: 'Easter Celebration', icon: '🌅',   color: '#F59E0B', months: [3, 4],
+    desc: 'Celebrate the resurrection of Jesus Christ',
+    challenges: [
+      { id: 'eas_1', label: 'Resurrection Reading', desc: 'Read the Gospel accounts in the NT tracker (Matt, Mark, Luke, John)', xp: 50, icon: '📖' },
+      { id: 'eas_2', label: 'Praise Report',        desc: 'Post 3 praise reports on the Praise Wall',               xp: 35, icon: '🎉' },
+      { id: 'eas_3', label: 'Share the Good News',  desc: 'Post an encouraging message on the Warrior Wall',         xp: 30, icon: '📢' },
+    ],
+  },
+  { id: 'pentecost', label: 'Pentecost Power',    icon: '🔥',   color: '#EF4444', months: [4, 5],
+    desc: 'Receive the fire of the Holy Spirit',
+    challenges: [
+      { id: 'pen_1', label: 'Gifts Discovery',      desc: 'Complete the Spiritual Gifts quiz to discover your gift',  xp: 40, icon: '🎁' },
+      { id: 'pen_2', label: 'Community Fire',       desc: 'Complete 5 community challenges this season',             xp: 35, icon: '🔥' },
+      { id: 'pen_3', label: 'Spirit-Led Prayer',    desc: 'Complete 5 guided prayer timer sessions this season',     xp: 45, icon: '🙏' },
+    ],
+  },
+  { id: 'summer',    label: 'Summer Harvest',     icon: '☀️',   color: '#34D399', months: [5, 6, 7],
+    desc: 'Bear fruit in every good work this summer',
+    challenges: [
+      { id: 'sum_1', label: 'Harvest of Souls',     desc: 'Encourage 10 members by praying on the Prayer Wall',     xp: 40, icon: '🌾' },
+      { id: 'sum_2', label: 'Word of Life',         desc: 'Complete 5 Bible memory verse challenges',               xp: 35, icon: '📖' },
+      { id: 'sum_3', label: 'Serve & Shine',        desc: 'Join 2 different ministry teams and serve daily',         xp: 45, icon: '☀️' },
+    ],
+  },
+  { id: 'fall',      label: 'Fall Harvest',       icon: '🍂',   color: '#F97316', months: [8, 9, 10],
+    desc: 'A season of gratitude and gathering',
+    challenges: [
+      { id: 'fal_1', label: 'Gratitude Journal',   desc: 'Write 10 grace notes capturing God\'s goodness',          xp: 40, icon: '🍂' },
+      { id: 'fal_2', label: 'Sermon Dedication',   desc: 'Log 4 sermon notes from Sunday services',                 xp: 35, icon: '📝' },
+      { id: 'fal_3', label: 'Prayer Harvest',      desc: 'Pray for 10 different members on the Prayer Wall',        xp: 45, icon: '🙏' },
+    ],
+  },
+];
+
 // ── Phase 11 Constants ────────────────────────────────────────────────────────
 
 const ARENA_OT_BOOKS = [
@@ -10134,6 +10201,154 @@ const ARENA_NT_BOOKS = [
   { id: '3jn',   label: '3 John',          ch: 1  }, { id: 'jude',  label: 'Jude',            ch: 1  },
   { id: 'rev',   label: 'Revelation',      ch: 22 },
 ];
+
+// ── Phase 12: Milestones + Seasonal Events ───────────────────────────────────
+function ArenaMilestonesScreen({ state, onBack }) {
+  const totalXP = state.totalXP || 0;
+  const nextMilestone = ARENA_XP_MILESTONES.find(m => totalXP < m.xp);
+  const pct = nextMilestone ? Math.round((totalXP / nextMilestone.xp) * 100) : 100;
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0A0A14 0%, #0D0D1F 100%)', padding: '0 0 80px 0' }}>
+      <div style={{ padding: '20px 16px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, padding: '8px 14px', color: 'white', cursor: 'pointer', fontSize: '0.85rem' }}>← Back</button>
+        <div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#D4AF37' }}>XP Milestones</div>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Your faith journey progress</div>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 16px' }}>
+        <div style={{ background: 'linear-gradient(135deg, #1A1A0A, #2A2A14)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: 20, marginBottom: 16, textAlign: 'center' }}>
+          <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#D4AF37', marginBottom: 4 }}>{totalXP.toLocaleString()}</div>
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: nextMilestone ? 14 : 0 }}>Total XP Earned</div>
+          {nextMilestone && (
+            <>
+              <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 8, height: 10, overflow: 'hidden', marginBottom: 8 }}>
+                <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, ${nextMilestone.color}, ${nextMilestone.color}88)`, borderRadius: 8, transition: 'width 0.6s ease' }} />
+              </div>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
+                {totalXP.toLocaleString()} / {nextMilestone.xp.toLocaleString()} XP → {nextMilestone.icon} {nextMilestone.label}
+              </div>
+            </>
+          )}
+          {!nextMilestone && (
+            <div style={{ fontSize: '0.85rem', color: '#D4AF37', fontWeight: 700, marginTop: 4 }}>🏆 All milestones reached!</div>
+          )}
+        </div>
+
+        <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: 10 }}>ALL MILESTONES</div>
+        {ARENA_XP_MILESTONES.map(m => {
+          const reached = totalXP >= m.xp;
+          return (
+            <div key={m.xp} style={{
+              background: reached ? 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))' : 'rgba(255,255,255,0.02)',
+              border: `1px solid ${reached ? m.color + '55' : 'rgba(255,255,255,0.08)'}`,
+              borderRadius: 14, padding: '14px 16px', marginBottom: 10,
+              display: 'flex', alignItems: 'center', gap: 14,
+              opacity: reached ? 1 : 0.55,
+            }}>
+              <div style={{ fontSize: '1.6rem', filter: reached ? 'none' : 'grayscale(1)' }}>{m.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: reached ? m.color : 'rgba(255,255,255,0.5)', marginBottom: 2 }}>{m.label}</div>
+                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)' }}>{m.xp.toLocaleString()} XP required</div>
+              </div>
+              <div style={{ fontSize: '1.1rem' }}>{reached ? '✅' : '🔒'}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ArenaSeasonalScreen({ state, onComplete, onBack }) {
+  const month = new Date().getMonth();
+  const event = ARENA_SEASONAL_EVENTS.find(e => e.months.includes(month)) || ARENA_SEASONAL_EVENTS[4];
+  const completed = state.seasonalCompleted || {};
+  const doneCount = event.challenges.filter(c => completed[c.id]).length;
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0A0A14 0%, #0D0D1F 100%)', padding: '0 0 80px 0' }}>
+      <div style={{ padding: '20px 16px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 10, padding: '8px 14px', color: 'white', cursor: 'pointer', fontSize: '0.85rem' }}>← Back</button>
+        <div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: event.color }}>{event.icon} {event.label}</div>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Seasonal challenges · {state.seasonalCount || 0} total completions</div>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 16px' }}>
+        <div style={{ background: `linear-gradient(135deg, ${event.color}22, ${event.color}11)`, border: `1px solid ${event.color}44`, borderRadius: 16, padding: 18, marginBottom: 16, textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>{event.icon}</div>
+          <div style={{ fontSize: '1rem', fontWeight: 700, color: event.color, marginBottom: 6 }}>{event.label}</div>
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', marginBottom: 12 }}>{event.desc}</div>
+          <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, height: 6, overflow: 'hidden', marginBottom: 8 }}>
+            <div style={{ width: `${Math.round((doneCount / event.challenges.length) * 100)}%`, height: '100%', background: event.color, borderRadius: 6 }} />
+          </div>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>{doneCount}/{event.challenges.length} challenges complete</div>
+        </div>
+
+        <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: 10 }}>THIS SEASON'S CHALLENGES</div>
+
+        {event.challenges.map(ch => {
+          const done = !!completed[ch.id];
+          return (
+            <div key={ch.id} style={{
+              background: done ? 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${done ? event.color + '44' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: 14, padding: 16, marginBottom: 12,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: done ? 0 : 14 }}>
+                <div style={{ fontSize: '1.4rem', filter: done ? 'none' : 'grayscale(0.3)', flexShrink: 0 }}>{ch.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: done ? event.color : 'white' }}>{ch.label}</div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: event.color, flexShrink: 0, marginLeft: 8 }}>+{ch.xp} XP</div>
+                  </div>
+                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{ch.desc}</div>
+                </div>
+              </div>
+              {!done && (
+                <button onClick={() => onComplete(ch.id, ch.xp)} style={{
+                  width: '100%', padding: '10px', borderRadius: 10, border: 'none',
+                  background: `linear-gradient(135deg, ${event.color}CC, ${event.color}88)`,
+                  color: 'white', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                }}>Mark Complete · +{ch.xp} XP</button>
+              )}
+              {done && (
+                <div style={{ textAlign: 'center', fontSize: '0.75rem', color: event.color, fontWeight: 700, marginTop: 8 }}>✅ Completed!</div>
+              )}
+            </div>
+          );
+        })}
+
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: 10 }}>ALL SEASONS</div>
+          {ARENA_SEASONAL_EVENTS.map(ev => {
+            const evDone = ev.challenges.filter(c => completed[c.id]).length;
+            const isCurrent = ev.id === event.id;
+            return (
+              <div key={ev.id} style={{
+                background: isCurrent ? `${ev.color}18` : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${isCurrent ? ev.color + '44' : 'rgba(255,255,255,0.07)'}`,
+                borderRadius: 12, padding: '12px 14px', marginBottom: 8,
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                <div style={{ fontSize: '1.2rem' }}>{ev.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: isCurrent ? ev.color : 'rgba(255,255,255,0.6)' }}>{ev.label}</div>
+                  <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.35)' }}>{evDone}/{ev.challenges.length} complete</div>
+                </div>
+                {isCurrent && <div style={{ fontSize: '0.6rem', fontWeight: 700, color: ev.color, background: `${ev.color}22`, padding: '2px 8px', borderRadius: 20 }}>ACTIVE</div>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Phase 11: OT Book Tracker, Ministry Sign-Up, Prayer Timer ────────────────
 
@@ -12557,6 +12772,8 @@ function ArenaTab({ me }) {
     otBooksRead: [],
     ministrySignups: [], lastMinistryServe: '',
     prayerTimerCount: 0, lastPrayerTimerDate: '',
+    // Phase 12
+    seasonalCompleted: {}, seasonalCount: 0,
   };
 
   const [arenaState, setArenaState] = useState(() => {
@@ -12894,6 +13111,21 @@ function ArenaTab({ me }) {
     save(newState);
   }, [arenaState, notify, save]);
 
+  const completeSeasonalChallenge = useCallback((challengeId, xp) => {
+    if ((arenaState.seasonalCompleted || {})[challengeId]) return;
+    const newState = {
+      ...arenaState,
+      totalXP: (arenaState.totalXP || 0) + xp,
+      faithXP: (arenaState.faithXP || 0) + xp,
+      seasonalCompleted: { ...(arenaState.seasonalCompleted || {}), [challengeId]: true },
+      seasonalCount: (arenaState.seasonalCount || 0) + 1,
+    };
+    const unlockedBadge = applyBadges(newState, arenaState);
+    if (unlockedBadge) notify(`Badge Unlocked: ${ARENA_BADGES.find(b => b.id === unlockedBadge).label}! 🏅`);
+    else notify(`+${xp} XP — Seasonal challenge complete! 🎄`);
+    save(newState);
+  }, [arenaState, notify, save]);
+
   const saveLifeVerse = useCallback(({ ref, text, custom }) => {
     const isFirst = !arenaState.lifeVerse;
     const newState = {
@@ -13198,6 +13430,12 @@ function ArenaTab({ me }) {
   }
   if (screen === 'prayertimer') {
     return <ArenaPrayerTimerScreen state={arenaState} onComplete={completePrayerSession} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'milestones') {
+    return <ArenaMilestonesScreen state={arenaState} onBack={() => setScreen('home')} />;
+  }
+  if (screen === 'seasonal') {
+    return <ArenaSeasonalScreen state={arenaState} onComplete={completeSeasonalChallenge} onBack={() => setScreen('home')} />;
   }
   if (screen === 'lifeversescreen') {
     return <ArenaLifeVerseScreen state={arenaState} onSave={saveLifeVerse} onBack={() => setScreen('home')} />;
@@ -13692,6 +13930,42 @@ function ArenaTab({ me }) {
           </div>
           <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>›</div>
         </button>
+
+        {/* Milestones + Seasonal Events */}
+        {(() => {
+          const month = new Date().getMonth();
+          const ev = ARENA_SEASONAL_EVENTS.find(e => e.months.includes(month)) || ARENA_SEASONAL_EVENTS[4];
+          const evDone = ev.challenges.filter(c => (arenaState.seasonalCompleted||{})[c.id]).length;
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+              <button onClick={() => setScreen('milestones')} style={{
+                background: 'linear-gradient(145deg, #1A1400, #2A2000)',
+                border: '1px solid rgba(212,175,55,0.3)',
+                borderRadius: 14, padding: '14px 10px',
+                color: 'white', cursor: 'pointer', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>⭐</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2 }}>Milestones</div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+                  {(arenaState.totalXP||0).toLocaleString()} total XP
+                </div>
+              </button>
+
+              <button onClick={() => setScreen('seasonal')} style={{
+                background: `linear-gradient(145deg, ${ev.color}18, ${ev.color}0A)`,
+                border: `1px solid ${ev.color}44`,
+                borderRadius: 14, padding: '14px 10px',
+                color: 'white', cursor: 'pointer', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>{ev.icon}</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 2, color: ev.color }}>{ev.label}</div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+                  {evDone}/{ev.challenges.length} done · +XP
+                </div>
+              </button>
+            </div>
+          );
+        })()}
 
         {/* OT Tracker + Prayer Timer + Ministry */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
