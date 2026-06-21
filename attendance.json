@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:33:39.431Z",
+    "publishedAt": "2026-06-21T16:33:54.124Z",
     "totalSessions": 6
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 26,
-        "absent": 22,
+        "present": 29,
+        "absent": 19,
         "total": 48
       },
       "records": [
@@ -144,6 +144,21 @@
         {
           "memberId": "sis-08",
           "memberName": "Sis. Sandra Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-21",
+          "memberName": "Sis. Shannie Sadia",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-06",
+          "memberName": "Bro. Sherwin",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1780825619454",
+          "memberName": "Sis. Kitz Tejares",
           "status": "present"
         }
       ]
