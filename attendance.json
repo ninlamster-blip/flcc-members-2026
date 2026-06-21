@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:32:52.550Z",
+    "publishedAt": "2026-06-21T16:33:08.858Z",
     "totalSessions": 6
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 16,
-        "absent": 32,
+        "present": 19,
+        "absent": 29,
         "total": 48
       },
       "records": [
@@ -94,6 +94,21 @@
         {
           "memberId": "bro-03",
           "memberName": "Bro. Elbert Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-15",
+          "memberName": "Sis. Grace Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-02",
+          "memberName": "Sis. Hasmin Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-19",
+          "memberName": "Sis. Irene Sabangan",
           "status": "present"
         }
       ]
