@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:33:54.124Z",
+    "publishedAt": "2026-06-21T16:36:39.168Z",
     "totalSessions": 6
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 29,
-        "absent": 19,
+        "present": 30,
+        "absent": 18,
         "total": 48
       },
       "records": [
@@ -159,6 +159,11 @@
         {
           "memberId": "vis-1780825619454",
           "memberName": "Sis. Kitz Tejares",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-11",
+          "memberName": "Sis. Jhem Tulagan",
           "status": "present"
         }
       ]
