@@ -294,6 +294,11 @@ function computeCareFlags(sessions, members) {
       if (recentSundays.length < 3) return flags;
       maxStreak = calcStreak(recentSundays, m.id);
       missedService = 'Sunday';
+    } else if (m.fridayOnly) {
+      // Friday-primary members (e.g. far from church on Sundays): only Friday sessions count
+      if (recentFridays.length < 3) return flags;
+      maxStreak = calcStreak(recentFridays, m.id);
+      missedService = 'Friday';
     } else {
       // Regular members: track Friday and Sunday streaks independently.
       // Flag if either reaches 3 — someone who attends Sunday but skips every
@@ -536,9 +541,12 @@ function TodayTab({ members, state, dispatch, schedule }) {
   const todayVisitors = state.customMembers.filter(m=>m.sessionDate===today||m.permanent);
   const currentService = session?.service;
   const allMembers = useMemo(()=>{
-    const base = (currentService && currentService !== 'Sunday')
-      ? members.filter(m => !m.sundayOnly)
-      : members;
+    let base = members;
+    if (currentService === 'Sunday') {
+      base = members.filter(m => !m.fridayOnly);
+    } else if (currentService) {
+      base = members.filter(m => !m.sundayOnly);
+    }
     return [...base, ...todayVisitors];
   },[members, todayVisitors, currentService]);
 
@@ -546,9 +554,9 @@ function TodayTab({ members, state, dispatch, schedule }) {
   const detectedService = useMemo(()=>detectTodayService(schedule),[schedule]);
 
   const startSession = serviceKey => {
-    const sessionList = serviceKey !== 'Sunday'
-      ? [...members.filter(m => !m.sundayOnly), ...todayVisitors]
-      : [...members, ...todayVisitors];
+    const sessionList = serviceKey === 'Sunday'
+      ? [...members.filter(m => !m.fridayOnly), ...todayVisitors]
+      : [...members.filter(m => !m.sundayOnly), ...todayVisitors];
     const dup = state.sessions.find(s=>s.date===today && s.service===serviceKey && (s.records||[]).length>0);
     if (dup) {
       const sum = getSessionSummary(dup, sessionList.length);
@@ -1256,6 +1264,7 @@ function MembersTab({ members, state, dispatch }) {
                   <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.fullName||m.name}</div>
                   {isCustom && <span className="pill" style={{ background:ATT_ACCENT+'20', color:ATT_ACCENT, fontSize:'0.6rem', padding:'1px 5px' }}>custom</span>}
                   {m.sundayOnly && <span className="pill" style={{ background:'#7C3AED20', color:'#7C3AED', fontSize:'0.6rem', padding:'1px 5px' }}>Sun only</span>}
+                  {m.fridayOnly && <span className="pill" style={{ background:'#EA580C20', color:'#EA580C', fontSize:'0.6rem', padding:'1px 5px' }}>Fri primary</span>}
                 </div>
                 <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{m.ministry||'Ministry'}</div>
               </div>
@@ -2048,6 +2057,7 @@ function App() {
         status:     'active',
         ministry:   deriveMinistry(w),
         sundayOnly: w.sundayOnly || false,
+        fridayOnly: w.fridayOnly || false,
       }));
   },[mainData]);
 

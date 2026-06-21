@@ -26,7 +26,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": "10-25"
+      "birthday": "10-25",
+      "fridayOnly": true
     },
     {
       "id": "sis-02",
@@ -49,7 +50,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": "10-19"
+      "birthday": "10-19",
+      "fridayOnly": true
     },
     {
       "id": "sis-04",
@@ -218,7 +220,7 @@
         "presider",
         "songLeader"
       ],
-      "status": "active",
+      "status": "inactive",
       "birthday": "06-03"
     },
     {
@@ -717,7 +719,7 @@
       "title": "Bro.",
       "type": "individual",
       "eligibleRoles": [],
-      "status": "active",
+      "status": "inactive",
       "birthday": "",
       "sundayOnly": true
     },
