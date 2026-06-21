@@ -991,9 +991,18 @@ function IntercessoryRow({ entry, state, dispatch, mainData }) {
       </td>
       <td className="font-mono text-xs ink-muted">{formatTime12(entry.startTime)}{entry.endTime ? ` – ${formatTime12(entry.endTime)}` : ''}</td>
       <td>
-        <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => {
-          if (confirm(`Delete intercessory prayer on ${formatDateShort(entry.date)}?`)) dispatch({ type: 'DELETE_INTERCESSORY', id: entry.id });
-        }}>Delete</button>
+        <div className="flex gap-1 flex-wrap">
+          <button className="btn btn-ghost text-xs" title="Send WhatsApp notification to team" onClick={() => {
+            const msg = generateIPNotifyText(state, entry);
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+          }}>💬</button>
+          <button className="btn btn-ghost text-xs" title="Copy notification message" onClick={() => {
+            navigator.clipboard.writeText(generateIPNotifyText(state, entry)).then(() => alert('Copied!')).catch(() => alert('Copy failed.'));
+          }}>📋</button>
+          <button className="btn btn-ghost text-xs" style={{ color: 'var(--danger)' }} onClick={() => {
+            if (confirm(`Delete intercessory prayer on ${formatDateShort(entry.date)}?`)) dispatch({ type: 'DELETE_INTERCESSORY', id: entry.id });
+          }}>Delete</button>
+        </div>
       </td>
     </tr>
   );
@@ -1116,6 +1125,13 @@ function MeetingCard({ meeting, state, onEdit }) {
   const exhorter = state.workers.find(w => w.id === meeting.exhorterId);
   const songLeader = state.workers.find(w => w.id === meeting.songLeaderId);
   const isCoordinated = ['sectoral', 'corporate'].includes(meeting.type);
+  const [notifyOpen, setNotifyOpen] = React.useState(false);
+
+  const assignments = [
+    { role: 'Presider', worker: presider, id: meeting.presiderId },
+    { role: 'Exhorter', worker: exhorter, id: meeting.exhorterId },
+    { role: 'Song Leader', worker: songLeader, id: meeting.songLeaderId },
+  ].filter(a => a.worker);
 
   return (
     <div className={`card p-5 ${meta.strip}`}>
@@ -1128,7 +1144,12 @@ function MeetingCard({ meeting, state, onEdit }) {
           </div>
           <div className="text-xs ink-muted mt-1">{formatTime12(meeting.startTime)} · {meeting.venue || <span className="italic">venue TBD</span>}</div>
         </div>
-        <button className="btn btn-soft text-xs" onClick={onEdit}>Edit</button>
+        <div className="flex gap-2">
+          {assignments.length > 0 && (
+            <button className="btn btn-soft text-xs" onClick={() => setNotifyOpen(o => !o)}>📣 Notify</button>
+          )}
+          <button className="btn btn-soft text-xs" onClick={onEdit}>Edit</button>
+        </div>
       </div>
 
       {isCoordinated && meeting.coordinator && (
@@ -1144,6 +1165,25 @@ function MeetingCard({ meeting, state, onEdit }) {
 
       {meeting.foodInChargeText && (
         <div className="text-xs ink-muted mt-3"><strong>Food in charge:</strong> {meeting.foodInChargeText}</div>
+      )}
+
+      {notifyOpen && assignments.length > 0 && (
+        <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+          <div className="text-xs font-semibold tracking-widest uppercase ink-muted mb-3">Notify Assigned Workers</div>
+          <div className="flex flex-col gap-3">
+            {assignments.map(({ role, worker, id }) => {
+              const msg = generateMeetingNotifyText(state, meeting, id, role);
+              const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+              return (
+                <div key={id} className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm flex-1">{workerDisplay(worker)} <span className="ink-muted text-xs">· {role}</span></span>
+                  <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn-soft text-xs">💬 WhatsApp</a>
+                  <button className="btn btn-ghost text-xs" onClick={() => navigator.clipboard.writeText(msg).then(() => alert('Copied!')).catch(() => alert('Copy failed.'))}>📋 Copy</button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1487,7 +1527,7 @@ function PrintTab({ state, mainData }) {
           Replicates the original two schedules side by side. Use Print to save as PDF or copy as text for Messenger.
         </SectionHeading>
         <div className="card p-4 mb-6 flex items-center gap-3 flex-wrap">
-          <button className="btn btn-primary" onClick={() => window.print()}>🖨 Print / Save PDF</button>
+          <button className="btn btn-primary" onClick={() => window.print()}>🖸 Print / Save PDF</button>
           <button className="btn btn-soft" onClick={() => {
             navigator.clipboard.writeText(generateMessengerText(state, month)).then(() => alert('Copied to clipboard!')).catch(() => alert('Copy failed.'));
           }}>📋 Copy as text</button>
@@ -1624,6 +1664,26 @@ function generateMessengerText(state, month) {
     if (m.foodInChargeText) out += `• Food: ${m.foodInChargeText}\n`;
   }
   return out.trim();
+}
+
+function generateMeetingNotifyText(state, meeting, workerId, role) {
+  const worker = state.workers.find(w => w.id === workerId);
+  if (!worker) return '';
+  const meta = meetingTypeMeta(meeting.type);
+  const dateStr = formatDateShort(meeting.date);
+  const day = dayOfWeek(meeting.date);
+  const time = formatTime12(meeting.startTime);
+  const venue = meeting.venue || 'TBD';
+  return `🙏 Dear ${workerDisplay(worker)},\n\nYou are assigned for the Prayer Meeting:\n\n📅 ${dateStr} (${day}) at ${time}\n👤 Role: ${role}\n📍 Venue: ${venue}\n🏷 Type: ${meta.label}\n\nKindly confirm your availability.\n\nGod bless!\n${state.meta.churchName} · ${state.meta.ministryName}`.trim();
+}
+
+function generateIPNotifyText(state, entry) {
+  const team = teamMeta(state, entry.teamId);
+  const teamName = team ? team.name : 'Team';
+  const svcMeta = SERVICE_TYPES_FOR_INTERCESSORY.find(s => s.key === entry.service);
+  const svcLabel = svcMeta ? svcMeta.label : entry.service;
+  const time = `${formatTime12(entry.startTime)}${entry.endTime ? ` – ${formatTime12(entry.endTime)}` : ''}`;
+  return `🙏 Dear ${teamName},\n\nYour team is assigned for Intercessory Prayer:\n\n📅 ${formatDateShort(entry.date)} (${dayOfWeek(entry.date)})\n⛪ ${svcLabel} Service\n🕐 Time: ${time}\n\nKindly ensure your team is ready and present on time.\n\nGod bless!\n${state.meta.churchName} · ${state.meta.ministryName}`.trim();
 }
 
 // =============================================================================
