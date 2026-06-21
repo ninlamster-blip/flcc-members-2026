@@ -26,7 +26,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": "10-25"
+      "birthday": "10-25",
+      "fridayOnly": true
     },
     {
       "id": "sis-02",
@@ -49,7 +50,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": "10-19"
+      "birthday": "10-19",
+      "fridayOnly": true
     },
     {
       "id": "sis-04",
@@ -195,7 +197,8 @@
       ],
       "status": "active",
       "birthday": "03-29",
-      "anniversary": "05-23"
+      "anniversary": "05-23",
+      "sundayOnly": true
     },
     {
       "id": "sis-16",
@@ -218,7 +221,7 @@
         "presider",
         "songLeader"
       ],
-      "status": "active",
+      "status": "inactive",
       "birthday": "06-03"
     },
     {
@@ -249,7 +252,8 @@
       ],
       "status": "active",
       "birthday": "05-04",
-      "anniversary": "08-03"
+      "anniversary": "08-03",
+      "sundayOnly": true
     },
     {
       "id": "sis-20",
@@ -341,7 +345,7 @@
         "communionAssistant1",
         "communionAssistant2"
       ],
-      "status": "active",
+      "status": "inactive",
       "birthday": "09-17",
       "anniversary": "07-10",
       "designation": "CSL"
@@ -427,7 +431,8 @@
       ],
       "status": "active",
       "birthday": "07-10",
-      "anniversary": "10-28"
+      "anniversary": "10-28",
+      "sundayOnly": true
     },
     {
       "id": "fam-01",
@@ -717,7 +722,7 @@
       "title": "Bro.",
       "type": "individual",
       "eligibleRoles": [],
-      "status": "active",
+      "status": "inactive",
       "birthday": "",
       "sundayOnly": true
     },
@@ -784,6 +789,29 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "08-05",
+      "sundayOnly": true,
+      "hideMinistryCard": true
+    },
+    {
+      "id": "sun-10",
+      "name": "Kitz Tejares",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true,
+      "hideMinistryCard": true
+    },
+    {
+      "id": "sun-11",
+      "name": "Jojo Sabangan",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true,
       "hideMinistryCard": true
     }
   ],
