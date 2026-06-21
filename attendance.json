@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:36:39.168Z",
+    "publishedAt": "2026-06-21T16:50:33.376Z",
     "totalSessions": 6
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 30,
-        "absent": 18,
+        "present": 31,
+        "absent": 17,
         "total": 48
       },
       "records": [
@@ -164,6 +164,11 @@
         {
           "memberId": "sis-11",
           "memberName": "Sis. Jhem Tulagan",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-02",
+          "memberName": "Sis. Sheena",
           "status": "present"
         }
       ]
