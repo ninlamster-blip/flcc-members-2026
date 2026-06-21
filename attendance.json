@@ -1,10 +1,93 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:31:56.783Z",
-    "totalSessions": 5
+    "publishedAt": "2026-06-21T16:32:45.577Z",
+    "totalSessions": 6
   },
   "sessions": [
+    {
+      "id": "a-1782059531852-4muy",
+      "date": "2026-06-21",
+      "service": "Sunday",
+      "serviceLabel": "Sunday Service",
+      "summary": {
+        "present": 14,
+        "absent": 34,
+        "total": 48
+      },
+      "records": [
+        {
+          "memberId": "bro-05",
+          "memberName": "Bro. Allen Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-13",
+          "memberName": "Sis. Alma Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-14",
+          "memberName": "Sis. Almira Dela Paz",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-03",
+          "memberName": "Bro. Alvin",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-10",
+          "memberName": "Bro. Benedict Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-01",
+          "memberName": "Sis. Bless De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1780825146907",
+          "memberName": "Bro. Edward Pascal",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-10",
+          "memberName": "Sis. Celsa Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-09",
+          "memberName": "Bro. Dave Vergara",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        }
+      ]
+    },
     {
       "id": "a-1781878256828-3526",
       "date": "2026-06-19",
