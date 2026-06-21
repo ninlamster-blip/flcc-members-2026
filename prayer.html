@@ -3,5 +3,861 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FLCC Prayer OS — Prayer Ministry Dashboard</title>
-<meta name="description" content="Prayer Ministry dashboard for FLCC - Abundance Church. Intercessory prayer, prayer meetings, teams." />
+<title>FLCC Intercessory Prayer Schedule</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1a202c;min-height:100vh}
+.app-header{background:linear-gradient(135deg,#1a365d 0%,#2a4a7f 50%,#1a365d 100%);color:white;padding:20px 24px;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.app-header h1{font-size:1.5rem;font-weight:700;letter-spacing:0.5px}
+.app-header p{font-size:0.85rem;opacity:0.85;margin-top:4px}
+.tab-bar{background:white;border-bottom:2px solid #e2e8f0;display:flex;padding:0 24px;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.tab-btn{padding:14px 20px;border:none;background:none;cursor:pointer;font-size:0.9rem;font-weight:500;color:#64748b;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s;white-space:nowrap}
+.tab-btn:hover{color:#1a365d;background:#f8fafc}
+.tab-btn.active{color:#1a365d;border-bottom-color:#1a365d;font-weight:600}
+.main-content{padding:24px;max-width:1400px;margin:0 auto}
+.card{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid #e2e8f0}
+.section-title{font-size:1.1rem;font-weight:700;color:#1a365d;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#1a365d;color:white}
+.btn-primary:hover{background:#2a4a7f;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,54,93,0.3)}
+.btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+.btn-secondary:hover{background:#e2e8f0}
+.btn-success{background:#16a34a;color:white}
+.btn-success:hover{background:#15803d}
+.btn-danger{background:#dc2626;color:white}
+.btn-danger:hover{background:#b91c1c}
+.btn-warning{background:#d97706;color:white}
+.btn-warning:hover{background:#b45309}
+.btn-info{background:#0891b2;color:white}
+.btn-info:hover{background:#0e7490}
+.btn-sm{padding:5px 10px;font-size:0.78rem}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-yellow{background:#fef9c3;color:#854d0e}
+.badge-gray{background:#f1f5f9;color:#475569}
+.badge-purple{background:#ede9fe;color:#5b21b6}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:0.82rem;font-weight:600;color:#374151;margin-bottom:5px}
+.form-control{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.88rem;transition:border-color 0.2s;background:white;color:#1a202c}
+.form-control:focus{outline:none;border-color:#1a365d;box-shadow:0 0 0 3px rgba(26,54,93,0.1)}
+select.form-control{cursor:pointer}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.flex{display:flex}
+.flex-col{display:flex;flex-direction:column}
+.items-center{align-items:center}
+.justify-between{justify-content:space-between}
+.gap-2{gap:8px}
+.gap-3{gap:12px}
+.gap-4{gap:16px}
+.mt-2{margin-top:8px}
+.mt-3{margin-top:12px}
+.mt-4{margin-top:16px}
+.mb-3{margin-bottom:12px}
+.mb-4{margin-bottom:16px}
+.p-3{padding:12px}
+.p-4{padding:16px}
+.rounded{border-radius:8px}
+.rounded-lg{border-radius:12px}
+.text-sm{font-size:0.85rem}
+.text-xs{font-size:0.75rem}
+.text-muted{color:#64748b}
+.text-danger{color:#dc2626}
+.font-bold{font-weight:700}
+.font-semibold{font-weight:600}
+.w-full{width:100%}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-box{background:white;border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.modal-title{font-size:1.15rem;font-weight:700;color:#1a365d;margin-bottom:20px}
+.divider{height:1px;background:#e2e8f0;margin:16px 0}
+.alert{padding:12px 16px;border-radius:8px;font-size:0.85rem;margin-bottom:12px}
+.alert-info{background:#dbeafe;color:#1e40af;border-left:4px solid #3b82f6}
+.alert-success{background:#dcfce7;color:#166534;border-left:4px solid #22c55e}
+.alert-warning{background:#fef9c3;color:#854d0e;border-left:4px solid #eab308}
+.member-card{border:1.5px solid #e2e8f0;border-radius:10px;padding:14px;transition:all 0.2s;background:white}
+.member-card:hover{border-color:#1a365d;box-shadow:0 4px 12px rgba(26,54,93,0.1)}
+.schedule-row{border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:8px;background:white;transition:all 0.2s}
+.schedule-row:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.week-header{background:linear-gradient(135deg,#1a365d,#2a4a7f);color:white;padding:10px 16px;border-radius:8px;margin-bottom:8px;font-weight:600;font-size:0.9rem}
+.prayer-slot{border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc}
+.search-box{position:relative}
+.search-box input{padding-left:36px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:1rem}
+.stat-card{background:white;border-radius:10px;padding:16px;border:1px solid #e2e8f0;text-align:center}
+.stat-number{font-size:1.8rem;font-weight:700;color:#1a365d}
+.stat-label{font-size:0.8rem;color:#64748b;margin-top:4px}
+.empty-state{text-align:center;padding:40px;color:#94a3b8}
+.empty-state-icon{font-size:3rem;margin-bottom:12px}
+.tooltip{position:relative;display:inline-flex}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;background:#e0e7ff;color:#3730a3}
+.overflow-x-auto{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f8fafc;font-size:0.8rem;font-weight:600;color:#64748b;padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:0.85rem;vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.notify-btn{background:#7c3aed;color:white;border:none;padding:5px 10px;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all 0.2s}
+.notify-btn:hover{background:#6d28d9;transform:translateY(-1px)}
+.notify-modal textarea{width:100%;min-height:140px;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical}
+.notify-modal textarea:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
+@media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}.main-content{padding:16px}.tab-btn{padding:10px 12px;font-size:0.82rem}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef,useMemo,useCallback}=React;
+
+// ── helpers ──────────────────────────────────────────────
+const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const fmt=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+const fmtFull=d=>d?new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}):"";
+const today=()=>new Date().toISOString().split("T")[0];
+const addDays=(d,n)=>{const dt=new Date(d+"T12:00:00");dt.setDate(dt.getDate()+n);return dt.toISOString().split("T")[0]};
+const diffDays=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/(864e5));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const LS_KEY="flcc_prayer_v3";
+
+// ── storage ──────────────────────────────────────────────
+const loadData=()=>{try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null}catch{return null}};
+const saveData=d=>{try{localStorage.setItem(LS_KEY,JSON.stringify(d))}catch{}};
+
+// ── seed data ────────────────────────────────────────────
+const SEED_MEMBERS=[
+  {id:"m1",name:"Abena Asante",phone:"555-0101",email:"abena@church.org",cell:"Alpha",active:true,ipDays:[],notes:""},
+  {id:"m2",name:"Kwame Boateng",phone:"555-0102",email:"kwame@church.org",cell:"Alpha",active:true,ipDays:[],notes:""},
+  {id:"m3",name:"Efua Mensah",phone:"555-0103",email:"efua@church.org",cell:"Alpha",active:true,ipDays:[],notes:""},
+  {id:"m4",name:"Kofi Acheampong",phone:"555-0104",email:"kofi@church.org",cell:"Beta",active:true,ipDays:[],notes:""},
+  {id:"m5",name:"Ama Owusu",phone:"555-0105",email:"ama@church.org",cell:"Beta",active:true,ipDays:[],notes:""},
+  {id:"m6",name:"Yaw Darko",phone:"555-0106",email:"yaw@church.org",cell:"Beta",active:true,ipDays:[],notes:""},
+  {id:"m7",name:"Akosua Frimpong",phone:"555-0107",email:"akosua@church.org",cell:"Gamma",active:true,ipDays:[],notes:""},
+  {id:"m8",name:"Nana Adjei",phone:"555-0108",email:"nana@church.org",cell:"Gamma",active:true,ipDays:[],notes:""},
+  {id:"m9",name:"Adwoa Amponsah",phone:"555-0109",email:"adwoa@church.org",cell:"Gamma",active:true,ipDays:[],notes:""},
+  {id:"m10",name:"Kojo Asiedu",phone:"555-0110",email:"kojo@church.org",cell:"Delta",active:true,ipDays:[],notes:""},
+  {id:"m11",name:"Abiba Antwi",phone:"555-0111",email:"abiba@church.org",cell:"Delta",active:true,ipDays:[],notes:""},
+  {id:"m12",name:"Fiifi Baah",phone:"555-0112",email:"fiifi@church.org",cell:"Delta",active:true,ipDays:[],notes:""},
+];
+
+const SEED_IP_SCHEDULE=()=>{
+  const slots=[];
+  const start="2026-06-01";
+  for(let i=0;i<84;i++){// 12 weeks
+    const date=addDays(start,i);
+    const dow=new Date(date+"T12:00:00").getDay();
+    if(dow===0||dow===6)continue;// skip weekends
+    // assign 2-3 members rotating
+    const assigned=[SEED_MEMBERS[i%12].id, SEED_MEMBERS[(i+4)%12].id];
+    slots.push({id:uid(),date,assignedIds:assigned,slot:"Morning",notes:""});
+  }
+  return slots;
+};
+
+const SEED_MEETINGS=()=>{
+  const meetings=[];
+  let start="2026-06-04";// first Wednesday
+  for(let w=0;w<12;w++){
+    meetings.push({
+      id:uid(),
+      date:addDays(start,w*7),
+      type:"Weekly",
+      time:"6:00 PM",
+      location:"Main Sanctuary",
+      theme:"",
+      assignedIds:[SEED_MEMBERS[w%12].id, SEED_MEMBERS[(w+3)%12].id, SEED_MEMBERS[(w+6)%12].id],
+      notes:"",
+      attendance:[],
+    });
+  }
+  return meetings;
+};
+
+const defaultData=()=>({
+  members:SEED_MEMBERS,
+  ipSchedule:SEED_IP_SCHEDULE(),
+  meetings:SEED_MEETINGS(),
+  cells:["Alpha","Beta","Gamma","Delta"],
+  settings:{churchName:"First Love Christian Centre",defaultSlot:"Morning",timezone:"UTC"},
+});
+
+// ── Notify helpers ────────────────────────────────────────
+function generateIPNotifyText(member,slot){
+  return `Dear ${member.name},\n\nThis is a reminder that you are scheduled for Intercessory Prayer on ${fmtFull(slot.date)} (${slot.slot} session).\n\nPlease be available and prepared to intercede for our church and community.\n\nGod bless you!\nFLCC Prayer Team`;
+}
+
+function generateMeetingNotifyText(member,meeting){
+  return `Dear ${member.name},\n\nYou are assigned to the Prayer Meeting on ${fmtFull(meeting.date)} at ${meeting.time}, ${meeting.location}.${meeting.theme?`\nTheme: ${meeting.theme}`:""}\n\nPlease come prepared and on time.\n\nGod bless you!\nFLCC Prayer Team`;
+}
+
+// ── NotifyModal ───────────────────────────────────────────
+function NotifyModal({member,text,onClose}){
+  const [msg,setMsg]=useState(text);
+  const copy=()=>{navigator.clipboard.writeText(msg).catch(()=>{});}
+  const wa=()=>{
+    const num=member.phone.replace(/\D/g,"");
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,"_blank");
+  };
+  const sms=()=>{
+    window.open(`sms:${member.phone}?body=${encodeURIComponent(msg)}`,"_blank");
+  };
+  return(
+    <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
+      <div className="modal-box notify-modal">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="modal-title" style={{marginBottom:0}}>Notify {member.name}</h3>
+          <button className="btn btn-secondary btn-sm" onClick={onClose}>✕</button>
+        </div>
+        <div className="text-sm text-muted mb-3">📞 {member.phone}</div>
+        <textarea value={msg} onChange={e=>setMsg(e.target.value)}/>
+        <div className="flex gap-2 mt-3 flex-wrap">
+          <button className="btn btn-secondary btn-sm" onClick={copy}>📋 Copy</button>
+          <button className="btn btn-success btn-sm" onClick={wa}>💬 WhatsApp</button>
+          <button className="btn btn-info btn-sm" onClick={sms}>📱 SMS</button>
+          <button className="btn btn-secondary btn-sm" style={{marginLeft:"auto"}} onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MembersTab ────────────────────────────────────────────
+function MembersTab({members,cells,onSave,onDelete}){
+  const [search,setSearch]=useState("");
+  const [filterCell,setFilterCell]=useState("all");
+  const [showModal,setShowModal]=useState(false);
+  const [editing,setEditing]=useState(null);
+  const [form,setForm]=useState({name:"",phone:"",email:"",cell:"",active:true,notes:""});
+
+  const filtered=useMemo(()=>members.filter(m=>{
+    const q=search.toLowerCase();
+    const matchQ=!q||m.name.toLowerCase().includes(q)||m.phone.includes(q)||m.email.toLowerCase().includes(q);
+    const matchC=filterCell==="all"||m.cell===filterCell;
+    return matchQ&&matchC;
+  }),[members,search,filterCell]);
+
+  const open=(m=null)=>{
+    setEditing(m);
+    setForm(m?{...m}:{name:"",phone:"",email:"",cell:cells[0]||"",active:true,notes:""});
+    setShowModal(true);
+  };
+  const save=()=>{
+    if(!form.name.trim())return;
+    onSave(editing?{...form,id:editing.id}:{...form,id:uid(),ipDays:[]});
+    setShowModal(false);
+  };
+
+  return(
+    <div>
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <div className="search-box">
+            <span className="search-icon">🔍</span>
+            <input className="form-control" style={{paddingLeft:36,width:220}} placeholder="Search members…" value={search} onChange={e=>setSearch(e.target.value)}/>
+          </div>
+          <select className="form-control" style={{width:140}} value={filterCell} onChange={e=>setFilterCell(e.target.value)}>
+            <option value="all">All Cells</option>
+            {cells.map(c=><option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <button className="btn btn-primary" onClick={()=>open()}>+ Add Member</button>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        {filtered.map(m=>(
+          <div key={m.id} className="member-card">
+            <div className="flex justify-between items-center mb-2">
+              <div>
+                <div className="font-semibold">{m.name}</div>
+                <div className="text-xs text-muted">{m.cell} Cell</div>
+              </div>
+              <span className={`badge ${m.active?"badge-green":"badge-gray"}`}>{m.active?"Active":"Inactive"}</span>
+            </div>
+            {m.phone&&<div className="text-sm text-muted">📞 {m.phone}</div>}
+            {m.email&&<div className="text-sm text-muted">✉ {m.email}</div>}
+            {m.notes&&<div className="text-xs text-muted mt-2 p-2" style={{background:"#f8fafc",borderRadius:6}}>{m.notes}</div>}
+            <div className="flex gap-2 mt-3">
+              <button className="btn btn-secondary btn-sm" onClick={()=>open(m)}>✏ Edit</button>
+              <button className="btn btn-danger btn-sm" onClick={()=>{if(confirm("Delete this member?"))onDelete(m.id);}}>🗑</button>
+            </div>
+          </div>
+        ))}
+        {filtered.length===0&&<div className="empty-state" style={{gridColumn:"1/-1"}}><div className="empty-state-icon">👥</div><p>No members found</p></div>}
+      </div>
+
+      {showModal&&(
+        <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setShowModal(false)}}>
+          <div className="modal-box">
+            <h3 className="modal-title">{editing?"Edit Member":"Add Member"}</h3>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Full Name *</label>
+                <input className="form-control" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>  
+              </div>
+              <div className="form-group">
+                <label className="form-label">Cell Group</label>
+                <select className="form-control" value={form.cell} onChange={e=>setForm(f=>({...f,cell:e.target.value}))}>
+                  {cells.map(c=><option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Phone</label>
+                <input className="form-control" value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))}/>  
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input className="form-control" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>  
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <textarea className="form-control" rows={2} value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))}/>  
+            </div>
+            <div className="form-group">
+              <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}>
+                <input type="checkbox" checked={form.active} onChange={e=>setForm(f=>({...f,active:e.target.checked}))}/>  
+                <span className="form-label" style={{margin:0}}>Active Member</span>
+              </label>
+            </div>
+            <div className="flex gap-2 justify-between mt-2">
+              <button className="btn btn-secondary" onClick={()=>setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save}>Save Member</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── IPScheduleTab ─────────────────────────────────────────
+function IPScheduleTab({ipSchedule,members,onSave,onDelete}){
+  const [viewMode,setViewMode]=useState("list");
+  const [showModal,setShowModal]=useState(false);
+  const [editing,setEditing]=useState(null);
+  const [filterMember,setFilterMember]=useState("all");
+  const [notify,setNotify]=useState(null);// {member, text}
+  const [form,setForm]=useState({date:"",slot:"Morning",assignedIds:[],notes:""});
+
+  const sorted=useMemo(()=>[...ipSchedule].sort((a,b)=>a.date.localeCompare(b.date)),[ipSchedule]);
+  const filtered=useMemo(()=>filterMember==="all"?sorted:sorted.filter(s=>s.assignedIds.includes(filterMember)),[sorted,filterMember]);
+
+  // group by week
+  const byWeek=useMemo(()=>{
+    const weeks={};
+    filtered.forEach(s=>{
+      const d=new Date(s.date+"T12:00:00");
+      const sun=new Date(d);sun.setDate(d.getDate()-d.getDay());
+      const key=sun.toISOString().split("T")[0];
+      if(!weeks[key])weeks[key]=[];
+      weeks[key].push(s);
+    });
+    return Object.entries(weeks).sort(([a],[b])=>a.localeCompare(b));
+  },[filtered]);
+
+  const open=(s=null)=>{
+    setEditing(s);
+    setForm(s?{...s,assignedIds:[...s.assignedIds]}:{date:today(),slot:"Morning",assignedIds:[],notes:""});
+    setShowModal(true);
+  };
+  const save=()=>{
+    if(!form.date)return;
+    onSave(editing?{...form,id:editing.id}:{...form,id:uid()});
+    setShowModal(false);
+  };
+  const toggleMember=id=>setForm(f=>({...f,assignedIds:f.assignedIds.includes(id)?f.assignedIds.filter(x=>x!==id):[...f.assignedIds,id]}));
+
+  const memberMap=useMemo(()=>Object.fromEntries(members.map(m=>[m.id,m])),[members]);
+
+  return(
+    <div>
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div className="flex gap-2">
+          <select className="form-control" style={{width:180}} value={filterMember} onChange={e=>setFilterMember(e.target.value)}>
+            <option value="all">All Members</option>
+            {members.filter(m=>m.active).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+          <button className={`btn ${viewMode==="list"?"btn-primary":"btn-secondary"}`} onClick={()=>setViewMode("list")}>List</button>
+          <button className={`btn ${viewMode==="week"?"btn-primary":"btn-secondary"}`} onClick={()=>setViewMode("week")}>By Week</button>
+        </div>
+        <button className="btn btn-primary" onClick={()=>open()}>+ Add Slot</button>
+      </div>
+
+      {viewMode==="list"&&(
+        <div className="card">
+          <div className="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>Date</th><th>Day</th><th>Slot</th><th>Assigned Members</th><th>Notes</th><th>Actions</th>
+              </tr></thead>
+              <tbody>
+                {filtered.map(s=>(
+                  <tr key={s.id}>
+                    <td className="font-semibold">{fmt(s.date)}</td>
+                    <td>{DAYS[new Date(s.date+"T12:00:00").getDay()]}</td>
+                    <td><span className="badge badge-blue">{s.slot}</span></td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        {s.assignedIds.map(id=>memberMap[id]&&(
+                          <span key={id} className="chip">{memberMap[id].name}</span>
+                        ))}
+                        {s.assignedIds.length===0&&<span className="text-muted text-xs">None</span>}
+                      </div>
+                    </td>
+                    <td className="text-sm text-muted">{s.notes||"—"}</td>
+                    <td>
+                      <div className="flex gap-1 flex-wrap">
+                        <button className="btn btn-secondary btn-sm" onClick={()=>open(s)}>✏</button>
+                        <button className="btn btn-danger btn-sm" onClick={()=>{if(confirm("Delete?"))onDelete(s.id);}}>🗑</button>
+                        {s.assignedIds.map(id=>memberMap[id]&&(
+                          <button key={id} className="notify-btn" onClick={()=>setNotify({member:memberMap[id],text:generateIPNotifyText(memberMap[id],s)})}>
+                            🔔 {memberMap[id].name.split(" ")[0]}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length===0&&<tr><td colSpan={6} className="empty-state">No slots found</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {viewMode==="week"&&(
+        <div>
+          {byWeek.map(([weekStart,slots])=>(
+            <div key={weekStart} className="mb-4">
+              <div className="week-header">Week of {fmt(weekStart)}</div>
+              {slots.map(s=>(
+                <div key={s.id} className="schedule-row">
+                  <div className="flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                      <span className="font-semibold">{fmt(s.date)}</span>
+                      <span className="text-muted text-sm ml-2">{DAYS[new Date(s.date+"T12:00:00").getDay()]}</span>
+                      <span className="badge badge-blue ml-2">{s.slot}</span>
+                    </div>
+                    <div className="flex gap-1 flex-wrap">
+                      {s.assignedIds.map(id=>memberMap[id]&&(
+                        <button key={id} className="notify-btn" onClick={()=>setNotify({member:memberMap[id],text:generateIPNotifyText(memberMap[id],s)})}>
+                          🔔 {memberMap[id].name.split(" ")[0]}
+                        </button>
+                      ))}
+                      <button className="btn btn-secondary btn-sm" onClick={()=>open(s)}>✏</button>
+                      <button className="btn btn-danger btn-sm" onClick={()=>{if(confirm("Delete?"))onDelete(s.id);}}>🗑</button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {s.assignedIds.map(id=>memberMap[id]&&<span key={id} className="chip">{memberMap[id].name}</span>)}
+                    {s.notes&&<span className="text-xs text-muted ml-2">{s.notes}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          {byWeek.length===0&&<div className="empty-state"><div className="empty-state-icon">📅</div><p>No slots scheduled</p></div>}
+        </div>
+      )}
+
+      {showModal&&(
+        <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setShowModal(false)}}>
+          <div className="modal-box">
+            <h3 className="modal-title">{editing?"Edit IP Slot":"Add IP Slot"}</h3>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Date *</label>
+                <input className="form-control" type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/>  
+              </div>
+              <div className="form-group">
+                <label className="form-label">Session</label>
+                <select className="form-control" value={form.slot} onChange={e=>setForm(f=>({...f,slot:e.target.value}))}>
+                  {["Morning","Afternoon","Evening","Night"].map(s=><option key={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Assign Members</label>
+              <div style={{maxHeight:180,overflowY:"auto",border:"1.5px solid #e2e8f0",borderRadius:8,padding:8}}>
+                {members.filter(m=>m.active).map(m=>(
+                  <label key={m.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 4px",cursor:"pointer"}}>
+                    <input type="checkbox" checked={form.assignedIds.includes(m.id)} onChange={()=>toggleMember(m.id)}/>  
+                    <span className="text-sm">{m.name}</span>
+                    <span className="text-xs text-muted">({m.cell})</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <input className="form-control" value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))}/>  
+            </div>
+            <div className="flex gap-2 justify-between mt-2">
+              <button className="btn btn-secondary" onClick={()=>setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {notify&&<NotifyModal member={notify.member} text={notify.text} onClose={()=>setNotify(null)}\/>}
+    </div>
+  );
+}
+
+// ── MeetingsTab ───────────────────────────────────────────
+function MeetingsTab({meetings,members,onSave,onDelete,onAttendance}){
+  const [showModal,setShowModal]=useState(false);
+  const [editing,setEditing]=useState(null);
+  const [showAttendance,setShowAttendance]=useState(null);
+  const [notify,setNotify]=useState(null);// {member, text}
+  const [form,setForm]=useState({date:"",type:"Weekly",time:"6:00 PM",location:"Main Sanctuary",theme:"",assignedIds:[],notes:""});
+
+  const sorted=useMemo(()=>[...meetings].sort((a,b)=>a.date.localeCompare(b.date)),[meetings]);
+  const memberMap=useMemo(()=>Object.fromEntries(members.map(m=>[m.id,m])),[members]);
+
+  const open=(m=null)=>{
+    setEditing(m);
+    setForm(m?{...m,assignedIds:[...m.assignedIds]}:{date:today(),type:"Weekly",time:"6:00 PM",location:"Main Sanctuary",theme:"",assignedIds:[],notes:""});
+    setShowModal(true);
+  };
+  const save=()=>{
+    if(!form.date)return;
+    onSave(editing?{...form,id:editing.id,attendance:editing.attendance||[]}:{...form,id:uid(),attendance:[]});
+    setShowModal(false);
+  };
+  const toggleMember=id=>setForm(f=>({...f,assignedIds:f.assignedIds.includes(id)?f.assignedIds.filter(x=>x!==id):[...f.assignedIds,id]}));
+
+  return(
+    <div>
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div className="section-title" style={{margin:0}}>📋 Prayer Meetings</div>
+        <button className="btn btn-primary" onClick={()=>open()}>+ Add Meeting</button>
+      </div>
+
+      {sorted.map(mtg=>{
+        const isPast=mtg.date<today();
+        const assignedMembers=mtg.assignedIds.map(id=>memberMap[id]).filter(Boolean);
+        return(
+          <div key={mtg.id} className="card mb-4">
+            <div className="flex justify-between items-center flex-wrap gap-2 mb-3">
+              <div>
+                <div className="font-bold" style={{fontSize:"1rem"}}>{fmtFull(mtg.date)}</div>
+                <div className="flex gap-2 mt-1 flex-wrap">
+                  <span className="badge badge-blue">{mtg.type}</span>
+                  <span className="badge badge-gray">⏰ {mtg.time}</span>
+                  <span className="badge badge-gray">📍 {mtg.location}</span>
+                  {isPast&&<span className="badge badge-yellow">Past</span>}
+                </div>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button className="btn btn-secondary btn-sm" onClick={()=>open(mtg)}>✏ Edit</button>
+                <button className="btn btn-warning btn-sm" onClick={()=>setShowAttendance(mtg)}>📋 Attendance</button>
+                <button className="btn btn-danger btn-sm" onClick={()=>{if(confirm("Delete meeting?"))onDelete(mtg.id);}}>🗑</button>
+              </div>
+            </div>
+
+            {mtg.theme&&<div className="alert alert-info mb-3">🎯 Theme: {mtg.theme}</div>}
+
+            <div>
+              <div className="text-sm font-semibold mb-2">Notify Assigned Workers:</div>
+              <div className="flex gap-2 flex-wrap">
+                {assignedMembers.length===0&&<span className="text-muted text-sm">No members assigned</span>}
+                {assignedMembers.map(m=>(
+                  <button key={m.id} className="notify-btn" onClick={()=>setNotify({member:m,text:generateMeetingNotifyText(m,mtg)})}>
+                    🔔 {m.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {mtg.notes&&<div className="text-sm text-muted mt-3 p-3" style={{background:"#f8fafc",borderRadius:8}}>📝 {mtg.notes}</div>}
+
+            {isPast&&(
+              <div className="mt-3 p-3" style={{background:"#f0fdf4",borderRadius:8}}>
+                <div className="text-sm font-semibold text-success">Attendance: {(mtg.attendance||[]).length} / {members.filter(m=>m.active).length} active members</div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {sorted.length===0&&<div className="empty-state"><div className="empty-state-icon">📅</div><p>No meetings scheduled</p></div>}
+
+      {showModal&&(
+        <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setShowModal(false)}}>
+          <div className="modal-box">
+            <h3 className="modal-title">{editing?"Edit Meeting":"Add Meeting"}</h3>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Date *</label>
+                <input className="form-control" type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/>  
+              </div>
+              <div className="form-group">
+                <label className="form-label">Type</label>
+                <select className="form-control" value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>
+                  {["Weekly","Monthly","Special","Emergency"].map(t=><option key={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Time</label>
+                <input className="form-control" value={form.time} onChange={e=>setForm(f=>({...f,time:e.target.value}))}/>  
+              </div>
+              <div className="form-group">
+                <label className="form-label">Location</label>
+                <input className="form-control" value={form.location} onChange={e=>setForm(f=>({...f,location:e.target.value}))}/>  
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Theme / Focus</label>
+              <input className="form-control" value={form.theme} onChange={e=>setForm(f=>({...f,theme:e.target.value}))}/>  
+            </div>
+            <div className="form-group">
+              <label className="form-label">Assign Members</label>
+              <div style={{maxHeight:180,overflowY:"auto",border:"1.5px solid #e2e8f0",borderRadius:8,padding:8}}>
+                {members.filter(m=>m.active).map(m=>(
+                  <label key={m.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 4px",cursor:"pointer"}}>
+                    <input type="checkbox" checked={form.assignedIds.includes(m.id)} onChange={()=>toggleMember(m.id)}/>  
+                    <span className="text-sm">{m.name}</span>
+                    <span className="text-xs text-muted">({m.cell})</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <textarea className="form-control" rows={2} value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))}/>  
+            </div>
+            <div className="flex gap-2 justify-between mt-2">
+              <button className="btn btn-secondary" onClick={()=>setShowModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={save}>Save Meeting</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAttendance&&(
+        <AttendanceModal meeting={showAttendance} members={members} onSave={(id,att)=>{onAttendance(id,att);setShowAttendance(null);}} onClose={()=>setShowAttendance(null)}\/>
+      )}
+
+      {notify&&<NotifyModal member={notify.member} text={notify.text} onClose={()=>setNotify(null)}\/>}
+    </div>
+  );
+}
+
+// ── AttendanceModal ───────────────────────────────────────
+function AttendanceModal({meeting,members,onSave,onClose}){
+  const [present,setPresent]=useState(new Set(meeting.attendance||[]));
+  const toggle=id=>setPresent(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
+  return(
+    <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
+      <div className="modal-box">
+        <h3 className="modal-title">Attendance — {fmt(meeting.date)}</h3>
+        <div className="alert alert-info mb-3">{present.size} of {members.filter(m=>m.active).length} present</div>
+        <div style={{maxHeight:300,overflowY:"auto"}}>
+          {members.filter(m=>m.active).map(m=>(
+            <label key={m.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 4px",cursor:"pointer",borderBottom:"1px solid #f1f5f9"}}>
+              <input type="checkbox" checked={present.has(m.id)} onChange={()=>toggle(m.id)}/>  
+              <span>{m.name}</span>
+              <span className="text-xs text-muted ml-auto">{m.cell}</span>
+            </label>
+          ))}
+        </div>
+        <div className="flex gap-2 justify-between mt-4">
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={()=>onSave(meeting.id,[...present])}>Save Attendance</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ReportsTab ────────────────────────────────────────────
+function ReportsTab({members,ipSchedule,meetings}){
+  const t=today();
+  const activeMbrs=members.filter(m=>m.active);
+  const upcomingIP=ipSchedule.filter(s=>s.date>=t).length;
+  const pastIP=ipSchedule.filter(s=>s.date<t).length;
+  const upcomingMtg=meetings.filter(m=>m.date>=t).length;
+  const pastMtg=meetings.filter(m=>m.date<t).length;
+
+  // member assignment frequency
+  const ipCount={};
+  ipSchedule.forEach(s=>s.assignedIds.forEach(id=>{ipCount[id]=(ipCount[id]||0)+1;}));
+  const mtgCount={};
+  meetings.forEach(m=>m.assignedIds.forEach(id=>{mtgCount[id]=(mtgCount[id]||0)+1;}));
+
+  // upcoming this week
+  const weekEnd=addDays(t,7);
+  const thisWeekIP=ipSchedule.filter(s=>s.date>=t&&s.date<=weekEnd);
+  const thisWeekMtg=meetings.filter(m=>m.date>=t&&m.date<=weekEnd);
+
+  return(
+    <div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:12,marginBottom:24}}>
+        <div className="stat-card"><div className="stat-number">{activeMbrs.length}</div><div className="stat-label">Active Members</div></div>
+        <div className="stat-card"><div className="stat-number">{upcomingIP}</div><div className="stat-label">Upcoming IP Slots</div></div>
+        <div className="stat-card"><div className="stat-number">{pastIP}</div><div className="stat-label">Past IP Slots</div></div>
+        <div className="stat-card"><div className="stat-number">{upcomingMtg}</div><div className="stat-label">Upcoming Meetings</div></div>
+        <div className="stat-card"><div className="stat-number">{pastMtg}</div><div className="stat-label">Past Meetings</div></div>
+      </div>
+
+      {(thisWeekIP.length>0||thisWeekMtg.length>0)&&(
+        <div className="card mb-4">
+          <div className="section-title">📅 This Week</div>
+          {thisWeekIP.map(s=>(
+            <div key={s.id} className="schedule-row">
+              <span className="badge badge-purple mr-2">IP</span>
+              <span className="font-semibold">{fmt(s.date)}</span>
+              <span className="text-muted text-sm ml-2">{s.slot}</span>
+            </div>
+          ))}
+          {thisWeekMtg.map(m=>(
+            <div key={m.id} className="schedule-row">
+              <span className="badge badge-blue mr-2">MTG</span>
+              <span className="font-semibold">{fmt(m.date)}</span>
+              <span className="text-muted text-sm ml-2">{m.time} — {m.location}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="card">
+        <div className="section-title">👤 Member Assignment Summary</div>
+        <div className="overflow-x-auto">
+          <table>
+            <thead><tr>
+              <th>Member</th><th>Cell</th><th>IP Slots</th><th>Prayer Meetings</th><th>Total</th>
+            </tr></thead>
+            <tbody>
+              {activeMbrs.sort((a,b)=>(ipCount[b.id]||0)+(mtgCount[b.id]||0)-((ipCount[a.id]||0)+(mtgCount[a.id]||0))).map(m=>(
+                <tr key={m.id}>
+                  <td className="font-semibold">{m.name}</td>
+                  <td>{m.cell}</td>
+                  <td><span className="badge badge-purple">{ipCount[m.id]||0}</span></td>
+                  <td><span className="badge badge-blue">{mtgCount[m.id]||0}</span></td>
+                  <td className="font-bold">{(ipCount[m.id]||0)+(mtgCount[m.id]||0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SettingsTab ───────────────────────────────────────────
+function SettingsTab({data,onReset,onImport,onExport,cells,onAddCell,onDeleteCell}){
+  const [newCell,setNewCell]=useState("");
+  const fileRef=useRef();
+
+  const doExport=()=>{
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="flcc_prayer_backup.json";a.click();
+  };
+  const doImport=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{try{onImport(JSON.parse(ev.target.result));}catch{alert("Invalid file");}}
+    reader.readAsText(file);
+  };
+
+  return(
+    <div>
+      <div className="card mb-4">
+        <div className="section-title">⚙ Church Settings</div>
+        <div className="alert alert-info">Church Name: {data.settings?.churchName||"—"}</div>
+      </div>
+
+      <div className="card mb-4">
+        <div className="section-title">🏘 Cell Groups</div>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {cells.map(c=>(
+            <div key={c} className="flex items-center gap-1" style={{background:"#f1f5f9",borderRadius:20,padding:"4px 12px"}}>
+              <span className="text-sm font-semibold">{c}</span>
+              <button className="text-danger" style={{border:"none",background:"none",cursor:"pointer",fontSize:"1rem"}} onClick={()=>onDeleteCell(c)}>×</button>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input className="form-control" style={{maxWidth:200}} placeholder="New cell name" value={newCell} onChange={e=>setNewCell(e.target.value)}/>  
+          <button className="btn btn-primary" onClick={()=>{if(newCell.trim()){onAddCell(newCell.trim());setNewCell("");}}}> + Add</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="section-title">💾 Data Management</div>
+        <div className="flex gap-2 flex-wrap">
+          <button className="btn btn-success" onClick={doExport}>⬇ Export Backup</button>
+          <button className="btn btn-info" onClick={()=>fileRef.current.click()}>⬆ Import Backup</button>
+          <button className="btn btn-danger" onClick={()=>{if(confirm("Reset ALL data? This cannot be undone."))onReset();}}>🗑 Reset Data</button>
+          <input type="file" ref={fileRef} accept=".json" style={{display:"none"}} onChange={doImport}/>
+        </div>
+        <div className="alert alert-warning mt-3">Data is stored in your browser's localStorage. Export regularly to back up your schedule.</div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ──────────────────────────────────────────────────
+function App(){
+  const [data,setData]=useState(()=>loadData()||defaultData());
+  const [activeTab,setActiveTab]=useState("ip");
+
+  useEffect(()=>{saveData(data);},[data]);
+
+  const updateMembers=ms=>setData(d=>({...d,members:ms}));
+  const saveMember=m=>setData(d=>({...d,members:d.members.find(x=>x.id===m.id)?d.members.map(x=>x.id===m.id?m:x):[...d.members,m]}));
+  const deleteMember=id=>setData(d=>({...d,members:d.members.filter(m=>m.id!==id)}));
+
+  const saveIPSlot=s=>setData(d=>({...d,ipSchedule:d.ipSchedule.find(x=>x.id===s.id)?d.ipSchedule.map(x=>x.id===s.id?s:x):[...d.ipSchedule,s]}));
+  const deleteIPSlot=id=>setData(d=>({...d,ipSchedule:d.ipSchedule.filter(s=>s.id!==id)}));
+
+  const saveMeeting=m=>setData(d=>({...d,meetings:d.meetings.find(x=>x.id===m.id)?d.meetings.map(x=>x.id===m.id?m:x):[...d.meetings,m]}));
+  const deleteMeeting=id=>setData(d=>({...d,meetings:d.meetings.filter(m=>m.id!==id)}));
+  const saveAttendance=(id,att)=>setData(d=>({...d,meetings:d.meetings.map(m=>m.id===id?{...m,attendance:att}:m)}));
+
+  const addCell=c=>setData(d=>({...d,cells:[...d.cells,c]}));
+  const deleteCell=c=>setData(d=>({...d,cells:d.cells.filter(x=>x!==c)}));
+
+  const TABS=[
+    {id:"ip",label:"⛪ Intercessory Prayer"},
+    {id:"meetings",label:"📋 Prayer Meetings"},
+    {id:"members",label:"👥 Members"},
+    {id:"reports",label:"📊 Reports"},
+    {id:"settings",label:"⚙ Settings"},
+  ];
+
+  return(
+    <div>
+      <div className="app-header">
+        <h1>⛪ FLCC Intercessory Prayer Schedule</h1>
+        <p>{data.settings?.churchName||"First Love Christian Centre"} • Prayer Management System</p>
+      </div>
+      <div className="tab-bar">
+        {TABS.map(t=>(
+          <button key={t.id} className={`tab-btn ${activeTab===t.id?"active":""}`} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
+      <div className="main-content">
+        {activeTab==="ip"         && <IPScheduleTab   ipSchedule={data.ipSchedule} members={data.members} onSave={saveIPSlot}   onDelete={deleteIPSlot}\/>}
+        {activeTab==="meetings"     && <MeetingsTab     meetings={data.meetings}    members={data.members} onSave={saveMeeting}  onDelete={deleteMeeting} onAttendance={saveAttendance}\/>}
+        {activeTab==="members"      && <MembersTab      members={data.members}      cells={data.cells}     onSave={saveMember}   onDelete={deleteMember}\/>}
+        {activeTab==="reports"      && <ReportsTab      members={data.members}      ipSchedule={data.ipSchedule} meetings={data.meetings}\/>}
+        {activeTab==="settings"     && <SettingsTab     data={data}                 cells={data.cells}     onReset={()=>setData(defaultData())} onImport={setData} onExport={()=>{}} onAddCell={addCell} onDeleteCell={deleteCell}\/>}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
