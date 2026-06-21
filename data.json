@@ -345,7 +345,7 @@
         "communionAssistant1",
         "communionAssistant2"
       ],
-      "status": "active",
+      "status": "inactive",
       "birthday": "09-17",
       "anniversary": "07-10",
       "designation": "CSL"
@@ -805,7 +805,7 @@
     },
     {
       "id": "sun-11",
-      "name": "Jojo",
+      "name": "Jojo Sabangan",
       "title": "Bro.",
       "type": "individual",
       "eligibleRoles": [],
