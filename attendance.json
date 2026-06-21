@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:32:45.577Z",
+    "publishedAt": "2026-06-21T16:32:52.550Z",
     "totalSessions": 6
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 14,
-        "absent": 34,
+        "present": 16,
+        "absent": 32,
         "total": 48
       },
       "records": [
@@ -84,6 +84,16 @@
         {
           "memberId": "bro-07",
           "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-08",
+          "memberName": "Bro. Edward Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-03",
+          "memberName": "Bro. Elbert Siangco",
           "status": "present"
         }
       ]
