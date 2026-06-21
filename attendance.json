@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:33:08.858Z",
+    "publishedAt": "2026-06-21T16:33:39.431Z",
     "totalSessions": 6
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 19,
-        "absent": 29,
+        "present": 26,
+        "absent": 22,
         "total": 48
       },
       "records": [
@@ -109,6 +109,41 @@
         {
           "memberId": "sis-19",
           "memberName": "Sis. Irene Sabangan",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-18",
+          "memberName": "Sis. Laidz Pascual",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-04",
+          "memberName": "Sis. Lizel Ocenar",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-03",
+          "memberName": "Sis. Mae De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-07",
+          "memberName": "Bro. Rodel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-07",
+          "memberName": "Sis. Rona Vergara",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-08",
+          "memberName": "Sis. Sandra Gabriel",
           "status": "present"
         }
       ]
