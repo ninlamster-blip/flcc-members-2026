@@ -197,7 +197,8 @@
       ],
       "status": "active",
       "birthday": "03-29",
-      "anniversary": "05-23"
+      "anniversary": "05-23",
+      "sundayOnly": true
     },
     {
       "id": "sis-16",
@@ -429,7 +430,8 @@
       ],
       "status": "active",
       "birthday": "07-10",
-      "anniversary": "10-28"
+      "anniversary": "10-28",
+      "sundayOnly": true
     },
     {
       "id": "fam-01",
@@ -786,6 +788,18 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "08-05",
+      "sundayOnly": true,
+      "hideMinistryCard": true
+    },
+    {
+      "id": "sun-10",
+      "name": "Kitz Tejares",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true,
       "hideMinistryCard": true
     }
   ],
