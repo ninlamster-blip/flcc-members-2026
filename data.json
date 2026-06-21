@@ -252,7 +252,8 @@
       ],
       "status": "active",
       "birthday": "05-04",
-      "anniversary": "08-03"
+      "anniversary": "08-03",
+      "sundayOnly": true
     },
     {
       "id": "sis-20",
@@ -795,6 +796,17 @@
       "id": "sun-10",
       "name": "Kitz Tejares",
       "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "",
+      "sundayOnly": true,
+      "hideMinistryCard": true
+    },
+    {
+      "id": "sun-11",
+      "name": "Jojo",
+      "title": "Bro.",
       "type": "individual",
       "eligibleRoles": [],
       "status": "active",
