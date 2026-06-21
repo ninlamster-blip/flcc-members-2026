@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-21T16:50:33.376Z",
+    "publishedAt": "2026-06-21T19:09:16.591Z",
     "totalSessions": 6
   },
   "sessions": [
@@ -157,7 +157,7 @@
           "status": "present"
         },
         {
-          "memberId": "sun-10",
+          "memberId": "vis-1780825619454",
           "memberName": "Sis. Kitz Tejares",
           "status": "present"
         },
@@ -629,8 +629,8 @@
           "status": "present"
         },
         {
-          "memberId": "bro-10",
-          "memberName": "Bro. Benedict Treseni",
+          "memberId": "vis-1780825376685",
+          "memberName": "Bro. Emmanuel James",
           "status": "present"
         },
         {
@@ -837,7 +837,7 @@
           "status": "present"
         },
         {
-          "memberId": "sun-10",
+          "memberId": "vis-1780825619454",
           "memberName": "Sis. Kitz Tejares",
           "status": "present"
         },
