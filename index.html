@@ -811,6 +811,13 @@ function generateIntercessoryMessage(entry, intercessory, teamName, churchName, 
   return `📢 Hi ${teamName}!\n\nYour team is assigned for Intercessory Prayer at ${churchName}:\n\n📅 ${entry.service} Service — ${formatDateLong(entry.date)}${svcTimePart}\n🙏 Intercessory Prayer: ${prayerTime} (before the service)${notesPart}\n\nPlease ensure your team is ready and present before the service starts. God bless! 🙏\n– FLCC Prayer Ministry`;
 }
 
+function generatePrayerMeetingAssignmentMessage(meeting, worker, roleLabel, churchName) {
+  const meta = PRAYER_MEETING_TYPES.find(t => t.key === meeting.type) || PRAYER_MEETING_TYPES[3];
+  const name = [(worker.title || ''), worker.name].filter(Boolean).join(' ');
+  const venuePart = meeting.venue ? `📍 Venue: ${meeting.venue}\n` : '';
+  return `📢 Hi ${name}!\n\nYou have a Prayer Meeting assignment at ${churchName}:\n\n📅 ${meta.label} — ${formatDateLong(meeting.date)}\n⏰ Time: ${formatTime12(meeting.startTime)}\n${venuePart}🙏 Your role: ${roleLabel}\n\nPlease confirm your availability. God bless! 🙏\n– FLCC Prayer Ministry`;
+}
+
 // ── Assignment Notifications ──────────────────────────────────────────────────
 const NOTIF_KEY = 'flcc-notifs-seen-v1';
 const loadNotifSeen = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) || []; } catch { return []; } };
@@ -3214,6 +3221,116 @@ function NotifyMembersPanel({ entry, workers, churchName, serviceTimes, interces
   );
 }
 
+// ── Notify panel for intercessory prayer entries (prayer tab) ─────────────────
+function NotifyIntercessoryPanel({ entry, team, churchName, serviceTimes }) {
+  const [copied, setCopied] = useState(null);
+  const [shared, setShared]  = useState(null);
+  const teamName = team ? team.name : 'Prayer Team';
+  const msg = generateIntercessoryMessage(entry, entry, teamName, churchName, serviceTimes);
+
+  const handleCopy = () => {
+    try {
+      navigator.clipboard.writeText(msg).then(() => { setCopied(true); setTimeout(() => setCopied(null), 2000); });
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = msg; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      setCopied(true); setTimeout(() => setCopied(null), 2000);
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try { await navigator.share({ title: `FLCC Intercessory Prayer — ${teamName}`, text: msg }); setShared(true); setTimeout(() => setShared(null), 2000); } catch {}
+    } else { window.open('https://www.messenger.com/', '_blank'); }
+  };
+
+  return (
+    <div className="mt-2">
+      <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #6366F1' }}>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <div className="text-sm font-semibold">🙏 {teamName}</div>
+            <div className="text-xs ink-muted">Intercessory Prayer · {formatTime12(entry.startTime)}{entry.endTime ? `–${formatTime12(entry.endTime)}` : ''}</div>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button className="btn btn-soft text-xs" onClick={handleCopy}>{copied ? '✓ Copied!' : '📋 Copy message'}</button>
+            <button className="btn btn-accent text-xs" onClick={handleShare} title="Share via Messenger or any app">{shared ? '✓ Shared!' : '💬 Share'}</button>
+          </div>
+        </div>
+        <details className="mt-2">
+          <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
+          <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+        </details>
+      </div>
+    </div>
+  );
+}
+
+// ── Notify panel for prayer meeting roles (prayer tab) ────────────────────────
+function NotifyPrayerMeetingPanel({ meeting, prayerWorkers, churchName }) {
+  const [copied, setCopied] = useState(null);
+  const [shared, setShared]  = useState(null);
+
+  const roleEntries = [
+    { key: 'presiderId',   label: 'Presider' },
+    { key: 'exhorterId',   label: 'Exhorter' },
+    { key: 'songLeaderId', label: 'Song Leader' },
+  ].map(({ key, label }) => {
+    const workerId = meeting[key];
+    if (!workerId) return null;
+    const worker = prayerWorkers.find(w => w.id === workerId);
+    if (!worker) return null;
+    return { worker, label, workerId };
+  }).filter(Boolean);
+
+  if (roleEntries.length === 0) return <div className="text-xs ink-muted mt-2">No roles assigned yet.</div>;
+
+  const handleCopy = (key, msg) => {
+    try {
+      navigator.clipboard.writeText(msg).then(() => { setCopied(key); setTimeout(() => setCopied(null), 2000); });
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = msg; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      setCopied(key); setTimeout(() => setCopied(null), 2000);
+    }
+  };
+
+  const handleShare = async (key, title, msg) => {
+    if (navigator.share) {
+      try { await navigator.share({ title, text: msg }); setShared(key); setTimeout(() => setShared(null), 2000); } catch {}
+    } else { window.open('https://www.messenger.com/', '_blank'); }
+  };
+
+  return (
+    <div className="space-y-2 mt-2">
+      {roleEntries.map(({ worker, label, workerId }) => {
+        const msg = generatePrayerMeetingAssignmentMessage(meeting, worker, label, churchName);
+        const name = [(worker.title || ''), worker.name].filter(Boolean).join(' ');
+        return (
+          <div key={workerId} style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px' }}>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <div className="text-sm font-semibold">{name}</div>
+                <div className="text-xs ink-muted">{label}</div>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button className="btn btn-soft text-xs" onClick={() => handleCopy(workerId, msg)}>{copied === workerId ? '✓ Copied!' : '📋 Copy message'}</button>
+                <button className="btn btn-accent text-xs" onClick={() => handleShare(workerId, `FLCC Prayer Meeting — ${name}`, msg)} title="Share via Messenger or any app">{shared === workerId ? '✓ Shared!' : '💬 Share'}</button>
+              </div>
+            </div>
+            <details className="mt-2">
+              <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
+              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+            </details>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ServiceListSection({ title, entries, workers, me, churchName, serviceTimes, onConflict, prayerData, intercessoryByKey, musicData, musicByKey, sermonNotes, onOpenNote }) {
   if (entries.length === 0) return null;
   const [notifyOpen, setNotifyOpen] = useState({});
@@ -4303,6 +4420,8 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
 
   // Match member to prayer roster (by name)
   const myPrayerWorker = useMemo(() => findPrayerMatch(me, prayerData.workers), [me, prayerData.workers]);
+  const [notifyOpen, setNotifyOpen] = useState({});
+  const toggleNotify = id => setNotifyOpen(prev => ({ ...prev, [id]: !prev[id] }));
 
   const SERVICE_LABELS = {
     'BOTR-NECK': 'BOTR-NECK',
@@ -4339,13 +4458,27 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
                     {entries.map(entry => {
                       const team = (prayerData.teams || []).find(t => t.id === entry.teamId);
                       return (
-                        <div key={entry.id} className="row-card flex items-center gap-3 flex-wrap">
-                          <div className="font-mono text-xs ink-muted" style={{ width: 80, flexShrink: 0 }}>{formatDateShort(entry.date)}</div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium">{team ? team.name : <span className="ink-subtle italic">Unassigned</span>}</div>
-                            <div className="text-xs ink-muted">{formatTime12(entry.startTime)}{entry.endTime ? `–${formatTime12(entry.endTime)}` : ''}</div>
+                        <div key={entry.id} className="row-card">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <div className="font-mono text-xs ink-muted" style={{ width: 80, flexShrink: 0 }}>{formatDateShort(entry.date)}</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium">{team ? team.name : <span className="ink-subtle italic">Unassigned</span>}</div>
+                              <div className="text-xs ink-muted">{formatTime12(entry.startTime)}{entry.endTime ? `–${formatTime12(entry.endTime)}` : ''}</div>
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                              <button
+                                className="btn btn-soft text-xs"
+                                style={{ color: 'var(--accent)' }}
+                                onClick={() => toggleNotify(entry.id)}
+                              >
+                                {notifyOpen[entry.id] ? '▲ Hide notify' : '📢 Notify'}
+                              </button>
+                              <button className="btn btn-ghost text-xs" title="Save to phone calendar" onClick={() => downloadIntercessoryICS(entry, prayerData, data.meta.churchName)}>📅</button>
+                            </div>
                           </div>
-                          <button className="btn btn-ghost text-xs" title="Save to phone calendar" onClick={() => downloadIntercessoryICS(entry, prayerData, data.meta.churchName)}>📅</button>
+                          {notifyOpen[entry.id] && (
+                            <NotifyIntercessoryPanel entry={entry} team={team} churchName={data.meta.churchName} serviceTimes={data.meta?.serviceTimes} />
+                          )}
                         </div>
                       );
                     })}
@@ -4398,7 +4531,16 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
                         </div>
                       )}
                     </div>
-                    <button className="btn btn-soft text-xs" onClick={() => downloadPrayerMeetingICS(m, prayerData, data.meta.churchName)}>📅</button>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button
+                        className="btn btn-soft text-xs"
+                        style={{ color: 'var(--accent)' }}
+                        onClick={() => toggleNotify(m.id)}
+                      >
+                        {notifyOpen[m.id] ? '▲ Hide notify' : '📢 Notify members'}
+                      </button>
+                      <button className="btn btn-soft text-xs" onClick={() => downloadPrayerMeetingICS(m, prayerData, data.meta.churchName)}>📅</button>
+                    </div>
                   </div>
 
                   <div className="dotted-divider my-3" />
@@ -4427,6 +4569,11 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
                           ⚠ Report conflict
                         </button>
                       ))}
+                    </div>
+                  )}
+                  {notifyOpen[m.id] && (
+                    <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+                      <NotifyPrayerMeetingPanel meeting={m} prayerWorkers={prayerData.workers || []} churchName={data.meta.churchName} />
                     </div>
                   )}
                 </div>
