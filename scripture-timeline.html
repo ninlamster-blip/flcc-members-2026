@@ -1381,6 +1381,210 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 .hidden { display: none !important; }
 .text-accent { color: var(--accent); }
 .text-gold { color: var(--gold); }
+
+/* ── PHASE 2: SEARCH OVERLAY ── */
+#search-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(4px);
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+#search-overlay.open { display: flex; }
+#search-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.22);
+  width: 100%;
+  max-width: 640px;
+  overflow: hidden;
+  animation: searchIn .15s ease;
+}
+@keyframes searchIn {
+  from { opacity: 0; transform: translateY(-12px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+#search-input-wrap {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+#search-input-wrap svg { flex-shrink: 0; color: var(--text2); }
+#search-input {
+  flex: 1;
+  font-size: 1rem;
+  border: none; outline: none;
+  color: var(--text);
+  font-family: inherit;
+  background: transparent;
+}
+#search-input::placeholder { color: var(--text2); }
+#search-results {
+  max-height: 400px;
+  overflow-y: auto;
+}
+.search-result {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 22px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--bg2);
+  transition: background .1s;
+}
+.search-result:last-child { border-bottom: none; }
+.search-result:hover, .search-result.focused { background: var(--accent-light); }
+.search-result-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .64rem; font-weight: 700; letter-spacing: .04em;
+  flex-shrink: 0; text-transform: uppercase;
+}
+.sri-event  { background: var(--accent-light); color: var(--accent); }
+.sri-book   { background: var(--gold-light); color: var(--gold); }
+.sri-person { background: #f0fdf4; color: #059669; }
+.sri-place  { background: #fef2f2; color: #dc2626; }
+.search-result-body { flex: 1; min-width: 0; }
+.search-result-title {
+  font-size: .88rem; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.search-result-meta { font-size: .73rem; color: var(--text2); margin-top: 2px; }
+.search-empty {
+  padding: 36px 24px; text-align: center;
+  color: var(--text2); font-size: .88rem;
+}
+#search-footer {
+  padding: 9px 22px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 18px;
+  font-size: .68rem; color: var(--text2);
+  align-items: center;
+}
+.search-kbd { display: inline-flex; align-items: center; gap: 4px; }
+.kbd {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 5px;
+  font-family: monospace; font-size: .65rem; color: var(--text);
+}
+.nav-search-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .75rem; color: var(--text2);
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+  margin-right: 8px;
+}
+.nav-search-btn:hover { background: var(--bg3); color: var(--text); }
+
+/* ── PHASE 2: PROPHECY SECTION ── */
+#prophecy-section { background: var(--bg2); }
+.prophecy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+}
+.prophecy-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .4s, transform .4s, box-shadow .2s;
+}
+.prophecy-card.visible { opacity: 1; transform: none; }
+.prophecy-card:hover { box-shadow: var(--shadow); }
+.proph-ot {
+  padding: 18px 20px 22px;
+  position: relative;
+}
+.proph-bridge {
+  display: flex; align-items: center; justify-content: center;
+  height: 28px; position: relative;
+}
+.proph-bridge::before {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0;
+  height: 1px; background: var(--border);
+}
+.proph-bridge-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 700; position: relative; z-index: 1;
+  box-shadow: 0 2px 8px rgba(37,99,235,.3);
+  flex-shrink: 0;
+}
+.proph-nt {
+  padding: 18px 20px;
+  background: var(--accent-light);
+}
+.proph-label {
+  font-size: .63rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; margin-bottom: 5px;
+}
+.proph-label-ot { color: var(--gold); }
+.proph-label-nt { color: var(--accent); }
+.proph-ref {
+  font-size: .8rem; font-weight: 700; color: var(--text);
+  margin-bottom: 7px; font-family: 'Playfair Display', serif;
+}
+.proph-text {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: .85rem;
+  color: var(--text2);
+  line-height: 1.55;
+}
+.proph-topic {
+  font-size: .65rem; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text2);
+  margin-bottom: 14px;
+}
+
+/* ── PHASE 2: GRAPH NODE INFO PANEL ── */
+#graph-node-info {
+  display: none;
+  position: absolute; bottom: 16px; left: 16px;
+  width: 248px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  z-index: 5;
+  animation: fadeUp .2s ease;
+}
+#graph-node-info.visible { display: block; }
+.gni-type-badge {
+  font-size: .62rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 4px;
+  display: inline-block; margin-bottom: 7px;
+}
+#gni-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700; color: var(--text);
+  margin-bottom: 6px; line-height: 1.2;
+}
+#gni-desc {
+  font-size: .78rem; color: var(--text2);
+  line-height: 1.55; margin-bottom: 10px;
+}
+#gni-verse {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: .76rem; color: var(--text);
+  padding: 8px 10px; background: var(--bg2);
+  border-radius: 6px; border-left: 2px solid var(--accent);
+  line-height: 1.5;
+}
 </style>
 </head>
 <body>
@@ -1396,6 +1600,11 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <li><a href="#graph-section" class="tab-item">Connections</a></li>
     <li><a href="#revelation-section" class="tab-item">Revelation</a></li>
   </ul>
+  <button class="nav-search-btn" onclick="openSearch()" aria-label="Search">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    Search
+    <kbd class="kbd">⌘K</kbd>
+  </button>
   <a href="#timeline-section" class="nav-cta">Begin Journey</a>
 </nav>
 
@@ -1468,6 +1677,7 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#timeline-section" class="tab-item active">Timeline</a>
     <a href="#christ-section" class="tab-item">Life of Christ</a>
     <a href="#church-section" class="tab-item">Early Church</a>
+    <a href="#prophecy-section" class="tab-item">Prophecy</a>
     <a href="#map-section" class="tab-item">Paul's Journeys</a>
     <a href="#books-section" class="tab-item">Book Explorer</a>
     <a href="#graph-section" class="tab-item">Connections</a>
@@ -2380,6 +2590,18 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
+<!-- PROPHECY FULFILLMENT -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="prophecy-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Old Testament to New Testament</div>
+    <h2 class="section-heading serif">Prophecy &amp; Fulfillment</h2>
+    <p class="section-sub">Every major thread in the Old Testament finds its answer in Jesus Christ. Here are twelve of the most significant prophecy-fulfillment pairs in all of Scripture.</p>
+    <div class="prophecy-grid" id="prophecy-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
 <!-- PAUL'S JOURNEYS MAP -->
 <!-- ═══════════════════════════════════════════ -->
 <section id="map-section" class="section">
@@ -2526,6 +2748,12 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 
     <div id="graph-canvas-wrap" style="margin-top:28px;">
       <canvas id="knowledge-canvas"></canvas>
+      <div id="graph-node-info" role="complementary" aria-live="polite">
+        <div id="gni-type-badge" class="gni-type-badge"></div>
+        <div id="gni-name"></div>
+        <div id="gni-desc"></div>
+        <div id="gni-verse"></div>
+      </div>
     </div>
 
     <div class="graph-legend">
@@ -3245,9 +3473,268 @@ window.addEventListener('resize', () => {
 
 // ── KEYBOARD ─────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeScripture();
+  if (e.key === 'Escape') { closeScripture(); closeSearch(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
 });
 
+// ── PHASE 2: PROPHECY FULFILLMENT ────────────────────────────────
+const prophecyData = [
+  { ot:'Isaiah 7:14', otText:'The virgin will conceive and give birth to a son, and will call him Immanuel.', nt:'Matthew 1:23', ntText:'"The virgin will conceive and give birth to a son, and they will call him Immanuel" — which means God with us.', topic:'Virgin Birth' },
+  { ot:'Micah 5:2', otText:'But you, Bethlehem Ephrathah… out of you will come for me one who will be ruler over Israel, whose origins are from of old, from ancient times.', nt:'Matthew 2:6', ntText:'"But you, Bethlehem, in the land of Judah, are by no means least; for out of you will come a ruler who will shepherd my people Israel."', topic:'Born in Bethlehem' },
+  { ot:'Isaiah 40:3', otText:'A voice of one calling: "In the wilderness prepare the way for the Lord; make straight in the desert a highway for our God."', nt:'John 1:23', ntText:'John replied in the words of Isaiah the prophet, "I am the voice of one calling in the wilderness, Make straight the way for the Lord."', topic:'The Forerunner' },
+  { ot:'Zechariah 9:9', otText:'Rejoice greatly, Daughter Zion! Shout, Daughter Jerusalem! See, your king comes to you, righteous and victorious, lowly and riding on a donkey.', nt:'Matthew 21:5', ntText:'"Say to Daughter Zion, See, your king comes to you, gentle and riding on a donkey, and on a colt, the foal of a donkey."', topic:'Triumphal Entry' },
+  { ot:'Psalm 41:9', otText:'Even my close friend, someone I trusted, one who shared my bread, has turned against me.', nt:'John 13:18', ntText:'"He who shared my bread has turned against me." I am telling you this now before it happens, so that when it does happen you will believe.', topic:'Betrayal' },
+  { ot:'Zechariah 11:12', otText:'So they paid me thirty pieces of silver.', nt:'Matthew 26:15', ntText:'"What are you willing to give me if I deliver him over to you?" So they counted out for him thirty pieces of silver.', topic:'Thirty Pieces of Silver' },
+  { ot:'Psalm 22:1', otText:'My God, my God, why have you forsaken me? Why are you so far from saving me, so far from my cries of anguish?', nt:'Matthew 27:46', ntText:'About three in the afternoon Jesus cried out, "Eli, Eli, lema sabachthani?" — which means "My God, my God, why have you forsaken me?"', topic:'Cry of Desolation' },
+  { ot:'Isaiah 53:5', otText:'But he was pierced for our transgressions, he was crushed for our iniquities; the punishment that brought us peace was on him, and by his wounds we are healed.', nt:'1 Peter 2:24', ntText:'"He himself bore our sins" in his body on the cross, so that we might die to sins and live for righteousness; "by his wounds you have been healed."', topic:'Suffering Servant' },
+  { ot:'Psalm 22:18', otText:'They divide my clothes among them and cast lots for my garment.', nt:'John 19:24', ntText:'They said to one another, "Let\'s not tear it. Let\'s decide by lot who will get it." This happened that the scripture might be fulfilled.', topic:'Casting Lots' },
+  { ot:'Psalm 16:10', otText:'Because you will not abandon me to the realm of the dead, nor will you let your faithful one see decay.', nt:'Acts 13:35', ntText:'For when David had served God\'s purpose in his own generation, he fell asleep… but the one whom God raised from the dead did not see decay.', topic:'Resurrection' },
+  { ot:'Joel 2:28', otText:'And afterward, I will pour out my Spirit on all people. Your sons and daughters will prophesy, your old men will dream dreams, your young men will see visions.', nt:'Acts 2:17', ntText:'"In the last days, God says, I will pour out my Spirit on all people. Your sons and daughters will prophesy, your young men will see visions, your old men will dream dreams."', topic:'Pentecost' },
+  { ot:'Isaiah 65:17', otText:'"See, I will create new heavens and a new earth. The former things will not be remembered, nor will they come to mind."', nt:'Revelation 21:1', ntText:'Then I saw "a new heaven and a new earth," for the first heaven and the first earth had passed away, and there was no longer any sea.', topic:'New Creation' },
+];
+
+function renderProphecies() {
+  const grid = document.getElementById('prophecy-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  prophecyData.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'prophecy-card';
+    card.innerHTML = `
+      <div class="proph-ot">
+        <div class="proph-topic">${p.topic}</div>
+        <div class="proph-label proph-label-ot">Old Testament</div>
+        <div class="proph-ref">${p.ot}</div>
+        <div class="proph-text">${p.otText}</div>
+      </div>
+      <div class="proph-bridge"><div class="proph-bridge-dot">→</div></div>
+      <div class="proph-nt">
+        <div class="proph-label proph-label-nt">New Testament</div>
+        <div class="proph-ref">${p.nt}</div>
+        <div class="proph-text">${p.ntText}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  const propObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  grid.querySelectorAll('.prophecy-card').forEach(c => propObserver.observe(c));
+}
+renderProphecies();
+
+// ── PHASE 2: KNOWLEDGE GRAPH NODE INFO PANEL ─────────────────────
+const nodeDescriptions = {
+  jesus:       { desc:'The central figure of all Scripture — the promised Messiah, Son of God, who came to redeem humanity through his death and resurrection.', verse:'"For God so loved the world that he gave his one and only Son." — John 3:16' },
+  abraham:     { desc:'Father of the Hebrew nation, called from Ur to become the ancestor of God\'s covenant people. His faith was credited to him as righteousness.', verse:'"All peoples on earth will be blessed through you." — Genesis 12:3' },
+  david:       { desc:'Israel\'s greatest king, a man after God\'s own heart. God promised David that his dynasty would endure forever — fulfilled in Jesus.', verse:'"Your house and your kingdom will endure forever." — 2 Samuel 7:16' },
+  moses:       { desc:'The great lawgiver and deliverer of Israel. Moses led Israel out of Egypt and received the Law at Sinai, prefiguring Jesus as the ultimate Prophet and Mediator.', verse:'"The Lord your God will raise up for you a prophet like me." — Deuteronomy 18:15' },
+  isaiah53:    { desc:'Written 700 years before the crucifixion, Isaiah 53 describes the Suffering Servant in astonishing detail — pierced for transgressions, crushed for iniquities.', verse:'"He was pierced for our transgressions." — Isaiah 53:5' },
+  passover:    { desc:'The night God delivered Israel from Egypt, the blood of a lamb on the doorposts spared the firstborn — the foundational type of Christ\'s atoning sacrifice.', verse:'"Christ, our Passover lamb, has been sacrificed." — 1 Corinthians 5:7' },
+  cross:       { desc:'The climax of redemptive history. Jesus bore the sin of the world on the cross, satisfying God\'s justice and demonstrating his love for sinners.', verse:'"It is finished." — John 19:30' },
+  resurrection:{ desc:'Three days after his burial, Jesus rose from the dead — the definitive vindication of his identity as Son of God and guarantee of our resurrection.', verse:'"Death has been swallowed up in victory." — 1 Corinthians 15:54' },
+  creation:    { desc:'God speaks all things into existence from nothing. The created order declares his glory, and humanity is made in his image to rule as his representatives.', verse:'"In the beginning God created the heavens and the earth." — Genesis 1:1' },
+  covenant:    { desc:'The binding agreement through which God commits himself to his people. From Noah to Abraham to David, each covenant builds toward the New Covenant in Jesus.', verse:'"I will be your God, and you will be my people." — Jeremiah 31:33' },
+  redemption:  { desc:'The great theme of Scripture — God buying back what was lost through human sin. Every sacrifice and prophecy points to the ultimate redemption in Christ.', verse:'"In him we have redemption through his blood." — Ephesians 1:7' },
+  bethlehem:   { desc:'The birthplace of Jesus, prophesied by Micah 700 years before his birth. Also the city of David, connecting Jesus to the royal line of Israel.', verse:'"But you, Bethlehem… out of you will come a ruler." — Micah 5:2' },
+  jerusalem:   { desc:'The holy city — where God chose to place his name, where the Temple stood, where Jesus was crucified and rose again.', verse:'"Jerusalem, built as a city that is closely compacted together." — Psalm 122:3' },
+  temple:      { desc:'God\'s dwelling place among his people. Solomon built it, Babylon destroyed it — but Jesus declared himself the true Temple, destroyed and raised in three days.', verse:'"Destroy this temple and I will raise it again in three days." — John 2:19' },
+  spirit:      { desc:'The Holy Spirit — promised throughout the Old Testament, poured out at Pentecost, and at work in every believer as the down payment of our inheritance.', verse:'"I will pour out my Spirit on all people." — Joel 2:28' },
+  paul:        { desc:'From persecutor to missionary. Paul\'s three journeys took the gospel from Jerusalem to Rome, and his letters form the theological core of the New Testament.', verse:'"I am not ashamed of the gospel, because it is the power of God." — Romans 1:16' },
+  newcreation: { desc:'The final chapter of God\'s story — all things made new, death abolished, God dwelling with his people forever. Eden restored and surpassed.', verse:'"He who was seated on the throne said, I am making everything new." — Revelation 21:5' },
+};
+
+const typeBadgeStyle = {
+  person:   { bg:'#EFF6FF', color:'#2563EB', label:'Person' },
+  event:    { bg:'#f5f3ff', color:'#7c3aed', label:'Event' },
+  prophecy: { bg:'#FEF3C7', color:'#b45309', label:'Prophecy' },
+  theme:    { bg:'#ecfdf5', color:'#059669', label:'Theme' },
+  place:    { bg:'#fef2f2', color:'#dc2626', label:'Place' },
+};
+
+function showNodeInfo(node) {
+  const info = document.getElementById('graph-node-info');
+  const desc = nodeDescriptions[node.id];
+  if (!desc) { info.classList.remove('visible'); return; }
+  const style = typeBadgeStyle[node.type] || {};
+  document.getElementById('gni-type-badge').textContent = style.label || node.type;
+  document.getElementById('gni-type-badge').style.cssText = `background:${style.bg};color:${style.color}`;
+  document.getElementById('gni-name').textContent = node.label;
+  document.getElementById('gni-desc').textContent = desc.desc;
+  document.getElementById('gni-verse').textContent = desc.verse;
+  info.classList.add('visible');
+}
+
+// Patch canvas click to show node info
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  const node = getNodeAt(x, y);
+  if (node) {
+    selectedNode = node;
+    showNodeInfo(node);
+    trackProgress('connections');
+  } else {
+    selectedNode = null;
+    document.getElementById('graph-node-info').classList.remove('visible');
+  }
+});
+
+// ── PHASE 2: GLOBAL SEARCH ────────────────────────────────────────
+let searchIndex = [];
+let searchFocusIdx = -1;
+
+function buildSearchIndex() {
+  searchIndex = [];
+
+  // Timeline event cards
+  document.querySelectorAll('.event-card').forEach(card => {
+    const title = card.querySelector('.card-title')?.textContent;
+    const ref   = card.querySelector('.card-ref')?.textContent;
+    const ctx   = card.querySelector('.card-context')?.textContent?.slice(0, 80);
+    if (title) searchIndex.push({ type:'event', icon:'Era', title, meta: ref || '', desc: ctx || '', target: card });
+  });
+
+  // Christ cards
+  document.querySelectorAll('.christ-card').forEach(card => {
+    const title = card.querySelector('.christ-card-title')?.textContent;
+    const ref   = card.querySelector('.christ-ref')?.textContent;
+    if (title) searchIndex.push({ type:'event', icon:'Life of Christ', title, meta: ref || '', desc:'', target: card });
+  });
+
+  // Early Church cards
+  document.querySelectorAll('.church-card').forEach(card => {
+    const title = card.querySelector('.church-card-title')?.textContent;
+    if (title) searchIndex.push({ type:'event', icon:'Early Church', title, meta:'', desc:'', target: card });
+  });
+
+  // Bible books
+  bibleBooks.forEach(book => {
+    searchIndex.push({ type:'book', icon:'Book', title: book.name, meta: book.testament + ' · ' + book.cat, desc: book.theme, bookData: book });
+  });
+
+  // Key people from graph
+  graphData.filter(n => n.type === 'person').forEach(n => {
+    searchIndex.push({ type:'person', icon:'Person', title: n.label, meta:'Biblical Person', desc: (nodeDescriptions[n.id]?.desc || '').slice(0, 80), nodeId: n.id });
+  });
+
+  // Key places from graph
+  graphData.filter(n => n.type === 'place').forEach(n => {
+    searchIndex.push({ type:'place', icon:'Place', title: n.label, meta:'Biblical Place', desc: (nodeDescriptions[n.id]?.desc || '').slice(0, 80), nodeId: n.id });
+  });
+}
+
+function doSearch(query) {
+  const q = query.trim().toLowerCase();
+  searchFocusIdx = -1;
+  const resultsEl = document.getElementById('search-results');
+  if (!q) {
+    resultsEl.innerHTML = '<div class="search-empty">Start typing to search across the entire timeline, all 66 books, key people, and places of Scripture.</div>';
+    return;
+  }
+  const matches = searchIndex.filter(item =>
+    item.title.toLowerCase().includes(q) ||
+    item.meta.toLowerCase().includes(q) ||
+    item.desc.toLowerCase().includes(q)
+  ).slice(0, 12);
+
+  if (!matches.length) {
+    resultsEl.innerHTML = '<div class="search-empty">No results found for "' + query + '"</div>';
+    return;
+  }
+
+  const typeClass = { event:'sri-event', book:'sri-book', person:'sri-person', place:'sri-place' };
+  resultsEl.innerHTML = matches.map((item, i) =>
+    `<div class="search-result" data-idx="${i}" onclick="navigateResult(${i})">
+      <div class="search-result-icon ${typeClass[item.type] || 'sri-event'}">${item.icon.slice(0,3).toUpperCase()}</div>
+      <div class="search-result-body">
+        <div class="search-result-title">${item.title}</div>
+        <div class="search-result-meta">${item.meta}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  window._searchMatches = matches;
+}
+
+function navigateResult(idx) {
+  const matches = window._searchMatches || [];
+  const item = matches[idx];
+  if (!item) return;
+  closeSearch();
+  setTimeout(() => {
+    if (item.target) {
+      item.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      item.target.style.outline = '2px solid var(--accent)';
+      item.target.style.outlineOffset = '4px';
+      setTimeout(() => { item.target.style.outline = ''; item.target.style.outlineOffset = ''; }, 2000);
+    } else if (item.bookData) {
+      showBookPanel(item.bookData);
+    } else if (item.nodeId) {
+      const node = nodes.find(n => n.id === item.nodeId);
+      if (node) { selectedNode = node; showNodeInfo(node); document.getElementById('graph-section').scrollIntoView({ behavior:'smooth' }); }
+    }
+  }, 100);
+}
+
+document.getElementById('search-input').addEventListener('input', e => doSearch(e.target.value));
+document.getElementById('search-input').addEventListener('keydown', e => {
+  const results = document.querySelectorAll('.search-result');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    searchFocusIdx = Math.min(searchFocusIdx + 1, results.length - 1);
+    results.forEach((r, i) => r.classList.toggle('focused', i === searchFocusIdx));
+    results[searchFocusIdx]?.scrollIntoView({ block:'nearest' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    searchFocusIdx = Math.max(searchFocusIdx - 1, 0);
+    results.forEach((r, i) => r.classList.toggle('focused', i === searchFocusIdx));
+    results[searchFocusIdx]?.scrollIntoView({ block:'nearest' });
+  } else if (e.key === 'Enter') {
+    if (searchFocusIdx >= 0) navigateResult(searchFocusIdx);
+    else if (results.length > 0) navigateResult(0);
+  }
+});
+
+function openSearch() {
+  const overlay = document.getElementById('search-overlay');
+  overlay.classList.add('open');
+  const input = document.getElementById('search-input');
+  input.value = '';
+  input.focus();
+  document.getElementById('search-results').innerHTML = '<div class="search-empty">Start typing to search across the entire timeline, all 66 books, key people, and places of Scripture.</div>';
+  if (!searchIndex.length) buildSearchIndex();
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+}
+
+// Update section observer to include prophecy-section
+const prophSection = document.getElementById('prophecy-section');
+if (prophSection) sectionObserver.observe(prophSection);
+
 </script>
+
+<!-- SEARCH OVERLAY -->
+<div id="search-overlay" role="dialog" aria-modal="true" aria-label="Search" onclick="if(event.target===this)closeSearch()">
+  <div id="search-modal">
+    <div id="search-input-wrap">
+      <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input id="search-input" type="text" placeholder="Search events, books, people, places..." autocomplete="off" spellcheck="false">
+    </div>
+    <div id="search-results">
+      <div class="search-empty">Start typing to search across the entire timeline, all 66 books, key people, and places of Scripture.</div>
+    </div>
+    <div id="search-footer">
+      <span class="search-kbd"><kbd class="kbd">Enter</kbd> navigate</span>
+      <span class="search-kbd"><kbd class="kbd">↑↓</kbd> select</span>
+      <span class="search-kbd"><kbd class="kbd">Esc</kbd> close</span>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
