@@ -1560,6 +1560,76 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 .panel-bookmark-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 .panel-bookmark-btn.bookmarked { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 
+/* ── PHASE 13: WORD STUDIES ── */
+#word-studies-section { background: var(--bg); }
+.ws-filter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.ws-filter-btn { padding: .38rem .85rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--text2); font-size: .81rem; cursor: pointer; transition: all .2s; }
+.ws-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ws-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+.ws-card { background: var(--bg2); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.4rem; transition: box-shadow .2s; }
+.ws-card:hover { box-shadow: var(--shadow); }
+.ws-card-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: .75rem; }
+.ws-original { font-size: 1.6rem; line-height: 1.2; color: var(--gold); font-weight: 600; min-width: 2.5rem; text-align: center; }
+.ws-original.hebrew { direction: rtl; font-family: serif; font-size: 1.8rem; }
+.ws-original.greek { font-family: serif; font-size: 1.7rem; }
+.ws-meta { flex: 1; }
+.ws-transliteration { font-size: 1rem; font-weight: 700; color: var(--text); font-style: italic; }
+.ws-english { font-size: .82rem; color: var(--text2); margin-top: .15rem; }
+.ws-badge { display: inline-block; padding: .2rem .55rem; border-radius: 99px; font-size: .72rem; font-weight: 600; margin-top: .3rem; }
+.ws-badge.heb { background: #fef3c7; color: #92400e; }
+.ws-badge.grk { background: #eff6ff; color: #1d4ed8; }
+.ws-strongs { font-size: .75rem; color: var(--text2); margin-bottom: .5rem; }
+.ws-strongs span { font-weight: 600; color: var(--text); }
+.ws-desc { font-size: .84rem; color: var(--text2); line-height: 1.6; }
+.ws-ref { margin-top: .6rem; font-size: .8rem; color: var(--accent); font-style: italic; border-top: 1px solid var(--border); padding-top: .5rem; }
+.ws-count { font-size: .75rem; color: var(--text2); margin-top: .35rem; }
+
+/* ── PHASE 13: 12 TRIBES ── */
+#tribes-section { background: var(--bg); }
+.tribes-intro { text-align: center; max-width: 700px; margin: 0 auto 2rem; font-size: .95rem; color: var(--text2); line-height: 1.7; }
+.tribes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.25rem; }
+.tribe-card { background: var(--bg2); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: box-shadow .2s; }
+.tribe-card:hover { box-shadow: var(--shadow); }
+.tribe-bar { height: 5px; width: 100%; }
+.tribe-body { padding: 1.25rem 1.4rem; }
+.tribe-name-row { display: flex; align-items: baseline; gap: .65rem; margin-bottom: .6rem; }
+.tribe-name { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.tribe-hebrew { font-size: 1rem; color: var(--gold); font-style: italic; direction: rtl; font-family: serif; }
+.tribe-meaning { font-size: .8rem; color: var(--text2); font-style: italic; margin-bottom: .7rem; }
+.tribe-facts { list-style: none; padding: 0; margin: 0 0 .75rem; display: flex; flex-direction: column; gap: .3rem; }
+.tribe-facts li { font-size: .81rem; color: var(--text2); display: flex; gap: .4rem; }
+.tribe-facts li strong { color: var(--text); min-width: 68px; flex-shrink: 0; }
+.tribe-nt { margin-top: .6rem; padding-top: .6rem; border-top: 1px solid var(--border); font-size: .8rem; color: var(--accent); line-height: 1.5; }
+
+/* ── PHASE 13: VERSE HIGHLIGHTS ── */
+#highlights-section { background: var(--bg); }
+.hl-intro { text-align: center; max-width: 680px; margin: 0 auto 2rem; font-size: .95rem; color: var(--text2); line-height: 1.7; }
+.hl-add-form { background: var(--bg2); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.6rem; max-width: 680px; margin: 0 auto 2.5rem; }
+.hl-form-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
+.hl-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: .8rem; }
+.hl-form-row.single { grid-template-columns: 1fr; }
+.hl-label { font-size: .8rem; font-weight: 600; color: var(--text); margin-bottom: .3rem; }
+.hl-input { width: 100%; padding: .55rem .8rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--text); box-sizing: border-box; }
+.hl-input:focus { outline: none; border-color: var(--accent); }
+.hl-textarea { width: 100%; padding: .55rem .8rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--text); resize: vertical; min-height: 80px; box-sizing: border-box; }
+.hl-textarea:focus { outline: none; border-color: var(--accent); }
+.hl-colors { display: flex; gap: .6rem; margin-bottom: .8rem; }
+.hl-color-btn { width: 2rem; height: 2rem; border-radius: 50%; border: 2.5px solid transparent; cursor: pointer; transition: border-color .15s, transform .15s; }
+.hl-color-btn:hover { transform: scale(1.15); }
+.hl-color-btn.selected { border-color: var(--text); transform: scale(1.1); }
+.hl-save-btn { padding: .55rem 1.4rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+.hl-save-btn:hover { opacity: .88; }
+.hl-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.1rem; }
+.hl-card { border-radius: var(--radius); border: 1.5px solid var(--border); padding: 1.1rem 1.25rem; position: relative; transition: box-shadow .2s; }
+.hl-card:hover { box-shadow: var(--shadow); }
+.hl-card-ref { font-size: .8rem; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
+.hl-card-verse { font-size: .88rem; line-height: 1.6; color: var(--text); font-style: italic; font-family: 'Lora', serif; margin-bottom: .4rem; }
+.hl-card-note { font-size: .78rem; color: var(--text2); border-top: 1px solid var(--border); padding-top: .4rem; margin-top: .4rem; }
+.hl-card-del { position: absolute; top: .7rem; right: .7rem; background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1rem; line-height: 1; padding: .2rem .35rem; border-radius: var(--radius-sm); }
+.hl-card-del:hover { background: #fee2e2; color: #dc2626; }
+.hl-empty { text-align: center; color: var(--text2); padding: 3rem 1rem; font-size: .95rem; grid-column: 1/-1; }
+
 /* ── PHASE 12: PSALMS EXPLORER ── */
 #psalms-section { background: var(--bg); }
 .psalms-filter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
@@ -2778,6 +2848,9 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#psalms-section" class="tab-item">Psalms</a>
     <a href="#promises-section" class="tab-item">Promises</a>
     <a href="#geography-section" class="tab-item">Geography</a>
+    <a href="#word-studies-section" class="tab-item">Word Studies</a>
+    <a href="#tribes-section" class="tab-item">12 Tribes</a>
+    <a href="#highlights-section" class="tab-item">Verse Highlights</a>
   </div>
 </nav>
 
@@ -5147,6 +5220,181 @@ function printPlan(idx) {
 }
 
 renderReadingPlans();
+
+// ── PHASE 13: WORD STUDIES ────────────────────────────────────────
+const wordStudiesData = [
+  // Hebrew
+  { lang:'Hebrew', word:'שָׁלוֹם', romanize:'Shalom', strongs:'H7965', english:'Peace / Wholeness / Welfare', count:'237 occurrences', ref:'Numbers 6:24-26', desc:'Far richer than mere absence of conflict, shalom denotes complete well-being — spiritual, relational, physical, and communal. The Aaronic blessing sends God\'s shalom upon his people as an outpouring of his own wholeness.' },
+  { lang:'Hebrew', word:'חֶסֶד', romanize:'Hesed', strongs:'H2617', english:'Steadfast Love / Loyal Kindness', count:'248 occurrences', ref:'Lamentations 3:22-23', desc:'Often rendered "lovingkindness" or "mercy," hesed is covenant love that goes beyond obligation. It is the love that stays when it has every right to leave. Lamentations finds hope in this word even amid total devastation.' },
+  { lang:'Hebrew', word:'אֱמֶת', romanize:'Emet', strongs:'H571', english:'Truth / Faithfulness / Reliability', count:'127 occurrences', ref:'Psalm 119:160', desc:'Emet comes from the root "to be firm, stable." God\'s Word is emet — it stands unmoved by time or circumstance. Jesus\' "Truly, truly I say to you" (Amen, amen) draws directly on this ancient word.' },
+  { lang:'Hebrew', word:'תּוֹרָה', romanize:'Torah', strongs:'H8451', english:'Instruction / Teaching / Law', count:'220 occurrences', ref:'Psalm 1:2', desc:'Torah is not a cold legal code but loving parental instruction. The same God who redeems gives Torah to show his people how to live as the people they now are. Jesus did not abolish Torah but fulfilled its deepest intent.' },
+  { lang:'Hebrew', word:'כָּבוֹד', romanize:'Kavod', strongs:'H3519', english:'Glory / Weight / Honor', count:'200 occurrences', ref:'Isaiah 6:3', desc:'Kavod shares a root with "heavy" — God\'s glory has substance and weight. The seraphim proclaim the whole earth full of his kavod. In the New Testament, Jesus is "the radiance of God\'s glory" (Heb 1:3).' },
+  { lang:'Hebrew', word:'נֶפֶשׁ', romanize:'Nephesh', strongs:'H5315', english:'Soul / Person / Living Being', count:'755 occurrences', ref:'Genesis 2:7', desc:'When God breathed life into the dust, the man became a living nephesh. It refers to the entire living person — not an immortal soul separate from the body but the whole creature animated by God\'s breath.' },
+  { lang:'Hebrew', word:'רוּחַ', romanize:'Ruach', strongs:'H7307', english:'Spirit / Wind / Breath', count:'389 occurrences', ref:'Genesis 1:2', desc:'Ruach hovered over the formless deep at creation and is the same word for both the divine Spirit and a natural windstorm. God\'s Spirit is personal and powerful — as untameable and life-giving as the wind.' },
+  { lang:'Hebrew', word:'קָדוֹשׁ', romanize:'Qadosh', strongs:'H6918', english:'Holy / Set Apart / Sacred', count:'116 occurrences', ref:'Isaiah 6:3', desc:'Qadosh means fundamentally "set apart" — distinct, other, belonging to a different category. God\'s holiness is not merely moral purity but his utter uniqueness. His people are called qadosh: set apart to reflect his character.' },
+  { lang:'Hebrew', word:'אֱמוּנָה', romanize:'Emunah', strongs:'H530', english:'Faithfulness / Steadiness / Trust', count:'49 occurrences', ref:'Habakkuk 2:4', desc:'The righteous shall live by emunah — not merely an intellectual belief, but a steady, ongoing trust and faithfulness. Paul quotes this text in Romans, Galatians, and Hebrews to anchor justification by faith.' },
+  { lang:'Hebrew', word:'תְּשׁוּבָה', romanize:'Teshuva', strongs:'H8666', english:'Return / Repentance / Turning', count:'—', ref:'Joel 2:12-13', desc:'Teshuva comes from "to turn back." It is not mere regret but a complete reversal of direction — returning to God. God\'s call through every prophet is essentially teshuva: come back. The door is always open.' },
+  { lang:'Hebrew', word:'מַלְאָךְ', romanize:'Malak', strongs:'H4397', english:'Messenger / Angel / Envoy', count:'214 occurrences', ref:'Genesis 16:7', desc:'Malak simply means "messenger" — used for both human envoys and divine ones. The "angel of the LORD" who appears throughout the Old Testament with divine authority is understood by many theologians as a pre-incarnate appearance of Christ.' },
+  { lang:'Hebrew', word:'גְּאֻלָּה', romanize:'Ge\'ullah', strongs:'H1353', english:'Redemption / Kinsman-Redeemer', count:'14 occurrences', ref:'Ruth 4:14', desc:'The go\'el was a family member with the duty and right to redeem a relative from slavery or poverty. Boaz\'s redemption of Ruth is the supreme narrative illustration — and points to Christ as the ultimate kinsman-redeemer of his people.' },
+  { lang:'Hebrew', word:'דָּבָר', romanize:'Dabar', strongs:'H1697', english:'Word / Thing / Event / Matter', count:'1,440 occurrences', ref:'Isaiah 55:11', desc:'In Hebrew thought, a spoken word has power and substance — it does not merely describe reality but shapes it. God\'s dabar accomplishes what he sends it to do. John\'s "In the beginning was the Word" echoes this ancient concept.' },
+  // Greek
+  { lang:'Greek', word:'ἀγάπη', romanize:'Agape', strongs:'G26', english:'Unconditional / Sacrificial Love', count:'116 occurrences', ref:'1 John 4:8', desc:'Agape was a relatively rare Greek word before Christianity filled it with new meaning. It describes love that acts for the beloved\'s good regardless of merit — the love God demonstrated in sending his Son while we were still his enemies.' },
+  { lang:'Greek', word:'χάρις', romanize:'Charis', strongs:'G5485', english:'Grace / Unmerited Favor', count:'155 occurrences', ref:'Ephesians 2:8', desc:'Charis in classical Greek meant attractiveness or gift. Paul transformed it into the cornerstone of the gospel: God\'s undeserved, unconditional generosity given to those who deserve the opposite. Grace is not God lowering his standards — it is God meeting the full standard on our behalf.' },
+  { lang:'Greek', word:'πίστις', romanize:'Pistis', strongs:'G4102', english:'Faith / Trust / Faithfulness', count:'243 occurrences', ref:'Hebrews 11:1', desc:'Pistis is both the act of trusting and the quality of being trustworthy. Faith is not blind leap but informed trust in a proven person. The same word describes Abraham\'s faith and God\'s own faithfulness — the circle of trust between the faithful God and his faith-full people.' },
+  { lang:'Greek', word:'σωτηρία', romanize:'Soteria', strongs:'G4991', english:'Salvation / Deliverance / Rescue', count:'45 occurrences', ref:'Acts 4:12', desc:'Soteria is the comprehensive rescue of the whole person from everything that diminishes them — sin, death, spiritual bondage, and ultimate condemnation. It has past (justified), present (being sanctified), and future (glorified) dimensions.' },
+  { lang:'Greek', word:'καιρός', romanize:'Kairos', strongs:'G2540', english:'Appointed Time / Opportune Moment', count:'85 occurrences', ref:'Mark 1:15', desc:'Contrasted with chronos (clock time), kairos is time with quality and purpose — a decisive moment. "The time is fulfilled" at Jesus\' arrival announces that the long-awaited kairos of God has arrived. History has been building toward this moment.' },
+  { lang:'Greek', word:'παρουσία', romanize:'Parousia', strongs:'G3952', english:'Coming / Arrival / Royal Presence', count:'24 occurrences', ref:'1 Thessalonians 4:15', desc:'Parousia was used for the official arrival of a king or emperor to a city — a world-altering event. The New Testament uses it exclusively for Christ\'s return: not a secret but a glorious, visible, history-ending arrival.' },
+  { lang:'Greek', word:'ἐκκλησία', romanize:'Ekklesia', strongs:'G1577', english:'Church / Assembly / Called-Out People', count:'114 occurrences', ref:'Matthew 16:18', desc:'Ekklesia in Greek meant a civic assembly of citizens called out to conduct public business. Jesus redefined it as his community — people called out of the world to belong to him and embody his kingdom. It is not a building but a people.' },
+  { lang:'Greek', word:'πνεῦμα', romanize:'Pneuma', strongs:'G4151', english:'Spirit / Breath / Wind', count:'379 occurrences', ref:'John 3:8', desc:'Like the Hebrew ruach, pneuma carries the double meaning of spirit and breath/wind. Jesus uses this wordplay with Nicodemus: the Spirit\'s work is as invisible and untameable as wind, yet undeniably real in its effects.' },
+  { lang:'Greek', word:'δόξα', romanize:'Doxa', strongs:'G1391', english:'Glory / Honor / Splendor', count:'168 occurrences', ref:'John 1:14', desc:'Doxa originally meant "opinion" but came to mean the reputation or honor that reflects inner reality. When John says "We saw his glory," he is saying Jesus\' life was the visible expression of God\'s true nature — full of grace and truth.' },
+  { lang:'Greek', word:'δικαιοσύνη', romanize:'Dikaiosyne', strongs:'G1343', english:'Righteousness / Justice / Right-standing', count:'92 occurrences', ref:'Romans 3:21-22', desc:'Dikaiosyne is both legal standing (acquitted before God) and moral character (acting rightly toward others). Paul declares a righteousness from God apart from law — received through faith in Christ. It is both forensic and transformative.' },
+  { lang:'Greek', word:'κένωσις', romanize:'Kenosis', strongs:'G2758', english:'Self-Emptying / Pouring Out', count:'—', ref:'Philippians 2:7', desc:'Derived from kenoo — "to empty." Paul\'s great Christological hymn describes Jesus "emptying himself" by taking the form of a servant. Not an emptying of deity, but a voluntary setting aside of divine prerogatives in order to fully enter human experience.' },
+  { lang:'Greek', word:'παράκλητος', romanize:'Parakletos', strongs:'G3875', english:'Advocate / Helper / Comforter', count:'5 occurrences', ref:'John 14:16', desc:'Para (alongside) + kaleo (to call) = one called alongside to help. Used in legal contexts for a defense attorney and in pastoral contexts for a comforter. Jesus promises another Paraklete (implying he himself is the first), the Spirit who will remain with his people forever.' },
+  { lang:'Greek', word:'μετάνοια', romanize:'Metanoia', strongs:'G3341', english:'Repentance / Change of Mind / Transformation', count:'22 occurrences', ref:'Acts 2:38', desc:'Meta (after/change) + nous (mind) = a thoroughgoing change in how you think about everything. Metanoia is not regret alone but a complete reorientation — turning from self-governance to God\'s governance. Both John the Baptist and Jesus open their ministry with this call.' },
+  { lang:'Greek', word:'τέλειος', romanize:'Teleios', strongs:'G5046', english:'Perfect / Complete / Mature / Whole', count:'19 occurrences', ref:'Matthew 5:48', desc:'Teleios comes from telos — "end" or "goal." To be teleios is to have fully reached your intended purpose. Jesus\' call to "be perfect" is a call to wholeness and maturity, not sinless perfection — to reflect the completeness of the Father who loves without limit.' },
+  { lang:'Greek', word:'κοινωνία', romanize:'Koinonia', strongs:'G2842', english:'Fellowship / Communion / Participation', count:'19 occurrences', ref:'Acts 2:42', desc:'Koinonia comes from koinos — "common." It is far deeper than friendly socializing: a shared life, shared possessions, shared suffering, and shared participation in Christ himself. The early church\'s koinonia was so radical it was visible to the watching world.' },
+];
+
+function renderWordStudies(filter) {
+  document.querySelectorAll('.ws-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.startsWith(filter === 'All' ? 'All' : filter));
+  });
+  const grid = document.getElementById('ws-grid');
+  if (!grid) return;
+  const list = filter === 'All' ? wordStudiesData : wordStudiesData.filter(w => w.lang === filter);
+  grid.innerHTML = list.map(w => {
+    const isHeb = w.lang === 'Hebrew';
+    return `<div class="ws-card">
+      <div class="ws-card-header">
+        <div class="ws-original ${isHeb ? 'hebrew' : 'greek'}">${w.word}</div>
+        <div class="ws-meta">
+          <div class="ws-transliteration">${w.romanize}</div>
+          <div class="ws-english">${w.english}</div>
+          <span class="ws-badge ${isHeb ? 'heb' : 'grk'}">${w.lang}</span>
+        </div>
+      </div>
+      <div class="ws-strongs">Strong's <span>${w.strongs}</span></div>
+      <div class="ws-desc">${w.desc}</div>
+      <div class="ws-ref">${w.ref}</div>
+      <div class="ws-count">${w.count}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── PHASE 13: 12 TRIBES ─────────────────────────────────────────
+const tribesData = [
+  { name:'Reuben', hebrew:'רְאוּבֵן', meaning:'See, a son!', mother:'Leah', color:'#dc2626', blessing:'Turbulent as water, you shall not excel — lost birthright after defiling his father\'s bed (Gen 35:22).', territory:'East of Jordan (Transjordan), north of Gad', notable:'Tried to save Joseph from the pit; lost firstborn rights given to Joseph\'s sons', nt:'Mentioned in Revelation 7:5 as sealed among the 144,000' },
+  { name:'Simeon', hebrew:'שִׁמְעוֹן', meaning:'He who hears', mother:'Leah', color:'#ea580c', blessing:'Scattered in Israel — along with Levi, for their violence at Shechem (Gen 34).', territory:'Absorbed into Judah\'s territory in southern Canaan', notable:'Simeon was held hostage by Joseph in Egypt as a pledge (Gen 42:24)', nt:'The name Simeon (Greek form) is carried by the apostle Peter and by Simeon at the Temple (Luke 2:25)' },
+  { name:'Levi', hebrew:'לֵוִי', meaning:'Attached', mother:'Leah', color:'#d97706', blessing:'Scattered — yet transformed into blessing. Their passion for God (Ex 32) made them priests.', territory:'No tribal land; 48 Levitical cities spread throughout Israel', notable:'Moses, Aaron, and Miriam; the entire priestly line; John the Baptist', nt:'The Letter to the Hebrews contrasts the Levitical priesthood with Christ\'s superior priesthood after the order of Melchizedek' },
+  { name:'Judah', hebrew:'יְהוּדָה', meaning:'Praise', mother:'Leah', color:'#ca8a04', blessing:'The lion\'s cub. The scepter shall not depart from Judah until Shiloh comes (Gen 49:10).', territory:'Largest tribe; southern Canaan, including Jerusalem and Bethlehem', notable:'King David, King Solomon, all the kings of the southern kingdom; Jesus of Nazareth', nt:'Jesus is "the Lion of the tribe of Judah" (Rev 5:5). The Davidic covenant (2 Sam 7) is fulfilled in Christ.' },
+  { name:'Zebulun', hebrew:'זְבוּלוּן', meaning:'Honor / Dwelling', mother:'Leah', color:'#16a34a', blessing:'Shall dwell at the shore of the sea and be a haven for ships.', territory:'Galilee, inland from Carmel to the Sea of Galilee', notable:'Region of Jesus\' primary ministry in the Galilee — "Galilee of the Gentiles"', nt:'Matthew 4:13-15 quotes Isaiah 9:1 — Jesus moved to Capernaum in "the land of Zebulun and Naphtali" to fulfill prophecy' },
+  { name:'Issachar', hebrew:'יִשָּׂשכָר', meaning:'He will bring a reward', mother:'Leah', color:'#0891b2', blessing:'A strong donkey crouching between its saddlebags — recognized the good land and bore the yoke.', territory:'Jezreel Valley, some of the most fertile land in Israel', notable:'1 Chronicles 12:32 honors the "men of Issachar who understood the times"', nt:'The gift of discerning the times is celebrated in the NT call to understand God\'s redemptive calendar (Rom 13:11)' },
+  { name:'Dan', hebrew:'דָּן', meaning:'He judged', mother:'Bilhah (Rachel\'s servant)', color:'#7c3aed', blessing:'Dan shall judge his people... a serpent by the way who bites the horse\'s heels.', territory:'Original allotment in the south-west; migrated north to Laish (Dan) near Mt. Hermon', notable:'Samson was a Danite; the tribe set up idols at Dan (Judges 18)', nt:'Dan is the only tribe absent from the 144,000 in Revelation 7 — widely linked to their history of idolatry' },
+  { name:'Naphtali', hebrew:'נַפְתָּלִי', meaning:'My wrestling', mother:'Bilhah (Rachel\'s servant)', color:'#0284c7', blessing:'A doe set free that bears beautiful fawns.', territory:'Northern Galilee, west of the Jordan, around the Sea of Galilee', notable:'Jesus spent most of his earthly ministry in the region of Naphtali; site of the Sermon on the Mount', nt:'Isaiah 9:1 / Matthew 4:15 — "land of Naphtali" was to see the great light, fulfilled in Christ\'s ministry there' },
+  { name:'Gad', hebrew:'גָּד', meaning:'Good fortune / A troop', mother:'Zilpah (Leah\'s servant)', color:'#15803d', blessing:'Raiders shall raid him, but he shall raid at their heels.', territory:'East of Jordan (Transjordan), between Reuben and the half-tribe of Manasseh', notable:'Warriors; asked Moses for the Transjordan territory (Num 32)', nt:'Mentioned among the sealed in Revelation 7:5' },
+  { name:'Asher', hebrew:'אָשֵׁר', meaning:'Happy / Blessed', mother:'Zilpah (Leah\'s servant)', color:'#0369a1', blessing:'His food shall be rich, and he shall yield royal delicacies.', territory:'Coastal plain from Carmel north to Phoenicia', notable:'Known for olive oil and fertile land; Anna the prophetess (Luke 2:36) was from Asher', nt:'Anna of Asher was among the first to recognize the infant Jesus as the Messiah in the Temple (Luke 2:36-38)' },
+  { name:'Joseph (Ephraim + Manasseh)', hebrew:'יוֹסֵף', meaning:'May he add', mother:'Rachel', color:'#be185d', blessing:'A fruitful bough by a spring. Jacob crossed his hands — Ephraim the younger received the greater blessing (Gen 48).', territory:'Central hill country: Ephraim in south-center; Manasseh in north-center and east of Jordan', notable:'Ephraim became the leading northern tribe; Israel is sometimes called "Ephraim" by the prophets', nt:'The parable of the Prodigal Son echoes Joseph\'s story of exile, reconciliation, and restoration (Luke 15)' },
+  { name:'Benjamin', hebrew:'בִּנְיָמִין', meaning:'Son of the right hand', mother:'Rachel (died in childbirth)', color:'#9333ea', blessing:'Benjamin is a ravenous wolf — in the morning devouring the prey, in the evening dividing the plunder.', territory:'Narrow strip between Judah and Ephraim, including Jerusalem\'s northern edge and Jericho', notable:'King Saul, Esther and Mordecai, the Apostle Paul — "a Hebrew of Hebrews, of the tribe of Benjamin" (Phil 3:5)', nt:'Paul\'s tribal identity as a Benjaminite (Rom 11:1) grounds his argument that God has not rejected his people Israel' },
+];
+
+function renderTribes() {
+  const grid = document.getElementById('tribes-grid');
+  if (!grid) return;
+  grid.innerHTML = tribesData.map(t => `<div class="tribe-card">
+    <div class="tribe-bar" style="background:${t.color}"></div>
+    <div class="tribe-body">
+      <div class="tribe-name-row">
+        <div class="tribe-name">${t.name}</div>
+        <div class="tribe-hebrew">${t.hebrew}</div>
+      </div>
+      <div class="tribe-meaning">"${t.meaning}"</div>
+      <ul class="tribe-facts">
+        <li><strong>Mother:</strong> ${t.mother}</li>
+        <li><strong>Territory:</strong> ${t.territory}</li>
+        <li><strong>Notable:</strong> ${t.notable}</li>
+        <li><strong>Blessing:</strong> ${t.blessing}</li>
+      </ul>
+      <div class="tribe-nt">${t.nt}</div>
+    </div>
+  </div>`).join('');
+}
+
+// ── PHASE 13: VERSE HIGHLIGHTS ───────────────────────────────────
+const HL_COLORS = [
+  { id:'yellow', bg:'#fef9c3', border:'#ca8a04', label:'Yellow' },
+  { id:'blue',   bg:'#dbeafe', border:'#2563eb', label:'Blue' },
+  { id:'green',  bg:'#dcfce7', border:'#16a34a', label:'Green' },
+  { id:'rose',   bg:'#ffe4e6', border:'#f43f5e', label:'Rose' },
+  { id:'purple', bg:'#ede9fe', border:'#7c3aed', label:'Purple' },
+];
+let hlSelectedColor = 'yellow';
+
+function loadHighlights() {
+  try { return JSON.parse(localStorage.getItem('scripture_verse_highlights') || '[]'); } catch(e) { return []; }
+}
+
+function initHighlights() {
+  renderHlColorPicker();
+  renderHighlightsList();
+}
+
+function renderHlColorPicker() {
+  const picker = document.getElementById('hl-color-picker');
+  if (!picker) return;
+  picker.innerHTML = HL_COLORS.map(c =>
+    `<button class="hl-color-btn${c.id === hlSelectedColor ? ' selected' : ''}" style="background:${c.bg};border-color:${c.id === hlSelectedColor ? c.border : 'transparent'}" onclick="hlSelectColor('${c.id}')" aria-label="${c.label} highlight" title="${c.label}"></button>`
+  ).join('');
+}
+
+function hlSelectColor(id) {
+  hlSelectedColor = id;
+  renderHlColorPicker();
+}
+
+function saveHighlight() {
+  const ref = (document.getElementById('hl-ref') || {}).value?.trim();
+  const verse = (document.getElementById('hl-verse') || {}).value?.trim();
+  if (!ref || !verse) { alert('Please enter a reference and verse text.'); return; }
+  const trans = (document.getElementById('hl-trans') || {}).value?.trim() || '';
+  const note = (document.getElementById('hl-note') || {}).value?.trim() || '';
+  const highlights = loadHighlights();
+  highlights.unshift({ id: Date.now(), ref, trans, verse, note, color: hlSelectedColor });
+  localStorage.setItem('scripture_verse_highlights', JSON.stringify(highlights));
+  document.getElementById('hl-ref').value = '';
+  document.getElementById('hl-trans').value = '';
+  document.getElementById('hl-verse').value = '';
+  document.getElementById('hl-note').value = '';
+  renderHighlightsList();
+}
+
+function deleteHighlight(id) {
+  const highlights = loadHighlights().filter(h => h.id !== id);
+  localStorage.setItem('scripture_verse_highlights', JSON.stringify(highlights));
+  renderHighlightsList();
+}
+
+function renderHighlightsList() {
+  const list = document.getElementById('hl-list');
+  if (!list) return;
+  const highlights = loadHighlights();
+  if (!highlights.length) {
+    list.innerHTML = '<div class="hl-empty">No highlights yet. Add your first verse above.</div>';
+    return;
+  }
+  list.innerHTML = highlights.map(h => {
+    const col = HL_COLORS.find(c => c.id === h.color) || HL_COLORS[0];
+    return `<div class="hl-card" style="background:${col.bg};border-color:${col.border}">
+      <button class="hl-card-del" onclick="deleteHighlight(${h.id})" aria-label="Delete highlight">&times;</button>
+      <div class="hl-card-ref">${h.ref}${h.trans ? ' · ' + h.trans : ''}</div>
+      <div class="hl-card-verse">${h.verse}</div>
+      ${h.note ? `<div class="hl-card-note">${h.note}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+renderWordStudies('All');
+renderTribes();
+initHighlights();
 
 // ── PHASE 12: PSALMS EXPLORER ────────────────────────────────────
 const psalmsData = [
@@ -7624,6 +7872,68 @@ renderPeople('all');
     <h2 class="section-title">Bible Geography</h2>
     <p class="geo-intro">The Bible is a geographical book — its stories are rooted in real places. Understanding these locations enriches the narrative and grounds faith in history.</p>
     <div class="geo-grid" id="geo-grid"></div>
+  </div>
+</section>
+
+<!-- PHASE 13: WORD STUDIES -->
+<section id="word-studies-section" class="section" aria-label="Biblical Word Studies">
+  <div class="section-inner">
+    <h2 class="section-title">Biblical Word Studies</h2>
+    <p class="section-subtitle">28 key Hebrew and Greek terms explored in their original language, with theological context and Scripture references</p>
+    <div class="ws-filter">
+      <button class="ws-filter-btn active" onclick="renderWordStudies('All')">All (28)</button>
+      <button class="ws-filter-btn" onclick="renderWordStudies('Hebrew')">Hebrew (13)</button>
+      <button class="ws-filter-btn" onclick="renderWordStudies('Greek')">Greek (15)</button>
+    </div>
+    <div class="ws-grid" id="ws-grid"></div>
+  </div>
+</section>
+
+<!-- PHASE 13: 12 TRIBES -->
+<section id="tribes-section" class="section" aria-label="12 Tribes of Israel">
+  <div class="section-inner">
+    <h2 class="section-title">The 12 Tribes of Israel</h2>
+    <p class="section-subtitle">The sons of Jacob and the covenant people who carried the promises of God through history to their fulfillment in Christ</p>
+    <p class="tribes-intro">Each tribe received Jacob's prophetic blessing (Genesis 49) and a portion in the Promised Land — together forming one people chosen to bear God's name to the nations.</p>
+    <div class="tribes-grid" id="tribes-grid"></div>
+  </div>
+</section>
+
+<!-- PHASE 13: VERSE HIGHLIGHTS -->
+<section id="highlights-section" class="section" aria-label="Personal Verse Highlights">
+  <div class="section-inner">
+    <h2 class="section-title">Personal Verse Highlights</h2>
+    <p class="section-subtitle">Save and color-code Scripture verses that speak to you — your personal anthology of God's Word</p>
+    <p class="hl-intro">Choose a highlight color, enter a reference and verse text, and add a personal note. Your highlights are saved privately in your browser.</p>
+    <div class="hl-add-form">
+      <div class="hl-form-title">Add a Verse Highlight</div>
+      <div class="hl-form-row">
+        <div>
+          <div class="hl-label">Reference</div>
+          <input class="hl-input" id="hl-ref" type="text" placeholder="e.g. John 3:16" aria-label="Verse reference">
+        </div>
+        <div>
+          <div class="hl-label">Translation</div>
+          <input class="hl-input" id="hl-trans" type="text" placeholder="e.g. ESV" aria-label="Bible translation">
+        </div>
+      </div>
+      <div class="hl-form-row single">
+        <div>
+          <div class="hl-label">Verse Text</div>
+          <textarea class="hl-textarea" id="hl-verse" placeholder="Paste or type the verse here..." aria-label="Verse text"></textarea>
+        </div>
+      </div>
+      <div class="hl-form-row single">
+        <div>
+          <div class="hl-label">Personal Note (optional)</div>
+          <input class="hl-input" id="hl-note" type="text" placeholder="Why this verse matters to you..." aria-label="Personal note">
+        </div>
+      </div>
+      <div class="hl-label" style="margin-bottom:.4rem">Highlight Color</div>
+      <div class="hl-colors" id="hl-color-picker"></div>
+      <button class="hl-save-btn" onclick="saveHighlight()">Save Highlight</button>
+    </div>
+    <div class="hl-list" id="hl-list"></div>
   </div>
 </section>
 
