@@ -1,0 +1,3253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Grand Story of Scripture · FLCC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFFFFF;
+  --bg2: #F8F9FA;
+  --bg3: #F1F3F5;
+  --text: #111827;
+  --text2: #6B7280;
+  --border: #E5E7EB;
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --accent-mid: #BFDBFE;
+  --gold: #B45309;
+  --gold-light: #FEF3C7;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow: 0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.10);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── TYPOGRAPHY ── */
+.serif { font-family: 'Playfair Display', Georgia, serif; }
+.lora { font-family: 'Lora', Georgia, serif; }
+
+h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
+
+/* ── TOP NAV ── */
+#top-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .02em;
+  text-decoration: none;
+}
+
+.nav-logo span { color: var(--accent); }
+
+.nav-links {
+  display: flex; gap: 2px;
+  list-style: none;
+}
+
+.nav-links a {
+  display: block;
+  padding: 6px 14px;
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--text2);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all .15s;
+  letter-spacing: .01em;
+}
+
+.nav-links a:hover { background: var(--bg2); color: var(--text); }
+.nav-links a.active { background: var(--accent-light); color: var(--accent); }
+
+.nav-cta {
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .15s;
+  letter-spacing: .01em;
+}
+
+.nav-cta:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,.3); }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #f0f4ff 0%, #ffffff 50%, #fef9f0 100%);
+}
+
+.hero-landscape {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* SVG mountain landscape */
+.hero-landscape svg {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  width: 100%; height: auto;
+}
+
+/* Light rays */
+.hero-landscape::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 80%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,249,230,.9) 0%, rgba(255,249,230,.4) 40%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-landscape::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 20%, rgba(255,245,200,.5) 0%, transparent 60%),
+    linear-gradient(to bottom, transparent 40%, rgba(255,255,255,.6) 80%, rgba(255,255,255,1) 100%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative; z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 120px 32px 80px;
+  text-align: center;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid var(--accent-mid);
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 28px;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.08;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.hero-title .line2 {
+  display: block;
+  color: var(--accent);
+}
+
+.hero-subtitle {
+  font-family: 'Lora', serif;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  color: var(--text2);
+  font-style: italic;
+  margin-bottom: 20px;
+  letter-spacing: .01em;
+}
+
+.hero-desc {
+  font-size: .95rem;
+  color: var(--text2);
+  max-width: 520px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+
+.btn-primary {
+  padding: 14px 32px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+  letter-spacing: .01em;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37,99,235,.3);
+}
+
+.btn-secondary {
+  padding: 14px 32px;
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+  letter-spacing: .01em;
+}
+
+.btn-secondary:hover {
+  background: var(--bg2);
+  border-color: var(--text2);
+  transform: translateY(-2px);
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  animation: float 2s ease-in-out infinite;
+  z-index: 1;
+}
+
+.scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--text2));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(6px); }
+}
+
+/* ── SECTION WRAPPER ── */
+.section {
+  padding: 80px 0;
+}
+
+.section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.section-label {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.section-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.section-sub {
+  font-size: .95rem;
+  color: var(--text2);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* ── TAB BAR (sections) ── */
+#section-tabs {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+}
+
+.tabs-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs-inner::-webkit-scrollbar { display: none; }
+
+.tab-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 16px 20px;
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--text2);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all .15s;
+  cursor: pointer;
+  background: none;
+  border-top: none; border-left: none; border-right: none;
+  letter-spacing: .01em;
+}
+
+.tab-item:hover { color: var(--text); background: var(--bg2); }
+.tab-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── TIMELINE ── */
+#timeline-section {
+  background: var(--bg);
+  padding: 60px 0;
+}
+
+.timeline-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* Left sticky nav */
+.timeline-nav {
+  position: sticky;
+  top: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tnav-era {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
+  color: var(--text2);
+}
+
+.tnav-era:hover { background: var(--bg2); color: var(--text); }
+.tnav-era.active { background: var(--accent-light); color: var(--accent); }
+
+.tnav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background .15s;
+}
+
+.tnav-era.active .tnav-dot { background: var(--accent); }
+.tnav-era:hover .tnav-dot { background: var(--text2); }
+
+.tnav-label {
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .01em;
+}
+
+/* Timeline content column */
+.timeline-content {
+  position: relative;
+}
+
+/* Vertical line */
+.timeline-content::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border) 5%, var(--border) 95%, transparent);
+}
+
+/* Era group */
+.era-group {
+  position: relative;
+  margin-bottom: 64px;
+}
+
+.era-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 28px;
+  padding-left: 24px;
+  position: relative;
+}
+
+.era-header::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.era-badge {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid var(--accent-mid);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.era-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.era-date {
+  font-size: .75rem;
+  color: var(--text2);
+  font-style: italic;
+}
+
+/* Event card */
+.event-card {
+  margin-left: 24px;
+  margin-bottom: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.event-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .4s ease, transform .4s ease, box-shadow .2s, border-color .2s;
+}
+
+.event-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--accent-mid);
+  transform: translateY(-2px);
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.event-card:hover::before { opacity: 1; }
+
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+
+.card-ref {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 3px 9px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.card-context {
+  font-size: .875rem;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.card-meta {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  margin-bottom: 16px;
+}
+
+.meta-group { display: flex; flex-direction: column; gap: 4px; }
+
+.meta-label {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.meta-tags {
+  display: flex; flex-wrap: wrap; gap: 4px;
+}
+
+.meta-tag {
+  font-size: .75rem;
+  color: var(--text);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 5px;
+}
+
+.card-scriptures {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 16px;
+}
+
+.scripture-chip {
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--gold);
+  background: var(--gold-light);
+  border: 1px solid #fde68a;
+  padding: 4px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.scripture-chip:hover {
+  background: #fef08a;
+  transform: translateY(-1px);
+}
+
+.card-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+
+.card-btn {
+  padding: 7px 14px;
+  font-size: .75rem;
+  font-weight: 500;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all .15s;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text2);
+  letter-spacing: .01em;
+}
+
+.card-btn:hover { background: var(--bg2); color: var(--text); border-color: var(--text2); }
+.card-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.card-btn.primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+
+/* ── CHRIST SECTION ── */
+#christ-section {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 30%, #fffbeb 100%);
+  border-top: 1px solid #fde68a;
+  border-bottom: 1px solid #fde68a;
+  padding: 80px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#christ-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(251,191,36,.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.christ-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.christ-eyebrow {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+.christ-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.christ-subtitle {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text2);
+  margin-bottom: 48px;
+  max-width: 500px;
+}
+
+.christ-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.christ-card {
+  background: rgba(255,255,255,.8);
+  border: 1px solid #fde68a;
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+  transition: all .2s;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.christ-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .4s ease, transform .4s ease, box-shadow .2s;
+}
+
+.christ-card:hover {
+  box-shadow: 0 4px 20px rgba(180,83,9,.12);
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+}
+
+.christ-card-num {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.christ-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.christ-card-refs {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-bottom: 10px;
+}
+
+.gospel-chip {
+  font-size: .65rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .04em;
+}
+
+.gospel-matt { background: #dbeafe; color: #1e40af; }
+.gospel-mark { background: #dcfce7; color: #166534; }
+.gospel-luke { background: #fef9c3; color: #854d0e; }
+.gospel-john { background: #fce7f3; color: #9d174d; }
+
+.christ-card-text {
+  font-size: .82rem;
+  color: var(--text2);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+
+.christ-prophecy {
+  font-size: .75rem;
+  color: var(--gold);
+  background: var(--gold-light);
+  border: 1px solid #fde68a;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-style: italic;
+}
+
+/* ── BOOK EXPLORER ── */
+#books-section {
+  background: var(--bg2);
+  padding: 80px 0;
+}
+
+.books-layout { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+.books-categories {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.cat-btn {
+  padding: 7px 16px;
+  font-size: .78rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: .01em;
+}
+
+.cat-btn:hover { background: var(--bg3); color: var(--text); }
+.cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.book-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  cursor: pointer;
+  transition: all .2s;
+  display: none;
+}
+
+.book-card.show { display: block; }
+.book-card:hover { box-shadow: var(--shadow); border-color: var(--accent-mid); transform: translateY(-2px); }
+
+.book-testament {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 4px;
+}
+
+.book-name {
+  font-family: 'Playfair Display', serif;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.book-category {
+  font-size: .7rem;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+
+.book-theme {
+  font-size: .75rem;
+  color: var(--text2);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── KNOWLEDGE GRAPH ── */
+#graph-section {
+  background: var(--bg);
+  padding: 80px 0;
+}
+
+.graph-layout { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+#graph-canvas-wrap {
+  width: 100%;
+  height: 520px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  cursor: grab;
+}
+
+#graph-canvas-wrap:active { cursor: grabbing; }
+
+#knowledge-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.graph-legend {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .75rem;
+  color: var(--text2);
+}
+
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+/* ── PAUL'S JOURNEYS MAP ── */
+#map-section {
+  background: var(--bg2);
+  padding: 80px 0;
+}
+
+.map-layout { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+#journey-map {
+  width: 100%;
+  height: 460px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+}
+
+.map-svg-container {
+  width: 100%; height: 100%;
+  position: relative;
+}
+
+.map-location {
+  position: absolute;
+  cursor: pointer;
+}
+
+.map-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.2);
+  transition: all .2s;
+}
+
+.map-location:hover .map-dot {
+  transform: scale(1.4);
+  box-shadow: 0 0 0 4px rgba(37,99,235,.3);
+}
+
+.map-location.jerusalem .map-dot { background: var(--gold); box-shadow: 0 0 0 3px rgba(180,83,9,.2); }
+
+.map-label {
+  position: absolute;
+  left: 16px; top: 50%;
+  transform: translateY(-50%);
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  background: rgba(255,255,255,.9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.map-location:hover .map-label { opacity: 1; }
+
+.map-tooltip {
+  position: absolute;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-lg);
+  max-width: 240px;
+  font-size: .8rem;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.map-tooltip.show { opacity: 1; }
+
+.tooltip-city {
+  font-family: 'Playfair Display', serif;
+  font-size: .95rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.tooltip-text { color: var(--text2); line-height: 1.6; }
+
+/* ── REVELATION SECTION ── */
+#revelation-section {
+  background: linear-gradient(160deg, #f5f3ff 0%, #eff6ff 50%, #f0fdf4 100%);
+  border-top: 1px solid #ddd6fe;
+  padding: 80px 0;
+}
+
+.rev-layout { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+.rev-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 40px;
+  position: relative;
+  padding-left: 32px;
+}
+
+.rev-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, #a78bfa, #93c5fd, #86efac);
+}
+
+.rev-item {
+  position: relative;
+  padding: 0 0 32px 28px;
+  opacity: 0;
+  transform: translateX(-12px);
+}
+
+.rev-item.visible {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all .4s ease;
+}
+
+.rev-item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 6px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid #a78bfa;
+  z-index: 1;
+}
+
+.rev-ref {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  padding: 3px 9px;
+  border-radius: 5px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.rev-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.rev-text {
+  font-size: .85rem;
+  color: var(--text2);
+  line-height: 1.7;
+  max-width: 580px;
+}
+
+/* ── SCRIPTURE PANEL ── */
+#scripture-panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: 380px;
+  height: 100vh;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(0,0,0,.08);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+
+#scripture-panel.open { transform: translateX(0); }
+
+.panel-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.panel-title-ref {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.panel-close {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2);
+  font-size: 1rem;
+  transition: all .15s;
+  line-height: 1;
+}
+
+.panel-close:hover { background: var(--bg2); color: var(--text); }
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.panel-verse-ref {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.panel-verse-text {
+  font-family: 'Lora', serif;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text);
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.panel-verse-text::before {
+  content: '\201C';
+  font-size: 2.5rem;
+  color: var(--accent-mid);
+  line-height: 0;
+  vertical-align: -.6em;
+  margin-right: 4px;
+}
+
+.panel-section-label {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.panel-cross-refs {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+
+.panel-xref {
+  font-size: .75rem;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid var(--accent-mid);
+  padding: 4px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.panel-xref:hover { background: var(--accent-mid); }
+
+/* ── PROGRESS WIDGET ── */
+#progress-widget {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-lg);
+  z-index: 150;
+  width: 220px;
+  transition: all .2s;
+}
+
+#progress-widget.collapsed { width: auto; padding: 10px 14px; }
+
+.progress-toggle {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.progress-toggle-label {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.progress-toggle-btn {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: none;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: .8rem;
+  transition: transform .2s;
+}
+
+#progress-widget.collapsed .progress-toggle { margin-bottom: 0; }
+#progress-widget.collapsed .progress-body { display: none; }
+#progress-widget.collapsed .progress-toggle-btn { transform: rotate(180deg); }
+
+.progress-stat {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-stat:last-child { border-bottom: none; }
+
+.stat-label {
+  font-size: .75rem;
+  color: var(--text2);
+}
+
+.stat-value {
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.progress-bar-wrap {
+  margin-top: 12px;
+}
+
+.pbar-label {
+  display: flex; justify-content: space-between;
+  font-size: .7rem;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+
+.pbar {
+  height: 4px;
+  background: var(--bg3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pbar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+
+/* ── MOBILE BOTTOM NAV ── */
+#mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index: 180;
+}
+
+.mobile-nav-inner {
+  display: flex; justify-content: space-around;
+}
+
+.mobile-nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 4px 12px;
+  border: none; background: none;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: .65rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color .15s;
+  letter-spacing: .01em;
+}
+
+.mobile-nav-btn.active { color: var(--accent); }
+.mobile-nav-btn svg { width: 20px; height: 20px; stroke-width: 1.5; }
+
+/* ── DIVIDER ── */
+.section-divider {
+  width: 48px; height: 1px;
+  background: var(--border);
+  margin: 16px 0 24px;
+}
+
+/* ── EARLY CHURCH ── */
+#church-section {
+  background: var(--bg2);
+  padding: 80px 0;
+}
+
+.church-layout { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+.church-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.church-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  transition: all .2s;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.church-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all .4s ease;
+}
+
+.church-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); border-color: var(--accent-mid); }
+
+.church-card-ref {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.church-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.church-card-text {
+  font-size: .82rem;
+  color: var(--text2);
+  line-height: 1.65;
+}
+
+/* ── FADE-IN ANIMATION ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  opacity: 0;
+  animation: fadeUp .6s ease forwards;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  #top-nav { padding: 0 16px; }
+  .nav-links { display: none; }
+  .nav-cta { display: none; }
+
+  .hero-content { padding: 100px 16px 80px; }
+
+  .timeline-layout {
+    grid-template-columns: 1fr;
+    padding: 0 16px;
+  }
+
+  .timeline-nav { display: none; }
+
+  .section-inner,
+  .christ-layout,
+  .books-layout,
+  .graph-layout,
+  .map-layout,
+  .rev-layout,
+  .church-layout { padding: 0 16px; }
+
+  .tabs-inner { padding: 0 16px; }
+
+  #progress-widget { display: none; }
+
+  #mobile-nav { display: block; }
+
+  body { padding-bottom: 70px; }
+
+  #scripture-panel { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .christ-grid,
+  .church-grid { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .btn-primary, .btn-secondary { text-align: center; }
+}
+
+/* ── UTILITY ── */
+.hidden { display: none !important; }
+.text-accent { color: var(--accent); }
+.text-gold { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav id="top-nav">
+  <a href="#hero" class="nav-logo">The Grand Story <span>of Scripture</span></a>
+  <ul class="nav-links">
+    <li><a href="#timeline-section" class="tab-item">Timeline</a></li>
+    <li><a href="#christ-section" class="tab-item">Christ</a></li>
+    <li><a href="#church-section" class="tab-item">Early Church</a></li>
+    <li><a href="#books-section" class="tab-item">Books</a></li>
+    <li><a href="#graph-section" class="tab-item">Connections</a></li>
+    <li><a href="#revelation-section" class="tab-item">Revelation</a></li>
+  </ul>
+  <a href="#timeline-section" class="nav-cta">Begin Journey</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-landscape" aria-hidden="true">
+    <svg viewBox="0 0 1440 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e0eaff" stop-opacity=".6"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="mtn1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c7d7f4"/>
+          <stop offset="100%" stop-color="#dde9fc"/>
+        </linearGradient>
+        <linearGradient id="mtn2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#d4e4f7"/>
+          <stop offset="100%" stop-color="#eaf2ff"/>
+        </linearGradient>
+        <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e8f0e0"/>
+          <stop offset="100%" stop-color="#f3f7ed"/>
+        </linearGradient>
+        <radialGradient id="sunburst" cx="50%" cy="0%" r="60%">
+          <stop offset="0%" stop-color="#fffbeb" stop-opacity=".8"/>
+          <stop offset="100%" stop-color="#fffbeb" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="1440" height="400" fill="url(#sky)"/>
+      <rect width="1440" height="400" fill="url(#sunburst)"/>
+      <!-- Far mountains -->
+      <path d="M0,280 L120,180 L240,230 L360,150 L480,200 L600,130 L720,170 L840,120 L960,160 L1080,130 L1200,170 L1320,140 L1440,180 L1440,400 L0,400 Z" fill="url(#mtn1)" opacity=".5"/>
+      <!-- Mid mountains -->
+      <path d="M0,320 L100,240 L200,270 L340,200 L480,245 L580,195 L700,230 L820,190 L940,220 L1060,180 L1180,215 L1300,195 L1440,220 L1440,400 L0,400 Z" fill="url(#mtn2)" opacity=".6"/>
+      <!-- Foreground hills -->
+      <path d="M0,360 Q200,310 400,340 Q600,370 800,330 Q1000,290 1200,340 Q1350,370 1440,350 L1440,400 L0,400 Z" fill="url(#ground)" opacity=".7"/>
+      <!-- Water reflection -->
+      <ellipse cx="720" cy="385" rx="320" ry="18" fill="#d0e4f7" opacity=".35"/>
+    </svg>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Biblical Atlas · Redemptive History</div>
+    <h1 class="hero-title serif">
+      The Grand Story
+      <span class="line2">of Scripture</span>
+    </h1>
+    <p class="hero-subtitle">From Creation to New Creation</p>
+    <p class="hero-desc">
+      Explore God's redemptive story from Genesis to Revelation through an
+      interactive biblical timeline — connecting events, people, places, and
+      the unfolding of His eternal purpose.
+    </p>
+    <div class="hero-actions">
+      <a href="#timeline-section" class="btn-primary">Begin Journey</a>
+      <a href="#books-section" class="btn-secondary">Explore the Books</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint" aria-hidden="true">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- SECTION TABS -->
+<nav id="section-tabs" aria-label="Section navigation">
+  <div class="tabs-inner">
+    <a href="#timeline-section" class="tab-item active">Timeline</a>
+    <a href="#christ-section" class="tab-item">Life of Christ</a>
+    <a href="#church-section" class="tab-item">Early Church</a>
+    <a href="#map-section" class="tab-item">Paul's Journeys</a>
+    <a href="#books-section" class="tab-item">Book Explorer</a>
+    <a href="#graph-section" class="tab-item">Connections</a>
+    <a href="#revelation-section" class="tab-item">Revelation</a>
+  </div>
+</nav>
+
+<!-- MAIN TIMELINE -->
+<section id="timeline-section" class="section">
+  <div class="timeline-layout">
+
+    <!-- Left sticky era nav -->
+    <aside class="timeline-nav" aria-label="Era navigation">
+      <a href="#era-creation" class="tnav-era active"><span class="tnav-dot"></span><span class="tnav-label">Creation</span></a>
+      <a href="#era-patriarchs" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">Patriarchs</span></a>
+      <a href="#era-exodus" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">Exodus</span></a>
+      <a href="#era-conquest" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">Conquest &amp; Judges</span></a>
+      <a href="#era-kingdom" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">Kingdom</span></a>
+      <a href="#era-divided" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">Divided Kingdom</span></a>
+      <a href="#era-exile" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">Exile</span></a>
+      <a href="#era-return" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">Return</span></a>
+      <a href="#era-silence" class="tnav-era"><span class="tnav-dot"></span><span class="tnav-label">400 Years</span></a>
+    </aside>
+
+    <!-- Timeline content -->
+    <div class="timeline-content" id="timeline-content">
+
+      <!-- ERA: CREATION -->
+      <div class="era-group" id="era-creation">
+        <div class="era-header">
+          <span class="era-badge">Creation</span>
+          <span class="era-date">In the Beginning</span>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 1–2" data-verses='[{"ref":"Genesis 1:1","text":"In the beginning God created the heavens and the earth.","xrefs":["John 1:1","Colossians 1:16","Hebrews 11:3"]},{"ref":"Genesis 1:27","text":"So God created mankind in his own image, in the image of God he created them; male and female he created them.","xrefs":["Genesis 5:1","James 3:9"]}]'>
+          <div class="card-top">
+            <div>
+              <div class="card-title">Creation</div>
+            </div>
+            <span class="card-ref">Genesis 1–2</span>
+          </div>
+          <p class="card-context">God speaks existence into being — light, sky, land, seas, living creatures — and crowns creation with humanity made in His image. The world is declared very good. This is not merely origin; it is the foundation of all meaning, dignity, and relationship.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">God</span>
+                <span class="meta-tag">Adam</span>
+                <span class="meta-tag">Eve</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 1:1" data-text="In the beginning God created the heavens and the earth." data-xrefs="John 1:1,Colossians 1:16">Genesis 1:1</span>
+            <span class="scripture-chip" data-ref="John 1:1" data-text="In the beginning was the Word, and the Word was with God, and the Word was God." data-xrefs="Genesis 1:1,Colossians 1:16">John 1:1</span>
+            <span class="scripture-chip" data-ref="Colossians 1:16" data-text="For in him all things were created: things in heaven and on earth, visible and invisible..." data-xrefs="John 1:3,Hebrews 1:2">Colossians 1:16</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn" onclick="highlightConnections('creation')">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 3" data-verses='[{"ref":"Genesis 3:15","text":"And I will put enmity between you and the woman, and between your offspring and hers; he will crush your head, and you will strike his heel.","xrefs":["Romans 16:20","Revelation 12:9","Galatians 4:4"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">The Fall</div></div>
+            <span class="card-ref">Genesis 3</span>
+          </div>
+          <p class="card-context">Adam and Eve disobey God, sin enters creation, and the relationship between God and humanity is fractured. Yet in judgment, God speaks the first promise of redemption — the seed of the woman will crush the serpent. This protoevangelium is the lens through which all of Scripture must be read.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Adam</span>
+                <span class="meta-tag">Eve</span>
+                <span class="meta-tag">The Serpent</span>
+              </div>
+            </div>
+            <div class="meta-group">
+              <span class="meta-label">Themes</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Sin</span>
+                <span class="meta-tag">Judgment</span>
+                <span class="meta-tag">First Promise</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 3:15" data-text="And I will put enmity between you and the woman, and between your offspring and hers; he will crush your head, and you will strike his heel." data-xrefs="Romans 16:20,Galatians 4:4,Revelation 12:9">Genesis 3:15</span>
+            <span class="scripture-chip" data-ref="Romans 5:12" data-text="Therefore, just as sin entered the world through one man, and death through sin, and in this way death came to all people..." data-xrefs="1 Corinthians 15:21,Genesis 3:19">Romans 5:12</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn" onclick="highlightConnections('fall')">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 6–9" data-verses='[{"ref":"Genesis 9:13","text":"I have set my rainbow in the clouds, and it will be the sign of the covenant between me and the earth.","xrefs":["Isaiah 54:9","Ezekiel 1:28","Revelation 4:3"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Noah and the Flood</div></div>
+            <span class="card-ref">Genesis 6–9</span>
+          </div>
+          <p class="card-context">Humanity's corruption reaches its fullness, and God sends judgment through a great flood. Noah, a righteous man, is preserved by faith. After the waters recede, God establishes a covenant with all creation, sealed by a rainbow — God's judgment is real, and so is His commitment to preserve His world.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Noah</span>
+                <span class="meta-tag">Shem</span>
+                <span class="meta-tag">Ham</span>
+                <span class="meta-tag">Japheth</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 9:13" data-text="I have set my rainbow in the clouds, and it will be the sign of the covenant between me and the earth." data-xrefs="Isaiah 54:9,Revelation 4:3">Genesis 9:13</span>
+            <span class="scripture-chip" data-ref="Hebrews 11:7" data-text="By faith Noah, when warned about things not yet seen, in holy fear built an ark to save his family." data-xrefs="1 Peter 3:20,2 Peter 2:5">Hebrews 11:7</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 11" data-verses='[{"ref":"Genesis 11:9","text":"That is why it was called Babel — because there the Lord confused the language of the whole world. From there the Lord scattered them over the face of the whole earth.","xrefs":["Acts 2:1-11","Revelation 7:9"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Tower of Babel</div></div>
+            <span class="card-ref">Genesis 11</span>
+          </div>
+          <p class="card-context">Human pride reaches its zenith as the nations attempt to build a tower to heaven. God confuses their language and scatters them across the earth. This sets the stage for God's call of Abraham — the answer to the problem of scattered, divided humanity is not human achievement but divine election and promise.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Themes</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Pride</span>
+                <span class="meta-tag">Judgment</span>
+                <span class="meta-tag">Nations</span>
+                <span class="meta-tag">Language</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 11:9" data-text="That is why it was called Babel — because there the Lord confused the language of the whole world." data-xrefs="Acts 2:4-11,Revelation 7:9">Genesis 11:9</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-creation -->
+
+      <!-- ERA: PATRIARCHS -->
+      <div class="era-group" id="era-patriarchs">
+        <div class="era-header">
+          <span class="era-badge">Patriarchs</span>
+          <span class="era-date">c. 2100 – 1700 BC</span>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 12; 15; 17" data-verses='[{"ref":"Genesis 12:3","text":"And all peoples on earth will be blessed through you.","xrefs":["Galatians 3:8","Acts 3:25","Romans 4:13"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">The Call of Abraham</div></div>
+            <span class="card-ref">Genesis 12; 15; 17</span>
+          </div>
+          <p class="card-context">God calls Abram out of Ur of the Chaldeans with a staggering promise: a land, a great nation, and blessing to all the families of the earth. This Abrahamic Covenant is the spine of redemptive history. Every subsequent act of God flows from this unconditional promise — ultimately fulfilled in Jesus Christ, the true seed of Abraham.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Abraham</span>
+                <span class="meta-tag">Sarah</span>
+                <span class="meta-tag">Lot</span>
+              </div>
+            </div>
+            <div class="meta-group">
+              <span class="meta-label">Covenant Elements</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Land</span>
+                <span class="meta-tag">Nation</span>
+                <span class="meta-tag">Blessing</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 12:3" data-text="And all peoples on earth will be blessed through you." data-xrefs="Galatians 3:8,Acts 3:25,Romans 4:13">Genesis 12:3</span>
+            <span class="scripture-chip" data-ref="Galatians 3:8" data-text="Scripture foresaw that God would justify the Gentiles by faith, and announced the gospel in advance to Abraham." data-xrefs="Romans 4:3,Genesis 15:6">Galatians 3:8</span>
+            <span class="scripture-chip" data-ref="Romans 4:3" data-text="Abraham believed God, and it was credited to him as righteousness." data-xrefs="Genesis 15:6,James 2:23">Romans 4:3</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn" onclick="highlightConnections('abraham')">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 22" data-verses='[{"ref":"Genesis 22:14","text":"So Abraham called that place The Lord Will Provide. And to this day it is said, On the mountain of the Lord it will be provided.","xrefs":["John 1:29","Isaiah 53:7","Revelation 5:6"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Abraham and Isaac — The Binding</div></div>
+            <span class="card-ref">Genesis 22</span>
+          </div>
+          <p class="card-context">God tests Abraham by commanding him to sacrifice his son Isaac. Abraham obeys in faith, and at the last moment God provides a ram. Mount Moriah — the site of this substitutionary provision — is later identified as Jerusalem, the very place where God's own Son would become the ultimate sacrifice. The substitution foreshadowed points forward unmistakably.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Abraham</span>
+                <span class="meta-tag">Isaac</span>
+              </div>
+            </div>
+            <div class="meta-group">
+              <span class="meta-label">Themes</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Substitution</span>
+                <span class="meta-tag">Faith</span>
+                <span class="meta-tag">Provision</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 22:14" data-text="So Abraham called that place The Lord Will Provide." data-xrefs="John 1:29,Hebrews 11:17-19">Genesis 22:14</span>
+            <span class="scripture-chip" data-ref="Hebrews 11:17" data-text="By faith Abraham, when God tested him, offered Isaac as a sacrifice." data-xrefs="James 2:21,Genesis 22:1">Hebrews 11:17</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 25–35" data-verses='[{"ref":"Genesis 28:15","text":"I am with you and will watch over you wherever you go, and I will bring you back to this land. I will not leave you until I have done what I have promised you.","xrefs":["Romans 9:13","Hebrews 13:5"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Isaac, Jacob, and the Twelve Tribes</div></div>
+            <span class="card-ref">Genesis 25–35</span>
+          </div>
+          <p class="card-context">The promise passes to Isaac, then to Jacob — whom God renames Israel. Through his twelve sons, the twelve tribes of Israel are formed. God's covenant purpose is not thwarted by human weakness; Jacob's deceptions, family dysfunction, and flight from home all become instruments of divine sovereignty. The nation that will receive the Law and inherit the land begins here.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Isaac</span>
+                <span class="meta-tag">Rebekah</span>
+                <span class="meta-tag">Jacob</span>
+                <span class="meta-tag">Esau</span>
+                <span class="meta-tag">Rachel</span>
+                <span class="meta-tag">Leah</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 28:15" data-text="I am with you and will watch over you wherever you go..." data-xrefs="Hebrews 13:5,Joshua 1:5">Genesis 28:15</span>
+            <span class="scripture-chip" data-ref="Romans 9:13" data-text="Just as it is written: Jacob I loved, but Esau I hated." data-xrefs="Malachi 1:2-3,Genesis 25:23">Romans 9:13</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Genesis 37–50" data-verses='[{"ref":"Genesis 50:20","text":"You intended to harm me, but God intended it for good to accomplish what is now being done, the saving of many lives.","xrefs":["Romans 8:28","Acts 7:9"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Joseph — Betrayal, Sovereignty, and Egypt</div></div>
+            <span class="card-ref">Genesis 37–50</span>
+          </div>
+          <p class="card-context">Joseph, Jacob's favored son, is sold into slavery by his brothers, falsely accused, and imprisoned. Yet through a series of divine providences, he rises to rule Egypt and saves the ancient world from famine — including his own family. Joseph's story is a masterclass in divine sovereignty through human suffering, and a profound foreshadowing of the one who would be betrayed, suffer, and then save.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Joseph</span>
+                <span class="meta-tag">Potiphar</span>
+                <span class="meta-tag">Pharaoh</span>
+                <span class="meta-tag">Jacob</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Genesis 50:20" data-text="You intended to harm me, but God intended it for good to accomplish what is now being done, the saving of many lives." data-xrefs="Romans 8:28,Acts 7:9">Genesis 50:20</span>
+            <span class="scripture-chip" data-ref="Acts 7:9" data-text="Because the patriarchs were jealous of Joseph, they sold him as a slave into Egypt. But God was with him." data-xrefs="Psalm 105:17,Genesis 37:28">Acts 7:9</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-patriarchs -->
+
+      <!-- ERA: EXODUS -->
+      <div class="era-group" id="era-exodus">
+        <div class="era-header">
+          <span class="era-badge">Exodus</span>
+          <span class="era-date">c. 1446 BC</span>
+        </div>
+
+        <div class="event-card" data-ref="Exodus 1–4" data-verses='[{"ref":"Exodus 3:14","text":"God said to Moses, I AM WHO I AM. This is what you are to say to the Israelites: I AM has sent me to you.","xrefs":["John 8:58","John 6:35","Revelation 1:8"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Moses and the Burning Bush</div></div>
+            <span class="card-ref">Exodus 3–4</span>
+          </div>
+          <p class="card-context">After 400 years of slavery in Egypt, God appears to Moses in a burning bush and reveals His name: I AM WHO I AM. This self-disclosure of God's eternal, self-existent nature is foundational to all theology. God commissions Moses to deliver Israel — a man who protests his own inadequacy becomes the instrument of the greatest deliverance in the Old Testament.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Moses</span>
+                <span class="meta-tag">Aaron</span>
+                <span class="meta-tag">Jethro</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Exodus 3:14" data-text="God said to Moses, I AM WHO I AM." data-xrefs="John 8:58,Revelation 1:8">Exodus 3:14</span>
+            <span class="scripture-chip" data-ref="John 8:58" data-text="Very truly I tell you, Jesus answered, before Abraham was born, I am!" data-xrefs="Exodus 3:14,John 1:1">John 8:58</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Exodus 7–12" data-verses='[{"ref":"Exodus 12:13","text":"The blood will be a sign for you on the houses where you are, and when I see the blood, I will pass over you.","xrefs":["1 Corinthians 5:7","John 1:29","Revelation 5:9"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">The Ten Plagues and the Passover</div></div>
+            <span class="card-ref">Exodus 7–12</span>
+          </div>
+          <p class="card-context">Through ten escalating plagues, God dismantles Egypt's power and exposes the impotence of its gods. The tenth and final plague — the death of the firstborn — is averted for Israel by the blood of a lamb on their doorposts. The Passover is the defining saving event of the Old Testament, and its fulfillment is found in Jesus Christ, our Passover Lamb, who was sacrificed for us.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Moses</span>
+                <span class="meta-tag">Aaron</span>
+                <span class="meta-tag">Pharaoh</span>
+              </div>
+            </div>
+            <div class="meta-group">
+              <span class="meta-label">Themes</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Substitution</span>
+                <span class="meta-tag">Redemption</span>
+                <span class="meta-tag">Judgment</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Exodus 12:13" data-text="The blood will be a sign for you...when I see the blood, I will pass over you." data-xrefs="1 Corinthians 5:7,John 1:29">Exodus 12:13</span>
+            <span class="scripture-chip" data-ref="1 Corinthians 5:7" data-text="For Christ, our Passover lamb, has been sacrificed." data-xrefs="Exodus 12:21,John 1:29">1 Corinthians 5:7</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn" onclick="highlightConnections('passover')">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Exodus 14" data-verses='[{"ref":"Exodus 14:31","text":"And when the Israelites saw the mighty hand of the Lord displayed against the Egyptians, the people feared the Lord and put their trust in him and in Moses his servant.","xrefs":["Romans 6:3-4","1 Corinthians 10:1-2"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Crossing the Red Sea</div></div>
+            <span class="card-ref">Exodus 14</span>
+          </div>
+          <p class="card-context">Trapped between the Egyptian army and the sea, Israel witnesses the most dramatic deliverance yet — the Red Sea parts, Israel walks through on dry ground, and Egypt's army is destroyed. Paul identifies this crossing as a kind of baptism — the old life left behind, new life entered through water. The pattern of judgment and salvation is set for all Scripture.</p>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Exodus 14:31" data-text="And when the Israelites saw the mighty hand of the Lord displayed against the Egyptians, the people feared the Lord..." data-xrefs="Romans 6:3,1 Corinthians 10:2">Exodus 14:31</span>
+            <span class="scripture-chip" data-ref="1 Corinthians 10:2" data-text="They were all baptized into Moses in the cloud and in the sea." data-xrefs="Exodus 14:22,Romans 6:4">1 Corinthians 10:2</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Exodus 19–20" data-verses='[{"ref":"Exodus 20:2","text":"I am the Lord your God, who brought you out of Egypt, out of the land of slavery.","xrefs":["Romans 3:20","Galatians 3:24","Matthew 5:17"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Mount Sinai and the Ten Commandments</div></div>
+            <span class="card-ref">Exodus 19–20</span>
+          </div>
+          <p class="card-context">At Mount Sinai, God enters into a covenant with Israel and gives the Law — not as a means of earning salvation, but as a response to it. God first declares "I am the Lord your God who brought you out of Egypt" before giving any commands. The Law reveals God's character and humanity's need for a mediator — ultimately fulfilled in Christ, who did not abolish the Law but completed it.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Events</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Ten Commandments</span>
+                <span class="meta-tag">Mosaic Covenant</span>
+                <span class="meta-tag">God's Holiness</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Exodus 20:2" data-text="I am the Lord your God, who brought you out of Egypt, out of the land of slavery." data-xrefs="Romans 3:20,Galatians 3:24">Exodus 20:2</span>
+            <span class="scripture-chip" data-ref="Matthew 5:17" data-text="Do not think that I have come to abolish the Law or the Prophets; I have not come to abolish them but to fulfill them." data-xrefs="Romans 10:4,Luke 24:44">Matthew 5:17</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Exodus 25–40" data-verses='[{"ref":"Exodus 25:8","text":"Then have them make a sanctuary for me, and I will dwell among them.","xrefs":["John 1:14","Hebrews 9:11","Revelation 21:3"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">The Tabernacle</div></div>
+            <span class="card-ref">Exodus 25–40</span>
+          </div>
+          <p class="card-context">God instructs Moses to build the Tabernacle — a portable sanctuary where God's glory would dwell among His people. Every element points forward: the altar of sacrifice, the veil, the ark of the covenant, the high priest. The writer of Hebrews explains that the entire Tabernacle system is a shadow of the heavenly reality fulfilled in Christ, our great High Priest.</p>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Exodus 25:8" data-text="Then have them make a sanctuary for me, and I will dwell among them." data-xrefs="John 1:14,Hebrews 9:11,Revelation 21:3">Exodus 25:8</span>
+            <span class="scripture-chip" data-ref="Hebrews 9:11" data-text="But when Christ came as high priest of the good things that are now already here, he went through the greater and more perfect tabernacle..." data-xrefs="Exodus 25:9,Hebrews 8:5">Hebrews 9:11</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-exodus -->
+
+      <!-- ERA: CONQUEST & JUDGES -->
+      <div class="era-group" id="era-conquest">
+        <div class="era-header">
+          <span class="era-badge">Conquest &amp; Judges</span>
+          <span class="era-date">c. 1406 – 1050 BC</span>
+        </div>
+
+        <div class="event-card" data-ref="Joshua 1–12" data-verses='[{"ref":"Joshua 1:9","text":"Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.","xrefs":["Hebrews 13:5","Deuteronomy 31:6"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Joshua and the Conquest of Canaan</div></div>
+            <span class="card-ref">Joshua 1–12</span>
+          </div>
+          <p class="card-context">After forty years of wilderness wandering, a new generation enters the Promised Land under Joshua's leadership. The walls of Jericho fall at God's command. City by city, Israel takes possession of the land God had promised to Abraham centuries earlier. Joshua (whose name means "salvation") is a type of Jesus — the one who brings God's people into their inheritance.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Joshua</span>
+                <span class="meta-tag">Caleb</span>
+                <span class="meta-tag">Rahab</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Joshua 1:9" data-text="Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go." data-xrefs="Hebrews 13:5,Deuteronomy 31:6">Joshua 1:9</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Judges 2–16" data-verses='[{"ref":"Judges 2:16","text":"Then the Lord raised up judges, who saved them out of the hands of these raiders.","xrefs":["Hebrews 11:32-34","Acts 13:20"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">The Period of the Judges</div></div>
+            <span class="card-ref">Judges 2–16</span>
+          </div>
+          <p class="card-context">After Joshua's death, Israel enters a cyclical pattern: abandonment of God, oppression by enemies, crying out to God, and deliverance through a judge. Figures like Deborah, Gideon, and Samson appear — each delivering Israel from oppressors, yet each also deeply flawed. The book ends with the haunting summary: "Everyone did what was right in their own eyes." Israel desperately needs a king.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Judges</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Deborah</span>
+                <span class="meta-tag">Gideon</span>
+                <span class="meta-tag">Jephthah</span>
+                <span class="meta-tag">Samson</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Judges 2:16" data-text="Then the Lord raised up judges, who saved them out of the hands of these raiders." data-xrefs="Hebrews 11:32,Acts 13:20">Judges 2:16</span>
+            <span class="scripture-chip" data-ref="Judges 21:25" data-text="In those days Israel had no king; everyone did as they saw fit." data-xrefs="1 Samuel 8:5,Proverbs 21:2">Judges 21:25</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-conquest -->
+
+      <!-- ERA: KINGDOM -->
+      <div class="era-group" id="era-kingdom">
+        <div class="era-header">
+          <span class="era-badge">United Kingdom</span>
+          <span class="era-date">c. 1050 – 931 BC</span>
+        </div>
+
+        <div class="event-card" data-ref="1 Samuel 8–15" data-verses='[{"ref":"1 Samuel 15:22","text":"Does the Lord delight in burnt offerings and sacrifices as much as in obeying the Lord? To obey is better than sacrifice.","xrefs":["Psalm 51:16","Micah 6:8","Hosea 6:6"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">King Saul — The People's King</div></div>
+            <span class="card-ref">1 Samuel 8–15</span>
+          </div>
+          <p class="card-context">Israel demands a king like the surrounding nations. God grants their request, warning them of the consequences. Saul is tall, handsome, and initially promising, but his repeated disobedience and failure to trust God result in his rejection. His life is a sobering study in the difference between outward religious performance and genuine heart obedience.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Saul</span>
+                <span class="meta-tag">Samuel</span>
+                <span class="meta-tag">Jonathan</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="1 Samuel 15:22" data-text="To obey is better than sacrifice, and to heed is better than the fat of rams." data-xrefs="Psalm 51:16,Micah 6:8">1 Samuel 15:22</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="1 Samuel 16 – 2 Samuel 24" data-verses='[{"ref":"2 Samuel 7:16","text":"Your house and your kingdom will endure forever before me; your throne will be established forever.","xrefs":["Luke 1:32-33","Acts 2:30","Revelation 22:16"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">King David — A Man After God's Heart</div></div>
+            <span class="card-ref">1 Samuel 16 – 2 Samuel 24</span>
+          </div>
+          <p class="card-context">David is anointed king as a shepherd boy and grows to be Israel's greatest king. He unites the nation, establishes Jerusalem as the capital, defeats all enemies, and writes many of the Psalms. The Davidic Covenant promises an eternal throne, fulfilled ultimately in Jesus — the Son of David. Even David's gravest sin and the Psalms of repentance that follow reveal a man whose heart fundamentally turns toward God.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">David</span>
+                <span class="meta-tag">Nathan</span>
+                <span class="meta-tag">Bathsheba</span>
+                <span class="meta-tag">Solomon</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="2 Samuel 7:16" data-text="Your house and your kingdom will endure forever before me; your throne will be established forever." data-xrefs="Luke 1:32-33,Acts 2:30,Revelation 22:16">2 Samuel 7:16</span>
+            <span class="scripture-chip" data-ref="Acts 2:30" data-text="But he was a prophet and knew that God had promised him on oath that he would place one of his descendants on his throne." data-xrefs="2 Samuel 7:12,Psalm 132:11">Acts 2:30</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn" onclick="highlightConnections('david')">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="1 Kings 1–11" data-verses='[{"ref":"1 Kings 8:27","text":"But will God really dwell on earth? The heavens, even the highest heaven, cannot contain you. How much less this temple I have built!","xrefs":["Acts 7:48-49","Isaiah 66:1","John 4:24"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Solomon and the Temple</div></div>
+            <span class="card-ref">1 Kings 1–11</span>
+          </div>
+          <p class="card-context">Solomon begins his reign with unparalleled wisdom and builds the Temple in Jerusalem — the permanent dwelling place of God's glory. The dedication ceremony is breathtaking. Yet Solomon's heart turns away through foreign wives and idolatry, and the kingdom is torn from his son. Wisdom without faithfulness is ultimately futile. The Temple points forward to the One who declared "destroy this temple, and I will raise it again in three days."</p>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="1 Kings 8:27" data-text="But will God really dwell on earth? The heavens, even the highest heaven, cannot contain you." data-xrefs="Acts 7:48,Isaiah 66:1">1 Kings 8:27</span>
+            <span class="scripture-chip" data-ref="John 2:19" data-text="Jesus answered them, Destroy this temple, and I will raise it again in three days." data-xrefs="1 Kings 8:27,Matthew 12:6">John 2:19</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-kingdom -->
+
+      <!-- ERA: DIVIDED KINGDOM -->
+      <div class="era-group" id="era-divided">
+        <div class="era-header">
+          <span class="era-badge">Divided Kingdom</span>
+          <span class="era-date">931 – 586 BC</span>
+        </div>
+
+        <div class="event-card" data-ref="1 Kings 12 – 2 Kings 17" data-verses='[{"ref":"1 Kings 18:21","text":"How long will you waver between two opinions? If the Lord is God, follow him; but if Baal is God, follow him.","xrefs":["Joshua 24:15","James 4:4"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">The Kingdom Divides — Israel and Judah</div></div>
+            <span class="card-ref">1 Kings 12 – 2 Kings 17</span>
+          </div>
+          <p class="card-context">After Solomon's death, the kingdom splits into two: Israel (north, 10 tribes) and Judah (south, 2 tribes). The northern kingdom is immediately plagued by false worship and corrupt kings. God sends prophets — especially Elijah and Elisha — to call the people back. The northern kingdom is eventually destroyed by Assyria in 722 BC, the southern kingdom of Judah survives longer under the Davidic line.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Prophets of this Era</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Elijah</span>
+                <span class="meta-tag">Elisha</span>
+                <span class="meta-tag">Amos</span>
+                <span class="meta-tag">Hosea</span>
+                <span class="meta-tag">Isaiah</span>
+                <span class="meta-tag">Micah</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="1 Kings 18:21" data-text="How long will you waver between two opinions? If the Lord is God, follow him; but if Baal is God, follow him." data-xrefs="Joshua 24:15,James 4:4">1 Kings 18:21</span>
+            <span class="scripture-chip" data-ref="Isaiah 9:6" data-text="For to us a child is born, to us a son is given, and the government will be on his shoulders. And he will be called Wonderful Counselor, Mighty God, Everlasting Father, Prince of Peace." data-xrefs="Luke 1:32,Matthew 1:23">Isaiah 9:6</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-divided -->
+
+      <!-- ERA: EXILE -->
+      <div class="era-group" id="era-exile">
+        <div class="era-header">
+          <span class="era-badge">Exile</span>
+          <span class="era-date">605 – 538 BC</span>
+        </div>
+
+        <div class="event-card" data-ref="2 Kings 25; Jeremiah; Ezekiel" data-verses='[{"ref":"Jeremiah 29:11","text":"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.","xrefs":["Romans 8:28","Lamentations 3:22-23"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Babylon and the Exile</div></div>
+            <span class="card-ref">2 Kings 25; Jeremiah; Lamentations</span>
+          </div>
+          <p class="card-context">After repeated warnings, Babylon under Nebuchadnezzar destroys Jerusalem, burns the Temple, and deports the population. This is the darkest moment in Israel's history. Yet in the midst of judgment, the prophets speak extraordinary hope: a new covenant, a new heart, the Spirit poured out, the valley of dry bones restored. God's purposes are not defeated — they are refined.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Prophets</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Jeremiah</span>
+                <span class="meta-tag">Ezekiel</span>
+                <span class="meta-tag">Daniel</span>
+                <span class="meta-tag">Isaiah</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Jeremiah 29:11" data-text="For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future." data-xrefs="Romans 8:28,Lamentations 3:22">Jeremiah 29:11</span>
+            <span class="scripture-chip" data-ref="Jeremiah 31:33" data-text="I will put my law in their minds and write it on their hearts. I will be their God, and they will be my people." data-xrefs="Hebrews 8:10,Ezekiel 36:26">Jeremiah 31:33</span>
+            <span class="scripture-chip" data-ref="Ezekiel 37:4" data-text="Then he said to me: Prophesy to these bones and say to them, Dry bones, hear the word of the Lord!" data-xrefs="Romans 8:11,John 5:25">Ezekiel 37:4</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+
+        <div class="event-card" data-ref="Daniel 1–12" data-verses='[{"ref":"Daniel 2:44","text":"In the time of those kings, the God of heaven will set up a kingdom that will never be destroyed...it will itself endure forever.","xrefs":["Revelation 11:15","Luke 1:33","Matthew 4:17"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Daniel in Babylon</div></div>
+            <span class="card-ref">Daniel 1–12</span>
+          </div>
+          <p class="card-context">Daniel and his three friends — Hananiah, Mishael, and Azariah — maintain covenant faithfulness in the most hostile pagan environment. Through visions and miraculous deliverances (the fiery furnace, the lion's den), God demonstrates sovereignty over all kingdoms. Daniel's visions of the Ancient of Days, the Son of Man, and the seventy weeks provide the apocalyptic framework that Jesus and the apostles will draw upon.</p>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Daniel 2:44" data-text="In the time of those kings, the God of heaven will set up a kingdom that will never be destroyed." data-xrefs="Revelation 11:15,Luke 1:33">Daniel 2:44</span>
+            <span class="scripture-chip" data-ref="Daniel 7:13" data-text="In my vision at night I looked, and there before me was one like a son of man, coming with the clouds of heaven." data-xrefs="Matthew 26:64,Revelation 1:7">Daniel 7:13</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-exile -->
+
+      <!-- ERA: RETURN -->
+      <div class="era-group" id="era-return">
+        <div class="era-header">
+          <span class="era-badge">Return from Exile</span>
+          <span class="era-date">538 – 400 BC</span>
+        </div>
+
+        <div class="event-card" data-ref="Ezra 1–10; Nehemiah 1–13" data-verses='[{"ref":"Nehemiah 8:10","text":"Do not grieve, for the joy of the Lord is your strength.","xrefs":["Philippians 4:4","Isaiah 35:10"]}]'>
+          <div class="card-top">
+            <div><div class="card-title">Ezra, Nehemiah, and the Restoration</div></div>
+            <span class="card-ref">Ezra 1–10; Nehemiah 1–13</span>
+          </div>
+          <p class="card-context">By decree of Cyrus the Great (as prophesied by Isaiah), the exiles return to Jerusalem in waves. Zerubbabel leads the rebuilding of the Temple, Ezra leads spiritual renewal around the Word, and Nehemiah oversees the reconstruction of the city walls. The return is a foretaste of the greater restoration and New Creation to come — but the people quickly see that they need more than rebuilt walls; they need transformed hearts.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Key Figures</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Cyrus</span>
+                <span class="meta-tag">Zerubbabel</span>
+                <span class="meta-tag">Ezra</span>
+                <span class="meta-tag">Nehemiah</span>
+                <span class="meta-tag">Esther</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Nehemiah 8:10" data-text="The joy of the Lord is your strength." data-xrefs="Philippians 4:4,Isaiah 35:10">Nehemiah 8:10</span>
+            <span class="scripture-chip" data-ref="Isaiah 44:28" data-text="Who says of Cyrus, He is my shepherd and will accomplish all that I please; he will say of Jerusalem, Let it be rebuilt." data-xrefs="Ezra 1:1,Isaiah 45:1">Isaiah 44:28</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-return -->
+
+      <!-- ERA: 400 YEARS OF SILENCE -->
+      <div class="era-group" id="era-silence">
+        <div class="era-header">
+          <span class="era-badge">Intertestamental Period</span>
+          <span class="era-date">400 BC – 4 BC</span>
+        </div>
+
+        <div class="event-card">
+          <div class="card-top">
+            <div><div class="card-title">Four Hundred Years of Silence</div></div>
+            <span class="card-ref">Malachi – Matthew</span>
+          </div>
+          <p class="card-context">Between Malachi and Matthew, God sends no new prophet for approximately 400 years. The world is not silent — Alexander the Great spreads Greek culture, Rome rises to power, synagogues emerge throughout the Jewish world, and the Septuagint (Greek Old Testament) is translated, preparing the world for the gospel. Malachi ends with a promise: Elijah will come before the great day of the Lord. The world waits.</p>
+          <div class="card-meta">
+            <div class="meta-group">
+              <span class="meta-label">Historical Context</span>
+              <div class="meta-tags">
+                <span class="meta-tag">Greek Empire</span>
+                <span class="meta-tag">Roman Empire</span>
+                <span class="meta-tag">Septuagint</span>
+                <span class="meta-tag">Synagogues</span>
+                <span class="meta-tag">Pharisees</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-scriptures">
+            <span class="scripture-chip" data-ref="Malachi 4:5" data-text="See, I will send the prophet Elijah to you before that great and dreadful day of the Lord comes." data-xrefs="Matthew 11:14,Luke 1:17,Mark 1:2">Malachi 4:5</span>
+            <span class="scripture-chip" data-ref="Galatians 4:4" data-text="But when the set time had fully come, God sent his Son, born of a woman, born under the law." data-xrefs="Ephesians 1:10,Mark 1:15">Galatians 4:4</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn primary" onclick="openScripture(this.closest('.event-card'))">Read Scripture</button>
+            <button class="card-btn">View Connections</button>
+          </div>
+        </div>
+      </div><!-- /era-silence -->
+
+    </div><!-- /timeline-content -->
+  </div><!-- /timeline-layout -->
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LIFE OF CHRIST SECTION -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="christ-section">
+  <div class="christ-layout">
+    <div class="christ-eyebrow">The Fullness of Time</div>
+    <h2 class="christ-title serif">The Life of Jesus Christ</h2>
+    <p class="christ-subtitle">The center of all history, the fulfillment of all Scripture</p>
+
+    <div class="christ-grid">
+
+      <div class="christ-card">
+        <div class="christ-card-num">01</div>
+        <div class="christ-card-title">The Birth of Christ</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 1–2</span>
+          <span class="gospel-chip gospel-luke">Luke 1–2</span>
+        </div>
+        <p class="christ-card-text">The eternal Son of God takes on human flesh in Bethlehem, born of a virgin. Angels announce His birth to shepherds; Magi travel from the East. God has entered His creation.</p>
+        <div class="christ-prophecy">Fulfilled: Isaiah 7:14 · Micah 5:2 · Hosea 11:1</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">02</div>
+        <div class="christ-card-title">Baptism and Temptation</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 3–4</span>
+          <span class="gospel-chip gospel-mark">Mark 1</span>
+          <span class="gospel-chip gospel-luke">Luke 3–4</span>
+        </div>
+        <p class="christ-card-text">Jesus is baptized by John and the Trinity is revealed — Father's voice, Son in water, Spirit as a dove. He then faces forty days of temptation in the wilderness, succeeding where Israel failed.</p>
+        <div class="christ-prophecy">Fulfilled: Isaiah 42:1 · Deuteronomy 8:3</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">03</div>
+        <div class="christ-card-title">Calling the Disciples</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 4</span>
+          <span class="gospel-chip gospel-mark">Mark 1–3</span>
+          <span class="gospel-chip gospel-luke">Luke 5–6</span>
+        </div>
+        <p class="christ-card-text">Jesus calls twelve ordinary men — fishermen, a tax collector, a zealot — to follow Him. He will form a new community, a new Israel, built on the foundation of these apostles.</p>
+        <div class="christ-prophecy">Connection: Twelve tribes of Israel · Exodus 24</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">04</div>
+        <div class="christ-card-title">Miracles and Signs</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 8–9</span>
+          <span class="gospel-chip gospel-john">John 2–11</span>
+        </div>
+        <p class="christ-card-text">Jesus heals the sick, gives sight to the blind, raises the dead, stills storms, and feeds thousands. These signs announce that the Kingdom of God has arrived — creation is being restored. John selects seven signs as a new creation narrative.</p>
+        <div class="christ-prophecy">Fulfilled: Isaiah 35:5-6 · Isaiah 61:1</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">05</div>
+        <div class="christ-card-title">The Sermon on the Mount</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 5–7</span>
+          <span class="gospel-chip gospel-luke">Luke 6</span>
+        </div>
+        <p class="christ-card-text">Jesus gives the definitive interpretation of God's Law, deepening rather than abolishing it. He describes the character of Kingdom citizens — the Beatitudes — and teaches the Lord's Prayer. He is the new Moses on a new mountain.</p>
+        <div class="christ-prophecy">Connection: Mount Sinai · Exodus 19–20</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">06</div>
+        <div class="christ-card-title">Parables of the Kingdom</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 13</span>
+          <span class="gospel-chip gospel-mark">Mark 4</span>
+          <span class="gospel-chip gospel-luke">Luke 15</span>
+        </div>
+        <p class="christ-card-text">Jesus teaches the nature of God's Kingdom in parables — the Prodigal Son, the Good Samaritan, the Lost Sheep, the Hidden Treasure. These stories reveal both the scandal of grace and the costliness of discipleship.</p>
+        <div class="christ-prophecy">Fulfilled: Psalm 78:2 · "I will open my mouth in parables"</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">07</div>
+        <div class="christ-card-title">The Transfiguration</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 17</span>
+          <span class="gospel-chip gospel-mark">Mark 9</span>
+          <span class="gospel-chip gospel-luke">Luke 9</span>
+        </div>
+        <p class="christ-card-text">On a high mountain, Jesus' glory shines through His humanity. Moses and Elijah — representing the Law and the Prophets — appear with Him. The Father's voice confirms: "This is my Son, listen to him." All of Scripture points to this moment.</p>
+        <div class="christ-prophecy">Connection: Moses, Elijah · Deuteronomy 18:15</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">08</div>
+        <div class="christ-card-title">The Triumphal Entry</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 21</span>
+          <span class="gospel-chip gospel-mark">Mark 11</span>
+          <span class="gospel-chip gospel-luke">Luke 19</span>
+          <span class="gospel-chip gospel-john">John 12</span>
+        </div>
+        <p class="christ-card-text">Jesus enters Jerusalem on a donkey to shouts of "Hosanna!" — consciously presenting Himself as Israel's King. The week that follows contains the most theologically dense events in human history.</p>
+        <div class="christ-prophecy">Fulfilled: Zechariah 9:9 · Psalm 118:26</div>
+      </div>
+
+      <div class="christ-card" style="border-color: #f59e0b;">
+        <div class="christ-card-num">09</div>
+        <div class="christ-card-title">The Crucifixion</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 27</span>
+          <span class="gospel-chip gospel-mark">Mark 15</span>
+          <span class="gospel-chip gospel-luke">Luke 23</span>
+          <span class="gospel-chip gospel-john">John 19</span>
+        </div>
+        <p class="christ-card-text">Jesus is crucified between two criminals outside Jerusalem. The one who knew no sin becomes sin for us. The Temple veil tears in two. The darkness at noon, the earthquake, the centurion's confession — all of creation responds. The Passover Lamb has been slain.</p>
+        <div class="christ-prophecy">Fulfilled: Isaiah 53 · Psalm 22 · Zechariah 12:10</div>
+      </div>
+
+      <div class="christ-card" style="border-color: #2563EB;">
+        <div class="christ-card-num">10</div>
+        <div class="christ-card-title">The Resurrection</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 28</span>
+          <span class="gospel-chip gospel-mark">Mark 16</span>
+          <span class="gospel-chip gospel-luke">Luke 24</span>
+          <span class="gospel-chip gospel-john">John 20–21</span>
+        </div>
+        <p class="christ-card-text">On the third day, Jesus rises bodily from the dead. The tomb is empty. He appears to Mary Magdalene, to the disciples, to more than five hundred people. Death has been defeated. The new creation has begun. If Christ has not been raised, Paul writes, our faith is futile — but He has been raised.</p>
+        <div class="christ-prophecy">Fulfilled: Psalm 16:10 · Jonah 1:17 · Isaiah 53:10</div>
+      </div>
+
+      <div class="christ-card">
+        <div class="christ-card-num">11</div>
+        <div class="christ-card-title">The Great Commission and Ascension</div>
+        <div class="christ-card-refs">
+          <span class="gospel-chip gospel-matt">Matthew 28</span>
+          <span class="gospel-chip gospel-luke">Luke 24</span>
+          <span class="gospel-chip gospel-john">John 20</span>
+        </div>
+        <p class="christ-card-text">Jesus commissions His disciples to make disciples of all nations. He ascends to the Father's right hand — not absent but reigning as King. His ascension is His enthronement. From there He pours out the Spirit and intercedes for His people.</p>
+        <div class="christ-prophecy">Fulfilled: Daniel 7:13-14 · Psalm 110:1</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- EARLY CHURCH SECTION -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="church-section" class="section">
+  <div class="church-layout">
+    <div class="section-label">Acts of the Apostles</div>
+    <h2 class="section-heading serif">The Early Church</h2>
+    <p class="section-sub">The Spirit poured out, the gospel spreading to the ends of the earth.</p>
+
+    <div class="church-grid">
+      <div class="church-card">
+        <span class="church-card-ref">Acts 2</span>
+        <div class="church-card-title">Pentecost</div>
+        <p class="church-card-text">Fifty days after the Resurrection, the Holy Spirit is poured out on 120 gathered disciples. They speak in the languages of the nations — a reversal of Babel. Peter preaches and 3,000 are baptized. The Church is born.</p>
+      </div>
+      <div class="church-card">
+        <span class="church-card-ref">Acts 3–7</span>
+        <div class="church-card-title">Peter and the Jerusalem Church</div>
+        <p class="church-card-text">The early church devotes itself to teaching, fellowship, breaking of bread, and prayer. Signs and wonders accompany the apostles. Stephen, the first martyr, is stoned while seeing Jesus standing at God's right hand.</p>
+      </div>
+      <div class="church-card">
+        <span class="church-card-ref">Acts 8–9</span>
+        <div class="church-card-title">Persecution and Expansion</div>
+        <p class="church-card-text">The scattering caused by persecution becomes the means of gospel expansion. Philip evangelizes Samaria. The Ethiopian eunuch is baptized on a desert road — the gospel is already moving toward Africa.</p>
+      </div>
+      <div class="church-card">
+        <span class="church-card-ref">Acts 9</span>
+        <div class="church-card-title">The Conversion of Paul</div>
+        <p class="church-card-text">Saul of Tarsus — the church's most fierce persecutor — encounters the risen Christ on the road to Damascus. "Saul, Saul, why do you persecute me?" The greatest enemy of the church becomes its greatest missionary.</p>
+      </div>
+      <div class="church-card">
+        <span class="church-card-ref">Acts 10–11</span>
+        <div class="church-card-title">The Gentile Pentecost</div>
+        <p class="church-card-text">God gives Peter a vision that breaks down the Jew/Gentile barrier. The Roman centurion Cornelius and his household receive the Holy Spirit. The door to the nations is opened, and Peter reports: "God shows no favoritism."</p>
+      </div>
+      <div class="church-card">
+        <span class="church-card-ref">Acts 13–28</span>
+        <div class="church-card-title">Paul's Missionary Journeys</div>
+        <p class="church-card-text">Paul makes three missionary journeys across the Mediterranean world, planting churches in Asia Minor, Greece, and beyond. He is beaten, imprisoned, shipwrecked — yet the gospel advances relentlessly. He arrives in Rome, the heart of the empire.</p>
+      </div>
+      <div class="church-card">
+        <span class="church-card-ref">Romans – Jude</span>
+        <div class="church-card-title">The Letters of the New Testament</div>
+        <p class="church-card-text">The apostles write to the churches they have planted, teaching the implications of the gospel for every area of life. Justification, sanctification, the church, the resurrection, the return of Christ — all are addressed with theological depth and pastoral care.</p>
+      </div>
+      <div class="church-card">
+        <span class="church-card-ref">Acts 28</span>
+        <div class="church-card-title">The Gospel Reaches Rome</div>
+        <p class="church-card-text">Acts ends with Paul under house arrest in Rome, but the final words are triumphant: "He proclaimed the kingdom of God and taught about the Lord Jesus Christ — with all boldness and without hindrance!" The story is not over.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PAUL'S JOURNEYS MAP -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="map-section" class="section">
+  <div class="map-layout">
+    <div class="section-label">Paul's Missionary Journeys</div>
+    <h2 class="section-heading serif">The Gospel Spreads</h2>
+    <p class="section-sub">From Jerusalem to the ends of the earth — trace the expansion of the early church across the ancient world.</p>
+
+    <div id="journey-map" style="margin-top:32px;">
+      <svg id="journey-svg" viewBox="0 0 900 420" width="100%" height="100%" style="display:block;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="seaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#bfdbfe"/>
+            <stop offset="100%" stop-color="#93c5fd"/>
+          </linearGradient>
+          <marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#2563EB" opacity=".7"/>
+          </marker>
+          <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#7c3aed" opacity=".7"/>
+          </marker>
+          <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#b45309" opacity=".7"/>
+          </marker>
+        </defs>
+
+        <!-- Sea background -->
+        <rect x="0" y="0" width="900" height="420" fill="#f0f6ff" rx="10"/>
+        <ellipse cx="450" cy="240" rx="380" ry="120" fill="url(#seaGrad)" opacity=".4"/>
+
+        <!-- Land masses (simplified) -->
+        <!-- Anatolia / Asia Minor -->
+        <path d="M400,80 C440,60 520,65 580,80 C620,90 650,110 640,140 C630,165 600,170 560,165 C520,160 480,155 450,145 C420,135 380,120 400,80 Z" fill="#e8f0e0" stroke="#d1dfc8" stroke-width="1"/>
+        <!-- Greece -->
+        <path d="M280,100 C310,85 340,90 355,110 C360,125 350,145 330,155 C310,165 280,160 265,145 C250,130 255,115 280,100 Z" fill="#e8f0e0" stroke="#d1dfc8" stroke-width="1"/>
+        <!-- Italy -->
+        <path d="M160,60 C180,50 205,55 215,75 C225,95 220,125 205,155 C195,175 175,185 160,175 C145,165 140,140 145,115 C150,90 145,70 160,60 Z" fill="#e8f0e0" stroke="#d1dfc8" stroke-width="1"/>
+        <!-- North Africa -->
+        <path d="M100,300 C200,280 400,275 560,285 C620,290 660,305 640,330 C620,350 100,360 80,340 C60,325 70,310 100,300 Z" fill="#f5e8c8" stroke="#e8d4a0" stroke-width="1"/>
+        <!-- Israel / Levant -->
+        <path d="M590,150 C610,140 635,145 645,165 C650,180 640,200 620,210 C600,218 580,210 572,195 C565,180 572,160 590,150 Z" fill="#fef3c7" stroke="#fde68a" stroke-width="1.5"/>
+        <!-- Cyprus -->
+        <ellipse cx="540" cy="175" rx="25" ry="12" fill="#e8f0e0" stroke="#d1dfc8" stroke-width="1"/>
+        <!-- Crete -->
+        <ellipse cx="360" cy="210" rx="40" ry="14" fill="#e8f0e0" stroke="#d1dfc8" stroke-width="1"/>
+
+        <!-- Journey paths -->
+        <!-- First journey (blue) -->
+        <path d="M618,185 C580,190 555,185 530,178 C500,168 475,160 455,155 C430,148 400,148 370,152 C345,155 325,160 305,168" fill="none" stroke="#2563EB" stroke-width="2" stroke-dasharray="6,3" opacity=".7" marker-end="url(#arrow1)"/>
+
+        <!-- Second journey (purple) -->
+        <path d="M618,185 C600,175 575,162 545,158 C510,152 475,148 445,135 C415,122 385,110 355,108 C330,106 305,110 285,120 C268,128 265,142" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3" opacity=".7" marker-end="url(#arrow2)"/>
+        <path d="M265,145 C255,155 240,165 215,165 C195,165 175,155 170,140" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3" opacity=".7" marker-end="url(#arrow2)"/>
+
+        <!-- Third journey (gold) -->
+        <path d="M618,185 C595,180 570,172 545,170 C515,166 485,168 460,172 C430,178 400,185 370,185 C345,185 320,180 300,170" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="6,3" opacity=".7" marker-end="url(#arrow3)"/>
+
+        <!-- Journey to Rome -->
+        <path d="M618,192 C600,200 575,205 545,205 C515,205 490,200 465,195 C435,188 400,185 365,188 C335,190 305,198 280,205 C255,212 230,218 205,220 C190,220 178,215 170,205" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,3" opacity=".6" marker-end="url(#arrow1)"/>
+
+        <!-- City dots -->
+        <!-- Jerusalem -->
+        <circle cx="618" cy="188" r="8" fill="#b45309" stroke="white" stroke-width="2"/>
+        <text x="630" y="185" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#111827">Jerusalem</text>
+
+        <!-- Antioch -->
+        <circle cx="590" cy="155" r="6" fill="#2563EB" stroke="white" stroke-width="2"/>
+        <text x="602" y="152" font-family="Inter,sans-serif" font-size="9" fill="#111827">Antioch</text>
+
+        <!-- Ephesus -->
+        <circle cx="455" cy="148" r="6" fill="#2563EB" stroke="white" stroke-width="2"/>
+        <text x="465" y="144" font-family="Inter,sans-serif" font-size="9" fill="#111827">Ephesus</text>
+
+        <!-- Philippi -->
+        <circle cx="310" cy="125" r="5" fill="#7c3aed" stroke="white" stroke-width="2"/>
+        <text x="318" y="122" font-family="Inter,sans-serif" font-size="9" fill="#111827">Philippi</text>
+
+        <!-- Thessalonica -->
+        <circle cx="300" cy="145" r="5" fill="#7c3aed" stroke="white" stroke-width="2"/>
+        <text x="310" y="158" font-family="Inter,sans-serif" font-size="9" fill="#111827">Thessalonica</text>
+
+        <!-- Corinth -->
+        <circle cx="285" cy="168" r="5" fill="#7c3aed" stroke="white" stroke-width="2"/>
+        <text x="295" y="165" font-family="Inter,sans-serif" font-size="9" fill="#111827">Corinth</text>
+
+        <!-- Athens -->
+        <circle cx="295" cy="155" r="4" fill="#7c3aed" stroke="white" stroke-width="1.5"/>
+        <text x="305" y="152" font-family="Inter,sans-serif" font-size="8" fill="#6b7280">Athens</text>
+
+        <!-- Rome -->
+        <circle cx="170" cy="138" r="7" fill="#6b7280" stroke="white" stroke-width="2"/>
+        <text x="180" y="135" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#111827">Rome</text>
+
+        <!-- Cyprus -->
+        <circle cx="540" cy="175" r="4" fill="#2563EB" stroke="white" stroke-width="1.5"/>
+        <text x="550" y="172" font-family="Inter,sans-serif" font-size="8" fill="#6b7280">Cyprus</text>
+
+        <!-- Legend -->
+        <rect x="20" y="350" width="12" height="2" fill="#2563EB" opacity=".7"/>
+        <text x="38" y="355" font-family="Inter,sans-serif" font-size="9" fill="#6b7280">1st Journey</text>
+        <rect x="110" y="350" width="12" height="2" fill="#7c3aed" opacity=".7"/>
+        <text x="128" y="355" font-family="Inter,sans-serif" font-size="9" fill="#6b7280">2nd Journey</text>
+        <rect x="210" y="350" width="12" height="2" fill="#b45309" opacity=".7"/>
+        <text x="228" y="355" font-family="Inter,sans-serif" font-size="9" fill="#6b7280">3rd Journey</text>
+        <rect x="310" y="350" width="12" height="2" fill="#6b7280" opacity=".6"/>
+        <text x="328" y="355" font-family="Inter,sans-serif" font-size="9" fill="#6b7280">Journey to Rome</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- BOOK EXPLORER -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="books-section" class="section">
+  <div class="books-layout">
+    <div class="section-label">The Canon of Scripture</div>
+    <h2 class="section-heading serif">Book Explorer</h2>
+    <p class="section-sub">Sixty-six books, one story. Explore every book of the Bible — author, theme, and key verse.</p>
+
+    <div class="books-categories" style="margin-top:28px;">
+      <button class="cat-btn active" data-cat="all">All Books</button>
+      <button class="cat-btn" data-cat="law">Law</button>
+      <button class="cat-btn" data-cat="history">History</button>
+      <button class="cat-btn" data-cat="poetry">Poetry &amp; Wisdom</button>
+      <button class="cat-btn" data-cat="prophets">Prophets</button>
+      <button class="cat-btn" data-cat="gospels">Gospels</button>
+      <button class="cat-btn" data-cat="letters">Letters</button>
+      <button class="cat-btn" data-cat="apocalyptic">Apocalyptic</button>
+    </div>
+
+    <div class="books-grid" id="books-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- KNOWLEDGE GRAPH -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="graph-section" class="section">
+  <div class="graph-layout">
+    <div class="section-label">Biblical Connections</div>
+    <h2 class="section-heading serif">The Connections Map</h2>
+    <p class="section-sub">See how people, prophecies, events, and themes connect across all of Scripture. Click any node to explore its relationships.</p>
+
+    <div id="graph-canvas-wrap" style="margin-top:28px;">
+      <canvas id="knowledge-canvas"></canvas>
+    </div>
+
+    <div class="graph-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div><span>Person</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div><span>Event</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div><span>Prophecy</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#059669"></div><span>Theme</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div><span>Place</span></div>
+    </div>
+
+    <p style="font-size:.8rem;color:var(--text2);margin-top:12px;">Drag to pan · Scroll to zoom · Click a node to see connections</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- REVELATION SECTION -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="revelation-section">
+  <div class="rev-layout">
+    <div class="section-label">The End and the New Beginning</div>
+    <h2 class="section-heading serif">The Book of Revelation</h2>
+    <p class="section-sub">The Apocalypse of John — not a book of fear, but of hope. The Lamb who was slain reigns, and all things are made new.</p>
+
+    <div class="rev-timeline">
+
+      <div class="rev-item">
+        <div class="rev-ref">Revelation 1</div>
+        <div class="rev-title">The Vision on Patmos</div>
+        <p class="rev-text">The apostle John, exiled on the island of Patmos, receives a vision of the risen Christ — eyes like blazing fire, feet like bronze, a voice like rushing waters. This Christ is not the suffering servant but the reigning King. John falls at His feet as though dead.</p>
+      </div>
+
+      <div class="rev-item">
+        <div class="rev-ref">Revelation 2–3</div>
+        <div class="rev-title">Letters to the Seven Churches</div>
+        <p class="rev-text">Christ dictates letters to seven actual churches in Asia Minor — Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, Laodicea. Each receives both commendation and correction. These letters address every church in every age: faithfulness, compromise, endurance, and returning to first love.</p>
+      </div>
+
+      <div class="rev-item">
+        <div class="rev-ref">Revelation 4–5</div>
+        <div class="rev-title">The Throne Room of Heaven</div>
+        <p class="rev-text">John is caught up to the throne room of God — surrounded by four living creatures and twenty-four elders, the crystal sea, the seven spirits, and ceaseless worship. The Lamb, looking as if slain, takes the scroll. Heaven erupts: "Worthy is the Lamb who was slain!" All creation joins the chorus.</p>
+      </div>
+
+      <div class="rev-item">
+        <div class="rev-ref">Revelation 6–19</div>
+        <div class="rev-title">The Unfolding of History</div>
+        <p class="rev-text">Through seals, trumpets, and bowls, John sees the full scope of history from the perspective of heaven — persecution, cosmic upheaval, the triumph of the beast, the judgment of Babylon. Yet woven throughout are visions of the redeemed — a great multitude from every nation, standing before the Lamb, clothed in white.</p>
+      </div>
+
+      <div class="rev-item">
+        <div class="rev-ref">Revelation 19</div>
+        <div class="rev-title">The Return of Christ</div>
+        <p class="rev-text">Heaven opens and the King of kings appears on a white horse — the Word of God, with a robe dipped in blood. He comes not as servant but as conqueror, to judge and to make war in righteousness. Every knee will bow before this King.</p>
+      </div>
+
+      <div class="rev-item">
+        <div class="rev-ref">Revelation 20</div>
+        <div class="rev-title">Final Judgment</div>
+        <p class="rev-text">Satan is bound, then released, then cast into the lake of fire. Death and Hades give up their dead. The books are opened. The Book of Life is the final word. Those whose names are written there are not condemned — they have already been judged in their representative, Jesus Christ.</p>
+      </div>
+
+      <div class="rev-item">
+        <div class="rev-ref">Revelation 21–22</div>
+        <div class="rev-title">New Heaven, New Earth, New Jerusalem</div>
+        <p class="rev-text">The first things have passed away. God declares: "I am making everything new!" The New Jerusalem descends from heaven — the dwelling of God is now with humanity. No more death, mourning, crying, or pain. The river of life flows from the throne. The tree of life yields its fruit. Eden is restored, magnified, glorified. The Grand Story of Scripture ends where it began — with God dwelling with His people — but now in indestructible, eternal glory. Come, Lord Jesus.</p>
+      </div>
+
+    </div>
+
+    <div style="margin-top:48px; padding:28px; background:rgba(255,255,255,.8); border:1px solid #ddd6fe; border-radius:12px; max-width:600px;">
+      <div style="font-family:'Lora',serif; font-style:italic; font-size:1.1rem; line-height:1.8; color:var(--text); margin-bottom:12px;">
+        "He who testifies to these things says, 'Yes, I am coming soon.' Amen. Come, Lord Jesus."
+      </div>
+      <div style="font-size:.75rem; font-weight:600; letter-spacing:.08em; color:#7c3aed;">
+        Revelation 22:20
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCRIPTURE READER PANEL -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="scripture-panel" role="dialog" aria-modal="true" aria-label="Scripture Reader">
+  <div class="panel-header">
+    <div class="panel-title-ref" id="panel-title-ref">Scripture</div>
+    <button class="panel-close" onclick="closeScripture()" aria-label="Close">&times;</button>
+  </div>
+  <div class="panel-body" id="panel-body">
+    <div class="panel-verse-ref" id="panel-verse-ref"></div>
+    <div class="panel-verse-text" id="panel-verse-text"></div>
+    <div class="panel-section-label">Cross-References</div>
+    <div class="panel-cross-refs" id="panel-cross-refs"></div>
+    <div class="panel-section-label" style="margin-top:20px;">Related Events</div>
+    <div id="panel-related" style="font-size:.82rem; color:var(--text2); line-height:1.6;"></div>
+  </div>
+</div>
+
+<!-- Panel overlay -->
+<div id="panel-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); z-index:199;" onclick="closeScripture()"></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PROGRESS WIDGET -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="progress-widget">
+  <div class="progress-toggle" onclick="toggleProgress()">
+    <span class="progress-toggle-label">Your Progress</span>
+    <button class="progress-toggle-btn" aria-label="Toggle">&#9650;</button>
+  </div>
+  <div class="progress-body">
+    <div class="progress-stat">
+      <span class="stat-label">Events Explored</span>
+      <span class="stat-value" id="stat-events">0</span>
+    </div>
+    <div class="progress-stat">
+      <span class="stat-label">Scriptures Read</span>
+      <span class="stat-value" id="stat-scriptures">0</span>
+    </div>
+    <div class="progress-stat">
+      <span class="stat-label">Connections Found</span>
+      <span class="stat-value" id="stat-connections">0</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="pbar-label">
+        <span>Timeline Progress</span>
+        <span id="stat-percent">0%</span>
+      </div>
+      <div class="pbar">
+        <div class="pbar-fill" id="progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav id="mobile-nav" aria-label="Mobile navigation">
+  <div class="mobile-nav-inner">
+    <a href="#timeline-section" class="mobile-nav-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      Timeline
+    </a>
+    <a href="#christ-section" class="mobile-nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v10m0 0l-3-3m3 3l3-3M5 22h14"/></svg>
+      Christ
+    </a>
+    <a href="#books-section" class="mobile-nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5V4.5A.5.5 0 014.5 4H18a.5.5 0 01.5.5v15"/></svg>
+      Books
+    </a>
+    <a href="#graph-section" class="mobile-nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><line x1="7" y1="11" x2="17" y2="6"/><line x1="7" y1="13" x2="17" y2="18"/></svg>
+      Connect
+    </a>
+    <a href="#revelation-section" class="mobile-nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+      Revelation
+    </a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
+<!-- ═══════════════════════════════════════════ -->
+<script>
+// ── BIBLE BOOKS DATA ──────────────────────────────────────────────
+const bibleBooks = [
+  { name:'Genesis', cat:'law', testament:'OT', author:'Moses', date:'c. 1445 BC', theme:'Origins and the covenant promise', verse:'In the beginning God created the heavens and the earth. (1:1)' },
+  { name:'Exodus', cat:'law', testament:'OT', author:'Moses', date:'c. 1445 BC', theme:'Redemption and the Law', verse:'I am who I am. (3:14)' },
+  { name:'Leviticus', cat:'law', testament:'OT', author:'Moses', date:'c. 1445 BC', theme:'Holiness and worship', verse:'Be holy because I, the Lord your God, am holy. (19:2)' },
+  { name:'Numbers', cat:'law', testament:'OT', author:'Moses', date:'c. 1444 BC', theme:'Wilderness wandering and faith', verse:'The Lord bless you and keep you. (6:24)' },
+  { name:'Deuteronomy', cat:'law', testament:'OT', author:'Moses', date:'c. 1406 BC', theme:'Covenant renewal and obedience', verse:'Love the Lord your God with all your heart. (6:5)' },
+  { name:'Joshua', cat:'history', testament:'OT', author:'Joshua', date:'c. 1390 BC', theme:'Conquest and faithful possession', verse:'Be strong and courageous. (1:9)' },
+  { name:'Judges', cat:'history', testament:'OT', author:'Unknown', date:'c. 1050 BC', theme:'Cycles of sin and deliverance', verse:'Everyone did what was right in their own eyes. (21:25)' },
+  { name:'Ruth', cat:'history', testament:'OT', author:'Unknown', date:'c. 1000 BC', theme:'Loyalty, redemption, and grace', verse:'Where you go I will go. (1:16)' },
+  { name:'1 Samuel', cat:'history', testament:'OT', author:'Samuel, Nathan, Gad', date:'c. 930 BC', theme:'The establishment of the monarchy', verse:'Man looks at the outward appearance, but the Lord looks at the heart. (16:7)' },
+  { name:'2 Samuel', cat:'history', testament:'OT', author:'Unknown', date:'c. 930 BC', theme:'The Davidic Kingdom and covenant', verse:'Your house and kingdom will endure forever. (7:16)' },
+  { name:'1 Kings', cat:'history', testament:'OT', author:'Unknown', date:'c. 550 BC', theme:'Solomon, the Temple, and division', verse:'I will give you a wise and discerning heart. (3:12)' },
+  { name:'2 Kings', cat:'history', testament:'OT', author:'Unknown', date:'c. 550 BC', theme:'Decline, exile, and God\'s faithfulness', verse:'Yet the Lord was not willing to destroy Judah. (8:19)' },
+  { name:'1 Chronicles', cat:'history', testament:'OT', author:'Ezra', date:'c. 430 BC', theme:'David\'s legacy and the Temple', verse:'Give praise to the Lord, proclaim his name. (16:8)' },
+  { name:'2 Chronicles', cat:'history', testament:'OT', author:'Ezra', date:'c. 430 BC', theme:'The Temple and the kings of Judah', verse:'If my people...humble themselves and pray. (7:14)' },
+  { name:'Ezra', cat:'history', testament:'OT', author:'Ezra', date:'c. 440 BC', theme:'Return and spiritual renewal', verse:'Ezra had devoted himself to the study of the Law. (7:10)' },
+  { name:'Nehemiah', cat:'history', testament:'OT', author:'Nehemiah', date:'c. 430 BC', theme:'Rebuilding and reformation', verse:'The joy of the Lord is your strength. (8:10)' },
+  { name:'Esther', cat:'history', testament:'OT', author:'Unknown', date:'c. 460 BC', theme:'God\'s hidden providence', verse:'And who knows but that you have come to your royal position for such a time as this. (4:14)' },
+  { name:'Job', cat:'poetry', testament:'OT', author:'Unknown', date:'Unknown', theme:'Suffering and the sovereignty of God', verse:'I know that my redeemer lives. (19:25)' },
+  { name:'Psalms', cat:'poetry', testament:'OT', author:'David and others', date:'c. 1000–400 BC', theme:'The full range of human prayer and praise', verse:'The Lord is my shepherd, I lack nothing. (23:1)' },
+  { name:'Proverbs', cat:'poetry', testament:'OT', author:'Solomon', date:'c. 950 BC', theme:'Practical wisdom for daily life', verse:'Trust in the Lord with all your heart. (3:5)' },
+  { name:'Ecclesiastes', cat:'poetry', testament:'OT', author:'Solomon', date:'c. 935 BC', theme:'The meaning of life under the sun', verse:'Fear God and keep his commandments, for this is the duty of all mankind. (12:13)' },
+  { name:'Song of Solomon', cat:'poetry', testament:'OT', author:'Solomon', date:'c. 950 BC', theme:'Love, marriage, and God\'s covenant love', verse:'I am my beloved\'s and my beloved is mine. (6:3)' },
+  { name:'Isaiah', cat:'prophets', testament:'OT', author:'Isaiah', date:'c. 740–681 BC', theme:'Judgment, comfort, and the Servant\'s redemption', verse:'He was pierced for our transgressions. (53:5)' },
+  { name:'Jeremiah', cat:'prophets', testament:'OT', author:'Jeremiah', date:'c. 626–585 BC', theme:'Judgment and the promise of a new covenant', verse:'I will put my law in their minds and write it on their hearts. (31:33)' },
+  { name:'Lamentations', cat:'prophets', testament:'OT', author:'Jeremiah', date:'c. 586 BC', theme:'Grief over Jerusalem\'s fall', verse:'Great is your faithfulness. (3:23)' },
+  { name:'Ezekiel', cat:'prophets', testament:'OT', author:'Ezekiel', date:'c. 593–571 BC', theme:'God\'s glory, judgment, and restoration', verse:'I will give you a new heart. (36:26)' },
+  { name:'Daniel', cat:'prophets', testament:'OT', author:'Daniel', date:'c. 535 BC', theme:'Faithfulness in exile and God\'s sovereign Kingdom', verse:'The God of heaven will set up a kingdom that will never be destroyed. (2:44)' },
+  { name:'Hosea', cat:'prophets', testament:'OT', author:'Hosea', date:'c. 755–715 BC', theme:'God\'s covenant love for unfaithful Israel', verse:'For I desire mercy, not sacrifice. (6:6)' },
+  { name:'Joel', cat:'prophets', testament:'OT', author:'Joel', date:'c. 835–800 BC', theme:'The day of the Lord and the Spirit\'s outpouring', verse:'I will pour out my Spirit on all people. (2:28)' },
+  { name:'Amos', cat:'prophets', testament:'OT', author:'Amos', date:'c. 760–750 BC', theme:'Justice and the coming judgment on Israel', verse:'Let justice roll on like a river. (5:24)' },
+  { name:'Obadiah', cat:'prophets', testament:'OT', author:'Obadiah', date:'c. 845 BC', theme:'Judgment on Edom and Israel\'s restoration', verse:'The day of the Lord is near. (v.15)' },
+  { name:'Jonah', cat:'prophets', testament:'OT', author:'Jonah', date:'c. 760 BC', theme:'God\'s mercy extending beyond Israel', verse:'Salvation comes from the Lord. (2:9)' },
+  { name:'Micah', cat:'prophets', testament:'OT', author:'Micah', date:'c. 742–687 BC', theme:'Justice, kindness, and the coming ruler', verse:'But you, Bethlehem... out of you will come for me one who will be ruler over Israel. (5:2)' },
+  { name:'Nahum', cat:'prophets', testament:'OT', author:'Nahum', date:'c. 663–612 BC', theme:'God\'s judgment on Nineveh', verse:'The Lord is good, a refuge in times of trouble. (1:7)' },
+  { name:'Habakkuk', cat:'prophets', testament:'OT', author:'Habakkuk', date:'c. 610–605 BC', theme:'Faith in God when evil seems to prevail', verse:'The righteous person will live by his faithfulness. (2:4)' },
+  { name:'Zephaniah', cat:'prophets', testament:'OT', author:'Zephaniah', date:'c. 640–609 BC', theme:'The day of the Lord and restoration', verse:'He will take great delight in you. (3:17)' },
+  { name:'Haggai', cat:'prophets', testament:'OT', author:'Haggai', date:'c. 520 BC', theme:'Rebuilding the Temple and priorities', verse:'Give careful thought to your ways. (1:5)' },
+  { name:'Zechariah', cat:'prophets', testament:'OT', author:'Zechariah', date:'c. 520–480 BC', theme:'Messianic prophecies and the coming King', verse:'Rejoice greatly...your king comes to you. (9:9)' },
+  { name:'Malachi', cat:'prophets', testament:'OT', author:'Malachi', date:'c. 430 BC', theme:'Covenant faithfulness and the coming Messenger', verse:'See, I will send the prophet Elijah to you. (4:5)' },
+  { name:'Matthew', cat:'gospels', testament:'NT', author:'Matthew', date:'c. 60–65 AD', theme:'Jesus as the Jewish Messiah and King', verse:'She will give birth to a son, and you are to give him the name Jesus, because he will save his people from their sins. (1:21)' },
+  { name:'Mark', cat:'gospels', testament:'NT', author:'John Mark', date:'c. 55–65 AD', theme:'Jesus as Servant and Son of God', verse:'For even the Son of Man did not come to be served, but to serve. (10:45)' },
+  { name:'Luke', cat:'gospels', testament:'NT', author:'Luke', date:'c. 60–62 AD', theme:'Jesus as Savior of all people', verse:'For the Son of Man came to seek and to save the lost. (19:10)' },
+  { name:'John', cat:'gospels', testament:'NT', author:'John', date:'c. 85–90 AD', theme:'Jesus as the eternal Word and Son of God', verse:'For God so loved the world that he gave his one and only Son. (3:16)' },
+  { name:'Acts', cat:'letters', testament:'NT', author:'Luke', date:'c. 62–63 AD', theme:'The Spirit-empowered expansion of the church', verse:'You will receive power...and you will be my witnesses...to the ends of the earth. (1:8)' },
+  { name:'Romans', cat:'letters', testament:'NT', author:'Paul', date:'c. 57 AD', theme:'The righteousness of God in the gospel', verse:'I am not ashamed of the gospel, because it is the power of God. (1:16)' },
+  { name:'1 Corinthians', cat:'letters', testament:'NT', author:'Paul', date:'c. 55 AD', theme:'Christian living and the resurrection', verse:'If Christ has not been raised, your faith is futile. (15:17)' },
+  { name:'2 Corinthians', cat:'letters', testament:'NT', author:'Paul', date:'c. 56 AD', theme:'Weakness, suffering, and ministry', verse:'My grace is sufficient for you. (12:9)' },
+  { name:'Galatians', cat:'letters', testament:'NT', author:'Paul', date:'c. 49 AD', theme:'Freedom in Christ and the gospel', verse:'It is for freedom that Christ has set us free. (5:1)' },
+  { name:'Ephesians', cat:'letters', testament:'NT', author:'Paul', date:'c. 62 AD', theme:'The church as Christ\'s body', verse:'For it is by grace you have been saved, through faith. (2:8)' },
+  { name:'Philippians', cat:'letters', testament:'NT', author:'Paul', date:'c. 62 AD', theme:'Joy and contentment in Christ', verse:'I can do all this through him who gives me strength. (4:13)' },
+  { name:'Colossians', cat:'letters', testament:'NT', author:'Paul', date:'c. 62 AD', theme:'The supremacy of Christ', verse:'In him all things hold together. (1:17)' },
+  { name:'1 Thessalonians', cat:'letters', testament:'NT', author:'Paul', date:'c. 51 AD', theme:'Sanctification and the return of Christ', verse:'Rejoice always, pray continually, give thanks in all circumstances. (5:16-18)' },
+  { name:'2 Thessalonians', cat:'letters', testament:'NT', author:'Paul', date:'c. 51–52 AD', theme:'The day of the Lord', verse:'May the Lord direct your hearts into God\'s love. (3:5)' },
+  { name:'1 Timothy', cat:'letters', testament:'NT', author:'Paul', date:'c. 64 AD', theme:'Church leadership and sound doctrine', verse:'Here is a trustworthy saying: Christ Jesus came into the world to save sinners. (1:15)' },
+  { name:'2 Timothy', cat:'letters', testament:'NT', author:'Paul', date:'c. 67 AD', theme:'Perseverance and faithful ministry', verse:'All Scripture is God-breathed. (3:16)' },
+  { name:'Titus', cat:'letters', testament:'NT', author:'Paul', date:'c. 63–65 AD', theme:'Godly living in the church', verse:'The grace of God has appeared that offers salvation to all people. (2:11)' },
+  { name:'Philemon', cat:'letters', testament:'NT', author:'Paul', date:'c. 62 AD', theme:'Reconciliation and forgiveness', verse:'I appeal to you on the basis of love. (v.9)' },
+  { name:'Hebrews', cat:'letters', testament:'NT', author:'Unknown', date:'c. 64–68 AD', theme:'Christ as the fulfillment of all the OT', verse:'The Son is the radiance of God\'s glory. (1:3)' },
+  { name:'James', cat:'letters', testament:'NT', author:'James', date:'c. 45–49 AD', theme:'Faith that works', verse:'Faith without deeds is dead. (2:26)' },
+  { name:'1 Peter', cat:'letters', testament:'NT', author:'Peter', date:'c. 62–64 AD', theme:'Suffering and hope in a hostile world', verse:'Cast all your anxiety on him because he cares for you. (5:7)' },
+  { name:'2 Peter', cat:'letters', testament:'NT', author:'Peter', date:'c. 67–68 AD', theme:'False teaching and the certainty of Christ\'s return', verse:'The Lord is not slow in keeping his promise. (3:9)' },
+  { name:'1 John', cat:'letters', testament:'NT', author:'John', date:'c. 90 AD', theme:'Assurance and love in the Christian life', verse:'God is love. (4:8)' },
+  { name:'2 John', cat:'letters', testament:'NT', author:'John', date:'c. 90 AD', theme:'Truth, love, and false teaching', verse:'Walk in obedience to his commands. (v.6)' },
+  { name:'3 John', cat:'letters', testament:'NT', author:'John', date:'c. 90 AD', theme:'Hospitality and faithful ministry', verse:'I have no greater joy than to hear that my children are walking in the truth. (v.4)' },
+  { name:'Jude', cat:'letters', testament:'NT', author:'Jude', date:'c. 65 AD', theme:'Contending for the faith', verse:'Contend for the faith that was once for all entrusted to God\'s holy people. (v.3)' },
+  { name:'Revelation', cat:'apocalyptic', testament:'NT', author:'John', date:'c. 95–96 AD', theme:'The victory of Christ and the new creation', verse:'He who testifies to these things says, "Yes, I am coming soon." (22:20)' }
+];
+
+// ── RENDER BOOKS ──────────────────────────────────────────────────
+function renderBooks(filter) {
+  const grid = document.getElementById('books-grid');
+  grid.innerHTML = '';
+  bibleBooks.forEach(book => {
+    const show = filter === 'all' || book.cat === filter;
+    const div = document.createElement('div');
+    div.className = 'book-card' + (show ? ' show' : '');
+    div.innerHTML = `
+      <div class="book-testament">${book.testament} · ${book.cat.charAt(0).toUpperCase()+book.cat.slice(1)}</div>
+      <div class="book-name">${book.name}</div>
+      <div class="book-category">${book.author} · ${book.date}</div>
+      <div class="book-theme">${book.theme}</div>
+    `;
+    div.addEventListener('click', () => showBookPanel(book));
+    grid.appendChild(div);
+  });
+}
+
+function showBookPanel(book) {
+  const panel = document.getElementById('scripture-panel');
+  const titleRef = document.getElementById('panel-title-ref');
+  const verseRef = document.getElementById('panel-verse-ref');
+  const verseText = document.getElementById('panel-verse-text');
+  const xrefs = document.getElementById('panel-cross-refs');
+  const related = document.getElementById('panel-related');
+  titleRef.textContent = book.name + ' — ' + book.testament;
+  verseRef.textContent = book.name;
+  verseText.textContent = book.theme;
+  xrefs.innerHTML = `<span class="panel-xref">${book.author}</span><span class="panel-xref">${book.date}</span>`;
+  related.textContent = book.verse;
+  panel.classList.add('open');
+  document.getElementById('panel-overlay').style.display = 'block';
+  trackProgress('scriptures');
+}
+
+// Category filter buttons
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.book-card').forEach(card => {
+      card.classList.toggle('show', cat === 'all' || card.querySelector('.book-testament').textContent.toLowerCase().includes(cat));
+    });
+    renderBooks(cat);
+  });
+});
+
+renderBooks('all');
+
+// ── SCRIPTURE PANEL ───────────────────────────────────────────────
+function openScripture(card) {
+  const verses = JSON.parse(card.dataset.verses || '[]');
+  if (!verses.length) return;
+  const v = verses[0];
+  const panel = document.getElementById('scripture-panel');
+  document.getElementById('panel-title-ref').textContent = v.ref;
+  document.getElementById('panel-verse-ref').textContent = v.ref;
+  document.getElementById('panel-verse-text').textContent = v.text;
+  const xrefsEl = document.getElementById('panel-cross-refs');
+  xrefsEl.innerHTML = (v.xrefs || []).map(r => `<span class="panel-xref" onclick="lookupVerse('${r}')">${r}</span>`).join('');
+  document.getElementById('panel-related').textContent = card.querySelector('.card-context')?.textContent || '';
+  panel.classList.add('open');
+  document.getElementById('panel-overlay').style.display = 'block';
+  trackProgress('scriptures');
+}
+
+function closeScripture() {
+  document.getElementById('scripture-panel').classList.remove('open');
+  document.getElementById('panel-overlay').style.display = 'none';
+}
+
+function lookupVerse(ref) {
+  document.getElementById('panel-verse-ref').textContent = ref;
+  document.getElementById('panel-verse-text').textContent = 'Open your Bible to explore ' + ref + ' in its full context.';
+  trackProgress('scriptures');
+}
+
+document.querySelectorAll('.scripture-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const panel = document.getElementById('scripture-panel');
+    const ref = chip.dataset.ref;
+    const text = chip.dataset.text;
+    const xrefs = (chip.dataset.xrefs || '').split(',').filter(Boolean);
+    document.getElementById('panel-title-ref').textContent = ref;
+    document.getElementById('panel-verse-ref').textContent = ref;
+    document.getElementById('panel-verse-text').textContent = text;
+    document.getElementById('panel-cross-refs').innerHTML = xrefs.map(r => `<span class="panel-xref">${r.trim()}</span>`).join('');
+    document.getElementById('panel-related').textContent = '';
+    panel.classList.add('open');
+    document.getElementById('panel-overlay').style.display = 'block';
+    trackProgress('scriptures');
+  });
+});
+
+// ── PROGRESS TRACKING ─────────────────────────────────────────────
+const progress = JSON.parse(localStorage.getItem('scripture_progress') || '{"events":0,"scriptures":0,"connections":0}');
+const TOTAL_EVENTS = 20;
+
+function trackProgress(type) {
+  if (type === 'events' && progress.events < TOTAL_EVENTS) progress.events++;
+  if (type === 'scriptures') progress.scriptures++;
+  if (type === 'connections') progress.connections++;
+  localStorage.setItem('scripture_progress', JSON.stringify(progress));
+  updateProgressUI();
+}
+
+function updateProgressUI() {
+  document.getElementById('stat-events').textContent = progress.events;
+  document.getElementById('stat-scriptures').textContent = progress.scriptures;
+  document.getElementById('stat-connections').textContent = progress.connections;
+  const pct = Math.round((progress.events / TOTAL_EVENTS) * 100);
+  document.getElementById('stat-percent').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+updateProgressUI();
+
+function toggleProgress() {
+  document.getElementById('progress-widget').classList.toggle('collapsed');
+}
+
+// Track events viewed via intersection observer
+const eventCards = document.querySelectorAll('.event-card');
+const viewedEvents = new Set();
+
+const cardObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      const title = entry.target.querySelector('.card-title')?.textContent;
+      if (title && !viewedEvents.has(title)) {
+        viewedEvents.add(title);
+        trackProgress('events');
+      }
+    }
+  });
+}, { threshold: 0.15 });
+
+eventCards.forEach(card => cardObserver.observe(card));
+
+// Christ cards
+const christCards = document.querySelectorAll('.christ-card');
+const christObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+christCards.forEach(c => christObserver.observe(c));
+
+// Church cards
+const churchCards = document.querySelectorAll('.church-card');
+churchCards.forEach(c => christObserver.observe(c));
+
+// Revelation items
+const revItems = document.querySelectorAll('.rev-item');
+revItems.forEach(r => christObserver.observe(r));
+
+// ── TIMELINE NAV ACTIVE STATE ─────────────────────────────────────
+const eras = document.querySelectorAll('.era-group');
+const tnavLinks = document.querySelectorAll('.tnav-era');
+
+const eraObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      tnavLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+
+eras.forEach(era => eraObserver.observe(era));
+
+// ── TAB ACTIVE STATE ──────────────────────────────────────────────
+const sections = ['timeline-section','christ-section','church-section','map-section','books-section','graph-section','revelation-section'];
+const tabLinks = document.querySelectorAll('#section-tabs .tab-item');
+
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      tabLinks.forEach(tab => {
+        tab.classList.toggle('active', tab.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { threshold: 0.2 });
+
+sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) sectionObserver.observe(el);
+});
+
+// ── KNOWLEDGE GRAPH CANVAS ────────────────────────────────────────
+const canvas = document.getElementById('knowledge-canvas');
+const ctx = canvas.getContext('2d');
+
+let nodes = [], edges = [], dragNode = null, offsetX = 0, offsetY = 0;
+let panX = 0, panY = 0, scale = 1, isPanning = false, panStart = null;
+let selectedNode = null;
+let animFrame = null;
+
+const nodeTypes = {
+  person: '#2563EB',
+  event:  '#7c3aed',
+  prophecy: '#b45309',
+  theme: '#059669',
+  place: '#dc2626'
+};
+
+const graphData = [
+  { id:'jesus',     label:'Jesus Christ',      type:'person',   x:.50, y:.35 },
+  { id:'abraham',   label:'Abraham',           type:'person',   x:.20, y:.25 },
+  { id:'david',     label:'David',             type:'person',   x:.25, y:.45 },
+  { id:'moses',     label:'Moses',             type:'person',   x:.15, y:.50 },
+  { id:'isaiah53',  label:'Isaiah 53',         type:'prophecy', x:.40, y:.15 },
+  { id:'passover',  label:'Passover',          type:'event',    x:.20, y:.65 },
+  { id:'cross',     label:'The Cross',         type:'event',    x:.55, y:.55 },
+  { id:'resurrection', label:'Resurrection',  type:'event',    x:.65, y:.40 },
+  { id:'creation',  label:'Creation',          type:'event',    x:.35, y:.70 },
+  { id:'covenant',  label:'Covenant',          type:'theme',    x:.70, y:.20 },
+  { id:'redemption',label:'Redemption',        type:'theme',    x:.70, y:.55 },
+  { id:'bethlehem', label:'Bethlehem',         type:'place',    x:.40, y:.48 },
+  { id:'jerusalem', label:'Jerusalem',         type:'place',    x:.55, y:.22 },
+  { id:'temple',    label:'Temple',            type:'event',    x:.35, y:.30 },
+  { id:'spirit',    label:'Holy Spirit',       type:'theme',    x:.80, y:.38 },
+  { id:'paul',      label:'Paul',              type:'person',   x:.82, y:.65 },
+  { id:'newcreation',label:'New Creation',     type:'theme',    x:.78, y:.75 },
+];
+
+const edgeData = [
+  ['jesus','isaiah53'],['jesus','cross'],['jesus','resurrection'],['jesus','bethlehem'],
+  ['jesus','covenant'],['jesus','redemption'],['jesus','spirit'],['jesus','jerusalem'],
+  ['jesus','temple'],['jesus','passover'],['jesus','david'],['jesus','abraham'],
+  ['abraham','covenant'],['abraham','bethlehem'],['david','jerusalem'],['david','temple'],
+  ['david','covenant'],['moses','passover'],['moses','covenant'],['passover','cross'],
+  ['cross','redemption'],['resurrection','newcreation'],['spirit','newcreation'],
+  ['paul','redemption'],['paul','spirit'],['creation','newcreation'],['creation','covenant'],
+  ['isaiah53','cross'],['temple','jerusalem'],['isaiah53','redemption'],
+];
+
+function initGraph() {
+  const wrap = document.getElementById('graph-canvas-wrap');
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+
+  nodes = graphData.map(n => ({
+    ...n,
+    x: n.x * canvas.width,
+    y: n.y * canvas.height,
+    vx: 0, vy: 0,
+    radius: n.id === 'jesus' ? 22 : 14
+  }));
+
+  edges = edgeData.map(([a, b]) => ({
+    source: nodes.find(n => n.id === a),
+    target: nodes.find(n => n.id === b)
+  })).filter(e => e.source && e.target);
+
+  animate();
+}
+
+function drawGraph() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(panX, panY);
+  ctx.scale(scale, scale);
+
+  // Edges
+  edges.forEach(e => {
+    const isHighlighted = selectedNode && (e.source === selectedNode || e.target === selectedNode);
+    ctx.beginPath();
+    ctx.moveTo(e.source.x, e.source.y);
+    ctx.lineTo(e.target.x, e.target.y);
+    ctx.strokeStyle = isHighlighted ? '#2563EB' : '#E5E7EB';
+    ctx.lineWidth = isHighlighted ? 2 : 1;
+    ctx.globalAlpha = isHighlighted ? .8 : .5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  });
+
+  // Nodes
+  nodes.forEach(n => {
+    const isSelected = n === selectedNode;
+    const isConnected = selectedNode && edges.some(e =>
+      (e.source === selectedNode && e.target === n) ||
+      (e.target === selectedNode && e.source === n)
+    );
+    const color = nodeTypes[n.type];
+    const alpha = !selectedNode || isSelected || isConnected ? 1 : .25;
+
+    ctx.globalAlpha = alpha;
+
+    // Shadow
+    ctx.shadowColor = 'rgba(0,0,0,.12)';
+    ctx.shadowBlur = 8;
+
+    // Circle
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+    ctx.fillStyle = isSelected ? color : color + 'cc';
+    ctx.fill();
+
+    if (isSelected) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      // Glow ring
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 5, 0, Math.PI * 2);
+      ctx.strokeStyle = color + '40';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    }
+
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.fillStyle = isSelected ? '#111827' : '#374151';
+    ctx.font = `${isSelected ? 600 : 500} ${n.radius < 16 ? 10 : 11}px Inter, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(n.label, n.x, n.y + n.radius + 4);
+
+    ctx.globalAlpha = 1;
+  });
+
+  ctx.restore();
+}
+
+// Gentle physics simulation
+function simulate() {
+  const k = 0.005, repulsion = 1800, damping = 0.85;
+
+  nodes.forEach(a => {
+    nodes.forEach(b => {
+      if (a === b) return;
+      const dx = a.x - b.x, dy = a.y - b.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const force = repulsion / (dist * dist);
+      a.vx += (dx / dist) * force;
+      a.vy += (dy / dist) * force;
+    });
+
+    // Center gravity
+    a.vx += (canvas.width / 2 - a.x) * 0.001;
+    a.vy += (canvas.height / 2 - a.y) * 0.001;
+  });
+
+  edges.forEach(e => {
+    const dx = e.target.x - e.source.x;
+    const dy = e.target.y - e.source.y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const targetLen = 100;
+    const force = (dist - targetLen) * k;
+    const fx = (dx / dist) * force;
+    const fy = (dy / dist) * force;
+    e.source.vx += fx; e.source.vy += fy;
+    e.target.vx -= fx; e.target.vy -= fy;
+  });
+
+  nodes.forEach(n => {
+    if (n === dragNode) return;
+    n.vx *= damping; n.vy *= damping;
+    n.x += n.vx; n.y += n.vy;
+    n.x = Math.max(n.radius, Math.min(canvas.width - n.radius, n.x));
+    n.y = Math.max(n.radius, Math.min(canvas.height - n.radius, n.y));
+  });
+}
+
+let tick = 0;
+function animate() {
+  if (tick < 200) { simulate(); tick++; }
+  drawGraph();
+  animFrame = requestAnimationFrame(animate);
+}
+
+function getNodeAt(x, y) {
+  const cx = (x - panX) / scale;
+  const cy = (y - panY) / scale;
+  return nodes.find(n => {
+    const d = Math.sqrt((n.x - cx) ** 2 + (n.y - cy) ** 2);
+    return d <= n.radius + 4;
+  });
+}
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  const node = getNodeAt(x, y);
+  if (node) {
+    dragNode = node;
+    selectedNode = node;
+    tick = 0;
+  } else {
+    isPanning = true;
+    panStart = { x: e.clientX - panX, y: e.clientY - panY };
+    if (!e.target.closest('.event-card')) selectedNode = null;
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  if (dragNode) {
+    dragNode.x = (e.clientX - rect.left - panX) / scale;
+    dragNode.y = (e.clientY - rect.top  - panY) / scale;
+  } else if (isPanning && panStart) {
+    panX = e.clientX - panStart.x;
+    panY = e.clientY - panStart.y;
+  }
+});
+
+canvas.addEventListener('mouseup', () => { dragNode = null; isPanning = false; });
+canvas.addEventListener('mouseleave', () => { dragNode = null; isPanning = false; });
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  scale = Math.max(.4, Math.min(3, scale * delta));
+}, { passive: false });
+
+// Touch support
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const node = getNodeAt(t.clientX - rect.left, t.clientY - rect.top);
+    if (node) { dragNode = node; selectedNode = node; }
+    else { isPanning = true; panStart = { x: t.clientX - panX, y: t.clientY - panY }; }
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchmove', e => {
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    if (dragNode) {
+      dragNode.x = (t.clientX - rect.left - panX) / scale;
+      dragNode.y = (t.clientY - rect.top  - panY) / scale;
+    } else if (isPanning && panStart) {
+      panX = t.clientX - panStart.x;
+      panY = t.clientY - panStart.y;
+    }
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchend', () => { dragNode = null; isPanning = false; });
+
+// Init graph when visible
+const graphObserver = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting && !animFrame) initGraph();
+}, { threshold: 0.1 });
+graphObserver.observe(document.getElementById('graph-canvas-wrap'));
+
+// ── CONNECTIONS HIGHLIGHT ─────────────────────────────────────────
+function highlightConnections(concept) {
+  const map = {
+    creation: 'creation',
+    fall: 'cross',
+    abraham: 'abraham',
+    passover: 'passover',
+    david: 'david',
+  };
+  const nodeId = map[concept];
+  if (nodeId) {
+    selectedNode = nodes.find(n => n.id === nodeId) || null;
+    document.getElementById('graph-section').scrollIntoView({ behavior: 'smooth' });
+    trackProgress('connections');
+  }
+}
+
+// ── RESIZE ────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  const wrap = document.getElementById('graph-canvas-wrap');
+  if (canvas && wrap) {
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+  }
+});
+
+// ── KEYBOARD ─────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeScripture();
+});
+
+</script>
+</body>
+</html>
