@@ -159,7 +159,8 @@
       ],
       "status": "active",
       "birthday": "05-16",
-      "anniversary": "02-07"
+      "anniversary": "02-07",
+      "fridayOnly": true
     },
     {
       "id": "sis-13",
@@ -264,7 +265,8 @@
         "presider"
       ],
       "status": "active",
-      "birthday": "04-28"
+      "birthday": "04-28",
+      "fridayOnly": true
     },
     {
       "id": "bro-01",
@@ -276,7 +278,8 @@
       ],
       "status": "active",
       "birthday": "12-13",
-      "anniversary": "02-04"
+      "anniversary": "02-04",
+      "fridayOnly": true
     },
     {
       "id": "bro-02",
@@ -717,15 +720,6 @@
       "hideMinistryCard": true
     },
     {
-      "id": "sun-05",
-      "name": "Shane",
-      "title": "Bro.",
-      "type": "individual",
-      "eligibleRoles": [],
-      "status": "inactive",
-      "birthday": "",
-      "sundayOnly": true
-    },
     {
       "id": "sun-06",
       "name": "Sherwin",
