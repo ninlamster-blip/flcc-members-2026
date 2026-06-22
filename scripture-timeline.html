@@ -1549,6 +1549,76 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
   margin-bottom: 14px;
 }
 
+/* ── PHASE 7: DAILY VERSE ── */
+#daily-verse-section {
+  background: linear-gradient(135deg, var(--accent-light) 0%, var(--bg) 70%);
+  border-bottom: 1px solid var(--border);
+}
+.daily-verse-wrap { max-width: 680px; margin: 0 auto; text-align: center; }
+.daily-verse-date { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+.daily-verse-text { font-family: 'Lora', serif; font-size: 1.3rem; font-style: italic; color: var(--text); line-height: 1.75; margin-bottom: 12px; }
+.daily-verse-ref { font-size: .88rem; font-weight: 600; color: var(--text2); margin-bottom: 20px; }
+.daily-verse-reflection {
+  font-size: .86rem; color: var(--text2); background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 16px; margin-bottom: 20px; text-align: left; line-height: 1.6;
+}
+.daily-verse-reflection strong { color: var(--text); }
+.daily-verse-actions { display: flex; gap: 10px; justify-content: center; }
+.dv-copy-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px;
+  border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  background: var(--bg); font-size: .8rem; font-weight: 500;
+  color: var(--text2); cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.dv-copy-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.dv-copy-btn.copied { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
+
+/* ── PHASE 7: TYPOLOGY EXPLORER ── */
+#typology-section { background: var(--bg2); }
+.typology-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 40px; }
+.typology-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s; }
+.typology-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.typology-ot { background: var(--gold-light); border-bottom: 1px solid var(--border); padding: 16px 18px; }
+.typology-nt { background: var(--accent-light); padding: 16px 18px; }
+.typology-part-label { font-size: .67rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 5px; }
+.typology-ot .typology-part-label { color: var(--gold); }
+.typology-nt .typology-part-label { color: var(--accent); }
+.typology-part-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.typology-part-ref { font-size: .72rem; color: var(--text2); margin-bottom: 6px; }
+.typology-part-desc { font-size: .82rem; color: var(--text2); line-height: 1.5; }
+.typology-connector { display: flex; align-items: flex-start; gap: 8px; padding: 10px 18px; background: var(--bg3); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.typology-connector-icon { color: var(--accent); font-weight: 700; font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
+.typology-connector-text { font-size: .77rem; color: var(--text2); line-height: 1.5; font-style: italic; }
+
+/* ── PHASE 7: PRAYER JOURNAL ── */
+#prayer-section { background: var(--bg); }
+.prayer-form { max-width: 680px; margin: 0 auto 48px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+.prayer-form-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 20px; }
+.prayer-acts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+@media (max-width: 600px) { .prayer-acts-grid { grid-template-columns: 1fr; } }
+.prayer-acts-item label { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text2); margin-bottom: 6px; }
+.prayer-acts-item label span { color: var(--accent); font-size: .85rem; margin-right: 4px; }
+.prayer-textarea { width: 100%; min-height: 80px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: .85rem; font-family: 'Inter', sans-serif; resize: vertical; line-height: 1.5; transition: border-color .15s; }
+.prayer-textarea:focus { outline: none; border-color: var(--accent); }
+.prayer-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.prayer-ref-input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: .85rem; font-family: 'Inter', sans-serif; width: 180px; transition: border-color .15s; }
+.prayer-ref-input:focus { outline: none; border-color: var(--accent); }
+.prayer-entries { max-width: 680px; margin: 0 auto; }
+.prayer-entries-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.prayer-entries-title { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text2); }
+.prayer-entry-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px; position: relative; }
+.prayer-entry-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.prayer-entry-date { font-size: .75rem; color: var(--text2); }
+.prayer-entry-ref { font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--accent-light); color: var(--accent); }
+.prayer-entry-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 540px) { .prayer-entry-acts { grid-template-columns: 1fr; } }
+.prayer-entry-acts-label { font-size: .67rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text2); margin-bottom: 4px; }
+.prayer-entry-acts-text { font-size: .82rem; color: var(--text); line-height: 1.5; }
+.prayer-entry-delete { position: absolute; top: 14px; right: 14px; background: none; border: none; cursor: pointer; color: var(--text2); font-size: 1rem; padding: 2px 6px; border-radius: 4px; transition: all .15s; }
+.prayer-entry-delete:hover { background: #fef2f2; color: #dc2626; }
+.prayer-empty { text-align: center; color: var(--text2); font-size: .9rem; padding: 32px 0; }
+
 /* ── PHASE 6: COVENANT TRACKER ── */
 #covenant-section { background: var(--bg); }
 .covenant-thread {
@@ -2344,6 +2414,9 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#memory-section" class="tab-item">Memory</a>
     <a href="#covenant-section" class="tab-item">Covenants</a>
     <a href="#quiz-section" class="tab-item">Quiz</a>
+    <a href="#daily-verse-section" class="tab-item">Today</a>
+    <a href="#typology-section" class="tab-item">Typology</a>
+    <a href="#prayer-section" class="tab-item">Prayer</a>
   </div>
 </nav>
 
@@ -4709,6 +4782,191 @@ function printPlan(idx) {
 
 renderReadingPlans();
 
+// ── PHASE 7: DAILY VERSE ─────────────────────────────────────────
+const dailyVerses = [
+  { ref:'John 3:16', text:'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.', reflect:'How does God\'s love for the world shape the way you love others today?' },
+  { ref:'Romans 8:28', text:'And we know that in all things God works for the good of those who love him, who have been called according to his purpose.', reflect:'What circumstance in your life needs to be surrendered to God\'s sovereign purpose?' },
+  { ref:'Psalm 23:1', text:'The LORD is my shepherd; I shall not want.', reflect:'In what area of life do you most need to trust the Shepherd\'s provision today?' },
+  { ref:'Isaiah 40:31', text:'But those who hope in the LORD will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.', reflect:'What does it look like to wait on the LORD in your current season?' },
+  { ref:'Proverbs 3:5–6', text:'Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.', reflect:'Where are you tempted to lean on your own understanding instead of God\'s wisdom?' },
+  { ref:'Philippians 4:6–7', text:'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and minds in Christ Jesus.', reflect:'What anxiety can you bring to God in prayer right now?' },
+  { ref:'Matthew 6:33', text:'But seek first his kingdom and his righteousness, and all these things will be given to you as well.', reflect:'What would it look like to seek God\'s kingdom first in your decisions today?' },
+  { ref:'Joshua 1:9', text:'Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.', reflect:'What challenge are you facing that requires courage grounded in God\'s presence?' },
+  { ref:'Hebrews 11:1', text:'Now faith is confidence in what we hope for and assurance about what we do not see.', reflect:'How does the unseen reality of God\'s kingdom shape your visible choices today?' },
+  { ref:'Galatians 5:22–23', text:'But the fruit of the Spirit is love, joy, peace, forbearance, kindness, goodness, faithfulness, gentleness and self-control.', reflect:'Which fruit of the Spirit do you most need to cultivate in your relationships right now?' },
+  { ref:'Romans 12:2', text:'Do not conform to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God\'s will is — his good, pleasing and perfect will.', reflect:'In what area of thinking is God calling you to transformation?' },
+  { ref:'Ephesians 3:20–21', text:'Now to him who is able to do immeasurably more than all we ask or imagine, according to his power that is at work within us, to him be glory in the church and in Christ Jesus throughout all generations.', reflect:'What do you need to ask God for that stretches the limits of your imagination?' },
+  { ref:'Psalm 119:105', text:'Your word is a lamp for my feet, a light on my path.', reflect:'What decision are you facing where you need the lamp of God\'s Word to guide you?' },
+  { ref:'2 Corinthians 12:9', text:'But he said to me, "My grace is sufficient for you, for my power is made perfect in weakness." Therefore I will boast all the more gladly about my weaknesses, so that Christ\'s power may rest on me.', reflect:'What weakness in your life might God be using to display his strength?' },
+  { ref:'Lamentations 3:22–23', text:'Because of the LORD\'s great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.', reflect:'What aspect of God\'s faithfulness are you most grateful for this morning?' },
+  { ref:'1 Peter 5:7', text:'Cast all your anxiety on him because he cares for you.', reflect:'What specific burden can you consciously lay before God right now, trusting in his care?' },
+  { ref:'Micah 6:8', text:'He has shown you, O mortal, what is good. And what does the LORD require of you? To act justly and to love mercy and to walk humbly with your God.', reflect:'Which of these three — justice, mercy, or humility — needs the most attention in your walk today?' },
+  { ref:'Colossians 3:2', text:'Set your minds on things above, not on earthly things.', reflect:'What earthly thing is competing with your focus on eternity today?' },
+  { ref:'James 1:5', text:'If any of you lacks wisdom, you should ask God, who gives generously to all without finding fault, and it will be given to you.', reflect:'What situation in your life calls for wisdom that only God can provide?' },
+  { ref:'Revelation 21:5', text:'He who was seated on the throne said, "I am making everything new!" Then he said, "Write this down, for these words are trustworthy and true."', reflect:'How does the promise of renewal shape your hope in the middle of brokenness today?' },
+  { ref:'Psalm 46:10', text:'He says, "Be still, and know that I am God; I will be exalted among the nations, I will be exalted in the earth."', reflect:'Where in your life do you need to stop striving and simply be still before God?' },
+  { ref:'Isaiah 55:8–9', text:'"For my thoughts are not your thoughts, neither are your ways my ways," declares the LORD. "As the heavens are higher than the earth, so are my ways higher than your ways and my thoughts than your thoughts."', reflect:'What situation requires you to trust God\'s higher wisdom over your own?' },
+  { ref:'John 14:27', text:'Peace I leave with you; my peace I give you. I do not give to you as the world gives. Do not let your hearts be troubled and do not be afraid.', reflect:'How does the peace Christ gives differ from the peace the world offers, in your experience?' },
+  { ref:'Romans 5:8', text:'But God demonstrates his own love for us in this: While we were still sinners, Christ died for us.', reflect:'How does the reality of Christ dying for you while you were still a sinner change how you see yourself?' },
+  { ref:'1 John 4:19', text:'We love because he first loved us.', reflect:'How has receiving God\'s love overflowed into your love for others this week?' },
+  { ref:'Matthew 5:6', text:'Blessed are those who hunger and thirst for righteousness, for they will be filled.', reflect:'What does spiritual hunger and thirst look like in your daily rhythm of life?' },
+  { ref:'John 15:5', text:'I am the vine; you are the branches. If you remain in me and I in you, you will bear much fruit; apart from me you can do nothing.', reflect:'What practices help you remain in Christ — and which have you neglected lately?' },
+  { ref:'Ephesians 4:32', text:'Be kind and compassionate to one another, forgiving each other, just as in Christ God forgave you.', reflect:'Is there someone you need to extend forgiveness to today, in light of what God has forgiven in you?' },
+  { ref:'Psalm 27:14', text:'Wait for the LORD; be strong and take heart and wait for the LORD.', reflect:'What are you waiting on God for, and how can you take heart while you wait?' },
+  { ref:'2 Timothy 1:7', text:'For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.', reflect:'Where has fear been driving your decisions, and how might you step forward in Spirit-given power instead?' }
+];
+
+function initDailyVerse() {
+  const el = document.getElementById('daily-verse-inner');
+  if (!el) return;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now - start) / 86400000);
+  const v = dailyVerses[dayOfYear % dailyVerses.length];
+  const today = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  el.innerHTML = `
+    <div class="daily-verse-date">${today}</div>
+    <div class="daily-verse-text">"${v.text}"</div>
+    <div class="daily-verse-ref">— ${v.ref}</div>
+    <div class="daily-verse-reflection"><strong>Reflect:</strong> ${v.reflect}</div>
+    <div class="daily-verse-actions">
+      <button class="dv-copy-btn" id="dv-copy-btn">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+        Copy Verse
+      </button>
+    </div>`;
+  document.getElementById('dv-copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText('"' + v.text + '" — ' + v.ref).then(() => {
+      const btn = document.getElementById('dv-copy-btn');
+      if (!btn) return;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Verse';
+      }, 2000);
+    }).catch(() => {});
+  });
+}
+initDailyVerse();
+
+// ── PHASE 7: TYPOLOGY EXPLORER ───────────────────────────────────
+const typologyData = [
+  { ot:'Adam', otRef:'Gen 2–3; Rom 5:14', otDesc:'The first man, head of old humanity, whose disobedience brought condemnation to all.', nt:'Christ, the Last Adam', ntRef:'1 Cor 15:45; Rom 5:19', ntDesc:'Whose perfect obedience brings righteousness and life to all united to him.', link:'As Adam\'s sin is imputed to those in him, so Christ\'s righteousness is imputed to those in Christ by faith.' },
+  { ot:'Noah\'s Ark', otRef:'Gen 6–9; 1 Pet 3:20', otDesc:'A vessel of rescue through which God saved eight people from the waters of judgment.', nt:'Salvation through Christ', ntRef:'1 Pet 3:21', ntDesc:'Baptism is the antitype — not washing of the body but the pledge of a good conscience toward God through the resurrection.', link:'The flood waters brought judgment on the world and salvation to those inside, foreshadowing Christ who is our ark.' },
+  { ot:'The Passover Lamb', otRef:'Exod 12; Isa 53:7', otDesc:'An unblemished lamb slain at sunset — its blood protecting Israel from the angel of death.', nt:'Jesus Christ', ntRef:'John 1:29; 1 Cor 5:7', ntDesc:'"Christ our Passover has been sacrificed." He is the Lamb of God who takes away the sin of the world.', link:'The unblemished lamb\'s blood on the doorpost foreshadows the perfect blood of Christ applied to the sinner by faith.' },
+  { ot:'The Bronze Serpent', otRef:'Num 21:4–9', otDesc:'Moses lifted a bronze serpent on a pole; all who looked at it were healed from deadly bites.', nt:'Christ Crucified', ntRef:'John 3:14–15', ntDesc:'"Just as Moses lifted up the snake, so the Son of Man must be lifted up, that everyone who believes may have eternal life."', link:'Looking in faith to the crucified Christ heals from sin and death — the venom of the ancient serpent.' },
+  { ot:'The High Priest', otRef:'Lev 16; Exod 28–29', otDesc:'Israel\'s mediator who entered the Holy of Holies once a year with blood to atone for the people\'s sins.', nt:'Jesus Christ', ntRef:'Heb 4:14–16; 9:11–12', ntDesc:'Our great High Priest who entered the true tabernacle with his own blood, obtaining eternal redemption once for all.', link:'The annual Day of Atonement was a shadow of the once-for-all sacrifice of the eternal High Priest.' },
+  { ot:'The Tabernacle', otRef:'Exod 25–31; 40', otDesc:'God\'s dwelling place among Israel — the meeting point between the holy God and his sinful people.', nt:'Christ\'s Body', ntRef:'John 1:14; 2:21; Rev 21:22', ntDesc:'The Word became flesh and "tabernacled" among us. Jesus\' body is the true temple. In the New Creation, God himself is the temple.', link:'The portable tent and later stone temple were shadows of God\'s ultimate dwelling with humanity in and through Christ.' },
+  { ot:'Manna in the Wilderness', otRef:'Exod 16; Ps 78:24', otDesc:'Miraculous bread from heaven that sustained Israel through forty years in the desert.', nt:'Jesus, Bread of Life', ntRef:'John 6:31–35', ntDesc:'"I am the bread of life. Whoever comes to me will never go hungry." He is the true bread from heaven.', link:'The daily manna sustaining Israel pointed to the one who is himself the sustenance of eternal life for God\'s people.' },
+  { ot:'The Rock in the Wilderness', otRef:'Exod 17:6; Num 20:11', otDesc:'Moses struck the rock and water poured out to sustain the thirsty people of God.', nt:'Christ', ntRef:'1 Cor 10:4', ntDesc:'"They drank from the spiritual rock that accompanied them, and that rock was Christ." Living water follows God\'s people.', link:'The life-giving water from the struck rock foreshadows the living water flowing from the side of the crucified Christ.' },
+  { ot:'Jonah in the Fish', otRef:'Jonah 1:17; 2', otDesc:'The prophet spent three days in a great fish and emerged to proclaim God\'s mercy to Nineveh.', nt:'Death and Resurrection of Christ', ntRef:'Matt 12:40', ntDesc:'"As Jonah was three days in the belly of a huge fish, so the Son of Man will be three days in the heart of the earth."', link:'Jesus himself cited Jonah\'s descent and emergence as the sign of his own death and resurrection.' },
+  { ot:'David the King', otRef:'2 Sam 7; Ps 2; 110', otDesc:'The shepherd-king, a man after God\'s own heart, who unified Israel and established the covenant dynasty.', nt:'Jesus, Son of David', ntRef:'Matt 1:1; Rev 22:16', ntDesc:'"I am the Root and Offspring of David." Jesus inherits the eternal throne promised to David\'s line.', link:'David\'s shepherd-kingship, suffering, exaltation, and eternal covenant all find their fullness in the greater Son of David.' },
+  { ot:'The Sacrifice of Isaac', otRef:'Gen 22', otDesc:'Abraham was commanded to offer his beloved only son on Mount Moriah — and God provided a substitute.', nt:'The Father and the Son', ntRef:'John 3:16; Heb 11:17–19', ntDesc:'God did not spare his own Son but gave him up for us all. No substitute was provided for Christ — he is the substitute.', link:'On the same mountain range, the Father provides his Son as the final sacrifice with no ram to intervene in his place.' },
+  { ot:'The Year of Jubilee', otRef:'Lev 25:8–55', otDesc:'Every fifty years, debts were cancelled, slaves freed, and land returned to its original owner across Israel.', nt:'The Kingdom of God', ntRef:'Luke 4:18–19; Isa 61:1', ntDesc:'"The Spirit of the Lord is on me...to proclaim the year of the Lord\'s favor." Jesus announced the ultimate Jubilee.', link:'The Jubilee\'s economic liberation previewed the total liberation Christ brings from sin, debt, bondage, and death.' }
+];
+
+function renderTypology() {
+  const grid = document.getElementById('typology-grid');
+  if (!grid) return;
+  grid.innerHTML = typologyData.map(t => `
+    <div class="typology-card fade-in-card">
+      <div class="typology-ot">
+        <div class="typology-part-label">Old Testament Type</div>
+        <div class="typology-part-name">${t.ot}</div>
+        <div class="typology-part-ref">${t.otRef}</div>
+        <div class="typology-part-desc">${t.otDesc}</div>
+      </div>
+      <div class="typology-connector">
+        <span class="typology-connector-icon">&#8594;</span>
+        <span class="typology-connector-text">${t.link}</span>
+      </div>
+      <div class="typology-nt">
+        <div class="typology-part-label">New Testament Fulfillment</div>
+        <div class="typology-part-name">${t.nt}</div>
+        <div class="typology-part-ref">${t.ntRef}</div>
+        <div class="typology-part-desc">${t.ntDesc}</div>
+      </div>
+    </div>`).join('');
+  observeFadeIn(grid.querySelectorAll('.fade-in-card'));
+}
+renderTypology();
+
+// ── PHASE 7: PRAYER JOURNAL ──────────────────────────────────────
+const PRAYER_KEY = 'scripture_prayer_journal';
+
+function loadPrayerEntries() {
+  return JSON.parse(localStorage.getItem(PRAYER_KEY) || '[]');
+}
+
+function savePrayerEntry() {
+  const a = document.getElementById('prayer-a')?.value.trim() || '';
+  const c = document.getElementById('prayer-c')?.value.trim() || '';
+  const t = document.getElementById('prayer-t')?.value.trim() || '';
+  const s = document.getElementById('prayer-s')?.value.trim() || '';
+  const ref = document.getElementById('prayer-ref')?.value.trim() || '';
+  if (!a && !c && !t && !s) return;
+  const entries = loadPrayerEntries();
+  entries.unshift({ a, c, t, s, ref, date: new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }), id: Date.now() });
+  localStorage.setItem(PRAYER_KEY, JSON.stringify(entries.slice(0, 50)));
+  ['prayer-a','prayer-c','prayer-t','prayer-s','prayer-ref'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  renderPrayerEntries();
+}
+
+function deletePrayerEntry(id) {
+  const entries = loadPrayerEntries().filter(e => e.id !== id);
+  localStorage.setItem(PRAYER_KEY, JSON.stringify(entries));
+  renderPrayerEntries();
+}
+
+function renderPrayerEntries() {
+  const list = document.getElementById('prayer-entries-list');
+  const countEl = document.getElementById('prayer-entries-count');
+  if (!list) return;
+  const entries = loadPrayerEntries();
+  if (countEl) countEl.textContent = 'Past Entries (' + entries.length + ')';
+  if (!entries.length) {
+    list.innerHTML = '<div class="prayer-empty">Your saved prayer entries will appear here.</div>';
+    return;
+  }
+  const labels = { a:'Adoration', c:'Confession', t:'Thanksgiving', s:'Supplication' };
+  list.innerHTML = entries.map(e => `
+    <div class="prayer-entry-card fade-in-card">
+      <button class="prayer-entry-delete" onclick="deletePrayerEntry(${e.id})" aria-label="Delete">&times;</button>
+      <div class="prayer-entry-meta">
+        <span class="prayer-entry-date">${e.date}</span>
+        ${e.ref ? '<span class="prayer-entry-ref">' + e.ref + '</span>' : ''}
+      </div>
+      <div class="prayer-entry-acts">
+        ${['a','c','t','s'].filter(k => e[k]).map(k => `
+          <div>
+            <div class="prayer-entry-acts-label">${labels[k]}</div>
+            <div class="prayer-entry-acts-text">${e[k].replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  observeFadeIn(list.querySelectorAll('.fade-in-card'));
+}
+
+function exportPrayerJournal() {
+  const entries = loadPrayerEntries();
+  if (!entries.length) return;
+  const labels = { a:'Adoration', c:'Confession', t:'Thanksgiving', s:'Supplication' };
+  const text = entries.map(e => {
+    const parts = ['a','c','t','s'].filter(k => e[k]).map(k => labels[k] + ':\n' + e[k]);
+    return e.date + (e.ref ? ' — ' + e.ref : '') + '\n' + '─'.repeat(40) + '\n' + parts.join('\n\n');
+  }).join('\n\n' + '═'.repeat(40) + '\n\n');
+  const blob = new Blob(['MY PRAYER JOURNAL\nExported ' + new Date().toLocaleDateString() + '\n' + '═'.repeat(40) + '\n\n' + text], { type:'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'prayer-journal.txt';
+  a.click();
+}
+
+renderPrayerEntries();
+
 // ── PHASE 6: COVENANT TRACKER ─────────────────────────────────────
 const covenantsData = [
   { name:'Adamic Covenant', era:'Creation', parties:'God & Adam', promise:'Humanity as image-bearers and stewards of creation, with the proto-gospel promise of a coming Redeemer after the Fall.', sign:'Image of God', scripture:'Gen 1:28; 3:15', fulfillment:'Christ as the Last Adam restores dominion and crushes the serpent (Rom 5:14; 1 Cor 15:45).' },
@@ -5456,6 +5714,75 @@ renderPeople('all');
     <div class="dashboard-body" id="dashboard-body"></div>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DAILY VERSE -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="daily-verse-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Daily Devotion</div>
+    <h2 class="section-heading serif">Verse of the Day</h2>
+    <p class="section-sub">A different verse each day drawn from across all of Scripture — with a question to carry into the hours ahead.</p>
+    <div class="daily-verse-wrap">
+      <div id="daily-verse-inner"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TYPOLOGY EXPLORER -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="typology-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Shadow &amp; Substance</div>
+    <h2 class="section-heading serif">Typology Explorer</h2>
+    <p class="section-sub">Twelve Old Testament types and their New Testament fulfillments — showing how the whole Bible points to Christ.</p>
+    <div class="typology-grid" id="typology-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PRAYER JOURNAL -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="prayer-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Talk with God</div>
+    <h2 class="section-heading serif">Prayer Journal</h2>
+    <p class="section-sub">Record your prayers using the ACTS format — Adoration, Confession, Thanksgiving, Supplication. Entries are stored privately in your browser.</p>
+    <div class="prayer-form">
+      <div class="prayer-form-title">New Prayer Entry</div>
+      <div class="prayer-acts-grid">
+        <div class="prayer-acts-item">
+          <label><span>A</span>Adoration</label>
+          <textarea class="prayer-textarea" id="prayer-a" placeholder="Praise God for who he is..."></textarea>
+        </div>
+        <div class="prayer-acts-item">
+          <label><span>C</span>Confession</label>
+          <textarea class="prayer-textarea" id="prayer-c" placeholder="Acknowledge sin and ask forgiveness..."></textarea>
+        </div>
+        <div class="prayer-acts-item">
+          <label><span>T</span>Thanksgiving</label>
+          <textarea class="prayer-textarea" id="prayer-t" placeholder="Thank God for specific blessings..."></textarea>
+        </div>
+        <div class="prayer-acts-item">
+          <label><span>S</span>Supplication</label>
+          <textarea class="prayer-textarea" id="prayer-s" placeholder="Bring your requests to God..."></textarea>
+        </div>
+      </div>
+      <div class="prayer-form-footer">
+        <input type="text" class="prayer-ref-input" id="prayer-ref" placeholder="Scripture reference (optional)">
+        <button class="btn-primary" onclick="savePrayerEntry()">Save Entry</button>
+      </div>
+    </div>
+    <div class="prayer-entries">
+      <div class="prayer-entries-header">
+        <div class="prayer-entries-title" id="prayer-entries-count">Past Entries</div>
+        <button class="notes-export-btn" onclick="exportPrayerJournal()">Export Journal</button>
+      </div>
+      <div id="prayer-entries-list"></div>
+    </div>
+  </div>
+</section>
 
 <!-- MY NOTES VIEWER -->
 <div id="notes-viewer" role="dialog" aria-modal="true" aria-label="My Study Notes">
