@@ -1549,6 +1549,189 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
   margin-bottom: 14px;
 }
 
+/* ── PHASE 6: COVENANT TRACKER ── */
+#covenant-section { background: var(--bg); }
+.covenant-thread {
+  position: relative;
+  max-width: 820px;
+  margin: 48px auto 0;
+  padding: 0 0 32px;
+}
+.covenant-thread::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--gold-light), var(--gold), var(--accent), var(--accent-mid));
+  transform: translateX(-50%);
+}
+.covenant-card {
+  position: relative;
+  width: 44%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 36px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, transform .2s;
+}
+.covenant-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.covenant-card.left { margin-left: 0; margin-right: auto; }
+.covenant-card.right { margin-left: auto; margin-right: 0; }
+.covenant-card::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  width: 32px; height: 2px;
+  background: var(--border);
+}
+.covenant-card.left::after { right: -33px; }
+.covenant-card.right::after { left: -33px; }
+.covenant-dot {
+  position: absolute;
+  top: 26px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.covenant-card.left .covenant-dot { right: -38px; }
+.covenant-card.right .covenant-dot { left: -38px; }
+.covenant-number {
+  font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 4px;
+}
+.covenant-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 10px;
+}
+.covenant-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.covenant-badge {
+  font-size: .68rem; font-weight: 600; padding: 2px 8px;
+  border-radius: 4px; background: var(--accent-light); color: var(--accent);
+}
+.covenant-promise {
+  font-family: 'Lora', serif; font-style: italic;
+  font-size: .85rem; color: var(--text2);
+  border-left: 2px solid var(--gold-light);
+  padding-left: 10px; margin: 10px 0; line-height: 1.5;
+}
+.covenant-details { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.covenant-detail-tag {
+  font-size: .72rem; padding: 3px 9px;
+  border-radius: 20px; border: 1px solid var(--border);
+  color: var(--text2); background: var(--bg);
+}
+.covenant-detail-tag strong { color: var(--text); }
+.covenant-fulfillment { margin-top: 10px; font-size: .75rem; color: var(--accent); font-weight: 500; }
+@media (max-width: 680px) {
+  .covenant-thread::before { left: 16px; }
+  .covenant-card { width: 100%; padding-left: 44px; }
+  .covenant-card.left, .covenant-card.right { margin: 0 0 28px 0; }
+  .covenant-card::after { display: none; }
+  .covenant-card.left .covenant-dot,
+  .covenant-card.right .covenant-dot { left: 10px; right: auto; }
+}
+
+/* ── PHASE 6: BIBLE QUIZ ── */
+#quiz-section { background: var(--bg2); }
+.quiz-category-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 32px; }
+.quiz-cat-btn {
+  padding: 7px 18px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--text2); font-size: .8rem; font-weight: 500; cursor: pointer; transition: all .15s;
+}
+.quiz-cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.quiz-cat-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+#quiz-card-wrap { max-width: 680px; margin: 0 auto; }
+.quiz-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px 36px;
+  box-shadow: var(--shadow-sm); min-height: 320px;
+}
+.quiz-progress-line { display: flex; justify-content: space-between; font-size: .75rem; color: var(--text2); margin-bottom: 20px; }
+.quiz-q-text { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 600; color: var(--text); line-height: 1.45; margin-bottom: 24px; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; }
+.quiz-option {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  background: var(--bg2); cursor: pointer; font-size: .88rem;
+  color: var(--text); transition: all .15s; text-align: left; width: 100%;
+}
+.quiz-option:hover:not([disabled]) { border-color: var(--accent); background: var(--accent-light); }
+.quiz-option.correct { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+.quiz-option.incorrect { border-color: #dc2626; background: #fef2f2; color: #b91c1c; }
+.quiz-option-letter {
+  width: 24px; height: 24px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: .72rem;
+  font-weight: 700; background: var(--border); color: var(--text2);
+  flex-shrink: 0; transition: all .15s;
+}
+.quiz-option.correct .quiz-option-letter { background: #16a34a; color: #fff; }
+.quiz-option.incorrect .quiz-option-letter { background: #dc2626; color: #fff; }
+.quiz-explanation {
+  margin-top: 16px; font-size: .82rem; color: var(--text2);
+  background: var(--bg2); border-left: 3px solid var(--accent-mid);
+  padding: 10px 14px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  line-height: 1.5; display: none;
+}
+.quiz-explanation.show { display: block; }
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+.quiz-score-card { text-align: center; padding: 48px 36px; }
+.quiz-score-ring { width: 120px; height: 120px; margin: 0 auto 24px; }
+.quiz-score-ring circle { fill: none; stroke-width: 10; }
+.quiz-score-bg { stroke: var(--border); }
+.quiz-score-fill { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
+.quiz-score-pct { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--text); }
+.quiz-score-label { font-size: .85rem; color: var(--text2); margin-top: 4px; }
+
+/* ── PHASE 6: STUDY DASHBOARD ── */
+#study-dashboard {
+  position: fixed; inset: 0; z-index: 1100;
+  background: rgba(17,24,39,.72); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 80px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+#study-dashboard.open { opacity: 1; pointer-events: all; }
+#study-dashboard-modal {
+  width: min(760px, 94vw); background: var(--bg);
+  border-radius: var(--radius); box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - 120px); overflow-y: auto;
+}
+.dashboard-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 28px 20px; border-bottom: 1px solid var(--border);
+}
+.dashboard-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--text); }
+.dashboard-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text2); line-height: 1; padding: 4px 8px; }
+.dashboard-body { padding: 24px 28px 32px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.dash-stat { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+.dash-stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+.dash-stat-label { font-size: .72rem; color: var(--text2); font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+.dashboard-ring-row { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; margin-bottom: 24px; }
+.dash-ring-item { text-align: center; }
+.dash-ring-svg { width: 88px; height: 88px; }
+.dash-ring-svg circle { fill: none; stroke-width: 8; }
+.dash-ring-bg { stroke: var(--border); }
+.dash-ring-fill { stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
+.dash-ring-name { font-size: .72rem; color: var(--text2); margin-top: 4px; }
+.dashboard-section-title { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+.quiz-history-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: .85rem; }
+.quiz-history-row:last-child { border-bottom: none; }
+.quiz-history-cat { color: var(--text); font-weight: 500; }
+.quiz-history-score { color: var(--accent); font-weight: 600; }
+.dash-btn {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+  background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: .8rem; font-weight: 500;
+  color: var(--text2); cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.dash-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+
 /* ── PHASE 5: PANEL NOTES ── */
 .panel-notes-input {
   width: 100%; min-height: 80px;
@@ -2069,6 +2252,10 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     Notes
   </button>
+  <button class="dash-btn" onclick="openDashboard()" aria-label="My Study Journey">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+    Dashboard
+  </button>
   <button class="nav-search-btn" onclick="openSearch()" aria-label="Search">
     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     Search
@@ -2155,6 +2342,8 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#revelation-section" class="tab-item">Revelation</a>
     <a href="#plans-section" class="tab-item">Reading Plans</a>
     <a href="#memory-section" class="tab-item">Memory</a>
+    <a href="#covenant-section" class="tab-item">Covenants</a>
+    <a href="#quiz-section" class="tab-item">Quiz</a>
   </div>
 </nav>
 
@@ -4520,6 +4709,257 @@ function printPlan(idx) {
 
 renderReadingPlans();
 
+// ── PHASE 6: COVENANT TRACKER ─────────────────────────────────────
+const covenantsData = [
+  { name:'Adamic Covenant', era:'Creation', parties:'God & Adam', promise:'Humanity as image-bearers and stewards of creation, with the proto-gospel promise of a coming Redeemer after the Fall.', sign:'Image of God', scripture:'Gen 1:28; 3:15', fulfillment:'Christ as the Last Adam restores dominion and crushes the serpent (Rom 5:14; 1 Cor 15:45).' },
+  { name:'Noahic Covenant', era:'Post-Flood', parties:'God & All Creation', promise:'God will never again destroy the earth by flood. Creation order is preserved so redemption can fully unfold.', sign:'Rainbow', scripture:'Gen 9:8–17', fulfillment:'God\'s patience with a groaning creation until Christ\'s return (2 Pet 3:9; Rom 8:21).' },
+  { name:'Abrahamic Covenant', era:'Patriarchs', parties:'God & Abraham', promise:'Land, a great nation, and blessing to all peoples of the earth through Abraham\'s offspring.', sign:'Circumcision', scripture:'Gen 12:1–3; 17:1–14', fulfillment:'Christ as Abraham\'s true seed through whom all nations are blessed (Gal 3:16, 29).' },
+  { name:'Mosaic Covenant', era:'Exodus', parties:'God & Israel', promise:'God\'s treasured people and royal priesthood — if they obey the Law given at Sinai.', sign:'Sabbath', scripture:'Exod 19:5–6; 20', fulfillment:'Christ fulfills the Law perfectly and bears its curse for his people (Matt 5:17; Gal 3:13).' },
+  { name:'Davidic Covenant', era:'United Kingdom', parties:'God & David', promise:'An eternal throne through David\'s lineage — a King whose kingdom will have no end.', sign:'Temple / Dynasty', scripture:'2 Sam 7:12–16', fulfillment:'Jesus, Son of David, rules on the eternal throne (Luke 1:32–33; Rev 22:16).' },
+  { name:'Priestly Covenant', era:'Wilderness', parties:'God & Phinehas', promise:'A perpetual covenant of peace — a lasting priesthood for Phinehas and his line.', sign:'Zeal for God\'s glory', scripture:'Num 25:12–13', fulfillment:'Christ as our eternal High Priest after the order of Melchizedek (Heb 7:24).' },
+  { name:'New Covenant', era:'New Testament', parties:'God & His People', promise:'God\'s law written on hearts, complete forgiveness, and direct knowledge of God for all — Jew and Gentile alike.', sign:'Lord\'s Supper', scripture:'Jer 31:31–34; Luke 22:20', fulfillment:'Ratified by Christ\'s blood, poured out for many, and applied by the Spirit\'s indwelling.' }
+];
+
+function renderCovenants() {
+  const container = document.getElementById('covenant-thread');
+  if (!container) return;
+  container.innerHTML = covenantsData.map((c, i) => {
+    const side = i % 2 === 0 ? 'left' : 'right';
+    return `<div class="covenant-card ${side} fade-in-card">
+      <div class="covenant-dot"></div>
+      <div class="covenant-number">Covenant ${i + 1} of 7</div>
+      <div class="covenant-name">${c.name}</div>
+      <div class="covenant-meta">
+        <span class="covenant-badge">${c.era}</span>
+        <span class="covenant-badge" style="background:var(--gold-light);color:var(--gold)">${c.parties}</span>
+      </div>
+      <p class="covenant-promise">${c.promise}</p>
+      <div class="covenant-details">
+        <span class="covenant-detail-tag"><strong>Sign:</strong> ${c.sign}</span>
+        <span class="covenant-detail-tag"><strong>Ref:</strong> ${c.scripture}</span>
+      </div>
+      <div class="covenant-fulfillment">In Christ: ${c.fulfillment}</div>
+    </div>`;
+  }).join('');
+  observeFadeIn(container.querySelectorAll('.fade-in-card'));
+}
+renderCovenants();
+
+// ── PHASE 6: BIBLE QUIZ ────────────────────────────────────────────
+const QUIZ_KEY = 'scripture_quiz_scores';
+const quizCategories = [
+  { id:'creation', label:'Creation & Fall' },
+  { id:'patriarchs', label:'Patriarchs & Exodus' },
+  { id:'kingdom', label:'Kingdom & Prophets' },
+  { id:'christ', label:'Life of Christ' },
+  { id:'church', label:'The Church' }
+];
+const quizQuestions = {
+  creation: [
+    { q:'On which day of creation did God make humanity?', opts:['Day 4','Day 5','Day 6','Day 7'], ans:2, exp:'God created man and woman on the sixth day alongside land animals (Gen 1:27–31).' },
+    { q:'What was the name of the garden where Adam and Eve lived?', opts:['Gethsemane','Eden','Nod','Shinar'], ans:1, exp:'The Garden of Eden is described in Genesis 2 as the first home of humanity.' },
+    { q:'What did the serpent say the fruit would give Eve?', opts:['Eternal life','Riches','Knowledge of good and evil','Immortality'], ans:2, exp:'"You will be like God, knowing good and evil" — Gen 3:5.' },
+    { q:'What sign did God give after the flood as a covenant token?', opts:['A dove','A rainbow','A burning bush','An altar'], ans:1, exp:'God placed a rainbow in the clouds as a sign of his covenant with all creation (Gen 9:13).' },
+    { q:'Why did the people of Babel build their tower?', opts:['To reach the stars','To make a name for themselves','To honor God','To escape another flood'], ans:1, exp:'"Come, let us build ourselves a city...that we may make a name for ourselves" — Gen 11:4.' },
+    { q:'How many pairs of clean animals did Noah take into the ark?', opts:['One pair','Two pairs','Seven pairs','Ten pairs'], ans:2, exp:'Seven pairs of every clean animal and one pair of unclean animals (Gen 7:2).' }
+  ],
+  patriarchs: [
+    { q:'What land did God promise to Abraham?', opts:['Egypt','Canaan','Mesopotamia','Babylon'], ans:1, exp:'God called Abram to go to Canaan, which he promised to his offspring (Gen 12:1–7).' },
+    { q:'Which son of Abraham was the child of promise?', opts:['Ishmael','Esau','Isaac','Jacob'], ans:2, exp:'Isaac was born miraculously to Abraham and Sarah in their old age (Gen 21:1–3).' },
+    { q:'How many brothers did Joseph have?', opts:['10','11','12','9'], ans:1, exp:'Joseph had 11 brothers — 12 sons of Jacob total, representing the 12 tribes.' },
+    { q:'Which plague finally convinced Pharaoh to release Israel?', opts:['Locusts','Darkness','Frogs','Death of the firstborn'], ans:3, exp:'The tenth plague — death of the firstborn — led to the Passover and Exodus (Exod 12).' },
+    { q:'On which mountain did God give Moses the Ten Commandments?', opts:['Mount Zion','Mount Carmel','Mount Sinai','Mount Horeb'], ans:2, exp:'The Law was given at Mount Sinai (also called Horeb), the mountain of God (Exod 19–20).' },
+    { q:'What did the manna taste like in the wilderness?', opts:['Honey','Plain bread','Wafers made with honey','Coriander seed'], ans:2, exp:'"It tasted like wafers made with honey" (Exod 16:31).' }
+  ],
+  kingdom: [
+    { q:'Who was Israel\'s first king?', opts:['David','Solomon','Saul','Samuel'], ans:2, exp:'Saul of the tribe of Benjamin was anointed by Samuel as Israel\'s first king (1 Sam 10).' },
+    { q:'How many psalms are in the book of Psalms?', opts:['100','120','150','175'], ans:2, exp:'The Psalter contains 150 psalms, arranged in five books.' },
+    { q:'What was Solomon\'s famous test of wisdom?', opts:['Solving a riddle','Two women claiming the same baby','Building the temple','Judging a murder'], ans:1, exp:'Two women claimed the same infant; Solomon proposed cutting the baby to reveal the true mother (1 Kgs 3).' },
+    { q:'Which prophet was taken to heaven in a chariot of fire?', opts:['Elijah','Elisha','Isaiah','Jeremiah'], ans:0, exp:'Elijah was taken up by a whirlwind with chariots and horses of fire (2 Kgs 2:11).' },
+    { q:'In what year was Jerusalem destroyed by Babylon?', opts:['722 BC','586 BC','539 BC','450 BC'], ans:1, exp:'Nebuchadnezzar destroyed Jerusalem and the temple in 586 BC, beginning the Babylonian exile.' },
+    { q:'Which prophet spoke of a new covenant written on the heart?', opts:['Isaiah','Ezekiel','Jeremiah','Daniel'], ans:2, exp:'"I will put my law within them and write it on their hearts" — Jeremiah 31:33.' }
+  ],
+  christ: [
+    { q:'In which town was Jesus born?', opts:['Nazareth','Jerusalem','Bethlehem','Capernaum'], ans:2, exp:'Jesus was born in Bethlehem, fulfilling Micah 5:2 (Matt 2:1; Luke 2:4–7).' },
+    { q:'What was Jesus\' first recorded miracle in John\'s Gospel?', opts:['Healing a blind man','Raising Lazarus','Turning water into wine','Feeding 5,000'], ans:2, exp:'At a wedding in Cana, Jesus turned water into wine — "the first of his signs" (John 2:11).' },
+    { q:'How many apostles did Jesus choose?', opts:['7','10','12','70'], ans:2, exp:'Jesus appointed twelve apostles, symbolizing the twelve tribes of the renewed Israel (Mark 3:14).' },
+    { q:'What did Jesus say was the greatest commandment?', opts:['Do not murder','Honor your parents','Love God with all your heart','Keep the Sabbath'], ans:2, exp:'"Love the Lord your God with all your heart, soul, and mind" — Matt 22:37.' },
+    { q:'On which day of the week did Jesus rise from the dead?', opts:['The first day','The third day','The Sabbath','The day of Pentecost'], ans:0, exp:'Jesus rose "on the first day of the week" — Sunday morning (Matt 28:1; John 20:1).' },
+    { q:'How long was Jesus tempted in the wilderness?', opts:['3 days','7 days','40 days','100 days'], ans:2, exp:'Jesus was led by the Spirit into the wilderness for forty days (Luke 4:1–2).' }
+  ],
+  church: [
+    { q:'On which feast day was the Holy Spirit poured out at Pentecost?', opts:['Passover','Firstfruits','Feast of Weeks','Tabernacles'], ans:2, exp:'Acts 2 records the Spirit\'s coming on the Feast of Weeks (Pentecost), 50 days after Passover.' },
+    { q:'Who was the first Christian martyr recorded in Acts?', opts:['James','Peter','Stephen','Paul'], ans:2, exp:'Stephen was stoned after his speech before the Sanhedrin — Acts 6–7.' },
+    { q:'Where were followers of Jesus first called "Christians"?', opts:['Jerusalem','Rome','Antioch','Corinth'], ans:2, exp:'"The disciples were first called Christians at Antioch" — Acts 11:26.' },
+    { q:'How many letters in the New Testament are attributed to Paul?', opts:['9','11','13','15'], ans:2, exp:'Thirteen letters bear Paul\'s name: Romans through Philemon.' },
+    { q:'On which island was John exiled when he wrote Revelation?', opts:['Cyprus','Malta','Crete','Patmos'], ans:3, exp:'"I, John...was on the island called Patmos" — Revelation 1:9.' },
+    { q:'What does the Greek word "euangelion" (gospel) mean?', opts:['Sacred writing','Good news','Divine law','Covenant promise'], ans:1, exp:'Euangelion means "good news" — the announcement of salvation through Jesus Christ.' }
+  ]
+};
+
+let quizState = { cat:'creation', idx:0, answered:false, score:0 };
+
+function renderQuizTabs() {
+  const el = document.getElementById('quiz-cat-tabs');
+  if (!el) return;
+  el.innerHTML = quizCategories.map(c =>
+    `<button class="quiz-cat-btn${quizState.cat===c.id?' active':''}" onclick="startQuizCat('${c.id}')">${c.label}</button>`
+  ).join('');
+}
+
+function startQuizCat(catId) {
+  quizState = { cat:catId, idx:0, answered:false, score:0 };
+  renderQuizTabs();
+  renderQuizCard();
+}
+
+function renderQuizCard() {
+  const card = document.getElementById('quiz-card');
+  if (!card) return;
+  const qs = quizQuestions[quizState.cat];
+  if (quizState.idx >= qs.length) { renderQuizScore(); return; }
+  const q = qs[quizState.idx];
+  const letters = ['A','B','C','D'];
+  card.innerHTML = `
+    <div class="quiz-progress-line"><span>Question ${quizState.idx+1} of ${qs.length}</span><span>Score: ${quizState.score}</span></div>
+    <div class="quiz-q-text">${q.q}</div>
+    <div class="quiz-options">${q.opts.map((opt,i)=>`
+      <button class="quiz-option" id="qopt${i}" onclick="answerQuiz(${i})" ${quizState.answered?'disabled':''}>
+        <span class="quiz-option-letter">${letters[i]}</span>${opt}
+      </button>`).join('')}</div>
+    <div class="quiz-explanation" id="quiz-exp">${q.exp}</div>
+    <div class="quiz-nav"><div></div>
+      <button class="btn-primary" id="quiz-next-btn" style="display:none" onclick="nextQuizQuestion()">
+        ${quizState.idx+1<qs.length?'Next Question':'See Results'}
+      </button>
+    </div>`;
+}
+
+function answerQuiz(chosen) {
+  if (quizState.answered) return;
+  quizState.answered = true;
+  const q = quizQuestions[quizState.cat][quizState.idx];
+  if (chosen === q.ans) quizState.score++;
+  document.querySelectorAll('.quiz-option').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add('correct');
+    else if (i === chosen) btn.classList.add('incorrect');
+  });
+  const exp = document.getElementById('quiz-exp');
+  if (exp) exp.classList.add('show');
+  const next = document.getElementById('quiz-next-btn');
+  if (next) next.style.display = 'inline-flex';
+}
+
+function nextQuizQuestion() {
+  quizState.idx++;
+  quizState.answered = false;
+  renderQuizCard();
+}
+
+function renderQuizScore() {
+  const card = document.getElementById('quiz-card');
+  if (!card) return;
+  const total = quizQuestions[quizState.cat].length;
+  const pct = Math.round((quizState.score / total) * 100);
+  const circ = 2 * Math.PI * 46;
+  const offset = circ - (pct / 100) * circ;
+  const catLabel = quizCategories.find(c => c.id === quizState.cat)?.label || '';
+  const scores = JSON.parse(localStorage.getItem(QUIZ_KEY) || '{}');
+  scores[quizState.cat] = { score: quizState.score, total, pct, date: new Date().toLocaleDateString() };
+  localStorage.setItem(QUIZ_KEY, JSON.stringify(scores));
+  card.innerHTML = `
+    <div class="quiz-score-card">
+      <svg class="quiz-score-ring" viewBox="0 0 100 100">
+        <circle class="quiz-score-bg" cx="50" cy="50" r="46"/>
+        <circle class="quiz-score-fill" cx="50" cy="50" r="46"
+          stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"
+          transform="rotate(-90 50 50)"/>
+      </svg>
+      <div class="quiz-score-pct">${pct}%</div>
+      <div class="quiz-score-label">${quizState.score} of ${total} correct &mdash; ${catLabel}</div>
+      <p style="font-size:.85rem;color:var(--text2);margin:16px 0 24px;line-height:1.6">${
+        pct===100?'Perfect score! Outstanding knowledge of Scripture.':
+        pct>=80?'Excellent! You know this section of Scripture well.':
+        pct>=60?'Good effort. Keep studying to strengthen your knowledge.':
+        'Keep at it — every review deepens your understanding of the Word.'
+      }</p>
+      <button class="btn-primary" onclick="startQuizCat('${quizState.cat}')">Try Again</button>
+    </div>`;
+}
+
+renderQuizTabs();
+renderQuizCard();
+
+// ── PHASE 6: STUDY DASHBOARD ──────────────────────────────────────
+function openDashboard() {
+  const overlay = document.getElementById('study-dashboard');
+  if (!overlay) return;
+  renderDashboard();
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDashboard() {
+  const overlay = document.getElementById('study-dashboard');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function renderDashboard() {
+  const body = document.getElementById('dashboard-body');
+  if (!body) return;
+  const memorized = getMemorized();
+  const noteCount = Object.keys(loadNotes()).length;
+  const scores = JSON.parse(localStorage.getItem(QUIZ_KEY) || '{}');
+  const sessions = parseInt(localStorage.getItem('scripture_sessions') || '0');
+  const memPct = Math.round((memorized.length / 20) * 100);
+  const quizDone = Object.keys(scores).length;
+  const circ = 2 * Math.PI * 38;
+  const rings = [
+    { label:'Memory', pct:memPct, color:'var(--gold)' },
+    { label:'Quiz Progress', pct:Math.round((quizDone/5)*100), color:'var(--accent)' },
+    { label:'Notes (×10%)', pct:Math.min(100,noteCount*10), color:'#16a34a' }
+  ];
+  body.innerHTML = `
+    <div class="dashboard-grid">
+      <div class="dash-stat"><div class="dash-stat-value">${memorized.length}</div><div class="dash-stat-label">Verses Memorized</div></div>
+      <div class="dash-stat"><div class="dash-stat-value">${noteCount}</div><div class="dash-stat-label">Notes Written</div></div>
+      <div class="dash-stat"><div class="dash-stat-value">${quizDone}/5</div><div class="dash-stat-label">Quiz Categories</div></div>
+      <div class="dash-stat"><div class="dash-stat-value">${sessions}</div><div class="dash-stat-label">Study Sessions</div></div>
+    </div>
+    <div class="dashboard-section-title">Progress</div>
+    <div class="dashboard-ring-row">${rings.map(r => {
+      const off = circ - (r.pct/100)*circ;
+      return `<div class="dash-ring-item">
+        <svg class="dash-ring-svg" viewBox="0 0 88 88">
+          <circle class="dash-ring-bg" cx="44" cy="44" r="38"/>
+          <circle class="dash-ring-fill" cx="44" cy="44" r="38"
+            stroke="${r.color}" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+            transform="rotate(-90 44 44)"/>
+          <text x="44" y="49" text-anchor="middle" font-size="13" font-weight="700"
+            fill="var(--text)" font-family="Inter,sans-serif">${r.pct}%</text>
+        </svg>
+        <div class="dash-ring-name">${r.label}</div>
+      </div>`;
+    }).join('')}</div>
+    ${quizDone>0?`
+    <div class="dashboard-section-title" style="margin-top:20px">Quiz Scores</div>
+    <div>${Object.entries(scores).map(([cat,s])=>{
+      const lbl=quizCategories.find(c=>c.id===cat)?.label||cat;
+      return `<div class="quiz-history-row"><span class="quiz-history-cat">${lbl}</span><span class="quiz-history-score">${s.score}/${s.total} (${s.pct}%) &mdash; ${s.date}</span></div>`;
+    }).join('')}</div>`
+    :'<p style="font-size:.85rem;color:var(--text2);margin-top:8px">Complete a quiz category to see your scores here.</p>'}
+  `;
+}
+
+(function() {
+  const n = parseInt(localStorage.getItem('scripture_sessions')||'0') + 1;
+  localStorage.setItem('scripture_sessions', n);
+})();
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDashboard();
+});
+
 // ── PHASE 5: PERSONAL NOTES ──────────────────────────────────────
 const NOTES_KEY = 'scripture_study_notes';
 let currentPanelRef = '';
@@ -4978,6 +5418,44 @@ renderPeople('all');
     <div class="flashcards-grid" id="flashcards-grid"></div>
   </div>
 </section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- COVENANT TRACKER -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="covenant-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">God's Promises</div>
+    <h2 class="section-heading serif">The Covenants of Scripture</h2>
+    <p class="section-sub">Seven binding agreements God made with humanity — each one building toward the New Covenant sealed in Christ's blood.</p>
+    <div class="covenant-thread" id="covenant-thread"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- BIBLE QUIZ -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="quiz-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Test Your Knowledge</div>
+    <h2 class="section-heading serif">Bible Quiz</h2>
+    <p class="section-sub">Thirty questions across five eras of Scripture. Choose a category and see how well you know the Grand Story.</p>
+    <div class="quiz-category-tabs" id="quiz-cat-tabs"></div>
+    <div id="quiz-card-wrap">
+      <div class="quiz-card" id="quiz-card"></div>
+    </div>
+  </div>
+</section>
+
+<!-- STUDY DASHBOARD OVERLAY -->
+<div id="study-dashboard" onclick="if(event.target===this)closeDashboard()" role="dialog" aria-modal="true" aria-label="My Study Journey">
+  <div id="study-dashboard-modal">
+    <div class="dashboard-header">
+      <div class="dashboard-title">My Study Journey</div>
+      <button class="dashboard-close" onclick="closeDashboard()" aria-label="Close">&times;</button>
+    </div>
+    <div class="dashboard-body" id="dashboard-body"></div>
+  </div>
+</div>
 
 <!-- MY NOTES VIEWER -->
 <div id="notes-viewer" role="dialog" aria-modal="true" aria-label="My Study Notes">
