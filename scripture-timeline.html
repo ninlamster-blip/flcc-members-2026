@@ -1560,6 +1560,67 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 .panel-bookmark-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 .panel-bookmark-btn.bookmarked { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 
+/* ── PHASE 10: KEY DOCTRINES ── */
+#doctrines-section { background: var(--bg); }
+.doctrines-intro { max-width: 720px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
+.doctrines-cats { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.doctrine-cat-btn { padding: .4rem .9rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--text2); font-size: .82rem; cursor: pointer; transition: all .2s; }
+.doctrine-cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+.doctrine-cat-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.doctrines-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+.doctrine-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; cursor: pointer; transition: box-shadow .2s, transform .2s; }
+.doctrine-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.doctrine-card.open { box-shadow: var(--shadow); }
+.doctrine-cat-tag { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: .5rem; }
+.doctrine-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--text); margin-bottom: .5rem; }
+.doctrine-def { font-size: .87rem; color: var(--text2); line-height: 1.55; }
+.doctrine-verses { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .75rem; }
+.doctrine-verse-chip { font-size: .72rem; padding: .2rem .55rem; border-radius: 99px; background: var(--accent-light); color: var(--accent); font-weight: 600; }
+.doctrine-detail { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .87rem; color: var(--text); line-height: 1.65; }
+.doctrine-card.open .doctrine-detail { display: block; }
+.doctrine-expand-hint { font-size: .75rem; color: var(--text2); margin-top: .6rem; font-style: italic; }
+.doctrine-card.open .doctrine-expand-hint { display: none; }
+
+/* ── PHASE 10: NAMES OF GOD ── */
+#names-section { background: var(--bg2); }
+.names-intro { max-width: 720px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
+.names-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.25rem; }
+.name-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; transition: box-shadow .2s, transform .2s; }
+.name-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.name-hebrew { font-size: 1.6rem; color: var(--gold); font-weight: 700; margin-bottom: .25rem; direction: rtl; letter-spacing: .04em; font-family: serif; }
+.name-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--text); margin-bottom: .25rem; }
+.name-meta { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.name-language { font-size: .69rem; padding: .18rem .5rem; border-radius: 99px; background: var(--bg3); color: var(--text2); font-weight: 600; }
+.name-pronunciation { font-size: .76rem; color: var(--text2); font-style: italic; }
+.name-meaning { font-size: .78rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .45rem; }
+.name-passage { font-size: .77rem; font-weight: 700; color: var(--gold); margin-bottom: .5rem; }
+.name-desc { font-size: .84rem; color: var(--text2); line-height: 1.6; }
+
+/* ── PHASE 10: CHURCH CALENDAR ── */
+#church-cal-section { background: var(--bg); }
+.cal-intro { max-width: 720px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
+.cal-grid { display: flex; flex-direction: column; gap: 1rem; max-width: 900px; margin: 0 auto; }
+.cal-season-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: box-shadow .2s; }
+.cal-season-card.current { box-shadow: 0 0 0 2px var(--accent); }
+.cal-season-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+.cal-season-header:hover { background: var(--bg2); }
+.cal-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(0,0,0,.1); }
+.cal-season-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--text); flex: 1; }
+.cal-dates { font-size: .77rem; color: var(--text2); white-space: nowrap; }
+.cal-current-badge { font-size: .67rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; background: var(--accent); color: #fff; white-space: nowrap; }
+.cal-toggle { font-size: .9rem; color: var(--text2); transition: transform .2s; flex-shrink: 0; }
+.cal-season-card.open .cal-toggle { transform: rotate(180deg); }
+.cal-season-body { display: none; padding: 1rem 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+.cal-season-card.open .cal-season-body { display: block; }
+.cal-season-meta { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.cal-meta-item { display: flex; flex-direction: column; gap: .2rem; }
+.cal-meta-label { font-size: .71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text2); }
+.cal-meta-value { font-size: .88rem; color: var(--text); font-weight: 500; }
+.cal-desc { font-size: .9rem; color: var(--text); line-height: 1.65; margin-bottom: 1rem; }
+.cal-readings-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text2); margin-bottom: .5rem; }
+.cal-readings { display: flex; flex-wrap: wrap; gap: .4rem; }
+.cal-reading-chip { font-size: .77rem; padding: .25rem .65rem; border-radius: 99px; background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
 /* ── PHASE 9: GOSPEL HARMONY ── */
 #harmony-section { background: var(--bg2); }
 .harmony-intro { max-width: 820px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
@@ -2600,6 +2661,9 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#harmony-section" class="tab-item">Gospel Harmony</a>
     <a href="#sermon-section" class="tab-item">Sermon Notes</a>
     <a href="#planbuilder-section" class="tab-item">Plan Builder</a>
+    <a href="#doctrines-section" class="tab-item">Doctrines</a>
+    <a href="#names-section" class="tab-item">Names of God</a>
+    <a href="#church-cal-section" class="tab-item">Church Calendar</a>
   </div>
 </nav>
 
@@ -4970,6 +5034,152 @@ function printPlan(idx) {
 
 renderReadingPlans();
 
+// ── PHASE 10: KEY DOCTRINES ────────────────────────────────────
+const doctrinesData = [
+  { cat:'Theology Proper', name:'The Trinity', def:'God eternally exists as one Being in three distinct Persons — Father, Son, and Holy Spirit — each fully God, co-equal and co-eternal, yet distinguishable in their relations and roles.', verses:['Matthew 28:19','2 Corinthians 13:14','John 1:1–2'], detail:'The doctrine of the Trinity is foundational to Christianity. Though the word "Trinity" does not appear in Scripture, the teaching is woven throughout: God is one (Deut 6:4), yet the Father, Son, and Holy Spirit are each called God, address one another, and are distinguished as Persons. This mystery exceeds human comprehension yet anchors every other doctrine.' },
+  { cat:'Theology Proper', name:'Divine Sovereignty', def:'God rules over all creation, history, and human affairs according to his perfect will, working all things together for his glory and the good of his people.', verses:['Romans 8:28','Isaiah 46:10','Psalm 115:3'], detail:'God\'s sovereignty means he is the ultimate authority behind all events. He is not a passive observer but actively governs the universe. This does not negate human responsibility but assures believers that nothing occurs outside God\'s knowledge or permission — every trial and every triumph serves his redemptive purposes.' },
+  { cat:'Theology Proper', name:'Divine Attributes', def:'God\'s essential characteristics include omniscience (all-knowing), omnipotence (all-powerful), omnipresence (everywhere present), holiness, love, justice, and immutability (unchanging nature).', verses:['Psalm 139:7–10','Job 42:2','1 John 4:8'], detail:'God\'s attributes are not external qualities he possesses but expressions of his very being. His holiness means he is wholly other and morally perfect; his love is self-giving and unconditional; his justice ensures all wrongs will ultimately be righted. These attributes are perfectly harmonized in his nature — none overriding another.' },
+  { cat:'Theology Proper', name:'General & Special Revelation', def:'God makes himself known through creation and conscience (general revelation) and through Scripture and Christ (special revelation), so that humanity is without excuse.', verses:['Romans 1:20','2 Timothy 3:16–17','Hebrews 1:1–2'], detail:'General revelation reveals God\'s existence and moral law to all people through nature and conscience. Special revelation — Scripture and the incarnate Word — provides the specific saving knowledge of God, his redemptive plan, and his will for human life. Together they leave all people accountable before their Creator.' },
+  { cat:'Christology', name:'The Incarnation', def:'The eternal Son of God took on full human nature in the person of Jesus of Nazareth, becoming fully God and fully human — two natures in one Person — without confusion or separation.', verses:['John 1:14','Philippians 2:6–8','Colossians 2:9'], detail:'The Incarnation is the miracle of Christmas: the infinite became finite, the eternal entered time. Jesus was not half-God and half-man but fully both. This is essential: only a true human could represent humanity; only a true God could provide infinite atonement. The Council of Chalcedon (451 AD) defined this as two natures in one Person.' },
+  { cat:'Christology', name:'The Atonement', def:'Christ\'s death on the cross was a substitutionary sacrifice that satisfied divine justice, bore our guilt and punishment, and reconciled sinners to God.', verses:['Isaiah 53:5–6','Romans 5:8','1 Peter 2:24'], detail:'The atonement encompasses several complementary aspects: propitiation (satisfying God\'s wrath against sin), expiation (removing our guilt), substitution (Christ taking our place), redemption (purchasing us from slavery to sin), and reconciliation (restoring the broken relationship with God). Together these portray the full wonder of the cross.' },
+  { cat:'Christology', name:'The Resurrection', def:'Jesus physically rose from the dead on the third day, vindicating his claims, conquering death, and guaranteeing the future resurrection of all who believe in him.', verses:['1 Corinthians 15:3–4','Romans 1:4','John 11:25'], detail:'The resurrection is not merely symbolic but a historical, bodily event — the foundation of Christian faith. Paul argues in 1 Corinthians 15 that if Christ has not risen, faith is futile. The empty tomb and post-resurrection appearances confirm that Jesus conquered death and now reigns as Lord, guaranteeing believers\' own future resurrection.' },
+  { cat:'Christology', name:'The Second Coming', def:'Jesus Christ will personally and visibly return in glory to judge the living and the dead, consummate his kingdom, and make all things new.', verses:['Acts 1:11','Revelation 19:11–16','1 Thessalonians 4:16–17'], detail:'Christ\'s return will be unmistakable — every eye will see him (Rev 1:7). He will defeat all evil, raise the dead, pronounce final judgment, and establish the new creation. This hope sustains believers in suffering and calls them to holy living as they await the Day of the Lord.' },
+  { cat:'Pneumatology', name:'The Person of the Spirit', def:'The Holy Spirit is the third Person of the Trinity — fully divine and personal — not merely a force or influence but a distinct Person who indwells, teaches, and empowers believers.', verses:['John 14:16–17','Acts 5:3–4','Ephesians 4:30'], detail:'The Holy Spirit is called "another Helper" (Paraclete) — the same kind of personal advocate Jesus was. He can be lied to, grieved, and quenched — acts against a Person, not a force. He is co-equal with the Father and Son, sent to indwell believers and inaugurate the new covenant age.' },
+  { cat:'Pneumatology', name:'Regeneration', def:'The Holy Spirit sovereignly gives new spiritual life to those who are dead in sin, creating the capacity to believe the gospel and turn to Christ in repentance and faith.', verses:['John 3:5–8','Titus 3:5','Ezekiel 36:26–27'], detail:'Regeneration is sometimes called the new birth. It is entirely a work of God, not of human decision or effort. The Spirit removes the heart of stone and gives a heart of flesh (Ezek 36:26), enabling the sinner to see the beauty of Christ and respond in faith. It is the necessary precondition of saving faith.' },
+  { cat:'Pneumatology', name:'Sanctification', def:'The ongoing work of the Holy Spirit to conform believers to the image of Christ, producing the fruit of the Spirit and increasing holiness throughout their lives.', verses:['Galatians 5:22–23','2 Corinthians 3:18','1 Thessalonians 4:3'], detail:'Sanctification is definitive (we are set apart at conversion), progressive (we grow in holiness throughout life), and ultimately glorifying (complete at resurrection). The Spirit works through Scripture, prayer, the church, and even trials to transform believers into Christlikeness.' },
+  { cat:'Pneumatology', name:'Spiritual Gifts', def:'The Holy Spirit distributes various gifts to believers for the building up of the church, the common good, and the proclamation of the gospel.', verses:['1 Corinthians 12:4–11','Romans 12:6–8','Ephesians 4:11–12'], detail:'Spiritual gifts are given sovereignly by the Spirit — not earned or chosen. Every believer receives at least one gift. They are for the common good rather than personal display and are to be exercised in love. Though Christians debate which gifts continue today, all agree they are given to strengthen the Body of Christ.' },
+  { cat:'Soteriology', name:'Grace', def:'God\'s unmerited favor given freely to sinners who deserve only judgment — the source of salvation entirely apart from any human merit, effort, or works.', verses:['Ephesians 2:8–9','Titus 2:11','Romans 11:6'], detail:'Grace is the foundation of the entire plan of salvation. It cannot be mixed with works without ceasing to be grace (Rom 11:6). God does not save because humans deserve it or foresee faith; he saves because of his sovereign mercy. This makes salvation entirely to the praise of his glory — not ours.' },
+  { cat:'Soteriology', name:'Justification by Faith', def:'God declares sinners righteous on the basis of Christ\'s righteousness alone, received through faith alone — not through any human works or moral achievement.', verses:['Romans 3:28','Galatians 2:16','Romans 4:5'], detail:'Justification is a forensic (legal) declaration, not a process or infusion. God imputes Christ\'s perfect righteousness to the believer\'s account, removing guilt and granting full acceptance. Luther called it "the article by which the church stands or falls." It provides unshakeable assurance of standing before God.' },
+  { cat:'Soteriology', name:'Repentance & Faith', def:'God grants saving repentance (turning from sin) and faith (trust in Christ alone) as gifts that together constitute the human response to the gospel.', verses:['Acts 20:21','Mark 1:15','Ephesians 2:8'], detail:'Repentance and faith are two sides of the same coin: repentance turns away from sin and self-reliance; faith turns toward Christ for forgiveness and life. Both are Spirit-enabled yet genuine human responses. They are not one-time acts but ongoing postures of the Christian life — daily dying to self and living to Christ.' },
+  { cat:'Soteriology', name:'Perseverance of the Saints', def:'Those whom God has truly saved will be kept by his power and will persevere in faith to the end, because salvation rests on God\'s faithfulness, not human effort.', verses:['John 10:28–29','Philippians 1:6','Romans 8:38–39'], detail:'This doctrine assures believers that God finishes what he starts. True believers may stumble badly, yet they will not finally fall away. The guarantee is not in the believer\'s strength but in Christ\'s intercession, the Spirit\'s indwelling seal, and the Father\'s electing love. This produces gratitude and humility, not presumption.' },
+  { cat:'Ecclesiology', name:'The Nature of the Church', def:'The church is the gathered assembly of all who have been called by God in Christ — both the universal church (all true believers) and local churches (gathered congregations).', verses:['Matthew 16:18','Ephesians 1:22–23','Hebrews 10:25'], detail:'The church is Christ\'s body and bride — not a human institution but a divinely created community. The New Testament envisions both the invisible church (all true believers across all ages) and visible local churches. The church\'s mission is to worship God, disciple believers, and proclaim the gospel to the world.' },
+  { cat:'Ecclesiology', name:'Baptism & the Lord\'s Supper', def:'Two ordinances instituted by Christ: baptism marks entry into the covenant community; the Lord\'s Supper proclaims the Lord\'s death until he comes.', verses:['Matthew 28:19','1 Corinthians 11:23–26','Romans 6:4'], detail:'Christians differ on the mode and recipients of baptism and on the nature of Christ\'s presence in the Supper. All agree these are not optional ceremonies but commanded acts of worship that declare, remember, and seal the gospel promises. They are visible words — the gospel enacted through water, bread, and wine.' },
+  { cat:'Ecclesiology', name:'The Priesthood of Believers', def:'Every believer has direct access to God through Christ the High Priest and is called to offer spiritual sacrifices, without requiring a human priestly mediator.', verses:['1 Peter 2:9','Hebrews 4:16','Revelation 1:6'], detail:'The Reformation recovered the biblical truth that all believers are priests before God. This does not mean everyone functions as a pastor or elder, but that no earthly intermediary is required for direct access to God. Every believer can read Scripture, pray, and minister grace to others as a member of the royal priesthood.' },
+  { cat:'Eschatology', name:'Death & the Intermediate State', def:'At physical death, the souls of believers enter immediately into the presence of Christ; unbelievers face conscious separation from God awaiting final judgment.', verses:['Luke 23:43','2 Corinthians 5:8','Philippians 1:23'], detail:'Death is not the end. For believers, to be absent from the body is to be present with the Lord — a conscious, blessed state, though short of the final resurrection. For unbelievers, the intermediate state involves conscious existence in a condition of separation from God\'s blessings, awaiting final judgment at the last day.' },
+  { cat:'Eschatology', name:'The Resurrection of the Dead', def:'At Christ\'s return, all the dead will be bodily raised — believers to eternal life in glorified bodies; unbelievers to face final judgment and eternal separation from God.', verses:['1 Corinthians 15:42–44','John 5:28–29','Daniel 12:2'], detail:'The Christian hope is not the immortality of the soul but the resurrection of the body. God does not discard the physical — he transforms it. The resurrection body is the same yet gloriously different: incorruptible, powerful, and spiritual. This affirms the goodness of creation and the redemption of every aspect of human existence.' },
+  { cat:'Eschatology', name:'Final Judgment', def:'God will judge every person according to their deeds; those in Christ are eternally secure, while those outside Christ face the second death.', verses:['Revelation 20:11–15','2 Corinthians 5:10','Romans 2:6–8'], detail:'The final judgment is just, thorough, and universal. For believers, it is not about condemnation (Rom 8:1) but about reward and accountability. For unbelievers, it is the revelation of God\'s righteousness against all unrepented sin. This doctrine makes evangelism urgent, grounds ethical living, and comforts those who suffer unjustly.' },
+  { cat:'Eschatology', name:'The New Creation', def:'God will renew the heavens and the earth, removing all sin, suffering, and death, and will dwell with his people in perfect fellowship forever — the consummation of his kingdom.', verses:['Revelation 21:1–5','Romans 8:21','Isaiah 65:17'], detail:'The Bible\'s story ends not with disembodied souls floating in an ethereal heaven but with a renewed, material creation. The New Jerusalem descends; God dwells with humanity; there is no more curse, tears, or death. This vision is better than Eden — not a return to the beginning but an advance to the ultimate goal of creation.' }
+];
+
+let doctrineActiveCat = 'All';
+
+function renderDoctrines(cat) {
+  doctrineActiveCat = cat || 'All';
+  const cats = ['All', ...new Set(doctrinesData.map(d => d.cat))];
+  document.getElementById('doctrines-cats').innerHTML = cats.map(c =>
+    `<button class="doctrine-cat-btn${c===doctrineActiveCat?' active':''}" onclick="renderDoctrines('${c.replace(/'/g,"\\'")}')">${c}</button>`
+  ).join('');
+  const filtered = doctrineActiveCat === 'All' ? doctrinesData : doctrinesData.filter(d => d.cat === doctrineActiveCat);
+  document.getElementById('doctrines-grid').innerHTML = filtered.map((d, i) => `
+    <div class="doctrine-card" onclick="this.classList.toggle('open')">
+      <div class="doctrine-cat-tag">${d.cat}</div>
+      <div class="doctrine-name">${d.name}</div>
+      <div class="doctrine-def">${d.def}</div>
+      <div class="doctrine-verses">${d.verses.map(v=>`<span class="doctrine-verse-chip">${v}</span>`).join('')}</div>
+      <div class="doctrine-expand-hint">Tap to read more</div>
+      <div class="doctrine-detail">${d.detail}</div>
+    </div>`).join('');
+}
+
+// ── PHASE 10: NAMES OF GOD ────────────────────────────────────
+const namesOfGodData = [
+  { name:'Elohim', hebrew:'אֱלֹהִים', language:'Hebrew', meaning:'God, Creator, Mighty One', pronunciation:'El-o-HEEM', passage:'Genesis 1:1', desc:'The first name of God in Scripture. A plural form conveying fullness and majesty, used over 2,500 times. Elohim is the powerful Creator who speaks the cosmos into existence — underscoring that creation is an act of omnipotence.' },
+  { name:'YHWH (Yahweh)', hebrew:'יהוה', language:'Hebrew', meaning:'I AM WHO I AM; the Self-Existent One', pronunciation:'YAH-weh', passage:'Exodus 3:14', desc:'The personal covenant name of God, considered too sacred to pronounce aloud in Jewish tradition and rendered LORD in most English translations. It declares God\'s eternal, self-existent nature — he derives his being from nothing outside himself.' },
+  { name:'El Shaddai', hebrew:'אֵל שַׁדַּי', language:'Hebrew', meaning:'God Almighty; All-Sufficient God', pronunciation:'El sha-DY', passage:'Genesis 17:1', desc:'The name God revealed to Abraham when renewing the covenant promise. It speaks of God\'s all-sufficient power — he is more than enough for every need, the nourisher and sustainer who can do what is impossible for humans.' },
+  { name:'El Elyon', hebrew:'אֵל עֶלְיוֹן', language:'Hebrew', meaning:'God Most High; the Exalted One', pronunciation:'El el-YOHN', passage:'Genesis 14:18–20', desc:'First used by Melchizedek, the priest-king of Salem. El Elyon affirms God\'s supreme sovereignty over all nations, rulers, and rival powers. Daniel uses this name repeatedly to declare God\'s dominion over the kingdoms of the earth.' },
+  { name:'El Roi', hebrew:'אֵל רֳאִי', language:'Hebrew', meaning:'The God Who Sees', pronunciation:'El ro-EE', passage:'Genesis 16:13', desc:'Coined by Hagar when God appeared to her in the wilderness in her distress. A deeply personal name affirming that God sees the overlooked, the marginalized, and those who feel invisible. No one is hidden from his gaze or beyond his care.' },
+  { name:'YHWH Jireh', hebrew:'יְהוָה יִרְאֶה', language:'Hebrew', meaning:'The LORD Will Provide', pronunciation:'YAH-weh YIR-eh', passage:'Genesis 22:14', desc:'Named by Abraham after God provided a ram in place of Isaac on Mount Moriah. It foreshadows the ultimate provision: God providing his own Son as the Lamb on the same mountain range, in place of sinners who deserve judgment.' },
+  { name:'YHWH Rapha', hebrew:'יְהוָה רֹפְאֶךָ', language:'Hebrew', meaning:'The LORD Who Heals', pronunciation:'YAH-weh ro-FAH', passage:'Exodus 15:26', desc:'Revealed at Marah, where God turned bitter water sweet. He heals physically, emotionally, and spiritually. The ultimate fulfillment is Christ himself — by whose wounds we are healed (Isaiah 53:5), and who will one day wipe away every tear.' },
+  { name:'YHWH Nissi', hebrew:'יְהוָה נִסִּי', language:'Hebrew', meaning:'The LORD Is My Banner', pronunciation:'YAH-weh NIS-ee', passage:'Exodus 17:15', desc:'Named after Israel\'s victory over Amalek when Moses held up the staff. A battle banner rallied armies and marked victory. God is the flag under which his people march — their rallying point, the source of all their victories, and the cause they fight for.' },
+  { name:'YHWH Shalom', hebrew:'יְהוָה שָׁלוֹם', language:'Hebrew', meaning:'The LORD Is Peace', pronunciation:'YAH-weh sha-LOHM', passage:'Judges 6:24', desc:'The name Gideon gave his altar after God assured him he would not die. Shalom is not merely the absence of conflict but wholeness, completeness, and flourishing. Christ makes this peace through his blood, reconciling us to God and one another.' },
+  { name:'YHWH Rohi', hebrew:'יְהוָה רֹעִי', language:'Hebrew', meaning:'The LORD Is My Shepherd', pronunciation:'YAH-weh ro-EE', passage:'Psalm 23:1', desc:'David\'s beloved portrait of God as the attentive shepherd who guides, protects, restores, and provides. Jesus declares himself the Good Shepherd who lays down his life for the sheep (John 10:11), fulfilling this divine name in the flesh.' },
+  { name:'YHWH Tsidkenu', hebrew:'יְהוָה צִדְקֵנוּ', language:'Hebrew', meaning:'The LORD Our Righteousness', pronunciation:'YAH-weh tsid-KAY-noo', passage:'Jeremiah 23:6', desc:'A messianic name — the righteous Branch from David\'s line who will be called "The LORD our Righteousness." In Christ, God\'s own righteousness is reckoned to sinners who believe; he who knew no sin became sin for us (2 Cor 5:21).' },
+  { name:'YHWH Shammah', hebrew:'יְהוָה שָׁמָּה', language:'Hebrew', meaning:'The LORD Is There', pronunciation:'YAH-weh SHAM-ah', passage:'Ezekiel 48:35', desc:'The name given to the restored city in Ezekiel\'s final vision. It points to the ultimate reality of Revelation 21:3 — "God\'s dwelling place is now among the people." His presence with his people is the supreme treasure of the new creation.' },
+  { name:'Adonai', hebrew:'אֲדֹנָי', language:'Hebrew', meaning:'Lord, Master, Owner', pronunciation:'Ah-do-NY', passage:'Isaiah 6:1', desc:'Isaiah saw Adonai seated on a high and lofty throne. It speaks of absolute lordship and authority. John 12:41 reveals that Isaiah was seeing Christ — identifying Jesus as the Adonai of the Old Testament enthroned in glory.' },
+  { name:'Abba', hebrew:'אַבָּא', language:'Aramaic', meaning:'Father (intimate address)', pronunciation:'AH-bah', passage:'Mark 14:36; Romans 8:15', desc:'The intimate family term Jesus used in Gethsemane. Through adoption in Christ, believers receive the Spirit of sonship by whom we cry "Abba, Father" — the most intimate address to God possible, expressing both reverence and the tender closeness of a beloved child.' },
+  { name:'Ancient of Days', hebrew:'עַתִּיק יוֹמִין', language:'Aramaic', meaning:'One who has existed from eternity', pronunciation:'AT-ik yo-MEEN', passage:'Daniel 7:9', desc:'Daniel\'s majestic vision of God enthroned in judgment: white garments, hair like wool, a throne of blazing fire. This image of absolute, eternal, judicial authority echoes through Revelation\'s portrait of the risen Christ (Rev 1:14).' },
+  { name:'I AM (Ego Eimi)', hebrew:'אֶהְיֶה / Ἐγώ εἰμι', language:'Hebrew / Greek', meaning:'I AM; the self-existent One', pronunciation:'EH-hye-yeh / eh-GOH ay-MEE', passage:'Exodus 3:14; John 8:58', desc:'When Moses asked God his name, he said "I AM WHO I AM." Jesus claimed this divine name in John\'s seven "I AM" statements and the absolute "I AM" of John 8:58 — for which the religious leaders immediately took up stones for blasphemy.' },
+  { name:'Logos (The Word)', hebrew:'Λόγος', language:'Greek', meaning:'The Word; Reason; Divine Expression', pronunciation:'LOH-gos', passage:'John 1:1', desc:'John\'s profound title for the pre-incarnate Christ, resonating with Greek philosophy (the rational principle ordering creation) and Hebrew wisdom tradition (God\'s creative and revealing word). The eternal Logos became flesh in Jesus of Nazareth.' },
+  { name:'Kyrios (Lord)', hebrew:'Κύριος', language:'Greek', meaning:'Lord, Master, Ruler', pronunciation:'KOO-ree-os', passage:'Romans 10:9; Philippians 2:11', desc:'The Greek equivalent of YHWH in the Septuagint. Paul applies it directly to Jesus: "Jesus is Lord." The earliest Christian confession, it declared supreme loyalty to Christ above every earthly authority. At his name every knee will bow and every tongue confess.' }
+];
+
+function renderNamesOfGod() {
+  document.getElementById('names-grid').innerHTML = namesOfGodData.map(n => `
+    <div class="name-card">
+      <div class="name-hebrew">${n.hebrew}</div>
+      <div class="name-title">${n.name}</div>
+      <div class="name-meta">
+        <span class="name-language">${n.language}</span>
+        <span class="name-pronunciation">pron. ${n.pronunciation}</span>
+      </div>
+      <div class="name-meaning">${n.meaning}</div>
+      <div class="name-passage">${n.passage}</div>
+      <div class="name-desc">${n.desc}</div>
+    </div>`).join('');
+}
+
+// ── PHASE 10: CHURCH CALENDAR ────────────────────────────────────
+const churchCalData = [
+  { season:'Advent', color:'#7C3AED', colorName:'Purple', dates:'Nov 29 – Dec 24, 2026', theme:'Waiting, Hope, Preparation, Longing', symbol:'Advent wreath / candles', desc:'The Christian year begins with Advent — a season of watching and waiting for Christ\'s coming. We look back to the Incarnation and forward to Christ\'s return. The four Sundays carry themes of Hope, Peace, Joy, and Love, marked by lighting candles on the Advent wreath.', readings:['Isaiah 40:3–5','Luke 1:26–38','Romans 13:11–14','Revelation 22:20'] },
+  { season:'Christmas', color:'#B45309', colorName:'White / Gold', dates:'Dec 25, 2026 – Jan 5, 2027', theme:'Incarnation, Light, Joy, Emmanuel', symbol:'Nativity scene / star', desc:'The twelve days of Christmas celebrate the mystery of the Incarnation — God becoming flesh. The Eternal Word entered time and space. In darkness a light has dawned. The season calls believers to adore and proclaim the One who is fully God and fully human, born in Bethlehem.', readings:['Luke 2:1–20','John 1:1–14','Isaiah 9:6–7','Micah 5:2'] },
+  { season:'Epiphany', color:'#1D4ED8', colorName:'White then Green', dates:'Jan 6 – Feb 17, 2026', theme:'Revelation, Light to the Nations, Mission', symbol:'Star / Magi / candle', desc:'Epiphany ("appearing" or "manifestation") celebrates the revelation of Christ to the Gentiles, beginning with the Magi\'s visit. It emphasizes that the gospel is for all nations, and Christ is the light of the world. Ordinary Time in this season focuses on Christ\'s early Galilean ministry.', readings:['Matthew 2:1–12','Isaiah 60:1–6','John 2:1–11','Luke 4:14–21'] },
+  { season:'Lent', color:'#7C3AED', colorName:'Purple / Gray', dates:'Feb 18 – Apr 4, 2026', theme:'Repentance, Fasting, Prayer, The Cross', symbol:'Ashes / cross', desc:'Forty days (excluding Sundays) of preparation for Easter, mirroring Christ\'s forty days in the wilderness. Lent invites deep repentance, fasting, prayer, and meditation on the cross. It begins with Ash Wednesday — "Remember you are dust, and to dust you shall return" (Gen 3:19).', readings:['Joel 2:12–18','Matthew 4:1–11','Psalm 51:1–17','2 Corinthians 5:20–6:2'] },
+  { season:'Holy Week', color:'#DC2626', colorName:'Crimson / Black', dates:'Mar 29 – Apr 4, 2026', theme:'Passion, Betrayal, Suffering, Atoning Death', symbol:'Palm branches / cross / crown of thorns', desc:'The most sacred week: Palm Sunday (triumphal entry), Maundy Thursday (Last Supper and Gethsemane), Good Friday (crucifixion), Holy Saturday (the great silence). The church enters deeply into the final days of Christ\'s earthly life — his betrayal, suffering, and atoning death.', readings:['Mark 11:1–11','John 13:1–17','Isaiah 53:1–12','Luke 23:26–49'] },
+  { season:'Easter / Eastertide', color:'#B45309', colorName:'White / Gold', dates:'Apr 5 – May 23, 2026', theme:'Resurrection, Victory, New Life, Ascension', symbol:'Empty tomb / lily / sunrise', desc:'The central season of the Christian year — fifty days of resurrection celebration. "Alleluia!" is the great Easter cry. We celebrate the risen Christ, his post-resurrection appearances, the Ascension (May 14), and the expectation of the Spirit. Every Sunday in this season is a "little Easter."', readings:['Matthew 28:1–10','1 Corinthians 15:3–8','John 20:1–18','Acts 1:1–11'] },
+  { season:'Pentecost', color:'#DC2626', colorName:'Red', dates:'May 24, 2026', theme:'Outpouring of the Spirit, Birth of the Church', symbol:'Flames / dove / rushing wind', desc:'Pentecost Sunday marks the outpouring of the Holy Spirit on the disciples (Acts 2) — the birthday of the church. Red symbolizes the fire of the Spirit. The disciples\' transformed boldness launched the worldwide mission of the church that continues in every generation.', readings:['Acts 2:1–21','John 16:5–15','Romans 8:14–17','Ezekiel 37:1–14'] },
+  { season:'Ordinary Time', color:'#16A34A', colorName:'Green', dates:'May 25 – Nov 28, 2026', theme:'Growth, Discipleship, Kingdom Living, Mission', symbol:'Green shoots / tree of life', desc:'The longest season — green for growth. "Ordinary" here means ordinal: counted Sundays. These weeks focus on Christ\'s teaching, the life of discipleship, and growth in faith and love. The church is nurtured in the Word and deployed in the world in the power of the Spirit.', readings:['Matthew 5:1–12','Galatians 5:22–23','Romans 12:1–2','James 1:22'] }
+];
+
+function getCurrentCalSeason() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  if (y !== 2026) return null;
+  if (m === 0 && d < 6) return 'Christmas';
+  if (m === 0 && d >= 6) return 'Epiphany';
+  if (m === 1 && d < 18) return 'Epiphany';
+  if (m === 1 && d >= 18) return 'Lent';
+  if (m === 2 && d < 29) return 'Lent';
+  if (m === 2 && d >= 29) return 'Holy Week';
+  if (m === 3 && d <= 4) return 'Holy Week';
+  if (m === 3 && d >= 5) return 'Easter / Eastertide';
+  if (m === 4 && d <= 23) return 'Easter / Eastertide';
+  if (m === 4 && d === 24) return 'Pentecost';
+  if ((m === 4 && d >= 25) || (m >= 5 && m <= 9)) return 'Ordinary Time';
+  if (m === 10 && d <= 28) return 'Ordinary Time';
+  return 'Advent';
+}
+
+function renderChurchCal() {
+  const currentSeason = getCurrentCalSeason();
+  document.getElementById('cal-grid').innerHTML = churchCalData.map(s => {
+    const isCurrent = currentSeason && s.season.startsWith(currentSeason.split(' ')[0]) && s.season.includes(currentSeason.split(' ')[0]);
+    const isCurrentExact = s.season === currentSeason || (currentSeason === 'Ordinary Time' && s.season === 'Ordinary Time');
+    return `<div class="cal-season-card${isCurrentExact?' current open':''}">
+      <div class="cal-season-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="cal-dot" style="background:${s.color}"></div>
+        <div class="cal-season-name">${s.season}</div>
+        ${isCurrentExact ? '<span class="cal-current-badge">Current Season</span>' : ''}
+        <span class="cal-dates">${s.dates}</span>
+        <span class="cal-toggle">&#9660;</span>
+      </div>
+      <div class="cal-season-body">
+        <div class="cal-season-meta">
+          <div class="cal-meta-item"><span class="cal-meta-label">Liturgical Color</span><span class="cal-meta-value">${s.colorName}</span></div>
+          <div class="cal-meta-item"><span class="cal-meta-label">Symbol</span><span class="cal-meta-value">${s.symbol}</span></div>
+          <div class="cal-meta-item"><span class="cal-meta-label">Theme</span><span class="cal-meta-value">${s.theme}</span></div>
+        </div>
+        <div class="cal-desc">${s.desc}</div>
+        <div class="cal-readings-label">Key Readings</div>
+        <div class="cal-readings">${s.readings.map(r=>`<span class="cal-reading-chip">${r}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+renderDoctrines('All');
+renderNamesOfGod();
+renderChurchCal();
+
 // ── PHASE 9: GOSPEL HARMONY ────────────────────────────────────
 const harmonyData = [
   { id:'birth', label:'Birth & Nativity',
@@ -6732,6 +6942,34 @@ renderPeople('all');
       </div>
       <div id="pb-result" style="display:none"></div>
     </div>
+  </div>
+</section>
+
+<!-- KEY DOCTRINES -->
+<section id="doctrines-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Key Doctrines</h2>
+    <p class="doctrines-intro">Explore the foundational teachings of the Christian faith organized by theological category. Click any card to read a deeper explanation.</p>
+    <div class="doctrines-cats" id="doctrines-cats"></div>
+    <div class="doctrines-grid" id="doctrines-grid"></div>
+  </div>
+</section>
+
+<!-- NAMES OF GOD -->
+<section id="names-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Names of God</h2>
+    <p class="names-intro">The names and titles of God in Scripture reveal his character and his relationship with his people. Each name was given in a moment of encounter — a window into who God is.</p>
+    <div class="names-grid" id="names-grid"></div>
+  </div>
+</section>
+
+<!-- CHURCH CALENDAR -->
+<section id="church-cal-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Church Calendar 2026</h2>
+    <p class="cal-intro">The liturgical calendar orders the year around the life of Christ, shaping Christian worship through seasons of preparation, celebration, and growth. The current season is highlighted.</p>
+    <div class="cal-grid" id="cal-grid"></div>
   </div>
 </section>
 
