@@ -1549,6 +1549,109 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
   margin-bottom: 14px;
 }
 
+/* ── PHASE 4: THEMES EXPLORER ── */
+#themes-section { background: var(--bg); }
+.themes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 36px;
+}
+.theme-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: box-shadow .2s, transform .15s;
+  opacity: 0; transform: translateY(14px);
+  transition: opacity .4s, transform .4s, box-shadow .2s;
+}
+.theme-card.visible { opacity: 1; transform: none; }
+.theme-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.theme-card.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light), var(--shadow); }
+.theme-icon-line {
+  width: 36px; height: 3px; border-radius: 2px;
+  margin-bottom: 14px;
+}
+.theme-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  margin-bottom: 4px;
+}
+.theme-subtitle {
+  font-size: .72rem; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text2);
+  margin-bottom: 10px;
+}
+.theme-desc {
+  font-size: .8rem; color: var(--text2); line-height: 1.6;
+  margin-bottom: 14px;
+}
+.theme-passages {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 12px;
+}
+.theme-passage {
+  font-size: .68rem; font-weight: 600;
+  padding: 3px 8px; border-radius: 5px;
+  background: var(--bg2); color: var(--text2);
+  border: 1px solid var(--border);
+  cursor: pointer; transition: all .12s;
+}
+.theme-passage:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+.theme-arc {
+  font-size: .75rem; color: var(--text2);
+  line-height: 1.5;
+  padding: 10px; border-radius: 6px;
+  background: var(--bg2);
+  display: none;
+  border-left: 2px solid var(--accent);
+}
+.theme-card.active .theme-arc { display: block; }
+
+/* ── PHASE 4: PEOPLE DIRECTORY ── */
+#people-section { background: var(--bg2); }
+.people-filter-bar {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin: 24px 0 28px;
+}
+.people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.person-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, transform .15s;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity .35s, transform .35s, box-shadow .2s;
+}
+.person-card.visible { opacity: 1; transform: none; }
+.person-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.person-era-tag {
+  font-size: .6rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; padding: 2px 7px;
+  border-radius: 4px; display: inline-block;
+  margin-bottom: 8px;
+}
+.person-name {
+  font-family: 'Playfair Display', serif;
+  font-size: .95rem; font-weight: 700; color: var(--text);
+  margin-bottom: 3px;
+}
+.person-role {
+  font-size: .73rem; color: var(--text2); line-height: 1.4;
+}
+
+/* People detail panel uses existing #scripture-panel */
+
 /* ── PHASE 3: ERA FILTER CHIPS ── */
 .era-filter-bar {
   display: flex; gap: 7px; flex-wrap: wrap;
@@ -1836,8 +1939,10 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#christ-section" class="tab-item">Life of Christ</a>
     <a href="#church-section" class="tab-item">Early Church</a>
     <a href="#prophecy-section" class="tab-item">Prophecy</a>
+    <a href="#themes-section" class="tab-item">Themes</a>
     <a href="#map-section" class="tab-item">Paul's Journeys</a>
     <a href="#books-section" class="tab-item">Book Explorer</a>
+    <a href="#people-section" class="tab-item">People</a>
     <a href="#graph-section" class="tab-item">Connections</a>
     <a href="#revelation-section" class="tab-item">Revelation</a>
     <a href="#plans-section" class="tab-item">Reading Plans</a>
@@ -2774,6 +2879,18 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 </section>
 
 <!-- ═══════════════════════════════════════════ -->
+<!-- THEMES EXPLORER -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="themes-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Theological Threads</div>
+    <h2 class="section-heading serif">Themes of Scripture</h2>
+    <p class="section-sub">Eight great themes run from Genesis to Revelation. Click any card to see its development arc across the whole Bible.</p>
+    <div class="themes-grid" id="themes-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
 <!-- PAUL'S JOURNEYS MAP -->
 <!-- ═══════════════════════════════════════════ -->
 <section id="map-section" class="section">
@@ -2916,6 +3033,26 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     </div>
 
     <div class="books-grid" id="books-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PEOPLE DIRECTORY -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="people-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">The Human Story</div>
+    <h2 class="section-heading serif">People of Scripture</h2>
+    <p class="section-sub">Twenty-four men and women through whom God worked — from Abraham to Paul. Click any person to read their story and how it points to Christ.</p>
+    <div class="people-filter-bar" id="people-filter-bar">
+      <button class="cat-btn active" data-filter="all">All</button>
+      <button class="cat-btn" data-filter="OT">Old Testament</button>
+      <button class="cat-btn" data-filter="NT">New Testament</button>
+      <button class="cat-btn" data-filter="prophet">Prophets</button>
+      <button class="cat-btn" data-filter="apostle">Apostles</button>
+      <button class="cat-btn" data-filter="woman">Women</button>
+    </div>
+    <div class="people-grid" id="people-grid"></div>
   </div>
 </section>
 
@@ -4170,6 +4307,218 @@ function printPlan(idx) {
 }
 
 renderReadingPlans();
+
+// ── PHASE 4: THEMES EXPLORER ──────────────────────────────────────
+const themesData = [
+  {
+    name: 'Creation & New Creation',
+    subtitle: 'Alpha and Omega',
+    color: '#059669',
+    desc: 'God created all things good; humanity\'s sin shattered that order. The entire Bible is the story of God\'s commitment to restore and surpass his original creation — not by patching what is broken, but by making all things new.',
+    passages: ['Genesis 1–2', 'Romans 8:19-22', 'Colossians 1:15-20', 'Revelation 21–22'],
+    arc: 'OT: Creation declares God\'s glory; the fall fractures it. Prophets promise restoration (Isaiah 65:17). → NT: Jesus is the firstborn of the new creation (2 Corinthians 5:17). The resurrection is the beginning of the new order. Revelation 21 shows the final, permanent new creation — Eden surpassed.'
+  },
+  {
+    name: 'Covenant & Promise',
+    subtitle: 'God\'s Binding Commitment',
+    color: '#2563EB',
+    desc: 'God governs his relationship with humanity through covenants — binding commitments that accumulate and build through the story of Scripture, each one pointing forward to its ultimate fulfillment in Jesus Christ.',
+    passages: ['Genesis 15', '2 Samuel 7', 'Jeremiah 31:31-34', 'Luke 22:20', 'Hebrews 8'],
+    arc: 'OT: Noah (universal preservation), Abraham (land, seed, blessing), Moses (law and mediation), David (eternal kingdom). Each covenant adds a layer. → NT: Jesus inaugurates the New Covenant in his blood — not on stone tablets but written on hearts. All prior covenants find their "Yes" in him (2 Corinthians 1:20).'
+  },
+  {
+    name: 'Kingdom of God',
+    subtitle: 'The Reign of Heaven',
+    color: '#7c3aed',
+    desc: 'God is King — but his royal rule was rejected in Eden and contested throughout history. The entire story moves toward the moment when "the kingdom of the world has become the kingdom of our Lord and of his Messiah, and he will reign for ever and ever."',
+    passages: ['Psalm 93–99', 'Daniel 2:44', 'Mark 1:15', 'Luke 17:21', 'Revelation 11:15'],
+    arc: 'OT: God rules creation but Israel\'s kings fail. Prophets speak of a coming King from David\'s line. → NT: Jesus announces "the kingdom of God is at hand" — present in his ministry, crucifixion, and resurrection, and yet still coming in its fullness. The kingdom is both now and not yet.'
+  },
+  {
+    name: 'Redemption & Atonement',
+    subtitle: 'Bought with a Price',
+    color: '#b45309',
+    desc: 'Humanity is enslaved to sin and its consequences. Redemption is the act of God buying freedom at great cost. Atonement is the covering and removal of guilt. Both find their ultimate expression in the cross of Christ.',
+    passages: ['Exodus 12', 'Leviticus 16', 'Isaiah 53', 'Romans 3:21-26', '1 Peter 1:18-19'],
+    arc: 'OT: The Passover lamb, the Day of Atonement, the whole sacrificial system — all point forward to a final, sufficient sacrifice. → NT: Jesus is both the Lamb of God and the High Priest. His one sacrifice accomplishes what thousands of animal sacrifices could only symbolize (Hebrews 10:1-14).'
+  },
+  {
+    name: 'Faith & Obedience',
+    subtitle: 'Trust that Acts',
+    color: '#0891b2',
+    desc: 'From Abel\'s offering to Abraham\'s journey to the disciples leaving their nets — the Bible\'s heroes are defined not by moral perfection but by trusting God\'s word and acting on it. Faith and obedience are inseparable throughout Scripture.',
+    passages: ['Genesis 15:6', 'Habakkuk 2:4', 'Hebrews 11', 'Romans 1:17', 'James 2:17'],
+    arc: 'OT: Hebrews 11 reads the OT as a gallery of faith — each act of trust anticipating a future not yet seen. → NT: Jesus is "the author and perfecter of faith" (Hebrews 12:2). Paul grounds all faith in the risen Christ; James shows that genuine faith always produces works. Faith and works are two sides of one coin.'
+  },
+  {
+    name: 'Suffering & Glory',
+    subtitle: 'The Way of the Cross',
+    color: '#dc2626',
+    desc: 'Scripture is unsentimental about suffering. It does not explain it away but insists it is the path through which glory comes. Joseph\'s pit, the Psalms of lament, Isaiah\'s Servant, and the cross — all declare that God transforms suffering into the very means of redemption.',
+    passages: ['Psalm 22', 'Isaiah 53:3-5', 'Romans 8:17-18', '2 Corinthians 4:17', '1 Peter 4:13'],
+    arc: 'OT: The pattern recurs constantly — suffering followed by vindication. Psalms give language for honest lament. → NT: The cross is the ultimate union of suffering and glory. "Was it not necessary that the Messiah should suffer these things and then enter his glory?" (Luke 24:26). All Christian suffering is now participation in Christ\'s (Romans 8:17).'
+  },
+  {
+    name: 'The People of God',
+    subtitle: 'Community & Mission',
+    color: '#0f766e',
+    desc: 'God has always been building a people — not just saving individuals. From Abraham\'s family to the nation of Israel to the multi-ethnic church, the People of God are called to display his character to the watching world.',
+    passages: ['Exodus 19:5-6', 'Jeremiah 31:33', 'Matthew 16:18', 'Ephesians 2:19-22', '1 Peter 2:9'],
+    arc: 'OT: Israel is God\'s "kingdom of priests and holy nation" — called to be a light to the Gentiles. Their failures are real but God\'s commitment to his people never wavers. → NT: The church is the new covenant people — Jew and Gentile united in Christ. The "mystery" Paul proclaims is this: the Gentiles are "fellow heirs" (Ephesians 3:6).'
+  },
+  {
+    name: 'The Word of God',
+    subtitle: 'Living and Active',
+    color: '#475569',
+    desc: 'God speaks — and what he speaks brings things into being, reveals his character, judges sin, and saves his people. His word has taken the form of creation, law, prophecy, wisdom, gospel, and finally the incarnate Son himself.',
+    passages: ['Psalm 119:89', 'Isaiah 55:10-11', 'John 1:1-14', 'Hebrews 4:12', '2 Timothy 3:16'],
+    arc: 'OT: "The word of the Lord came to…" — the prophetic formula that marks Scripture\'s origin. The Law is God\'s revealed will; the Prophets are his word through human lips. → NT: The Word becomes flesh in Jesus (John 1:14). Scripture is "God-breathed" (2 Timothy 3:16). The Spirit illumines the written word so the living Word is encountered through it.'
+  }
+];
+
+function renderThemes() {
+  const grid = document.getElementById('themes-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  themesData.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'theme-card';
+    card.innerHTML = `
+      <div class="theme-icon-line" style="background:${t.color}"></div>
+      <div class="theme-subtitle">${t.subtitle}</div>
+      <div class="theme-name">${t.name}</div>
+      <div class="theme-desc">${t.desc}</div>
+      <div class="theme-passages">
+        ${t.passages.map(p => `<span class="theme-passage" onclick="openThemePassage(event,'${p}')">${p}</span>`).join('')}
+      </div>
+      <div class="theme-arc">${t.arc}</div>`;
+    card.addEventListener('click', e => {
+      if (e.target.classList.contains('theme-passage')) return;
+      card.classList.toggle('active');
+      trackProgress('connections');
+    });
+    grid.appendChild(card);
+  });
+
+  const tObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  grid.querySelectorAll('.theme-card').forEach(c => tObserver.observe(c));
+}
+
+function openThemePassage(e, ref) {
+  e.stopPropagation();
+  const panel = document.getElementById('scripture-panel');
+  document.getElementById('panel-title-ref').textContent = ref;
+  document.getElementById('panel-verse-ref').textContent = ref;
+  document.getElementById('panel-verse-text').textContent = 'Open your Bible to read ' + ref + ' — a key passage in this theological thread through Scripture.';
+  document.getElementById('panel-cross-refs').innerHTML = '';
+  document.getElementById('panel-related').textContent = '';
+  panel.classList.add('open');
+  document.getElementById('panel-overlay').style.display = 'block';
+  trackProgress('scriptures');
+}
+renderThemes();
+
+// ── PHASE 4: PEOPLE DIRECTORY ─────────────────────────────────────
+const peopleData = [
+  { name:'Adam & Eve',    era:'Creation',   testament:'OT', tags:[''],        role:'First humans, made in God\'s image', summary:'Called to rule creation as God\'s image-bearers, Adam and Eve chose self-reliance over trust and brought sin and death into the world. Yet even in judgment, God clothed them and promised a seed who would crush the serpent.', key:'Genesis 1–3', verse:'"I will put enmity between you and the woman… he will crush your head." — Genesis 3:15', gospel:'Their disobedience established the need for redemption; Christ is the Last Adam who succeeded where the first failed (Romans 5:19).' },
+  { name:'Noah',          era:'Creation',   testament:'OT', tags:[''],        role:'Builder of the ark; preserver of life', summary:'A righteous man in a corrupt generation, Noah trusted God\'s word and built an ark before rain had ever fallen. His obedience saved his household and preserved the human race.', key:'Genesis 6–9', verse:'"Noah found favor in the eyes of the Lord." — Genesis 6:8', gospel:'The ark is a type of Christ — the one refuge from God\'s righteous judgment. Salvation through water points forward to baptism (1 Peter 3:20-21).' },
+  { name:'Abraham',       era:'Patriarchs', testament:'OT', tags:['patriarch'], role:'Father of the Faith; covenant patriarch', summary:'Called from Ur without knowing where he was going, Abraham trusted God through decades of waiting, exile, and the ultimate test of offering his son Isaac. His faith was credited as righteousness.', key:'Genesis 12; 15; 22', verse:'"All peoples on earth will be blessed through you." — Genesis 12:3', gospel:'The promises to Abraham — land, seed, blessing — find their fulfillment in Jesus, the true Seed (Galatians 3:16). In Christ, believers are Abraham\'s children (Galatians 3:29).' },
+  { name:'Sarah',         era:'Patriarchs', testament:'OT', tags:['woman'],    role:'Mother of the covenant promise', summary:'Sarah waited 90 years for the promised son, laughed at God\'s announcement, then witnessed the impossible — a child born to a barren womb. Her faith faltered and then held. She is listed in Hebrews 11.', key:'Genesis 18; 21', verse:'"Is anything too hard for the Lord?" — Genesis 18:14', gospel:'The miraculous birth of Isaac prefigures the virgin birth of Jesus — both born through divine intervention to advance God\'s covenant purposes.' },
+  { name:'Moses',         era:'Exodus',     testament:'OT', tags:['prophet'],  role:'Lawgiver, deliverer, mediator of Israel', summary:'Drawn from the Nile as a baby, raised in Pharaoh\'s palace, and called at a burning bush, Moses led Israel out of 400 years of slavery. He received the Law at Sinai and interceded for a stiff-necked people for 40 years.', key:'Exodus 3–4; 19–20', verse:'"I AM WHO I AM." — Exodus 3:14', gospel:'Moses prefigures Christ as Prophet, Deliverer, and Mediator. "The Lord your God will raise up for you a prophet like me" (Deuteronomy 18:15) — fulfilled in Jesus.' },
+  { name:'Miriam',        era:'Exodus',     testament:'OT', tags:['woman','prophet'], role:'Prophetess; sister of Moses', summary:'Miriam watched over baby Moses in the Nile, negotiated his return to his mother, and later led Israel\'s women in song after the Red Sea crossing. The first woman identified as a prophet in Scripture.', key:'Exodus 2; 15', verse:'"Sing to the Lord, for he is highly exalted." — Exodus 15:21', gospel:'Miriam\'s song of deliverance anticipates the praise of the redeemed in Revelation 15 — the song of Moses and the Lamb.' },
+  { name:'Joshua',        era:'Conquest',   testament:'OT', tags:[''],        role:'Military commander; successor to Moses', summary:'As Moses\'s successor, Joshua led Israel across the Jordan and into Canaan. His leadership was marked by radical obedience — from the unlikely strategy at Jericho to the covenant renewal at Shechem.', key:'Joshua 1; 24', verse:'"Be strong and courageous. Do not be afraid." — Joshua 1:9', gospel:'Joshua\'s name (Hebrew: Yeshua) is the same as Jesus. He brought Israel into their earthly inheritance; Jesus brings his people into their eternal rest (Hebrews 4:8-9).' },
+  { name:'Ruth',          era:'Judges',     testament:'OT', tags:['woman'],    role:'Moabite woman; ancestor of King David', summary:'A Moabite widow who chose faithfulness to her mother-in-law and her God over security at home. Ruth\'s story of radical loyalty and redemption through Boaz became a picture of God\'s grace extending beyond Israel.', key:'Ruth 1–4', verse:'"Where you go I will go, and where you stay I will stay." — Ruth 1:16', gospel:'Boaz as kinsman-redeemer is a picture of Christ who takes us as his own, pays the price of redemption, and brings us into his family.' },
+  { name:'Samuel',        era:'Kingdom',    testament:'OT', tags:['prophet'],  role:'Last judge; prophet; anointed Israel\'s first two kings', summary:'Born in answer to a desperate prayer, Samuel served God from childhood under Eli. He anointed Saul and then David, and he was a prophetic hinge point as Israel transitioned from theocracy to monarchy.', key:'1 Samuel 1–3; 16', verse:'"Speak, Lord, for your servant is listening." — 1 Samuel 3:9', gospel:'Samuel\'s whole ministry pointed toward the coming King. He anointed David — the ancestor of the Messiah — and demonstrated that God chooses by the heart, not appearance.' },
+  { name:'David',         era:'Kingdom',    testament:'OT', tags:[''],        role:'Shepherd, king, psalmist; man after God\'s own heart', summary:'From shepherd boy to giant-killer to king, David was Israel\'s greatest ruler. He was also an adulterer and a murderer who repented deeply. His Psalms give the church its prayer language. God\'s covenant with David became the backbone of messianic hope.', key:'2 Samuel 7; Psalm 51', verse:'"Your house and your kingdom will endure forever." — 2 Samuel 7:16', gospel:'Jesus is "the Son of David" — the promised descendant who rules David\'s throne forever. The Davidic Covenant finds its final fulfillment in Christ the King.' },
+  { name:'Elijah',        era:'Divided',    testament:'OT', tags:['prophet'],  role:'Prophet of fire; champion against Baal worship', summary:'In the darkest days of the northern kingdom, Elijah stood alone against the prophets of Baal on Mount Carmel, called down fire, and then fled into the wilderness in despair. God met him in a gentle whisper. He never died — taken to heaven in a chariot of fire.', key:'1 Kings 18–19; 2 Kings 2', verse:'"How long will you waver between two opinions?" — 1 Kings 18:21', gospel:'Elijah was expected to return before the Messiah (Malachi 4:5). Jesus declared that John the Baptist came "in the spirit and power of Elijah" (Luke 1:17).' },
+  { name:'Isaiah',        era:'Prophets',   testament:'OT', tags:['prophet'],  role:'The Evangelical Prophet; prophet to Judah', summary:'Isaiah ministered for 40+ years to a declining Judah. His book moves from devastating judgment to breathtaking comfort. Chapters 40–66 form the theological summit of the OT, climaxing in the Servant Songs describing Jesus centuries in advance.', key:'Isaiah 6; 40; 53', verse:'"He was pierced for our transgressions." — Isaiah 53:5', gospel:'Isaiah is quoted more in the NT than almost any other OT book. He saw the Servant\'s suffering (53), the ministry of the Spirit (61:1-2 — quoted by Jesus in Luke 4), and the New Creation (65:17).' },
+  { name:'Jeremiah',      era:'Exile',      testament:'OT', tags:['prophet'],  role:'The Weeping Prophet; prophet of the New Covenant', summary:'Called to prophesy judgment on a nation that did not listen, Jeremiah suffered imprisonment, mockery, and isolation. Yet he also proclaimed the most hopeful promise in the OT — a New Covenant written on the heart rather than stone.', key:'Jeremiah 1; 31', verse:'"I will put my law in their minds and write it on their hearts." — Jeremiah 31:33', gospel:'The New Covenant Jeremiah promised was inaugurated by Jesus at the Last Supper: "This cup is the new covenant in my blood" (Luke 22:20).' },
+  { name:'Daniel',        era:'Exile',      testament:'OT', tags:['prophet'],  role:'Statesman-prophet in Babylon; visionary of the end', summary:'Deported to Babylon as a teenager, Daniel maintained his integrity through 70 years of exile under multiple empires. His visions of the Son of Man and the four kingdoms became the apocalyptic vocabulary that Revelation builds upon.', key:'Daniel 2; 7', verse:'"The God of heaven will set up a kingdom that will never be destroyed." — Daniel 2:44', gospel:'Daniel\'s vision of "one like a Son of Man" (Daniel 7:13-14) is the title Jesus most often used for himself — claiming the role of the divine ruler of the eternal kingdom.' },
+  { name:'Esther',        era:'Return',     testament:'OT', tags:['woman'],    role:'Jewish queen who saved her people', summary:'An orphan raised by her cousin Mordecai, Esther became queen of Persia and, at the risk of her own life, interceded for the Jewish people when Haman plotted their destruction. Her courage reversed what seemed like inevitable genocide.', key:'Esther 4', verse:'"Who knows but that you have come to your royal position for such a time as this?" — Esther 4:14', gospel:'God is never named in Esther, yet his providence is unmistakable. The preservation of the Jewish people was essential for the birth of the Messiah.' },
+  { name:'Mary',          era:'Gospels',    testament:'NT', tags:['woman'],    role:'Mother of Jesus; theotokos (God-bearer)', summary:'A young woman from Nazareth who received the most extraordinary announcement in history with faith and surrender: "I am the Lord\'s servant. May your word to me be fulfilled." She watched her son die and was present at Pentecost.', key:'Luke 1–2; John 19', verse:'"My soul glorifies the Lord and my spirit rejoices in God my Savior." — Luke 1:46-47', gospel:'Mary\'s Magnificat is one of the most revolutionary songs in Scripture — God scattering the proud and lifting up the humble.' },
+  { name:'John the Baptist', era:'Gospels', testament:'NT', tags:['prophet'],  role:'The forerunner; herald of the Messiah', summary:'Born six months before Jesus to elderly Elizabeth and Zechariah, John prepared Israel for the coming King. He preached repentance in the wilderness, baptized Jesus, and was imprisoned and beheaded by Herod — the last of the old-covenant prophets.', key:'Matthew 3; John 1', verse:'"He must become greater; I must become less." — John 3:30', gospel:'Jesus called John the greatest born of woman — yet declared that the least in the Kingdom is greater than he (Matthew 11:11). John was the end of one era and the door to another.' },
+  { name:'Peter',         era:'Church',     testament:'NT', tags:['apostle'],  role:'Fisherman, rock, first preacher of the church', summary:'Impulsive, passionate, and prone to failure, Peter was also the first to confess Jesus as Messiah and the first to preach on the day of Pentecost. His denial and restoration is one of the most grace-filled narratives in the Gospels.', key:'Matthew 16; John 21; Acts 2', verse:'"Lord, you know all things; you know that I love you." — John 21:17', gospel:'Peter\'s life is a study in grace — chosen despite his weakness, restored after his failure, and used to open the gospel to both Jews (Acts 2) and Gentiles (Acts 10).' },
+  { name:'Mary Magdalene', era:'Gospels',   testament:'NT', tags:['woman'],    role:'First witness of the resurrection', summary:'Delivered from seven demons, Mary Magdalene became one of Jesus\'s most devoted followers. She was present at the cross when others fled, was first at the tomb on resurrection morning, and was the first to see the risen Christ — "apostle to the apostles."', key:'John 20:1-18', verse:'"Mary." She turned toward him and cried out in Aramaic, "Rabboni!" — John 20:16', gospel:'That the risen Christ first appeared to a woman — and entrusted her with the resurrection announcement — is a mark of the upside-down kingdom where the last are first.' },
+  { name:'Stephen',       era:'Church',     testament:'NT', tags:['apostle'],  role:'First Christian martyr; deacon full of the Spirit', summary:'Chosen as one of the first deacons, Stephen was also a powerful evangelist and apologist. His speech before the Sanhedrin was a tour de force of redemptive history. As he was stoned, he saw Jesus standing at God\'s right hand — and prayed for his killers.', key:'Acts 6–7', verse:'"Lord, do not hold this sin against them." — Acts 7:60', gospel:'Stephen\'s death scattered the Jerusalem church and ignited the missionary movement — the blood of the first martyr became the seed of the global church.' },
+  { name:'Paul',          era:'Church',     testament:'NT', tags:['apostle','prophet'], role:'Apostle to the Gentiles; theologian of grace', summary:'Saul of Tarsus — Pharisee, persecutor, scholar — encountered the risen Christ on the Damascus road and became the greatest missionary the church has ever known. Three journeys, thirteen letters, and a theology of grace that still shapes Christian thought 2,000 years later.', key:'Acts 9; Romans 1; Galatians 1', verse:'"I am not ashamed of the gospel, because it is the power of God." — Romans 1:16', gospel:'Paul\'s central insight was that the gospel is not morality or religion but the announcement that Jesus died for sinners and rose as Lord — and that this is received by faith alone.' },
+  { name:'Lydia',         era:'Church',     testament:'NT', tags:['woman'],    role:'First convert in Europe; leader of the Philippian church', summary:'A merchant from Thyatira dealing in purple cloth, Lydia was Paul\'s first convert in Europe at a prayer meeting by a river in Philippi. She immediately opened her home to Paul and Silas, becoming the patron of the Philippian church.', key:'Acts 16:11-15', verse:'"If you consider me a believer in the Lord, come and stay at my house." — Acts 16:15', gospel:'Lydia\'s conversion shows the Spirit\'s sovereign work: "The Lord opened her heart to respond to Paul\'s message." Her hospitality made her home the base for the European church.' },
+  { name:'Timothy',       era:'Church',     testament:'NT', tags:['apostle'],  role:'Paul\'s son in the faith; pastor of Ephesus', summary:'The son of a Jewish mother and Greek father, Timothy joined Paul\'s missionary team as a young man and became one of his closest companions. Paul\'s two letters to Timothy are the most personal pastoral epistles in the NT.', key:'Acts 16; 2 Timothy 1', verse:'"For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline." — 2 Timothy 1:7', gospel:'Timothy represents the passing of the gospel to the second generation — Paul\'s charge to him is a charge to every leader: guard the good deposit entrusted to you.' },
+  { name:'John',          era:'Church',     testament:'NT', tags:['apostle'],  role:'Beloved disciple; apostle and author', summary:'The son of Zebedee, John was one of the inner three apostles. He wrote the fourth gospel, three letters, and the book of Revelation. Exiled to Patmos in old age, he received the most sweeping vision of history ever given — and lived to tell it.', key:'John 1; 1 John 4; Revelation 1', verse:'"God is love." — 1 John 4:8', gospel:'John\'s gospel is the most theological of the four — "In the beginning was the Word." His central lens is love: God so loved the world; we love because he first loved us.' },
+];
+
+const eraColors = {
+  Creation:  { bg:'#f0fdf4', color:'#059669' },
+  Patriarchs:{ bg:'#FEF3C7', color:'#b45309' },
+  Exodus:    { bg:'#EFF6FF', color:'#2563EB' },
+  Conquest:  { bg:'#f5f3ff', color:'#7c3aed' },
+  Judges:    { bg:'#fef2f2', color:'#dc2626' },
+  Kingdom:   { bg:'#ecfdf5', color:'#059669' },
+  Divided:   { bg:'#fff7ed', color:'#ea580c' },
+  Exile:     { bg:'#f5f3ff', color:'#7c3aed' },
+  Return:    { bg:'#EFF6FF', color:'#2563EB' },
+  Prophets:  { bg:'#fff7ed', color:'#ea580c' },
+  Gospels:   { bg:'#FEF3C7', color:'#b45309' },
+  Church:    { bg:'#EFF6FF', color:'#2563EB' },
+};
+
+function renderPeople(filter) {
+  const grid = document.getElementById('people-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const filtered = filter === 'all' ? peopleData :
+    filter === 'OT' ? peopleData.filter(p => p.testament === 'OT') :
+    filter === 'NT' ? peopleData.filter(p => p.testament === 'NT') :
+    peopleData.filter(p => p.tags.includes(filter));
+
+  filtered.forEach(person => {
+    const style = eraColors[person.era] || { bg:'#F8F9FA', color:'#6B7280' };
+    const card = document.createElement('div');
+    card.className = 'person-card';
+    card.innerHTML = `
+      <div class="person-era-tag" style="background:${style.bg};color:${style.color}">${person.era}</div>
+      <div class="person-name">${person.name}</div>
+      <div class="person-role">${person.role}</div>`;
+    card.addEventListener('click', () => showPersonPanel(person));
+    grid.appendChild(card);
+  });
+
+  const pObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.05 });
+  grid.querySelectorAll('.person-card').forEach(c => pObserver.observe(c));
+}
+
+function showPersonPanel(person) {
+  const panel = document.getElementById('scripture-panel');
+  document.getElementById('panel-title-ref').textContent = person.name;
+  document.getElementById('panel-verse-ref').textContent = person.role;
+  document.getElementById('panel-verse-text').textContent = person.summary;
+  const xrefsEl = document.getElementById('panel-cross-refs');
+  xrefsEl.innerHTML = `<span class="panel-xref">${person.key}</span><span class="panel-xref">${person.era} · ${person.testament}</span>`;
+  const relEl = document.getElementById('panel-related');
+  relEl.innerHTML = `<div style="font-family:'Lora',serif;font-style:italic;font-size:.85rem;margin-bottom:12px;line-height:1.6;color:var(--text);">${person.verse}</div><div style="font-size:.8rem;color:var(--text2);line-height:1.6;"><strong style="color:var(--accent);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;">Gospel Connection</strong><br>${person.gospel}</div>`;
+  panel.classList.add('open');
+  document.getElementById('panel-overlay').style.display = 'block';
+  trackProgress('scriptures');
+}
+
+document.getElementById('people-filter-bar').addEventListener('click', e => {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.querySelectorAll('#people-filter-bar .cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPeople(btn.dataset.filter);
+});
+
+renderPeople('all');
+
+// Add new sections to observer
+['themes-section','people-section'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) sectionObserver.observe(el);
+});
 
 </script>
 
