@@ -1560,6 +1560,100 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 .panel-bookmark-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 .panel-bookmark-btn.bookmarked { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 
+/* ── PHASE 9: GOSPEL HARMONY ── */
+#harmony-section { background: var(--bg2); }
+.harmony-intro { max-width: 820px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
+.harmony-events { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.harmony-chip { padding: .4rem .9rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text2); font-size: .82rem; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.harmony-chip:hover { border-color: var(--accent); color: var(--accent); }
+.harmony-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.harmony-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; max-width: 1100px; margin: 0 auto; }
+@media(max-width:900px){ .harmony-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:540px){ .harmony-grid { grid-template-columns: 1fr; } }
+.harmony-col { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.harmony-col-header { padding: .75rem 1rem; background: var(--accent-light); border-bottom: 1px solid var(--accent-mid); text-align: center; font-weight: 700; color: var(--accent); font-size: .95rem; font-family: 'Playfair Display', serif; }
+.harmony-col-body { padding: 1rem; min-height: 120px; }
+.harmony-col-body.absent { display: flex; align-items: center; justify-content: center; color: var(--text2); font-style: italic; font-size: .88rem; opacity: .7; }
+.harmony-ref { font-size: .78rem; font-weight: 700; color: var(--accent); margin-bottom: .4rem; letter-spacing: .02em; }
+.harmony-text { font-size: .88rem; color: var(--text); line-height: 1.6; font-family: 'Lora', serif; }
+.harmony-event-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--text); margin-bottom: 1.5rem; font-style: italic; }
+
+/* ── PHASE 9: SERMON NOTES ── */
+#sermon-section { background: var(--bg); }
+.sermon-form-wrap { max-width: 700px; margin: 0 auto; }
+.sermon-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media(max-width:600px){ .sermon-form-grid { grid-template-columns: 1fr; } }
+.sermon-field { display: flex; flex-direction: column; gap: .35rem; }
+.sermon-field.full { grid-column: 1/-1; }
+.sermon-label { font-size: .78rem; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
+.sermon-input, .sermon-textarea { width: 100%; padding: .6rem .85rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: .9rem; color: var(--text); background: var(--bg2); transition: border-color .2s; box-sizing: border-box; }
+.sermon-input:focus, .sermon-textarea:focus { outline: none; border-color: var(--accent); background: #fff; }
+.sermon-textarea { resize: vertical; min-height: 80px; }
+.sermon-subpoints { display: flex; flex-direction: column; gap: .5rem; }
+.sermon-actions { display: flex; gap: .75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+.sermon-btn-save { padding: .6rem 1.5rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: .9rem; transition: opacity .2s; }
+.sermon-btn-save:hover { opacity: .85; }
+.sermon-btn-clear { padding: .6rem 1.25rem; background: transparent; color: var(--text2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: .9rem; cursor: pointer; transition: all .2s; }
+.sermon-btn-clear:hover { border-color: var(--text2); color: var(--text); }
+.sermon-past-wrap { max-width: 700px; margin: 2.5rem auto 0; }
+.sermon-past-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--text); margin-bottom: 1rem; }
+.sermon-past-list { display: flex; flex-direction: column; gap: .75rem; }
+.sermon-entry { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); overflow: hidden; }
+.sermon-entry-head { display: flex; align-items: center; gap: 1rem; padding: .85rem 1rem; cursor: pointer; user-select: none; }
+.sermon-entry-head:hover { background: var(--bg3); }
+.sermon-entry-date { font-size: .75rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.sermon-entry-title { font-weight: 600; font-size: .92rem; color: var(--text); flex: 1; }
+.sermon-entry-speaker { font-size: .8rem; color: var(--text2); white-space: nowrap; }
+.sermon-entry-toggle { font-size: 1rem; color: var(--text2); transition: transform .2s; }
+.sermon-entry.open .sermon-entry-toggle { transform: rotate(180deg); }
+.sermon-entry-body { display: none; padding: 0 1rem 1rem; border-top: 1px solid var(--border); }
+.sermon-entry.open .sermon-entry-body { display: block; }
+.sermon-entry-row { display: flex; gap: .5rem; margin-top: .6rem; font-size: .87rem; }
+.sermon-entry-row-label { font-weight: 600; color: var(--text2); min-width: 90px; font-size: .8rem; }
+.sermon-entry-row-val { color: var(--text); line-height: 1.5; }
+.sermon-entry-actions { display: flex; gap: .6rem; margin-top: .75rem; }
+.sermon-del-btn { padding: .3rem .8rem; background: transparent; color: #dc2626; border: 1px solid #fca5a5; border-radius: var(--radius-sm); font-size: .8rem; cursor: pointer; transition: all .2s; }
+.sermon-del-btn:hover { background: #fef2f2; }
+.sermon-export-btn { padding: .3rem .8rem; background: transparent; color: var(--accent); border: 1px solid var(--accent-mid); border-radius: var(--radius-sm); font-size: .8rem; cursor: pointer; transition: all .2s; }
+.sermon-export-btn:hover { background: var(--accent-light); }
+
+/* ── PHASE 9: READING PLAN BUILDER ── */
+#planbuilder-section { background: var(--bg2); }
+.pb-wrap { max-width: 820px; margin: 0 auto; }
+.pb-intro { color: var(--text2); font-size: .95rem; margin-bottom: 1.75rem; text-align: center; }
+.pb-group-label { font-size: .8rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .6rem; }
+.pb-books-group { margin-bottom: 1.25rem; }
+.pb-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.pb-book-chip { padding: .3rem .7rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text2); font-size: .78rem; cursor: pointer; transition: all .18s; }
+.pb-book-chip:hover { border-color: var(--accent); color: var(--accent); }
+.pb-book-chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pb-group-btn { padding: .3rem .85rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text2); font-size: .78rem; cursor: pointer; transition: all .18s; margin-bottom: .75rem; }
+.pb-group-btn:hover { border-color: var(--gold); color: var(--gold); }
+.pb-settings { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin: 1.5rem 0; }
+.pb-settings-field { display: flex; align-items: center; gap: .6rem; }
+.pb-settings-label { font-size: .85rem; color: var(--text2); font-weight: 600; }
+.pb-days-input { width: 80px; padding: .5rem .7rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: .9rem; font-family: 'Inter', sans-serif; color: var(--text); background: var(--bg); text-align: center; }
+.pb-days-input:focus { outline: none; border-color: var(--accent); }
+.pb-selected-count { font-size: .85rem; color: var(--text2); }
+.pb-selected-count strong { color: var(--accent); }
+.pb-build-btn { padding: .6rem 1.6rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 700; font-size: .93rem; cursor: pointer; transition: opacity .2s; }
+.pb-build-btn:hover { opacity: .85; }
+.pb-result { margin-top: 2rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+.pb-result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem; }
+.pb-result-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--text); }
+.pb-result-actions { display: flex; gap: .6rem; }
+.pb-copy-btn, .pb-export-btn { padding: .4rem 1rem; background: transparent; border-radius: var(--radius-sm); font-size: .82rem; cursor: pointer; transition: all .2s; }
+.pb-copy-btn { color: var(--accent); border: 1.5px solid var(--accent-mid); }
+.pb-copy-btn:hover { background: var(--accent-light); }
+.pb-export-btn { color: var(--gold); border: 1.5px solid var(--gold-light); }
+.pb-export-btn:hover { background: var(--gold-light); }
+.pb-plan-list { max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: .4rem; }
+.pb-plan-day { display: flex; gap: .75rem; align-items: flex-start; padding: .45rem .5rem; border-radius: var(--radius-sm); transition: background .15s; }
+.pb-plan-day:hover { background: var(--bg3); }
+.pb-day-num { font-size: .75rem; font-weight: 700; color: var(--accent); min-width: 46px; padding-top: .1rem; }
+.pb-day-reading { font-size: .87rem; color: var(--text); line-height: 1.5; }
+.pb-empty { text-align: center; color: var(--text2); font-style: italic; padding: 1.5rem 0; }
+
 /* ── PHASE 8: VERSE COMPARISON ── */
 #compare-section { background: var(--bg2); }
 .compare-layout { display: flex; gap: 28px; margin-top: 40px; align-items: flex-start; }
@@ -2503,6 +2597,9 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#prayer-section" class="tab-item">Prayer</a>
     <a href="#compare-section" class="tab-item">Compare</a>
     <a href="#archaeology-section" class="tab-item">Archaeology</a>
+    <a href="#harmony-section" class="tab-item">Gospel Harmony</a>
+    <a href="#sermon-section" class="tab-item">Sermon Notes</a>
+    <a href="#planbuilder-section" class="tab-item">Plan Builder</a>
   </div>
 </nav>
 
@@ -4873,6 +4970,404 @@ function printPlan(idx) {
 
 renderReadingPlans();
 
+// ── PHASE 9: GOSPEL HARMONY ────────────────────────────────────
+const harmonyData = [
+  { id:'birth', label:'Birth & Nativity',
+    matthew:{ ref:'Matthew 1:18–2:12', text:'Joseph, being a just man and unwilling to put Mary to shame, resolved to divorce her quietly. But as he considered these things, an angel appeared in a dream. The Magi from the east followed the star to Bethlehem and worshiped the child, presenting gifts of gold, frankincense, and myrrh.' },
+    mark:null,
+    luke:{ ref:'Luke 2:1–20', text:'Caesar Augustus decreed a census; Joseph went up from Galilee to Bethlehem. Mary gave birth to her firstborn, wrapped him in swaddling cloths, and laid him in a manger. Shepherds in the fields were told by an angel, "For unto you is born this day in the city of David a Savior, who is Christ the Lord."' },
+    john:{ ref:'John 1:1–14', text:'In the beginning was the Word, and the Word was with God, and the Word was God. He was in the world, and the world was made through him. And the Word became flesh and dwelt among us, full of grace and truth.' }
+  },
+  { id:'baptism', label:'Baptism of Jesus',
+    matthew:{ ref:'Matthew 3:13–17', text:'Jesus came from Galilee to the Jordan to be baptized by John. When Jesus was baptized he went up from the water, and behold, the heavens were opened and he saw the Spirit of God descending like a dove. A voice from heaven said, "This is my beloved Son, with whom I am well pleased."' },
+    mark:{ ref:'Mark 1:9–11', text:'In those days Jesus came from Nazareth of Galilee and was baptized by John in the Jordan. When he came up out of the water, immediately he saw the heavens being torn open and the Spirit descending on him like a dove. A voice came from heaven, "You are my beloved Son; with you I am well pleased."' },
+    luke:{ ref:'Luke 3:21–22', text:'When all the people were baptized, and when Jesus also had been baptized and was praying, the heavens were opened, and the Holy Spirit descended on him in bodily form, like a dove; and a voice came from heaven, "You are my beloved Son; with you I am well pleased."' },
+    john:{ ref:'John 1:29–34', text:'John saw Jesus coming toward him, and said, "Behold, the Lamb of God, who takes away the sin of the world!" He who sent me to baptize with water said to me, "He on whom you see the Spirit descend and remain, this is he who baptizes with the Holy Spirit." And I have seen and have borne witness that this is the Son of God.' }
+  },
+  { id:'temptation', label:'Temptation in the Wilderness',
+    matthew:{ ref:'Matthew 4:1–11', text:'Jesus was led by the Spirit into the wilderness to be tempted by the devil. After fasting forty days and forty nights, he was hungry. The devil tempted him three times — to turn stones to bread, to cast himself from the temple pinnacle, and to worship the devil for all the kingdoms of the world. Jesus resisted each with Scripture.' },
+    mark:{ ref:'Mark 1:12–13', text:'The Spirit immediately drove Jesus out into the wilderness. He was in the wilderness forty days, being tempted by Satan. He was with the wild animals, and the angels were ministering to him.' },
+    luke:{ ref:'Luke 4:1–13', text:'Jesus, full of the Holy Spirit, was led in the Spirit in the wilderness for forty days, being tempted by the devil. The devil took him to Jerusalem, set him on the pinnacle of the temple, and showed him all the kingdoms of the world. When the devil had ended every temptation, he departed until an opportune time.' },
+    john:null
+  },
+  { id:'calling', label:'Calling of the Disciples',
+    matthew:{ ref:'Matthew 4:18–22', text:'Walking by the Sea of Galilee, Jesus saw two brothers, Simon called Peter and Andrew, casting a net. He said, "Follow me, and I will make you fishers of men." Immediately they left their nets and followed him. He called James and John; immediately they left the boat and their father and followed him.' },
+    mark:{ ref:'Mark 1:16–20', text:'Passing alongside the Sea of Galilee, Jesus saw Simon and his brother Andrew casting a net. He said to them, "Follow me, and I will make you become fishers of men." Immediately they left their nets and followed him. He saw James and John, who left their father Zebedee in the boat and followed Jesus.' },
+    luke:{ ref:'Luke 5:1–11', text:'Jesus got into Simon\'s boat and taught the crowds. He told Simon to let down the nets in deep water; they caught so many fish the nets began to break. Simon Peter fell at Jesus\' knees saying, "Depart from me, for I am a sinful man, O Lord." Jesus said, "Do not be afraid; from now on you will be catching men."' },
+    john:{ ref:'John 1:35–51', text:'Andrew, one of John\'s disciples, heard John say "Behold, the Lamb of God" and followed Jesus. He first found his own brother Simon and said, "We have found the Messiah." Jesus looked at Simon and said, "You shall be called Cephas" (which means Peter). Philip and Nathanael were also called.' }
+  },
+  { id:'sermon', label:'Sermon on the Mount / Plain',
+    matthew:{ ref:'Matthew 5:1–7:29', text:'Seeing the crowds, Jesus went up on the mountain. He taught the Beatitudes, the salt and light analogy, the fulfillment of the Law, instructions on anger, adultery, oaths, retaliation, love of enemies, prayer (the Lord\'s Prayer), fasting, treasure, anxiety, and judgment. The crowds were astonished, for he taught as one who had authority.' },
+    mark:null,
+    luke:{ ref:'Luke 6:17–49', text:'Jesus stood on a level place with a great crowd. He spoke blessings and woes: "Blessed are you who are poor... but woe to you who are rich." He taught love of enemies, judging others, the log and speck, and two builders — one who built on the rock, the other on sand.' },
+    john:null
+  },
+  { id:'feeding', label:'Feeding of the 5,000',
+    matthew:{ ref:'Matthew 14:13–21', text:'Jesus withdrew by boat to a desolate place, but the crowds followed on foot. He had compassion and healed their sick. Taking five loaves and two fish, he looked up to heaven, blessed, and broke the loaves. All ate and were satisfied; they took up twelve baskets of broken pieces, and there were five thousand men who ate, besides women and children.' },
+    mark:{ ref:'Mark 6:30–44', text:'The apostles returned and told Jesus all they had done. He said, "Come away by yourselves to a desolate place and rest." Crowds came ahead of them; Jesus had compassion, for they were like sheep without a shepherd. With five loaves and two fish he fed five thousand men.' },
+    luke:{ ref:'Luke 9:10–17', text:'Jesus withdrew to a town called Bethsaida. He welcomed the crowds, spoke about the kingdom of God, and healed those who needed healing. As the day wore on, the twelve said to send the crowd away. Jesus said, "You give them something to eat." With five loaves and two fish he fed about five thousand men.' },
+    john:{ ref:'John 6:1–14', text:'Jesus went up on the mountain and sat down with his disciples. A large crowd followed because they saw the signs he was doing. Philip and Andrew spoke of five barley loaves and two fish from a boy. Jesus gave thanks and distributed to those seated; all ate as much as they wanted. Twelve baskets of leftovers remained. The people said, "This is indeed the Prophet who is to come into the world."' }
+  },
+  { id:'transfiguration', label:'Transfiguration',
+    matthew:{ ref:'Matthew 17:1–9', text:'After six days Jesus took Peter, James, and John up a high mountain. He was transfigured before them; his face shone like the sun, and his clothes became white as light. Moses and Elijah appeared, talking with him. A bright cloud overshadowed them; a voice said, "This is my beloved Son, with whom I am well pleased; listen to him."' },
+    mark:{ ref:'Mark 9:2–8', text:'After six days, Jesus led Peter, James, and John up a high mountain. He was transfigured; his clothes became radiant, intensely white. Elijah and Moses appeared and were talking with Jesus. A cloud overshadowed them; a voice said, "This is my beloved Son; listen to him."' },
+    luke:{ ref:'Luke 9:28–36', text:'About eight days after these sayings, Jesus took Peter, John, and James up on the mountain to pray. As he was praying, his face was altered and his clothing became dazzling white. Moses and Elijah appeared in glory and spoke of his departure which he was about to accomplish at Jerusalem.' },
+    john:null
+  },
+  { id:'entry', label:'Triumphal Entry',
+    matthew:{ ref:'Matthew 21:1–11', text:'As they approached Jerusalem, Jesus sent two disciples to bring a donkey and her colt. "Tell the daughter of Zion: Behold, your king is coming to you, humble, and mounted on a donkey." The crowds spread cloaks on the road; others cut branches. They shouted, "Hosanna to the Son of David! Blessed is he who comes in the name of the Lord!"' },
+    mark:{ ref:'Mark 11:1–11', text:'As they approached Bethphage and Bethany, Jesus sent two disciples to find a colt that had never been ridden. They brought it; many spread cloaks on the road; others spread leafy branches. Those going before and after cried, "Hosanna! Blessed is he who comes in the name of the Lord!"' },
+    luke:{ ref:'Luke 19:28–44', text:'Going up to Jerusalem, Jesus sent two disciples for a colt. As he rode, they spread their cloaks on the road. The whole multitude of disciples praised God with a loud voice. Some Pharisees asked Jesus to rebuke them; he replied, "If these were silent, the very stones would cry out." He wept over Jerusalem.' },
+    john:{ ref:'John 12:12–19', text:'The next day the great crowd that had come to the feast heard that Jesus was coming. They took branches of palm trees and went to meet him, crying, "Hosanna! Blessed is he who comes in the name of the Lord, even the King of Israel!" Jesus found a young donkey and sat on it, as it is written: "Fear not, daughter of Zion; behold, your king is coming."' }
+  },
+  { id:'supper', label:'The Last Supper',
+    matthew:{ ref:'Matthew 26:17–30', text:'On the first day of Unleavened Bread, the disciples asked where to prepare the Passover. At evening Jesus reclined with the twelve. As they were eating, he took bread, blessed and broke it, saying, "Take, eat; this is my body." Taking the cup, he gave thanks and gave it to them: "Drink of it, all of you, for this is my blood of the covenant."' },
+    mark:{ ref:'Mark 14:12–26', text:'On the first day of Unleavened Bread, the disciples prepared the Passover. As they were eating, Jesus took bread, blessed and broke it, and gave it to them, saying, "Take; this is my body." He took a cup, gave thanks, and they all drank of it. He said, "This is my blood of the covenant, which is poured out for many."' },
+    luke:{ ref:'Luke 22:7–23', text:'The day of Unleavened Bread came, when the Passover lamb had to be sacrificed. Jesus reclined at table with the apostles. He said, "I have earnestly desired to eat this Passover with you before I suffer." He took bread, gave thanks, broke it, and gave it to them: "This is my body, which is given for you. Do this in remembrance of me."' },
+    john:{ ref:'John 13:1–17:26', text:'Before the Feast of Passover, Jesus, knowing his hour had come, rose from supper, laid aside his outer garments, and washed the disciples\' feet. He said, "I have given you an example, that you also should do just as I have done to you." John 13–17 records his farewell discourse, the new commandment, and his high priestly prayer.' }
+  },
+  { id:'gethsemane', label:'Gethsemane',
+    matthew:{ ref:'Matthew 26:36–56', text:'Jesus went to Gethsemane and said to the disciples, "Sit here, while I go over there and pray." Taking Peter and the two sons of Zebedee, he began to be sorrowful and troubled. He prayed, "My Father, if it be possible, let this cup pass from me; nevertheless, not as I will, but as you will." Three times he found the disciples sleeping.' },
+    mark:{ ref:'Mark 14:32–52', text:'They went to Gethsemane. Jesus took Peter, James, and John and became greatly distressed. He prayed, "Abba, Father, all things are possible for you. Remove this cup from me. Yet not what I will, but what you will." He returned to find the disciples sleeping three times. Judas arrived with a crowd; Jesus was seized.' },
+    luke:{ ref:'Luke 22:39–53', text:'Jesus went out to the Mount of Olives, as was his custom, and the disciples followed. He said, "Pray that you may not enter into temptation." He knelt and prayed, "Father, if you are willing, remove this cup from me. Nevertheless, not my will, but yours, be done." An angel from heaven appeared, strengthening him.' },
+    john:{ ref:'John 18:1–12', text:'Jesus crossed the Kidron Valley to a garden. Judas arrived with soldiers and officers from the chief priests and Pharisees. Jesus asked, "Whom do you seek?" — "Jesus of Nazareth." He replied, "I am he," and they fell to the ground. Peter cut off the high priest\'s servant\'s ear. Jesus said, "Shall I not drink the cup that the Father has given me?"' }
+  },
+  { id:'crucifixion', label:'Crucifixion',
+    matthew:{ ref:'Matthew 27:27–56', text:'The soldiers stripped Jesus, put a scarlet robe on him, a crown of thorns, and mocked him. They led him to Golgotha and crucified him between two robbers. From the sixth hour darkness fell over the land until the ninth hour. Jesus cried, "Eli, Eli, lema sabachthani?" and yielded up his spirit. The curtain of the temple was torn in two.' },
+    mark:{ ref:'Mark 15:21–41', text:'They compelled Simon of Cyrene to carry the cross to Golgotha. They crucified him at the third hour. The inscription read: "The King of the Jews." At the ninth hour Jesus cried, "Eloi, Eloi, lema sabachthani?" He uttered a loud cry and breathed his last. The centurion said, "Truly this man was the Son of God."' },
+    luke:{ ref:'Luke 23:26–49', text:'They led Jesus away to crucify him. He said to the weeping women, "Weep not for me but for yourselves." Two criminals were crucified with him. Jesus said, "Father, forgive them, for they know not what they do." To the repentant criminal: "Today you will be with me in paradise." He cried, "Father, into your hands I commit my spirit!" and breathed his last.' },
+    john:{ ref:'John 19:16–37', text:'They took Jesus carrying his own cross to the Place of a Skull, Golgotha. Pilate wrote the inscription: "Jesus of Nazareth, the King of the Jews" in Aramaic, Latin, and Greek. Soldiers divided his garments, fulfilling Scripture. Jesus said to his mother and the beloved disciple, "Woman, behold your son." He said, "I thirst," then "It is finished," and bowed his head and gave up his spirit.' }
+  },
+  { id:'resurrection', label:'Resurrection',
+    matthew:{ ref:'Matthew 28:1–10', text:'After the Sabbath, Mary Magdalene and the other Mary went to the tomb. There was a great earthquake; an angel had rolled back the stone. His appearance was like lightning, his clothing white as snow. The angel said, "He is not here, for he has risen, as he said." The women ran with fear and great joy to tell the disciples. Jesus met them, saying, "Do not be afraid."' },
+    mark:{ ref:'Mark 16:1–8', text:'When the Sabbath was past, Mary Magdalene, Mary the mother of James, and Salome bought spices. They found the stone rolled back. Entering the tomb, they saw a young man in a white robe who said, "Do not be alarmed. You seek Jesus of Nazareth, who was crucified. He has risen; he is not here. See the place where they laid him."' },
+    luke:{ ref:'Luke 24:1–12', text:'On the first day of the week, the women came to the tomb with spices. They found the stone rolled away. Two men in dazzling apparel said, "Why do you seek the living among the dead? He is not here, but has risen." They returned from the tomb and told all these things to the eleven and to all the rest.' },
+    john:{ ref:'John 20:1–18', text:'On the first day of the week Mary Magdalene came to the tomb early while it was still dark, and saw that the stone had been taken away. She ran to Simon Peter and the other disciple. They ran together; the beloved disciple reached the tomb first. Later Mary stood weeping outside the tomb. The risen Jesus appeared to her, calling her by name: "Mary."' }
+  },
+  { id:'appearances', label:'Post-Resurrection Appearances',
+    matthew:{ ref:'Matthew 28:9–10, 16–17', text:'Jesus met the women on their way and said, "Greetings!" They took hold of his feet and worshiped him. Then the eleven disciples went to Galilee, to the mountain to which Jesus had directed them. When they saw him they worshiped him, but some doubted.' },
+    mark:{ ref:'Mark 16:9–14', text:'Jesus appeared first to Mary Magdalene. He appeared in another form to two of them walking in the country. Afterward he appeared to the eleven as they were reclining at table, and he rebuked them for their unbelief and hardness of heart, because they had not believed those who saw him after he had risen.' },
+    luke:{ ref:'Luke 24:13–49', text:'Two disciples walked to Emmaus; a stranger joined them and explained the Scriptures concerning himself. At table he broke bread and their eyes were opened. He vanished. They returned to Jerusalem. Jesus appeared among them and said, "Peace to you." He showed them his hands and feet. He opened their minds to understand the Scriptures.' },
+    john:{ ref:'John 20:19–21:25', text:'On the evening of the first day, Jesus stood among the disciples and said, "Peace be with you." He showed them his hands and his side. Eight days later he appeared when Thomas was present; Thomas said, "My Lord and my God!" Jesus appeared by the Sea of Tiberias; Peter was restored with the threefold question, "Do you love me?"' }
+  },
+  { id:'commission', label:'The Great Commission',
+    matthew:{ ref:'Matthew 28:18–20', text:'Jesus came and said, "All authority in heaven and on earth has been given to me. Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, teaching them to observe all that I have commanded you. And behold, I am with you always, to the end of the age."' },
+    mark:{ ref:'Mark 16:15–18', text:'He said to them, "Go into all the world and proclaim the gospel to the whole creation. Whoever believes and is baptized will be saved, but whoever does not believe will be condemned. These signs will accompany those who believe: in my name they will cast out demons; they will speak in new tongues."' },
+    luke:{ ref:'Luke 24:44–49', text:'He said to them, "Everything written about me in the Law of Moses and the Prophets and the Psalms must be fulfilled." He opened their minds to understand the Scriptures. "Repentance for the forgiveness of sins should be proclaimed in his name to all nations, beginning from Jerusalem. You are witnesses of these things. Stay in the city until you are clothed with power from on high."' },
+    john:{ ref:'John 20:21–23', text:'Jesus said to them again, "Peace be with you. As the Father has sent me, even so I am sending you." When he had said this, he breathed on them and said to them, "Receive the Holy Spirit. If you forgive the sins of any, they are forgiven them; if you withhold forgiveness from any, it is withheld."' }
+  }
+];
+
+let harmonyActiveIdx = 0;
+
+function renderHarmony(idx) {
+  harmonyActiveIdx = idx;
+  const ev = harmonyData[idx];
+  document.getElementById('harmony-event-title').textContent = ev.label;
+  const gospels = ['matthew','mark','luke','john'];
+  const names = ['Matthew','Mark','Luke','John'];
+  const grid = document.getElementById('harmony-grid');
+  grid.innerHTML = gospels.map((g, i) => {
+    const d = ev[g];
+    const body = d
+      ? `<div class="harmony-ref">${d.ref}</div><div class="harmony-text">${d.text}</div>`
+      : '';
+    const bodyClass = d ? 'harmony-col-body' : 'harmony-col-body absent';
+    const bodyContent = d ? body : 'Not recorded';
+    return `<div class="harmony-col">
+      <div class="harmony-col-header">${names[i]}</div>
+      <div class="${bodyClass}">${bodyContent}</div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.harmony-chip').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+}
+
+function initHarmony() {
+  const container = document.getElementById('harmony-events');
+  container.innerHTML = harmonyData.map((ev, i) =>
+    `<button class="harmony-chip${i===0?' active':''}" onclick="renderHarmony(${i})">${ev.label}</button>`
+  ).join('');
+  renderHarmony(0);
+}
+
+// ── PHASE 9: SERMON NOTES ────────────────────────────────────
+const sermonNotesKey = 'scripture_sermon_notes';
+
+function loadSermonNotes() {
+  try { return JSON.parse(localStorage.getItem(sermonNotesKey) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveSermonNote() {
+  const date = document.getElementById('sn-date').value;
+  const speaker = document.getElementById('sn-speaker').value.trim();
+  const title = document.getElementById('sn-title').value.trim();
+  const passage = document.getElementById('sn-passage').value.trim();
+  const main = document.getElementById('sn-main').value.trim();
+  const sub1 = document.getElementById('sn-sub1').value.trim();
+  const sub2 = document.getElementById('sn-sub2').value.trim();
+  const sub3 = document.getElementById('sn-sub3').value.trim();
+  const application = document.getElementById('sn-application').value.trim();
+  const prayer = document.getElementById('sn-prayer').value.trim();
+  if (!title && !passage && !main) {
+    alert('Please fill in at least the title, passage, or main point before saving.');
+    return;
+  }
+  const notes = loadSermonNotes();
+  notes.unshift({ id: Date.now(), date, speaker, title, passage, main, sub1, sub2, sub3, application, prayer });
+  localStorage.setItem(sermonNotesKey, JSON.stringify(notes));
+  renderSermonPastList();
+  clearSermonForm();
+  const btn = document.querySelector('.sermon-btn-save');
+  const orig = btn.textContent;
+  btn.textContent = 'Saved!';
+  setTimeout(() => { btn.textContent = orig; }, 1500);
+}
+
+function clearSermonForm() {
+  ['sn-date','sn-speaker','sn-title','sn-passage','sn-main','sn-sub1','sn-sub2','sn-sub3','sn-application','sn-prayer']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('sn-date').value = today;
+}
+
+function deleteSermonNote(id) {
+  if (!confirm('Delete this sermon note?')) return;
+  const notes = loadSermonNotes().filter(n => n.id !== id);
+  localStorage.setItem(sermonNotesKey, JSON.stringify(notes));
+  renderSermonPastList();
+}
+
+function exportSermonNote(id) {
+  const note = loadSermonNotes().find(n => n.id === id);
+  if (!note) return;
+  const lines = [
+    'SERMON NOTES',
+    '============',
+    `Date: ${note.date || '—'}`,
+    `Speaker: ${note.speaker || '—'}`,
+    `Title: ${note.title || '—'}`,
+    `Passage: ${note.passage || '—'}`,
+    '',
+    'MAIN POINT',
+    note.main || '—',
+    '',
+    'SUB-POINTS',
+    note.sub1 ? `1. ${note.sub1}` : '',
+    note.sub2 ? `2. ${note.sub2}` : '',
+    note.sub3 ? `3. ${note.sub3}` : '',
+    '',
+    'PERSONAL APPLICATION',
+    note.application || '—',
+    '',
+    'PRAYER RESPONSE',
+    note.prayer || '—'
+  ].filter((l, i, arr) => !(l === '' && arr[i-1] === '')).join('\n');
+  const blob = new Blob([lines], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sermon-${note.date || 'note'}-${(note.title || 'untitled').replace(/\s+/g,'-').toLowerCase()}.txt`;
+  a.click();
+}
+
+function renderSermonPastList() {
+  const list = document.getElementById('sermon-past-list');
+  const notes = loadSermonNotes();
+  if (!notes.length) {
+    list.innerHTML = '<div style="color:var(--text2);font-style:italic;font-size:.9rem;padding:.5rem 0;">No saved sermon notes yet. Fill in the form above and save your first note.</div>';
+    return;
+  }
+  list.innerHTML = notes.map(n => `
+    <div class="sermon-entry" id="snentry-${n.id}">
+      <div class="sermon-entry-head" onclick="toggleSermonEntry(${n.id})">
+        <span class="sermon-entry-date">${n.date || '—'}</span>
+        <span class="sermon-entry-title">${n.title || '(Untitled)'}</span>
+        <span class="sermon-entry-speaker">${n.speaker || ''}</span>
+        <span class="sermon-entry-toggle">&#9660;</span>
+      </div>
+      <div class="sermon-entry-body">
+        ${n.passage ? `<div class="sermon-entry-row"><span class="sermon-entry-row-label">Passage</span><span class="sermon-entry-row-val">${n.passage}</span></div>` : ''}
+        ${n.main ? `<div class="sermon-entry-row"><span class="sermon-entry-row-label">Main Point</span><span class="sermon-entry-row-val">${n.main}</span></div>` : ''}
+        ${n.sub1||n.sub2||n.sub3 ? `<div class="sermon-entry-row"><span class="sermon-entry-row-label">Sub-Points</span><span class="sermon-entry-row-val">${[n.sub1,n.sub2,n.sub3].filter(Boolean).map((s,i)=>`${i+1}. ${s}`).join('<br>')}</span></div>` : ''}
+        ${n.application ? `<div class="sermon-entry-row"><span class="sermon-entry-row-label">Application</span><span class="sermon-entry-row-val">${n.application}</span></div>` : ''}
+        ${n.prayer ? `<div class="sermon-entry-row"><span class="sermon-entry-row-label">Prayer</span><span class="sermon-entry-row-val">${n.prayer}</span></div>` : ''}
+        <div class="sermon-entry-actions">
+          <button class="sermon-export-btn" onclick="exportSermonNote(${n.id})">Export .txt</button>
+          <button class="sermon-del-btn" onclick="deleteSermonNote(${n.id})">Delete</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleSermonEntry(id) {
+  const el = document.getElementById('snentry-' + id);
+  if (el) el.classList.toggle('open');
+}
+
+function initSermonNotes() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('sn-date').value = today;
+  renderSermonPastList();
+}
+
+// ── PHASE 9: READING PLAN BUILDER ────────────────────────────────────
+const bookChapters = {
+  'Genesis':50,'Exodus':40,'Leviticus':27,'Numbers':36,'Deuteronomy':34,
+  'Joshua':24,'Judges':21,'Ruth':4,'1 Samuel':31,'2 Samuel':24,
+  '1 Kings':22,'2 Kings':25,'1 Chronicles':29,'2 Chronicles':36,
+  'Ezra':10,'Nehemiah':13,'Esther':10,'Job':42,'Psalms':150,
+  'Proverbs':31,'Ecclesiastes':12,'Song of Solomon':8,'Isaiah':66,
+  'Jeremiah':52,'Lamentations':5,'Ezekiel':48,'Daniel':12,
+  'Hosea':14,'Joel':3,'Amos':9,'Obadiah':1,'Jonah':4,
+  'Micah':7,'Nahum':3,'Habakkuk':3,'Zephaniah':3,'Haggai':2,
+  'Zechariah':14,'Malachi':4,
+  'Matthew':28,'Mark':16,'Luke':24,'John':21,'Acts':28,
+  'Romans':16,'1 Corinthians':16,'2 Corinthians':13,'Galatians':6,
+  'Ephesians':6,'Philippians':4,'Colossians':4,
+  '1 Thessalonians':5,'2 Thessalonians':3,
+  '1 Timothy':6,'2 Timothy':4,'Titus':3,'Philemon':1,
+  'Hebrews':13,'James':5,'1 Peter':5,'2 Peter':3,
+  '1 John':5,'2 John':1,'3 John':1,'Jude':1,'Revelation':22
+};
+
+const pbGroups = {
+  law: ['Genesis','Exodus','Leviticus','Numbers','Deuteronomy'],
+  history: ['Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther'],
+  poetry: ['Job','Psalms','Proverbs','Ecclesiastes','Song of Solomon'],
+  prophets: ['Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi'],
+  gospels: ['Matthew','Mark','Luke','John','Acts'],
+  epistles: ['Romans','1 Corinthians','2 Corinthians','Galatians','Ephesians','Philippians','Colossians','1 Thessalonians','2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon','Hebrews','James','1 Peter','2 Peter','1 John','2 John','3 John','Jude','Revelation']
+};
+pbGroups.ot = [...pbGroups.law,...pbGroups.history,...pbGroups.poetry,...pbGroups.prophets];
+pbGroups.nt = [...pbGroups.gospels,...pbGroups.epistles];
+
+let pbSelected = new Set();
+
+function pbRenderChips() {
+  const otBooks = pbGroups.ot;
+  const ntBooks = pbGroups.nt;
+  document.getElementById('pb-chips-ot').innerHTML = otBooks.map(b =>
+    `<button class="pb-book-chip${pbSelected.has(b)?' selected':''}" onclick="pbToggleBook('${b}')">${b}</button>`
+  ).join('');
+  document.getElementById('pb-chips-nt').innerHTML = ntBooks.map(b =>
+    `<button class="pb-book-chip${pbSelected.has(b)?' selected':''}" onclick="pbToggleBook('${b}')">${b}</button>`
+  ).join('');
+  pbUpdateCount();
+}
+
+function pbToggleBook(name) {
+  if (pbSelected.has(name)) pbSelected.delete(name);
+  else pbSelected.add(name);
+  pbRenderChips();
+}
+
+function pbSelectGroup(group) {
+  const books = pbGroups[group] || [];
+  const allSelected = books.every(b => pbSelected.has(b));
+  if (allSelected) books.forEach(b => pbSelected.delete(b));
+  else books.forEach(b => pbSelected.add(b));
+  pbRenderChips();
+}
+
+function pbUpdateCount() {
+  const total = [...pbSelected].reduce((sum, b) => sum + (bookChapters[b] || 0), 0);
+  document.getElementById('pb-selected-count').innerHTML =
+    `<strong>${pbSelected.size}</strong> book${pbSelected.size !== 1 ? 's' : ''} &middot; <strong>${total}</strong> chapter${total !== 1 ? 's' : ''} selected`;
+}
+
+function pbBuildPlan() {
+  const days = parseInt(document.getElementById('pb-days').value, 10) || 90;
+  if (!pbSelected.size) { alert('Please select at least one book.'); return; }
+  const chapters = [];
+  const orderedBooks = Object.keys(bookChapters).filter(b => pbSelected.has(b));
+  orderedBooks.forEach(book => {
+    const count = bookChapters[book] || 1;
+    for (let c = 1; c <= count; c++) chapters.push(`${book} ${c}`);
+  });
+  const total = chapters.length;
+  const perDay = total / days;
+  const plan = [];
+  let pos = 0;
+  for (let d = 1; d <= days; d++) {
+    const start = Math.round((d-1) * perDay);
+    const end = Math.min(Math.round(d * perDay), total);
+    if (start >= total) { plan.push({ day: d, readings: [] }); continue; }
+    const dayChaps = chapters.slice(start, end);
+    if (!dayChaps.length) continue;
+    const grouped = [];
+    let cur = null;
+    dayChaps.forEach(ch => {
+      const parts = ch.match(/^(.*)\s(\d+)$/);
+      if (!parts) return;
+      const [,book,num] = parts;
+      if (cur && cur.book === book) cur.end = parseInt(num);
+      else { cur = { book, start: parseInt(num), end: parseInt(num) }; grouped.push(cur); }
+    });
+    const label = grouped.map(g => g.start === g.end ? `${g.book} ${g.start}` : `${g.book} ${g.start}–${g.end}`).join(', ');
+    plan.push({ day: d, label });
+  }
+  const validPlan = plan.filter(p => p.label);
+  pbRenderPlan(validPlan, days, total, orderedBooks);
+}
+
+function pbRenderPlan(plan, days, total, books) {
+  const result = document.getElementById('pb-result');
+  result.style.display = 'block';
+  const bookLabel = books.length <= 3 ? books.join(', ') : `${books.length} books`;
+  result.innerHTML = `
+    <div class="pb-result-header">
+      <div class="pb-result-title">${days}-Day Plan &mdash; ${bookLabel} (${total} chapters)</div>
+      <div class="pb-result-actions">
+        <button class="pb-copy-btn" onclick="pbCopyPlan()">Copy Text</button>
+        <button class="pb-export-btn" onclick="pbExportPlan()">Export .txt</button>
+      </div>
+    </div>
+    <div class="pb-plan-list" id="pb-plan-list">
+      ${plan.map(p => `<div class="pb-plan-day"><span class="pb-day-num">Day ${p.day}</span><span class="pb-day-reading">${p.label}</span></div>`).join('')}
+    </div>`;
+  result.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function pbGetPlanText() {
+  const items = document.querySelectorAll('#pb-plan-list .pb-plan-day');
+  return [...items].map(el => {
+    const day = el.querySelector('.pb-day-num').textContent;
+    const reading = el.querySelector('.pb-day-reading').textContent;
+    return `${day}: ${reading}`;
+  }).join('\n');
+}
+
+function pbCopyPlan() {
+  const text = pbGetPlanText();
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.pb-copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
+function pbExportPlan() {
+  const text = pbGetPlanText();
+  if (!text) return;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'reading-plan.txt';
+  a.click();
+}
+
+function initPlanBuilder() {
+  pbRenderChips();
+}
+
+initHarmony();
+initSermonNotes();
+initPlanBuilder();
+
 // ── PHASE 8: VERSE COMPARISON ────────────────────────────────────
 const comparePassages = [
   { ref:'Genesis 1:1', kjv:'In the beginning God created the heaven and the earth.', esv:'In the beginning, God created the heavens and the earth.', niv:'In the beginning God created the heavens and the earth.', nasb:'In the beginning God created the heavens and the earth.' },
@@ -5047,7 +5542,7 @@ function renderBookmarksPanel() {
 function openBookmarkItem(bm) {
   closeBookmarksPanel();
   if (bm.type === 'book') {
-    const book = (typeof booksData !== 'undefined' ? booksData : []).find(b => b.name === bm.ref);
+    const book = bibleBooks.find(b => b.name === bm.ref);
     if (book) { showBookPanel(book); return; }
   }
   if (bm.type === 'person') {
@@ -6134,6 +6629,111 @@ renderPeople('all');
     <button class="notes-export-btn" onclick="clearAllBookmarks()" style="color:#dc2626">Clear All</button>
   </div>
 </div>
+
+<!-- GOSPEL HARMONY -->
+<section id="harmony-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Gospel Harmony</h2>
+    <p class="harmony-intro">See how Matthew, Mark, Luke, and John each record the key events of Jesus' life and ministry. Select an event below to compare the accounts side by side.</p>
+    <div class="harmony-events" id="harmony-events"></div>
+    <div class="harmony-event-title" id="harmony-event-title"></div>
+    <div class="harmony-grid" id="harmony-grid"></div>
+  </div>
+</section>
+
+<!-- SERMON NOTES -->
+<section id="sermon-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Sermon Notes</h2>
+    <div class="sermon-form-wrap">
+      <div class="sermon-form-grid">
+        <div class="sermon-field">
+          <label class="sermon-label" for="sn-date">Date</label>
+          <input class="sermon-input" id="sn-date" type="date">
+        </div>
+        <div class="sermon-field">
+          <label class="sermon-label" for="sn-speaker">Speaker</label>
+          <input class="sermon-input" id="sn-speaker" type="text" placeholder="Pastor / Speaker name">
+        </div>
+        <div class="sermon-field full">
+          <label class="sermon-label" for="sn-title">Sermon Title</label>
+          <input class="sermon-input" id="sn-title" type="text" placeholder="Title of the sermon">
+        </div>
+        <div class="sermon-field full">
+          <label class="sermon-label" for="sn-passage">Scripture Passage</label>
+          <input class="sermon-input" id="sn-passage" type="text" placeholder="e.g. John 3:16-21">
+        </div>
+        <div class="sermon-field full">
+          <label class="sermon-label" for="sn-main">Main Point</label>
+          <textarea class="sermon-textarea" id="sn-main" placeholder="The central message of the sermon..."></textarea>
+        </div>
+        <div class="sermon-field full">
+          <label class="sermon-label">Sub-Points</label>
+          <div class="sermon-subpoints">
+            <input class="sermon-input" id="sn-sub1" type="text" placeholder="Sub-point 1">
+            <input class="sermon-input" id="sn-sub2" type="text" placeholder="Sub-point 2">
+            <input class="sermon-input" id="sn-sub3" type="text" placeholder="Sub-point 3">
+          </div>
+        </div>
+        <div class="sermon-field full">
+          <label class="sermon-label" for="sn-application">Personal Application</label>
+          <textarea class="sermon-textarea" id="sn-application" placeholder="How will you apply this message this week?"></textarea>
+        </div>
+        <div class="sermon-field full">
+          <label class="sermon-label" for="sn-prayer">Prayer Response</label>
+          <textarea class="sermon-textarea" id="sn-prayer" placeholder="A prayer in response to what you heard..."></textarea>
+        </div>
+      </div>
+      <div class="sermon-actions">
+        <button class="sermon-btn-save" onclick="saveSermonNote()">Save Note</button>
+        <button class="sermon-btn-clear" onclick="clearSermonForm()">Clear Form</button>
+      </div>
+    </div>
+    <div class="sermon-past-wrap">
+      <div class="sermon-past-title">Past Sermon Notes</div>
+      <div class="sermon-past-list" id="sermon-past-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- READING PLAN BUILDER -->
+<section id="planbuilder-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Reading Plan Builder</h2>
+    <div class="pb-wrap">
+      <p class="pb-intro">Select the books you want to read, set the number of days, and build a custom day-by-day reading plan.</p>
+      <div class="pb-books-group">
+        <div class="pb-group-label">Old Testament</div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
+          <button class="pb-group-btn" onclick="pbSelectGroup('ot')">Select All OT</button>
+          <button class="pb-group-btn" onclick="pbSelectGroup('law')">Law (5)</button>
+          <button class="pb-group-btn" onclick="pbSelectGroup('history')">History (12)</button>
+          <button class="pb-group-btn" onclick="pbSelectGroup('poetry')">Poetry (5)</button>
+          <button class="pb-group-btn" onclick="pbSelectGroup('prophets')">Prophets (17)</button>
+        </div>
+        <div class="pb-chips" id="pb-chips-ot"></div>
+      </div>
+      <div class="pb-books-group">
+        <div class="pb-group-label">New Testament</div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
+          <button class="pb-group-btn" onclick="pbSelectGroup('nt')">Select All NT</button>
+          <button class="pb-group-btn" onclick="pbSelectGroup('gospels')">Gospels (4)</button>
+          <button class="pb-group-btn" onclick="pbSelectGroup('epistles')">Epistles (21)</button>
+        </div>
+        <div class="pb-chips" id="pb-chips-nt"></div>
+      </div>
+      <div class="pb-settings">
+        <div class="pb-settings-field">
+          <label class="pb-settings-label" for="pb-days">Days</label>
+          <input class="pb-days-input" id="pb-days" type="number" min="1" max="3650" value="90">
+        </div>
+        <div class="pb-selected-count" id="pb-selected-count"><strong>0</strong> books · <strong>0</strong> chapters selected</div>
+        <button class="pb-build-btn" onclick="pbBuildPlan()">Build Plan</button>
+      </div>
+      <div id="pb-result" style="display:none"></div>
+    </div>
+  </div>
+</section>
 
 <!-- MY NOTES VIEWER -->
 <div id="notes-viewer" role="dialog" aria-modal="true" aria-label="My Study Notes">
