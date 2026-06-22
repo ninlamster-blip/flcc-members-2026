@@ -1549,6 +1549,86 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
   margin-bottom: 14px;
 }
 
+/* ── PHASE 8: PANEL BOOKMARK BUTTON ── */
+.panel-header-actions { display: flex; gap: 8px; align-items: center; }
+.panel-bookmark-btn {
+  display: none; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: var(--bg2);
+  color: var(--text2); cursor: pointer; transition: all .15s; padding: 0;
+}
+.panel-bookmark-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+.panel-bookmark-btn.bookmarked { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+
+/* ── PHASE 8: VERSE COMPARISON ── */
+#compare-section { background: var(--bg2); }
+.compare-layout { display: flex; gap: 28px; margin-top: 40px; align-items: flex-start; }
+.compare-passage-list { flex-shrink: 0; width: 190px; display: flex; flex-direction: column; gap: 3px; max-height: 460px; overflow-y: auto; border-right: 1px solid var(--border); padding-right: 16px; }
+.compare-passage-btn {
+  text-align: left; padding: 8px 10px; border-radius: var(--radius-sm);
+  border: none; background: transparent; color: var(--text2);
+  font-size: .8rem; font-weight: 500; cursor: pointer; transition: all .15s;
+  font-family: 'Inter', sans-serif; line-height: 1.3;
+}
+.compare-passage-btn:hover { background: var(--bg3); color: var(--text); }
+.compare-passage-btn.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+.compare-display { flex: 1; min-width: 0; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.compare-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.compare-trans-label { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.compare-trans-name { font-size: .72rem; color: var(--text2); margin-bottom: 10px; }
+.compare-trans-text { font-family: 'Lora', serif; font-size: .9rem; line-height: 1.75; color: var(--text); }
+.compare-ref-header { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 16px; }
+@media (max-width: 720px) {
+  .compare-layout { flex-direction: column; }
+  .compare-passage-list { width: 100%; flex-direction: row; flex-wrap: wrap; max-height: none; border-right: none; border-bottom: 1px solid var(--border); padding: 0 0 12px; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+
+/* ── PHASE 8: BIBLICAL ARCHAEOLOGY ── */
+#archaeology-section { background: var(--bg); }
+.archaeology-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 40px; }
+.arch-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s; }
+.arch-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.arch-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
+.arch-year { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); white-space: nowrap; }
+.arch-scripture-tag { font-size: .68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--gold-light); color: var(--gold); white-space: nowrap; }
+.arch-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.arch-location { font-size: .75rem; color: var(--text2); margin-bottom: 10px; }
+.arch-desc { font-size: .83rem; color: var(--text2); line-height: 1.6; margin-bottom: 10px; }
+.arch-confirms { font-size: .78rem; color: var(--accent); font-weight: 500; font-style: italic; }
+
+/* ── PHASE 8: BOOKMARKS PANEL ── */
+#bookmarks-panel {
+  position: fixed; top: 0; right: -420px; width: 400px; max-width: 94vw;
+  height: 100vh; background: var(--bg); z-index: 600;
+  border-left: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; transition: right .3s cubic-bezier(.4,0,.2,1);
+}
+#bookmarks-panel.open { right: 0; }
+.bm-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.bm-panel-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; color: var(--text); }
+.bm-panel-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text2); line-height: 1; padding: 2px 8px; }
+.bm-panel-body { flex: 1; overflow-y: auto; padding: 16px 24px 24px; }
+.bm-group-label { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); margin: 16px 0 8px; }
+.bm-group-label:first-child { margin-top: 0; }
+.bm-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg2); margin-bottom: 6px; cursor: pointer; transition: all .15s; }
+.bm-item:hover { border-color: var(--accent); background: var(--accent-light); }
+.bm-item-label { flex: 1; font-size: .84rem; font-weight: 500; color: var(--text); }
+.bm-item-date { font-size: .7rem; color: var(--text2); white-space: nowrap; }
+.bm-remove-btn { background: none; border: none; cursor: pointer; color: var(--text2); font-size: .95rem; padding: 2px 4px; border-radius: 3px; transition: all .15s; }
+.bm-remove-btn:hover { background: #fef2f2; color: #dc2626; }
+.bm-empty { text-align: center; color: var(--text2); font-size: .9rem; padding: 32px 0; }
+.bm-panel-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.bm-trigger-btn {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+  background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: .8rem; font-weight: 500;
+  color: var(--text2); cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.bm-trigger-btn:hover { background: var(--gold-light); color: var(--gold); border-color: var(--gold); }
+.bm-trigger-btn.has-bookmarks { background: var(--gold-light); color: var(--gold); border-color: var(--gold); }
+
 /* ── PHASE 7: DAILY VERSE ── */
 #daily-verse-section {
   background: linear-gradient(135deg, var(--accent-light) 0%, var(--bg) 70%);
@@ -2322,6 +2402,10 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     Notes
   </button>
+  <button class="bm-trigger-btn" id="bm-nav-btn" onclick="openBookmarksPanel()" aria-label="Bookmarks">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+    Bookmarks
+  </button>
   <button class="dash-btn" onclick="openDashboard()" aria-label="My Study Journey">
     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
     Dashboard
@@ -2417,6 +2501,8 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#daily-verse-section" class="tab-item">Today</a>
     <a href="#typology-section" class="tab-item">Typology</a>
     <a href="#prayer-section" class="tab-item">Prayer</a>
+    <a href="#compare-section" class="tab-item">Compare</a>
+    <a href="#archaeology-section" class="tab-item">Archaeology</a>
   </div>
 </nav>
 
@@ -3642,7 +3728,12 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 <div id="scripture-panel" role="dialog" aria-modal="true" aria-label="Scripture Reader">
   <div class="panel-header">
     <div class="panel-title-ref" id="panel-title-ref">Scripture</div>
-    <button class="panel-close" onclick="closeScripture()" aria-label="Close">&times;</button>
+    <div class="panel-header-actions">
+      <button class="panel-bookmark-btn" id="panel-bookmark-btn" onclick="toggleBookmarkFromPanel()" aria-label="Bookmark" title="Bookmark this">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+      </button>
+      <button class="panel-close" onclick="closeScripture()" aria-label="Close">&times;</button>
+    </div>
   </div>
   <div class="panel-body" id="panel-body">
     <div class="panel-verse-ref" id="panel-verse-ref"></div>
@@ -4782,6 +4873,227 @@ function printPlan(idx) {
 
 renderReadingPlans();
 
+// ── PHASE 8: VERSE COMPARISON ────────────────────────────────────
+const comparePassages = [
+  { ref:'Genesis 1:1', kjv:'In the beginning God created the heaven and the earth.', esv:'In the beginning, God created the heavens and the earth.', niv:'In the beginning God created the heavens and the earth.', nasb:'In the beginning God created the heavens and the earth.' },
+  { ref:'John 1:1', kjv:'In the beginning was the Word, and the Word was with God, and the Word was God.', esv:'In the beginning was the Word, and the Word was with God, and the Word was God.', niv:'In the beginning was the Word, and the Word was with God, and the Word was God.', nasb:'In the beginning was the Word, and the Word was with God, and the Word was God.' },
+  { ref:'John 3:16', kjv:'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.', esv:'For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.', niv:'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.', nasb:'For God so loved the world, that He gave His only begotten Son, that whoever believes in Him shall not perish, but have eternal life.' },
+  { ref:'Psalm 23:1', kjv:'The LORD is my shepherd; I shall not want.', esv:'The LORD is my shepherd; I shall not want.', niv:'The LORD is my shepherd, I lack nothing.', nasb:'The LORD is my shepherd, I shall not want.' },
+  { ref:'Isaiah 53:5', kjv:'But he was wounded for our transgressions, he was bruised for our iniquities: the chastisement of our peace was upon him; and with his stripes we are healed.', esv:'But he was pierced for our transgressions; he was crushed for our iniquities; upon him was the chastisement that brought us peace, and with his wounds we are healed.', niv:'But he was pierced for our transgressions, he was crushed for our iniquities; the punishment that brought us peace was on him, and by his wounds we are healed.', nasb:'But He was pierced through for our transgressions, He was crushed for our iniquities; the chastening for our well-being fell upon Him, and by His scourging we are healed.' },
+  { ref:'Jeremiah 29:11', kjv:'For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.', esv:'For I know the plans I have for you, declares the LORD, plans for welfare and not for evil, to give you a future and a hope.', niv:'"For I know the plans I have for you," declares the LORD, "plans to prosper you and not to harm you, plans to give you hope and a future."', nasb:'"For I know the plans that I have for you," declares the LORD, "plans for welfare and not for calamity to give you a future and a hope."' },
+  { ref:'Proverbs 3:5–6', kjv:'Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.', esv:'Trust in the LORD with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths.', niv:'Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.', nasb:'Trust in the LORD with all your heart and do not lean on your own understanding. In all your ways acknowledge Him, and He will make your paths straight.' },
+  { ref:'Romans 3:23', kjv:'For all have sinned, and come short of the glory of God.', esv:'For all have sinned and fall short of the glory of God.', niv:'For all have sinned and fall short of the glory of God.', nasb:'For all have sinned and fall short of the glory of God.' },
+  { ref:'Romans 6:23', kjv:'For the wages of sin is death; but the gift of God is eternal life through Jesus Christ our Lord.', esv:'For the wages of sin is death, but the free gift of God is eternal life in Christ Jesus our Lord.', niv:'For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.', nasb:'For the wages of sin is death, but the free gift of God is eternal life in Christ Jesus our Lord.' },
+  { ref:'Romans 8:28', kjv:'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.', esv:'And we know that for those who love God all things work together for good, for those who are called according to his purpose.', niv:'And we know that in all things God works for the good of those who love him, who have been called according to his purpose.', nasb:'And we know that God causes all things to work together for good to those who love God, to those who are called according to His purpose.' },
+  { ref:'Romans 12:1', kjv:'I beseech you therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.', esv:'I appeal to you therefore, brothers, by the mercies of God, to present your bodies as a living sacrifice, holy and acceptable to God, which is your spiritual worship.', niv:'Therefore, I urge you, brothers and sisters, in view of God\'s mercy, to offer your bodies as a living sacrifice, holy and pleasing to God — this is your true and proper worship.', nasb:'Therefore I urge you, brethren, by the mercies of God, to present your bodies a living and holy sacrifice, acceptable to God, which is your spiritual service of worship.' },
+  { ref:'Ephesians 2:8–9', kjv:'For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: not of works, lest any man should boast.', esv:'For by grace you have been saved through faith. And this is not your own doing; it is the gift of God, not a result of works, so that no one may boast.', niv:'For it is by grace you have been saved, through faith — and this is not from yourselves, it is the gift of God — not by works, so that no one can boast.', nasb:'For by grace you have been saved through faith; and that not of yourselves, it is the gift of God; not as a result of works, so that no one may boast.' },
+  { ref:'Philippians 4:13', kjv:'I can do all things through Christ which strengtheneth me.', esv:'I can do all things through him who strengthens me.', niv:'I can do all this through him who gives me strength.', nasb:'I can do all things through Him who strengthens me.' },
+  { ref:'Hebrews 11:1', kjv:'Now faith is the substance of things hoped for, the evidence of things not seen.', esv:'Now faith is the assurance of things hoped for, the conviction of things not seen.', niv:'Now faith is confidence in what we hope for and assurance about what we do not see.', nasb:'Now faith is the assurance of things hoped for, the conviction of things not seen.' },
+  { ref:'John 14:6', kjv:'Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me.', esv:'Jesus said to him, "I am the way, and the truth, and the life. No one comes to the Father except through me."', niv:'Jesus answered, "I am the way and the truth and the life. No one comes to the Father except through me."', nasb:'Jesus said to him, "I am the way, and the truth, and the life; no one comes to the Father but through Me."' },
+  { ref:'Galatians 2:20', kjv:'I am crucified with Christ: nevertheless I live; yet not I, but Christ liveth in me: and the life which I now live in the flesh I live by the faith of the Son of God, who loved me, and gave himself for me.', esv:'I have been crucified with Christ. It is no longer I who live, but Christ who lives in me. And the life I now live in the flesh I live by faith in the Son of God, who loved me and gave himself for me.', niv:'I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.', nasb:'I have been crucified with Christ; and it is no longer I who live, but Christ lives in me; and the life which I now live in the flesh I live by faith in the Son of God, who loved me and gave Himself up for me.' },
+  { ref:'2 Timothy 3:16', kjv:'All scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness.', esv:'All Scripture is breathed out by God and profitable for teaching, for reproof, for correction, and for training in righteousness.', niv:'All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness.', nasb:'All Scripture is inspired by God and profitable for teaching, for reproof, for correction, for training in righteousness.' },
+  { ref:'Matthew 28:19–20', kjv:'Go ye therefore, and teach all nations, baptizing them in the name of the Father, and of the Son, and of the Holy Ghost: teaching them to observe all things whatsoever I have commanded you: and, lo, I am with you alway, even unto the end of the world.', esv:'Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, teaching them to observe all that I have commanded you. And behold, I am with you always, to the end of the age.', niv:'Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, and teaching them to obey everything I have commanded you. And surely I am with you always, to the very end of the age.', nasb:'Go therefore and make disciples of all the nations, baptizing them in the name of the Father and the Son and the Holy Spirit, teaching them to observe all that I commanded you; and lo, I am with you always, even to the end of the age.' },
+  { ref:'Isaiah 40:31', kjv:'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.', esv:'But they who wait for the LORD shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.', niv:'But those who hope in the LORD will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.', nasb:'Yet those who wait for the LORD will gain new strength; they will mount up with wings like eagles, they will run and not get tired, they will walk and not become weary.' },
+  { ref:'1 Corinthians 13:4–5', kjv:'Charity suffereth long, and is kind; charity envieth not; charity vaunteth not itself, is not puffed up, doth not behave itself unseemly, seeketh not her own, is not easily provoked, thinketh no evil.', esv:'Love is patient and kind; love does not envy or boast; it is not arrogant or rude. It does not insist on its own way; it is not irritable or resentful.', niv:'Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs.', nasb:'Love is patient, love is kind and is not jealous; love does not brag and is not arrogant, does not act unbecomingly; it does not seek its own, is not provoked, does not take into account a wrong suffered.' }
+];
+
+let compareIdx = 0;
+
+function renderCompareList() {
+  const el = document.getElementById('compare-passage-list');
+  if (!el) return;
+  el.innerHTML = comparePassages.map((p, i) =>
+    `<button class="compare-passage-btn${i===compareIdx?' active':''}" onclick="selectComparePassage(${i})">${p.ref}</button>`
+  ).join('');
+}
+
+function selectComparePassage(idx) {
+  compareIdx = idx;
+  renderCompareList();
+  renderCompareDisplay();
+}
+
+function renderCompareDisplay() {
+  const el = document.getElementById('compare-display');
+  if (!el) return;
+  const p = comparePassages[compareIdx];
+  const translations = [
+    { key:'kjv', label:'KJV', name:'King James Version (1611)' },
+    { key:'esv', label:'ESV', name:'English Standard Version (2001)' },
+    { key:'niv', label:'NIV', name:'New International Version (1978)' },
+    { key:'nasb', label:'NASB', name:'New American Standard Bible (1971)' }
+  ];
+  el.innerHTML = `
+    <div class="compare-ref-header">${p.ref}</div>
+    <div class="compare-grid">
+      ${translations.map(t => `
+        <div class="compare-card">
+          <div class="compare-trans-label">${t.label}</div>
+          <div class="compare-trans-name">${t.name}</div>
+          <div class="compare-trans-text">"${p[t.key]}"</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+renderCompareList();
+renderCompareDisplay();
+
+// ── PHASE 8: BIBLICAL ARCHAEOLOGY ────────────────────────────────
+const archaeologyData = [
+  { name:'Dead Sea Scrolls', year:'Discovered 1947', location:'Qumran Caves, Jordan Valley', scripture:'Isaiah 40:8; 2 Tim 3:16', desc:'Over 900 manuscripts including every Old Testament book except Esther, found in 11 caves. The Great Isaiah Scroll is 1,000 years older than any previously known manuscript and virtually identical to the Masoretic text.', confirms:'Confirms the extraordinary accuracy of Old Testament transmission across centuries.' },
+  { name:'Cyrus Cylinder', year:'539 BC (found 1879)', location:'Babylon (British Museum)', scripture:'Ezra 1:2–3; Isa 44:28', desc:'A baked clay cylinder inscribed with Cyrus the Great\'s decree allowing displaced peoples to return to their homelands and rebuild their temples — exactly as Ezra 1 records.', confirms:'Confirms Cyrus\'s policy of returning Jewish exiles and his decree to rebuild the temple in Jerusalem.' },
+  { name:'Tel Dan Stele', year:'~870 BC (found 1993)', location:'Tel Dan, northern Israel', scripture:'2 Sam 7:16; 1 Kgs 15:18', desc:'A 9th-century BC Aramaic victory inscription by a Syrian king mentioning "the House of David" — the first extrabiblical reference to King David ever discovered, silencing claims that David was legendary.', confirms:'Confirms the historical existence of King David and the dynasty bearing his name.' },
+  { name:'Mesha Stele (Moabite Stone)', year:'~830 BC (found 1868)', location:'Dhiban, Jordan (Louvre)', scripture:'2 Kgs 3:4–5; 1 Kgs 16:23', desc:'A black basalt stone inscribed by Mesha, King of Moab, recording his revolt against Israel. It mentions the "Israelites," Omri king of Israel, and several cities listed in the Bible.', confirms:'Confirms King Omri of Israel, his subjugation of Moab, and the subsequent Moabite revolt recorded in 2 Kings 3.' },
+  { name:'Hezekiah\'s Tunnel', year:'700 BC (found 1838)', location:'City of David, Jerusalem', scripture:'2 Kgs 20:20; 2 Chron 32:30', desc:'A 533-meter tunnel cut through solid rock to divert water from the Gihon Spring inside Jerusalem\'s walls before Sennacherib\'s Assyrian siege. A 1880 inscription describes the workers cutting from both ends until they met.', confirms:'Confirms the engineering feat described in 2 Kings 20:20 — "Hezekiah made the pool and the tunnel to bring water into the city."' },
+  { name:'Pool of Siloam', year:'1st century (found 2004)', location:'Jerusalem, near the City of David', scripture:'John 9:7; Neh 3:15', desc:'The actual pool rediscovered during sewer repair work in 2004. Large steps descend into a broad ritual bath (mikveh), consistent with the public pool where Jesus sent the blind man to wash.', confirms:'Confirms the precise location of the Pool of Siloam where Jesus performed the healing of the man born blind.' },
+  { name:'Pontius Pilate Stone', year:'Discovered 1961', location:'Caesarea Maritima, Israel', scripture:'Luke 3:1; John 18:29; Matt 27:2', desc:'A limestone block bearing the Latin inscription "Pontius Pilatus, Praefectus Iudaeae" (Pontius Pilate, Prefect of Judaea) — the first physical evidence of Pilate\'s existence outside literary sources.', confirms:'Confirms Pilate\'s historical existence, title ("Prefect" not "Procurator"), and jurisdiction over Judaea during Jesus\' trial.' },
+  { name:'Caiaphas Ossuary', year:'Discovered 1990', location:'Jerusalem Peace Forest', scripture:'Matt 26:3; John 11:49; Acts 4:6', desc:'An ornately decorated limestone bone box inscribed "Joseph son of Caiaphas" — the high priest who presided over Jesus\' trial. The bones of a 60-year-old man were found inside.', confirms:'Confirms the identity and historicity of Caiaphas, the high priest who condemned Jesus and played a central role in Acts.' },
+  { name:'House of Peter, Capernaum', year:'1st century (excavated 1968)', location:'Capernaum, Sea of Galilee', scripture:'Mark 1:29–31; Luke 4:38', desc:'A 1st-century house beneath a 5th-century octagonal church, with walls bearing early Christian graffiti identifying it as the home of Peter. The site was venerated from the 1st century onward.', confirms:'Confirms the location of Peter\'s house in Capernaum where Jesus healed Peter\'s mother-in-law and many others.' },
+  { name:'Ebla Tablets', year:'~2400–2300 BC (found 1975)', location:'Tell Mardikh (ancient Ebla), Syria', scripture:'Gen 14:2; 10:19', desc:'Over 17,000 cuneiform tablets from the ancient city of Ebla, including trade records referencing the five cities of the plain (Sodom, Gomorrah, Admah, Zeboiim, Zoar) and many biblical personal names and places from Genesis.', confirms:'Confirms the historicity of cities and geographic details in early Genesis, previously dismissed as legendary by critical scholars.' }
+];
+
+function renderArchaeology() {
+  const grid = document.getElementById('archaeology-grid');
+  if (!grid) return;
+  grid.innerHTML = archaeologyData.map(a => `
+    <div class="arch-card fade-in-card">
+      <div class="arch-card-top">
+        <span class="arch-year">${a.year}</span>
+        <span class="arch-scripture-tag">${a.scripture}</span>
+      </div>
+      <div class="arch-name">${a.name}</div>
+      <div class="arch-location">${a.location}</div>
+      <div class="arch-desc">${a.desc}</div>
+      <div class="arch-confirms">${a.confirms}</div>
+    </div>`).join('');
+  observeFadeIn(grid.querySelectorAll('.fade-in-card'));
+}
+renderArchaeology();
+
+// ── PHASE 8: BOOKMARKS ────────────────────────────────────────────
+const BOOKMARKS_KEY = 'scripture_bookmarks';
+
+function getBookmarks() { return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]'); }
+
+function addBookmark(type, ref, label) {
+  const bms = getBookmarks().filter(b => b.ref !== ref);
+  bms.unshift({ type, ref, label, date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) });
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bms.slice(0, 100)));
+  updateBMNavBtn();
+}
+
+function removeBookmark(ref) {
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(getBookmarks().filter(b => b.ref !== ref)));
+  updateBMNavBtn();
+}
+
+function isBookmarked(ref) { return getBookmarks().some(b => b.ref === ref); }
+
+function updateBMNavBtn() {
+  const btn = document.getElementById('bm-nav-btn');
+  if (!btn) return;
+  btn.classList.toggle('has-bookmarks', getBookmarks().length > 0);
+}
+
+let _bmRef = '', _bmType = '', _bmLabel = '';
+
+function updatePanelBookmarkBtn(type, ref, label) {
+  _bmRef = ref; _bmType = type; _bmLabel = label;
+  const btn = document.getElementById('panel-bookmark-btn');
+  if (!btn) return;
+  btn.style.display = 'flex';
+  const bmed = isBookmarked(ref);
+  btn.classList.toggle('bookmarked', bmed);
+  btn.querySelector('svg').setAttribute('fill', bmed ? 'var(--gold)' : 'none');
+  btn.querySelector('svg').setAttribute('stroke', bmed ? 'var(--gold)' : 'currentColor');
+  btn.title = bmed ? 'Remove bookmark' : 'Bookmark this';
+}
+
+function toggleBookmarkFromPanel() {
+  if (!_bmRef) return;
+  if (isBookmarked(_bmRef)) removeBookmark(_bmRef); else addBookmark(_bmType, _bmRef, _bmLabel);
+  updatePanelBookmarkBtn(_bmType, _bmRef, _bmLabel);
+}
+
+function openBookmarksPanel() {
+  renderBookmarksPanel();
+  document.getElementById('bookmarks-panel')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBookmarksPanel() {
+  document.getElementById('bookmarks-panel')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderBookmarksPanel() {
+  const body = document.getElementById('bm-panel-body');
+  if (!body) return;
+  const bms = getBookmarks();
+  if (!bms.length) { body.innerHTML = '<div class="bm-empty">Bookmark any scripture, book, or person using the star icon in the reading panel.</div>'; return; }
+  const groups = { scripture:'Scripture', book:'Books', person:'People', other:'Other' };
+  const grouped = {};
+  bms.forEach(b => { const g = groups[b.type] ? b.type : 'other'; (grouped[g] = grouped[g] || []).push(b); });
+  body.innerHTML = Object.entries(grouped).map(([type, items]) => `
+    <div class="bm-group-label">${groups[type] || type}</div>
+    ${items.map(b => `
+      <div class="bm-item" onclick="openBookmarkItem(${JSON.stringify(b).replace(/"/g,'&quot;')})">
+        <span class="bm-item-label">${b.label || b.ref}</span>
+        <span class="bm-item-date">${b.date}</span>
+        <button class="bm-remove-btn" onclick="event.stopPropagation();removeBookmark('${b.ref.replace(/'/g,"\\\'")}');renderBookmarksPanel();updatePanelBookmarkBtn('${b.type}','${b.ref.replace(/'/g,"\\\'")}','${(b.label||b.ref).replace(/'/g,"\\\'")}')" aria-label="Remove">&times;</button>
+      </div>`).join('')}`).join('');
+}
+
+function openBookmarkItem(bm) {
+  closeBookmarksPanel();
+  if (bm.type === 'book') {
+    const book = (typeof booksData !== 'undefined' ? booksData : []).find(b => b.name === bm.ref);
+    if (book) { showBookPanel(book); return; }
+  }
+  if (bm.type === 'person') {
+    const person = (typeof peopleData !== 'undefined' ? peopleData : []).find(p => p.name === bm.ref);
+    if (person) { showPersonPanel(person); return; }
+  }
+  document.getElementById('panel-title-ref').textContent = bm.ref;
+  document.getElementById('panel-verse-ref').textContent = bm.ref;
+  document.getElementById('panel-verse-text').textContent = bm.label && bm.label !== bm.ref ? bm.label : 'Open your Bible to read ' + bm.ref;
+  document.getElementById('panel-cross-refs').innerHTML = '';
+  document.getElementById('panel-related').textContent = '';
+  document.getElementById('scripture-panel').classList.add('open');
+  document.getElementById('panel-overlay').style.display = 'block';
+  updatePanelBookmarkBtn(bm.type, bm.ref, bm.label || bm.ref);
+}
+
+function clearAllBookmarks() {
+  if (confirm('Clear all bookmarks? This cannot be undone.')) {
+    localStorage.removeItem(BOOKMARKS_KEY);
+    renderBookmarksPanel();
+    updateBMNavBtn();
+  }
+}
+
+// Patch panel open functions to show bookmark button
+const _p8OrigOpenScripture = openScripture;
+openScripture = function(card) {
+  _p8OrigOpenScripture(card);
+  const ref = card.dataset.verses ? (JSON.parse(card.dataset.verses)[0]?.ref || '') : (card.dataset.ref || '');
+  updatePanelBookmarkBtn('scripture', ref, ref);
+};
+
+const _p8OrigShowBookPanel = showBookPanel;
+showBookPanel = function(book) {
+  _p8OrigShowBookPanel(book);
+  updatePanelBookmarkBtn('book', book.name, book.name + (book.testament ? ' — ' + book.testament : ''));
+};
+
+const _p8OrigShowPersonPanel = showPersonPanel;
+showPersonPanel = function(person) {
+  _p8OrigShowPersonPanel(person);
+  updatePanelBookmarkBtn('person', person.name, person.name + (person.role ? ' · ' + person.role : ''));
+};
+
+updateBMNavBtn();
+
 // ── PHASE 7: DAILY VERSE ─────────────────────────────────────────
 const dailyVerses = [
   { ref:'John 3:16', text:'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.', reflect:'How does God\'s love for the world shape the way you love others today?' },
@@ -5783,6 +6095,45 @@ renderPeople('all');
     </div>
   </div>
 </section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- VERSE COMPARISON -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="compare-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Translation Study</div>
+    <h2 class="section-heading serif">Verse Comparison</h2>
+    <p class="section-sub">Select a key passage to see it across four major English translations: KJV, ESV, NIV, and NASB. Differences in word choice often reveal the richness of the original text.</p>
+    <div class="compare-layout">
+      <div class="compare-passage-list" id="compare-passage-list"></div>
+      <div class="compare-display" id="compare-display"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- BIBLICAL ARCHAEOLOGY -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="archaeology-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Confirmed by Evidence</div>
+    <h2 class="section-heading serif">Biblical Archaeology</h2>
+    <p class="section-sub">Ten major archaeological discoveries that have confirmed people, places, and events recorded in Scripture.</p>
+    <div class="archaeology-grid" id="archaeology-grid"></div>
+  </div>
+</section>
+
+<!-- BOOKMARKS PANEL -->
+<div id="bookmarks-panel" role="dialog" aria-modal="true" aria-label="My Bookmarks">
+  <div class="bm-panel-header">
+    <div class="bm-panel-title">My Bookmarks</div>
+    <button class="bm-panel-close" onclick="closeBookmarksPanel()" aria-label="Close">&times;</button>
+  </div>
+  <div class="bm-panel-body" id="bm-panel-body"></div>
+  <div class="bm-panel-footer">
+    <button class="notes-export-btn" onclick="clearAllBookmarks()" style="color:#dc2626">Clear All</button>
+  </div>
+</div>
 
 <!-- MY NOTES VIEWER -->
 <div id="notes-viewer" role="dialog" aria-modal="true" aria-label="My Study Notes">
