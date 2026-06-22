@@ -6,12 +6,12 @@
     "version": "1.0"
   },
   "ministry": {
-    "headName": "Bro. Wilson Guerzon",
-    "headTitle": "Prayer Ministry Lead",
-    "whatsapp": "+96566299452",
+    "headName": "Sis. Grace Siangco",
+    "headTitle": "Prayer Ministry Lead (Acting)",
+    "whatsapp": "",
     "messenger": "",
-    "phone": "+96566299452",
-    "email": "wilson_guerzon@yahoo.com"
+    "phone": "",
+    "email": ""
   },
   "teams": [
     {"id": "team-worship", "name": "Worship Team", "leader": ""},
