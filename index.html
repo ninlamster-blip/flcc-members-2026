@@ -2269,11 +2269,8 @@ function LiftingUpCard({ data, me, attendanceData }) {
     if (!attendanceData?.sessions?.length) return [];
 
     // Only track individual members (not families, pairs, or visitors)
-    const eligibleIds = new Set(
-      (data.workers || [])
-        .filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id))
-        .map(w => w.id)
-    );
+    const eligibleWorkers = (data.workers || []).filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id));
+    const workerMap = Object.fromEntries(eligibleWorkers.map(w => [w.id, w]));
 
     const allSessions = [...(attendanceData.sessions || [])].sort((a, b) => b.date.localeCompare(a.date));
     const friSessions = allSessions.filter(s => s.service === 'Friday').slice(0, 3);
@@ -2281,24 +2278,38 @@ function LiftingUpCard({ data, me, attendanceData }) {
 
     const absentSet = new Set();
 
-    [friSessions, sunSessions].forEach(sessions => {
-      if (sessions.length < 3) return; // need 3 sessions before flagging anyone
-
+    // Friday check: exclude sundayOnly members (they are not expected on Fridays)
+    if (friSessions.length >= 3) {
+      const friEligible = new Set(eligibleWorkers.filter(w => !w.sundayOnly).map(w => w.id));
       const absentCounts = {};
-      sessions.forEach(session => {
+      friSessions.forEach(session => {
         const presentIds = new Set(session.records.map(r => r.memberId));
-        eligibleIds.forEach(id => {
+        friEligible.forEach(id => {
           if (!presentIds.has(id)) absentCounts[id] = (absentCounts[id] || 0) + 1;
         });
       });
-
       Object.entries(absentCounts).forEach(([id, count]) => {
         if (count >= 3) absentSet.add(id);
       });
-    });
+    }
+
+    // Sunday check: exclude fridayOnly members (they are not expected on Sundays)
+    if (sunSessions.length >= 3) {
+      const sunEligible = new Set(eligibleWorkers.filter(w => !w.fridayOnly).map(w => w.id));
+      const absentCounts = {};
+      sunSessions.forEach(session => {
+        const presentIds = new Set(session.records.map(r => r.memberId));
+        sunEligible.forEach(id => {
+          if (!presentIds.has(id)) absentCounts[id] = (absentCounts[id] || 0) + 1;
+        });
+      });
+      Object.entries(absentCounts).forEach(([id, count]) => {
+        if (count >= 3) absentSet.add(id);
+      });
+    }
 
     return [...absentSet]
-      .map(id => data.workers.find(w => w.id === id))
+      .map(id => workerMap[id])
       .filter(Boolean)
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [attendanceData, data.workers]);
