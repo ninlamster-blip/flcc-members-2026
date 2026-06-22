@@ -1560,6 +1560,48 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 .panel-bookmark-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 .panel-bookmark-btn.bookmarked { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 
+/* ── PHASE 12: PSALMS EXPLORER ── */
+#psalms-section { background: var(--bg); }
+.psalms-filter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.psalm-filter-btn { padding: .38rem .85rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--text2); font-size: .81rem; cursor: pointer; transition: all .2s; }
+.psalm-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.psalm-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.psalms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; }
+.psalm-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.15rem; position: relative; overflow: hidden; }
+.psalm-bg-num { position: absolute; top: -.2rem; right: .6rem; font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; color: var(--accent); opacity: .07; line-height: 1; pointer-events: none; }
+.psalm-type { font-size: .71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: .35rem; }
+.psalm-num-title { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .5rem; }
+.psalm-num { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.psalm-title { font-size: .9rem; color: var(--text2); }
+.psalm-key { font-family: 'Lora', serif; font-size: .86rem; color: var(--text); line-height: 1.6; font-style: italic; margin-bottom: .6rem; border-left: 3px solid var(--accent-mid); padding-left: .7rem; }
+.psalm-desc { font-size: .83rem; color: var(--text2); line-height: 1.55; }
+
+/* ── PHASE 12: PROMISES OF GOD ── */
+#promises-section { background: var(--bg2); }
+.promises-filter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.promise-filter-btn { padding: .38rem .85rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text2); font-size: .81rem; cursor: pointer; transition: all .2s; }
+.promise-filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+.promise-filter-btn.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+.promises-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.promise-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.15rem; }
+.promise-cat { font-size: .71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); margin-bottom: .45rem; }
+.promise-text { font-family: 'Lora', serif; font-size: .92rem; color: var(--text); line-height: 1.7; font-style: italic; margin-bottom: .6rem; }
+.promise-ref { font-size: .78rem; font-weight: 700; color: var(--accent); margin-bottom: .4rem; }
+.promise-note { font-size: .82rem; color: var(--text2); line-height: 1.5; }
+
+/* ── PHASE 12: BIBLE GEOGRAPHY ── */
+#geography-section { background: var(--bg); }
+.geo-intro { max-width: 720px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
+.geo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.25rem; }
+.geo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.geo-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--text); margin-bottom: .25rem; }
+.geo-modern { font-size: .77rem; color: var(--text2); font-style: italic; margin-bottom: .5rem; }
+.geo-era-chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .6rem; }
+.geo-era-chip { font-size: .68rem; padding: .15rem .45rem; border-radius: 99px; background: var(--accent-light); color: var(--accent); font-weight: 600; }
+.geo-ref { font-size: .77rem; font-weight: 700; color: var(--gold); margin-bottom: .5rem; }
+.geo-significance { font-size: .87rem; color: var(--text); line-height: 1.6; margin-bottom: .5rem; }
+.geo-events { font-size: .82rem; color: var(--text2); line-height: 1.55; }
+
 /* ── PHASE 11: PARABLES OF JESUS ── */
 #parables-section { background: var(--bg2); }
 .parables-filter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
@@ -2733,6 +2775,9 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#parables-section" class="tab-item">Parables</a>
     <a href="#miracles-section" class="tab-item">Miracles</a>
     <a href="#creeds-section" class="tab-item">Creeds</a>
+    <a href="#psalms-section" class="tab-item">Psalms</a>
+    <a href="#promises-section" class="tab-item">Promises</a>
+    <a href="#geography-section" class="tab-item">Geography</a>
   </div>
 </nav>
 
@@ -5103,6 +5148,161 @@ function printPlan(idx) {
 
 renderReadingPlans();
 
+// ── PHASE 12: PSALMS EXPLORER ────────────────────────────────────
+const psalmsData = [
+  { num:1, type:'Wisdom', title:'The Two Ways', key:'"Blessed is the man who walks not in the counsel of the wicked... his delight is in the law of the LORD, and on his law he meditates day and night."', desc:'The gateway psalm, setting the agenda for the entire Psalter. Two paths: the blessed life rooted in God\'s Word versus the way of the wicked that ultimately perishes.' },
+  { num:2, type:'Royal / Messianic', title:'The Lord\'s Anointed', key:'"I will tell of the decree: The LORD said to me, \'You are my Son; today I have begotten you.\'"', desc:'Quoted more than any psalm in the New Testament. The Father\'s declaration over his King is fulfilled in Jesus\' baptism, resurrection, and return as the King of kings.' },
+  { num:8, type:'Praise / Creation', title:'The Majesty of God and the Dignity of Man', key:'"When I look at your heavens, the work of your fingers... what is man that you are mindful of him?"', desc:'A meditation on the paradox of the universe: an infinite Creator who pays personal attention to tiny, mortal humanity. The New Testament applies it to Christ as the true Man who fulfills humanity\'s destiny (Heb 2:6–9).' },
+  { num:13, type:'Lament', title:'How Long, O Lord?', key:'"How long, O LORD? Will you forget me forever? How long will you hide your face from me?"', desc:'One of the purest individual laments. Its fourfold "How long?" gives voice to anguish, yet ends in trust and praise — modeling how honest prayer moves from despair to hope.' },
+  { num:16, type:'Royal / Messianic', title:'The Path of Life', key:'"You will not abandon my soul to Sheol, or let your holy one see corruption."', desc:'Peter and Paul both quote verse 10 as fulfilled in Jesus\' resurrection — his body did not see corruption. It expresses supreme confidence in God\'s presence and the joy of life in him.' },
+  { num:19, type:'Praise / Creation', title:'The Two Books of God', key:'"The law of the LORD is perfect, reviving the soul; the testimony of the LORD is sure, making wise the simple."', desc:'Celebrates God\'s two revelations: creation (the silent universal witness of the skies) and Scripture (the perfect, pure, enduring Word). Ends in the great prayer for hidden faults and presumptuous sins.' },
+  { num:22, type:'Lament / Messianic', title:'My God, My God, Why Have You Forsaken Me?', key:'"My God, my God, why have you forsaken me? Why are you so far from saving me?"', desc:'Jesus quoted its opening cry from the cross. The psalm moves from abandonment to praise, describing the crucifixion in remarkable detail (pierced hands and feet, lots cast for clothing) centuries before crucifixion existed.' },
+  { num:23, type:'Thanksgiving', title:'The Lord Is My Shepherd', key:'"The LORD is my shepherd; I shall not want. He makes me lie down in green pastures."', desc:'The most beloved of all psalms. David draws on his experience as a shepherd to describe God\'s guiding, restoring, and protecting care — and the confident hope of dwelling in God\'s house forever.' },
+  { num:27, type:'Lament', title:'The Lord Is My Light', key:'"The LORD is my light and my salvation; whom shall I fear? The LORD is the stronghold of my life; of whom shall I be afraid?"', desc:'Alternates between bold confidence in God\'s protection and an urgent cry for help. Contains the famous counsel: "Wait for the LORD; be strong and let your heart take courage."' },
+  { num:32, type:'Penitential / Thanksgiving', title:'Blessed Is the One Whose Transgression Is Forgiven', key:'"Blessed is the one whose transgression is forgiven, whose sin is covered."', desc:'The first of the seven penitential psalms. After experiencing the physical anguish of unconfessed sin, David describes the relief of forgiveness and counsels others to seek God while he may be found.' },
+  { num:34, type:'Thanksgiving', title:'Taste and See That the Lord Is Good', key:'"Taste and see that the LORD is good! Blessed is the man who takes refuge in him!"', desc:'An acrostic psalm of praise written after David feigned madness before Abimelech. Full of memorable promises about God\'s protection of the humble, the provision for those who fear him, and his nearness to the brokenhearted.' },
+  { num:37, type:'Wisdom', title:'Fret Not Yourself', key:'"Commit your way to the LORD; trust in him, and he will act. He will bring forth your righteousness as the light."', desc:'Addresses the perennial problem of the wicked prospering while the righteous suffer. Its answer: fret not, trust, delight in God, commit your way, and wait patiently — judgment is certain, the meek shall inherit the land.' },
+  { num:46, type:'Trust', title:'God Is Our Refuge and Strength', key:'"God is our refuge and strength, a very present help in trouble. Therefore we will not fear though the earth gives way."', desc:'The inspiration for Luther\'s "A Mighty Fortress." It celebrates God\'s protective presence in the midst of cosmic upheaval and national crisis — the steadfast river of God\'s city while mountains fall into the sea.' },
+  { num:51, type:'Penitential', title:'Have Mercy on Me, O God', key:'"Create in me a clean heart, O God, and renew a right spirit within me. Cast me not away from your presence."', desc:'The great penitential psalm, written after Nathan confronted David over his sin with Bathsheba. The deepest confession in the Psalter — and the most comprehensive prayer for forgiveness, cleansing, and restoration.' },
+  { num:63, type:'Praise / Trust', title:'My Soul Thirsts for You', key:'"O God, you are my God; earnestly I seek you; my soul thirsts for you; my flesh faints for you, as in a dry and weary land where there is no water."', desc:'Written when David was in the wilderness of Judah. The physical thirst of the desert becomes a metaphor for the soul\'s longing for God. It portrays worship as the deepest satisfaction a human being can know.' },
+  { num:69, type:'Lament / Messianic', title:'Save Me, O God', key:'"I have become a stranger to my brothers, an alien to my mother\'s sons. For zeal for your house has consumed me."', desc:'A messianic lament quoted in John 2:17 (zeal for your house) and Romans 15:3. David\'s sufferings foreshadow Christ\'s — the reproach, the vinegar, the prayer that his enemies not be blotted out.' },
+  { num:72, type:'Royal / Messianic', title:'The Righteous King', key:'"May he have dominion from sea to sea, and from the River to the ends of the earth... all nations will call him blessed."', desc:'A prayer for Solomon that becomes a prayer for the ultimate King. Its vision of universal justice, peace, and prosperity under the King transcends any earthly ruler and points to the reign of Christ.' },
+  { num:73, type:'Wisdom', title:'My Feet Had Almost Stumbled', key:'"When I thought how to understand this, it seemed to me a wearisome task, until I went into the sanctuary of God; then I discerned their end."', desc:'A wisdom psalm about the crisis of faith when the wicked prosper. The turning point — entering the sanctuary of God — reframes everything. One of Scripture\'s most profound treatments of suffering and divine perspective.' },
+  { num:88, type:'Lament', title:'A Psalm of Darkness', key:'"O LORD, God of my salvation, I cry out day and night before you... I am a man who has no strength, like one set loose among the dead."', desc:'The darkest psalm — it ends with no resolution, only "darkness is my closest friend." Uniquely, it does not move to praise. It validates that honest lament can itself be faith, even when no light appears.' },
+  { num:90, type:'Wisdom', title:'From Everlasting to Everlasting', key:'"Lord, you have been our dwelling place in all generations. Before the mountains were brought forth... from everlasting to everlasting you are God."', desc:'The only psalm attributed to Moses. It contrasts human frailty and mortality against God\'s eternity — a thousand years are as a watch in the night. Contains the great prayer: "Teach us to number our days."' },
+  { num:100, type:'Praise', title:'Shout for Joy to the Lord', key:'"Make a joyful noise to the LORD, all the earth! Serve the LORD with gladness! Come into his presence with singing!"', desc:'Perhaps the most exuberant call to corporate worship in the Psalter. In just five verses it declares who God is (the Creator and Shepherd), who we are (his people and his sheep), and what our response must be.' },
+  { num:103, type:'Praise', title:'Bless the Lord, O My Soul', key:'"The LORD is merciful and gracious, slow to anger and abounding in steadfast love... as far as the east is from the west, so far does he remove our transgressions from us."', desc:'A comprehensive hymn of praise for all of God\'s benefits: forgiveness, healing, redemption, steadfast love, and tender fatherly compassion. Its portrait of divine mercy is unsurpassed in the Old Testament.' },
+  { num:110, type:'Royal / Messianic', title:'The Lord Said to My Lord', key:'"The LORD says to my Lord: \'Sit at my right hand, until I make your enemies your footstool.\'"', desc:'The most quoted psalm in the New Testament. Jesus himself cited it to stump the Pharisees about the Messiah\'s identity. Hebrews uses it extensively to establish Christ\'s eternal priesthood after the order of Melchizedek.' },
+  { num:119, type:'Wisdom', title:'Your Word Is a Lamp to My Feet', key:'"Your word is a lamp to my feet and a light to my path... I have stored up your word in my heart, that I might not sin against you."', desc:'The longest chapter in the Bible — 176 verses, each of 22 sections devoted to one letter of the Hebrew alphabet. Every verse but one references God\'s Word by one of its eight synonyms. A sustained meditation on Scripture.' },
+  { num:121, type:'Psalms of Ascent', title:'My Help Comes from the LORD', key:'"I lift up my eyes to the hills. From where does my help come? My help comes from the LORD, who made heaven and earth."', desc:'One of 15 pilgrimage psalms (120–134) sung on the journey to Jerusalem for festivals. The Keeper who neither slumbers nor sleeps guards Israel\'s going out and coming in, from this time forth and forevermore.' },
+  { num:126, type:'Psalms of Ascent', title:'When the Lord Restored the Fortunes of Zion', key:'"Those who sow in tears shall reap with shouts of joy! He who goes out weeping, bearing the seed for sowing, shall come home with shouts of joy."', desc:'Celebrates Israel\'s return from Babylon as a dream come true, and prays for complete restoration. Its closing image — tears that become joy at harvest — became a defining image of Christian hope.' },
+  { num:130, type:'Penitential / Lament', title:'Out of the Depths', key:'"Out of the depths I cry to you, O LORD! O Lord, hear my voice! Let your ears be attentive to the voice of my pleas for mercy!"', desc:'A classic cry of penitence from the abyss of guilt and sorrow. But it does not stay in the depths — it rises to the great affirmation: "With the LORD there is steadfast love, and with him is plentiful redemption."' },
+  { num:139, type:'Praise / Wisdom', title:'You Have Searched Me and Known Me', key:'"You have searched me, LORD, and you know me. You know when I sit and when I rise; you perceive my thoughts from afar."', desc:'The most comprehensive biblical meditation on God\'s omniscience and omnipresence. God knows our thoughts before we think them, is present everywhere, and knit us together in the womb. Ends with a prayer for searching and leading.' },
+  { num:145, type:'Praise', title:'Great Is the Lord', key:'"The LORD is gracious and merciful, slow to anger and abounding in steadfast love. The LORD is good to all, and his mercy is over all that he has made."', desc:'The only psalm with the heading "A Psalm of Praise" in Hebrew. An acrostic hymn celebrating God\'s greatness, his acts of power, his kingdom, and especially his care for the weak and fallen.' },
+  { num:150, type:'Praise', title:'Let Everything That Has Breath Praise the Lord', key:'"Let everything that has breath praise the LORD! Praise the LORD!"', desc:'The grand finale of the Psalter. Six verses of escalating praise — where (in the sanctuary and firmament), why (God\'s mighty deeds and surpassing greatness), how (every instrument), and who (everything that has breath). Hallelujah.' }
+];
+
+let psalmsActiveCat = 'All';
+
+function renderPsalms(cat) {
+  psalmsActiveCat = cat || 'All';
+  const cats = ['All', ...new Set(psalmsData.map(p => p.type))];
+  document.getElementById('psalms-filter').innerHTML = cats.map(c =>
+    `<button class="psalm-filter-btn${c===psalmsActiveCat?' active':''}" onclick="renderPsalms('${c.replace(/'/g,"\\'")}')"> ${c}</button>`
+  ).join('');
+  const filtered = psalmsActiveCat === 'All' ? psalmsData : psalmsData.filter(p => p.type === psalmsActiveCat);
+  document.getElementById('psalms-grid').innerHTML = filtered.map(p => `
+    <div class="psalm-card">
+      <div class="psalm-bg-num">${p.num}</div>
+      <div class="psalm-type">${p.type}</div>
+      <div class="psalm-num-title">
+        <span class="psalm-num">Psalm ${p.num}</span>
+        <span class="psalm-title">— ${p.title}</span>
+      </div>
+      <div class="psalm-key">${p.key}</div>
+      <div class="psalm-desc">${p.desc}</div>
+    </div>`).join('');
+}
+
+// ── PHASE 12: PROMISES OF GOD ────────────────────────────────────
+const promisesData = [
+  { cat:'God\'s Presence', text:'"I will never leave you nor forsake you."', ref:'Hebrews 13:5', note:'Quoting Deuteronomy 31:6 and Joshua 1:5, this promise has sustained God\'s people through every generation — it is the bedrock of all other promises.' },
+  { cat:'God\'s Presence', text:'"And behold, I am with you always, to the end of the age."', ref:'Matthew 28:20', note:'The closing words of Matthew\'s Gospel — the Great Commission is grounded in this promise. Jesus does not send his people out alone; his presence accompanies his mission.' },
+  { cat:'God\'s Presence', text:'"Fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand."', ref:'Isaiah 41:10', note:'One of Scripture\'s most comprehensive promises: the presence, strength, help, and upholding of God — given to his servants in times of fear and weakness.' },
+  { cat:'God\'s Presence', text:'"Draw near to God, and he will draw near to you."', ref:'James 4:8', note:'A conditional promise of mutual approach: our coming to God in humility and repentance is met by his active drawing near. The initiative may be ours, but his response is guaranteed.' },
+  { cat:'Salvation', text:'"For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life."', ref:'John 3:16', note:'The most quoted verse in all of Scripture. The promise is universal in scope ("whoever") and unconditional in its foundation ("God so loved") — salvation is a gift received by faith, not earned.' },
+  { cat:'Salvation', text:'"Everyone who calls on the name of the Lord will be saved."', ref:'Romans 10:13', note:'Citing Joel 2:32, Paul declares the gospel\'s universality: nationality, background, and past sins are no barrier. The only condition is calling on the name of the Lord — which itself requires faith.' },
+  { cat:'Salvation', text:'"Whoever comes to me I will never cast out."', ref:'John 6:37', note:'Jesus gives an absolute, unconditional assurance: no one who comes to him will be turned away. This is the promise for the person who fears they are too sinful, too broken, or too late.' },
+  { cat:'Salvation', text:'"If you confess with your mouth that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved."', ref:'Romans 10:9', note:'The apostolic summary of saving faith: external confession and internal belief in the resurrection. These are not two separate requirements but two expressions of one whole-person response.' },
+  { cat:'Forgiveness', text:'"If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness."', ref:'1 John 1:9', note:'The ongoing promise for believers who sin. Forgiveness is grounded in God\'s faithfulness and justice — the debt was paid at the cross; confession applies that payment. Cleansing covers not just guilt but the defilement of sin.' },
+  { cat:'Forgiveness', text:'"As far as the east is from the west, so far does he remove our transgressions from us."', ref:'Psalm 103:12', note:'East and west never meet — the removal of our sins is total and measureless. This is not forgiveness that keeps a record of forgiven wrongs; it is the complete cancellation of the debt.' },
+  { cat:'Forgiveness', text:'"Come now, let us reason together, says the LORD: though your sins are like scarlet, they shall be as white as snow."', ref:'Isaiah 1:18', note:'The most scarlet-stained conscience can be made whiter than snow. God\'s invitation is to reason together — there is no sin too deep-dyed for his cleansing.' },
+  { cat:'Forgiveness', text:'"I, I am he who blots out your transgressions for my own sake, and I will not remember your sins."', ref:'Isaiah 43:25', note:'Forgiveness is grounded in God\'s own character and glory, not in our merit. He forgives for his own sake — and chooses not to remember. The omniscient God actively sets sin aside.' },
+  { cat:'Provision', text:'"My God will supply every need of yours according to his riches in glory in Christ Jesus."', ref:'Philippians 4:19', note:'Written by Paul in prison, with nothing by worldly standards. God\'s supply is calibrated to his riches in glory in Christ — infinitely generous, not merely adequate. Every need, not every want.' },
+  { cat:'Provision', text:'"But seek first the kingdom of God and his righteousness, and all these things will be added to you."', ref:'Matthew 6:33', note:'The reversal of anxious priority-setting. Put God\'s kingdom first and earthly needs follow as God\'s addition. This is not a health-and-wealth promise but a kingdom ordering of life.' },
+  { cat:'Provision', text:'"The LORD is my shepherd; I shall not want."', ref:'Psalm 23:1', note:'The Shepherd provides everything the sheep needs: rest, still waters, restored soul, right paths, protection through the valley, a prepared table, and the endless goodness and mercy that follow.' },
+  { cat:'Provision', text:'"Bring the full tithe into the storehouse... and thereby put me to the test, says the LORD of hosts, if I will not open the windows of heaven for you and pour down for you a blessing until there is no more need."', ref:'Malachi 3:10', note:'One of the rare instances where God explicitly invites his people to test him. Faithfulness in giving becomes the occasion for God\'s demonstrating his limitless provision.' },
+  { cat:'Guidance', text:'"Trust in the LORD with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."', ref:'Proverbs 3:5–6', note:'The foundational promise for decision-making. The condition is total heart-trust and full acknowledgment; the promise is straight paths — not necessarily easy, but directed by God.' },
+  { cat:'Guidance', text:'"I will instruct you and teach you in the way you should go; I will counsel you with my eye upon you."', ref:'Psalm 32:8', note:'God personally commits to instruction — not a distant rulebook but attentive guidance with his eye upon us. The intimacy of "my eye upon you" implies ongoing personal attention.' },
+  { cat:'Guidance', text:'"Your word is a lamp to my feet and a light to my path."', ref:'Psalm 119:105', note:'Scripture provides the light for the next step and for the longer path. A lamp illuminates enough to take the next step safely; a light shows the direction of the journey. Both are given through God\'s Word.' },
+  { cat:'Guidance', text:'"When the Spirit of truth comes, he will guide you into all the truth."', ref:'John 16:13', note:'The Holy Spirit\'s guidance is into truth — he does not invent new revelation but leads believers into the full significance of what Christ has said and done.' },
+  { cat:'Strength', text:'"But they who wait for the LORD shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint."', ref:'Isaiah 40:31', note:'The promise for the exhausted — those who have run dry. Waiting on God is not passive resignation but active, expectant trust. The result is supernatural renewal: eagle-flight, tireless running, unwearied walking.' },
+  { cat:'Strength', text:'"I can do all things through him who strengthens me."', ref:'Philippians 4:13', note:'Often misapplied to athletic achievement, this verse speaks of contentment in every circumstance — both abundance and need. The "all things" is contentment through Christ\'s strength, not unlimited capability.' },
+  { cat:'Strength', text:'"He gives power to the faint, and to him who has no might he increases strength."', ref:'Isaiah 40:29', note:'The prerequisite is having no strength — God\'s power is perfected in our acknowledged weakness. He specializes in those who are empty, faint, and at the end of their resources.' },
+  { cat:'Strength', text:'"No temptation has overtaken you that is not common to man. God is faithful, and he will not let you be tempted beyond your ability, but with the temptation he will also provide the way of escape."', ref:'1 Corinthians 10:13', note:'Three assurances: your temptation is not unique, God limits its intensity to what you can bear, and he always provides a way out. Temptation is not an excuse but a battle in which God guarantees a door.' },
+  { cat:'Peace', text:'"And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus."', ref:'Philippians 4:7', note:'The peace is given in response to anxious prayer with thanksgiving. It is incomprehensible — we cannot explain why we have peace in the midst of trials — yet it stands as a military guard over heart and mind.' },
+  { cat:'Peace', text:'"Peace I leave with you; my peace I give to you. Not as the world gives do I give to you. Let not your hearts be troubled, neither let them be afraid."', ref:'John 14:27', note:'Christ\'s farewell gift is his own peace — the peace of One who sleeps in the storm, who faces the cross without terror. It is qualitatively different from what the world offers.' },
+  { cat:'Peace', text:'"You keep him in perfect peace whose mind is stayed on you, because he trusts in you."', ref:'Isaiah 26:3', note:'"Perfect peace" in Hebrew is shalom shalom — doubled for intensity and completeness. The condition is a mind stayed (anchored, set) on God. Unbroken focus on God produces unbroken peace.' },
+  { cat:'Eternal Life', text:'"I give them eternal life, and they will never perish, and no one will snatch them out of my hand."', ref:'John 10:28', note:'The double security of Christ\'s hand and the Father\'s hand (v. 29) wrap around the believer. "No one" and "never perish" are absolute. Eternal life begins at conversion — it is a present possession, not only a future hope.' },
+  { cat:'Eternal Life', text:'"For I am sure that neither death nor life, nor angels nor rulers, nor things present nor things to come... will be able to separate us from the love of God in Christ Jesus our Lord."', ref:'Romans 8:38–39', note:'Paul exhausts every imaginable category of threat — cosmic, temporal, spiritual — and finds none that can sever the believer from God\'s love in Christ. The foundation is love, not our faithfulness.' },
+  { cat:'Eternal Life', text:'"Whoever believes in the Son has eternal life."', ref:'John 3:36', note:'The simplest statement of the gospel: belief in the Son = eternal life now. The present tense ("has") is crucial — eternal life is not a future award but a present reality for those who trust Christ.' },
+  { cat:'Hope & Purpose', text:'"For I know the plans I have for you, declares the LORD, plans for welfare and not for evil, to give you a future and a hope."', ref:'Jeremiah 29:11', note:'Spoken to exiles in Babylon — people in the worst circumstances imaginable. God\'s plans transcend our circumstances. The hope was not for immediate rescue but for a future that God was already orchestrating.' },
+  { cat:'Hope & Purpose', text:'"And we know that for those who love God all things work together for good, for those who are called according to his purpose."', ref:'Romans 8:28', note:'The promise is not that all things feel good or are good in themselves, but that God weaves them together for good in the lives of those who love him. The guarantee is the calling and the purpose of God.' },
+  { cat:'Hope & Purpose', text:'"For it is God who works in you, both to will and to work for his good pleasure."', ref:'Philippians 2:13', note:'This promise is the engine of spiritual transformation — God is at work in the believer\'s will and activity. Human effort and divine enablement are not in competition; they are concurrent realities.' },
+  { cat:'Prayer', text:'"Ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you."', ref:'Matthew 7:7', note:'The threefold intensification (ask → seek → knock) suggests increasing urgency and perseverance. All three carry the promise of a positive response — given, found, opened. God is not reluctant but willing.' },
+  { cat:'Prayer', text:'"If you abide in me, and my words abide in you, ask whatever you wish, and it will be done for you."', ref:'John 15:7', note:'The condition — abiding in Christ and his Word abiding in you — shapes what we ask. The person formed by Christ\'s Word increasingly asks for what aligns with his will, and those prayers are answered.' },
+  { cat:'Prayer', text:'"Call to me and I will answer you, and will tell you great and hidden things that you have not known."', ref:'Jeremiah 33:3', note:'"Great and hidden things" — prayer is not merely petition management but the gateway to divine revelation. God answers prayer with more than we asked for: he shows us things we could not have discovered otherwise.' }
+];
+
+let promisesActiveCat = 'All';
+
+function renderPromises(cat) {
+  promisesActiveCat = cat || 'All';
+  const cats = ['All', ...new Set(promisesData.map(p => p.cat))];
+  document.getElementById('promises-filter').innerHTML = cats.map(c =>
+    `<button class="promise-filter-btn${c===promisesActiveCat?' active':''}" onclick="renderPromises('${c.replace(/'/g,"\\'")}')">${c}</button>`
+  ).join('');
+  const filtered = promisesActiveCat === 'All' ? promisesData : promisesData.filter(p => p.cat === promisesActiveCat);
+  document.getElementById('promises-grid').innerHTML = filtered.map(p => `
+    <div class="promise-card">
+      <div class="promise-cat">${p.cat}</div>
+      <div class="promise-text">${p.text}</div>
+      <div class="promise-ref">${p.ref}</div>
+      <div class="promise-note">${p.note}</div>
+    </div>`).join('');
+}
+
+// ── PHASE 12: BIBLE GEOGRAPHY ────────────────────────────────────
+const geographyData = [
+  { name:'Garden of Eden', modern:'Possibly near confluence of Tigris & Euphrates, SE Turkey/Iraq', eras:['Creation'], ref:'Genesis 2:8–15', significance:'The original home of humanity — the place of perfect fellowship between God and man, before the Fall. It represents the paradise lost that the whole of Scripture moves to restore.', events:'Creation of Adam and Eve; the Fall; expulsion through the guarded eastern gate. Revelation\'s new creation echoes its imagery: river of life, tree of life, God dwelling with his people.' },
+  { name:'Mount Ararat', modern:'Eastern Turkey (Ağrı Dağı), near Armenian border', eras:['Pre-Patriarchal'], ref:'Genesis 8:4', significance:'The resting place of Noah\'s ark after the Flood — the mountain that emerged first as the waters receded. It stands as a monument to divine judgment and divine mercy operating together.', events:'Noah\'s ark came to rest here after 150 days of flood. Noah built an altar and offered sacrifices; God made the Noahic covenant and set the rainbow as its sign.' },
+  { name:'Ur of the Chaldees', modern:'Tell el-Muqayyar, southern Iraq (near Nasiriyah)', eras:['Patriarchal'], ref:'Genesis 11:28–31', significance:'Abraham\'s birthplace — one of ancient Mesopotamia\'s most sophisticated cities. God called Abraham out of paganism and prosperity into the unknown, initiating the covenant that would shape all of history.', events:'Birthplace of Abraham (Abram). Terah led the family from Ur toward Canaan but stopped in Haran. God\'s call to Abraham launched the great journey of faith.' },
+  { name:'Canaan / The Promised Land', modern:'Modern Israel, Palestinian territories, and parts of Jordan & Lebanon', eras:['Patriarchal','Conquest','Monarchy'], ref:'Genesis 12:7; Joshua 1:3', significance:'The land promised to Abraham and his descendants — the stage for most of the Old Testament narrative. Its central location makes it the crossroads of civilizations and the theater of God\'s redemptive acts.', events:'Abraham\'s journey; Isaac, Jacob, and the patriarchs; the Exodus destination; Joshua\'s conquest; the United and Divided Kingdoms; site of the Incarnation, crucifixion, and resurrection of Jesus.' },
+  { name:'Egypt', modern:'Modern Egypt', eras:['Patriarchal','Exodus'], ref:'Genesis 46:3–4; Exodus 1:1', significance:'Both a place of refuge and a place of bondage in Scripture. Egypt represents the world\'s power — impressive, wealthy, and ultimately unable to hold God\'s people. The Exodus from Egypt becomes the defining act of OT redemption.', events:'Joseph\'s rise to power; Jacob\'s family settles in Goshen; 400 years of slavery; the ten plagues; the Passover and Exodus; the Holy Family\'s flight to Egypt (Matt 2:13–15).' },
+  { name:'Mount Sinai / Horeb', modern:'Traditionally Jebel Musa, Sinai Peninsula, Egypt', eras:['Exodus'], ref:'Exodus 19:1–3; 1 Kings 19:8', significance:'The mountain of God — where Moses encountered the burning bush, where the Law was given, where the covenant was established, and where Elijah heard the still small voice. The meeting place of heaven and earth.', events:'The burning bush (Ex 3); the giving of the Ten Commandments (Ex 19–20); the covenant with Israel; the golden calf crisis; Elijah\'s forty-day journey here to hear God.' },
+  { name:'Jerusalem / Zion', modern:'Jerusalem, Israel', eras:['Monarchy','Exile','Second Temple','New Testament'], ref:'2 Samuel 5:7; Psalm 48:1', significance:'The city of David, the site of Solomon\'s Temple, the place of Jesus\' death and resurrection. More chapters of the Bible are set in Jerusalem than any other city. The New Testament ends with the New Jerusalem descending from heaven.', events:'David\'s capture of the city; Solomon\'s Temple built; the Babylonian destruction (587 BC); the Return and rebuilding; Jesus\' triumphal entry, Last Supper, crucifixion, and resurrection; Pentecost; the New Jerusalem in Revelation.' },
+  { name:'Bethlehem', modern:'Bethlehem, Palestinian West Bank', eras:['Patriarchal','Monarchy','New Testament'], ref:'Micah 5:2; Luke 2:4', significance:'Ephrathah, the "house of bread" — birthplace of both King David and Jesus the Messiah. Micah prophesied the Messiah\'s birth here 700 years before it happened, one of Scripture\'s most precise predictive prophecies.', events:'Rachel\'s burial near Bethlehem (Gen 35); birthplace of David; Ruth and Boaz\'s story takes place here; the Nativity of Jesus; the slaughter of the innocents by Herod.' },
+  { name:'Nazareth', modern:'Nazareth, northern Israel', eras:['New Testament'], ref:'Luke 2:39; Matthew 2:23', significance:'The obscure Galilean town where Jesus grew up, so undistinguished that Nathanael asked, "Can anything good come out of Nazareth?" Yet God chose this insignificant place for thirty years of the Son of God\'s life.', events:'Mary received the Annunciation here; Joseph and Mary\'s home; Jesus\' childhood and thirty years of hidden life; his rejection by his hometown (Luke 4:16–30); called "Jesus of Nazareth" in the Gospels.' },
+  { name:'Sea of Galilee', modern:'Lake Kinneret, northern Israel', eras:['New Testament'], ref:'Matthew 4:18; John 6:1', significance:'The freshwater lake around which much of Jesus\' Galilean ministry took place. Roughly 13 miles long and 8 miles wide — surprisingly small for the stage of such momentous events.', events:'Calling of the first disciples; calming of the storm; walking on water; the feeding of the 5,000 nearby; numerous healings; the post-resurrection appearance to the disciples (John 21).' },
+  { name:'Capernaum', modern:'Kfar Nahum ruins, northern shore of Sea of Galilee', eras:['New Testament'], ref:'Matthew 4:13; Mark 2:1', significance:'Jesus\' adopted hometown during his Galilean ministry — the base of operations for most of his miracles and teaching. Despite its privilege it was judged for its unbelief (Matt 11:23).', events:'Peter and Andrew\'s home; the healing of the centurion\'s servant; the paralyzed man lowered through the roof; the healing in the synagogue; the Bread of Life discourse (John 6).' },
+  { name:'Jordan River', modern:'Jordan River (Israel/Jordan border)', eras:['Conquest','New Testament'], ref:'Joshua 3:13–17; Matthew 3:13', significance:'The boundary between the wilderness and the Promised Land — and the site of Jesus\' baptism. Its crossing by Israel under Joshua echoes the Red Sea crossing; Jesus\' baptism in it inaugurates his public ministry.', events:'Israel\'s miraculous crossing into Canaan (Josh 3); Elijah and Elisha crossing and the mantle of prophecy passed; John the Baptist ministering here; Jesus\' baptism — the descent of the Spirit and the Father\'s voice.' },
+  { name:'Jericho', modern:'Ariha, West Bank', eras:['Conquest','New Testament'], ref:'Joshua 6:1; Luke 19:1', significance:'The first city conquered in Canaan — its walls famously fell at the shout of Israel, not by military might. In Jesus\' day it was a prosperous city on the road to Jerusalem.', events:'The walls fell to Israel\'s obedient march (Josh 6); Rahab the prostitute was spared and is in Jesus\' genealogy; Elisha purified the spring here; healing of Bartimaeus (Mark 10); Jesus and Zacchaeus (Luke 19).' },
+  { name:'Gethsemane', modern:'Garden at foot of Mount of Olives, Jerusalem', eras:['New Testament'], ref:'Matthew 26:36; Luke 22:39', significance:'The olive press garden where Jesus\' greatest struggle took place — "not my will, but yours be done." The very name means "olive press," fittingly where the Son of God was pressed by the weight of sin he was about to bear.', events:'Jesus\' agony and prayer after the Last Supper; the three disciples\' failure to watch; the angel strengthening him (Luke 22:43); Judas\'s betrayal with a kiss; the arrest.' },
+  { name:'Calvary / Golgotha', modern:'Traditionally near the Church of the Holy Sepulchre, Jerusalem', eras:['New Testament'], ref:'Matthew 27:33; John 19:17', significance:'The skull-shaped hill outside Jerusalem\'s walls where Jesus was crucified — the site of the greatest event in all of human history. Here justice and mercy kissed; here the wrath of God and the love of God were simultaneously displayed.', events:'The crucifixion of Jesus between two criminals; the seven last words; the darkness from noon to 3 pm; the temple curtain torn; the centurion\'s confession; the burial in the nearby new tomb.' },
+  { name:'Babylon', modern:'Al-Hillah area, Iraq (50 miles south of Baghdad)', eras:['Monarchy','Exile'], ref:'Daniel 1:1; Isaiah 47:1', significance:'The great empire that destroyed Jerusalem and carried Israel into exile in 587 BC. Symbolically, Babylon represents all anti-God world power — it reappears in Revelation as the great prostitute, the city opposed to the New Jerusalem.', events:'Tower of Babel (Gen 11); Nebuchadnezzar\'s conquest of Jerusalem; Daniel and his friends in Babylon; the writing on the wall (Dan 5); the fall of Babylon to Persia (539 BC); the Return under Cyrus.' },
+  { name:'Nineveh', modern:'Mosul area, northern Iraq', eras:['Monarchy'], ref:'Jonah 1:2; Nahum 1:1', significance:'Capital of the Assyrian Empire — ancient Israel\'s greatest oppressor. Jonah\'s reluctant mission to Nineveh and its remarkable repentance is one of Scripture\'s greatest stories of divine mercy extended beyond Israel\'s borders.', events:'Jonah\'s call to preach repentance; the city\'s repentance from the greatest to the least (Jon 3); Nahum prophesied its destruction; Assyria\'s fall to Babylon in 612 BC fulfilled Nahum\'s prophecy.' },
+  { name:'Athens', modern:'Athens, Greece', eras:['Early Church'], ref:'Acts 17:15–34', significance:'The intellectual capital of the ancient world — home of Socrates, Plato, and Aristotle. Paul\'s speech at the Areopagus is the Bible\'s most sophisticated engagement with secular philosophy, quoting Greek poets and reasoning from creation to resurrection.', events:'Paul\'s Areopagus address (Acts 17): "In him we live and move and have our being." The Athenians mocked the resurrection; some believed, including Dionysius the Areopagite and Damaris.' },
+  { name:'Corinth', modern:'Ancient Corinth ruins, southern Greece', eras:['Early Church'], ref:'Acts 18:1; 1 Corinthians 1:2', significance:'A cosmopolitan port city famous for commerce, immorality, and religious plurality. Paul spent 18 months there — longer than anywhere else on his second journey — and wrote two of his most significant letters to the church here.', events:'Paul\'s 18-month ministry; tent-making with Aquila and Priscilla; the vision: "I have many people in this city"; the writing of 1 and 2 Corinthians addressing divisions, immorality, spiritual gifts, and the resurrection.' },
+  { name:'Rome', modern:'Rome, Italy', eras:['Early Church'], ref:'Acts 28:16; Romans 1:7', significance:'Capital of the empire — the center of power, law, and roads. Paul\'s letter to the Romans is his theological masterwork; his imprisonment there produced the Prison Epistles. Tradition holds that both Peter and Paul were martyred here.', events:'Paul\'s two-year house arrest and appeal to Caesar (Acts 28); the writing of Ephesians, Philippians, Colossians, Philemon; Paul\'s probable execution under Nero (~AD 68); Peter\'s crucifixion upside down.' },
+  { name:'Patmos', modern:'Patmos island, Aegean Sea, Greece', eras:['Early Church'], ref:'Revelation 1:9', significance:'A small, rocky island of exile where the apostle John was sent by the Roman authorities for his testimony. Here, in the Spirit on the Lord\'s Day, he received the visions that became the book of Revelation — the climax of all Scripture.', events:'John\'s exile during the reign of Domitian (~AD 95); the vision of the risen Christ among the lampstands; the letters to the seven churches; the vast apocalyptic vision of the end of history and the new creation.' }
+];
+
+function renderGeography() {
+  document.getElementById('geo-grid').innerHTML = geographyData.map(g => `
+    <div class="geo-card">
+      <div class="geo-name">${g.name}</div>
+      <div class="geo-modern">${g.modern}</div>
+      <div class="geo-era-chips">${g.eras.map(e=>`<span class="geo-era-chip">${e}</span>`).join('')}</div>
+      <div class="geo-ref">${g.ref}</div>
+      <div class="geo-significance">${g.significance}</div>
+      <div class="geo-events">${g.events}</div>
+    </div>`).join('');
+}
+
+renderPsalms('All');
+renderPromises('All');
+renderGeography();
+
 // ── PHASE 11: PARABLES OF JESUS ────────────────────────────────────
 const parablesData = [
   { name:'The Sower', cat:'Kingdom', gospels:['Matt','Mark','Luke'], ref:'Matthew 13:3–23', truth:'How people receive the Word of God determines whether it takes root and bears lasting fruit in their lives.', application:'Examine what kind of soil your heart is. Are you allowing God\'s Word to take deep root, or is it being choked by the cares of this world and the deceitfulness of riches?' },
@@ -7397,6 +7597,33 @@ renderPeople('all');
     <h2 class="section-title">Creeds &amp; Confessions</h2>
     <p class="creeds-intro">The great creeds and confessions are the church's careful summary of Scripture's teaching, forged in the heat of controversy to guard the faith delivered to the saints. They connect us to two thousand years of Christian witness.</p>
     <div class="creeds-list" id="creeds-list"></div>
+  </div>
+</section>
+
+<!-- PSALMS EXPLORER -->
+<section id="psalms-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Psalms Explorer</h2>
+    <div class="psalms-filter" id="psalms-filter"></div>
+    <div class="psalms-grid" id="psalms-grid"></div>
+  </div>
+</section>
+
+<!-- PROMISES OF GOD -->
+<section id="promises-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Promises of God</h2>
+    <div class="promises-filter" id="promises-filter"></div>
+    <div class="promises-grid" id="promises-grid"></div>
+  </div>
+</section>
+
+<!-- BIBLE GEOGRAPHY -->
+<section id="geography-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Bible Geography</h2>
+    <p class="geo-intro">The Bible is a geographical book — its stories are rooted in real places. Understanding these locations enriches the narrative and grounds faith in history.</p>
+    <div class="geo-grid" id="geo-grid"></div>
   </div>
 </section>
 
