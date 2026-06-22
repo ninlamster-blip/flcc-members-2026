@@ -1549,6 +1549,164 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
   margin-bottom: 14px;
 }
 
+/* ── PHASE 3: ERA FILTER CHIPS ── */
+.era-filter-bar {
+  display: flex; gap: 7px; flex-wrap: wrap;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.era-chip {
+  padding: 5px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: .72rem; font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.era-chip:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+
+/* ── PHASE 3: CITY POPUP ── */
+#journey-map { position: relative; }
+.city-dot { cursor: pointer; transition: opacity .15s; }
+.city-dot:hover { opacity: .75; }
+#city-popup {
+  display: none;
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 234px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 0;
+  z-index: 10;
+  overflow: hidden;
+  animation: fadeUp .18s ease;
+}
+#city-popup.open { display: block; }
+.city-popup-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+#city-popup-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700; color: var(--text);
+}
+.city-popup-close {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.1rem; color: var(--text2); line-height: 1;
+  padding: 0 4px;
+}
+#city-popup-journeys {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  padding: 0 16px 10px;
+}
+.city-journey-badge {
+  font-size: .6rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px;
+}
+#city-popup-text {
+  font-size: .78rem; color: var(--text2); line-height: 1.55;
+  padding: 0 16px 10px;
+}
+#city-popup-verse {
+  font-family: 'Lora', serif; font-style: italic;
+  font-size: .75rem; color: var(--text);
+  padding: 9px 12px; margin: 0 16px 14px;
+  background: var(--bg2);
+  border-radius: 6px; border-left: 2px solid var(--accent);
+  line-height: 1.5;
+}
+
+/* ── PHASE 3: READING PLANS ── */
+#plans-section { background: var(--bg2); }
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+  margin-top: 36px;
+}
+.plan-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  opacity: 0; transform: translateY(12px);
+  transition: opacity .4s, transform .4s, box-shadow .2s;
+}
+.plan-card.visible { opacity: 1; transform: none; }
+.plan-card:hover { box-shadow: var(--shadow); }
+.plan-header {
+  padding: 20px 18px 16px;
+  cursor: pointer;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px;
+}
+.plan-header-left { flex: 1; }
+.plan-duration {
+  font-size: .63rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--accent);
+  background: var(--accent-light); padding: 2px 8px;
+  border-radius: 4px; display: inline-block; margin-bottom: 7px;
+}
+.plan-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--text); margin-bottom: 4px; line-height: 1.2;
+}
+.plan-desc { font-size: .77rem; color: var(--text2); line-height: 1.5; }
+.plan-toggle {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  font-size: .8rem; color: var(--text2);
+  transition: all .2s; line-height: 1;
+}
+.plan-card.expanded .plan-toggle {
+  background: var(--accent); color: #fff;
+  border-color: var(--accent); transform: rotate(45deg);
+}
+.plan-days {
+  display: none;
+  border-top: 1px solid var(--border);
+  max-height: 300px;
+  overflow-y: auto;
+}
+.plan-card.expanded .plan-days { display: block; }
+.plan-day {
+  display: flex; gap: 12px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--bg2);
+  align-items: flex-start;
+}
+.plan-day:last-child { border-bottom: none; }
+.plan-day-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent-light); color: var(--accent);
+  font-size: .62rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.plan-day-ref { font-size: .77rem; font-weight: 600; color: var(--text); margin-bottom: 1px; }
+.plan-day-topic { font-size: .7rem; color: var(--text2); }
+.plan-print-btn {
+  display: flex; align-items: center; gap: 6px;
+  margin: 10px 18px 14px;
+  padding: 6px 12px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 7px; font-size: .73rem; font-weight: 500;
+  color: var(--text2); cursor: pointer; transition: all .15s;
+  font-family: inherit;
+}
+.plan-print-btn:hover { background: var(--bg3); color: var(--text); }
+
 /* ── PHASE 2: GRAPH NODE INFO PANEL ── */
 #graph-node-info {
   display: none;
@@ -1682,6 +1840,7 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#books-section" class="tab-item">Book Explorer</a>
     <a href="#graph-section" class="tab-item">Connections</a>
     <a href="#revelation-section" class="tab-item">Revelation</a>
+    <a href="#plans-section" class="tab-item">Reading Plans</a>
   </div>
 </nav>
 
@@ -1704,6 +1863,19 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 
     <!-- Timeline content -->
     <div class="timeline-content" id="timeline-content">
+
+      <!-- Era quick-jump chips -->
+      <div class="era-filter-bar" aria-label="Jump to era">
+        <a href="#era-creation"  class="era-chip">Creation</a>
+        <a href="#era-patriarchs" class="era-chip">Patriarchs</a>
+        <a href="#era-exodus"    class="era-chip">Exodus</a>
+        <a href="#era-conquest"  class="era-chip">Conquest</a>
+        <a href="#era-kingdom"   class="era-chip">Kingdom</a>
+        <a href="#era-divided"   class="era-chip">Divided Kingdom</a>
+        <a href="#era-exile"     class="era-chip">Exile</a>
+        <a href="#era-return"    class="era-chip">Return</a>
+        <a href="#era-silence"   class="era-chip">400 Years of Silence</a>
+      </div>
 
       <!-- ERA: CREATION -->
       <div class="era-group" id="era-creation">
@@ -2662,42 +2834,42 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
         <!-- Journey to Rome -->
         <path d="M618,192 C600,200 575,205 545,205 C515,205 490,200 465,195 C435,188 400,185 365,188 C335,190 305,198 280,205 C255,212 230,218 205,220 C190,220 178,215 170,205" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,3" opacity=".6" marker-end="url(#arrow1)"/>
 
-        <!-- City dots -->
+        <!-- City dots (interactive) -->
         <!-- Jerusalem -->
-        <circle cx="618" cy="188" r="8" fill="#b45309" stroke="white" stroke-width="2"/>
-        <text x="630" y="185" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#111827">Jerusalem</text>
+        <circle class="city-dot" data-city="jerusalem" cx="618" cy="188" r="9" fill="#b45309" stroke="white" stroke-width="2"/>
+        <text x="630" y="185" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#111827" pointer-events="none">Jerusalem</text>
 
         <!-- Antioch -->
-        <circle cx="590" cy="155" r="6" fill="#2563EB" stroke="white" stroke-width="2"/>
-        <text x="602" y="152" font-family="Inter,sans-serif" font-size="9" fill="#111827">Antioch</text>
+        <circle class="city-dot" data-city="antioch" cx="590" cy="155" r="7" fill="#2563EB" stroke="white" stroke-width="2"/>
+        <text x="602" y="152" font-family="Inter,sans-serif" font-size="9" fill="#111827" pointer-events="none">Antioch</text>
 
         <!-- Ephesus -->
-        <circle cx="455" cy="148" r="6" fill="#2563EB" stroke="white" stroke-width="2"/>
-        <text x="465" y="144" font-family="Inter,sans-serif" font-size="9" fill="#111827">Ephesus</text>
+        <circle class="city-dot" data-city="ephesus" cx="455" cy="148" r="7" fill="#2563EB" stroke="white" stroke-width="2"/>
+        <text x="465" y="144" font-family="Inter,sans-serif" font-size="9" fill="#111827" pointer-events="none">Ephesus</text>
 
         <!-- Philippi -->
-        <circle cx="310" cy="125" r="5" fill="#7c3aed" stroke="white" stroke-width="2"/>
-        <text x="318" y="122" font-family="Inter,sans-serif" font-size="9" fill="#111827">Philippi</text>
+        <circle class="city-dot" data-city="philippi" cx="310" cy="125" r="6" fill="#7c3aed" stroke="white" stroke-width="2"/>
+        <text x="318" y="122" font-family="Inter,sans-serif" font-size="9" fill="#111827" pointer-events="none">Philippi</text>
 
         <!-- Thessalonica -->
-        <circle cx="300" cy="145" r="5" fill="#7c3aed" stroke="white" stroke-width="2"/>
-        <text x="310" y="158" font-family="Inter,sans-serif" font-size="9" fill="#111827">Thessalonica</text>
+        <circle class="city-dot" data-city="thessalonica" cx="300" cy="145" r="6" fill="#7c3aed" stroke="white" stroke-width="2"/>
+        <text x="310" y="158" font-family="Inter,sans-serif" font-size="9" fill="#111827" pointer-events="none">Thessalonica</text>
 
         <!-- Corinth -->
-        <circle cx="285" cy="168" r="5" fill="#7c3aed" stroke="white" stroke-width="2"/>
-        <text x="295" y="165" font-family="Inter,sans-serif" font-size="9" fill="#111827">Corinth</text>
+        <circle class="city-dot" data-city="corinth" cx="285" cy="168" r="6" fill="#7c3aed" stroke="white" stroke-width="2"/>
+        <text x="295" y="165" font-family="Inter,sans-serif" font-size="9" fill="#111827" pointer-events="none">Corinth</text>
 
         <!-- Athens -->
-        <circle cx="295" cy="155" r="4" fill="#7c3aed" stroke="white" stroke-width="1.5"/>
-        <text x="305" y="152" font-family="Inter,sans-serif" font-size="8" fill="#6b7280">Athens</text>
+        <circle class="city-dot" data-city="athens" cx="295" cy="155" r="5" fill="#7c3aed" stroke="white" stroke-width="1.5"/>
+        <text x="305" y="152" font-family="Inter,sans-serif" font-size="8" fill="#6b7280" pointer-events="none">Athens</text>
 
         <!-- Rome -->
-        <circle cx="170" cy="138" r="7" fill="#6b7280" stroke="white" stroke-width="2"/>
-        <text x="180" y="135" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#111827">Rome</text>
+        <circle class="city-dot" data-city="rome" cx="170" cy="138" r="8" fill="#6b7280" stroke="white" stroke-width="2"/>
+        <text x="180" y="135" font-family="Inter,sans-serif" font-size="10" font-weight="600" fill="#111827" pointer-events="none">Rome</text>
 
         <!-- Cyprus -->
-        <circle cx="540" cy="175" r="4" fill="#2563EB" stroke="white" stroke-width="1.5"/>
-        <text x="550" y="172" font-family="Inter,sans-serif" font-size="8" fill="#6b7280">Cyprus</text>
+        <circle class="city-dot" data-city="cyprus" cx="540" cy="175" r="5" fill="#2563EB" stroke="white" stroke-width="1.5"/>
+        <text x="550" y="172" font-family="Inter,sans-serif" font-size="8" fill="#6b7280" pointer-events="none">Cyprus</text>
 
         <!-- Legend -->
         <rect x="20" y="350" width="12" height="2" fill="#2563EB" opacity=".7"/>
@@ -2709,7 +2881,17 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
         <rect x="310" y="350" width="12" height="2" fill="#6b7280" opacity=".6"/>
         <text x="328" y="355" font-family="Inter,sans-serif" font-size="9" fill="#6b7280">Journey to Rome</text>
       </svg>
+      <div id="city-popup">
+        <div class="city-popup-header">
+          <div id="city-popup-name"></div>
+          <button class="city-popup-close" onclick="closeCityPopup()" aria-label="Close">&times;</button>
+        </div>
+        <div id="city-popup-journeys"></div>
+        <p id="city-popup-text"></p>
+        <div id="city-popup-verse"></div>
+      </div>
     </div>
+    <p style="font-size:.78rem;color:var(--text2);margin-top:10px;">Click any city dot to learn what happened there.</p>
   </div>
 </section>
 
@@ -2831,6 +3013,18 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
         Revelation 22:20
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- READING PLANS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="plans-section" class="section">
+  <div class="section-inner">
+    <div class="section-label">Structured Devotional Reading</div>
+    <h2 class="section-heading serif">Reading Plans</h2>
+    <p class="section-sub">Five curated plans to guide you through Scripture — from a single week to a month. Click any plan to see the day-by-day schedule.</p>
+    <div class="plans-grid" id="plans-grid"></div>
   </div>
 </section>
 
@@ -3710,9 +3904,272 @@ function closeSearch() {
   document.getElementById('search-overlay').classList.remove('open');
 }
 
-// Update section observer to include prophecy-section
+// Update section observer to include prophecy-section and plans-section
 const prophSection = document.getElementById('prophecy-section');
 if (prophSection) sectionObserver.observe(prophSection);
+const plansSection = document.getElementById('plans-section');
+if (plansSection) sectionObserver.observe(plansSection);
+
+// ── PHASE 3: PAUL'S JOURNEY CITY POPUPS ──────────────────────────
+const cityData = {
+  jerusalem: {
+    name: 'Jerusalem',
+    journeys: [{ label: 'Home Base', color: '#b45309', bg: '#FEF3C7' }],
+    text: 'The starting point of the entire mission. Paul returned here after his journeys, was arrested in the Temple, and eventually appealed to Caesar. The church at Jerusalem commissioned the first missionary journey from Antioch.',
+    verse: '"You will be my witnesses in Jerusalem, and in all Judea and Samaria, and to the ends of the earth." — Acts 1:8'
+  },
+  antioch: {
+    name: 'Antioch (Syria)',
+    journeys: [{ label: '1st Journey Start', color: '#2563EB', bg: '#EFF6FF' }, { label: '2nd &amp; 3rd', color: '#7c3aed', bg: '#f5f3ff' }],
+    text: 'The great sending church of the New Testament. It was here that believers were first called "Christians." Antioch commissioned and received Paul on all three missionary journeys, replacing Jerusalem as the missional center.',
+    verse: '"Set apart for me Barnabas and Saul for the work to which I have called them." — Acts 13:2'
+  },
+  ephesus: {
+    name: 'Ephesus',
+    journeys: [{ label: '3rd Journey', color: '#b45309', bg: '#FEF3C7' }],
+    text: 'Paul spent nearly three years in Ephesus — his longest stay anywhere. The gospel spread through all of Asia Minor from here. A riot broke out when silversmiths feared the decline of the Artemis trade. Paul\'s letter to the Ephesians was written during his Roman imprisonment.',
+    verse: '"So the word of the Lord spread widely and grew in power." — Acts 19:20'
+  },
+  philippi: {
+    name: 'Philippi',
+    journeys: [{ label: '2nd Journey', color: '#7c3aed', bg: '#f5f3ff' }],
+    text: 'The first city in Europe to receive the gospel. Paul and Silas were beaten, imprisoned, and experienced a miraculous earthquake that opened all the doors. The jailer and his household were baptized that night. The Philippian church became Paul\'s most joyful partnership.',
+    verse: '"I thank my God every time I remember you." — Philippians 1:3'
+  },
+  thessalonica: {
+    name: 'Thessalonica',
+    journeys: [{ label: '2nd Journey', color: '#7c3aed', bg: '#f5f3ff' }],
+    text: 'Paul preached for three weeks in the synagogue and a large number believed. A mob forced him to flee at night. He wrote 1 &amp; 2 Thessalonians to encourage this young church, addressing their questions about the return of Christ.',
+    verse: '"You became a model to all the believers in Macedonia and Achaia." — 1 Thessalonians 1:7'
+  },
+  corinth: {
+    name: 'Corinth',
+    journeys: [{ label: '2nd Journey', color: '#7c3aed', bg: '#f5f3ff' }],
+    text: 'Paul spent 18 months planting the church in one of the ancient world\'s most morally complex cities. He received a vision: "Do not be afraid — I have many people in this city." 1 &amp; 2 Corinthians address the struggles of a church learning to live as the body of Christ.',
+    verse: '"For I resolved to know nothing while I was with you except Jesus Christ and him crucified." — 1 Corinthians 2:2'
+  },
+  athens: {
+    name: 'Athens',
+    journeys: [{ label: '2nd Journey', color: '#7c3aed', bg: '#f5f3ff' }],
+    text: 'Standing on the Areopagus, Paul engaged the Greek philosophers with one of Scripture\'s great missionary speeches. He used their altar "To an Unknown God" as a bridge to proclaim the resurrection. Some sneered; others believed — including Dionysius and Damaris.',
+    verse: '"For in him we live and move and have our being." — Acts 17:28'
+  },
+  rome: {
+    name: 'Rome',
+    journeys: [{ label: 'Journey to Rome', color: '#6b7280', bg: '#F3F4F6' }],
+    text: 'Paul arrived in Rome as a prisoner after a harrowing shipwreck. Yet Acts ends triumphantly: he welcomed all who came to him and proclaimed the Kingdom of God with all boldness and without hindrance. Paul\'s letter to Rome preceded him — the most systematic presentation of the gospel ever written.',
+    verse: '"I am not ashamed of the gospel, because it is the power of God." — Romans 1:16'
+  },
+  cyprus: {
+    name: 'Cyprus',
+    journeys: [{ label: '1st Journey', color: '#2563EB', bg: '#EFF6FF' }],
+    text: 'The first stop on the first missionary journey. Barnabas\'s home island. Paul confronted the sorcerer Elymas here and struck him blind, and the Roman proconsul Sergius Paulus believed — one of the earliest recorded conversions of a Roman official.',
+    verse: '"Then the proconsul believed, for he was amazed at the teaching about the Lord." — Acts 13:12'
+  }
+};
+
+function showCityPopup(cityKey) {
+  const city = cityData[cityKey];
+  if (!city) return;
+  document.getElementById('city-popup-name').textContent = city.name;
+  document.getElementById('city-popup-journeys').innerHTML = city.journeys.map(j =>
+    `<span class="city-journey-badge" style="background:${j.bg};color:${j.color}">${j.label}</span>`
+  ).join('');
+  document.getElementById('city-popup-text').innerHTML = city.text;
+  document.getElementById('city-popup-verse').textContent = city.verse;
+  document.getElementById('city-popup').classList.add('open');
+  trackProgress('connections');
+}
+
+function closeCityPopup() {
+  document.getElementById('city-popup').classList.remove('open');
+}
+
+document.querySelectorAll('.city-dot').forEach(dot => {
+  dot.addEventListener('click', () => showCityPopup(dot.dataset.city));
+});
+
+// ── PHASE 3: READING PLANS ────────────────────────────────────────
+const readingPlans = [
+  {
+    title: 'The Grand Story of Scripture',
+    duration: '30 Days',
+    desc: 'Walk through the entire Bible narrative from Creation to New Creation in a month.',
+    days: [
+      { ref:'Genesis 1–2',       topic:'Creation and the image of God' },
+      { ref:'Genesis 3',         topic:'The Fall and the first promise' },
+      { ref:'Genesis 6–9',       topic:'The Flood and God\'s covenant with Noah' },
+      { ref:'Genesis 12; 15',    topic:'The call and covenant with Abraham' },
+      { ref:'Genesis 22; 50',    topic:'The binding of Isaac; Joseph\'s providence' },
+      { ref:'Exodus 1–4',        topic:'Moses and the burning bush' },
+      { ref:'Exodus 12–14',      topic:'The Passover and the Red Sea' },
+      { ref:'Exodus 19–20',      topic:'The Law at Sinai' },
+      { ref:'Joshua 1–4; 24',    topic:'Entering the land; covenant renewal' },
+      { ref:'Judges 2; Ruth 1–4',topic:'Cycles of sin; Ruth and Boaz' },
+      { ref:'1 Samuel 16–17',    topic:'David anointed and Goliath defeated' },
+      { ref:'2 Samuel 7',        topic:'The Davidic Covenant' },
+      { ref:'1 Kings 8; 11',     topic:'Solomon\'s Temple; the kingdom divides' },
+      { ref:'Isaiah 40; 53',     topic:'Comfort and the Suffering Servant' },
+      { ref:'Jeremiah 31',       topic:'The promise of the New Covenant' },
+      { ref:'Ezekiel 37',        topic:'The valley of dry bones' },
+      { ref:'Daniel 2; 7',       topic:'God\'s sovereign kingdom over empires' },
+      { ref:'Ezra 1–3; Nehemiah 8', topic:'Return from exile; the Law restored' },
+      { ref:'Psalm 22; 110',     topic:'Messianic psalms' },
+      { ref:'Luke 1–2',          topic:'The Incarnation' },
+      { ref:'Luke 4; John 1',    topic:'The Word made flesh; Jesus begins his ministry' },
+      { ref:'Matthew 5–7',       topic:'The Sermon on the Mount' },
+      { ref:'Luke 15',           topic:'The parables of the lost' },
+      { ref:'Mark 8–9',          topic:'The transfiguration; the cost of discipleship' },
+      { ref:'John 13–17',        topic:'The upper room discourse' },
+      { ref:'Luke 22–23',        topic:'The crucifixion' },
+      { ref:'Luke 24; John 20',  topic:'The resurrection' },
+      { ref:'Acts 1–2',          topic:'Ascension and Pentecost' },
+      { ref:'Romans 8',          topic:'Life in the Spirit; no condemnation' },
+      { ref:'Revelation 21–22',  topic:'The New Creation; all things made new' },
+    ]
+  },
+  {
+    title: 'The Life of Christ',
+    duration: '14 Days',
+    desc: 'A two-week journey through the four Gospels, tracing the life, teaching, death, and resurrection of Jesus.',
+    days: [
+      { ref:'Luke 1–2',          topic:'Birth and childhood' },
+      { ref:'Matthew 3–4',       topic:'Baptism, temptation, and calling' },
+      { ref:'John 1–3',          topic:'The eternal Word; Nicodemus; first signs' },
+      { ref:'Matthew 5–7',       topic:'The Sermon on the Mount' },
+      { ref:'Luke 8–9',          topic:'Miracles and the cost of following Jesus' },
+      { ref:'John 6; 10',        topic:'Bread of life; the Good Shepherd' },
+      { ref:'Luke 10; 15',       topic:'The Good Samaritan; lost parables' },
+      { ref:'Mark 8–9',          topic:'Confession at Caesarea Philippi; transfiguration' },
+      { ref:'John 11',           topic:'The raising of Lazarus' },
+      { ref:'Matthew 21–23',     topic:'Triumphal entry; confrontation in the Temple' },
+      { ref:'John 13–17',        topic:'Upper room discourse and high-priestly prayer' },
+      { ref:'Matthew 26–27',     topic:'Gethsemane, trial, and crucifixion' },
+      { ref:'John 20–21',        topic:'Resurrection appearances' },
+      { ref:'Luke 24; Acts 1',   topic:'Ascension and the great commission' },
+    ]
+  },
+  {
+    title: 'The Covenants of God',
+    duration: '7 Days',
+    desc: 'Trace the single thread of God\'s covenant faithfulness from Eden to the New Covenant in Christ\'s blood.',
+    days: [
+      { ref:'Genesis 1–3',       topic:'Creation covenant: God\'s design and the fall' },
+      { ref:'Genesis 6–9',       topic:'Noahic covenant: preservation and promise' },
+      { ref:'Genesis 12; 15; 17',topic:'Abrahamic covenant: land, seed, blessing' },
+      { ref:'Exodus 19–20; 24',  topic:'Mosaic covenant: law and mediation' },
+      { ref:'2 Samuel 7',        topic:'Davidic covenant: the eternal kingdom' },
+      { ref:'Jeremiah 31; Hebrews 8–9', topic:'New Covenant: the law written on hearts' },
+      { ref:'Luke 22; Revelation 21–22', topic:'Covenant fulfilled: the marriage supper of the Lamb' },
+    ]
+  },
+  {
+    title: 'Paul\'s Letters',
+    duration: '7 Days',
+    desc: 'A week through the heart of Paul\'s theology — grace, justification, the church, and the Christian life.',
+    days: [
+      { ref:'Romans 1–5',        topic:'The gospel: all have sinned; justification by faith' },
+      { ref:'Romans 6–8',        topic:'Death to sin; life in the Spirit' },
+      { ref:'1 Corinthians 13; 15', topic:'Love and the resurrection' },
+      { ref:'Galatians 1–3; 5',  topic:'Freedom in Christ; faith not works' },
+      { ref:'Ephesians 1–3',     topic:'Every spiritual blessing; the church as Christ\'s body' },
+      { ref:'Philippians 1–4',   topic:'Joy, humility, and the peace of God' },
+      { ref:'Colossians 1–2; 1 Timothy 1', topic:'The supremacy of Christ; sound doctrine' },
+    ]
+  },
+  {
+    title: 'The Psalms',
+    duration: '7 Days',
+    desc: 'Seven days in Israel\'s hymnbook — the full range of human prayer, praise, lament, and wonder before God.',
+    days: [
+      { ref:'Psalms 1–2; 8',     topic:'The righteous life; the Messiah; God\'s majesty' },
+      { ref:'Psalms 22–23; 27',  topic:'Lament, trust, and the Good Shepherd' },
+      { ref:'Psalms 46–48; 51',  topic:'God as refuge; the city of God; confession' },
+      { ref:'Psalms 72–73',      topic:'The righteous king; the prosperity problem' },
+      { ref:'Psalms 90–91; 100', topic:'The eternity of God; abiding in his shadow; thanksgiving' },
+      { ref:'Psalms 110; 118–119', topic:'The Lord\'s Anointed; praise and God\'s Word' },
+      { ref:'Psalms 145–150',    topic:'The great hallelujah crescendo' },
+    ]
+  }
+];
+
+function renderReadingPlans() {
+  const grid = document.getElementById('plans-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  readingPlans.forEach((plan, pi) => {
+    const card = document.createElement('div');
+    card.className = 'plan-card';
+    card.innerHTML = `
+      <div class="plan-header" onclick="togglePlan(${pi})">
+        <div class="plan-header-left">
+          <div class="plan-duration">${plan.duration}</div>
+          <div class="plan-title">${plan.title}</div>
+          <div class="plan-desc">${plan.desc}</div>
+        </div>
+        <div class="plan-toggle">+</div>
+      </div>
+      <div class="plan-days">
+        ${plan.days.map((d, di) => `
+          <div class="plan-day">
+            <div class="plan-day-num">${di + 1}</div>
+            <div>
+              <div class="plan-day-ref">${d.ref}</div>
+              <div class="plan-day-topic">${d.topic}</div>
+            </div>
+          </div>`).join('')}
+        <button class="plan-print-btn" onclick="printPlan(${pi})">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Print this plan
+        </button>
+      </div>`;
+    card.dataset.planIdx = pi;
+    grid.appendChild(card);
+  });
+
+  const planObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  grid.querySelectorAll('.plan-card').forEach(c => planObserver.observe(c));
+}
+
+function togglePlan(idx) {
+  const cards = document.querySelectorAll('.plan-card');
+  cards.forEach((c, i) => {
+    if (parseInt(c.dataset.planIdx) === idx) c.classList.toggle('expanded');
+  });
+}
+
+function printPlan(idx) {
+  const plan = readingPlans[idx];
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${plan.title}</title>
+    <style>
+      body { font-family: Georgia, serif; max-width: 560px; margin: 40px auto; color: #111; }
+      h1 { font-size: 1.6rem; margin-bottom: 4px; }
+      p { color: #555; font-style: italic; margin-bottom: 24px; }
+      .day { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #eee; }
+      .num { width: 24px; height: 24px; border-radius: 50%; background: #EFF6FF; color: #2563EB;
+             font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+             flex-shrink: 0; font-family: sans-serif; margin-top: 2px; }
+      .ref { font-size: .9rem; font-weight: 700; }
+      .topic { font-size: .8rem; color: #666; font-style: italic; }
+      .footer { margin-top: 24px; font-size: .75rem; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 12px; }
+    </style></head><body>
+    <h1>${plan.title}</h1>
+    <p>${plan.duration} · ${plan.desc}</p>
+    ${plan.days.map((d, i) => `<div class="day"><div class="num">${i+1}</div><div><div class="ref">${d.ref}</div><div class="topic">${d.topic}</div></div></div>`).join('')}
+    <div class="footer">The Grand Story of Scripture · FLCC</div>
+    </body></html>`);
+  w.document.close();
+  w.print();
+}
+
+renderReadingPlans();
 
 </script>
 
