@@ -1560,6 +1560,72 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
 .panel-bookmark-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 .panel-bookmark-btn.bookmarked { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
 
+/* ── PHASE 11: PARABLES OF JESUS ── */
+#parables-section { background: var(--bg2); }
+.parables-filter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.parable-filter-btn { padding: .38rem .85rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text2); font-size: .81rem; cursor: pointer; transition: all .2s; }
+.parable-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.parable-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.parables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.1rem; }
+.parable-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.15rem; cursor: pointer; transition: box-shadow .2s, transform .2s; }
+.parable-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.parable-card.open { box-shadow: var(--shadow); }
+.parable-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin-bottom: .5rem; }
+.parable-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--text); }
+.parable-gospels { display: flex; gap: .3rem; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.parable-gospel-chip { font-size: .68rem; padding: .15rem .45rem; border-radius: 99px; background: var(--accent-light); color: var(--accent); font-weight: 700; }
+.parable-cat { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); margin-bottom: .45rem; }
+.parable-ref { font-size: .77rem; font-weight: 600; color: var(--text2); margin-bottom: .5rem; }
+.parable-truth { font-size: .87rem; color: var(--text2); line-height: 1.55; }
+.parable-extra { display: none; margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--border); }
+.parable-card.open .parable-extra { display: block; }
+.parable-extra-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-bottom: .3rem; }
+.parable-application { font-size: .86rem; color: var(--text); line-height: 1.6; font-family: 'Lora', serif; font-style: italic; }
+.parable-hint { font-size: .73rem; color: var(--text2); font-style: italic; margin-top: .6rem; }
+.parable-card.open .parable-hint { display: none; }
+
+/* ── PHASE 11: MIRACLES OF JESUS ── */
+#miracles-section { background: var(--bg); }
+.miracles-filter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.miracle-filter-btn { padding: .38rem .85rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--text2); font-size: .81rem; cursor: pointer; transition: all .2s; }
+.miracle-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.miracle-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.miracles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.1rem; }
+.miracle-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.15rem; }
+.miracle-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; margin-bottom: .4rem; }
+.miracle-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--text); flex: 1; }
+.miracle-cat-badge { font-size: .68rem; padding: .2rem .5rem; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+.miracle-cat-healing { background: #d1fae5; color: #065f46; }
+.miracle-cat-nature { background: #dbeafe; color: #1e40af; }
+.miracle-cat-exorcism { background: #ede9fe; color: #5b21b6; }
+.miracle-cat-resurrection { background: var(--gold-light); color: var(--gold); }
+.miracle-ref { font-size: .77rem; font-weight: 600; color: var(--accent); margin-bottom: .5rem; }
+.miracle-desc { font-size: .86rem; color: var(--text2); line-height: 1.55; margin-bottom: .6rem; }
+.miracle-significance { font-size: .83rem; color: var(--text); line-height: 1.55; padding-top: .6rem; border-top: 1px solid var(--border); font-style: italic; }
+
+/* ── PHASE 11: CREEDS & CONFESSIONS ── */
+#creeds-section { background: var(--bg2); }
+.creeds-intro { max-width: 720px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
+.creeds-list { display: flex; flex-direction: column; gap: 1rem; max-width: 860px; margin: 0 auto; }
+.creed-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.creed-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+.creed-header:hover { background: var(--bg2); }
+.creed-year { font-size: .72rem; font-weight: 700; color: var(--accent); background: var(--accent-light); padding: .2rem .55rem; border-radius: 99px; white-space: nowrap; }
+.creed-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--text); flex: 1; }
+.creed-origin { font-size: .78rem; color: var(--text2); white-space: nowrap; }
+.creed-toggle { font-size: .9rem; color: var(--text2); transition: transform .2s; flex-shrink: 0; }
+.creed-card.open .creed-toggle { transform: rotate(180deg); }
+.creed-body { display: none; padding: 0 1.25rem 1.5rem; border-top: 1px solid var(--border); }
+.creed-card.open .creed-body { display: block; }
+.creed-context { font-size: .88rem; color: var(--text2); line-height: 1.65; margin: 1rem 0; }
+.creed-text-label { font-size: .73rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text2); margin-bottom: .6rem; }
+.creed-text { font-family: 'Lora', serif; font-size: .92rem; color: var(--text); line-height: 1.85; background: var(--bg2); border-left: 3px solid var(--accent-mid); padding: 1rem 1.25rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; white-space: pre-wrap; }
+.creed-affirmations { margin-top: 1rem; }
+.creed-affirm-label { font-size: .73rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--gold); margin-bottom: .5rem; }
+.creed-affirm-list { display: flex; flex-direction: column; gap: .35rem; }
+.creed-affirm-item { display: flex; gap: .6rem; font-size: .85rem; color: var(--text); line-height: 1.5; }
+.creed-affirm-dot { color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: .1rem; }
+
 /* ── PHASE 10: KEY DOCTRINES ── */
 #doctrines-section { background: var(--bg); }
 .doctrines-intro { max-width: 720px; margin: 0 auto 2rem; text-align: center; color: var(--text2); font-size: .97rem; line-height: 1.6; }
@@ -2664,6 +2730,9 @@ h1, h2, h3 { letter-spacing: -.02em; line-height: 1.2; }
     <a href="#doctrines-section" class="tab-item">Doctrines</a>
     <a href="#names-section" class="tab-item">Names of God</a>
     <a href="#church-cal-section" class="tab-item">Church Calendar</a>
+    <a href="#parables-section" class="tab-item">Parables</a>
+    <a href="#miracles-section" class="tab-item">Miracles</a>
+    <a href="#creeds-section" class="tab-item">Creeds</a>
   </div>
 </nav>
 
@@ -5034,6 +5103,337 @@ function printPlan(idx) {
 
 renderReadingPlans();
 
+// ── PHASE 11: PARABLES OF JESUS ────────────────────────────────────
+const parablesData = [
+  { name:'The Sower', cat:'Kingdom', gospels:['Matt','Mark','Luke'], ref:'Matthew 13:3–23', truth:'How people receive the Word of God determines whether it takes root and bears lasting fruit in their lives.', application:'Examine what kind of soil your heart is. Are you allowing God\'s Word to take deep root, or is it being choked by the cares of this world and the deceitfulness of riches?' },
+  { name:'The Wheat and Tares', cat:'Kingdom', gospels:['Matt'], ref:'Matthew 13:24–30', truth:'The church in this age contains genuine believers alongside counterfeit ones; God alone will make the final separation at the last judgment.', application:'Do not be surprised by hypocrisy in the church. God is patient; judgment belongs to him. Pursue authenticity in your own faith rather than policing others.' },
+  { name:'The Mustard Seed', cat:'Kingdom', gospels:['Matt','Mark','Luke'], ref:'Matthew 13:31–32', truth:'The kingdom of God begins small and inconspicuous but grows into something vast enough to shelter many — far beyond what its beginnings would suggest.', application:'Do not despise small beginnings. A faithful word, a quiet prayer, a small act of service — these are seeds of something the Lord can grow beyond imagination.' },
+  { name:'The Leaven', cat:'Kingdom', gospels:['Matt','Luke'], ref:'Matthew 13:33', truth:'The kingdom of God works quietly and pervasively from within, transforming everything it touches, until the whole is leavened.', application:'The gospel transforms from the inside out. Trust God\'s hidden work in your life and in society, even when change seems slow or invisible.' },
+  { name:'The Hidden Treasure', cat:'Kingdom', gospels:['Matt'], ref:'Matthew 13:44', truth:'The kingdom of heaven is worth giving up everything to obtain — its value infinitely surpasses all other goods combined.', application:'What are you holding onto that competes with wholehearted commitment to Christ? The joy of the man who found the treasure made his sacrifice feel like gain.' },
+  { name:'The Pearl of Great Price', cat:'Kingdom', gospels:['Matt'], ref:'Matthew 13:45–46', truth:'When a person discovers the surpassing worth of the kingdom, the only reasonable response is to surrender everything else to secure it.', application:'Have you truly seen the worth of Christ? Genuine faith produces a reordering of all priorities — Christ becomes the supreme treasure, not merely an addition to life.' },
+  { name:'The Dragnet', cat:'Kingdom', gospels:['Matt'], ref:'Matthew 13:47–50', truth:'At the end of the age, angels will separate the wicked from the righteous — a sobering reminder that the gospel call goes to all, but not all who hear are truly saved.', application:'The certainty of final judgment should make us urgent in evangelism and honest in self-examination. The net gathers all; the sorting is still to come.' },
+  { name:'The Growing Seed', cat:'Kingdom', gospels:['Mark'], ref:'Mark 4:26–29', truth:'The kingdom grows by God\'s power according to its own inner life — the farmer\'s role is to sow and reap, but the growth is mysterious and divine.', application:'Our work is to faithfully sow the Word and trust God for the harvest. We cannot manufacture spiritual growth; we can only participate in what God is doing.' },
+  { name:'The Ten Virgins', cat:'Kingdom', gospels:['Matt'], ref:'Matthew 25:1–13', truth:'Preparedness for Christ\'s return requires an ongoing, personal relationship with him — it cannot be borrowed from others or produced at the last moment.', application:'Are you keeping your lamp full? Spiritual readiness is maintained daily through prayer, the Word, and fellowship — it cannot be stored up and drawn on in a moment of crisis.' },
+  { name:'The Talents', cat:'Kingdom', gospels:['Matt','Luke'], ref:'Matthew 25:14–30', truth:'Every believer is accountable to God for how they use the gifts, abilities, and opportunities he has entrusted to them.', application:'What has God given you — time, gifts, resources, relationships, influence? Faithful stewardship means using these actively for his kingdom, not burying them in fear or indifference.' },
+  { name:'The Prodigal Son', cat:'Grace', gospels:['Luke'], ref:'Luke 15:11–32', truth:'God the Father runs to meet repentant sinners with extravagant grace, restoring them to full sonship — while warning against the elder-brother spirit of self-righteous resentment.', application:'Have you experienced the Father\'s running embrace? And do you find yourself resenting the grace he shows to others whose sins seem worse than yours?' },
+  { name:'The Lost Sheep', cat:'Grace', gospels:['Matt','Luke'], ref:'Luke 15:3–7', truth:'God rejoices over the recovery of one lost sinner with a joy that exceeds even the joy over the many who are already found.', application:'You are not too lost for the Shepherd to seek. And each person around you who does not know Christ is worth the leaving of the ninety-nine to find.' },
+  { name:'The Lost Coin', cat:'Grace', gospels:['Luke'], ref:'Luke 15:8–10', truth:'God actively and persistently seeks the lost with the same urgency as a woman who lights a lamp and sweeps every corner for a precious missing coin.', application:'The joy in heaven over one sinner who repents exceeds any earthly celebration. Does that heavenly joy shape how we feel about the salvation of the lost around us?' },
+  { name:'The Unmerciful Servant', cat:'Grace', gospels:['Matt'], ref:'Matthew 18:23–35', truth:'Those who have been forgiven an immeasurable debt by God are called to extend that same forgiveness to others — failure to do so reveals that God\'s grace has not truly transformed the heart.', application:'The debt God has forgiven you is infinitely greater than any wrong another person has done to you. Unforgiveness is a theological contradiction for those who have experienced the gospel.' },
+  { name:'The Pharisee and Tax Collector', cat:'Grace', gospels:['Luke'], ref:'Luke 18:9–14', truth:'God justifies the one who comes in humble dependence and honest confession, not the one who presents a record of achievements as the basis for acceptance.', application:'The prayer that God hears is not impressive — it is honest. "God, be merciful to me, a sinner" remains the most theologically accurate prayer anyone can pray.' },
+  { name:'The Two Debtors', cat:'Grace', gospels:['Luke'], ref:'Luke 7:41–43', truth:'The depth of gratitude a person shows to God is in direct proportion to how great a debt of sin they know they have been forgiven.', application:'If your love for Christ is lukewarm, perhaps you have not yet grasped how much you have been forgiven. Go deeper into the gospel and gratitude will follow.' },
+  { name:'The Good Samaritan', cat:'Discipleship', gospels:['Luke'], ref:'Luke 10:25–37', truth:'Loving your neighbor means showing costly, inconvenient mercy to any person in need you encounter — without regard for ethnicity, social distance, or personal cost.', application:'Who is the neighbor in front of you right now? The parable moves from the question "Who is my neighbor?" to "Which of these was a neighbor?" — a call to active love, not definition.' },
+  { name:'The Two Sons', cat:'Discipleship', gospels:['Matt'], ref:'Matthew 21:28–32', truth:'What matters to God is not what we say we will do but what we actually do — and repentance that leads to obedience is always more honored than religious profession without fruit.', application:'Which son are you? Have you said yes to God and done nothing? Or have you resisted and then repented? God is more interested in what you do than what you say.' },
+  { name:'The Wicked Tenants', cat:'Discipleship', gospels:['Matt','Mark','Luke'], ref:'Matthew 21:33–46', truth:'Israel\'s rejection of God\'s messengers, and ultimately his Son, would result in judgment and the transfer of kingdom privileges to a people bearing its fruit.', application:'The vineyard is the Lord\'s; we are stewards, not owners. Do we honor the Son he has sent, or do we try to claim his inheritance for ourselves?' },
+  { name:'The Wedding Banquet', cat:'Discipleship', gospels:['Matt'], ref:'Matthew 22:1–14', truth:'God\'s gracious invitation to the kingdom feast is rejected by those who feel entitled to it, so he opens the invitation to all — but still requires the garment of righteousness.', application:'Have you accepted the invitation? And are you wearing the wedding garment — not your own righteousness but the righteousness of Christ imputed to you by faith?' },
+  { name:'The Great Banquet', cat:'Discipleship', gospels:['Luke'], ref:'Luke 14:15–24', truth:'Excuses rooted in worldly priorities — possessions, work, relationships — cause many to miss the kingdom feast to which they were invited, while the unlikely and outcast enter in.', application:'What excuses do you give for incomplete surrender to Christ? The fields, the oxen, the spouse — all good things, but none worth missing the feast.' },
+  { name:'The Wise and Foolish Builders', cat:'Discipleship', gospels:['Matt','Luke'], ref:'Matthew 7:24–27', truth:'Hearing the words of Jesus is worthless without obedience — only those who build their lives on acting on his teaching will stand when the storms of life and judgment come.', application:'The storms will come — they come for both builders. The question is what your life is built on. Hearing without doing is self-deception; obedience is the test of genuine faith.' },
+  { name:'The Persistent Widow', cat:'Prayer', gospels:['Luke'], ref:'Luke 18:1–8', truth:'Believers should pray persistently and not lose heart, trusting that God, unlike the unjust judge, will give justice to his elect who cry out to him day and night.', application:'Are you persevering in prayer for something you\'ve been waiting on for a long time? The parable exists to encourage you: do not give up. God hears and God will act.' },
+  { name:'The Friend at Midnight', cat:'Prayer', gospels:['Luke'], ref:'Luke 11:5–8', truth:'Bold, persistent asking in prayer is not inappropriate — God honors the boldness of those who come to him with urgent need.', application:'Ask boldly. The shamelessness of the man at midnight is presented as a model, not a rebuke. Bring your needs to God with confident persistence.' },
+  { name:'The Rich Fool', cat:'Stewardship', gospels:['Luke'], ref:'Luke 12:16–21', truth:'Building wealth for one\'s own security while being spiritually impoverished toward God is the greatest possible foolishness in light of death and eternity.', application:'What are you building toward? The rich man\'s plans were not wrong in themselves — but they had no room for God, others, or eternity. "So is the one who lays up treasure for himself and is not rich toward God."' },
+  { name:'The Dishonest Manager', cat:'Stewardship', gospels:['Luke'], ref:'Luke 16:1–13', truth:'Believers should use worldly wealth with shrewd intentionality — investing it in eternal relationships and kingdom purposes — knowing they are managers, not owners.', application:'Are you using money to make eternal friends or temporary ones? This is the most challenging parable — Jesus commends shrewdness in using resources for things that outlast this life.' },
+  { name:'The Rich Man and Lazarus', cat:'Stewardship', gospels:['Luke'], ref:'Luke 16:19–31', truth:'Indifference to the poor while living in luxury carries eternal consequences — and no miraculous sign can persuade those who refuse to heed Moses and the Prophets.', application:'The reversal is coming. How we treat the vulnerable and poor around us is not merely a social issue but a spiritual one with eternal weight.' },
+  { name:'The Workers in the Vineyard', cat:'Stewardship', gospels:['Matt'], ref:'Matthew 20:1–16', truth:'God\'s grace cannot be calculated by human standards of fairness — he gives generously to latecomers, and the grace shown to others does not diminish what he has given you.', application:'Are you resentful when God blesses someone who came to faith later than you, or whose obedience record is shorter? The parable exposes the subtle legalism of the heart.' },
+  { name:'The Sheep and the Goats', cat:'Judgment', gospels:['Matt'], ref:'Matthew 25:31–46', truth:'At the final judgment, Christ will separate humanity based on whether they showed genuine love to "the least of these" — which he identifies with himself.', application:'The judgment reveals what was already true of the heart. Genuine faith in Christ produces love for the vulnerable — not as a way to earn salvation but as its inevitable fruit.' },
+  { name:'The Fig Tree', cat:'Judgment', gospels:['Matt','Mark','Luke'], ref:'Matthew 24:32–35', truth:'Just as a budding fig tree signals summer, the signs Jesus described signal the nearness of the end — his words are certain and will not pass away.', application:'Watch for the signs and live with readiness. The uncertainty is about timing, not about the certainty of the end. Live in light of the Lord\'s return.' },
+  { name:'The Unclean Spirit', cat:'Warning', gospels:['Matt','Luke'], ref:'Matthew 12:43–45', truth:'Reformation without regeneration — emptying oneself of vice without being filled with the Spirit — leaves a person more vulnerable than before.', application:'Moral self-improvement without Christ is not neutral — it can end in greater spiritual danger. Only the indwelling Spirit can guard the house that has been swept clean.' },
+  { name:'New Wine, New Wineskins', cat:'Kingdom', gospels:['Matt','Mark','Luke'], ref:'Matthew 9:16–17', truth:'The new covenant Jesus brings cannot be confined within the forms of the old — it requires new hearts and new structures appropriate to the age of the Spirit.', application:'Are we trying to pour the new wine of the Spirit into old religious forms? The gospel cannot be domesticated or contained in mere religious habit.' },
+  { name:'Tower Builder & King at War', cat:'Discipleship', gospels:['Luke'], ref:'Luke 14:28–33', truth:'Following Christ requires counting the full cost — the call to discipleship is a call to total surrender, not a casual or partial commitment.', application:'Have you counted the cost? Jesus does not ask for less than everything. Those who begin to follow without counting the cost may build only halfway and abandon the project.' }
+];
+
+let parablesActiveCat = 'All';
+
+function renderParables(cat) {
+  parablesActiveCat = cat || 'All';
+  const cats = ['All', ...new Set(parablesData.map(p => p.cat))];
+  document.getElementById('parables-filter').innerHTML = cats.map(c =>
+    `<button class="parable-filter-btn${c===parablesActiveCat?' active':''}" onclick="renderParables('${c}')">${c}</button>`
+  ).join('');
+  const filtered = parablesActiveCat === 'All' ? parablesData : parablesData.filter(p => p.cat === parablesActiveCat);
+  document.getElementById('parables-grid').innerHTML = filtered.map(p => `
+    <div class="parable-card" onclick="this.classList.toggle('open')">
+      <div class="parable-top">
+        <div class="parable-name">${p.name}</div>
+        <div class="parable-gospels">${p.gospels.map(g=>`<span class="parable-gospel-chip">${g}</span>`).join('')}</div>
+      </div>
+      <div class="parable-cat">${p.cat}</div>
+      <div class="parable-ref">${p.ref}</div>
+      <div class="parable-truth">${p.truth}</div>
+      <div class="parable-hint">Tap to see application</div>
+      <div class="parable-extra">
+        <div class="parable-extra-label">Application</div>
+        <div class="parable-application">${p.application}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── PHASE 11: MIRACLES OF JESUS ────────────────────────────────────
+const miraclesData = [
+  { name:'Water Turned to Wine', cat:'Nature', ref:'John 2:1–11', desc:'At the wedding in Cana, Jesus transformed six stone jars of water — 120–180 gallons — into fine wine, revealing his glory. The first of seven signs in John\'s Gospel.', significance:'Reveals Jesus\' authority over creation and foreshadows the messianic banquet. The "better wine kept until now" points to the superior blessings of the new covenant.' },
+  { name:'Healing of the Nobleman\'s Son', cat:'Healing', ref:'John 4:46–54', desc:'An official from Capernaum begged Jesus to heal his dying son. Jesus spoke the word from a distance; the son was healed at that exact hour, the second sign in John.', significance:'Demonstrates that Jesus\' healing power is not limited by physical proximity — his word alone is sufficient. It rewarded a faith that acted on his word before seeing the result.' },
+  { name:'Healing at the Pool of Bethesda', cat:'Healing', ref:'John 5:1–9', desc:'On the Sabbath, Jesus healed a man who had been an invalid for 38 years, simply commanding him to take up his mat and walk. The man did not even know who healed him.', significance:'The healing on the Sabbath provoked controversy and led Jesus to declare his divine authority — "My Father is working until now, and I am working" (John 5:17).' },
+  { name:'Man with Unclean Spirit (Capernaum)', cat:'Exorcism', ref:'Mark 1:23–26', desc:'In the Capernaum synagogue, a man with an unclean spirit cried out. Jesus rebuked the spirit — "Be silent and come out of him!" — and it left with a convulsion.', significance:'The first recorded miracle in Mark\'s Gospel. The demons recognize Jesus\' divine identity immediately. His word commands supernatural obedience — no rituals, no formulas.' },
+  { name:'Healing of Peter\'s Mother-in-Law', cat:'Healing', ref:'Matthew 8:14–15', desc:'Jesus visited Peter\'s house and found his mother-in-law sick with a fever. He took her hand and the fever left immediately; she got up and began to serve.', significance:'A simple, quiet miracle showing Jesus\' compassion for individuals and families, not only crowds. The immediate restoration to service reflects the gospel pattern of healing unto mission.' },
+  { name:'The Great Catch of Fish', cat:'Nature', ref:'Luke 5:4–11', desc:'After a fruitless night of fishing, Jesus told Simon to cast the nets into deep water. The catch was so enormous the nets began to break and two boats began to sink.', significance:'Peter\'s response — "Depart from me, for I am a sinful man, O Lord" — shows the proper response to a genuine encounter with the holy: awareness of one\'s own unworthiness.' },
+  { name:'Cleansing of the Leper', cat:'Healing', ref:'Matthew 8:2–4', desc:'A man with leprosy knelt before Jesus: "If you will, you can make me clean." Jesus touched him — an act of ritual defilement — and said, "I will; be clean." He was cured immediately.', significance:'Jesus\' touch reversed the expected transfer of uncleanness: instead of becoming unclean, the leper became clean. Christ absorbs our defilement rather than being contaminated by it.' },
+  { name:'Healing of the Centurion\'s Servant', cat:'Healing', ref:'Matthew 8:5–13', desc:'A Roman centurion asked Jesus to heal his paralyzed servant, saying "only say the word." Jesus marveled at his faith, declared him greater than any in Israel, and healed the servant from a distance.', significance:'Jesus commended Gentile faith as superior and announced that many from east and west will recline at table in the kingdom — an early hint that the gospel is for all nations.' },
+  { name:'Raising of the Widow\'s Son at Nain', cat:'Resurrection', ref:'Luke 7:11–17', desc:'As Jesus approached the town of Nain, a funeral procession emerged. He had compassion on the widow, touched the bier, and commanded, "Young man, I say to you, arise." The dead man sat up.', significance:'Jesus acted with unsolicited compassion — no one asked him. The crowd recognized the presence of a great prophet and the visitation of God. It foreshadows the resurrection Christ will bring to all who trust him.' },
+  { name:'Healing the Paralyzed Man (Through the Roof)', cat:'Healing', ref:'Mark 2:3–12', desc:'Four men lowered their paralyzed friend through the roof to reach Jesus. He forgave the man\'s sins first — provoking the scribes — then healed him to demonstrate his authority to forgive.', significance:'The healing was proof of the greater miracle: forgiveness of sins. Jesus performed the visible to demonstrate the invisible, and revealed himself as the Son of Man with authority over both.' },
+  { name:'Healing the Man with a Withered Hand', cat:'Healing', ref:'Mark 3:1–5', desc:'On the Sabbath in the synagogue, Jesus healed a man\'s withered hand in full view of the Pharisees who were watching to accuse him. He was grieved at their hardness of heart.', significance:'Christ showed that doing good on the Sabbath is lawful — in fact required. The Pharisees\' response of murderous plotting reveals that the real Sabbath-breakers were those whose hearts were unmerciful.' },
+  { name:'Calming the Storm', cat:'Nature', ref:'Mark 4:35–41', desc:'In a violent squall on the Sea of Galilee, the terrified disciples woke Jesus, who was sleeping. He rebuked the wind and waves — "Peace! Be still!" — and there was a great calm.', significance:'His authority over the natural world — creation obeying his word — provoked awe: "Who then is this, that even the wind and the sea obey him?" Only the Creator commands creation.' },
+  { name:'Healing of the Gerasene Demoniac', cat:'Exorcism', ref:'Mark 5:1–20', desc:'A man possessed by a "Legion" of demons — unable to be restrained by chains — fell before Jesus. Jesus cast out the demons into a herd of pigs that rushed into the sea. The man was found clothed and in his right mind.', significance:'No power of evil, however numerous or entrenched, can resist the authority of Jesus. The former demoniac became a missionary to the Decapolis — the greatest transformation.' },
+  { name:'Healing the Woman with a Hemorrhage', cat:'Healing', ref:'Mark 5:25–34', desc:'A woman who had suffered bleeding for twelve years — spending everything on physicians with no improvement — touched the fringe of Jesus\' garment and was immediately healed.', significance:'Her faith was real despite its timidity. Jesus\' response ("Who touched me?") was not to expose her but to affirm her publicly — "Daughter, your faith has made you well."' },
+  { name:'Raising of Jairus\'s Daughter', cat:'Resurrection', ref:'Mark 5:22–43', desc:'While Jesus was on the way to heal Jairus\'s daughter, she died. Jesus took Peter, James, and John to the house, took the girl\'s hand, and said, "Little girl, I say to you, arise." She got up at once.', significance:'Christ has authority over death itself. His words to the mourners — "She is not dead but sleeping" — were not denial but the perspective of the one who holds the power of resurrection.' },
+  { name:'Feeding of the Five Thousand', cat:'Nature', ref:'John 6:1–14', desc:'With five barley loaves and two fish, Jesus fed five thousand men (plus women and children), with twelve baskets of fragments left over. The only miracle recorded in all four Gospels.', significance:'Jesus is the Bread of Life who satisfies the deepest hunger. The feeding points to the Eucharist and the messianic banquet. God provides abundantly from what seems impossibly small.' },
+  { name:'Walking on Water', cat:'Nature', ref:'Matthew 14:22–33', desc:'Jesus walked on the Sea of Galilee at night during a storm, coming to his disciples in the boat. When Peter stepped out in faith, he began to sink; Jesus caught him — "O you of little faith."', significance:'Jesus\' declaration "I AM" (the divine name) confirms his identity. He has authority over water, chaos, and fear. He catches those who sink when their faith falters — and never lets go.' },
+  { name:'Healing the Syrophoenician\'s Daughter', cat:'Exorcism', ref:'Matthew 15:21–28', desc:'A Canaanite woman persistently begged Jesus to cast a demon from her daughter. After testing her faith, Jesus commended her great faith and her daughter was healed that very hour.', significance:'Jesus extended mercy beyond Israel to a Gentile woman whose tenacious faith contrasted with the unbelief of many in Israel. Her persistence is a model of believing prayer that will not be put off.' },
+  { name:'Feeding of the Four Thousand', cat:'Nature', ref:'Matthew 15:32–39', desc:'Jesus fed four thousand men with seven loaves and a few small fish, with seven baskets of fragments remaining. This took place in Gentile territory.', significance:'A parallel to the feeding of the five thousand, but in Gentile territory — suggesting the scope of Christ\'s provision extends beyond Israel. The Bread of Life feeds all who come to him.' },
+  { name:'Healing of the Man Born Blind', cat:'Healing', ref:'John 9:1–41', desc:'Jesus mixed clay and put it on a blind man\'s eyes and told him to wash in the Pool of Siloam. He came back seeing, triggering a dramatic confrontation with the Pharisees.', significance:'The sixth sign in John, it demonstrates that Jesus is "the Light of the World." The man born blind ends up seeing both physically and spiritually, while the sighted Pharisees remain spiritually blind.' },
+  { name:'Raising of Lazarus', cat:'Resurrection', ref:'John 11:1–45', desc:'Four days after Lazarus\'s burial, Jesus came to the tomb, wept with the mourners, prayed to the Father, and cried, "Lazarus, come out!" The dead man came out, still wrapped in burial cloths.', significance:'The seventh and climactic sign in John, proving Jesus\' claim: "I am the resurrection and the life." It directly precipitated the plot to kill him — the act that gave life led to his death.' },
+  { name:'Healing of the Ten Lepers', cat:'Healing', ref:'Luke 17:11–19', desc:'Jesus healed ten lepers as they went to show themselves to the priest. Only one — a Samaritan — returned to give thanks. Jesus asked, "Were not ten cleansed? Where are the nine?"', significance:'The miracle raises the question of gratitude: of those who receive grace, how many return to worship and give thanks? The outsider (Samaritan) models the response God desires.' },
+  { name:'Healing of Blind Bartimaeus', cat:'Healing', ref:'Mark 10:46–52', desc:'Blind Bartimaeus cried out repeatedly, "Jesus, Son of David, have mercy on me!" Despite being rebuked by the crowd, Jesus called him and restored his sight. He immediately followed Jesus on the way.', significance:'Bartimaeus saw more clearly than the sighted crowd — he recognized Jesus as the messianic Son of David. His cry — "Son of David, have mercy on me" — became a model prayer in Christian tradition (the Jesus Prayer).' },
+  { name:'Healing of Malchus\'s Ear', cat:'Healing', ref:'Luke 22:50–51', desc:'When a disciple cut off the ear of the high priest\'s servant at Jesus\' arrest, Jesus said, "No more of this!" and touched the man\'s ear and healed him.', significance:'Jesus\' final healing miracle — performed on an enemy who came to arrest him — demonstrates that his kingdom does not advance through violence and that he came to give life, not take it.' },
+  { name:'Boy with Evil Spirit', cat:'Exorcism', ref:'Mark 9:14–29', desc:'The disciples were unable to cast out a deaf and mute spirit from a boy. Jesus rebuked it and the boy was healed. He explained privately: "This kind cannot be driven out by anything but prayer."', significance:'The disciples\' failure revealed presumption — attempting spiritual warfare without prayer. Christ\'s success demonstrated his supreme authority over all demonic powers.' },
+  { name:'Second Miraculous Catch of Fish', cat:'Nature', ref:'John 21:1–14', desc:'After his resurrection, Jesus appeared to disciples fishing on the Sea of Galilee. At his word they cast the net and caught 153 large fish. John recognized him: "It is the Lord!"', significance:'The post-resurrection miracle mirrors the original call to discipleship (Luke 5), signaling recommissioning. The number 153 has fascinated interpreters; the abundance points to the harvest of souls.' },
+  { name:'The Resurrection of Jesus', cat:'Resurrection', ref:'Matthew 28; John 20', desc:'On the third day, Jesus rose bodily from the tomb — defeating death, vindicating his claims, and appearing to Mary Magdalene, Peter, the twelve, five hundred disciples, and Paul.', significance:'The miracle that authenticates all others. If Christ has been raised, everything he said is true and everything he promised is guaranteed. Paul: "If Christ has not been raised, your faith is futile" (1 Cor 15:17).' }
+];
+
+let miraclesActiveCat = 'All';
+
+function renderMiracles(cat) {
+  miraclesActiveCat = cat || 'All';
+  const cats = ['All','Healing','Nature','Exorcism','Resurrection'];
+  const colorMap = { Healing:'miracle-cat-healing', Nature:'miracle-cat-nature', Exorcism:'miracle-cat-exorcism', Resurrection:'miracle-cat-resurrection' };
+  document.getElementById('miracles-filter').innerHTML = cats.map(c =>
+    `<button class="miracle-filter-btn${c===miraclesActiveCat?' active':''}" onclick="renderMiracles('${c}')">${c}</button>`
+  ).join('');
+  const filtered = miraclesActiveCat === 'All' ? miraclesData : miraclesData.filter(m => m.cat === miraclesActiveCat);
+  document.getElementById('miracles-grid').innerHTML = filtered.map(m => `
+    <div class="miracle-card">
+      <div class="miracle-card-top">
+        <div class="miracle-name">${m.name}</div>
+        <span class="miracle-cat-badge ${colorMap[m.cat]||''}">${m.cat}</span>
+      </div>
+      <div class="miracle-ref">${m.ref}</div>
+      <div class="miracle-desc">${m.desc}</div>
+      <div class="miracle-significance">${m.significance}</div>
+    </div>`).join('');
+}
+
+// ── PHASE 11: CREEDS & CONFESSIONS ────────────────────────────────────
+const creedsData = [
+  {
+    title: 'The Apostles\' Creed',
+    year: '~2nd Century',
+    origin: 'Western Church baptismal tradition',
+    context: 'The oldest and simplest of the ecumenical creeds, developed from baptismal confessions used in the early church in Rome. Not written by the apostles themselves, but summarizing apostolic teaching. Used in baptism and worship across virtually all Christian traditions for nearly two millennia.',
+    text: `I believe in God, the Father Almighty,
+  Creator of heaven and earth.
+
+I believe in Jesus Christ, his only Son, our Lord,
+  who was conceived by the Holy Spirit,
+  born of the Virgin Mary,
+  suffered under Pontius Pilate,
+  was crucified, died, and was buried.
+  He descended to the dead.
+  On the third day he rose again.
+  He ascended into heaven
+  and is seated at the right hand of the Father.
+  He will come to judge the living and the dead.
+
+I believe in the Holy Spirit,
+  the holy catholic church,
+  the communion of saints,
+  the forgiveness of sins,
+  the resurrection of the body,
+  and the life everlasting. Amen.`,
+    affirmations: ['The Trinity: Father, Son, and Holy Spirit — three distinct Persons, one faith', 'The Incarnation: Jesus is truly God\'s Son, conceived by the Spirit, born of a virgin', 'The Atonement: his suffering and death were historical, datable events under Pontius Pilate', 'The Resurrection: bodily, physical, on the third day — not spiritual or symbolic', 'The Ascension and future return for judgment', 'The church as the community of the saints and the reality of forgiveness']
+  },
+  {
+    title: 'The Nicene Creed',
+    year: '325 / 381 AD',
+    origin: 'Councils of Nicaea and Constantinople',
+    context: 'Formulated at the First Council of Nicaea (325 AD) to refute Arianism — the teaching that the Son was a created being, not eternal God. Expanded and finalized at the Council of Constantinople (381 AD). The most widely used creed in Christian history, confessed by Catholic, Orthodox, Anglican, Lutheran, Reformed, and many evangelical churches.',
+    text: `We believe in one God,
+  the Father almighty,
+  maker of heaven and earth,
+  of all things visible and invisible.
+
+And in one Lord Jesus Christ,
+  the only Son of God,
+  begotten from the Father before all ages,
+  God from God, Light from Light,
+  true God from true God,
+  begotten, not made;
+  of the same essence as the Father.
+  Through him all things were made.
+  For us and for our salvation
+    he came down from heaven;
+    he became incarnate by the Holy Spirit and the virgin Mary,
+    and was made human.
+    He was crucified for us under Pontius Pilate;
+    he suffered and was buried.
+    The third day he rose again, according to the Scriptures.
+    He ascended to heaven
+    and is seated at the right hand of the Father.
+    He will come again with glory
+    to judge the living and the dead.
+    His kingdom will never end.
+
+And we believe in the Holy Spirit,
+  the Lord, the giver of life.
+  He proceeds from the Father and the Son,
+  and with the Father and the Son is worshiped and glorified.
+  He spoke through the prophets.
+  We believe in one holy catholic and apostolic church.
+  We affirm one baptism for the forgiveness of sins.
+  We look forward to the resurrection of the dead,
+  and to life in the world to come. Amen.`,
+    affirmations: ['"Begotten, not made; of the same essence as the Father" — the direct refutation of Arianism', '"True God from true God" — Jesus is not a lesser or derivative deity but fully divine', '"Through him all things were made" — the Son is Creator, not creature', '"The Holy Spirit, the Lord, the giver of life" — the Spirit\'s full deity affirmed', '"One holy catholic and apostolic church" — the church\'s unity and continuity with the apostles']
+  },
+  {
+    title: 'The Chalcedonian Definition',
+    year: '451 AD',
+    origin: 'Council of Chalcedon',
+    context: 'Called to resolve the Nestorian controversy (was Christ two persons?) and the Eutychian controversy (were his two natures blended into one?). Chalcedon defined the orthodox doctrine of Christ\'s person: fully God and fully human, two natures united in one Person without confusion, change, division, or separation — the "four fences" that guard the mystery.',
+    text: `We confess that one and the same Christ, Lord,
+and only-begotten Son, is to be acknowledged in two natures,
+without confusion or change,
+without division or separation —
+
+the distinction of natures being in no way abolished
+because of the union, but rather
+the characteristic property of each nature being preserved,
+and concurring into one Person and one subsistence,
+not as if Christ were parted or divided into two persons,
+but one and the same Son and only-begotten God, Word, Lord Jesus Christ.`,
+    affirmations: ['"Without confusion or change" — refutes Eutychianism: the two natures are not blended into one', '"Without division or separation" — refutes Nestorianism: the two natures are not two persons', '"The characteristic property of each nature being preserved" — Jesus\' humanity is real humanity; his deity is real deity', '"Concurring into one Person" — one Christ, one Subject, one Lord', 'The mystery is affirmed and bounded, not explained away']
+  },
+  {
+    title: 'The Athanasian Creed',
+    year: '~5th Century',
+    origin: 'Western Church (attributed to Athanasius)',
+    context: 'The most detailed of the three ecumenical creeds, likely composed in southern Gaul in the late 5th century. It gives an extended account of both the Trinity and the Incarnation, insisting that the saving faith includes right understanding of both. Famous for its strong opening: "Whoever wishes to be saved must, above all things, hold the catholic faith."',
+    text: `Whoever wishes to be saved must, above all,
+hold the catholic faith.
+Whoever does not keep it whole and undefiled
+will without doubt perish eternally.
+
+Now this is the catholic faith:
+We worship one God in Trinity
+and the Trinity in Unity,
+  neither confusing the persons
+  nor dividing the substance.
+
+For the Father is one person, the Son is another,
+and the Holy Spirit is still another.
+But the deity of the Father, the Son,
+and the Holy Spirit is one — equal in glory,
+coeternal in majesty.
+
+Such as the Father is, such is the Son,
+and such is the Holy Spirit:
+  The Father is uncreated,
+  the Son is uncreated,
+  the Holy Spirit is uncreated...
+  The Father is almighty,
+  the Son is almighty,
+  the Holy Spirit is almighty —
+  and yet there are not three Almighties
+  but one Almighty.
+
+Furthermore, it is necessary to everlasting salvation
+that one also believe rightly the incarnation
+of our Lord Jesus Christ.
+For the right faith is that we believe and confess
+that our Lord Jesus Christ, the Son of God,
+is at the same time both God and man.`,
+    affirmations: ['Salvation is bound up with right doctrine about God — orthodoxy is not optional', 'The Trinity: three distinct Persons sharing one divine nature, substance, and glory', 'The Persons are co-equal and co-eternal — none is prior, greater, or derived', 'The Incarnation: Christ is complete God and complete man — neither mixture nor separation', 'Right faith about Christ\'s two natures is essential to saving faith']
+  },
+  {
+    title: 'Heidelberg Catechism — Question 1',
+    year: '1563 AD',
+    origin: 'Reformed Church, Heidelberg, Germany',
+    context: 'Commissioned by Elector Frederick III of the Palatinate and written primarily by Zacharias Ursinus and Caspar Olevianus. Structured in three parts: human misery, deliverance, and gratitude. Question 1 has been called "the most beautiful question and answer in all of Christian literature" — a masterwork of pastoral theology in a single exchange.',
+    text: `Question: What is your only comfort in life and in death?
+
+Answer: That I am not my own,
+but belong — body and soul,
+in life and in death —
+to my faithful Savior, Jesus Christ.
+
+He has fully paid for all my sins
+  with his precious blood,
+and has set me free
+  from the tyranny of the devil.
+
+He also watches over me in such a way
+  that not a hair can fall from my head
+  without the will of my Father in heaven;
+  in fact, all things must work together
+  for my salvation.
+
+Because I belong to him,
+Christ, by his Holy Spirit,
+also assures me of eternal life
+and makes me wholeheartedly willing
+  and ready from now on
+  to live for him.`,
+    affirmations: ['Comfort is not found in feelings but in belonging to a Person — Jesus Christ', 'Full payment for sins: propitiation, not partial or conditional', 'Freedom from the devil\'s tyranny — the spiritual dimension of redemption', 'Providence: not a hair falls without the Father\'s will', 'The Spirit\'s assurance and willingness to live for Christ — gratitude as the Christian life']
+  },
+  {
+    title: 'Westminster Shorter Catechism — Questions 1–4',
+    year: '1647 AD',
+    origin: 'Westminster Assembly, London',
+    context: 'Produced by the Westminster Assembly (1643–1649), a gathering of 121 Puritan divines called by the English Parliament to advise on the reformation of the Church of England. The Shorter Catechism was designed for the instruction of children. It remains one of the finest summaries of Reformed theology ever written, used in Presbyterian and Reformed churches worldwide.',
+    text: `Q1: What is the chief end of man?
+A: Man\'s chief end is to glorify God,
+   and to enjoy him forever.
+
+Q2: What rule has God given to direct us
+    how we may glorify and enjoy him?
+A: The Word of God, which is contained
+   in the Scriptures of the Old and New Testaments,
+   is the only rule to direct us how we may glorify
+   and enjoy him.
+
+Q3: What do the Scriptures principally teach?
+A: The Scriptures principally teach
+   what man is to believe concerning God,
+   and what duty God requires of man.
+
+Q4: What is God?
+A: God is a Spirit, infinite, eternal, and unchangeable,
+   in his being, wisdom, power, holiness, justice,
+   goodness, and truth.`,
+    affirmations: ['"Glorify God and enjoy him forever" — the end is not utility but worship and delight in God himself', 'Scripture alone as the rule for faith and life — sola Scriptura in catechetical form', 'Theology (what to believe) and ethics (what to do) are both derived from Scripture', 'God\'s nature: Spirit, infinite, eternal, unchangeable — the foundation of all other doctrines', '"Enjoy him forever" — Christianity is not mere duty but the pursuit of the supreme Good']
+  }
+];
+
+function renderCreeds() {
+  document.getElementById('creeds-list').innerHTML = creedsData.map((c, i) => `
+    <div class="creed-card${i===0?' open':''}">
+      <div class="creed-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="creed-year">${c.year}</span>
+        <span class="creed-title">${c.title}</span>
+        <span class="creed-origin">${c.origin}</span>
+        <span class="creed-toggle">&#9660;</span>
+      </div>
+      <div class="creed-body">
+        <div class="creed-context">${c.context}</div>
+        <div class="creed-text-label">Text</div>
+        <div class="creed-text">${c.text}</div>
+        <div class="creed-affirmations">
+          <div class="creed-affirm-label">Key Affirmations</div>
+          <div class="creed-affirm-list">${c.affirmations.map(a=>`<div class="creed-affirm-item"><span class="creed-affirm-dot">&#8226;</span><span>${a}</span></div>`).join('')}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+renderParables('All');
+renderMiracles('All');
+renderCreeds();
+
 // ── PHASE 10: KEY DOCTRINES ────────────────────────────────────
 const doctrinesData = [
   { cat:'Theology Proper', name:'The Trinity', def:'God eternally exists as one Being in three distinct Persons — Father, Son, and Holy Spirit — each fully God, co-equal and co-eternal, yet distinguishable in their relations and roles.', verses:['Matthew 28:19','2 Corinthians 13:14','John 1:1–2'], detail:'The doctrine of the Trinity is foundational to Christianity. Though the word "Trinity" does not appear in Scripture, the teaching is woven throughout: God is one (Deut 6:4), yet the Father, Son, and Holy Spirit are each called God, address one another, and are distinguished as Persons. This mystery exceeds human comprehension yet anchors every other doctrine.' },
@@ -6970,6 +7370,33 @@ renderPeople('all');
     <h2 class="section-title">Church Calendar 2026</h2>
     <p class="cal-intro">The liturgical calendar orders the year around the life of Christ, shaping Christian worship through seasons of preparation, celebration, and growth. The current season is highlighted.</p>
     <div class="cal-grid" id="cal-grid"></div>
+  </div>
+</section>
+
+<!-- PARABLES OF JESUS -->
+<section id="parables-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Parables of Jesus</h2>
+    <div class="parables-filter" id="parables-filter"></div>
+    <div class="parables-grid" id="parables-grid"></div>
+  </div>
+</section>
+
+<!-- MIRACLES OF JESUS -->
+<section id="miracles-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Miracles of Jesus</h2>
+    <div class="miracles-filter" id="miracles-filter"></div>
+    <div class="miracles-grid" id="miracles-grid"></div>
+  </div>
+</section>
+
+<!-- CREEDS & CONFESSIONS -->
+<section id="creeds-section" class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Creeds &amp; Confessions</h2>
+    <p class="creeds-intro">The great creeds and confessions are the church's careful summary of Scripture's teaching, forged in the heat of controversy to guard the faith delivered to the saints. They connect us to two thousand years of Christian witness.</p>
+    <div class="creeds-list" id="creeds-list"></div>
   </div>
 </section>
 
