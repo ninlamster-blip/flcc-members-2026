@@ -231,6 +231,7 @@
   }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .fade-in { animation: fadeIn 0.2s ease-out; }
 
   /* Channel buttons */
@@ -3429,13 +3430,21 @@ const EquipCoursesCtx = React.createContext(EQUIP_COURSES);
 const useEquipCourses = () => React.useContext(EquipCoursesCtx);
 
 function BibleTab() {
+  const [loaded, setLoaded] = React.useState(false);
   return (
-    <div style={{ height: 'calc(100vh - 128px)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,.08)' }}>
+    <div style={{ position: 'relative', height: 'calc(100vh - 128px)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,.08)', background: '#f5f4ef' }}>
+      {!loaded && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#6b7280' }}>
+          <div style={{ width: 40, height: 40, border: '3px solid #e5e7eb', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
+          <span style={{ fontSize: '0.875rem' }}>Loading The Grand Story of Scripture…</span>
+        </div>
+      )}
       <iframe
         src="./scripture-timeline.html"
         title="The Grand Story of Scripture"
-        style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+        style={{ width: '100%', height: '100%', border: 'none', display: 'block', opacity: loaded ? 1 : 0, transition: 'opacity .3s' }}
         allow="fullscreen"
+        onLoad={() => setLoaded(true)}
       />
     </div>
   );
