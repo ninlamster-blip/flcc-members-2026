@@ -4995,23 +4995,28 @@ function navigateResult(idx) {
   }, 100);
 }
 
-document.getElementById('search-input').addEventListener('input', e => doSearch(e.target.value));
-document.getElementById('search-input').addEventListener('keydown', e => {
-  const results = document.querySelectorAll('.search-result');
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    searchFocusIdx = Math.min(searchFocusIdx + 1, results.length - 1);
-    results.forEach((r, i) => r.classList.toggle('focused', i === searchFocusIdx));
-    results[searchFocusIdx]?.scrollIntoView({ block:'nearest' });
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    searchFocusIdx = Math.max(searchFocusIdx - 1, 0);
-    results.forEach((r, i) => r.classList.toggle('focused', i === searchFocusIdx));
-    results[searchFocusIdx]?.scrollIntoView({ block:'nearest' });
-  } else if (e.key === 'Enter') {
-    if (searchFocusIdx >= 0) navigateResult(searchFocusIdx);
-    else if (results.length > 0) navigateResult(0);
-  }
+// Search input is rendered after this script block, so attach listeners after DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function attachSearchListeners() {
+  const si = document.getElementById('search-input');
+  if (!si) return;
+  si.addEventListener('input', e => doSearch(e.target.value));
+  si.addEventListener('keydown', e => {
+    const results = document.querySelectorAll('.search-result');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      searchFocusIdx = Math.min(searchFocusIdx + 1, results.length - 1);
+      results.forEach((r, i) => r.classList.toggle('focused', i === searchFocusIdx));
+      results[searchFocusIdx]?.scrollIntoView({ block:'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      searchFocusIdx = Math.max(searchFocusIdx - 1, 0);
+      results.forEach((r, i) => r.classList.toggle('focused', i === searchFocusIdx));
+      results[searchFocusIdx]?.scrollIntoView({ block:'nearest' });
+    } else if (e.key === 'Enter') {
+      if (searchFocusIdx >= 0) navigateResult(searchFocusIdx);
+      else if (results.length > 0) navigateResult(0);
+    }
+  });
 });
 
 function openSearch() {
@@ -7697,6 +7702,53 @@ renderPeople('all');
 ['themes-section','people-section'].forEach(id => {
   const el = document.getElementById(id);
   if (el) sectionObserver.observe(el);
+});
+
+// All sections and overlays below this script block are rendered after DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function initLateSections() {
+  // Re-run every render/init that targets sections defined after the script block
+  renderWordStudies('All');
+  renderTribes();
+  initHighlights();
+  renderPsalms('All');
+  renderPromises('All');
+  renderGeography();
+  renderParables('All');
+  renderMiracles('All');
+  renderCreeds();
+  renderDoctrines('All');
+  renderNamesOfGod();
+  renderChurchCal();
+  initHarmony();
+  initSermonNotes();
+  initPlanBuilder();
+  renderCompareList();
+  renderCompareDisplay();
+  renderArchaeology();
+  initDailyVerse();
+  renderTypology();
+  renderCovenants();
+  renderQuizTabs();
+  renderQuizCard();
+  renderThemes();
+  renderPeople('all');
+
+  // Observe all late-defined sections for the active-tab indicator
+  [
+    'memory-section','covenant-section','quiz-section','daily-verse-section',
+    'typology-section','prayer-section','compare-section','archaeology-section',
+    'harmony-section','sermon-section','planbuilder-section','doctrines-section',
+    'names-section','church-cal-section','parables-section','miracles-section',
+    'creeds-section','psalms-section','promises-section','geography-section',
+    'word-studies-section','tribes-section','highlights-section'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && typeof sectionObserver !== 'undefined') sectionObserver.observe(el);
+  });
+
+  // Phase 14: update search placeholder after index is ready
+  const si = document.getElementById('search-input');
+  if (si) si.placeholder = 'Search events, books, people, Word Studies, Tribes, Psalms, Promises…';
 });
 
 </script>
