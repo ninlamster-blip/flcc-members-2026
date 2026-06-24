@@ -3430,18 +3430,22 @@ const EquipCoursesCtx = React.createContext(EQUIP_COURSES);
 const useEquipCourses = () => React.useContext(EquipCoursesCtx);
 
 function BibleTab() {
+  return <IframeTab src="./scripture-timeline.html" title="The Grand Story of Scripture" />;
+}
+
+function IframeTab({ src, title }) {
   const [loaded, setLoaded] = React.useState(false);
   return (
     <div style={{ position: 'relative', height: 'calc(100vh - 128px)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,.08)', background: '#f5f4ef' }}>
       {!loaded && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#6b7280' }}>
           <div style={{ width: 40, height: 40, border: '3px solid #e5e7eb', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
-          <span style={{ fontSize: '0.875rem' }}>Loading The Grand Story of Scripture…</span>
+          <span style={{ fontSize: '0.875rem' }}>Loading {title}…</span>
         </div>
       )}
       <iframe
-        src="./scripture-timeline.html"
-        title="The Grand Story of Scripture"
+        src={src}
+        title={title}
         style={{ width: '100%', height: '100%', border: 'none', display: 'block', opacity: loaded ? 1 : 0, transition: 'opacity .3s' }}
         allow="fullscreen"
         onLoad={() => setLoaded(true)}
@@ -5674,10 +5678,13 @@ const TABS = [
   { key: 'calendar', label: 'Calendar' },
   { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
   { key: 'music',    label: 'Music',   requiresMusic:  true },
-  { key: 'equip',    label: 'Equip'   },
-  { key: 'bible',    label: 'Bible'   },
-  { key: 'giving',   label: '💰 Giving', requiresGiving: true },
-  { key: 'about',    label: 'About' },
+  { key: 'equip',      label: 'Equip'        },
+  { key: 'bible',      label: 'Bible'        },
+  { key: 'worldwatch', label: 'World Watch'  },
+  { key: 'faithmap',   label: 'Faith Map'    },
+  { key: 'prayermap',  label: 'Prayer Map'   },
+  { key: 'giving',     label: '💰 Giving', requiresGiving: true },
+  { key: 'about',      label: 'About' },
 ];
 
 const GIVING_KEY = 'flcc-giving-name-v1';
@@ -6137,9 +6144,12 @@ function App() {
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
-          {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
-          {currentTab === 'bible'    && <BibleTab />}
-          {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
+          {currentTab === 'equip'      && <EquipTab equipData={equipData} />}
+          {currentTab === 'bible'      && <BibleTab />}
+          {currentTab === 'worldwatch' && <IframeTab src="./wwl2026.html" title="World Watch List 2026" />}
+          {currentTab === 'faithmap'   && <IframeTab src="./faith-map.html" title="Global Faith & Intercession" />}
+          {currentTab === 'prayermap'  && <IframeTab src="./flcc-gmpi-prayer-map.html" title="FLCC-GMPI Prayer Map Philippines" />}
+          {currentTab === 'giving'     && <GivingTab givingData={givingData} me={me} />}
           {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
           {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
         </div>
