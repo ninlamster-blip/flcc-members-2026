@@ -5625,13 +5625,16 @@ const psalmsData = [
 let psalmsActiveCat = 'All';
 
 function renderPsalms(cat) {
+  const filterEl = document.getElementById('psalms-filter');
+  const gridEl = document.getElementById('psalms-grid');
+  if (!filterEl || !gridEl) return;
   psalmsActiveCat = cat || 'All';
   const cats = ['All', ...new Set(psalmsData.map(p => p.type))];
-  document.getElementById('psalms-filter').innerHTML = cats.map(c =>
+  filterEl.innerHTML = cats.map(c =>
     `<button class="psalm-filter-btn${c===psalmsActiveCat?' active':''}" onclick="renderPsalms('${c.replace(/'/g,"\\'")}')"> ${c}</button>`
   ).join('');
   const filtered = psalmsActiveCat === 'All' ? psalmsData : psalmsData.filter(p => p.type === psalmsActiveCat);
-  document.getElementById('psalms-grid').innerHTML = filtered.map(p => `
+  gridEl.innerHTML = filtered.map(p => `
     <div class="psalm-card">
       <div class="psalm-bg-num">${p.num}</div>
       <div class="psalm-type">${p.type}</div>
@@ -5687,13 +5690,16 @@ const promisesData = [
 let promisesActiveCat = 'All';
 
 function renderPromises(cat) {
+  const filterEl = document.getElementById('promises-filter');
+  const gridEl = document.getElementById('promises-grid');
+  if (!filterEl || !gridEl) return;
   promisesActiveCat = cat || 'All';
   const cats = ['All', ...new Set(promisesData.map(p => p.cat))];
-  document.getElementById('promises-filter').innerHTML = cats.map(c =>
+  filterEl.innerHTML = cats.map(c =>
     `<button class="promise-filter-btn${c===promisesActiveCat?' active':''}" onclick="renderPromises('${c.replace(/'/g,"\\'")}')">${c}</button>`
   ).join('');
   const filtered = promisesActiveCat === 'All' ? promisesData : promisesData.filter(p => p.cat === promisesActiveCat);
-  document.getElementById('promises-grid').innerHTML = filtered.map(p => `
+  gridEl.innerHTML = filtered.map(p => `
     <div class="promise-card">
       <div class="promise-cat">${p.cat}</div>
       <div class="promise-text">${p.text}</div>
@@ -5728,7 +5734,9 @@ const geographyData = [
 ];
 
 function renderGeography() {
-  document.getElementById('geo-grid').innerHTML = geographyData.map(g => `
+  const grid = document.getElementById('geo-grid');
+  if (!grid) return;
+  grid.innerHTML = geographyData.map(g => `
     <div class="geo-card">
       <div class="geo-name">${g.name}</div>
       <div class="geo-modern">${g.modern}</div>
@@ -5840,6 +5848,7 @@ const miraclesData = [
 let miraclesActiveCat = 'All';
 
 function renderMiracles(cat) {
+  if (!document.getElementById('miracles-filter')) return;
   miraclesActiveCat = cat || 'All';
   const cats = ['All','Healing','Nature','Exorcism','Resurrection'];
   const colorMap = { Healing:'miracle-cat-healing', Nature:'miracle-cat-nature', Exorcism:'miracle-cat-exorcism', Resurrection:'miracle-cat-resurrection' };
@@ -6050,6 +6059,7 @@ A: God is a Spirit, infinite, eternal, and unchangeable,
 ];
 
 function renderCreeds() {
+  if (!document.getElementById('creeds-list')) return;
   document.getElementById('creeds-list').innerHTML = creedsData.map((c, i) => `
     <div class="creed-card${i===0?' open':''}">
       <div class="creed-header" onclick="this.parentElement.classList.toggle('open')">
@@ -6104,6 +6114,7 @@ const doctrinesData = [
 let doctrineActiveCat = 'All';
 
 function renderDoctrines(cat) {
+  if (!document.getElementById('doctrines-cats')) return;
   doctrineActiveCat = cat || 'All';
   const cats = ['All', ...new Set(doctrinesData.map(d => d.cat))];
   document.getElementById('doctrines-cats').innerHTML = cats.map(c =>
@@ -6144,6 +6155,7 @@ const namesOfGodData = [
 ];
 
 function renderNamesOfGod() {
+  if (!document.getElementById('names-grid')) return;
   document.getElementById('names-grid').innerHTML = namesOfGodData.map(n => `
     <div class="name-card">
       <div class="name-hebrew">${n.hebrew}</div>
@@ -6190,6 +6202,7 @@ function getCurrentCalSeason() {
 }
 
 function renderChurchCal() {
+  if (!document.getElementById('cal-grid')) return;
   const currentSeason = getCurrentCalSeason();
   document.getElementById('cal-grid').innerHTML = churchCalData.map(s => {
     const isCurrent = currentSeason && s.season.startsWith(currentSeason.split(' ')[0]) && s.season.includes(currentSeason.split(' ')[0]);
@@ -6336,6 +6349,7 @@ function renderHarmony(idx) {
 
 function initHarmony() {
   const container = document.getElementById('harmony-events');
+  if (!container) return;
   container.innerHTML = harmonyData.map((ev, i) =>
     `<button class="harmony-chip${i===0?' active':''}" onclick="renderHarmony(${i})">${ev.label}</button>`
   ).join('');
@@ -6457,8 +6471,10 @@ function toggleSermonEntry(id) {
 }
 
 function initSermonNotes() {
+  const snDate = document.getElementById('sn-date');
+  if (!snDate) return;
   const today = new Date().toISOString().slice(0,10);
-  document.getElementById('sn-date').value = today;
+  snDate.value = today;
   renderSermonPastList();
 }
 
@@ -6496,6 +6512,7 @@ pbGroups.nt = [...pbGroups.gospels,...pbGroups.epistles];
 let pbSelected = new Set();
 
 function pbRenderChips() {
+  if (!document.getElementById('pb-chips-ot')) return;
   const otBooks = pbGroups.ot;
   const ntBooks = pbGroups.nt;
   document.getElementById('pb-chips-ot').innerHTML = otBooks.map(b =>
