@@ -3428,6 +3428,19 @@ function getPathwayStage(progress, courses) {
 const EquipCoursesCtx = React.createContext(EQUIP_COURSES);
 const useEquipCourses = () => React.useContext(EquipCoursesCtx);
 
+function BibleTab() {
+  return (
+    <div style={{ height: 'calc(100vh - 128px)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,.08)' }}>
+      <iframe
+        src="./scripture-timeline.html"
+        title="The Grand Story of Scripture"
+        style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+        allow="fullscreen"
+      />
+    </div>
+  );
+}
+
 function EquipTab({ equipData }) {
   // Merge admin courses from equip.json with seed courses
   const allCourses = useMemo(() => {
@@ -5653,6 +5666,7 @@ const TABS = [
   { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
   { key: 'music',    label: 'Music',   requiresMusic:  true },
   { key: 'equip',    label: 'Equip'   },
+  { key: 'bible',    label: 'Bible'   },
   { key: 'giving',   label: '💰 Giving', requiresGiving: true },
   { key: 'about',    label: 'About' },
 ];
@@ -6115,6 +6129,7 @@ function App() {
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'equip'    && <EquipTab equipData={equipData} />}
+          {currentTab === 'bible'    && <BibleTab />}
           {currentTab === 'giving'   && <GivingTab givingData={givingData} me={me} />}
           {currentTab === 'calendar' && <CalendarTab data={data} prayerData={prayerData} musicData={musicData} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} me={me} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} />}
           {currentTab === 'about' && <AboutTab data={data} prayerData={prayerData} musicData={musicData} equipData={equipData} me={me} onChangeName={changeName} />}
