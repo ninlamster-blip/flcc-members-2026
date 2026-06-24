@@ -5679,7 +5679,8 @@ const TABS = [
   { key: 'prayer',   label: 'Prayer',  requiresPrayer: true },
   { key: 'music',    label: 'Music',   requiresMusic:  true },
   { key: 'equip',      label: 'Equip'        },
-  { key: 'bible',      label: 'Bible'        },
+  { key: 'bible',      label: 'Bible Study'  },
+  { key: 'verses',     label: 'Verses'       },
   { key: 'worldwatch', label: 'World Watch'  },
   { key: 'faithmap',   label: 'Faith Map'    },
   { key: 'prayermap',  label: 'Prayer Map'   },
@@ -6146,6 +6147,7 @@ function App() {
           {currentTab === 'music' && musicData && <MusicTab data={data} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
           {currentTab === 'equip'      && <EquipTab equipData={equipData} />}
           {currentTab === 'bible'      && <BibleTab />}
+          {currentTab === 'verses'     && <IframeTab src="./verse-lookup.html" title="Verse Lookup" />}
           {currentTab === 'worldwatch' && <IframeTab src="./wwl2026.html" title="World Watch List 2026" />}
           {currentTab === 'faithmap'   && <IframeTab src="./faith-map.html" title="Global Faith & Intercession" />}
           {currentTab === 'prayermap'  && <IframeTab src="./flcc-gmpi-prayer-map.html" title="FLCC-GMPI Prayer Map Philippines" />}

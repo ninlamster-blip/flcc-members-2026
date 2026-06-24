@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Verse Lookup — FLCC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#fafaf7;
+  --bg2:#f3f2ee;
+  --bg3:#eceae4;
+  --text:#1a1814;
+  --text2:#4a4640;
+  --muted:#8a8480;
+  --accent:#6d3a1f;
+  --accent2:#7c3aed;
+  --gold:#b5860d;
+  --border:#ddd9d0;
+  --radius:10px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:0;
+}
+
+/* ── Layout ── */
+.app{display:flex;flex-direction:column;min-height:100vh;}
+.header{
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:.75rem 1.25rem;
+  display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;
+}
+.header-title{
+  font-family:'Lora',serif;font-size:1.05rem;font-weight:600;
+  color:var(--accent);white-space:nowrap;
+}
+.lookup-bar{
+  display:flex;gap:.5rem;flex:1;min-width:0;
+}
+.ref-input{
+  flex:1;min-width:0;
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:.5rem .75rem;font-size:.95rem;font-family:inherit;
+  background:#fff;color:var(--text);outline:none;
+  transition:border-color .15s;
+}
+.ref-input:focus{border-color:var(--accent2);}
+.ref-input::placeholder{color:var(--muted);}
+.trans-select{
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:.5rem .5rem;font-size:.875rem;font-family:inherit;
+  background:#fff;color:var(--text);cursor:pointer;outline:none;
+}
+.lookup-btn{
+  background:var(--accent2);color:#fff;
+  border:none;border-radius:var(--radius);
+  padding:.5rem 1.1rem;font-size:.95rem;font-family:inherit;font-weight:500;
+  cursor:pointer;white-space:nowrap;transition:opacity .15s;
+}
+.lookup-btn:hover{opacity:.88;}
+
+/* ── Main content ── */
+.content{display:flex;flex:1;gap:0;overflow:hidden;max-height:calc(100vh - 60px);}
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  overflow-y:auto;padding:.75rem 0;
+}
+.panel{flex:1;overflow-y:auto;padding:1.25rem;}
+
+/* ── Sidebar ── */
+.sidebar-section{margin-bottom:1rem;}
+.sidebar-heading{
+  font-size:.6875rem;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--muted);
+  padding:.25rem 1rem .35rem;
+}
+.sidebar-btn{
+  display:block;width:100%;text-align:left;
+  background:none;border:none;cursor:pointer;
+  padding:.35rem 1rem;font-size:.875rem;color:var(--text2);
+  font-family:inherit;transition:background .12s,color .12s;border-radius:0;
+}
+.sidebar-btn:hover{background:var(--bg3);color:var(--text);}
+.sidebar-btn.active{background:var(--bg3);color:var(--accent2);font-weight:600;}
+
+/* ── Verse result ── */
+.verse-card{
+  background:#fff;border:1px solid var(--border);
+  border-radius:14px;padding:1.5rem 1.75rem;
+  box-shadow:var(--shadow);max-width:680px;
+  margin:0 auto 1.25rem;
+}
+.verse-ref{
+  font-size:.875rem;font-weight:600;letter-spacing:.03em;
+  color:var(--accent2);margin-bottom:.6rem;
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  flex-wrap:wrap;
+}
+.verse-trans-badge{
+  font-size:.75rem;font-weight:500;padding:.2rem .5rem;
+  background:var(--bg3);color:var(--text2);border-radius:99px;
+}
+.verse-text{
+  font-family:'Lora',serif;font-size:1.2rem;line-height:1.75;
+  color:var(--text);
+}
+.verse-text em{font-style:italic;}
+.verse-actions{
+  display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap;
+}
+.action-btn{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:99px;padding:.3rem .8rem;font-size:.8rem;
+  font-family:inherit;cursor:pointer;color:var(--text2);
+  transition:background .12s,color .12s;
+}
+.action-btn:hover{background:var(--bg3);color:var(--text);}
+
+/* ── State messages ── */
+.state-box{
+  text-align:center;padding:3rem 1rem;max-width:480px;margin:0 auto;
+  color:var(--text2);
+}
+.state-box .label{font-family:'Lora',serif;font-size:1.1rem;margin-bottom:.5rem;color:var(--text);}
+.state-box p{font-size:.9rem;color:var(--muted);}
+.error-box{color:#dc2626;}
+.spinner{
+  width:36px;height:36px;border:3px solid var(--border);
+  border-top-color:var(--accent2);border-radius:50%;
+  animation:spin .85s linear infinite;margin:0 auto 1rem;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Popular verses grid ── */
+.pop-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:.75rem;max-width:720px;margin:0 auto;
+}
+.pop-card{
+  background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+  padding:.85rem 1rem;cursor:pointer;transition:border-color .12s,box-shadow .12s;
+}
+.pop-card:hover{border-color:var(--accent2);box-shadow:0 2px 8px rgba(124,58,237,.12);}
+.pop-ref{font-size:.8rem;font-weight:600;color:var(--accent2);margin-bottom:.3rem;}
+.pop-preview{font-size:.8rem;color:var(--text2);line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* ── Chapter browser ── */
+.chapter-heading{
+  font-family:'Lora',serif;font-size:1.1rem;font-weight:600;
+  color:var(--accent);margin-bottom:1rem;
+}
+.chapter-grid{
+  display:flex;flex-wrap:wrap;gap:.4rem;max-width:480px;
+}
+.ch-btn{
+  width:2.5rem;height:2.5rem;border-radius:var(--radius);
+  border:1px solid var(--border);background:#fff;
+  font-size:.875rem;font-family:inherit;cursor:pointer;color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s,border-color .12s,color .12s;
+}
+.ch-btn:hover{background:var(--bg3);border-color:var(--accent2);color:var(--text);}
+.ch-btn.active{background:var(--accent2);border-color:var(--accent2);color:#fff;font-weight:600;}
+
+/* ── Copy toast ── */
+#copy-toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  background:var(--text);color:#fff;font-size:.875rem;
+  padding:.5rem 1.1rem;border-radius:99px;opacity:0;
+  pointer-events:none;transition:opacity .2s;z-index:9999;white-space:nowrap;
+}
+#copy-toast.show{opacity:1;}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .sidebar{width:140px;}
+  .header{padding:.5rem .75rem;}
+  .verse-card{padding:1.1rem 1.1rem;}
+  .verse-text{font-size:1.05rem;}
+}
+@media(max-width:440px){
+  .sidebar{display:none;}
+  .header-title{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header / search bar -->
+  <header class="header">
+    <span class="header-title">Verse Lookup</span>
+    <div class="lookup-bar">
+      <input id="ref-input" class="ref-input" type="text" placeholder="e.g. John 3:16 or Psalm 23:1-3" autocomplete="off" spellcheck="false"/>
+      <select id="trans-select" class="trans-select" title="Translation">
+        <option value="kjv">KJV</option>
+        <option value="web">WEB</option>
+        <option value="asv">ASV</option>
+        <option value="bbe">BBE</option>
+        <option value="darby">Darby</option>
+        <option value="ylt">YLT</option>
+      </select>
+      <button class="lookup-btn" id="lookup-btn">Look up</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <!-- Sidebar: book list -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Old Testament</div>
+        <!-- populated by JS -->
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-heading">New Testament</div>
+        <!-- populated by JS -->
+      </div>
+    </nav>
+
+    <!-- Main panel -->
+    <main class="panel" id="panel">
+      <!-- Default: popular verses -->
+      <div id="popular-view">
+        <div class="state-box" style="text-align:left;padding:0 0 1rem;">
+          <div class="label">Popular Verses</div>
+          <p>Click a verse or type a reference above and press Look up.</p>
+        </div>
+        <div class="pop-grid" id="pop-grid"></div>
+      </div>
+      <div id="result-view" style="display:none"></div>
+      <div id="chapter-view" style="display:none"></div>
+    </main>
+  </div>
+</div>
+
+<div id="copy-toast">Copied!</div>
+
+<script>
+// ── Bible book data ──────────────────────────────────────────────────────────
+const OT = [
+  ['Genesis',50],['Exodus',40],['Leviticus',27],['Numbers',36],['Deuteronomy',34],
+  ['Joshua',24],['Judges',21],['Ruth',4],['1 Samuel',31],['2 Samuel',24],
+  ['1 Kings',22],['2 Kings',25],['1 Chronicles',29],['2 Chronicles',36],
+  ['Ezra',10],['Nehemiah',13],['Esther',10],['Job',42],['Psalms',150],
+  ['Proverbs',31],['Ecclesiastes',12],['Song of Solomon',8],['Isaiah',66],
+  ['Jeremiah',52],['Lamentations',5],['Ezekiel',48],['Daniel',12],
+  ['Hosea',14],['Joel',3],['Amos',9],['Obadiah',1],['Jonah',4],['Micah',7],
+  ['Nahum',3],['Habakkuk',3],['Zephaniah',3],['Haggai',2],['Zechariah',14],['Malachi',4]
+];
+const NT = [
+  ['Matthew',28],['Mark',16],['Luke',24],['John',21],['Acts',28],
+  ['Romans',16],['1 Corinthians',16],['2 Corinthians',13],['Galatians',6],
+  ['Ephesians',6],['Philippians',4],['Colossians',4],
+  ['1 Thessalonians',5],['2 Thessalonians',3],
+  ['1 Timothy',6],['2 Timothy',4],['Titus',3],['Philemon',1],
+  ['Hebrews',13],['James',5],['1 Peter',5],['2 Peter',3],
+  ['1 John',5],['2 John',1],['3 John',1],['Jude',1],['Revelation',22]
+];
+const POPULAR = [
+  { ref:'John 3:16',     preview:'For God so loved the world, that he gave his only begotten Son…' },
+  { ref:'Psalm 23:1',    preview:'The LORD is my shepherd; I shall not want.' },
+  { ref:'Romans 8:28',   preview:'And we know that all things work together for good to them that love God…' },
+  { ref:'Philippians 4:13', preview:'I can do all things through Christ which strengtheneth me.' },
+  { ref:'Jeremiah 29:11',preview:'"For I know the plans I have for you," declares the LORD…' },
+  { ref:'Proverbs 3:5',  preview:'Trust in the LORD with all thine heart; and lean not unto thine own understanding.' },
+  { ref:'Isaiah 40:31',  preview:'But they that wait upon the LORD shall renew their strength…' },
+  { ref:'Romans 12:2',   preview:'And be not conformed to this world: but be ye transformed by the renewing of your mind…' },
+  { ref:'Matthew 11:28', preview:'Come unto me, all ye that labour and are heavy laden, and I will give you rest.' },
+  { ref:'Psalm 119:105', preview:'Thy word is a lamp unto my feet, and a light unto my path.' },
+  { ref:'Galatians 5:22',preview:'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith…' },
+  { ref:'2 Timothy 3:16',preview:'All scripture is given by inspiration of God…' },
+];
+
+// ── State ────────────────────────────────────────────────────────────────────
+let currentBook = null;
+let currentChapter = null;
+
+// ── DOM refs ─────────────────────────────────────────────────────────────────
+const refInput    = document.getElementById('ref-input');
+const transSelect = document.getElementById('trans-select');
+const lookupBtn   = document.getElementById('lookup-btn');
+const panel       = document.getElementById('panel');
+const popView     = document.getElementById('popular-view');
+const resultView  = document.getElementById('result-view');
+const chapterView = document.getElementById('chapter-view');
+const sidebar     = document.getElementById('sidebar');
+const copyToast   = document.getElementById('copy-toast');
+
+// ── Build sidebar ─────────────────────────────────────────────────────────────
+function buildSidebar() {
+  const sections = sidebar.querySelectorAll('.sidebar-section');
+  [OT, NT].forEach((books, si) => {
+    books.forEach(([name]) => {
+      const btn = document.createElement('button');
+      btn.className = 'sidebar-btn';
+      btn.textContent = name;
+      btn.addEventListener('click', () => openBook(name));
+      sections[si].appendChild(btn);
+    });
+  });
+}
+
+// ── Popular verses ────────────────────────────────────────────────────────────
+function buildPopular() {
+  const grid = document.getElementById('pop-grid');
+  POPULAR.forEach(({ ref, preview }) => {
+    const card = document.createElement('div');
+    card.className = 'pop-card';
+    card.innerHTML = `<div class="pop-ref">${ref}</div><div class="pop-preview">${preview}</div>`;
+    card.addEventListener('click', () => { refInput.value = ref; doLookup(); });
+    grid.appendChild(card);
+  });
+}
+
+// ── Lookup ────────────────────────────────────────────────────────────────────
+async function doLookup(ref, trans) {
+  ref = (ref || refInput.value).trim();
+  if (!ref) return;
+  trans = trans || transSelect.value;
+  refInput.value = ref;
+
+  showView('result');
+  resultView.innerHTML = '<div class="state-box"><div class="spinner"></div><p>Looking up…</p></div>';
+
+  try {
+    const url = `https://bible-api.com/${encodeURIComponent(ref)}?translation=${trans}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderVerses(data, trans);
+  } catch (err) {
+    resultView.innerHTML = `
+      <div class="state-box error-box">
+        <div class="label">Not found</div>
+        <p>${escHtml(err.message)}</p>
+        <p style="margin-top:.5rem;font-size:.8rem">Try: "John 3:16", "Psalm 23", "Romans 8:28-30"</p>
+      </div>`;
+  }
+}
+
+function renderVerses(data, trans) {
+  const ref   = data.reference || '';
+  const verses = data.verses || [];
+  const text   = data.text || '';
+
+  let html = `<div class="verse-card">
+    <div class="verse-ref">
+      <span>${escHtml(ref)}</span>
+      <span class="verse-trans-badge">${trans.toUpperCase()}</span>
+    </div>`;
+
+  if (verses.length > 1) {
+    // Multi-verse passage
+    verses.forEach(v => {
+      html += `<p class="verse-text" style="margin-bottom:.8rem">
+        <sup style="font-size:.7em;color:var(--muted);font-family:'Inter',sans-serif;font-style:normal;margin-right:3px">${v.verse}</sup>${escHtml(v.text.trim())}
+      </p>`;
+    });
+  } else {
+    html += `<p class="verse-text">${escHtml(text.trim())}</p>`;
+  }
+
+  html += `<div class="verse-actions">
+    <button class="action-btn" id="copy-verse-btn">Copy verse</button>
+    <button class="action-btn" id="copy-ref-btn">Copy with reference</button>
+  </div></div>`;
+
+  resultView.innerHTML = html;
+
+  // Back button
+  const back = document.createElement('div');
+  back.style.cssText = 'text-align:center;margin-top:.5rem';
+  const bBtn = document.createElement('button');
+  bBtn.className = 'action-btn';
+  bBtn.textContent = 'Back to popular verses';
+  bBtn.addEventListener('click', () => { refInput.value = ''; showView('popular'); });
+  back.appendChild(bBtn);
+  resultView.appendChild(back);
+
+  // Copy handlers
+  const fullText = text.trim() || verses.map(v => v.text.trim()).join(' ');
+  document.getElementById('copy-verse-btn').addEventListener('click', () => copyText(fullText));
+  document.getElementById('copy-ref-btn').addEventListener('click', () => copyText(`"${fullText}" — ${ref} (${trans.toUpperCase()})`));
+}
+
+// ── Book/chapter browser ──────────────────────────────────────────────────────
+function openBook(name) {
+  currentBook = name;
+  const all   = [...OT, ...NT];
+  const entry = all.find(([n]) => n === name);
+  const chCount = entry ? entry[1] : 1;
+
+  // Update sidebar active
+  sidebar.querySelectorAll('.sidebar-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent === name);
+  });
+
+  showView('chapter');
+  chapterView.innerHTML = `<div class="chapter-heading">${escHtml(name)}</div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:.85rem">Select a chapter:</p>
+    <div class="chapter-grid" id="ch-grid"></div>`;
+
+  const grid = document.getElementById('ch-grid');
+  for (let c = 1; c <= chCount; c++) {
+    const btn = document.createElement('button');
+    btn.className = 'ch-btn';
+    btn.textContent = c;
+    const chapter = c;
+    btn.addEventListener('click', () => {
+      grid.querySelectorAll('.ch-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const ref = `${name} ${chapter}`;
+      refInput.value = ref;
+      doLookup(ref);
+    });
+    grid.appendChild(btn);
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showView(name) {
+  popView.style.display     = name === 'popular'  ? '' : 'none';
+  resultView.style.display  = name === 'result'   ? '' : 'none';
+  chapterView.style.display = name === 'chapter'  ? '' : 'none';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    clearTimeout(toastTimer);
+    copyToast.classList.add('show');
+    toastTimer = setTimeout(() => copyToast.classList.remove('show'), 2000);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    copyToast.classList.add('show');
+    toastTimer = setTimeout(() => copyToast.classList.remove('show'), 2000);
+  });
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+lookupBtn.addEventListener('click', () => doLookup());
+refInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildSidebar();
+buildPopular();
+</script>
+</body>
+</html>
