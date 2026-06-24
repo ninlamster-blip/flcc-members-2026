@@ -1631,6 +1631,190 @@ function ServiceDetails({ entry, workers, highlightId }) {
 }
 
 // =============================================================================
+// WEATHER CARD
+// =============================================================================
+
+function WeatherCard({ setActiveTab }) {
+  const [weather, setWeather] = React.useState(null);
+
+  React.useEffect(() => {
+    const loadWeather = async (lat, lon, city = '') => {
+      try {
+        const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day`);
+        const wData = await wRes.json();
+        setWeather({ temp: wData.current.temperature_2m, code: wData.current.weather_code, isDay: wData.current.is_day === 1, city });
+      } catch {}
+    };
+    const ipFallback = async () => {
+      try {
+        const ipRes = await fetch('https://ipwho.is/');
+        const ipData = await ipRes.json();
+        if (ipData.success && ipData.latitude) loadWeather(ipData.latitude, ipData.longitude, ipData.city || '');
+      } catch {}
+    };
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const { latitude: lat, longitude: lon } = pos.coords;
+          let city = '';
+          try {
+            const gRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+            const gData = await gRes.json();
+            city = gData.address?.city || gData.address?.town || gData.address?.village || gData.address?.suburb || '';
+          } catch {}
+          loadWeather(lat, lon, city);
+        },
+        ipFallback
+      );
+    } else {
+      ipFallback();
+    }
+  }, []);
+
+  function weatherEmoji(c, isDay) {
+    if (c === 0) return isDay ? '☀️' : '🌙';
+    if (c <= 2)  return isDay ? '🌤️' : '🌛';
+    if (c === 3) return '☁️';
+    if (c <= 48) return '🌫️';
+    if (c <= 55) return isDay ? '🌦️' : '🌧️';
+    if (c <= 67) return '🌧️';
+    if (c <= 77) return '❄️';
+    if (c <= 82) return '🌧️';
+    return '⛈️';
+  }
+  function weatherLabel(c, isDay) {
+    if (c === 0) return isDay ? 'Clear sky' : 'Clear night';
+    if (c <= 2)  return 'Partly cloudy';
+    if (c === 3) return 'Overcast';
+    if (c <= 48) return 'Foggy';
+    if (c <= 55) return 'Drizzle';
+    if (c <= 67) return 'Rainy';
+    if (c <= 77) return 'Snowy';
+    if (c <= 82) return 'Showers';
+    return 'Thunderstorm';
+  }
+  function spiritualMessage(c, isDay) {
+    if (!isDay) {
+      if (c === 0) return "The stars declare His glory tonight. Rest in the peace of God who never sleeps nor slumbers — you are in His watchful care.";
+      if (c <= 2)  return "Even when moonlight is dimmed by clouds, God's light never fades. Let His presence be your comfort through the night.";
+      if (c === 3) return "In the stillness of this night, God is right beside you. You are never alone in the dark — He is your peace.";
+      if (c <= 48) return "On misty nights, remember: God is your lantern. His Word is a lamp to your feet, lighting every step you take.";
+      if (c <= 55) return "As gentle rain falls through the night, let God's peace wash over your soul and bring you rest and renewal.";
+      if (c <= 67) return "God is your shelter through every storm of life. Rest safely under His wings — He gives sweet sleep to His beloved.";
+      if (c <= 77) return "As the world rests quietly under the snow, may you find deep rest and renewal in God's arms tonight.";
+      if (c <= 82) return "After tonight's rain comes tomorrow's blessing. Trust God's plan through the night — morning joy is on its way!";
+      return "Even in the fiercest storm, God is your anchor and your shield. 'He gives sleep to His beloved.' You are safe in His hands.";
+    }
+    if (c === 0) return "Today is a beautiful sunny day — let the love of God shine brightly through you!";
+    if (c <= 2)  return "Sunshine breaks through the clouds, just like God's grace breaks through every challenge. Keep shining!";
+    if (c === 3) return "Even on an overcast day, God's love fully covers you. Walk boldly in His light today!";
+    if (c <= 48) return "Through every fog and uncertainty, God is your compass. Trust His direction — He will never lead you astray.";
+    if (c <= 55) return "Like gentle drizzle that refreshes the earth, may God's Word refresh and nourish your soul today.";
+    if (c <= 67) return "Even in the rain you walk under God's covering. His grace is your shelter and His love your strength!";
+    if (c <= 77) return "As snow blankets the earth in stillness, may God's perfect peace fill your heart and quiet every worry.";
+    if (c <= 82) return "After every shower comes growth. God is watering the seeds of faith He has planted in you!";
+    return "Even in the storm, God is your anchor. Be still and know that He is God — you are safe in His hands!";
+  }
+
+  if (!weather) return null;
+
+  return (
+    <div className="card mb-5 p-4" style={{ border: '1px solid var(--border)' }}>
+      <div className="flex items-center gap-4">
+        <div className="text-center flex-shrink-0" style={{ minWidth: 72 }}>
+          <div style={{ fontSize: '2rem' }}>{weatherEmoji(weather.code, weather.isDay)}</div>
+          <div className="font-bold" style={{ fontSize: '1.3rem', color: '#18181B' }}>{Math.round(weather.temp)}°C</div>
+          {weather.city && <div className="text-xs mt-0.5" style={{ color: '#52525B', lineHeight: 1.3 }}>{weather.city}</div>}
+          <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--accent)' }}>{weatherLabel(weather.code, weather.isDay)}</div>
+        </div>
+        <div className="flex-1">
+          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: 'var(--accent)' }}>{weather.isDay ? "Today's Encouragement" : "Tonight's Encouragement"}</div>
+          <div className="text-sm" style={{ color: '#18181B', lineHeight: 1.65 }}>{spiritualMessage(weather.code, weather.isDay)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// LIFTING UP OUR BRETHREN CARD
+// =============================================================================
+
+function LiftingUpCard({ data, me, attendanceData }) {
+  const absentMembers = React.useMemo(() => {
+    if (!attendanceData?.sessions?.length) return [];
+    const eligibleWorkers = (data.workers || []).filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id));
+    const allSessions = [...(attendanceData.sessions || [])].sort((a, b) => b.date.localeCompare(a.date));
+    const friSessions = allSessions.filter(s => s.service === 'Friday').slice(0, 3);
+    const sunSessions = allSessions.filter(s => s.service === 'Sunday').slice(0, 3);
+    const absentSet = new Set();
+    if (friSessions.length >= 3) {
+      const friEligible = new Set(eligibleWorkers.filter(w => !w.sundayOnly).map(w => w.id));
+      const counts = {};
+      friSessions.forEach(session => {
+        const presentIds = new Set(session.records.map(r => r.memberId));
+        friEligible.forEach(id => { if (!presentIds.has(id)) counts[id] = (counts[id] || 0) + 1; });
+      });
+      Object.entries(counts).forEach(([id, n]) => { if (n >= 3) absentSet.add(id); });
+    }
+    if (sunSessions.length >= 3) {
+      const sunEligible = new Set(eligibleWorkers.filter(w => !w.fridayOnly).map(w => w.id));
+      const counts = {};
+      sunSessions.forEach(session => {
+        const presentIds = new Set(session.records.map(r => r.memberId));
+        sunEligible.forEach(id => { if (!presentIds.has(id)) counts[id] = (counts[id] || 0) + 1; });
+      });
+      Object.entries(counts).forEach(([id, n]) => { if (n >= 3) absentSet.add(id); });
+    }
+    const workerMap = Object.fromEntries(eligibleWorkers.map(w => [w.id, w]));
+    return [...absentSet].map(id => workerMap[id]).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  }, [attendanceData, data.workers]);
+
+  if (!absentMembers.length) return null;
+
+  const senderName = me ? `${me.title ? me.title + ' ' : ''}${me.name}` : 'FLCC Family';
+
+  return (
+    <div className="card p-5 mb-5" style={{ border: '1px solid var(--border)' }}>
+      <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: 'var(--accent)' }}>
+        Lifting Up Our Brethren
+      </div>
+      <div className="text-sm ink-muted mb-4" style={{ lineHeight: 1.5 }}>
+        {absentMembers.length === 1 ? 'This member has' : `These ${absentMembers.length} members have`} been missing from our recent services. Reach out and let them know they are loved!
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {absentMembers.map((w, i) => {
+          const name = `${w.title ? w.title + ' ' : ''}${w.name}`;
+          const firstName = w.name.split(' ')[0];
+          const msg = `Hi ${firstName}! 👋\n\nWe've been missing you at our services! Just want you to know you are always in our prayers and we care about you. The FLCC family is stronger with you in it — we hope to see you soon!\n\nWith love from FLCC - Abundance Family 🙏\n— ${senderName}`;
+          return (
+            <div key={w.id} className="flex items-center justify-between gap-3 flex-wrap"
+              style={{ paddingBottom: i < absentMembers.length - 1 ? '0.75rem' : 0, borderBottom: i < absentMembers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <div className="font-medium">{name}</div>
+              <button
+                className="btn btn-soft flex-shrink-0"
+                style={{ color: 'var(--accent)', fontSize: '0.8rem' }}
+                onClick={() => {
+                  const messenger = w.messenger || data.ministry?.messenger;
+                  if (messenger) {
+                    window.open(`https://m.me/${messenger}?text=${encodeURIComponent(msg)}`, '_blank');
+                  } else {
+                    try { navigator.clipboard.writeText(msg); } catch {}
+                    alert(`Message copied! Paste and send to ${name} on Messenger.`);
+                  }
+                }}
+              >
+                💌 Send Encouragement
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // HOME TAB — Grid dashboard of upcoming items
 // =============================================================================
 
@@ -1744,6 +1928,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       <SectionHeading eyebrow={me ? `Hello, ${me.title || ''} ${me.name}` : 'Welcome'} title="Today">
         {me ? `Your upcoming services, prayer meetings, and what's coming up at ${data.meta.churchName}.` : `What's coming up at ${data.meta.churchName}.`}
       </SectionHeading>
+
+      <WeatherCard setActiveTab={setActiveTab} />
+      <LiftingUpCard data={data} me={me} attendanceData={attendanceData} />
 
       {/* My assignments - top priority cards */}
       {me && (myNextService || myNextPrayer || myNextMusic) && (
