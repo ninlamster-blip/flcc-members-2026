@@ -5791,6 +5791,7 @@ const parablesData = [
 let parablesActiveCat = 'All';
 
 function renderParables(cat) {
+  if (!document.getElementById('parables-filter')) return;
   parablesActiveCat = cat || 'All';
   const cats = ['All', ...new Set(parablesData.map(p => p.cat))];
   document.getElementById('parables-filter').innerHTML = cats.map(c =>
