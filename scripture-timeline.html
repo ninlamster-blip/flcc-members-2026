@@ -6715,6 +6715,20 @@ const archaeologyData = [
   { name:'Ebla Tablets', year:'~2400–2300 BC (found 1975)', location:'Tell Mardikh (ancient Ebla), Syria', scripture:'Gen 14:2; 10:19', desc:'Over 17,000 cuneiform tablets from the ancient city of Ebla, including trade records referencing the five cities of the plain (Sodom, Gomorrah, Admah, Zeboiim, Zoar) and many biblical personal names and places from Genesis.', confirms:'Confirms the historicity of cities and geographic details in early Genesis, previously dismissed as legendary by critical scholars.' }
 ];
 
+function observeFadeIn(cards) {
+  if (!cards || !cards.length) return;
+  if (!('IntersectionObserver' in window)) {
+    cards.forEach(c => c.classList.add('in-view'));
+    return;
+  }
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  cards.forEach(c => obs.observe(c));
+}
+
 function renderArchaeology() {
   const grid = document.getElementById('archaeology-grid');
   if (!grid) return;
