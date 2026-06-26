@@ -15372,6 +15372,21 @@ function App() {
         title="Armor of God: Spiritual Battle"
         aria-label="Play Armor of God game"
       >⚔️</button>
+      <button
+        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'snake/index.html'; }}
+        style={{
+          position: 'fixed', bottom: 92, left: 24,
+          width: 54, height: 54, borderRadius: '50%',
+          background: '#064e3b', color: 'white',
+          border: '2px solid rgba(0,255,136,0.35)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.375rem', lineHeight: 1,
+          boxShadow: '0 4px 20px rgba(0,255,136,0.28)',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
+        }}
+        title="Snake: Nokia Reborn"
+        aria-label="Play Snake game"
+      >🐍</button>
 
       {/* Personal events FAB — bottom right */}
       <button

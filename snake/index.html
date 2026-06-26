@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Snake — Reborn</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a href="../" class="back-btn">← App</a>
+
+  <div id="game-wrap">
+    <div id="hud">
+      <span id="score-val">0</span>
+      <span id="level-val">LVL 1</span>
+      <span id="hi-val">BEST: 0</span>
+    </div>
+
+    <div id="canvas-wrap">
+      <canvas id="c"></canvas>
+      <div id="power-banner"></div>
+      <div id="level-flash" class="hidden">LEVEL UP!</div>
+    </div>
+
+    <div id="start-screen" class="overlay active">
+      <div class="card">
+        <div class="logo">🐍</div>
+        <h1>SNAKE</h1>
+        <p class="tagline">Nokia Reborn</p>
+        <div id="start-best">BEST &nbsp;<span id="hi-display">0</span></div>
+        <button id="btn-start" class="btn">PLAY</button>
+        <p class="hint">Arrow keys / WASD / Swipe</p>
+      </div>
+    </div>
+
+    <div id="over-screen" class="overlay">
+      <div class="card">
+        <h2>GAME OVER</h2>
+        <div class="stat">Score <span id="over-score">0</span></div>
+        <div class="stat">Level <span id="over-level">1</span></div>
+        <div id="new-rec" class="hidden">NEW BEST ★</div>
+        <button id="btn-restart" class="btn">PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
