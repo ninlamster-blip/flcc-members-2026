@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Armor of God: Spiritual Battle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-row">
+        <div class="hud-left">
+          <div class="hud-label">FAITH</div>
+          <div class="faith-bar-wrap"><div id="faith-bar"></div></div>
+        </div>
+        <div class="hud-center">
+          <div id="score-display">0</div>
+          <div id="combo-display" class="hidden"></div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-label">GRACE</div>
+          <div id="lives-display"></div>
+        </div>
+      </div>
+      <div class="hud-row hud-sub">
+        <div id="level-display">LEVEL 1 — Personal Battles</div>
+        <div id="weapon-display"></div>
+        <button id="pause-btn" aria-label="Pause">&#9646;&#9646;</button>
+      </div>
+    </div>
+
+    <!-- Touch Controls -->
+    <div id="touch-controls" class="hidden">
+      <button id="touch-left" class="touch-btn" aria-label="Move Left">&#9664;</button>
+      <button id="touch-fire" class="touch-btn touch-fire-btn" aria-label="Fire">FIRE</button>
+      <button id="touch-right" class="touch-btn" aria-label="Move Right">&#9654;</button>
+    </div>
+
+    <!-- Main Menu Screen -->
+    <div id="screen-menu" class="screen">
+      <div class="screen-inner">
+        <div class="brand-mark">&#10022;</div>
+        <h1>ARMOR OF GOD</h1>
+        <p class="tagline">Spiritual Battle</p>
+        <p class="scripture-ref">Ephesians 6:10&ndash;18</p>
+        <div class="menu-buttons">
+          <button id="btn-start" class="btn-primary">Begin Battle</button>
+          <button id="btn-armor" class="btn-secondary">Armor of God</button>
+          <button id="btn-scores" class="btn-secondary">Leaderboard</button>
+        </div>
+        <div class="controls-hint">
+          <span>Arrow keys or WASD to move</span>
+          <span>Space to fire</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Armor of God Info Screen -->
+    <div id="screen-armor" class="screen hidden">
+      <div class="screen-inner scrollable">
+        <h2>The Armor of God</h2>
+        <p class="armor-intro">&ldquo;Put on the full armor of God, so that you can take your stand against the devil&rsquo;s schemes.&rdquo;</p>
+        <p class="armor-ref">Ephesians 6:11</p>
+        <div class="armor-list">
+          <div class="armor-item">
+            <span class="armor-icon">&#9776;</span>
+            <div><strong>Belt of Truth</strong><p>Grounded in God's word</p></div>
+          </div>
+          <div class="armor-item">
+            <span class="armor-icon">&#9632;</span>
+            <div><strong>Breastplate of Righteousness</strong><p>Living in right standing with God</p></div>
+          </div>
+          <div class="armor-item">
+            <span class="armor-icon">&#9672;</span>
+            <div><strong>Gospel of Peace</strong><p>Feet ready to share the Good News</p></div>
+          </div>
+          <div class="armor-item">
+            <span class="armor-icon">&#9711;</span>
+            <div><strong>Shield of Faith</strong><p>Quenches the fiery arrows of the evil one</p></div>
+          </div>
+          <div class="armor-item">
+            <span class="armor-icon">&#9651;</span>
+            <div><strong>Helmet of Salvation</strong><p>Protects your mind and thoughts</p></div>
+          </div>
+          <div class="armor-item">
+            <span class="armor-icon">&#9135;</span>
+            <div><strong>Sword of the Spirit</strong><p>The Word of God — your only offensive weapon</p></div>
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="ui.showMenu()">Back</button>
+      </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="screen-scores" class="screen hidden">
+      <div class="screen-inner">
+        <h2>Leaderboard</h2>
+        <div id="scores-list"></div>
+        <button class="btn-secondary" onclick="ui.showMenu()">Back</button>
+      </div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="screen-pause" class="screen hidden">
+      <div class="screen-inner">
+        <h2>Paused</h2>
+        <p class="pause-verse">&ldquo;Be still, and know that I am God.&rdquo;<br><span>Psalm 46:10</span></p>
+        <div class="menu-buttons">
+          <button id="btn-resume" class="btn-primary">Resume</button>
+          <button id="btn-quit" class="btn-secondary">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level Complete Screen -->
+    <div id="screen-level" class="screen hidden">
+      <div class="screen-inner">
+        <div class="brand-mark">&#10022;</div>
+        <h2 id="level-complete-title">Level Complete</h2>
+        <p id="level-complete-sub"></p>
+        <div id="level-complete-verse" class="verse-block"></div>
+        <p id="level-score-display"></p>
+        <button id="btn-next-level" class="btn-primary">Continue</button>
+      </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="screen-gameover" class="screen hidden">
+      <div class="screen-inner">
+        <h2>Battle Ended</h2>
+        <p class="gameover-sub">Stand firm. The battle belongs to the Lord.</p>
+        <div class="verse-block">
+          <p>&ldquo;Be strong in the Lord and in his mighty power.&rdquo;</p>
+          <span class="verse-ref">Ephesians 6:10</span>
+        </div>
+        <p id="final-score-display"></p>
+        <div id="new-high-score" class="hidden high-score-badge">New High Score!</div>
+        <div class="menu-buttons">
+          <button id="btn-restart" class="btn-primary">Fight Again</button>
+          <button id="btn-menu" class="btn-secondary">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="screen-victory" class="screen hidden">
+      <div class="screen-inner">
+        <div class="brand-mark victory-mark">&#10022;</div>
+        <h2>Victory!</h2>
+        <p class="victory-sub">You have put on the full Armor of God and stood firm.</p>
+        <div class="verse-block">
+          <p>&ldquo;Thanks be to God! He gives us the victory through our Lord Jesus Christ.&rdquo;</p>
+          <span class="verse-ref">1 Corinthians 15:57</span>
+        </div>
+        <p id="victory-score-display"></p>
+        <div class="menu-buttons">
+          <button id="btn-play-again" class="btn-primary">Play Again</button>
+          <button id="btn-menu-v" class="btn-secondary">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verse Popup (mid-game) -->
+    <div id="verse-popup" class="hidden">
+      <div class="verse-popup-inner">
+        <div id="verse-enemy-name"></div>
+        <div id="verse-defeated">Defeated</div>
+        <div class="verse-divider"></div>
+        <p id="verse-text"></p>
+        <span id="verse-ref-display"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
