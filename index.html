@@ -15358,7 +15358,7 @@ function App() {
       {/* Games FAB — bottom left */}
       <button
         className="fab-live"
-        onClick={() => setShowGames(true)}
+        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'armor-of-god/index.html'; }}
         style={{
           position: 'fixed', bottom: 28, left: 24,
           width: 54, height: 54, borderRadius: '50%',
@@ -15369,9 +15369,9 @@ function App() {
           boxShadow: '0 4px 20px rgba(124,58,237,0.38)',
           zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
         }}
-        title="Bible games"
-        aria-label="Open Bible games"
-      >🎮</button>
+        title="Armor of God: Spiritual Battle"
+        aria-label="Play Armor of God game"
+      >⚔️</button>
 
       {/* Personal events FAB — bottom right */}
       <button
@@ -15391,8 +15391,6 @@ function App() {
         aria-label="Add personal event"
       >+</button>
 
-      {/* Game Hub */}
-      {showGames && <GameHub onClose={() => setShowGames(false)} />}
 
       <footer className="max-w-5xl mx-auto px-4 sm:px-6 py-12 text-xs ink-subtle text-center">
         FLCC Schedule OS · Members View · Data fetched live from <code className="font-mono">data.json</code>
