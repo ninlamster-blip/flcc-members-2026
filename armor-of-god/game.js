@@ -16,7 +16,12 @@ const VERSES = {
   MATERIALISM: { text: "Seek first the kingdom of God and his righteousness, and all these things will be added to you.", ref: "Matthew 6:33" },
   DISTRACTION: { text: "Fix your eyes on Jesus, the author and perfecter of our faith.", ref: "Hebrews 12:2" },
   PRESSURE: { text: "Do not conform to the pattern of this world, but be transformed by the renewing of your mind.", ref: "Romans 12:2" },
-  BOSS: { text: "Our struggle is not against flesh and blood, but against the spiritual forces of evil in the heavenly realms.", ref: "Ephesians 6:12" }
+  BOSS:          { text: "Our struggle is not against flesh and blood, but against the spiritual forces of evil in the heavenly realms.", ref: "Ephesians 6:12" },
+  DECEPTION:     { text: "Satan himself masquerades as an angel of light.", ref: "2 Corinthians 11:14" },
+  BITTERNESS:    { text: "Get rid of all bitterness, rage and anger... Be kind and compassionate, forgiving each other.", ref: "Ephesians 4:31-32" },
+  ANXIETY:       { text: "Cast all your anxiety on him because he cares for you.", ref: "1 Peter 5:7" },
+  ENVY:          { text: "Love is patient, love is kind. It does not envy, it does not boast, it is not proud.", ref: "1 Corinthians 13:4" },
+  ADDICTION:     { text: "I have the right to do anything — but I will not be mastered by anything.", ref: "1 Corinthians 6:12" }
 };
 
 const LEVEL_VERSES = [
@@ -39,7 +44,27 @@ const LEVEL_VERSES = [
   // Powers of Darkness (13-15)
   { text: "Be self-controlled and alert. Your enemy the devil prowls around like a roaring lion.", ref: "1 Peter 5:8" },
   { text: "With God we will gain the victory, and he will trample down our enemies.", ref: "Psalm 60:12" },
-  { text: "Thanks be to God! He gives us the victory through our Lord Jesus Christ.", ref: "1 Corinthians 15:57" }
+  { text: "Thanks be to God! He gives us the victory through our Lord Jesus Christ.", ref: "1 Corinthians 15:57" },
+  // Warrior's Calling (16-18)
+  { text: "Praise be to the Lord my Rock, who trains my hands for war, my fingers for battle.", ref: "Psalm 144:1" },
+  { text: "The Lord is a warrior; the Lord is his name.", ref: "Exodus 15:3" },
+  { text: "You are the light of the world. A city set on a hill cannot be hidden.", ref: "Matthew 5:14" },
+  // More Than Conquerors (19-21)
+  { text: "In all these things we are more than conquerors through him who loved us.", ref: "Romans 8:37" },
+  { text: "For everyone born of God overcomes the world.", ref: "1 John 5:4" },
+  { text: "But thanks be to God, who always leads us as captives in Christ's triumphal procession.", ref: "2 Corinthians 2:14" },
+  // Faith Hall of Fame (22-24)
+  { text: "By faith they conquered kingdoms, administered justice, and gained what was promised.", ref: "Hebrews 11:33" },
+  { text: "Therefore, since we are surrounded by such a great cloud of witnesses, let us run with perseverance.", ref: "Hebrews 12:1" },
+  { text: "These were all commended for their faith, yet none of them received what had been promised.", ref: "Hebrews 11:39" },
+  // Cosmic Powers (25-27)
+  { text: "The Lord your God is with you, the Mighty Warrior who saves.", ref: "Zephaniah 3:17" },
+  { text: "For the Lord your God is the one who goes with you to fight for you against your enemies.", ref: "Deuteronomy 20:4" },
+  { text: "Who is this King of glory? The Lord strong and mighty, the Lord mighty in battle.", ref: "Psalm 24:8" },
+  // Eternal Victory (28-30)
+  { text: "They triumphed over him by the blood of the Lamb and by the word of their testimony.", ref: "Revelation 12:11" },
+  { text: "I have fought the good fight, I have finished the race, I have kept the faith.", ref: "2 Timothy 4:7" },
+  { text: "To him who overcomes, I will give the right to sit with me on my throne.", ref: "Revelation 3:21" }
 ];
 
 // ---- Weapon Types ----
@@ -60,7 +85,12 @@ const ENEMY_DEF = {
   DISCOURAGEMENT:{ name:"Discouragement",label:"DISCOURAGEMENT",hp:2, speed:0.6, w:52, h:44, color:"#374151", glow:"rgba(55,65,81,0.6)",     pts:180, drop:0.18, shape:"heavy"   },
   MATERIALISM:   { name:"Materialism",   label:"MATERIALISM",   hp:2, speed:1.3, w:46, h:40, color:"#D97706", glow:"rgba(217,119,6,0.6)",    pts:220, drop:0.15, shape:"crystal" },
   DISTRACTION:   { name:"Distraction",   label:"DISTRACTION",   hp:1, speed:2.6, w:36, h:32, color:"#0891B2", glow:"rgba(8,145,178,0.6)",    pts:160, drop:0.10, shape:"erratic" },
-  PRESSURE:      { name:"Pressure",      label:"PRESSURE",      hp:3, speed:1.0, w:54, h:46, color:"#6B7280", glow:"rgba(107,114,128,0.6)",  pts:250, drop:0.20, shape:"heavy"   }
+  PRESSURE:      { name:"Pressure",      label:"PRESSURE",      hp:3, speed:1.0, w:54, h:46, color:"#6B7280", glow:"rgba(107,114,128,0.6)",  pts:250, drop:0.20, shape:"heavy"   },
+  DECEPTION:     { name:"Deception",     label:"DECEPTION",     hp:4, speed:0.8, w:58, h:48, color:"#065F46", glow:"rgba(6,95,70,0.8)",       pts:350, drop:0.22, shape:"armored" },
+  BITTERNESS:    { name:"Bitterness",    label:"BITTERNESS",    hp:3, speed:1.2, w:52, h:44, color:"#7F1D1D", glow:"rgba(127,29,29,0.7)",     pts:280, drop:0.18, shape:"fire"    },
+  ANXIETY:       { name:"Anxiety",       label:"ANXIETY",       hp:1, speed:3.2, w:34, h:30, color:"#5B21B6", glow:"rgba(91,33,182,0.7)",     pts:180, drop:0.10, shape:"erratic" },
+  ENVY:          { name:"Envy",          label:"ENVY",          hp:2, speed:1.5, w:44, h:38, color:"#14532D", glow:"rgba(20,83,45,0.6)",      pts:240, drop:0.14, shape:"crystal" },
+  ADDICTION:     { name:"Addiction",     label:"ADDICTION",     hp:5, speed:0.7, w:62, h:52, color:"#1E1B4B", glow:"rgba(30,27,75,0.9)",      pts:400, drop:0.25, shape:"heavy"   }
 };
 
 // ---- Level Config ----
@@ -84,7 +114,27 @@ const LEVELS = [
   // Tier 5 — Powers of Darkness (L13–15)
   { name:"Powers of Darkness I",    enemies:["PRIDE","PRESSURE","ANGER","DOUBT","TEMPTATION"],          rows:4, cols:8, dropSpd:0.73, shootInterval:680,  waveGap:2000 },
   { name:"Powers of Darkness II",   enemies:["MATERIALISM","DISCOURAGEMENT","PRIDE","ANGER","FEAR"],    rows:4, cols:9, dropSpd:0.79, shootInterval:650,  waveGap:2000 },
-  { name:"Powers of Darkness III",  enemies:["PRIDE","ANGER","PRESSURE","DISTRACTION","DOUBT","FEAR"],  rows:5, cols:9, dropSpd:0.86, shootInterval:600,  waveGap:2000 }
+  { name:"Powers of Darkness III",  enemies:["PRIDE","ANGER","PRESSURE","DISTRACTION","DOUBT","FEAR"],  rows:5, cols:9, dropSpd:0.86, shootInterval:600,  waveGap:2000 },
+  // Tier 6 — Warrior's Calling (L16–18)
+  { name:"Warrior's Calling I",     enemies:["DECEPTION","BITTERNESS","ANXIETY"],                                          rows:4, cols:8, dropSpd:0.92, shootInterval:560,  waveGap:2200 },
+  { name:"Warrior's Calling II",    enemies:["ANXIETY","DECEPTION","ENVY","BITTERNESS"],                                   rows:5, cols:8, dropSpd:0.98, shootInterval:520,  waveGap:2200 },
+  { name:"Warrior's Calling III",   enemies:["BITTERNESS","ENVY","DECEPTION","ADDICTION","ANXIETY"],                       rows:5, cols:9, dropSpd:1.05, shootInterval:480,  waveGap:2200 },
+  // Tier 7 — More Than Conquerors (L19–21)
+  { name:"More Than Conquerors I",  enemies:["ADDICTION","DECEPTION","PRIDE","BITTERNESS"],                                rows:5, cols:8, dropSpd:1.12, shootInterval:440,  waveGap:2400 },
+  { name:"More Than Conquerors II", enemies:["ENVY","ADDICTION","DECEPTION","ANGER","ANXIETY"],                            rows:5, cols:9, dropSpd:1.20, shootInterval:400,  waveGap:2400 },
+  { name:"More Than Conquerors III",enemies:["PRIDE","ADDICTION","BITTERNESS","DECEPTION","ANGER","ENVY"],                 rows:5, cols:9, dropSpd:1.28, shootInterval:370,  waveGap:2400 },
+  // Tier 8 — Faith Hall of Fame (L22–24)
+  { name:"Faith Hall of Fame I",    enemies:["DECEPTION","ADDICTION","ANXIETY","PRIDE","BITTERNESS"],                      rows:5, cols:9, dropSpd:1.36, shootInterval:340,  waveGap:2600 },
+  { name:"Faith Hall of Fame II",   enemies:["ADDICTION","ENVY","BITTERNESS","DECEPTION","PRESSURE","ANXIETY"],            rows:6, cols:9, dropSpd:1.44, shootInterval:310,  waveGap:2600 },
+  { name:"Faith Hall of Fame III",  enemies:["DECEPTION","ADDICTION","PRIDE","ANGER","ENVY","BITTERNESS","ANXIETY"],       rows:6, cols:9, dropSpd:1.52, shootInterval:290,  waveGap:2600 },
+  // Tier 9 — Cosmic Powers (L25–27)
+  { name:"Cosmic Powers I",         enemies:["ADDICTION","DECEPTION","BITTERNESS","PRIDE","ENVY","PRESSURE"],              rows:6, cols:9, dropSpd:1.62, shootInterval:270,  waveGap:2800 },
+  { name:"Cosmic Powers II",        enemies:["DECEPTION","ADDICTION","ANGER","ENVY","ANXIETY","BITTERNESS","PRIDE"],       rows:6, cols:9, dropSpd:1.72, shootInterval:250,  waveGap:2800 },
+  { name:"Cosmic Powers III",       enemies:["ADDICTION","DECEPTION","PRIDE","BITTERNESS","ENVY","ANGER","PRESSURE","ANXIETY"], rows:6, cols:9, dropSpd:1.82, shootInterval:230, waveGap:2800 },
+  // Tier 10 — Eternal Victory (L28–30)
+  { name:"Eternal Victory I",       enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","PRESSURE","DISTRACTION"], rows:6, cols:9, dropSpd:1.94, shootInterval:210, waveGap:3000 },
+  { name:"Eternal Victory II",      enemies:["ADDICTION","DECEPTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","PRESSURE","DOUBT","FEAR"], rows:6, cols:9, dropSpd:2.06, shootInterval:190, waveGap:3000 },
+  { name:"Eternal Victory III",     enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","TEMPTATION","PRESSURE","DISTRACTION","DOUBT"], rows:6, cols:9, dropSpd:2.20, shootInterval:170, waveGap:3000 }
 ];
 
 // ---- Powerup Types ----
@@ -116,7 +166,27 @@ const LEVEL_INTROS = [
   // Levels 13–15: Helmet of Salvation / Sword of the Spirit / Full Armor
   { tag:"LEVEL 13", name:"Powers of Darkness I",     armor:"Helmet of Salvation",          verse:"Take the helmet of salvation and the sword of the Spirit, which is the word of God.",                     ref:"Ephesians 6:17" },
   { tag:"LEVEL 14", name:"Powers of Darkness II",    armor:"Sword of the Spirit",          verse:"The word of God is alive and active, sharper than any double-edged sword.",                               ref:"Hebrews 4:12"   },
-  { tag:"LEVEL 15", name:"Powers of Darkness III",   armor:"Full Armor of God",            verse:"Put on the full armor of God, so that when the day of evil comes, you may be able to stand your ground.", ref:"Ephesians 6:13" }
+  { tag:"LEVEL 15", name:"Powers of Darkness III",   armor:"Full Armor of God",            verse:"Put on the full armor of God, so that when the day of evil comes, you may be able to stand your ground.", ref:"Ephesians 6:13" },
+  // Tier 6 — Warrior's Calling
+  { tag:"LEVEL 16", name:"Warrior's Calling I",      armor:"Prayer Warrior",               verse:"Pray in the Spirit on all occasions with all kinds of prayers and requests.",                             ref:"Ephesians 6:18" },
+  { tag:"LEVEL 17", name:"Warrior's Calling II",     armor:"Prayer Warrior",               verse:"Praise be to the Lord my Rock, who trains my hands for war, my fingers for battle.",                     ref:"Psalm 144:1"    },
+  { tag:"LEVEL 18", name:"Warrior's Calling III",    armor:"Prayer Warrior",               verse:"The Lord is a warrior; the Lord is his name.",                                                            ref:"Exodus 15:3"    },
+  // Tier 7 — More Than Conquerors
+  { tag:"LEVEL 19", name:"More Than Conquerors I",   armor:"Conqueror's Crown",            verse:"No, in all these things we are more than conquerors through him who loved us.",                           ref:"Romans 8:37"    },
+  { tag:"LEVEL 20", name:"More Than Conquerors II",  armor:"Conqueror's Crown",            verse:"Everyone born of God overcomes the world. This is the victory — even our faith.",                        ref:"1 John 5:4"     },
+  { tag:"LEVEL 21", name:"More Than Conquerors III", armor:"Conqueror's Crown",            verse:"God always leads us as captives in Christ's triumphal procession.",                                       ref:"2 Corinthians 2:14" },
+  // Tier 8 — Faith Hall of Fame
+  { tag:"LEVEL 22", name:"Faith Hall of Fame I",     armor:"Shield of the Faithful",       verse:"By faith they conquered kingdoms, administered justice, and gained what was promised.",                  ref:"Hebrews 11:33"  },
+  { tag:"LEVEL 23", name:"Faith Hall of Fame II",    armor:"Shield of the Faithful",       verse:"We are surrounded by such a great cloud of witnesses — let us run with perseverance.",                   ref:"Hebrews 12:1"   },
+  { tag:"LEVEL 24", name:"Faith Hall of Fame III",   armor:"Shield of the Faithful",       verse:"These were all commended for their faith. God had planned something better for us.",                     ref:"Hebrews 11:39-40" },
+  // Tier 9 — Cosmic Powers
+  { tag:"LEVEL 25", name:"Cosmic Powers I",          armor:"Breastplate of Fire",          verse:"The Lord your God is with you, the Mighty Warrior who saves.",                                           ref:"Zephaniah 3:17" },
+  { tag:"LEVEL 26", name:"Cosmic Powers II",         armor:"Breastplate of Fire",          verse:"The Lord goes with you to fight for you against your enemies, to give you victory.",                     ref:"Deuteronomy 20:4" },
+  { tag:"LEVEL 27", name:"Cosmic Powers III",        armor:"Breastplate of Fire",          verse:"Who is this King of glory? The Lord strong and mighty, the Lord mighty in battle.",                      ref:"Psalm 24:8"     },
+  // Tier 10 — Eternal Victory
+  { tag:"LEVEL 28", name:"Eternal Victory I",        armor:"Crown of Life",                verse:"They triumphed over him by the blood of the Lamb and by the word of their testimony.",                   ref:"Revelation 12:11" },
+  { tag:"LEVEL 29", name:"Eternal Victory II",       armor:"Crown of Life",                verse:"I have fought the good fight, I have finished the race, I have kept the faith.",                         ref:"2 Timothy 4:7"  },
+  { tag:"LEVEL 30", name:"Eternal Victory III",      armor:"Crown of Life",                verse:"To him who overcomes, I will give the right to sit with me on my throne.",                               ref:"Revelation 3:21" }
 ];
 
 // ============================================================
@@ -1476,12 +1546,12 @@ class Game {
       this.shootTimer = 0;
       const alive = this.enemies.filter(e => !e.dead && e.spawned);
       if (alive.length) {
-        const bspd = 3.2 + Math.min(this.levelIdx * 0.15, 2.5);
+        const bspd = 3.2 + Math.min(this.levelIdx * 0.18, 5.0);
         const eDef = { w: 4, h: 14, spd: bspd, dmg: 1, color: '#F87171', glow: 'rgba(248,113,113,0.8)', trail: '#FCA5A5' };
         const shooter = alive[Math.floor(Math.random() * alive.length)];
         this.eBullets.push(new Bullet(shooter.x, shooter.y + shooter.h / 2, eDef, true));
-        // Double shot at level 12+, triple at level 15
-        const extraShots = this.levelIdx >= 14 ? 2 : this.levelIdx >= 11 ? 1 : 0;
+        // Extra simultaneous shots scale with level: +1 at L12, +2 at L15, +3 at L20, +4 at L25, +5 at L28
+        const extraShots = this.levelIdx >= 27 ? 5 : this.levelIdx >= 24 ? 4 : this.levelIdx >= 19 ? 3 : this.levelIdx >= 14 ? 2 : this.levelIdx >= 11 ? 1 : 0;
         for (let s = 0; s < extraShots; s++) {
           const s2 = alive[Math.floor(Math.random() * alive.length)];
           this.eBullets.push(new Bullet(s2.x, s2.y + s2.h / 2, eDef, true));
