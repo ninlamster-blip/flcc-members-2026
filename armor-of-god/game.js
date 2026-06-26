@@ -20,9 +20,26 @@ const VERSES = {
 };
 
 const LEVEL_VERSES = [
+  // Personal Battles (1-3)
   { text: "Finally, be strong in the Lord and in his mighty power.", ref: "Ephesians 6:10" },
+  { text: "The Lord will fight for you; you need only to be still.", ref: "Exodus 14:14" },
+  { text: "I can do all this through him who gives me strength.", ref: "Philippians 4:13" },
+  // Battles of the Heart (4-6)
   { text: "Create in me a pure heart, O God, and renew a steadfast spirit within me.", ref: "Psalm 51:10" },
-  { text: "Do not be overcome by evil, but overcome evil with good.", ref: "Romans 12:21" }
+  { text: "Guard your heart above all else, for everything you do flows from it.", ref: "Proverbs 4:23" },
+  { text: "Do not be overcome by evil, but overcome evil with good.", ref: "Romans 12:21" },
+  // Battles of the World (7-9)
+  { text: "Do not conform to the pattern of this world, but be transformed by the renewing of your mind.", ref: "Romans 12:2" },
+  { text: "Set your minds on things above, not on earthly things.", ref: "Colossians 3:2" },
+  { text: "Everyone born of God overcomes the world. This is the victory — even our faith.", ref: "1 John 5:4" },
+  // Principalities (10-12)
+  { text: "Submit yourselves to God. Resist the devil, and he will flee from you.", ref: "James 4:7" },
+  { text: "The weapons we fight with are not the weapons of the world. They have divine power to demolish strongholds.", ref: "2 Corinthians 10:4" },
+  { text: "No weapon forged against you will prevail, and you will refute every tongue that accuses you.", ref: "Isaiah 54:17" },
+  // Powers of Darkness (13-15)
+  { text: "Be self-controlled and alert. Your enemy the devil prowls around like a roaring lion.", ref: "1 Peter 5:8" },
+  { text: "With God we will gain the victory, and he will trample down our enemies.", ref: "Psalm 60:12" },
+  { text: "Thanks be to God! He gives us the victory through our Lord Jesus Christ.", ref: "1 Corinthians 15:57" }
 ];
 
 // ---- Weapon Types ----
@@ -48,9 +65,26 @@ const ENEMY_DEF = {
 
 // ---- Level Config ----
 const LEVELS = [
-  { name:"Personal Battles",     enemies:["FEAR","DOUBT","TEMPTATION"],            rows:3, cols:7, dropSpd:0.28, shootInterval:2200, waveGap:1400 },
-  { name:"Battles of the Heart", enemies:["ANGER","PRIDE","DISCOURAGEMENT"],       rows:3, cols:6, dropSpd:0.38, shootInterval:1800, waveGap:1600 },
-  { name:"Battles of the World", enemies:["MATERIALISM","DISTRACTION","PRESSURE"], rows:3, cols:6, dropSpd:0.48, shootInterval:1500, waveGap:1800 }
+  // Tier 1 — Personal Battles (L1–3)
+  { name:"Personal Battles I",      enemies:["FEAR","DOUBT","TEMPTATION"],                              rows:3, cols:6, dropSpd:0.25, shootInterval:2400, waveGap:1400 },
+  { name:"Personal Battles II",     enemies:["TEMPTATION","FEAR","DOUBT"],                              rows:3, cols:7, dropSpd:0.28, shootInterval:2100, waveGap:1400 },
+  { name:"Personal Battles III",    enemies:["DOUBT","TEMPTATION","FEAR"],                              rows:4, cols:7, dropSpd:0.32, shootInterval:1900, waveGap:1400 },
+  // Tier 2 — Battles of the Heart (L4–6)
+  { name:"Battles of the Heart I",  enemies:["ANGER","PRIDE","DISCOURAGEMENT"],                         rows:3, cols:6, dropSpd:0.36, shootInterval:1750, waveGap:1500 },
+  { name:"Battles of the Heart II", enemies:["DISCOURAGEMENT","ANGER","PRIDE"],                         rows:4, cols:7, dropSpd:0.40, shootInterval:1550, waveGap:1500 },
+  { name:"Battles of the Heart III",enemies:["PRIDE","DISCOURAGEMENT","ANGER"],                         rows:4, cols:7, dropSpd:0.45, shootInterval:1350, waveGap:1500 },
+  // Tier 3 — Battles of the World (L7–9)
+  { name:"Battles of the World I",  enemies:["MATERIALISM","DISTRACTION","PRESSURE"],                   rows:3, cols:7, dropSpd:0.48, shootInterval:1200, waveGap:1600 },
+  { name:"Battles of the World II", enemies:["DISTRACTION","PRESSURE","MATERIALISM"],                   rows:4, cols:7, dropSpd:0.52, shootInterval:1050, waveGap:1600 },
+  { name:"Battles of the World III",enemies:["PRESSURE","MATERIALISM","DISTRACTION"],                   rows:4, cols:7, dropSpd:0.56, shootInterval:950,  waveGap:1600 },
+  // Tier 4 — Principalities (L10–12)
+  { name:"Principalities I",        enemies:["FEAR","ANGER","PRIDE","MATERIALISM"],                     rows:4, cols:7, dropSpd:0.60, shootInterval:880,  waveGap:1800 },
+  { name:"Principalities II",       enemies:["DOUBT","PRIDE","PRESSURE","DISCOURAGEMENT"],              rows:4, cols:8, dropSpd:0.64, shootInterval:800,  waveGap:1800 },
+  { name:"Principalities III",      enemies:["ANGER","MATERIALISM","PRIDE","FEAR","DOUBT"],             rows:5, cols:8, dropSpd:0.68, shootInterval:730,  waveGap:1800 },
+  // Tier 5 — Powers of Darkness (L13–15)
+  { name:"Powers of Darkness I",    enemies:["PRIDE","PRESSURE","ANGER","DOUBT","TEMPTATION"],          rows:4, cols:8, dropSpd:0.73, shootInterval:680,  waveGap:2000 },
+  { name:"Powers of Darkness II",   enemies:["MATERIALISM","DISCOURAGEMENT","PRIDE","ANGER","FEAR"],    rows:4, cols:9, dropSpd:0.79, shootInterval:650,  waveGap:2000 },
+  { name:"Powers of Darkness III",  enemies:["PRIDE","ANGER","PRESSURE","DISTRACTION","DOUBT","FEAR"],  rows:5, cols:9, dropSpd:0.86, shootInterval:600,  waveGap:2000 }
 ];
 
 // ---- Powerup Types ----
@@ -63,34 +97,26 @@ const POWERUP_TYPES = [
 
 // ---- Level Intro Cards (Phase 3) ----
 const LEVEL_INTROS = [
-  {
-    tag:   "LEVEL 1",
-    name:  "Personal Battles",
-    armor: "Belt of Truth",
-    verse: "Stand firm then, with the belt of truth buckled around your waist.",
-    ref:   "Ephesians 6:14"
-  },
-  {
-    tag:   "LEVEL 2",
-    name:  "Battles of the Heart",
-    armor: "Breastplate of Righteousness",
-    verse: "...with the breastplate of righteousness in place.",
-    ref:   "Ephesians 6:14"
-  },
-  {
-    tag:   "LEVEL 3",
-    name:  "Battles of the World",
-    armor: "Gospel of Peace",
-    verse: "...with your feet fitted with the readiness that comes from the gospel of peace.",
-    ref:   "Ephesians 6:15"
-  },
-  {
-    tag:   "FINAL BATTLE",
-    name:  "The Enemy",
-    armor: "Shield of Faith",
-    verse: "Take up the shield of faith, with which you can extinguish all the flaming arrows of the evil one.",
-    ref:   "Ephesians 6:16"
-  }
+  // Levels 1–3: Belt of Truth
+  { tag:"LEVEL 1",  name:"Personal Battles I",      armor:"Belt of Truth",                verse:"Stand firm then, with the belt of truth buckled around your waist.",                                        ref:"Ephesians 6:14" },
+  { tag:"LEVEL 2",  name:"Personal Battles II",     armor:"Belt of Truth",                verse:"Buy the truth and do not sell it — wisdom, instruction and insight as well.",                               ref:"Proverbs 23:23" },
+  { tag:"LEVEL 3",  name:"Personal Battles III",    armor:"Belt of Truth",                verse:"Then you will know the truth, and the truth will set you free.",                                            ref:"John 8:32"      },
+  // Levels 4–6: Breastplate of Righteousness
+  { tag:"LEVEL 4",  name:"Battles of the Heart I",  armor:"Breastplate of Righteousness", verse:"...with the breastplate of righteousness in place.",                                                       ref:"Ephesians 6:14" },
+  { tag:"LEVEL 5",  name:"Battles of the Heart II", armor:"Breastplate of Righteousness", verse:"Guard your heart above all else, for everything you do flows from it.",                                    ref:"Proverbs 4:23"  },
+  { tag:"LEVEL 6",  name:"Battles of the Heart III",armor:"Breastplate of Righteousness", verse:"Blessed are the pure in heart, for they will see God.",                                                    ref:"Matthew 5:8"    },
+  // Levels 7–9: Gospel of Peace
+  { tag:"LEVEL 7",  name:"Battles of the World I",  armor:"Gospel of Peace",              verse:"...with your feet fitted with the readiness that comes from the gospel of peace.",                         ref:"Ephesians 6:15" },
+  { tag:"LEVEL 8",  name:"Battles of the World II", armor:"Gospel of Peace",              verse:"How beautiful are the feet of those who bring good news!",                                                  ref:"Romans 10:15"   },
+  { tag:"LEVEL 9",  name:"Battles of the World III",armor:"Gospel of Peace",              verse:"Do not be overcome by evil, but overcome evil with good.",                                                  ref:"Romans 12:21"   },
+  // Levels 10–12: Shield of Faith
+  { tag:"LEVEL 10", name:"Principalities I",         armor:"Shield of Faith",              verse:"Take up the shield of faith, with which you can extinguish all the flaming arrows of the evil one.",      ref:"Ephesians 6:16" },
+  { tag:"LEVEL 11", name:"Principalities II",        armor:"Shield of Faith",              verse:"Submit yourselves to God. Resist the devil, and he will flee from you.",                                   ref:"James 4:7"      },
+  { tag:"LEVEL 12", name:"Principalities III",       armor:"Shield of Faith",              verse:"The weapons we fight with are not the weapons of the world. They have divine power to demolish strongholds.", ref:"2 Corinthians 10:4" },
+  // Levels 13–15: Helmet of Salvation / Sword of the Spirit / Full Armor
+  { tag:"LEVEL 13", name:"Powers of Darkness I",     armor:"Helmet of Salvation",          verse:"Take the helmet of salvation and the sword of the Spirit, which is the word of God.",                     ref:"Ephesians 6:17" },
+  { tag:"LEVEL 14", name:"Powers of Darkness II",    armor:"Sword of the Spirit",          verse:"The word of God is alive and active, sharper than any double-edged sword.",                               ref:"Hebrews 4:12"   },
+  { tag:"LEVEL 15", name:"Powers of Darkness III",   armor:"Full Armor of God",            verse:"Put on the full armor of God, so that when the day of evil comes, you may be able to stand your ground.", ref:"Ephesians 6:13" }
 ];
 
 // ============================================================
@@ -172,7 +198,14 @@ class Input {
     };
     safe('touch-left',  'left',  true);
     safe('touch-right', 'right', true);
-    safe('touch-fire',  'fire',  true);
+    // Fire: tap anywhere on the game container (any touch = firing)
+    const container = document.getElementById('game-container');
+    if (container) {
+      const updateFire = (e) => { this.fire = e.touches.length > 0; };
+      container.addEventListener('touchstart', e => { e.preventDefault(); Audio.resume(); updateFire(e); }, { passive: false });
+      container.addEventListener('touchend',   e => { e.preventDefault(); updateFire(e); },                 { passive: false });
+      container.addEventListener('touchcancel',e => { e.preventDefault(); updateFire(e); },                 { passive: false });
+    }
   }
 }
 
@@ -270,7 +303,7 @@ class Bullet {
   constructor(x, y, weapon, fromEnemy = false) {
     this.x = x; this.y = y;
     this.w = weapon.w; this.h = weapon.h;
-    this.spd   = fromEnemy ? 3.2 : -weapon.spd;
+    this.spd   = fromEnemy ? (weapon.spd || 3.2) : -weapon.spd;
     this.color = fromEnemy ? '#F87171' : weapon.color;
     this.glow  = fromEnemy ? 'rgba(248,113,113,0.8)' : weapon.glow;
     this.trail = fromEnemy ? '#FCA5A5' : weapon.trail;
@@ -1440,9 +1473,16 @@ class Game {
       this.shootTimer = 0;
       const alive = this.enemies.filter(e => !e.dead && e.spawned);
       if (alive.length) {
+        const bspd = 3.2 + Math.min(this.levelIdx * 0.15, 2.5);
+        const eDef = { w: 4, h: 14, spd: bspd, dmg: 1, color: '#F87171', glow: 'rgba(248,113,113,0.8)', trail: '#FCA5A5' };
         const shooter = alive[Math.floor(Math.random() * alive.length)];
-        this.eBullets.push(new Bullet(shooter.x, shooter.y + shooter.h / 2,
-          { w: 4, h: 14, spd: 0, dmg: 1, color: '#F87171', glow: 'rgba(248,113,113,0.8)', trail: '#FCA5A5' }, true));
+        this.eBullets.push(new Bullet(shooter.x, shooter.y + shooter.h / 2, eDef, true));
+        // Double shot at level 12+, triple at level 15
+        const extraShots = this.levelIdx >= 14 ? 2 : this.levelIdx >= 11 ? 1 : 0;
+        for (let s = 0; s < extraShots; s++) {
+          const s2 = alive[Math.floor(Math.random() * alive.length)];
+          this.eBullets.push(new Bullet(s2.x, s2.y + s2.h / 2, eDef, true));
+        }
       }
     }
   }
