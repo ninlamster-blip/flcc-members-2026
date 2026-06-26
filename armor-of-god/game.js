@@ -199,12 +199,15 @@ class Input {
     safe('touch-left',  'left',  true);
     safe('touch-right', 'right', true);
     // Fire: tap anywhere on the game container (any touch = firing)
+    // Only active during gameplay so menu button clicks aren't blocked
     const container = document.getElementById('game-container');
     if (container) {
-      const updateFire = (e) => { this.fire = e.touches.length > 0; };
-      container.addEventListener('touchstart', e => { e.preventDefault(); Audio.resume(); updateFire(e); }, { passive: false });
-      container.addEventListener('touchend',   e => { e.preventDefault(); updateFire(e); },                 { passive: false });
-      container.addEventListener('touchcancel',e => { e.preventDefault(); updateFire(e); },                 { passive: false });
+      const updateFire = (e) => {
+        if (game && game.state === 'playing') this.fire = e.touches.length > 0;
+      };
+      container.addEventListener('touchstart', e => { Audio.resume(); updateFire(e); });
+      container.addEventListener('touchend',   updateFire);
+      container.addEventListener('touchcancel',updateFire);
     }
   }
 }
