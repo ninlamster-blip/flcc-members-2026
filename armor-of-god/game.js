@@ -64,7 +64,21 @@ const LEVEL_VERSES = [
   // Eternal Victory (28-30)
   { text: "They triumphed over him by the blood of the Lamb and by the word of their testimony.", ref: "Revelation 12:11" },
   { text: "I have fought the good fight, I have finished the race, I have kept the faith.", ref: "2 Timothy 4:7" },
-  { text: "To him who overcomes, I will give the right to sit with me on my throne.", ref: "Revelation 3:21" }
+  { text: "To him who overcomes, I will give the right to sit with me on my throne.", ref: "Revelation 3:21" },
+  // Abyss (31-33)
+  { text: "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me.", ref: "Psalm 23:4" },
+  { text: "The Lord is my light and my salvation — whom shall I fear? The Lord is the stronghold of my life.", ref: "Psalm 27:1" },
+  { text: "No weapon forged against you will prevail, and you will refute every tongue that accuses you.", ref: "Isaiah 54:17" },
+  // Wrath of Darkness (34-36)
+  { text: "They triumphed over him by the blood of the Lamb and by the word of their testimony.", ref: "Revelation 12:11" },
+  { text: "The one who is in you is greater than the one who is in the world.", ref: "1 John 4:4" },
+  { text: "Neither death nor life, neither angels nor demons — nothing will be able to separate us from the love of God.", ref: "Romans 8:38-39" },
+  // Gates of Hell (37-39)
+  { text: "And the gates of hell shall not prevail against it.", ref: "Matthew 16:18" },
+  { text: "The Lord will rescue me from every evil attack and bring me safely to his heavenly kingdom.", ref: "2 Timothy 4:18" },
+  { text: "But thanks be to God! He gives us the victory through our Lord Jesus Christ.", ref: "1 Corinthians 15:57" },
+  // Satan's Mothership (40)
+  { text: "The God of peace will soon crush Satan under your feet.", ref: "Romans 16:20" }
 ];
 
 // ---- Weapon Types ----
@@ -134,7 +148,19 @@ const LEVELS = [
   // Tier 10 — Eternal Victory (L28–30)
   { name:"Eternal Victory I",       enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","PRESSURE","DISTRACTION"], rows:6, cols:9, dropSpd:1.94, shootInterval:210, waveGap:3000 },
   { name:"Eternal Victory II",      enemies:["ADDICTION","DECEPTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","PRESSURE","DOUBT","FEAR"], rows:6, cols:9, dropSpd:2.06, shootInterval:190, waveGap:3000 },
-  { name:"Eternal Victory III",     enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","TEMPTATION","PRESSURE","DISTRACTION","DOUBT"], rows:6, cols:9, dropSpd:2.20, shootInterval:170, waveGap:3000 }
+  { name:"Eternal Victory III",     enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","TEMPTATION","PRESSURE","DISTRACTION","DOUBT"], rows:6, cols:9, dropSpd:2.20, shootInterval:170, waveGap:3000 },
+  // Tier 11 — Abyss (L31-33)
+  { name:"Abyss I",               enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ANXIETY","ENVY"],                                                                             rows:6, cols:10, dropSpd:2.35, shootInterval:155, waveGap:3200 },
+  { name:"Abyss II",              enemies:["ADDICTION","DECEPTION","ANGER","PRESSURE","BITTERNESS","ENVY","ANXIETY"],                                                                  rows:7, cols:10, dropSpd:2.55, shootInterval:140, waveGap:3200 },
+  { name:"Abyss III",             enemies:["DECEPTION","ADDICTION","BITTERNESS","PRIDE","ENVY","ANGER","ANXIETY","PRESSURE"],                                                          rows:7, cols:10, dropSpd:2.75, shootInterval:125, waveGap:3200 },
+  // Tier 12 — Wrath of Darkness (L34-36)
+  { name:"Wrath of Darkness I",   enemies:["ADDICTION","DECEPTION","PRIDE","BITTERNESS","ANGER","ENVY","ANXIETY","PRESSURE","DOUBT"],                                                  rows:7, cols:11, dropSpd:2.98, shootInterval:112, waveGap:3400 },
+  { name:"Wrath of Darkness II",  enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ANGER","ENVY","ANXIETY","PRESSURE","FEAR","TEMPTATION"],                                      rows:7, cols:11, dropSpd:3.22, shootInterval:100, waveGap:3400 },
+  { name:"Wrath of Darkness III", enemies:["ADDICTION","DECEPTION","BITTERNESS","PRIDE","ENVY","ANGER","ANXIETY","PRESSURE","DOUBT","FEAR","TEMPTATION","DISTRACTION"],                rows:7, cols:11, dropSpd:3.48, shootInterval:92,  waveGap:3400 },
+  // Tier 13 — Gates of Hell (L37-39)
+  { name:"Gates of Hell I",       enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","PRESSURE","TEMPTATION","FEAR","DOUBT","DISTRACTION","MATERIALISM"],  rows:8, cols:11, dropSpd:3.75, shootInterval:85,  waveGap:3600 },
+  { name:"Gates of Hell II",      enemies:["ADDICTION","DECEPTION","BITTERNESS","PRIDE","ENVY","ANGER","ANXIETY","FEAR","TEMPTATION","DOUBT","DISCOURAGEMENT","DISTRACTION","PRESSURE","MATERIALISM"], rows:8, cols:11, dropSpd:4.05, shootInterval:78, waveGap:3600 },
+  { name:"Gates of Hell III",     enemies:["DECEPTION","ADDICTION","PRIDE","BITTERNESS","ENVY","ANGER","ANXIETY","PRESSURE","TEMPTATION","FEAR","DOUBT","DISTRACTION","MATERIALISM","DISCOURAGEMENT"], rows:8, cols:11, dropSpd:4.40, shootInterval:70, waveGap:3600 }
 ];
 
 // ---- Powerup Types ----
@@ -186,7 +212,21 @@ const LEVEL_INTROS = [
   // Tier 10 — Eternal Victory
   { tag:"LEVEL 28", name:"Eternal Victory I",        armor:"Crown of Life",                verse:"They triumphed over him by the blood of the Lamb and by the word of their testimony.",                   ref:"Revelation 12:11" },
   { tag:"LEVEL 29", name:"Eternal Victory II",       armor:"Crown of Life",                verse:"I have fought the good fight, I have finished the race, I have kept the faith.",                         ref:"2 Timothy 4:7"  },
-  { tag:"LEVEL 30", name:"Eternal Victory III",      armor:"Crown of Life",                verse:"To him who overcomes, I will give the right to sit with me on my throne.",                               ref:"Revelation 3:21" }
+  { tag:"LEVEL 30", name:"Eternal Victory III",      armor:"Crown of Life",                verse:"To him who overcomes, I will give the right to sit with me on my throne.",                               ref:"Revelation 3:21" },
+  // Tier 11 — Abyss
+  { tag:"LEVEL 31", name:"Abyss I",                 armor:"Shield of Faith",              verse:"Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me.",   ref:"Psalm 23:4" },
+  { tag:"LEVEL 32", name:"Abyss II",                armor:"Shield of Faith",              verse:"The Lord is my light and my salvation — whom shall I fear? The Lord is the stronghold of my life.",          ref:"Psalm 27:1" },
+  { tag:"LEVEL 33", name:"Abyss III",               armor:"Shield of Faith",              verse:"No weapon forged against you will prevail, and you will refute every tongue that accuses you.",              ref:"Isaiah 54:17" },
+  // Tier 12 — Wrath of Darkness
+  { tag:"LEVEL 34", name:"Wrath of Darkness I",     armor:"Sword of the Spirit",          verse:"They triumphed over him by the blood of the Lamb and by the word of their testimony.",                      ref:"Revelation 12:11" },
+  { tag:"LEVEL 35", name:"Wrath of Darkness II",    armor:"Sword of the Spirit",          verse:"The one who is in you is greater than the one who is in the world.",                                        ref:"1 John 4:4" },
+  { tag:"LEVEL 36", name:"Wrath of Darkness III",   armor:"Sword of the Spirit",          verse:"Neither death nor life, neither angels nor demons — nothing will be able to separate us from the love of God.", ref:"Romans 8:38-39" },
+  // Tier 13 — Gates of Hell
+  { tag:"LEVEL 37", name:"Gates of Hell I",         armor:"Full Armor of God",            verse:"And the gates of hell shall not prevail against it.",                                                        ref:"Matthew 16:18" },
+  { tag:"LEVEL 38", name:"Gates of Hell II",        armor:"Full Armor of God",            verse:"The Lord will rescue me from every evil attack and bring me safely to his heavenly kingdom.",                ref:"2 Timothy 4:18" },
+  { tag:"LEVEL 39", name:"Gates of Hell III",       armor:"Full Armor of God",            verse:"But thanks be to God! He gives us the victory through our Lord Jesus Christ.",                               ref:"1 Corinthians 15:57" },
+  // Satan's Mothership
+  { tag:"LEVEL 40", name:"Satan's Mothership",      armor:"Holy Fire",                    verse:"The God of peace will soon crush Satan under your feet.",                                                    ref:"Romans 16:20" }
 ];
 
 // ============================================================
@@ -393,7 +433,12 @@ class Bullet {
     // Store trail before moving
     this._trail.unshift({ x: this.x, y: this.y });
     if (this._trail.length > this._maxTrail) this._trail.pop();
-    this.y += this.spd;
+    if (this.vx !== undefined || this.vy !== undefined) {
+      this.x += (this.vx || 0);
+      this.y += (this.vy || 0);
+    } else {
+      this.y += this.spd;
+    }
     this.age++;
   }
 
@@ -761,6 +806,133 @@ class Boss {
   }
 }
 
+class SatanBoss {
+  constructor(W) {
+    this.isSatan = true;
+    this.w = 200; this.h = 150;
+    this.x = W / 2;
+    this.targetY = 90;
+    this.y = -this.h - 30;
+    this.maxHp = 400; this.hp = 400;
+    this.shootTimer = 0;
+    this.age = 0;
+    this.dead = false;
+    this.phase2 = false;
+    this.phase3 = false;
+    this.beamActive = false;
+    this.beamTimer = 0;
+    this._flashTimer = 0;
+    this.orbs = Array.from({ length: 6 }, (_, i) => ({ angle: (i / 6) * Math.PI * 2, r: 80, speed: 0.022 + i * 0.003 }));
+  }
+  update(W) {
+    this.age++;
+    const hpFrac = this.hp / this.maxHp;
+    this.phase2 = hpFrac < 0.66;
+    this.phase3 = hpFrac < 0.33;
+    const sway = Math.sin(this.age * 0.012) * (W * 0.28);
+    const bob  = Math.sin(this.age * 0.025) * 18;
+    this.x = W / 2 + sway;
+    this.y = this.targetY + bob;
+    const orbSpeedMult = this.phase3 ? 2.2 : this.phase2 ? 1.5 : 1.0;
+    for (const orb of this.orbs) orb.angle += orb.speed * orbSpeedMult;
+    if (this.phase2) {
+      this.beamTimer++;
+      this.beamActive = (this.beamTimer % 120 < 60);
+    }
+    if (this._flashTimer > 0) this._flashTimer--;
+  }
+  canShoot(interval) {
+    this.shootTimer++;
+    if (this.shootTimer >= interval) { this.shootTimer = 0; return true; }
+    return false;
+  }
+  takeDamage(dmg) {
+    this.hp = Math.max(0, this.hp - dmg);
+    this._flashTimer = 8;
+    if (this.hp <= 0) this.dead = true;
+    return this.dead;
+  }
+  draw(ctx, W, H) {
+    const { x, y, w, h } = this;
+    const hw = w / 2, hh = h / 2;
+    const flash = this._flashTimer > 0;
+    const t = this.age * 0.02;
+    ctx.save();
+
+    // Mothership saucer hull
+    ctx.shadowColor = flash ? '#FFFFFF' : (this.phase3 ? '#FF0000' : this.phase2 ? '#CC0000' : '#880000');
+    ctx.shadowBlur  = flash ? 60 : 40;
+    const bg = ctx.createRadialGradient(x, y, 10, x, y, hw);
+    if (flash)            { bg.addColorStop(0, '#FFFFFF'); bg.addColorStop(1, '#FF4444'); }
+    else if (this.phase3) { bg.addColorStop(0, '#660000'); bg.addColorStop(0.5, '#AA0000'); bg.addColorStop(1, '#220000'); }
+    else if (this.phase2) { bg.addColorStop(0, '#440000'); bg.addColorStop(0.5, '#880000'); bg.addColorStop(1, '#110000'); }
+    else                  { bg.addColorStop(0, '#220000'); bg.addColorStop(0.5, '#550000'); bg.addColorStop(1, '#0A0000'); }
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.ellipse(x, y, hw, hh * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = flash ? '#FFFFFF' : '#FF4444';
+    ctx.lineWidth = 3; ctx.stroke();
+
+    // Dome
+    ctx.beginPath();
+    ctx.ellipse(x, y - hh * 0.2, hw * 0.45, hh * 0.6, 0, 0, Math.PI * 2);
+    const domeBg = ctx.createRadialGradient(x, y - hh * 0.2, 5, x, y - hh * 0.2, hw * 0.45);
+    domeBg.addColorStop(0, flash ? '#FFF' : '#FF2222');
+    domeBg.addColorStop(1, '#000');
+    ctx.fillStyle = domeBg;
+    ctx.shadowColor = flash ? '#FFFFFF' : '#FF0000'; ctx.shadowBlur = 30;
+    ctx.fill();
+
+    // Eye
+    const eyeR = 22 + 6 * Math.sin(t * 4);
+    ctx.beginPath(); ctx.arc(x, y - hh * 0.1, eyeR, 0, Math.PI * 2);
+    ctx.fillStyle = flash ? '#FFFFFF' : '#FF0000';
+    ctx.shadowColor = '#FF0000'; ctx.shadowBlur = 40;
+    ctx.fill();
+    ctx.fillStyle = '#000'; ctx.shadowBlur = 0;
+    ctx.beginPath(); ctx.ellipse(x + 4 * Math.sin(t * 2), y - hh * 0.1, 11, 13, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Orbiting orbs
+    for (const orb of this.orbs) {
+      const ox = x + Math.cos(orb.angle) * orb.r;
+      const oy = y + Math.sin(orb.angle) * orb.r * 0.4;
+      ctx.beginPath(); ctx.arc(ox, oy, 7 + 2 * Math.sin(orb.angle * 3), 0, Math.PI * 2);
+      ctx.fillStyle = this.phase3 ? '#FF4400' : '#FF0000';
+      ctx.shadowColor = '#FF0000'; ctx.shadowBlur = 18;
+      ctx.globalAlpha = 0.85; ctx.fill(); ctx.globalAlpha = 1;
+    }
+
+    // Phase 2+ beam
+    if (this.phase2 && this.beamActive) {
+      const bw = 12 + 4 * Math.sin(this.beamTimer * 0.3);
+      const beamGrad = ctx.createLinearGradient(x, y + hh * 0.5, x, H);
+      beamGrad.addColorStop(0, 'rgba(255,0,0,0.9)');
+      beamGrad.addColorStop(1, 'rgba(255,0,0,0.0)');
+      ctx.fillStyle = beamGrad;
+      ctx.shadowColor = '#FF0000'; ctx.shadowBlur = 20;
+      ctx.globalAlpha = 0.7;
+      ctx.fillRect(x - bw / 2, y + hh * 0.5, bw, H - y - hh * 0.5);
+      ctx.globalAlpha = 1;
+    }
+
+    // HP bar
+    const bw2 = w * 0.9, bx2 = x - bw2 / 2, by2 = y + hh * 0.5 + 14;
+    ctx.shadowBlur = 0; ctx.globalAlpha = 0.95;
+    ctx.fillStyle = '#0A0000'; ctx.fillRect(bx2 - 1, by2 - 1, bw2 + 2, 12);
+    const hpP = this.hp / this.maxHp;
+    const hpC = hpP > 0.66 ? '#880000' : hpP > 0.33 ? '#CC0000' : '#FF0000';
+    ctx.fillStyle = hpC; ctx.shadowColor = hpC; ctx.shadowBlur = 12;
+    ctx.fillRect(bx2, by2, bw2 * hpP, 10);
+    ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    ctx.fillStyle = '#FF8888';
+    ctx.font = 'bold 11px "SF Mono","Fira Code",monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText("SATAN'S MOTHERSHIP", x, by2 + 14);
+    ctx.restore();
+  }
+}
+
 class Particle {
   // type: 'circle' | 'spark'
   constructor(x, y, color, vx, vy, life, size, type = 'circle') {
@@ -1049,7 +1221,7 @@ const ui = {
     document.getElementById('level-score-display').textContent  = `Score: ${score.toLocaleString()}`;
   },
 
-  showGameOver(score) {
+  showGameOver(score, levelIdx) {
     ['hud','touch-controls','verse-popup'].forEach(s => this._hide(s));
     this._show('screen-gameover');
     document.getElementById('final-score-display').textContent = `Score: ${score.toLocaleString()}`;
@@ -1057,6 +1229,15 @@ const ui = {
     document.getElementById('new-high-score').classList.toggle('hidden', !isHigh);
     if (isHigh) Leaderboard.add('Champion', score);
     Audio.gameOver();
+    // Continue from level button
+    const continueBtn = document.getElementById('btn-continue-level');
+    if (continueBtn && levelIdx > 0) {
+      continueBtn.textContent = `Continue from Level ${levelIdx + 1}`;
+      continueBtn.dataset.levelIdx = levelIdx;
+      continueBtn.classList.remove('hidden');
+    } else if (continueBtn) {
+      continueBtn.classList.add('hidden');
+    }
   },
 
   showVictory(score, runVerses) {
@@ -1335,8 +1516,8 @@ class Game {
   _startBoss() {
     this.isBoss = true;
     this.enemies = [];
-    this.boss = new Boss(this.W);
-    this.shootInterval = 900;
+    this.boss = this.levelIdx >= LEVELS.length - 1 ? new SatanBoss(this.W) : new Boss(this.W);
+    this.shootInterval = this.boss.isSatan ? 500 : 900;
     this.shootTimer    = 0;
     // Phase 2: boss intro
     this._bossIntroActive = true;
@@ -1403,7 +1584,7 @@ class Game {
       if (this._playerDeathTimer === 0) {
         this.state = 'over';
         cancelAnimationFrame(this._raf);
-        setTimeout(() => ui.showGameOver(Math.round(this.score)), 100);
+        setTimeout(() => ui.showGameOver(Math.round(this.score), this.levelIdx), 100);
       }
       return;
     }
@@ -1525,6 +1706,9 @@ class Game {
       this._onLevelClear();
     }
 
+    // Multiplayer: share position with co-op partner
+    if (MP.connected) MP.tick(this.player.x, this.score);
+
     ui.updateHUD(player, Math.round(this.score), this.levelIdx, this.combo, player.weapon.name);
   }
 
@@ -1551,7 +1735,7 @@ class Game {
         const shooter = alive[Math.floor(Math.random() * alive.length)];
         this.eBullets.push(new Bullet(shooter.x, shooter.y + shooter.h / 2, eDef, true));
         // Extra simultaneous shots scale with level: +1 at L12, +2 at L15, +3 at L20, +4 at L25, +5 at L28
-        const extraShots = this.levelIdx >= 27 ? 5 : this.levelIdx >= 24 ? 4 : this.levelIdx >= 19 ? 3 : this.levelIdx >= 14 ? 2 : this.levelIdx >= 11 ? 1 : 0;
+        const extraShots = this.levelIdx >= 38 ? 9 : this.levelIdx >= 35 ? 8 : this.levelIdx >= 32 ? 7 : this.levelIdx >= 29 ? 6 : this.levelIdx >= 27 ? 5 : this.levelIdx >= 24 ? 4 : this.levelIdx >= 19 ? 3 : this.levelIdx >= 14 ? 2 : this.levelIdx >= 11 ? 1 : 0;
         for (let s = 0; s < extraShots; s++) {
           const s2 = alive[Math.floor(Math.random() * alive.length)];
           this.eBullets.push(new Bullet(s2.x, s2.y + s2.h / 2, eDef, true));
@@ -1585,13 +1769,36 @@ class Game {
     }
 
     this.boss.update(this.W);
-    if (this.boss.canShoot(this.shootInterval)) {
-      const spread = this.boss.phase2 ? 3 : 1;
-      for (let i = 0; i < spread; i++) {
-        const ox = (i - Math.floor(spread / 2)) * 28;
-        this.eBullets.push(new Bullet(
-          this.boss.x + ox, this.boss.y + this.boss.h / 2,
-          { w: 5, h: 18, spd: 0, dmg: 1, color: '#F87171', glow: 'rgba(248,113,113,0.8)', trail: '#FCA5A5' }, true));
+    if (this.boss.isSatan) {
+      // Satan fires aimed orbs at the player
+      if (this.boss.canShoot(this.shootInterval)) {
+        const shots = this.boss.phase3 ? 5 : this.boss.phase2 ? 3 : 2;
+        for (let i = 0; i < shots; i++) {
+          const angle = (Math.PI / 2) + (i - Math.floor(shots / 2)) * 0.28;
+          const spd = this.boss.phase3 ? 5.5 : this.boss.phase2 ? 4.5 : 3.5;
+          const bDef = { w: 8, h: 8, spd: 0, dmg: 2, color: '#FF2222', glow: 'rgba(255,34,34,0.9)', trail: '#FF6666', isOrb: true };
+          const b = new Bullet(this.boss.x, this.boss.y + this.boss.h / 2, bDef, true);
+          b.vx = Math.cos(angle) * spd;
+          b.vy = Math.sin(angle) * spd;
+          this.eBullets.push(b);
+        }
+      }
+      // Satan beam: continuous damage when in phase2+
+      if (this.boss.phase2 && this.boss.beamActive) {
+        if (rectsOverlap(this.player.x - this.player.w / 2, this.player.y - this.player.h / 2,
+            this.player.w, this.player.h, this.boss.x - 8, this.boss.y + this.boss.h / 2, 16, this.H)) {
+          if (this.boss.beamTimer % 8 === 0) this.player.hp--;
+        }
+      }
+    } else {
+      if (this.boss.canShoot(this.shootInterval)) {
+        const spread = this.boss.phase2 ? 3 : 1;
+        for (let i = 0; i < spread; i++) {
+          const ox = (i - Math.floor(spread / 2)) * 28;
+          this.eBullets.push(new Bullet(
+            this.boss.x + ox, this.boss.y + this.boss.h / 2,
+            { w: 5, h: 18, spd: 0, dmg: 1, color: '#F87171', glow: 'rgba(248,113,113,0.8)', trail: '#FCA5A5' }, true));
+        }
       }
     }
   }
@@ -1641,6 +1848,31 @@ class Game {
     this.levelIdx++;
     ui.hidePause();
     ui._hide('screen-level');
+    ui.showGame();
+    this.state = 'playing';
+    if (this.levelIdx >= LEVELS.length) this._startBoss();
+    else this._buildLevel(this.levelIdx);
+    this._loop();
+  }
+
+  continueGame(levelIdx) {
+    ui._hide('screen-gameover');
+    this.score     = 0;
+    this.combo     = 0;
+    this.comboTimer = 0;
+    this.levelIdx  = levelIdx;
+    this.player    = new Player(this.W / 2, this.H - 80);
+    this.player.lives = 3;
+    this.player.dead  = false;
+    this._playerDeathTimer = 0;
+    this.bullets   = [];
+    this.eBullets  = [];
+    this.enemies   = [];
+    this.particles = [];
+    this.powerups  = [];
+    this.isBoss    = false;
+    this.boss      = null;
+    this._runVerses = new Set();
     ui.showGame();
     this.state = 'playing';
     if (this.levelIdx >= LEVELS.length) this._startBoss();
@@ -1830,8 +2062,9 @@ class Game {
     this.bg.draw(ctx);
     for (const p of this.powerups) p.draw(ctx);
     for (const e of this.enemies)  e.draw(ctx);
-    if (this.boss && !this.boss.dead) this.boss.draw(ctx);
+    if (this.boss && !this.boss.dead) this.boss.draw(ctx, this.W, this.H);
     this.player.draw(ctx);
+    if (MP.connected && MP.p2x !== null) this._drawP2Ghost(MP.p2x, this.player.y);
     for (const p of this.particles) p.draw(ctx);
     for (const b of this.bullets)  b.draw(ctx);
     for (const b of this.eBullets) b.draw(ctx);
@@ -1985,28 +2218,139 @@ class Game {
       const textAlpha = Math.min(1, (115 - t) / 25) * oa;
       ctx.globalAlpha = textAlpha;
 
+      const isSatan = this.boss && this.boss.isSatan;
       // Subtitle
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.shadowColor = '#7C3AED'; ctx.shadowBlur = 25;
-      ctx.fillStyle = '#A78BFA';
+      ctx.shadowColor = isSatan ? '#DC2626' : '#7C3AED'; ctx.shadowBlur = 25;
+      ctx.fillStyle = isSatan ? '#F87171' : '#A78BFA';
       ctx.font = '600 10px "SF Mono","Fira Code",monospace';
-      ctx.fillText('E P H E S I A N S   6 : 1 2', W / 2, H / 2 - 32);
+      ctx.fillText(isSatan ? 'R O M A N S   1 6 : 2 0' : 'E P H E S I A N S   6 : 1 2', W / 2, H / 2 - 32);
 
       // Main title
-      ctx.shadowColor = '#FFFFFF'; ctx.shadowBlur = 30;
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 28px "SF Mono","Fira Code",monospace';
-      ctx.fillText('THE ENEMY', W / 2, H / 2 + 4);
+      ctx.shadowColor = isSatan ? '#FF0000' : '#FFFFFF'; ctx.shadowBlur = 30;
+      ctx.fillStyle = isSatan ? '#FF4444' : '#FFFFFF';
+      ctx.font = 'bold 22px "SF Mono","Fira Code",monospace';
+      ctx.fillText(isSatan ? "SATAN'S MOTHERSHIP" : 'THE ENEMY', W / 2, H / 2 + 4);
 
       // Tag
       ctx.shadowColor = '#DC2626'; ctx.shadowBlur = 15;
       ctx.fillStyle = '#F87171';
       ctx.font = '500 9px "SF Mono","Fira Code",monospace';
-      ctx.fillText('F I N A L   B A T T L E', W / 2, H / 2 + 32);
+      ctx.fillText(isSatan ? 'U L T I M A T E   F I N A L   B A T T L E' : 'F I N A L   B A T T L E', W / 2, H / 2 + 32);
     }
     ctx.restore();
   }
+
+  _drawP2Ghost(x, y) {
+    const { ctx } = this;
+    const w = 30, h = 38;
+    ctx.save();
+    ctx.shadowColor = '#2DD4BF';
+    ctx.shadowBlur  = 18;
+    const hull = ctx.createLinearGradient(x, y - h * 0.48, x, y + h * 0.38);
+    hull.addColorStop(0, '#E2E8F0');
+    hull.addColorStop(0.5, '#2DD4BF');
+    hull.addColorStop(1, '#0D9488');
+    ctx.fillStyle = hull;
+    ctx.beginPath();
+    ctx.moveTo(x,           y - h * 0.48);
+    ctx.lineTo(x + w * 0.5, y + h * 0.2);
+    ctx.lineTo(x + w * 0.3, y + h * 0.38);
+    ctx.lineTo(x,           y + h * 0.18);
+    ctx.lineTo(x - w * 0.3, y + h * 0.38);
+    ctx.lineTo(x - w * 0.5, y + h * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF'; ctx.shadowBlur = 8;
+    ctx.fillRect(x - 1.5, y - 9, 3, 18);
+    ctx.fillRect(x - 7, y - 3, 14, 3);
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = '#2DD4BF';
+    ctx.font = '7px "SF Mono","Fira Code",monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('P2', x, y + h * 0.38 + 10);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
 }
+
+// ============================================================
+//  MULTIPLAYER (PeerJS P2P co-op)
+// ============================================================
+const MP = (() => {
+  let peer = null, conn = null;
+  const state = {
+    role: null,
+    connected: false,
+    roomCode: null,
+    p2x: null,
+    p2score: 0,
+    _ticker: 0
+  };
+
+  function _cleanup() {
+    if (conn)  { try { conn.close();   } catch(_) {} conn  = null; }
+    if (peer)  { try { peer.destroy(); } catch(_) {} peer  = null; }
+    state.connected = false;
+    state.role      = null;
+    state.roomCode  = null;
+    state.p2x       = null;
+    state.p2score   = 0;
+    state._ticker   = 0;
+  }
+
+  function _handle(data) {
+    if (data && data.t === 'p') {
+      state.p2x     = data.x;
+      state.p2score = data.s || 0;
+    }
+  }
+
+  return {
+    get role()      { return state.role; },
+    get connected() { return state.connected; },
+    get p2x()       { return state.p2x; },
+    get p2score()   { return state.p2score; },
+
+    createRoom(onCode, onConnect) {
+      _cleanup();
+      const code = Math.random().toString(36).substr(2, 6).toUpperCase();
+      state.role = 'host';
+      state.roomCode = code;
+      peer = new Peer('AOG-' + code, { debug: 0 });
+      peer.on('open', () => onCode(code));
+      peer.on('connection', c => {
+        conn = c;
+        c.on('open', () => { state.connected = true; onConnect(); });
+        c.on('data', _handle);
+      });
+      peer.on('error', e => console.warn('MP error:', e));
+    },
+
+    joinRoom(code, onConnect, onError) {
+      _cleanup();
+      state.role = 'guest';
+      state.roomCode = code.toUpperCase().trim();
+      peer = new Peer({ debug: 0 });
+      peer.on('open', () => {
+        conn = peer.connect('AOG-' + state.roomCode, { reliable: false });
+        conn.on('open', () => { state.connected = true; onConnect(); });
+        conn.on('data', _handle);
+        conn.on('error', onError);
+      });
+      peer.on('error', onError);
+    },
+
+    tick(x, score) {
+      if (!state.connected || !conn) return;
+      state._ticker++;
+      if (state._ticker % 3 !== 0) return;
+      try { conn.send({ t: 'p', x, s: score }); } catch(_) {}
+    },
+
+    disconnect: _cleanup
+  };
+})();
 
 // ============================================================
 //  UTILITY

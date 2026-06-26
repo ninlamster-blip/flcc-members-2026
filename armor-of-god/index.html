@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Armor of God: Spiritual Battle</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
   <a href="../" style="position:fixed;top:10px;left:12px;z-index:999;padding:5px 12px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.18);border-radius:7px;color:#fff;font-size:0.78rem;text-decoration:none;letter-spacing:0.04em;">← App</a>
@@ -57,6 +58,7 @@
         <p class="scripture-ref">Ephesians 6:10&ndash;18</p>
         <div class="menu-buttons">
           <button id="btn-start" class="btn-primary">Begin Battle</button>
+          <button id="btn-multiplayer" class="btn-secondary">⚔ Co-op Multiplayer</button>
           <button id="btn-journal" class="btn-secondary">Verse Journal</button>
           <button id="btn-armor" class="btn-secondary">Armor of God</button>
           <button id="btn-scores" class="btn-secondary">Leaderboard</button>
@@ -65,6 +67,49 @@
           <span>Arrow keys or WASD to move</span>
           <span>Space to fire</span>
         </div>
+      </div>
+    </div>
+
+    <!-- Multiplayer Menu Screen -->
+    <div id="screen-mp-menu" class="screen hidden">
+      <div class="screen-inner">
+        <div class="brand-mark">&#9876;</div>
+        <h2>Co-op Multiplayer</h2>
+        <p class="tagline">Fight the darkness together</p>
+        <div class="menu-buttons">
+          <button id="btn-mp-create" class="btn-primary">Create Room</button>
+          <button id="btn-mp-join" class="btn-primary">Join Room</button>
+          <button id="btn-mp-back" class="btn-secondary">Back</button>
+        </div>
+        <p class="controls-hint" style="margin-top:14px;">Both players fight side by side.<br>Share the 6-letter room code with your partner.</p>
+      </div>
+    </div>
+
+    <!-- Multiplayer Create Room Screen -->
+    <div id="screen-mp-create" class="screen hidden">
+      <div class="screen-inner">
+        <h2>Create Room</h2>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:8px;">Share this code with your partner:</p>
+        <div id="mp-room-code" class="mp-code">......
+</div>
+        <button id="btn-copy-code" class="btn-secondary" style="margin-bottom:16px;">Copy Code</button>
+        <p id="mp-create-status" class="mp-status">Connecting to server...</p>
+        <button id="btn-mp-start" class="btn-primary hidden" style="margin-top:12px;">&#9654; Start Battle Together</button>
+        <button id="btn-mp-create-cancel" class="btn-secondary" style="margin-top:8px;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Multiplayer Join Room Screen -->
+    <div id="screen-mp-join" class="screen hidden">
+      <div class="screen-inner">
+        <h2>Join Room</h2>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:12px;">Enter your partner's 6-letter room code:</p>
+        <input id="mp-code-input" class="mp-input" type="text" maxlength="6" placeholder="ABCDEF" autocapitalize="characters" autocomplete="off" spellcheck="false">
+        <div class="menu-buttons" style="margin-top:12px;">
+          <button id="btn-mp-join-confirm" class="btn-primary">Join Battle</button>
+          <button id="btn-mp-join-cancel" class="btn-secondary">Back</button>
+        </div>
+        <p id="mp-join-status" class="mp-status" style="margin-top:12px;"></p>
       </div>
     </div>
 
@@ -149,7 +194,8 @@
         <p id="final-score-display"></p>
         <div id="new-high-score" class="hidden high-score-badge">New High Score!</div>
         <div class="menu-buttons">
-          <button id="btn-restart" class="btn-primary">Fight Again</button>
+          <button id="btn-continue-level" class="btn-primary hidden">Continue from Level 1</button>
+          <button id="btn-restart" class="btn-secondary">Start from Level 1</button>
           <button id="btn-menu" class="btn-secondary">Main Menu</button>
         </div>
       </div>
@@ -203,5 +249,86 @@
   </div>
 
   <script src="game.js"></script>
+  <script>
+  // Multiplayer & Continue-from-level UI wiring
+  window.addEventListener('DOMContentLoaded', () => {
+    const show = id => document.getElementById(id).classList.remove('hidden');
+    const hide = id => document.getElementById(id).classList.add('hidden');
+
+    // Multiplayer menu
+    document.getElementById('btn-multiplayer').addEventListener('click', () => {
+      hide('screen-menu'); show('screen-mp-menu');
+    });
+    document.getElementById('btn-mp-back').addEventListener('click', () => {
+      hide('screen-mp-menu'); show('screen-menu');
+    });
+
+    // Create room
+    document.getElementById('btn-mp-create').addEventListener('click', () => {
+      hide('screen-mp-menu'); show('screen-mp-create');
+      document.getElementById('mp-room-code').textContent = '......';
+      document.getElementById('mp-create-status').textContent = 'Connecting to server...';
+      hide('btn-mp-start');
+      MP.createRoom(
+        code => {
+          document.getElementById('mp-room-code').textContent = code;
+          document.getElementById('mp-create-status').textContent = 'Waiting for partner to join...';
+        },
+        () => {
+          document.getElementById('mp-create-status').textContent = 'Partner connected! Ready to fight.';
+          show('btn-mp-start');
+        }
+      );
+    });
+    document.getElementById('btn-copy-code').addEventListener('click', () => {
+      const code = document.getElementById('mp-room-code').textContent.trim();
+      if (navigator.clipboard) navigator.clipboard.writeText(code).catch(() => {});
+      document.getElementById('btn-copy-code').textContent = 'Copied!';
+      setTimeout(() => { document.getElementById('btn-copy-code').textContent = 'Copy Code'; }, 1500);
+    });
+    document.getElementById('btn-mp-start').addEventListener('click', () => {
+      hide('screen-mp-create'); Audio.resume(); game.start();
+    });
+    document.getElementById('btn-mp-create-cancel').addEventListener('click', () => {
+      MP.disconnect(); hide('screen-mp-create'); show('screen-mp-menu');
+    });
+
+    // Join room
+    document.getElementById('btn-mp-join').addEventListener('click', () => {
+      hide('screen-mp-menu'); show('screen-mp-join');
+      document.getElementById('mp-join-status').textContent = '';
+      document.getElementById('mp-code-input').value = '';
+    });
+    document.getElementById('btn-mp-join-confirm').addEventListener('click', () => {
+      const code = document.getElementById('mp-code-input').value.trim().toUpperCase();
+      if (code.length !== 6) {
+        document.getElementById('mp-join-status').textContent = 'Enter a 6-letter room code.';
+        return;
+      }
+      document.getElementById('mp-join-status').textContent = 'Connecting...';
+      MP.joinRoom(code,
+        () => {
+          document.getElementById('mp-join-status').textContent = 'Connected! Starting battle...';
+          setTimeout(() => { hide('screen-mp-join'); Audio.resume(); game.start(); }, 900);
+        },
+        () => {
+          document.getElementById('mp-join-status').textContent = 'Connection failed. Check the code and try again.';
+        }
+      );
+    });
+    document.getElementById('mp-code-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('btn-mp-join-confirm').click();
+    });
+    document.getElementById('btn-mp-join-cancel').addEventListener('click', () => {
+      MP.disconnect(); hide('screen-mp-join'); show('screen-mp-menu');
+    });
+
+    // Continue from level
+    document.getElementById('btn-continue-level').addEventListener('click', function() {
+      const idx = parseInt(this.dataset.levelIdx) || 0;
+      game.continueGame(idx);
+    });
+  });
+  </script>
 </body>
 </html>
