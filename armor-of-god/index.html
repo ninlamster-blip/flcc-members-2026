@@ -33,6 +33,10 @@
         <div id="weapon-display"></div>
         <button id="pause-btn" aria-label="Pause">&#9646;&#9646;</button>
       </div>
+      <div class="hud-row hud-armor">
+        <div id="armor-display"></div>
+        <div id="journal-count"></div>
+      </div>
     </div>
 
     <!-- Touch Controls -->
@@ -51,6 +55,7 @@
         <p class="scripture-ref">Ephesians 6:10&ndash;18</p>
         <div class="menu-buttons">
           <button id="btn-start" class="btn-primary">Begin Battle</button>
+          <button id="btn-journal" class="btn-secondary">Verse Journal</button>
           <button id="btn-armor" class="btn-secondary">Armor of God</button>
           <button id="btn-scores" class="btn-secondary">Leaderboard</button>
         </div>
@@ -150,7 +155,7 @@
 
     <!-- Victory Screen -->
     <div id="screen-victory" class="screen hidden">
-      <div class="screen-inner">
+      <div class="screen-inner scrollable">
         <div class="brand-mark victory-mark">&#10022;</div>
         <h2>Victory!</h2>
         <p class="victory-sub">You have put on the full Armor of God and stood firm.</p>
@@ -159,6 +164,7 @@
           <span class="verse-ref">1 Corinthians 15:57</span>
         </div>
         <p id="victory-score-display"></p>
+        <div id="victory-verse-summary" class="victory-verse-summary hidden"></div>
         <div class="menu-buttons">
           <button id="btn-play-again" class="btn-primary">Play Again</button>
           <button id="btn-menu-v" class="btn-secondary">Main Menu</button>
@@ -174,6 +180,21 @@
         <div class="verse-divider"></div>
         <p id="verse-text"></p>
         <span id="verse-ref-display"></span>
+        <div id="verse-new-badge" class="verse-new-badge hidden">&#10022; New verse saved to Journal</div>
+      </div>
+    </div>
+
+    <!-- New Verse Badge (HUD overlay) -->
+    <div id="new-verse-toast" class="new-verse-toast hidden"></div>
+
+    <!-- Verse Journal Screen (Phase 3) -->
+    <div id="screen-journal" class="screen hidden">
+      <div class="screen-inner scrollable">
+        <h2>Verse Journal</h2>
+        <p id="journal-progress-text" class="journal-progress-text">0 / 10 collected</p>
+        <div class="journal-progress-bar-wrap"><div id="journal-progress-bar"></div></div>
+        <div id="journal-grid" class="journal-grid"></div>
+        <button class="btn-secondary" onclick="ui.showMenu()">Back</button>
       </div>
     </div>
 

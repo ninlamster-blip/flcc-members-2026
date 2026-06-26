@@ -638,6 +638,223 @@ h2 {
   color: var(--text);
 }
 
+/* ============================================================
+   PHASE 3 — Bible Features
+   ============================================================ */
+
+/* ---- Armor display (HUD row) ---- */
+.hud-armor {
+  justify-content: space-between;
+  padding: 0 0.1rem;
+  margin-top: -0.1rem;
+}
+
+#armor-display {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: var(--accent-gold);
+  text-shadow: 0 0 8px var(--glow-gold);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+#journal-count {
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+/* ---- Verse popup new-verse badge ---- */
+.verse-new-badge {
+  margin-top: 0.55rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--accent-gold);
+  font-weight: 600;
+  text-shadow: 0 0 8px var(--glow-gold);
+  animation: fadeIn 0.4s ease;
+}
+
+/* ---- New verse toast (top overlay) ---- */
+.new-verse-toast {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  background: linear-gradient(135deg, rgba(10,22,40,0.95), rgba(20,15,40,0.95));
+  border: 1px solid rgba(252,211,77,0.35);
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--accent-gold);
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 0 20px var(--glow-gold);
+  animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) scale(0.85) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1)    translateY(0); }
+}
+
+/* ---- Verse Journal Screen ---- */
+.journal-progress-text {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  margin-top: -0.2rem;
+}
+
+.journal-progress-bar-wrap {
+  width: 100%;
+  max-width: 280px;
+  height: 4px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0.3rem 0 0.8rem;
+}
+
+#journal-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7C3AED, #FCD34D);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.journal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 0.8rem;
+}
+
+.verse-card {
+  border-radius: 8px;
+  padding: 0.75rem 0.7rem;
+  border: 1px solid;
+  text-align: left;
+  transition: transform 0.15s ease;
+}
+
+.verse-card.unlocked {
+  background: rgba(96,165,250,0.05);
+  border-color: rgba(96,165,250,0.2);
+}
+
+.verse-card.unlocked:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96,165,250,0.4);
+}
+
+.verse-card.locked {
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.05);
+}
+
+.verse-card-enemy {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.verse-card.unlocked .verse-card-enemy { color: var(--accent-blue); }
+.verse-card.locked   .verse-card-enemy { color: var(--text-faint); }
+
+.verse-card-text {
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: var(--text);
+  font-style: italic;
+  margin-bottom: 0.35rem;
+}
+
+.verse-card-ref {
+  font-size: 0.65rem;
+  color: var(--accent-gold);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  display: block;
+}
+
+.verse-card-locked {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  font-style: italic;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.verse-card-lock {
+  font-size: 0.9rem;
+  opacity: 0.25;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+/* ---- Victory verse summary ---- */
+.victory-verse-summary {
+  width: 100%;
+  max-width: 300px;
+  background: rgba(252,211,77,0.05);
+  border: 1px solid rgba(252,211,77,0.2);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.victory-verse-summary h3 {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.victory-verse-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.victory-verse-row:last-child { border-bottom: none; }
+
+.victory-verse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.victory-verse-name {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.victory-verse-ref {
+  font-size: 0.65rem;
+  color: var(--accent-gold);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.victory-no-new {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
 /* ---- Responsive ---- */
 @media (max-height: 600px) {
   .screen-inner { padding: 1.2rem 1rem; }

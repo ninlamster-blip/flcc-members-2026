@@ -61,6 +61,38 @@ const POWERUP_TYPES = [
   { id:"light",  label:"LIGHT",  color:"#F9FAFB", dur:5000 }
 ];
 
+// ---- Level Intro Cards (Phase 3) ----
+const LEVEL_INTROS = [
+  {
+    tag:   "LEVEL 1",
+    name:  "Personal Battles",
+    armor: "Belt of Truth",
+    verse: "Stand firm then, with the belt of truth buckled around your waist.",
+    ref:   "Ephesians 6:14"
+  },
+  {
+    tag:   "LEVEL 2",
+    name:  "Battles of the Heart",
+    armor: "Breastplate of Righteousness",
+    verse: "...with the breastplate of righteousness in place.",
+    ref:   "Ephesians 6:14"
+  },
+  {
+    tag:   "LEVEL 3",
+    name:  "Battles of the World",
+    armor: "Gospel of Peace",
+    verse: "...with your feet fitted with the readiness that comes from the gospel of peace.",
+    ref:   "Ephesians 6:15"
+  },
+  {
+    tag:   "FINAL BATTLE",
+    name:  "The Enemy",
+    armor: "Shield of Faith",
+    verse: "Take up the shield of faith, with which you can extinguish all the flaming arrows of the evil one.",
+    ref:   "Ephesians 6:16"
+  }
+];
+
 // ============================================================
 //  AUDIO ENGINE
 // ============================================================
@@ -719,6 +751,48 @@ function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
          ay + ah / 2 > by - bh / 2;
 }
 
+// Phase 3: canvas text word-wrap
+function wrapText(ctx, text, cx, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '', lineY = y;
+  for (const word of words) {
+    const test = line + (line ? ' ' : '') + word;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, cx, lineY);
+      line = word; lineY += lineH;
+    } else { line = test; }
+  }
+  ctx.fillText(line, cx, lineY);
+  return lineY; // return final Y
+}
+
+// ============================================================
+//  JOURNAL (Phase 3) — LocalStorage verse collection
+// ============================================================
+class Journal {
+  constructor() { this.KEY = 'aog_journal_v1'; }
+
+  _get() { try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch { return {}; } }
+
+  unlock(type) {
+    const j = this._get();
+    const isNew = !j[type];
+    if (isNew) {
+      j[type] = { date: new Date().toLocaleDateString() };
+      localStorage.setItem(this.KEY, JSON.stringify(j));
+    }
+    return isNew;
+  }
+
+  isUnlocked(type) { return !!this._get()[type]; }
+
+  count()  { return Object.keys(this._get()).length; }
+  total()  { return Object.keys(VERSES).length; }
+  entries(){ return this._get(); }
+}
+
+const journal = new Journal();
+
 // ============================================================
 //  BACKGROUND (Phase 2: nebulae layer)
 // ============================================================
@@ -832,8 +906,8 @@ const ui = {
   _show(id) { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); },
 
   showMenu() {
-    ['screen-armor','screen-scores','screen-pause','screen-level','screen-gameover','screen-victory','screen-menu'].forEach(s => this._hide(s));
-    ['hud','touch-controls','verse-popup'].forEach(s => this._hide(s));
+    ['screen-armor','screen-scores','screen-journal','screen-pause','screen-level','screen-gameover','screen-victory','screen-menu'].forEach(s => this._hide(s));
+    ['hud','touch-controls','verse-popup','new-verse-toast'].forEach(s => this._hide(s));
     this._show('screen-menu');
   },
   showArmor() { this._hide('screen-menu'); this._show('screen-armor'); },
@@ -879,11 +953,32 @@ const ui = {
     Audio.gameOver();
   },
 
-  showVictory(score) {
+  showVictory(score, runVerses) {
     ['hud','touch-controls','verse-popup'].forEach(s => this._hide(s));
     this._show('screen-victory');
     document.getElementById('victory-score-display').textContent = `Final Score: ${score.toLocaleString()}`;
     Leaderboard.add('Champion', score);
+    // Phase 3: run verse summary
+    const summary = document.getElementById('victory-verse-summary');
+    if (summary && runVerses) {
+      const verses = [...runVerses];
+      if (verses.length > 0) {
+        summary.classList.remove('hidden');
+        summary.innerHTML = `<h3>Verses Unlocked This Run</h3>` +
+          verses.map(type => {
+            const v   = VERSES[type];
+            const def = ENEMY_DEF[type] || {};
+            return `<div class="victory-verse-row">
+              <div class="victory-verse-dot" style="background:${def.color || '#60A5FA'}"></div>
+              <span class="victory-verse-name">${def.name || type}</span>
+              <span class="victory-verse-ref">${v?.ref || ''}</span>
+            </div>`;
+          }).join('');
+      } else {
+        summary.classList.remove('hidden');
+        summary.innerHTML = `<p class="victory-no-new">All verses already in your Journal. Well done!</p>`;
+      }
+    }
   },
 
   updateHUD(player, score, levelIdx, combo, weaponName) {
@@ -902,6 +997,13 @@ const ui = {
     document.getElementById('weapon-display').textContent = weaponName;
     document.getElementById('lives-display').textContent  = '✦'.repeat(Math.max(0, player.lives)) || '—';
 
+    // Phase 3: armor piece + journal count in HUD
+    const intro = LEVEL_INTROS[levelIdx] || LEVEL_INTROS[LEVEL_INTROS.length - 1];
+    const armorEl = document.getElementById('armor-display');
+    if (armorEl && intro) armorEl.textContent = intro.armor.toUpperCase();
+    const jcEl = document.getElementById('journal-count');
+    if (jcEl) jcEl.textContent = `${journal.count()} / ${journal.total()} verses`;
+
     const comboEl = document.getElementById('combo-display');
     if (combo >= 3) {
       comboEl.textContent = `VICTORY STREAK ×${combo}`;
@@ -912,16 +1014,33 @@ const ui = {
     }
   },
 
-  showVerse(type) {
+  showVerse(type, isNew = false) {
     const v = VERSES[type];
     if (!v) return;
     const popup = document.getElementById('verse-popup');
     document.getElementById('verse-enemy-name').textContent  = ENEMY_DEF[type]?.name || type;
     document.getElementById('verse-text').textContent        = `"${v.text}"`;
     document.getElementById('verse-ref-display').textContent = v.ref;
+    // Phase 3: show new-verse badge
+    const badge = document.getElementById('verse-new-badge');
+    if (badge) badge.classList.toggle('hidden', !isNew);
     popup.classList.remove('hidden');
     clearTimeout(this._verseTimer);
-    this._verseTimer = setTimeout(() => popup.classList.add('hidden'), 2800);
+    this._verseTimer = setTimeout(() => {
+      popup.classList.add('hidden');
+      if (badge) badge.classList.add('hidden');
+    }, 2800);
+    // Phase 3: journal count toast
+    if (isNew) this._showJournalToast(ENEMY_DEF[type]?.name || type);
+  },
+
+  _showJournalToast(enemyName) {
+    const toast = document.getElementById('new-verse-toast');
+    if (!toast) return;
+    toast.textContent = `${enemyName} verse saved to Journal`;
+    toast.classList.remove('hidden');
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => toast.classList.add('hidden'), 2600);
   },
 
   showBossVerse() {
@@ -930,7 +1049,44 @@ const ui = {
     document.getElementById('verse-enemy-name').textContent  = 'The Enemy';
     document.getElementById('verse-text').textContent        = `"${v.text}"`;
     document.getElementById('verse-ref-display').textContent = v.ref;
+    const badge = document.getElementById('verse-new-badge');
+    if (badge) badge.classList.add('hidden');
     popup.classList.remove('hidden');
+  },
+
+  showJournal() {
+    this._hide('screen-menu');
+    const j      = journal.entries();
+    const count  = journal.count();
+    const total  = journal.total();
+    document.getElementById('journal-progress-text').textContent = `${count} / ${total} verses collected`;
+    const pct = total > 0 ? (count / total * 100) : 0;
+    const bar = document.getElementById('journal-progress-bar');
+    if (bar) bar.style.width = pct + '%';
+
+    const grid = document.getElementById('journal-grid');
+    if (!grid) { this._show('screen-journal'); return; }
+
+    grid.innerHTML = Object.entries(VERSES).map(([key, v]) => {
+      const unlocked = !!j[key];
+      const def = ENEMY_DEF[key] || {};
+      const color = def.color || '#60A5FA';
+      if (unlocked) {
+        return `<div class="verse-card unlocked">
+          <span class="verse-card-enemy" style="color:${color}">${def.name || key}</span>
+          <p class="verse-card-text">"${v.text}"</p>
+          <span class="verse-card-ref">${v.ref}</span>
+        </div>`;
+      } else {
+        return `<div class="verse-card locked">
+          <span class="verse-card-lock">&#128274;</span>
+          <span class="verse-card-enemy">${def.name || key}</span>
+          <p class="verse-card-locked">Defeat ${def.name || key} to unlock</p>
+        </div>`;
+      }
+    }).join('');
+
+    this._show('screen-journal');
   }
 };
 
@@ -971,6 +1127,11 @@ class Game {
     // Phase 2: boss intro
     this._bossIntroTimer = 0;
     this._bossIntroActive = false;
+    // Phase 3: level intro + run journal
+    this._levelIntroActive = false;
+    this._levelIntroTimer  = 0;
+    this._levelIntroData   = null;
+    this._runVerses        = new Set();
   }
 
   _resize() {
@@ -1017,6 +1178,11 @@ class Game {
     this._hitFlash     = 0;
     this._bossIntroActive = false;
     this._bossIntroTimer  = 0;
+    // Phase 3
+    this._levelIntroActive = false;
+    this._levelIntroTimer  = 0;
+    this._levelIntroData   = null;
+    this._runVerses        = new Set();
 
     this._buildLevel(0);
     ui.showGame();
@@ -1050,6 +1216,14 @@ class Game {
     this.shouldDrop    = false;
     this.shootTimer    = 0;
     this.enemyDir      = 1;
+
+    // Phase 3: level intro cinematic
+    const intro = LEVEL_INTROS[idx];
+    if (intro) {
+      this._levelIntroActive = true;
+      this._levelIntroTimer  = 210; // ~3.5 s at 60 fps
+      this._levelIntroData   = intro;
+    }
   }
 
   _startBoss() {
@@ -1090,6 +1264,22 @@ class Game {
   _update() {
     const { player, input } = this;
     this.bg.update();
+
+    // Phase 3: level intro — suspend gameplay, allow fire to skip
+    if (this._levelIntroActive) {
+      this._levelIntroTimer--;
+      // Allow skip after 30 frames to prevent accidental skips
+      if (this._levelIntroTimer < 180 && input.fire) {
+        this._levelIntroTimer = Math.min(this._levelIntroTimer, 22);
+      }
+      if (this._levelIntroTimer <= 0) {
+        this._levelIntroActive = false;
+        this._levelIntroData   = null;
+      }
+      for (const p of this.particles) p.update();
+      this.particles = this.particles.filter(p => !p.dead);
+      return;
+    }
 
     // Phase 2: update screen shake
     if (this._shakeDur > 0) {
@@ -1309,7 +1499,10 @@ class Game {
     // Phase 2: combo flash on streak
     if (this.combo >= 5) this._comboFlash = 22;
     if (Math.random() < e.drop) this._spawnPowerup(e.x, e.y);
-    ui.showVerse(e.type);
+    // Phase 3: journal unlock
+    const isNew = journal.unlock(e.type);
+    if (isNew) this._runVerses.add(e.type);
+    ui.showVerse(e.type, isNew);
     this._checkWeaponRotate();
   }
 
@@ -1320,7 +1513,7 @@ class Game {
     setTimeout(() => {
       this.state = 'paused';
       cancelAnimationFrame(this._raf);
-      ui.showVictory(Math.round(this.score));
+      ui.showVictory(Math.round(this.score), this._runVerses);
     }, 2200);
   }
 
@@ -1534,6 +1727,11 @@ class Game {
 
     // Screen overlays (no shake — drawn on top)
     this._drawScreenEffects();
+
+    // Phase 3: level intro card (highest layer)
+    if (this._levelIntroActive && this._levelIntroData) {
+      this._drawLevelIntro();
+    }
   }
 
   // Phase 2: overlay effects drawn after shake restore
@@ -1567,6 +1765,90 @@ class Game {
     if (this._bossIntroActive && this._bossIntroTimer > 0) {
       this._drawBossIntroOverlay();
     }
+  }
+
+  // Phase 3: level intro cinematic card
+  _drawLevelIntro() {
+    const { ctx, W, H } = this;
+    const d = this._levelIntroData;
+    const TOTAL = 210;
+    const t = this._levelIntroTimer;
+
+    // Alpha: fade in (210→180), hold, fade out (22→0)
+    let oa = 0;
+    if (t > 180)     oa = (TOTAL - t) / 30;
+    else if (t > 22) oa = 1;
+    else             oa = t / 22;
+
+    ctx.save();
+
+    // Dark overlay
+    ctx.globalAlpha = oa * 0.90;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, W, H);
+
+    // Content fades in after overlay
+    const textA = t < 185 ? Math.min(1, (185 - t) / 20) * oa : 0;
+    ctx.globalAlpha = textA;
+
+    const midX = W / 2, midY = H / 2;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Tag (e.g. "LEVEL 1")
+    ctx.font = '600 9px "SF Mono","Fira Code",monospace';
+    ctx.fillStyle  = '#60A5FA';
+    ctx.shadowColor = '#60A5FA'; ctx.shadowBlur = 18;
+    ctx.fillText(d.tag, midX, midY - 82);
+
+    // Level name
+    ctx.font = 'bold 20px "SF Mono","Fira Code",monospace';
+    ctx.fillStyle  = '#FFFFFF';
+    ctx.shadowColor = '#A78BFA'; ctx.shadowBlur = 22;
+    ctx.fillText(d.name, midX, midY - 54);
+
+    // Horizontal rule
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(96,165,250,0.25)';
+    ctx.lineWidth = 0.75;
+    ctx.beginPath();
+    ctx.moveTo(midX - 65, midY - 30);
+    ctx.lineTo(midX + 65, midY - 30);
+    ctx.stroke();
+
+    // Armor piece label
+    ctx.font = '700 9px "SF Mono","Fira Code",monospace';
+    ctx.fillStyle  = 'rgba(252,211,77,0.7)';
+    ctx.shadowColor = '#FCD34D'; ctx.shadowBlur = 10;
+    ctx.fillText('EQUIPPING', midX, midY - 13);
+
+    // Armor piece name
+    ctx.font = 'bold 15px "SF Mono","Fira Code",monospace';
+    ctx.fillStyle  = '#FCD34D';
+    ctx.shadowColor = '#FCD34D'; ctx.shadowBlur = 20;
+    ctx.fillText(d.armor.toUpperCase(), midX, midY + 8);
+
+    // Verse text (wrapped)
+    ctx.font = 'italic 11.5px "SF Mono","Fira Code",monospace';
+    ctx.fillStyle  = '#CBD5E1';
+    ctx.shadowBlur = 0;
+    const verseY = wrapText(ctx, `"${d.verse}"`, midX, midY + 36, W * 0.72, 18);
+
+    // Verse reference
+    ctx.font = '600 9px "SF Mono","Fira Code",monospace';
+    ctx.fillStyle  = '#FCD34D';
+    ctx.shadowColor = '#FCD34D'; ctx.shadowBlur = 8;
+    ctx.fillText(d.ref, midX, verseY + 22);
+
+    // Skip hint (fades in after 1s)
+    if (t < 150) {
+      ctx.globalAlpha = textA * 0.45;
+      ctx.font = '500 8px "SF Mono","Fira Code",monospace';
+      ctx.fillStyle = '#94A3B8'; ctx.shadowBlur = 0;
+      ctx.fillText('SPACE / TAP TO SKIP', midX, verseY + 48);
+    }
+
+    ctx.restore();
   }
 
   // Phase 2: boss intro canvas overlay
@@ -1632,6 +1914,7 @@ window.addEventListener('DOMContentLoaded', () => {
   game = new Game(canvas);
 
   document.getElementById('btn-start').addEventListener('click', () => { Audio.resume(); game.start(); });
+  document.getElementById('btn-journal').addEventListener('click', () => ui.showJournal());
   document.getElementById('btn-armor').addEventListener('click', () => ui.showArmor());
   document.getElementById('btn-scores').addEventListener('click', () => ui.showScores());
 
