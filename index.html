@@ -15388,6 +15388,22 @@ function App() {
         aria-label="Play Snake game"
       >🐍</button>
 
+      <button
+        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'spiritual-maze/index.html'; }}
+        style={{
+          position: 'fixed', bottom: 156, left: 24,
+          width: 54, height: 54, borderRadius: '50%',
+          background: '#0F2A4A', color: 'white',
+          border: '2px solid rgba(252,211,77,0.45)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.375rem', lineHeight: 1,
+          boxShadow: '0 4px 20px rgba(252,211,77,0.25)',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
+        }}
+        title="Walk in the Light: Spiritual Maze"
+        aria-label="Play Spiritual Maze game"
+      >✦</button>
+
       {/* Personal events FAB — bottom right */}
       <button
         className="fab-live"

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Walk in the Light: Spiritual Maze</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a href="../" class="back-link">← App</a>
+
+  <div id="app">
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div>
+        <div class="hud-score" id="score-disp">0</div>
+        <div class="hud-hs" id="hs-disp">Best 0</div>
+      </div>
+      <div style="text-align:center">
+        <div class="hud-level" id="level-disp">Level 1</div>
+        <div class="hud-armor" id="armor-disp">◌◌◌◌</div>
+      </div>
+      <div style="text-align:right">
+        <div class="hud-lives" id="lives-disp">✝✝✝</div>
+        <button id="btn-pause">⏸</button>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div id="canvas-wrap">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- D-pad -->
+    <div id="dpad" class="hidden">
+      <div></div>
+      <button class="dpad-btn" id="dpad-up">▲</button>
+      <div></div>
+      <button class="dpad-btn" id="dpad-left">◀</button>
+      <div class="dpad-center"></div>
+      <button class="dpad-btn" id="dpad-right">▶</button>
+      <div></div>
+      <button class="dpad-btn" id="dpad-down">▼</button>
+      <div></div>
+    </div>
+
+  </div>
+
+  <!-- Main Menu -->
+  <div id="screen-menu" class="screen">
+    <div class="screen-inner">
+      <div class="brand-mark">✦</div>
+      <h1>WALK IN THE LIGHT</h1>
+      <p class="tagline">Spiritual Maze Adventure</p>
+      <p class="scripture">John 1:5 &mdash; &ldquo;The light shines in the darkness&rdquo;</p>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-start">Begin Journey</button>
+      </div>
+      <div class="controls-hint">
+        Arrow keys / WASD to move<br>
+        Collect scriptures &bull; Avoid dark spirits<br>
+        Armor pellets (✦) grant power to defeat them
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause -->
+  <div id="screen-pause" class="screen hidden">
+    <div class="screen-inner">
+      <h2>Paused</h2>
+      <p style="color:rgba(255,255,255,0.6);font-style:italic;margin:12px 0 20px;">&ldquo;Be still, and know that I am God.&rdquo;<br><span style="font-size:0.75rem;color:rgba(255,255,255,0.4);">Psalm 46:10</span></p>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-resume">Resume</button>
+        <button class="btn-secondary" id="btn-menu">Main Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Complete -->
+  <div id="screen-level" class="screen hidden">
+    <div class="screen-inner">
+      <div class="brand-mark">✦</div>
+      <h2 id="lc-title">Level 1 — Complete!</h2>
+      <div class="lc-verse" id="lc-verse"></div>
+      <div class="lc-score" id="lc-score"></div>
+      <button class="btn-primary" id="btn-next">Next Level</button>
+    </div>
+  </div>
+
+  <!-- Game Over / Victory -->
+  <div id="screen-go" class="screen hidden">
+    <div class="screen-inner">
+      <div class="brand-mark">✦</div>
+      <div class="go-best" id="go-best"></div>
+      <div class="go-score" id="go-score"></div>
+      <p class="go-verse" id="go-verse"></p>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-restart">Play Again</button>
+        <button class="btn-secondary" id="btn-menu" onclick="window.mazeGame?._goMenu()">Main Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verse Popup -->
+  <div id="verse-pop" class="hidden">
+    <div id="vpop-bonus"></div>
+    <p id="vpop-text"></p>
+    <span id="vpop-ref"></span>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
