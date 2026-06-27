@@ -1,0 +1,212 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%; width: 100%;
+  background: #000B1E;
+  color: #E2E8F0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  user-select: none;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  position: relative;
+}
+
+/* Back link */
+.back-link {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top, 10px));
+  left: max(12px, env(safe-area-inset-left, 12px));
+  z-index: 999;
+  padding: 5px 12px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 7px;
+  color: #fff;
+  font-size: 0.78rem;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+
+/* HUD */
+#hud {
+  width: 100%;
+  padding: calc(env(safe-area-inset-top, 0px) + 40px) 12px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(0,11,30,0.9);
+  flex-shrink: 0;
+  z-index: 10;
+}
+#hud.hidden { display: none; }
+
+.hud-score { font-size: 1.3rem; font-weight: 700; color: #FCD34D; letter-spacing: 0.05em; }
+.hud-level { font-size: 0.75rem; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; text-transform: uppercase; }
+.hud-lives { font-size: 0.85rem; letter-spacing: 0.12em; color: #F9A8D4; }
+.hud-armor { font-size: 0.75rem; letter-spacing: 0.06em; color: #A78BFA; }
+.hud-hs    { font-size: 0.7rem; color: rgba(255,255,255,0.38); }
+
+#btn-pause {
+  background: none; border: 1px solid rgba(255,255,255,0.25);
+  color: #fff; border-radius: 6px; padding: 3px 8px; font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Canvas container */
+#canvas-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+}
+#gameCanvas { display: block; image-rendering: pixelated; }
+
+/* D-pad touch controls */
+#dpad {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-template-rows: repeat(3, 52px);
+  gap: 4px;
+  padding: 10px 0 max(12px, env(safe-area-inset-bottom, 12px));
+}
+#dpad.hidden { display: none; }
+
+.dpad-btn {
+  width: 52px; height: 52px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  transition: background 0.1s;
+}
+.dpad-btn:active { background: rgba(255,255,255,0.22); }
+.dpad-center { background: none; border: none; pointer-events: none; }
+
+/* Screens */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,11,30,0.92);
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+.screen.hidden { display: none; }
+
+.screen-inner {
+  background: rgba(15,42,74,0.97);
+  border: 1px solid rgba(59,130,246,0.35);
+  border-radius: 18px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 0 40px rgba(30,77,216,0.25);
+}
+
+.brand-mark { font-size: 2.4rem; margin-bottom: 4px; }
+.screen-inner h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.12em; color: #FCD34D; margin-bottom: 4px; }
+.screen-inner h2 { font-size: 1.3rem; font-weight: 700; color: #FCD34D; margin-bottom: 8px; }
+.tagline { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+.scripture { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-bottom: 18px; letter-spacing: 0.05em; }
+
+.btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+
+.btn-primary {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #1D4ED8, #7C3AED);
+  border: none; border-radius: 10px;
+  color: #fff; font-size: 1rem; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.05em;
+  transition: opacity 0.15s;
+}
+.btn-primary:active { opacity: 0.8; }
+
+.btn-secondary {
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  color: rgba(255,255,255,0.85); font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-secondary:active { background: rgba(255,255,255,0.14); }
+
+.controls-hint {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.35);
+  margin-top: 14px;
+  line-height: 1.6;
+}
+
+/* Verse popup */
+#verse-pop {
+  position: fixed;
+  bottom: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 320px;
+  background: rgba(15,42,74,0.96);
+  border: 1px solid rgba(252,211,77,0.4);
+  border-radius: 14px;
+  padding: 14px 16px;
+  z-index: 200;
+  text-align: center;
+  box-shadow: 0 0 24px rgba(252,211,77,0.2);
+  animation: fadeInUp 0.3s ease;
+}
+#verse-pop.hidden { display: none; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+#vpop-bonus { font-size: 1.1rem; font-weight: 700; color: #FCD34D; margin-bottom: 4px; }
+#vpop-text  { font-size: 0.8rem; color: rgba(255,255,255,0.88); line-height: 1.5; font-style: italic; }
+#vpop-ref   { font-size: 0.72rem; color: rgba(252,211,77,0.75); margin-top: 5px; display: block; }
+
+/* Level complete verse */
+.lc-verse {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.55;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-left: 2px solid #7C3AED;
+  text-align: left;
+}
+.lc-score { font-size: 1.1rem; font-weight: 700; color: #FCD34D; margin: 8px 0 16px; }
+
+/* Game over verse */
+.go-verse {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: rgba(255,255,255,0.7);
+  margin: 10px 0 16px;
+  line-height: 1.5;
+}
+.go-score { font-size: 1.4rem; font-weight: 800; color: #FCD34D; }
+.go-best  { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
