@@ -6,12 +6,13 @@ const TICK_BASE = 145; // ms at level 1 (decreases per level)
 const TICK_MIN  = 58;  // fastest possible tick
 
 // ── Food catalogue ────────────────────────────────────────────────
+// Each orb is an enemy weapon the warrior devours to advance in battle.
 const FOOD = {
-  APPLE:  { pts: 10, color: '#FF4455', glow: 'rgba(255,68,85,0.75)',   prob: 0.62, label: null,   power: null    },
-  GOLD:   { pts: 50, color: '#FFD700', glow: 'rgba(255,215,0,0.85)',   prob: 0.14, label: '★',    power: null    },
-  SPEED:  { pts: 20, color: '#22CCFF', glow: 'rgba(34,204,255,0.80)',  prob: 0.10, label: '⚡',   power: 'SPEED' },
-  DOUBLE: { pts: 25, color: '#FF8800', glow: 'rgba(255,136,0,0.80)',   prob: 0.08, label: '×2',   power: 'DOUBLE'},
-  SHRINK: { pts: 35, color: '#FF00FF', glow: 'rgba(255,0,255,0.80)',   prob: 0.06, label: '✂',    power: 'SHRINK'},
+  FEAR:   { pts: 10, color: '#FF4455', glow: 'rgba(255,68,85,0.75)',   prob: 0.62, label: null,   power: null,    name: 'FEAR'    },
+  TRUTH:  { pts: 50, color: '#FFD700', glow: 'rgba(255,215,0,0.85)',   prob: 0.14, label: '✝',    power: null,    name: 'TRUTH'   },
+  FIRE:   { pts: 20, color: '#FF6600', glow: 'rgba(255,102,0,0.85)',   prob: 0.10, label: '🔥',   power: 'SPEED', name: 'FIRE'    },
+  GRACE:  { pts: 25, color: '#CC88FF', glow: 'rgba(204,136,255,0.80)', prob: 0.08, label: '✦',    power: 'DOUBLE',name: 'GRACE'   },
+  REPENT: { pts: 35, color: '#FF00AA', glow: 'rgba(255,0,170,0.80)',   prob: 0.06, label: '✂',    power: 'SHRINK',name: 'REPENT'  },
 };
 
 // ── State ─────────────────────────────────────────────────────────
@@ -72,9 +73,9 @@ function init() {
   resize();
   window.addEventListener('resize', resize);
 
-  hiScore = +localStorage.getItem('snk_hi') || 0;
+  hiScore = +localStorage.getItem('spb_hi') || 0;
   document.getElementById('hi-display').textContent = hiScore;
-  document.getElementById('hi-val').textContent = 'BEST: ' + hiScore;
+  document.getElementById('hi-val').textContent = 'RECORD: ' + hiScore;
 
   bindInput();
 
@@ -204,20 +205,24 @@ function eatFood() {
   score += pts;
 
   burst(food.x * cellW + cellW / 2, food.y * cellH + cellH / 2, f.color,
-        food.type === 'GOLD' ? 22 : 12);
+        food.type === 'TRUTH' ? 22 : 12);
 
   if (f.power) {
     activatePower(f.power);
     sndPower();
-  } else if (food.type === 'GOLD') {
+  } else if (food.type === 'TRUTH') {
     sndGold();
     burst(food.x * cellW + cellW / 2, food.y * cellH + cellH / 2, '#FFD700', 18);
   } else {
     sndEat();
   }
 
-  // Show floating score
-  floatText('+' + pts, food.x * cellW + cellW / 2, food.y * cellH, f.color);
+  // Show floating score with spiritual label
+  const floatLabel = food.type === 'TRUTH' ? 'TRUTH +' + pts :
+                     food.type === 'FIRE'  ? 'FIRE +' + pts  :
+                     food.type === 'GRACE' ? 'GRACE +' + pts :
+                     '+' + pts;
+  floatText(floatLabel, food.x * cellW + cellW / 2, food.y * cellH, f.color);
 
   const newLevel = Math.floor(score / 120) + 1;
   if (newLevel > level) { level = newLevel; doLevelUp(); }
@@ -256,8 +261,8 @@ function expirePower() {
 function showPowerBanner(p) {
   const el = document.getElementById('power-banner');
   el.className = '';
-  if (p === 'SPEED')  { el.textContent = '⚡ SPEED BOOST'; el.classList.add('spd'); }
-  if (p === 'DOUBLE') { el.textContent = '×2 DOUBLE SCORE'; el.classList.add('x2'); }
+  if (p === 'SPEED')  { el.textContent = '🔥 HOLY FIRE!'; el.classList.add('spd'); }
+  if (p === 'DOUBLE') { el.textContent = '✦ DOUBLE GRACE'; el.classList.add('x2'); }
   el.style.display = 'block';
 }
 
@@ -273,7 +278,7 @@ function doLevelUp() {
   tickId = setInterval(tick, tickSpeed());
 
   const el = document.getElementById('level-flash');
-  el.textContent = 'LEVEL ' + level + '!';
+  el.textContent = 'BATTLE ' + level + '! ADVANCE!';
   el.classList.remove('hidden');
   void el.offsetWidth; // re-trigger animation
   el.style.animation = 'none';
@@ -288,11 +293,11 @@ function die() {
   sndDie();
   shake = 14;
 
-  snake.forEach(seg => burst(seg.x * cellW + cellW / 2, seg.y * cellH + cellH / 2, '#00FF88', 5));
+  snake.forEach(seg => burst(seg.x * cellW + cellW / 2, seg.y * cellH + cellH / 2, '#FFB300', 5));
 
   if (score > hiScore) {
     hiScore = score;
-    localStorage.setItem('snk_hi', hiScore);
+    localStorage.setItem('spb_hi', hiScore);
   }
 
   setTimeout(() => {
@@ -325,8 +330,8 @@ function floatText(text, x, y, color) {
 // ── HUD ───────────────────────────────────────────────────────────
 function updateHUD() {
   document.getElementById('score-val').textContent = score;
-  document.getElementById('level-val').textContent = 'LVL ' + level;
-  document.getElementById('hi-val').textContent = 'BEST: ' + hiScore;
+  document.getElementById('level-val').textContent = 'BATTLE ' + level;
+  document.getElementById('hi-val').textContent = 'RECORD: ' + hiScore;
 }
 
 function showOverlay(id) {
@@ -388,7 +393,7 @@ function draw() {
   }
 
   // Grid dots
-  ctx.fillStyle = 'rgba(0,255,136,0.055)';
+  ctx.fillStyle = 'rgba(255,179,0,0.055)';
   for (let col = 0; col < COLS; col++) {
     for (let row = 0; row < ROWS; row++) {
       ctx.beginPath();
@@ -398,7 +403,7 @@ function draw() {
   }
 
   // Border glow
-  ctx.strokeStyle = 'rgba(0,255,136,0.18)';
+  ctx.strokeStyle = 'rgba(255,179,0,0.18)';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(1, 1, W - 2, H - 2);
 
@@ -438,7 +443,7 @@ function draw() {
   // Power progress bar (bottom of canvas)
   if (activePower && powerMax > 0) {
     const ratio = powerTicks / powerMax;
-    const barColor = activePower === 'SPEED' ? '#22CCFF' : '#FF8800';
+    const barColor = activePower === 'SPEED' ? '#FF6600' : '#CC88FF';
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(0, H - 5, W, 5);
     ctx.fillStyle = barColor;
@@ -494,11 +499,12 @@ function drawFood() {
 function drawSnake() {
   const n = snake.length;
   snake.forEach((seg, i) => {
-    // Green gradient: head bright → tail dark
+    // Fire gradient: head = bright gold, tail = dark ember
     const t = i / Math.max(n - 1, 1);
-    const g = Math.round(255 - t * 185);
-    const a = Math.max(0.25, 1 - t * 0.7);
-    const color = `rgba(0,${g},${Math.round(136 - t * 110)},${a})`;
+    const r = Math.round(255 - t * 155);
+    const g = Math.round(215 - t * 205);
+    const a = Math.max(0.28, 1 - t * 0.72);
+    const color = `rgba(${r},${g},0,${a})`;
 
     const px = seg.x * cellW + 1;
     const py = seg.y * cellH + 1;
@@ -506,7 +512,7 @@ function drawSnake() {
     const h  = cellH - 2;
 
     ctx.save();
-    if (i === 0) { ctx.shadowColor = '#00FF88'; ctx.shadowBlur = 16; }
+    if (i === 0) { ctx.shadowColor = '#FFD700'; ctx.shadowBlur = 16; }
     ctx.fillStyle = color;
 
     // Rounded rect

@@ -1,7 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --green: #00FF88;
+  --green: #FFB300;
   --gold: #FFD700;
   --red: #FF4444;
   --bg: #060a0f;
@@ -50,7 +50,7 @@ body {
   flex-shrink: 0;
   height: 46px;
   background: rgba(0,0,0,0.5);
-  border-bottom: 1px solid rgba(0,255,136,0.08);
+  border-bottom: 1px solid rgba(255,179,0,0.08);
 }
 
 #score-val {
@@ -107,8 +107,8 @@ canvas {
   pointer-events: none;
 }
 
-#power-banner.spd  { color: #00AAFF; border-color: #00AAFF; }
-#power-banner.x2   { color: #FF8800; border-color: #FF8800; }
+#power-banner.spd  { color: #FF6600; border-color: #FF6600; }
+#power-banner.x2   { color: #CC88FF; border-color: #CC88FF; }
 #power-banner.inv  { color: #FF00FF; border-color: #FF00FF; }
 
 @keyframes blink {
@@ -157,10 +157,10 @@ canvas {
 .card {
   text-align: center;
   padding: 32px 40px;
-  border: 1px solid rgba(0,255,136,0.25);
+  border: 1px solid rgba(255,179,0,0.25);
   border-radius: 18px;
   background: rgba(0,0,0,0.75);
-  box-shadow: 0 0 50px rgba(0,255,136,0.12);
+  box-shadow: 0 0 50px rgba(255,179,0,0.12);
   max-width: 320px;
   width: 90%;
 }
@@ -168,14 +168,15 @@ canvas {
 .logo {
   font-size: 3.5rem;
   margin-bottom: 4px;
-  filter: drop-shadow(0 0 12px rgba(0,255,136,0.7));
+  filter: drop-shadow(0 0 12px rgba(255,179,0,0.7));
 }
 
 .card h1 {
-  font-size: 2.8rem;
+  font-size: 2.2rem;
   color: var(--green);
-  text-shadow: 0 0 20px var(--green), 0 0 50px rgba(0,255,136,0.3);
+  text-shadow: 0 0 20px var(--green), 0 0 50px rgba(255,179,0,0.3);
   letter-spacing: 0.12em;
+  line-height: 1.2;
 }
 
 .card h2 {
@@ -186,9 +187,9 @@ canvas {
 }
 
 .tagline {
-  color: rgba(0,255,136,0.5);
-  font-size: 0.85rem;
-  letter-spacing: 0.18em;
+  color: rgba(255,179,0,0.6);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
   margin: 4px 0 22px;
 }
 
@@ -212,13 +213,13 @@ canvas {
   cursor: pointer;
   letter-spacing: 0.12em;
   text-shadow: 0 0 8px var(--green);
-  box-shadow: 0 0 18px rgba(0,255,136,0.18);
+  box-shadow: 0 0 18px rgba(255,179,0,0.18);
   transition: background 0.15s, box-shadow 0.15s;
 }
 
 .btn:hover, .btn:active {
-  background: rgba(0,255,136,0.12);
-  box-shadow: 0 0 28px rgba(0,255,136,0.35);
+  background: rgba(255,179,0,0.12);
+  box-shadow: 0 0 28px rgba(255,179,0,0.35);
 }
 
 .hint {
