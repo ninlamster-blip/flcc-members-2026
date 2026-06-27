@@ -63,6 +63,15 @@ const GHOSTS_CFG = [
 const GHOST_START = [[7,9],[7,11],[9,10],[9,9]];
 const GHOST_RELEASE = [0, 0, 150, 300];
 
+// Per-level config: player speed, ghost speed, power frames, ghost release timers, scatter/chase durations
+const LEVEL_CONFIG = [
+  { ps: 0.070, gs: 0.055, pf: 600, rel: [0, 80, 9999, 9999], sct: 300, chs: 420 }, // L1 — very easy, 2 ghosts
+  { ps: 0.082, gs: 0.068, pf: 500, rel: [0, 50, 220, 9999],  sct: 240, chs: 480 }, // L2 — 3 ghosts
+  { ps: 0.094, gs: 0.082, pf: 420, rel: [0, 30, 160, 380],   sct: 200, chs: 540 }, // L3 — all 4 ghosts
+  { ps: 0.106, gs: 0.096, pf: 330, rel: [0, 20, 130, 300],   sct: 160, chs: 600 }, // L4 — faster
+  { ps: 0.118, gs: 0.110, pf: 240, rel: [0, 0,  100, 220],   sct: 120, chs: 660 }, // L5 — hardest
+];
+
 const P_START_ROW = 11, P_START_COL = 10;
 const POWER_FRAMES = 420;
 const DIRS = [{dr:-1,dc:0},{dr:0,dc:1},{dr:1,dc:0},{dr:0,dc:-1}];
@@ -112,17 +121,26 @@ const Input = (() => {
     if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') window.mazeGame?._togglePause();
   });
 
-  function bind(id, dir) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); pending = dir; Snd.resume(); }, {passive:false});
-    el.addEventListener('touchend',   e => { e.preventDefault(); }, {passive:false});
-    el.addEventListener('mousedown',  e => { pending = dir; });
-  }
-  bind('dpad-up',    {dr:-1,dc:0});
-  bind('dpad-down',  {dr:1,dc:0});
-  bind('dpad-left',  {dr:0,dc:-1});
-  bind('dpad-right', {dr:0,dc:1});
+  // Swipe-to-move: register direction on touchend based on drag vector
+  let swipeStart = null;
+  const MIN_SWIPE = 22;
+  document.addEventListener('touchstart', e => {
+    if (e.target.closest('button, a')) { swipeStart = null; return; }
+    e.preventDefault();
+    Snd.resume();
+    swipeStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: false });
+  document.addEventListener('touchend', e => {
+    if (!swipeStart) return;
+    e.preventDefault();
+    const dx = e.changedTouches[0].clientX - swipeStart.x;
+    const dy = e.changedTouches[0].clientY - swipeStart.y;
+    swipeStart = null;
+    if (Math.abs(dx) < MIN_SWIPE && Math.abs(dy) < MIN_SWIPE) return;
+    pending = Math.abs(dx) > Math.abs(dy)
+      ? (dx > 0 ? {dr:0,dc:1} : {dr:0,dc:-1})
+      : (dy > 0 ? {dr:1,dc:0} : {dr:-1,dc:0});
+  }, { passive: false });
 
   return {
     consume() { const d = pending; pending = null; return d; },
@@ -294,7 +312,7 @@ class Ghost {
   update(map, game) {
     if (this.scared) { this.scaredT--; if (this.scaredT <= 0) this.scared = false; }
 
-    const spd = this.eyeOnly ? 0.22 : this.scared ? 0.07 : this.inHouse ? 0.06 : (0.09 + (game.level - 1) * 0.01);
+    const spd = this.eyeOnly ? 0.22 : this.scared ? Math.max(0.05, game.ghostSpeed * 0.6) : this.inHouse ? 0.06 : game.ghostSpeed;
     this.prog += spd;
 
     if (this.prog < 1) return;
@@ -426,7 +444,7 @@ class Game {
   }
 
   _resize() {
-    const safeH = window.innerHeight - 150; // leave room for HUD + d-pad
+    const safeH = window.innerHeight - 72; // leave room for HUD only
     const sz    = Math.min(window.innerWidth - 16, safeH);
     this.cs     = Math.max(14, Math.floor(sz / COLS));
     this.W      = this.cs * COLS;
@@ -468,13 +486,19 @@ class Game {
     for (const row of this.map) for (const v of row) if (v === 0 || v === 2) this.dotTotal++;
     this.dotsLeft = this.dotTotal;
 
-    const spd = 0.09 + (this.level - 1) * 0.012;
-    this.player = new Player(spd);
-    this.ghosts = [0,1,2,3].map(i => new Ghost(i));
+    const cfg = LEVEL_CONFIG[Math.min(this.level - 1, LEVEL_CONFIG.length - 1)];
+    this.player = new Player(cfg.ps);
+    this.ghostSpeed = cfg.gs;
+    this.ghosts = [0,1,2,3].map(i => {
+      const g = new Ghost(i);
+      g._origRelease = cfg.rel[i];
+      g.releaseT = cfg.rel[i];
+      return g;
+    });
 
     this.powerT    = 0;
-    this.scatterT  = Math.max(120, 300 - (this.level-1)*40);
-    this.chaseT    = Math.max(300, 600 - (this.level-1)*60);
+    this.scatterT  = cfg.sct;
+    this.chaseT    = cfg.chs;
     this.scatterMode = true;
     this.modeTimer = this.scatterT;
     this.deathT    = 0;
@@ -486,7 +510,7 @@ class Game {
 
     this.state = 'playing';
     this._hide('screen-menu'); this._hide('screen-go'); this._hide('screen-level'); this._hide('screen-pause');
-    this._show('hud'); this._show('dpad');
+    this._show('hud');
     this._hud();
   }
 
