@@ -1609,7 +1609,7 @@ class Game {
 
     // Fire
     this.fireTimer = Math.max(0, this.fireTimer - 1);
-    if (input.fire && this.fireTimer === 0) {
+    if ((input.fire || input.left || input.right) && this.fireTimer === 0) {
       this._playerShoot();
       this.fireTimer = player.rapidFire ? 7 : this.fireCooldown;
     }
