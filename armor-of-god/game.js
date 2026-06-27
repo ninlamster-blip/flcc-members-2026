@@ -1226,7 +1226,11 @@ const ui = {
   showGameOver(score, levelIdx) {
     ['hud','touch-controls','verse-popup'].forEach(s => this._hide(s));
     this._show('screen-gameover');
-    document.getElementById('final-score-display').textContent = `Score: ${score.toLocaleString()}`;
+    MP.send({ t: 'over', s: score });
+    const scoreText = MP.connected
+      ? `Your Score: ${score.toLocaleString()} | P2: ${MP.p2score.toLocaleString()}`
+      : `Score: ${score.toLocaleString()}`;
+    document.getElementById('final-score-display').textContent = scoreText;
     const isHigh = Leaderboard.isHighScore(score);
     document.getElementById('new-high-score').classList.toggle('hidden', !isHigh);
     if (isHigh) Leaderboard.add('Champion', score);
@@ -1281,6 +1285,11 @@ const ui = {
         : 'linear-gradient(90deg, #EF4444, #F87171)';
 
     document.getElementById('score-display').textContent = score.toLocaleString();
+    const p2El = document.getElementById('p2-score-display');
+    if (p2El) {
+      if (MP.connected) { p2El.classList.remove('hidden'); p2El.textContent = `P2 ${MP.p2score.toLocaleString()}`; }
+      else p2El.classList.add('hidden');
+    }
     const lvl = LEVELS[levelIdx];
     document.getElementById('level-display').textContent  = `LVL ${levelIdx + 1} — ${lvl ? lvl.name.toUpperCase() : 'BOSS BATTLE'}`;
     document.getElementById('weapon-display').textContent = weaponName;
@@ -1843,6 +1852,7 @@ class Game {
     this.state = 'paused';
     cancelAnimationFrame(this._raf);
     Audio.levelUp();
+    MP.send({ t: 'lvl' });
     setTimeout(() => ui.showLevelComplete(this.levelIdx, Math.round(this.score)), 500);
   }
 
@@ -2302,8 +2312,13 @@ const MP = (() => {
   }
 
   function _handle(data) {
-    if (data && data.t === 'p') {
+    if (!data) return;
+    if (data.t === 'p') {
       state.p2x     = data.x;
+      state.p2score = data.s || 0;
+    } else if (data.t === 'lvl') {
+      if (game && game.state === 'playing') game.nextLevel();
+    } else if (data.t === 'over') {
       state.p2score = data.s || 0;
     }
   }
@@ -2348,6 +2363,11 @@ const MP = (() => {
       state._ticker++;
       if (state._ticker % 3 !== 0) return;
       try { conn.send({ t: 'p', x, s: score }); } catch(_) {}
+    },
+
+    send(msg) {
+      if (!state.connected || !conn) return;
+      try { conn.send(msg); } catch(_) {}
     },
 
     disconnect: _cleanup
