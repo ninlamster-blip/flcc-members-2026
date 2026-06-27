@@ -301,23 +301,25 @@ class Input {
       if (!el) return;
       const set   = () => { this[prop] = val; };
       const unset = () => { if (val) this[prop] = false; };
-      el.addEventListener('touchstart', e => { e.preventDefault(); set(); Audio.resume(); }, { passive: false });
-      el.addEventListener('touchend',   e => { e.preventDefault(); unset(); },              { passive: false });
+      el.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); set(); Audio.resume(); }, { passive: false });
+      el.addEventListener('touchend',   e => { e.preventDefault(); e.stopPropagation(); unset(); },              { passive: false });
       el.addEventListener('mousedown',  set);
       el.addEventListener('mouseup',    unset);
     };
     safe('touch-left',  'left',  true);
     safe('touch-right', 'right', true);
-    // Fire: tap anywhere on the game container (any touch = firing)
-    // Only active during gameplay so menu button clicks aren't blocked
+    safe('touch-fire',  'fire',  true);
+    // Fire: also tap anywhere on game container that isn't a button
     const container = document.getElementById('game-container');
     if (container) {
-      const updateFire = (e) => {
-        if (game && game.state === 'playing') this.fire = e.touches.length > 0;
-      };
-      container.addEventListener('touchstart', e => { Audio.resume(); updateFire(e); });
-      container.addEventListener('touchend',   updateFire);
-      container.addEventListener('touchcancel',updateFire);
+      container.addEventListener('touchstart', e => {
+        Audio.resume();
+        if (!e.target.closest('.touch-btn') && game && game.state === 'playing') this.fire = true;
+      });
+      container.addEventListener('touchend', e => {
+        if (!e.target.closest('.touch-btn') && game && game.state === 'playing') this.fire = false;
+      });
+      container.addEventListener('touchcancel', () => { this.fire = false; });
     }
   }
 }
