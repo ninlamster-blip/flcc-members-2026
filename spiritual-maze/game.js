@@ -63,14 +63,33 @@ const GHOSTS_CFG = [
 const GHOST_START = [[7,9],[7,11],[9,10],[9,9]];
 const GHOST_RELEASE = [0, 0, 150, 300];
 
-// Per-level config: player speed, ghost speed, power frames, ghost release timers, scatter/chase durations
-const LEVEL_CONFIG = [
-  { ps: 0.070, gs: 0.055, pf: 600, rel: [0, 80, 9999, 9999], sct: 300, chs: 420 }, // L1 — very easy, 2 ghosts
-  { ps: 0.082, gs: 0.068, pf: 500, rel: [0, 50, 220, 9999],  sct: 240, chs: 480 }, // L2 — 3 ghosts
-  { ps: 0.094, gs: 0.082, pf: 420, rel: [0, 30, 160, 380],   sct: 200, chs: 540 }, // L3 — all 4 ghosts
-  { ps: 0.106, gs: 0.096, pf: 330, rel: [0, 20, 130, 300],   sct: 160, chs: 600 }, // L4 — faster
-  { ps: 0.118, gs: 0.110, pf: 240, rel: [0, 0,  100, 220],   sct: 120, chs: 660 }, // L5 — hardest
-];
+// Returns per-level config for 40 levels across 5 difficulty tiers
+function getLevelConfig(level) {
+  let tier;
+  if (level <= 5) {
+    // Slow (L1–5): 2 ghosts → gradually add more
+    tier = { ps: 0.070, gs: 0.055, pf: 600, sct: 300, chs: 420 };
+  } else if (level <= 15) {
+    // Medium Slow (L6–15)
+    tier = { ps: 0.082, gs: 0.068, pf: 500, sct: 240, chs: 480 };
+  } else if (level <= 20) {
+    // Medium (L16–20)
+    tier = { ps: 0.094, gs: 0.082, pf: 420, sct: 200, chs: 540 };
+  } else if (level <= 30) {
+    // Medium Fast (L21–30)
+    tier = { ps: 0.106, gs: 0.096, pf: 330, sct: 160, chs: 600 };
+  } else {
+    // Fast (L31–40)
+    tier = { ps: 0.118, gs: 0.110, pf: 240, sct: 120, chs: 660 };
+  }
+  // Ghost release: start gentle, all 4 active from level 6+
+  let rel;
+  if      (level === 1) rel = [0, 80, 9999, 9999];
+  else if (level <= 3)  rel = [0, 50, 9999, 9999];
+  else if (level <= 5)  rel = [0, 30,  220, 9999];
+  else                  rel = [0, 20,  120,  250];
+  return { ...tier, rel };
+}
 
 const P_START_ROW = 11, P_START_COL = 10;
 const POWER_FRAMES = 420;
@@ -486,7 +505,7 @@ class Game {
     for (const row of this.map) for (const v of row) if (v === 0 || v === 2) this.dotTotal++;
     this.dotsLeft = this.dotTotal;
 
-    const cfg = LEVEL_CONFIG[Math.min(this.level - 1, LEVEL_CONFIG.length - 1)];
+    const cfg = getLevelConfig(this.level);
     this.player = new Player(cfg.ps);
     this.ghostSpeed = cfg.gs;
     this.ghosts = [0,1,2,3].map(i => {
@@ -517,7 +536,7 @@ class Game {
   _nextLevel() {
     this.level++;
     this._hide('screen-level');
-    if (this.level > 5) { this._victory(); return; }
+    if (this.level > 40) { this._victory(); return; }
     this._initLevel();
   }
 
@@ -671,7 +690,7 @@ class Game {
     document.getElementById('lc-title').textContent = `Level ${this.level} — Complete!`;
     document.getElementById('lc-verse').textContent = `"${v.text}" — ${v.ref}`;
     document.getElementById('lc-score').textContent = 'Score: ' + this.score;
-    document.getElementById('btn-next').textContent = this.level >= 5 ? 'Claim Victory' : 'Next Level';
+    document.getElementById('btn-next').textContent = this.level >= 40 ? 'Claim Victory' : 'Next Level';
     this._show('screen-level');
     this._hide('verse-pop');
   }
