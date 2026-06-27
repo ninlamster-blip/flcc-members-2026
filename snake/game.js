@@ -2,8 +2,6 @@
 
 // ── Grid constants ────────────────────────────────────────────────
 const COLS = 22, ROWS = 22;
-const TICK_BASE = 145; // ms at level 1 (decreases per level)
-const TICK_MIN  = 58;  // fastest possible tick
 
 // ── Food catalogue ────────────────────────────────────────────────
 // Each orb is an enemy weapon the warrior devours to advance in battle.
@@ -138,7 +136,9 @@ function startGame() {
 }
 
 function tickSpeed() {
-  return Math.max(TICK_MIN, TICK_BASE - (level - 1) * 9);
+  if (level <= 10) return 220; // very slow  (L1–10)
+  if (level <= 20) return 155; // slow       (L11–20)
+  return 100;                   // medium     (L21–30+)
 }
 
 // ── Food ──────────────────────────────────────────────────────────
