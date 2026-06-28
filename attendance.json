@@ -1,10 +1,58 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-26T14:32:29.623Z",
-    "totalSessions": 7
+    "publishedAt": "2026-06-28T16:27:32.434Z",
+    "totalSessions": 8
   },
   "sessions": [
+    {
+      "id": "a-1782664032132-sysy",
+      "date": "2026-06-28",
+      "service": "Sunday",
+      "serviceLabel": "Sunday Service",
+      "summary": {
+        "present": 7,
+        "absent": 35,
+        "total": 42
+      },
+      "records": [
+        {
+          "memberId": "bro-05",
+          "memberName": "Bro. Allen Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-13",
+          "memberName": "Sis. Alma Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-14",
+          "memberName": "Sis. Almira Dela Paz",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-03",
+          "memberName": "Bro. Alvin",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-04",
+          "memberName": "Bro. Arnel",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1780825146907",
+          "memberName": "Bro. Edward Pascal",
+          "status": "present"
+        }
+      ]
+    },
     {
       "id": "a-1782484291623-1tus",
       "date": "2026-06-26",
