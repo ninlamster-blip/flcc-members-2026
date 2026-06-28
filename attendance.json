@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-06-28T16:27:32.434Z",
+    "publishedAt": "2026-06-28T16:27:53.488Z",
     "totalSessions": 8
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 7,
-        "absent": 35,
+        "present": 15,
+        "absent": 27,
         "total": 42
       },
       "records": [
@@ -49,6 +49,46 @@
         {
           "memberId": "vis-1780825146907",
           "memberName": "Bro. Edward Pascal",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-09",
+          "memberName": "Bro. Dave Vergara",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-03",
+          "memberName": "Bro. Elbert Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-15",
+          "memberName": "Sis. Grace Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-08",
+          "memberName": "Sis. Jen Tanlangco",
           "status": "present"
         }
       ]
