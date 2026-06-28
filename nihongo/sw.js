@@ -1,9 +1,13 @@
 // Nihongo Journey — offline cache (cache-first for app shell & data).
-const CACHE = 'nihongo-v1';
+const CACHE = 'nihongo-v2';
 const ASSETS = [
   './', './index.html', './styles.css',
-  './js/app.js', './js/core.js', './js/missions.js',
-  './js/views/home.js', './js/views/kana.js', './data/kana.js',
+  './js/app.js', './js/core.js', './js/missions.js', './js/srs.js', './js/achievements.js',
+  './js/views/home.js', './js/views/kana.js', './js/views/vocab.js',
+  './js/views/breakdown.js', './js/views/flash.js', './js/views/kanji.js',
+  './js/views/chat.js', './js/views/speak.js', './js/views/write.js',
+  './js/views/jlpt.js', './js/views/progress.js',
+  './data/kana.js', './data/vocab.js', './data/sentences.js', './data/kanji.js',
 ];
 
 self.addEventListener('install', (e) => {

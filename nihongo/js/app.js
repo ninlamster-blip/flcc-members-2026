@@ -1,6 +1,7 @@
 // App shell: sidebar nav + hash router. Views are lazy-loaded per route.
 import { State, save, level, touchActivity, el } from './core.js';
 import { checkMissions } from './missions.js';
+import { evaluateAchievements } from './achievements.js';
 
 const NAV = [
   { group: 'Learn', items: [
@@ -110,8 +111,13 @@ function highlightNav(name) {
 
 async function route() {
   const { name, params } = parseHash();
-  const view = document.getElementById('view');
-  if (!view) return;
+  const old = document.getElementById('view');
+  if (!old) return;
+  // Swap in a fresh #view node so any pending timers/async callbacks held by
+  // the previous view write into the now-detached old node, never the live UI.
+  const view = document.createElement('div');
+  view.id = 'view';
+  old.replaceWith(view);
   highlightNav(name);
   const loader = VIEWS[name] || VIEWS.home;
   view.innerHTML = `<div class="empty-state"><div class="big">桜</div>Loading…</div>`;
@@ -127,13 +133,14 @@ async function route() {
       This module isn't available yet.</div>`;
   }
   checkMissions();
+  evaluateAchievements();
 }
 
 export function start() {
   touchActivity();
   buildShell();
   window.addEventListener('hashchange', route);
-  window.addEventListener('xp', () => highlightNav(parseHash().name));
+  window.addEventListener('xp', () => { highlightNav(parseHash().name); evaluateAchievements(); });
   if (!location.hash) location.hash = '#home';
   route();
 }
