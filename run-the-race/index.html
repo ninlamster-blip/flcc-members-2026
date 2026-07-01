@@ -15,10 +15,13 @@
       </div>
     </div>
     <script>
-      window.addEventListener('error', function(e) {
+      function showErr(msg) {
         var el = document.getElementById('pre-load');
-        if (el) { el.innerHTML = '<div style="font-size:2rem;margin-bottom:12px">✝</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Could not load game</div><div style="font-size:0.7rem;opacity:0.5;margin-bottom:20px;max-width:280px">' + (e.message||'Unknown error') + '</div><button onclick="location.reload()" style="padding:12px 28px;background:#FBBF24;color:#000;border:none;border-radius:12px;font-weight:700;font-size:0.9rem;cursor:pointer">Try Again</button>'; el.style.display='flex'; }
-      });
+        if (el) { el.innerHTML = '<div style="font-size:2rem;margin-bottom:12px">✝</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Could not load game</div><div style="font-size:0.7rem;opacity:0.5;margin-bottom:20px;max-width:280px">' + msg + '</div><button onclick="location.reload()" style="padding:12px 28px;background:#FBBF24;color:#000;border:none;border-radius:12px;font-weight:700;font-size:0.9rem;cursor:pointer">Try Again</button>'; el.style.display='flex'; }
+      }
+      window.addEventListener('error', function(e) { showErr(e.message || 'Script error'); });
+      window.addEventListener('unhandledrejection', function(e) { showErr((e.reason && (e.reason.message || String(e.reason))) || 'Module load failed'); });
+      setTimeout(function() { if (document.getElementById('pre-load')) showErr('Timed out — tap Try Again'); }, 15000);
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
