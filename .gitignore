@@ -13,5 +13,4 @@ universe/package.json
 node_modules/
 bible-universe/node_modules/
 bible-universe/.next/
-run-the-race/dist/
 run-the-race/node_modules/

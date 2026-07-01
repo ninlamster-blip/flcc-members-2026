@@ -6,7 +6,7 @@ export default function MainMenu() {
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-indigo-950 via-blue-950 to-black text-white px-6">
       <a
-        href="../"
+        href="../../"
         className="fixed top-safe-top left-safe-left z-50 px-3 py-1 bg-black/50 border border-white/20 rounded text-xs tracking-wider"
         style={{ top: 'max(10px, env(safe-area-inset-top, 10px))', left: 'max(12px, env(safe-area-inset-left, 12px))' }}
       >

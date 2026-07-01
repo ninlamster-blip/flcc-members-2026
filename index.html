@@ -15404,6 +15404,22 @@ function App() {
         aria-label="Play Spiritual Maze game"
       >✦</button>
 
+      <button
+        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'run-the-race/dist/'; }}
+        style={{
+          position: 'fixed', bottom: 220, left: 24,
+          width: 54, height: 54, borderRadius: '50%',
+          background: '#1e1b4b', color: 'white',
+          border: '2px solid rgba(167,139,250,0.5)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.375rem', lineHeight: 1,
+          boxShadow: '0 4px 20px rgba(139,92,246,0.35)',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
+        }}
+        title="Run the Race: 3D Endless Runner"
+        aria-label="Play Run the Race game"
+      >🏃</button>
+
       {/* Personal events FAB — bottom right */}
       <button
         className="fab-live"
