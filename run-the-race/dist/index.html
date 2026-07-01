@@ -6,18 +6,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Run the Race</title>
-    <script type="module" crossorigin src="/run-the-race/dist/assets/index-Bw4WVMfu.js"></script>
+    <script type="module" crossorigin src="/run-the-race/dist/assets/index-LsRHjPlx.js"></script>
     <link rel="modulepreload" crossorigin href="/run-the-race/dist/assets/state-dg_CLfd2.js">
     <link rel="modulepreload" crossorigin href="/run-the-race/dist/assets/three-kX_EKA9e.js">
     <link rel="modulepreload" crossorigin href="/run-the-race/dist/assets/r3f-CotsnrkQ.js">
     <link rel="stylesheet" crossorigin href="/run-the-race/dist/assets/index-B9bMeHHI.css">
   </head>
   <body style="margin:0;background:#000;overflow:hidden;">
-    <div id="root">
-      <div id="pre-load" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Georgia,serif;text-align:center;padding:24px">
-        <div style="font-size:2.5rem;margin-bottom:16px">✝</div>
-        <div style="font-size:1rem;letter-spacing:.15em;opacity:.6">Loading…</div>
-      </div>
+    <div id="root"></div>
+    <div id="pre-load" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Georgia,serif;text-align:center;padding:24px">
+      <div style="font-size:2.5rem;margin-bottom:16px">✝</div>
+      <div style="font-size:1rem;letter-spacing:.15em;opacity:.6">Loading…</div>
     </div>
     <script>
       function showErr(msg) {
@@ -26,7 +25,7 @@
       }
       window.addEventListener('error', function(e) { showErr(e.message || 'Script error'); });
       window.addEventListener('unhandledrejection', function(e) { showErr((e.reason && (e.reason.message || String(e.reason))) || 'Module load failed'); });
-      setTimeout(function() { if (document.getElementById('pre-load')) showErr('Timed out — tap Try Again'); }, 15000);
+      setTimeout(function() { if (document.getElementById('pre-load')) showErr('Timed out — tap Try Again'); }, 10000);
     </script>
   </body>
 </html>

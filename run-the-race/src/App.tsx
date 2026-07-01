@@ -1,4 +1,4 @@
-import { Suspense, Component, type ReactNode } from 'react'
+import { Suspense, Component, useEffect, type ReactNode } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import MainMenu from '@/ui/MainMenu'
 import GameOverScreen from '@/ui/GameOverScreen'
@@ -45,6 +45,11 @@ function LoadingFallback() {
 export default function App() {
   const phase = useGameStore((s) => s.phase)
   const inGame = phase === 'running' || phase === 'paused' || phase === 'faith'
+
+  useEffect(() => {
+    const el = document.getElementById('pre-load')
+    if (el) el.remove()
+  }, [])
 
   return (
     <ErrorBoundary>
