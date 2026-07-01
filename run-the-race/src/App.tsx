@@ -6,6 +6,7 @@ import GameScene from '@/scenes/GameScene'
 import HUD from '@/ui/HUD'
 import PauseScreen from '@/ui/PauseScreen'
 import FaithWalkOverlay from '@/ui/FaithWalkOverlay'
+import VerseToast from '@/ui/VerseToast'
 
 function LoadingFallback() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <>
             <GameScene />
             <HUD />
+            <VerseToast />
           </>
         )}
         {phase === 'faith' && <FaithWalkOverlay />}

@@ -1,8 +1,16 @@
-import { Canvas } from '@react-three/fiber'
+import { useFrame, Canvas } from '@react-three/fiber'
 import Track from '@/entities/Track'
 import Player from '@/entities/Player'
 import Skybox from '@/entities/Skybox'
+import SpawnerSystem from '@/systems/SpawnerSystem'
 import { PLAYER_Z } from '@/utils/constants'
+
+function CameraController() {
+  useFrame(({ camera }) => {
+    camera.lookAt(0, 0.8, PLAYER_Z - 6)
+  })
+  return null
+}
 
 export default function GameScene() {
   return (
@@ -12,6 +20,7 @@ export default function GameScene() {
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       className="absolute inset-0"
     >
+      <CameraController />
       <Skybox />
 
       <ambientLight intensity={0.35} />
@@ -27,11 +36,11 @@ export default function GameScene() {
         shadow-camera-top={12}
         shadow-camera-bottom={-12}
       />
-      {/* Rim light from front-right for heavenly glow */}
       <pointLight position={[6, 5, PLAYER_Z]} intensity={0.6} color="#a78bfa" />
 
       <Track />
       <Player />
+      <SpawnerSystem />
     </Canvas>
   )
 }

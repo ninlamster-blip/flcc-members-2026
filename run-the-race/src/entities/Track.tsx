@@ -6,6 +6,7 @@ import { TILE_LENGTH, TILE_COUNT, PLAYER_Z } from '@/utils/constants'
 
 const TRACK_WIDTH = 9
 const EDGE_WIDTH = 0.4
+const RECYCLE_THRESHOLD = PLAYER_Z + TILE_LENGTH + 4
 
 const trackMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.9, metalness: 0.1 })
 const edgeMat = new THREE.MeshStandardMaterial({
@@ -50,8 +51,10 @@ function buildTileMesh(): THREE.Group {
 export default function Track() {
   const groupRef = useRef<THREE.Group>(null)
   const tilesRef = useRef<THREE.Group[]>([])
+  // Tiles span from far ahead (low Z) to just behind player (high Z)
+  // and scroll toward the camera (+Z direction) to simulate forward movement.
   const zPositions = useRef<number[]>(
-    Array.from({ length: TILE_COUNT }, (_, i) => i * TILE_LENGTH - PLAYER_Z - TILE_LENGTH)
+    Array.from({ length: TILE_COUNT }, (_, i) => PLAYER_Z - i * TILE_LENGTH)
   )
 
   const phase = useGameStore((s) => s.phase)
@@ -68,9 +71,7 @@ export default function Track() {
       return mesh
     })
     tilesRef.current = tiles
-    return () => {
-      tiles.forEach((t) => parent.remove(t))
-    }
+    return () => { tiles.forEach((t) => parent.remove(t)) }
   }, [])
 
   useFrame((_, delta) => {
@@ -80,12 +81,11 @@ export default function Track() {
 
     const tiles = tilesRef.current
     const zp = zPositions.current
-    const recycleThreshold = -PLAYER_Z - TILE_LENGTH
 
     for (let i = 0; i < tiles.length; i++) {
-      zp[i] -= move
-      if (zp[i] < recycleThreshold) {
-        zp[i] += TILE_COUNT * TILE_LENGTH
+      zp[i] += move
+      if (zp[i] > RECYCLE_THRESHOLD) {
+        zp[i] -= TILE_COUNT * TILE_LENGTH
       }
       tiles[i].position.z = zp[i]
     }

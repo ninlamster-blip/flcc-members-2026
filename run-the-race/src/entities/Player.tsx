@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useGameStore, Lane } from '@/store/gameStore'
 import { LANE_POSITIONS, LANE_SWITCH_DURATION, PLAYER_Z, INVINCIBLE_DURATION } from '@/utils/constants'
+import { playerXRef } from '@/utils/playerRef'
 
 const BODY_COLOR = '#60A5FA'
 const HEAD_COLOR = '#FCD34D'
@@ -188,6 +189,7 @@ export default function Player() {
 
     parent.position.x = currentX.current
     parent.position.z = PLAYER_Z
+    playerXRef.current = currentX.current
 
     // Running bob animation
     if (store.phase === 'running' || store.phase === 'faith') {
