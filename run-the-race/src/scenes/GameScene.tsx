@@ -17,7 +17,7 @@ export default function GameScene() {
     <Canvas
       shadows
       camera={{ position: [0, 3.5, PLAYER_Z + 9], fov: 58, near: 0.1, far: 300 }}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      gl={{ antialias: false, powerPreference: 'default' }}
       className="absolute inset-0"
     >
       <CameraController />

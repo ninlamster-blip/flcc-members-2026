@@ -8,7 +8,18 @@
     <title>Run the Race</title>
   </head>
   <body style="margin:0;background:#000;overflow:hidden;">
-    <div id="root"></div>
+    <div id="root">
+      <div id="pre-load" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Georgia,serif;text-align:center;padding:24px">
+        <div style="font-size:2.5rem;margin-bottom:16px">✝</div>
+        <div style="font-size:1rem;letter-spacing:.15em;opacity:.6">Loading…</div>
+      </div>
+    </div>
+    <script>
+      window.addEventListener('error', function(e) {
+        var el = document.getElementById('pre-load');
+        if (el) { el.innerHTML = '<div style="font-size:2rem;margin-bottom:12px">✝</div><div style="font-size:1rem;font-weight:700;margin-bottom:8px">Could not load game</div><div style="font-size:0.7rem;opacity:0.5;margin-bottom:20px;max-width:280px">' + (e.message||'Unknown error') + '</div><button onclick="location.reload()" style="padding:12px 28px;background:#FBBF24;color:#000;border:none;border-radius:12px;font-weight:700;font-size:0.9rem;cursor:pointer">Try Again</button>'; el.style.display='flex'; }
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
