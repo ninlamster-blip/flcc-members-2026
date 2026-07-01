@@ -1,30 +1,37 @@
 import { Canvas } from '@react-three/fiber'
+import Track from '@/entities/Track'
+import Player from '@/entities/Player'
+import Skybox from '@/entities/Skybox'
+import { PLAYER_Z } from '@/utils/constants'
 
 export default function GameScene() {
   return (
     <Canvas
       shadows
-      camera={{ position: [0, 4, 8], fov: 60, near: 0.1, far: 300 }}
+      camera={{ position: [0, 3.5, PLAYER_Z + 9], fov: 58, near: 0.1, far: 300 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       className="absolute inset-0"
     >
-      <color attach="background" args={['#0a0a1a']} />
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
+      <Skybox />
 
-      {/* Track placeholder — Milestone 2 will replace this */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[9, 120]} />
-        <meshStandardMaterial color="#1e1b4b" />
-      </mesh>
+      <ambientLight intensity={0.35} />
+      <directionalLight
+        position={[4, 10, 8]}
+        intensity={1.1}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-camera-near={0.1}
+        shadow-camera-far={60}
+        shadow-camera-left={-12}
+        shadow-camera-right={12}
+        shadow-camera-top={12}
+        shadow-camera-bottom={-12}
+      />
+      {/* Rim light from front-right for heavenly glow */}
+      <pointLight position={[6, 5, PLAYER_Z]} intensity={0.6} color="#a78bfa" />
 
-      {/* Lane markers */}
-      {[-3, 0, 3].map((x) => (
-        <mesh key={x} position={[x, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.05, 120]} />
-          <meshBasicMaterial color="#4338ca" opacity={0.5} transparent />
-        </mesh>
-      ))}
+      <Track />
+      <Player />
     </Canvas>
   )
 }
