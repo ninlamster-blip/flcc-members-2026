@@ -191,15 +191,22 @@ export default function Player() {
     parent.position.z = PLAYER_Z
     playerXRef.current = currentX.current
 
-    // Running bob animation
+    // Running bob + Faith Walk elevation
     if (store.phase === 'running' || store.phase === 'faith') {
       bobTime.current += delta * 8
-      parent.position.y = 0.05 * Math.abs(Math.sin(bobTime.current))
+      const faithY = store.phase === 'faith' ? 2.2 : 0
+      parent.position.y += (faithY + 0.05 * Math.abs(Math.sin(bobTime.current)) - parent.position.y) * 0.06
       mesh.rotation.z = 0.04 * Math.sin(bobTime.current)
-      // Leg animation
       legsRef.current.forEach((leg, i) => {
         leg.rotation.x = (i % 2 === 0 ? 1 : -1) * 0.4 * Math.sin(bobTime.current)
       })
+      // Golden glow during Faith Walk
+      if (mesh.children.length > 0) {
+        const glowIntensity = store.phase === 'faith' ? 1.0 : 0.5
+        ;(mesh.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>)
+          .material?.emissiveIntensity !== undefined &&
+          ((mesh.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>).material.emissiveIntensity = glowIntensity)
+      }
     }
   })
 

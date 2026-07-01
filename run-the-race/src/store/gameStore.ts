@@ -32,6 +32,8 @@ interface GameState {
   highScore: number
   currentVerse: ScriptureVerse | null
   verseProgress: number[]
+  combo: number
+  multiplier: number
 
   setPhase: (phase: GamePhase) => void
   startGame: () => void
@@ -48,11 +50,17 @@ interface GameState {
   endFaithWalk: () => void
   setInvincible: (v: boolean) => void
   collectVerse: (idx: number) => void
+  incrementCombo: () => void
+  resetCombo: () => void
   reset: () => void
 }
 
 const INITIAL_SPEED = 8
 const INITIAL_LIVES = 3
+
+function saveHighScore(score: number) {
+  localStorage.setItem('rtr-highscore', String(score))
+}
 
 export const useGameStore = create<GameState>((set, get) => ({
   phase: 'menu',
@@ -67,6 +75,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   highScore: parseInt(localStorage.getItem('rtr-highscore') ?? '0'),
   currentVerse: null,
   verseProgress: [],
+  combo: 0,
+  multiplier: 1,
 
   setPhase: (phase) => set({ phase }),
 
@@ -83,6 +93,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       isInvincible: false,
       currentVerse: null,
       verseProgress: [],
+      combo: 0,
+      multiplier: 1,
     }),
 
   pauseGame: () => {
@@ -97,22 +109,27 @@ export const useGameStore = create<GameState>((set, get) => ({
     set((s) => {
       const score = s.score + points
       const highScore = Math.max(score, s.highScore)
-      if (highScore > s.highScore) localStorage.setItem('rtr-highscore', String(highScore))
+      if (highScore > s.highScore) saveHighScore(highScore)
       return { score, highScore }
     }),
 
+  // Distance scoring: 1 point per meter, plus speed ramp
   updateDistance: (delta) =>
     set((s) => {
       const distance = s.distance + delta
       const speed = Math.min(INITIAL_SPEED + distance * 0.003, 28)
-      return { distance, speed }
+      const pts = delta // 1 pt/m
+      const score = s.score + pts
+      const highScore = Math.max(score, s.highScore)
+      if (highScore > s.highScore) saveHighScore(highScore)
+      return { distance, speed, score, highScore }
     }),
 
   loseLife: () =>
     set((s) => {
       const lives = s.lives - 1
-      if (lives <= 0) return { lives: 0, phase: 'gameover' }
-      return { lives, isInvincible: true }
+      if (lives <= 0) return { lives: 0, phase: 'gameover', combo: 0, multiplier: 1 }
+      return { lives, isInvincible: true, combo: 0, multiplier: 1 }
     }),
 
   setLane: (lane) => set({ lane }),
@@ -138,6 +155,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       return { verseProgress, currentVerse }
     }),
 
+  incrementCombo: () =>
+    set((s) => {
+      const combo = s.combo + 1
+      // Multiplier: x1 → x2 at 3, x3 at 6, x4 at 9
+      const multiplier = Math.min(1 + Math.floor(combo / 3), 4)
+      return { combo, multiplier }
+    }),
+
+  resetCombo: () => set({ combo: 0, multiplier: 1 }),
+
   reset: () =>
     set({
       phase: 'menu',
@@ -151,5 +178,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       isInvincible: false,
       currentVerse: null,
       verseProgress: [],
+      combo: 0,
+      multiplier: 1,
     }),
 }))

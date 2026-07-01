@@ -185,7 +185,17 @@ export default function SpawnerSystem() {
         continue
       }
 
-      // Skip collision when invincible or not near player Z
+      // During Faith Walk: auto-collect all scrolls in visible range
+      if (store.phase === 'faith' && entry.type === 'collectible' && entry.z > SPAWN_Z && entry.z < DESPAWN_Z) {
+        useGameStore.getState().addScore(100 * store.multiplier)
+        useGameStore.getState().incrementCombo()
+        if (entry.verseIdx >= 0) useGameStore.getState().collectVerse(entry.verseIdx)
+        entry.active = false
+        entry.group.visible = false
+        continue
+      }
+
+      // Skip collision when invincible
       if (store.isInvincible) continue
 
       const inZone = overlapsXZ(
@@ -196,9 +206,11 @@ export default function SpawnerSystem() {
       if (inZone) {
         if (entry.type === 'obstacle') {
           useGameStore.getState().loseLife()
+          useGameStore.getState().resetCombo()
         } else {
-          useGameStore.getState().addScore(50)
+          useGameStore.getState().addScore(50 * store.multiplier)
           useGameStore.getState().addFaith(22)
+          useGameStore.getState().incrementCombo()
           if (entry.verseIdx >= 0) {
             useGameStore.getState().collectVerse(entry.verseIdx)
           }
