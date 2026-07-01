@@ -1,5 +1,11 @@
 {
   "env": {
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(cat)",
+      "Bash(chmod +x /root/.claude/stop-hook-git-check.sh)"
+    ]
   }
 }
