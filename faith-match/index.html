@@ -26,65 +26,6 @@
     </div>
   </div>
 
-  <!--
-    Temporary on-screen diagnostic overlay: surfaces uncaught JS errors
-    directly on the page so this can be debugged from a phone with no
-    Web Inspector access. Safe to remove once the reported freeze is
-    root-caused. Kept dependency-free so it can never itself fail.
-  -->
-  <div id="fm-debug-log" style="position:fixed;left:4px;right:4px;bottom:4px;max-height:40vh;overflow:auto;
-    background:rgba(0,0,0,0.85);color:#0f0;font:10px/1.4 monospace;padding:6px;border-radius:6px;
-    z-index:99999;display:none;white-space:pre-wrap;pointer-events:none;"></div>
-  <script>
-    (function () {
-      var box = document.getElementById('fm-debug-log');
-      function log(msg) {
-        box.style.display = 'block';
-        box.textContent += msg + '\n';
-        box.scrollTop = box.scrollHeight;
-      }
-      window.__fmLog = log;
-      log('[boot] ' + navigator.userAgent);
-      window.addEventListener('error', function (e) {
-        log('[error] ' + e.message + ' @ ' + (e.filename || '?') + ':' + e.lineno);
-      });
-      window.addEventListener('unhandledrejection', function (e) {
-        log('[promise] ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
-      });
-      document.addEventListener('touchstart', function (e) {
-        var t = e.touches[0];
-        log('[touch] touchstart client=' + Math.round(t.clientX) + ',' + Math.round(t.clientY) + ' target=' + (e.target && e.target.tagName));
-      }, { passive: true });
-      document.addEventListener('touchend', function () { log('[touch] touchend'); }, { passive: true });
-
-      // Find the canvas Phaser inserts via MutationObserver instead of any
-      // Phaser boot/ready event, which may fire before a listener for it
-      // can be registered (a real race that hid canvas-level logging in
-      // an earlier version of this diagnostic).
-      var seenCanvas = false;
-      var mo = new MutationObserver(function () {
-        if (seenCanvas) return;
-        var canvas = document.querySelector('#game-container canvas');
-        if (!canvas) return;
-        seenCanvas = true;
-        var rect = canvas.getBoundingClientRect();
-        log('[canvas] inserted: drawbuf=' + canvas.width + 'x' + canvas.height +
-          ' css=' + Math.round(rect.width) + 'x' + Math.round(rect.height) +
-          ' at ' + Math.round(rect.left) + ',' + Math.round(rect.top) +
-          ' dpr=' + window.devicePixelRatio);
-        canvas.addEventListener('touchstart', function (e) {
-          var t = e.touches[0];
-          var r = canvas.getBoundingClientRect();
-          log('[canvas] touchstart client=' + Math.round(t.clientX) + ',' + Math.round(t.clientY) +
-            ' rect=' + Math.round(r.left) + ',' + Math.round(r.top) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
-        }, { passive: true });
-        canvas.addEventListener('touchend', function () { log('[canvas] touchend'); }, { passive: true });
-      });
-      var root = document.getElementById('game-container');
-      if (root) mo.observe(root, { childList: true });
-    })();
-  </script>
-
   <!-- Vendored locally so the game works fully offline after first load. -->
   <script src="Assets/lib/phaser.min.js"></script>
 

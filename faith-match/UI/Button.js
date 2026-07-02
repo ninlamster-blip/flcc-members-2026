@@ -106,7 +106,6 @@
         scene.tweens.add({ targets: this, scale: 1, duration: 90, ease: 'Sine.easeOut' });
       });
 
-      this._label = opts.label || '';
       ensureSceneButtonDispatch(scene);
       scene.__fmButtons.push(this);
       this.once('destroy', () => {
@@ -136,12 +135,10 @@
     }
 
     _onManualPress() {
-      if (global.__fmLog) global.__fmLog('[button] "' + this._label + '" pressed');
       this.scene.tweens.add({ targets: this, scale: 0.96, duration: 70, ease: 'Sine.easeOut' });
     }
 
     _onManualRelease() {
-      if (global.__fmLog) global.__fmLog('[button] "' + this._label + '" released');
       this.scene.tweens.add({ targets: this, scale: 1, duration: 110, ease: 'Back.easeOut' });
       if (global.AudioManager) global.AudioManager.playTap();
       if (this.onClickCallback) this.onClickCallback();

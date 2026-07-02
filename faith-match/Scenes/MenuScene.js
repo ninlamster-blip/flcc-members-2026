@@ -17,15 +17,6 @@
       const C = global.FM_CONST.COLORS;
       this.cameras.main.setBackgroundColor(C.BACKGROUND);
 
-      // Temporary: scene-wide pointer trace (see index.html #fm-debug-log).
-      // Fires on every pointer event Phaser's own input system processes
-      // in this scene, hit or miss, unlike per-button logging which only
-      // fires if the hit-test against that button already succeeded.
-      if (global.__fmLog) {
-        this.input.on('pointerdown', (p) => global.__fmLog('[scene] Menu pointerdown game-space ' + Math.round(p.x) + ',' + Math.round(p.y) + ' (Play btn at ' + Math.round(width / 2) + ',' + Math.round(height * 0.48) + ')'));
-        this.input.on('pointerup', (p) => global.__fmLog('[scene] Menu pointerup game-space ' + Math.round(p.x) + ',' + Math.round(p.y)));
-      }
-
       global.FMProfileStrip.build(this, 30);
 
       const title = this.add.text(width / 2, height * 0.28, 'FAITH MATCH', {

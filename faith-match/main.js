@@ -62,21 +62,5 @@
   };
   window.addEventListener('pointerdown', unlockAudioOnce);
 
-  // iOS Safari's address/tab bar collapses on the first touch of a
-  // session, which changes the on-screen canvas position via the
-  // visualViewport, not always via a plain `window resize` event.
-  // Phaser's InputManager caches the canvas's bounding rect for hit
-  // testing and only recomputes it on scale-manager resize — so if the
-  // toolbar collapse doesn't trigger that path, the very first tap is
-  // hit-tested against a stale rect and misses; a second tap (after
-  // *something* else finally triggers a recompute) works. Explicitly
-  // refresh on every visualViewport change so the cached rect can never
-  // go stale for more than one frame.
-  if (window.visualViewport) {
-    const refreshScale = () => { if (game.scale) game.scale.refresh(); };
-    window.visualViewport.addEventListener('resize', refreshScale);
-    window.visualViewport.addEventListener('scroll', refreshScale);
-  }
-
   window.FM_GAME = game;
 })();
