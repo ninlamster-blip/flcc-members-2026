@@ -26,6 +26,35 @@
     </div>
   </div>
 
+  <!--
+    Temporary on-screen diagnostic overlay: surfaces uncaught JS errors
+    directly on the page so this can be debugged from a phone with no
+    Web Inspector access. Safe to remove once the reported freeze is
+    root-caused. Kept dependency-free so it can never itself fail.
+  -->
+  <div id="fm-debug-log" style="position:fixed;left:4px;right:4px;bottom:4px;max-height:40vh;overflow:auto;
+    background:rgba(0,0,0,0.85);color:#0f0;font:10px/1.4 monospace;padding:6px;border-radius:6px;
+    z-index:99999;display:none;white-space:pre-wrap;pointer-events:none;"></div>
+  <script>
+    (function () {
+      var box = document.getElementById('fm-debug-log');
+      function log(msg) {
+        box.style.display = 'block';
+        box.textContent += msg + '\n';
+        box.scrollTop = box.scrollHeight;
+      }
+      log('[boot] ' + navigator.userAgent);
+      window.addEventListener('error', function (e) {
+        log('[error] ' + e.message + ' @ ' + (e.filename || '?') + ':' + e.lineno);
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        log('[promise] ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+      });
+      document.addEventListener('touchstart', function () { log('[touch] touchstart'); }, { passive: true });
+      document.addEventListener('touchend', function () { log('[touch] touchend'); }, { passive: true });
+    })();
+  </script>
+
   <!-- Vendored locally so the game works fully offline after first load. -->
   <script src="Assets/lib/phaser.min.js"></script>
 
