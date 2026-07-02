@@ -52,9 +52,12 @@
 
   // Browsers require a user gesture before audio can start; unlock on
   // the very first tap/click anywhere and never again after that.
+  // Ambient background music does NOT auto-start here — it felt too
+  // hypnotic/droning in testing. Sound effects (taps, matches, win
+  // fanfare, etc.) are unaffected. A player can still turn ambient
+  // music on manually from Settings if they want it.
   const unlockAudioOnce = () => {
     AudioManager.ensureUnlocked();
-    AudioManager.startAmbientMusic();
     window.removeEventListener('pointerdown', unlockAudioOnce);
   };
   window.addEventListener('pointerdown', unlockAudioOnce);
