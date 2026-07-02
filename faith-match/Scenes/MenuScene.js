@@ -45,10 +45,10 @@
         y: height * 0.55,
         label: 'Play',
         variant: 'primary',
-        onClick: () => this.scene.start('Game', { levelId: 1 })
+        onClick: () => this.scene.start('WorldMap')
       });
 
-      this.add.text(width / 2, height - 24, 'Phase 1 build — core engine preview', {
+      this.add.text(width / 2, height - 24, `${global.FM_CONST.TOTAL_LEVEL_COUNT} levels across 14 worlds`, {
         fontFamily: 'Inter, sans-serif',
         fontSize: '11px',
         color: C.TEXT_MUTED

@@ -35,31 +35,43 @@
 
     create() {
       const C = global.FM_CONST.COLORS;
-      const GRID = global.FM_CONST.GRID;
       this.cameras.main.setBackgroundColor(C.BACKGROUND);
 
-      this.rows = GRID.ROWS;
-      this.cols = GRID.COLS;
-      this.movesLeft = 30;
+      this.level = global.LevelManager.getLevel(this.levelId);
+      this.rows = this.level.rows;
+      this.cols = this.level.cols;
+      this.movesLeft = this.level.resourceType === 'moves' ? this.level.moveLimit : null;
+      this.timeLeft = this.level.resourceType === 'time' ? this.level.timeLimit : null;
       this.score = 0;
       this.isResolving = false;
+      this.levelEnded = false;
       this.selectedCell = null;
       this.dragStart = null;
       this.cascadeDepth = 0;
       this.spritesById = new Map();
+      this.objectiveTracker = new global.ObjectiveTracker(this.level.objectives);
 
       this._computeLayout();
       this._ensureBadgeTextures();
       this._ensureFxTextures();
 
-      this.board = new global.Board({ rows: this.rows, cols: this.cols, rng: new global.RNG(Date.now()) });
-      this.board.generate();
+      this.board = new global.Board({
+        rows: this.rows,
+        cols: this.cols,
+        pieceTypes: this.level.pieceTypes,
+        rng: new global.RNG(this.level.seed)
+      });
+      this.board.generate(this.level.blockers);
 
       this.boardContainer = this.add.container(0, 0);
       this.fxContainer = this.add.container(0, 0);
       this._renderInitialBoard();
       this._createHud();
       this._createSelectionHighlight();
+
+      if (this.level.resourceType === 'time') {
+        this.timerEvent = this.time.addEvent({ delay: 1000, loop: true, callback: this._tickTimer, callbackScope: this });
+      }
 
       this.input.on('pointerdown', this._onPointerDown, this);
       this.input.on('pointerup', this._onPointerUp, this);
@@ -73,7 +85,7 @@
 
     _computeLayout(reflow) {
       const { width, height } = this.scale;
-      const topMargin = 120;
+      const topMargin = 156;
       const bottomMargin = 40;
       const available = Math.min(width - 32, height - topMargin - bottomMargin);
       this.tileSize = Math.floor(available / this.cols);
@@ -222,24 +234,27 @@
         y: 40,
         width: 76,
         height: 40,
-        label: '< Menu',
+        label: '< Levels',
         variant: 'secondary',
         fontSize: 13,
-        onClick: () => this.scene.start('Menu')
+        onClick: () => this.scene.start('LevelSelect', { worldId: this.level.worldId })
       });
 
-      this.movesText = this.add.text(width / 2, 34, `Moves: ${this.movesLeft}`, {
+      const resourceLabel = this.level.resourceType === 'time' ? this._formatTime(this.timeLeft) : `Moves: ${this.movesLeft}`;
+      this.movesText = this.add.text(width / 2, 30, resourceLabel, {
         fontFamily: 'Inter, sans-serif',
         fontSize: '18px',
         fontStyle: '700',
         color: C.TEXT
       }).setOrigin(0.5);
 
-      this.scoreText = this.add.text(width / 2, 60, `Score: ${this.score}`, {
+      this.scoreText = this.add.text(width / 2, 54, `Score: ${this.score}`, {
         fontFamily: 'Inter, sans-serif',
-        fontSize: '14px',
+        fontSize: '13px',
         color: C.TEXT_MUTED
       }).setOrigin(0.5);
+
+      this._createObjectiveHud();
 
       this.statusText = this.add.text(width / 2, this.scale.height - 24, '', {
         fontFamily: 'Inter, sans-serif',
@@ -248,9 +263,85 @@
       }).setOrigin(0.5);
     }
 
+    _createObjectiveHud() {
+      const C = global.FM_CONST.COLORS;
+      const { width } = this.scale;
+      const objectives = this.objectiveTracker.getSummary();
+      const rowY = 92;
+      const chipWidth = Math.min(150, (width - 32) / objectives.length);
+      const totalWidth = chipWidth * objectives.length;
+      const startX = width / 2 - totalWidth / 2 + chipWidth / 2;
+
+      this.objectiveChips = objectives.map((obj, i) => {
+        const x = startX + i * chipWidth;
+        const container = this.add.container(x, rowY);
+
+        const iconKey = obj.type === global.FM_CONST.OBJECTIVE_TYPES.COLLECT
+          ? obj.pieceType
+          : obj.type === global.FM_CONST.OBJECTIVE_TYPES.BREAK_STONE
+            ? 'stone'
+            : obj.type === global.FM_CONST.OBJECTIVE_TYPES.CLEAR_FOG
+              ? 'fog'
+              : null;
+
+        let iconOffset = 0;
+        if (iconKey && this.textures.exists(iconKey)) {
+          const badgeColor = Phaser.Display.Color.HexStringToColor(global.FM_CONST.PIECE_COLORS[iconKey] || '#94A3B8').color;
+          container.add(this.add.circle(-chipWidth / 2 + 16, 0, 14, badgeColor));
+          container.add(this.add.image(-chipWidth / 2 + 16, 0, iconKey).setDisplaySize(18, 18));
+          iconOffset = 20;
+        }
+
+        const text = this.add.text(-chipWidth / 2 + 6 + iconOffset, 0, this._objectiveProgressText(obj), {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '12px',
+          fontStyle: '700',
+          color: C.TEXT
+        }).setOrigin(0, 0.5);
+        container.add(text);
+        container.setData('text', text);
+
+        return container;
+      });
+    }
+
+    _objectiveProgressText(obj) {
+      if (obj.type === global.FM_CONST.OBJECTIVE_TYPES.SCORE) return `${obj.progress}/${obj.target}`;
+      return `${obj.progress}/${obj.target}`;
+    }
+
+    _formatTime(seconds) {
+      const s = Math.max(0, seconds);
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${m}:${r < 10 ? '0' : ''}${r}`;
+    }
+
     _updateHud() {
-      this.movesText.setText(`Moves: ${this.movesLeft}`);
+      const resourceLabel = this.level.resourceType === 'time' ? this._formatTime(this.timeLeft) : `Moves: ${this.movesLeft}`;
+      this.movesText.setText(resourceLabel);
       this.scoreText.setText(`Score: ${this.score}`);
+      this._updateObjectiveHud();
+    }
+
+    _updateObjectiveHud() {
+      if (!this.objectiveChips) return;
+      const summary = this.objectiveTracker.getSummary();
+      summary.forEach((obj, i) => {
+        const chip = this.objectiveChips[i];
+        if (!chip) return;
+        chip.getData('text').setText(this._objectiveProgressText(obj));
+      });
+    }
+
+    _tickTimer() {
+      if (this.levelEnded) return;
+      this.timeLeft = Math.max(0, this.timeLeft - 1);
+      this._updateHud();
+      if (this.timeLeft <= 0) {
+        this.timerEvent.remove();
+        if (!this.isResolving) this._checkEndState();
+      }
     }
 
     _createSelectionHighlight() {
@@ -372,14 +463,14 @@
     // ---------------------------------------------------------------
 
     _onPointerDown(pointer) {
-      if (this.isResolving) return;
+      if (this.isResolving || this.levelEnded) return;
       const cell = this.cellFromPixel(pointer.x, pointer.y);
       if (!cell) return;
       this.dragStart = { row: cell.row, col: cell.col, x: pointer.x, y: pointer.y };
     }
 
     _onPointerUp(pointer) {
-      if (this.isResolving || !this.dragStart) {
+      if (this.isResolving || this.levelEnded || !this.dragStart) {
         this.dragStart = null;
         return;
       }
@@ -489,6 +580,7 @@
 
       const result = this.board.activateSpecials([{ row: specialTile.row, col: specialTile.col }]);
       this.score += result.scoreGained;
+      this._applyResultToObjectives(result);
       this._updateHud();
       this._playClearSequence(result, () => this._afterClearAnimation(result));
     }
@@ -508,8 +600,15 @@
       const originCells = combo.cells.concat([{ row: tileA.row, col: tileA.col }, { row: tileB.row, col: tileB.col }]);
       const result = this.board.activateSpecials(originCells, 300);
       this.score += result.scoreGained;
+      this._applyResultToObjectives(result);
       this._updateHud();
       this._playClearSequence(result, () => this._afterClearAnimation(result));
+    }
+
+    _applyResultToObjectives(result) {
+      this.objectiveTracker.applyClearedCells(result.clearedCells);
+      this.objectiveTracker.applyBlockerDamage(result.blockersDamaged);
+      this.objectiveTracker.applyScore(this.score);
     }
 
     _shakeCell(row, col) {
@@ -545,6 +644,7 @@
       this.cascadeDepth++;
       const result = this.board.resolveMatches(groups, swapAnchor || null);
       this.score += result.scoreGained;
+      this._applyResultToObjectives(result);
       this._updateHud();
 
       // Combo/cascade text: prefer the biggest single-group shape label,
@@ -710,9 +810,167 @@
     }
 
     _checkEndState() {
-      if (this.movesLeft <= 0) {
-        this.statusText.setText(`Out of moves — Final score: ${this.score}`);
+      if (this.levelEnded) return;
+
+      if (this.objectiveTracker.isComplete()) {
+        this._endLevel(true);
+        return;
       }
+
+      const outOfMoves = this.level.resourceType === 'moves' && this.movesLeft <= 0;
+      const outOfTime = this.level.resourceType === 'time' && this.timeLeft <= 0;
+      if (outOfMoves || outOfTime) {
+        this._endLevel(false);
+      }
+    }
+
+    _endLevel(won) {
+      this.levelEnded = true;
+      this._deselect();
+      if (this.timerEvent) this.timerEvent.remove();
+
+      if (won) {
+        const stars = global.LevelManager.starsForScore(this.level, this.score);
+        const existing = global.FM_SAVE.data.completedLevels[this.levelId];
+        const bestScore = Math.max(this.score, existing ? existing.bestScore : 0);
+        const bestStars = Math.max(stars, existing ? existing.stars : 0);
+        global.FM_SAVE.data.completedLevels[this.levelId] = {
+          stars: bestStars,
+          bestScore,
+          movesUsed: this.level.moveLimit ? this.level.moveLimit - (this.movesLeft || 0) : null,
+          completedAt: Date.now()
+        };
+        if (this.score > global.FM_SAVE.data.leaderboard.bestScore) {
+          global.FM_SAVE.data.leaderboard.bestScore = this.score;
+        }
+        global.FM_SAVE.addCoins(10 * bestStars);
+        global.FM_SAVE.addXP(50 * bestStars);
+        this._showWinModal(stars);
+      } else {
+        this._showLoseModal();
+      }
+    }
+
+    _buildModalShell(title, accentHex) {
+      const { width, height } = this.scale;
+      const C = global.FM_CONST.COLORS;
+      const modal = this.add.container(width / 2, height / 2);
+
+      const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.35).setOrigin(0.5);
+      overlay.setPosition(0, 0);
+      modal.add(overlay);
+
+      const panelWidth = Math.min(320, width - 48);
+      const panel = this.add.graphics();
+      panel.fillStyle(Phaser.Display.Color.HexStringToColor(C.SURFACE).color, 1);
+      panel.fillRoundedRect(-panelWidth / 2, -140, panelWidth, 280, 22);
+      modal.add(panel);
+
+      const stripe = this.add.graphics();
+      stripe.fillStyle(Phaser.Display.Color.HexStringToColor(accentHex).color, 1);
+      stripe.fillRoundedRect(-panelWidth / 2, -140, panelWidth, 8, { tl: 22, tr: 22, bl: 0, br: 0 });
+      modal.add(stripe);
+
+      modal.add(this.add.text(0, -100, title, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '22px',
+        fontStyle: '800',
+        color: C.TEXT
+      }).setOrigin(0.5));
+
+      modal.setData('panelWidth', panelWidth);
+      return modal;
+    }
+
+    _showWinModal(stars) {
+      const C = global.FM_CONST.COLORS;
+      const modal = this._buildModalShell('Level Complete!', global.FM_CONST.WORLD_ACCENTS[this.level.worldId]);
+
+      const starLabel = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+      modal.add(this.add.text(0, -54, starLabel, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '32px',
+        color: global.FM_CONST.WORLD_ACCENTS[this.level.worldId]
+      }).setOrigin(0.5));
+
+      modal.add(this.add.text(0, -8, `Score: ${this.score}`, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '16px',
+        fontStyle: '600',
+        color: C.TEXT
+      }).setOrigin(0.5));
+
+      modal.add(this.add.text(0, 18, `+${10 * stars} coins   +${50 * stars} XP`, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '13px',
+        color: C.TEXT_MUTED
+      }).setOrigin(0.5));
+
+      const nextLevelId = this.levelId + 1;
+      const hasNext = nextLevelId <= global.FM_CONST.TOTAL_LEVEL_COUNT;
+      modal.add(new global.FMButton(this, {
+        x: 0,
+        y: 78,
+        width: modal.getData('panelWidth') - 60,
+        height: 48,
+        label: hasNext ? 'Next Level' : 'Choose World',
+        variant: 'primary',
+        onClick: () => {
+          if (hasNext) this.scene.start('Game', { levelId: nextLevelId });
+          else this.scene.start('WorldMap');
+        }
+      }));
+
+      modal.add(new global.FMButton(this, {
+        x: 0,
+        y: 132,
+        width: modal.getData('panelWidth') - 60,
+        height: 40,
+        label: 'Level Select',
+        variant: 'ghost',
+        fontSize: 14,
+        onClick: () => this.scene.start('LevelSelect', { worldId: this.level.worldId })
+      }));
+    }
+
+    _showLoseModal() {
+      const C = global.FM_CONST.COLORS;
+      const reason = this.level.resourceType === 'time' ? "Time's Up!" : 'Out of Moves';
+      const modal = this._buildModalShell(reason, C.DANGER);
+
+      modal.add(this.add.text(0, -50, `Score: ${this.score}`, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '16px',
+        fontStyle: '600',
+        color: C.TEXT
+      }).setOrigin(0.5));
+
+      modal.add(this.add.text(0, -22, 'So close — try again!', {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '13px',
+        color: C.TEXT_MUTED
+      }).setOrigin(0.5));
+
+      modal.add(new global.FMButton(this, {
+        x: 0,
+        y: 40,
+        width: modal.getData('panelWidth') - 60,
+        height: 48,
+        label: 'Retry',
+        variant: 'primary',
+        onClick: () => this.scene.restart({ levelId: this.levelId })
+      }));
+
+      modal.add(new global.FMButton(this, {
+        x: 0,
+        y: 96,
+        width: modal.getData('panelWidth') - 60,
+        height: 40,
+        label: 'Level Select',
+        variant: 'ghost',
+        fontSize: 14,
+        onClick: () => this.scene.start('LevelSelect', { worldId: this.level.worldId })
+      }));
     }
   }
 

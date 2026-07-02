@@ -57,26 +57,43 @@
     DANGER: '#DC2626'
   };
 
+  // One accent color per world, used for the world-map card stripe and
+  // the level-select header so each era of the story reads distinctly.
+  const WORLD_ACCENTS = {
+    1: '#16A34A', 2: '#0EA5E9', 3: '#D97706', 4: '#DC2626',
+    5: '#0D9488', 6: '#7C3AED', 7: '#4F46E5', 8: '#E11D48',
+    9: '#06B6D4', 10: '#B91C1C', 11: '#CA8A04', 12: '#0284C7',
+    13: '#EA580C', 14: '#6D28D9'
+  };
+
   const WORLDS = [
-    { id: 1, name: 'Creation', theme: 'creation', levels: 20 },
-    { id: 2, name: 'Noah', theme: 'noah', levels: 20 },
-    { id: 3, name: 'Abraham', theme: 'abraham', levels: 20 },
-    { id: 4, name: 'Exodus', theme: 'exodus', levels: 20 },
-    { id: 5, name: 'Promised Land', theme: 'promised_land', levels: 20 },
-    { id: 6, name: 'Kings', theme: 'kings', levels: 20 },
-    { id: 7, name: 'Prophets', theme: 'prophets', levels: 20 },
-    { id: 8, name: 'Birth of Christ', theme: 'nativity', levels: 20 },
-    { id: 9, name: 'Miracles', theme: 'miracles', levels: 20 },
-    { id: 10, name: 'Cross', theme: 'cross', levels: 20 },
-    { id: 11, name: 'Resurrection', theme: 'resurrection', levels: 20 },
-    { id: 12, name: 'Acts', theme: 'acts', levels: 20 },
-    { id: 13, name: 'Missionary Journeys', theme: 'missionary', levels: 20 },
-    { id: 14, name: 'Revelation', theme: 'revelation', levels: 20 }
+    { id: 1, name: 'Creation', theme: 'creation', levels: 22 },
+    { id: 2, name: 'Noah', theme: 'noah', levels: 22 },
+    { id: 3, name: 'Abraham', theme: 'abraham', levels: 22 },
+    { id: 4, name: 'Exodus', theme: 'exodus', levels: 22 },
+    { id: 5, name: 'Promised Land', theme: 'promised_land', levels: 22 },
+    { id: 6, name: 'Kings', theme: 'kings', levels: 22 },
+    { id: 7, name: 'Prophets', theme: 'prophets', levels: 21 },
+    { id: 8, name: 'Birth of Christ', theme: 'nativity', levels: 21 },
+    { id: 9, name: 'Miracles', theme: 'miracles', levels: 21 },
+    { id: 10, name: 'Cross', theme: 'cross', levels: 21 },
+    { id: 11, name: 'Resurrection', theme: 'resurrection', levels: 21 },
+    { id: 12, name: 'Acts', theme: 'acts', levels: 21 },
+    { id: 13, name: 'Missionary Journeys', theme: 'missionary', levels: 21 },
+    { id: 14, name: 'Revelation', theme: 'revelation', levels: 21 }
   ];
 
-  const TOTAL_LEVELS = WORLDS.reduce((sum, w) => sum + w.levels, 0); // 280 base + bonus below
-  const LEVELS_PER_WORLD = 20; // 14 worlds * 20 = 280; +20 bonus levels distributed to reach 300
-  const TOTAL_LEVEL_COUNT = 300;
+  // Precompute each world's global level-id range (1-based, inclusive) so
+  // Levels/LevelGenerator.js can resolve "which world does level N belong
+  // to" without recomputing offsets everywhere.
+  let _levelCursor = 1;
+  WORLDS.forEach((w) => {
+    w.startLevelId = _levelCursor;
+    w.endLevelId = _levelCursor + w.levels - 1;
+    _levelCursor = w.endLevelId + 1;
+  });
+
+  const TOTAL_LEVEL_COUNT = WORLDS.reduce((sum, w) => sum + w.levels, 0); // 300
 
   const OBJECTIVE_TYPES = {
     COLLECT: 'collect', // collect N of a given piece type
@@ -128,7 +145,7 @@
     SPECIAL_COLORS,
     COLORS,
     WORLDS,
-    LEVELS_PER_WORLD,
+    WORLD_ACCENTS,
     TOTAL_LEVEL_COUNT,
     OBJECTIVE_TYPES,
     BLOCKER_TYPES,

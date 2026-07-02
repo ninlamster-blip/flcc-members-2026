@@ -22,7 +22,7 @@
       antialias: true,
       roundPixels: true
     },
-    scene: [BootScene, PreloadScene, MenuScene, GameScene]
+    scene: [BootScene, PreloadScene, MenuScene, WorldMapScene, LevelSelectScene, GameScene]
   };
 
   const game = new Phaser.Game(config);
