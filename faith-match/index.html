@@ -43,6 +43,7 @@
         box.textContent += msg + '\n';
         box.scrollTop = box.scrollHeight;
       }
+      window.__fmLog = log;
       log('[boot] ' + navigator.userAgent);
       window.addEventListener('error', function (e) {
         log('[error] ' + e.message + ' @ ' + (e.filename || '?') + ':' + e.lineno);

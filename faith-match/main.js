@@ -60,4 +60,19 @@
   window.addEventListener('pointerdown', unlockAudioOnce);
 
   window.FM_GAME = game;
+
+  // --- Temporary diagnostic instrumentation (see index.html #fm-debug-log) ---
+  if (typeof window.__fmLog === 'function') {
+    const fmLog = window.__fmLog;
+    game.events.once('ready', () => {
+      const canvas = game.canvas;
+      if (!canvas) {
+        fmLog('[canvas] NOT FOUND after ready');
+        return;
+      }
+      fmLog('[canvas] found, size ' + canvas.width + 'x' + canvas.height);
+      canvas.addEventListener('touchstart', () => fmLog('[canvas] touchstart'), { passive: true });
+      canvas.addEventListener('touchend', () => fmLog('[canvas] touchend'), { passive: true });
+    });
+  }
 })();

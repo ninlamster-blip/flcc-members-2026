@@ -60,10 +60,12 @@
         scene.tweens.add({ targets: this, scale: 1, duration: 90, ease: 'Sine.easeOut' });
       });
       this.on('pointerdown', () => {
+        if (global.__fmLog) global.__fmLog('[button] "' + (opts.label || '') + '" pointerdown, disabled=' + this.disabled);
         if (this.disabled) return;
         scene.tweens.add({ targets: this, scale: 0.96, duration: 70, ease: 'Sine.easeOut' });
       });
       this.on('pointerup', () => {
+        if (global.__fmLog) global.__fmLog('[button] "' + (opts.label || '') + '" pointerup, disabled=' + this.disabled);
         if (this.disabled) return;
         scene.tweens.add({ targets: this, scale: 1, duration: 110, ease: 'Back.easeOut' });
         if (global.AudioManager) global.AudioManager.playTap();
