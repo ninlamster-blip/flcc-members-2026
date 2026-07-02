@@ -673,9 +673,8 @@
       const fontSize = Math.round(Math.min(width * 0.17, height * 0.09, 68));
 
       const label = this.add.text(centerX, centerY, text.toUpperCase(), {
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: '"Luckiest Guy", cursive',
         fontSize: fontSize + 'px',
-        fontStyle: '900',
         color: colorHex || global.FM_CONST.COLORS.ACCENT,
         stroke: '#FFFFFF',
         strokeThickness: Math.max(5, Math.round(fontSize * 0.09)),
