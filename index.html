@@ -15355,10 +15355,35 @@ function App() {
         );
       })()}
 
-      {/* Games FAB — bottom left */}
+      {/* Games FAB — bottom left. A single toggle button that expands into
+          the game list, so it only occupies one 54px circle on screen
+          instead of a permanent stack of one per game. */}
+      {showGames && [
+        { key: 'armor', href: 'armor-of-god/index.html', bottom: 92, bg: G_ACCENT, border: 'none', shadow: 'rgba(124,58,237,0.38)', icon: '⚔️', title: 'Armor of God: Spiritual Battle' },
+        { key: 'snake', href: 'snake/index.html', bottom: 156, bg: '#064e3b', border: '2px solid rgba(0,255,136,0.35)', shadow: 'rgba(0,255,136,0.28)', icon: '🐍', title: 'Snake: Nokia Reborn' },
+        { key: 'maze', href: 'spiritual-maze/index.html', bottom: 220, bg: '#0F2A4A', border: '2px solid rgba(252,211,77,0.45)', shadow: 'rgba(252,211,77,0.25)', icon: '✦', title: 'Walk in the Light: Spiritual Maze' },
+        { key: 'faithmatch', href: 'faith-match/index.html', bottom: 284, bg: '#1e3a5f', border: '2px solid rgba(37,99,235,0.5)', shadow: 'rgba(37,99,235,0.35)', icon: '🧩', title: 'Faith Match: Scripture Match-3' },
+      ].map((g) => (
+        <button
+          key={g.key}
+          onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + g.href; }}
+          style={{
+            position: 'fixed', bottom: g.bottom, left: 24,
+            width: 54, height: 54, borderRadius: '50%',
+            background: g.bg, color: 'white',
+            border: g.border, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.375rem', lineHeight: 1,
+            boxShadow: `0 4px 20px ${g.shadow}`,
+            zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
+          }}
+          title={g.title}
+          aria-label={`Play ${g.title}`}
+        >{g.icon}</button>
+      ))}
       <button
         className="fab-live"
-        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'armor-of-god/index.html'; }}
+        onClick={() => setShowGames((s) => !s)}
         style={{
           position: 'fixed', bottom: 28, left: 24,
           width: 54, height: 54, borderRadius: '50%',
@@ -15367,74 +15392,11 @@ function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.375rem', lineHeight: 1,
           boxShadow: '0 4px 20px rgba(124,58,237,0.38)',
-          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
+          zIndex: 26, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
         }}
-        title="Armor of God: Spiritual Battle"
-        aria-label="Play Armor of God game"
-      >⚔️</button>
-      <button
-        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'snake/index.html'; }}
-        style={{
-          position: 'fixed', bottom: 92, left: 24,
-          width: 54, height: 54, borderRadius: '50%',
-          background: '#064e3b', color: 'white',
-          border: '2px solid rgba(0,255,136,0.35)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.375rem', lineHeight: 1,
-          boxShadow: '0 4px 20px rgba(0,255,136,0.28)',
-          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
-        }}
-        title="Snake: Nokia Reborn"
-        aria-label="Play Snake game"
-      >🐍</button>
-
-      <button
-        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'spiritual-maze/index.html'; }}
-        style={{
-          position: 'fixed', bottom: 156, left: 24,
-          width: 54, height: 54, borderRadius: '50%',
-          background: '#0F2A4A', color: 'white',
-          border: '2px solid rgba(252,211,77,0.45)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.375rem', lineHeight: 1,
-          boxShadow: '0 4px 20px rgba(252,211,77,0.25)',
-          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
-        }}
-        title="Walk in the Light: Spiritual Maze"
-        aria-label="Play Spiritual Maze game"
-      >✦</button>
-
-      <button
-        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'run-the-race/dist/'; }}
-        style={{
-          position: 'fixed', bottom: 220, left: 24,
-          width: 54, height: 54, borderRadius: '50%',
-          background: '#1e1b4b', color: 'white',
-          border: '2px solid rgba(167,139,250,0.5)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.375rem', lineHeight: 1,
-          boxShadow: '0 4px 20px rgba(139,92,246,0.35)',
-          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
-        }}
-        title="Run the Race: 3D Endless Runner"
-        aria-label="Play Run the Race game"
-      >🏃</button>
-
-      <button
-        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'faith-match/index.html'; }}
-        style={{
-          position: 'fixed', bottom: 284, left: 24,
-          width: 54, height: 54, borderRadius: '50%',
-          background: '#1e3a5f', color: 'white',
-          border: '2px solid rgba(37,99,235,0.5)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.375rem', lineHeight: 1,
-          boxShadow: '0 4px 20px rgba(37,99,235,0.35)',
-          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
-        }}
-        title="Faith Match: Scripture Match-3"
-        aria-label="Play Faith Match game"
-      >🧩</button>
+        title={showGames ? 'Close games menu' : 'Games'}
+        aria-label={showGames ? 'Close games menu' : 'Open games menu'}
+      >{showGames ? '✕' : '🎮'}</button>
 
       {/* Personal events FAB — bottom right */}
       <button
