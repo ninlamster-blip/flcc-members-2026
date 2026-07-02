@@ -395,15 +395,40 @@
     _createSelectionHighlight() {
       this.highlight = this.add.graphics();
       this.highlight.setVisible(false);
+      this.highlightTween = null;
     }
 
+    /**
+     * Selecting a tile (the first tap of a tap-then-tap-adjacent-tile
+     * swap) previously drew only a thin 3px ring, easy to miss entirely
+     * under quick/frustrated tapping — which reads as "nothing happened"
+     * even though the game is waiting for a second tap. Draw a bolder
+     * double ring centered on the Graphics object's own local origin (so
+     * scale tweens pulse around the tile's center) and keep it visibly
+     * animating the whole time a tile is selected.
+     */
     _drawHighlightAt(row, col) {
       const p = this.cellToPixel(row, col);
-      const s = this.tileSize * 0.9;
+      const s = this.tileSize * 0.92;
       this.highlight.clear();
+      this.highlight.lineStyle(6, 0xffffff, 0.9);
+      this.highlight.strokeRoundedRect(-s / 2, -s / 2, s, s, 18);
       this.highlight.lineStyle(3, Phaser.Display.Color.HexStringToColor(global.FM_CONST.COLORS.ACCENT).color, 1);
-      this.highlight.strokeRoundedRect(p.x - s / 2, p.y - s / 2, s, s, 18);
+      this.highlight.strokeRoundedRect(-s / 2, -s / 2, s, s, 18);
+      this.highlight.setPosition(p.x, p.y);
+      this.highlight.setScale(1);
+      this.highlight.setAlpha(1);
       this.highlight.setVisible(true);
+      if (this.highlightTween) this.highlightTween.stop();
+      this.highlightTween = this.tweens.add({
+        targets: this.highlight,
+        scale: { from: 1, to: 1.14 },
+        alpha: { from: 1, to: 0.5 },
+        duration: 420,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
     }
 
     // ---------------------------------------------------------------
@@ -708,18 +733,21 @@
     _onPointerDown(pointer) {
       if (this.isResolving || this.levelEnded) return;
       const cell = this.cellFromPixel(pointer.x, pointer.y);
+      if (global.__fmLog) global.__fmLog('[board] pointerdown ' + Math.round(pointer.x) + ',' + Math.round(pointer.y) + ' -> cell=' + (cell ? cell.row + ',' + cell.col : 'none') + ' isResolving=' + this.isResolving);
       if (!cell) return;
       this.dragStart = { row: cell.row, col: cell.col, x: pointer.x, y: pointer.y };
     }
 
     _onPointerUp(pointer) {
       if (this.isResolving || this.levelEnded || !this.dragStart) {
+        if (global.__fmLog) global.__fmLog('[board] pointerup ignored: isResolving=' + this.isResolving + ' levelEnded=' + this.levelEnded + ' hadDragStart=' + !!this.dragStart);
         this.dragStart = null;
         return;
       }
       const dx = pointer.x - this.dragStart.x;
       const dy = pointer.y - this.dragStart.y;
       const start = { row: this.dragStart.row, col: this.dragStart.col };
+      if (global.__fmLog) global.__fmLog('[board] pointerup at ' + start.row + ',' + start.col + ' dx=' + Math.round(dx) + ' dy=' + Math.round(dy) + ' threshold=' + DRAG_THRESHOLD);
       this.dragStart = null;
 
       if (this.pendingPowerup) {
@@ -742,6 +770,7 @@
     }
 
     _handleTap(row, col) {
+      if (global.__fmLog) global.__fmLog('[board] tap ' + row + ',' + col + ' selectedCell=' + (this.selectedCell ? this.selectedCell.row + ',' + this.selectedCell.col : 'none'));
       if (!this.selectedCell) {
         this._select(row, col);
         return;
@@ -755,6 +784,7 @@
         this._deselect();
         this._attemptSwap(from.row, from.col, row, col);
       } else {
+        if (global.__fmLog) global.__fmLog('[board] tap not adjacent to selection -> reselecting ' + row + ',' + col);
         this._select(row, col);
       }
     }
@@ -769,6 +799,10 @@
     _deselect() {
       this.selectedCell = null;
       this.highlight.setVisible(false);
+      if (this.highlightTween) {
+        this.highlightTween.stop();
+        this.highlightTween = null;
+      }
     }
 
     // ---------------------------------------------------------------
@@ -776,6 +810,7 @@
     // ---------------------------------------------------------------
 
     _attemptSwap(r1, c1, r2, c2) {
+      if (global.__fmLog) global.__fmLog('[board] attemptSwap ' + r1 + ',' + c1 + ' <-> ' + r2 + ',' + c2 + ' inBounds=' + this.board.inBounds(r2, c2) + ' canSwap=' + (this.board.inBounds(r2, c2) && this.board.canSwap(r1, c1, r2, c2)));
       if (!this.board.inBounds(r2, c2)) return;
       if (!this.board.canSwap(r1, c1, r2, c2)) {
         this._shakeCell(r1, c1);
