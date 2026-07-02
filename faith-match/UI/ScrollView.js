@@ -9,7 +9,9 @@
 
   class FMScrollView extends Phaser.GameObjects.Container {
     constructor(scene, opts) {
-      super(scene, opts.x, opts.y);
+      // See UI/Button.js — fractional container positions can make
+      // Phaser's input hit-testing miss entirely, so snap to whole pixels.
+      super(scene, Math.round(opts.x), Math.round(opts.y));
       this.scene = scene;
       this.viewWidth = opts.width;
       this.viewHeight = opts.height;

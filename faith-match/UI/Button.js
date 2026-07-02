@@ -20,10 +20,14 @@
      * @param {number} [opts.fontSize=18]
      */
     constructor(scene, opts) {
-      super(scene, opts.x, opts.y);
+      // Phaser's input hit-testing can miss on sub-pixel container
+      // positions (observed with fractional coordinates from width/2,
+      // height*factor, etc.), so every interactive element is snapped
+      // to whole pixels at construction time.
+      super(scene, Math.round(opts.x), Math.round(opts.y));
       this.scene = scene;
-      this.width = opts.width || 220;
-      this.height = opts.height || 56;
+      this.width = Math.round(opts.width || 220);
+      this.height = Math.round(opts.height || 56);
       this.variant = opts.variant || 'primary';
       this.onClickCallback = opts.onClick || null;
       this.disabled = false;

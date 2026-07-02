@@ -8,12 +8,27 @@
   'use strict';
 
   const _cache = new Map();
+  const _challengeCache = new Map();
 
   function getLevel(levelId) {
     if (!_cache.has(levelId)) {
       _cache.set(levelId, global.LevelGenerator.generateLevelConfig(levelId));
     }
     return _cache.get(levelId);
+  }
+
+  /**
+   * Returns today's/this-week's challenge level, regenerating (and
+   * evicting the old entry) automatically once the date/ISO-week rolls
+   * over — the cache key includes the date/week key itself.
+   */
+  function getChallengeLevel(kind) {
+    const level = global.LevelGenerator.generateChallengeLevel(kind);
+    const cacheKey = kind + ':' + level.challengeKey;
+    if (!_challengeCache.has(cacheKey)) {
+      _challengeCache.set(cacheKey, level);
+    }
+    return _challengeCache.get(cacheKey);
   }
 
   function isLevelCompleted(levelId) {
@@ -69,6 +84,7 @@
 
   global.LevelManager = {
     getLevel,
+    getChallengeLevel,
     isLevelCompleted,
     isLevelUnlocked,
     isWorldUnlocked,

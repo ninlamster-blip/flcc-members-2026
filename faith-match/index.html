@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <a href="../" class="fm-back-link" aria-label="Back to app">&larr; App</a>
+  <a href="../" class="fm-back-link" aria-label="Back to app">&larr;</a>
 
   <div id="game-root">
     <div id="game-container"></div>
@@ -33,7 +33,10 @@
   <script src="Utils/Constants.js"></script>
   <script src="Utils/EventBus.js"></script>
   <script src="Utils/RNG.js"></script>
+  <script src="Utils/DateUtils.js"></script>
   <script src="Utils/SaveManager.js"></script>
+  <script src="Utils/Achievements.js"></script>
+  <script src="Utils/DailyRewards.js"></script>
 
   <!-- Data models -->
   <script src="Objects/Tile.js"></script>
@@ -47,6 +50,7 @@
   <!-- UI components -->
   <script src="UI/Button.js"></script>
   <script src="UI/ScrollView.js"></script>
+  <script src="UI/ProfileStrip.js"></script>
 
   <!-- Scenes -->
   <script src="Scenes/BootScene.js"></script>
@@ -54,6 +58,10 @@
   <script src="Scenes/MenuScene.js"></script>
   <script src="Scenes/WorldMapScene.js"></script>
   <script src="Scenes/LevelSelectScene.js"></script>
+  <script src="Scenes/ChallengesScene.js"></script>
+  <script src="Scenes/AchievementsScene.js"></script>
+  <script src="Scenes/SettingsScene.js"></script>
+  <script src="Scenes/CreditsScene.js"></script>
   <script src="Scenes/GameScene.js"></script>
 
   <script src="main.js"></script>

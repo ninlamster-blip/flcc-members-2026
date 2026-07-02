@@ -207,5 +207,48 @@
     };
   }
 
-  global.LevelGenerator = { generateLevelConfig, getWorldForLevel };
+  /**
+   * Builds a one-off level for the Daily or Weekly Challenge, seeded by
+   * the current date/ISO-week so every player sees the same board that
+   * day/week. Lives outside the 1-300 campaign id space (challengeKey
+   * instead of a numeric id) so playing it never touches campaign
+   * unlock/save state.
+   * @param {'daily'|'weekly'} kind
+   */
+  function generateChallengeLevel(kind) {
+    const key = kind === 'weekly' ? global.DateUtils.weekKey(new Date()) : global.DateUtils.dateKey(new Date());
+    const rng = new global.RNG(`${kind}-${key}`);
+    const globalDifficulty = kind === 'weekly' ? 0.75 : 0.4;
+
+    const pieceTypeCount = kind === 'weekly' ? 8 : 7;
+    const pieceTypes = pickPieceTypes(rng, pieceTypeCount);
+
+    const target = Math.round(scoreTarget(globalDifficulty, rng) * (kind === 'weekly' ? 1.4 : 1));
+    const objectives = [{ type: OBJECTIVE_TYPES.SCORE, target, label: 'Reach Score' }];
+    const starThresholds = [target, Math.round(target * 1.4), Math.round(target * 1.85)];
+
+    return {
+      id: `${kind}-${key}`,
+      worldId: 0,
+      worldName: kind === 'weekly' ? 'Weekly Challenge' : 'Daily Challenge',
+      worldTheme: 'challenge',
+      indexInWorld: 0,
+      rows: GRID.ROWS,
+      cols: GRID.COLS,
+      resourceType: 'moves',
+      moveLimit: moveLimitFor(globalDifficulty, rng),
+      timeLimit: null,
+      objectives,
+      pieceTypes,
+      blockers: [],
+      starThresholds,
+      globalDifficulty,
+      seed: `${kind}-${key}-board`,
+      isChallenge: true,
+      challengeKind: kind,
+      challengeKey: key
+    };
+  }
+
+  global.LevelGenerator = { generateLevelConfig, generateChallengeLevel, getWorldForLevel };
 })(window);

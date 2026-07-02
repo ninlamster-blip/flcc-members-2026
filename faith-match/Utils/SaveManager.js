@@ -52,6 +52,21 @@
         claimedReward: false
       },
 
+      // Daily challenge (a single featured level that rotates by date)
+      dailyChallenge: {
+        dateKey: null, // 'YYYY-MM-DD'
+        bestScore: 0,
+        played: false
+      },
+
+      // Lightweight lifetime counters, used by the achievement system.
+      stats: {
+        levelsCompleted: 0,
+        totalStarsEarned: 0,
+        specialsActivated: 0,
+        combosTriggered: 0
+      },
+
       // Local leaderboard entries (per-device, no backend)
       leaderboard: {
         bestScore: 0,

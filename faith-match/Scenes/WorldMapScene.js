@@ -34,7 +34,9 @@
         onClick: () => this.scene.start('Menu')
       });
 
-      const viewTop = 80;
+      global.FMProfileStrip.build(this, 68);
+
+      const viewTop = 96;
       const viewHeight = height - viewTop - 16;
       const cardWidth = Math.min(360, width - 40);
       const cardHeight = 84;

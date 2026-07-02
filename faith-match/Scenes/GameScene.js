@@ -30,6 +30,7 @@
     }
 
     init(data) {
+      this.challengeKind = data && data.challengeKind ? data.challengeKind : null;
       this.levelId = (data && data.levelId) || 1;
     }
 
@@ -37,7 +38,9 @@
       const C = global.FM_CONST.COLORS;
       this.cameras.main.setBackgroundColor(C.BACKGROUND);
 
-      this.level = global.LevelManager.getLevel(this.levelId);
+      this.level = this.challengeKind
+        ? global.LevelManager.getChallengeLevel(this.challengeKind)
+        : global.LevelManager.getLevel(this.levelId);
       this.rows = this.level.rows;
       this.cols = this.level.cols;
       this.movesLeft = this.level.resourceType === 'moves' ? this.level.moveLimit : null;
@@ -270,15 +273,16 @@
       const C = global.FM_CONST.COLORS;
       const { width } = this.scale;
 
+      const back = this._backTarget();
       new global.FMButton(this, {
         x: 42,
         y: 24,
         width: 62,
         height: 32,
-        label: '< Levels',
+        label: this.challengeKind ? '< Back' : '< Levels',
         variant: 'secondary',
         fontSize: 11,
-        onClick: () => this.scene.start('LevelSelect', { worldId: this.level.worldId })
+        onClick: () => this.scene.start(back.scene, back.data)
       });
 
       const resourceLabel = this.level.resourceType === 'time' ? this._formatTime(this.timeLeft) : `Moves: ${this.movesLeft}`;
@@ -618,6 +622,8 @@
       const p = this.cellToPixel(specialTile.row, specialTile.col);
       this._showComboText('Activated!', p.x, p.y, global.FM_CONST.SPECIAL_COLORS[specialTile.specialType]);
       this._shakeCamera(2);
+      global.FM_SAVE.data.stats.specialsActivated++;
+      global.FM_SAVE.save();
 
       const result = this.board.activateSpecials([{ row: specialTile.row, col: specialTile.col }]);
       this.score += result.scoreGained;
@@ -635,6 +641,9 @@
       const p = this.cellToPixel(tileB.row, tileB.col);
       this._showComboText('Combined Power!', p.x, p.y, global.FM_CONST.COLORS.ACCENT);
       this._shakeCamera(4);
+      global.FM_SAVE.data.stats.combosTriggered++;
+      global.FM_SAVE.data.stats.specialsActivated += 2;
+      global.FM_SAVE.save();
 
       // The two combo-source tiles themselves should also clear, in case
       // their own effect() calc didn't already include their own cell.
@@ -861,8 +870,15 @@
       const outOfMoves = this.level.resourceType === 'moves' && this.movesLeft <= 0;
       const outOfTime = this.level.resourceType === 'time' && this.timeLeft <= 0;
       if (outOfMoves || outOfTime) {
-        this._endLevel(false);
+        // Daily/Weekly Challenges are best-score attempts, not pass/fail —
+        // running out of moves still records the score instead of failing.
+        this._endLevel(!!this.challengeKind);
       }
+    }
+
+    _backTarget() {
+      if (this.challengeKind) return { scene: 'Challenges', data: {} };
+      return { scene: 'LevelSelect', data: { worldId: this.level.worldId } };
     }
 
     _endLevel(won) {
@@ -870,11 +886,27 @@
       this._deselect();
       if (this.timerEvent) this.timerEvent.remove();
 
-      if (won) {
-        const stars = global.LevelManager.starsForScore(this.level, this.score);
+      if (!won) {
+        this._showLoseModal();
+        return;
+      }
+
+      const stars = global.LevelManager.starsForScore(this.level, this.score);
+      let coinsAwarded = 0;
+      let xpAwarded = 0;
+
+      if (this.challengeKind === 'daily') {
+        coinsAwarded = this._recordDailyChallenge(stars);
+      } else if (this.challengeKind === 'weekly') {
+        const reward = this._recordWeeklyChallenge();
+        coinsAwarded = reward.coins;
+        xpAwarded = reward.xp;
+      } else {
         const existing = global.FM_SAVE.data.completedLevels[this.levelId];
         const bestScore = Math.max(this.score, existing ? existing.bestScore : 0);
         const bestStars = Math.max(stars, existing ? existing.stars : 0);
+        if (!existing) global.FM_SAVE.data.stats.levelsCompleted++;
+        global.FM_SAVE.data.stats.totalStarsEarned += Math.max(0, bestStars - (existing ? existing.stars : 0));
         global.FM_SAVE.data.completedLevels[this.levelId] = {
           stars: bestStars,
           bestScore,
@@ -884,12 +916,51 @@
         if (this.score > global.FM_SAVE.data.leaderboard.bestScore) {
           global.FM_SAVE.data.leaderboard.bestScore = this.score;
         }
-        global.FM_SAVE.addCoins(10 * bestStars);
-        global.FM_SAVE.addXP(50 * bestStars);
-        this._showWinModal(stars);
-      } else {
-        this._showLoseModal();
+        coinsAwarded = 10 * bestStars;
+        xpAwarded = 50 * bestStars;
       }
+
+      if (coinsAwarded) global.FM_SAVE.addCoins(coinsAwarded);
+      if (xpAwarded) global.FM_SAVE.addXP(xpAwarded);
+
+      const { newlyUnlocked } = global.FM_ACHIEVEMENTS.evaluate(global.FM_SAVE.data);
+      global.FM_SAVE.save();
+      this._showWinModal(stars, coinsAwarded, xpAwarded, newlyUnlocked);
+    }
+
+    /** Returns coins awarded: a bigger one-time bonus the first time today's challenge is won, a small bonus for beating a personal best afterward. */
+    _recordDailyChallenge(stars) {
+      const d = global.FM_SAVE.data.dailyChallenge;
+      if (d.dateKey !== this.level.challengeKey) {
+        d.dateKey = this.level.challengeKey;
+        d.bestScore = 0;
+        d.played = false;
+      }
+      const improved = this.score > d.bestScore;
+      if (improved) d.bestScore = this.score;
+      if (!d.played) {
+        d.played = true;
+        return 30 + stars * 15;
+      }
+      return improved ? 10 : 0;
+    }
+
+    /** Returns { coins, xp } awarded once per week, the first time the weekly score threshold is met. */
+    _recordWeeklyChallenge() {
+      const w = global.FM_SAVE.data.weeklyChallenge;
+      if (w.weekKey !== this.level.challengeKey) {
+        w.weekKey = this.level.challengeKey;
+        w.score = 0;
+        w.completed = false;
+        w.claimedReward = false;
+      }
+      if (this.score > w.score) w.score = this.score;
+      if (!w.completed && w.score >= this.level.starThresholds[0]) {
+        w.completed = true;
+        w.claimedReward = true;
+        return { coins: 150, xp: 300 };
+      }
+      return { coins: 0, xp: 0 };
     }
 
     _buildModalShell(title, accentHex) {
@@ -923,15 +994,17 @@
       return modal;
     }
 
-    _showWinModal(stars) {
+    _showWinModal(stars, coinsAwarded, xpAwarded, newlyUnlocked) {
       const C = global.FM_CONST.COLORS;
-      const modal = this._buildModalShell('Level Complete!', global.FM_CONST.WORLD_ACCENTS[this.level.worldId]);
+      const accent = this.challengeKind ? C.ACCENT : global.FM_CONST.WORLD_ACCENTS[this.level.worldId];
+      const challengeTitle = this.objectiveTracker.isComplete() ? 'Challenge Complete!' : 'Score Recorded!';
+      const modal = this._buildModalShell(this.challengeKind ? challengeTitle : 'Level Complete!', accent);
 
       const starLabel = '★'.repeat(stars) + '☆'.repeat(3 - stars);
       modal.add(this.add.text(0, -54, starLabel, {
         fontFamily: 'Inter, sans-serif',
         fontSize: '32px',
-        color: global.FM_CONST.WORLD_ACCENTS[this.level.worldId]
+        color: accent
       }).setOrigin(0.5));
 
       modal.add(this.add.text(0, -8, `Score: ${this.score}`, {
@@ -941,24 +1014,37 @@
         color: C.TEXT
       }).setOrigin(0.5));
 
-      modal.add(this.add.text(0, 18, `+${10 * stars} coins   +${50 * stars} XP`, {
+      const rewardLabel = coinsAwarded || xpAwarded
+        ? `+${coinsAwarded} coins   +${xpAwarded} XP`
+        : 'Personal best not beaten this time';
+      modal.add(this.add.text(0, 18, rewardLabel, {
         fontFamily: 'Inter, sans-serif',
         fontSize: '13px',
         color: C.TEXT_MUTED
       }).setOrigin(0.5));
 
+      if (newlyUnlocked && newlyUnlocked.length) {
+        modal.add(this.add.text(0, 40, `🏆 ${newlyUnlocked[0].name} unlocked!`, {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '12px',
+          fontStyle: '700',
+          color: C.WARNING
+        }).setOrigin(0.5));
+      }
+
+      const back = this._backTarget();
       const nextLevelId = this.levelId + 1;
-      const hasNext = nextLevelId <= global.FM_CONST.TOTAL_LEVEL_COUNT;
+      const hasNext = !this.challengeKind && nextLevelId <= global.FM_CONST.TOTAL_LEVEL_COUNT;
       modal.add(new global.FMButton(this, {
         x: 0,
         y: 78,
         width: modal.getData('panelWidth') - 60,
         height: 48,
-        label: hasNext ? 'Next Level' : 'Choose World',
+        label: hasNext ? 'Next Level' : this.challengeKind ? 'Back to Challenges' : 'Choose World',
         variant: 'primary',
         onClick: () => {
           if (hasNext) this.scene.start('Game', { levelId: nextLevelId });
-          else this.scene.start('WorldMap');
+          else this.scene.start(back.scene, back.data);
         }
       }));
 
@@ -967,10 +1053,10 @@
         y: 132,
         width: modal.getData('panelWidth') - 60,
         height: 40,
-        label: 'Level Select',
+        label: this.challengeKind ? 'Menu' : 'Level Select',
         variant: 'ghost',
         fontSize: 14,
-        onClick: () => this.scene.start('LevelSelect', { worldId: this.level.worldId })
+        onClick: () => this.scene.start(this.challengeKind ? 'Menu' : back.scene, this.challengeKind ? undefined : back.data)
       }));
     }
 
@@ -992,6 +1078,8 @@
         color: C.TEXT_MUTED
       }).setOrigin(0.5));
 
+      const back = this._backTarget();
+      const restartData = this.challengeKind ? { challengeKind: this.challengeKind } : { levelId: this.levelId };
       modal.add(new global.FMButton(this, {
         x: 0,
         y: 40,
@@ -999,7 +1087,7 @@
         height: 48,
         label: 'Retry',
         variant: 'primary',
-        onClick: () => this.scene.restart({ levelId: this.levelId })
+        onClick: () => this.scene.start('Game', restartData)
       }));
 
       modal.add(new global.FMButton(this, {
@@ -1007,10 +1095,10 @@
         y: 96,
         width: modal.getData('panelWidth') - 60,
         height: 40,
-        label: 'Level Select',
+        label: this.challengeKind ? 'Back' : 'Level Select',
         variant: 'ghost',
         fontSize: 14,
-        onClick: () => this.scene.start('LevelSelect', { worldId: this.level.worldId })
+        onClick: () => this.scene.start(back.scene, back.data)
       }));
     }
   }

@@ -58,16 +58,20 @@ html, body {
 
 .fm-back-link {
   position: fixed;
-  top: max(10px, env(safe-area-inset-top, 10px));
-  left: max(12px, env(safe-area-inset-left, 12px));
+  top: max(6px, env(safe-area-inset-top, 6px));
+  left: max(6px, env(safe-area-inset-left, 6px));
   z-index: 999;
-  padding: 6px 14px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(6px);
   border: 1px solid var(--fm-border);
   border-radius: 999px;
   color: var(--fm-text);
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   letter-spacing: 0.02em;
