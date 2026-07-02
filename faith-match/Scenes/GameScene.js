@@ -478,12 +478,14 @@
         container.add(countText);
 
         container.setSize(size, size);
+        // Cosmetic only (desktop hover cursor) — actual tap handling goes
+        // through _hitPowerupButton in _onPointerDown/_onPointerUp instead,
+        // since this hit-test was confirmed broken at devicePixelRatio 3.
         container.setInteractive({
           hitArea: new Phaser.Geom.Rectangle(-size / 2, -size / 2, size, size),
           hitAreaCallback: Phaser.Geom.Rectangle.Contains,
           useHandCursor: true
         });
-        container.on('pointerup', () => this._usePowerup(type));
 
         this.powerupButtons[type] = { container, countText, bg };
       });
@@ -730,8 +732,35 @@
     // Input
     // ---------------------------------------------------------------
 
+    /**
+     * The powerup toolbar circles use Phaser's own setInteractive()
+     * hit-test for pointerup, which was confirmed broken at
+     * devicePixelRatio 3 (see UI/Button.js) — a tap inside the circle's
+     * rectangle can still make scene.input.manager.hitTest() return no
+     * match. Hook the toolbar into GameScene's existing scene-wide
+     * pointer handling instead, same manual-bounds approach as FMButton.
+     */
+    _hitPowerupButton(x, y) {
+      if (!this.powerupButtons) return null;
+      for (const type of Object.keys(this.powerupButtons)) {
+        const c = this.powerupButtons[type].container;
+        const s = c.scale || 1;
+        const halfW = (c.width * s) / 2;
+        const halfH = (c.height * s) / 2;
+        if (x >= c.x - halfW && x <= c.x + halfW && y >= c.y - halfH && y <= c.y + halfH) return type;
+      }
+      return null;
+    }
+
     _onPointerDown(pointer) {
       if (this.isResolving || this.levelEnded) return;
+      const powerupHit = this._hitPowerupButton(pointer.x, pointer.y);
+      if (powerupHit) {
+        this._pendingPowerupPress = powerupHit;
+        this.dragStart = null;
+        return;
+      }
+      this._pendingPowerupPress = null;
       const cell = this.cellFromPixel(pointer.x, pointer.y);
       if (global.__fmLog) global.__fmLog('[board] pointerdown ' + Math.round(pointer.x) + ',' + Math.round(pointer.y) + ' -> cell=' + (cell ? cell.row + ',' + cell.col : 'none') + ' isResolving=' + this.isResolving);
       if (!cell) return;
@@ -739,6 +768,13 @@
     }
 
     _onPointerUp(pointer) {
+      if (this._pendingPowerupPress) {
+        const type = this._pendingPowerupPress;
+        this._pendingPowerupPress = null;
+        if (!this.isResolving && !this.levelEnded) this._usePowerup(type);
+        this.dragStart = null;
+        return;
+      }
       if (this.isResolving || this.levelEnded || !this.dragStart) {
         if (global.__fmLog) global.__fmLog('[board] pointerup ignored: isResolving=' + this.isResolving + ' levelEnded=' + this.levelEnded + ' hadDragStart=' + !!this.dragStart);
         this.dragStart = null;
