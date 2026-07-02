@@ -1155,7 +1155,11 @@
       if (global.FM_SAVE.data.seenVerseIds.length > 60) global.FM_SAVE.data.seenVerseIds.shift();
       global.FM_SAVE.save();
 
-      const modal = this.add.container(width / 2, height / 2);
+      // Fractional container positions (odd width/height → width/2 !=
+      // integer) make Phaser's hit-testing miss on nested interactive
+      // children even though the child's own local x/y is rounded, so
+      // every modal root container snaps to whole pixels — see README.
+      const modal = this.add.container(Math.round(width / 2), Math.round(height / 2));
       modal.add(this.add.rectangle(0, 0, width, height, 0x000000, 0.4).setOrigin(0.5));
 
       const panelWidth = Math.min(340, width - 40);
@@ -1256,7 +1260,9 @@
     _buildModalShell(title, accentHex) {
       const { width, height } = this.scale;
       const C = global.FM_CONST.COLORS;
-      const modal = this.add.container(width / 2, height / 2);
+      // See _showScriptureModal above: snap to whole pixels so nested
+      // buttons remain tappable.
+      const modal = this.add.container(Math.round(width / 2), Math.round(height / 2));
 
       const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.35).setOrigin(0.5);
       overlay.setPosition(0, 0);

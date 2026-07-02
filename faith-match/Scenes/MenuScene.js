@@ -113,7 +113,10 @@
     _showDailyRewardModal(status) {
       const C = global.FM_CONST.COLORS;
       const { width, height } = this.scale;
-      const modal = this.add.container(width / 2, height / 2);
+      // Fractional container positions break Phaser's hit-testing for
+      // nested interactive children (see faith-match/README.md), so the
+      // modal root snaps to whole pixels even though width/height may be odd.
+      const modal = this.add.container(Math.round(width / 2), Math.round(height / 2));
       modal.add(this.add.rectangle(0, 0, width, height, 0x000000, 0.4).setOrigin(0.5));
 
       const panelWidth = Math.min(340, width - 48);
