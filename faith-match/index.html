@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#FAFAFA" />
+  <meta name="description" content="Faith Match — a Scripture-inspired match-3 puzzle game." />
+  <title>Faith Match</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <a href="../" class="fm-back-link" aria-label="Back to app">&larr; App</a>
+
+  <div id="game-root">
+    <div id="game-container"></div>
+    <div id="orientation-lock" class="fm-hidden">
+      <div class="fm-orientation-card">
+        <div class="fm-orientation-icon">&#8635;</div>
+        <p>Please rotate your device to portrait mode to play Faith Match.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendored locally so the game works fully offline after first load. -->
+  <script src="Assets/lib/phaser.min.js"></script>
+
+  <!-- Utils (no dependencies on scenes/objects) -->
+  <script src="Utils/Constants.js"></script>
+  <script src="Utils/EventBus.js"></script>
+  <script src="Utils/RNG.js"></script>
+  <script src="Utils/SaveManager.js"></script>
+
+  <!-- Data models -->
+  <script src="Objects/Tile.js"></script>
+  <script src="Objects/Board.js"></script>
+
+  <!-- UI components -->
+  <script src="UI/Button.js"></script>
+
+  <!-- Scenes -->
+  <script src="Scenes/BootScene.js"></script>
+  <script src="Scenes/PreloadScene.js"></script>
+  <script src="Scenes/MenuScene.js"></script>
+  <script src="Scenes/GameScene.js"></script>
+
+  <script src="main.js"></script>
+</body>
+</html>
