@@ -653,31 +653,73 @@
       });
     }
 
+    /**
+     * Big, screen-filling combo banner for the moments worth celebrating
+     * (shape matches, cascades, special activations) — pops in with an
+     * overshoot, shakes side to side, then grows and fades out. Only one
+     * shows at a time: a fast chain of matches would otherwise stack
+     * several huge banners on top of each other.
+     */
     _showComboText(text, x, y, colorHex) {
-      const label = this.add.text(x, y, text, {
-        fontFamily: 'Inter, sans-serif',
-        fontSize: '22px',
-        fontStyle: '800',
-        color: colorHex || global.FM_CONST.COLORS.ACCENT
-      }).setOrigin(0.5).setScale(0.6).setAlpha(0);
+      if (this._activeComboText) {
+        this._activeComboText.destroy();
+        this._activeComboText = null;
+      }
+      const generation = (this._comboTextGeneration = (this._comboTextGeneration || 0) + 1);
+
+      const { width, height } = this.scale;
+      const centerX = width / 2;
+      const centerY = height * 0.4;
+      const fontSize = Math.round(Math.min(width * 0.17, height * 0.09, 68));
+
+      const label = this.add.text(centerX, centerY, text.toUpperCase(), {
+        fontFamily: '"Luckiest Guy", cursive',
+        fontSize: fontSize + 'px',
+        color: colorHex || global.FM_CONST.COLORS.ACCENT,
+        stroke: '#FFFFFF',
+        strokeThickness: Math.max(5, Math.round(fontSize * 0.09)),
+        align: 'center',
+        wordWrap: { width: width - 32 }
+      })
+        .setOrigin(0.5)
+        .setShadow(0, 3, 'rgba(17,24,39,0.35)', 8, false, true)
+        .setScale(0.2)
+        .setAlpha(0)
+        .setDepth(1000);
       this.fxContainer.add(label);
+      this._activeComboText = label;
 
       this.tweens.add({
         targets: label,
         scale: 1,
         alpha: 1,
-        y: y - 18,
-        duration: 220,
+        duration: 260,
         ease: 'Back.easeOut',
         onComplete: () => {
+          if (this._comboTextGeneration !== generation) return;
           this.tweens.add({
             targets: label,
-            alpha: 0,
-            y: y - 42,
-            delay: 260,
-            duration: 260,
-            ease: 'Sine.easeIn',
-            onComplete: () => label.destroy()
+            angle: { from: -4, to: 4 },
+            duration: 65,
+            yoyo: true,
+            repeat: 3,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+              if (this._comboTextGeneration !== generation) return;
+              label.setAngle(0);
+              this.tweens.add({
+                targets: label,
+                alpha: 0,
+                scale: 1.2,
+                delay: 220,
+                duration: 320,
+                ease: 'Sine.easeIn',
+                onComplete: () => {
+                  label.destroy();
+                  if (this._activeComboText === label) this._activeComboText = null;
+                }
+              });
+            }
           });
         }
       });

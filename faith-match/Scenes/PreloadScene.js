@@ -22,6 +22,14 @@
       const { width, height } = this.scale;
       const C = global.FM_CONST.COLORS;
 
+      // Phaser's canvas-rendered Text doesn't re-render itself once a
+      // web font finishes loading asynchronously, so it has to already
+      // be available by the time GameScene's combo banner first uses
+      // it. Kick off the fetch now, well before any combo can fire.
+      if (global.document && document.fonts && document.fonts.load) {
+        document.fonts.load('40px "Luckiest Guy"').catch(() => {});
+      }
+
       this.add.text(width / 2, height / 2 - 70, 'Faith Match', {
         fontFamily: 'Inter, sans-serif',
         fontSize: '30px',
