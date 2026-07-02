@@ -66,6 +66,7 @@
       this.on('pointerup', () => {
         if (this.disabled) return;
         scene.tweens.add({ targets: this, scale: 1, duration: 110, ease: 'Back.easeOut' });
+        if (global.AudioManager) global.AudioManager.playTap();
         if (this.onClickCallback) this.onClickCallback();
       });
 

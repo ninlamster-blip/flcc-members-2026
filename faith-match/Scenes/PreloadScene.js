@@ -9,7 +9,8 @@
   const ICON_KEYS = [
     'bible', 'cross', 'fish', 'lamp', 'scroll', 'bread', 'grapes', 'dove',
     'prayer_bomb', 'living_water', 'sword_of_spirit', 'pentecost_flame', 'armor_of_god',
-    'stone', 'fog'
+    'stone', 'fog',
+    'powerup_prayer', 'powerup_extra_moves', 'powerup_hint', 'powerup_shuffle', 'powerup_hammer', 'powerup_cross_blast'
   ];
 
   class PreloadScene extends Phaser.Scene {

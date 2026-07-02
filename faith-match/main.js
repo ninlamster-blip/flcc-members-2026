@@ -32,6 +32,7 @@
       AchievementsScene,
       SettingsScene,
       CreditsScene,
+      LeaderboardScene,
       GameScene
     ]
   };
@@ -48,6 +49,15 @@
   window.addEventListener('resize', handleOrientation);
   window.addEventListener('orientationchange', handleOrientation);
   handleOrientation();
+
+  // Browsers require a user gesture before audio can start; unlock on
+  // the very first tap/click anywhere and never again after that.
+  const unlockAudioOnce = () => {
+    AudioManager.ensureUnlocked();
+    AudioManager.startAmbientMusic();
+    window.removeEventListener('pointerdown', unlockAudioOnce);
+  };
+  window.addEventListener('pointerdown', unlockAudioOnce);
 
   window.FM_GAME = game;
 })();

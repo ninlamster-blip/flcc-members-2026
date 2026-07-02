@@ -95,7 +95,10 @@
       row.add(hitZone);
       hitZone.on('pointerup', () => {
         const newVal = !global.FM_SAVE.data.settings[settingKey];
-        global.FM_SAVE.set(`settings.${settingKey}`, newVal);
+        if (settingKey === 'musicOn') global.AudioManager.setMusicEnabled(newVal);
+        else if (settingKey === 'sfxOn') global.AudioManager.setSfxEnabled(newVal);
+        else global.FM_SAVE.set(`settings.${settingKey}`, newVal);
+        if (newVal) global.AudioManager.playTap();
         draw(newVal);
         global.FM_BUS.emit(global.FM_CONST.EVENTS.SETTINGS_CHANGED, global.FM_SAVE.data.settings);
       });

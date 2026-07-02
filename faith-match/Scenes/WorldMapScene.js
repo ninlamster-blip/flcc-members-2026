@@ -34,9 +34,20 @@
         onClick: () => this.scene.start('Menu')
       });
 
-      global.FMProfileStrip.build(this, 68);
+      new global.FMButton(this, {
+        x: width - 46,
+        y: 34,
+        width: 60,
+        height: 34,
+        label: '🏆',
+        variant: 'secondary',
+        fontSize: 15,
+        onClick: () => this.scene.start('Leaderboard')
+      });
 
-      const viewTop = 96;
+      global.FMProfileStrip.build(this, 76);
+
+      const viewTop = 104;
       const viewHeight = height - viewTop - 16;
       const cardWidth = Math.min(360, width - 40);
       const cardHeight = 84;

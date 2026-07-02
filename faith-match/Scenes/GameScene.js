@@ -53,6 +53,8 @@
       this.cascadeDepth = 0;
       this.spritesById = new Map();
       this.objectiveTracker = new global.ObjectiveTracker(this.level.objectives);
+      this.levelStartTime = Date.now();
+      this.pendingPowerup = null;
 
       this._computeLayout();
       this._ensureBadgeTextures();
@@ -71,6 +73,7 @@
       this._renderInitialBoard();
       this._createHud();
       this._createSelectionHighlight();
+      this._createPowerupToolbar();
 
       if (this.level.resourceType === 'time') {
         this.timerEvent = this.time.addEvent({ delay: 1000, loop: true, callback: this._tickTimer, callbackScope: this });
@@ -89,7 +92,7 @@
     _computeLayout(reflow) {
       const { width, height } = this.scale;
       const topMargin = 92;
-      const bottomMargin = 14;
+      const bottomMargin = 76; // leaves room for the powerup toolbar
       const available = Math.min(width - 10, height - topMargin - bottomMargin);
       this.tileSize = Math.floor(available / this.cols);
       const boardPixelW = this.tileSize * this.cols;
@@ -301,7 +304,7 @@
 
       this._createObjectiveHud();
 
-      this.statusText = this.add.text(width / 2, this.scale.height - 12, '', {
+      this.statusText = this.add.text(width / 2, this.scale.height - 68, '', {
         fontFamily: 'Inter, sans-serif',
         fontSize: '13px',
         color: C.ACCENT
@@ -401,6 +404,201 @@
       this.highlight.lineStyle(3, Phaser.Display.Color.HexStringToColor(global.FM_CONST.COLORS.ACCENT).color, 1);
       this.highlight.strokeRoundedRect(p.x - s / 2, p.y - s / 2, s, s, 18);
       this.highlight.setVisible(true);
+    }
+
+    // ---------------------------------------------------------------
+    // Powerups
+    // ---------------------------------------------------------------
+
+    _createPowerupToolbar() {
+      const C = global.FM_CONST.COLORS;
+      const { width, height } = this.scale;
+      const types = ['prayer', 'extra_moves', 'hint', 'shuffle', 'hammer', 'cross_blast'];
+      const iconKeys = {
+        prayer: 'powerup_prayer',
+        extra_moves: 'powerup_extra_moves',
+        hint: 'powerup_hint',
+        shuffle: 'powerup_shuffle',
+        hammer: 'powerup_hammer',
+        cross_blast: 'powerup_cross_blast'
+      };
+      const size = Math.min(46, Math.floor((width - 20) / types.length) - 6);
+      const gap = 6;
+      const totalW = types.length * size + (types.length - 1) * gap;
+      const startX = Math.round(width / 2 - totalW / 2 + size / 2);
+      const y = Math.round(height - 38);
+
+      this.powerupButtons = {};
+      types.forEach((type, i) => {
+        const x = Math.round(startX + i * (size + gap));
+        const container = this.add.container(x, y);
+
+        const bg = this.add.circle(0, 0, size / 2, Phaser.Display.Color.HexStringToColor(C.SURFACE).color);
+        bg.setStrokeStyle(1.5, Phaser.Display.Color.HexStringToColor(C.BORDER).color);
+        container.add(bg);
+
+        const icon = this.add.image(0, 0, iconKeys[type])
+          .setDisplaySize(size * 0.5, size * 0.5)
+          .setTint(Phaser.Display.Color.HexStringToColor(C.ACCENT).color);
+        container.add(icon);
+
+        const badgeBg = this.add.circle(size * 0.32, -size * 0.32, 9, Phaser.Display.Color.HexStringToColor(C.DANGER).color);
+        container.add(badgeBg);
+        const countText = this.add.text(size * 0.32, -size * 0.32, '0', {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '10px',
+          fontStyle: '700',
+          color: '#FFFFFF'
+        }).setOrigin(0.5);
+        container.add(countText);
+
+        container.setSize(size, size);
+        container.setInteractive({
+          hitArea: new Phaser.Geom.Rectangle(-size / 2, -size / 2, size, size),
+          hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+          useHandCursor: true
+        });
+        container.on('pointerup', () => this._usePowerup(type));
+
+        this.powerupButtons[type] = { container, countText, bg };
+      });
+
+      this._updatePowerupToolbar();
+    }
+
+    _updatePowerupToolbar() {
+      if (!this.powerupButtons) return;
+      const C = global.FM_CONST.COLORS;
+      Object.keys(this.powerupButtons).forEach((type) => {
+        const { container, countText, bg } = this.powerupButtons[type];
+        const count = global.FM_SAVE.data.powerups[type] || 0;
+        countText.setText(String(count));
+        container.setAlpha(count > 0 ? 1 : 0.4);
+        const isPending = this.pendingPowerup === type;
+        bg.setStrokeStyle(isPending ? 3 : 1.5, Phaser.Display.Color.HexStringToColor(isPending ? C.ACCENT : C.BORDER).color);
+      });
+    }
+
+    _usePowerup(type) {
+      if (this.isResolving || this.levelEnded) return;
+      const count = global.FM_SAVE.data.powerups[type] || 0;
+      if (count <= 0) return;
+
+      if (type === 'hammer' || type === 'cross_blast') {
+        this.pendingPowerup = this.pendingPowerup === type ? null : type;
+        this._updatePowerupToolbar();
+        this.statusText.setText(this.pendingPowerup ? 'Tap a tile to target it' : '');
+        return;
+      }
+
+      this._consumePowerup(type);
+      if (type === 'prayer') this._applyPrayerBoost();
+      else if (type === 'extra_moves') this._applyExtraMoves();
+      else if (type === 'hint') this._showHint();
+      else if (type === 'shuffle') this._applyManualShuffle();
+    }
+
+    _consumePowerup(type) {
+      global.FM_SAVE.data.powerups[type] = Math.max(0, (global.FM_SAVE.data.powerups[type] || 0) - 1);
+      global.FM_SAVE.save();
+      global.AudioManager.playPowerupUse();
+      this._updatePowerupToolbar();
+    }
+
+    _applyPrayerBoost() {
+      const candidates = [];
+      for (let r = 0; r < this.board.rows; r++) {
+        for (let c = 0; c < this.board.cols; c++) {
+          const tile = this.board.getTile(r, c);
+          if (tile && tile.isMatchable && !tile.isSpecial) candidates.push(tile);
+        }
+      }
+      if (candidates.length === 0) return;
+      const tile = candidates[Math.floor(Math.random() * candidates.length)];
+      tile.specialType = global.FM_CONST.SPECIAL_TYPES.PRAYER_BOMB;
+      this._refreshTileVisual(tile);
+      this._playSpecialFx(global.FM_CONST.SPECIAL_TYPES.PRAYER_BOMB, tile.row, tile.col);
+    }
+
+    _applyExtraMoves() {
+      if (this.level.resourceType === 'time') this.timeLeft += 15;
+      else this.movesLeft += 5;
+      this._updateHud();
+    }
+
+    _findHintMove() {
+      const board = this.board;
+      for (let r = 0; r < board.rows; r++) {
+        for (let c = 0; c < board.cols; c++) {
+          const tile = board.getTile(r, c);
+          if (!tile || !tile.isMatchable) continue;
+          if (c + 1 < board.cols && board.canSwap(r, c, r, c + 1)) return [{ row: r, col: c }, { row: r, col: c + 1 }];
+          if (r + 1 < board.rows && board.canSwap(r, c, r + 1, c)) return [{ row: r, col: c }, { row: r + 1, col: c }];
+        }
+      }
+      return null;
+    }
+
+    _showHint() {
+      const move = this._findHintMove();
+      if (!move) return;
+      move.forEach((cell) => {
+        const tile = this.board.getTile(cell.row, cell.col);
+        const container = tile && this.spritesById.get(tile.id);
+        if (!container) return;
+        this.tweens.add({ targets: container, scale: 1.16, duration: 260, yoyo: true, repeat: 2, ease: 'Sine.easeInOut' });
+      });
+    }
+
+    _applyManualShuffle() {
+      this.isResolving = true;
+      this.board.shuffleBoard();
+      this.statusText.setText('Board shuffled!');
+      this.time.delayedCall(300, () => {
+        this._redrawEntireBoard();
+        this.statusText.setText('');
+        this.isResolving = false;
+      });
+    }
+
+    /** Hammer (single-tile smash) and Cross Blast (row+column clear) both target a tapped cell while `pendingPowerup` is armed. */
+    _applyTargetedPowerup(type, row, col) {
+      const tile = this.board.getTile(row, col);
+      this.pendingPowerup = null;
+      this._updatePowerupToolbar();
+      this.statusText.setText('');
+      if (!tile) return;
+
+      this._consumePowerup(type);
+      this.isResolving = true;
+      this.cascadeDepth = 0;
+
+      if (type === 'hammer' && tile.isBlockedStone) {
+        tile.blocker = null;
+        tile.type = this.level.pieceTypes[Math.floor(Math.random() * this.level.pieceTypes.length)];
+        this._refreshTileVisual(tile);
+        this._applyResultToObjectives({ clearedCells: [], blockersDamaged: [{ row, col, blocker: 'stone', destroyed: true }] });
+        this._playSpecialFx(global.FM_CONST.SPECIAL_TYPES.PRAYER_BOMB, row, col);
+        this.isResolving = false;
+        this._checkEndState();
+        return;
+      }
+
+      const originCells =
+        type === 'hammer'
+          ? [{ row, col }]
+          : this.board.specialEffectCells(row, col, global.FM_CONST.SPECIAL_TYPES.LIVING_WATER).concat(
+              this.board.specialEffectCells(row, col, global.FM_CONST.SPECIAL_TYPES.SWORD_OF_SPIRIT)
+            );
+
+      this._playSpecialFx(type === 'hammer' ? global.FM_CONST.SPECIAL_TYPES.PRAYER_BOMB : global.FM_CONST.SPECIAL_TYPES.LIVING_WATER, row, col);
+      if (type === 'cross_blast') this._playSpecialFx(global.FM_CONST.SPECIAL_TYPES.SWORD_OF_SPIRIT, row, col);
+
+      const result = this.board.activateSpecials(originCells, type === 'cross_blast' ? 100 : 0);
+      this.score += result.scoreGained;
+      this._applyResultToObjectives(result);
+      this._updateHud();
+      this._playClearSequence(result, () => this._afterClearAnimation(result));
     }
 
     // ---------------------------------------------------------------
@@ -524,6 +722,11 @@
       const start = { row: this.dragStart.row, col: this.dragStart.col };
       this.dragStart = null;
 
+      if (this.pendingPowerup) {
+        this._applyTargetedPowerup(this.pendingPowerup, start.row, start.col);
+        return;
+      }
+
       if (Math.max(Math.abs(dx), Math.abs(dy)) >= DRAG_THRESHOLD) {
         let target;
         if (Math.abs(dx) > Math.abs(dy)) {
@@ -577,6 +780,7 @@
       if (!this.board.canSwap(r1, c1, r2, c2)) {
         this._shakeCell(r1, c1);
         this._shakeCell(r2, c2);
+        global.AudioManager.playSwapInvalid();
         return;
       }
 
@@ -622,6 +826,7 @@
       const p = this.cellToPixel(specialTile.row, specialTile.col);
       this._showComboText('Activated!', p.x, p.y, global.FM_CONST.SPECIAL_COLORS[specialTile.specialType]);
       this._shakeCamera(2);
+      global.AudioManager.playSpecialActivate();
       global.FM_SAVE.data.stats.specialsActivated++;
       global.FM_SAVE.save();
 
@@ -641,6 +846,7 @@
       const p = this.cellToPixel(tileB.row, tileB.col);
       this._showComboText('Combined Power!', p.x, p.y, global.FM_CONST.COLORS.ACCENT);
       this._shakeCamera(4);
+      global.AudioManager.playCombo();
       global.FM_SAVE.data.stats.combosTriggered++;
       global.FM_SAVE.data.stats.specialsActivated += 2;
       global.FM_SAVE.save();
@@ -696,6 +902,7 @@
       this.score += result.scoreGained;
       this._applyResultToObjectives(result);
       this._updateHud();
+      global.AudioManager.playMatch(this.cascadeDepth);
 
       // Combo/cascade text: prefer the biggest single-group shape label,
       // falling back to a cascade-depth label on chained matches.
@@ -887,11 +1094,13 @@
       if (this.timerEvent) this.timerEvent.remove();
 
       if (!won) {
+        global.AudioManager.playLose();
         this._showLoseModal();
         return;
       }
 
       const stars = global.LevelManager.starsForScore(this.level, this.score);
+      const elapsedMs = Date.now() - this.levelStartTime;
       let coinsAwarded = 0;
       let xpAwarded = 0;
 
@@ -913,9 +1122,7 @@
           movesUsed: this.level.moveLimit ? this.level.moveLimit - (this.movesLeft || 0) : null,
           completedAt: Date.now()
         };
-        if (this.score > global.FM_SAVE.data.leaderboard.bestScore) {
-          global.FM_SAVE.data.leaderboard.bestScore = this.score;
-        }
+        this._recordLeaderboardEntry(elapsedMs);
         coinsAwarded = 10 * bestStars;
         xpAwarded = 50 * bestStars;
       }
@@ -925,7 +1132,90 @@
 
       const { newlyUnlocked } = global.FM_ACHIEVEMENTS.evaluate(global.FM_SAVE.data);
       global.FM_SAVE.save();
-      this._showWinModal(stars, coinsAwarded, xpAwarded, newlyUnlocked);
+
+      global.AudioManager.playWinFanfare();
+      if (newlyUnlocked.length) this.time.delayedCall(500, () => global.AudioManager.playAchievement());
+
+      this._showScriptureModal(() => this._showWinModal(stars, coinsAwarded, xpAwarded, newlyUnlocked));
+    }
+
+    _recordLeaderboardEntry(elapsedMs) {
+      const lb = global.FM_SAVE.data.leaderboard;
+      if (this.score > lb.bestScore) lb.bestScore = this.score;
+      if (lb.fastestCompletionMs === null || elapsedMs < lb.fastestCompletionMs) lb.fastestCompletionMs = elapsedMs;
+      lb.history.unshift({ levelId: this.levelId, worldName: this.level.worldName, score: this.score, moves: this.level.moveLimit ? this.level.moveLimit - (this.movesLeft || 0) : null, timeMs: elapsedMs, date: Date.now() });
+      if (lb.history.length > 20) lb.history.length = 20;
+    }
+
+    _showScriptureModal(onContinue) {
+      const C = global.FM_CONST.COLORS;
+      const { width, height } = this.scale;
+      const { index, verse } = global.Scripture.pickRandomVerse(global.FM_SAVE.data.seenVerseIds);
+      global.FM_SAVE.data.seenVerseIds.push(index);
+      if (global.FM_SAVE.data.seenVerseIds.length > 60) global.FM_SAVE.data.seenVerseIds.shift();
+      global.FM_SAVE.save();
+
+      const modal = this.add.container(width / 2, height / 2);
+      modal.add(this.add.rectangle(0, 0, width, height, 0x000000, 0.4).setOrigin(0.5));
+
+      const panelWidth = Math.min(340, width - 40);
+      const panelHeight = Math.min(360, height - 80);
+      const panel = this.add.graphics();
+      panel.fillStyle(Phaser.Display.Color.HexStringToColor(C.SURFACE).color, 1);
+      panel.fillRoundedRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 22);
+      modal.add(panel);
+
+      const stripe = this.add.graphics();
+      stripe.fillStyle(Phaser.Display.Color.HexStringToColor(global.FM_CONST.WORLD_ACCENTS[this.level.worldId] || C.ACCENT).color, 1);
+      stripe.fillRoundedRect(-panelWidth / 2, -panelHeight / 2, panelWidth, 8, { tl: 22, tr: 22, bl: 0, br: 0 });
+      modal.add(stripe);
+
+      modal.add(this.add.text(0, -panelHeight / 2 + 30, 'Word for Today', {
+        fontFamily: 'Inter, sans-serif', fontSize: '13px', fontStyle: '700', color: C.TEXT_MUTED
+      }).setOrigin(0.5));
+
+      modal.add(this.add.text(0, -panelHeight / 2 + 66, `"${verse.text}"`, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '15px',
+        fontStyle: '500',
+        color: C.TEXT,
+        align: 'center',
+        wordWrap: { width: panelWidth - 56 }
+      }).setOrigin(0.5, 0));
+
+      const refY = -panelHeight / 2 + 66 + this._estimateTextHeight(verse.text, panelWidth - 56, 15) + 16;
+      modal.add(this.add.text(0, refY, verse.ref, {
+        fontFamily: 'Inter, sans-serif', fontSize: '13px', fontStyle: '700', color: global.FM_CONST.WORLD_ACCENTS[this.level.worldId] || C.ACCENT
+      }).setOrigin(0.5));
+
+      modal.add(this.add.text(0, refY + 30, verse.note, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '12px',
+        color: C.TEXT_MUTED,
+        align: 'center',
+        wordWrap: { width: panelWidth - 56 }
+      }).setOrigin(0.5, 0));
+
+      modal.add(new global.FMButton(this, {
+        x: 0,
+        y: panelHeight / 2 - 42,
+        width: panelWidth - 60,
+        height: 46,
+        label: 'Continue',
+        variant: 'primary',
+        onClick: () => {
+          modal.destroy();
+          onContinue();
+        }
+      }));
+    }
+
+    /** Rough single-line-height * line-count estimate for wrapped text, used to stack modal content without a full text-measurement pass. */
+    _estimateTextHeight(text, wrapWidth, fontSize) {
+      const avgCharWidth = fontSize * 0.52;
+      const charsPerLine = Math.max(10, Math.floor(wrapWidth / avgCharWidth));
+      const lines = Math.ceil(text.length / charsPerLine);
+      return lines * (fontSize * 1.35);
     }
 
     /** Returns coins awarded: a bigger one-time bonus the first time today's challenge is won, a small bonus for beating a personal best afterward. */
