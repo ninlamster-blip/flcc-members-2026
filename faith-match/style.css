@@ -1,0 +1,124 @@
+:root {
+  --fm-bg: #FAFAFA;
+  --fm-accent: #2563EB;
+  --fm-accent-dark: #1D4ED8;
+  --fm-text: #111827;
+  --fm-text-muted: #6B7280;
+  --fm-surface: #FFFFFF;
+  --fm-border: #E5E7EB;
+  --fm-radius-lg: 20px;
+  --fm-radius-md: 14px;
+  --fm-radius-sm: 8px;
+  --fm-shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.06), 0 1px 3px rgba(17, 24, 39, 0.08);
+  --fm-shadow-md: 0 4px 10px rgba(17, 24, 39, 0.08), 0 2px 4px rgba(17, 24, 39, 0.06);
+  --fm-shadow-lg: 0 12px 28px rgba(17, 24, 39, 0.12), 0 4px 10px rgba(17, 24, 39, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--fm-bg);
+  color: var(--fm-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+#game-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fm-bg);
+}
+
+#game-container {
+  width: 100%;
+  height: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: var(--fm-shadow-lg);
+  background: var(--fm-bg);
+}
+
+#game-container canvas {
+  display: block;
+  touch-action: none;
+}
+
+.fm-back-link {
+  position: fixed;
+  top: max(6px, env(safe-area-inset-top, 6px));
+  left: max(6px, env(safe-area-inset-left, 6px));
+  z-index: 999;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--fm-border);
+  border-radius: 999px;
+  color: var(--fm-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  box-shadow: var(--fm-shadow-sm);
+}
+
+.fm-hidden {
+  display: none !important;
+}
+
+#orientation-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--fm-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-orientation-card {
+  max-width: 320px;
+  text-align: center;
+  padding: 32px;
+  border-radius: var(--fm-radius-lg);
+  background: var(--fm-surface);
+  box-shadow: var(--fm-shadow-md);
+  border: 1px solid var(--fm-border);
+}
+
+.fm-orientation-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  color: var(--fm-accent);
+}
+
+.fm-orientation-card p {
+  margin: 0;
+  color: var(--fm-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 900px) {
+  #game-container {
+    height: min(94vh, 960px);
+    border-radius: var(--fm-radius-lg);
+    overflow: hidden;
+  }
+}
