@@ -331,42 +331,100 @@
      * @returns {{clearedCells: Array, specialsCreated: Array, blockersDamaged: Array, scoreGained: number}}
      */
     resolveMatches(groups, swapAnchor = null) {
-      const clearedKeys = new Map(); // key -> {row,col,type,specialType}
-      const specialsCreated = [];
+      const seedCells = [];
+      groups.forEach((group) => group.cells.forEach((c) => seedCells.push(c)));
+      const seedCount = new Set(seedCells.map((c) => key(c.row, c.col))).size;
+
+      const fullClearCells = this._expandClearSet(seedCells);
+
       let scoreGained = 0;
-
       groups.forEach((group) => {
-        group.cells.forEach((cell) => {
-          const tile = this.getTile(cell.row, cell.col);
-          if (!tile) return;
-          clearedKeys.set(key(cell.row, cell.col), { row: cell.row, col: cell.col, type: tile.type });
-          // If an existing special piece is part of this match, trigger its
-          // area effect too (chain reaction), merging extra cleared cells in.
-          if (tile.isSpecial) {
-            const extra = this.specialEffectCells(cell.row, cell.col, tile.specialType);
-            extra.forEach((ec) => {
-              const t = this.getTile(ec.row, ec.col);
-              if (t) clearedKeys.set(key(ec.row, ec.col), { row: ec.row, col: ec.col, type: t.type });
-            });
-          }
-        });
-
         scoreGained += this._scoreForGroup(group);
+      });
+      // Bonus for any additional cells swept in by chained special effects.
+      scoreGained += Math.max(0, fullClearCells.length - seedCount) * 40;
 
-        if (group.specialType) {
-          const anchor =
-            swapAnchor && group.cells.some((c) => c.row === swapAnchor.row && c.col === swapAnchor.col)
-              ? swapAnchor
-              : group.anchor;
-          specialsCreated.push({ row: anchor.row, col: anchor.col, specialType: group.specialType, baseType: group.type });
-        }
+      const specialsCreated = [];
+      groups.forEach((group) => {
+        if (!group.specialType) return;
+        const anchor =
+          swapAnchor && group.cells.some((c) => c.row === swapAnchor.row && c.col === swapAnchor.col)
+            ? swapAnchor
+            : group.anchor;
+        specialsCreated.push({ row: anchor.row, col: anchor.col, specialType: group.specialType, baseType: group.type });
       });
 
-      // Damage stone blockers adjacent to any cleared cell.
-      const blockersDamaged = this._damageAdjacentBlockers(Array.from(clearedKeys.values()));
+      const { clearedCells, blockersDamaged } = this._clearCells(fullClearCells, specialsCreated);
 
-      // Clear fog on any cleared cell itself.
-      clearedKeys.forEach((info) => {
+      return { clearedCells, specialsCreated, blockersDamaged, scoreGained };
+    }
+
+    /**
+     * Activates one or more special pieces directly (triggered by the
+     * player swapping into/between existing specials, rather than by
+     * forming a fresh match). Chain-expands through any further specials
+     * caught in the blast, exactly like a match-triggered chain reaction.
+     * @param {Array<{row:number,col:number}>} originCells cells whose
+     *   special effect(s) should fire; extra cells from combineSpecials()
+     *   can also be passed in directly.
+     * @param {number} [scoreBonus] flat bonus added on top of per-cell score
+     */
+    activateSpecials(originCells, scoreBonus = 0) {
+      const fullClearCells = this._expandClearSet(originCells);
+      const { clearedCells, blockersDamaged } = this._clearCells(fullClearCells, []);
+      const scoreGained = fullClearCells.length * 40 + scoreBonus;
+      return { clearedCells, specialsCreated: [], blockersDamaged, scoreGained };
+    }
+
+    /**
+     * BFS-expands an initial set of cells: whenever a cell in the frontier
+     * holds a special piece, its effect area is unioned in too, so chains
+     * of specials (e.g. a striped piece swept up by a color bomb) resolve
+     * in a single pass.
+     */
+    _expandClearSet(initialCells) {
+      const map = new Map();
+      const queue = [];
+      initialCells.forEach((c) => {
+        const k = key(c.row, c.col);
+        if (!map.has(k)) {
+          map.set(k, c);
+          queue.push(c);
+        }
+      });
+      while (queue.length) {
+        const cell = queue.shift();
+        const tile = this.getTile(cell.row, cell.col);
+        if (!tile || !tile.isSpecial) continue;
+        this.specialEffectCells(cell.row, cell.col, tile.specialType).forEach((ec) => {
+          const k = key(ec.row, ec.col);
+          if (!map.has(k)) {
+            map.set(k, ec);
+            queue.push(ec);
+          }
+        });
+      }
+      return Array.from(map.values());
+    }
+
+    /**
+     * Removes tiles at the given cells (preserving cells reserved for a
+     * newly-spawned special piece), damages adjacent stone blockers, and
+     * clears fog on the cleared cells themselves.
+     */
+    _clearCells(cells, specialsCreated) {
+      const specialAnchors = new Map(specialsCreated.map((s) => [key(s.row, s.col), s]));
+      const clearedCells = [];
+
+      cells.forEach((cell) => {
+        const tile = this.getTile(cell.row, cell.col);
+        if (!tile) return;
+        clearedCells.push({ row: cell.row, col: cell.col, type: tile.type });
+      });
+
+      const blockersDamaged = this._damageAdjacentBlockers(clearedCells);
+
+      clearedCells.forEach((info) => {
         const tile = this.getTile(info.row, info.col);
         if (tile && tile.blocker && tile.blocker.type === 'fog') {
           blockersDamaged.push({ row: info.row, col: info.col, blocker: 'fog', cleared: true });
@@ -374,29 +432,20 @@
         }
       });
 
-      // Remove tiles from the grid (set empty), except where a special
-      // piece will be spawned — that cell keeps a tile object but gets
-      // re-typed as the special.
-      const specialAnchors = new Map(specialsCreated.map((s) => [key(s.row, s.col), s]));
-
-      clearedKeys.forEach((info, k) => {
+      cells.forEach((cell) => {
+        const k = key(cell.row, cell.col);
         const spawn = specialAnchors.get(k);
-        const tile = this.getTile(info.row, info.col);
+        const tile = this.getTile(cell.row, cell.col);
         if (!tile) return;
         if (spawn) {
           tile.type = spawn.baseType;
           tile.specialType = spawn.specialType;
         } else {
-          this.setTile(info.row, info.col, tile.isBlockedStone ? tile : null);
+          this.setTile(cell.row, cell.col, tile.isBlockedStone ? tile : null);
         }
       });
 
-      return {
-        clearedCells: Array.from(clearedKeys.values()),
-        specialsCreated,
-        blockersDamaged,
-        scoreGained
-      };
+      return { clearedCells, blockersDamaged };
     }
 
     _scoreForGroup(group) {
@@ -486,47 +535,55 @@
         for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) cells.push({ row: r, col: c });
         return cells;
       };
-      const rowCells = () => {
-        const cells = [];
-        for (let c = 0; c < this.cols; c++) cells.push({ row, col: c });
-        return cells;
-      };
-      const colCells = () => {
-        const cells = [];
-        for (let r = 0; r < this.rows; r++) cells.push({ row: r, col });
-        return cells;
-      };
-      const thickCross = () => {
+      const band = (thickness) => {
         const cells = new Map();
-        for (let dr = -1; dr <= 1; dr++) for (let c = 0; c < this.cols; c++) cells.set(key(row + dr, c), { row: row + dr, col: c });
-        for (let dc = -1; dc <= 1; dc++) for (let r = 0; r < this.rows; r++) cells.set(key(r, col + dc), { row: r, col: col + dc });
+        for (let dr = -thickness; dr <= thickness; dr++) {
+          for (let c = 0; c < this.cols; c++) cells.set(key(row + dr, c), { row: row + dr, col: c });
+        }
+        return Array.from(cells.values()).filter((cc) => this.inBounds(cc.row, cc.col));
+      };
+      const thickCross = (thickness = 1) => {
+        const cells = new Map();
+        for (let dr = -thickness; dr <= thickness; dr++) for (let c = 0; c < this.cols; c++) cells.set(key(row + dr, c), { row: row + dr, col: c });
+        for (let dc = -thickness; dc <= thickness; dc++) for (let r = 0; r < this.rows; r++) cells.set(key(r, col + dc), { row: r, col: col + dc });
         return Array.from(cells.values()).filter((cc) => this.inBounds(cc.row, cc.col));
       };
 
       switch (pair) {
         case [S.LIVING_WATER, S.LIVING_WATER].sort().join('+'):
-          return { cells: [...rowCells(), ...rowCells()], resultSpecial: null };
+          return { cells: band(1), resultSpecial: null };
         case [S.SWORD_OF_SPIRIT, S.SWORD_OF_SPIRIT].sort().join('+'):
-          return { cells: colCells(), resultSpecial: null };
+          return { cells: this._columnBand(col, 1), resultSpecial: null };
         case [S.LIVING_WATER, S.SWORD_OF_SPIRIT].sort().join('+'):
-          return { cells: thickCross(), resultSpecial: null };
+          return { cells: thickCross(1), resultSpecial: null };
         case [S.PRAYER_BOMB, S.PRAYER_BOMB].sort().join('+'):
           return { cells: this.specialEffectCells(row, col, S.ARMOR_OF_GOD), resultSpecial: null };
         case [S.PRAYER_BOMB, S.LIVING_WATER].sort().join('+'):
         case [S.PRAYER_BOMB, S.SWORD_OF_SPIRIT].sort().join('+'):
-          return { cells: thickCross(), resultSpecial: null };
+          return { cells: thickCross(1), resultSpecial: null };
+        case [S.ARMOR_OF_GOD, S.LIVING_WATER].sort().join('+'):
+        case [S.ARMOR_OF_GOD, S.SWORD_OF_SPIRIT].sort().join('+'):
+        case [S.ARMOR_OF_GOD, S.PRAYER_BOMB].sort().join('+'):
+          return { cells: thickCross(2), resultSpecial: null };
         case [S.PENTECOST_FLAME, S.PENTECOST_FLAME].sort().join('+'):
-          return { cells: all(), resultSpecial: null };
         case [S.PENTECOST_FLAME, S.LIVING_WATER].sort().join('+'):
         case [S.PENTECOST_FLAME, S.SWORD_OF_SPIRIT].sort().join('+'):
         case [S.PENTECOST_FLAME, S.PRAYER_BOMB].sort().join('+'):
-          return { cells: all(), resultSpecial: null };
         case [S.ARMOR_OF_GOD, S.ARMOR_OF_GOD].sort().join('+'):
         case [S.PENTECOST_FLAME, S.ARMOR_OF_GOD].sort().join('+'):
           return { cells: all(), resultSpecial: null };
         default:
           return { cells: this.specialEffectCells(row, col, typeA), resultSpecial: null };
       }
+    }
+
+    _columnBand(col, thickness) {
+      const cells = [];
+      for (let dc = -thickness; dc <= thickness; dc++) {
+        if (!this.inBounds(0, col + dc)) continue;
+        for (let r = 0; r < this.rows; r++) cells.push({ row: r, col: col + dc });
+      }
+      return cells;
     }
 
     // ---------------------------------------------------------------

@@ -1,13 +1,11 @@
 /**
- * GameScene — Phase 1 vertical slice: renders an 8x8 Board using the
- * SVG icon set, supports tap-to-select and drag-to-swap input (mouse +
- * touch), and drives the full match -> resolve -> gravity -> refill ->
- * cascade loop against Objects/Board.js.
- *
- * Not yet implemented here (arrives in Phase 2): activating an existing
- * special piece by swapping into it, combining two specials, particle
- * effects, combo text, and chain-reaction juice. Board.js already
- * exposes specialEffectCells()/combineSpecials() for that follow-up work.
+ * GameScene — renders an 8x8 Board using the SVG icon set, supports
+ * tap-to-select and drag-to-swap input (mouse + touch), and drives the
+ * full match -> resolve -> gravity -> refill -> cascade loop against
+ * Objects/Board.js. Also handles swap-triggered special-piece
+ * activation and combination, plus juice: particle bursts, combo text,
+ * special-effect flashes (beam/ring/board-flash), and cascade-scaled
+ * screen shake.
  */
 (function (global) {
   'use strict';
@@ -16,6 +14,15 @@
   const CLEAR_TWEEN_MS = 160;
   const FALL_TWEEN_MS = 220;
   const SWAP_TWEEN_MS = 140;
+
+  const COMBO_LABELS = {
+    line4: 'Great!',
+    line5: 'Amazing!',
+    L_T: 'Prayer Power!',
+    plus: 'Miraculous!'
+  };
+
+  const CASCADE_LABELS = ['', '', 'Blessed!', 'Anointed!', 'Overflowing!', 'Miraculous!'];
 
   class GameScene extends Phaser.Scene {
     constructor() {
@@ -38,15 +45,18 @@
       this.isResolving = false;
       this.selectedCell = null;
       this.dragStart = null;
+      this.cascadeDepth = 0;
       this.spritesById = new Map();
 
       this._computeLayout();
       this._ensureBadgeTextures();
+      this._ensureFxTextures();
 
       this.board = new global.Board({ rows: this.rows, cols: this.cols, rng: new global.RNG(Date.now()) });
       this.board.generate();
 
       this.boardContainer = this.add.container(0, 0);
+      this.fxContainer = this.add.container(0, 0);
       this._renderInitialBoard();
       this._createHud();
       this._createSelectionHighlight();
@@ -68,7 +78,6 @@
       const available = Math.min(width - 32, height - topMargin - bottomMargin);
       this.tileSize = Math.floor(available / this.cols);
       const boardPixelW = this.tileSize * this.cols;
-      const boardPixelH = this.tileSize * this.rows;
       this.boardX = Math.round((width - boardPixelW) / 2);
       this.boardY = topMargin;
       if (reflow && this.boardContainer) this._reflowSprites();
@@ -109,7 +118,7 @@
     }
 
     // ---------------------------------------------------------------
-    // Badge (tinted rounded-square) textures, one per piece/special type
+    // Textures: badges (tinted rounded squares) + particle/fx primitives
     // ---------------------------------------------------------------
 
     _ensureBadgeTextures() {
@@ -132,6 +141,23 @@
         g.fillStyle(Phaser.Display.Color.HexStringToColor('#94A3B8').color, 1);
         g.fillRoundedRect(0, 0, size, size, radius);
         g.generateTexture('badge_stone', size, size);
+        g.destroy();
+      }
+    }
+
+    _ensureFxTextures() {
+      if (!this.textures.exists('fx_dot')) {
+        const g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0xffffff, 1);
+        g.fillCircle(8, 8, 8);
+        g.generateTexture('fx_dot', 16, 16);
+        g.destroy();
+      }
+      if (!this.textures.exists('fx_ring')) {
+        const g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.lineStyle(6, 0xffffff, 1);
+        g.strokeCircle(32, 32, 26);
+        g.generateTexture('fx_ring', 64, 64);
         g.destroy();
       }
     }
@@ -175,6 +201,12 @@
       container.getData('icon').setTexture(iconKey);
       container.getData('bg').setTexture(badgeKey);
       this.tweens.add({ targets: container, scale: { from: 0.7, to: 1 }, duration: 220, ease: 'Back.easeOut' });
+    }
+
+    _pieceColorHex(tile) {
+      const map = tile.isSpecial ? global.FM_CONST.SPECIAL_COLORS : global.FM_CONST.PIECE_COLORS;
+      const type = tile.isSpecial ? tile.specialType : tile.type;
+      return Phaser.Display.Color.HexStringToColor(map[type] || '#2563EB').color;
     }
 
     // ---------------------------------------------------------------
@@ -233,6 +265,106 @@
       this.highlight.lineStyle(3, Phaser.Display.Color.HexStringToColor(global.FM_CONST.COLORS.ACCENT).color, 1);
       this.highlight.strokeRoundedRect(p.x - s / 2, p.y - s / 2, s, s, 18);
       this.highlight.setVisible(true);
+    }
+
+    // ---------------------------------------------------------------
+    // Juice: particles, combo text, special-effect flashes, screen shake
+    // ---------------------------------------------------------------
+
+    _spawnClearParticles(cells) {
+      cells.forEach((cell) => {
+        const p = this.cellToPixel(cell.row, cell.col);
+        const colorHex = Phaser.Display.Color.HexStringToColor(
+          global.FM_CONST.PIECE_COLORS[cell.type] || global.FM_CONST.COLORS.ACCENT
+        ).color;
+        const emitter = this.add.particles(p.x, p.y, 'fx_dot', {
+          lifespan: 380,
+          speed: { min: 60, max: 140 },
+          scale: { start: this.tileSize / 64, end: 0 },
+          alpha: { start: 0.9, end: 0 },
+          tint: colorHex,
+          quantity: 6,
+          emitting: false
+        });
+        this.fxContainer.add(emitter);
+        emitter.explode(6);
+        this.time.delayedCall(420, () => emitter.destroy());
+      });
+    }
+
+    _showComboText(text, x, y, colorHex) {
+      const label = this.add.text(x, y, text, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '22px',
+        fontStyle: '800',
+        color: colorHex || global.FM_CONST.COLORS.ACCENT
+      }).setOrigin(0.5).setScale(0.6).setAlpha(0);
+      this.fxContainer.add(label);
+
+      this.tweens.add({
+        targets: label,
+        scale: 1,
+        alpha: 1,
+        y: y - 18,
+        duration: 220,
+        ease: 'Back.easeOut',
+        onComplete: () => {
+          this.tweens.add({
+            targets: label,
+            alpha: 0,
+            y: y - 42,
+            delay: 260,
+            duration: 260,
+            ease: 'Sine.easeIn',
+            onComplete: () => label.destroy()
+          });
+        }
+      });
+    }
+
+    _shakeCamera(depth) {
+      const intensity = Math.min(0.012, 0.004 + depth * 0.0018);
+      this.cameras.main.shake(120 + depth * 20, intensity);
+    }
+
+    /**
+     * One-shot visual flourish for a special piece's activation, matched
+     * to its area of effect: a horizontal/vertical beam sweep for the row
+     * / column clearers, an expanding ring for the radius bombs, and a
+     * full-board flash for the color-bomb-style Pentecost Flame.
+     */
+    _playSpecialFx(specialType, row, col) {
+      const S = global.FM_CONST.SPECIAL_TYPES;
+      const colorHex = Phaser.Display.Color.HexStringToColor(global.FM_CONST.SPECIAL_COLORS[specialType]).color;
+      const p = this.cellToPixel(row, col);
+
+      if (specialType === S.LIVING_WATER) {
+        const beam = this.add.rectangle(this.boardX + (this.tileSize * this.cols) / 2, p.y, this.tileSize * this.cols, this.tileSize * 0.7, colorHex, 0.35);
+        this.fxContainer.add(beam);
+        this.tweens.add({ targets: beam, alpha: 0, duration: 380, onComplete: () => beam.destroy() });
+      } else if (specialType === S.SWORD_OF_SPIRIT) {
+        const beam = this.add.rectangle(p.x, this.boardY + (this.tileSize * this.rows) / 2, this.tileSize * 0.7, this.tileSize * this.rows, colorHex, 0.35);
+        this.fxContainer.add(beam);
+        this.tweens.add({ targets: beam, alpha: 0, duration: 380, onComplete: () => beam.destroy() });
+      } else if (specialType === S.PENTECOST_FLAME) {
+        const { width, height } = this.scale;
+        const flash = this.add.rectangle(width / 2, height / 2, width, height, colorHex, 0.25);
+        this.fxContainer.add(flash);
+        this.tweens.add({ targets: flash, alpha: 0, duration: 420, onComplete: () => flash.destroy() });
+      } else {
+        const radius = specialType === S.ARMOR_OF_GOD ? this.tileSize * 5 : this.tileSize * 3;
+        const ring = this.add.image(p.x, p.y, 'fx_ring').setDisplaySize(20, 20).setTint(colorHex).setAlpha(0.8);
+        this.fxContainer.add(ring);
+        this.tweens.add({
+          targets: ring,
+          displayWidth: radius,
+          displayHeight: radius,
+          alpha: 0,
+          duration: 420,
+          ease: 'Sine.easeOut',
+          onComplete: () => ring.destroy()
+        });
+      }
     }
 
     // ---------------------------------------------------------------
@@ -313,8 +445,13 @@
       }
 
       this.isResolving = true;
+      this.cascadeDepth = 0;
       const tileA = this.board.getTile(r1, c1);
       const tileB = this.board.getTile(r2, c2);
+      const wasSpecialA = tileA.isSpecial;
+      const wasSpecialB = tileB.isSpecial;
+      const specialTypeA = tileA.specialType;
+      const specialTypeB = tileB.specialType;
       const containerA = this.spritesById.get(tileA.id);
       const containerB = this.spritesById.get(tileB.id);
       const posA = this.cellToPixel(r1, c1);
@@ -328,11 +465,51 @@
         if (remaining > 0) return;
         this.movesLeft = Math.max(0, this.movesLeft - 1);
         this._updateHud();
-        this._runResolutionLoop({ row: r2, col: c2 });
+
+        if (wasSpecialA && wasSpecialB) {
+          this._handleSpecialCombo(tileA, specialTypeA, tileB, specialTypeB);
+        } else if (wasSpecialA) {
+          this._handleSpecialActivation(tileA);
+        } else if (wasSpecialB) {
+          this._handleSpecialActivation(tileB);
+        } else {
+          this._runResolutionLoop({ row: r2, col: c2 });
+        }
       };
 
       this.tweens.add({ targets: containerA, x: posB.x, y: posB.y, duration: SWAP_TWEEN_MS, ease: 'Sine.easeInOut', onComplete: onDone });
       this.tweens.add({ targets: containerB, x: posA.x, y: posA.y, duration: SWAP_TWEEN_MS, ease: 'Sine.easeInOut', onComplete: onDone });
+    }
+
+    _handleSpecialActivation(specialTile) {
+      this._playSpecialFx(specialTile.specialType, specialTile.row, specialTile.col);
+      const p = this.cellToPixel(specialTile.row, specialTile.col);
+      this._showComboText('Activated!', p.x, p.y, global.FM_CONST.SPECIAL_COLORS[specialTile.specialType]);
+      this._shakeCamera(2);
+
+      const result = this.board.activateSpecials([{ row: specialTile.row, col: specialTile.col }]);
+      this.score += result.scoreGained;
+      this._updateHud();
+      this._playClearSequence(result, () => this._afterClearAnimation(result));
+    }
+
+    _handleSpecialCombo(tileA, specialTypeA, tileB, specialTypeB) {
+      // Both tiles now sit at their post-swap positions; use tileB's cell
+      // (the swap's destination) as the combo epicenter.
+      const combo = this.board.combineSpecials(specialTypeA, specialTypeB, tileB.row, tileB.col);
+      this._playSpecialFx(specialTypeA, tileA.row, tileA.col);
+      this._playSpecialFx(specialTypeB, tileB.row, tileB.col);
+      const p = this.cellToPixel(tileB.row, tileB.col);
+      this._showComboText('Combined Power!', p.x, p.y, global.FM_CONST.COLORS.ACCENT);
+      this._shakeCamera(4);
+
+      // The two combo-source tiles themselves should also clear, in case
+      // their own effect() calc didn't already include their own cell.
+      const originCells = combo.cells.concat([{ row: tileA.row, col: tileA.col }, { row: tileB.row, col: tileB.col }]);
+      const result = this.board.activateSpecials(originCells, 300);
+      this.score += result.scoreGained;
+      this._updateHud();
+      this._playClearSequence(result, () => this._afterClearAnimation(result));
     }
 
     _shakeCell(row, col) {
@@ -365,25 +542,52 @@
         return;
       }
 
+      this.cascadeDepth++;
       const result = this.board.resolveMatches(groups, swapAnchor || null);
       this.score += result.scoreGained;
       this._updateHud();
 
+      // Combo/cascade text: prefer the biggest single-group shape label,
+      // falling back to a cascade-depth label on chained matches.
+      const biggestGroup = groups.reduce((a, b) => (b.size > a.size ? b : a), groups[0]);
+      const shapeLabel = COMBO_LABELS[biggestGroup.shape];
+      const cascadeLabel = this.cascadeDepth >= 2 ? CASCADE_LABELS[Math.min(this.cascadeDepth, CASCADE_LABELS.length - 1)] : null;
+      const label = shapeLabel || cascadeLabel;
+      if (label) {
+        const anchorCell = swapAnchor || biggestGroup.anchor;
+        const p = this.cellToPixel(anchorCell.row, anchorCell.col);
+        this._showComboText(label, p.x, p.y, global.FM_CONST.COLORS.ACCENT);
+      }
+      if (this.cascadeDepth >= 2) this._shakeCamera(this.cascadeDepth);
+
+      result.specialsCreated.forEach((s) => {
+        this._playSpecialFx(s.specialType, s.row, s.col);
+      });
+
+      this._playClearSequence(result, () => this._afterClearAnimation(result));
+    }
+
+    /**
+     * Shared clear-animation step used by both regular match resolution
+     * and swap-triggered special activation/combination: bursts particles
+     * on every cleared cell, tweens the orphaned sprites out, then invokes
+     * onComplete once all clear animations finish.
+     */
+    _playClearSequence(result, onComplete) {
       const specialAnchorKeys = new Set(result.specialsCreated.map((s) => `${s.row},${s.col}`));
       const clearTargets = [];
 
       result.clearedCells.forEach((cell) => {
         const k = `${cell.row},${cell.col}`;
         if (specialAnchorKeys.has(k)) return; // handled as a "promote" visual instead of a clear
-        // Find the sprite by scanning spritesById is O(n); instead we rely on
-        // the fact clearedCells no longer exist in the grid at (row,col),
-        // so locate the orphaned container via its last known board position.
         const container = this._findOrphanContainerAt(cell);
         if (container) clearTargets.push(container);
       });
 
+      this._spawnClearParticles(result.clearedCells.filter((c) => !specialAnchorKeys.has(`${c.row},${c.col}`)));
+
       if (clearTargets.length === 0) {
-        this._afterClearAnimation(result);
+        onComplete();
         return;
       }
 
@@ -400,7 +604,7 @@
             this.spritesById.delete(tileId);
             container.destroy();
             pending--;
-            if (pending === 0) this._afterClearAnimation(result);
+            if (pending === 0) onComplete();
           }
         });
       });
@@ -483,6 +687,7 @@
     }
 
     _finishResolutionCycle() {
+      this.cascadeDepth = 0;
       if (!this.board.hasPossibleMove()) {
         this.statusText.setText('No moves left — reshuffling...');
         this.board.shuffleBoard();
