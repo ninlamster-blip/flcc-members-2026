@@ -2,9 +2,53 @@
  * FMButton — reusable rounded, shadowed button matching the minimalist
  * Claude/Notion-inspired UI style. Emits a pointerup callback and plays
  * a small press/scale animation for tactile "juice".
+ *
+ * Click/tap handling deliberately does NOT rely on Phaser's own
+ * per-object hit-test (setInteractive + hitArea). That path was
+ * confirmed broken at devicePixelRatio 3 (real iPhones): a tap
+ * unambiguously inside a button's rectangle still made
+ * `scene.input.manager.hitTest()` return zero matches, while the
+ * scene-wide pointerdown/pointerup coordinates were correct the whole
+ * time. So instead, every scene gets a single shared pointerdown/up
+ * listener (installed lazily below) that manually checks tap position
+ * against each live button's own bounds — bypassing Phaser's hit-test
+ * entirely for the part that actually has to work reliably.
+ * setInteractive() is kept only for the cosmetic desktop hover cursor.
  */
 (function (global) {
   'use strict';
+
+  function ensureSceneButtonDispatch(scene) {
+    if (scene.__fmButtonDispatchInstalled) return;
+    scene.__fmButtonDispatchInstalled = true;
+    scene.__fmButtons = [];
+    scene.__fmActiveButton = null;
+
+    scene.input.on('pointerdown', (pointer) => {
+      const list = scene.__fmButtons;
+      for (let i = list.length - 1; i >= 0; i--) {
+        const btn = list[i];
+        if (!btn || !btn.active || btn.disabled) continue;
+        if (btn._containsPoint(pointer.x, pointer.y)) {
+          scene.__fmActiveButton = btn;
+          btn._onManualPress();
+          return;
+        }
+      }
+    });
+
+    scene.input.on('pointerup', () => {
+      const btn = scene.__fmActiveButton;
+      scene.__fmActiveButton = null;
+      if (btn && btn.active && !btn.disabled) btn._onManualRelease();
+    });
+
+    scene.events.once('shutdown', () => {
+      scene.__fmButtons = [];
+      scene.__fmActiveButton = null;
+      scene.__fmButtonDispatchInstalled = false;
+    });
+  }
 
   class FMButton extends Phaser.GameObjects.Container {
     /**
@@ -49,6 +93,8 @@
       this.add(this.label);
 
       this.setSize(this.width, this.height);
+      // Cosmetic only (desktop hover cursor) — click handling below does
+      // not depend on this hit-test succeeding. See class comment.
       this.setInteractive({ useHandCursor: true, hitArea: new Phaser.Geom.Rectangle(-this.width / 2, -this.height / 2, this.width, this.height), hitAreaCallback: Phaser.Geom.Rectangle.Contains });
 
       this.on('pointerover', () => {
@@ -59,18 +105,43 @@
         if (this.disabled) return;
         scene.tweens.add({ targets: this, scale: 1, duration: 90, ease: 'Sine.easeOut' });
       });
-      this.on('pointerdown', () => {
-        if (this.disabled) return;
-        scene.tweens.add({ targets: this, scale: 0.96, duration: 70, ease: 'Sine.easeOut' });
-      });
-      this.on('pointerup', () => {
-        if (this.disabled) return;
-        scene.tweens.add({ targets: this, scale: 1, duration: 110, ease: 'Back.easeOut' });
-        if (global.AudioManager) global.AudioManager.playTap();
-        if (this.onClickCallback) this.onClickCallback();
+
+      ensureSceneButtonDispatch(scene);
+      scene.__fmButtons.push(this);
+      this.once('destroy', () => {
+        const idx = scene.__fmButtons.indexOf(this);
+        if (idx !== -1) scene.__fmButtons.splice(idx, 1);
+        if (scene.__fmActiveButton === this) scene.__fmActiveButton = null;
       });
 
       scene.add.existing(this);
+    }
+
+    /**
+     * px/py are world/scene coordinates (from Phaser's Pointer), but
+     * this.x/this.y are LOCAL coordinates relative to this button's own
+     * parent (e.g. a modal container) — comparing them directly is only
+     * correct for buttons with no parent offset. Use the button's own
+     * world transform matrix instead so nested buttons (every modal's
+     * Continue/Next Level/Cancel/etc.) are hit-tested correctly too.
+     */
+    _containsPoint(px, py) {
+      const m = this.getWorldTransformMatrix();
+      const out = FMButton._tmpPoint;
+      m.applyInverse(px, py, out);
+      const halfW = this.width / 2;
+      const halfH = this.height / 2;
+      return out.x >= -halfW && out.x <= halfW && out.y >= -halfH && out.y <= halfH;
+    }
+
+    _onManualPress() {
+      this.scene.tweens.add({ targets: this, scale: 0.96, duration: 70, ease: 'Sine.easeOut' });
+    }
+
+    _onManualRelease() {
+      this.scene.tweens.add({ targets: this, scale: 1, duration: 110, ease: 'Back.easeOut' });
+      if (global.AudioManager) global.AudioManager.playTap();
+      if (this.onClickCallback) this.onClickCallback();
     }
 
     _palette() {
@@ -110,6 +181,8 @@
       return this;
     }
   }
+
+  FMButton._tmpPoint = { x: 0, y: 0 };
 
   global.FMButton = FMButton;
 })(window);

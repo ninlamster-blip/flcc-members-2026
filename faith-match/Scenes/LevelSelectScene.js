@@ -59,6 +59,22 @@
 
       const scroll = new global.FMScrollView(this, { x: width / 2, y: viewTop, width: viewWidth, height: viewHeight });
 
+      // Nodes use manual hit-testing (see _hitLevelNode) instead of
+      // Phaser's own per-object hit-test, which was confirmed broken at
+      // devicePixelRatio 3 for Container-type GameObjects — a tap
+      // unambiguously inside a node's rectangle still made
+      // scene.input.manager.hitTest() return zero matches.
+      this._levelNodes = [];
+      this._activeLevelNode = null;
+      this.input.on('pointerdown', (pointer) => {
+        this._activeLevelNode = this._hitLevelNode(pointer.x, pointer.y);
+      });
+      this.input.on('pointerup', () => {
+        const hit = this._activeLevelNode;
+        this._activeLevelNode = null;
+        if (hit) this._onLevelNodeTap(hit);
+      });
+
       const levelIds = [];
       for (let id = world.startLevelId; id <= world.endLevelId; id++) levelIds.push(id);
 
@@ -71,9 +87,31 @@
         const node = this._buildLevelNode(levelId, accentHex);
         node.setPosition(gridLeft + col * (NODE_SIZE + NODE_GAP), row * (NODE_SIZE + NODE_GAP) + NODE_SIZE / 2);
         scroll.addChild(node);
+        this._levelNodes.push(node);
       });
 
       scroll.setContentHeight(rows * (NODE_SIZE + NODE_GAP));
+    }
+
+    /** Topmost (last-built) node wins, matching normal Z-order click semantics. */
+    _hitLevelNode(px, py) {
+      const out = LevelSelectScene._tmpPoint;
+      for (let i = this._levelNodes.length - 1; i >= 0; i--) {
+        const node = this._levelNodes[i];
+        node.getWorldTransformMatrix().applyInverse(px, py, out);
+        if (out.x >= -NODE_SIZE / 2 && out.x <= NODE_SIZE / 2 && out.y >= -NODE_SIZE / 2 && out.y <= NODE_SIZE / 2) return node;
+      }
+      return null;
+    }
+
+    _onLevelNodeTap(container) {
+      const levelId = container.getData('levelId');
+      const unlocked = container.getData('unlocked');
+      if (unlocked) {
+        this.scene.start('Game', { levelId });
+      } else {
+        this.tweens.add({ targets: container, scale: { from: 1, to: 0.9 }, duration: 60, yoyo: true });
+      }
     }
 
     _buildLevelNode(levelId, accentHex) {
@@ -138,22 +176,22 @@
       }
 
       container.setSize(NODE_SIZE, NODE_SIZE);
+      // Cosmetic only (desktop hover cursor) — tap handling goes through
+      // _hitLevelNode/_onLevelNodeTap instead, driven by the scene-wide
+      // dispatch installed in create(). See the comment there.
       container.setInteractive({
         useHandCursor: unlocked,
         hitArea: new Phaser.Geom.Rectangle(-NODE_SIZE / 2, -NODE_SIZE / 2, NODE_SIZE, NODE_SIZE),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains
       });
-      container.on('pointerup', () => {
-        if (unlocked) {
-          this.scene.start('Game', { levelId });
-        } else {
-          this.tweens.add({ targets: container, scale: { from: 1, to: 0.9 }, duration: 60, yoyo: true });
-        }
-      });
+      container.setData('levelId', levelId);
+      container.setData('unlocked', unlocked);
 
       return container;
     }
   }
+
+  LevelSelectScene._tmpPoint = { x: 0, y: 0 };
 
   global.LevelSelectScene = LevelSelectScene;
 })(window);

@@ -30,6 +30,7 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+  overscroll-behavior: none;
 }
 
 #game-root {

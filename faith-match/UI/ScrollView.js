@@ -44,7 +44,10 @@
       scene.input.on('pointermove', (pointer) => {
         if (this._dragStartPointerY === null || !pointer.isDown) return;
         const dy = pointer.y - this._dragStartPointerY;
-        this.content.y = Phaser.Math.Clamp(this._dragStartContentY + dy, this.minY, this.maxY);
+        // Round: a fractional content.y would push every card/node
+        // inside it to a fractional world position, breaking their
+        // hit-testing (see Button.js) for the rest of the scroll's life.
+        this.content.y = Math.round(Phaser.Math.Clamp(this._dragStartContentY + dy, this.minY, this.maxY));
       });
       scene.input.on('pointerup', () => {
         this._dragStartPointerY = null;

@@ -42,7 +42,10 @@
     _cardShell(x, y, accentHex, height) {
       const C = global.FM_CONST.COLORS;
       const width = Math.min(360, this.scale.width - 40);
-      const container = this.add.container(x, y);
+      // x arrives as scale.width/2, which is fractional on odd-width
+      // screens and would otherwise break hit-testing on the nested
+      // Play button even though its own local x/y is rounded.
+      const container = this.add.container(Math.round(x), Math.round(y));
 
       const bg = this.add.graphics();
       bg.fillStyle(Phaser.Display.Color.HexStringToColor(C.SURFACE).color, 1);

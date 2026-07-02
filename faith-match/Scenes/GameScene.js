@@ -395,15 +395,40 @@
     _createSelectionHighlight() {
       this.highlight = this.add.graphics();
       this.highlight.setVisible(false);
+      this.highlightTween = null;
     }
 
+    /**
+     * Selecting a tile (the first tap of a tap-then-tap-adjacent-tile
+     * swap) previously drew only a thin 3px ring, easy to miss entirely
+     * under quick/frustrated tapping — which reads as "nothing happened"
+     * even though the game is waiting for a second tap. Draw a bolder
+     * double ring centered on the Graphics object's own local origin (so
+     * scale tweens pulse around the tile's center) and keep it visibly
+     * animating the whole time a tile is selected.
+     */
     _drawHighlightAt(row, col) {
       const p = this.cellToPixel(row, col);
-      const s = this.tileSize * 0.9;
+      const s = this.tileSize * 0.92;
       this.highlight.clear();
+      this.highlight.lineStyle(6, 0xffffff, 0.9);
+      this.highlight.strokeRoundedRect(-s / 2, -s / 2, s, s, 18);
       this.highlight.lineStyle(3, Phaser.Display.Color.HexStringToColor(global.FM_CONST.COLORS.ACCENT).color, 1);
-      this.highlight.strokeRoundedRect(p.x - s / 2, p.y - s / 2, s, s, 18);
+      this.highlight.strokeRoundedRect(-s / 2, -s / 2, s, s, 18);
+      this.highlight.setPosition(p.x, p.y);
+      this.highlight.setScale(1);
+      this.highlight.setAlpha(1);
       this.highlight.setVisible(true);
+      if (this.highlightTween) this.highlightTween.stop();
+      this.highlightTween = this.tweens.add({
+        targets: this.highlight,
+        scale: { from: 1, to: 1.14 },
+        alpha: { from: 1, to: 0.5 },
+        duration: 420,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
     }
 
     // ---------------------------------------------------------------
@@ -453,12 +478,14 @@
         container.add(countText);
 
         container.setSize(size, size);
+        // Cosmetic only (desktop hover cursor) — actual tap handling goes
+        // through _hitPowerupButton in _onPointerDown/_onPointerUp instead,
+        // since this hit-test was confirmed broken at devicePixelRatio 3.
         container.setInteractive({
           hitArea: new Phaser.Geom.Rectangle(-size / 2, -size / 2, size, size),
           hitAreaCallback: Phaser.Geom.Rectangle.Contains,
           useHandCursor: true
         });
-        container.on('pointerup', () => this._usePowerup(type));
 
         this.powerupButtons[type] = { container, countText, bg };
       });
@@ -705,14 +732,48 @@
     // Input
     // ---------------------------------------------------------------
 
+    /**
+     * The powerup toolbar circles use Phaser's own setInteractive()
+     * hit-test for pointerup, which was confirmed broken at
+     * devicePixelRatio 3 (see UI/Button.js) — a tap inside the circle's
+     * rectangle can still make scene.input.manager.hitTest() return no
+     * match. Hook the toolbar into GameScene's existing scene-wide
+     * pointer handling instead, same manual-bounds approach as FMButton.
+     */
+    _hitPowerupButton(x, y) {
+      if (!this.powerupButtons) return null;
+      for (const type of Object.keys(this.powerupButtons)) {
+        const c = this.powerupButtons[type].container;
+        const s = c.scale || 1;
+        const halfW = (c.width * s) / 2;
+        const halfH = (c.height * s) / 2;
+        if (x >= c.x - halfW && x <= c.x + halfW && y >= c.y - halfH && y <= c.y + halfH) return type;
+      }
+      return null;
+    }
+
     _onPointerDown(pointer) {
       if (this.isResolving || this.levelEnded) return;
+      const powerupHit = this._hitPowerupButton(pointer.x, pointer.y);
+      if (powerupHit) {
+        this._pendingPowerupPress = powerupHit;
+        this.dragStart = null;
+        return;
+      }
+      this._pendingPowerupPress = null;
       const cell = this.cellFromPixel(pointer.x, pointer.y);
       if (!cell) return;
       this.dragStart = { row: cell.row, col: cell.col, x: pointer.x, y: pointer.y };
     }
 
     _onPointerUp(pointer) {
+      if (this._pendingPowerupPress) {
+        const type = this._pendingPowerupPress;
+        this._pendingPowerupPress = null;
+        if (!this.isResolving && !this.levelEnded) this._usePowerup(type);
+        this.dragStart = null;
+        return;
+      }
       if (this.isResolving || this.levelEnded || !this.dragStart) {
         this.dragStart = null;
         return;
@@ -769,6 +830,10 @@
     _deselect() {
       this.selectedCell = null;
       this.highlight.setVisible(false);
+      if (this.highlightTween) {
+        this.highlightTween.stop();
+        this.highlightTween = null;
+      }
     }
 
     // ---------------------------------------------------------------
@@ -1155,7 +1220,11 @@
       if (global.FM_SAVE.data.seenVerseIds.length > 60) global.FM_SAVE.data.seenVerseIds.shift();
       global.FM_SAVE.save();
 
-      const modal = this.add.container(width / 2, height / 2);
+      // Fractional container positions (odd width/height → width/2 !=
+      // integer) make Phaser's hit-testing miss on nested interactive
+      // children even though the child's own local x/y is rounded, so
+      // every modal root container snaps to whole pixels — see README.
+      const modal = this.add.container(Math.round(width / 2), Math.round(height / 2));
       modal.add(this.add.rectangle(0, 0, width, height, 0x000000, 0.4).setOrigin(0.5));
 
       const panelWidth = Math.min(340, width - 40);
@@ -1256,7 +1325,9 @@
     _buildModalShell(title, accentHex) {
       const { width, height } = this.scale;
       const C = global.FM_CONST.COLORS;
-      const modal = this.add.container(width / 2, height / 2);
+      // See _showScriptureModal above: snap to whole pixels so nested
+      // buttons remain tappable.
+      const modal = this.add.container(Math.round(width / 2), Math.round(height / 2));
 
       const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.35).setOrigin(0.5);
       overlay.setPosition(0, 0);

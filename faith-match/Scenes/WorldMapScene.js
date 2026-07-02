@@ -55,13 +55,51 @@
 
       const scroll = new global.FMScrollView(this, { x: width / 2, y: viewTop, width: cardWidth + 20, height: viewHeight });
 
+      // Cards use manual hit-testing (see _hitWorldCard) instead of
+      // Phaser's own per-object hit-test, which was confirmed broken at
+      // devicePixelRatio 3 for Container-type GameObjects — a tap
+      // unambiguously inside a card's rectangle still made
+      // scene.input.manager.hitTest() return zero matches.
+      this._worldCards = [];
+      this._activeWorldCard = null;
+      this.input.on('pointerdown', (pointer) => {
+        this._activeWorldCard = this._hitWorldCard(pointer.x, pointer.y, cardWidth, cardHeight);
+      });
+      this.input.on('pointerup', () => {
+        const hit = this._activeWorldCard;
+        this._activeWorldCard = null;
+        if (hit) this._onWorldCardTap(hit);
+      });
+
       global.FM_CONST.WORLDS.forEach((world, i) => {
         const card = this._buildWorldCard(world, cardWidth, cardHeight);
         card.setPosition(0, i * (cardHeight + gap));
         scroll.addChild(card);
+        this._worldCards.push(card);
       });
 
       scroll.setContentHeight(global.FM_CONST.WORLDS.length * (cardHeight + gap));
+    }
+
+    /** Topmost (last-built) card wins, matching normal Z-order click semantics. */
+    _hitWorldCard(px, py, cardWidth, cardHeight) {
+      const out = WorldMapScene._tmpPoint;
+      for (let i = this._worldCards.length - 1; i >= 0; i--) {
+        const card = this._worldCards[i];
+        card.getWorldTransformMatrix().applyInverse(px, py, out);
+        if (out.x >= -cardWidth / 2 && out.x <= cardWidth / 2 && out.y >= 0 && out.y <= cardHeight) return card;
+      }
+      return null;
+    }
+
+    _onWorldCardTap(container) {
+      const world = container.getData('world');
+      const unlocked = container.getData('unlocked');
+      if (unlocked) {
+        this.scene.start('LevelSelect', { worldId: world.id });
+      } else {
+        this.tweens.add({ targets: container, x: { from: -6, to: 6 }, duration: 40, yoyo: true, repeat: 3, onComplete: () => container.setX(0) });
+      }
     }
 
     _buildWorldCard(world, cardWidth, cardHeight) {
@@ -133,22 +171,22 @@
       }
 
       container.setSize(cardWidth, cardHeight);
+      // Cosmetic only (desktop hover cursor) — tap handling goes through
+      // _hitWorldCard/_onWorldCardTap instead, driven by the scene-wide
+      // dispatch installed in create(). See the comment there.
       container.setInteractive({
         useHandCursor: unlocked,
         hitArea: new Phaser.Geom.Rectangle(-cardWidth / 2, 0, cardWidth, cardHeight),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains
       });
-      container.on('pointerup', () => {
-        if (unlocked) {
-          this.scene.start('LevelSelect', { worldId: world.id });
-        } else {
-          this.tweens.add({ targets: container, x: { from: -6, to: 6 }, duration: 40, yoyo: true, repeat: 3, onComplete: () => container.setX(0) });
-        }
-      });
+      container.setData('world', world);
+      container.setData('unlocked', unlocked);
 
       return container;
     }
   }
+
+  WorldMapScene._tmpPoint = { x: 0, y: 0 };
 
   global.WorldMapScene = WorldMapScene;
 })(window);

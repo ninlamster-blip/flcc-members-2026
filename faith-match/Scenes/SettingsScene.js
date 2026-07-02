@@ -49,7 +49,10 @@
 
     _rowShell(x, y, width, height) {
       const C = global.FM_CONST.COLORS;
-      const container = this.add.container(x, y);
+      // x is passed in as width/2, which is fractional on odd-width
+      // screens; that alone can break hit-testing on the nested toggle/
+      // reset buttons even though their own local x/y is rounded.
+      const container = this.add.container(Math.round(x), Math.round(y));
       const bg = this.add.graphics();
       bg.fillStyle(Phaser.Display.Color.HexStringToColor(C.SURFACE).color, 1);
       bg.fillRoundedRect(-width / 2, -height / 2, width, height, 14);
@@ -159,7 +162,7 @@
     _confirmReset() {
       const C = global.FM_CONST.COLORS;
       const { width, height } = this.scale;
-      const modal = this.add.container(width / 2, height / 2);
+      const modal = this.add.container(Math.round(width / 2), Math.round(height / 2));
       modal.add(this.add.rectangle(0, 0, width, height, 0x000000, 0.45).setOrigin(0.5));
 
       const panelWidth = Math.min(320, width - 48);
