@@ -85,9 +85,9 @@
 
     _computeLayout(reflow) {
       const { width, height } = this.scale;
-      const topMargin = 156;
-      const bottomMargin = 40;
-      const available = Math.min(width - 32, height - topMargin - bottomMargin);
+      const topMargin = 92;
+      const bottomMargin = 14;
+      const available = Math.min(width - 10, height - topMargin - bottomMargin);
       this.tileSize = Math.floor(available / this.cols);
       const boardPixelW = this.tileSize * this.cols;
       this.boardX = Math.round((width - boardPixelW) / 2);
@@ -125,36 +125,77 @@
     _scaleContainerToTile(container) {
       const bg = container.getData('bg');
       const icon = container.getData('icon');
-      if (bg) bg.setDisplaySize(this.tileSize * 0.86, this.tileSize * 0.86);
-      if (icon) icon.setDisplaySize(this.tileSize * 0.52, this.tileSize * 0.52);
+      if (bg) bg.setDisplaySize(this.tileSize * 0.98, this.tileSize * 0.98);
+      if (icon) icon.setDisplaySize(this.tileSize * 0.5, this.tileSize * 0.5);
     }
 
     // ---------------------------------------------------------------
     // Textures: badges (tinted rounded squares) + particle/fx primitives
     // ---------------------------------------------------------------
 
+    /**
+     * Generates a frosted-glass tile badge per piece/special type: a
+     * baked soft drop shadow (layered translucent rounded rects, since
+     * canvas Graphics has no true blur), a translucent color fill, a
+     * diagonal gradient sheen, a bright specular highlight sliver, and a
+     * light glass-edge border. Baked once into a texture (not a runtime
+     * shader/FX) so 64+ on-screen tiles stay cheap and hit 60fps.
+     */
     _ensureBadgeTextures() {
-      const size = 128;
-      const radius = 28;
-      const allTypes = Object.assign({}, global.FM_CONST.PIECE_COLORS, global.FM_CONST.SPECIAL_COLORS);
+      const size = 160;
+      const allTypes = Object.assign(
+        {},
+        global.FM_CONST.PIECE_COLORS,
+        global.FM_CONST.SPECIAL_COLORS,
+        { stone: '#94A3B8' }
+      );
       Object.keys(allTypes).forEach((type) => {
         const key = `badge_${type}`;
         if (this.textures.exists(key)) return;
         const g = this.make.graphics({ x: 0, y: 0, add: false });
-        const color = Phaser.Display.Color.HexStringToColor(allTypes[type]).color;
-        g.fillStyle(color, 1);
-        g.fillRoundedRect(0, 0, size, size, radius);
+        this._drawGlassTile(g, size, Phaser.Display.Color.HexStringToColor(allTypes[type]).color);
         g.generateTexture(key, size, size);
         g.destroy();
       });
+    }
 
-      if (!this.textures.exists('badge_stone')) {
-        const g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(Phaser.Display.Color.HexStringToColor('#94A3B8').color, 1);
-        g.fillRoundedRect(0, 0, size, size, radius);
-        g.generateTexture('badge_stone', size, size);
-        g.destroy();
+    _drawGlassTile(g, size, colorInt) {
+      const pad = size * 0.1;
+      const panel = size - pad * 2;
+      const radius = panel * 0.26;
+
+      // Baked soft shadow: stacked translucent rounded rects, growing
+      // outward and fading, standing in for a real gaussian blur.
+      for (let i = 7; i >= 1; i--) {
+        const grow = i * 1.6;
+        g.fillStyle(0x0f172a, 0.018 * i);
+        g.fillRoundedRect(
+          pad - grow * 0.4,
+          pad - grow * 0.4 + size * 0.03,
+          panel + grow * 0.8,
+          panel + grow * 0.8,
+          radius + grow * 0.3
+        );
       }
+
+      // Frosted translucent color base.
+      g.fillStyle(colorInt, 0.58);
+      g.fillRoundedRect(pad, pad, panel, panel, radius);
+
+      // Diagonal glass sheen: brighter top, fading toward the bottom.
+      g.fillGradientStyle(0xffffff, 0xffffff, colorInt, colorInt, 0.4, 0.14, 0.04, 0);
+      g.fillRoundedRect(pad, pad, panel, panel, radius);
+
+      // Bright specular highlight sliver near the top-left.
+      g.fillStyle(0xffffff, 0.5);
+      g.fillRoundedRect(pad + panel * 0.1, pad + panel * 0.08, panel * 0.5, panel * 0.13, panel * 0.065);
+
+      // Light glass-edge border, plus a faint colored outer rim so the
+      // tile still pops against a flat background.
+      g.lineStyle(Math.max(1.5, size * 0.012), 0xffffff, 0.55);
+      g.strokeRoundedRect(pad, pad, panel, panel, radius);
+      g.lineStyle(Math.max(1, size * 0.008), colorInt, 0.4);
+      g.strokeRoundedRect(pad - 1.5, pad - 1.5, panel + 3, panel + 3, radius + 1.5);
     }
 
     _ensureFxTextures() {
@@ -193,8 +234,8 @@
       const iconKey = tile.isBlockedStone ? 'stone' : tile.specialType || tile.type;
       const badgeKey = tile.isBlockedStone ? 'badge_stone' : `badge_${tile.specialType || tile.type}`;
 
-      const bg = this.add.image(0, 0, badgeKey).setDisplaySize(this.tileSize * 0.86, this.tileSize * 0.86);
-      const icon = this.add.image(0, 0, iconKey).setDisplaySize(this.tileSize * 0.52, this.tileSize * 0.52);
+      const bg = this.add.image(0, 0, badgeKey).setDisplaySize(this.tileSize * 0.98, this.tileSize * 0.98);
+      const icon = this.add.image(0, 0, iconKey).setDisplaySize(this.tileSize * 0.5, this.tileSize * 0.5);
       container.add([bg, icon]);
       container.setData('bg', bg);
       container.setData('icon', icon);
@@ -230,35 +271,35 @@
       const { width } = this.scale;
 
       new global.FMButton(this, {
-        x: 50,
-        y: 40,
-        width: 76,
-        height: 40,
+        x: 42,
+        y: 24,
+        width: 62,
+        height: 32,
         label: '< Levels',
         variant: 'secondary',
-        fontSize: 13,
+        fontSize: 11,
         onClick: () => this.scene.start('LevelSelect', { worldId: this.level.worldId })
       });
 
       const resourceLabel = this.level.resourceType === 'time' ? this._formatTime(this.timeLeft) : `Moves: ${this.movesLeft}`;
-      this.movesText = this.add.text(width / 2, 30, resourceLabel, {
+      this.movesText = this.add.text(width / 2, 20, resourceLabel, {
         fontFamily: 'Inter, sans-serif',
-        fontSize: '18px',
+        fontSize: '16px',
         fontStyle: '700',
         color: C.TEXT
       }).setOrigin(0.5);
 
-      this.scoreText = this.add.text(width / 2, 54, `Score: ${this.score}`, {
+      this.scoreText = this.add.text(width / 2, 40, `Score: ${this.score}`, {
         fontFamily: 'Inter, sans-serif',
-        fontSize: '13px',
+        fontSize: '11px',
         color: C.TEXT_MUTED
       }).setOrigin(0.5);
 
       this._createObjectiveHud();
 
-      this.statusText = this.add.text(width / 2, this.scale.height - 24, '', {
+      this.statusText = this.add.text(width / 2, this.scale.height - 12, '', {
         fontFamily: 'Inter, sans-serif',
-        fontSize: '14px',
+        fontSize: '13px',
         color: C.ACCENT
       }).setOrigin(0.5);
     }
@@ -267,8 +308,8 @@
       const C = global.FM_CONST.COLORS;
       const { width } = this.scale;
       const objectives = this.objectiveTracker.getSummary();
-      const rowY = 92;
-      const chipWidth = Math.min(150, (width - 32) / objectives.length);
+      const rowY = 66;
+      const chipWidth = Math.min(150, (width - 16) / objectives.length);
       const totalWidth = chipWidth * objectives.length;
       const startX = width / 2 - totalWidth / 2 + chipWidth / 2;
 
@@ -287,14 +328,14 @@
         let iconOffset = 0;
         if (iconKey && this.textures.exists(iconKey)) {
           const badgeColor = Phaser.Display.Color.HexStringToColor(global.FM_CONST.PIECE_COLORS[iconKey] || '#94A3B8').color;
-          container.add(this.add.circle(-chipWidth / 2 + 16, 0, 14, badgeColor));
-          container.add(this.add.image(-chipWidth / 2 + 16, 0, iconKey).setDisplaySize(18, 18));
-          iconOffset = 20;
+          container.add(this.add.circle(-chipWidth / 2 + 13, 0, 11, badgeColor));
+          container.add(this.add.image(-chipWidth / 2 + 13, 0, iconKey).setDisplaySize(14, 14));
+          iconOffset = 16;
         }
 
-        const text = this.add.text(-chipWidth / 2 + 6 + iconOffset, 0, this._objectiveProgressText(obj), {
+        const text = this.add.text(-chipWidth / 2 + 4 + iconOffset, 0, this._objectiveProgressText(obj), {
           fontFamily: 'Inter, sans-serif',
-          fontSize: '12px',
+          fontSize: '11px',
           fontStyle: '700',
           color: C.TEXT
         }).setOrigin(0, 0.5);
