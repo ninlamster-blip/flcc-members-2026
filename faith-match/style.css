@@ -30,11 +30,26 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+  overscroll-behavior: none;
 }
 
+/*
+ * iOS Safari shows/hides its address+tab bar in response to the very
+ * first touch of a session, which changes the visual viewport height
+ * mid-gesture. A `position: fixed; inset: 0` box tracks that change
+ * live, so Phaser's RESIZE-mode canvas (and every button position
+ * computed against scene width/height) shifts out from under the
+ * finger between touchstart and touchend — the tap silently misses and
+ * a second, now-stable tap is needed. `100svh` pins the box to the
+ * *small* viewport (toolbar-visible) size so it never grows mid-tap.
+ */
 #game-root {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
