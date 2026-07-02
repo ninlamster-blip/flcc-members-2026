@@ -15420,6 +15420,22 @@ function App() {
         aria-label="Play Run the Race game"
       >🏃</button>
 
+      <button
+        onClick={() => { const b = window.location.href.split('?')[0].split('#')[0]; window.location.href = (b.endsWith('/') ? b : b.replace(/\/[^/]*$/, '/')) + 'faith-match/index.html'; }}
+        style={{
+          position: 'fixed', bottom: 284, left: 24,
+          width: 54, height: 54, borderRadius: '50%',
+          background: '#1e3a5f', color: 'white',
+          border: '2px solid rgba(37,99,235,0.5)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.375rem', lineHeight: 1,
+          boxShadow: '0 4px 20px rgba(37,99,235,0.35)',
+          zIndex: 25, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
+        }}
+        title="Faith Match: Scripture Match-3"
+        aria-label="Play Faith Match game"
+      >🧩</button>
+
       {/* Personal events FAB — bottom right */}
       <button
         className="fab-live"
