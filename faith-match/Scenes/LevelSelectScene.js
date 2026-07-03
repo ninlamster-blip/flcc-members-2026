@@ -81,13 +81,28 @@
       const rows = Math.ceil(levelIds.length / COLS);
       const gridLeft = -(gridWidth / 2) + NODE_SIZE / 2;
 
+      const nextLevelId = global.LevelManager.getHighestUnlockedLevel();
+
       levelIds.forEach((levelId, i) => {
         const row = Math.floor(i / COLS);
         const col = i % COLS;
-        const node = this._buildLevelNode(levelId, accentHex);
-        node.setPosition(gridLeft + col * (NODE_SIZE + NODE_GAP), row * (NODE_SIZE + NODE_GAP) + NODE_SIZE / 2);
+        const finalX = gridLeft + col * (NODE_SIZE + NODE_GAP);
+        const finalY = row * (NODE_SIZE + NODE_GAP) + NODE_SIZE / 2;
+        const node = this._buildLevelNode(levelId, accentHex, levelId === nextLevelId);
+        node.setPosition(finalX, finalY);
         scroll.addChild(node);
         this._levelNodes.push(node);
+
+        node.setScale(0.6);
+        node.setAlpha(0);
+        this.tweens.add({
+          targets: node,
+          scale: 1,
+          alpha: 1,
+          delay: Math.min(i, 14) * 25,
+          duration: 240,
+          ease: 'Back.easeOut'
+        });
       });
 
       scroll.setContentHeight(rows * (NODE_SIZE + NODE_GAP));
@@ -114,7 +129,7 @@
       }
     }
 
-    _buildLevelNode(levelId, accentHex) {
+    _buildLevelNode(levelId, accentHex, isNext) {
       const C = global.FM_CONST.COLORS;
       const unlocked = global.LevelManager.isLevelUnlocked(levelId);
       const completedEntry = global.FM_SAVE.data.completedLevels[levelId];
@@ -122,6 +137,22 @@
       const accent = Phaser.Display.Color.HexStringToColor(accentHex).color;
 
       const container = this.add.container(0, 0);
+
+      // The next level to play (first unlocked, not-yet-completed) gets a
+      // pulsing glow ring so it's obvious at a glance where to tap next.
+      if (isNext) {
+        const glow = this.add.circle(0, 0, NODE_SIZE / 2 + 6, accent, 0.35);
+        container.add(glow);
+        this.tweens.add({
+          targets: glow,
+          scale: { from: 1, to: 1.25 },
+          alpha: { from: 0.4, to: 0.08 },
+          duration: 750,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
 
       const circle = this.add.graphics();
       if (completedEntry) {

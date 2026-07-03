@@ -108,9 +108,19 @@
 
     // Deep-merge saved data onto a fresh default so newly added fields
     // (from later phases) are always present for existing players.
+    //
+    // Walks the UNION of keys from both defaults and saved, not just
+    // defaults' own keys. Several fields (completedLevels, stars,
+    // achievements) start as an empty {} in the default schema since
+    // their real keys are dynamic (level ids, achievement ids) rather
+    // than fixed — iterating only defaults' keys meant those dynamic
+    // dictionaries were silently wiped back to {} on every reload,
+    // since none of the player's actual keys ever existed in defaults.
     _mergeDefaults(defaults, saved) {
       const out = Array.isArray(defaults) ? [] : {};
-      for (const key of Object.keys(defaults)) {
+      const keys = new Set(Object.keys(defaults));
+      if (saved) Object.keys(saved).forEach((k) => keys.add(k));
+      for (const key of keys) {
         const dVal = defaults[key];
         const sVal = saved ? saved[key] : undefined;
         if (sVal === undefined || sVal === null) {
