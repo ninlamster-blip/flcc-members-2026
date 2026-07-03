@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-07-03T14:14:42.974Z",
+    "publishedAt": "2026-07-03T14:14:55.352Z",
     "totalSessions": 9
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 3,
-        "absent": 29,
+        "present": 6,
+        "absent": 26,
         "total": 32
       },
       "records": [
@@ -29,6 +29,21 @@
         {
           "memberId": "w-1782986400001",
           "memberName": "Sis. Amazelle De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-01",
+          "memberName": "Sis. Bless De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1780825146907",
+          "memberName": "Bro. Edward Pascal",
           "status": "present"
         }
       ]
