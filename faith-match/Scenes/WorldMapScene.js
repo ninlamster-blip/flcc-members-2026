@@ -73,9 +73,23 @@
 
       global.FM_CONST.WORLDS.forEach((world, i) => {
         const card = this._buildWorldCard(world, cardWidth, cardHeight);
-        card.setPosition(0, i * (cardHeight + gap));
+        const finalY = i * (cardHeight + gap);
+        card.setPosition(0, finalY);
         scroll.addChild(card);
         this._worldCards.push(card);
+
+        // Cards pop in one after another instead of all appearing at
+        // once — a small, cheap bit of "this screen is alive" motion.
+        card.setScale(0.85);
+        card.setAlpha(0);
+        this.tweens.add({
+          targets: card,
+          scale: 1,
+          alpha: 1,
+          delay: Math.min(i, 8) * 45,
+          duration: 260,
+          ease: 'Back.easeOut'
+        });
       });
 
       scroll.setContentHeight(global.FM_CONST.WORLDS.length * (cardHeight + gap));
@@ -110,10 +124,17 @@
 
       const container = this.add.container(0, 0);
 
+      // Unlocked worlds get a soft tint of their own accent color instead
+      // of a flat white card, so the map reads as a colorful trail of
+      // distinct chapters rather than a plain list.
       const bg = this.add.graphics();
-      bg.fillStyle(Phaser.Display.Color.HexStringToColor(C.SURFACE).color, 1);
+      if (unlocked) {
+        bg.fillGradientStyle(0xffffff, 0xffffff, accent, accent, 0.16);
+      } else {
+        bg.fillStyle(Phaser.Display.Color.HexStringToColor(C.SURFACE).color, 1);
+      }
       bg.fillRoundedRect(-cardWidth / 2, 0, cardWidth, cardHeight, 16);
-      bg.lineStyle(1.5, Phaser.Display.Color.HexStringToColor(C.BORDER).color, 1);
+      bg.lineStyle(1.5, unlocked ? accent : Phaser.Display.Color.HexStringToColor(C.BORDER).color, unlocked ? 0.4 : 1);
       bg.strokeRoundedRect(-cardWidth / 2, 0, cardWidth, cardHeight, 16);
       container.add(bg);
 

@@ -730,6 +730,28 @@
       this.cameras.main.shake(120 + depth * 20, intensity);
     }
 
+    /** A shower of colorful confetti across the top of the screen for the win modal. */
+    _celebrateWin() {
+      const { width } = this.scale;
+      const colors = [0xFCD34D, 0xF87171, 0x60A5FA, 0x4ADE80, 0xC084FC, 0xF472B6];
+      const emitter = this.add.particles(0, -20, 'fx_dot', {
+        x: { min: 0, max: width },
+        lifespan: 1700,
+        speedY: { min: 90, max: 210 },
+        speedX: { min: -50, max: 50 },
+        scale: { start: 1, end: 0.5 },
+        rotate: { start: 0, end: 360 },
+        gravityY: 260,
+        tint: colors,
+        quantity: 3,
+        frequency: 35,
+        emitting: true
+      });
+      emitter.setDepth(2000);
+      this.time.delayedCall(1300, () => emitter.stop());
+      this.time.delayedCall(2200, () => emitter.destroy());
+    }
+
     /**
      * One-shot visual flourish for a special piece's activation, matched
      * to its area of effect: a horizontal/vertical beam sweep for the row
@@ -1403,12 +1425,30 @@
       const challengeTitle = this.objectiveTracker.isComplete() ? 'Challenge Complete!' : 'Score Recorded!';
       const modal = this._buildModalShell(this.challengeKind ? challengeTitle : 'Level Complete!', accent);
 
-      const starLabel = '★'.repeat(stars) + '☆'.repeat(3 - stars);
-      modal.add(this.add.text(0, -54, starLabel, {
-        fontFamily: 'Inter, sans-serif',
-        fontSize: '32px',
-        color: accent
-      }).setOrigin(0.5));
+      if (stars > 0) this._celebrateWin();
+
+      // Stars pop in one at a time with a bounce instead of appearing as
+      // a single static line, echoing Candy Crush's level-complete beat.
+      for (let i = 0; i < 3; i++) {
+        const filled = i < stars;
+        const star = this.add.text(-40 + i * 40, -54, filled ? '★' : '☆', {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '34px',
+          color: accent
+        }).setOrigin(0.5).setScale(0);
+        modal.add(star);
+        if (filled) {
+          this.tweens.add({
+            targets: star,
+            scale: 1,
+            delay: 280 + i * 170,
+            duration: 320,
+            ease: 'Back.easeOut'
+          });
+        } else {
+          star.setScale(1);
+        }
+      }
 
       modal.add(this.add.text(0, -8, `Score: ${this.score}`, {
         fontFamily: 'Inter, sans-serif',
