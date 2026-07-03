@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-07-03T14:15:10.654Z",
+    "publishedAt": "2026-07-03T14:15:39.404Z",
     "totalSessions": 9
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 9,
-        "absent": 23,
+        "present": 18,
+        "absent": 14,
         "total": 32
       },
       "records": [
@@ -59,6 +59,51 @@
         {
           "memberId": "ptr-02",
           "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-03",
+          "memberName": "Bro. Elbert Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-11",
+          "memberName": "Sis. Jhem Tulagan",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-18",
+          "memberName": "Sis. Laidz Pascual",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-04",
+          "memberName": "Sis. Lizel Ocenar",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-03",
+          "memberName": "Sis. Mae De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-08",
+          "memberName": "Sis. Sandra Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-20",
+          "memberName": "Sis. Thara Embo",
           "status": "present"
         }
       ]
