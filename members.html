@@ -1743,7 +1743,7 @@ function WeatherCard({ setActiveTab }) {
 function LiftingUpCard({ data, me, attendanceData }) {
   const absentMembers = React.useMemo(() => {
     if (!attendanceData?.sessions?.length) return [];
-    const eligibleWorkers = (data.workers || []).filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id));
+    const eligibleWorkers = (data.workers || []).filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id) && w.status !== 'inactive');
     const allSessions = [...(attendanceData.sessions || [])].sort((a, b) => b.date.localeCompare(a.date));
     const friSessions = allSessions.filter(s => s.service === 'Friday').slice(0, 3);
     const sunSessions = allSessions.filter(s => s.service === 'Sunday').slice(0, 3);

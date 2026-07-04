@@ -2276,7 +2276,7 @@ function LiftingUpCard({ data, me, attendanceData }) {
     if (!attendanceData?.sessions?.length) return [];
 
     // Only track individual members (not families, pairs, or visitors)
-    const eligibleWorkers = (data.workers || []).filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id));
+    const eligibleWorkers = (data.workers || []).filter(w => /^(bro|sis|ptr|sun)-\d/.test(w.id) && w.status !== 'inactive');
     const workerMap = Object.fromEntries(eligibleWorkers.map(w => [w.id, w]));
 
     const allSessions = [...(attendanceData.sessions || [])].sort((a, b) => b.date.localeCompare(a.date));
