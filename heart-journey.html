@@ -1037,7 +1037,7 @@ function UrgentCareNote({ ministry }) {
 }
 
 // ─── Privacy & Settings tab ──────────────────────────────────────────────────
-function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename, ministry }) {
+function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename }) {
   const [renaming, setRenaming] = useState(false);
   const [newName, setNewName] = useState(name);
   return (
@@ -1045,7 +1045,6 @@ function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename, ministry })
       <div>
         <h2 className="font-display text-xl font-semibold mb-1">Privacy & Safety</h2>
       </div>
-      <UrgentCareNote ministry={ministry} />
       <div className="card card-pad">
         <div className="text-sm font-semibold mb-2">What Heart Journey is not</div>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-muted)' }}>{safetyDisclaimer}</p>
@@ -1213,7 +1212,7 @@ function App() {
         {tab === 'timeline' && <TimelineTab stats={stats} journal={journal} gratitude={gratitude} memorized={memorized} prayers={prayers} heartLog={heartLog} />}
         {tab === 'prayer' && <PrayerWallTab prayers={prayers} setPrayers={setPrayers} hjData={hjData} prayerLead={prayerLead} setStats={setStats} onAddGratitude={addGratitude} />}
         {tab === 'ask' && <AskCompanionTab aiConfig={aiConfig} hasConnection={hasConnection} />}
-        {tab === 'privacy' && <PrivacyTab safetyDisclaimer={hjData.meta.safetyDisclaimer} onDeleteAll={deleteAll} name={name} onRename={(n) => { setName(n); saveJSON(HJ.name, n); }} ministry={churchData?.ministry} />}
+        {tab === 'privacy' && <PrivacyTab safetyDisclaimer={hjData.meta.safetyDisclaimer} onDeleteAll={deleteAll} name={name} onRename={(n) => { setName(n); saveJSON(HJ.name, n); }} />}
       </main>
       <footer className="text-center text-xs py-6" style={{ color: 'var(--ink-subtle)' }}>
         {hjData.meta.translationNote}
