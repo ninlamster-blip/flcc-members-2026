@@ -40,8 +40,9 @@
     --info-soft: #DBEAFE;
   }
   *, *::before, *::after { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  html { font-size: 19px; } /* larger base so every rem-based size (Tailwind + custom) reads bigger */
   html, body { background: var(--bg); color: var(--ink); margin: 0; min-height: 100%; }
-  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-feature-settings: "ss01", "ss03"; }
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-feature-settings: "ss01", "ss03"; line-height: 1.6; }
   .font-display { font-family: 'Fraunces', Georgia, serif; font-feature-settings: "ss01"; }
 
   #root { min-height: 100dvh; display: flex; flex-direction: column; }
@@ -285,7 +286,7 @@ async function callCompanion({ apiKey, model, proxyUrl, proxySecret, systemPromp
 }
 
 // ─── Onboarding / Privacy Consent ──────────────────────────────────────────
-function ConsentScreen({ safetyDisclaimer, onAccept }) {
+function ConsentScreen({ safetyDisclaimer, onAccept, ministry }) {
   const [name, setName] = useState('');
   const [ack, setAck] = useState(false);
   return (
@@ -295,6 +296,7 @@ function ConsentScreen({ safetyDisclaimer, onAccept }) {
         <h1 className="font-display text-2xl font-semibold">Welcome to Heart Journey</h1>
         <p className="text-sm mt-2" style={{ color: 'var(--ink-muted)' }}>A quiet companion for your daily walk with Christ.</p>
       </div>
+      <div className="mb-4"><UrgentCareNote ministry={ministry} /></div>
       <div className="card card-pad mb-4">
         <div className="text-sm font-semibold mb-2">What Heart Journey is</div>
         <p className="text-sm mb-3" style={{ color: 'var(--ink-muted)', lineHeight: 1.6 }}>
@@ -847,8 +849,31 @@ function AskCompanionTab({ aiConfig, hasConnection }) {
   );
 }
 
+// ─── Urgent care — a real, human way to reach help right now ───────────────
+function UrgentCareNote({ ministry }) {
+  const phoneDigits = ministry?.phone ? ministry.phone.replace(/[^0-9+]/g, '') : null;
+  const waDigits = ministry?.whatsapp ? ministry.whatsapp.replace(/[^0-9]/g, '') : null;
+  return (
+    <div className="card card-pad" style={{ background: 'var(--danger-soft)', borderColor: '#F3C6C6' }}>
+      <div className="text-sm font-semibold mb-2" style={{ color: 'var(--danger)' }}>If you need help right now</div>
+      <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--ink)' }}>
+        Heart Journey is a devotional tool — it cannot respond in an emergency. If you are in crisis, thinking of harming yourself, in danger, or need urgent care, please don't wait on this app. Call your lead pastor or a spiritual leader you trust right away, or contact local emergency services immediately.
+      </p>
+      {ministry?.headName ? (
+        <p className="text-sm">
+          <strong>{ministry.headTitle || 'Ministry Leader'}:</strong> {ministry.headName}
+          {phoneDigits && <> · <a href={`tel:${phoneDigits}`} className="underline font-medium">Call</a></>}
+          {waDigits && <> · <a href={`https://wa.me/${waDigits}`} target="_blank" rel="noreferrer" className="underline font-medium">WhatsApp</a></>}
+        </p>
+      ) : (
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Reach out to any pastor, elder, or ministry leader at FLCC — Abundance Church.</p>
+      )}
+    </div>
+  );
+}
+
 // ─── Privacy & Settings tab ──────────────────────────────────────────────────
-function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename }) {
+function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename, ministry }) {
   const [renaming, setRenaming] = useState(false);
   const [newName, setNewName] = useState(name);
   return (
@@ -856,6 +881,7 @@ function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename }) {
       <div>
         <h2 className="font-display text-xl font-semibold mb-1">Privacy & Safety</h2>
       </div>
+      <UrgentCareNote ministry={ministry} />
       <div className="card card-pad">
         <div className="text-sm font-semibold mb-2">What Heart Journey is not</div>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-muted)' }}>{safetyDisclaimer}</p>
@@ -922,6 +948,7 @@ function App() {
 
   const [tab, setTab] = useState('today');
   const [journalPrefill, setJournalPrefill] = useState(null);
+  const [showUrgentCare, setShowUrgentCare] = useState(false);
 
   useEffect(() => saveJSON(HJ.heartLog, heartLog), [heartLog]);
   useEffect(() => saveJSON(HJ.journal, journal), [journal]);
@@ -968,6 +995,7 @@ function App() {
 
   if (!consent) {
     return <ConsentScreen safetyDisclaimer={hjData?.meta?.safetyDisclaimer || 'Heart Journey does not replace Scripture, prayer, pastors, or professional care.'}
+      ministry={churchData?.ministry}
       onAccept={(n) => { setName(n); saveJSON(HJ.name, n); setConsent(true); saveJSON(HJ.consent, true); }} />;
   }
   if (!hjData) return <div className="fade-in text-center py-20 text-sm" style={{ color: 'var(--ink-muted)' }}>Loading Heart Journey…</div>;
@@ -985,13 +1013,25 @@ function App() {
               <span className="text-xl">🌿</span>
               <span className="font-display text-lg font-semibold">Heart Journey</span>
             </div>
-            <a href="index.html" className="text-xs" style={{ color: 'var(--ink-muted)' }}>← Back to App</a>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <button onClick={() => setShowUrgentCare(true)} className="text-xs font-semibold" style={{ color: 'var(--danger)' }}>🆘 Need help now?</button>
+              <a href="index.html" className="text-xs" style={{ color: 'var(--ink-muted)' }}>← Back to App</a>
+            </div>
           </div>
           <nav className="flex flex-wrap gap-1.5">
             {TABS.map(t => <button key={t.key} className={`tab-pill ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>)}
           </nav>
         </div>
       </header>
+
+      {showUrgentCare && (
+        <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setShowUrgentCare(false)}>
+          <div className="modal">
+            <UrgentCareNote ministry={churchData?.ministry} />
+            <button className="btn btn-ghost w-full mt-3" onClick={() => setShowUrgentCare(false)}>Close</button>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
         {tab === 'today' && (
@@ -1019,7 +1059,7 @@ function App() {
         {tab === 'timeline' && <TimelineTab stats={stats} journal={journal} gratitude={gratitude} memorized={memorized} prayers={prayers} heartLog={heartLog} />}
         {tab === 'prayer' && <PrayerWallTab prayers={prayers} setPrayers={setPrayers} hjData={hjData} prayerLead={prayerLead} setStats={setStats} onAddGratitude={addGratitude} />}
         {tab === 'ask' && <AskCompanionTab aiConfig={aiConfig} hasConnection={hasConnection} />}
-        {tab === 'privacy' && <PrivacyTab safetyDisclaimer={hjData.meta.safetyDisclaimer} onDeleteAll={deleteAll} name={name} onRename={(n) => { setName(n); saveJSON(HJ.name, n); }} />}
+        {tab === 'privacy' && <PrivacyTab safetyDisclaimer={hjData.meta.safetyDisclaimer} onDeleteAll={deleteAll} name={name} onRename={(n) => { setName(n); saveJSON(HJ.name, n); }} ministry={churchData?.ministry} />}
       </main>
       <footer className="text-center text-xs py-6" style={{ color: 'var(--ink-subtle)' }}>
         {hjData.meta.translationNote}
