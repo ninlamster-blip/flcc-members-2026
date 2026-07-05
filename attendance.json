@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-07-05T16:26:30.654Z",
+    "publishedAt": "2026-07-05T16:26:36.459Z",
     "totalSessions": 10
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 25,
-        "absent": 18,
+        "present": 26,
+        "absent": 17,
         "total": 43
       },
       "records": [
@@ -139,6 +139,11 @@
         {
           "memberId": "sun-02",
           "memberName": "Sis. Sheena",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1780825579699",
+          "memberName": "Sis. Rosemarie Quario",
           "status": "present"
         }
       ]
