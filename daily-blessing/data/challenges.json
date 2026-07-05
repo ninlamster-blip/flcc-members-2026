@@ -1,0 +1,14 @@
+[
+  { "type": "bible", "title": "Bible Challenge", "prompt": "Read Psalm 23 slowly today. Underline or write down the phrase that stands out to you most." },
+  { "type": "bible", "title": "Bible Challenge", "prompt": "Read the story of the Good Samaritan in Luke 10:25-37. Who is your 'neighbor' this week?" },
+  { "type": "bible", "title": "Bible Challenge", "prompt": "Memorize Philippians 4:6-7 and recite it before bed tonight." },
+  { "type": "bible", "title": "Bible Challenge", "prompt": "Read one chapter of Proverbs today, matching today's date." },
+  { "type": "kindness", "title": "Kindness Challenge", "prompt": "Send an encouraging message to someone you haven't spoken to in a while." },
+  { "type": "kindness", "title": "Kindness Challenge", "prompt": "Pay for someone's coffee, meal, or a small need today without expecting thanks." },
+  { "type": "kindness", "title": "Kindness Challenge", "prompt": "Write a short note of appreciation to a family member and give it to them today." },
+  { "type": "kindness", "title": "Kindness Challenge", "prompt": "Compliment a stranger sincerely today." },
+  { "type": "mission", "title": "Mission Challenge", "prompt": "Pray by name for one missionary or ministry your church supports." },
+  { "type": "mission", "title": "Mission Challenge", "prompt": "Invite someone to join you at church this Sunday." },
+  { "type": "mission", "title": "Mission Challenge", "prompt": "Share a scripture that has encouraged you with someone who is struggling." },
+  { "type": "mission", "title": "Mission Challenge", "prompt": "Set aside a small amount today toward a cause or ministry you care about." }
+]

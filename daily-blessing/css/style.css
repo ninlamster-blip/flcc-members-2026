@@ -1,0 +1,678 @@
+/* ==========================================================================
+   Daily Blessing — design tokens
+   ========================================================================== */
+:root {
+  --bg: #F8F9FB;
+  --card: #FFFFFF;
+  --primary: #1E5EFF;
+  --primary-soft: rgba(30, 94, 255, 0.1);
+  --gold: #D6A756;
+  --gold-soft: rgba(214, 167, 86, 0.14);
+  --text: #111827;
+  --text-secondary: #6B7280;
+  --success: #16A34A;
+  --border: rgba(17, 24, 39, 0.08);
+  --shadow-soft: 0 1px 2px rgba(17,24,39,0.04), 0 12px 32px rgba(17,24,39,0.06);
+  --shadow-card: 0 8px 24px rgba(17,24,39,0.06), 0 2px 6px rgba(17,24,39,0.05);
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0B0D12;
+    --card: #15171E;
+    --primary: #5B8CFF;
+    --primary-soft: rgba(91, 140, 255, 0.16);
+    --gold: #E3BC7C;
+    --gold-soft: rgba(227, 188, 124, 0.16);
+    --text: #F3F4F6;
+    --text-secondary: #9CA3AF;
+    --success: #34D399;
+    --border: rgba(255, 255, 255, 0.08);
+    --shadow-soft: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.35);
+    --shadow-card: 0 8px 24px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.3);
+  }
+}
+
+/* ==========================================================================
+   Reset + base
+   ========================================================================== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3, p { margin: 0; }
+button { font-family: inherit; }
+a { color: var(--primary); }
+
+.back-link {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 40;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  box-shadow: var(--shadow-soft);
+}
+.back-link:hover { color: var(--text); }
+
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ==========================================================================
+   App shell + nav
+   ========================================================================== */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-root {
+  flex: 1;
+  padding: 72px 24px 120px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+.page-root:focus { outline: none; }
+
+.bottom-nav {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  padding: 8px max(8px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-top: 1px solid var(--border);
+  z-index: 30;
+}
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 56px;
+  min-height: 48px;
+  padding: 6px 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: color 0.2s var(--ease-premium), transform 0.2s var(--ease-premium);
+}
+.nav-btn:hover { color: var(--text); }
+.nav-btn.is-active { color: var(--primary); }
+.nav-btn:active { transform: scale(0.94); }
+.nav-icon { width: 24px; height: 24px; }
+
+/* ==========================================================================
+   Shared page/section chrome
+   ========================================================================== */
+.page { animation: page-in 0.4s var(--ease-premium); }
+@keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.page-header { margin-bottom: 28px; }
+.page-header h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.01em; }
+.page-eyebrow { font-size: 13px; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.page-subtitle { color: var(--text-secondary); font-size: 15px; margin-top: 6px; }
+.section-title { font-size: 22px; font-weight: 600; margin-bottom: 14px; }
+.profile-section { margin-top: 32px; }
+.empty-state { color: var(--text-secondary); font-size: 15px; }
+
+.progress-track {
+  margin-top: 16px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.progress-track--small { margin-top: 10px; width: 220px; max-width: 100%; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold)); border-radius: inherit; transition: width 0.8s var(--ease-premium); }
+.progress-caption { margin-top: 8px; font-size: 14px; color: var(--text-secondary); }
+
+/* ==========================================================================
+   Home — greeting + streak
+   ========================================================================== */
+.home-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.home-greeting { font-size: 32px; font-weight: 700; letter-spacing: -0.01em; }
+.home-subtitle { color: var(--text-secondary); font-size: 17px; margin-top: 6px; max-width: 34ch; }
+
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold-soft);
+  color: var(--gold);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.streak-flame {
+  width: 16px; height: 16px;
+  background: var(--gold);
+  clip-path: path('M8 0C6 4 3 5 3 9a5 5 0 0 0 10 0c0-2-1-3-2-4 0 2-1 2-2 1 1-2 0-4-1-6Z');
+}
+.streak-count { font-variant-numeric: tabular-nums; }
+
+.home-stage-wrap {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+/* ==========================================================================
+   Gift box
+   ========================================================================== */
+.giftbox-stage {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 900px;
+}
+.giftbox {
+  position: relative;
+  width: 168px;
+  height: 150px;
+  transform-style: preserve-3d;
+  animation: box-float 5s ease-in-out infinite;
+  transition: transform 1.4s var(--ease-premium);
+}
+@keyframes box-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+.giftbox-glow {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-soft) 0%, transparent 68%);
+  filter: blur(2px);
+  z-index: 0;
+}
+
+.giftbox-body {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 108px;
+  background: linear-gradient(160deg, #FFFFFF, #ECEFF4);
+  border-radius: 16px;
+  box-shadow: 0 30px 40px -20px rgba(17,24,39,0.25), inset 0 0 0 1px rgba(17,24,39,0.05);
+}
+.giftbox--gold .giftbox-body,
+.giftbox--gold .giftbox-lid-band { background: linear-gradient(160deg, #FBF3E4, #F1DFB8); }
+
+.giftbox-band-v {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 20px;
+  margin-left: -10px;
+  background: linear-gradient(180deg, var(--gold), #B8873F);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+}
+.giftbox-shine {
+  position: absolute;
+  left: 14px; top: 10px;
+  width: 34px; height: 60px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.65), transparent);
+  border-radius: 10px;
+  transform: skewX(-8deg);
+  pointer-events: none;
+}
+
+.giftbox-lid {
+  position: absolute;
+  left: -6px; right: -6px;
+  top: 0;
+  height: 46px;
+  transform-origin: 50% 100%;
+  transition: transform 1s var(--ease-premium), opacity 0.6s ease;
+  z-index: 2;
+}
+.giftbox-lid-band {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #FFFFFF, #E4E8F0);
+  border-radius: 14px;
+  box-shadow: 0 10px 18px -8px rgba(17,24,39,0.3), inset 0 0 0 1px rgba(17,24,39,0.05);
+}
+.giftbox-lid-bow {
+  position: absolute;
+  left: 50%; top: -16px;
+  width: 40px; height: 26px;
+  margin-left: -20px;
+  background: radial-gradient(circle at 30% 30%, #F4DCA6, var(--gold));
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  box-shadow: 0 6px 10px -4px rgba(0,0,0,0.3);
+}
+
+.giftbox-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+  background-size: 220% 220%;
+  background-position: 120% 0;
+  animation: shimmer-sweep 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shimmer-sweep {
+  0%, 82% { background-position: 130% 0; opacity: 0; }
+  88% { opacity: 1; }
+  100% { background-position: -30% 0; opacity: 0; }
+}
+
+.giftbox-particles { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.particle {
+  position: absolute;
+  bottom: 55px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFF6DD, var(--gold));
+  opacity: 0;
+  animation: particle-rise 1.8s ease-out forwards;
+}
+@keyframes particle-rise {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--drift), -160px) scale(1.1); }
+}
+
+.giftbox-beam {
+  position: absolute;
+  left: 50%; bottom: 40%;
+  width: 6px; height: 0;
+  margin-left: -3px;
+  background: radial-gradient(ellipse at top, rgba(255,244,214,0.9), transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.giftbox-stage.is-opening .giftbox { animation: none; transform: scale(1.08); }
+.giftbox-stage.is-lifting .giftbox-lid { transform: translateY(-70px) rotateX(-95deg); opacity: 0; }
+.giftbox-stage.is-lifting .giftbox-shimmer { display: none; }
+.giftbox-stage.is-lifting .giftbox-beam { animation: beam-rise 1.4s var(--ease-premium) forwards; }
+@keyframes beam-rise { 0% { height: 0; opacity: 0; } 40% { opacity: 0.9; } 100% { height: 220px; opacity: 0; } }
+
+.giftbox--opened { animation: none; }
+.giftbox--opened .giftbox-lid { transform: translateY(-4px) rotateX(-18deg); }
+.giftbox--opened .giftbox-shimmer { animation: none; opacity: 0; }
+
+/* Season accents (navigation/layout unchanged, only palette shifts) */
+body.season-christmas { --gold: #C23B3B; --gold-soft: rgba(194,59,59,0.14); }
+body.season-holyweek, body.season-resurrection { --gold: #8E6BC7; --gold-soft: rgba(142,107,199,0.14); }
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn-primary {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 999px;
+  min-height: 44px;
+  box-shadow: 0 10px 24px -8px var(--primary-soft);
+  transition: transform 0.18s var(--ease-premium), box-shadow 0.18s var(--ease-premium), opacity 0.18s;
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+.btn-primary:disabled { opacity: 0.55; cursor: default; transform: none; }
+.btn-large { font-size: 17px; padding: 16px 32px; }
+
+/* ==========================================================================
+   Card overlay + blessing card
+   ========================================================================== */
+body.scene-blurred .page-root,
+body.scene-blurred .bottom-nav { filter: blur(6px); transition: filter 0.5s ease; }
+.page-root, .bottom-nav { transition: filter 0.5s ease; }
+
+body.scroll-locked { overflow: hidden; }
+
+.card-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(17,24,39,0.34);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-premium);
+}
+.card-overlay.is-visible { opacity: 1; }
+.card-overlay[hidden] { display: none; }
+
+.blessing-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 86vh;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  box-shadow: 0 30px 60px -20px rgba(17,24,39,0.35);
+  text-align: center;
+  transform: translateY(24px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.45s var(--ease-premium), opacity 0.45s var(--ease-premium);
+  border: 1px solid var(--border);
+}
+.card-overlay.is-visible .blessing-card { transform: none; opacity: 1; }
+
+.blessing-card.rarity-rare { box-shadow: 0 30px 60px -20px rgba(30,94,255,0.28); }
+.blessing-card.rarity-epic { box-shadow: 0 30px 70px -18px rgba(30,94,255,0.35); border-color: rgba(30,94,255,0.25); }
+.blessing-card.rarity-legendary { box-shadow: 0 30px 80px -16px rgba(214,167,86,0.45); border-color: rgba(214,167,86,0.4); }
+.blessing-card.rarity-miracle { box-shadow: 0 30px 90px -14px rgba(214,167,86,0.6); border: 1px solid var(--gold); }
+
+.blessing-eyebrow { font-size: 13px; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; }
+.blessing-body { margin-bottom: 24px; }
+.blessing-quote { font-size: 22px; font-weight: 500; line-height: 1.45; font-style: italic; }
+.blessing-quote--prayer { font-style: normal; }
+.blessing-quote--large { font-size: 24px; }
+.blessing-reference { margin-top: 12px; color: var(--text-secondary); font-size: 15px; font-weight: 500; }
+.blessing-subtitle { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.blessing-paragraph { font-size: 17px; line-height: 1.6; text-align: left; }
+.blessing-application { margin-top: 14px; font-size: 15px; color: var(--text-secondary); font-style: italic; text-align: left; }
+.blessing-link { display: inline-block; margin-top: 16px; font-size: 14px; font-weight: 600; text-decoration: none; }
+
+.blessing-rewards { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+.reward-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.reward-chip--coin { background: var(--gold-soft); color: var(--gold); }
+.reward-chip--xp { background: var(--primary-soft); color: var(--primary); }
+.reward-chip-icon { width: 10px; height: 10px; border-radius: 50%; }
+.reward-chip-icon--coin { background: var(--gold); }
+.reward-chip-icon--xp { background: var(--primary); }
+
+.blessing-character-callout { margin: 8px 0 24px; }
+.blessing-character-callout-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+.blessing-card-close { width: 100%; }
+
+/* ==========================================================================
+   Character cards (Collection)
+   ========================================================================== */
+.char-card-shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+.char-card {
+  perspective: 800px;
+  height: 190px;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+.char-card--small { height: 150px; max-width: 220px; margin: 0 auto; }
+.char-card-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease-premium);
+  border-radius: var(--radius-md);
+}
+.char-card.is-flipped .char-card-inner { transform: rotateY(180deg); }
+.char-card-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: var(--radius-md);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+}
+.char-card-back { transform: rotateY(180deg); justify-content: flex-start; text-align: left; gap: 8px; overflow-y: auto; }
+.char-card-emblem {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--gold));
+  margin-bottom: 6px;
+}
+.char-card--locked .char-card-emblem { background: var(--border); color: var(--text-secondary); }
+.char-card--locked .char-card-face { opacity: 0.7; }
+.char-card-name { font-weight: 600; font-size: 15px; }
+.char-card-role { font-size: 13px; color: var(--text-secondary); }
+.char-card-difficulty { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gold); font-weight: 600; }
+.char-card-era { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.char-card-verse { font-size: 13px; font-weight: 500; }
+.char-card-fact { font-size: 12.5px; color: var(--text-secondary); }
+
+.char-card--epic .char-card-face { box-shadow: var(--shadow-card), 0 0 0 1px rgba(30,94,255,0.2); }
+.char-card--legendary .char-card-face,
+.char-card--miracle .char-card-face { box-shadow: var(--shadow-card), 0 0 0 1px var(--gold); }
+
+.collection-complete-banner {
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: var(--gold-soft);
+  color: var(--gold);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Journey (heatmap + timeline)
+   ========================================================================== */
+.journey-heatmap-section { margin-bottom: 36px; }
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11px, 1fr));
+  grid-auto-flow: row dense;
+  gap: 4px;
+  max-width: 100%;
+}
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--border);
+}
+.heatmap-cell--filled { background: var(--primary); }
+
+.timeline-day { margin-bottom: 24px; }
+.timeline-date { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+.timeline-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.timeline-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
+/* ==========================================================================
+   Community
+   ========================================================================== */
+.community-ring-wrap { position: relative; width: 200px; height: 200px; margin: 40px auto 0; }
+.progress-ring { width: 100%; height: 100%; }
+.progress-ring-track { stroke: var(--border); }
+.progress-ring-fill { stroke: var(--primary); stroke-linecap: round; }
+.community-ring-label {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.community-ring-pct { font-size: 40px; font-weight: 700; }
+.community-ring-caption { font-size: 13px; color: var(--text-secondary); }
+.community-complete { margin-top: 28px; text-align: center; color: var(--gold); font-weight: 500; }
+
+/* ==========================================================================
+   Profile
+   ========================================================================== */
+.profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.profile-avatar {
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--gold));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700;
+  margin-bottom: 14px;
+}
+.profile-name { font-size: 24px; font-weight: 700; }
+.profile-level { color: var(--text-secondary); font-size: 15px; margin-top: 4px; }
+
+.profile-stats {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.stat-tile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-value { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 13px; color: var(--text-secondary); }
+
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.badge-pill {
+  background: var(--gold-soft);
+  color: var(--gold);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field-label { display: block; font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
+.field-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; min-height: 44px; }
+.toggle-input { width: 44px; height: 26px; accent-color: var(--primary); }
+
+/* ==========================================================================
+   Milestone celebration
+   ========================================================================== */
+.celebration-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(17,24,39,0.4);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-premium);
+}
+.celebration-overlay.is-visible { opacity: 1; }
+.celebration-card {
+  max-width: 380px;
+  width: 100%;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 36px 28px;
+  text-align: center;
+  box-shadow: 0 30px 80px -16px rgba(214,167,86,0.4);
+  border: 1px solid var(--gold);
+  transform: scale(0.94);
+  transition: transform 0.4s var(--ease-premium);
+}
+.celebration-overlay.is-visible .celebration-card { transform: none; }
+.celebration-artwork {
+  width: 80px; height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFF6DD, var(--gold));
+  box-shadow: 0 12px 30px -8px rgba(214,167,86,0.6);
+}
+.celebration-eyebrow { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); }
+.celebration-title { font-size: 26px; font-weight: 700; margin-top: 8px; }
+.celebration-body { margin-top: 12px; color: var(--text-secondary); font-size: 15px; }
+.celebration-card .btn-primary { margin-top: 24px; width: 100%; }
+
+/* ==========================================================================
+   Accessibility: reduced motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .giftbox, .giftbox-shimmer, .page { animation: none !important; }
+  .giftbox-lid, .blessing-card, .card-overlay, .celebration-card, .celebration-overlay, .progress-fill, .progress-ring-fill {
+    transition-duration: 0.01ms !important;
+  }
+}
+body.scene-blurred.reduce-motion .page-root,
+body.scene-blurred.reduce-motion .bottom-nav { filter: none; }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (min-width: 720px) {
+  .page-root { padding-top: 88px; }
+}
+@media (max-width: 420px) {
+  .home-greeting { font-size: 26px; }
+  .home-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .giftbox-stage { width: 220px; height: 220px; }
+}

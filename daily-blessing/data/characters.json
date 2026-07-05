@@ -1,0 +1,21 @@
+{
+  "collection": {
+    "month": "July",
+    "title": "Heroes of Faith",
+    "description": "Twelve lives that shaped the story of Scripture."
+  },
+  "characters": [
+    { "id": "noah", "name": "Noah", "era": "Early Genesis", "role": "Builder", "verse": "Genesis 6:9 — Noah was a righteous man, blameless in his generation. Noah walked with God.", "fact": "Noah spent decades building the ark in obedience before a single drop of rain fell.", "difficulty": "Common" },
+    { "id": "abraham", "name": "Abraham", "era": "Patriarchs", "role": "Father of Faith", "verse": "Genesis 15:6 — And he believed the LORD, and he counted it to him as righteousness.", "fact": "Abraham left his homeland not knowing where he was going, trusting God's promise alone.", "difficulty": "Rare" },
+    { "id": "joseph", "name": "Joseph", "era": "Patriarchs", "role": "Dreamer", "verse": "Genesis 50:20 — You meant evil against me, but God meant it for good.", "fact": "Joseph forgave the brothers who sold him into slavery and saved their lives during famine.", "difficulty": "Rare" },
+    { "id": "moses", "name": "Moses", "era": "Exodus", "role": "Leader", "verse": "Exodus 3:14 — God said to Moses, 'I AM WHO I AM.'", "fact": "Moses led roughly two million people out of Egypt and received the Law at Mount Sinai.", "difficulty": "Epic" },
+    { "id": "joshua", "name": "Joshua", "era": "Conquest", "role": "Successor", "verse": "Joshua 1:9 — Be strong and courageous. Do not be frightened, for the LORD your God is with you.", "fact": "Joshua led Israel into the Promised Land after Moses' death and never wavered in faith.", "difficulty": "Rare" },
+    { "id": "deborah", "name": "Deborah", "era": "Judges", "role": "Judge & Prophetess", "verse": "Judges 4:4 — Deborah, a prophetess, was judging Israel at that time.", "fact": "Deborah was the only female judge of Israel and led the nation to victory in battle.", "difficulty": "Epic" },
+    { "id": "david", "name": "David", "era": "Kings", "role": "Shepherd King", "verse": "1 Samuel 13:14 — The LORD has sought out a man after his own heart.", "fact": "David went from shepherding sheep to ruling Israel, and wrote many of the Psalms.", "difficulty": "Legendary" },
+    { "id": "isaiah", "name": "Isaiah", "era": "Prophets", "role": "Prophet", "verse": "Isaiah 6:8 — Here am I! Send me.", "fact": "Isaiah's prophecies about a coming Messiah are quoted throughout the New Testament.", "difficulty": "Epic" },
+    { "id": "daniel", "name": "Daniel", "era": "Exile", "role": "Prophet in Exile", "verse": "Daniel 6:23 — No kind of harm was found on him, because he had trusted in his God.", "fact": "Daniel remained faithful in prayer even under threat of the lions' den.", "difficulty": "Rare" },
+    { "id": "esther", "name": "Esther", "era": "Exile", "role": "Queen", "verse": "Esther 4:14 — For such a time as this.", "fact": "Esther risked her life to save her people, trusting God's providence in a hidden way.", "difficulty": "Epic" },
+    { "id": "peter", "name": "Peter", "era": "New Testament", "role": "Apostle", "verse": "Matthew 16:16 — You are the Christ, the Son of the living God.", "fact": "Peter denied Christ three times, yet was restored and became a founding leader of the church.", "difficulty": "Legendary" },
+    { "id": "paul", "name": "Paul", "era": "New Testament", "role": "Apostle to the Gentiles", "verse": "Philippians 4:13 — I can do all things through him who strengthens me.", "fact": "Paul went from persecuting the church to writing much of the New Testament.", "difficulty": "Miracle" }
+  ]
+}
