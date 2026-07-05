@@ -150,6 +150,44 @@ function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = (h * 3
 function pick(arr, seedStr) { return arr[hashStr(seedStr) % arr.length]; }
 function fmtDate(iso) { try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); } catch { return iso; } }
 
+// ─── Live weather for the greeting — a small, human touch, not a mood diagnosis ──
+// Defaults to the church's home city (Kuwait) rather than requesting the
+// member's precise location, so no location permission prompt is needed.
+const CHURCH_CITY = { lat: 29.3759, lon: 47.9774, place: 'Kuwait City' };
+const WEATHER_CODES = {
+  0:  { label: 'clear skies',            icon: '☀️' },
+  1:  { label: 'mostly clear skies',     icon: '🌤️' },
+  2:  { label: 'partly cloudy skies',    icon: '⛅' },
+  3:  { label: 'overcast, grey skies',   icon: '☁️', moodNote: "Grey skies can make a heart feel heavier too — but His mercies are new every morning, regardless of the weather." },
+  45: { label: 'foggy conditions',       icon: '🌫️', moodNote: "When the way ahead feels unclear, remember He still lights the very next step." },
+  48: { label: 'foggy conditions',       icon: '🌫️', moodNote: "When the way ahead feels unclear, remember He still lights the very next step." },
+  51: { label: 'a light drizzle',        icon: '🌦️', moodNote: "Even a grey, drizzly morning is still a morning He has made." },
+  53: { label: 'a drizzle',              icon: '🌦️', moodNote: "Even a grey, drizzly morning is still a morning He has made." },
+  55: { label: 'a steady drizzle',       icon: '🌦️', moodNote: "Even a grey, drizzly morning is still a morning He has made." },
+  61: { label: 'rain',                   icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  63: { label: 'rain',                   icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  65: { label: 'heavy rain',             icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  71: { label: 'snow',                   icon: '🌨️', moodNote: "Even in a cold season, His presence keeps you warm." },
+  73: { label: 'snow',                   icon: '🌨️', moodNote: "Even in a cold season, His presence keeps you warm." },
+  75: { label: 'heavy snow',             icon: '🌨️', moodNote: "Even in a cold season, His presence keeps you warm." },
+  80: { label: 'rain showers',           icon: '🌦️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  81: { label: 'rain showers',           icon: '🌦️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  82: { label: 'heavy rain showers',     icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  95: { label: 'thunderstorms',          icon: '⛈️', moodNote: "Storms outside can mirror storms within — but the One who calmed the wind and waves is near you now too." },
+  96: { label: 'thunderstorms',          icon: '⛈️', moodNote: "Storms outside can mirror storms within — but the One who calmed the wind and waves is near you now too." },
+  99: { label: 'severe thunderstorms',   icon: '⛈️', moodNote: "Storms outside can mirror storms within — but the One who calmed the wind and waves is near you now too." },
+};
+async function fetchChurchCityWeather() {
+  const { lat, lon, place } = CHURCH_CITY;
+  const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`);
+  if (!res.ok) throw new Error('weather fetch failed');
+  const data = await res.json();
+  const cw = data.current_weather;
+  if (!cw) throw new Error('no current_weather in response');
+  const meta = WEATHER_CODES[cw.weathercode] || { label: 'mild weather', icon: '🌡️' };
+  return { tempC: Math.round(cw.temperature), place, ...meta };
+}
+
 // ─── Streak / stats helpers ─────────────────────────────────────────────────
 function bumpStreak(stats, field, lastField, dateStr) {
   const s = { ...stats };
@@ -163,25 +201,149 @@ function bumpStreak(stats, field, lastField, dateStr) {
 const DEFAULT_STATS = { bibleStreak: 0, lastBibleDate: null, prayerStreak: 0, lastPrayerDate: null, answeredPrayers: 0, actsOfKindness: 0 };
 
 // ─── Personalization phrase pools ───────────────────────────────────────────
-const INTRO_TEMPLATES = [
-  (n, e) => `${n}, today you shared that you're feeling ${e}. Here's a word for exactly where you are.`,
-  (n, e) => `Thank you for being honest, ${n} — carrying ${e} today. Let this be a moment to bring that to God.`,
-  (n, e) => `${n}, as you begin today with ${e} in your heart, here's something to hold onto.`,
-  (n, e) => `Whatever ${e} looks like for you today, ${n}, God already knows — and He meets you there.`,
-];
-const PRAYER_TEMPLATES = [
-  (n, e, focus) => `Father,\n\nToday ${n} comes to You feeling ${e}.\nMeet ${n} with ${focus}.\nRemind ${n} that You are near, that You are faithful, and that nothing today is outside Your care.\nTeach ${n} to trust You more with each step of this day.\n\nIn Jesus' name, Amen.`,
-  (n, e, focus) => `Father,\n\nYou see ${n} today, feeling ${e}.\nWe ask for ${focus} to fill this day.\nGive ${n} wisdom in every decision, and a heart that keeps returning to You.\nThank You for hearing this prayer before it is even finished.\n\nIn Jesus' name, Amen.`,
-  (n, e, focus) => `Father,\n\n${n} brings You an honest heart today — feeling ${e}.\nWe pray for ${focus}, not because ${n} has earned it, but because that is who You are.\nHold ${n} close today, and let today's burdens be lighter for having been given to You.\n\nIn Jesus' name, Amen.`,
-];
+// Opening lines are grouped by engagement tier so returning members read
+// something noticeably different from a first-time visitor, not the same
+// four templates everyone sees forever.
+const OPENING_LINES = {
+  new: [
+    (n, e) => `${n}, thank you for opening your heart today — feeling ${e}. This is the start of a journey, one honest day at a time.`,
+    (n, e) => `Welcome, ${n}. Today you're carrying ${e}, and that honesty is exactly where this journey begins.`,
+    (n, e) => `${n}, there's no wrong way to begin this. Today it's ${e} — let's bring that honestly before God.`,
+  ],
+  building: [
+    (n, e) => `${n}, today you're feeling ${e}. You've been showing up to reflect, and that consistency is already shaping something in you.`,
+    (n, e) => `Good to have you back, ${n}. Today it's ${e} — let's bring that honestly before God, the way you've been learning to.`,
+    (n, e) => `${n}, carrying ${e} today. A few days into this rhythm now, and it's already becoming part of how you meet each morning.`,
+  ],
+  established: [
+    (n, e) => `${n}, today's ${e} joins a season Heart Journey has walked with you for a while now — and today's Word meets you right in it.`,
+    (n, e) => `${n}, you've built a real rhythm of coming back here. Today that honesty looks like ${e}.`,
+    (n, e) => `${n}, by now this has become a steady part of your walk. Today you bring ${e}, and that steadiness itself is worth noticing.`,
+  ],
+  devoted: [
+    (n, e) => `${n}, this journey together has grown into something steady. Today you're carrying ${e}, and that steadiness is exactly what makes today's Word land differently than it might have when you started.`,
+    (n, e) => `${n}, few things say more about a life than what it keeps returning to — and you keep returning here. Today, that's ${e}.`,
+    (n, e) => `${n}, after all this time reflecting together, today's honesty is ${e}. Let's sit with that, the way you've learned to.`,
+  ],
+};
 const CHURCH_THEME_TEMPLATES = [
   (theme) => `This month our church family is reflecting together on the theme of "${theme}" — let today's word be part of that same journey.`,
   (theme) => `As our church walks through "${theme}" this month, consider how today's reflection connects to that shared season.`,
 ];
-const STREAK_LINES = [
-  (n) => `You've opened your heart before God for ${n} days in a row now — a quiet, faithful rhythm worth celebrating.`,
-  (n) => `${n} days of returning to Scripture in a row. Small, consistent steps like this shape a life.`,
+const PRAYER_OPENERS = [
+  (n, e) => `Today ${n} comes to You feeling ${e}.`,
+  (n, e) => `You see ${n} today, feeling ${e}.`,
+  (n, e) => `${n} brings You an honest heart today — feeling ${e}.`,
 ];
+
+// ─── Engagement profile — a plain-language read of how long/consistently a
+// member has been using Heart Journey, so today's content can reference
+// their actual journey instead of reading identically for everyone. ──────────
+function categoryCountsInWindow(heartLog, hjData, todayIso, days, excludeToday) {
+  const cutoff = new Date(todayIso); cutoff.setDate(cutoff.getDate() - (days - 1));
+  const entries = heartLog.filter(h => {
+    if (excludeToday && h.date === todayIso) return false;
+    const d = new Date(h.date);
+    return d >= cutoff && d <= new Date(todayIso);
+  });
+  const counts = {};
+  entries.forEach(h => (h.emotions || []).forEach(k => {
+    const e = hjData.emotions.find(x => x.key === k);
+    if (e) counts[e.category] = (counts[e.category] || 0) + 1;
+  }));
+  return { counts, entries };
+}
+
+function findJournalEcho(journal, category, todayIso) {
+  const cutoff = new Date(todayIso); cutoff.setDate(cutoff.getDate() - 9);
+  const regexes = KEYWORD_CATEGORY_MAP.filter(([, c]) => c === category).map(([re]) => re);
+  if (!regexes.length) return null;
+  const match = journal.find(j => new Date(j.date) >= cutoff && regexes.some(re => re.test(j.text)));
+  if (!match) return null;
+  const snippet = match.text.length > 70 ? match.text.slice(0, 70).trim() + '…' : match.text;
+  return { snippet, date: match.date };
+}
+
+function computeEngagement({ heartLog, journal, gratitude, prayers, memorized, stats, category, todayIso }) {
+  const total = heartLog.length;
+  const tier = total <= 1 ? 'new' : total <= 6 ? 'building' : total <= 20 ? 'established' : 'devoted';
+  return {
+    tier,
+    totalCheckins: total,
+    streakBible: stats.bibleStreak || 0,
+    streakPrayer: stats.prayerStreak || 0,
+    memorizedCount: memorized.length,
+    gratitudeCount: gratitude.length,
+    answeredPrayers: stats.answeredPrayers || 0,
+    openPrayerCount: prayers.filter(p => !p.answered).length,
+    journalEcho: findJournalEcho(journal, category, todayIso),
+  };
+}
+
+function milestoneClause(name, eng) {
+  if (eng.tier === 'new') return null;
+  const parts = [];
+  if (eng.streakBible >= 3) parts.push(`${eng.streakBible} days in a row of returning to Scripture`);
+  if (eng.memorizedCount >= 1) parts.push(`${eng.memorizedCount} verse${eng.memorizedCount === 1 ? '' : 's'} tucked into memory`);
+  if (eng.gratitudeCount >= 3) parts.push(`${eng.gratitudeCount} gratitude entries planted`);
+  if (eng.answeredPrayers >= 1) parts.push(`${eng.answeredPrayers} answered prayer${eng.answeredPrayers === 1 ? '' : 's'} recorded`);
+  if (!parts.length) return null;
+  return `Along the way, ${name} has built ${listJoin(parts)} — small, faithful evidence of grace at work.`;
+}
+
+function journalEchoClause(echo) {
+  if (!echo) return null;
+  return `A few days ago you wrote in your journal: "${echo.snippet}" — that still feels close to today's Word. You're not walking through this alone.`;
+}
+
+// ─── Member-specific seed — so two members with the same mood on the same
+// day don't read verbatim-identical phrasing. Persisted once on this device.
+function getMemberSeed() {
+  try {
+    let s = localStorage.getItem('hj_member_seed_v1');
+    if (!s) { s = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('hj_member_seed_v1', s); }
+    return s;
+  } catch { return 'anon'; }
+}
+
+function buildPersonalReflection({ name, emotionsPhrase, devotion, eng, churchTheme, memberSeed, category, dateStr }) {
+  const opening = pick(OPENING_LINES[eng.tier], dateStr + category + memberSeed)(name, emotionsPhrase);
+  const journeyNote = [milestoneClause(name, eng), journalEchoClause(eng.journalEcho)].filter(Boolean).join(' ') || null;
+  const themeLine = (churchTheme && hashStr(dateStr + memberSeed) % 3 === 0)
+    ? pick(CHURCH_THEME_TEMPLATES, dateStr + memberSeed)(churchTheme) : null;
+  return { opening, journeyNote, base: devotion.reflection, themeLine };
+}
+
+function buildPrayer({ name, emotionsPhrase, focus, eng, memberSeed, dateStr, category }) {
+  const lines = ['Father,', '', pick(PRAYER_OPENERS, dateStr + category + memberSeed + 'p')(name, emotionsPhrase)];
+  lines.push(`Meet ${name} with ${focus}.`);
+  if (eng.tier !== 'new' && eng.streakBible >= 3) {
+    lines.push(`Thank You that for ${eng.streakBible} days now, ${name} has kept returning to You — please keep sustaining that faithfulness.`);
+  }
+  if (eng.answeredPrayers >= 1) {
+    lines.push(`Thank You for the ${eng.answeredPrayers} answered prayer${eng.answeredPrayers === 1 ? '' : 's'} already recorded in ${name}'s journey — You are faithful.`);
+  }
+  if (eng.openPrayerCount >= 1) {
+    lines.push(`Continue to hold the ${eng.openPrayerCount} request${eng.openPrayerCount === 1 ? '' : 's'} ${name} is still waiting on.`);
+  }
+  lines.push(`Teach ${name} to trust You more with each step of today.`);
+  lines.push('');
+  lines.push("In Jesus' name, Amen.");
+  return lines.join('\n');
+}
+
+function buildEncouragement({ eng, memberSeed, dateStr, generalPool }) {
+  const base = pick(generalPool, dateStr + 'enc' + memberSeed);
+  if (eng.tier === 'new' || eng.totalCheckins < 2) return base;
+  return `You've now returned to reflect ${eng.totalCheckins} times. ${base}`;
+}
+
+function buildActionStep({ eng, devotion }) {
+  const step = devotion.actionStep.charAt(0).toLowerCase() + devotion.actionStep.slice(1);
+  if (eng.tier === 'new') return devotion.actionStep;
+  if (eng.tier === 'building') return `Since you're building a rhythm here, try this: ${step}`;
+  return `You've shown real consistency in this journey — here's today's next step: ${step}`;
+}
 
 function listJoin(arr) {
   if (arr.length === 0) return "what's on your heart";
@@ -233,16 +395,10 @@ function getDevotion(hjData, category, dateStr) {
 
 // ─── Weekly emotional pattern recognition ───────────────────────────────────
 function weeklyPattern(heartLog, hjData, todayIso) {
-  const cutoff = new Date(todayIso); cutoff.setDate(cutoff.getDate() - 6);
-  const recent = heartLog.filter(h => new Date(h.date) >= cutoff && new Date(h.date) <= new Date(todayIso));
-  const counts = {};
-  recent.forEach(h => (h.emotions || []).forEach(k => {
-    const e = hjData.emotions.find(x => x.key === k);
-    if (e) counts[e.category] = (counts[e.category] || 0) + 1;
-  }));
+  const { counts, entries } = categoryCountsInWindow(heartLog, hjData, todayIso, 7, false);
   let topCat = null, topN = 0;
   Object.entries(counts).forEach(([c, n]) => { if (n > topN) { topN = n; topCat = c; } });
-  if (topCat && topN >= 3 && recent.length >= 3) return { category: topCat, count: topN, days: recent.length };
+  if (topCat && topN >= 3 && entries.length >= 3) return { category: topCat, count: topN, days: entries.length };
   return null;
 }
 
@@ -309,6 +465,7 @@ function ConsentScreen({ safetyDisclaimer, onAccept, ministry }) {
           <li>Your journal, prayers, and heart-check history are stored only in this browser (on your device) — not on a church server.</li>
           <li>Nothing is sold or used for advertising.</li>
           <li>If you use the AI Conversation or "reflect with AI" features, that specific text is sent to an AI provider (Anthropic) to generate a response.</li>
+          <li>Today's weather in the greeting is fetched from Open-Meteo, a public weather API, for the church's home city — not your personal location.</li>
           <li>You can delete all Heart Journey data at any time from the Privacy tab.</li>
         </ul>
       </div>
@@ -335,7 +492,7 @@ const MOOD_ORDER = ['joyful','thankful','grateful','loved','comforted','content'
   'spiritually_dry','distant_from_god','close_to_god'];
 const NEED_ORDER = ['need_wisdom','need_direction','need_strength','need_forgiveness','need_rest','need_courage','need_peace','need_joy','need_hope'];
 
-function HeartCheck({ emotionsData, onSubmit, greetingName }) {
+function HeartCheck({ emotionsData, onSubmit, greetingName, weather }) {
   const [selected, setSelected] = useState([]);
   const [freeText, setFreeText] = useState('');
   const byKey = k => emotionsData.find(e => e.key === k);
@@ -344,6 +501,12 @@ function HeartCheck({ emotionsData, onSubmit, greetingName }) {
   return (
     <div className="fade-in">
       <h2 className="font-display text-xl sm:text-2xl font-semibold mb-1">Good {greetingTime()}, {greetingName}</h2>
+      {weather && (
+        <p className="text-sm mb-2" style={{ color: 'var(--ink-muted)' }}>
+          {weather.icon} It's {weather.tempC}°C with {weather.label} in {weather.place} this {greetingTime()}.
+          {weather.moodNote && <span> {weather.moodNote}</span>}
+        </p>
+      )}
       <p className="text-sm mb-5" style={{ color: 'var(--ink-muted)' }}>How is your heart today?</p>
 
       <div className="mb-4">
@@ -374,22 +537,23 @@ function HeartCheck({ emotionsData, onSubmit, greetingName }) {
 function greetingTime() { const h = new Date().getHours(); return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'; }
 
 // ─── Today's devotional card ────────────────────────────────────────────────
-function DevotionalCard({ name, category, categoryMeta, devotion, churchTheme, stats, memorized, onMemorize, onPrayed, onJournalFromPrompt, emotionLabels }) {
+function DevotionalCard({ name, category, categoryMeta, devotion, churchTheme, memorized, onMemorize, onPrayed, onJournalFromPrompt, emotionLabels, heartLog, journal, gratitude, prayers, stats }) {
   const meta = categoryMeta[category] || { theme: 'Today\'s Word', prayerFocus: 'Your peace and presence' };
   const emotionsPhrase = listJoin(emotionLabels || []);
-  const intro = pick(INTRO_TEMPLATES, todayStr() + category)(name, emotionsPhrase);
-  const prayerText = pick(PRAYER_TEMPLATES, todayStr() + category + 'p')(name, emotionsPhrase, meta.prayerFocus);
-  const showTheme = churchTheme && hashStr(todayStr()) % 3 === 0;
-  const themeLine = showTheme ? pick(CHURCH_THEME_TEMPLATES, todayStr())(churchTheme) : null;
-  const showStreak = stats.bibleStreak >= 3;
-  const streakLine = showStreak ? pick(STREAK_LINES, todayStr())(stats.bibleStreak) : null;
+  const dateStr = todayStr();
+  const memberSeed = getMemberSeed();
+  const eng = computeEngagement({ heartLog, journal, gratitude, prayers, memorized, stats, category, todayIso: dateStr });
+  const reflection = buildPersonalReflection({ name, emotionsPhrase, devotion, eng, churchTheme, memberSeed, category, dateStr });
+  const prayerText = buildPrayer({ name, emotionsPhrase, focus: meta.prayerFocus, eng, memberSeed, dateStr, category });
+  const encouragement = buildEncouragement({ eng, memberSeed, dateStr, generalPool: GENERAL_ENCOURAGEMENTS_REF.current });
+  const actionStep = buildActionStep({ eng, devotion });
   const isMemorized = memorized.includes(devotion.reference + '|' + devotion.memoryVerse.reference);
 
   return (
     <div className="fade-in space-y-4">
       <div className="card card-pad">
         <div className="devo-section-label">{meta.theme}</div>
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{intro}</p>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{reflection.opening}</p>
       </div>
 
       <div className="card card-pad">
@@ -399,9 +563,9 @@ function DevotionalCard({ name, category, categoryMeta, devotion, churchTheme, s
 
       <div className="card card-pad">
         <div className="devo-section-label">Personal Reflection</div>
-        <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--ink)' }}>{devotion.reflection}</p>
-        {themeLine && <p className="text-sm italic" style={{ color: 'var(--accent)' }}>{themeLine}</p>}
-        {streakLine && <p className="text-sm italic mt-1" style={{ color: 'var(--ink-subtle)' }}>{streakLine}</p>}
+        {reflection.journeyNote && <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--accent)' }}>{reflection.journeyNote}</p>}
+        <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--ink)' }}>{reflection.base}</p>
+        {reflection.themeLine && <p className="text-sm italic" style={{ color: 'var(--ink-muted)' }}>{reflection.themeLine}</p>}
       </div>
 
       <div className="card card-pad">
@@ -413,11 +577,11 @@ function DevotionalCard({ name, category, categoryMeta, devotion, churchTheme, s
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="card card-pad">
           <div className="devo-section-label">Encouragement</div>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{pick(GENERAL_ENCOURAGEMENTS_REF.current, todayStr() + 'enc')}</p>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{encouragement}</p>
         </div>
         <div className="card card-pad">
           <div className="devo-section-label">One Action Step</div>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{devotion.actionStep}</p>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{actionStep}</p>
         </div>
       </div>
 
@@ -893,6 +1057,7 @@ function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename, ministry })
           <li>Nothing is sold, shared, or used for advertising.</li>
           <li>The AI Conversation and "Reflect with AI" journal feature send only the specific text you submit to Anthropic's API (directly or via the church's proxy) to generate a response.</li>
           <li>Sharing a prayer request with the Prayer Team is fully optional and only happens when you tap "Share."</li>
+          <li>Today's weather in the greeting is fetched from Open-Meteo, a public weather API, for the church's home city — not your personal location.</li>
         </ul>
       </div>
       <div className="card card-pad">
@@ -934,6 +1099,7 @@ function App() {
   const [hjData, setHjData] = useState(null);
   const [churchData, setChurchData] = useState(null);
   const [prayerData, setPrayerData] = useState(null);
+  const [weather, setWeather] = useState(null);
 
   const [consent, setConsent] = useState(() => loadJSON(HJ.consent, false));
   const [name, setName] = useState(() => loadJSON(HJ.name, ''));
@@ -948,7 +1114,6 @@ function App() {
 
   const [tab, setTab] = useState('today');
   const [journalPrefill, setJournalPrefill] = useState(null);
-  const [showUrgentCare, setShowUrgentCare] = useState(false);
 
   useEffect(() => saveJSON(HJ.heartLog, heartLog), [heartLog]);
   useEffect(() => saveJSON(HJ.journal, journal), [journal]);
@@ -962,6 +1127,7 @@ function App() {
     fetch('heart-journey-data.json').then(r => r.json()).then(d => { GENERAL_ENCOURAGEMENTS_REF.current = d.generalEncouragements; setHjData(d); }).catch(() => {});
     fetch('data.json').then(r => r.json()).then(setChurchData).catch(() => {});
     fetch('prayer.json').then(r => r.json()).then(setPrayerData).catch(() => {});
+    fetchChurchCityWeather().then(setWeather).catch(() => {});
   }, []);
 
   const churchTheme = churchData?.themes?.[monthStr()] || null;
@@ -1013,10 +1179,7 @@ function App() {
               <span className="text-xl">🌿</span>
               <span className="font-display text-lg font-semibold">Heart Journey</span>
             </div>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <button onClick={() => setShowUrgentCare(true)} className="text-xs font-semibold" style={{ color: 'var(--danger)' }}>🆘 Need help now?</button>
-              <a href="index.html" className="text-xs" style={{ color: 'var(--ink-muted)' }}>← Back to App</a>
-            </div>
+            <a href="index.html" className="text-xs" style={{ color: 'var(--ink-muted)' }}>← Back to App</a>
           </div>
           <nav className="flex flex-wrap gap-1.5">
             {TABS.map(t => <button key={t.key} className={`tab-pill ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>)}
@@ -1024,19 +1187,10 @@ function App() {
         </div>
       </header>
 
-      {showUrgentCare && (
-        <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setShowUrgentCare(false)}>
-          <div className="modal">
-            <UrgentCareNote ministry={churchData?.ministry} />
-            <button className="btn btn-ghost w-full mt-3" onClick={() => setShowUrgentCare(false)}>Close</button>
-          </div>
-        </div>
-      )}
-
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
         {tab === 'today' && (
           !todayEntry
-            ? <HeartCheck emotionsData={hjData.emotions} onSubmit={submitHeartCheck} greetingName={name} />
+            ? <HeartCheck emotionsData={hjData.emotions} onSubmit={submitHeartCheck} greetingName={name} weather={weather} />
             : (
               <div>
                 <div className="flex justify-between items-center mb-3">
@@ -1045,7 +1199,7 @@ function App() {
                 </div>
                 <PatternBanner pattern={pattern} categoryMeta={hjData.categoryMeta} />
                 <DevotionalCard name={name} category={category} categoryMeta={hjData.categoryMeta} devotion={devotion} churchTheme={churchTheme}
-                  stats={stats} memorized={memorized}
+                  stats={stats} memorized={memorized} heartLog={heartLog} journal={journal} gratitude={gratitude} prayers={prayers}
                   emotionLabels={(todayEntry.emotions || []).map(k => hjData.emotions.find(e => e.key === k)?.label?.toLowerCase()).filter(Boolean)}
                   onMemorize={() => { const key = devotion.reference + '|' + devotion.memoryVerse.reference; setMemorized(m => m.includes(key) ? m.filter(x => x !== key) : [...m, key]); }}
                   onPrayed={() => setStats(s => bumpStreak(s, 'prayerStreak', 'lastPrayerDate', todayStr()))}
