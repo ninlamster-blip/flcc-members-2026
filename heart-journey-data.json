@@ -38,6 +38,9 @@
     { "key": "unmotivated", "label": "Unmotivated", "category": "spiritual_dryness" },
     { "key": "spiritually_dry", "label": "Spiritually Dry", "category": "spiritual_dryness" },
     { "key": "homesick", "label": "Homesick", "category": "lonely" },
+    { "key": "missing_family", "label": "Missing My Family", "category": "lonely" },
+    { "key": "serving_far_from_home", "label": "Serving Far From Home", "category": "lonely" },
+    { "key": "unable_to_attend_church", "label": "Unable to Attend Church", "category": "distant_worship" },
     { "key": "distant_from_god", "label": "Feeling Distant From God", "category": "spiritual_dryness" },
     { "key": "close_to_god", "label": "Feeling Close To God", "category": "close_to_god" },
     { "key": "need_wisdom", "label": "Need Wisdom", "category": "need_wisdom" },
@@ -63,7 +66,8 @@
     "shame_guilt":       { "theme": "No Condemnation in Christ", "prayerFocus": "grace, forgiveness, and freedom from shame",               "weekPatternMessage": "guilt or shame" },
     "financial":         { "theme": "God Our Provider",         "prayerFocus": "provision, wisdom, and trust with finances",                 "weekPatternMessage": "financial stress" },
     "spiritual_dryness": { "theme": "Reviving a Thirsty Soul",  "prayerFocus": "a renewed hunger for God's presence",                        "weekPatternMessage": "spiritual dryness or distance from God" },
-    "close_to_god":      { "theme": "Abiding in Christ",        "prayerFocus": "deeper intimacy and consistency in walking with God",       "weekPatternMessage": "closeness to God" }
+    "close_to_god":      { "theme": "Abiding in Christ",        "prayerFocus": "deeper intimacy and consistency in walking with God",       "weekPatternMessage": "closeness to God" },
+    "distant_worship":   { "theme": "Worship Beyond Walls",     "prayerFocus": "the sense of God's presence even far from a church building", "weekPatternMessage": "being unable to gather with the church" }
   },
   "generalEncouragements": [
     "Whatever season you're walking through, God has not left you — He is near, He is faithful, and He is at work even when you cannot see it.",
@@ -248,6 +252,60 @@
         "reflectionQuestion": "Who in your church family could you invest in this week, even in a small way?",
         "journalPrompt": "Describe what belonging looks like to you right now, and one step you could take toward it.",
         "memoryVerse": { "reference": "Psalm 68:6", "text": "God setteth the solitary in families." }
+      },
+      {
+        "reference": "Genesis 39:2-3",
+        "verseText": "And the LORD was with Joseph, and he was a prosperous man; and he was in the house of his master the Egyptian. And his master saw that the LORD was with him, and that the LORD made all that he did to prosper in his hand.",
+        "reflection": "Joseph was sold away from his father's house into another man's household, in a country whose language and gods were not his own. Scripture doesn't skip past how painful that must have been — but it also doesn't wait until Joseph felt at home to say God was with him. If you're serving faithfully today in a household far from your own family, this is written for you: God was in that house before you ever walked into it.",
+        "historicalBackground": "Joseph was sold into slavery by his own brothers and taken to Egypt, where he served in the household of Potiphar, an officer of Pharaoh. Everything about his position was involuntary and unjust — yet the text repeatedly says 'the LORD was with Joseph,' even inside someone else's home, doing someone else's work.",
+        "crossReferences": ["Genesis 39:21", "Acts 7:9-10"],
+        "bibleStory": { "title": "Joseph in Potiphar's House", "summary": "Serving in an Egyptian household far from his family and homeland, Joseph remained faithful in his work and his character, and Scripture is careful to say God's presence went with him into every room of that house (Genesis 39:1-6)." },
+        "worshipSong": "\"Way Maker\" — Sinach",
+        "actionStep": "Say a short prayer over the specific place you work or serve today, asking God to make His presence known there, just as He did for Joseph.",
+        "reflectionQuestion": "What would it mean today to believe that God is present in the exact house, room, or job where you're serving right now — not just back home?",
+        "journalPrompt": "Write a prayer for the family you are far away from today, and another for God's presence in the place you are serving right now.",
+        "memoryVerse": { "reference": "Genesis 39:2", "text": "And the LORD was with Joseph, and he was a prosperous man." }
+      },
+      {
+        "reference": "Ruth 2:11-12",
+        "verseText": "It hath fully been shewed me, all that thou hast done unto thy mother in law since the death of thine husband: and how thou hast left thy father and thy mother, and the land of thy nativity, and art come unto a people which thou knewest not heretofore. The LORD recompense thy work, and a full reward be given thee of the LORD God of Israel, under whose wings thou art come to trust.",
+        "reflection": "Ruth left her own country to work in a field that wasn't hers, gathering leftover grain to provide for someone she loved. Boaz's blessing over her wasn't empty — it named exactly what she'd given up, and it asked God to repay work that no one back home could see. Whatever labor you're doing far from your own family right now, in a field or a house or a job that isn't really yours, God sees the whole cost of it, and He is not stingy with His reward.",
+        "historicalBackground": "Ruth was a Moabite widow who left her homeland to accompany her mother-in-law Naomi to Bethlehem, where she supported them both by gleaning leftover grain in the fields — one of the most vulnerable and low-status forms of labor available to a foreign widow at the time.",
+        "crossReferences": ["Colossians 3:23-24", "Hebrews 6:10"],
+        "bibleStory": { "title": "Ruth Gleaning in Boaz's Field", "summary": "A foreign widow with nothing of her own, Ruth worked hard in another family's field to provide for her household, and God noticed — leading her into provision and a new family through Boaz (Ruth 2)." },
+        "worshipSong": "\"Same God\" — Elevation Worship",
+        "actionStep": "If you're sending support back home or working for someone else's household today, offer that specific labor to God in prayer as an act of worship, not just survival.",
+        "reflectionQuestion": "Ruth's sacrifice was seen and named by Boaz before it was ever rewarded — what would it look like to trust that God sees your sacrifice even when no one around you names it?",
+        "journalPrompt": "What have you given up — home, family, comfort — to provide for the people you love, and how does it feel to bring that specific sacrifice to God today?",
+        "memoryVerse": { "reference": "Ruth 2:12", "text": "The LORD recompense thy work, and a full reward be given thee." }
+      }
+    ],
+    "distant_worship": [
+      {
+        "reference": "John 4:21-24",
+        "verseText": "Jesus saith unto her, Woman, believe me, the hour cometh, when ye shall neither in this mountain, nor yet at Jerusalem, worship the Father... But the hour cometh, and now is, when the true worshippers shall worship the Father in spirit and in truth: for the Father seeketh such to worship him. God is a Spirit: and they that worship him must worship him in spirit and in truth.",
+        "reflection": "The woman at the well assumed worship was tied to a specific mountain, a specific building. Jesus told her the truest worship was never about the location — it's about the heart. If your work schedule keeps you from a church service this week, that is a real loss worth grieving, but it does not put you outside the reach of true worship. Wherever you are right now can become holy ground.",
+        "historicalBackground": "Jesus spoke this to a Samaritan woman at a well outside Sychar, addressing a centuries-old dispute between Jews and Samaritans over the 'correct' mountain for worship. His answer reframed worship entirely — away from geography and toward the condition of the heart.",
+        "crossReferences": ["1 Corinthians 3:16", "Hebrews 10:19-22"],
+        "bibleStory": { "title": "The Woman at the Well", "summary": "A Samaritan woman met Jesus at a well in the middle of an ordinary workday, and He offered her true worship and living water right there — not in a temple, but in the middle of her routine (John 4:1-26)." },
+        "worshipSong": "\"Build My Life\" — Pat Barrett",
+        "actionStep": "Set aside ten minutes today, wherever you are, to pray, read a Psalm, or sing quietly — a small service of one, offered to God in spirit and truth.",
+        "reflectionQuestion": "What would it look like to treat the room you're standing in right now as a place true worship can happen, even if it isn't a sanctuary?",
+        "journalPrompt": "Write about what you miss most about gathering with your church, and ask God honestly to meet you in that gap this week.",
+        "memoryVerse": { "reference": "John 4:24", "text": "God is a Spirit: and they that worship him must worship him in spirit and in truth." }
+      },
+      {
+        "reference": "Daniel 6:10",
+        "verseText": "Now when Daniel knew that the writing was signed, he went into his house; and his windows being open in his chamber toward Jerusalem, he kneeled upon his knees three times a day, and prayed, and gave thanks before his God, as he did aforetime.",
+        "reflection": "Daniel served in a foreign palace, under a foreign king, thousands of miles from Jerusalem's temple — and still kept his own quiet rhythm of prayer, three times a day, exactly as he always had. No congregation, no building, sometimes no safety — and he still didn't stop. Your own small, private rhythm of prayer and Scripture, kept faithfully even when you can't gather with others, is not a lesser form of faith. It's the same faith Daniel kept in Babylon.",
+        "historicalBackground": "Daniel was a Hebrew exile serving in high office in the Babylonian and later Persian court, far from Jerusalem and its temple. When a law was passed specifically to trap him for his faith, he didn't change his private prayer habit at all — he simply kept doing what he had always done.",
+        "crossReferences": ["Psalm 55:17", "Acts 16:25"],
+        "bibleStory": { "title": "Daniel's Private Prayer Habit", "summary": "Far from the temple and under threat of death for it, Daniel kept his personal habit of praying three times a day toward Jerusalem — proof that faithful devotion doesn't require a building or a crowd (Daniel 6:1-10)." },
+        "worshipSong": "\"The Blessing\" — Kari Jobe & Cody Carnes",
+        "actionStep": "Choose one small prayer rhythm you can keep today no matter where you are or who's watching — even one minute, kept faithfully.",
+        "reflectionQuestion": "What would it look like to build a Daniel-like habit of prayer that doesn't depend on being able to attend a service?",
+        "journalPrompt": "Write about a personal prayer rhythm you could keep this week, even in a busy household or a demanding schedule.",
+        "memoryVerse": { "reference": "Daniel 6:10", "text": "He kneeled upon his knees three times a day, and prayed, and gave thanks before his God." }
       }
     ],
     "discouraged_grief": [
