@@ -66,10 +66,12 @@
     border: 1px solid var(--border);
     background: var(--surface);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink-muted);
     cursor: pointer;
   }
   .icon-btn:active { transform: scale(0.94); }
+  .icon-btn svg { width: 19px; height: 19px; }
 
   .segmented {
     display: flex; gap: 0.25rem; margin-top: 0.9rem;
@@ -96,10 +98,11 @@
     border-radius: var(--radius-lg);
     padding: 1.25rem;
     margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(24,24,27,0.03), 0 6px 20px rgba(24,24,27,0.03);
   }
   .eyebrow {
-    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 0.5rem;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-subtle); margin-bottom: 0.5rem;
   }
 
   .btn-big {
@@ -125,29 +128,44 @@
   .btn-secondary.done { background: var(--calm-soft); border-color: var(--calm); color: var(--calm); }
 
   /* ── Mood grid ── */
-  .mood-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
+  .mood-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
   @media (min-width: 420px) { .mood-grid { grid-template-columns: repeat(3, 1fr); } }
   .mood-tile {
-    border: 2px solid transparent;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
     border-radius: 16px;
-    padding: 0.9rem 0.6rem;
-    min-height: 84px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;
+    padding: 1rem 0.6rem 0.85rem;
+    min-height: 100px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.55rem;
     cursor: pointer;
     font-family: inherit;
     text-align: center;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
   }
-  .mood-tile .emoji { font-size: 1.7rem; line-height: 1; }
-  .mood-tile .label { font-size: 0.85rem; font-weight: 600; }
-  .mood-tile.selected { border-color: currentColor; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+  .mood-tile .label { font-size: 0.83rem; font-weight: 500; color: var(--ink); }
+  .mood-tile.selected { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(24,24,27,0.05); }
+  .mood-tile.selected .label { font-weight: 700; }
   .mood-tile:active { transform: scale(0.97); }
+  .mood-orb {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    box-shadow: inset 0 -5px 8px rgba(0,0,0,0.16), inset 0 2px 3px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .mood-orb.lg { width: 64px; height: 64px; }
+  .pulse-orb {
+    width: 48px; height: 48px; border-radius: 50%; margin: 0 auto;
+    background: radial-gradient(circle at 32% 28%, #E8998A, var(--accent) 60%, var(--accent-hover) 100%);
+    box-shadow: inset 0 -5px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
+    animation: orbPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes orbPulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.08); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .pulse-orb { animation: none; } }
 
   /* ── Intensity slider ── */
   .intensity-track { position: relative; padding: 1.5rem 0.25rem 0.5rem; }
   input[type="range"].intensity {
     width: 100%; -webkit-appearance: none; appearance: none;
-    height: 10px; border-radius: 6px; outline: none;
-    background: linear-gradient(90deg, #DBEAFE, #A33B2A);
+    height: 8px; border-radius: 6px; outline: none;
+    background: linear-gradient(90deg, #D8D4C8, var(--accent));
   }
   input[type="range"].intensity::-webkit-slider-thumb {
     -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%;
@@ -193,7 +211,7 @@
   .step-sub { color: var(--ink-muted); font-size: 0.95rem; margin-bottom: 1.25rem; line-height: 1.5; }
 
   .reflection-block + .reflection-block { margin-top: 1rem; }
-  .reflection-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-subtle); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+  .reflection-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-subtle); margin-bottom: 0.6rem; }
   .reflection-text { font-size: 1rem; line-height: 1.75; color: var(--ink); }
   .prayer-text { font-size: 1rem; line-height: 1.85; color: var(--ink); font-style: italic; }
   blockquote.verse {
@@ -209,9 +227,10 @@
   .care-banner.urgent { background: var(--danger-soft); border-color: var(--danger); }
 
   .streak-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
-  .streak-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem; text-align: center; }
-  .streak-num { font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 600; }
-  .streak-label { font-size: 0.75rem; color: var(--ink-muted); margin-top: 0.15rem; }
+  .streak-tile { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 0.9rem; text-align: center; }
+  .streak-num { font-family: 'Fraunces', Georgia, serif; font-size: 1.9rem; font-weight: 600; line-height: 1; color: var(--ink); }
+  .streak-num.zero { color: var(--ink-subtle); }
+  .streak-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.02em; color: var(--ink-muted); margin-top: 0.4rem; }
 
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.3rem; }
   .cal-cell { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 0.7rem; color: var(--ink-subtle); gap: 0.15rem; }
@@ -264,47 +283,53 @@ const CARE_DISMISS_PREFIX   = 'flcc-mood-care-dismissed-v1::';
 const DEFAULT_MODEL         = 'claude-sonnet-4-5-20250929';
 
 const MOODS = [
-  { key:'joyful',      label:'Joyful',      emoji:'😊', tier: 3 },
-  { key:'excited',     label:'Excited',     emoji:'🤩', tier: 3 },
-  { key:'grateful',    label:'Grateful',    emoji:'🙏', tier: 2 },
-  { key:'loved',       label:'Loved',       emoji:'💗', tier: 2 },
-  { key:'motivated',   label:'Motivated',   emoji:'💪', tier: 2 },
-  { key:'peaceful',    label:'Peaceful',    emoji:'🕊️', tier: 1 },
-  { key:'hopeful',     label:'Hopeful',     emoji:'🌅', tier: 1 },
-  { key:'calm',        label:'Calm',        emoji:'😌', tier: 1 },
-  { key:'content',     label:'Content',     emoji:'🙂', tier: 1 },
-  { key:'neutral',     label:'Neutral',     emoji:'😐', tier: 0 },
-  { key:'confused',    label:'Confused',    emoji:'😕', tier:-1 },
-  { key:'lonely',      label:'Lonely',      emoji:'😞', tier:-1 },
-  { key:'frustrated',  label:'Frustrated',  emoji:'😤', tier:-1 },
-  { key:'guilty',      label:'Guilty',      emoji:'😣', tier:-1 },
-  { key:'discouraged', label:'Discouraged', emoji:'😔', tier:-2 },
-  { key:'stressed',    label:'Stressed',    emoji:'😖', tier:-2 },
-  { key:'anxious',     label:'Anxious',     emoji:'😰', tier:-2 },
-  { key:'fearful',     label:'Fearful',     emoji:'😨', tier:-2 },
-  { key:'ashamed',     label:'Ashamed',     emoji:'😳', tier:-2 },
-  { key:'exhausted',   label:'Exhausted',   emoji:'🥱', tier:-2 },
-  { key:'angry',       label:'Angry',       emoji:'😠', tier:-2 },
-  { key:'overwhelmed', label:'Overwhelmed', emoji:'🌊', tier:-3 },
-  { key:'burnedout',   label:'Burned Out',  emoji:'😩', tier:-3 },
-  { key:'sad',         label:'Sad',         emoji:'😢', tier:-3 },
-  { key:'heartbroken', label:'Heartbroken', emoji:'💔', tier:-3 },
-  { key:'hopeless',    label:'Hopeless',    emoji:'🌑', tier:-3 },
-  { key:'empty',       label:'Empty',       emoji:'🫥', tier:-3 },
-  { key:'other',       label:'Other',       emoji:'➕', tier: 0 },
+  { key:'joyful',      label:'Joyful',      tier: 3 },
+  { key:'excited',     label:'Excited',     tier: 3 },
+  { key:'grateful',    label:'Grateful',    tier: 2 },
+  { key:'loved',       label:'Loved',       tier: 2 },
+  { key:'motivated',   label:'Motivated',   tier: 2 },
+  { key:'peaceful',    label:'Peaceful',    tier: 1 },
+  { key:'hopeful',     label:'Hopeful',     tier: 1 },
+  { key:'calm',        label:'Calm',        tier: 1 },
+  { key:'content',     label:'Content',     tier: 1 },
+  { key:'neutral',     label:'Neutral',     tier: 0 },
+  { key:'confused',    label:'Confused',    tier:-1 },
+  { key:'lonely',      label:'Lonely',      tier:-1 },
+  { key:'frustrated',  label:'Frustrated',  tier:-1 },
+  { key:'guilty',      label:'Guilty',      tier:-1 },
+  { key:'discouraged', label:'Discouraged', tier:-2 },
+  { key:'stressed',    label:'Stressed',    tier:-2 },
+  { key:'anxious',     label:'Anxious',     tier:-2 },
+  { key:'fearful',     label:'Fearful',     tier:-2 },
+  { key:'ashamed',     label:'Ashamed',     tier:-2 },
+  { key:'exhausted',   label:'Exhausted',   tier:-2 },
+  { key:'angry',       label:'Angry',       tier:-2 },
+  { key:'overwhelmed', label:'Overwhelmed', tier:-3 },
+  { key:'burnedout',   label:'Burned Out',  tier:-3 },
+  { key:'sad',         label:'Sad',         tier:-3 },
+  { key:'heartbroken', label:'Heartbroken', tier:-3 },
+  { key:'hopeless',    label:'Hopeless',    tier:-3 },
+  { key:'empty',       label:'Empty',       tier:-3 },
+  { key:'other',       label:'Other',       tier: 0 },
 ];
 const MOOD_BY_KEY = Object.fromEntries(MOODS.map(m => [m.key, m]));
 
+// Soft, glossy tier colors — valence communicated through color (as in Apple's
+// own mood logging), not icons. light/base/dark form a radial "orb" gradient.
 const TIER_COLORS = {
-   3: { bg:'#FEF3C7', fg:'#92400E' },
-   2: { bg:'#D1FAE5', fg:'#065F46' },
-   1: { bg:'#DBEAFE', fg:'#1E40AF' },
-   0: { bg:'#F1F5F9', fg:'#475569' },
-  '-1': { bg:'#E0E7FF', fg:'#3730A3' },
-  '-2': { bg:'#EDE9FE', fg:'#5B21B6' },
-  '-3': { bg:'#FEE2E2', fg:'#991B1B' },
+   3: { light:'#FDE68A', base:'#F2A93B', dark:'#C2670A', bg:'#FEF6E3', fg:'#92400E' },
+   2: { light:'#8DE6BE', base:'#26B17A', dark:'#047857', bg:'#EAFBF3', fg:'#065F46' },
+   1: { light:'#A8CBFB', base:'#4E8FF0', dark:'#1D4ED8', bg:'#EDF4FF', fg:'#1E40AF' },
+   0: { light:'#DCE3EB', base:'#9AABBC', dark:'#64748B', bg:'#F5F7F9', fg:'#475569' },
+  '-1': { light:'#BFC7FA', base:'#7C82EE', dark:'#4338CA', bg:'#F1F1FE', fg:'#3730A3' },
+  '-2': { light:'#D4C2FA', base:'#9D6EEA', dark:'#6D28D9', bg:'#F6F1FE', fg:'#5B21B6' },
+  '-3': { light:'#F3B4B0', base:'#D9564E', dark:'#991B1B', bg:'#FDF0EF', fg:'#991B1B' },
 };
 function tierColor(tier) { return TIER_COLORS[String(tier)] || TIER_COLORS[0]; }
+function orbGradient(tier) {
+  const c = tierColor(tier);
+  return `radial-gradient(circle at 32% 26%, ${c.light}, ${c.base} 58%, ${c.dark} 100%)`;
+}
 
 const CRISIS_TIER = -3; // Overwhelmed, Burned Out, Sad, Heartbroken, Hopeless, Empty
 
@@ -651,16 +676,16 @@ function useWeather() {
   return { weather, status };
 }
 
-function weatherEmoji(c, isDay) {
-  if (c === 0) return isDay ? '☀️' : '🌙';
-  if (c <= 2) return isDay ? '🌤️' : '🌛';
-  if (c === 3) return '☁️';
-  if (c <= 48) return '🌫️';
-  if (c <= 55) return isDay ? '🌦️' : '🌧️';
-  if (c <= 67) return '🌧️';
-  if (c <= 77) return '❄️';
-  if (c <= 82) return '🌧️';
-  return '⛈️';
+function weatherKind(c) {
+  if (c === 0) return 'clear';
+  if (c <= 2) return 'partly';
+  if (c === 3) return 'overcast';
+  if (c <= 48) return 'fog';
+  if (c <= 55) return 'drizzle';
+  if (c <= 67) return 'rain';
+  if (c <= 77) return 'snow';
+  if (c <= 82) return 'rain';
+  return 'storm';
 }
 function weatherLabel(c, isDay) {
   if (c === 0) return isDay ? 'Clear Sky' : 'Clear Night';
@@ -677,6 +702,146 @@ function formatTime(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+// =============================================================================
+// ICONS — a small set of hand-drawn line/glyph icons (no emoji anywhere).
+// =============================================================================
+
+function IconLock({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="11" width="14" height="9" rx="2.3" />
+      <path d="M8 11V7.5a4 4 0 0 1 8 0V11" />
+    </svg>
+  );
+}
+function IconChevronLeft({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  );
+}
+function IconChevronRight({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+function IconCheck({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="5 13 10 18 19 7" />
+    </svg>
+  );
+}
+
+let __iconIdSeq = 0;
+function useIconId(prefix) {
+  const ref = useRef(null);
+  if (ref.current === null) ref.current = `${prefix}${__iconIdSeq++}`;
+  return ref.current;
+}
+
+// A soft, filled cloud silhouette built from overlapping circles — no memorized path data.
+function CloudShape({ tone = 'currentColor', y = 0 }) {
+  return (
+    <g transform={`translate(0 ${y})`} fill={tone}>
+      <circle cx="8.5" cy="13.5" r="3.6" />
+      <circle cx="13" cy="11.6" r="4.6" />
+      <circle cx="17" cy="14" r="3.1" />
+      <rect x="6.2" y="13.5" width="13.5" height="5.4" rx="2.7" />
+    </g>
+  );
+}
+
+function WeatherIcon({ code, isDay, size = 40 }) {
+  const kind = weatherKind(code);
+  const id = useIconId('sun');
+  const sun = (cx, cy, r, rays) => (
+    <g>
+      <circle cx={cx} cy={cy} r={r} fill="url(#wgSun)" />
+      {rays && [0, 45, 90, 135, 180, 225, 270, 315].map(deg => {
+        const rad = (deg * Math.PI) / 180;
+        const x1 = cx + Math.cos(rad) * (r + 2.2), y1 = cy + Math.sin(rad) * (r + 2.2);
+        const x2 = cx + Math.cos(rad) * (r + 4.6), y2 = cy + Math.sin(rad) * (r + 4.6);
+        return <line key={deg} x1={x1.toFixed(1)} y1={y1.toFixed(1)} x2={x2.toFixed(1)} y2={y2.toFixed(1)} stroke="#F2A93B" strokeWidth="1.7" strokeLinecap="round" />;
+      })}
+    </g>
+  );
+  const moon = (cx, cy, r) => (
+    <g>
+      <mask id={id}>
+        <rect x="0" y="0" width="24" height="24" fill="#fff" />
+        <circle cx={cx + r * 0.55} cy={cy - r * 0.45} r={r * 0.85} fill="#000" />
+      </mask>
+      <circle cx={cx} cy={cy} r={r} fill="#8B93A6" mask={`url(#${id})`} />
+    </g>
+  );
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <defs>
+        <radialGradient id="wgSun" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#FDE68A" />
+          <stop offset="100%" stopColor="#F2A93B" />
+        </radialGradient>
+        <linearGradient id="wgCloud" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#E4E9EF" />
+          <stop offset="100%" stopColor="#B9C2CE" />
+        </linearGradient>
+      </defs>
+
+      {kind === 'clear' && (isDay ? sun(12, 12, 6, true) : moon(12, 12, 7))}
+
+      {kind === 'partly' && (
+        <>
+          {isDay ? sun(15.5, 8.5, 3.6, false) : moon(15.5, 8.5, 4.2)}
+          <CloudShape tone="url(#wgCloud)" y="0" />
+        </>
+      )}
+
+      {kind === 'overcast' && <CloudShape tone="url(#wgCloud)" />}
+
+      {kind === 'fog' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          <line x1="4" y1="20" x2="20" y2="20" stroke="#B9C2CE" strokeWidth="1.4" strokeLinecap="round" />
+          <line x1="6" y1="22.3" x2="18" y2="22.3" stroke="#B9C2CE" strokeWidth="1.4" strokeLinecap="round" />
+        </>
+      )}
+
+      {kind === 'drizzle' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          {[8, 12, 16].map(x => <line key={x} x1={x} y1="19.5" x2={x - 1} y2="22" stroke="#7CA9E0" strokeWidth="1.6" strokeLinecap="round" />)}
+        </>
+      )}
+
+      {kind === 'rain' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          {[7.5, 12, 16.5].map(x => <line key={x} x1={x} y1="19" x2={x - 1.6} y2="23" stroke="#4E8FF0" strokeWidth="1.7" strokeLinecap="round" />)}
+        </>
+      )}
+
+      {kind === 'snow' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          {[8, 12, 16].map(x => <circle key={x} cx={x} cy="21.5" r="1.15" fill="#9DB6D6" />)}
+        </>
+      )}
+
+      {kind === 'storm' && (
+        <>
+          <CloudShape tone="#8C97A8" y="-1.5" />
+          <polyline points="13.5,18 10.5,22.5 13,22.5 11.5,26" fill="none" stroke="#F2A93B" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" transform="translate(0,-4) scale(0.85)" />
+        </>
+      )}
+    </svg>
+  );
 }
 
 // =============================================================================
@@ -906,7 +1071,7 @@ function WeatherCard({ weather }) {
     <div className="card">
       <div className="eyebrow">{weather.city || 'Your Location'}</div>
       <div className="flex items-center gap-4" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div style={{ fontSize: '2.4rem', lineHeight: 1 }}>{weatherEmoji(weather.code, weather.isDay)}</div>
+        <WeatherIcon code={weather.code} isDay={weather.isDay} size={52} />
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '1.6rem', fontWeight: 700, lineHeight: 1.1 }}>{Math.round(weather.temp)}°C</div>
           <div style={{ fontSize: '0.9rem', color: 'var(--ink-muted)' }}>{weatherLabel(weather.code, weather.isDay)}</div>
@@ -937,16 +1102,14 @@ function MoodGrid({ value, onChange }) {
   return (
     <div className="mood-grid">
       {MOODS.map(m => {
-        const c = tierColor(m.tier);
         const selected = value === m.key;
         return (
           <button
             key={m.key}
             className={`mood-tile${selected ? ' selected' : ''}`}
-            style={{ background: c.bg, color: c.fg }}
             onClick={() => onChange(m.key)}
           >
-            <span className="emoji">{m.emoji}</span>
+            <span className="mood-orb" style={{ background: orbGradient(m.tier) }} />
             <span className="label">{m.label}</span>
           </button>
         );
@@ -980,48 +1143,48 @@ function CausesGrid({ value, onToggle }) {
 
 function ReflectionView({ entry, onMarkPrayed, onMarkAction, onShare }) {
   const mood = MOOD_BY_KEY[entry.mood];
-  const c = tierColor(entry.tier);
   return (
     <div className="fade-in">
-      <div className="card" style={{ background: c.bg }}>
-        <div className="eyebrow" style={{ color: c.fg }}>Today, You Felt</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '2.2rem' }}>{mood.emoji}</span>
+      <div className="card">
+        <div className="eyebrow">Today, You Felt</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+          <span className="mood-orb lg" style={{ background: orbGradient(entry.tier) }} />
           <div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: c.fg }}>{mood.label}</div>
-            <div style={{ fontSize: '0.85rem', color: c.fg, opacity: 0.85 }}>{INTENSITY_LABELS[entry.intensity - 1]}</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif" }}>{mood.label}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)' }}>{INTENSITY_LABELS[entry.intensity - 1]}</div>
           </div>
         </div>
         {entry.causes?.length > 0 && (
-          <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+          <div style={{ marginTop: '0.9rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
             {entry.causes.map(cs => (
-              <span key={cs} style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.6)', color: c.fg, padding: '0.25rem 0.6rem', borderRadius: 999 }}>{cs}</span>
+              <span key={cs} style={{ fontSize: '0.75rem', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--ink-muted)', padding: '0.3rem 0.7rem', borderRadius: 999 }}>{cs}</span>
             ))}
           </div>
         )}
       </div>
 
       <div className="card">
-        <div className="reflection-label">✨ Today's Reflection {entry.reflection?.source === 'ai' ? '· AI-Personalized' : ''}</div>
+        <div className="reflection-label">Today's Reflection{entry.reflection?.source === 'ai' ? ' · AI-Personalized' : ''}</div>
         <div className="reflection-text">{entry.reflection.devotional}</div>
       </div>
 
       <div className="card">
-        <div className="reflection-label">🙏 A Prayer For You</div>
+        <div className="reflection-label">A Prayer For You</div>
         <div className="prayer-text">{entry.reflection.prayer}</div>
-        <button className={`btn-secondary${entry.prayerDone ? ' done' : ''}`} style={{ marginTop: '1rem', width: '100%' }} onClick={onMarkPrayed}>
-          {entry.prayerDone ? '✓ You prayed this today' : 'I prayed this prayer'}
+        <button className={`btn-secondary${entry.prayerDone ? ' done' : ''}`} style={{ marginTop: '1rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={onMarkPrayed}>
+          {entry.prayerDone && <IconCheck size={14} />}
+          {entry.prayerDone ? 'You prayed this today' : 'I prayed this prayer'}
         </button>
       </div>
 
       <div className="card">
-        <div className="reflection-label">💛 Encouragement</div>
+        <div className="reflection-label">Encouragement</div>
         <div className="reflection-text">{entry.reflection.encouragement}</div>
       </div>
 
       {entry.reflection.reading && (
         <div className="card">
-          <div className="reflection-label">📖 Suggested Reading</div>
+          <div className="reflection-label">Suggested Reading</div>
           <blockquote className="verse">{entry.reflection.reading.reference || entry.reflection.reading.ref}</blockquote>
           <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.5rem' }}>{entry.reflection.reading.note}</div>
         </div>
@@ -1029,7 +1192,7 @@ function ReflectionView({ entry, onMarkPrayed, onMarkAction, onShare }) {
 
       {entry.reflection.questions?.length > 0 && (
         <div className="card">
-          <div className="reflection-label">💭 Reflection Questions</div>
+          <div className="reflection-label">Reflection Questions</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {entry.reflection.questions.map((q, i) => (
               <div key={i} style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>{i + 1}. {q}</div>
@@ -1040,17 +1203,18 @@ function ReflectionView({ entry, onMarkPrayed, onMarkAction, onShare }) {
 
       {entry.reflection.action && (
         <div className="card">
-          <div className="reflection-label">🕊️ Today's Spiritual Action</div>
+          <div className="reflection-label">Today's Spiritual Action</div>
           <div className="reflection-text">{entry.reflection.action}</div>
-          <button className={`btn-secondary${entry.actionDone ? ' done' : ''}`} style={{ marginTop: '1rem', width: '100%' }} onClick={onMarkAction}>
-            {entry.actionDone ? '✓ Done today' : 'I did this today'}
+          <button className={`btn-secondary${entry.actionDone ? ' done' : ''}`} style={{ marginTop: '1rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={onMarkAction}>
+            {entry.actionDone && <IconCheck size={14} />}
+            {entry.actionDone ? 'Done today' : 'I did this today'}
           </button>
         </div>
       )}
 
       {entry.journal && (
         <div className="card">
-          <div className="reflection-label">📔 What You Wrote <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· private</span></div>
+          <div className="reflection-label">What You Wrote <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· private</span></div>
           <div className="reflection-text" style={{ whiteSpace: 'pre-wrap' }}>{entry.journal}</div>
           <button className="link-btn" style={{ marginTop: '0.75rem' }} onClick={onShare}>Share this with a leader →</button>
         </div>
@@ -1064,7 +1228,7 @@ function CareBanner({ signal, ministry, memberFirstName, onDismiss }) {
   const msg = `Hi, this is ${memberFirstName || 'a member'}. I've been going through a hard time emotionally and wanted to reach out. Could we talk or pray together sometime soon?`;
   return (
     <div className={`care-banner${urgent ? ' urgent' : ''}`}>
-      <div style={{ fontWeight: 700, marginBottom: '0.5rem' }}>{urgent ? '💛 You are not alone' : '💛 A gentle check-in'}</div>
+      <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.5rem' }}>{urgent ? 'You are not alone' : 'A gentle check-in'}</div>
       <p style={{ fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '0.75rem' }}>
         You are not alone. Sometimes God cares for us through the people He has placed in our lives. Consider speaking with your Life Group leader, ministry leader, or pastor so they can pray with and encourage you.
       </p>
@@ -1077,7 +1241,7 @@ function CareBanner({ signal, ministry, memberFirstName, onDismiss }) {
         {ministry?.whatsapp && (
           <a className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-block' }}
             href={`https://wa.me/${ministry.whatsapp.replace(/[^\d+]/g, '').replace(/^\+/, '')}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener">
-            💬 Message {ministry.headName || 'a leader'}
+            Message {ministry.headName || 'a leader'}
           </a>
         )}
         <button className="btn-secondary" onClick={onDismiss}>I'm okay for now</button>
@@ -1128,9 +1292,9 @@ function EmotionalCalendar({ entries, monthKeyVal, onNavigate }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-        <button className="icon-btn" onClick={() => onNavigate(-1)} aria-label="Previous month">‹</button>
+        <button className="icon-btn" onClick={() => onNavigate(-1)} aria-label="Previous month"><IconChevronLeft /></button>
         <div style={{ fontWeight: 600 }}>{first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
-        <button className="icon-btn" onClick={() => onNavigate(1)} aria-label="Next month">›</button>
+        <button className="icon-btn" onClick={() => onNavigate(1)} aria-label="Next month"><IconChevronRight /></button>
       </div>
       <div className="cal-grid">
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
@@ -1254,9 +1418,8 @@ function TrendsTab({ entries }) {
 
   if (!entries.length) {
     return (
-      <div className="card fade-in" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
-        <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🌱</div>
-        <div style={{ fontWeight: 600, marginBottom: '0.4rem' }}>Your trends will appear here</div>
+      <div className="card fade-in" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+        <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: '1.15rem', fontWeight: 600, marginBottom: '0.5rem' }}>Your trends will appear here</div>
         <div style={{ fontSize: '0.9rem', color: 'var(--ink-muted)' }}>Check in daily and your mood trends, streaks, and insights will grow over time.</div>
       </div>
     );
@@ -1282,10 +1445,10 @@ function TrendsTab({ entries }) {
       <div className="card">
         <div className="eyebrow">Streaks</div>
         <div className="streak-grid">
-          <div className="streak-tile"><div className="streak-num">🔥 {checkinStreak.current}</div><div className="streak-label">Check-in Streak</div></div>
-          <div className="streak-tile"><div className="streak-num">📔 {journalStreak.current}</div><div className="streak-label">Journal Streak</div></div>
-          <div className="streak-tile"><div className="streak-num">🙏 {prayerStreak.current}</div><div className="streak-label">Prayer Streak</div></div>
-          <div className="streak-tile"><div className="streak-num">🕊️ {actionStreak.current}</div><div className="streak-label">Devotion Streak</div></div>
+          <div className="streak-tile"><div className={`streak-num${checkinStreak.current ? '' : ' zero'}`}>{checkinStreak.current}</div><div className="streak-label">Check-in Streak</div></div>
+          <div className="streak-tile"><div className={`streak-num${journalStreak.current ? '' : ' zero'}`}>{journalStreak.current}</div><div className="streak-label">Journal Streak</div></div>
+          <div className="streak-tile"><div className={`streak-num${prayerStreak.current ? '' : ' zero'}`}>{prayerStreak.current}</div><div className="streak-label">Prayer Streak</div></div>
+          <div className="streak-tile"><div className={`streak-num${actionStreak.current ? '' : ' zero'}`}>{actionStreak.current}</div><div className="streak-label">Devotion Streak</div></div>
         </div>
       </div>
 
@@ -1297,8 +1460,8 @@ function TrendsTab({ entries }) {
             const c = tierColor(m.tier);
             const pct = Math.round((count / entries.length) * 100);
             return (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>{m.emoji}</span>
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: orbGradient(m.tier), flexShrink: 0 }} />
                 <span style={{ fontSize: '0.9rem', width: 92 }}>{m.label}</span>
                 <div style={{ flex: 1, background: 'var(--bg)', borderRadius: 999, height: 8, overflow: 'hidden' }}>
                   <div style={{ width: `${pct}%`, background: c.fg, height: '100%' }} />
@@ -1320,7 +1483,7 @@ function TrendsTab({ entries }) {
       </div>
 
       <div className="card">
-        <div className="eyebrow">✨ AI Insights</div>
+        <div className="eyebrow">AI Insights</div>
         {insights.length ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {insights.map((ins, i) => <div key={i} style={{ fontSize: '0.9rem', lineHeight: 1.6 }}>· {ins}</div>)}
@@ -1360,7 +1523,7 @@ function PrivacyModal({ onClose }) {
   return (
     <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-sheet">
-        <div className="step-title">🔒 Your Privacy</div>
+        <div className="step-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><IconLock size={19} /> Your Privacy</div>
         <div style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--ink-muted)' }}>
           <p>Your mood check-ins and journal entries are private by default. They are stored only in this browser, on this device — never uploaded to a church server, spreadsheet, or database.</p>
           <p>No one — including pastors or ministry leaders — can see your entries unless you explicitly choose to share one, using the "Share with a leader" option.</p>
@@ -1539,7 +1702,7 @@ function App() {
           </div>
           <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
             <FontScaleControl scale={scale} onChange={setScale} />
-            <button className="icon-btn" onClick={() => setShowPrivacy(true)} aria-label="Privacy info">🔒</button>
+            <button className="icon-btn" onClick={() => setShowPrivacy(true)} aria-label="Privacy info"><IconLock /></button>
           </div>
         </div>
         <div className="segmented">
@@ -1560,7 +1723,7 @@ function App() {
             {checkingIn ? (
               generating ? (
                 <div className="card fade-in" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🕊️</div>
+                  <div className="pulse-orb" style={{ marginBottom: '1.1rem' }} />
                   <div style={{ fontWeight: 600 }}>Preparing your reflection…</div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.4rem' }}>Just a moment while we bring this before God with you.</div>
                 </div>
