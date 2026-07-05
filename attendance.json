@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-07-05T16:25:29.323Z",
+    "publishedAt": "2026-07-05T16:25:43.353Z",
     "totalSessions": 10
   },
   "sessions": [
@@ -11,8 +11,8 @@
       "service": "Sunday",
       "serviceLabel": "Sunday Service",
       "summary": {
-        "present": 4,
-        "absent": 39,
+        "present": 8,
+        "absent": 35,
         "total": 43
       },
       "records": [
@@ -34,6 +34,26 @@
         {
           "memberId": "sun-03",
           "memberName": "Bro. Alvin",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sun-04",
+          "memberName": "Bro. Arnel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-10",
+          "memberName": "Bro. Benedict Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1780825146907",
+          "memberName": "Bro. Edward Pascal",
           "status": "present"
         }
       ]
