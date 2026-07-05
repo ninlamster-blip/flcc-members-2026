@@ -953,11 +953,50 @@ const ASK_SUGGESTIONS = [
   'How should I pray today?',
 ];
 
-function AskCompanionTab({ aiConfig, hasConnection }) {
+function ConnectAIModal({ onSave, onClose }) {
+  const [tab, setTab] = useState('proxy');
+  const [proxy, setProxy] = useState('');
+  const [secret, setSecret] = useState('');
+  const [key, setKey] = useState('');
+  return (
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="font-display text-xl font-semibold mb-3">Connect AI</div>
+        <div className="flex gap-1 mb-4 p-0.5 rounded-lg" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+          {[['proxy', 'Proxy URL'], ['key', 'My API Key']].map(([v, label]) => (
+            <button key={v} onClick={() => setTab(v)} className="flex-1 text-xs font-medium py-1.5 px-2 rounded-md"
+              style={tab === v ? { background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid var(--border)' } : { color: 'var(--ink-muted)', background: 'transparent', border: '1px solid transparent' }}>{label}</button>
+          ))}
+        </div>
+        {tab === 'proxy' ? (
+          <>
+            <p className="text-xs mb-3" style={{ color: 'var(--ink-subtle)' }}>Ask your church admin for a Worker/proxy URL, or run your own — see the project README.</p>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--ink-muted)' }}>WORKER / PROXY URL</label>
+            <input className="field mb-2" placeholder="https://your-proxy.workers.dev" value={proxy} onChange={e => setProxy(e.target.value)} />
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--ink-muted)' }}>PROXY SECRET <span style={{ fontWeight: 400 }}>(optional)</span></label>
+            <input className="field mb-4" type="password" placeholder="Leave blank if none" value={secret} onChange={e => setSecret(e.target.value)} />
+            <button className="btn btn-primary w-full" disabled={!proxy.trim()} onClick={() => onSave({ proxy: proxy.trim(), secret: secret.trim() })}>Save & Connect</button>
+          </>
+        ) : (
+          <>
+            <p className="text-xs mb-3" style={{ color: 'var(--ink-subtle)' }}>Your key is saved only in this browser and sent directly to Anthropic — never through a third-party server.</p>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--ink-muted)' }}>API KEY</label>
+            <input className="field mb-4" type="password" placeholder="sk-ant-api03-…" value={key} onChange={e => setKey(e.target.value)} />
+            <button className="btn btn-primary w-full" disabled={!key.trim()} onClick={() => onSave({ key: key.trim() })}>Save</button>
+          </>
+        )}
+        <button className="btn btn-ghost w-full mt-2" onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function AskCompanionTab({ aiConfig, hasConnection, onConnected }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [showConnect, setShowConnect] = useState(false);
   const endRef = useRef(null);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, busy]);
 
@@ -974,12 +1013,20 @@ function AskCompanionTab({ aiConfig, hasConnection }) {
     setBusy(false);
   };
 
+  const saveConnection = ({ proxy, secret, key }) => {
+    if (proxy !== undefined) { localStorage.setItem(ASK_PROXY_KEY, proxy); if (secret) localStorage.setItem(ASK_PROXY_SECRET_KEY, secret); }
+    if (key !== undefined) localStorage.setItem(ASK_API_KEY, key);
+    setShowConnect(false);
+    onConnected();
+  };
+
   if (!hasConnection) {
     return (
       <div className="fade-in card card-pad text-center">
-        <p className="text-sm mb-3" style={{ color: 'var(--ink-muted)' }}>AI Conversation isn't connected yet. Open <strong>Ask FLCC</strong> once to connect the church AI proxy or your own API key — Heart Journey will use the same connection.</p>
-        <a className="btn btn-primary" href="ask.html">Open Ask FLCC to Connect →</a>
+        <p className="text-sm mb-3" style={{ color: 'var(--ink-muted)' }}>AI Conversation isn't connected yet. Connect a church-provided proxy or your own Anthropic API key to enable it.</p>
+        <button className="btn btn-primary" onClick={() => setShowConnect(true)}>Connect AI →</button>
         <p className="safety-note mt-4">In the meantime, explore your offline devotional in the Today tab, or write in your Journal.</p>
+        {showConnect && <ConnectAIModal onSave={saveConnection} onClose={() => setShowConnect(false)} />}
       </div>
     );
   }
@@ -1131,6 +1178,7 @@ function App() {
 
   const churchTheme = churchData?.themes?.[monthStr()] || null;
   const prayerLead = prayerData?.ministry || {};
+  const [connectVersion, setConnectVersion] = useState(0);
 
   const aiConfig = useMemo(() => ({
     apiKey: localStorage.getItem(ASK_API_KEY) || '',
@@ -1138,7 +1186,7 @@ function App() {
     proxyUrl: localStorage.getItem(ASK_PROXY_KEY) || '',
     proxySecret: localStorage.getItem(ASK_PROXY_SECRET_KEY) || '',
     name, churchTheme,
-  }), [name, churchTheme]);
+  }), [name, churchTheme, connectVersion]);
   const hasConnection = !!(aiConfig.apiKey || aiConfig.proxyUrl);
 
   const todayEntry = heartLog.find(h => h.date === todayStr());
@@ -1178,7 +1226,6 @@ function App() {
               <span className="text-xl">🌿</span>
               <span className="font-display text-lg font-semibold">Heart Journey</span>
             </div>
-            <a href="index.html" className="text-xs" style={{ color: 'var(--ink-muted)' }}>← Back to App</a>
           </div>
           <nav className="flex flex-wrap gap-1.5">
             {TABS.map(t => <button key={t.key} className={`tab-pill ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>)}
@@ -1211,7 +1258,7 @@ function App() {
         {tab === 'garden' && <GardenTab gratitude={gratitude} setGratitude={setGratitude} plants={hjData.gratitudePlants} />}
         {tab === 'timeline' && <TimelineTab stats={stats} journal={journal} gratitude={gratitude} memorized={memorized} prayers={prayers} heartLog={heartLog} />}
         {tab === 'prayer' && <PrayerWallTab prayers={prayers} setPrayers={setPrayers} hjData={hjData} prayerLead={prayerLead} setStats={setStats} onAddGratitude={addGratitude} />}
-        {tab === 'ask' && <AskCompanionTab aiConfig={aiConfig} hasConnection={hasConnection} />}
+        {tab === 'ask' && <AskCompanionTab aiConfig={aiConfig} hasConnection={hasConnection} onConnected={() => setConnectVersion(v => v + 1)} />}
         {tab === 'privacy' && <PrivacyTab safetyDisclaimer={hjData.meta.safetyDisclaimer} onDeleteAll={deleteAll} name={name} onRename={(n) => { setName(n); saveJSON(HJ.name, n); }} />}
       </main>
       <footer className="text-center text-xs py-6" style={{ color: 'var(--ink-subtle)' }}>
