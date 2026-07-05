@@ -6,6 +6,14 @@
 <title>Heart Journey AI · FLCC Abundance Church</title>
 <meta name="description" content="A Christ-centered spiritual companion for daily reflection, prayer, and Scripture — Heart Journey AI for FLCC Abundance Church." />
 
+<link rel="manifest" href="heart-journey-manifest.json">
+<meta name="theme-color" content="#4B6B53">
+<link rel="icon" href="heart-journey-icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="heart-journey-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Heart Journey">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1129,6 +1137,74 @@ function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename }) {
   );
 }
 
+// ─── PWA install prompt ──────────────────────────────────────────────────────
+const INSTALL_DISMISSED_KEY = 'hj_install_dismissed_v1';
+const INSTALL_DISMISS_DAYS = 14;
+
+function isStandaloneDisplay() {
+  return window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function isIOSDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+function InstallBanner({ deferredPrompt, onInstalled }) {
+  const [dismissed, setDismissed] = useState(() => {
+    const ts = Number(localStorage.getItem(INSTALL_DISMISSED_KEY) || 0);
+    return ts && daysBetween(new Date(ts), new Date()) < INSTALL_DISMISS_DAYS;
+  });
+  const [installing, setInstalling] = useState(false);
+  const ios = isIOSDevice();
+
+  if (dismissed || isStandaloneDisplay() || (!deferredPrompt && !ios)) return null;
+
+  const dismiss = () => { localStorage.setItem(INSTALL_DISMISSED_KEY, String(Date.now())); setDismissed(true); };
+
+  const install = async () => {
+    if (!deferredPrompt) return;
+    setInstalling(true);
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice.catch(() => null);
+    setInstalling(false);
+    if (choice?.outcome === 'accepted') onInstalled();
+    else dismiss();
+  };
+
+  return (
+    <div className="card card-pad mb-4 fade-in" style={{ background: 'var(--accent-soft)', borderColor: 'var(--accent)' }}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold mb-1">🌿 Add Heart Journey to your home screen</div>
+          {ios ? (
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              Tap the Share icon <span aria-hidden="true">⬆️</span> in Safari, then "Add to Home Screen" — so it's one tap away, every day.
+            </p>
+          ) : (
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Install it like an app for quick, one-tap access each day — no app store needed.</p>
+          )}
+        </div>
+        <button className="icon-btn" onClick={dismiss} aria-label="Dismiss">✕</button>
+      </div>
+      {!ios && (
+        <button className="btn btn-primary btn-sm mt-3" disabled={installing} onClick={install}>{installing ? 'Installing…' : 'Install'}</button>
+      )}
+    </div>
+  );
+}
+
+// ─── Streak-at-risk nudge — gentle, never guilt-inducing ────────────────────
+function StreakNudge({ streak }) {
+  const hour = new Date().getHours();
+  if (hour < 17 || streak < 2) return null;
+  return (
+    <div className="card card-pad mb-4 fade-in" style={{ background: 'var(--gold-soft)', borderColor: 'var(--gold)' }}>
+      <p className="text-sm" style={{ color: 'var(--ink)' }}>
+        Your {streak}-day streak is still here waiting for today — a quiet moment before the day ends keeps it going. No pressure, just an invitation. 🌙
+      </p>
+    </div>
+  );
+}
+
 // ─── App shell ───────────────────────────────────────────────────────────────
 const TABS = [
   { key: 'today',   label: 'Today' },
@@ -1160,6 +1236,16 @@ function App() {
 
   const [tab, setTab] = useState('today');
   const [journalPrefill, setJournalPrefill] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./heart-journey-sw.js').catch(() => {});
+    }
+    const onBeforeInstall = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+  }, []);
 
   useEffect(() => saveJSON(HJ.heartLog, heartLog), [heartLog]);
   useEffect(() => saveJSON(HJ.journal, journal), [journal]);
@@ -1234,9 +1320,15 @@ function App() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+        <InstallBanner deferredPrompt={deferredPrompt} onInstalled={() => setDeferredPrompt(null)} />
         {tab === 'today' && (
           !todayEntry
-            ? <HeartCheck emotionsData={hjData.emotions} onSubmit={submitHeartCheck} greetingName={name} weather={weather} />
+            ? (
+              <div>
+                <StreakNudge streak={stats.bibleStreak || 0} />
+                <HeartCheck emotionsData={hjData.emotions} onSubmit={submitHeartCheck} greetingName={name} weather={weather} />
+              </div>
+            )
             : (
               <div>
                 <div className="flex justify-between items-center mb-3">
