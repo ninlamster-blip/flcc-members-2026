@@ -4614,6 +4614,23 @@ function WWLTab() {
   );
 }
 
+function MoodJournalTab() {
+  const [iframeH, setIframeH] = useState(() => Math.max(700, window.innerHeight - 170));
+  useEffect(() => {
+    const onResize = () => setIframeH(Math.max(700, window.innerHeight - 170));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return (
+    <div className="fade-in">
+      <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
+        <iframe src="./mood-journal.html" title="Daily Emotion &amp; Mood Journal"
+          style={{ width: '100%', height: iframeH, border: 'none', display: 'block' }} />
+      </div>
+    </div>
+  );
+}
+
 function BibleExplorerTab() {
   return (
     <div className="fade-in" style={{ margin: '0 -1rem', height: 'calc(100vh - 112px)' }}>
@@ -14758,6 +14775,7 @@ function ArenaTab({ me }) {
 
 const TABS = [
   { key: 'home',     label: 'Home' },
+  { key: 'mood',     label: 'Mood Journal' },
   { key: 'mine',     label: 'My Schedule', requiresMe: true },
   { key: 'bible',    label: 'Bible' },
   { key: 'month',    label: 'This Month' },
@@ -15281,6 +15299,7 @@ function App() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div key={currentTab} className="tab-content-area">
           {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} />}
+          {currentTab === 'mood' && <MoodJournalTab />}
           {currentTab === 'bible' && <BibleTab />}
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}

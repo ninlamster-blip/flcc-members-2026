@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Daily Reflection · FLCC</title>
+<meta name="description" content="A private daily emotion and mood journal to help you become more aware of your emotional and spiritual well-being." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+
+<style>
+  :root {
+    --scale: 1;
+    --bg: #FBF9F4;
+    --surface: #FFFFFF;
+    --ink: #18181B;
+    --ink-muted: #52525B;
+    --ink-subtle: #8B8B85;
+    --border: #E9E6DD;
+    --border-strong: #D8D4C8;
+    --accent: #A33B2A;
+    --accent-hover: #8B2E20;
+    --accent-soft: #FBEBE7;
+    --calm: #3B6E64;
+    --calm-soft: #E6F0ED;
+    --success: #15803D;
+    --danger: #B91C1C;
+    --danger-soft: #FEE2E2;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html { font-size: calc(16px * var(--scale)); scroll-behavior: smooth; }
+  html, body { background: var(--bg); color: var(--ink); margin: 0; min-height: 100%; }
+  body {
+    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.6;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .font-display { font-family: 'Fraunces', Georgia, serif; }
+
+  #root { max-width: 620px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Header ── */
+  .app-header {
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(251,249,244,0.94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1.1rem 0.75rem;
+  }
+  .header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+  .greeting { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 1.5rem; letter-spacing: -0.01em; line-height: 1.25; }
+  .greeting-sub { font-size: 0.95rem; color: var(--ink-muted); margin-top: 0.35rem; line-height: 1.5; }
+
+  .icon-btn {
+    width: 42px; height: 42px; min-width: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+  .icon-btn:active { transform: scale(0.94); }
+  .icon-btn svg { width: 19px; height: 19px; }
+
+  .segmented {
+    display: flex; gap: 0.25rem; margin-top: 0.9rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 0.25rem;
+  }
+  .segmented button {
+    flex: 1; border: none; background: transparent; cursor: pointer;
+    font-family: inherit; font-size: 0.9rem; font-weight: 500;
+    padding: 0.6rem 0.5rem; border-radius: 10px; color: var(--ink-muted);
+    min-height: 44px;
+  }
+  .segmented button.active { background: var(--ink); color: #fff; }
+
+  /* ── Content ── */
+  .content { flex: 1; padding: 1rem 1.1rem 2.5rem; }
+  .fade-in { animation: fadeIn 0.25s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(24,24,27,0.03), 0 6px 20px rgba(24,24,27,0.03);
+  }
+  .eyebrow {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-subtle); margin-bottom: 0.5rem;
+  }
+
+  .btn-big {
+    width: 100%; min-height: 56px;
+    border-radius: 16px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 1.05rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    background: var(--ink); color: #fff;
+    padding: 0.9rem 1.25rem;
+    transition: transform 0.12s ease, background 0.15s ease;
+  }
+  .btn-big:active { transform: scale(0.98); }
+  .btn-big:disabled { background: #D8D4C8; color: #8B8B85; cursor: not-allowed; }
+  .btn-big.accent { background: var(--accent); }
+  .btn-big.accent:hover { background: var(--accent-hover); }
+  .btn-big.ghost { background: var(--surface); color: var(--ink); border: 1.5px solid var(--border-strong); }
+  .btn-secondary {
+    min-height: 48px; border-radius: 14px; border: 1.5px solid var(--border-strong);
+    background: var(--surface); color: var(--ink); font-family: inherit; font-weight: 500;
+    font-size: 0.95rem; padding: 0.7rem 1.1rem; cursor: pointer;
+  }
+  .btn-secondary:active { transform: scale(0.98); }
+  .btn-secondary.done { background: var(--calm-soft); border-color: var(--calm); color: var(--calm); }
+
+  /* ── Mood grid ── */
+  .mood-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+  @media (min-width: 420px) { .mood-grid { grid-template-columns: repeat(3, 1fr); } }
+  .mood-tile {
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1rem 0.6rem 0.85rem;
+    min-height: 100px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.55rem;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  }
+  .mood-tile .label { font-size: 0.83rem; font-weight: 500; color: var(--ink); }
+  .mood-tile.selected { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(24,24,27,0.05); }
+  .mood-tile.selected .label { font-weight: 700; }
+  .mood-tile:active { transform: scale(0.97); }
+  .mood-orb {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    box-shadow: inset 0 -5px 8px rgba(0,0,0,0.16), inset 0 2px 3px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .mood-orb.lg { width: 64px; height: 64px; }
+  .pulse-orb {
+    width: 48px; height: 48px; border-radius: 50%; margin: 0 auto;
+    background: radial-gradient(circle at 32% 28%, #E8998A, var(--accent) 60%, var(--accent-hover) 100%);
+    box-shadow: inset 0 -5px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
+    animation: orbPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes orbPulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.08); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .pulse-orb { animation: none; } }
+
+  /* ── Intensity slider ── */
+  .intensity-track { position: relative; padding: 1.5rem 0.25rem 0.5rem; }
+  input[type="range"].intensity {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 8px; border-radius: 6px; outline: none;
+    background: linear-gradient(90deg, #D8D4C8, var(--accent));
+  }
+  input[type="range"].intensity::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--accent); cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  input[type="range"].intensity::-moz-range-thumb {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--accent); cursor: pointer;
+  }
+  .intensity-labels { display: flex; justify-content: space-between; margin-top: 0.75rem; font-size: 0.7rem; color: var(--ink-subtle); }
+  .intensity-current { text-align: center; font-size: 1.15rem; font-weight: 600; margin-bottom: 0.25rem; }
+
+  /* ── Cause chips ── */
+  .chip-wrap { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .chip {
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 0.65rem 1.05rem;
+    font-size: 0.9rem; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+    min-height: 44px;
+    display: inline-flex; align-items: center;
+  }
+  .chip.selected { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  textarea.journal-input {
+    width: 100%; min-height: 160px; border-radius: 14px;
+    border: 1.5px solid var(--border-strong); padding: 0.9rem 1rem;
+    font-family: inherit; font-size: 1rem; line-height: 1.6; color: var(--ink);
+    resize: vertical; outline: none; background: var(--surface);
+  }
+  textarea.journal-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(163,59,42,0.1); }
+  .word-count { font-size: 0.75rem; color: var(--ink-subtle); text-align: right; margin-top: 0.4rem; }
+  .word-count.over { color: var(--danger); font-weight: 600; }
+
+  .progress-dots { display: flex; gap: 0.4rem; justify-content: center; margin: 0.5rem 0 1.2rem; }
+  .progress-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); }
+  .progress-dots span.active { background: var(--accent); width: 22px; border-radius: 5px; }
+
+  .step-title { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 1.35rem; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+  .step-sub { color: var(--ink-muted); font-size: 0.95rem; margin-bottom: 1.25rem; line-height: 1.5; }
+
+  .reflection-block + .reflection-block { margin-top: 1rem; }
+  .reflection-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-subtle); margin-bottom: 0.6rem; }
+  .reflection-text { font-size: 1rem; line-height: 1.75; color: var(--ink); }
+  .prayer-text { font-size: 1rem; line-height: 1.85; color: var(--ink); font-style: italic; }
+  blockquote.verse {
+    border-left: 3px solid var(--accent); margin: 0; padding: 0.2rem 0 0.2rem 1rem;
+    font-style: italic; color: var(--ink-muted); font-size: 0.95rem; line-height: 1.6;
+  }
+
+  .care-banner {
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    background: var(--calm-soft); border: 1.5px solid var(--calm);
+    margin-bottom: 1rem;
+  }
+  .care-banner.urgent { background: var(--danger-soft); border-color: var(--danger); }
+
+  .streak-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
+  .streak-tile { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 0.9rem; text-align: center; }
+  .streak-num { font-family: 'Fraunces', Georgia, serif; font-size: 1.9rem; font-weight: 600; line-height: 1; color: var(--ink); }
+  .streak-num.zero { color: var(--ink-subtle); }
+  .streak-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.02em; color: var(--ink-muted); margin-top: 0.4rem; }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.3rem; }
+  .cal-cell { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 0.7rem; color: var(--ink-subtle); gap: 0.15rem; }
+  .cal-cell.today { border: 1.5px solid var(--ink); }
+  .cal-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  .disclaimer {
+    font-size: 0.7rem; color: var(--ink-subtle); text-align: center; line-height: 1.6;
+    padding: 1rem 1.5rem 1.5rem; max-width: 520px; margin: 0 auto;
+  }
+
+  .link-btn { background: none; border: none; color: var(--accent); font-family: inherit; font-size: inherit; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(24,24,27,0.5); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center; z-index: 50; padding: 0;
+  }
+  @media (min-width: 640px) { .modal-backdrop { align-items: center; padding: 1.5rem; } }
+  .modal-sheet {
+    background: var(--surface); width: 100%; max-width: 480px;
+    border-radius: 22px 22px 0 0; padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+    max-height: 85vh; overflow-y: auto;
+  }
+  @media (min-width: 640px) { .modal-sheet { border-radius: 20px; } }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+</style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const DATA_URL              = './data.json';
+const ME_KEY                = 'flcc-members-me';
+const STORAGE_KEY_API       = 'flcc_ask_apikey';
+const STORAGE_KEY_MODEL     = 'flcc_ask_model';
+const ASK_PROXY_KEY         = 'flcc-ask-proxy-url-v1';
+const ASK_PROXY_SECRET_KEY  = 'flcc-ask-proxy-secret-v1';
+const FONT_SCALE_KEY        = 'flcc-mood-font-scale-v1';
+const ENTRIES_KEY_PREFIX    = 'flcc-mood-journal-entries-v1::';
+const CARE_DISMISS_PREFIX   = 'flcc-mood-care-dismissed-v1::';
+const DEFAULT_MODEL         = 'claude-sonnet-4-5-20250929';
+
+const MOODS = [
+  { key:'joyful',      label:'Joyful',      tier: 3 },
+  { key:'excited',     label:'Excited',     tier: 3 },
+  { key:'grateful',    label:'Grateful',    tier: 2 },
+  { key:'loved',       label:'Loved',       tier: 2 },
+  { key:'motivated',   label:'Motivated',   tier: 2 },
+  { key:'peaceful',    label:'Peaceful',    tier: 1 },
+  { key:'hopeful',     label:'Hopeful',     tier: 1 },
+  { key:'calm',        label:'Calm',        tier: 1 },
+  { key:'content',     label:'Content',     tier: 1 },
+  { key:'neutral',     label:'Neutral',     tier: 0 },
+  { key:'confused',    label:'Confused',    tier:-1 },
+  { key:'lonely',      label:'Lonely',      tier:-1 },
+  { key:'frustrated',  label:'Frustrated',  tier:-1 },
+  { key:'guilty',      label:'Guilty',      tier:-1 },
+  { key:'discouraged', label:'Discouraged', tier:-2 },
+  { key:'stressed',    label:'Stressed',    tier:-2 },
+  { key:'anxious',     label:'Anxious',     tier:-2 },
+  { key:'fearful',     label:'Fearful',     tier:-2 },
+  { key:'ashamed',     label:'Ashamed',     tier:-2 },
+  { key:'exhausted',   label:'Exhausted',   tier:-2 },
+  { key:'angry',       label:'Angry',       tier:-2 },
+  { key:'overwhelmed', label:'Overwhelmed', tier:-3 },
+  { key:'burnedout',   label:'Burned Out',  tier:-3 },
+  { key:'sad',         label:'Sad',         tier:-3 },
+  { key:'heartbroken', label:'Heartbroken', tier:-3 },
+  { key:'hopeless',    label:'Hopeless',    tier:-3 },
+  { key:'empty',       label:'Empty',       tier:-3 },
+  { key:'other',       label:'Other',       tier: 0 },
+];
+const MOOD_BY_KEY = Object.fromEntries(MOODS.map(m => [m.key, m]));
+
+// Soft, glossy tier colors — valence communicated through color (as in Apple's
+// own mood logging), not icons. light/base/dark form a radial "orb" gradient.
+const TIER_COLORS = {
+   3: { light:'#FDE68A', base:'#F2A93B', dark:'#C2670A', bg:'#FEF6E3', fg:'#92400E' },
+   2: { light:'#8DE6BE', base:'#26B17A', dark:'#047857', bg:'#EAFBF3', fg:'#065F46' },
+   1: { light:'#A8CBFB', base:'#4E8FF0', dark:'#1D4ED8', bg:'#EDF4FF', fg:'#1E40AF' },
+   0: { light:'#DCE3EB', base:'#9AABBC', dark:'#64748B', bg:'#F5F7F9', fg:'#475569' },
+  '-1': { light:'#BFC7FA', base:'#7C82EE', dark:'#4338CA', bg:'#F1F1FE', fg:'#3730A3' },
+  '-2': { light:'#D4C2FA', base:'#9D6EEA', dark:'#6D28D9', bg:'#F6F1FE', fg:'#5B21B6' },
+  '-3': { light:'#F3B4B0', base:'#D9564E', dark:'#991B1B', bg:'#FDF0EF', fg:'#991B1B' },
+};
+function tierColor(tier) { return TIER_COLORS[String(tier)] || TIER_COLORS[0]; }
+function orbGradient(tier) {
+  const c = tierColor(tier);
+  return `radial-gradient(circle at 32% 26%, ${c.light}, ${c.base} 58%, ${c.dark} 100%)`;
+}
+
+const CRISIS_TIER = -3; // Overwhelmed, Burned Out, Sad, Heartbroken, Hopeless, Empty
+
+const INTENSITY_LABELS = ['Very Slight', 'Slight', 'Moderate', 'Strong', 'Very Strong'];
+
+const CAUSES = [
+  'Work', 'Employer', 'Financial', 'Family', 'Marriage', 'Children',
+  'Loneliness', 'Homesickness', 'Health', 'Church', 'Ministry', 'Relationships',
+  'Future', 'Spiritual struggles', 'Sin', 'Temptation', 'Waiting on God',
+  'Answered prayer', 'Blessings', 'Thankfulness', 'Unknown', 'Other',
+];
+
+const CAUSE_NOTES = {
+  'Work': 'the weight of long hours and the demands of your work',
+  'Employer': 'tension in your relationship with your employer',
+  'Financial': 'financial pressure and the worry it brings',
+  'Family': "missing your family and carrying their needs on your heart",
+  'Marriage': 'something happening in your marriage',
+  'Children': 'concern for your children',
+  'Loneliness': 'a deep sense of loneliness',
+  'Homesickness': 'homesickness for home and everything familiar',
+  'Health': 'concerns about your health',
+  'Church': 'something on your heart about church',
+  'Ministry': 'the weight of serving in ministry',
+  'Relationships': "a relationship that's been on your mind",
+  'Future': "uncertainty about what's ahead",
+  'Spiritual struggles': "a spiritual struggle you're wrestling with",
+  'Sin': 'conviction over sin',
+  'Temptation': "a temptation you've been facing",
+  'Waiting on God': "the hard work of waiting on God's timing",
+  'Answered prayer': 'an answered prayer',
+  'Blessings': 'the blessings God has poured out on you',
+  'Thankfulness': 'a heart full of thankfulness',
+  'Unknown': "a feeling you can't quite explain",
+  'Other': 'something personal on your heart',
+};
+
+// Reflection questions & spiritual actions, grouped by tier
+const TIER_LIBRARY = {
+  3: {
+    encouragement: [
+      "Joy like this is a gift from the Father of lights, who gives every good and perfect gift (James 1:17). Let it lead you to worship, not just to feel good.",
+      "This gladness is worth noticing — it's a small resurrection, a reminder that God delights in you and is present in your good days too.",
+    ],
+    questions: [
+      'What do you think God is teaching you through this joy today?',
+      'Who could you bless or encourage out of the fullness you feel right now?',
+      'How can you turn this feeling into a moment of worship?',
+      'What specific thing will you thank God for tonight?',
+    ],
+    actions: ['Write down three things you are thankful for and thank God for each one.', 'Encourage another believer today — share what God has done for you.', 'Attend church this week and celebrate with your church family.'],
+  },
+  2: {
+    encouragement: [
+      "\"Every good and perfect gift is from above\" (James 1:17). What you're feeling is worth pausing over — let it deepen your trust, not just your mood.",
+      "God sees this and is glad with you. Let gratitude become a habit, not just a feeling that passes with the day.",
+    ],
+    questions: [
+      'Where did you experience God\'s grace today?',
+      'Who has God used to bless you recently, and have you thanked them?',
+      'What is one way you can carry this feeling into tomorrow?',
+    ],
+    actions: ['Send a message of thanks to someone God has used in your life.', 'Memorize one verse that captures how you feel right now.', 'Spend five minutes simply thanking God, without asking for anything.'],
+  },
+  1: {
+    encouragement: [
+      "\"Peace I leave with you; my peace I give you\" (John 14:27). This calm isn't an accident — it's a gift Christ gives that the world cannot. Rest in it.",
+      "This quiet, steady feeling is worth protecting. Guard it with prayer and with the Word, and let it anchor you through whatever comes next.",
+    ],
+    questions: [
+      'What has helped you feel steady today?',
+      'How is God inviting you to rest in Him right now?',
+      'Who in your life could use some of this peace today?',
+    ],
+    actions: ['Spend ten minutes in silence before God, simply resting in His presence.', 'Read Psalm 23 slowly, out loud if you can.', 'Reach out to someone who might need a calm, steady friend today.'],
+  },
+  0: {
+    encouragement: [
+      "Not every day feels dramatic, and that's alright. God is present in the ordinary, steady middle of life just as much as in the highs and lows.",
+      "\"In him we live and move and have our being\" (Acts 17:28). Even an ordinary day is held in His hands.",
+    ],
+    questions: [
+      'Is there something beneath the surface today that\'s worth naming honestly?',
+      'What would it look like to invite God into this ordinary day?',
+      'What burden, even a small one, can you hand to Christ right now?',
+    ],
+    actions: ['Pray for five minutes, simply telling God how your day has gone.', 'Read one chapter of the Gospels today.', 'Reach out to a friend just to check in on them.'],
+  },
+  '-1': {
+    encouragement: [
+      "God does not despise the honest, unsettled places in us. \"Cast all your anxiety on him because he cares for you\" (1 Peter 5:7) — even the smaller worries.",
+      "It's alright not to have it all figured out. James 1:5 promises that if we lack wisdom, we can simply ask God, who gives generously.",
+    ],
+    questions: [
+      'What is unsettled in you right now that you haven\'t named yet?',
+      'What burden can you surrender to Christ today, even a small one?',
+      'Who could you talk to honestly about how you\'re really doing?',
+    ],
+    actions: ['Pray for five minutes, asking God for clarity and peace.', 'Call a family member or trusted friend and talk it through.', 'Write down what\'s unclear and bring each part to God in prayer.'],
+  },
+  '-2': {
+    encouragement: [
+      "You are not alone in this. \"The Lord is close to the brokenhearted\" (Psalm 34:18), and He has not turned His face from you today.",
+      "This is hard, and it's honest to say so. \"Come to me, all you who are weary and burdened, and I will give you rest\" (Matthew 11:28) — that invitation is for exactly this moment.",
+    ],
+    questions: [
+      'What burden can you surrender to Christ today?',
+      'Where do you most need God\'s strength right now?',
+      'Who has God placed in your life that you could lean on this week?',
+      'What is one small, true thing you can hold onto today?',
+    ],
+    actions: ['Pray for five minutes and name this feeling honestly before God.', 'Call your family — hearing their voice may lighten the load.', 'Reach out to a Life Group leader or trusted brother/sister in Christ.'],
+  },
+  '-3': {
+    encouragement: [
+      "You are deeply loved, even now. \"He heals the brokenhearted and binds up their wounds\" (Psalm 147:3). This pain is seen, and it is not the end of your story.",
+      "God is near to you in exactly this moment. \"The Lord is close to the brokenhearted and saves those who are crushed in spirit\" (Psalm 34:18) — that is a promise, not a platitude.",
+    ],
+    questions: [
+      'Is there someone you trust who you could tell how you\'re really feeling today?',
+      'What is one true thing about God\'s love you can hold onto right now, even if you don\'t feel it?',
+      'What would it look like to let someone carry this with you instead of carrying it alone?',
+    ],
+    actions: ['Reach out to your Life Group leader, ministry leader, or pastor today.', 'Call someone who loves you, even just to hear their voice.', 'Spend a few quiet minutes simply telling God exactly how you feel — He can handle it.'],
+  },
+};
+
+// "Never random" suggested reading — one deliberate reference per mood.
+const MOOD_READING = {
+  joyful:      { ref: 'Psalm 100',            note: 'A psalm of pure thanksgiving for a joyful heart.' },
+  excited:     { ref: 'Psalm 118:24',         note: '"This is the day the Lord has made; let us rejoice and be glad in it."' },
+  grateful:    { ref: '1 Thessalonians 5:16-18', note: '"Give thanks in all circumstances" — a short epistle passage on gratitude.' },
+  loved:       { ref: '1 John 4:16-19',       note: '"God is love" — resting in how deeply and securely you are loved.' },
+  motivated:   { ref: 'Philippians 4:10-13',  note: '"I can do all this through him who gives me strength."' },
+  peaceful:    { ref: 'John 14:25-27',        note: '"Peace I leave with you; my peace I give you" — Christ\'s own gift of peace.' },
+  hopeful:     { ref: 'Romans 15:13',         note: 'A prayer that the God of hope would fill you with joy and peace.' },
+  calm:        { ref: 'Psalm 46',             note: '"Be still, and know that I am God."' },
+  content:     { ref: 'Philippians 4:11-13',  note: 'Paul\'s testimony of learning to be content in any circumstance.' },
+  neutral:     { ref: 'Psalm 139:1-6',        note: 'God\'s intimate, constant knowledge of you, even on quiet days.' },
+  other:       { ref: 'Psalm 139:1-6',        note: 'God\'s intimate, constant knowledge of you, whatever today has been.' },
+  confused:    { ref: 'James 1:5-6',          note: '"If any of you lacks wisdom, you should ask God" — a promise for unclear days.' },
+  lonely:      { ref: 'Deuteronomy 31:6',     note: '"He will never leave you nor forsake you" — a promise for lonely seasons.' },
+  frustrated:  { ref: 'Galatians 6:9',        note: '"Let us not become weary in doing good" — an epistle word for frustration.' },
+  guilty:      { ref: '1 John 1:9',           note: '"He is faithful and just to forgive us our sins and purify us."' },
+  discouraged: { ref: 'Matthew 11:28-30',     note: '"Come to me, all you who are weary and burdened" — Jesus\' own invitation for the discouraged.' },
+  stressed:    { ref: 'Matthew 6:25-34',      note: 'Jesus teaching on why we do not need to worry about tomorrow.' },
+  anxious:     { ref: 'Philippians 4:6-7',    note: '"Do not be anxious about anything, but in every situation, by prayer... present your requests to God."' },
+  fearful:     { ref: 'Isaiah 41:10',         note: '"Do not fear, for I am with you" — God\'s own word to the afraid.' },
+  ashamed:     { ref: 'Romans 8:1',           note: '"There is now no condemnation for those who are in Christ Jesus."' },
+  exhausted:   { ref: 'Isaiah 40:28-31',      note: 'Those who hope in the Lord will renew their strength.' },
+  angry:       { ref: 'Ephesians 4:26-27',    note: '"In your anger do not sin" — wisdom for a heated moment.' },
+  overwhelmed: { ref: 'Psalm 61:1-4',         note: '"Lead me to the rock that is higher than I" — a psalm for when you feel in over your head.' },
+  burnedout:   { ref: 'Matthew 11:28-30',     note: '"I will give you rest" — Jesus\' invitation to the weary and burned out.' },
+  sad:         { ref: 'Psalm 34:17-18',       note: '"The Lord is close to the brokenhearted."' },
+  heartbroken: { ref: 'Psalm 147:3',          note: '"He heals the brokenhearted and binds up their wounds."' },
+  hopeless:    { ref: 'Lamentations 3:22-24', note: '"His mercies... are new every morning" — hope in the middle of grief.' },
+  empty:       { ref: 'John 4:13-14',         note: 'Jesus offers living water so that we will never thirst again.' },
+};
+
+// Wisdom-literature override for decision/future-oriented causes
+const WISDOM_OVERRIDE = { ref: 'Proverbs 3:5-6', note: '"Trust in the Lord with all your heart" — wisdom for decisions and an uncertain future.' };
+
+const CRISIS_KEYWORDS = [
+  'suicide', 'kill myself', 'end my life', 'want to die', 'ending it all',
+  'no reason to live', 'harm myself', 'hurting myself', "can't go on", 'give up on life',
+];
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function dateISO(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+function todayISO() { return dateISO(new Date()); }
+function addDays(iso, n) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d + n);
+  return dateISO(dt);
+}
+function parseISO(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function formatDateLong(iso) {
+  return parseISO(iso).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+function monthKey(iso) { return iso.slice(0, 7); }
+function wordCount(text) { return (text || '').trim().split(/\s+/).filter(Boolean).length; }
+
+function seededRandom(seedStr) {
+  let h = 0;
+  for (let i = 0; i < seedStr.length; i++) { h = (h << 5) - h + seedStr.charCodeAt(i); h |= 0; }
+  const x = Math.sin(h) * 10000;
+  return x - Math.floor(x);
+}
+function pick(arr, seed) {
+  if (!arr || !arr.length) return '';
+  return arr[Math.floor(seededRandom(seed) * arr.length) % arr.length];
+}
+function pickN(arr, n, seed) {
+  if (arr.length <= n) return arr;
+  const indices = [];
+  let tries = 0;
+  while (indices.length < n && tries < 20) {
+    const idx = Math.floor(seededRandom(seed + tries) * arr.length);
+    if (!indices.includes(idx)) indices.push(idx);
+    tries++;
+  }
+  return indices.map(i => arr[i]);
+}
+
+function computeStreak(dateList) {
+  const dates = [...new Set(dateList)].sort();
+  if (!dates.length) return { current: 0, longest: 0 };
+  let longest = 1, run = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const gap = (parseISO(dates[i]) - parseISO(dates[i - 1])) / 86400000;
+    run = gap === 1 ? run + 1 : 1;
+    longest = Math.max(longest, run);
+  }
+  const today = todayISO();
+  const yesterday = addDays(today, -1);
+  const last = dates[dates.length - 1];
+  let current = 0;
+  if (last === today || last === yesterday) {
+    current = 1;
+    for (let i = dates.length - 1; i > 0; i--) {
+      const gap = (parseISO(dates[i]) - parseISO(dates[i - 1])) / 86400000;
+      if (gap === 1) current++; else break;
+    }
+  }
+  return { current, longest };
+}
+
+function avg(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null; }
+
+function timeOfDay() {
+  const h = new Date().getHours();
+  if (h < 5) return 'lateNight';
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  if (h < 22) return 'evening';
+  return 'lateNight';
+}
+function greetingWord() {
+  const t = timeOfDay();
+  if (t === 'morning') return 'Good morning';
+  if (t === 'afternoon') return 'Good afternoon';
+  if (t === 'evening') return 'Good evening';
+  return 'Good evening';
+}
+
+// =============================================================================
+// STORAGE
+// =============================================================================
+
+function useLocalMember() {
+  const [me, setMe] = useState(null);
+  const [meId, setMeId] = useState(null);
+  useEffect(() => {
+    let id = null;
+    try { id = localStorage.getItem(ME_KEY); } catch {}
+    setMeId(id);
+    fetch(`${DATA_URL}?t=${Date.now()}`)
+      .then(r => r.json())
+      .then(d => {
+        if (id && d.workers) {
+          const w = d.workers.find(x => x.id === id);
+          if (w) setMe(w);
+        }
+      })
+      .catch(() => {});
+  }, []);
+  return { me, meId };
+}
+
+function entriesKey(meId) { return ENTRIES_KEY_PREFIX + (meId || 'guest'); }
+
+function loadEntries(meId) {
+  try {
+    const raw = localStorage.getItem(entriesKey(meId));
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+function saveEntries(meId, entries) {
+  try { localStorage.setItem(entriesKey(meId), JSON.stringify(entries)); } catch {}
+}
+
+// =============================================================================
+// WEATHER
+// =============================================================================
+
+function useWeather() {
+  const [weather, setWeather] = useState(null);
+  const [status, setStatus] = useState('loading');
+
+  useEffect(() => {
+    const load = async (lat, lon, city) => {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m&daily=sunrise,sunset&timezone=auto`);
+        const d = await res.json();
+        setWeather({
+          temp: d.current.temperature_2m,
+          humidity: d.current.relative_humidity_2m,
+          wind: d.current.wind_speed_10m,
+          code: d.current.weather_code,
+          isDay: d.current.is_day === 1,
+          sunrise: d.daily?.sunrise?.[0],
+          sunset: d.daily?.sunset?.[0],
+          city,
+        });
+        setStatus('ok');
+      } catch { setStatus('error'); }
+    };
+    const ipFallback = async () => {
+      try {
+        const r = await fetch('https://ipwho.is/');
+        const d = await r.json();
+        if (d.success && d.latitude) load(d.latitude, d.longitude, d.city || '');
+        else setStatus('error');
+      } catch { setStatus('error'); }
+    };
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const { latitude: lat, longitude: lon } = pos.coords;
+          let city = '';
+          try {
+            const g = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+            const gd = await g.json();
+            city = gd.address?.city || gd.address?.town || gd.address?.village || gd.address?.suburb || '';
+          } catch {}
+          load(lat, lon, city);
+        },
+        ipFallback,
+        { timeout: 8000 }
+      );
+    } else {
+      ipFallback();
+    }
+  }, []);
+
+  return { weather, status };
+}
+
+function weatherKind(c) {
+  if (c === 0) return 'clear';
+  if (c <= 2) return 'partly';
+  if (c === 3) return 'overcast';
+  if (c <= 48) return 'fog';
+  if (c <= 55) return 'drizzle';
+  if (c <= 67) return 'rain';
+  if (c <= 77) return 'snow';
+  if (c <= 82) return 'rain';
+  return 'storm';
+}
+function weatherLabel(c, isDay) {
+  if (c === 0) return isDay ? 'Clear Sky' : 'Clear Night';
+  if (c <= 2) return 'Partly Cloudy';
+  if (c === 3) return 'Overcast';
+  if (c <= 48) return 'Foggy';
+  if (c <= 55) return 'Drizzle';
+  if (c <= 67) return 'Rainy';
+  if (c <= 77) return 'Snowy';
+  if (c <= 82) return 'Showers';
+  return 'Thunderstorm';
+}
+function formatTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+// =============================================================================
+// ICONS — a small set of hand-drawn line/glyph icons (no emoji anywhere).
+// =============================================================================
+
+function IconLock({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="11" width="14" height="9" rx="2.3" />
+      <path d="M8 11V7.5a4 4 0 0 1 8 0V11" />
+    </svg>
+  );
+}
+function IconChevronLeft({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  );
+}
+function IconChevronRight({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+function IconCheck({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="5 13 10 18 19 7" />
+    </svg>
+  );
+}
+
+let __iconIdSeq = 0;
+function useIconId(prefix) {
+  const ref = useRef(null);
+  if (ref.current === null) ref.current = `${prefix}${__iconIdSeq++}`;
+  return ref.current;
+}
+
+// A soft, filled cloud silhouette built from overlapping circles — no memorized path data.
+function CloudShape({ tone = 'currentColor', y = 0 }) {
+  return (
+    <g transform={`translate(0 ${y})`} fill={tone}>
+      <circle cx="8.5" cy="13.5" r="3.6" />
+      <circle cx="13" cy="11.6" r="4.6" />
+      <circle cx="17" cy="14" r="3.1" />
+      <rect x="6.2" y="13.5" width="13.5" height="5.4" rx="2.7" />
+    </g>
+  );
+}
+
+function WeatherIcon({ code, isDay, size = 40 }) {
+  const kind = weatherKind(code);
+  const id = useIconId('sun');
+  const sun = (cx, cy, r, rays) => (
+    <g>
+      <circle cx={cx} cy={cy} r={r} fill="url(#wgSun)" />
+      {rays && [0, 45, 90, 135, 180, 225, 270, 315].map(deg => {
+        const rad = (deg * Math.PI) / 180;
+        const x1 = cx + Math.cos(rad) * (r + 2.2), y1 = cy + Math.sin(rad) * (r + 2.2);
+        const x2 = cx + Math.cos(rad) * (r + 4.6), y2 = cy + Math.sin(rad) * (r + 4.6);
+        return <line key={deg} x1={x1.toFixed(1)} y1={y1.toFixed(1)} x2={x2.toFixed(1)} y2={y2.toFixed(1)} stroke="#F2A93B" strokeWidth="1.7" strokeLinecap="round" />;
+      })}
+    </g>
+  );
+  const moon = (cx, cy, r) => (
+    <g>
+      <mask id={id}>
+        <rect x="0" y="0" width="24" height="24" fill="#fff" />
+        <circle cx={cx + r * 0.55} cy={cy - r * 0.45} r={r * 0.85} fill="#000" />
+      </mask>
+      <circle cx={cx} cy={cy} r={r} fill="#8B93A6" mask={`url(#${id})`} />
+    </g>
+  );
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <defs>
+        <radialGradient id="wgSun" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#FDE68A" />
+          <stop offset="100%" stopColor="#F2A93B" />
+        </radialGradient>
+        <linearGradient id="wgCloud" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#E4E9EF" />
+          <stop offset="100%" stopColor="#B9C2CE" />
+        </linearGradient>
+      </defs>
+
+      {kind === 'clear' && (isDay ? sun(12, 12, 6, true) : moon(12, 12, 7))}
+
+      {kind === 'partly' && (
+        <>
+          {isDay ? sun(15.5, 8.5, 3.6, false) : moon(15.5, 8.5, 4.2)}
+          <CloudShape tone="url(#wgCloud)" y="0" />
+        </>
+      )}
+
+      {kind === 'overcast' && <CloudShape tone="url(#wgCloud)" />}
+
+      {kind === 'fog' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          <line x1="4" y1="20" x2="20" y2="20" stroke="#B9C2CE" strokeWidth="1.4" strokeLinecap="round" />
+          <line x1="6" y1="22.3" x2="18" y2="22.3" stroke="#B9C2CE" strokeWidth="1.4" strokeLinecap="round" />
+        </>
+      )}
+
+      {kind === 'drizzle' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          {[8, 12, 16].map(x => <line key={x} x1={x} y1="19.5" x2={x - 1} y2="22" stroke="#7CA9E0" strokeWidth="1.6" strokeLinecap="round" />)}
+        </>
+      )}
+
+      {kind === 'rain' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          {[7.5, 12, 16.5].map(x => <line key={x} x1={x} y1="19" x2={x - 1.6} y2="23" stroke="#4E8FF0" strokeWidth="1.7" strokeLinecap="round" />)}
+        </>
+      )}
+
+      {kind === 'snow' && (
+        <>
+          <CloudShape tone="url(#wgCloud)" y="-1.5" />
+          {[8, 12, 16].map(x => <circle key={x} cx={x} cy="21.5" r="1.15" fill="#9DB6D6" />)}
+        </>
+      )}
+
+      {kind === 'storm' && (
+        <>
+          <CloudShape tone="#8C97A8" y="-1.5" />
+          <polyline points="13.5,18 10.5,22.5 13,22.5 11.5,26" fill="none" stroke="#F2A93B" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" transform="translate(0,-4) scale(0.85)" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+// =============================================================================
+// REFLECTION ENGINE (template fallback — always available, no AI required)
+// =============================================================================
+
+function pickReading(mood, causes) {
+  if (causes && (causes.includes('Future') || causes.includes('Waiting on God'))) return WISDOM_OVERRIDE;
+  return MOOD_READING[mood.key] || MOOD_READING.neutral;
+}
+
+function patternClause(history, tier) {
+  const recent = history.slice(-3);
+  if (recent.length < 3) return '';
+  const allHard = recent.every(e => e.tier <= -2);
+  const allBright = recent.every(e => e.tier >= 2);
+  if (tier <= -1 && allHard) {
+    return " I've noticed the last few days have been heavy for you — today isn't a coincidence, and God sees the whole week, not just this moment.";
+  }
+  if (tier >= 1 && allBright) {
+    return " You've had a beautiful run of days like this — what a gift to notice God's steady goodness building over time.";
+  }
+  return '';
+}
+
+function buildTemplateReflection({ mood, intensity, causes, journal, name, history }) {
+  const tier = mood.tier;
+  const lib = TIER_LIBRARY[String(tier)] || TIER_LIBRARY[0];
+  const seed = todayISO() + mood.key + intensity;
+  const firstName = (name || 'friend').split(' ')[0];
+  const intensityWord = INTENSITY_LABELS[intensity - 1].toLowerCase();
+
+  const causeNotes = (causes || []).filter(c => c !== 'Other').slice(0, 2).map(c => CAUSE_NOTES[c]).filter(Boolean);
+  let causeSentence = '';
+  if (causeNotes.length === 1) causeSentence = ` It sounds like this is connected to ${causeNotes[0]}.`;
+  else if (causeNotes.length === 2) causeSentence = ` It sounds like this is connected to ${causeNotes[0]} and ${causeNotes[1]}.`;
+
+  const opens = {
+    3: [`${greetingWord()}, ${firstName}. What a gift to sit with you in this ${intensityWord} feeling of ${mood.label.toLowerCase()} today.`,
+        `${firstName}, thank you for pausing to notice this ${intensityWord} sense of ${mood.label.toLowerCase()} in your heart today.`],
+    0: [`${greetingWord()}, ${firstName}. Thank you for checking in and naming how you feel today.`,
+        `${firstName}, I'm glad you paused today, even if today feels fairly ordinary.`],
+    '-2': [`${greetingWord()}, ${firstName}. Thank you for being honest that today feels ${intensityWord} ${mood.label.toLowerCase()}.`,
+           `${firstName}, I hear you — this ${intensityWord} weight of ${mood.label.toLowerCase()} is real, and you were brave to name it.`],
+  };
+  const openBucket = tier >= 2 ? 3 : (tier <= -2 ? '-2' : 0);
+
+  const closes = {
+    3: [`Carry this joy forward as worship — let it be one more reason to trust Him tomorrow, whatever it holds.`,
+        `Let this be a marker of God's goodness that you can look back on in harder seasons.`],
+    0: [`Whatever today holds, you are held by a God who never changes, even when your feelings do.`,
+        `Take this quiet moment with Him — He is present in the ordinary just as much as in the extraordinary.`],
+    '-2': [`You are not walking through this alone. Christ is near, and so is your church family — please don't carry this in silence.`,
+           `This feeling is not the final word over your day. God's mercies are new this morning, and He is not finished with you.`],
+  };
+  const closeBucket = tier >= 2 ? 3 : (tier <= -2 ? '-2' : 0);
+
+  const devotional = [
+    pick(opens[openBucket], seed + 'o') + causeSentence,
+    patternClause(history || [], tier),
+    pick(closes[closeBucket], seed + 'c'),
+  ].filter(Boolean).join(' ');
+
+  const reading = pickReading(mood, causes);
+
+  const prayer = buildTemplatePrayer({ mood, tier, causeNotes, reading, seed });
+  const encouragement = pick(lib.encouragement, seed + 'e');
+  const questions = pickN(lib.questions, 3, seed + 'q');
+  let action = pick(lib.actions, seed + 'a');
+  if ((causes || []).includes('Loneliness') || (causes || []).includes('Homesickness')) action = 'Call your family — even a short message can lighten a homesick heart.';
+  else if ((causes || []).includes('Church') || (causes || []).includes('Ministry')) action = tier >= 1 ? 'Encourage another believer today, especially someone serving alongside you.' : 'Reach out to your Life Group leader or ministry head this week.';
+
+  return { devotional, prayer, encouragement, reading, questions, action, source: 'template' };
+}
+
+function buildTemplatePrayer({ mood, tier, causeNotes, reading, seed }) {
+  const acknowledge = tier >= 2
+    ? `Lord, thank You for this moment of ${mood.label.toLowerCase()} You've given today.`
+    : tier <= -1
+      ? `Lord, You see me right now, feeling ${mood.label.toLowerCase()}${causeNotes.length ? ', weighed down by ' + causeNotes[0] : ''}.`
+      : `Lord, I come to You in this ordinary moment, just as I am today.`;
+  const thanksgiving = `Thank You that You are near, that Your mercies are new every morning, and that nothing about today has surprised You.`;
+  const surrender = tier <= -1
+    ? `I surrender this feeling to You — I don't have to carry it alone or pretend it isn't there. Take what is heavy and carry it with me.`
+    : `I surrender this day to You, asking that whatever comes next would be for Your glory and my good.`;
+  const hope = `I hold on to hope, not because of how I feel, but because of who You are and what You have already done through Christ.`;
+  const scripture = `Your Word says, ${reading.note}`;
+  const trust = `I choose to trust You today, one step at a time, even where I don't fully understand.`;
+  const closing = pick([
+    'In Jesus\' name, amen.',
+    'I pray this trusting in Your love, in Jesus\' name, amen.',
+  ], seed + 'p');
+  return [acknowledge, thanksgiving, surrender, hope, scripture, trust, closing].join(' ');
+}
+
+// =============================================================================
+// PASTORAL CARE DETECTION (heuristic, descriptive — never diagnostic)
+// =============================================================================
+
+function detectCrisisLanguage(text) {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  return CRISIS_KEYWORDS.some(k => lower.includes(k));
+}
+
+function computeCareSignal(entries) {
+  const cutoff = addDays(todayISO(), -14);
+  const recent = entries.filter(e => e.date >= cutoff);
+  const hardCount = recent.filter(e => e.tier <= -2).length;
+  const crisisCount = recent.filter(e => e.tier === CRISIS_TIER).length;
+
+  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  let run = 0, longestRun = 0;
+  for (const e of sorted) {
+    if (e.tier <= -1) { run++; longestRun = Math.max(longestRun, run); } else { run = 0; }
+  }
+  const lastFive = sorted.slice(-5);
+  const keywordHit = lastFive.some(e => detectCrisisLanguage(e.journal));
+
+  const trigger = crisisCount >= 3 || hardCount >= 6 || longestRun >= 5 || keywordHit;
+  return { trigger, severity: keywordHit ? 'urgent' : 'gentle', hardCount, crisisCount, longestRun, keywordHit };
+}
+
+// =============================================================================
+// AI REFLECTION (optional enhancement — reuses Ask FLCC's proxy/key if configured)
+// =============================================================================
+
+function getAiConfig() {
+  let apiKey = '', proxyUrl = '', proxySecret = '', model = DEFAULT_MODEL;
+  try {
+    apiKey = localStorage.getItem(STORAGE_KEY_API) || '';
+    proxyUrl = localStorage.getItem(ASK_PROXY_KEY) || '';
+    proxySecret = localStorage.getItem(ASK_PROXY_SECRET_KEY) || '';
+    model = localStorage.getItem(STORAGE_KEY_MODEL) || DEFAULT_MODEL;
+  } catch {}
+  return { apiKey, proxyUrl, proxySecret, model };
+}
+
+function buildAiSystemPrompt() {
+  return `You are a warm, mature Christian mentor writing a private daily devotional reflection for a member of a Filipino church community (Free Life Christian Church), many of whom are Overseas Filipino Workers (OFWs) far from home. You respond with biblical wisdom, emotional honesty, and pastoral warmth — never generic, never robotic, never repeated word-for-word between days.
+
+Ground rules:
+- This is NOT therapy, diagnosis, or a replacement for prayer, Scripture, pastoral care, or professional help.
+- Never use clinical or diagnostic language.
+- Acknowledge pain honestly. Never offer toxic positivity or dismiss hard feelings.
+- Always point toward Christ, Scripture, prayer, and the local church community.
+- Suggested Bible reading must be a REAL, specific reference (book, chapter, verses) appropriate to the mood: a Psalm for anxiety/sorrow, a Gospel passage for discouragement/weariness, an Epistle for encouragement/relational issues, Wisdom literature (Proverbs/Ecclesiastes) for decisions or an uncertain future.
+- If recent entries or the journal text show signs of persistent hopelessness, isolation, or language suggesting crisis, set "careFlag": true so the app can gently invite the member to reach out to a Life Group leader, ministry leader, or pastor. Never shame them. Never diagnose.
+- Keep it personal: reference their specific mood, intensity, causes, and journal entry (if given) rather than writing generically.
+
+Respond with STRICT JSON only, no markdown fences, matching exactly this shape:
+{"devotional": "120-180 word devotional reflection, second person, warm and specific",
+ "prayer": "80-140 word first-person prayer prayed with/for the member: acknowledging emotions, thanksgiving, surrender, hope, a scripture truth woven in, trust, and a closing",
+ "encouragement": "40-80 words of scripture-rooted encouragement, honest about pain, pointing to hope in Christ",
+ "reading": {"reference": "specific book/chapter/verses", "note": "one sentence on why this passage fits today"},
+ "questions": ["2 to 4 short, thoughtful reflection questions"],
+ "action": "one simple, concrete spiritual action for today",
+ "careFlag": true or false}`;
+}
+
+async function callAiReflection(payload) {
+  const { apiKey, proxyUrl, proxySecret, model } = getAiConfig();
+  if (!apiKey && !proxyUrl) return null;
+
+  const endpoint = proxyUrl ? proxyUrl.replace(/\/+$/, '') + '/proxy' : 'https://api.anthropic.com/v1/messages';
+  const headers = { 'Content-Type': 'application/json' };
+  if (!proxyUrl) {
+    headers['x-api-key'] = apiKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  } else if (proxySecret) {
+    headers['x-proxy-secret'] = proxySecret;
+  }
+
+  const historyLines = (payload.history || []).slice(-7)
+    .map(e => `${e.date}: ${e.mood} (intensity ${e.intensity}/5)${e.journal ? ' — journaled' : ''}`).join('\n') || 'No prior entries yet.';
+
+  const userMsg = `Member: ${payload.name || 'a church member'}
+Time of day: ${payload.timeOfDay}
+Weather: ${payload.weatherDesc || 'unknown'}
+Today's mood: ${payload.mood} (intensity ${payload.intensity}/5 — ${INTENSITY_LABELS[payload.intensity - 1]})
+Causes selected: ${(payload.causes || []).join(', ') || 'none given'}
+Journal entry: ${payload.journal ? '"' + payload.journal + '"' : '(no journal entry written today)'}
+Check-in streak: ${payload.checkinStreak} day(s)
+Recent mood history (most recent last):
+${historyLines}
+
+Write today's personalized devotional reflection now, following the JSON schema exactly.`;
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model,
+        max_tokens: 1400,
+        system: buildAiSystemPrompt(),
+        messages: [{ role: 'user', content: userMsg }],
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data?.content?.[0]?.text || '';
+    const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '').trim();
+    const parsed = JSON.parse(cleaned);
+    if (!parsed.devotional || !parsed.prayer) return null;
+    return {
+      devotional: parsed.devotional,
+      prayer: parsed.prayer,
+      encouragement: parsed.encouragement || '',
+      reading: parsed.reading || null,
+      questions: Array.isArray(parsed.questions) ? parsed.questions.slice(0, 4) : [],
+      action: parsed.action || '',
+      careFlag: !!parsed.careFlag,
+      source: 'ai',
+    };
+  } catch { return null; }
+}
+
+// =============================================================================
+// SMALL COMPONENTS
+// =============================================================================
+
+function WeatherCard({ weather }) {
+  if (!weather) return null;
+  return (
+    <div className="card">
+      <div className="eyebrow">{weather.city || 'Your Location'}</div>
+      <div className="flex items-center gap-4" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <WeatherIcon code={weather.code} isDay={weather.isDay} size={52} />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '1.6rem', fontWeight: 700, lineHeight: 1.1 }}>{Math.round(weather.temp)}°C</div>
+          <div style={{ fontSize: '0.9rem', color: 'var(--ink-muted)' }}>{weatherLabel(weather.code, weather.isDay)}</div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', marginTop: '1rem', fontSize: '0.75rem', color: 'var(--ink-muted)', textAlign: 'center' }}>
+        <div><div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>{weather.humidity != null ? weather.humidity + '%' : '—'}</div>Humidity</div>
+        <div><div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>{weather.wind != null ? Math.round(weather.wind) + ' km/h' : '—'}</div>Wind</div>
+        <div><div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>{formatTime(weather.sunrise)}</div>Sunrise</div>
+        <div><div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>{formatTime(weather.sunset)}</div>Sunset</div>
+      </div>
+      <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--ink-muted)', lineHeight: 1.6, fontStyle: 'italic' }}>
+        Sometimes our surroundings influence our emotions. God remains constant through every season.
+      </p>
+    </div>
+  );
+}
+
+function ProgressDots({ step, total }) {
+  return (
+    <div className="progress-dots">
+      {Array.from({ length: total }).map((_, i) => <span key={i} className={i === step ? 'active' : ''} />)}
+    </div>
+  );
+}
+
+function MoodGrid({ value, onChange }) {
+  return (
+    <div className="mood-grid">
+      {MOODS.map(m => {
+        const selected = value === m.key;
+        return (
+          <button
+            key={m.key}
+            className={`mood-tile${selected ? ' selected' : ''}`}
+            onClick={() => onChange(m.key)}
+          >
+            <span className="mood-orb" style={{ background: orbGradient(m.tier) }} />
+            <span className="label">{m.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function IntensitySlider({ value, onChange }) {
+  return (
+    <div className="intensity-track">
+      <div className="intensity-current">{INTENSITY_LABELS[value - 1]}</div>
+      <input type="range" min="1" max="5" step="1" value={value} className="intensity"
+        onChange={e => onChange(Number(e.target.value))} />
+      <div className="intensity-labels">
+        {INTENSITY_LABELS.map(l => <span key={l}>{l}</span>)}
+      </div>
+    </div>
+  );
+}
+
+function CausesGrid({ value, onToggle }) {
+  return (
+    <div className="chip-wrap">
+      {CAUSES.map(c => (
+        <button key={c} className={`chip${value.includes(c) ? ' selected' : ''}`} onClick={() => onToggle(c)}>{c}</button>
+      ))}
+    </div>
+  );
+}
+
+function ReflectionView({ entry, onMarkPrayed, onMarkAction, onShare }) {
+  const mood = MOOD_BY_KEY[entry.mood];
+  return (
+    <div className="fade-in">
+      <div className="card">
+        <div className="eyebrow">Today, You Felt</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+          <span className="mood-orb lg" style={{ background: orbGradient(entry.tier) }} />
+          <div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif" }}>{mood.label}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)' }}>{INTENSITY_LABELS[entry.intensity - 1]}</div>
+          </div>
+        </div>
+        {entry.causes?.length > 0 && (
+          <div style={{ marginTop: '0.9rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            {entry.causes.map(cs => (
+              <span key={cs} style={{ fontSize: '0.75rem', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--ink-muted)', padding: '0.3rem 0.7rem', borderRadius: 999 }}>{cs}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="reflection-label">Today's Reflection{entry.reflection?.source === 'ai' ? ' · AI-Personalized' : ''}</div>
+        <div className="reflection-text">{entry.reflection.devotional}</div>
+      </div>
+
+      <div className="card">
+        <div className="reflection-label">A Prayer For You</div>
+        <div className="prayer-text">{entry.reflection.prayer}</div>
+        <button className={`btn-secondary${entry.prayerDone ? ' done' : ''}`} style={{ marginTop: '1rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={onMarkPrayed}>
+          {entry.prayerDone && <IconCheck size={14} />}
+          {entry.prayerDone ? 'You prayed this today' : 'I prayed this prayer'}
+        </button>
+      </div>
+
+      <div className="card">
+        <div className="reflection-label">Encouragement</div>
+        <div className="reflection-text">{entry.reflection.encouragement}</div>
+      </div>
+
+      {entry.reflection.reading && (
+        <div className="card">
+          <div className="reflection-label">Suggested Reading</div>
+          <blockquote className="verse">{entry.reflection.reading.reference || entry.reflection.reading.ref}</blockquote>
+          <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.5rem' }}>{entry.reflection.reading.note}</div>
+        </div>
+      )}
+
+      {entry.reflection.questions?.length > 0 && (
+        <div className="card">
+          <div className="reflection-label">Reflection Questions</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            {entry.reflection.questions.map((q, i) => (
+              <div key={i} style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>{i + 1}. {q}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {entry.reflection.action && (
+        <div className="card">
+          <div className="reflection-label">Today's Spiritual Action</div>
+          <div className="reflection-text">{entry.reflection.action}</div>
+          <button className={`btn-secondary${entry.actionDone ? ' done' : ''}`} style={{ marginTop: '1rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={onMarkAction}>
+            {entry.actionDone && <IconCheck size={14} />}
+            {entry.actionDone ? 'Done today' : 'I did this today'}
+          </button>
+        </div>
+      )}
+
+      {entry.journal && (
+        <div className="card">
+          <div className="reflection-label">What You Wrote <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>· private</span></div>
+          <div className="reflection-text" style={{ whiteSpace: 'pre-wrap' }}>{entry.journal}</div>
+          <button className="link-btn" style={{ marginTop: '0.75rem' }} onClick={onShare}>Share this with a leader →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CareBanner({ signal, ministry, memberFirstName, onDismiss }) {
+  const urgent = signal.severity === 'urgent';
+  const msg = `Hi, this is ${memberFirstName || 'a member'}. I've been going through a hard time emotionally and wanted to reach out. Could we talk or pray together sometime soon?`;
+  return (
+    <div className={`care-banner${urgent ? ' urgent' : ''}`}>
+      <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.5rem' }}>{urgent ? 'You are not alone' : 'A gentle check-in'}</div>
+      <p style={{ fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '0.75rem' }}>
+        You are not alone. Sometimes God cares for us through the people He has placed in our lives. Consider speaking with your Life Group leader, ministry leader, or pastor so they can pray with and encourage you.
+      </p>
+      {urgent && (
+        <p style={{ fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '0.75rem', fontWeight: 600 }}>
+          If you are having thoughts of harming yourself, please reach out right now to a trusted family member, church leader, local emergency services, or a mental health professional. You do not have to face this alone.
+        </p>
+      )}
+      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        {ministry?.whatsapp && (
+          <a className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-block' }}
+            href={`https://wa.me/${ministry.whatsapp.replace(/[^\d+]/g, '').replace(/^\+/, '')}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener">
+            Message {ministry.headName || 'a leader'}
+          </a>
+        )}
+        <button className="btn-secondary" onClick={onDismiss}>I'm okay for now</button>
+      </div>
+    </div>
+  );
+}
+
+function TrendChart({ points }) {
+  const w = 560, h = 160, pad = 24;
+  if (points.length < 2) {
+    return <div style={{ fontSize: '0.85rem', color: 'var(--ink-subtle)', textAlign: 'center', padding: '2rem 0' }}>Check in a few more days to see your trend here.</div>;
+  }
+  const xs = points.map((_, i) => pad + (i * (w - pad * 2)) / (points.length - 1));
+  const ys = points.map(p => h / 2 - (p.value / 3.2) * (h / 2 - pad));
+  const path = xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(' ');
+  const areaPath = `${path} L ${xs[xs.length - 1].toFixed(1)} ${h - pad} L ${xs[0].toFixed(1)} ${h - pad} Z`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 'auto', display: 'block' }} preserveAspectRatio="xMidYMid meet">
+      <line x1={pad} y1={h / 2} x2={w - pad} y2={h / 2} stroke="var(--border)" strokeWidth="1" strokeDasharray="4 4" />
+      <path d={areaPath} fill="url(#moodGrad)" opacity="0.5" />
+      <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {xs.map((x, i) => {
+        const c = tierColor(Math.round(points[i].value));
+        return <circle key={i} cx={x} cy={ys[i]} r="4" fill={c.fg} stroke="#fff" strokeWidth="1.5" />;
+      })}
+      <defs>
+        <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function EmotionalCalendar({ entries, monthKeyVal, onNavigate }) {
+  const byDate = useMemo(() => Object.fromEntries(entries.map(e => [e.date, e])), [entries]);
+  const [y, m] = monthKeyVal.split('-').map(Number);
+  const first = new Date(y, m - 1, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  const today = todayISO();
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+        <button className="icon-btn" onClick={() => onNavigate(-1)} aria-label="Previous month"><IconChevronLeft /></button>
+        <div style={{ fontWeight: 600 }}>{first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
+        <button className="icon-btn" onClick={() => onNavigate(1)} aria-label="Next month"><IconChevronRight /></button>
+      </div>
+      <div className="cal-grid">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <div key={i} style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--ink-subtle)', fontWeight: 600 }}>{d}</div>
+        ))}
+        {cells.map((day, i) => {
+          if (!day) return <div key={i} />;
+          const iso = `${y}-${pad2(m)}-${pad2(day)}`;
+          const entry = byDate[iso];
+          const c = entry ? tierColor(entry.tier) : null;
+          return (
+            <div key={i} className={`cal-cell${iso === today ? ' today' : ''}`}>
+              <span>{day}</span>
+              {c && <span className="cal-dot" style={{ background: c.fg }} />}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function computeInsights(entries) {
+  if (entries.length < 5) return [];
+  const insights = [];
+  const overall = avg(entries.map(e => e.tier));
+
+  const byDow = {};
+  entries.forEach(e => {
+    const dow = parseISO(e.date).toLocaleDateString('en-US', { weekday: 'long' });
+    (byDow[dow] = byDow[dow] || []).push(e.tier);
+  });
+  let bestDow = null, bestDiff = 0.75, worstDow = null, worstDiff = 0.75;
+  Object.entries(byDow).forEach(([dow, tiers]) => {
+    if (tiers.length < 2) return;
+    const diff = avg(tiers) - overall;
+    if (diff > bestDiff) { bestDiff = diff; bestDow = dow; }
+    if (-diff > worstDiff) { worstDiff = -diff; worstDow = dow; }
+  });
+  if (bestDow) insights.push(`You tend to feel more at peace on ${bestDow}s.`);
+  if (worstDow) insights.push(`${worstDow}s tend to be harder for you — consider extra rest or prayer that day.`);
+
+  const journaled = entries.filter(e => e.journal && e.journal.trim());
+  const notJournaled = entries.filter(e => !e.journal || !e.journal.trim());
+  if (journaled.length >= 3 && notJournaled.length >= 3) {
+    const diff = avg(journaled.map(e => e.tier)) - avg(notJournaled.map(e => e.tier));
+    if (diff > 0.5) insights.push('When you spend time journaling, your entries tend to be more hopeful.');
+  }
+
+  const hardEntries = entries.filter(e => e.tier <= -2);
+  if (hardEntries.length >= 3) {
+    const tally = {};
+    hardEntries.forEach(e => (e.causes || []).forEach(c => (tally[c] = (tally[c] || 0) + 1)));
+    const [topCause, count] = Object.entries(tally).sort((a, b) => b[1] - a[1])[0] || [];
+    if (topCause && count / hardEntries.length >= 0.4) insights.push(`${topCause} appears often on your harder days.`);
+  }
+
+  const brightEntries = entries.filter(e => e.tier >= 2);
+  const gratitudeCauses = ['Answered prayer', 'Blessings', 'Thankfulness'];
+  const gratitudeCount = brightEntries.filter(e => (e.causes || []).some(c => gratitudeCauses.includes(c))).length;
+  if (brightEntries.length >= 3 && gratitudeCount / brightEntries.length >= 0.4) {
+    insights.push('Gratitude and thankfulness show up often on your brighter days.');
+  }
+
+  if (entries.length >= 14) {
+    const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+    const lastWeek = sorted.slice(-7);
+    const priorWeek = sorted.slice(-14, -7);
+    const diff = avg(lastWeek.map(e => e.tier)) - avg(priorWeek.map(e => e.tier));
+    if (diff > 0.6) insights.push('Your overall mood this week has felt gentler than last week.');
+    else if (diff < -0.6) insights.push('This week has felt a bit heavier than last week — be gentle with yourself.');
+  }
+
+  return insights.slice(0, 5);
+}
+
+function TrendsTab({ entries }) {
+  const [range, setRange] = useState('week');
+  const [calMonth, setCalMonth] = useState(monthKey(todayISO()));
+
+  const sorted = useMemo(() => [...entries].sort((a, b) => a.date.localeCompare(b.date)), [entries]);
+
+  const points = useMemo(() => {
+    if (range === 'week') {
+      const days = Array.from({ length: 7 }).map((_, i) => addDays(todayISO(), i - 6));
+      return days.map(d => ({ date: d, value: sorted.find(e => e.date === d)?.tier ?? null })).filter(p => p.value !== null || true).map(p => ({ ...p, value: p.value ?? 0 }));
+    }
+    if (range === 'month') {
+      const days = Array.from({ length: 30 }).map((_, i) => addDays(todayISO(), i - 29));
+      return days.filter(d => sorted.some(e => e.date === d)).map(d => ({ date: d, value: sorted.find(e => e.date === d).tier }));
+    }
+    // year — monthly averages
+    const months = Array.from({ length: 12 }).map((_, i) => {
+      const dt = new Date(); dt.setMonth(dt.getMonth() - (11 - i));
+      return monthKey(dateISO(dt));
+    });
+    return months.map(mk => {
+      const vals = sorted.filter(e => monthKey(e.date) === mk).map(e => e.tier);
+      return vals.length ? { date: mk, value: avg(vals) } : null;
+    }).filter(Boolean);
+  }, [range, sorted]);
+
+  const streakDates = entries.map(e => e.date);
+  const journalDates = entries.filter(e => e.journal && e.journal.trim()).map(e => e.date);
+  const prayerDates = entries.filter(e => e.prayerDone).map(e => e.date);
+  const actionDates = entries.filter(e => e.actionDone).map(e => e.date);
+
+  const checkinStreak = computeStreak(streakDates);
+  const journalStreak = computeStreak(journalDates);
+  const prayerStreak = computeStreak(prayerDates);
+  const actionStreak = computeStreak(actionDates);
+
+  const moodCounts = useMemo(() => {
+    const tally = {};
+    entries.forEach(e => (tally[e.mood] = (tally[e.mood] || 0) + 1));
+    return Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  }, [entries]);
+
+  const overallAvg = entries.length ? avg(entries.map(e => e.tier)) : null;
+  const insights = useMemo(() => computeInsights(entries), [entries]);
+
+  if (!entries.length) {
+    return (
+      <div className="card fade-in" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+        <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: '1.15rem', fontWeight: 600, marginBottom: '0.5rem' }}>Your trends will appear here</div>
+        <div style={{ fontSize: '0.9rem', color: 'var(--ink-muted)' }}>Check in daily and your mood trends, streaks, and insights will grow over time.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in">
+      <div className="card">
+        <div className="eyebrow">Mood Trend</div>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          {[['week', 'Week'], ['month', 'Month'], ['year', 'Year']].map(([v, l]) => (
+            <button key={v} className="chip" style={range === v ? { background: 'var(--ink)', borderColor: 'var(--ink)', color: '#fff' } : {}} onClick={() => setRange(v)}>{l}</button>
+          ))}
+        </div>
+        <TrendChart points={points} />
+        {overallAvg !== null && (
+          <div style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--ink-muted)' }}>
+            Average mood: <strong style={{ color: 'var(--ink)' }}>{overallAvg > 0.5 ? 'Generally Positive' : overallAvg < -0.5 ? 'Generally Difficult' : 'Fairly Steady'}</strong>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="eyebrow">Streaks</div>
+        <div className="streak-grid">
+          <div className="streak-tile"><div className={`streak-num${checkinStreak.current ? '' : ' zero'}`}>{checkinStreak.current}</div><div className="streak-label">Check-in Streak</div></div>
+          <div className="streak-tile"><div className={`streak-num${journalStreak.current ? '' : ' zero'}`}>{journalStreak.current}</div><div className="streak-label">Journal Streak</div></div>
+          <div className="streak-tile"><div className={`streak-num${prayerStreak.current ? '' : ' zero'}`}>{prayerStreak.current}</div><div className="streak-label">Prayer Streak</div></div>
+          <div className="streak-tile"><div className={`streak-num${actionStreak.current ? '' : ' zero'}`}>{actionStreak.current}</div><div className="streak-label">Devotion Streak</div></div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="eyebrow">Most Common Emotions</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          {moodCounts.map(([key, count]) => {
+            const m = MOOD_BY_KEY[key];
+            const c = tierColor(m.tier);
+            const pct = Math.round((count / entries.length) * 100);
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: orbGradient(m.tier), flexShrink: 0 }} />
+                <span style={{ fontSize: '0.9rem', width: 92 }}>{m.label}</span>
+                <div style={{ flex: 1, background: 'var(--bg)', borderRadius: 999, height: 8, overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, background: c.fg, height: '100%' }} />
+                </div>
+                <span style={{ fontSize: '0.75rem', color: 'var(--ink-subtle)', width: 28, textAlign: 'right' }}>{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="eyebrow">Emotional Calendar</div>
+        <EmotionalCalendar entries={entries} monthKeyVal={calMonth} onNavigate={n => {
+          const [y, m] = calMonth.split('-').map(Number);
+          const dt = new Date(y, m - 1 + n, 1);
+          setCalMonth(monthKey(dateISO(dt)));
+        }} />
+      </div>
+
+      <div className="card">
+        <div className="eyebrow">AI Insights</div>
+        {insights.length ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            {insights.map((ins, i) => <div key={i} style={{ fontSize: '0.9rem', lineHeight: 1.6 }}>· {ins}</div>)}
+          </div>
+        ) : (
+          <div style={{ fontSize: '0.85rem', color: 'var(--ink-subtle)' }}>Keep checking in daily — patterns and insights will appear here once there's enough history.</div>
+        )}
+        <div style={{ fontSize: '0.7rem', color: 'var(--ink-subtle)', marginTop: '0.75rem', fontStyle: 'italic' }}>These are gentle, descriptive observations — not medical or psychological conclusions.</div>
+      </div>
+    </div>
+  );
+}
+
+function ShareModal({ entry, ministry, memberFirstName, onClose }) {
+  const defaultMsg = `Hi, this is ${memberFirstName || 'a member'}. I wanted to share something from my journal today (${formatDateLong(entry.date)}):\n\n"${entry.journal}"\n\nWould appreciate your prayers.`;
+  const [msg, setMsg] = useState(defaultMsg);
+  return (
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-sheet">
+        <div className="step-title">Share with a Leader</div>
+        <div className="step-sub">This is entirely your choice. Nothing is ever shared automatically — edit the message below before sending.</div>
+        <textarea className="journal-input" value={msg} onChange={e => setMsg(e.target.value)} />
+        <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1rem' }}>
+          <button className="btn-big ghost" onClick={onClose}>Cancel</button>
+          {ministry?.whatsapp && (
+            <a className="btn-big accent" style={{ textDecoration: 'none' }}
+              href={`https://wa.me/${ministry.whatsapp.replace(/[^\d+]/g, '').replace(/^\+/, '')}?text=${encodeURIComponent(msg)}`}
+              target="_blank" rel="noopener" onClick={onClose}>Send via WhatsApp</a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrivacyModal({ onClose }) {
+  return (
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-sheet">
+        <div className="step-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><IconLock size={19} /> Your Privacy</div>
+        <div style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--ink-muted)' }}>
+          <p>Your mood check-ins and journal entries are private by default. They are stored only in this browser, on this device — never uploaded to a church server, spreadsheet, or database.</p>
+          <p>No one — including pastors or ministry leaders — can see your entries unless you explicitly choose to share one, using the "Share with a leader" option.</p>
+          <p>Because entries live in this browser, they won't follow you to another device or browser, and if you clear your browser data they will be lost. If this is a shared or public device, please keep that in mind.</p>
+        </div>
+        <button className="btn-big" style={{ marginTop: '1.25rem' }} onClick={onClose}>Got it</button>
+      </div>
+    </div>
+  );
+}
+
+function FontScaleControl({ scale, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: '0.4rem' }}>
+      <button className="icon-btn" style={{ fontSize: '0.8rem', fontWeight: 700 }} onClick={() => onChange(Math.max(0.9, scale - 0.1))}>A-</button>
+      <button className="icon-btn" style={{ fontSize: '1.1rem', fontWeight: 700 }} onClick={() => onChange(Math.min(1.35, scale + 0.1))}>A+</button>
+    </div>
+  );
+}
+
+// =============================================================================
+// CHECK-IN WIZARD
+// =============================================================================
+
+function CheckinWizard({ onComplete, onCancel }) {
+  const [step, setStep] = useState(0);
+  const [mood, setMood] = useState(null);
+  const [intensity, setIntensity] = useState(3);
+  const [causes, setCauses] = useState([]);
+  const [journal, setJournal] = useState('');
+  const totalSteps = 4;
+
+  const toggleCause = (c) => setCauses(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+  const words = wordCount(journal);
+  const over = words > 1000;
+
+  const next = () => setStep(s => Math.min(totalSteps - 1, s + 1));
+  const back = () => step === 0 ? onCancel() : setStep(s => s - 1);
+
+  return (
+    <div className="fade-in">
+      <ProgressDots step={step} total={totalSteps} />
+      {step === 0 && (
+        <div className="card">
+          <div className="step-title">How are you really feeling?</div>
+          <div className="step-sub">Choose the emotion that best describes your heart right now.</div>
+          <MoodGrid value={mood} onChange={v => { setMood(v); setTimeout(next, 150); }} />
+        </div>
+      )}
+      {step === 1 && mood && (
+        <div className="card">
+          <div className="step-title">How intense is this feeling?</div>
+          <div className="step-sub">Slide to show how strongly you're feeling {MOOD_BY_KEY[mood].label.toLowerCase()} right now.</div>
+          <IntensitySlider value={intensity} onChange={setIntensity} />
+          <button className="btn-big accent" style={{ marginTop: '1rem' }} onClick={next}>Continue</button>
+        </div>
+      )}
+      {step === 2 && (
+        <div className="card">
+          <div className="step-title">What's contributing to this?</div>
+          <div className="step-sub">Choose as many as apply — or none, if you're not sure.</div>
+          <CausesGrid value={causes} onToggle={toggleCause} />
+          <button className="btn-big accent" style={{ marginTop: '1.5rem' }} onClick={next}>Continue</button>
+        </div>
+      )}
+      {step === 3 && (
+        <div className="card">
+          <div className="step-title">Would you like to write more?</div>
+          <div className="step-sub">What happened today? What's on your heart? Would you like to tell God something? This stays completely private.</div>
+          <textarea className="journal-input" placeholder="Write as much or as little as you like…" value={journal} onChange={e => setJournal(e.target.value)} />
+          <div className={`word-count${over ? ' over' : ''}`}>{words} / 1000 words</div>
+          <button className="btn-big accent" style={{ marginTop: '1rem' }} disabled={over}
+            onClick={() => onComplete({ mood, intensity, causes, journal: journal.trim() })}>
+            Complete Check-in
+          </button>
+        </div>
+      )}
+      {step > 0 && (
+        <button className="link-btn" style={{ display: 'block', margin: '0.75rem auto 0' }} onClick={back}>← Back</button>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// MAIN APP
+// =============================================================================
+
+function App() {
+  const { me, meId } = useLocalMember();
+  const { weather } = useWeather();
+  const [entries, setEntries] = useState([]);
+  const [tab, setTab] = useState('today');
+  const [checkingIn, setCheckingIn] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [scale, setScale] = useState(() => {
+    try { return parseFloat(localStorage.getItem(FONT_SCALE_KEY)) || 1; } catch { return 1; }
+  });
+  const [shareEntry, setShareEntry] = useState(null);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [careDismissed, setCareDismissed] = useState(false);
+  const [ministry, setMinistry] = useState(null);
+
+  useEffect(() => { document.documentElement.style.setProperty('--scale', scale); try { localStorage.setItem(FONT_SCALE_KEY, String(scale)); } catch {} }, [scale]);
+
+  useEffect(() => {
+    if (meId === null && meId !== undefined) { /* still resolving */ }
+    setEntries(loadEntries(meId));
+  }, [meId]);
+
+  useEffect(() => {
+    fetch(`${DATA_URL}?t=${Date.now()}`).then(r => r.json()).then(d => setMinistry(d.ministry || null)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    try {
+      const dismissedDate = localStorage.getItem(CARE_DISMISS_PREFIX + (meId || 'guest'));
+      setCareDismissed(dismissedDate === todayISO());
+    } catch {}
+  }, [meId]);
+
+  const today = todayISO();
+  const todayEntry = entries.find(e => e.date === today);
+  const careSignal = useMemo(() => computeCareSignal(entries), [entries]);
+
+  const persist = (next) => { setEntries(next); saveEntries(meId, next); };
+
+  const handleComplete = async ({ mood, intensity, causes, journal }) => {
+    setGenerating(true);
+    const moodMeta = MOOD_BY_KEY[mood];
+    const history = entries.map(e => ({ date: e.date, mood: e.mood, tier: e.tier, intensity: e.intensity, journal: e.journal }));
+    const checkinStreak = computeStreak(entries.map(e => e.date)).current;
+
+    let reflection = null;
+    try {
+      reflection = await callAiReflection({
+        name: me?.name, timeOfDay: timeOfDay(),
+        weatherDesc: weather ? `${Math.round(weather.temp)}°C, ${weatherLabel(weather.code, weather.isDay)}` : null,
+        mood: moodMeta.label, intensity, causes, journal, checkinStreak, history,
+      });
+    } catch {}
+    if (!reflection) {
+      reflection = buildTemplateReflection({ mood: moodMeta, intensity, causes, journal, name: me?.name, history });
+    }
+    if (!reflection.reading) reflection.reading = pickReading(moodMeta, causes);
+
+    const entry = {
+      date: today, mood, tier: moodMeta.tier, intensity, causes, journal,
+      weather: weather ? { temp: weather.temp, code: weather.code, city: weather.city } : null,
+      reflection, prayerDone: false, actionDone: false, createdAt: new Date().toISOString(),
+    };
+    persist([...entries.filter(e => e.date !== today), entry]);
+    setGenerating(false);
+    setCheckingIn(false);
+  };
+
+  const markPrayed = () => persist(entries.map(e => e.date === today ? { ...e, prayerDone: !e.prayerDone } : e));
+  const markAction = () => persist(entries.map(e => e.date === today ? { ...e, actionDone: !e.actionDone } : e));
+
+  const dismissCare = () => {
+    try { localStorage.setItem(CARE_DISMISS_PREFIX + (meId || 'guest'), todayISO()); } catch {}
+    setCareDismissed(true);
+  };
+
+  const firstName = (me?.name || '').split(' ')[0];
+  const greetingName = firstName ? `, ${firstName}` : '';
+
+  return (
+    <React.Fragment>
+      <div className="app-header">
+        <div className="header-row">
+          <div>
+            <div className="greeting">{greetingWord()}{greetingName}.</div>
+            {!todayEntry && <div className="greeting-sub">Before today's devotion, how are you really feeling?</div>}
+            {todayEntry && <div className="greeting-sub">You've already checked in today — come back tomorrow for your next reflection.</div>}
+          </div>
+          <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+            <FontScaleControl scale={scale} onChange={setScale} />
+            <button className="icon-btn" onClick={() => setShowPrivacy(true)} aria-label="Privacy info"><IconLock /></button>
+          </div>
+        </div>
+        <div className="segmented">
+          <button className={tab === 'today' ? 'active' : ''} onClick={() => setTab('today')}>Today</button>
+          <button className={tab === 'trends' ? 'active' : ''} onClick={() => setTab('trends')}>Trends</button>
+        </div>
+      </div>
+
+      <div className="content">
+        {tab === 'today' && (
+          <React.Fragment>
+            {careSignal.trigger && !careDismissed && (
+              <CareBanner signal={careSignal} ministry={ministry} memberFirstName={firstName} onDismiss={dismissCare} />
+            )}
+
+            {!checkingIn && !todayEntry && <WeatherCard weather={weather} />}
+
+            {checkingIn ? (
+              generating ? (
+                <div className="card fade-in" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+                  <div className="pulse-orb" style={{ marginBottom: '1.1rem' }} />
+                  <div style={{ fontWeight: 600 }}>Preparing your reflection…</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '0.4rem' }}>Just a moment while we bring this before God with you.</div>
+                </div>
+              ) : (
+                <CheckinWizard onComplete={handleComplete} onCancel={() => setCheckingIn(false)} />
+              )
+            ) : todayEntry ? (
+              <ReflectionView entry={todayEntry} onMarkPrayed={markPrayed} onMarkAction={markAction} onShare={() => setShareEntry(todayEntry)} />
+            ) : (
+              <button className="btn-big accent" onClick={() => setCheckingIn(true)}>Begin Today's Check-in</button>
+            )}
+          </React.Fragment>
+        )}
+
+        {tab === 'trends' && <TrendsTab entries={entries} />}
+      </div>
+
+      <div className="disclaimer">
+        This devotional journal is designed to encourage your walk with Christ. It is not a replacement for the Bible, prayer, Christian fellowship, pastoral guidance, professional counseling, or your personal relationship with God. If you are experiencing prolonged emotional distress or thoughts of harming yourself, please seek immediate help from trusted family members, church leaders, local emergency services, or qualified mental health professionals.
+      </div>
+
+      {shareEntry && <ShareModal entry={shareEntry} ministry={ministry} memberFirstName={firstName} onClose={() => setShareEntry(null)} />}
+      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
