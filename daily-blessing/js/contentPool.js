@@ -24,12 +24,23 @@ export function drawFromPool(poolName, items) {
   const state = getState();
   let bagState = state.pools[poolName];
   if (!bagState || !bagState.bag || bagState.bag.length === 0) {
-    const ids = items.map((it) => it.id);
-    bagState = { bag: shuffle(ids) };
+    bagState = { bag: shuffle(items.map((it) => it.id)) };
   }
-  const nextId = bagState.bag.pop();
+
+  let nextId = bagState.bag.pop();
+  let picked = items.find((it) => it.id === nextId);
+
+  // The cached bag can hold an id that no longer belongs to this pool (a
+  // stale bag from a content edit, or a caller bug) — rebuild fresh from the
+  // current items rather than silently serving the wrong content.
+  if (!picked && items.length > 0) {
+    bagState = { bag: shuffle(items.map((it) => it.id)) };
+    nextId = bagState.bag.pop();
+    picked = items.find((it) => it.id === nextId);
+  }
+
   updateState((s) => {
     s.pools[poolName] = bagState;
   });
-  return items.find((it) => it.id === nextId) || items[0];
+  return picked;
 }

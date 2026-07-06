@@ -171,15 +171,7 @@ export function renderProfile(name) {
   $('db-stat-days').textContent = formatNumber(distinctDays);
 
   const avatar = $('db-avatar');
-  const initials = (name || 'F').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
-  avatar.textContent = '';
-  avatar.style.display = 'flex';
-  avatar.style.alignItems = 'center';
-  avatar.style.justifyContent = 'center';
-  avatar.style.color = '#fff';
-  avatar.style.fontWeight = '700';
-  avatar.style.fontSize = '24px';
-  avatar.textContent = initials;
+  avatar.textContent = (name || 'F').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 
   const list = $('db-achievements');
   list.innerHTML = '';

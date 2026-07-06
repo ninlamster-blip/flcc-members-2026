@@ -4,7 +4,7 @@ import { registerOpen } from './js/streak.js';
 import { loadPools } from './js/contentPool.js';
 import { fetchCommunityCount, reportOpened } from './js/community.js';
 import { switchView, renderHome, renderJourney, renderCollection, renderCommunity, renderProfile } from './js/views.js';
-import { prefersReducedMotion } from './js/utils.js';
+import { prefersReducedMotion, todayKey } from './js/utils.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -49,18 +49,20 @@ function renderHomeFromResolved(resolved) {
   });
 }
 
+// `reference` doubles as the "show Read Full Chapter link" flag — only
+// scripture-like content (with a real citation) links out.
 const CARD_COPY = {
-  scripture: (c) => ({ kicker: "Today's Scripture", heading: '', body: c.verse, reference: c.reference, showLink: true }),
-  prayer: (c) => ({ kicker: "Today's Prayer", heading: c.title, body: c.body, reference: '', showLink: false }),
-  encouragement: (c) => ({ kicker: "Today's Encouragement", heading: '', body: c.body, reference: '', showLink: false }),
-  reflection: (c) => ({ kicker: 'Reflection Question', heading: '', body: c.question, reference: '', showLink: false }),
-  devotional: (c) => ({ kicker: 'Mini Devotional', heading: c.title, body: c.body, reference: c.reference, showLink: true }),
-  memoryVerse: (c) => ({ kicker: 'Memory Verse', heading: '', body: c.verse, reference: c.reference, showLink: true }),
-  historicalFact: (c) => ({ kicker: 'Did You Know?', heading: c.title, body: c.body, reference: '', showLink: false }),
-  challenge: (c) => ({ kicker: "Today's Bible Challenge", heading: c.title, body: c.body, reference: '', showLink: false }),
-  kindness: (c) => ({ kicker: 'Kindness Challenge', heading: c.title, body: c.body, reference: '', showLink: false }),
-  mission: (c) => ({ kicker: 'Mission Challenge', heading: c.title, body: c.body, reference: '', showLink: false }),
-  friday: (c) => ({ kicker: c.title, heading: '', body: c.body, reference: '', showLink: false }),
+  scripture: (c) => ({ kicker: "Today's Scripture", heading: '', body: c.verse, reference: c.reference }),
+  prayer: (c) => ({ kicker: "Today's Prayer", heading: c.title, body: c.body, reference: '' }),
+  encouragement: (c) => ({ kicker: "Today's Encouragement", heading: '', body: c.body, reference: '' }),
+  reflection: (c) => ({ kicker: 'Reflection Question', heading: '', body: c.question, reference: '' }),
+  devotional: (c) => ({ kicker: 'Mini Devotional', heading: c.title, body: c.body, reference: c.reference }),
+  memoryVerse: (c) => ({ kicker: 'Memory Verse', heading: '', body: c.verse, reference: c.reference }),
+  historicalFact: (c) => ({ kicker: 'Did You Know?', heading: c.title, body: c.body, reference: '' }),
+  challenge: (c) => ({ kicker: "Today's Bible Challenge", heading: c.title, body: c.body, reference: '' }),
+  kindness: (c) => ({ kicker: 'Kindness Challenge', heading: c.title, body: c.body, reference: '' }),
+  mission: (c) => ({ kicker: 'Mission Challenge', heading: c.title, body: c.body, reference: '' }),
+  friday: (c) => ({ kicker: c.title, heading: '', body: c.body, reference: '' }),
 };
 
 function populateBlessingCard(resolved) {
@@ -77,7 +79,7 @@ function populateBlessingCard(resolved) {
   ref.textContent = copy.reference;
   ref.hidden = !copy.reference;
   const link = $('db-card-link');
-  link.hidden = !copy.showLink;
+  link.hidden = !copy.reference;
   link.target = '_blank';
   link.rel = 'noopener';
 
@@ -157,10 +159,13 @@ function closeBlessingCard() {
   $('db-gift-box').focus();
 }
 
-function bindGiftBoxToReopen() {
-  const box = $('db-gift-box');
-  box.removeEventListener('click', handleOpen);
-  box.onclick = () => openBlessingCard(currentResolved);
+async function handleGiftBoxClick() {
+  // Already opened today — just reopen the same card, no ceremony, no re-earning.
+  if (currentResolved && currentResolved.opened) {
+    openBlessingCard(currentResolved);
+    return;
+  }
+  await handleOpen();
 }
 
 async function handleOpen() {
@@ -177,7 +182,6 @@ async function handleOpen() {
 
   openBlessingCard(currentResolved);
   renderHomeFromResolved({ ...currentResolved, opened: true });
-  bindGiftBoxToReopen();
 
   reportOpened();
 
@@ -186,10 +190,21 @@ async function handleOpen() {
   }
 }
 
-async function init() {
-  memberName = await resolveMemberName();
+// If the tab is left open past midnight, refresh once the user comes back to
+// it so they see a fresh, unopened box for the new day instead of yesterday's
+// cached blessing.
+function refreshIfNewDay() {
+  if (currentResolved && currentResolved.date !== todayKey()) {
+    window.location.reload();
+  }
+}
 
-  const pools = await loadPools(['characters']);
+async function init() {
+  const [name, pools] = await Promise.all([
+    resolveMemberName(),
+    loadPools(['characters']),
+  ]);
+  memberName = name;
   characters = pools.characters;
 
   currentResolved = await resolveTodaysBlessing();
@@ -197,18 +212,17 @@ async function init() {
 
   setupNav();
 
-  $('db-gift-box').addEventListener('click', handleOpen);
+  $('db-gift-box').addEventListener('click', handleGiftBoxClick);
   $('db-open-btn').addEventListener('click', handleOpen);
   $('db-card-close').addEventListener('click', closeBlessingCard);
   $('db-card-backdrop').addEventListener('click', closeBlessingCard);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !$('db-card-overlay').hidden) closeBlessingCard();
   });
-
-  if (currentResolved.opened) {
-    // Already opened today — box reopens the same blessing without re-earning rewards.
-    bindGiftBoxToReopen();
-  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshIfNewDay();
+  });
+  window.addEventListener('focus', refreshIfNewDay);
 }
 
 init();

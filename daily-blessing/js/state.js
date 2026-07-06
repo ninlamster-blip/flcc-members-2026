@@ -18,12 +18,31 @@ function defaultState() {
 
 let state = load();
 
+// Merges saved data onto the current defaults one level deep, so adding a
+// new field to a nested object (e.g. streak, collection) in a future release
+// doesn't get silently wiped by an older saved shape that lacks it.
+function mergeDefaults(defaults, saved) {
+  const merged = { ...defaults, ...saved };
+  for (const key of Object.keys(defaults)) {
+    const defaultValue = defaults[key];
+    const savedValue = saved[key];
+    if (
+      defaultValue && savedValue &&
+      typeof defaultValue === 'object' && typeof savedValue === 'object' &&
+      !Array.isArray(defaultValue) && !Array.isArray(savedValue)
+    ) {
+      merged[key] = { ...defaultValue, ...savedValue };
+    }
+  }
+  return merged;
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
     const parsed = JSON.parse(raw);
-    return { ...defaultState(), ...parsed };
+    return mergeDefaults(defaultState(), parsed);
   } catch {
     return defaultState();
   }

@@ -51,18 +51,17 @@ const POOL_FILES = {
   memoryVerse: 'memoryVerses',
   historicalFact: 'historicalFacts',
   challenge: 'challenges',
-  friday: 'fridaySpecials',
 };
 
 function rollInRange(rng, [min, max]) {
   return Math.round(min + rng() * (max - min));
 }
 
-async function pickCategoryContent(category, rng) {
+async function pickCategoryContent(category) {
   if (category === 'kindness' || category === 'mission') {
     const all = await loadPools(['kindnessMissions']);
     const items = all.kindnessMissions.filter((it) => it.type === category);
-    return drawFromPool('kindnessMissions', items);
+    return drawFromPool(`kindnessMissions:${category}`, items);
   }
   if (category === 'friday') {
     const pools = await loadPools(['fridaySpecials', 'pastorMessages', 'announcements']);
@@ -72,6 +71,13 @@ async function pickCategoryContent(category, rng) {
   const file = POOL_FILES[category];
   const pools = await loadPools([file]);
   return drawFromPool(file, pools[file]);
+}
+
+async function pickCharacterCard(state) {
+  const pools = await loadPools(['characters']);
+  const owned = new Set(state.collection.ownedCharacterIds);
+  const remaining = pools.characters.filter((c) => !owned.has(c.id));
+  return remaining.length > 0 ? drawFromPool('characters', remaining) : null;
 }
 
 export async function resolveTodaysBlessing() {
@@ -96,17 +102,12 @@ export async function resolveTodaysBlessing() {
     categories = [{ value: 'friday', weight: 30 }, ...CATEGORY_WEIGHTS];
   }
   const category = weightedPick(rng, categories);
-  const content = await pickCategoryContent(category, rng);
+  const willTryCharacterCard = rng() < CARD_CHANCE[rarity];
 
-  let characterCard = null;
-  if (rng() < CARD_CHANCE[rarity]) {
-    const pools = await loadPools(['characters']);
-    const owned = new Set(state.collection.ownedCharacterIds);
-    const remaining = pools.characters.filter((c) => !owned.has(c.id));
-    if (remaining.length > 0) {
-      characterCard = drawFromPool('characters', remaining);
-    }
-  }
+  const [content, characterCard] = await Promise.all([
+    pickCategoryContent(category),
+    willTryCharacterCard ? pickCharacterCard(state) : Promise.resolve(null),
+  ]);
 
   const resolved = {
     date: key,
