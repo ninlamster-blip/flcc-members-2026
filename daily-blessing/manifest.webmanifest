@@ -1,0 +1,11 @@
+{
+  "name": "Daily Blessing",
+  "short_name": "Blessing",
+  "description": "Every day, discover God's encouragement in a beautiful experience.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F8F9FB",
+  "theme_color": "#F8F9FB",
+  "icons": []
+}

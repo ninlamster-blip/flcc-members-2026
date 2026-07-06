@@ -5,3 +5,11 @@ compatibility_date = "2024-01-01"
 [assets]
 directory = "."
 binding = "ASSETS"
+
+# Optional — powers the real "members opened today" count on the Daily
+# Blessing Community tab. Create a KV namespace (Workers & Pages → your
+# Worker → Settings → Bindings → KV Namespace) and uncomment below with its
+# id. Without this, the Community tab simply shows a local-only message.
+# [[kv_namespaces]]
+# binding = "DAILY_BLESSING_KV"
+# id = "your-kv-namespace-id"

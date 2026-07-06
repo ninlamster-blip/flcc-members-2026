@@ -1,0 +1,10 @@
+[
+  { "id": "kmn-001", "type": "kindness", "title": "Encourage a Stranger", "body": "Offer a genuine compliment or word of encouragement to someone you don't know well today." },
+  { "id": "kmn-002", "type": "kindness", "title": "Carry Someone's Burden", "body": "Ask a friend or family member how they are really doing, and actually listen to the answer." },
+  { "id": "kmn-003", "type": "kindness", "title": "Quiet Generosity", "body": "Do something generous for someone today without telling anyone you did it." },
+  { "id": "kmn-004", "type": "kindness", "title": "Forgive Something Small", "body": "Let go of a small offense today instead of holding onto it." },
+  { "id": "kmn-005", "type": "mission", "title": "Pray for the Nations", "body": "Pray today for a missionary or a country you've never visited, that the Gospel would take root there." },
+  { "id": "kmn-006", "type": "mission", "title": "Invite Someone to Church", "body": "Invite one person to join you at church or a small group this week." },
+  { "id": "kmn-007", "type": "mission", "title": "Share Your Story", "body": "Tell one person today about a specific way God has been faithful to you." },
+  { "id": "kmn-008", "type": "mission", "title": "Serve Behind the Scenes", "body": "Volunteer for a task at church this week that no one will notice you did." }
+]
