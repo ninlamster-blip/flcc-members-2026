@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F8F9FB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Daily Blessing</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="db-back-link" href="../" aria-label="Back to app">←</a>
+
+  <div id="db-root">
+
+    <!-- ============ HOME ============ -->
+    <section id="view-home" class="db-view" data-view="home" aria-labelledby="home-greeting">
+      <header class="db-home-header">
+        <p class="db-eyebrow" id="db-season-label" hidden></p>
+        <h1 id="home-greeting" class="db-greeting">Good Morning</h1>
+        <p class="db-subgreeting">Every day is a new opportunity to walk with Christ.</p>
+      </header>
+
+      <div class="db-streak-chip" id="db-streak-chip" role="status" aria-live="polite">
+        <span class="db-flame" aria-hidden="true"></span>
+        <span id="db-streak-text">Begin your journey</span>
+      </div>
+
+      <div class="db-box-stage">
+        <button type="button" id="db-gift-box" class="db-gift-box" aria-describedby="db-box-caption">
+          <span class="db-box-lid" aria-hidden="true"></span>
+          <span class="db-box-body" aria-hidden="true"></span>
+          <span class="db-box-shimmer" aria-hidden="true"></span>
+        </button>
+        <p id="db-box-caption" class="db-box-caption">Today's Blessing awaits</p>
+      </div>
+
+      <button type="button" id="db-open-btn" class="db-primary-btn">Open Today's Blessing</button>
+    </section>
+
+    <!-- ============ JOURNEY ============ -->
+    <section id="view-journey" class="db-view" data-view="journey" hidden aria-labelledby="journey-title">
+      <header class="db-view-header">
+        <h1 id="journey-title" class="db-title">Journey</h1>
+        <p class="db-view-sub">Your walk, one day at a time.</p>
+      </header>
+      <div class="db-card db-journey-heatmap-card">
+        <h2 class="db-section-title">Faithfulness</h2>
+        <div id="db-heatmap" class="db-heatmap" role="img" aria-label="Activity over the last 26 weeks"></div>
+      </div>
+      <div class="db-card">
+        <h2 class="db-section-title">Timeline</h2>
+        <ol id="db-timeline" class="db-timeline"></ol>
+      </div>
+    </section>
+
+    <!-- ============ COLLECTION ============ -->
+    <section id="view-collection" class="db-view" data-view="collection" hidden aria-labelledby="collection-title">
+      <header class="db-view-header">
+        <h1 id="collection-title" class="db-title">Collection</h1>
+        <p class="db-view-sub" id="db-collection-progress">Heroes of Faith · 0 of 0 collected</p>
+      </header>
+      <div id="db-collection-grid" class="db-collection-grid"></div>
+    </section>
+
+    <!-- ============ COMMUNITY ============ -->
+    <section id="view-community" class="db-view" data-view="community" hidden aria-labelledby="community-title">
+      <header class="db-view-header">
+        <h1 id="community-title" class="db-title">Community</h1>
+        <p class="db-view-sub">Today's Church Journey</p>
+      </header>
+      <div class="db-card db-community-card">
+        <div class="db-progress-ring" id="db-community-ring" aria-hidden="true">
+          <svg viewBox="0 0 120 120">
+            <circle class="db-ring-track" cx="60" cy="60" r="52"></circle>
+            <circle class="db-ring-fill" id="db-ring-fill" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <span class="db-ring-count" id="db-community-count">—</span>
+        </div>
+        <p class="db-community-text" id="db-community-text">Opening today's blessing links you with your church family.</p>
+      </div>
+    </section>
+
+    <!-- ============ PROFILE ============ -->
+    <section id="view-profile" class="db-view" data-view="profile" hidden aria-labelledby="profile-title">
+      <header class="db-view-header">
+        <h1 id="profile-title" class="db-title">Profile</h1>
+      </header>
+      <div class="db-card db-profile-card">
+        <div class="db-avatar" id="db-avatar" aria-hidden="true"></div>
+        <p class="db-profile-level" id="db-profile-level">Faith Journey · Level 1</p>
+        <div class="db-xp-track"><div class="db-xp-fill" id="db-xp-fill"></div></div>
+      </div>
+      <div class="db-stat-grid">
+        <div class="db-stat"><span class="db-stat-value" id="db-stat-coins">0</span><span class="db-stat-label">Grace Coins</span></div>
+        <div class="db-stat"><span class="db-stat-value" id="db-stat-xp">0</span><span class="db-stat-label">Faith XP</span></div>
+        <div class="db-stat"><span class="db-stat-value" id="db-stat-badges">0</span><span class="db-stat-label">Badges</span></div>
+        <div class="db-stat"><span class="db-stat-value" id="db-stat-days">0</span><span class="db-stat-label">Journey Days</span></div>
+      </div>
+      <div class="db-card">
+        <h2 class="db-section-title">Recent Achievements</h2>
+        <ul id="db-achievements" class="db-achievements"></ul>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav class="db-nav" aria-label="Daily Blessing sections">
+    <button type="button" class="db-nav-btn is-active" data-nav="home" aria-current="page">
+      <span class="db-nav-icon" aria-hidden="true">&#9679;</span><span>Home</span>
+    </button>
+    <button type="button" class="db-nav-btn" data-nav="journey">
+      <span class="db-nav-icon" aria-hidden="true">&#9670;</span><span>Journey</span>
+    </button>
+    <button type="button" class="db-nav-btn" data-nav="collection">
+      <span class="db-nav-icon" aria-hidden="true">&#9632;</span><span>Collection</span>
+    </button>
+    <button type="button" class="db-nav-btn" data-nav="community">
+      <span class="db-nav-icon" aria-hidden="true">&#9711;</span><span>Community</span>
+    </button>
+    <button type="button" class="db-nav-btn" data-nav="profile">
+      <span class="db-nav-icon" aria-hidden="true">&#9650;</span><span>Profile</span>
+    </button>
+  </nav>
+
+  <!-- ============ OPENING CEREMONY OVERLAY ============ -->
+  <div id="db-ceremony" class="db-ceremony" hidden aria-hidden="true">
+    <div class="db-ceremony-backdrop"></div>
+    <div class="db-ceremony-stage">
+      <div class="db-ceremony-box">
+        <span class="db-box-lid" aria-hidden="true"></span>
+        <span class="db-box-body" aria-hidden="true"></span>
+      </div>
+      <div class="db-ceremony-light" aria-hidden="true"></div>
+      <div class="db-ceremony-particles" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <!-- ============ BLESSING CARD OVERLAY ============ -->
+  <div id="db-card-overlay" class="db-card-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="db-card-title">
+    <div class="db-card-backdrop" id="db-card-backdrop"></div>
+    <div class="db-blessing-card" id="db-blessing-card" tabindex="-1">
+      <p class="db-card-kicker" id="db-card-kicker">Today's Scripture</p>
+      <h2 id="db-card-title" class="db-card-heading"></h2>
+      <p class="db-card-body" id="db-card-body"></p>
+      <p class="db-card-reference" id="db-card-reference"></p>
+      <a class="db-card-link" id="db-card-link" href="../verse-lookup.html">Read Full Chapter</a>
+
+      <div class="db-rewards-row" id="db-rewards-row">
+        <div class="db-reward db-reward-coins"><span class="db-reward-value" id="db-reward-coins">+0</span><span class="db-reward-label">Grace Coins</span></div>
+        <div class="db-reward db-reward-xp"><span class="db-reward-value" id="db-reward-xp">+0</span><span class="db-reward-label">Faith XP</span></div>
+      </div>
+
+      <div id="db-character-reveal" class="db-character-reveal" hidden></div>
+
+      <button type="button" class="db-primary-btn db-card-close" id="db-card-close">Amen</button>
+    </div>
+  </div>
+
+  <!-- ============ MILESTONE TOAST ============ -->
+  <div id="db-toast" class="db-toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

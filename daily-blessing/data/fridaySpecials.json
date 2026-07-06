@@ -1,0 +1,10 @@
+[
+  { "id": "frd-001", "type": "worship", "title": "Today's Worship", "body": "\"How Great Thou Art\" — take a moment today to sit with this hymn and let it prepare your heart for Sunday." },
+  { "id": "frd-002", "type": "worship", "title": "Today's Worship", "body": "\"It Is Well With My Soul\" — whatever this week has held, let this be your song today." },
+  { "id": "frd-003", "type": "pastorWelcome", "title": "A Word Before Sunday", "body": "We can't wait to worship alongside you this Sunday. Come as you are — there is room for you here." },
+  { "id": "frd-004", "type": "prayer", "title": "A Prayer Before the Weekend", "body": "Lord, as this week closes, thank You for Your faithfulness in it. Prepare our hearts for Sunday, and rest our bodies tonight. Amen." },
+  { "id": "frd-005", "type": "schedule", "title": "This Sunday", "body": "Join us for worship this Sunday morning — check the church schedule for service times and this week's ministries." },
+  { "id": "frd-006", "type": "offering", "title": "A Gentle Reminder", "body": "\"Each one must give as he has decided in his heart, not reluctantly or under compulsion, for God loves a cheerful giver.\" (2 Corinthians 9:7) If you're able, consider giving toward this Sunday's offering." },
+  { "id": "frd-007", "type": "volunteer", "title": "Serve This Sunday", "body": "Our church runs on the quiet faithfulness of volunteers. If you have an hour to give this Sunday, reach out to a ministry leader — every hand matters." },
+  { "id": "frd-008", "type": "memoryVerse", "title": "Verse for the Weekend", "body": "\"Not neglecting to meet together, as is the habit of some, but encouraging one another.\" (Hebrews 10:25) See you Sunday." }
+]

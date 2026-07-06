@@ -19,6 +19,12 @@
 //
 // That's it — all members can now use Ask FLCC with no API key setup.
 // The worker also serves GET /news — live RSS headlines from trusted sources.
+//
+// OPTIONAL — Daily Blessing community counter:
+//  Go to your Worker → Settings → Bindings → Add binding → KV Namespace,
+//  create (or pick) a namespace, and name the binding DAILY_BLESSING_KV.
+//  This powers the real "members opened today" count on the Daily Blessing
+//  Community tab. Without it, that tab just shows a local-only message.
 // =============================================================================
 
 const CORS = {
@@ -119,6 +125,11 @@ async function handleRequest(request, env) {
     });
   }
 
+  // ── /api/daily-blessing/community — anonymous daily open counter ─────────
+  if (url.pathname === '/api/daily-blessing/community') {
+    return handleDailyBlessingCommunity(request, env, url);
+  }
+
   // ── All other non-POST requests ──────────────────────────────────────────
   // Static files (HTML, JSON, etc.) are served directly by Cloudflare's edge
   // before the Worker runs, so env.ASSETS is not available here.
@@ -181,5 +192,68 @@ async function handleRequest(request, env) {
       ...CORS,
       'Content-Type': anthropicResp.headers.get('Content-Type') || 'application/json',
     },
+  });
+}
+
+// ── Daily Blessing community counter ────────────────────────────────────────
+// Optional: only works once a KV namespace is bound to this Worker as
+// DAILY_BLESSING_KV (Workers & Pages → your Worker → Settings → Bindings →
+// add a KV namespace binding named DAILY_BLESSING_KV). Without it, the app's
+// Community tab gracefully falls back to a local-only message — nothing
+// breaks. Counts are anonymous: only a random per-device id (no member
+// identity) is stored, purely to avoid one device inflating the count.
+async function handleDailyBlessingCommunity(request, env, url) {
+  if (!env.DAILY_BLESSING_KV) {
+    return new Response(JSON.stringify({ configured: false }), {
+      status: 200,
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const date = url.searchParams.get('date') || '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return new Response(JSON.stringify({ error: { message: 'Invalid or missing date' } }), {
+      status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+  const countKey = `count:${date}`;
+
+  if (request.method === 'GET') {
+    const count = parseInt(await env.DAILY_BLESSING_KV.get(countKey), 10) || 0;
+    return new Response(JSON.stringify({ configured: true, date, count }), {
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (request.method === 'POST') {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: { message: 'Invalid JSON body' } }), {
+        status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+    const deviceId = String(body.deviceId || '').slice(0, 64);
+    if (!deviceId) {
+      return new Response(JSON.stringify({ error: { message: 'Missing deviceId' } }), {
+        status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+    const dedupeKey = `opened:${date}:${deviceId}`;
+    const alreadyCounted = await env.DAILY_BLESSING_KV.get(dedupeKey);
+    if (!alreadyCounted) {
+      const count = (parseInt(await env.DAILY_BLESSING_KV.get(countKey), 10) || 0) + 1;
+      await env.DAILY_BLESSING_KV.put(countKey, String(count), { expirationTtl: 60 * 60 * 24 * 3 });
+      await env.DAILY_BLESSING_KV.put(dedupeKey, '1', { expirationTtl: 60 * 60 * 24 * 3 });
+    }
+    const count = parseInt(await env.DAILY_BLESSING_KV.get(countKey), 10) || 0;
+    return new Response(JSON.stringify({ configured: true, date, count }), {
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify({ error: { message: 'Method not allowed' } }), {
+    status: 405, headers: { ...CORS, 'Content-Type': 'application/json' },
   });
 }
