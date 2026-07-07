@@ -3,8 +3,12 @@
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
 import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
 import { loadJson, escapeHtml } from './js/utils.js';
-import { initCompanion } from './js/companion.js';
-import { initJournal } from './js/journal.js';
+import { initCompanion, startNotOkayConversation } from './js/companion.js';
+import {
+  applyPeriodTheme, dateLine, occasionLine, initWeather,
+  ritualFor, currentPeriod, openBreathing, closeBreathing, initNotOkay,
+} from './js/sanctuary.js';
+import { initJournal, refreshJournal } from './js/journal.js';
 import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
 import { initSupport, renderCrisisLines } from './js/support.js';
@@ -37,6 +41,7 @@ async function boot() {
   setupSettings();
   setupCrisis();
   setupOnboarding();
+  setupSanctuary();
 
   initCompanion(context);
   initJournal(context);
@@ -72,6 +77,7 @@ function setupNav() {
     btn.addEventListener('click', () => {
       const target = btn.dataset.nav;
       if (target === 'faith') renderFaith(); // verse/prayer follow today's heart check-in
+      if (target === 'journal') refreshJournal(); // pick up entries saved from other tabs
       document.querySelectorAll('.oc-view').forEach((v) => { v.hidden = v.dataset.view !== target; });
       buttons.forEach((b) => {
         b.classList.toggle('is-active', b === btn);
@@ -81,6 +87,46 @@ function setupNav() {
       document.body.dataset.activeView = target;
       window.scrollTo({ top: 0 });
     });
+  });
+}
+
+// ── Daily sanctuary (home extras) ────────────────────────────────────────────
+
+function goTo(tab) {
+  document.querySelector(`.oc-nav-btn[data-nav="${tab}"]`)?.click();
+}
+
+function setupSanctuary() {
+  applyPeriodTheme();
+  document.getElementById('oc-date-line').textContent = dateLine();
+
+  const occasion = occasionLine();
+  if (occasion) {
+    const el = document.getElementById('oc-occasion');
+    el.textContent = occasion;
+    el.hidden = false;
+  }
+
+  initWeather(document.getElementById('oc-weather-chip'));
+
+  // One gentle ritual invitation per time of day.
+  const ritual = ritualFor(currentPeriod());
+  const pill = document.getElementById('oc-ritual-pill');
+  pill.textContent = `${ritual.icon} ${ritual.text}`;
+  pill.hidden = false;
+  pill.addEventListener('click', () => {
+    navigator.vibrate?.(8);
+    if (ritual.action === 'breathe') openBreathing();
+    else goTo(ritual.action);
+  });
+
+  document.getElementById('oc-breathe-close').addEventListener('click', closeBreathing);
+
+  initNotOkay({
+    verses: context.verses,
+    toast,
+    goTo,
+    onTalk: () => { goTo('home'); startNotOkayConversation(); },
   });
 }
 

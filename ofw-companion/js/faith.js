@@ -1,6 +1,6 @@
 // Faith — daily verse, personalized prayer, and the Virtual Bible Study
 // community led by Pastor Anson Dionisio.
-import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote } from './state.js';
+import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, addJournalEntry } from './state.js';
 import { personalPrayer, isConnected } from './ai.js';
 import { escapeHtml, todayKey } from './utils.js';
 
@@ -31,11 +31,21 @@ export function render() {
   const bs = data.biblestudy;
   const bringing = s.bringing?.date === weekKey() ? s.bringing : null;
 
+  const next = nextGathering(bs);
+
   body.innerHTML = `
     <div class="oc-verse-card">
       <p class="oc-verse-text">“${escapeHtml(verse.text)}”</p>
       <p class="oc-verse-ref">${escapeHtml(verse.ref)}</p>
     </div>
+
+    ${next ? `
+    <div class="oc-card oc-next-card">
+      <h2 class="oc-section-title">Next gathering</h2>
+      <p class="oc-next-title">${escapeHtml(next.entry.title)}</p>
+      <p class="oc-next-when">${escapeHtml(countdownText(next.when))} · ${escapeHtml(next.when.toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' }))} <span class="oc-muted">(your time)</span></p>
+      <p class="oc-muted">${escapeHtml(next.entry.note)}</p>
+    </div>` : ''}
 
     <div class="oc-card">
       <h2 class="oc-section-title">A prayer for you today</h2>
@@ -123,7 +133,19 @@ export function render() {
       <ul class="oc-values-list">
         ${bs.afterStudy.prompts.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}
       </ul>
+      <label class="oc-checkin-label" for="oc-carry-truth" style="margin-top:12px">What is one truth you want to carry into this week?</label>
+      <input type="text" class="oc-text-input" id="oc-carry-truth" maxlength="200" placeholder="Isulat mo dito…">
+      <button type="button" class="oc-ghost-btn" id="oc-carry-save" style="margin-top:10px">Itago sa Journal ko</button>
     </div>`;
+
+  body.querySelector('#oc-carry-save')?.addEventListener('click', () => {
+    const input = body.querySelector('#oc-carry-truth');
+    const text = input.value.trim();
+    if (!text) return;
+    addJournalEntry(`✨ Truth to carry this week: ${text}`);
+    input.value = '';
+    toast('Nakatago na sa Journal mo 🤍');
+  });
 
   body.querySelectorAll('[data-note-save]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -180,6 +202,37 @@ function renderBringingDone(bringing) {
         <div class="oc-checkin-summary">${bringing.note ? `“${escapeHtml(bringing.note)}”` : 'Held quietly between you and God.'}</div>
       </div>
     </div>`;
+}
+
+// Next scheduled gathering, computed from the Kuwait-time (UTC+3) schedule
+// and shown in the member's own timezone.
+function nextGathering(bs) {
+  const offset = (bs.scheduleUtcOffsetHours ?? 3) * 3600e3;
+  const entries = (bs.schedule || []).filter((e) => typeof e.dow === 'number');
+  if (!entries.length) return null;
+  const now = Date.now();
+  const kwNow = new Date(now + offset); // Kuwait wall-clock, read via UTC getters
+  let best = null;
+  for (const entry of entries) {
+    const target = new Date(kwNow);
+    target.setUTCHours(entry.hour, entry.minute || 0, 0, 0);
+    let daysAhead = (entry.dow - kwNow.getUTCDay() + 7) % 7;
+    if (daysAhead === 0 && target.getTime() <= kwNow.getTime()) daysAhead = 7;
+    target.setUTCDate(target.getUTCDate() + daysAhead);
+    const when = new Date(target.getTime() - offset);
+    if (!best || when < best.when) best = { entry, when };
+  }
+  return best;
+}
+
+function countdownText(when) {
+  const mins = Math.max(0, Math.round((when.getTime() - Date.now()) / 60000));
+  const d = Math.floor(mins / 1440);
+  const h = Math.floor((mins % 1440) / 60);
+  const m = mins % 60;
+  if (d > 0) return `Sa loob ng ${d} araw${h ? ` at ${h} oras` : ''}`;
+  if (h > 0) return `Sa loob ng ${h} oras${m ? ` at ${m} minuto` : ''}`;
+  return `Sa loob ng ${m} minuto — malapit na!`;
 }
 
 // Stable verse pick per (day, heart-state) so it doesn't shuffle on re-render.

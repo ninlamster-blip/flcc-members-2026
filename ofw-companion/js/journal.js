@@ -28,6 +28,14 @@ export function initJournal(context) {
   renderEntries();
 }
 
+// Re-render when the tab is opened, so entries added elsewhere (e.g. a
+// "truth to carry" saved from the Faith tab) appear immediately.
+export function refreshJournal() {
+  renderCheckin();
+  renderInsightCard();
+  renderEntries(document.getElementById('oc-journal-search').value.trim().toLowerCase());
+}
+
 // ── Daily check-in ───────────────────────────────────────────────────────────
 
 function renderCheckin() {
@@ -79,6 +87,7 @@ function renderCheckin() {
 
   body.querySelectorAll('.oc-mood-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
+      navigator.vibrate?.(8);
       draft.mood = Number(btn.dataset.mood);
       body.querySelectorAll('.oc-mood-btn').forEach((b) => b.classList.toggle('is-selected', b === btn));
       refresh();
@@ -120,6 +129,7 @@ function renderInsightCard() {
 
   if (checkins.length < 3) { card.hidden = true; return; }
   card.hidden = false;
+  renderJourneyDots();
   textEl.textContent = localInsight();
 
   if (!isConnected()) { btn.hidden = true; return; }
@@ -137,16 +147,39 @@ function renderInsightCard() {
   };
 }
 
-// Simple, kind pattern-noticing that works fully offline. Never diagnoses.
+// The last two weeks as a row of soft dots — a story at a glance, not a chart.
+function renderJourneyDots() {
+  const wrap = document.getElementById('oc-journey-dots');
+  const byDate = new Map(getState().checkins.map((c) => [c.date, c]));
+  const dots = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const c = byDate.get(key);
+    const mood = c ? c.mood : 0;
+    dots.push(`<span class="oc-dot oc-dot-${mood}" title="${key}${c ? ` · mood ${c.mood}/5` : ''}"></span>`);
+  }
+  wrap.innerHTML = dots.join('');
+}
+
+// A kind story of the season, told from the data — growth, not performance.
+// Works fully offline and never diagnoses.
 function localInsight() {
-  const recent = getState().checkins.slice(0, 7);
-  const avg = (key) => recent.reduce((s, c) => s + (c[key] || 0), 0) / recent.length;
+  const s = getState();
+  const recent = s.checkins.slice(0, 7);
+  const avg = (key) => recent.reduce((sum, c) => sum + (c[key] || 0), 0) / recent.length;
   const gratitudes = recent.filter((c) => c.gratitude).length;
   const connectedDays = recent.filter((c) => c.connected).length;
+  const hardDays = recent.filter((c) => c.mood <= 2).length;
 
   const lines = [];
-  lines.push(`You checked in ${recent.length} time${recent.length > 1 ? 's' : ''} recently — that's you taking care of your own heart.`);
-  if (gratitudes >= 3) lines.push(`You found something to be grateful for on ${gratitudes} of those days, kahit hindi laging madali. That is quiet strength.`);
+  if (hardDays >= 3 && gratitudes >= 2) {
+    lines.push(`This week held ${hardDays} hard days — and still you found gratitude on ${gratitudes} of them. That is not a small thing; that is quiet strength.`);
+  } else {
+    lines.push(`You checked in ${recent.length} time${recent.length > 1 ? 's' : ''} this week — that's you taking care of your own heart.`);
+    if (gratitudes >= 3) lines.push(`You recorded gratitude on ${gratitudes} days, kahit hindi laging madali.`);
+  }
+  if (s.bringing) lines.push('You brought something to Bible study this week — your faith is not standing still.');
   if (avg('loneliness') >= 3.5 && connectedDays <= 2) lines.push('Loneliness has been heavier lately. Maybe this week, one small connection — a call, a message, the Kapwa tab — could help.');
   else if (connectedDays >= 4) lines.push('You connected with people on most days — your heart tends to be lighter on those days.');
   if (avg('energy') <= 2.2) lines.push('Your energy has been low. Rest is not laziness — alagaan mo rin ang sarili mo.');

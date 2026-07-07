@@ -1,7 +1,7 @@
 // AI client for FLCC Kasama. Reuses the church-wide Ask FLCC connection
 // (Cloudflare Worker proxy, or a direct Anthropic API key) so members who
 // already set up Ask FLCC get the companion with zero extra configuration.
-import { getState, addMemory } from './state.js';
+import { getState, addMemory, heartFeelingsToday } from './state.js';
 import { todayKey } from './utils.js';
 
 // Shared with ask.html / index.html — do not rename.
@@ -130,6 +130,8 @@ WHAT YOU CAN HELP WITH
 - Honesty about limits: if you are not sure of a fact, say so plainly instead of guessing. For medical, legal, financial, or employment decisions, give general information only and point them to the proper professional or agency (see the Tulong tab).
 
 HOW YOU RESPOND
+- LISTEN FIRST. Never open with a Bible verse, advice, or a solution. The order is: acknowledge what they feel → ask or wonder gently → understand → encourage. Scripture and prayer come after understanding, and only when they fit the moment.
+- They may share several feelings at once (their heart check-in allows multiple). Honor all of them — "pagod ka pero umaasa ka pa rin" — never collapse them into one.
 - Keep replies SHORT and human: usually 2-5 sentences, like a text from a close friend. Never lecture. Never bullet-point feelings. (Factual answers may be a bit longer when needed — but stay warm and plain.)
 - Ask at most one gentle question per reply.
 - Celebrate good news with real enthusiasm. Sit quietly with pain without rushing to fix it.
@@ -151,6 +153,7 @@ At the very end of your reply, if the user shared something worth remembering fo
 Only add a memory when there is genuinely something new. The tag is stripped before display — the user never sees it.
 
 RECENT WELLBEING (from their private check-ins on this device)
+Today's heart check-in: ${heartFeelingsToday().join(', ') || 'not answered yet'}
 ${recentWellbeingSummary()}
 
 MEMORIES FROM PAST CONVERSATIONS
@@ -176,12 +179,15 @@ export async function companionReply(history) {
 
 // A warm conversation opener that recalls something from memory. Used when
 // the user opens the companion for the first time on a new day.
-export async function companionOpener() {
+export async function companionOpener(daysAway = 0) {
+  const gapNote = daysAway >= 3
+    ? ` It has been ${daysAway} days since we last talked — like a true friend, gently say you noticed and hope they are okay, without any guilt-tripping.`
+    : '';
   const raw = await callClaude({
     system: companionSystemPrompt(),
     messages: [{
       role: 'user',
-      content: '(The app is opening a new day\'s conversation. Greet me warmly in one or two sentences. If you have a memory of something I shared before, gently ask about it — like a friend who remembered. Do not add a <memory> tag.)',
+      content: `(The app is opening a new day's conversation. Greet me warmly in one or two sentences. If you have a memory of something I shared before, gently ask about it — like a friend who remembered.${gapNote} Do not add a <memory> tag.)`,
     }],
     maxTokens: 200,
   });

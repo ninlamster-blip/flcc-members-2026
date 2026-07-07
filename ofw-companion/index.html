@@ -22,12 +22,24 @@
       <header class="oc-home-header">
         <p class="oc-eyebrow">FLCC Kasama</p>
         <h1 id="oc-greeting" class="oc-greeting">Magandang araw</h1>
-        <p class="oc-subgreeting" id="oc-subgreeting">Kumusta ang puso mo ngayon? · How is your heart today?</p>
+        <p class="oc-subgreeting oc-today-line">
+          <span id="oc-date-line"></span>
+          <button type="button" id="oc-weather-chip" class="oc-weather-chip" hidden></button>
+        </p>
+        <p class="oc-occasion" id="oc-occasion" hidden></p>
       </header>
 
-      <!-- Heart check-in chips (shown until answered today) -->
+      <!-- Heart check-in cards (shown until answered today) -->
       <div class="oc-heart-checkin" id="oc-heart-checkin">
-        <div class="oc-chip-row" id="oc-heart-chips" role="group" aria-label="How is your heart today?"></div>
+        <p class="oc-heart-question">Kumusta ang puso mo ngayon? <span class="oc-muted">Pili ka — pwedeng higit sa isa.</span></p>
+        <div class="oc-chip-row" id="oc-heart-chips" role="group" aria-label="How is your heart today? Select all that apply"></div>
+        <button type="button" class="oc-primary-btn oc-heart-share" id="oc-heart-share" hidden>Ikwento kay Kaibigan</button>
+      </div>
+
+      <!-- Daily ritual + not-okay row -->
+      <div class="oc-care-row">
+        <button type="button" id="oc-ritual-pill" class="oc-ritual-pill" hidden></button>
+        <button type="button" id="oc-notokay-btn" class="oc-notokay-btn">🌧️ I'm not okay today</button>
       </div>
 
       <!-- Conversation -->
@@ -47,7 +59,8 @@
       </div>
 
       <div class="oc-card" id="oc-insight-card" hidden>
-        <h2 class="oc-section-title">Gentle reflection</h2>
+        <h2 class="oc-section-title">Your journey</h2>
+        <div class="oc-journey-dots" id="oc-journey-dots" aria-label="Your last two weeks, one dot per day"></div>
         <p class="oc-insight-text" id="oc-insight-text"></p>
         <button type="button" class="oc-ghost-btn" id="oc-insight-btn">Reflect on my week</button>
       </div>
@@ -166,6 +179,23 @@
       <p class="oc-crisis-note">If you or someone else is in immediate danger, call the local emergency number or authorities of the country you are in — ngayon na.</p>
       <button type="button" class="oc-primary-btn" id="oc-crisis-close">Salamat — back to our conversation</button>
     </div>
+  </div>
+
+  <!-- ============ "I'M NOT OKAY" SHEET ============ -->
+  <div id="oc-notokay" class="oc-sheet-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="oc-notokay-title">
+    <div class="oc-sheet">
+      <div class="oc-sheet-handle" aria-hidden="true"></div>
+      <h2 id="oc-notokay-title" class="oc-sheet-title">Nandito kami para sa'yo 🤍</h2>
+      <div id="oc-notokay-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ BREATHING OVERLAY ============ -->
+  <div id="oc-breathe" class="oc-breathe" hidden role="dialog" aria-modal="true" aria-label="Breathing exercise">
+    <div class="oc-breathe-circle" aria-hidden="true"></div>
+    <p class="oc-breathe-label" id="oc-breathe-label">Huminga… breathe in</p>
+    <p class="oc-breathe-sub">Sundan mo lang ang bilog. Walang madaliin.</p>
+    <button type="button" class="oc-ghost-btn" id="oc-breathe-close">Tapos na ako</button>
   </div>
 
   <!-- Toast -->

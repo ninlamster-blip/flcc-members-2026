@@ -1,7 +1,7 @@
 // Offline cache for the FLCC Kasama app shell, so the journal, comfort
 // responses, verses, and support directory all work without a network —
 // important for members with limited or expensive data.
-const CACHE = 'flcc-kasama-v3';
+const CACHE = 'flcc-kasama-v4';
 const SHELL = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const SHELL = [
   './js/state.js',
   './js/ai.js',
   './js/companion.js',
+  './js/sanctuary.js',
   './js/journal.js',
   './js/faith.js',
   './js/community.js',

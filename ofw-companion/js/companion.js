@@ -6,15 +6,27 @@ import {
   timeOfDayGreeting, detectsCrisis, classifyHeart,
 } from './utils.js';
 
+// Each feeling maps to a comfort/verse category; a heart can hold several at
+// once, so these are multi-select. The first six show by default; "More" opens
+// the full range.
 const HEART_CHIPS = [
-  { id: 'happy', emoji: '😊', label: 'Masaya' },
-  { id: 'grateful', emoji: '🌼', label: 'Grateful' },
-  { id: 'neutral', emoji: '😐', label: 'Okay lang' },
-  { id: 'lonely', emoji: '🥺', label: 'Nalulungkot' },
-  { id: 'homesick', emoji: '🏠', label: 'Namimiss ko sila' },
-  { id: 'exhausted', emoji: '😮‍💨', label: 'Pagod na pagod' },
-  { id: 'anxious', emoji: '😟', label: 'Kinakabahan' },
-  { id: 'heavy', emoji: '💔', label: 'Mabigat ang loob' },
+  { id: 'peaceful', emoji: '😌', label: 'Payapa', cat: 'neutral' },
+  { id: 'joyful', emoji: '😄', label: 'Masaya', cat: 'happy' },
+  { id: 'grateful', emoji: '🌼', label: 'Thankful', cat: 'grateful' },
+  { id: 'lonely', emoji: '🥺', label: 'Nalulungkot', cat: 'lonely' },
+  { id: 'missinghome', emoji: '🏠', label: 'Namimiss ko sila', cat: 'homesick' },
+  { id: 'exhausted', emoji: '😴', label: 'Pagod na pagod', cat: 'exhausted' },
+  { id: 'hopeful', emoji: '🙏', label: 'Umaasa', cat: 'grateful', more: true },
+  { id: 'loved', emoji: '❤️', label: 'Minamahal', cat: 'grateful', more: true },
+  { id: 'worried', emoji: '😰', label: 'Kinakabahan', cat: 'anxious', more: true },
+  { id: 'heartbroken', emoji: '💔', label: 'Sawi ang puso', cat: 'heavy', more: true },
+  { id: 'discouraged', emoji: '😞', label: 'Panghina ng loob', cat: 'heavy', more: true },
+  { id: 'frustrated', emoji: '😤', label: 'Frustrated', cat: 'heavy', more: true },
+  { id: 'overwhelmed', emoji: '😵‍💫', label: 'Lulong sa dami', cat: 'anxious', more: true },
+  { id: 'numb', emoji: '😶', label: 'Manhid na lang', cat: 'heavy', more: true },
+  { id: 'forgotten', emoji: '🥀', label: 'Parang nakalimutan', cat: 'invisible', more: true },
+  { id: 'listen', emoji: '🫂', label: 'Gusto ko lang may makinig', cat: 'lonely', more: true },
+  { id: 'needprayer', emoji: '🕊️', label: 'Kailangan ko ng panalangin', cat: 'heavy', more: true },
 ];
 
 // The offline companion acknowledges the chosen heart chip, then follows the
@@ -33,6 +45,7 @@ export async function initCompanion(context) {
     subgreeting: document.getElementById('oc-subgreeting'),
     heartCheckin: document.getElementById('oc-heart-checkin'),
     heartChips: document.getElementById('oc-heart-chips'),
+    shareBtn: document.getElementById('oc-heart-share'),
     chat: document.getElementById('oc-chat'),
     input: document.getElementById('oc-input'),
     sendBtn: document.getElementById('oc-send-btn'),
@@ -51,25 +64,40 @@ export async function initCompanion(context) {
 }
 
 function renderHeartChips() {
-  const chosen = heartToday();
-  if (chosen) {
+  if (heartToday()) {
     els.heartCheckin.hidden = true;
     return;
   }
   els.heartCheckin.hidden = false;
-  els.heartChips.innerHTML = HEART_CHIPS.map((c) =>
-    `<button type="button" class="oc-chip" data-heart="${c.id}">${c.emoji} ${escapeHtml(c.label)}</button>`
-  ).join('');
-  els.heartChips.querySelectorAll('.oc-chip').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const feeling = btn.dataset.heart;
-      btn.classList.add('is-selected');
-      setHeartToday(feeling);
-      setTimeout(() => { els.heartCheckin.hidden = true; }, 350);
-      const chip = HEART_CHIPS.find((c) => c.id === feeling);
-      sendUserMessage(`${chip.emoji} ${chip.label}`, { heartChip: feeling });
+  const selected = new Set();
+  let expanded = false;
+
+  const draw = () => {
+    const visible = HEART_CHIPS.filter((c) => expanded || !c.more || selected.has(c.id));
+    els.heartChips.innerHTML = visible.map((c) =>
+      `<button type="button" class="oc-chip${selected.has(c.id) ? ' is-selected' : ''}" data-heart="${c.id}" aria-pressed="${selected.has(c.id)}">${c.emoji} ${escapeHtml(c.label)}</button>`
+    ).join('') + (expanded ? '' : `<button type="button" class="oc-chip oc-chip-more" data-more>+ Iba pa…</button>`);
+
+    els.heartChips.querySelectorAll('[data-heart]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        navigator.vibrate?.(8);
+        const id = btn.dataset.heart;
+        if (selected.has(id)) selected.delete(id); else selected.add(id);
+        draw();
+      });
     });
-  });
+    els.heartChips.querySelector('[data-more]')?.addEventListener('click', () => { expanded = true; draw(); });
+    els.shareBtn.hidden = selected.size === 0;
+  };
+  draw();
+
+  els.shareBtn.onclick = () => {
+    if (!selected.size) return;
+    const chips = HEART_CHIPS.filter((c) => selected.has(c.id));
+    setHeartToday(chips.map((c) => c.cat));
+    els.heartCheckin.hidden = true;
+    sendUserMessage(chips.map((c) => `${c.emoji} ${c.label}`).join(' · '), { heartChip: chips[0].cat });
+  };
 }
 
 function renderHistory() {
@@ -93,20 +121,26 @@ function welcomeText() {
   return `${intro} Kwentuhan mo ako — o magtanong ka lang: Bible verse, kahit anong gustong malaman. Kumusta ang puso mo ngayon?`;
 }
 
-// On a new day, if connected, ask the AI for a warm opener that recalls a
-// memory ("Last week you mentioned missing your daughter…").
+// On a new day, ask the AI for a warm opener that recalls a memory ("Last
+// week you mentioned missing your daughter…") — and if days went by without
+// a word, say what a friend would say.
 async function maybeGreetNewDay() {
   const s = getState();
   const today = todayKey();
   if (!s.chat.messages.length) return;              // welcome bubble already shows
   if (s.chat.lastTalkedDate === today) return;      // already talked today
+  const daysAway = s.chat.lastTalkedDate
+    ? Math.round((new Date(today) - new Date(s.chat.lastTalkedDate)) / 86400000)
+    : 0;
   if (!isConnected()) {
-    appendBubble('ai', pickRandom(comfort.neutral));
+    appendBubble('ai', daysAway >= 3
+      ? `Ilang araw din tayong hindi nagkausap — hindi kita nakalimutan, at sana okay ka lang. Nandito lang ako. Kumusta ka?`
+      : pickRandom(comfort.neutral));
     return;
   }
   const typing = showTyping();
   try {
-    const opener = await companionOpener();
+    const opener = await companionOpener(daysAway);
     typing.remove();
     if (opener) {
       addChatMessage('assistant', opener);
@@ -116,6 +150,12 @@ async function maybeGreetNewDay() {
   } catch {
     typing.remove();
   }
+}
+
+// Lets the "I'm not okay" sheet start the conversation for the user.
+export function startNotOkayConversation() {
+  if (busy) return;
+  sendUserMessage('Hindi ako okay ngayon. 🌧️', { heartChip: 'heavy' });
 }
 
 function setupComposer() {

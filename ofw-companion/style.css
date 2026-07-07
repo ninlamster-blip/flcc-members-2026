@@ -194,9 +194,155 @@ input, textarea { font-family: inherit; color: var(--ink); }
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ── Daily sanctuary ────────────────────────────────────────────────────── */
+
+/* The home header carries the light of the hour — dawn warmth, daylight,
+   dusk gold, evening calm. Subtle in both themes. */
+.oc-home-header { border-radius: 24px; }
+body[data-period="morning"] .oc-home-header { background: linear-gradient(160deg, rgba(255, 200, 130, 0.28), rgba(255, 240, 214, 0) 70%); }
+body[data-period="day"] .oc-home-header { background: linear-gradient(160deg, rgba(150, 205, 235, 0.25), rgba(235, 245, 250, 0) 70%); }
+body[data-period="dusk"] .oc-home-header { background: linear-gradient(160deg, rgba(233, 150, 90, 0.26), rgba(250, 230, 214, 0) 70%); }
+body[data-period="night"] .oc-home-header { background: linear-gradient(160deg, rgba(110, 120, 200, 0.2), rgba(220, 224, 250, 0) 70%); }
+
+.oc-today-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.oc-weather-chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--ink-soft);
+  font-size: 0.9em;
+  padding: 3px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-occasion {
+  margin-top: 10px;
+  font-size: 0.92em;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+}
+body.oc-home-compact .oc-occasion { display: none; }
+
+.oc-heart-question {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95em;
+  margin-bottom: 10px;
+}
+.oc-heart-question .oc-muted { display: block; font-weight: 400; margin-top: 2px; }
+.oc-heart-share { margin-top: 12px; animation: oc-fade-up 0.3s ease both; }
+.oc-chip-more { color: var(--accent); border-style: dashed; }
+
+/* Ritual pill + not-okay, side by side under the check-in */
+.oc-care-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.oc-ritual-pill, .oc-notokay-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--ink-soft);
+  font-size: 0.88em;
+  font-weight: 600;
+  padding: 9px 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+}
+.oc-ritual-pill:active, .oc-notokay-btn:active { transform: scale(0.96); }
+.oc-notokay-btn { color: var(--calm); border-color: var(--calm-soft); background: var(--calm-soft); }
+/* When the header folds for chatting, the ritual steps aside but "I'm not
+   okay" stays one tap away — help must never require scrolling. */
+body.oc-home-compact .oc-ritual-pill { display: none; }
+body.oc-home-compact .oc-care-row { margin-bottom: 6px; }
+body.oc-home-compact .oc-notokay-btn { padding: 6px 14px; font-size: 0.82em; }
+
+/* "I'm not okay" sheet options */
+.oc-notokay-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  cursor: pointer;
+  font-size: 0.97em;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-notokay-option:active { transform: scale(0.98); }
+.oc-notokay-option > span:first-child { font-size: 1.5em; }
+.oc-notokay-verse {
+  margin-top: 6px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--calm-soft);
+  color: var(--ink-soft);
+  font-style: italic;
+  text-align: center;
+  font-size: 0.95em;
+}
+
+/* Breathing overlay */
+.oc-breathe {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: var(--bg);
+  text-align: center;
+  padding: 24px;
+}
+.oc-breathe-circle {
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--calm-soft), var(--calm));
+  animation: oc-breathe-cycle 14s ease-in-out infinite;
+}
+@keyframes oc-breathe-cycle {
+  0% { transform: scale(0.7); }
+  28% { transform: scale(1.25); }   /* 4s in */
+  57% { transform: scale(1.25); }   /* 4s hold */
+  100% { transform: scale(0.7); }   /* 6s out */
+}
+.oc-breathe-label { font-size: 1.25em; font-weight: 700; }
+.oc-breathe-sub { color: var(--ink-faint); font-size: 0.95em; }
+
 /* ── Heart check-in chips ───────────────────────────────────────────────── */
 
-.oc-heart-checkin { margin: 6px 0 14px; }
+/* Scrolls internally when the full feelings list is open, so the share
+   button is always reachable on small screens. */
+.oc-heart-checkin {
+  margin: 6px 0 14px;
+  flex-shrink: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+body[data-active-view="home"] .oc-chat { min-height: 56px; }
 
 .oc-chip-row {
   display: flex;
@@ -481,6 +627,28 @@ body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: no
   padding: 2px 6px;
 }
 .oc-entry-text { white-space: pre-wrap; overflow-wrap: break-word; }
+
+.oc-journey-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.oc-dot {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--bg-soft);
+}
+.oc-dot-1 { background: #C9847A; }
+.oc-dot-2 { background: #D8A27B; }
+.oc-dot-3 { background: #D9C27F; }
+.oc-dot-4 { background: #A9C48F; }
+.oc-dot-5 { background: #7FB08F; }
+
+.oc-next-card { border-left: 4px solid var(--accent); }
+.oc-next-title { font-weight: 700; font-size: 1.05em; }
+.oc-next-when { color: var(--accent); font-weight: 600; font-size: 0.94em; margin: 3px 0 6px; }
 
 .oc-insight-text {
   color: var(--ink-soft);

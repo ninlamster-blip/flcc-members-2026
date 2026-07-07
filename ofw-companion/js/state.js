@@ -25,8 +25,12 @@ function defaultState() {
     chat: { messages: [], lastTalkedDate: null },
     // Things the companion should remember about the user: { t, text }
     memories: [],
-    // Heart check-in chip chosen today: { date, feeling }
-    heart: { date: null, feeling: null },
+    // Heart check-in chosen today: { date, feeling (primary), feelings [] }
+    heart: { date: null, feeling: null, feelings: [] },
+    // Cached place for the weather greeting: { lat, lon }
+    geo: null,
+    // Cached weather: { at, code, temp }
+    weatherCache: null,
     // Bible study: what the user is bringing this week { date, choiceId, note }
     bringing: null,
     // Private notes on Faith-tab teachings, keyed by teaching date
@@ -161,13 +165,20 @@ export function saveTeachingNote(teachingDate, text) {
 }
 
 // ── Heart check-in ───────────────────────────────────────────────────────────
-export function setHeartToday(feeling) {
-  state.heart = { date: todayKey(), feeling };
+// Real hearts hold more than one feeling at once; the first selected is the
+// "primary" used for verse/prayer/comfort matching.
+export function setHeartToday(feelings) {
+  const list = Array.isArray(feelings) ? feelings : [feelings];
+  state.heart = { date: todayKey(), feeling: list[0] || null, feelings: list };
   save();
 }
 
 export function heartToday() {
   return state.heart.date === todayKey() ? state.heart.feeling : null;
+}
+
+export function heartFeelingsToday() {
+  return state.heart.date === todayKey() ? (state.heart.feelings || []) : [];
 }
 
 // ── Privacy controls ─────────────────────────────────────────────────────────
