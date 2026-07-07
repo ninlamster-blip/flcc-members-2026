@@ -1,4 +1,4 @@
-// LocalStorage-backed state for OFW Companion. All persistence lives here.
+// LocalStorage-backed state for FLCC Kasama. All persistence lives here.
 // Everything is private to this device — nothing is uploaded anywhere.
 import { todayKey, uid } from './utils.js';
 

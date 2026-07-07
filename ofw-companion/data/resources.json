@@ -96,15 +96,15 @@
   ],
   "church": [
     {
-      "name": "FLCC — Faith in the Living Christ Church",
-      "detail": "Our home church family. Join online worship, Bible studies, and fellowship wherever you are in the world.",
+      "name": "FLCC — Filipino Language Christian Congregation",
+      "detail": "Our home church family. Join worship, Bible studies, and fellowship wherever you are in the world.",
       "contact": "Open the FLCC members app",
       "url": "../index.html"
     },
     {
-      "name": "OFW Companion Virtual Bible Study",
-      "detail": "Weekly online Bible study for OFWs led by Pastor Anson Dionisio — see the Faith tab for the schedule.",
-      "contact": "Faith tab → Bible Study",
+      "name": "FLCC — Virtual Church",
+      "detail": "Led by Pastor Anson Dionisio. Every Sunday and Wednesday, 10:30 PM Kuwait time · K.S.A. every Saturday, 10:30 AM.",
+      "contact": "Faith tab → schedule",
       "url": ""
     }
   ],

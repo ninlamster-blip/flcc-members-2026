@@ -1,4 +1,4 @@
-// OFW Companion — entry point. Wires navigation, onboarding, settings,
+// FLCC Kasama — entry point. Wires navigation, onboarding, settings,
 // crisis support, and the five views together.
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
 import { getConnection, saveConnection, isConnected } from './js/ai.js';
@@ -176,7 +176,7 @@ function renderSettings() {
     const blob = new Blob([exportAll()], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'ofw-companion-data.json';
+    a.download = 'flcc-kasama-data.json';
     a.click();
     URL.revokeObjectURL(a.href);
   });

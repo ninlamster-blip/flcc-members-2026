@@ -1,7 +1,7 @@
-// Offline cache for the OFW Companion app shell, so the journal, comfort
+// Offline cache for the FLCC Kasama app shell, so the journal, comfort
 // responses, verses, and support directory all work without a network —
 // important for members with limited or expensive data.
-const CACHE = 'ofw-companion-v1';
+const CACHE = 'flcc-kasama-v1';
 const SHELL = [
   './',
   './index.html',

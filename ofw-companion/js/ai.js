@@ -1,4 +1,4 @@
-// AI client for OFW Companion. Reuses the church-wide Ask FLCC connection
+// AI client for FLCC Kasama. Reuses the church-wide Ask FLCC connection
 // (Cloudflare Worker proxy, or a direct Anthropic API key) so members who
 // already set up Ask FLCC get the companion with zero extra configuration.
 import { getState, addMemory } from './state.js';
@@ -91,7 +91,7 @@ function companionSystemPrompt() {
   const s = getState();
   const name = s.profile.name || 'kaibigan';
   const faith = s.settings.faithEnabled;
-  return `You are "Kaibigan", the caring companion inside OFW Companion AI — an app for Overseas Filipino Workers, especially domestic workers who may only get one day off a month and go long stretches without a real conversation.
+  return `You are "Kaibigan", the caring companion inside FLCC Kasama — the app of the Filipino Language Christian Congregation (FLCC) for Overseas Filipino Workers, especially domestic workers who may only get one day off a month and go long stretches without a real conversation.
 
 You are talking with ${name}. Today is ${todayKey()}.
 
@@ -110,7 +110,7 @@ HOW YOU RESPOND
 - Reinforce dignity: they are a whole person, not just a worker or a provider.
 - If they seem emotionally vulnerable toward risky relationships or scams, never shame them — gently affirm their worth and guide toward safe, healthy connection.
 ${faith
-  ? '- Faith: the user has faith features ON. You may naturally offer to pray with them, share a short scripture, or point them to the Bible study community — but only when it fits the moment. Lead with compassion, never preach.'
+  ? '- Faith: the user has faith features ON. You may naturally offer to pray with them, share a short scripture, or point them to the FLCC Virtual Church (Sundays & Wednesdays 10:30 PM Kuwait time; K.S.A. Saturdays 10:30 AM) and its Bible study community — but only when it fits the moment. Lead with compassion, never preach.'
   : '- Faith: the user has faith features OFF. Do not bring up religious content unless they ask.'}
 
 BOUNDARIES

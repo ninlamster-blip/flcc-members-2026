@@ -2,14 +2,14 @@
   "_comment": "Virtual Bible Study community content. Edit schedule/links here as the ministry grows — no code changes needed.",
   "pastor": {
     "name": "Pastor Anson Dionisio",
-    "role": "Lead Pastor · OFW Virtual Bible Study",
+    "role": "Lead Pastor · FLCC – Virtual Church",
     "message": "Wherever you are in the world — whether you get one day off a month or none at all — you are not forgotten, and you are never outside God's reach. This Bible study exists so that no OFW has to walk their faith journey alone. Come as you are: tired, homesick, questioning, rejoicing. There is a seat for you here, and we will keep it warm until you arrive.",
     "verse": { "ref": "Matthew 18:20", "text": "For where two or three gather in my name, there am I with them." }
   },
   "schedule": [
-    { "day": "Sunday", "time": "8:00 PM (PH time)", "title": "Sunday Night Fellowship & Word", "note": "Main weekly gathering — worship, teaching, and prayer for OFWs in every timezone." },
-    { "day": "Wednesday", "time": "9:00 PM (PH time)", "title": "Midweek Bible Study", "note": "Verse-by-verse study. Bring your questions — no question is too small." },
-    { "day": "Saturday", "time": "7:00 AM (PH time)", "title": "Early Risers Prayer Watch", "note": "30 minutes of prayer for OFW families, employers, and needs. Perfect before a work day." }
+    { "day": "Sunday", "time": "10:30 PM (Kuwait time)", "title": "FLCC Virtual Church", "note": "Worship, the Word, and fellowship — wherever you are, you have a seat." },
+    { "day": "Wednesday", "time": "10:30 PM (Kuwait time)", "title": "FLCC Virtual Church", "note": "Midweek gathering — come as you are, even after a long work day." },
+    { "day": "Saturday", "time": "10:30 AM (K.S.A.)", "title": "FLCC Virtual Church — K.S.A.", "note": "For our kababayans in the Kingdom of Saudi Arabia." }
   ],
   "joinNote": "Live session links are shared in the FLCC members app and by your group leaders. If you don't have the link yet, message your fellowship group or check the church announcements.",
   "bringingOptions": [
@@ -63,11 +63,8 @@
     ]
   },
   "groups": [
-    { "icon": "🌸", "name": "Women's Fellowship", "detail": "Sisters supporting sisters — weekly encouragement, prayer, and honest kwentuhan.", "meets": "Sundays after the main gathering" },
-    { "icon": "🛡️", "name": "Men's Fellowship", "detail": "Brotherhood for OFW men — accountability, prayer, and real talk about providing from afar.", "meets": "Saturdays, 9:00 PM PH time" },
-    { "icon": "🌱", "name": "New Believers Group", "detail": "Just starting your faith journey? Walk with patient guides — no question is too basic.", "meets": "Wednesdays before Bible study" },
-    { "icon": "📖", "name": "Bible Reading Group", "detail": "Read through the Bible together with a simple daily plan and gentle check-ins.", "meets": "Daily check-in thread" },
-    { "icon": "🤲", "name": "Prayer Partners", "detail": "Be matched with one kapatid who prays for you by name — and you for them.", "meets": "Weekly one-on-one" }
+    { "icon": "🌸", "name": "Women's Fellowship", "detail": "Sisters supporting sisters — encouragement, prayer, and honest kwentuhan.", "meets": "Every Wednesday, 8:30 PM (Kuwait time)" },
+    { "icon": "🛡️", "name": "Men's Fellowship", "detail": "Brotherhood for OFW men — accountability, prayer, and real talk about providing from afar.", "meets": "Every Wednesday, 8:30 PM (Kuwait time)" }
   ],
   "communityValues": [
     "No likes. No followers. No popularity — just kapatiran (family in Christ).",

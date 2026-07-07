@@ -56,7 +56,7 @@ export function render() {
     </div>
 
     <div class="oc-card">
-      <h2 class="oc-section-title">Bible study schedule</h2>
+      <h2 class="oc-section-title">Virtual Church &amp; Bible study schedule</h2>
       ${bs.schedule.map((it) => `
         <div class="oc-schedule-item">
           <div>

@@ -1,4 +1,4 @@
-// Shared helpers for OFW Companion.
+// Shared helpers for FLCC Kasama.
 
 export function todayKey(d = new Date()) {
   const y = d.getFullYear();

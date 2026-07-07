@@ -1,7 +1,7 @@
 {
-  "name": "OFW Companion",
-  "short_name": "Companion",
-  "description": "A caring companion, community, and faith support app for Overseas Filipino Workers. You are seen. You are heard. You are not alone.",
+  "name": "FLCC Kasama",
+  "short_name": "Kasama",
+  "description": "A caring companion, community, and faith support app for Overseas Filipino Workers, from the Filipino Language Christian Congregation. You are seen. You are heard. You are not alone.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
