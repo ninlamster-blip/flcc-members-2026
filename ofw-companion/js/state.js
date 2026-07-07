@@ -11,7 +11,10 @@ function defaultState() {
       faithEnabled: true,
       voiceReplies: false,
       largeText: false,
-      model: 'claude-sonnet-4-6',
+      // Haiku by default: warm, capable, and roughly a tenth of Sonnet's
+      // cost per message — kind to the church's shared API budget.
+      model: 'claude-haiku-4-5-20251001',
+      modelChosenByUser: false,
     },
     // Daily wellbeing check-ins, newest first: { date, mood 1-5, energy 1-5,
     // loneliness 1-5, hope 1-5, connected (bool), gratitude (string) }
@@ -26,6 +29,8 @@ function defaultState() {
     heart: { date: null, feeling: null },
     // Bible study: what the user is bringing this week { date, choiceId, note }
     bringing: null,
+    // Private notes on Faith-tab teachings, keyed by teaching date
+    teachingNotes: {},
     onboarded: false,
   };
 }
@@ -48,7 +53,13 @@ function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
-    return mergeDefaults(defaultState(), JSON.parse(raw));
+    const merged = mergeDefaults(defaultState(), JSON.parse(raw));
+    // The thrifty default applies until the member explicitly picks a model
+    // in Settings — early saves carried Sonnet without anyone choosing it.
+    if (!merged.settings.modelChosenByUser) {
+      merged.settings.model = defaultState().settings.model;
+    }
+    return merged;
   } catch {
     return defaultState();
   }
@@ -138,6 +149,14 @@ export function addMemory(text) {
 
 export function deleteMemory(index) {
   state.memories.splice(index, 1);
+  save();
+}
+
+// ── Teaching notes ───────────────────────────────────────────────────────────
+export function saveTeachingNote(teachingDate, text) {
+  const trimmed = String(text || '').trim();
+  if (trimmed) state.teachingNotes[teachingDate] = trimmed.slice(0, 4000);
+  else delete state.teachingNotes[teachingDate];
   save();
 }
 

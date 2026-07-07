@@ -1,6 +1,6 @@
 // Faith — daily verse, personalized prayer, and the Virtual Bible Study
 // community led by Pastor Anson Dionisio.
-import { getState, updateState, heartToday, todaysCheckin } from './state.js';
+import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote } from './state.js';
 import { personalPrayer, isConnected } from './ai.js';
 import { escapeHtml, todayKey } from './utils.js';
 
@@ -42,6 +42,18 @@ export function render() {
       <p class="oc-prayer-text" id="oc-prayer-text">${escapeHtml(data.prayers[heart] || data.prayers.neutral)}</p>
       ${isConnected() ? '<button type="button" class="oc-ghost-btn" id="oc-prayer-btn">🙏 Pray with me — a prayer just for my heart</button>' : ''}
     </div>
+
+    ${bs.congregation ? `
+    <div class="oc-card">
+      <div class="oc-pastor-card">
+        <div class="oc-pastor-avatar" aria-hidden="true">J</div>
+        <div>
+          <p class="oc-pastor-name">${escapeHtml(bs.congregation.leader)}</p>
+          <p class="oc-pastor-role">${escapeHtml(bs.congregation.leaderRole)} · ${escapeHtml(bs.congregation.name)}</p>
+          <p class="oc-pastor-message">${escapeHtml(bs.congregation.worship)}</p>
+        </div>
+      </div>
+    </div>` : ''}
 
     <div class="oc-card">
       <div class="oc-pastor-card">
@@ -85,7 +97,9 @@ export function render() {
 
     <div class="oc-card">
       <h2 class="oc-section-title">Previous teachings</h2>
-      ${bs.teachings.map((t) => `
+      ${bs.teachings.map((t) => {
+        const note = s.teachingNotes[t.date] || '';
+        return `
         <div class="oc-teaching">
           <div class="oc-teaching-date">${escapeHtml(t.date)}</div>
           <div class="oc-teaching-title">${escapeHtml(t.title)}</div>
@@ -94,7 +108,14 @@ export function render() {
           <ul class="oc-teaching-questions">
             ${t.questions.map((q) => `<li>${escapeHtml(q)}</li>`).join('')}
           </ul>
-        </div>`).join('')}
+          <details class="oc-teaching-notes" ${note ? 'open' : ''}>
+            <summary>✍️ My notes${note ? ' · saved' : ''}</summary>
+            <textarea class="oc-journal-input oc-note-input" data-note-for="${escapeHtml(t.date)}" rows="3"
+              placeholder="Ano ang sinabi ng Diyos sa'yo sa teaching na ito? Notes are private — saved on this device only.">${escapeHtml(note)}</textarea>
+            <button type="button" class="oc-ghost-btn oc-note-save" data-note-save="${escapeHtml(t.date)}">Save note</button>
+          </details>
+        </div>`;
+      }).join('')}
     </div>
 
     <div class="oc-card">
@@ -103,6 +124,17 @@ export function render() {
         ${bs.afterStudy.prompts.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}
       </ul>
     </div>`;
+
+  body.querySelectorAll('[data-note-save]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const date = btn.dataset.noteSave;
+      const textarea = body.querySelector(`[data-note-for="${CSS.escape(date)}"]`);
+      saveTeachingNote(date, textarea.value);
+      toast('Note saved — sa device mo lang ito 🔒');
+      const summary = btn.closest('.oc-teaching-notes').querySelector('summary');
+      summary.textContent = textarea.value.trim() ? '✍️ My notes · saved' : '✍️ My notes';
+    });
+  });
 
   body.querySelectorAll('[data-bring]').forEach((btn) => {
     btn.addEventListener('click', () => {

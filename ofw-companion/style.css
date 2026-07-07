@@ -304,7 +304,7 @@ body.oc-home-compact .oc-subgreeting { opacity: 0; max-height: 0; margin: 0; }
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px 2px 84px;
+  padding: 8px 2px 72px;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -365,7 +365,8 @@ body.oc-home-compact .oc-subgreeting { opacity: 0; max-height: 0; margin: 0; }
 .oc-typing span:nth-child(3) { animation-delay: 0.36s; }
 @keyframes oc-blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
 
-/* Composer pinned above the nav */
+/* Composer: a compact one-line bar sitting directly on top of the tab bar,
+   like a messaging app. It grows only while typing a long message. */
 .oc-composer {
   position: fixed;
   left: 0; right: 0;
@@ -376,8 +377,9 @@ body.oc-home-compact .oc-subgreeting { opacity: 0; max-height: 0; margin: 0; }
   gap: 8px;
   max-width: 620px;
   margin: 0 auto;
-  padding: 10px 16px 12px;
-  background: linear-gradient(to top, var(--bg) 70%, transparent);
+  padding: 8px 12px;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--line);
 }
 
 .oc-input {
@@ -385,19 +387,20 @@ body.oc-home-compact .oc-subgreeting { opacity: 0; max-height: 0; margin: 0; }
   resize: none;
   border: 1.5px solid var(--line);
   border-radius: 22px;
-  background: var(--bg-raised);
-  padding: 12px 18px;
+  background: var(--bg-soft);
+  padding: 10px 16px;
   font-size: 1em;
   line-height: 1.4;
   max-height: 120px;
   outline: none;
-  box-shadow: var(--shadow);
 }
 .oc-input:focus { border-color: var(--accent); }
 
+.oc-composer .oc-icon-btn { width: 40px; height: 40px; }
+
 .oc-send-btn {
   flex: 0 0 auto;
-  width: 46px; height: 46px;
+  width: 42px; height: 42px;
   border: none;
   border-radius: 50%;
   background: var(--accent);
@@ -632,6 +635,18 @@ body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: no
 .oc-teaching-summary { color: var(--ink-soft); font-size: 0.93em; }
 .oc-teaching-questions { margin: 10px 0 0 18px; color: var(--ink-soft); font-size: 0.93em; }
 .oc-teaching-questions li { margin-bottom: 6px; }
+
+.oc-teaching-notes { margin-top: 10px; }
+.oc-teaching-notes summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.92em;
+  color: var(--accent);
+  padding: 6px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-note-input { margin-top: 8px; min-height: 72px; font-size: 0.95em; }
+.oc-note-save { margin-top: 8px; }
 
 .oc-faith-off {
   text-align: center;

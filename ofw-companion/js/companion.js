@@ -138,7 +138,8 @@ function setupComposer() {
 
 function autoGrow() {
   els.input.style.height = 'auto';
-  els.input.style.height = Math.min(els.input.scrollHeight, 120) + 'px';
+  // Only grow while there is text; empty resets to a single line.
+  if (els.input.value) els.input.style.height = Math.min(els.input.scrollHeight, 120) + 'px';
 }
 
 // Fold the big greeting into a slim bar while the user reads up the

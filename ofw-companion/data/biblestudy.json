@@ -6,7 +6,14 @@
     "message": "Wherever you are in the world — whether you get one day off a month or none at all — you are not forgotten, and you are never outside God's reach. This Bible study exists so that no OFW has to walk their faith journey alone. Come as you are: tired, homesick, questioning, rejoicing. There is a seat for you here, and we will keep it warm until you arrive.",
     "verse": { "ref": "Matthew 18:20", "text": "For where two or three gather in my name, there am I with them." }
   },
+  "congregation": {
+    "name": "FLCC — Filipino Language Christian Congregation",
+    "leader": "Rev. Jopet Alim",
+    "leaderRole": "Lead Pastor · FLCC",
+    "worship": "Worship service every Friday, 10:00 AM, at the National Evangelical Church in Kuwait compound."
+  },
   "schedule": [
+    { "day": "Friday", "time": "10:00 AM (Kuwait)", "title": "FLCC Worship Service", "note": "In person at the National Evangelical Church in Kuwait compound, led by Rev. Jopet Alim." },
     { "day": "Sunday", "time": "10:30 PM (Kuwait time)", "title": "FLCC Virtual Church", "note": "Worship, the Word, and fellowship — wherever you are, you have a seat." },
     { "day": "Wednesday", "time": "10:30 PM (Kuwait time)", "title": "FLCC Virtual Church", "note": "Midweek gathering — come as you are, even after a long work day." },
     { "day": "Saturday", "time": "10:30 AM (K.S.A.)", "title": "FLCC Virtual Church — K.S.A.", "note": "For our kababayans in the Kingdom of Saudi Arabia." }

@@ -134,6 +134,15 @@ function renderSettings() {
     ${settingSwitch('voiceReplies', 'Spoken replies', 'Kaibigan reads responses aloud — helpful for tired eyes')}
     ${settingSwitch('largeText', 'Larger text', 'Bigger, easier-to-read letters everywhere')}
 
+    <div class="oc-settings-section">AI model</div>
+    <div class="oc-setting-row"><div style="flex:1">
+      <div class="oc-setting-sub" style="margin-bottom:8px">Matipid keeps costs low for the church's shared budget; Malalim thinks deeper but costs about 10× more per message.</div>
+      <div class="oc-scale-row">
+        <button type="button" class="oc-scale-dot${s.settings.model.includes('haiku') ? ' is-selected' : ''}" data-model="claude-haiku-4-5-20251001">Matipid · Haiku</button>
+        <button type="button" class="oc-scale-dot${s.settings.model.includes('haiku') ? '' : ' is-selected'}" data-model="claude-sonnet-4-6">Malalim · Sonnet</button>
+      </div>
+    </div></div>
+
     <div class="oc-settings-section">AI connection</div>
     <div class="oc-setting-row">
       <div style="flex:1">
@@ -177,6 +186,13 @@ function renderSettings() {
         renderFaith();
         document.getElementById('oc-nav-faith').style.display = next ? '' : 'none';
       }
+    });
+  });
+
+  body.querySelectorAll('[data-model]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      updateState((st) => { st.settings.model = btn.dataset.model; st.settings.modelChosenByUser = true; });
+      body.querySelectorAll('[data-model]').forEach((b) => b.classList.toggle('is-selected', b === btn));
     });
   });
 

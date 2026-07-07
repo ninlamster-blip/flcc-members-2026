@@ -33,17 +33,6 @@
 
       <!-- Conversation -->
       <div class="oc-chat" id="oc-chat" aria-live="polite"></div>
-
-      <!-- Composer -->
-      <div class="oc-composer">
-        <button type="button" id="oc-voice-btn" class="oc-icon-btn" title="Speak instead of typing" aria-label="Speak instead of typing" hidden>
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
-        </button>
-        <textarea id="oc-input" class="oc-input" rows="1" placeholder="Kwentuhan mo ako, o magtanong ka lang…" aria-label="Message your companion"></textarea>
-        <button type="button" id="oc-send-btn" class="oc-send-btn" aria-label="Send message">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z"/></svg>
-        </button>
-      </div>
     </section>
 
     <!-- ============ JOURNAL ============ -->
@@ -106,6 +95,20 @@
       <div id="oc-support-body"></div>
     </section>
 
+  </div>
+
+  <!-- ============ COMPOSER (Kaibigan tab only) ============ -->
+  <!-- Lives outside the animated view sections: their entrance animation makes
+       them a containing block, which would anchor this fixed bar to the
+       section instead of the viewport and float it above the tab bar. -->
+  <div class="oc-composer">
+    <button type="button" id="oc-voice-btn" class="oc-icon-btn" title="Speak instead of typing" aria-label="Speak instead of typing" hidden>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
+    </button>
+    <textarea id="oc-input" class="oc-input" rows="1" placeholder="Kwentuhan mo ako…" aria-label="Message your companion"></textarea>
+    <button type="button" id="oc-send-btn" class="oc-send-btn" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z"/></svg>
+    </button>
   </div>
 
   <!-- ============ BOTTOM NAV ============ -->
