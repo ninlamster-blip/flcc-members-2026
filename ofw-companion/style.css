@@ -264,12 +264,37 @@ input, textarea { font-family: inherit; color: var(--ink); }
 
 /* ── Chat ───────────────────────────────────────────────────────────────── */
 
+/* On the Kaibigan tab the page itself never scrolls: the header and heart
+   chips stay put, and only the conversation pane scrolls (with its own
+   rubber-band), like a real messaging app. */
+body[data-active-view="home"] {
+  height: 100dvh;
+  overflow: hidden;
+}
+body[data-active-view="home"] #oc-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+}
+body[data-active-view="home"] .oc-view[data-view="home"] {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.oc-home-header, .oc-heart-checkin { flex-shrink: 0; }
+
 .oc-chat {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px 0 96px;
-  min-height: 30vh;
+  padding: 8px 2px 84px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 .oc-bubble {

@@ -77,6 +77,8 @@ function renderHeartChips() {
 function renderHistory() {
   const { messages } = getState().chat;
   els.chat.innerHTML = '';
+  // Standing reminder at the top of every conversation — companionship only.
+  appendBubble('system', 'Si Kaibigan ay kasama mo lang — hindi kapalit ng tunay na kaibigan, ng pastor, ng counselor, o ng Diyos. 🤍');
   if (!messages.length) {
     appendBubble('ai', welcomeText());
     return;
@@ -177,12 +179,20 @@ async function sendUserMessage(text, opts = {}) {
 // Rule-based comfort when no AI connection exists. Validate first, then a
 // gentle question — never generic filler.
 function offlineReply(text, heartChip) {
+  // Acute distress overrides everything: point to real help immediately.
+  if (detectsCrisis(text)) return comfort.crisis;
+
   const category = heartChip || classifyHeart(text);
   const pool = comfort[category] || comfort.neutral;
-  const base = pickRandom(pool);
+  let base = pickRandom(pool);
   // Remember plainly-worded facts even offline, so the AI can recall them later.
   if (/anak|daughter|son|asawa|husband|wife|nanay|tatay|birthday/i.test(text)) {
     addMemory(`They shared: "${text.slice(0, 140)}"`);
+  }
+  // Every few exchanges, gently restate that this is companionship only.
+  const userTurns = getState().chat.messages.filter((m) => m.role === 'user').length;
+  if (userTurns > 0 && userTurns % 6 === 0) {
+    base += `\n\n*${comfort.fallbackClosing}*`;
   }
   return base;
 }
@@ -206,7 +216,7 @@ function showTyping() {
 
 function scrollToEnd(smooth = true) {
   requestAnimationFrame(() => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    els.chat.scrollTo({ top: els.chat.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
   });
 }
 
