@@ -70,6 +70,23 @@ async function callClaude({ system, messages, maxTokens = 700 }) {
   return (data?.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
 }
 
+// One tiny real request so Settings can show exactly why a connection fails.
+export async function testConnection() {
+  const { endpoint, headers } = buildEndpointAndHeaders();
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: getState().settings.model,
+      max_tokens: 8,
+      messages: [{ role: 'user', content: 'Reply with the single word: ok' }],
+    }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+  return true;
+}
+
 // ── Companion persona ────────────────────────────────────────────────────────
 
 function recentWellbeingSummary() {

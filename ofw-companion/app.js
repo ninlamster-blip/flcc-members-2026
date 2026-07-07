@@ -1,7 +1,7 @@
 // FLCC Kasama — entry point. Wires navigation, onboarding, settings,
 // crisis support, and the five views together.
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
-import { getConnection, saveConnection, isConnected } from './js/ai.js';
+import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
 import { loadJson, escapeHtml } from './js/utils.js';
 import { initCompanion } from './js/companion.js';
 import { initJournal } from './js/journal.js';
@@ -152,6 +152,8 @@ function renderSettings() {
         <input type="url" class="oc-text-input" id="oc-set-proxy" value="${escapeHtml(conn.proxyUrl)}" placeholder="https://flcc-ask.yourname.workers.dev" style="margin-top:10px" autocomplete="off">
         <input type="password" class="oc-text-input" id="oc-set-secret" value="${escapeHtml(conn.proxySecret)}" placeholder="Proxy secret (if your church set one)" style="margin-top:8px" autocomplete="off">
         <input type="password" class="oc-text-input" id="oc-set-apikey" value="${escapeHtml(conn.apiKey)}" placeholder="API key (sk-ant-…) — optional, instead of a proxy" style="margin-top:8px" autocomplete="off">
+        <button type="button" class="oc-ghost-btn" id="oc-test-conn" style="margin-top:10px">Test connection</button>
+        <div class="oc-setting-sub" id="oc-test-result" style="margin-top:8px"></div>
       </div>
     </div>
 
@@ -187,6 +189,31 @@ function renderSettings() {
         document.getElementById('oc-nav-faith').style.display = next ? '' : 'none';
       }
     });
+  });
+
+  body.querySelector('#oc-test-conn').addEventListener('click', async () => {
+    const btn = body.querySelector('#oc-test-conn');
+    const result = body.querySelector('#oc-test-result');
+    // Test exactly what's typed in the fields right now.
+    saveConnection({
+      proxyUrl: body.querySelector('#oc-set-proxy').value,
+      proxySecret: body.querySelector('#oc-set-secret').value,
+      apiKey: body.querySelector('#oc-set-apikey').value,
+    });
+    if (!isConnected()) {
+      result.textContent = 'Wala pang Worker URL o API key na nakalagay sa taas.';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Testing…';
+    try {
+      await testConnection();
+      result.textContent = '✅ Gumagana! Kaibigan is ready to talk.';
+    } catch (err) {
+      result.textContent = `❌ ${err.message}\n${connectionHint(err.message)}`;
+    }
+    btn.disabled = false;
+    btn.textContent = 'Test connection';
   });
 
   body.querySelectorAll('[data-model]').forEach((btn) => {
@@ -237,6 +264,18 @@ function renderSettings() {
     initCompanion(context);
     renderFaith();
   });
+}
+
+// Plain-language advice for the usual connection failures.
+function connectionHint(message) {
+  if (/proxy secret/i.test(message)) return 'Ang Proxy secret ay hindi tugma sa nakalagay sa Worker — itama o burahin ito.';
+  if (/ANTHROPIC_API_KEY secret not set/i.test(message)) return 'Ang Worker mismo ay walang API key pa. Sa Cloudflare: Worker → Settings → Variables → add Secret na ANTHROPIC_API_KEY.';
+  if (/invalid x-api-key|authentication_error|invalid api key/i.test(message)) return 'Mukhang mali o expired ang API key — dapat nagsisimula sa sk-ant- at kumpleto ang kopya.';
+  if (/credit|billing|balance/i.test(message)) return 'Walang load ang API account — mag-add ng credits sa console.anthropic.com → Billing.';
+  if (/model/i.test(message)) return 'Hindi available ang model sa key na ito — subukan ang kabilang pagpipilian sa AI model sa taas.';
+  if (/failed to fetch|networkerror|load failed/i.test(message)) return 'Hindi maabot ang address — tingnan ang spelling ng Worker URL at ang internet mo.';
+  if (/404/.test(message)) return 'Mali yata ang Worker URL — dapat ito ang address ng Worker mo, hal. https://pangalan.workers.dev.';
+  return 'Kung hindi malinaw, kopyahin ang error na ito at ipakita sa church admin.';
 }
 
 function settingSwitch(key, label, sub) {
