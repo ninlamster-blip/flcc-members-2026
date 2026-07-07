@@ -1,0 +1,11 @@
+{
+  "name": "OFW Companion",
+  "short_name": "Companion",
+  "description": "A caring companion, community, and faith support app for Overseas Filipino Workers. You are seen. You are heard. You are not alone.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF8F4",
+  "theme_color": "#FAF8F4",
+  "icons": []
+}

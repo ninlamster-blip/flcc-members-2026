@@ -15359,11 +15359,12 @@ function App() {
           the game list, so it only occupies one 54px circle on screen
           instead of a permanent stack of one per game. */}
       {showGames && [
-        { key: 'blessing', href: 'daily-blessing/index.html', bottom: 92, bg: '#1E5EFF', border: '2px solid rgba(214,167,86,0.5)', shadow: 'rgba(30,94,255,0.35)', icon: '🎁', title: 'Daily Blessing' },
-        { key: 'armor', href: 'armor-of-god/index.html', bottom: 156, bg: G_ACCENT, border: 'none', shadow: 'rgba(124,58,237,0.38)', icon: '⚔️', title: 'Armor of God: Spiritual Battle' },
-        { key: 'snake', href: 'snake/index.html', bottom: 220, bg: '#064e3b', border: '2px solid rgba(0,255,136,0.35)', shadow: 'rgba(0,255,136,0.28)', icon: '🐍', title: 'Snake: Nokia Reborn' },
-        { key: 'maze', href: 'spiritual-maze/index.html', bottom: 284, bg: '#0F2A4A', border: '2px solid rgba(252,211,77,0.45)', shadow: 'rgba(252,211,77,0.25)', icon: '✦', title: 'Walk in the Light: Spiritual Maze' },
-        { key: 'faithmatch', href: 'faith-match/index.html', bottom: 348, bg: '#1e3a5f', border: '2px solid rgba(37,99,235,0.5)', shadow: 'rgba(37,99,235,0.35)', icon: '🧩', title: 'Faith Match: Scripture Match-3' },
+        { key: 'ofw', href: 'ofw-companion/index.html', bottom: 92, bg: '#C2703E', border: '2px solid rgba(255,246,239,0.45)', shadow: 'rgba(194,112,62,0.38)', icon: '🤍', title: 'OFW Companion — someone to talk to' },
+        { key: 'blessing', href: 'daily-blessing/index.html', bottom: 156, bg: '#1E5EFF', border: '2px solid rgba(214,167,86,0.5)', shadow: 'rgba(30,94,255,0.35)', icon: '🎁', title: 'Daily Blessing' },
+        { key: 'armor', href: 'armor-of-god/index.html', bottom: 220, bg: G_ACCENT, border: 'none', shadow: 'rgba(124,58,237,0.38)', icon: '⚔️', title: 'Armor of God: Spiritual Battle' },
+        { key: 'snake', href: 'snake/index.html', bottom: 284, bg: '#064e3b', border: '2px solid rgba(0,255,136,0.35)', shadow: 'rgba(0,255,136,0.28)', icon: '🐍', title: 'Snake: Nokia Reborn' },
+        { key: 'maze', href: 'spiritual-maze/index.html', bottom: 348, bg: '#0F2A4A', border: '2px solid rgba(252,211,77,0.45)', shadow: 'rgba(252,211,77,0.25)', icon: '✦', title: 'Walk in the Light: Spiritual Maze' },
+        { key: 'faithmatch', href: 'faith-match/index.html', bottom: 412, bg: '#1e3a5f', border: '2px solid rgba(37,99,235,0.5)', shadow: 'rgba(37,99,235,0.35)', icon: '🧩', title: 'Faith Match: Scripture Match-3' },
       ].map((g) => (
         <button
           key={g.key}

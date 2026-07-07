@@ -1,0 +1,79 @@
+{
+  "_comment": "Virtual Bible Study community content. Edit schedule/links here as the ministry grows — no code changes needed.",
+  "pastor": {
+    "name": "Pastor Anson Dionisio",
+    "role": "Lead Pastor · OFW Virtual Bible Study",
+    "message": "Wherever you are in the world — whether you get one day off a month or none at all — you are not forgotten, and you are never outside God's reach. This Bible study exists so that no OFW has to walk their faith journey alone. Come as you are: tired, homesick, questioning, rejoicing. There is a seat for you here, and we will keep it warm until you arrive.",
+    "verse": { "ref": "Matthew 18:20", "text": "For where two or three gather in my name, there am I with them." }
+  },
+  "schedule": [
+    { "day": "Sunday", "time": "8:00 PM (PH time)", "title": "Sunday Night Fellowship & Word", "note": "Main weekly gathering — worship, teaching, and prayer for OFWs in every timezone." },
+    { "day": "Wednesday", "time": "9:00 PM (PH time)", "title": "Midweek Bible Study", "note": "Verse-by-verse study. Bring your questions — no question is too small." },
+    { "day": "Saturday", "time": "7:00 AM (PH time)", "title": "Early Risers Prayer Watch", "note": "30 minutes of prayer for OFW families, employers, and needs. Perfect before a work day." }
+  ],
+  "joinNote": "Live session links are shared in the FLCC members app and by your group leaders. If you don't have the link yet, message your fellowship group or check the church announcements.",
+  "bringingOptions": [
+    { "id": "gratitude", "icon": "🌼", "label": "A gratitude", "prompt": "What are you thankful for this week?" },
+    { "id": "prayer", "icon": "🙏", "label": "A prayer request", "prompt": "What would you like us to pray for?" },
+    { "id": "struggle", "icon": "🪨", "label": "A personal struggle", "prompt": "What has been heavy lately? Share only what you're comfortable sharing." },
+    { "id": "question", "icon": "❓", "label": "A question about faith", "prompt": "What have you been wondering about God, the Bible, or life?" },
+    { "id": "listening", "icon": "👂", "label": "Something I want God to speak into", "prompt": "What part of your life needs God's voice right now?" }
+  ],
+  "teachings": [
+    {
+      "date": "2026-06-28",
+      "title": "The God Who Sees the Worker",
+      "passage": "Genesis 16:1-13",
+      "summary": "Hagar — a foreign household worker, far from home, running from a hard employer — is the first person in Scripture to give God a name: El Roi, 'the God who sees me.' If God saw her in the desert, He sees you in the kitchen, the hospital ward, the construction site.",
+      "questions": [
+        "Hagar felt invisible in the household she served. When have you felt that only your work matters, not you?",
+        "God found Hagar and asked, 'Where have you come from, and where are you going?' How would you answer that question today?",
+        "What changes when you truly believe God sees you — not just your remittances or your work?"
+      ]
+    },
+    {
+      "date": "2026-06-21",
+      "title": "Faithful in a Foreign Land",
+      "passage": "Daniel 1 & 6",
+      "summary": "Daniel spent his whole career serving in a foreign country, under employers who didn't share his faith. He excelled in his work, kept his integrity, and kept his window open toward home — praying three times a day. A masterclass for every OFW.",
+      "questions": [
+        "Daniel excelled at his job without losing his identity. What helps you stay 'you' while working abroad?",
+        "Daniel had a daily rhythm of prayer facing home. What daily rhythm keeps your heart connected to God and family?",
+        "Who is your 'Shadrach, Meshach, and Abednego' — the companions who keep your faith alive abroad?"
+      ]
+    },
+    {
+      "date": "2026-06-14",
+      "title": "Love That Crosses the Sea",
+      "passage": "Ruth 1-2",
+      "summary": "Ruth left her homeland to provide for her family, gleaning in a stranger's field. Her sacrifice, dignity, and faithfulness were seen — by Boaz, and by God. Your sacrifice for your family is written in the same book.",
+      "questions": [
+        "Ruth's love was expressed through hard, humble work in a foreign land. How is your daily work an act of love?",
+        "Boaz noticed Ruth and made sure she was protected and provided for. Who has been a 'Boaz' — an unexpected kindness — in your journey?",
+        "Naomi felt bitter and empty, yet God was quietly working. Where might God be quietly working in your story right now?"
+      ]
+    }
+  ],
+  "afterStudy": {
+    "title": "Keep the conversation going",
+    "prompts": [
+      "Share one takeaway with your prayer partner or fellowship group this week.",
+      "Pray for one person from the study by name every day this week.",
+      "Write in your journal: what did God speak to you through this study?"
+    ]
+  },
+  "groups": [
+    { "icon": "🌸", "name": "Women's Fellowship", "detail": "Sisters supporting sisters — weekly encouragement, prayer, and honest kwentuhan.", "meets": "Sundays after the main gathering" },
+    { "icon": "🛡️", "name": "Men's Fellowship", "detail": "Brotherhood for OFW men — accountability, prayer, and real talk about providing from afar.", "meets": "Saturdays, 9:00 PM PH time" },
+    { "icon": "🌱", "name": "New Believers Group", "detail": "Just starting your faith journey? Walk with patient guides — no question is too basic.", "meets": "Wednesdays before Bible study" },
+    { "icon": "📖", "name": "Bible Reading Group", "detail": "Read through the Bible together with a simple daily plan and gentle check-ins.", "meets": "Daily check-in thread" },
+    { "icon": "🤲", "name": "Prayer Partners", "detail": "Be matched with one kapatid who prays for you by name — and you for them.", "meets": "Weekly one-on-one" }
+  ],
+  "communityValues": [
+    "No likes. No followers. No popularity — just kapatiran (family in Christ).",
+    "What is shared in the group stays in the group.",
+    "We validate first, advise second, judge never.",
+    "Every member is a verified kapamilya from our church community.",
+    "The goal is not attendance. The goal is relationship."
+  ]
+}
