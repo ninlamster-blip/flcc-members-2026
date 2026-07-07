@@ -18,7 +18,7 @@
     { "day": "Wednesday", "time": "10:30 PM (Kuwait time)", "title": "FLCC Virtual Church", "note": "Midweek gathering — come as you are, even after a long work day." },
     { "day": "Saturday", "time": "10:30 AM (K.S.A.)", "title": "FLCC Virtual Church — K.S.A.", "note": "For our kababayans in the Kingdom of Saudi Arabia." }
   ],
-  "joinNote": "Live session links are shared in the FLCC members app and by your group leaders. If you don't have the link yet, message your fellowship group or check the church announcements.",
+  "joinNote": "Live session links are shared by your group leaders and fellowship groups. If you don't have the link yet, message your fellowship leader.",
   "bringingOptions": [
     { "id": "gratitude", "icon": "🌼", "label": "A gratitude", "prompt": "What are you thankful for this week?" },
     { "id": "prayer", "icon": "🙏", "label": "A prayer request", "prompt": "What would you like us to pray for?" },

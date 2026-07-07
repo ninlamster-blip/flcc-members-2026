@@ -25,7 +25,7 @@ export function initCommunity(context) {
             <div class="oc-group-meets">${escapeHtml(g.meets)}</div>
           </div>
         </div>`).join('')}
-      <p class="oc-muted" style="margin-top:10px">To join a group, message your church contact or ask in the FLCC members app — a real person will welcome you in.</p>
+      <p class="oc-muted" style="margin-top:10px">To join a group, message your fellowship leader — a real person will welcome you in.</p>
     </div>
 
     <div class="oc-card">

@@ -20,11 +20,12 @@ remembered. You are not alone."**
 
 ## How the AI works
 
-The app reuses the church-wide **Ask FLCC** connection — the same Cloudflare
-Worker proxy in `../ask-proxy/worker.js` and the same localStorage keys
-(`flcc-ask-proxy-url-v1`, `flcc-ask-proxy-secret-v1`). Members who already set
-up Ask FLCC get the full companion with zero extra configuration; others can
-paste the Worker URL in Settings.
+FLCC Kasama is a **standalone app** — it has no navigation to or from the
+members app and installs to the home screen under its own icon. It shares
+only this repository for hosting, plus the church-wide AI connection: the
+Cloudflare Worker proxy in `../ask-proxy/worker.js` and its localStorage keys
+(`flcc-ask-proxy-url-v1`, `flcc-ask-proxy-secret-v1`), with a direct API-key
+option in Settings.
 
 **Without any AI connection the app still works**: the companion answers from
 a curated pool of compassionate Taglish responses (`data/comfort.json`)
