@@ -37,7 +37,22 @@ async function boot() {
   initSupport(context);
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => { /* offline shell is a bonus, not a requirement */ });
+    // When an updated service worker takes over (skipWaiting + claim), reload
+    // once so members see the newest schedule and content without having to
+    // know about hard refreshes. Guarded so the very first install (no
+    // previous controller) never triggers a reload loop.
+    const hadController = !!navigator.serviceWorker.controller;
+    if (hadController) {
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded) return;
+        reloaded = true;
+        location.reload();
+      });
+    }
+    navigator.serviceWorker.register('sw.js')
+      .then((reg) => reg.update())
+      .catch(() => { /* offline shell is a bonus, not a requirement */ });
   }
 }
 
