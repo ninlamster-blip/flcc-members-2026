@@ -22,7 +22,6 @@ const HEART_CHIPS = [
 let comfort = null;
 let els = {};
 let busy = false;
-let recognition = null;
 let bound = false;
 
 // Safe to call again after onboarding or settings changes — the composer and
@@ -37,7 +36,6 @@ export async function initCompanion(context) {
     chat: document.getElementById('oc-chat'),
     input: document.getElementById('oc-input'),
     sendBtn: document.getElementById('oc-send-btn'),
-    voiceBtn: document.getElementById('oc-voice-btn'),
   };
 
   els.greeting.textContent = timeOfDayGreeting(getState().profile.name);
@@ -47,7 +45,6 @@ export async function initCompanion(context) {
   if (!bound) {
     bound = true;
     setupComposer();
-    setupVoice();
     setupHeaderCollapse();
     maybeGreetNewDay();
   }
@@ -234,52 +231,50 @@ function scrollToEnd(smooth = true) {
   });
 }
 
-// ── Voice ────────────────────────────────────────────────────────────────────
+// ── Spoken replies ───────────────────────────────────────────────────────────
+// Web Speech quality depends entirely on the voices installed on the phone.
+// We pick the most natural one available: Filipino first, then the enhanced/
+// neural English voices, instead of the browser's robotic default.
 
-function setupVoice() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return; // keep the mic hidden where unsupported
-  els.voiceBtn.hidden = false;
+let cachedVoice = null;
 
-  els.voiceBtn.addEventListener('click', () => {
-    if (recognition) { recognition.stop(); return; }
-    recognition = new SR();
-    recognition.lang = 'fil-PH';
-    recognition.interimResults = true;
-    recognition.continuous = false;
-
-    els.voiceBtn.classList.add('is-listening');
-    let finalText = '';
-
-    recognition.onresult = (e) => {
-      let interim = '';
-      for (const result of e.results) {
-        if (result.isFinal) finalText += result[0].transcript;
-        else interim += result[0].transcript;
-      }
-      els.input.value = (finalText + interim).trim();
-      autoGrow();
-    };
-    recognition.onerror = () => stopListening();
-    recognition.onend = () => stopListening();
-    recognition.start();
-  });
+function pickVoice() {
+  if (cachedVoice) return cachedVoice;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  const preferences = [
+    (v) => /^(fil|tl)[-_]?/i.test(v.lang),
+    (v) => /en[-_]PH/i.test(v.lang),
+    (v) => /natural|neural|premium|enhanced/i.test(v.name) && /^en/i.test(v.lang),
+    (v) => /Google|Microsoft|Samantha|Karen/i.test(v.name) && /^en/i.test(v.lang),
+    (v) => /^en/i.test(v.lang),
+  ];
+  for (const wanted of preferences) {
+    const match = voices.find(wanted);
+    if (match) { cachedVoice = match; return match; }
+  }
+  return voices[0];
 }
 
-function stopListening() {
-  recognition = null;
-  els.voiceBtn.classList.remove('is-listening');
-  els.input.focus();
+if ('speechSynthesis' in window) {
+  // Voice list loads asynchronously on most phones.
+  window.speechSynthesis.addEventListener?.('voiceschanged', () => { cachedVoice = null; pickVoice(); });
 }
 
 function speakIfEnabled(text) {
   if (!getState().settings.voiceReplies) return;
   if (!('speechSynthesis' in window)) return;
-  // Strip markdown markers for natural speech.
-  const plain = text.replace(/\*+/g, '');
+  // Strip markdown markers and emoji — hearing "asterisk" or emoji names ruins the warmth.
+  const plain = text
+    .replace(/\*+/g, '')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '')
+    .trim();
+  if (!plain) return;
   const utter = new SpeechSynthesisUtterance(plain);
-  utter.rate = 0.98;
-  utter.pitch = 1.02;
+  const voice = pickVoice();
+  if (voice) { utter.voice = voice; utter.lang = voice.lang; }
+  utter.rate = 0.95;
+  utter.pitch = 1.03;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utter);
 }

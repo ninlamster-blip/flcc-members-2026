@@ -136,10 +136,9 @@ function renderSettings() {
 
     <div class="oc-settings-section">AI model</div>
     <div class="oc-setting-row"><div style="flex:1">
-      <div class="oc-setting-sub" style="margin-bottom:8px">Matipid keeps costs low for the church's shared budget; Malalim thinks deeper but costs about 10× more per message.</div>
       <div class="oc-scale-row">
-        <button type="button" class="oc-scale-dot${s.settings.model.includes('haiku') ? ' is-selected' : ''}" data-model="claude-haiku-4-5-20251001">Matipid · Haiku</button>
-        <button type="button" class="oc-scale-dot${s.settings.model.includes('haiku') ? '' : ' is-selected'}" data-model="claude-sonnet-4-6">Malalim · Sonnet</button>
+        <button type="button" class="oc-scale-dot${s.settings.model.includes('haiku') ? ' is-selected' : ''}" data-model="claude-haiku-4-5-20251001">Matipid</button>
+        <button type="button" class="oc-scale-dot${s.settings.model.includes('haiku') ? '' : ' is-selected'}" data-model="claude-sonnet-4-6">Malalim</button>
       </div>
     </div></div>
 
@@ -152,6 +151,7 @@ function renderSettings() {
           : 'Kaibigan still works offline with caring responses, but connecting makes conversations personal. Paste your church’s Worker URL below (ask your church admin), or set it up once in Ask FLCC.'}</div>
         <input type="url" class="oc-text-input" id="oc-set-proxy" value="${escapeHtml(conn.proxyUrl)}" placeholder="https://flcc-ask.yourname.workers.dev" style="margin-top:10px" autocomplete="off">
         <input type="password" class="oc-text-input" id="oc-set-secret" value="${escapeHtml(conn.proxySecret)}" placeholder="Proxy secret (if your church set one)" style="margin-top:8px" autocomplete="off">
+        <input type="password" class="oc-text-input" id="oc-set-apikey" value="${escapeHtml(conn.apiKey)}" placeholder="API key (sk-ant-…) — optional, instead of a proxy" style="margin-top:8px" autocomplete="off">
       </div>
     </div>
 
@@ -231,6 +231,7 @@ function renderSettings() {
     saveConnection({
       proxyUrl: body.querySelector('#oc-set-proxy').value,
       proxySecret: body.querySelector('#oc-set-secret').value,
+      apiKey: body.querySelector('#oc-set-apikey').value,
     });
     document.getElementById('oc-settings').hidden = true;
     initCompanion(context);

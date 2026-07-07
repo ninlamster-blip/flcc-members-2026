@@ -21,10 +21,11 @@ export function getConnection() {
   }
 }
 
-export function saveConnection({ proxyUrl, proxySecret }) {
+export function saveConnection({ proxyUrl, proxySecret, apiKey }) {
   try {
     if (proxyUrl !== undefined) localStorage.setItem(PROXY_URL_KEY, proxyUrl.trim());
     if (proxySecret !== undefined) localStorage.setItem(PROXY_SECRET_KEY, proxySecret.trim());
+    if (apiKey !== undefined) localStorage.setItem(API_KEY_KEY, apiKey.trim());
   } catch { /* private mode — connection lasts this session only */ }
 }
 
