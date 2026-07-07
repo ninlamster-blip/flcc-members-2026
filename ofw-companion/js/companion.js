@@ -48,6 +48,7 @@ export async function initCompanion(context) {
     bound = true;
     setupComposer();
     setupVoice();
+    setupHeaderCollapse();
     maybeGreetNewDay();
   }
 }
@@ -89,9 +90,10 @@ function renderHistory() {
 
 function welcomeText() {
   const name = getState().profile.name;
-  return name
-    ? `Kumusta, ${name}? Ako si Kaibigan — nandito ako para sa'yo, anumang oras. Walang husga, walang madaliin. Kwentuhan mo ako: kumusta ang puso mo ngayon?`
-    : `Kumusta? Ako si Kaibigan — your companion here, anytime you need someone. Walang husga, walang madaliin. Kwentuhan mo ako: kumusta ang puso mo ngayon?`;
+  const intro = name
+    ? `Kumusta, ${name}? Ako si Kaibigan — nandito ako para sa'yo, anumang oras. Walang husga, walang madaliin.`
+    : `Kumusta? Ako si Kaibigan — your companion here, anytime you need someone. Walang husga, walang madaliin.`;
+  return `${intro} Kwentuhan mo ako — o magtanong ka lang: Bible verse, kahit anong gustong malaman. Kumusta ang puso mo ngayon?`;
 }
 
 // On a new day, if connected, ask the AI for a warm opener that recalls a
@@ -137,6 +139,17 @@ function setupComposer() {
 function autoGrow() {
   els.input.style.height = 'auto';
   els.input.style.height = Math.min(els.input.scrollHeight, 120) + 'px';
+}
+
+// Fold the big greeting into a slim bar while the user reads up the
+// conversation (WhatsApp-style). Hysteresis (40px down / 8px up) prevents
+// flapping as the header resize itself changes the scroll geometry.
+function setupHeaderCollapse() {
+  els.chat.addEventListener('scroll', () => {
+    const compact = document.body.classList.contains('oc-home-compact');
+    if (!compact && els.chat.scrollTop > 40) document.body.classList.add('oc-home-compact');
+    else if (compact && els.chat.scrollTop < 8) document.body.classList.remove('oc-home-compact');
+  }, { passive: true });
 }
 
 async function sendUserMessage(text, opts = {}) {

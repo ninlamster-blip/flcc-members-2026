@@ -285,6 +285,21 @@ body[data-active-view="home"] .oc-view[data-view="home"] {
 }
 .oc-home-header, .oc-heart-checkin { flex-shrink: 0; }
 
+/* WhatsApp-style collapsing header: swiping up in the conversation folds the
+   big greeting into a slim bar so the chat and ask box get the whole screen;
+   scrolling back to the top expands it again. */
+.oc-home-header { transition: padding 0.28s ease; }
+.oc-greeting { transition: font-size 0.28s ease; }
+.oc-eyebrow, .oc-subgreeting {
+  max-height: 4.5em;
+  overflow: hidden;
+  transition: opacity 0.2s ease, max-height 0.28s ease, margin 0.28s ease;
+}
+body.oc-home-compact .oc-home-header { padding: 16px 60px 8px; }
+body.oc-home-compact .oc-greeting { font-size: 1.12em; }
+body.oc-home-compact .oc-eyebrow,
+body.oc-home-compact .oc-subgreeting { opacity: 0; max-height: 0; margin: 0; }
+
 .oc-chat {
   display: flex;
   flex-direction: column;
