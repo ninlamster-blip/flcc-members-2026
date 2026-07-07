@@ -1,0 +1,50 @@
+{
+  "_comment": "Offline compassionate responses, grouped by heart-state. Used when no AI connection is configured, or when the network is down. Written in warm Taglish — validate first, advise gently, never judge.",
+  "lonely": [
+    "Salamat sa pagsabi. Feeling alone while surrounded by a family that isn't yours — that's one of the heaviest kinds of quiet. Your feelings are real, and they matter. You are not invisible here. Kung gusto mo, kwentuhan mo ako — anong pinaka-namimiss mo ngayon?",
+    "I hear you. Loneliness doesn't mean something is wrong with you — it means you're a person made for connection, living far from the people you love. That takes real strength. I'm here, and I'm listening. What would you tell your best friend right now if she were sitting beside you?",
+    "Hindi ka nag-iisa sa pakiramdam na 'yan, kahit parang ikaw lang. So many kababayans carry this same quiet ache. It's okay to feel it. It's okay to say it out loud. Nandito lang ako — walang judgment, walang deadline. Ano ang gusto mong ikwento?"
+  ],
+  "homesick": [
+    "Ang hirap talagang ma-miss ang pamilya, lalo na kapag may okasyon na hindi mo nasamahan. Missing them this much is not weakness — it is proof of how deeply you love. And that love is exactly why you're there, doing what you do. They are lucky to be loved by someone like you. Gusto mo bang ikwento sila sa akin?",
+    "I hear the ache in that. Every remittance, every video call, every 'kaya ko pa' — that's love in action, even when it hurts. Your sacrifice is seen, even on the days it feels like nobody notices. Anong pinaka-gusto mong gawin kapag nakauwi ka na?",
+    "Homesickness is love with nowhere to go for a while. Hindi mo kailangang itago 'yan dito. Kung gusto mo, isulat natin sa journal ang isang paboritong alaala mo sa bahay — minsan nakakagaan ang balikan ang magagandang alaala."
+  ],
+  "exhausted": [
+    "Pagod ka na — and you're allowed to say that. Being strong all the time is exhausting, and you have been strong for so long, for so many people. Even just for tonight, you don't have to be strong here. Rest is not laziness; rest is how you keep going. Nakakatulog ka pa ba nang maayos?",
+    "I hear you. 'Tired of being strong' is a real kind of tired — deeper than sleep can fix, but sleep still helps. You have permission to put the weight down for a few minutes. What is one small thing that usually helps you breathe — music, prayer, a short walk, a favorite snack?",
+    "Kapag sinabi mong wala ka nang energy, naniniwala ako sa'yo. You give so much of yourself every single day. Tonight, maybe the kindest thing you can do is something small just for you. Hindi ka makasarili kapag nagpahinga ka."
+  ],
+  "invisible": [
+    "What you do matters — and more importantly, *you* matter, separate from all the work you do. Hindi ka lang katulong, hindi ka lang padala ng pera. You are a whole person: a daughter or son, a friend, someone with dreams. Nakikita kita. Ano ang isang bagay na proud ka sa sarili mo ngayong linggo?",
+    "Feeling unappreciated hurts, especially when you pour your whole self into caring for others. Please hear this: your sacrifices are not wasted, and your worth is not measured by whether anyone says thank you. Ang dignidad mo, hindi nawawala kahit walang pumapansin.",
+    "Napapagod ang puso kapag parang trabaho ka na lang sa paningin ng iba. Pero dito, ikaw ang mahalaga — hindi ang trabaho mo. Kwentuhan mo ako tungkol sa'yo: anong pangarap mo na hindi mo pa nasasabi kahit kanino?"
+  ],
+  "anxious": [
+    "Those 'what if' thoughts are heavy — about work, about the family, about the future. Let's slow down together for a moment. Take one slow breath. Ngayon mismo, sa sandaling ito, ligtas ka. We can face one worry at a time. Ano ang pinaka-malaking inaalala mo ngayon?",
+    "Fear grows louder when we carry it alone, kaya mabuti at sinabi mo. Worries about losing a job or about the family back home are real — pero hindi mo kailangang sagutin lahat ngayong gabi. What is one small step you *can* control this week? Let's start there.",
+    "Naiintindihan ko ang takot na 'yan. Kapag malayo ka sa pamilya, lumalaki ang bawat alalahanin. Isulat natin isa-isa — kapag nailabas mo, madalas lumiliit sila. Ano ang unang-una sa isip mo?"
+  ],
+  "heavy": [
+    "Whatever is weighing on your heart, you don't have to carry it alone tonight. Hindi mo kailangang ayusin agad — minsan kailangan lang muna itong masabi. I'm here and I'm not going anywhere. Kung gusto mong magkwento, nandito ako. Kung gusto mo munang tumahimik, okay din 'yan.",
+    "Salamat sa tiwala mo na sabihin 'yan. Heavy hearts don't need advice right away — they need someone to sit with them first. So I'm sitting with you. Take your time. Anong nangyari?",
+    "I hear you, and I'm sorry it's been heavy. Kahit hindi ko kayang alisin ang bigat, kaya kitang samahan habang binubuhat mo. One honest sentence at a time — ano ang pinakamabigat sa lahat?"
+  ],
+  "grateful": [
+    "Ang ganda niyan! Gratitude in the middle of a hard season is a kind of strength na hindi lahat kaya. I'm smiling with you. Ano ang nangyari — kwento mo, gusto kong marinig ang detalye!",
+    "That's beautiful. Hold on to this feeling — write it down if you can, so on harder days may babalikan ka. Sino o ano ang pinasasalamatan mo ngayon?",
+    "Nakakataba ng puso 'yan. Moments like this deserve to be celebrated, kahit maliit. Salamat sa pag-share — anong pinaka-highlight ng araw mo?"
+  ],
+  "happy": [
+    "Yay! Deserve mo ang saya na 'yan. Kwento mo pa — anong nangyari? Gusto kong makisaya sa'yo!",
+    "That makes me genuinely happy to hear. Joy is worth savoring, lalo na sa buhay OFW kung saan pinaghihirapan ang bawat ngiti. Anong pinakamasayang parte ng araw mo?",
+    "Ang sarap sa pakiramdam kapag may magandang balita! Celebrate this — you've earned it. Sino ang unang taong gusto mong balitaan?"
+  ],
+  "neutral": [
+    "Kumusta ang araw mo? Kahit walang malaking nangyari, gusto kong malaman kung ano ang meron sa isip mo ngayon. Sometimes the ordinary days are the ones where we most need someone to talk to.",
+    "Nandito lang ako. No pressure to have anything big to say — kahit simpleng kwento about your day, gusto kong marinig. Anong kinain mo? Kumusta ang trabaho? Kumusta ang puso mo?",
+    "Okay lang kahit 'okay lang.' Pero kung may maliit na bagay na gusto mong ikwento — nakakatawa, nakakainis, o nakaka-miss — I'm all ears."
+  ],
+  "crisis": "Naririnig kita — at mahalaga ang buhay mo. Sa Diyos, sa pamilya mo, at dito. Hindi mo kailangang harapin ito mag-isa, at hindi ako sapat na kasama para dito. Please, tawagan mo ngayon ang emergency number o local authorities ng bansang kinaroroonan mo, o ang mga crisis line sa Tulong tab — may tunay na taong handang tumulong sa'yo ngayon mismo. Nandito pa rin ako habang ginagawa mo 'yan.",
+  "fallbackClosing": "Paalala mula sa puso: kasama mo lang ako — hindi ako kapalit ng tunay na kaibigan, ng pamilya, ng pastor, ng professional counselor, o ng Diyos. Kung tuloy-tuloy ang bigat, please reach out sa Tulong tab o sa church family mo — may tunay na taong handang tumulong."
+}

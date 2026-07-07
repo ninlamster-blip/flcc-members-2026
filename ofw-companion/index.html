@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FAF8F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12100E" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="FLCC Kasama — a caring companion, community, and faith support app for Overseas Filipino Workers, from the Filipino Language Christian Congregation. You are seen. You are heard. You are not alone.">
+<title>FLCC Kasama</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="oc-root">
+
+    <!-- ============ KAIBIGAN (COMPANION) ============ -->
+    <section id="view-home" class="oc-view" data-view="home" aria-labelledby="oc-greeting">
+      <header class="oc-home-header">
+        <p class="oc-eyebrow">FLCC Kasama</p>
+        <h1 id="oc-greeting" class="oc-greeting">Magandang araw</h1>
+        <p class="oc-subgreeting oc-today-line">
+          <span id="oc-date-line"></span>
+          <button type="button" id="oc-weather-chip" class="oc-weather-chip" hidden></button>
+        </p>
+        <p class="oc-occasion" id="oc-occasion" hidden></p>
+      </header>
+
+      <!-- Heart check-in cards (shown until answered today) -->
+      <div class="oc-heart-checkin" id="oc-heart-checkin">
+        <p class="oc-heart-question">Kumusta ang puso mo ngayon? <span class="oc-muted">Pili ka — pwedeng higit sa isa.</span></p>
+        <div class="oc-chip-row" id="oc-heart-chips" role="group" aria-label="How is your heart today? Select all that apply"></div>
+        <button type="button" class="oc-primary-btn oc-heart-share" id="oc-heart-share" hidden>Ikwento kay Kaibigan</button>
+      </div>
+
+      <!-- Daily ritual + not-okay row -->
+      <div class="oc-care-row">
+        <button type="button" id="oc-ritual-pill" class="oc-ritual-pill" hidden></button>
+        <button type="button" id="oc-notokay-btn" class="oc-notokay-btn">🌧️ I'm not okay today</button>
+      </div>
+
+      <!-- Conversation -->
+      <div class="oc-chat" id="oc-chat" aria-live="polite"></div>
+    </section>
+
+    <!-- ============ JOURNAL ============ -->
+    <section id="view-journal" class="oc-view" data-view="journal" hidden aria-labelledby="journal-title">
+      <header class="oc-view-header">
+        <h1 id="journal-title" class="oc-title">Journal</h1>
+        <p class="oc-view-sub">A private place for your heart. Only you can see this.</p>
+      </header>
+
+      <div class="oc-card" id="oc-checkin-card">
+        <h2 class="oc-section-title">Today's check-in <span class="oc-muted">· under 30 seconds</span></h2>
+        <div id="oc-checkin-body"></div>
+      </div>
+
+      <div class="oc-card" id="oc-insight-card" hidden>
+        <h2 class="oc-section-title">Your journey</h2>
+        <div class="oc-journey-dots" id="oc-journey-dots" aria-label="Your last two weeks, one dot per day"></div>
+        <p class="oc-insight-text" id="oc-insight-text"></p>
+        <button type="button" class="oc-ghost-btn" id="oc-insight-btn">Reflect on my week</button>
+      </div>
+
+      <div class="oc-card">
+        <h2 class="oc-section-title">Write freely</h2>
+        <textarea id="oc-journal-input" class="oc-journal-input" rows="4" placeholder="Isulat mo lang lahat… no one else will read this."></textarea>
+        <button type="button" class="oc-primary-btn oc-journal-save" id="oc-journal-save">Save entry</button>
+      </div>
+
+      <div class="oc-card">
+        <div class="oc-journal-head">
+          <h2 class="oc-section-title">Past entries</h2>
+          <input type="search" id="oc-journal-search" class="oc-search" placeholder="Search…" aria-label="Search journal entries">
+        </div>
+        <ul id="oc-journal-list" class="oc-journal-list"></ul>
+      </div>
+    </section>
+
+    <!-- ============ FAITH ============ -->
+    <section id="view-faith" class="oc-view" data-view="faith" hidden aria-labelledby="faith-title">
+      <header class="oc-view-header">
+        <h1 id="faith-title" class="oc-title">Faith</h1>
+        <p class="oc-view-sub">Fellowship and encouragement, wherever you are.</p>
+      </header>
+      <div id="oc-faith-body"></div>
+    </section>
+
+    <!-- ============ KAPWA (COMMUNITY) ============ -->
+    <section id="view-community" class="oc-view" data-view="community" hidden aria-labelledby="community-title">
+      <header class="oc-view-header">
+        <h1 id="community-title" class="oc-title">Kapwa</h1>
+        <p class="oc-view-sub">A safe community. No likes, no followers — just kapatiran.</p>
+      </header>
+      <div id="oc-community-body"></div>
+    </section>
+
+    <!-- ============ TULONG (SUPPORT) ============ -->
+    <section id="view-support" class="oc-view" data-view="support" hidden aria-labelledby="support-title">
+      <header class="oc-view-header">
+        <h1 id="support-title" class="oc-title">Tulong</h1>
+        <p class="oc-view-sub">Real help, real people, real numbers.</p>
+      </header>
+      <div id="oc-support-body"></div>
+    </section>
+
+  </div>
+
+  <!-- ============ COMPOSER (Kaibigan tab only) ============ -->
+  <!-- Lives outside the animated view sections: their entrance animation makes
+       them a containing block, which would anchor this fixed bar to the
+       section instead of the viewport and float it above the tab bar. -->
+  <div class="oc-composer">
+    <textarea id="oc-input" class="oc-input" rows="1" placeholder="Kwentuhan mo ako…" aria-label="Message your companion"></textarea>
+    <button type="button" id="oc-send-btn" class="oc-send-btn" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z"/></svg>
+    </button>
+  </div>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav class="oc-nav" aria-label="FLCC Kasama sections">
+    <button type="button" class="oc-nav-btn is-active" data-nav="home" aria-current="page">
+      <span class="oc-nav-icon" aria-hidden="true">💬</span><span>Kaibigan</span>
+    </button>
+    <button type="button" class="oc-nav-btn" data-nav="journal">
+      <span class="oc-nav-icon" aria-hidden="true">📔</span><span>Journal</span>
+    </button>
+    <button type="button" class="oc-nav-btn" data-nav="faith" id="oc-nav-faith">
+      <span class="oc-nav-icon" aria-hidden="true">🕊️</span><span>Faith</span>
+    </button>
+    <button type="button" class="oc-nav-btn" data-nav="community">
+      <span class="oc-nav-icon" aria-hidden="true">🤝</span><span>Kapwa</span>
+    </button>
+    <button type="button" class="oc-nav-btn" data-nav="support">
+      <span class="oc-nav-icon" aria-hidden="true">🧭</span><span>Tulong</span>
+    </button>
+  </nav>
+
+  <!-- Settings gear -->
+  <button type="button" id="oc-settings-btn" class="oc-settings-btn" aria-label="Settings and privacy">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>
+  </button>
+
+  <!-- ============ ONBOARDING OVERLAY ============ -->
+  <div id="oc-onboarding" class="oc-sheet-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="oc-onboard-title">
+    <div class="oc-sheet oc-onboard">
+      <div class="oc-onboard-mark" aria-hidden="true">🤍</div>
+      <h2 id="oc-onboard-title" class="oc-sheet-title">Kumusta ka, kababayan?</h2>
+      <p class="oc-onboard-text">This is <strong>FLCC Kasama</strong> — a safe, private space made for OFWs by your Filipino Language Christian Congregation family. Someone to talk to after a long day, a journal for your heart, a community that prays with you, and real help when you need it.</p>
+      <p class="oc-onboard-text"><strong>Everything you share stays on this phone.</strong> No ads. Nothing is sold. Nothing is posted anywhere.</p>
+      <label class="oc-field-label" for="oc-onboard-name">What should I call you?</label>
+      <input type="text" id="oc-onboard-name" class="oc-text-input" placeholder="Your name or palayaw" maxlength="30" autocomplete="off">
+      <label class="oc-check-row">
+        <input type="checkbox" id="oc-onboard-faith" checked>
+        <span>Include faith features (prayers, Bible study, devotionals)</span>
+      </label>
+      <button type="button" class="oc-primary-btn" id="oc-onboard-start">Simulan natin · Let's begin</button>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS SHEET ============ -->
+  <div id="oc-settings" class="oc-sheet-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="oc-settings-title">
+    <div class="oc-sheet">
+      <div class="oc-sheet-handle" aria-hidden="true"></div>
+      <h2 id="oc-settings-title" class="oc-sheet-title">Settings & Privacy</h2>
+      <div id="oc-settings-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ CRISIS SUPPORT SHEET ============ -->
+  <div id="oc-crisis" class="oc-sheet-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="oc-crisis-title">
+    <div class="oc-sheet oc-crisis-sheet">
+      <h2 id="oc-crisis-title" class="oc-sheet-title">Mahalaga ka. You matter.</h2>
+      <p class="oc-onboard-text">Thank you for saying that out loud — it takes courage. I'm staying right here with you, but please also reach a real person now. May mga taong handang makinig sa'yo, anumang oras:</p>
+      <div id="oc-crisis-lines"></div>
+      <p class="oc-crisis-note">If you or someone else is in immediate danger, call the local emergency number or authorities of the country you are in — ngayon na.</p>
+      <button type="button" class="oc-primary-btn" id="oc-crisis-close">Salamat — back to our conversation</button>
+    </div>
+  </div>
+
+  <!-- ============ "I'M NOT OKAY" SHEET ============ -->
+  <div id="oc-notokay" class="oc-sheet-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="oc-notokay-title">
+    <div class="oc-sheet">
+      <div class="oc-sheet-handle" aria-hidden="true"></div>
+      <h2 id="oc-notokay-title" class="oc-sheet-title">Nandito kami para sa'yo 🤍</h2>
+      <div id="oc-notokay-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ BREATHING OVERLAY ============ -->
+  <div id="oc-breathe" class="oc-breathe" hidden role="dialog" aria-modal="true" aria-label="Breathing exercise">
+    <div class="oc-breathe-circle" aria-hidden="true"></div>
+    <p class="oc-breathe-label" id="oc-breathe-label">Huminga… breathe in</p>
+    <p class="oc-breathe-sub">Sundan mo lang ang bilog. Walang madaliin.</p>
+    <button type="button" class="oc-ghost-btn" id="oc-breathe-close">Tapos na ako</button>
+  </div>
+
+  <!-- Toast -->
+  <div id="oc-toast" class="oc-toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

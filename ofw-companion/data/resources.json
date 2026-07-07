@@ -1,0 +1,125 @@
+{
+  "_comment": "OFW Support Center directory. Numbers and links are for well-known Philippine government and support services — members should verify local numbers for their host country. Edit this file to add country-specific and church-specific contacts.",
+  "emergency": {
+    "title": "If you are in immediate danger",
+    "note": "Call the local emergency number of the country you are in first (for example 999 in Hong Kong/UK, 995/999 in Singapore, 911 in Saudi Arabia/UAE/US, 112 in most of Europe). Then contact your nearest Philippine Embassy or Consulate.",
+    "crisis": [
+      {
+        "name": "National Center for Mental Health Crisis Hotline (Philippines)",
+        "detail": "24/7 free and confidential emotional support in Filipino and English.",
+        "contact": "1553 (toll-free in PH) · +63 917 899 8727",
+        "url": "https://ncmh.gov.ph"
+      },
+      {
+        "name": "In Touch Community Services Crisis Line (Philippines)",
+        "detail": "Free 24/7 crisis intervention and emotional support.",
+        "contact": "+63 2 8893 7603 · +63 917 800 1123",
+        "url": "https://in-touch.org"
+      },
+      {
+        "name": "Find a helpline in your host country",
+        "detail": "Directory of verified emotional-support helplines in over 130 countries.",
+        "contact": "findahelpline.com",
+        "url": "https://findahelpline.com"
+      }
+    ]
+  },
+  "government": [
+    {
+      "name": "Department of Migrant Workers (DMW)",
+      "detail": "One-stop agency for OFW concerns: contracts, complaints, repatriation, welfare assistance.",
+      "contact": "Hotline 1348 (dial +63 2 1348 from abroad)",
+      "url": "https://dmw.gov.ph"
+    },
+    {
+      "name": "OWWA — Overseas Workers Welfare Administration",
+      "detail": "Membership benefits, welfare assistance, scholarships, reintegration programs.",
+      "contact": "Hotline 1348",
+      "url": "https://owwa.gov.ph"
+    },
+    {
+      "name": "Philippine Embassies & Consulates Directory",
+      "detail": "Find the address and hotline of the Philippine Embassy or Consulate nearest you. Ask for ATN (Assistance-to-Nationals) or the Migrant Workers Office (MWO/POLO).",
+      "contact": "dfa.gov.ph directory",
+      "url": "https://dfa.gov.ph/list-of-philippine-embassies-and-consulates-general"
+    },
+    {
+      "name": "OWWA Uwian Na (Repatriation Assistance)",
+      "detail": "Help for distressed OFWs who need to come home.",
+      "contact": "Via OWWA hotline 1348 or your MWO/POLO office",
+      "url": "https://owwa.gov.ph"
+    },
+    {
+      "name": "SSS for OFWs",
+      "detail": "Continue your Social Security contributions while abroad — pension, loans, benefits.",
+      "contact": "u.sss.gov.ph",
+      "url": "https://www.sss.gov.ph"
+    },
+    {
+      "name": "Pag-IBIG Overseas Program",
+      "detail": "Savings and housing loans for OFWs.",
+      "contact": "pagibigfund.gov.ph",
+      "url": "https://www.pagibigfund.gov.ph"
+    }
+  ],
+  "support": [
+    {
+      "name": "Mission for Migrant Workers (Hong Kong)",
+      "detail": "Free assistance for migrant domestic workers in crisis in Hong Kong: shelter, case help, counseling.",
+      "contact": "+852 2522 8264",
+      "url": "https://www.migrants.net"
+    },
+    {
+      "name": "HOME — Humanitarian Organization for Migration Economics (Singapore)",
+      "detail": "Help for migrant domestic workers in Singapore: shelter, helpdesk, training.",
+      "contact": "Helpline +65 1800 797 7977",
+      "url": "https://www.home.org.sg"
+    },
+    {
+      "name": "Migrante International",
+      "detail": "Global grassroots organization of overseas Filipinos with chapters in many countries.",
+      "contact": "migranteinternational.org",
+      "url": "https://migranteinternational.org"
+    },
+    {
+      "name": "Blas F. Ople Policy Center",
+      "detail": "NGO assisting distressed OFWs and victims of illegal recruitment and trafficking.",
+      "contact": "Facebook: @opecenter",
+      "url": "https://www.facebook.com/oplecenter"
+    },
+    {
+      "name": "IOM Global Assistance Directory",
+      "detail": "International Organization for Migration — support for migrants worldwide.",
+      "contact": "iom.int",
+      "url": "https://www.iom.int"
+    }
+  ],
+  "church": [
+    {
+      "name": "FLCC — Filipino Language Christian Congregation",
+      "detail": "Our home church family, led by Rev. Jopet Alim. Worship service every Friday, 10:00 AM, at the National Evangelical Church in Kuwait compound.",
+      "contact": "Ask your fellowship leader for directions and details",
+      "url": ""
+    },
+    {
+      "name": "FLCC — Virtual Church",
+      "detail": "Led by Pastor Anson Dionisio. Every Sunday and Wednesday, 10:30 PM Kuwait time · K.S.A. every Saturday, 10:30 AM.",
+      "contact": "Faith tab → schedule",
+      "url": ""
+    }
+  ],
+  "offday": {
+    "title": "Ideas for your day off",
+    "note": "Your rest day is precious. Even one meaningful connection can refill your heart for weeks.",
+    "ideas": [
+      { "icon": "⛪", "title": "Join a worship service or Bible study", "detail": "Online or in person — see the Faith tab for this week's schedule." },
+      { "icon": "🥘", "title": "Meet kababayans for a meal", "detail": "Cook or share Filipino food with friends — lutong bahay heals homesickness." },
+      { "icon": "📞", "title": "Schedule a long video call home", "detail": "Not the rushed weekday kind — a slow Sunday call with the whole family." },
+      { "icon": "🌳", "title": "Go somewhere green", "detail": "A park, a waterfront, a walk. Sunlight and open space lift a tired heart." },
+      { "icon": "📖", "title": "Feed your mind", "detail": "A free online course, a book, or a skill for your future — invest one hour in you." },
+      { "icon": "🤝", "title": "Encourage another OFW", "detail": "Message someone who might be lonelier than you. Ministering to others heals us too." },
+      { "icon": "📝", "title": "Write in your journal", "detail": "Ten quiet minutes with your own thoughts — see the Journal tab." },
+      { "icon": "💆", "title": "Real rest", "detail": "A nap without an alarm. Rest is not wasted time; it is maintenance for the soul." }
+    ]
+  }
+}

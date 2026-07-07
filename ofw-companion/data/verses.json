@@ -1,0 +1,48 @@
+{
+  "_comment": "Scripture encouragement matched to heart-states. Shown gently in the Faith tab and offered (never forced) in the companion when faith features are enabled.",
+  "lonely": [
+    { "ref": "Isaiah 41:10", "text": "Fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand." },
+    { "ref": "Psalm 68:6", "text": "God sets the lonely in families; he leads out the prisoners with singing." },
+    { "ref": "Deuteronomy 31:6", "text": "Be strong and courageous. Do not fear... for it is the Lord your God who goes with you. He will not leave you or forsake you." }
+  ],
+  "homesick": [
+    { "ref": "Psalm 121:8", "text": "The Lord will watch over your coming and going both now and forevermore." },
+    { "ref": "Proverbs 3:5-6", "text": "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight." },
+    { "ref": "Psalm 127:1", "text": "Unless the Lord builds the house, the builders labor in vain. Unless the Lord watches over the city, the guards stand watch in vain." }
+  ],
+  "exhausted": [
+    { "ref": "Matthew 11:28", "text": "Come to me, all you who are weary and burdened, and I will give you rest." },
+    { "ref": "Isaiah 40:31", "text": "But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint." },
+    { "ref": "Psalm 23:2-3", "text": "He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul." }
+  ],
+  "invisible": [
+    { "ref": "Genesis 16:13", "text": "You are the God who sees me." },
+    { "ref": "Colossians 3:23-24", "text": "Whatever you do, work at it with all your heart, as working for the Lord... It is the Lord Christ you are serving." },
+    { "ref": "Luke 12:6-7", "text": "Indeed, the very hairs of your head are all numbered. Don't be afraid; you are worth more than many sparrows." }
+  ],
+  "anxious": [
+    { "ref": "Philippians 4:6-7", "text": "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus." },
+    { "ref": "1 Peter 5:7", "text": "Cast all your anxiety on him because he cares for you." },
+    { "ref": "Matthew 6:34", "text": "Therefore do not worry about tomorrow, for tomorrow will worry about itself. Each day has enough trouble of its own." }
+  ],
+  "heavy": [
+    { "ref": "Psalm 34:18", "text": "The Lord is close to the brokenhearted and saves those who are crushed in spirit." },
+    { "ref": "Psalm 55:22", "text": "Cast your cares on the Lord and he will sustain you; he will never let the righteous be shaken." },
+    { "ref": "2 Corinthians 4:8-9", "text": "We are hard pressed on every side, but not crushed; perplexed, but not in despair; persecuted, but not abandoned; struck down, but not destroyed." }
+  ],
+  "grateful": [
+    { "ref": "1 Thessalonians 5:16-18", "text": "Rejoice always, pray continually, give thanks in all circumstances; for this is God's will for you in Christ Jesus." },
+    { "ref": "Psalm 107:1", "text": "Give thanks to the Lord, for he is good; his love endures forever." },
+    { "ref": "James 1:17", "text": "Every good and perfect gift is from above, coming down from the Father of the heavenly lights." }
+  ],
+  "happy": [
+    { "ref": "Psalm 118:24", "text": "This is the day the Lord has made; let us rejoice and be glad in it." },
+    { "ref": "Nehemiah 8:10", "text": "The joy of the Lord is your strength." },
+    { "ref": "Zephaniah 3:17", "text": "The Lord your God is with you, the Mighty Warrior who saves. He will take great delight in you; in his love he will no longer rebuke you, but will rejoice over you with singing." }
+  ],
+  "neutral": [
+    { "ref": "Lamentations 3:22-23", "text": "Because of the Lord's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness." },
+    { "ref": "Jeremiah 29:11", "text": "'For I know the plans I have for you,' declares the Lord, 'plans to prosper you and not to harm you, plans to give you hope and a future.'" },
+    { "ref": "Psalm 139:9-10", "text": "If I rise on the wings of the dawn, if I settle on the far side of the sea, even there your hand will guide me, your right hand will hold me fast." }
+  ]
+}

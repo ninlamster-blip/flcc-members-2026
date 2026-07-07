@@ -1,0 +1,1082 @@
+/* ============================================================================
+   FLCC Kasama — calm, warm, premium.
+   Design language: Apple Health/Journal spaciousness, Notion clarity,
+   the warmth of a friend. Large type for tired eyes. Light + dark.
+   ========================================================================== */
+
+:root {
+  --bg: #FAF8F4;
+  --bg-raised: #FFFFFF;
+  --bg-soft: #F1EDE6;
+  --ink: #2B2622;
+  --ink-soft: #6B6259;
+  --ink-faint: #9C938A;
+  --line: rgba(43, 38, 34, 0.09);
+  --accent: #C2703E;          /* warm terracotta — sunset over the sea */
+  --accent-soft: #F6E3D5;
+  --accent-ink: #8A4A22;
+  --calm: #4C7A6B;            /* deep sea green */
+  --calm-soft: #E2EEE9;
+  --gold: #C99A3F;
+  --danger: #B4453A;
+  --danger-soft: #F7E3E0;
+  --bubble-user: #C2703E;
+  --bubble-user-ink: #FFF9F4;
+  --bubble-ai: #FFFFFF;
+  --shadow: 0 2px 16px rgba(43, 38, 34, 0.07);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --nav-h: 76px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12100E;
+    --bg-raised: #1D1A17;
+    --bg-soft: #262220;
+    --ink: #EFE9E2;
+    --ink-soft: #B3A99E;
+    --ink-faint: #7D746B;
+    --line: rgba(239, 233, 226, 0.1);
+    --accent: #D98B54;
+    --accent-soft: #3A2A1D;
+    --accent-ink: #EFB68A;
+    --calm: #7FB3A1;
+    --calm-soft: #1E2B27;
+    --gold: #D9B15F;
+    --danger: #D96C60;
+    --danger-soft: #3A211E;
+    --bubble-user: #C2703E;
+    --bubble-user-ink: #FFF6EF;
+    --bubble-ai: #1D1A17;
+    --shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* display rules below (flex sheets, etc.) must never defeat the hidden attribute */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.55;
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.oc-large-text { font-size: 20px; }
+
+button { font-family: inherit; font-size: inherit; color: inherit; }
+input, textarea { font-family: inherit; color: var(--ink); }
+
+::placeholder { color: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+#oc-root {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+.oc-view { animation: oc-fade-up 0.45s ease both; }
+
+@keyframes oc-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.oc-settings-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: 14px;
+  z-index: 30;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-raised);
+  color: var(--ink-soft);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+/* ── Headers ────────────────────────────────────────────────────────────── */
+
+/* generous side padding keeps titles clear of the corner buttons */
+.oc-home-header { text-align: center; padding: 52px 44px 10px; }
+.oc-view-header { text-align: center; padding: 52px 44px 20px; }
+
+.oc-eyebrow {
+  font-size: 0.78em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.oc-greeting, .oc-title {
+  font-size: 1.9em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.oc-subgreeting, .oc-view-sub {
+  color: var(--ink-soft);
+  margin-top: 8px;
+  font-size: 0.98em;
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+
+.oc-card {
+  background: var(--bg-raised);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.oc-section-title {
+  font-size: 1.02em;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.oc-muted { color: var(--ink-faint); font-weight: 500; font-size: 0.85em; }
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
+.oc-primary-btn {
+  display: block;
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #FFF8F2;
+  font-weight: 700;
+  font-size: 1em;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-primary-btn:active { transform: scale(0.98); }
+.oc-primary-btn:disabled { opacity: 0.5; cursor: default; }
+
+.oc-ghost-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.95em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Daily sanctuary ────────────────────────────────────────────────────── */
+
+/* The home header carries the light of the hour — dawn warmth, daylight,
+   dusk gold, evening calm. Subtle in both themes. */
+.oc-home-header { border-radius: 24px; }
+body[data-period="morning"] .oc-home-header { background: linear-gradient(160deg, rgba(255, 200, 130, 0.28), rgba(255, 240, 214, 0) 70%); }
+body[data-period="day"] .oc-home-header { background: linear-gradient(160deg, rgba(150, 205, 235, 0.25), rgba(235, 245, 250, 0) 70%); }
+body[data-period="dusk"] .oc-home-header { background: linear-gradient(160deg, rgba(233, 150, 90, 0.26), rgba(250, 230, 214, 0) 70%); }
+body[data-period="night"] .oc-home-header { background: linear-gradient(160deg, rgba(110, 120, 200, 0.2), rgba(220, 224, 250, 0) 70%); }
+
+.oc-today-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.oc-weather-chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--ink-soft);
+  font-size: 0.9em;
+  padding: 3px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-occasion {
+  margin-top: 10px;
+  font-size: 0.92em;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+}
+body.oc-home-compact .oc-occasion { display: none; }
+
+.oc-heart-question {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95em;
+  margin-bottom: 10px;
+}
+.oc-heart-question .oc-muted { display: block; font-weight: 400; margin-top: 2px; }
+.oc-heart-share { margin-top: 12px; animation: oc-fade-up 0.3s ease both; }
+.oc-chip-more { color: var(--accent); border-style: dashed; }
+
+/* Ritual pill + not-okay, side by side under the check-in */
+.oc-care-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.oc-ritual-pill, .oc-notokay-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--ink-soft);
+  font-size: 0.88em;
+  font-weight: 600;
+  padding: 9px 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+}
+.oc-ritual-pill:active, .oc-notokay-btn:active { transform: scale(0.96); }
+.oc-notokay-btn { color: var(--calm); border-color: var(--calm-soft); background: var(--calm-soft); }
+/* When the header folds for chatting, the ritual steps aside but "I'm not
+   okay" stays one tap away — help must never require scrolling. */
+body.oc-home-compact .oc-ritual-pill { display: none; }
+body.oc-home-compact .oc-care-row { margin-bottom: 6px; }
+body.oc-home-compact .oc-notokay-btn { padding: 6px 14px; font-size: 0.82em; }
+
+/* "I'm not okay" sheet options */
+.oc-notokay-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  cursor: pointer;
+  font-size: 0.97em;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-notokay-option:active { transform: scale(0.98); }
+.oc-notokay-option > span:first-child { font-size: 1.5em; }
+.oc-notokay-verse {
+  margin-top: 6px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--calm-soft);
+  color: var(--ink-soft);
+  font-style: italic;
+  text-align: center;
+  font-size: 0.95em;
+}
+
+/* Breathing overlay */
+.oc-breathe {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: var(--bg);
+  text-align: center;
+  padding: 24px;
+}
+.oc-breathe-circle {
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--calm-soft), var(--calm));
+  animation: oc-breathe-cycle 14s ease-in-out infinite;
+}
+@keyframes oc-breathe-cycle {
+  0% { transform: scale(0.7); }
+  28% { transform: scale(1.25); }   /* 4s in */
+  57% { transform: scale(1.25); }   /* 4s hold */
+  100% { transform: scale(0.7); }   /* 6s out */
+}
+.oc-breathe-label { font-size: 1.25em; font-weight: 700; }
+.oc-breathe-sub { color: var(--ink-faint); font-size: 0.95em; }
+
+/* ── Heart check-in chips ───────────────────────────────────────────────── */
+
+/* Scrolls internally when the full feelings list is open, so the share
+   button is always reachable on small screens. */
+.oc-heart-checkin {
+  margin: 6px 0 14px;
+  flex-shrink: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+body[data-active-view="home"] .oc-chat { min-height: 56px; }
+
+.oc-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.oc-chip {
+  padding: 10px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--ink);
+  font-size: 0.92em;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-chip:active { transform: scale(0.96); }
+.oc-chip.is-selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+/* ── Chat ───────────────────────────────────────────────────────────────── */
+
+/* On the Kaibigan tab the page itself never scrolls: the header and heart
+   chips stay put, and only the conversation pane scrolls (with its own
+   rubber-band), like a real messaging app. */
+body[data-active-view="home"] {
+  height: 100dvh;
+  overflow: hidden;
+}
+body[data-active-view="home"] #oc-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+}
+body[data-active-view="home"] .oc-view[data-view="home"] {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.oc-home-header, .oc-heart-checkin { flex-shrink: 0; }
+
+/* WhatsApp-style collapsing header: swiping up in the conversation folds the
+   big greeting into a slim bar so the chat and ask box get the whole screen;
+   scrolling back to the top expands it again. */
+.oc-home-header { transition: padding 0.28s ease; }
+.oc-greeting { transition: font-size 0.28s ease; }
+.oc-eyebrow, .oc-subgreeting {
+  max-height: 4.5em;
+  overflow: hidden;
+  transition: opacity 0.2s ease, max-height 0.28s ease, margin 0.28s ease;
+}
+body.oc-home-compact .oc-home-header { padding: 16px 60px 8px; }
+body.oc-home-compact .oc-greeting { font-size: 1.12em; }
+body.oc-home-compact .oc-eyebrow,
+body.oc-home-compact .oc-subgreeting { opacity: 0; max-height: 0; margin: 0; }
+
+.oc-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 2px 72px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+.oc-bubble {
+  max-width: 86%;
+  padding: 13px 17px;
+  border-radius: 22px;
+  animation: oc-fade-up 0.35s ease both;
+  overflow-wrap: break-word;
+}
+.oc-bubble p + p { margin-top: 0.6em; }
+
+.oc-bubble-ai {
+  align-self: flex-start;
+  background: var(--bubble-ai);
+  border-bottom-left-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.oc-bubble-user {
+  align-self: flex-end;
+  background: var(--bubble-user);
+  color: var(--bubble-user-ink);
+  border-bottom-right-radius: 8px;
+}
+
+.oc-bubble-system {
+  align-self: center;
+  background: var(--calm-soft);
+  color: var(--calm);
+  font-size: 0.88em;
+  text-align: center;
+  border-radius: 16px;
+  max-width: 94%;
+}
+
+.oc-typing {
+  align-self: flex-start;
+  display: flex;
+  gap: 5px;
+  padding: 16px 18px;
+  background: var(--bubble-ai);
+  border-radius: 22px;
+  border-bottom-left-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.oc-typing span {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  animation: oc-blink 1.2s ease infinite;
+}
+.oc-typing span:nth-child(2) { animation-delay: 0.18s; }
+.oc-typing span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes oc-blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+
+/* Composer: a compact one-line bar sitting directly on top of the tab bar,
+   like a messaging app. It grows only while typing a long message. */
+.oc-composer {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 8px 12px;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--line);
+}
+
+.oc-input {
+  flex: 1;
+  resize: none;
+  border: 1.5px solid var(--line);
+  border-radius: 22px;
+  background: var(--bg-soft);
+  padding: 10px 16px;
+  font-size: 1em;
+  line-height: 1.4;
+  max-height: 120px;
+  outline: none;
+}
+.oc-input:focus { border-color: var(--accent); }
+
+.oc-send-btn {
+  flex: 0 0 auto;
+  width: 42px; height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #FFF8F2;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-send-btn:active { transform: scale(0.92); }
+.oc-send-btn:disabled { opacity: 0.4; }
+
+/* Only the companion view shows the composer */
+body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: none; }
+
+/* ── Journal ────────────────────────────────────────────────────────────── */
+
+.oc-checkin-row { margin-bottom: 16px; }
+.oc-checkin-label {
+  font-size: 0.92em;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.oc-mood-row { display: flex; gap: 8px; justify-content: space-between; }
+.oc-mood-btn {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 1.5em;
+  background: var(--bg-soft);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  filter: grayscale(0.6);
+}
+.oc-mood-btn:active { transform: scale(0.94); }
+.oc-mood-btn.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  filter: none;
+  transform: scale(1.05);
+}
+
+.oc-scale-row { display: flex; gap: 6px; }
+.oc-scale-dot {
+  flex: 1;
+  padding: 9px 0;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-raised);
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--ink-faint);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-scale-dot.is-selected {
+  background: var(--calm-soft);
+  border-color: var(--calm);
+  color: var(--calm);
+}
+
+.oc-text-input, .oc-search {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  font-size: 1em;
+  outline: none;
+}
+.oc-text-input:focus, .oc-search:focus { border-color: var(--accent); }
+.oc-search { width: auto; flex: 1; margin-left: 12px; padding: 9px 14px; font-size: 0.9em; }
+
+.oc-journal-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 96px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  font-size: 1em;
+  line-height: 1.5;
+  outline: none;
+}
+.oc-journal-input:focus { border-color: var(--accent); }
+.oc-journal-save { margin-top: 12px; }
+
+.oc-journal-head { display: flex; align-items: center; justify-content: space-between; }
+.oc-journal-list { list-style: none; margin-top: 8px; }
+.oc-journal-entry {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.oc-journal-entry:last-child { border-bottom: none; }
+.oc-entry-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.82em;
+  color: var(--ink-faint);
+  margin-bottom: 5px;
+}
+.oc-entry-delete {
+  border: none; background: none;
+  color: var(--ink-faint);
+  font-size: 1em;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.oc-entry-text { white-space: pre-wrap; overflow-wrap: break-word; }
+
+.oc-journey-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.oc-dot {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--bg-soft);
+}
+.oc-dot-1 { background: #C9847A; }
+.oc-dot-2 { background: #D8A27B; }
+.oc-dot-3 { background: #D9C27F; }
+.oc-dot-4 { background: #A9C48F; }
+.oc-dot-5 { background: #7FB08F; }
+
+.oc-next-card { border-left: 4px solid var(--accent); }
+.oc-next-title { font-weight: 700; font-size: 1.05em; }
+.oc-next-when { color: var(--accent); font-weight: 600; font-size: 0.94em; margin: 3px 0 6px; }
+
+.oc-insight-text {
+  color: var(--ink-soft);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.oc-insight-text:empty { display: none; }
+
+.oc-checkin-done {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--calm);
+  font-weight: 600;
+}
+.oc-checkin-done .oc-big-check { font-size: 1.6em; }
+.oc-checkin-summary { color: var(--ink-soft); font-weight: 400; font-size: 0.92em; margin-top: 4px; }
+
+/* ── Faith ──────────────────────────────────────────────────────────────── */
+
+.oc-verse-card {
+  background: linear-gradient(135deg, var(--calm-soft), var(--bg-raised));
+  border-radius: var(--radius);
+  padding: 26px 22px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.oc-verse-text {
+  font-size: 1.12em;
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--ink);
+}
+.oc-verse-ref {
+  margin-top: 12px;
+  font-weight: 700;
+  color: var(--calm);
+  font-size: 0.9em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.oc-prayer-text {
+  white-space: pre-wrap;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+
+.oc-pastor-card { display: flex; gap: 16px; align-items: flex-start; }
+.oc-pastor-avatar {
+  flex: 0 0 auto;
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  color: #FFF8F2;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5em;
+  font-weight: 700;
+}
+.oc-pastor-name { font-weight: 700; font-size: 1.05em; }
+.oc-pastor-role { color: var(--ink-faint); font-size: 0.85em; margin-bottom: 8px; }
+.oc-pastor-message { color: var(--ink-soft); font-size: 0.95em; }
+
+.oc-schedule-item {
+  display: flex;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.oc-schedule-item:last-child { border-bottom: none; }
+.oc-schedule-day {
+  flex: 0 0 74px;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.9em;
+}
+.oc-schedule-time { color: var(--ink-faint); font-size: 0.82em; }
+.oc-schedule-title { font-weight: 600; }
+.oc-schedule-note { color: var(--ink-soft); font-size: 0.88em; margin-top: 2px; }
+
+.oc-bring-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 14px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-bring-option.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.oc-bring-icon { font-size: 1.3em; }
+
+.oc-teaching {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.oc-teaching:last-child { border-bottom: none; }
+.oc-teaching-date { font-size: 0.8em; color: var(--ink-faint); }
+.oc-teaching-title { font-weight: 700; margin: 2px 0; }
+.oc-teaching-passage { color: var(--accent); font-size: 0.88em; font-weight: 600; margin-bottom: 6px; }
+.oc-teaching-summary { color: var(--ink-soft); font-size: 0.93em; }
+.oc-teaching-questions { margin: 10px 0 0 18px; color: var(--ink-soft); font-size: 0.93em; }
+.oc-teaching-questions li { margin-bottom: 6px; }
+
+.oc-teaching-notes { margin-top: 10px; }
+.oc-teaching-notes summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.92em;
+  color: var(--accent);
+  padding: 6px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-note-input { margin-top: 8px; min-height: 72px; font-size: 0.95em; }
+.oc-note-save { margin-top: 8px; }
+
+.oc-faith-off {
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 30px 16px;
+}
+
+/* ── Community ──────────────────────────────────────────────────────────── */
+
+.oc-group {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: flex-start;
+}
+.oc-group:last-child { border-bottom: none; }
+.oc-group-icon {
+  flex: 0 0 auto;
+  width: 46px; height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  font-size: 1.35em;
+}
+.oc-group-name { font-weight: 700; }
+.oc-group-detail { color: var(--ink-soft); font-size: 0.92em; }
+.oc-group-meets { color: var(--accent); font-size: 0.82em; font-weight: 600; margin-top: 3px; }
+
+.oc-values-list { list-style: none; }
+.oc-values-list li {
+  padding: 9px 0 9px 28px;
+  position: relative;
+  color: var(--ink-soft);
+}
+.oc-values-list li::before {
+  content: "🤍";
+  position: absolute;
+  left: 0;
+  font-size: 0.85em;
+  top: 11px;
+}
+
+.oc-idea {
+  display: flex;
+  gap: 13px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: flex-start;
+}
+.oc-idea:last-child { border-bottom: none; }
+.oc-idea-icon { font-size: 1.25em; padding-top: 1px; }
+.oc-idea-title { font-weight: 600; }
+.oc-idea-detail { color: var(--ink-soft); font-size: 0.9em; }
+
+/* ── Support ────────────────────────────────────────────────────────────── */
+
+.oc-emergency-card {
+  background: var(--danger-soft);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.oc-emergency-title {
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 1.02em;
+  margin-bottom: 8px;
+}
+.oc-emergency-note { color: var(--ink-soft); font-size: 0.93em; }
+
+.oc-resource {
+  display: block;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+}
+.oc-resource:last-child { border-bottom: none; }
+.oc-resource-name { font-weight: 700; }
+.oc-resource-name .oc-ext { color: var(--ink-faint); font-weight: 400; font-size: 0.85em; }
+.oc-resource-detail { color: var(--ink-soft); font-size: 0.92em; margin: 2px 0; }
+.oc-resource-contact { color: var(--accent); font-size: 0.9em; font-weight: 600; }
+
+.oc-support-disclaimer {
+  color: var(--ink-faint);
+  font-size: 0.82em;
+  text-align: center;
+  padding: 4px 12px 20px;
+}
+
+/* ── Bottom nav ─────────────────────────────────────────────────────────── */
+
+.oc-nav {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 25;
+  display: flex;
+  justify-content: space-around;
+  max-width: 620px;
+  margin: 0 auto;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  padding: 8px 6px calc(env(safe-area-inset-bottom, 0px) + 8px);
+  background: var(--bg-raised);
+  border-top: 1px solid var(--line);
+}
+
+.oc-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 0.72em;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-nav-btn.is-active { color: var(--accent); }
+.oc-nav-icon { font-size: 1.55em; line-height: 1; filter: grayscale(1) opacity(0.6); }
+.oc-nav-btn.is-active .oc-nav-icon { filter: none; }
+
+/* ── Sheets & overlays ──────────────────────────────────────────────────── */
+
+.oc-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(20, 16, 12, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: oc-overlay-in 0.25s ease both;
+}
+@keyframes oc-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+
+.oc-sheet {
+  width: 100%;
+  max-width: 620px;
+  max-height: 88vh;
+  max-height: 88dvh;
+  overflow-y: auto;
+  background: var(--bg);
+  border-radius: 26px 26px 0 0;
+  padding: 18px 22px calc(env(safe-area-inset-bottom, 0px) + 26px);
+  animation: oc-sheet-up 0.35s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes oc-sheet-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.oc-sheet-handle {
+  width: 40px; height: 4.5px;
+  border-radius: 3px;
+  background: var(--line);
+  margin: 0 auto 16px;
+}
+
+.oc-sheet-title {
+  font-size: 1.3em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.oc-onboard { text-align: center; }
+.oc-onboard-mark { font-size: 2.6em; margin-bottom: 10px; }
+.oc-onboard-text {
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  text-align: left;
+}
+.oc-field-label {
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.92em;
+  margin: 6px 0 8px;
+}
+.oc-onboard .oc-text-input { margin-bottom: 14px; }
+.oc-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  margin-bottom: 18px;
+  font-size: 0.95em;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.oc-check-row input { width: 20px; height: 20px; accent-color: var(--accent); flex: 0 0 auto; margin-top: 2px; }
+
+/* Settings */
+.oc-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.oc-setting-row:last-child { border-bottom: none; }
+.oc-setting-label { font-weight: 600; }
+.oc-setting-sub { color: var(--ink-faint); font-size: 0.84em; font-weight: 400; margin-top: 2px; }
+
+.oc-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px; height: 31px;
+  border-radius: 999px;
+  border: none;
+  background: var(--bg-soft);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 25px; height: 25px;
+  border-radius: 50%;
+  background: var(--bg-raised);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease;
+}
+.oc-switch[aria-checked="true"] { background: var(--calm); }
+.oc-switch[aria-checked="true"]::after { transform: translateX(21px); }
+
+.oc-settings-section {
+  font-size: 0.8em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 700;
+  margin: 22px 0 4px;
+}
+
+.oc-danger-btn {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-top: 10px;
+  border: 1.5px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--danger);
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Crisis sheet */
+.oc-crisis-sheet { border-top: 5px solid var(--danger); }
+.oc-crisis-line {
+  display: block;
+  padding: 13px 16px;
+  margin-bottom: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+}
+.oc-crisis-line-name { font-weight: 700; }
+.oc-crisis-line-contact { color: var(--danger); font-weight: 700; font-size: 1.05em; }
+.oc-crisis-line-detail { color: var(--ink-soft); font-size: 0.88em; }
+.oc-crisis-note { color: var(--ink-faint); font-size: 0.86em; text-align: center; margin: 8px 0 16px; }
+
+/* ── Toast ──────────────────────────────────────────────────────────────── */
+
+.oc-toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 11px 20px;
+  border-radius: 999px;
+  font-size: 0.92em;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  animation: oc-fade-up 0.3s ease both;
+  max-width: 88vw;
+  text-align: center;
+}
+
+/* Wide screens: breathe a little more */
+@media (min-width: 700px) {
+  .oc-home-header, .oc-view-header { padding-top: 56px; }
+}
