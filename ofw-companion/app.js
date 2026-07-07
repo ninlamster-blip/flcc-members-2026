@@ -11,6 +11,14 @@ import { initSupport, renderCrisisLines } from './js/support.js';
 
 const context = { toast };
 
+// Captured install prompt (Android/Chrome fires this when the app qualifies
+// for standalone install and isn't installed yet).
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt = e;
+});
+
 async function boot() {
   const [comfort, verses, prayers, resources, biblestudy] = await Promise.all([
     loadJson('data/comfort.json'),
@@ -134,6 +142,8 @@ function renderSettings() {
     ${settingSwitch('voiceReplies', 'Spoken replies', 'Kaibigan reads responses aloud — helpful for tired eyes')}
     ${settingSwitch('largeText', 'Larger text', 'Bigger, easier-to-read letters everywhere')}
 
+    ${installSection()}
+
     <div class="oc-settings-section">AI model</div>
     <div class="oc-setting-row"><div style="flex:1">
       <div class="oc-scale-row">
@@ -190,6 +200,21 @@ function renderSettings() {
       }
     });
   });
+
+  const installBtn = body.querySelector('#oc-install-btn');
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (installPrompt) {
+        installPrompt.prompt();
+        const { outcome } = await installPrompt.userChoice;
+        if (outcome === 'accepted') toast('Salamat! Hanapin ang 🤍 sa home screen mo.');
+        installPrompt = null;
+        return;
+      }
+      // No prompt available: already installed, or the browser hides it behind its own menu.
+      toast('Sa browser menu (⋮), piliin ang “Add to Home screen” o “Install app”.');
+    });
+  }
 
   body.querySelector('#oc-test-conn').addEventListener('click', async () => {
     const btn = body.querySelector('#oc-test-conn');
@@ -264,6 +289,22 @@ function renderSettings() {
     initCompanion(context);
     renderFaith();
   });
+}
+
+// Install-as-app section: one-tap on Android/Chrome, instructions on iPhone,
+// hidden entirely once already running standalone.
+function installSection() {
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (standalone) return '';
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  return `
+    <div class="oc-settings-section">Install as app</div>
+    <div class="oc-setting-row"><div style="flex:1">
+      <div class="oc-setting-sub" style="margin-bottom:8px">Ilagay ang FLCC Kasama sa home screen mo — bubukas ito na parang sariling app, kahit offline.</div>
+      ${isIOS
+        ? '<div class="oc-setting-sub">Sa iPhone: i-tap ang <strong>Share</strong> button (kahon na may arrow) sa Safari, tapos <strong>“Add to Home Screen”</strong>.</div>'
+        : '<button type="button" class="oc-ghost-btn" id="oc-install-btn" style="width:100%">📲 Install FLCC Kasama</button>'}
+    </div></div>`;
 }
 
 // Plain-language advice for the usual connection failures.

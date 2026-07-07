@@ -1,7 +1,7 @@
 // Offline cache for the FLCC Kasama app shell, so the journal, comfort
 // responses, verses, and support directory all work without a network —
 // important for members with limited or expensive data.
-const CACHE = 'flcc-kasama-v2';
+const CACHE = 'flcc-kasama-v3';
 const SHELL = [
   './',
   './index.html',
@@ -20,6 +20,10 @@ const SHELL = [
   './data/prayers.json',
   './data/resources.json',
   './data/biblestudy.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
