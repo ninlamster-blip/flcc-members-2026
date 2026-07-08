@@ -1,0 +1,12 @@
+{
+  "_comment": "Isang Minutong Salita — daily 1-minute audio Bible verses or prayers in Tagalog. Add entries with an audio file URL in 'src' (mp3, ~1 minute; host in this repo e.g. ofw-companion/audio/, or any https URL). The newest entry with a src plays; with no playable entries the home card shows a warm 'malapit na' placeholder. No code changes needed.",
+  "title": "Isang Minutong Salita",
+  "placeholderNote": "Araw-araw na maikling verse o panalangin sa Tagalog — malapit na, kapatid.",
+  "drops": [
+    {
+      "date": "2026-07-08",
+      "title": "Awit 46:1 — Ang Diyos ang ating kanlungan",
+      "src": ""
+    }
+  ]
+}

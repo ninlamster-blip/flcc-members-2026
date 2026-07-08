@@ -7,6 +7,8 @@ export function initCommunity(context) {
   const body = document.getElementById('oc-community-body');
 
   body.innerHTML = `
+    <div class="oc-card" id="oc-prayer-chain"></div>
+
     <div class="oc-card">
       <h2 class="oc-section-title">How this community works</h2>
       <ul class="oc-values-list">

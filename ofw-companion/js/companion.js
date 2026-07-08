@@ -1,10 +1,14 @@
 // Kaibigan — the AI companion view: heart check-in, conversation, voice.
 import { getState, addChatMessage, setHeartToday, heartToday, addMemory } from './state.js';
-import { companionReply, companionOpener, isConnected } from './ai.js';
+import { companionReply, companionOpener, isConnected, speakNatural } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom, todayKey,
   timeOfDayGreeting, detectsCrisis, classifyHeart,
 } from './utils.js';
+import { openBreathing } from './sanctuary.js';
+
+// Heart categories that deserve an immediate, gentle "Hinga Muna" offer.
+const HEAVY_CATS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
 
 // Each feeling maps to a comfort/verse category; a heart can hold several at
 // once, so these are multi-select. The first six show by default; "More" opens
@@ -91,12 +95,13 @@ function renderHeartChips() {
   };
   draw();
 
-  els.shareBtn.onclick = () => {
+  els.shareBtn.onclick = async () => {
     if (!selected.size) return;
     const chips = HEART_CHIPS.filter((c) => selected.has(c.id));
     setHeartToday(chips.map((c) => c.cat));
     els.heartCheckin.hidden = true;
-    sendUserMessage(chips.map((c) => `${c.emoji} ${c.label}`).join(' · '), { heartChip: chips[0].cat });
+    await sendUserMessage(chips.map((c) => `${c.emoji} ${c.label}`).join(' · '), { heartChip: chips[0].cat });
+    if (chips.some((c) => HEAVY_CATS.has(c.cat))) offerHingaMuna();
   };
 }
 
@@ -248,6 +253,21 @@ function offlineReply(text, heartChip) {
   return base;
 }
 
+// When the heart is heavy (Pagod, Lungkot, Kaba…), offer a breath before
+// anything else — a gentle invitation right inside the conversation.
+function offerHingaMuna() {
+  const div = document.createElement('div');
+  div.className = 'oc-bubble oc-bubble-system oc-hinga-offer';
+  div.innerHTML = `Mabigat 'yan, kapatid. Bago ang lahat —
+    <button type="button" class="oc-hinga-btn">🫁 Hinga muna tayo · isang minuto lang</button>`;
+  els.chat.appendChild(div);
+  scrollToEnd();
+  div.querySelector('.oc-hinga-btn').addEventListener('click', () => {
+    navigator.vibrate?.(8);
+    openBreathing();
+  });
+}
+
 function appendBubble(kind, text) {
   const div = document.createElement('div');
   div.className = `oc-bubble oc-bubble-${kind}`;
@@ -272,49 +292,10 @@ function scrollToEnd(smooth = true) {
 }
 
 // ── Spoken replies ───────────────────────────────────────────────────────────
-// Web Speech quality depends entirely on the voices installed on the phone.
-// We pick the most natural one available: Filipino first, then the enhanced/
-// neural English voices, instead of the browser's robotic default.
-
-let cachedVoice = null;
-
-function pickVoice() {
-  if (cachedVoice) return cachedVoice;
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices.length) return null;
-  const preferences = [
-    (v) => /^(fil|tl)[-_]?/i.test(v.lang),
-    (v) => /en[-_]PH/i.test(v.lang),
-    (v) => /natural|neural|premium|enhanced/i.test(v.name) && /^en/i.test(v.lang),
-    (v) => /Google|Microsoft|Samantha|Karen/i.test(v.name) && /^en/i.test(v.lang),
-    (v) => /^en/i.test(v.lang),
-  ];
-  for (const wanted of preferences) {
-    const match = voices.find(wanted);
-    if (match) { cachedVoice = match; return match; }
-  }
-  return voices[0];
-}
-
-if ('speechSynthesis' in window) {
-  // Voice list loads asynchronously on most phones.
-  window.speechSynthesis.addEventListener?.('voiceschanged', () => { cachedVoice = null; pickVoice(); });
-}
+// Only the natural voice (Worker /tts, ElevenLabs) is ever used — never the
+// phone's robotic speechSynthesis. If unavailable, Kaibigan stays quiet.
 
 function speakIfEnabled(text) {
   if (!getState().settings.voiceReplies) return;
-  if (!('speechSynthesis' in window)) return;
-  // Strip markdown markers and emoji — hearing "asterisk" or emoji names ruins the warmth.
-  const plain = text
-    .replace(/\*+/g, '')
-    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '')
-    .trim();
-  if (!plain) return;
-  const utter = new SpeechSynthesisUtterance(plain);
-  const voice = pickVoice();
-  if (voice) { utter.voice = voice; utter.lang = voice.lang; }
-  utter.rate = 0.95;
-  utter.pitch = 1.03;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utter);
+  speakNatural(text); // fire-and-forget; silence on failure is intentional
 }

@@ -301,6 +301,152 @@ body.oc-home-compact .oc-notokay-btn { padding: 6px 14px; font-size: 0.82em; }
   font-size: 0.95em;
 }
 
+/* Isang Minutong Salita — audio drop */
+.oc-audio-drop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin: 0 2px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+.oc-audio-play {
+  flex: 0 0 auto;
+  width: 42px; height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #FFF8F2;
+  font-size: 1em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-audio-play:disabled { opacity: 0.45; cursor: default; }
+.oc-audio-title { font-weight: 700; font-size: 0.92em; }
+.oc-audio-sub { color: var(--ink-faint); font-size: 0.84em; }
+body.oc-home-compact .oc-audio-drop { display: none; }
+
+/* Hinga Muna offer inside the conversation */
+.oc-hinga-offer { max-width: 96%; }
+.oc-hinga-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--calm);
+  color: #F4FAF7;
+  font-weight: 700;
+  font-size: 0.95em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Kadena ng Panalangin */
+.oc-pc-composer {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.oc-pc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.oc-pc-tag { font-size: 0.86em; padding: 8px 13px; }
+.oc-pc-composer-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+.oc-pc-country {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.9em;
+}
+.oc-pc-send { width: auto; flex: 0 0 auto; padding: 12px 22px; font-size: 0.95em; }
+
+.oc-pc-item {
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+.oc-pc-item:first-child { border-top: none; }
+.oc-pc-item-new { animation: oc-fade-up 0.5s ease both; }
+
+.oc-pc-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.oc-pc-badge {
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border-radius: 999px;
+  padding: 4px 11px;
+}
+.oc-pc-badge-mood { background: var(--accent-soft); color: var(--accent-ink); }
+.oc-pc-time { margin-left: auto; color: var(--ink-faint); font-size: 0.78em; }
+
+.oc-pc-content {
+  overflow-wrap: break-word;
+  font-size: 1.04em;
+  line-height: 1.6;
+}
+.oc-pc-counter {
+  color: var(--calm);
+  font-size: 0.86em;
+  font-weight: 600;
+  margin: 8px 0 12px;
+  min-height: 1em;
+}
+.oc-pc-counter:empty { margin: 6px 0; }
+
+.oc-pc-pray-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--calm);
+  border-radius: var(--radius-sm);
+  background: var(--calm-soft);
+  color: var(--calm);
+  font-weight: 700;
+  font-size: 0.94em;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-pc-pray-btn:active { transform: scale(0.98); }
+.oc-pc-pray-btn.is-prayed {
+  border-color: rgba(201, 154, 63, 0.45);
+  background: linear-gradient(135deg, rgba(201, 154, 63, 0.14), rgba(201, 154, 63, 0.05));
+  color: var(--gold);
+  cursor: default;
+}
+/* The moment of pag-salo: the candle catches light, then settles to a warm glow. */
+.oc-pc-pray-btn.is-glowing { animation: oc-candle 1.6s ease both; }
+@keyframes oc-candle {
+  0% { box-shadow: 0 0 0 0 rgba(201, 154, 63, 0); }
+  30% { box-shadow: 0 0 22px 4px rgba(201, 154, 63, 0.45); transform: scale(1.02); }
+  100% { box-shadow: 0 0 10px 1px rgba(201, 154, 63, 0.18); transform: none; }
+}
+
 /* Breathing overlay */
 .oc-breathe {
   position: fixed;
