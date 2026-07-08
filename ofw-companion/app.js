@@ -185,7 +185,7 @@ function renderSettings() {
 
     <div class="oc-settings-section">Experience</div>
     ${settingSwitch('faithEnabled', 'Faith features', 'Prayers, devotionals, and the Bible study community')}
-    ${settingSwitch('voiceReplies', 'Spoken replies', 'Kaibigan reads responses aloud — helpful for tired eyes')}
+    ${settingSwitch('voiceReplies', 'Spoken replies', 'Kaibigan reads replies aloud in a warm, natural voice. Needs the church voice key (ELEVENLABS_API_KEY) on the Worker — otherwise stays quiet.')}
     ${settingSwitch('largeText', 'Larger text', 'Bigger, easier-to-read letters everywhere')}
 
     ${installSection()}

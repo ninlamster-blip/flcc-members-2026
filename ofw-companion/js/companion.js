@@ -1,6 +1,6 @@
 // Kaibigan — the AI companion view: heart check-in, conversation, voice.
 import { getState, addChatMessage, setHeartToday, heartToday, addMemory } from './state.js';
-import { companionReply, companionOpener, isConnected } from './ai.js';
+import { companionReply, companionOpener, isConnected, speakNatural } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom, todayKey,
   timeOfDayGreeting, detectsCrisis, classifyHeart,
@@ -272,49 +272,10 @@ function scrollToEnd(smooth = true) {
 }
 
 // ── Spoken replies ───────────────────────────────────────────────────────────
-// Web Speech quality depends entirely on the voices installed on the phone.
-// We pick the most natural one available: Filipino first, then the enhanced/
-// neural English voices, instead of the browser's robotic default.
-
-let cachedVoice = null;
-
-function pickVoice() {
-  if (cachedVoice) return cachedVoice;
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices.length) return null;
-  const preferences = [
-    (v) => /^(fil|tl)[-_]?/i.test(v.lang),
-    (v) => /en[-_]PH/i.test(v.lang),
-    (v) => /natural|neural|premium|enhanced/i.test(v.name) && /^en/i.test(v.lang),
-    (v) => /Google|Microsoft|Samantha|Karen/i.test(v.name) && /^en/i.test(v.lang),
-    (v) => /^en/i.test(v.lang),
-  ];
-  for (const wanted of preferences) {
-    const match = voices.find(wanted);
-    if (match) { cachedVoice = match; return match; }
-  }
-  return voices[0];
-}
-
-if ('speechSynthesis' in window) {
-  // Voice list loads asynchronously on most phones.
-  window.speechSynthesis.addEventListener?.('voiceschanged', () => { cachedVoice = null; pickVoice(); });
-}
+// Only the natural voice (Worker /tts, ElevenLabs) is ever used — never the
+// phone's robotic speechSynthesis. If unavailable, Kaibigan stays quiet.
 
 function speakIfEnabled(text) {
   if (!getState().settings.voiceReplies) return;
-  if (!('speechSynthesis' in window)) return;
-  // Strip markdown markers and emoji — hearing "asterisk" or emoji names ruins the warmth.
-  const plain = text
-    .replace(/\*+/g, '')
-    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '')
-    .trim();
-  if (!plain) return;
-  const utter = new SpeechSynthesisUtterance(plain);
-  const voice = pickVoice();
-  if (voice) { utter.voice = voice; utter.lang = voice.lang; }
-  utter.rate = 0.95;
-  utter.pitch = 1.03;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utter);
+  speakNatural(text); // fire-and-forget; silence on failure is intentional
 }

@@ -138,6 +138,70 @@ async function handleRequest(request, env) {
     return new Response('Not found', { status: 404, headers: CORS });
   }
 
+  // ── POST /tts → natural voice for FLCC Kasama spoken replies ─────────────
+  // Optional: proxies ElevenLabs text-to-speech so members hear a warm human
+  // voice instead of the phone's robotic one. To enable, add a Secret named
+  // ELEVENLABS_API_KEY on this Worker (free key at elevenlabs.io — the free
+  // tier covers ~10k characters per month). Optionally set ELEVENLABS_VOICE_ID
+  // to pick a different voice. Without the key, the app simply stays silent.
+  if (url.pathname === '/tts') {
+    if (env.PROXY_SECRET) {
+      const incoming = request.headers.get('x-proxy-secret') || '';
+      if (incoming !== env.PROXY_SECRET) {
+        return new Response(
+          JSON.stringify({ error: { message: 'Invalid proxy secret.' } }),
+          { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    if (!env.ELEVENLABS_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: { message: 'Natural voice not configured on this Worker.' } }),
+        { status: 501, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    let ttsBody;
+    try {
+      ttsBody = await request.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: { message: 'Invalid JSON body' } }),
+        { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    const text = String(ttsBody.text || '').slice(0, 600).trim();
+    if (!text) {
+      return new Response(
+        JSON.stringify({ error: { message: 'Missing text' } }),
+        { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    // "Sarah" — a warm, natural female voice; multilingual model handles Taglish.
+    const voiceId = env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
+    const ttsResp = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_64`,
+      {
+        method: 'POST',
+        headers: { 'xi-api-key': env.ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+        }),
+      }
+    );
+    if (!ttsResp.ok) {
+      const detail = await ttsResp.text().catch(() => '');
+      return new Response(
+        JSON.stringify({ error: { message: `Voice service error (${ttsResp.status}): ${detail.slice(0, 200)}` } }),
+        { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    return new Response(ttsResp.body, {
+      headers: { ...CORS, 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' },
+    });
+  }
+
   // ── POST /proxy → Anthropic proxy (explicit path avoids asset-routing conflicts) ──
   // Also accept POST to any path for backwards compatibility
   if (!env.ANTHROPIC_API_KEY) {

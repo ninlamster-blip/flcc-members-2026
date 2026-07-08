@@ -87,6 +87,56 @@ export async function testConnection() {
   return true;
 }
 
+// ── Natural spoken replies ───────────────────────────────────────────────────
+// Speech goes through the church Worker's /tts endpoint (ElevenLabs), which
+// sounds like a warm human voice. There is deliberately NO fallback to the
+// phone's robotic speechSynthesis — if natural voice isn't available,
+// Kaibigan stays quiet. Returns true if audio played.
+
+let ttsUnavailable = false; // remembered per session to avoid repeat failures
+let currentAudio = null;
+
+export async function speakNatural(text) {
+  if (ttsUnavailable) return false;
+  const { proxyUrl, proxySecret } = getConnection();
+  if (!proxyUrl) { ttsUnavailable = true; return false; }
+
+  // Strip markdown and emoji — hearing "asterisk" ruins the warmth.
+  const plain = text
+    .replace(/\*+/g, '')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 600);
+  if (!plain) return false;
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (proxySecret) headers['x-proxy-secret'] = proxySecret;
+  try {
+    const res = await fetch(proxyUrl.replace(/\/+$/, '') + '/tts', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ text: plain }),
+    });
+    if (!res.ok) {
+      if (res.status === 501) ttsUnavailable = true; // not configured on the Worker
+      return false;
+    }
+    const blob = await res.blob();
+    currentAudio?.pause();
+    currentAudio = new Audio(URL.createObjectURL(blob));
+    currentAudio.addEventListener('ended', () => URL.revokeObjectURL(currentAudio.src), { once: true });
+    await currentAudio.play();
+    return true;
+  } catch {
+    return false; // offline or autoplay blocked — silence is kinder than a robot
+  }
+}
+
+export function stopSpeaking() {
+  currentAudio?.pause();
+}
+
 // ── Companion persona ────────────────────────────────────────────────────────
 
 function recentWellbeingSummary() {
