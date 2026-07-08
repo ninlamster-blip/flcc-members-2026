@@ -42,6 +42,16 @@
         <button type="button" id="oc-notokay-btn" class="oc-notokay-btn">🌧️ I'm not okay today</button>
       </div>
 
+      <!-- Isang Minutong Salita — daily 1-minute audio verse/prayer -->
+      <div class="oc-audio-drop" id="oc-audio-drop" hidden>
+        <button type="button" class="oc-audio-play" id="oc-audio-play" aria-label="Play today's one-minute word">▶</button>
+        <div class="oc-audio-info">
+          <div class="oc-audio-title" id="oc-audio-title">Isang Minutong Salita</div>
+          <div class="oc-audio-sub" id="oc-audio-sub"></div>
+        </div>
+        <audio id="oc-audio-el" preload="none"></audio>
+      </div>
+
       <!-- Conversation -->
       <div class="oc-chat" id="oc-chat" aria-live="polite"></div>
     </section>

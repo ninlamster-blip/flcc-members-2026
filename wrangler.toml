@@ -13,3 +13,14 @@ binding = "ASSETS"
 # [[kv_namespaces]]
 # binding = "DAILY_BLESSING_KV"
 # id = "your-kv-namespace-id"
+
+# Optional — powers the anonymous Kadena ng Panalangin (Prayer Chain) in the
+# FLCC Kasama app. Create with `wrangler d1 create flcc-kasama` (or Workers
+# dashboard → Storage & Databases → D1), paste the database_id below, and
+# uncomment. The Worker creates the tables itself on first use (see
+# ask-proxy/schema.sql for the canonical shape). Without this binding, the
+# Kapwa tab simply shows a gentle "coming soon" note — nothing breaks.
+# [[d1_databases]]
+# binding = "KASAMA_DB"
+# database_name = "flcc-kasama"
+# database_id = "your-d1-database-id"

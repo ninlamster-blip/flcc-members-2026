@@ -5,6 +5,10 @@ import {
   renderRichText, escapeHtml, pickRandom, todayKey,
   timeOfDayGreeting, detectsCrisis, classifyHeart,
 } from './utils.js';
+import { openBreathing } from './sanctuary.js';
+
+// Heart categories that deserve an immediate, gentle "Hinga Muna" offer.
+const HEAVY_CATS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
 
 // Each feeling maps to a comfort/verse category; a heart can hold several at
 // once, so these are multi-select. The first six show by default; "More" opens
@@ -91,12 +95,13 @@ function renderHeartChips() {
   };
   draw();
 
-  els.shareBtn.onclick = () => {
+  els.shareBtn.onclick = async () => {
     if (!selected.size) return;
     const chips = HEART_CHIPS.filter((c) => selected.has(c.id));
     setHeartToday(chips.map((c) => c.cat));
     els.heartCheckin.hidden = true;
-    sendUserMessage(chips.map((c) => `${c.emoji} ${c.label}`).join(' · '), { heartChip: chips[0].cat });
+    await sendUserMessage(chips.map((c) => `${c.emoji} ${c.label}`).join(' · '), { heartChip: chips[0].cat });
+    if (chips.some((c) => HEAVY_CATS.has(c.cat))) offerHingaMuna();
   };
 }
 
@@ -246,6 +251,21 @@ function offlineReply(text, heartChip) {
     base += `\n\n*${comfort.fallbackClosing}*`;
   }
   return base;
+}
+
+// When the heart is heavy (Pagod, Lungkot, Kaba…), offer a breath before
+// anything else — a gentle invitation right inside the conversation.
+function offerHingaMuna() {
+  const div = document.createElement('div');
+  div.className = 'oc-bubble oc-bubble-system oc-hinga-offer';
+  div.innerHTML = `Mabigat 'yan, kapatid. Bago ang lahat —
+    <button type="button" class="oc-hinga-btn">🫁 Hinga muna tayo · isang minuto lang</button>`;
+  els.chat.appendChild(div);
+  scrollToEnd();
+  div.querySelector('.oc-hinga-btn').addEventListener('click', () => {
+    navigator.vibrate?.(8);
+    openBreathing();
+  });
 }
 
 function appendBubble(kind, text) {

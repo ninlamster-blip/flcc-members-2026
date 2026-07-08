@@ -5,12 +5,13 @@ import { getConnection, saveConnection, isConnected, testConnection } from './js
 import { loadJson, escapeHtml } from './js/utils.js';
 import { initCompanion, startNotOkayConversation } from './js/companion.js';
 import {
-  applyPeriodTheme, dateLine, occasionLine, initWeather,
+  applyPeriodTheme, dateLine, occasionLine, initWeather, initAudioDrop,
   ritualFor, currentPeriod, openBreathing, closeBreathing, initNotOkay,
 } from './js/sanctuary.js';
 import { initJournal, refreshJournal } from './js/journal.js';
 import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
+import { initPrayerChain } from './js/prayerchain.js';
 import { initSupport, renderCrisisLines } from './js/support.js';
 
 const context = { toast };
@@ -24,14 +25,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 async function boot() {
-  const [comfort, verses, prayers, resources, biblestudy] = await Promise.all([
+  const [comfort, verses, prayers, resources, biblestudy, audiodrops] = await Promise.all([
     loadJson('data/comfort.json'),
     loadJson('data/verses.json'),
     loadJson('data/prayers.json'),
     loadJson('data/resources.json'),
     loadJson('data/biblestudy.json'),
+    loadJson('data/audiodrops.json').catch(() => ({ drops: [] })),
   ]);
-  Object.assign(context, { comfort, verses, prayers, resources, biblestudy });
+  Object.assign(context, { comfort, verses, prayers, resources, biblestudy, audiodrops });
 
   document.body.classList.toggle('oc-large-text', getState().settings.largeText);
   document.getElementById('oc-nav-faith').style.display = getState().settings.faithEnabled ? '' : 'none';
@@ -47,6 +49,7 @@ async function boot() {
   initJournal(context);
   initFaith(context);
   initCommunity(context);
+  initPrayerChain(context);
   initSupport(context);
 
   if ('serviceWorker' in navigator) {
@@ -108,6 +111,7 @@ function setupSanctuary() {
   }
 
   initWeather(document.getElementById('oc-weather-chip'));
+  initAudioDrop(context.audiodrops);
 
   // One gentle ritual invitation per time of day.
   const ritual = ritualFor(currentPeriod());

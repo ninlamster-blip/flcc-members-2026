@@ -1,7 +1,7 @@
 // Offline cache for the FLCC Kasama app shell, so the journal, comfort
 // responses, verses, and support directory all work without a network —
 // important for members with limited or expensive data.
-const CACHE = 'flcc-kasama-v5';
+const CACHE = 'flcc-kasama-v6';
 const SHELL = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const SHELL = [
   './js/ai.js',
   './js/companion.js',
   './js/sanctuary.js',
+  './js/prayerchain.js',
   './js/journal.js',
   './js/faith.js',
   './js/community.js',
@@ -21,6 +22,7 @@ const SHELL = [
   './data/prayers.json',
   './data/resources.json',
   './data/biblestudy.json',
+  './data/audiodrops.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
@@ -45,6 +47,7 @@ self.addEventListener('activate', (event) => {
 // the next visit while online; the cache only answers when the network can't.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return; // never intercept AI proxy calls
+  if (new URL(event.request.url).pathname.startsWith('/api/')) return; // live data (prayer chain) stays live
 
   event.respondWith(
     fetch(event.request)

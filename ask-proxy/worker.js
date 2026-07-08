@@ -130,6 +130,11 @@ async function handleRequest(request, env) {
     return handleDailyBlessingCommunity(request, env, url);
   }
 
+  // ── /api/prayers — FLCC Kasama anonymous Kadena ng Panalangin (D1) ────────
+  if (url.pathname === '/api/prayers' || url.pathname === '/api/prayers/pray') {
+    return handlePrayerChain(request, env, url);
+  }
+
   // ── All other non-POST requests ──────────────────────────────────────────
   // Static files (HTML, JSON, etc.) are served directly by Cloudflare's edge
   // before the Worker runs, so env.ASSETS is not available here.
@@ -257,6 +262,125 @@ async function handleRequest(request, env) {
       'Content-Type': anthropicResp.headers.get('Content-Type') || 'application/json',
     },
   });
+}
+
+// ── FLCC Kasama — Kadena ng Panalangin (anonymous prayer chain) ─────────────
+// Backed by a D1 database bound as KASAMA_DB (see wrangler.toml and
+// ask-proxy/schema.sql). Privacy by design: no names, no accounts — the only
+// per-user value stored is user_hash, a SHA-256 the device computes from its
+// own random id + the prayer id. It cannot be linked back to any person; it
+// exists purely so one device can't inflate a count by tapping twice.
+
+function jsonResponse(payload, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { ...CORS, 'Content-Type': 'application/json' },
+  });
+}
+
+// Lazily create the tables so binding the database is the only setup step.
+let kasamaSchemaReady = false;
+async function ensurePrayerSchema(db) {
+  if (kasamaSchemaReady) return;
+  await db.batch([
+    db.prepare(`CREATE TABLE IF NOT EXISTS prayers (
+      id TEXT PRIMARY KEY,
+      content TEXT NOT NULL,
+      mood_tag TEXT,
+      country_code TEXT,
+      prayer_count INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS prayer_interactions (
+      id TEXT PRIMARY KEY,
+      prayer_id TEXT NOT NULL,
+      user_hash TEXT NOT NULL
+    )`),
+    db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_prayer_interactions_unique
+      ON prayer_interactions (prayer_id, user_hash)`),
+    db.prepare(`CREATE INDEX IF NOT EXISTS idx_prayers_created_at
+      ON prayers (created_at DESC)`),
+  ]);
+  kasamaSchemaReady = true;
+}
+
+async function handlePrayerChain(request, env, url) {
+  if (!env.KASAMA_DB) {
+    // Not configured — the app shows a gentle "malapit na" note instead.
+    return jsonResponse({ configured: false });
+  }
+  const db = env.KASAMA_DB;
+  await ensurePrayerSchema(db);
+
+  // GET /api/prayers — the most recent requests from kapatid around the world
+  if (request.method === 'GET' && url.pathname === '/api/prayers') {
+    const { results } = await db.prepare(
+      `SELECT id, content, mood_tag, country_code, prayer_count, created_at
+       FROM prayers ORDER BY created_at DESC LIMIT 30`
+    ).all();
+    return jsonResponse({ configured: true, prayers: results || [] });
+  }
+
+  if (request.method !== 'POST') {
+    return jsonResponse({ error: { message: 'Method not allowed' } }, 405);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: { message: 'Invalid JSON body' } }, 400);
+  }
+
+  // POST /api/prayers — leave an anonymous prayer request
+  if (url.pathname === '/api/prayers') {
+    const content = String(body.content || '').replace(/[\u0000-\u001F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500);
+    if (content.length < 5) {
+      return jsonResponse({ error: { message: 'Kulang pa ang mensahe — isulat mo lang nang kaunti pa, kapatid.' } }, 400);
+    }
+    const moodTag = String(body.moodTag || '').slice(0, 30);
+    const countryCode = /^[A-Z]{2,3}$/.test(String(body.countryCode || '')) ? body.countryCode : null;
+    const prayer = {
+      id: crypto.randomUUID(),
+      content,
+      mood_tag: moodTag || null,
+      country_code: countryCode,
+      prayer_count: 0,
+    };
+    await db.prepare(
+      `INSERT INTO prayers (id, content, mood_tag, country_code) VALUES (?, ?, ?, ?)`
+    ).bind(prayer.id, prayer.content, prayer.mood_tag, prayer.country_code).run();
+    return jsonResponse({ configured: true, prayer });
+  }
+
+  // POST /api/prayers/pray — "Sinasamahan kita sa panalangin"
+  if (url.pathname === '/api/prayers/pray') {
+    const prayerId = String(body.prayerId || '');
+    const userHash = String(body.userHash || '');
+    if (!/^[0-9a-f-]{8,64}$/i.test(prayerId) || !/^[0-9a-f]{64}$/i.test(userHash)) {
+      return jsonResponse({ error: { message: 'Invalid prayerId or userHash' } }, 400);
+    }
+    const insert = await db.prepare(
+      `INSERT OR IGNORE INTO prayer_interactions (id, prayer_id, user_hash) VALUES (?, ?, ?)`
+    ).bind(crypto.randomUUID(), prayerId, userHash).run();
+
+    if ((insert.meta?.changes ?? 0) === 0) {
+      // Same kapatid, same prayer — already counted, and that's beautiful too.
+      return jsonResponse({ configured: true, counted: false, message: 'Sinalo na natin ito dati pa. 🤍' });
+    }
+    await db.prepare(
+      `UPDATE prayers SET prayer_count = prayer_count + 1 WHERE id = ?`
+    ).bind(prayerId).run();
+    const row = await db.prepare(`SELECT prayer_count FROM prayers WHERE id = ?`).bind(prayerId).first();
+    return jsonResponse({
+      configured: true,
+      counted: true,
+      prayerCount: row?.prayer_count ?? null,
+      message: 'Salamat, kapatid — dinala mo siya sa panalangin. 🤍',
+    });
+  }
+
+  return jsonResponse({ error: { message: 'Not found' } }, 404);
 }
 
 // ── Daily Blessing community counter ────────────────────────────────────────
