@@ -98,8 +98,11 @@ let currentAudio = null;
 
 export async function speakNatural(text) {
   if (ttsUnavailable) return false;
+  // An unset proxyUrl means "this same site" (relative fetch), not "no
+  // server" — the AI-chat Worker URL in Settings is a separate, optional
+  // override and must never disable /tts, which lives on this same Worker.
   const { proxyUrl, proxySecret } = getConnection();
-  if (!proxyUrl) { ttsUnavailable = true; return false; }
+  const base = proxyUrl ? proxyUrl.replace(/\/+$/, '') : '';
 
   // Strip markdown and emoji — hearing "asterisk" ruins the warmth.
   const plain = text
@@ -113,7 +116,7 @@ export async function speakNatural(text) {
   const headers = { 'Content-Type': 'application/json' };
   if (proxySecret) headers['x-proxy-secret'] = proxySecret;
   try {
-    const res = await fetch(proxyUrl.replace(/\/+$/, '') + '/tts', {
+    const res = await fetch(base + '/tts', {
       method: 'POST',
       headers,
       body: JSON.stringify({ text: plain }),

@@ -65,6 +65,11 @@ function savePrayedList(list) {
 }
 
 // ── API ──────────────────────────────────────────────────────────────────────
+// FLCC Kasama is served by the same Worker that hosts /api/prayers, so an
+// empty base simply means "this same site" (a relative fetch resolves
+// against the current origin). The AI-chat proxy URL in Settings is a
+// separate, optional override for members pointing at a different Worker —
+// its absence must never disable this feature.
 
 function apiBase() {
   const { proxyUrl } = getConnection();
@@ -73,7 +78,6 @@ function apiBase() {
 
 async function api(path, options = {}) {
   const base = apiBase();
-  if (!base) return { configured: false };
   const { proxySecret } = getConnection();
   const headers = { 'Content-Type': 'application/json' };
   if (proxySecret) headers['x-proxy-secret'] = proxySecret;
