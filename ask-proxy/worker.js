@@ -280,6 +280,24 @@ async function handleRequest(request, env, ctx) {
 // per-user value stored is user_hash, a SHA-256 the device computes from its
 // own random id + the prayer id. It cannot be linked back to any person; it
 // exists purely so one device can't inflate a count by tapping twice.
+//
+// Country is never taken from the client (a member could type anything).
+// Cloudflare stamps every request with the connecting edge location as
+// request.cf.country — an ISO 3166-1 alpha-2 code — for free, no GPS
+// permission prompt, no extra API call. We store that code (existing
+// country_code column, no migration needed) and derive a readable name for
+// display via COUNTRY_NAMES below, purely on the read path.
+const COUNTRY_NAMES = {
+  KW: 'Kuwait', SA: 'Saudi Arabia', AE: 'U.A.E.', QA: 'Qatar', BH: 'Bahrain', OM: 'Oman',
+  HK: 'Hong Kong', SG: 'Singapore', TW: 'Taiwan', JP: 'Japan', KR: 'South Korea', MY: 'Malaysia',
+  BN: 'Brunei', MO: 'Macau', CN: 'China', TH: 'Thailand', IL: 'Israel', JO: 'Jordan', LB: 'Lebanon',
+  CY: 'Cyprus', IT: 'Italy', UK: 'United Kingdom', GB: 'United Kingdom', IE: 'Ireland', DE: 'Germany',
+  FR: 'France', ES: 'Spain', NL: 'Netherlands', GR: 'Greece', CH: 'Switzerland', NO: 'Norway',
+  US: 'United States', CA: 'Canada', AU: 'Australia', NZ: 'New Zealand', PH: 'Philippines',
+};
+function countryNameFor(code) {
+  return COUNTRY_NAMES[code] || code || null;
+}
 
 function jsonResponse(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -335,7 +353,8 @@ async function handlePrayerChain(request, env, url, ctx) {
       `SELECT id, content, mood_tag, country_code, prayer_count, created_at
        FROM prayers ORDER BY created_at DESC LIMIT 30`
     ).all();
-    return jsonResponse({ configured: true, prayers: results || [] });
+    const prayers = (results || []).map((p) => ({ ...p, country_name: countryNameFor(p.country_code) }));
+    return jsonResponse({ configured: true, prayers });
   }
 
   if (request.method !== 'POST') {
@@ -356,7 +375,11 @@ async function handlePrayerChain(request, env, url, ctx) {
       return jsonResponse({ error: { message: 'Kulang pa ang mensahe — isulat mo lang nang kaunti pa, kapatid.' } }, 400);
     }
     const moodTag = String(body.moodTag || '').slice(0, 30);
-    const countryCode = /^[A-Z]{2,3}$/.test(String(body.countryCode || '')) ? body.countryCode : null;
+    // Never trust a client-supplied country — request.cf.country is stamped
+    // by Cloudflare's edge from the connecting IP, free, no GPS prompt, and
+    // not spoofable by the page's own JavaScript.
+    const cfCountry = request.cf?.country;
+    const countryCode = /^[A-Z]{2}$/.test(String(cfCountry || '')) ? cfCountry : null;
     const prayer = {
       id: crypto.randomUUID(),
       content,
@@ -370,7 +393,7 @@ async function handlePrayerChain(request, env, url, ctx) {
     // Notify subscribed devices after responding to the submitter — never
     // let a slow or failing push service delay their "Ipadala" confirmation.
     ctx?.waitUntil(fanOutNewPrayerPush(db, env, prayer).catch(() => {}));
-    return jsonResponse({ configured: true, prayer });
+    return jsonResponse({ configured: true, prayer: { ...prayer, country_name: countryNameFor(countryCode) } });
   }
 
   // POST /api/prayers/pray — "Sinasamahan kita sa panalangin"

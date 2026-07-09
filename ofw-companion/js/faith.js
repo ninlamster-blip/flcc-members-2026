@@ -2,7 +2,7 @@
 // community led by Pastor Anson Dionisio.
 import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, addJournalEntry } from './state.js';
 import { personalPrayer, isConnected } from './ai.js';
-import { escapeHtml, todayKey } from './utils.js';
+import { escapeHtml, todayKey, pickRandom } from './utils.js';
 
 let data = {}; // { verses, prayers, biblestudy }
 let toast = () => {};
@@ -35,8 +35,9 @@ export function render() {
 
   body.innerHTML = `
     <div class="oc-verse-card">
-      <p class="oc-verse-text">“${escapeHtml(verse.text)}”</p>
-      <p class="oc-verse-ref">${escapeHtml(verse.ref)}</p>
+      <p class="oc-verse-text" id="oc-verse-text">“${escapeHtml(verse.text)}”</p>
+      <p class="oc-verse-ref" id="oc-verse-ref">${escapeHtml(verse.ref)}</p>
+      <button type="button" class="oc-ghost-btn" id="oc-verse-btn">Bigyan mo ako ng Salita Ngayon 📖</button>
     </div>
 
     ${next ? `
@@ -168,6 +169,15 @@ export function render() {
     });
   });
 
+  const verseBtn = body.querySelector('#oc-verse-btn');
+  verseBtn?.addEventListener('click', () => {
+    const pool = allVersesFlat();
+    const pick = pickRandom(pool);
+    if (!pick) return;
+    body.querySelector('#oc-verse-text').textContent = `“${pick.text}”`;
+    body.querySelector('#oc-verse-ref').textContent = pick.ref;
+  });
+
   const prayerBtn = body.querySelector('#oc-prayer-btn');
   if (prayerBtn) {
     prayerBtn.addEventListener('click', async () => {
@@ -240,6 +250,12 @@ function verseForToday(heart) {
   const pool = data.verses[heart] || data.verses.neutral;
   const seed = todayKey().split('-').reduce((n, part) => n + Number(part), 0);
   return pool[seed % pool.length];
+}
+
+// Every verse across all heart-state categories, flattened into one pool
+// for the instant-verse button — no network call, just a local pick.
+function allVersesFlat() {
+  return Object.values(data.verses || {}).flat();
 }
 
 // The "bringing" answer refreshes each week (ISO week key).
