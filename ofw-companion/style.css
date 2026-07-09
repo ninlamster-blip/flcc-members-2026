@@ -360,24 +360,39 @@ body.oc-home-compact .oc-audio-drop { display: none; }
   margin-top: 10px;
 }
 .oc-pc-tag { font-size: 0.86em; padding: 8px 13px; }
-.oc-pc-composer-row {
+.oc-pc-input-row {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
-  align-items: center;
+  align-items: flex-start;
 }
-.oc-pc-country {
-  flex: 1;
-  min-width: 0;
-  padding: 11px 12px;
+.oc-pc-input-row .oc-journal-input { flex: 1; }
+.oc-icon-btn {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1.5px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--bg-soft);
-  color: var(--ink);
-  font-family: inherit;
-  font-size: 0.9em;
+  font-size: 1.15em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
-.oc-pc-send { width: auto; flex: 0 0 auto; padding: 12px 22px; font-size: 0.95em; }
+.oc-pc-mic.is-listening {
+  background: var(--danger, #d64545);
+  border-color: var(--danger, #d64545);
+  color: #fff;
+  animation: oc-mic-pulse 1.2s ease-in-out infinite;
+}
+@keyframes oc-mic-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.oc-pc-send { margin-top: 12px; }
 
 .oc-pc-item {
   padding: 18px 0;
@@ -837,6 +852,7 @@ body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: no
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.oc-verse-card #oc-verse-btn { margin-top: 16px; }
 
 .oc-prayer-text {
   white-space: pre-wrap;
@@ -1059,18 +1075,6 @@ body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: no
   background: var(--danger);
   border: 1.5px solid var(--bg-raised);
 }
-
-/* Notifications opt-in row on the Kadena ng Panalangin card */
-.oc-pc-notify-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  margin-bottom: 14px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-}
-.oc-pc-notify-text { flex: 1; font-size: 0.88em; color: var(--accent-ink); }
 
 /* ── Sheets & overlays ──────────────────────────────────────────────────── */
 

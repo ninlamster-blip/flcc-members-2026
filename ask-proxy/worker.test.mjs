@@ -43,12 +43,16 @@ function makeCtx() {
   return { waitUntil: (p) => pending.push(p), flush: () => Promise.allSettled(pending) };
 }
 
-async function call(env, ctx, method, path, body) {
+async function call(env, ctx, method, path, body, cf) {
   const req = new Request(`https://kasama.test${path}`, {
     method,
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
+  // request.cf is a Cloudflare-only extension (edge geolocation, etc.) not
+  // part of the standard Request constructor — simulate it the same way the
+  // real edge stamps it, so the Worker's request.cf.country reads work here.
+  req.cf = cf ?? { country: 'KW' };
   const res = await worker.fetch(req, env, ctx);
   const data = await res.json().catch(() => null);
   return { status: res.status, data, headers: res.headers };
@@ -103,14 +107,29 @@ const db = fakeD1();
   const tooShort = await call(env, ctx, 'POST', '/api/prayers', { content: 'hi' });
   assert(tooShort.status === 400, 'a too-short prayer is rejected');
 
+  // The client sends a spoofed/legacy countryCode; the Worker must ignore it
+  // entirely and use the Cloudflare-stamped request.cf.country instead
+  // (call() defaults cf to { country: 'KW' } — see the helper above).
   const created = await call(env, ctx, 'POST', '/api/prayers', {
-    content: '  Panalangin   po para sa pamilya ko.  ', moodTag: 'lungkot', countryCode: 'KWT',
+    content: '  Panalangin   po para sa pamilya ko.  ', moodTag: 'lungkot', countryCode: 'ZZ-SPOOFED',
   });
   assert(created.status === 200 && created.data.prayer.content === 'Panalangin po para sa pamilya ko.', 'whitespace collapsed/trimmed on create');
+  assert(created.data.prayer.country_code === 'KW', 'client-supplied countryCode is ignored — request.cf.country wins');
+  assert(created.data.prayer.country_name === 'Kuwait', 'a readable country_name is derived for the response');
   const prayerId = created.data.prayer.id;
 
   const listed = await call(env, ctx, 'GET', '/api/prayers');
   assert(listed.data.prayers.length === 1 && listed.data.prayers[0].id === prayerId, 'new prayer appears in the feed');
+  assert(listed.data.prayers[0].country_name === 'Kuwait', 'country_name is also present when listing the feed');
+
+  const fromSingapore = await call(env, ctx, 'POST', '/api/prayers',
+    { content: 'Sana po ma-renew ang aking visa dito.' }, { country: 'SG' });
+  assert(fromSingapore.data.prayer.country_code === 'SG' && fromSingapore.data.prayer.country_name === 'Singapore',
+    'a different edge country is picked up correctly');
+
+  const noCf = await call(env, ctx, 'POST', '/api/prayers', { content: 'Walang cf sa request na ito, dapat okay pa rin.' }, {});
+  assert(noCf.status === 200 && noCf.data.prayer.country_code === null,
+    'missing/unknown request.cf.country degrades to null instead of erroring');
 
   const badHash = await call(env, ctx, 'POST', '/api/prayers/pray', { prayerId, userHash: 'not-a-hash' });
   assert(badHash.status === 400, 'malformed userHash is rejected');

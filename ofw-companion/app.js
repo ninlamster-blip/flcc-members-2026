@@ -12,6 +12,7 @@ import { initJournal, refreshJournal } from './js/journal.js';
 import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
 import { initPrayerChain, markPrayersSeen } from './js/prayerchain.js';
+import { pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications } from './js/notifications.js';
 import { initSupport, renderCrisisLines } from './js/support.js';
 
 const context = { toast };
@@ -193,6 +194,15 @@ function renderSettings() {
     ${settingSwitch('voiceReplies', 'Spoken replies', 'Kaibigan reads replies aloud in a warm, natural voice. Needs the church voice key (ELEVENLABS_API_KEY) on the Worker — otherwise stays quiet.')}
     ${settingSwitch('largeText', 'Larger text', 'Bigger, easier-to-read letters everywhere')}
 
+    <div class="oc-settings-section" id="oc-notify-section" hidden>Kadena ng Panalangin</div>
+    <div class="oc-setting-row" id="oc-notify-row" hidden>
+      <div style="flex:1">
+        <div class="oc-setting-label">🔔 Bagong panalangin notifications</div>
+        <div class="oc-setting-sub">Ipaalam sa akin kapag may bagong prayer request sa Kadena — kahit sarado ang app.</div>
+      </div>
+      <button type="button" class="oc-switch" role="switch" aria-checked="false" id="oc-notify-switch" aria-label="Bagong panalangin notifications"></button>
+    </div>
+
     ${installSection()}
 
     <div class="oc-settings-section">AI model</div>
@@ -238,7 +248,7 @@ function renderSettings() {
     <button type="button" class="oc-danger-btn" id="oc-erase-btn">Erase everything on this device</button>
     <button type="button" class="oc-primary-btn" id="oc-settings-done" style="margin-top:18px">Done</button>`;
 
-  body.querySelectorAll('.oc-switch').forEach((sw) => {
+  body.querySelectorAll('.oc-switch[data-setting]').forEach((sw) => {
     sw.addEventListener('click', () => {
       const key = sw.dataset.setting;
       const next = sw.getAttribute('aria-checked') !== 'true';
@@ -251,6 +261,8 @@ function renderSettings() {
       }
     });
   });
+
+  wireNotifySwitch(body);
 
   const installBtn = body.querySelector('#oc-install-btn');
   if (installBtn) {
@@ -344,6 +356,40 @@ function renderSettings() {
 
 // Install-as-app section: one-tap on Android/Chrome, instructions on iPhone,
 // hidden entirely once already running standalone.
+// "Bagong panalangin" push notifications: a device preference, so it lives
+// in Settings rather than inline on the Kapwa tab. The whole section stays
+// hidden — never shown half-broken — until we know the church Worker
+// actually has a VAPID key configured.
+async function wireNotifySwitch(body) {
+  const configured = await pushConfiguredOnServer();
+  if (!configured) return;
+  const section = body.querySelector('#oc-notify-section');
+  const row = body.querySelector('#oc-notify-row');
+  const sw = body.querySelector('#oc-notify-switch');
+  if (!section || !row || !sw) return; // settings sheet was closed/re-rendered before this resolved
+  section.hidden = false;
+  row.hidden = false;
+  sw.setAttribute('aria-checked', String(await pushIsEnabled()));
+
+  sw.addEventListener('click', async () => {
+    const next = sw.getAttribute('aria-checked') !== 'true';
+    sw.disabled = true;
+    try {
+      if (next) {
+        await enableNotifications();
+        toast('Naka-on na ang abiso — salamat! 🔔');
+      } else {
+        await disableNotifications();
+        toast('Naka-off na ang abiso.');
+      }
+      sw.setAttribute('aria-checked', String(next));
+    } catch (err) {
+      toast(err.message || 'Hindi na-set up ang abiso.');
+    }
+    sw.disabled = false;
+  });
+}
+
 function installSection() {
   const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
   if (standalone) return '';

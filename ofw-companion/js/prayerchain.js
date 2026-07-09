@@ -10,27 +10,26 @@
 // random device id + the prayer id, computed right here on the device.
 import { getConnection } from './ai.js';
 import { escapeHtml, friendlyDate, uid } from './utils.js';
-import { pushSupported, pushConfiguredOnServer, isEnabled, enableNotifications, disableNotifications } from './notifications.js';
 
 const DEVICE_KEY = 'flcc-kasama-device-uuid';
 const PRAYED_KEY = 'flcc-kasama-my-prayed-list';
-const COUNTRY_KEY = 'flcc-kasama-country';
 const SEEN_KEY = 'flcc-kasama-last-seen-prayer-at';
 
+// "Bulong" — one-tap mood pills for prayer REQUESTS specifically (not
+// gratitude posts, which don't fit the "asking for prayer" framing).
 const MOOD_TAGS = [
   ['lungkot', '💧 Lungkot'],
   ['kaba', '😰 Kaba'],
   ['pagod', '😮‍💨 Pagod'],
-  ['salamat', '🌼 Salamat'],
 ];
 const MOOD_LABELS = Object.fromEntries(MOOD_TAGS);
 
-const COUNTRIES = [
-  ['KWT', '🇰🇼 Kuwait'], ['SAU', '🇸🇦 K.S.A.'], ['ARE', '🇦🇪 U.A.E.'], ['QAT', '🇶🇦 Qatar'],
-  ['BHR', '🇧🇭 Bahrain'], ['OMN', '🇴🇲 Oman'], ['HKG', '🇭🇰 Hong Kong'], ['SGP', '🇸🇬 Singapore'],
-  ['TWN', '🇹🇼 Taiwan'], ['JPN', '🇯🇵 Japan'], ['ITA', '🇮🇹 Italy'], ['PHL', '🇵🇭 Pilipinas'], ['OTH', '🌏 Iba pa'],
-];
-const COUNTRY_FLAGS = Object.fromEntries(COUNTRIES.map(([code, label]) => [code, label.split(' ')[0]]));
+// Regional-indicator flag emoji built from any ISO 3166-1 alpha-2 code —
+// no lookup table needed, works for whatever country Cloudflare reports.
+function flagEmoji(code) {
+  if (!/^[A-Z]{2}$/.test(code || '')) return '🌏';
+  return String.fromCodePoint(...[...code].map((c) => 0x1f1e6 + (c.charCodeAt(0) - 65)));
+}
 
 let toast = () => {};
 let container = null;
@@ -145,7 +144,6 @@ async function render() {
   updateUnreadBadge(prayers);
 
   body.innerHTML = `
-    ${await notifyRowHtml()}
     ${composerHtml()}
     <div id="oc-pc-feed">
       ${prayers.length
@@ -154,63 +152,32 @@ async function render() {
     </div>`;
 
   wireComposer(body);
-  wireNotifyRow(body);
   body.querySelectorAll('[data-pray]').forEach((btn) => {
     btn.addEventListener('click', () => handlePrayButtonClick(btn.dataset.pray));
   });
 }
 
-// ── "Ipaalam kapag may bagong panalangin" opt-in ────────────────────────────
-
-async function notifyRowHtml() {
-  if (!(await pushConfiguredOnServer())) return '';
-  const enabled = await isEnabled();
-  return `
-    <div class="oc-pc-notify-row">
-      <span class="oc-pc-notify-text">🔔 Ipaalam sa akin kapag may bagong panalangin sa Kadena</span>
-      <button type="button" class="oc-switch" role="switch" aria-checked="${enabled}" id="oc-pc-notify-switch" aria-label="Bagong panalangin notifications"></button>
-    </div>`;
-}
-
-function wireNotifyRow(body) {
-  const sw = body.querySelector('#oc-pc-notify-switch');
-  if (!sw) return;
-  sw.addEventListener('click', async () => {
-    const next = sw.getAttribute('aria-checked') !== 'true';
-    sw.disabled = true;
-    try {
-      if (next) {
-        await enableNotifications();
-        toast('Naka-on na ang abiso — salamat! 🔔');
-      } else {
-        await disableNotifications();
-        toast('Naka-off na ang abiso.');
-      }
-      sw.setAttribute('aria-checked', String(next));
-    } catch (err) {
-      toast(err.message || 'Hindi na-set up ang abiso.');
-    }
-    sw.disabled = false;
-  });
-}
+// (Push-notification opt-in now lives in Settings — see app.js — since it's
+// a device preference, not something tied to viewing the prayer chain.)
 
 // ── Flow A: Ang Paghingi ng Saklolo (composer) ──────────────────────────────
 
+// Just a text/mic area, optional mood pills, and one Send button — no
+// country picker. Country is stamped server-side from request.cf.country
+// (see ask-proxy/worker.js), so the client never needs to ask or send one.
 function composerHtml() {
-  const savedCountry = localStorage.getItem(COUNTRY_KEY) || 'KWT';
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   return `
     <div class="oc-pc-composer">
-      <textarea id="oc-pc-input" class="oc-journal-input" rows="2" maxlength="500"
-        placeholder="Anong dinadalangin mo ngayon, kapatid?"></textarea>
-      <div class="oc-pc-tags" role="group" aria-label="Ano ang nararamdaman mo? (optional)">
+      <div class="oc-pc-input-row">
+        <textarea id="oc-pc-input" class="oc-journal-input" rows="2" maxlength="500"
+          placeholder="Anong dinadalangin mo ngayon, kapatid?"></textarea>
+        ${SR ? `<button type="button" class="oc-icon-btn oc-pc-mic" id="oc-pc-mic" title="Tap to speak" aria-label="Tap to speak your prayer">🎤</button>` : ''}
+      </div>
+      <div class="oc-pc-tags" role="group" aria-label="Bulong — ano ang nararamdaman mo? (optional)">
         ${MOOD_TAGS.map(([id, label]) => `<button type="button" class="oc-chip oc-pc-tag" data-mood="${id}">${label}</button>`).join('')}
       </div>
-      <div class="oc-pc-composer-row">
-        <select id="oc-pc-country" class="oc-pc-country" aria-label="Saan ka nagtatrabaho?">
-          ${COUNTRIES.map(([code, label]) => `<option value="${code}" ${code === savedCountry ? 'selected' : ''}>${label}</option>`).join('')}
-        </select>
-        <button type="button" class="oc-primary-btn oc-pc-send" id="oc-pc-send">Ipadala 🕊️</button>
-      </div>
+      <button type="button" class="oc-primary-btn oc-pc-send" id="oc-pc-send">Ipadala 🕊️</button>
     </div>`;
 }
 
@@ -225,12 +192,12 @@ function wireComposer(body) {
     });
   });
 
+  wireMic(body);
+
   body.querySelector('#oc-pc-send').addEventListener('click', async () => {
     const input = body.querySelector('#oc-pc-input');
-    const country = body.querySelector('#oc-pc-country').value;
     const content = input.value.trim();
     if (content.length < 5) { toast('Isulat mo lang nang kaunti pa, kapatid.'); return; }
-    try { localStorage.setItem(COUNTRY_KEY, country); } catch { /* fine */ }
 
     const btn = body.querySelector('#oc-pc-send');
     btn.disabled = true;
@@ -238,11 +205,7 @@ function wireComposer(body) {
     try {
       const data = await api('/api/prayers', {
         method: 'POST',
-        body: JSON.stringify({
-          content,
-          moodTag: selectedMood || null,
-          countryCode: country === 'OTH' ? null : country,
-        }),
+        body: JSON.stringify({ content, moodTag: selectedMood || null }),
       });
       // Clear the form and smoothly prepend the new prayer to the feed.
       input.value = '';
@@ -261,6 +224,45 @@ function wireComposer(body) {
   });
 }
 
+// 🎤 Tap to speak — transcribes straight into the textarea for kapatid too
+// tired to type after a long shift. Hidden entirely where unsupported.
+function wireMic(body) {
+  const micBtn = body.querySelector('#oc-pc-mic');
+  if (!micBtn) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const input = body.querySelector('#oc-pc-input');
+  let recognition = null;
+
+  micBtn.addEventListener('click', () => {
+    if (recognition) { recognition.stop(); return; }
+    recognition = new SR();
+    recognition.lang = 'fil-PH';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    micBtn.classList.add('is-listening');
+    let finalText = '';
+
+    recognition.onresult = (e) => {
+      let interim = '';
+      for (const result of e.results) {
+        if (result.isFinal) finalText += result[0].transcript;
+        else interim += result[0].transcript;
+      }
+      input.value = (finalText + interim).trim();
+    };
+    recognition.onerror = () => stopListening();
+    recognition.onend = () => stopListening();
+    recognition.start();
+  });
+
+  function stopListening() {
+    recognition = null;
+    micBtn.classList.remove('is-listening');
+    input.focus();
+  }
+}
+
 // ── Flow B: Ang Pag-Salo (feed cards) ────────────────────────────────────────
 
 function counterSentence(count) {
@@ -269,8 +271,9 @@ function counterSentence(count) {
 }
 
 function prayerCardHtml(p, alreadyPrayed, isNew = false) {
-  const flag = COUNTRY_FLAGS[p.country_code] || '🌏';
-  const countryBadge = p.country_code ? `<span class="oc-pc-badge">${flag} ${escapeHtml(p.country_code)}</span>` : `<span class="oc-pc-badge">🌏</span>`;
+  const countryBadge = p.country_code
+    ? `<span class="oc-pc-badge">${flagEmoji(p.country_code)} ${escapeHtml(p.country_name || p.country_code)}</span>`
+    : `<span class="oc-pc-badge">🌏</span>`;
   const moodBadge = p.mood_tag && MOOD_LABELS[p.mood_tag] ? `<span class="oc-pc-badge oc-pc-badge-mood">${MOOD_LABELS[p.mood_tag]}</span>` : '';
   const count = p.prayer_count || 0;
   return `
