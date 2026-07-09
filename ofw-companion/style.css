@@ -1050,6 +1050,28 @@ body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: no
 .oc-nav-icon { font-size: 1.55em; line-height: 1; filter: grayscale(1) opacity(0.6); }
 .oc-nav-btn.is-active .oc-nav-icon { filter: none; }
 
+.oc-nav-icon-wrap { position: relative; display: inline-block; }
+.oc-nav-badge {
+  position: absolute;
+  top: -2px; right: -4px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 1.5px solid var(--bg-raised);
+}
+
+/* Notifications opt-in row on the Kadena ng Panalangin card */
+.oc-pc-notify-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
+.oc-pc-notify-text { flex: 1; font-size: 0.88em; color: var(--accent-ink); }
+
 /* ── Sheets & overlays ──────────────────────────────────────────────────── */
 
 .oc-sheet-overlay {

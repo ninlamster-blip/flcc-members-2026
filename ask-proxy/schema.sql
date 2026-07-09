@@ -37,3 +37,16 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_prayer_interactions_unique
 
 CREATE INDEX IF NOT EXISTS idx_prayers_created_at
   ON prayers (created_at DESC);
+
+-- Web Push subscriptions for the "new prayer" notification. One row per
+-- device that opted in; endpoint is the browser push service URL (unique
+-- per device/installation), p256dh/auth are the device's own public key and
+-- auth secret used to encrypt messages to it (RFC 8291) — never usable to
+-- identify a person, only to deliver an encrypted notification.
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id         TEXT PRIMARY KEY,
+  endpoint   TEXT NOT NULL UNIQUE,
+  p256dh     TEXT NOT NULL,
+  auth       TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);

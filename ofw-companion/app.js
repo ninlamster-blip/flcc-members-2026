@@ -11,7 +11,7 @@ import {
 import { initJournal, refreshJournal } from './js/journal.js';
 import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
-import { initPrayerChain } from './js/prayerchain.js';
+import { initPrayerChain, markPrayersSeen } from './js/prayerchain.js';
 import { initSupport, renderCrisisLines } from './js/support.js';
 
 const context = { toast };
@@ -81,6 +81,7 @@ function setupNav() {
       const target = btn.dataset.nav;
       if (target === 'faith') renderFaith(); // verse/prayer follow today's heart check-in
       if (target === 'journal') refreshJournal(); // pick up entries saved from other tabs
+      if (target === 'community') markPrayersSeen(); // clear the "new prayer" badge on open
       document.querySelectorAll('.oc-view').forEach((v) => { v.hidden = v.dataset.view !== target; });
       buttons.forEach((b) => {
         b.classList.toggle('is-active', b === btn);

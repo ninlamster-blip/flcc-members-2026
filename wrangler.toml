@@ -21,3 +21,16 @@ binding = "ASSETS"
 binding = "KASAMA_DB"
 database_name = "flcc-kasama"
 database_id = "69cf3b5d-f610-48d0-b5a2-3b8ec3607032"
+
+# Powers "bagong panalangin" push notifications (opt-in, per device) for the
+# Kadena ng Panalangin. This VAPID_PUBLIC_KEY is, as the name says, public —
+# it's handed to any browser that asks, so it's fine to commit here. The
+# matching PRIVATE key must never be committed: add it as a Worker Secret
+# instead (Settings → Variables and Secrets → Add → Secret):
+#   Name:  VAPID_PRIVATE_KEY_JWK
+#   Value: the private key as a JSON Web Key string (see ask-proxy/webpush.js
+#          header, or ask an admin/Claude session to generate a fresh pair)
+# Optionally also add a Text variable VAPID_SUBJECT = "mailto:you@example.com"
+# — without these two, notifications simply stay off; nothing breaks.
+[vars]
+VAPID_PUBLIC_KEY = "BCLTWSVRUpNgl_UB23W2QCSBRd1v5fgkE8Mm5KtrgDzCI0XM-fmDcZ8wQUnRxgx3UhSxbBWnUtzH_-unhU-cVyk"
