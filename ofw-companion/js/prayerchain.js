@@ -10,10 +10,12 @@
 // random device id + the prayer id, computed right here on the device.
 import { getConnection } from './ai.js';
 import { escapeHtml, friendlyDate, uid } from './utils.js';
+import { pushSupported, pushConfiguredOnServer, isEnabled, enableNotifications, disableNotifications } from './notifications.js';
 
 const DEVICE_KEY = 'flcc-kasama-device-uuid';
 const PRAYED_KEY = 'flcc-kasama-my-prayed-list';
 const COUNTRY_KEY = 'flcc-kasama-country';
+const SEEN_KEY = 'flcc-kasama-last-seen-prayer-at';
 
 const MOOD_TAGS = [
   ['lungkot', '💧 Lungkot'],
@@ -95,6 +97,28 @@ export function initPrayerChain(context) {
   render();
 }
 
+// ── "New prayer since your last visit" badge on the Kapwa nav icon ──────────
+// SQLite's datetime('now') format ("YYYY-MM-DD HH:MM:SS") sorts correctly as
+// plain strings, so no date parsing is needed to compare freshness.
+function updateUnreadBadge(prayers) {
+  const badge = document.getElementById('oc-kapwa-badge');
+  if (!badge) return;
+  const latest = prayers[0]?.created_at || '';
+  const seen = localStorage.getItem(SEEN_KEY) || '';
+  badge.hidden = !latest || latest <= seen;
+}
+
+// Called when the member actually opens the Kapwa tab.
+export function markPrayersSeen() {
+  const badge = document.getElementById('oc-kapwa-badge');
+  if (badge) badge.hidden = true;
+  try {
+    if (latestSeenCandidate) localStorage.setItem(SEEN_KEY, latestSeenCandidate);
+  } catch { /* best effort */ }
+}
+
+let latestSeenCandidate = null;
+
 async function render() {
   container.innerHTML = `
     <h2 class="oc-section-title">🕊️ Kadena ng Panalangin</h2>
@@ -117,8 +141,11 @@ async function render() {
 
   const prayed = new Set(myPrayedList());
   const prayers = data.prayers || [];
+  latestSeenCandidate = prayers[0]?.created_at || null;
+  updateUnreadBadge(prayers);
 
   body.innerHTML = `
+    ${await notifyRowHtml()}
     ${composerHtml()}
     <div id="oc-pc-feed">
       ${prayers.length
@@ -127,8 +154,43 @@ async function render() {
     </div>`;
 
   wireComposer(body);
+  wireNotifyRow(body);
   body.querySelectorAll('[data-pray]').forEach((btn) => {
     btn.addEventListener('click', () => handlePrayButtonClick(btn.dataset.pray));
+  });
+}
+
+// ── "Ipaalam kapag may bagong panalangin" opt-in ────────────────────────────
+
+async function notifyRowHtml() {
+  if (!(await pushConfiguredOnServer())) return '';
+  const enabled = await isEnabled();
+  return `
+    <div class="oc-pc-notify-row">
+      <span class="oc-pc-notify-text">🔔 Ipaalam sa akin kapag may bagong panalangin sa Kadena</span>
+      <button type="button" class="oc-switch" role="switch" aria-checked="${enabled}" id="oc-pc-notify-switch" aria-label="Bagong panalangin notifications"></button>
+    </div>`;
+}
+
+function wireNotifyRow(body) {
+  const sw = body.querySelector('#oc-pc-notify-switch');
+  if (!sw) return;
+  sw.addEventListener('click', async () => {
+    const next = sw.getAttribute('aria-checked') !== 'true';
+    sw.disabled = true;
+    try {
+      if (next) {
+        await enableNotifications();
+        toast('Naka-on na ang abiso — salamat! 🔔');
+      } else {
+        await disableNotifications();
+        toast('Naka-off na ang abiso.');
+      }
+      sw.setAttribute('aria-checked', String(next));
+    } catch (err) {
+      toast(err.message || 'Hindi na-set up ang abiso.');
+    }
+    sw.disabled = false;
   });
 }
 

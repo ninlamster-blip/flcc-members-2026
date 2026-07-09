@@ -4,6 +4,9 @@
 //
 // SETUP INSTRUCTIONS (5 minutes):
 //
+// PUSH NOTIFICATIONS ("bagong panalangin" alerts):
+//  See the setup note above handlePushSubscriptions() further down this file.
+//
 //  1. Go to https://dash.cloudflare.com → Workers & Pages → Create Worker
 //  2. Click "Edit code", paste the entire contents of this file, click Deploy
 //  3. Go to your Worker → Settings → Variables and Secrets
@@ -26,6 +29,8 @@
 //  This powers the real "members opened today" count on the Daily Blessing
 //  Community tab. Without it, that tab just shows a local-only message.
 // =============================================================================
+
+import { sendWebPush } from './webpush.js';
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -81,10 +86,10 @@ async function fetchNewsFeed(feed) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     // Top-level catch — every response gets CORS headers, nothing escapes as a bare Cloudflare error
     try {
-      return await handleRequest(request, env);
+      return await handleRequest(request, env, ctx);
     } catch (err) {
       return new Response(
         JSON.stringify({ error: { message: `Worker error: ${err.message}` } }),
@@ -94,7 +99,7 @@ export default {
   },
 };
 
-async function handleRequest(request, env) {
+async function handleRequest(request, env, ctx) {
   // CORS preflight
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS });
@@ -132,7 +137,12 @@ async function handleRequest(request, env) {
 
   // ── /api/prayers — FLCC Kasama anonymous Kadena ng Panalangin (D1) ────────
   if (url.pathname === '/api/prayers' || url.pathname === '/api/prayers/pray') {
-    return handlePrayerChain(request, env, url);
+    return handlePrayerChain(request, env, url, ctx);
+  }
+
+  // ── /api/push — "new prayer" browser push notifications (opt-in) ─────────
+  if (url.pathname.startsWith('/api/push/')) {
+    return handlePushSubscriptions(request, env, url);
   }
 
   // ── All other non-POST requests ──────────────────────────────────────────
@@ -300,11 +310,18 @@ async function ensurePrayerSchema(db) {
       ON prayer_interactions (prayer_id, user_hash)`),
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_prayers_created_at
       ON prayers (created_at DESC)`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id TEXT PRIMARY KEY,
+      endpoint TEXT NOT NULL UNIQUE,
+      p256dh TEXT NOT NULL,
+      auth TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`),
   ]);
   kasamaSchemaReady = true;
 }
 
-async function handlePrayerChain(request, env, url) {
+async function handlePrayerChain(request, env, url, ctx) {
   if (!env.KASAMA_DB) {
     // Not configured — the app shows a gentle "malapit na" note instead.
     return jsonResponse({ configured: false });
@@ -350,6 +367,9 @@ async function handlePrayerChain(request, env, url) {
     await db.prepare(
       `INSERT INTO prayers (id, content, mood_tag, country_code) VALUES (?, ?, ?, ?)`
     ).bind(prayer.id, prayer.content, prayer.mood_tag, prayer.country_code).run();
+    // Notify subscribed devices after responding to the submitter — never
+    // let a slow or failing push service delay their "Ipadala" confirmation.
+    ctx?.waitUntil(fanOutNewPrayerPush(db, env, prayer).catch(() => {}));
     return jsonResponse({ configured: true, prayer });
   }
 
@@ -378,6 +398,101 @@ async function handlePrayerChain(request, env, url) {
       prayerCount: row?.prayer_count ?? null,
       message: 'Salamat, kapatid — dinala mo siya sa panalangin. 🤍',
     });
+  }
+
+  return jsonResponse({ error: { message: 'Not found' } }, 404);
+}
+
+// Sends an encrypted "bagong panalangin" push to every subscribed device
+// (fire-and-forget, called via ctx.waitUntil so it never delays the
+// submitter's response). Devices whose subscription has expired (push
+// service returns 404/410) are quietly removed.
+async function fanOutNewPrayerPush(db, env, prayer) {
+  if (!env.VAPID_PRIVATE_KEY_JWK || !env.VAPID_PUBLIC_KEY) return; // not configured
+  const { results } = await db.prepare(`SELECT id, endpoint, p256dh, auth FROM push_subscriptions`).all();
+  if (!results?.length) return;
+
+  let privateKeyJwk;
+  try {
+    privateKeyJwk = JSON.parse(env.VAPID_PRIVATE_KEY_JWK);
+  } catch {
+    return; // malformed secret — fail closed, never throw into the caller
+  }
+  const vapid = {
+    privateKeyJwk,
+    publicKeyB64url: env.VAPID_PUBLIC_KEY,
+    subject: env.VAPID_SUBJECT || 'mailto:kasama@flcc.church',
+  };
+
+  const excerpt = prayer.content.length > 90 ? prayer.content.slice(0, 90).trimEnd() + '…' : prayer.content;
+  const payload = {
+    title: 'Bagong panalangin sa Kadena 🕯️',
+    body: excerpt,
+    url: './index.html',
+  };
+
+  const staleIds = [];
+  await Promise.allSettled(results.map(async (sub) => {
+    try {
+      const res = await sendWebPush(sub, payload, vapid);
+      if (res.status === 404 || res.status === 410) staleIds.push(sub.id);
+    } catch {
+      // one device's push service hiccuped — skip it this round, not fatal
+    }
+  }));
+
+  if (staleIds.length) {
+    await db.batch(staleIds.map((id) => db.prepare(`DELETE FROM push_subscriptions WHERE id = ?`).bind(id)));
+  }
+}
+
+// ── Push notification subscriptions ("bagong panalangin" alerts) ───────────
+// Optional, opt-in per device. To enable:
+//  1. Generate a VAPID key pair (see ask-proxy/webpush.js or run
+//     `node -e "..."` — ask an admin/Claude session for the one-liner).
+//  2. Worker → Settings → Variables and Secrets:
+//     - Secret  VAPID_PRIVATE_KEY_JWK — the private key as a JSON string
+//     - Text    VAPID_PUBLIC_KEY      — the public key, base64url
+//     - Text    VAPID_SUBJECT         — mailto:you@example.com (optional)
+// Without these, /api/push/vapid-public-key reports { configured: false }
+// and the app's notification toggle simply stays hidden.
+async function handlePushSubscriptions(request, env, url) {
+  if (url.pathname === '/api/push/vapid-public-key' && request.method === 'GET') {
+    if (!env.VAPID_PUBLIC_KEY) return jsonResponse({ configured: false });
+    return jsonResponse({ configured: true, publicKey: env.VAPID_PUBLIC_KEY });
+  }
+
+  if (!env.KASAMA_DB) return jsonResponse({ configured: false });
+  const db = env.KASAMA_DB;
+  await ensurePrayerSchema(db);
+
+  if (request.method !== 'POST') {
+    return jsonResponse({ error: { message: 'Method not allowed' } }, 405);
+  }
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: { message: 'Invalid JSON body' } }, 400);
+  }
+
+  if (url.pathname === '/api/push/subscribe') {
+    const { endpoint, keys } = body.subscription || body;
+    if (typeof endpoint !== 'string' || !endpoint.startsWith('https://') ||
+        typeof keys?.p256dh !== 'string' || typeof keys?.auth !== 'string') {
+      return jsonResponse({ error: { message: 'Invalid push subscription' } }, 400);
+    }
+    await db.prepare(
+      `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)
+       ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth`
+    ).bind(crypto.randomUUID(), endpoint, keys.p256dh, keys.auth).run();
+    return jsonResponse({ configured: true, subscribed: true });
+  }
+
+  if (url.pathname === '/api/push/unsubscribe') {
+    const endpoint = String(body.endpoint || '');
+    if (endpoint) await db.prepare(`DELETE FROM push_subscriptions WHERE endpoint = ?`).bind(endpoint).run();
+    return jsonResponse({ configured: true, subscribed: false });
   }
 
   return jsonResponse({ error: { message: 'Not found' } }, 404);

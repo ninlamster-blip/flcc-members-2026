@@ -1,7 +1,7 @@
 // Offline cache for the FLCC Kasama app shell, so the journal, comfort
 // responses, verses, and support directory all work without a network —
 // important for members with limited or expensive data.
-const CACHE = 'flcc-kasama-v7';
+const CACHE = 'flcc-kasama-v8';
 const SHELL = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const SHELL = [
   './js/companion.js',
   './js/sanctuary.js',
   './js/prayerchain.js',
+  './js/notifications.js',
   './js/journal.js',
   './js/faith.js',
   './js/community.js',
@@ -63,5 +64,38 @@ self.addEventListener('fetch', (event) => {
           (cached) => cached || new Response('Offline', { status: 503, statusText: 'Offline' })
         )
       )
+  );
+});
+
+// ── "Bagong panalangin" push notifications (opt-in, see js/notifications.js) ──
+self.addEventListener('push', (event) => {
+  let data = { title: 'FLCC Kasama', body: 'May bago sa Kadena ng Panalangin.', url: './index.html' };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch {
+    // Non-JSON or missing payload — the warm default above still shows something.
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: './icons/icon-192.png',
+      badge: './icons/icon-192.png',
+      data: { url: data.url || './index.html' },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = new URL(event.notification.data?.url || './index.html', self.location.href).href;
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url === targetUrl && 'focus' in client) return client.focus();
+      }
+      const existing = windowClients.find((c) => 'focus' in c);
+      if (existing) { existing.focus(); return existing.navigate?.(targetUrl); }
+      if (clients.openWindow) return clients.openWindow(targetUrl);
+    })
   );
 });
