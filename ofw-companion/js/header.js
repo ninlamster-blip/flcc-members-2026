@@ -25,6 +25,7 @@ const MOVE_THRESHOLD = 4; // ignore sub-pixel/rubber-band jitter
 export function createHeaderController({ getScrollTop, header, spacer, baselinePadding, onToggle }) {
   let lastScrollTop = getScrollTop();
   let hidden = false;
+  let ticking = false;
 
   function setHidden(next) {
     if (hidden === next) return;
@@ -41,13 +42,25 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
     onToggle?.(next);
   }
 
-  function onScroll() {
+  function process() {
+    ticking = false;
     const y = getScrollTop();
     const delta = y - lastScrollTop;
     if (y <= HIDE_AFTER) setHidden(false);
     else if (delta > MOVE_THRESHOLD) setHidden(true);
     else if (delta < -MOVE_THRESHOLD) setHidden(false);
     lastScrollTop = y;
+  }
+
+  // Raw scroll events can fire many times per animation frame (especially
+  // during touch/momentum scrolling), each carrying a tiny, noisy delta.
+  // Reacting to every one of them let the hide/show decision flip back and
+  // forth mid-gesture, interrupting the CSS transition each time — which
+  // reads as a stutter. Coalescing to one read+decision per frame fixes it.
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(process);
   }
 
   // Forces the header fully visible with no transition — used when a tab
