@@ -1,29 +1,40 @@
-// WhatsApp-style collapsible header, shared by every tab. Scrolling down
-// hides the header (translateY(-100%), eased); scrolling up snaps it
-// straight back (translateY(0), no transition — instant, the way
-// WhatsApp's own header reappears) and it stays put ("frozen") there. A
-// spacer element's top padding is kept in sync with the header's height so
-// content underneath never sits under it — but that padding change is
-// applied instantly, never animated: unlike transform, animating padding
-// forces the browser to recompute layout for the whole spacer subtree on
-// every frame, on the main thread, at the exact moment it's competing with
-// an active scroll gesture for that same thread — which is what stutter
-// actually is. Only the (compositor-only, cheap) transform animates.
+// WhatsApp-style collapsible header. Scrolling down hides the header
+// (translateY(-100%), eased); scrolling up snaps it straight back
+// (translateY(0), no transition — instant, the way WhatsApp's own header
+// reappears) and it stays put ("frozen") there.
 //
-// Journal/Faith/Kapwa/Tulong share one fixed header (#oc-shared-header) and
-// scroll at the window level. Kaibigan has its own header baked into its
-// non-scrolling layout and scrolls internally (its chat pane, not the
-// window, moves) — see companion.js, which builds its controller from the
-// same createHeaderController() factory below so both behave identically.
+// Journal/Faith/Kapwa/Tulong share one header (#oc-shared-header),
+// position: sticky, and scroll at the window level — sticky headers are
+// part of the normal scrolling flow, which iOS Safari's compositor tracks
+// natively frame-by-frame, and they reserve their own space automatically
+// (no spacer/padding management needed).
+//
+// Kaibigan has its own header baked into its non-scrolling layout and
+// scrolls internally (its chat pane, not the window, moves). It can't use
+// sticky without restructuring that chat pane's own scroll container, so
+// it stays position: fixed — which does need a spacer element's top
+// padding kept in sync with the header's height so content underneath
+// never sits under it. That padding change is applied instantly, never
+// animated: unlike transform, animating padding forces the browser to
+// recompute layout for the whole spacer subtree on every frame, on the
+// main thread, at the exact moment it's competing with an active scroll
+// gesture for that same thread.
+//
+// Both build their controller from the same createHeaderController()
+// factory below, so the scroll-direction decision logic is identical —
+// only what each does with "hidden" (transform alone vs. transform +
+// spacer padding) differs.
 const HIDE_AFTER = 24; // px scrolled down before the header may hide at all
 const MOVE_THRESHOLD = 10; // net px of travel needed before reacting
 
 // getScrollTop: () => number — current scroll position of whatever scrolls
 //   (window.scrollY, or a chat pane's scrollTop).
 // header: the element to slide off/on screen.
-// spacer: the element whose padding-top is kept in sync with the header's
-//   rendered height, so content underneath never jumps.
-// baselinePadding: the spacer's padding-top once the header is hidden.
+// spacer: optional — the element whose padding-top is kept in sync with
+//   the header's rendered height, so content underneath never jumps.
+//   Omit for a sticky header, which reserves its own space in the flow.
+// baselinePadding: required if spacer is set — the spacer's padding-top
+//   once the header is hidden.
 // onToggle(hidden): optional, called whenever the hidden/visible state
 //   changes — lets a caller fold other elements away in step (Kaibigan
 //   uses this to also tuck away the ritual pill and audio drop).
@@ -128,8 +139,8 @@ export function initScrollHeader() {
   shared = createHeaderController({
     getScrollTop: () => window.scrollY,
     header: document.getElementById('oc-shared-header'),
-    spacer: document.getElementById('oc-root'),
-    baselinePadding: 'calc(env(safe-area-inset-top, 0px) + 20px)',
+    // No spacer: position: sticky reserves its own space in the flow
+    // automatically, so there's no padding for JS to manage here.
   });
 
   window.addEventListener('scroll', () => {

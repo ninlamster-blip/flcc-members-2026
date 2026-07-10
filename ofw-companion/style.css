@@ -116,16 +116,31 @@ input, textarea { font-family: inherit; color: var(--ink); }
 /* ── Headers ────────────────────────────────────────────────────────────── */
 
 .oc-home-header { text-align: center; padding: 14px 56px 10px; }
-.oc-view-header { text-align: center; padding: 52px 44px 20px; }
+.oc-view-header { text-align: center; padding: calc(env(safe-area-inset-top, 0px) + 52px) 44px 20px; }
 
-/* WhatsApp-style collapsible header — every tab, including Kaibigan, uses
-   the exact same mechanics (see js/header.js): pinned to the top of the
-   viewport, JS toggles it out of view with translateY on scroll-down and
-   snaps it straight back — "frozen" in place — on scroll-up, shrinking a
-   spacer's top padding to match so content never jumps. Journal/Faith/
-   Kapwa/Tulong share one header and scroll at the window level; Kaibigan
-   has its own (its chat pane, not the window, scrolls). */
-.oc-home-header, .oc-view-header {
+/* WhatsApp-style collapsible header. JS (js/header.js) toggles it out of
+   view with translateY on scroll-down and snaps it straight back —
+   "frozen" in place — on scroll-up.
+   Journal/Faith/Kapwa/Tulong share one header (#oc-shared-header): it's
+   position: sticky, living as #oc-root's own first child, so it's part of
+   the normal scrolling flow that iOS Safari's compositor tracks natively
+   frame-by-frame — position: fixed elements are known to visually detach/
+   jump during momentum scrolling there instead, since Safari only
+   reconciles their position at certain points rather than every frame.
+   Sticky also means it reserves its own space automatically; no JS needs
+   to manage a spacer's padding for this header.
+   Kaibigan has its own header (.oc-home-header) and scrolls internally
+   (its chat pane, not the window, moves) — sticky isn't available to it
+   without restructuring its chat pane's own scroll container, so it
+   still uses position: fixed and its own JS-managed spacer padding. */
+.oc-view-header {
+  position: sticky;
+  top: 0;
+  z-index: 14;
+  background: var(--bg);
+  transform: translateY(0);
+}
+.oc-home-header {
   position: fixed;
   top: 0; left: 0; right: 0;
   max-width: 620px;
@@ -133,17 +148,20 @@ input, textarea { font-family: inherit; color: var(--ink); }
   z-index: 14;
   background: var(--bg);
   transform: translateY(0);
-  /* Force its own GPU compositing layer up front — without this, Safari in
-     particular can visually detach/jump position:fixed elements during
-     momentum scrolling (it only reconciles fixed elements at points during
-     the scroll rather than every frame), which reads as a stutter/shake
-     independent of anything the scroll-decision JS does. */
+}
+.oc-home-header, .oc-view-header {
+  /* Force its own GPU compositing layer up front for the transform
+     animation — cheap insurance regardless of positioning scheme. */
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+/* The sticky header now provides its own top spacing (including the
+   safe-area inset) — #oc-root must not add a second helping in front of
+   it, or the header would visibly jump the moment it transitions from
+   its normal-flow position to "stuck". */
 body:not([data-active-view="home"]) #oc-root {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+  padding-top: 0;
 }
 
 .oc-title {
