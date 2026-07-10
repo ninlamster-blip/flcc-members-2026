@@ -2,8 +2,13 @@
 // hides the header (translateY(-100%), eased); scrolling up snaps it
 // straight back (translateY(0), no transition — instant, the way
 // WhatsApp's own header reappears) and it stays put ("frozen") there. A
-// spacer element's top padding shrinks and grows in step so content never
-// jumps when the header's space disappears or returns.
+// spacer element's top padding is kept in sync with the header's height so
+// content underneath never sits under it — but that padding change is
+// applied instantly, never animated: unlike transform, animating padding
+// forces the browser to recompute layout for the whole spacer subtree on
+// every frame, on the main thread, at the exact moment it's competing with
+// an active scroll gesture for that same thread — which is what stutter
+// actually is. Only the (compositor-only, cheap) transform animates.
 //
 // Journal/Faith/Kapwa/Tulong share one fixed header (#oc-shared-header) and
 // scroll at the window level. Kaibigan has its own header baked into its
@@ -33,11 +38,11 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
     if (next) {
       header.style.transition = 'transform 0.3s ease';
       header.style.transform = 'translateY(-100%)';
-      if (spacer) { spacer.style.transition = 'padding-top 0.3s ease'; spacer.style.paddingTop = baselinePadding; }
+      if (spacer) spacer.style.paddingTop = baselinePadding;
     } else {
       header.style.transition = 'transform 0.15s ease';
       header.style.transform = 'translateY(0)';
-      if (spacer) { spacer.style.transition = 'padding-top 0.15s ease'; spacer.style.paddingTop = header.offsetHeight + 'px'; }
+      if (spacer) spacer.style.paddingTop = header.offsetHeight + 'px';
     }
     onToggle?.(next);
   }
@@ -71,12 +76,9 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
     hidden = false;
     header.style.transition = 'none';
     header.style.transform = 'translateY(0)';
-    if (spacer) { spacer.style.transition = 'none'; spacer.style.paddingTop = header.offsetHeight + 'px'; }
+    if (spacer) spacer.style.paddingTop = header.offsetHeight + 'px';
     onToggle?.(false);
-    requestAnimationFrame(() => {
-      header.style.transition = '';
-      if (spacer) spacer.style.transition = '';
-    });
+    requestAnimationFrame(() => { header.style.transition = ''; });
   }
 
   // Keeps the spacer padded to the header's actual rendered height whenever
