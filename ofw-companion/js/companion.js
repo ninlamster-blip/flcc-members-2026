@@ -3,7 +3,7 @@ import { getState, addChatMessage, setHeartToday, heartToday, addMemory } from '
 import { companionReply, companionOpener, isConnected, speakNatural } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom, todayKey,
-  timeOfDayGreeting, detectsCrisis, classifyHeart,
+  detectsCrisis, classifyHeart,
 } from './utils.js';
 import { openBreathing } from './sanctuary.js';
 
@@ -45,8 +45,7 @@ let bound = false;
 export async function initCompanion(context) {
   comfort = context.comfort;
   els = {
-    greeting: document.getElementById('oc-greeting'),
-    subgreeting: document.getElementById('oc-subgreeting'),
+    kaibiganUser: document.getElementById('oc-kaibigan-user'),
     heartCheckin: document.getElementById('oc-heart-checkin'),
     heartChips: document.getElementById('oc-heart-chips'),
     shareBtn: document.getElementById('oc-heart-share'),
@@ -55,7 +54,11 @@ export async function initCompanion(context) {
     sendBtn: document.getElementById('oc-send-btn'),
   };
 
-  els.greeting.textContent = timeOfDayGreeting(getState().profile.name);
+  // Header reads like a chat contact bar: "Kaibigan" as the fixed title,
+  // the member's own name underneath — hidden until they've given one.
+  const name = getState().profile.name;
+  els.kaibiganUser.textContent = name;
+  els.kaibiganUser.hidden = !name;
 
   renderHeartChips();
   renderHistory();

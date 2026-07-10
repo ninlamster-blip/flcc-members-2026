@@ -17,16 +17,6 @@ export function friendlyDate(iso) {
   return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-export function timeOfDayGreeting(name) {
-  const h = new Date().getHours();
-  let g;
-  if (h < 4) g = 'Gising ka pa ba?';
-  else if (h < 12) g = 'Magandang umaga';
-  else if (h < 18) g = 'Magandang hapon';
-  else g = 'Magandang gabi';
-  return name ? `${g}, ${name}` : g;
-}
-
 export function escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
