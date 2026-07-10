@@ -615,6 +615,15 @@ body[data-active-view="home"] .oc-view[data-view="home"] {
   border-radius: 22px;
   animation: oc-fade-up 0.35s ease both;
   overflow-wrap: break-word;
+  /* A long conversation can mean dozens of bubbles. Without this, showing/
+     hiding the fixed header re-triggers one synchronous layout pass over
+     every bubble in the pane on every state change — cheap for the other
+     tabs' small, fixed card counts, but the cost here scales with however
+     long the chat has grown, which is exactly the kind of hitch that reads
+     as a stutter. content-visibility skips layout/paint for off-screen
+     bubbles entirely, making that cost roughly constant instead. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60px;
 }
 .oc-bubble p + p { margin-top: 0.6em; }
 
@@ -806,6 +815,11 @@ body[data-active-view]:not([data-active-view="home"]) .oc-home-header { display:
   border-bottom: 1px solid var(--line);
   border-radius: var(--radius-sm);
   transition: background 0.2s ease;
+  /* Same reasoning as .oc-bubble above — a long journal history is the
+     other list that can grow unbounded, unlike Faith/Kapwa/Tulong's small
+     fixed card counts. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
 }
 .oc-journal-entry:last-child { border-bottom: none; }
 .oc-journal-entry:not(.oc-muted) { cursor: pointer; }
