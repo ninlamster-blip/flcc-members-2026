@@ -1,5 +1,6 @@
-// Journal — daily wellbeing check-in (<30s), gentle insights, private entries.
-import { getState, todaysCheckin, saveCheckin, addJournalEntry, deleteJournalEntry } from './state.js';
+// Journal — daily wellbeing check-in (<30s), gentle insights, private entries
+// with a reusable log: save, clear, and log again as many times as you like.
+import { getState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry } from './state.js';
 import { wellbeingInsight, isConnected } from './ai.js';
 import { escapeHtml, friendlyDate } from './utils.js';
 
@@ -188,28 +189,62 @@ function localInsight() {
 }
 
 // ── Free writing ─────────────────────────────────────────────────────────────
+// Reusable log: writing and saving never "locks" the editor — Save always
+// leaves it ready to log again. Clicking a past entry loads it back in for
+// editing; Save then updates that entry instead of creating a new one.
+
+let editingId = null;
 
 function setupFreeWriting() {
+  const titleInput = document.getElementById('oc-journal-title');
   const input = document.getElementById('oc-journal-input');
   const saveBtn = document.getElementById('oc-journal-save');
+  const clearBtn = document.getElementById('oc-journal-clear');
+
   saveBtn.addEventListener('click', () => {
     const text = input.value.trim();
     if (!text) return;
-    addJournalEntry(text);
-    input.value = '';
-    toast('Saved — for your eyes only 🔒');
-    renderEntries();
+    const title = titleInput.value.trim();
+    if (editingId) {
+      updateJournalEntry(editingId, { title, text });
+      toast('Entry updated 🔒');
+    } else {
+      addJournalEntry(text, title);
+      toast('Saved — for your eyes only 🔒');
+    }
+    resetEditor();
+    renderEntries(document.getElementById('oc-journal-search').value.trim().toLowerCase());
   });
+
+  clearBtn.addEventListener('click', resetEditor);
 
   document.getElementById('oc-journal-search').addEventListener('input', (e) => {
     renderEntries(e.target.value.trim().toLowerCase());
   });
 }
 
+function resetEditor() {
+  editingId = null;
+  document.getElementById('oc-journal-title').value = '';
+  document.getElementById('oc-journal-input').value = '';
+  document.getElementById('oc-journal-editor-title').textContent = 'Write freely';
+  document.getElementById('oc-journal-save').textContent = 'Save entry';
+}
+
+function loadEntryIntoEditor(entry) {
+  editingId = entry.id;
+  document.getElementById('oc-journal-title').value = entry.title || '';
+  document.getElementById('oc-journal-input').value = entry.text;
+  document.getElementById('oc-journal-editor-title').textContent = 'Editing entry';
+  document.getElementById('oc-journal-save').textContent = 'Update entry';
+  document.getElementById('oc-journal-input').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 function renderEntries(query = '') {
   const list = document.getElementById('oc-journal-list');
   let entries = getState().journal;
-  if (query) entries = entries.filter((e) => e.text.toLowerCase().includes(query));
+  if (query) entries = entries.filter((e) =>
+    e.text.toLowerCase().includes(query) || (e.title || '').toLowerCase().includes(query));
 
   if (!entries.length) {
     list.innerHTML = `<li class="oc-journal-entry oc-muted">${query ? 'No entries match your search.' : 'Your entries will appear here. Ang journal na ito ay sa\'yo lang.'}</li>`;
@@ -217,19 +252,30 @@ function renderEntries(query = '') {
   }
 
   list.innerHTML = entries.slice(0, 100).map((e) => `
-    <li class="oc-journal-entry">
+    <li class="oc-journal-entry${e.id === editingId ? ' oc-entry-editing' : ''}" data-entry="${e.id}">
       <div class="oc-entry-meta">
         <span>${friendlyDate(e.date)} · ${escapeHtml(e.time)}</span>
         <button type="button" class="oc-entry-delete" data-delete="${e.id}" aria-label="Delete this entry">✕</button>
       </div>
+      ${e.title ? `<div class="oc-entry-title">${escapeHtml(e.title)}</div>` : ''}
       <div class="oc-entry-text">${escapeHtml(e.text)}</div>
     </li>`).join('');
 
   list.querySelectorAll('[data-delete]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (evt) => {
+      evt.stopPropagation();
       if (!confirm('Delete this entry forever?')) return;
+      const wasEditing = btn.dataset.delete === editingId;
       deleteJournalEntry(btn.dataset.delete);
+      if (wasEditing) resetEditor();
       renderEntries(query);
+    });
+  });
+
+  list.querySelectorAll('[data-entry]').forEach((li) => {
+    li.addEventListener('click', () => {
+      const entry = getState().journal.find((e) => e.id === li.dataset.entry);
+      if (entry) loadEntryIntoEditor(entry);
     });
   });
 }

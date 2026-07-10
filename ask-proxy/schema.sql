@@ -8,21 +8,27 @@
 --   3. wrangler d1 execute flcc-kasama --remote --file=ask-proxy/schema.sql
 --
 -- (The Worker also runs these statements lazily with IF NOT EXISTS, so simply
--- binding the database is enough — this file documents the canonical shape.)
+-- binding the database is enough — this file documents the canonical shape.
+-- The Worker also self-migrates first_name/origin_country onto an
+-- already-deployed table via ALTER TABLE, so existing databases pick up the
+-- new columns without a manual migration step.)
 --
--- Privacy by design: prayers are anonymous. The only per-user data ever stored
--- is user_hash — a SHA-256 of a random device id + prayer id, computed on the
--- device. It cannot be linked back to any person, and exists purely so one
--- device can't inflate a prayer count by tapping twice.
+-- Members choose to share their first name and country of origin with each
+-- request — both optional. The only fully anonymous per-user value is
+-- user_hash — a SHA-256 of a random device id + prayer id, computed on the
+-- device — which cannot be linked back to any person and exists purely so
+-- one device can't inflate a prayer count by tapping twice.
 -- =============================================================================
 
 CREATE TABLE IF NOT EXISTS prayers (
-  id           TEXT PRIMARY KEY,
-  content      TEXT NOT NULL,
-  mood_tag     TEXT,
-  country_code TEXT,               -- 'KWT', 'HKG', … regional solidarity, never identity
-  prayer_count INTEGER DEFAULT 0,  -- how many kapatid have prayed for this
-  created_at   TEXT DEFAULT (datetime('now'))
+  id             TEXT PRIMARY KEY,
+  content        TEXT NOT NULL,
+  mood_tag       TEXT,
+  country_code   TEXT,               -- Cloudflare-stamped edge country (where they're working)
+  first_name     TEXT,               -- optional, member-supplied
+  origin_country TEXT,               -- optional, member-supplied "country of origin"
+  prayer_count   INTEGER DEFAULT 0,  -- how many kapatid have prayed for this
+  created_at     TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS prayer_interactions (

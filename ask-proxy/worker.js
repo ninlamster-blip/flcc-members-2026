@@ -274,19 +274,22 @@ async function handleRequest(request, env, ctx) {
   });
 }
 
-// ── FLCC Kasama — Kadena ng Panalangin (anonymous prayer chain) ─────────────
+// ── FLCC Kasama — Kadena ng Panalangin (prayer chain) ───────────────────────
 // Backed by a D1 database bound as KASAMA_DB (see wrangler.toml and
-// ask-proxy/schema.sql). Privacy by design: no names, no accounts — the only
-// per-user value stored is user_hash, a SHA-256 the device computes from its
-// own random id + the prayer id. It cannot be linked back to any person; it
-// exists purely so one device can't inflate a count by tapping twice.
+// ask-proxy/schema.sql). Members choose to attach their first name and
+// country of origin to a request — both optional, trimmed and length-capped
+// here. The only value that is never member-supplied is user_hash, a
+// SHA-256 the device computes from its own random id + the prayer id; it
+// cannot be linked back to any person and exists purely so one device can't
+// inflate a prayer count by tapping twice.
 //
-// Country is never taken from the client (a member could type anything).
-// Cloudflare stamps every request with the connecting edge location as
-// request.cf.country — an ISO 3166-1 alpha-2 code — for free, no GPS
-// permission prompt, no extra API call. We store that code (existing
-// country_code column, no migration needed) and derive a readable name for
-// display via COUNTRY_NAMES below, purely on the read path.
+// The *working* country badge is never taken from the client (a member could
+// type anything). Cloudflare stamps every request with the connecting edge
+// location as request.cf.country — an ISO 3166-1 alpha-2 code — for free, no
+// GPS permission prompt, no extra API call. We store that code (country_code)
+// and derive a readable name for display via COUNTRY_NAMES below, purely on
+// the read path. origin_country is separate: a free-text field the member
+// fills in themselves for where they consider home.
 const COUNTRY_NAMES = {
   KW: 'Kuwait', SA: 'Saudi Arabia', AE: 'U.A.E.', QA: 'Qatar', BH: 'Bahrain', OM: 'Oman',
   HK: 'Hong Kong', SG: 'Singapore', TW: 'Taiwan', JP: 'Japan', KR: 'South Korea', MY: 'Malaysia',
@@ -336,7 +339,22 @@ async function ensurePrayerSchema(db) {
       created_at TEXT DEFAULT (datetime('now'))
     )`),
   ]);
+  // Self-migrate onto a table created before first_name/origin_country
+  // existed — SQLite has no "ADD COLUMN IF NOT EXISTS", so check first.
+  const { results: cols } = await db.prepare(`PRAGMA table_info(prayers)`).all();
+  const have = new Set((cols || []).map((c) => c.name));
+  const alters = [];
+  if (!have.has('first_name')) alters.push(db.prepare(`ALTER TABLE prayers ADD COLUMN first_name TEXT`));
+  if (!have.has('origin_country')) alters.push(db.prepare(`ALTER TABLE prayers ADD COLUMN origin_country TEXT`));
+  if (alters.length) await db.batch(alters);
   kasamaSchemaReady = true;
+}
+
+// Trim, strip control characters, and cap length — same treatment as the
+// prayer content itself. Both fields are optional and member-supplied.
+function cleanShortField(value, maxLen) {
+  const s = String(value || '').replace(/[\u0000-\u001F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLen);
+  return s || null;
 }
 
 async function handlePrayerChain(request, env, url, ctx) {
@@ -350,7 +368,7 @@ async function handlePrayerChain(request, env, url, ctx) {
   // GET /api/prayers — the most recent requests from kapatid around the world
   if (request.method === 'GET' && url.pathname === '/api/prayers') {
     const { results } = await db.prepare(
-      `SELECT id, content, mood_tag, country_code, prayer_count, created_at
+      `SELECT id, content, mood_tag, country_code, first_name, origin_country, prayer_count, created_at
        FROM prayers ORDER BY created_at DESC LIMIT 30`
     ).all();
     const prayers = (results || []).map((p) => ({ ...p, country_name: countryNameFor(p.country_code) }));
@@ -375,21 +393,27 @@ async function handlePrayerChain(request, env, url, ctx) {
       return jsonResponse({ error: { message: 'Kulang pa ang mensahe — isulat mo lang nang kaunti pa, kapatid.' } }, 400);
     }
     const moodTag = String(body.moodTag || '').slice(0, 30);
-    // Never trust a client-supplied country — request.cf.country is stamped
-    // by Cloudflare's edge from the connecting IP, free, no GPS prompt, and
-    // not spoofable by the page's own JavaScript.
+    // Never trust a client-supplied country badge — request.cf.country is
+    // stamped by Cloudflare's edge from the connecting IP, free, no GPS
+    // prompt, and not spoofable by the page's own JavaScript. first_name and
+    // origin_country, by contrast, are members choosing to identify
+    // themselves — trimmed and length-capped, but taken as given.
     const cfCountry = request.cf?.country;
     const countryCode = /^[A-Z]{2}$/.test(String(cfCountry || '')) ? cfCountry : null;
+    const firstName = cleanShortField(body.firstName, 40);
+    const originCountry = cleanShortField(body.originCountry, 60);
     const prayer = {
       id: crypto.randomUUID(),
       content,
       mood_tag: moodTag || null,
       country_code: countryCode,
+      first_name: firstName,
+      origin_country: originCountry,
       prayer_count: 0,
     };
     await db.prepare(
-      `INSERT INTO prayers (id, content, mood_tag, country_code) VALUES (?, ?, ?, ?)`
-    ).bind(prayer.id, prayer.content, prayer.mood_tag, prayer.country_code).run();
+      `INSERT INTO prayers (id, content, mood_tag, country_code, first_name, origin_country) VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(prayer.id, prayer.content, prayer.mood_tag, prayer.country_code, prayer.first_name, prayer.origin_country).run();
     // Notify subscribed devices after responding to the submitter — never
     // let a slow or failing push service delay their "Ipadala" confirmation.
     ctx?.waitUntil(fanOutNewPrayerPush(db, env, prayer).catch(() => {}));

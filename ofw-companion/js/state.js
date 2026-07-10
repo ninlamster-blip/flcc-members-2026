@@ -6,7 +6,10 @@ const STORAGE_KEY = 'flcc-ofw-companion:v1';
 
 function defaultState() {
   return {
-    profile: { name: '' },
+    // country: "Country of Origin" — a member-chosen, free-text home
+    // country, attached (optionally) to prayer requests they send. Distinct
+    // from the auto-detected "working in" country stamped server-side.
+    profile: { name: '', country: '' },
     settings: {
       faithEnabled: true,
       voiceReplies: false,
@@ -35,6 +38,9 @@ function defaultState() {
     bringing: null,
     // Private notes on Faith-tab teachings, keyed by teaching date
     teachingNotes: {},
+    // A standing, general-purpose notes area for live Bible study / Sunday
+    // preaching — separate from the per-teaching notes above.
+    sermonNotes: '',
     onboarded: false,
   };
 }
@@ -102,15 +108,31 @@ export function saveCheckin(data) {
 }
 
 // ── Journal ──────────────────────────────────────────────────────────────────
-export function addJournalEntry(text) {
+export function addJournalEntry(text, title = '') {
   const now = new Date();
   const entry = {
     id: uid(),
     date: todayKey(now),
     time: now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+    timestamp: now.toISOString(),
+    title: title || '',
     text,
   };
   state.journal.unshift(entry);
+  save();
+  return entry;
+}
+
+// Re-save an existing entry in place (same id) — used when a member reopens
+// a past entry, edits it, and hits Save again.
+export function updateJournalEntry(id, { title = '', text }) {
+  const entry = state.journal.find((e) => e.id === id);
+  if (!entry) return null;
+  const now = new Date();
+  entry.title = title || '';
+  entry.text = text;
+  entry.time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  entry.timestamp = now.toISOString();
   save();
   return entry;
 }
@@ -161,6 +183,12 @@ export function saveTeachingNote(teachingDate, text) {
   const trimmed = String(text || '').trim();
   if (trimmed) state.teachingNotes[teachingDate] = trimmed.slice(0, 4000);
   else delete state.teachingNotes[teachingDate];
+  save();
+}
+
+// ── Sermon / Bible study notes (general, not tied to a specific teaching) ───
+export function saveSermonNotes(text) {
+  state.sermonNotes = String(text || '').slice(0, 8000);
   save();
 }
 

@@ -14,6 +14,7 @@ import { initCommunity } from './js/community.js';
 import { initPrayerChain, markPrayersSeen } from './js/prayerchain.js';
 import { pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications } from './js/notifications.js';
 import { initSupport, renderCrisisLines } from './js/support.js';
+import { initScrollHeader, resetScrollHeader } from './js/header.js';
 
 const context = { toast };
 
@@ -45,6 +46,7 @@ async function boot() {
   setupCrisis();
   setupOnboarding();
   setupSanctuary();
+  initScrollHeader();
 
   initCompanion(context);
   initJournal(context);
@@ -75,8 +77,18 @@ async function boot() {
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 
+// Title/subtitle for the shared header (see index.html) — everything but
+// Kaibigan (home), which carries its own header inside its layout.
+const VIEW_HEADERS = {
+  journal: { title: 'Journal', sub: 'A private place for your heart. Only you can see this.' },
+  faith: { title: 'Faith', sub: 'Fellowship and encouragement, wherever you are.' },
+  community: { title: 'Kapwa', sub: 'A safe community. No likes, no followers — just kapatiran.' },
+  support: { title: 'Tulong', sub: 'Real help, real people, real numbers.' },
+};
+
 function setupNav() {
   const buttons = document.querySelectorAll('.oc-nav-btn');
+  const sharedHeader = document.getElementById('oc-shared-header');
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.nav;
@@ -90,7 +102,14 @@ function setupNav() {
         else b.removeAttribute('aria-current');
       });
       document.body.dataset.activeView = target;
+      const headerInfo = VIEW_HEADERS[target];
+      sharedHeader.hidden = !headerInfo;
+      if (headerInfo) {
+        document.getElementById('oc-shared-header-title').textContent = headerInfo.title;
+        document.getElementById('oc-shared-header-sub').textContent = headerInfo.sub;
+      }
       window.scrollTo({ top: 0 });
+      resetScrollHeader();
     });
   });
 }
@@ -118,7 +137,7 @@ function setupSanctuary() {
   // One gentle ritual invitation per time of day.
   const ritual = ritualFor(currentPeriod());
   const pill = document.getElementById('oc-ritual-pill');
-  pill.textContent = `${ritual.icon} ${ritual.text}`;
+  pill.textContent = ritual.text;
   pill.hidden = false;
   pill.addEventListener('click', () => {
     navigator.vibrate?.(8);
@@ -144,9 +163,11 @@ function setupOnboarding() {
   overlay.hidden = false;
   document.getElementById('oc-onboard-start').addEventListener('click', () => {
     const name = document.getElementById('oc-onboard-name').value.trim();
+    const country = document.getElementById('oc-onboard-country').value.trim();
     const faith = document.getElementById('oc-onboard-faith').checked;
     updateState((s) => {
       s.profile.name = name;
+      s.profile.country = country;
       s.settings.faithEnabled = faith;
       s.onboarded = true;
     });
@@ -186,6 +207,9 @@ function renderSettings() {
       <div style="flex:1">
         <div class="oc-setting-label">Your name</div>
         <input type="text" class="oc-text-input" id="oc-set-name" value="${escapeHtml(s.profile.name)}" maxlength="30" placeholder="Your name or palayaw" style="margin-top:8px">
+        <div class="oc-setting-label" style="margin-top:14px">Country of origin</div>
+        <div class="oc-setting-sub" style="margin-bottom:8px">Shown alongside your first name when you send a prayer request in Kapwa.</div>
+        <input type="text" class="oc-text-input" id="oc-set-country" value="${escapeHtml(s.profile.country || '')}" maxlength="60" placeholder="e.g. Philippines">
       </div>
     </div>
 
@@ -342,7 +366,8 @@ function renderSettings() {
 
   body.querySelector('#oc-settings-done').addEventListener('click', () => {
     const name = body.querySelector('#oc-set-name').value.trim();
-    updateState((st) => { st.profile.name = name; });
+    const country = body.querySelector('#oc-set-country').value.trim();
+    updateState((st) => { st.profile.name = name; st.profile.country = country; });
     saveConnection({
       proxyUrl: body.querySelector('#oc-set-proxy').value,
       proxySecret: body.querySelector('#oc-set-secret').value,

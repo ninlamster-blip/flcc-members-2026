@@ -14,23 +14,23 @@ const HEAVY_CATS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick
 // once, so these are multi-select. The first six show by default; "More" opens
 // the full range.
 const HEART_CHIPS = [
-  { id: 'peaceful', emoji: '😌', label: 'Payapa', cat: 'neutral' },
-  { id: 'joyful', emoji: '😄', label: 'Masaya', cat: 'happy' },
-  { id: 'grateful', emoji: '🌼', label: 'Thankful', cat: 'grateful' },
-  { id: 'lonely', emoji: '🥺', label: 'Nalulungkot', cat: 'lonely' },
-  { id: 'missinghome', emoji: '🏠', label: 'Namimiss ko sila', cat: 'homesick' },
-  { id: 'exhausted', emoji: '😴', label: 'Pagod na pagod', cat: 'exhausted' },
-  { id: 'hopeful', emoji: '🙏', label: 'Umaasa', cat: 'grateful', more: true },
-  { id: 'loved', emoji: '❤️', label: 'Minamahal', cat: 'grateful', more: true },
-  { id: 'worried', emoji: '😰', label: 'Kinakabahan', cat: 'anxious', more: true },
-  { id: 'heartbroken', emoji: '💔', label: 'Sawi ang puso', cat: 'heavy', more: true },
-  { id: 'discouraged', emoji: '😞', label: 'Panghina ng loob', cat: 'heavy', more: true },
-  { id: 'frustrated', emoji: '😤', label: 'Frustrated', cat: 'heavy', more: true },
-  { id: 'overwhelmed', emoji: '😵‍💫', label: 'Lulong sa dami', cat: 'anxious', more: true },
-  { id: 'numb', emoji: '😶', label: 'Manhid na lang', cat: 'heavy', more: true },
-  { id: 'forgotten', emoji: '🥀', label: 'Parang nakalimutan', cat: 'invisible', more: true },
-  { id: 'listen', emoji: '🫂', label: 'Gusto ko lang may makinig', cat: 'lonely', more: true },
-  { id: 'needprayer', emoji: '🕊️', label: 'Kailangan ko ng panalangin', cat: 'heavy', more: true },
+  { id: 'peaceful', label: 'Payapa', cat: 'neutral' },
+  { id: 'joyful', label: 'Masaya', cat: 'happy' },
+  { id: 'grateful', label: 'Thankful', cat: 'grateful' },
+  { id: 'lonely', label: 'Nalulungkot', cat: 'lonely' },
+  { id: 'missinghome', label: 'Namimiss ko sila', cat: 'homesick' },
+  { id: 'exhausted', label: 'Pagod na pagod', cat: 'exhausted' },
+  { id: 'hopeful', label: 'Umaasa', cat: 'grateful', more: true },
+  { id: 'loved', label: 'Minamahal', cat: 'grateful', more: true },
+  { id: 'worried', label: 'Kinakabahan', cat: 'anxious', more: true },
+  { id: 'heartbroken', label: 'Sawi ang puso', cat: 'heavy', more: true },
+  { id: 'discouraged', label: 'Panghina ng loob', cat: 'heavy', more: true },
+  { id: 'frustrated', label: 'Frustrated', cat: 'heavy', more: true },
+  { id: 'overwhelmed', label: 'Lulong sa dami', cat: 'anxious', more: true },
+  { id: 'numb', label: 'Manhid na lang', cat: 'heavy', more: true },
+  { id: 'forgotten', label: 'Parang nakalimutan', cat: 'invisible', more: true },
+  { id: 'listen', label: 'Gusto ko lang may makinig', cat: 'lonely', more: true },
+  { id: 'needprayer', label: 'Kailangan ko ng panalangin', cat: 'heavy', more: true },
 ];
 
 // The offline companion acknowledges the chosen heart chip, then follows the
@@ -79,7 +79,7 @@ function renderHeartChips() {
   const draw = () => {
     const visible = HEART_CHIPS.filter((c) => expanded || !c.more || selected.has(c.id));
     els.heartChips.innerHTML = visible.map((c) =>
-      `<button type="button" class="oc-chip${selected.has(c.id) ? ' is-selected' : ''}" data-heart="${c.id}" aria-pressed="${selected.has(c.id)}">${c.emoji} ${escapeHtml(c.label)}</button>`
+      `<button type="button" class="oc-chip${selected.has(c.id) ? ' is-selected' : ''}" data-heart="${c.id}" aria-pressed="${selected.has(c.id)}">${escapeHtml(c.label)}</button>`
     ).join('') + (expanded ? '' : `<button type="button" class="oc-chip oc-chip-more" data-more>+ Iba pa…</button>`);
 
     els.heartChips.querySelectorAll('[data-heart]').forEach((btn) => {
@@ -100,7 +100,7 @@ function renderHeartChips() {
     const chips = HEART_CHIPS.filter((c) => selected.has(c.id));
     setHeartToday(chips.map((c) => c.cat));
     els.heartCheckin.hidden = true;
-    await sendUserMessage(chips.map((c) => `${c.emoji} ${c.label}`).join(' · '), { heartChip: chips[0].cat });
+    await sendUserMessage(chips.map((c) => c.label).join(' · '), { heartChip: chips[0].cat });
     if (chips.some((c) => HEAVY_CATS.has(c.cat))) offerHingaMuna();
   };
 }
