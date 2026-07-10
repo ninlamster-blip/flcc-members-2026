@@ -133,6 +133,14 @@ input, textarea { font-family: inherit; color: var(--ink); }
   z-index: 14;
   background: var(--bg);
   transform: translateY(0);
+  /* Force its own GPU compositing layer up front — without this, Safari in
+     particular can visually detach/jump position:fixed elements during
+     momentum scrolling (it only reconciles fixed elements at points during
+     the scroll rather than every frame), which reads as a stutter/shake
+     independent of anything the scroll-decision JS does. */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 body:not([data-active-view="home"]) #oc-root {
   padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
