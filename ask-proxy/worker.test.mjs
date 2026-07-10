@@ -112,15 +112,24 @@ const db = fakeD1();
   // (call() defaults cf to { country: 'KW' } — see the helper above).
   const created = await call(env, ctx, 'POST', '/api/prayers', {
     content: '  Panalangin   po para sa pamilya ko.  ', moodTag: 'lungkot', countryCode: 'ZZ-SPOOFED',
+    firstName: '  Maria  ', originCountry: ' Philippines ',
   });
   assert(created.status === 200 && created.data.prayer.content === 'Panalangin po para sa pamilya ko.', 'whitespace collapsed/trimmed on create');
   assert(created.data.prayer.country_code === 'KW', 'client-supplied countryCode is ignored — request.cf.country wins');
   assert(created.data.prayer.country_name === 'Kuwait', 'a readable country_name is derived for the response');
+  assert(created.data.prayer.first_name === 'Maria', 'first_name is trimmed and stored');
+  assert(created.data.prayer.origin_country === 'Philippines', 'origin_country is trimmed and stored');
   const prayerId = created.data.prayer.id;
 
   const listed = await call(env, ctx, 'GET', '/api/prayers');
   assert(listed.data.prayers.length === 1 && listed.data.prayers[0].id === prayerId, 'new prayer appears in the feed');
   assert(listed.data.prayers[0].country_name === 'Kuwait', 'country_name is also present when listing the feed');
+  assert(listed.data.prayers[0].first_name === 'Maria' && listed.data.prayers[0].origin_country === 'Philippines',
+    'first_name and origin_country round-trip through the feed');
+
+  const anonymous = await call(env, ctx, 'POST', '/api/prayers', { content: 'Panalangin lang, walang pangalan.' });
+  assert(anonymous.data.prayer.first_name === null && anonymous.data.prayer.origin_country === null,
+    'first_name and origin_country stay optional — omitting them degrades to null, not an error');
 
   const fromSingapore = await call(env, ctx, 'POST', '/api/prayers',
     { content: 'Sana po ma-renew ang aking visa dito.' }, { country: 'SG' });

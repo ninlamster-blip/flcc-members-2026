@@ -49,6 +49,11 @@ export function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+export function firstNameOf(name) {
+  const trimmed = String(name || '').trim();
+  return trimmed ? trimmed.split(/\s+/)[0] : '';
+}
+
 export function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }

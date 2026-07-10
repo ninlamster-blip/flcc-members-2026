@@ -1,6 +1,6 @@
 // Faith — daily verse, personalized prayer, and the Virtual Bible Study
 // community led by Pastor Anson Dionisio.
-import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, addJournalEntry } from './state.js';
+import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, saveSermonNotes, addJournalEntry } from './state.js';
 import { personalPrayer, isConnected } from './ai.js';
 import { escapeHtml, todayKey, pickRandom } from './utils.js';
 
@@ -49,6 +49,13 @@ export function render() {
     </div>` : ''}
 
     <div class="oc-card">
+      <h2 class="oc-section-title">Sermon &amp; Bible study notes</h2>
+      <p class="oc-muted" style="margin-bottom:10px">A standing space for whatever you're hearing right now — Sunday preaching, live Bible study, anything. Saved automatically as you type.</p>
+      <textarea id="oc-sermon-notes" class="oc-journal-input" rows="6" placeholder="Mga puntos, verses, pagninilay…">${escapeHtml(s.sermonNotes || '')}</textarea>
+      <div class="oc-note-status" id="oc-sermon-notes-status" aria-live="polite"></div>
+    </div>
+
+    <div class="oc-card">
       <h2 class="oc-section-title">A prayer for you today</h2>
       <p class="oc-prayer-text" id="oc-prayer-text">${escapeHtml(data.prayers[heart] || data.prayers.neutral)}</p>
       ${isConnected() ? '<button type="button" class="oc-ghost-btn" id="oc-prayer-btn">🙏 Pray with me — a prayer just for my heart</button>' : ''}
@@ -73,7 +80,7 @@ export function render() {
           <p class="oc-pastor-name">${escapeHtml(bs.pastor.name)}</p>
           <p class="oc-pastor-role">${escapeHtml(bs.pastor.role)}</p>
           <p class="oc-pastor-message">“${escapeHtml(bs.pastor.message)}”</p>
-          <p class="oc-verse-ref" style="text-align:left;margin-top:10px">${escapeHtml(bs.pastor.verse.ref)}</p>
+          <p class="oc-verse-ref" style="margin-top:10px">${escapeHtml(bs.pastor.verse.ref)}</p>
         </div>
       </div>
     </div>
@@ -139,6 +146,8 @@ export function render() {
       <button type="button" class="oc-ghost-btn" id="oc-carry-save" style="margin-top:10px">Itago sa Journal ko</button>
     </div>`;
 
+  wireSermonNotes(body);
+
   body.querySelector('#oc-carry-save')?.addEventListener('click', () => {
     const input = body.querySelector('#oc-carry-truth');
     const text = input.value.trim();
@@ -200,6 +209,26 @@ export function render() {
       }
     });
   }
+}
+
+// Autosaves as the member types (debounced), so notes taken live during a
+// sermon or Bible study session are never lost — no separate save step
+// needed, though the status line confirms it happened.
+function wireSermonNotes(body) {
+  const textarea = body.querySelector('#oc-sermon-notes');
+  const status = body.querySelector('#oc-sermon-notes-status');
+  if (!textarea) return;
+  let debounceTimer = null;
+  let fadeTimer = null;
+  textarea.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      saveSermonNotes(textarea.value);
+      status.textContent = 'Saved ✓';
+      clearTimeout(fadeTimer);
+      fadeTimer = setTimeout(() => { status.textContent = ''; }, 2000);
+    }, 600);
+  });
 }
 
 function renderBringingDone(bringing) {

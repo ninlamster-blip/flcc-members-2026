@@ -30,35 +30,18 @@ export function occasionLine() {
   const now = new Date();
   const m = now.getMonth() + 1;
   const d = now.getDate();
-  if (m === 12 && d >= 16 && d <= 24) return '🕯️ Kapaskuhan na — kahit malayo, kasama ka ng pamilya mo sa puso at sa panalangin.';
-  if (m === 12 && d === 25) return '🎄 Maligayang Pasko! Mahal na mahal ka — dito at sa bahay.';
-  if (m === 12 && d >= 26) return '✨ Papalapit na ang Bagong Taon — ipinagmamalaki ka ng pamilya mo.';
-  if (m === 1 && d === 1) return '🎆 Manigong Bagong Taon! Bagong taon, bagong biyaya.';
-  if (m === 11 && d === 1) return '🕯️ Undas ngayon — okay lang mangulila. Kasama ka namin sa pag-alala.';
-  if (m === 2 && d === 14) return '💐 Araw ng mga Puso — mahal ka, at hindi ka nag-iisa.';
-  if (m === 5 && now.getDay() === 0 && d >= 8 && d <= 14) return '🌷 Mother’s Day — sa lahat ng nanay na nagsasakripisyo mula sa malayo: bayani ka.';
-  if (m === 6 && now.getDay() === 0 && d >= 15 && d <= 21) return '🛠️ Father’s Day — sa mga tatay na nagtitiis para sa pamilya: nakikita ka.';
+  if (m === 12 && d >= 16 && d <= 24) return 'Kapaskuhan na — kahit malayo, kasama ka ng pamilya mo sa puso at sa panalangin.';
+  if (m === 12 && d === 25) return 'Maligayang Pasko! Mahal na mahal ka — dito at sa bahay.';
+  if (m === 12 && d >= 26) return 'Papalapit na ang Bagong Taon — ipinagmamalaki ka ng pamilya mo.';
+  if (m === 1 && d === 1) return 'Manigong Bagong Taon! Bagong taon, bagong biyaya.';
+  if (m === 11 && d === 1) return 'Undas ngayon — okay lang mangulila. Kasama ka namin sa pag-alala.';
+  if (m === 2 && d === 14) return 'Araw ng mga Puso — mahal ka, at hindi ka nag-iisa.';
+  if (m === 5 && now.getDay() === 0 && d >= 8 && d <= 14) return 'Mother’s Day — sa lahat ng nanay na nagsasakripisyo mula sa malayo: bayani ka.';
+  if (m === 6 && now.getDay() === 0 && d >= 15 && d <= 21) return 'Father’s Day — sa mga tatay na nagtitiis para sa pamilya: nakikita ka.';
   return '';
 }
 
 // ── Weather (Open-Meteo, free, no key) ───────────────────────────────────────
-
-const WEATHER_ICONS = [
-  [[0], '☀️', 'Clear'],
-  [[1, 2], '🌤️', 'Partly cloudy'],
-  [[3], '☁️', 'Cloudy'],
-  [[45, 48], '🌫️', 'Foggy'],
-  [[51, 53, 55, 61, 63, 65, 80, 81, 82], '🌧️', 'Rainy'],
-  [[71, 73, 75, 77, 85, 86], '🌨️', 'Snowy'],
-  [[95, 96, 99], '⛈️', 'Stormy'],
-];
-
-function weatherIcon(code) {
-  for (const [codes, icon, label] of WEATHER_ICONS) {
-    if (codes.includes(code)) return { icon, label };
-  }
-  return { icon: '🌤️', label: '' };
-}
 
 async function fetchWeather(lat, lon) {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`;
@@ -74,8 +57,7 @@ export async function initWeather(chipEl) {
   const s = getState();
 
   const show = (w) => {
-    const { icon } = weatherIcon(w.code);
-    chipEl.textContent = `${icon} ${w.temp}°`;
+    chipEl.textContent = `${w.temp}°C`;
     chipEl.hidden = false;
   };
 
@@ -94,10 +76,10 @@ export async function initWeather(chipEl) {
 
   if (!('geolocation' in navigator)) return;
   // Not yet set up: offer, don't demand.
-  chipEl.textContent = '🌤️ Add weather';
+  chipEl.textContent = 'Add weather';
   chipEl.hidden = false;
   chipEl.addEventListener('click', () => {
-    chipEl.textContent = '🌤️ …';
+    chipEl.textContent = '…';
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const geo = { lat: +pos.coords.latitude.toFixed(2), lon: +pos.coords.longitude.toFixed(2) };
       updateState((st) => { st.geo = geo; });
@@ -123,7 +105,7 @@ export function initAudioDrop(audiodrops) {
 
   const drop = (audiodrops.drops || []).filter((d) => d.src).pop();
   card.hidden = false;
-  title.textContent = `🎧 ${audiodrops.title || 'Isang Minutong Salita'}`;
+  title.textContent = audiodrops.title || 'Isang Minutong Salita';
 
   if (!drop) {
     sub.textContent = audiodrops.placeholderNote || 'Malapit na, kapatid.';
@@ -151,15 +133,15 @@ export function initAudioDrop(audiodrops) {
 
 export function ritualFor(period) {
   if (period === 'morning') {
-    return { icon: '🌅', text: 'Simulan ang umaga sa panalangin', action: 'faith' };
+    return { text: 'Simulan ang umaga sa panalangin', action: 'faith' };
   }
   if (period === 'day') {
-    return { icon: '🫁', text: 'Take a slow breathing break', action: 'breathe' };
+    return { text: 'Take a slow breathing break', action: 'breathe' };
   }
   if (period === 'dusk') {
-    return { icon: '💧', text: 'Uminom ka na ba ng tubig? Unat-unat din', action: 'breathe' };
+    return { text: 'Uminom ka na ba ng tubig? Unat-unat din', action: 'breathe' };
   }
-  return { icon: '🌙', text: 'Isulat ang isang pasasalamat bago matulog', action: 'journal' };
+  return { text: 'Isulat ang isang pasasalamat bago matulog', action: 'journal' };
 }
 
 // ── Breathing exercise ───────────────────────────────────────────────────────

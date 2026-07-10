@@ -1,28 +1,32 @@
-// Kadena ng Panalangin — the anonymous prayer chain on the Kapwa tab.
+// Kadena ng Panalangin — the prayer stream on the Kapwa tab.
 //
-// Two flows, echo-free by design:
-//   A. Ang Paghingi ng Saklolo — leave an anonymous request (no names, no
-//      emails, no handles — there are simply no such fields).
+// Two flows:
+//   A. Ang Paghingi ng Saklolo — leave a request, with your first name and
+//      country of origin attached (both optional — a member can still send
+//      one without them, but there's no name/country picker to hide behind
+//      by default).
 //   B. Ang Pag-Salo — carry a kapatid in prayer: one tap, the button becomes
 //      a glowing candle, and the count of praying kapatid rises.
 //
-// Privacy: interactions are deduplicated with an un-linkable SHA-256 of a
-// random device id + the prayer id, computed right here on the device.
+// Business rule: a member never sees their own request in their own feed —
+// requests they've sent are filtered out client-side by id (see
+// myOwnPrayerIds below), never shown back and never tappable to "pray" on.
+//
+// Interactions (the "pray" tap) are still deduplicated with an un-linkable
+// SHA-256 of a random device id + the prayer id, computed right here on the
+// device — that stays true regardless of whether a name is attached.
 import { getConnection } from './ai.js';
-import { escapeHtml, friendlyDate, uid } from './utils.js';
+import { getState } from './state.js';
+import { escapeHtml, friendlyDate, firstNameOf, uid } from './utils.js';
 
 const DEVICE_KEY = 'flcc-kasama-device-uuid';
 const PRAYED_KEY = 'flcc-kasama-my-prayed-list';
+const MY_PRAYERS_KEY = 'flcc-kasama-my-own-prayers';
 const SEEN_KEY = 'flcc-kasama-last-seen-prayer-at';
 
-// "Bulong" — one-tap mood pills for prayer REQUESTS specifically (not
-// gratitude posts, which don't fit the "asking for prayer" framing).
-const MOOD_TAGS = [
-  ['lungkot', '💧 Lungkot'],
-  ['kaba', '😰 Kaba'],
-  ['pagod', '😮‍💨 Pagod'],
-];
-const MOOD_LABELS = Object.fromEntries(MOOD_TAGS);
+// Historical mood tags — no longer collectible from the composer (removed
+// to declutter), but still rendered on older entries that have one saved.
+const MOOD_LABELS = { lungkot: '💧 Lungkot', kaba: '😰 Kaba', pagod: '😮‍💨 Pagod' };
 
 // Regional-indicator flag emoji built from any ISO 3166-1 alpha-2 code —
 // no lookup table needed, works for whatever country Cloudflare reports.
@@ -33,9 +37,8 @@ function flagEmoji(code) {
 
 let toast = () => {};
 let container = null;
-let selectedMood = null;
 
-// ── Privacy utilities ────────────────────────────────────────────────────────
+// ── Device-local lists ───────────────────────────────────────────────────────
 
 function deviceUuid() {
   try {
@@ -50,19 +53,30 @@ function deviceUuid() {
   }
 }
 
-// SHA-256 hex of deviceUuid + prayerId — completely un-linkable to a person.
+// SHA-256 hex of deviceUuid + prayerId — un-linkable to a person, used only
+// so one device can't inflate a "praying for you" count by tapping twice.
 export async function interactionHash(prayerId) {
   const data = new TextEncoder().encode(`${deviceUuid()}:${prayerId}`);
   const digest = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-function myPrayedList() {
-  try { return JSON.parse(localStorage.getItem(PRAYED_KEY)) || []; } catch { return []; }
+function readIdList(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
+}
+function writeIdList(key, list) {
+  try { localStorage.setItem(key, JSON.stringify(list.slice(-500))); } catch { /* best effort */ }
 }
 
-function savePrayedList(list) {
-  try { localStorage.setItem(PRAYED_KEY, JSON.stringify(list.slice(-500))); } catch { /* best effort */ }
+const myPrayedList = () => readIdList(PRAYED_KEY);
+const savePrayedList = (list) => writeIdList(PRAYED_KEY, list);
+
+// The ids of prayers *this device* has submitted — used purely to filter a
+// member's own requests out of their own feed. Never sent to the server.
+const myOwnPrayerIds = () => readIdList(MY_PRAYERS_KEY);
+function rememberMyOwnPrayer(id) {
+  const list = myOwnPrayerIds();
+  if (!list.includes(id)) { list.push(id); writeIdList(MY_PRAYERS_KEY, list); }
 }
 
 // ── API ──────────────────────────────────────────────────────────────────────
@@ -96,21 +110,19 @@ export function initPrayerChain(context) {
   render();
 }
 
-// ── "New prayer since your last visit" badge on the Kapwa nav icon ──────────
+// ── "New prayer since your last visit" badge + banner ───────────────────────
 // SQLite's datetime('now') format ("YYYY-MM-DD HH:MM:SS") sorts correctly as
 // plain strings, so no date parsing is needed to compare freshness.
-function updateUnreadBadge(prayers) {
+function updateUnreadIndicators(hasUnseen) {
   const badge = document.getElementById('oc-kapwa-badge');
-  if (!badge) return;
-  const latest = prayers[0]?.created_at || '';
-  const seen = localStorage.getItem(SEEN_KEY) || '';
-  badge.hidden = !latest || latest <= seen;
+  if (badge) badge.hidden = !hasUnseen;
+  const alert = document.getElementById('oc-pc-alert');
+  if (alert) alert.hidden = !hasUnseen;
 }
 
 // Called when the member actually opens the Kapwa tab.
 export function markPrayersSeen() {
-  const badge = document.getElementById('oc-kapwa-badge');
-  if (badge) badge.hidden = true;
+  updateUnreadIndicators(false);
   try {
     if (latestSeenCandidate) localStorage.setItem(SEEN_KEY, latestSeenCandidate);
   } catch { /* best effort */ }
@@ -121,7 +133,7 @@ let latestSeenCandidate = null;
 async function render() {
   container.innerHTML = `
     <h2 class="oc-section-title">🕊️ Kadena ng Panalangin</h2>
-    <p class="oc-muted" style="margin-bottom:12px">Walang pangalan, walang husga — panalangin lang. Ang kapatid na nag-iwan nito ay hinding-hindi malalaman kung sino ka, at ikaw rin sa kanya.</p>
+    <p class="oc-muted" style="margin-bottom:12px">Panalangin mula sa mga kapatid — kasama ang pangalan at bansang pinagmulan nila, para mas personal. Hindi mo makikita ang sarili mong mga kahilingan dito.</p>
     <div id="oc-pc-body"><p class="oc-muted">Binubuksan ang kadena…</p></div>`;
   const body = container.querySelector('#oc-pc-body');
 
@@ -139,17 +151,25 @@ async function render() {
   }
 
   const prayed = new Set(myPrayedList());
-  const prayers = data.prayers || [];
+  const myOwnIds = new Set(myOwnPrayerIds());
+  // Business rule: never show a member their own submitted requests.
+  const prayers = (data.prayers || []).filter((p) => !myOwnIds.has(p.id));
+
+  const seen = localStorage.getItem(SEEN_KEY) || '';
   latestSeenCandidate = prayers[0]?.created_at || null;
-  updateUnreadBadge(prayers);
+  const hasUnseen = prayers.some((p) => (p.created_at || '') > seen);
 
   body.innerHTML = `
+    <div class="oc-pc-alert" id="oc-pc-alert" role="status" aria-live="polite" ${hasUnseen ? '' : 'hidden'}>🔔 May mga bagong panalangin mula sa kapwa OFW</div>
     ${composerHtml()}
     <div id="oc-pc-feed">
       ${prayers.length
         ? prayers.map((p) => prayerCardHtml(p, prayed.has(p.id))).join('')
         : '<p class="oc-muted" style="margin-top:10px">Wala pang laman ang kadena — ikaw ang mauna, kapatid. 🤍</p>'}
     </div>`;
+
+  updateUnreadIndicators(hasUnseen);
+  body.querySelector('#oc-pc-alert')?.addEventListener('click', () => markPrayersSeen());
 
   wireComposer(body);
   body.querySelectorAll('[data-pray]').forEach((btn) => {
@@ -162,9 +182,11 @@ async function render() {
 
 // ── Flow A: Ang Paghingi ng Saklolo (composer) ──────────────────────────────
 
-// Just a text/mic area, optional mood pills, and one Send button — no
-// country picker. Country is stamped server-side from request.cf.country
-// (see ask-proxy/worker.js), so the client never needs to ask or send one.
+// A text/mic area and one explicit Send button — no mood pills. Country
+// (working location) is stamped server-side from request.cf.country (see
+// ask-proxy/worker.js); first name and country of origin come from the
+// member's profile (set in onboarding/Settings) and ride along with the
+// submission itself.
 function composerHtml() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   return `
@@ -174,24 +196,11 @@ function composerHtml() {
           placeholder="Anong dinadalangin mo ngayon, kapatid?"></textarea>
         ${SR ? `<button type="button" class="oc-icon-btn oc-pc-mic" id="oc-pc-mic" title="Tap to speak" aria-label="Tap to speak your prayer">🎤</button>` : ''}
       </div>
-      <div class="oc-pc-tags" role="group" aria-label="Bulong — ano ang nararamdaman mo? (optional)">
-        ${MOOD_TAGS.map(([id, label]) => `<button type="button" class="oc-chip oc-pc-tag" data-mood="${id}">${label}</button>`).join('')}
-      </div>
-      <button type="button" class="oc-primary-btn oc-pc-send" id="oc-pc-send">Ipadala 🕊️</button>
+      <button type="button" class="oc-primary-btn oc-pc-send" id="oc-pc-send">Ipadala</button>
     </div>`;
 }
 
 function wireComposer(body) {
-  selectedMood = null;
-  body.querySelectorAll('.oc-pc-tag').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      navigator.vibrate?.(8);
-      const mood = chip.dataset.mood;
-      selectedMood = selectedMood === mood ? null : mood;
-      body.querySelectorAll('.oc-pc-tag').forEach((c) => c.classList.toggle('is-selected', c.dataset.mood === selectedMood));
-    });
-  });
-
   wireMic(body);
 
   body.querySelector('#oc-pc-send').addEventListener('click', async () => {
@@ -203,24 +212,25 @@ function wireComposer(body) {
     btn.disabled = true;
     btn.textContent = 'Ipinapadala…';
     try {
+      const { profile } = getState();
       const data = await api('/api/prayers', {
         method: 'POST',
-        body: JSON.stringify({ content, moodTag: selectedMood || null }),
+        body: JSON.stringify({
+          content,
+          firstName: firstNameOf(profile.name),
+          originCountry: profile.country || '',
+        }),
       });
-      // Clear the form and smoothly prepend the new prayer to the feed.
       input.value = '';
-      selectedMood = null;
-      body.querySelectorAll('.oc-pc-tag').forEach((c) => c.classList.remove('is-selected'));
-      const feed = body.querySelector('#oc-pc-feed');
-      feed.insertAdjacentHTML('afterbegin', prayerCardHtml({ ...data.prayer, created_at: new Date().toISOString() }, false, true));
-      const newBtn = feed.querySelector('[data-pray]');
-      newBtn.addEventListener('click', () => handlePrayButtonClick(newBtn.dataset.pray));
+      // A member never sees their own requests in their own feed — so the
+      // new prayer is remembered locally, not inserted into the visible feed.
+      rememberMyOwnPrayer(data.prayer.id);
       toast('Nasa kadena na — ipapanalangin ka namin. 🤍');
     } catch (err) {
       toast(`Hindi naipadala: ${err.message}`);
     }
     btn.disabled = false;
-    btn.textContent = 'Ipadala 🕊️';
+    btn.textContent = 'Ipadala';
   });
 }
 
@@ -236,7 +246,7 @@ function wireMic(body) {
   micBtn.addEventListener('click', () => {
     if (recognition) { recognition.stop(); return; }
     recognition = new SR();
-    recognition.lang = 'fil-PH';
+    recognition.lang = 'tl-PH';
     recognition.interimResults = true;
     recognition.continuous = false;
 
@@ -276,12 +286,16 @@ function prayerCardHtml(p, alreadyPrayed, isNew = false) {
     : `<span class="oc-pc-badge">🌏</span>`;
   const moodBadge = p.mood_tag && MOOD_LABELS[p.mood_tag] ? `<span class="oc-pc-badge oc-pc-badge-mood">${MOOD_LABELS[p.mood_tag]}</span>` : '';
   const count = p.prayer_count || 0;
+  const nameLine = p.first_name || p.origin_country
+    ? `<p class="oc-pc-name">${p.first_name ? escapeHtml(p.first_name) : 'Isang kapatid'}${p.origin_country ? ` · ${escapeHtml(p.origin_country)}` : ''}</p>`
+    : '';
   return `
     <div class="oc-pc-item${isNew ? ' oc-pc-item-new' : ''}" data-prayer-item="${escapeHtml(p.id)}">
       <div class="oc-pc-badges">
         ${moodBadge}${countryBadge}
         <span class="oc-pc-time">${escapeHtml(friendlyDate(String(p.created_at || '').slice(0, 10)))}</span>
       </div>
+      ${nameLine}
       <p class="oc-pc-content">${escapeHtml(p.content)}</p>
       <p class="oc-pc-counter" data-count data-n="${count}">${counterSentence(count)}</p>
       <button type="button" class="oc-pc-pray-btn${alreadyPrayed ? ' is-prayed' : ''}" data-pray="${escapeHtml(p.id)}" ${alreadyPrayed ? 'disabled' : ''}>

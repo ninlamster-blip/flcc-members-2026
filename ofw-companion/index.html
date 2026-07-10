@@ -39,7 +39,7 @@
       <!-- Daily ritual + not-okay row -->
       <div class="oc-care-row">
         <button type="button" id="oc-ritual-pill" class="oc-ritual-pill" hidden></button>
-        <button type="button" id="oc-notokay-btn" class="oc-notokay-btn">🌧️ I'm not okay today</button>
+        <button type="button" id="oc-notokay-btn" class="oc-notokay-btn">I'm not okay today</button>
       </div>
 
       <!-- Isang Minutong Salita — daily 1-minute audio verse/prayer -->
@@ -57,12 +57,7 @@
     </section>
 
     <!-- ============ JOURNAL ============ -->
-    <section id="view-journal" class="oc-view" data-view="journal" hidden aria-labelledby="journal-title">
-      <header class="oc-view-header">
-        <h1 id="journal-title" class="oc-title">Journal</h1>
-        <p class="oc-view-sub">A private place for your heart. Only you can see this.</p>
-      </header>
-
+    <section id="view-journal" class="oc-view" data-view="journal" hidden aria-label="Journal">
       <div class="oc-card" id="oc-checkin-card">
         <h2 class="oc-section-title">Today's check-in <span class="oc-muted">· under 30 seconds</span></h2>
         <div id="oc-checkin-body"></div>
@@ -76,9 +71,13 @@
       </div>
 
       <div class="oc-card">
-        <h2 class="oc-section-title">Write freely</h2>
+        <h2 class="oc-section-title" id="oc-journal-editor-title">Write freely</h2>
+        <input type="text" id="oc-journal-title" class="oc-text-input" maxlength="60" placeholder="Title (optional)" style="margin-bottom:10px">
         <textarea id="oc-journal-input" class="oc-journal-input" rows="4" placeholder="Isulat mo lang lahat… no one else will read this."></textarea>
-        <button type="button" class="oc-primary-btn oc-journal-save" id="oc-journal-save">Save entry</button>
+        <div class="oc-journal-actions">
+          <button type="button" class="oc-primary-btn oc-journal-save" id="oc-journal-save">Save entry</button>
+          <button type="button" class="oc-ghost-btn" id="oc-journal-clear">Clear</button>
+        </div>
       </div>
 
       <div class="oc-card">
@@ -91,33 +90,33 @@
     </section>
 
     <!-- ============ FAITH ============ -->
-    <section id="view-faith" class="oc-view" data-view="faith" hidden aria-labelledby="faith-title">
-      <header class="oc-view-header">
-        <h1 id="faith-title" class="oc-title">Faith</h1>
-        <p class="oc-view-sub">Fellowship and encouragement, wherever you are.</p>
-      </header>
+    <section id="view-faith" class="oc-view" data-view="faith" hidden aria-label="Faith">
       <div id="oc-faith-body"></div>
     </section>
 
     <!-- ============ KAPWA (COMMUNITY) ============ -->
-    <section id="view-community" class="oc-view" data-view="community" hidden aria-labelledby="community-title">
-      <header class="oc-view-header">
-        <h1 id="community-title" class="oc-title">Kapwa</h1>
-        <p class="oc-view-sub">A safe community. No likes, no followers — just kapatiran.</p>
-      </header>
+    <section id="view-community" class="oc-view" data-view="community" hidden aria-label="Kapwa">
       <div id="oc-community-body"></div>
     </section>
 
     <!-- ============ TULONG (SUPPORT) ============ -->
-    <section id="view-support" class="oc-view" data-view="support" hidden aria-labelledby="support-title">
-      <header class="oc-view-header">
-        <h1 id="support-title" class="oc-title">Tulong</h1>
-        <p class="oc-view-sub">Real help, real people, real numbers.</p>
-      </header>
+    <section id="view-support" class="oc-view" data-view="support" hidden aria-label="Tulong">
       <div id="oc-support-body"></div>
     </section>
 
   </div>
+
+  <!-- ============ SHARED HEADER (Journal/Faith/Kapwa/Tulong) ============ -->
+  <!-- One WhatsApp-style collapsible header, its title/subtitle swapped by
+       app.js on each tab switch. Lives outside the animated view sections,
+       same reason as the composer below: their entrance animation makes
+       them a containing block, which would anchor this fixed header to the
+       section's own position instead of the viewport. Kaibigan (home) has
+       its own header baked into its layout and never uses this one. -->
+  <header class="oc-view-header" id="oc-shared-header" hidden>
+    <h1 class="oc-title" id="oc-shared-header-title"></h1>
+    <p class="oc-view-sub" id="oc-shared-header-sub"></p>
+  </header>
 
   <!-- ============ COMPOSER (Kaibigan tab only) ============ -->
   <!-- Lives outside the animated view sections: their entrance animation makes
@@ -160,9 +159,11 @@
       <div class="oc-onboard-mark" aria-hidden="true">🤍</div>
       <h2 id="oc-onboard-title" class="oc-sheet-title">Kumusta ka, kababayan?</h2>
       <p class="oc-onboard-text">This is <strong>FLCC Kasama</strong> — a safe, private space made for OFWs by your Filipino Language Christian Congregation family. Someone to talk to after a long day, a journal for your heart, a community that prays with you, and real help when you need it.</p>
-      <p class="oc-onboard-text"><strong>Everything you share stays on this phone.</strong> No ads. Nothing is sold. Nothing is posted anywhere.</p>
+      <p class="oc-onboard-text"><strong>Your journal, check-ins, and conversations stay on this phone.</strong> No ads. Nothing is sold. The only thing you ever post to other members is a prayer request you choose to send — and only your first name and country of origin ride along with it.</p>
       <label class="oc-field-label" for="oc-onboard-name">What should I call you?</label>
       <input type="text" id="oc-onboard-name" class="oc-text-input" placeholder="Your name or palayaw" maxlength="30" autocomplete="off">
+      <label class="oc-field-label" for="oc-onboard-country">Country of origin <span class="oc-muted">(optional)</span></label>
+      <input type="text" id="oc-onboard-country" class="oc-text-input" placeholder="e.g. Philippines" maxlength="60" autocomplete="off">
       <label class="oc-check-row">
         <input type="checkbox" id="oc-onboard-faith" checked>
         <span>Include faith features (prayers, Bible study, devotionals)</span>
