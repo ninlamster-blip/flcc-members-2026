@@ -2,7 +2,7 @@
 // crisis support, and the five views together.
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
 import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
-import { loadJson, escapeHtml } from './js/utils.js';
+import { loadJson, escapeHtml, wireCollapsingHeader } from './js/utils.js';
 import { initCompanion, startNotOkayConversation } from './js/companion.js';
 import {
   applyPeriodTheme, dateLine, occasionLine, initWeather, initAudioDrop,
@@ -75,7 +75,20 @@ async function boot() {
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 
+// Each non-Home tab pairs a scrollable content pane with its own collapsing
+// header (Home uses an older, equivalent body-class pattern in companion.js).
+const VIEW_SCROLL_PANES = {
+  journal: ['oc-journal-scroll', 'oc-journal-header'],
+  faith: ['oc-faith-scroll', 'oc-faith-header'],
+  community: ['oc-community-scroll', 'oc-community-header'],
+  support: ['oc-support-scroll', 'oc-support-header'],
+};
+
 function setupNav() {
+  for (const [scrollId, headerId] of Object.values(VIEW_SCROLL_PANES)) {
+    wireCollapsingHeader(document.getElementById(scrollId), document.getElementById(headerId));
+  }
+
   const buttons = document.querySelectorAll('.oc-nav-btn');
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -90,7 +103,13 @@ function setupNav() {
         else b.removeAttribute('aria-current');
       });
       document.body.dataset.activeView = target;
-      window.scrollTo({ top: 0 });
+      // Every tab opens fresh at the top, header fully expanded.
+      const pane = VIEW_SCROLL_PANES[target];
+      if (pane) {
+        const [scrollId, headerId] = pane;
+        document.getElementById(scrollId)?.scrollTo({ top: 0 });
+        document.getElementById(headerId)?.classList.remove('is-compact');
+      }
     });
   });
 }

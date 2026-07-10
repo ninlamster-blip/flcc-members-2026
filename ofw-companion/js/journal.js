@@ -1,5 +1,8 @@
 // Journal — daily wellbeing check-in (<30s), gentle insights, private entries.
-import { getState, todaysCheckin, saveCheckin, addJournalEntry, deleteJournalEntry } from './state.js';
+import {
+  getState, todaysCheckin, saveCheckin, addJournalEntry, deleteJournalEntry, editJournalEntry,
+  saveJournalDraft, clearJournalDraft,
+} from './state.js';
 import { wellbeingInsight, isConnected } from './ai.js';
 import { escapeHtml, friendlyDate } from './utils.js';
 
@@ -189,14 +192,29 @@ function localInsight() {
 
 // ── Free writing ─────────────────────────────────────────────────────────────
 
+// Autosaves the in-progress draft ~1s after typing stops, so a closed tab or
+// dead connection never loses what was half-written. Restored on load.
+let draftTimer = null;
+
 function setupFreeWriting() {
   const input = document.getElementById('oc-journal-input');
   const saveBtn = document.getElementById('oc-journal-save');
+
+  const draft = getState().journalDraft;
+  if (draft) input.value = draft;
+
+  input.addEventListener('input', () => {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(() => saveJournalDraft(input.value), 1000);
+  });
+
   saveBtn.addEventListener('click', () => {
     const text = input.value.trim();
     if (!text) return;
     addJournalEntry(text);
     input.value = '';
+    clearTimeout(draftTimer);
+    clearJournalDraft();
     toast('Saved — for your eyes only 🔒');
     renderEntries();
   });
@@ -205,6 +223,8 @@ function setupFreeWriting() {
     renderEntries(e.target.value.trim().toLowerCase());
   });
 }
+
+let editingId = null;
 
 function renderEntries(query = '') {
   const list = document.getElementById('oc-journal-list');
@@ -216,11 +236,22 @@ function renderEntries(query = '') {
     return;
   }
 
-  list.innerHTML = entries.slice(0, 100).map((e) => `
+  list.innerHTML = entries.slice(0, 100).map((e) => e.id === editingId ? `
+    <li class="oc-journal-entry">
+      <div class="oc-entry-meta"><span>${friendlyDate(e.date)} · ${escapeHtml(e.time)}</span></div>
+      <textarea class="oc-journal-input oc-entry-edit-input" data-edit-input="${e.id}" rows="4">${escapeHtml(e.text)}</textarea>
+      <div class="oc-entry-edit-actions">
+        <button type="button" class="oc-ghost-btn" data-edit-cancel="${e.id}">Cancel</button>
+        <button type="button" class="oc-primary-btn oc-entry-edit-save" data-edit-save="${e.id}">Save</button>
+      </div>
+    </li>` : `
     <li class="oc-journal-entry">
       <div class="oc-entry-meta">
-        <span>${friendlyDate(e.date)} · ${escapeHtml(e.time)}</span>
-        <button type="button" class="oc-entry-delete" data-delete="${e.id}" aria-label="Delete this entry">✕</button>
+        <span>${friendlyDate(e.date)} · ${escapeHtml(e.time)}${e.editedAt ? ` · edited ${escapeHtml(e.editedAt)}` : ''}</span>
+        <span class="oc-entry-actions">
+          <button type="button" class="oc-entry-edit" data-edit="${e.id}" aria-label="Edit this entry">✎</button>
+          <button type="button" class="oc-entry-delete" data-delete="${e.id}" aria-label="Delete this entry">✕</button>
+        </span>
       </div>
       <div class="oc-entry-text">${escapeHtml(e.text)}</div>
     </li>`).join('');
@@ -229,6 +260,30 @@ function renderEntries(query = '') {
     btn.addEventListener('click', () => {
       if (!confirm('Delete this entry forever?')) return;
       deleteJournalEntry(btn.dataset.delete);
+      renderEntries(query);
+    });
+  });
+
+  list.querySelectorAll('[data-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      editingId = btn.dataset.edit;
+      renderEntries(query);
+      list.querySelector(`[data-edit-input="${editingId}"]`)?.focus();
+    });
+  });
+
+  list.querySelectorAll('[data-edit-cancel]').forEach((btn) => {
+    btn.addEventListener('click', () => { editingId = null; renderEntries(query); });
+  });
+
+  list.querySelectorAll('[data-edit-save]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.editSave;
+      const text = list.querySelector(`[data-edit-input="${id}"]`).value.trim();
+      if (!text) return;
+      editJournalEntry(id, text);
+      editingId = null;
+      toast('Entry updated 🔒');
       renderEntries(query);
     });
   });

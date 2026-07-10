@@ -534,41 +534,55 @@ body[data-active-view="home"] .oc-chat { min-height: 56px; }
 
 /* ── Chat ───────────────────────────────────────────────────────────────── */
 
-/* On the Kaibigan tab the page itself never scrolls: the header and heart
-   chips stay put, and only the conversation pane scrolls (with its own
-   rubber-band), like a real messaging app. */
-body[data-active-view="home"] {
+/* On every tab the page itself never scrolls: the header stays put and only
+   the content pane below it scrolls (with its own rubber-band), like a real
+   messaging app — maximizes screen space and keeps the tab title in view. */
+body[data-active-view] {
   height: 100dvh;
   overflow: hidden;
 }
-body[data-active-view="home"] #oc-root {
+body[data-active-view] #oc-root {
   height: 100%;
   display: flex;
   flex-direction: column;
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
 }
-body[data-active-view="home"] .oc-view[data-view="home"] {
+.oc-view {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-.oc-home-header, .oc-heart-checkin { flex-shrink: 0; }
+.oc-home-header, .oc-heart-checkin, .oc-view-header { flex-shrink: 0; }
 
-/* WhatsApp-style collapsing header: swiping up in the conversation folds the
-   big greeting into a slim bar so the chat and ask box get the whole screen;
-   scrolling back to the top expands it again. */
-.oc-home-header { transition: padding 0.28s ease; }
-.oc-greeting { transition: font-size 0.28s ease; }
-.oc-eyebrow, .oc-subgreeting {
+.oc-view-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: 12px;
+}
+
+/* WhatsApp-style collapsing header: scrolling the pane below folds the big
+   heading into a slim bar so content gets the whole screen; scrolling back
+   to the top expands it again. Shared by Home (toggled on the <body>, since
+   its chat pane predates the .oc-view-scroll pattern) and every other tab
+   (toggled directly on that tab's own .oc-view-header). */
+.oc-home-header, .oc-view-header { transition: padding 0.28s ease; }
+.oc-greeting, .oc-title { transition: font-size 0.28s ease; }
+.oc-eyebrow, .oc-subgreeting, .oc-view-sub {
   max-height: 4.5em;
   overflow: hidden;
   transition: opacity 0.2s ease, max-height 0.28s ease, margin 0.28s ease;
 }
-body.oc-home-compact .oc-home-header { padding: 16px 60px 8px; }
-body.oc-home-compact .oc-greeting { font-size: 1.12em; }
+body.oc-home-compact .oc-home-header,
+.oc-view-header.is-compact { padding: 16px 60px 8px; }
+body.oc-home-compact .oc-greeting,
+.oc-view-header.is-compact .oc-title { font-size: 1.12em; }
 body.oc-home-compact .oc-eyebrow,
-body.oc-home-compact .oc-subgreeting { opacity: 0; max-height: 0; margin: 0; }
+body.oc-home-compact .oc-subgreeting,
+.oc-view-header.is-compact .oc-view-sub { opacity: 0; max-height: 0; margin: 0; }
 
 .oc-chat {
   display: flex;
@@ -780,6 +794,8 @@ body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: no
   color: var(--ink-faint);
   margin-bottom: 5px;
 }
+.oc-entry-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.oc-entry-edit,
 .oc-entry-delete {
   border: none; background: none;
   color: var(--ink-faint);
@@ -788,6 +804,14 @@ body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: no
   padding: 2px 6px;
 }
 .oc-entry-text { white-space: pre-wrap; overflow-wrap: break-word; }
+
+.oc-entry-edit-input { margin-bottom: 8px; }
+.oc-entry-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.oc-entry-edit-actions .oc-primary-btn { width: auto; padding: 10px 18px; }
 
 .oc-journey-dots {
   display: flex;

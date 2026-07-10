@@ -53,6 +53,18 @@ export function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+// WhatsApp-style header collapse: scrolling the paired pane down folds the
+// header's subtitle away and shrinks its title so content gets more room;
+// scrolling back near the top restores it.
+export function wireCollapsingHeader(scrollEl, headerEl, { down = 40, up = 8 } = {}) {
+  if (!scrollEl || !headerEl) return;
+  scrollEl.addEventListener('scroll', () => {
+    const compact = headerEl.classList.contains('is-compact');
+    if (!compact && scrollEl.scrollTop > down) headerEl.classList.add('is-compact');
+    else if (compact && scrollEl.scrollTop < up) headerEl.classList.remove('is-compact');
+  }, { passive: true });
+}
+
 export async function loadJson(path) {
   const res = await fetch(path);
   if (!res.ok) throw new Error(`Failed to load ${path}`);

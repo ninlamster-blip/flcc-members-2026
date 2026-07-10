@@ -58,10 +58,11 @@
 
     <!-- ============ JOURNAL ============ -->
     <section id="view-journal" class="oc-view" data-view="journal" hidden aria-labelledby="journal-title">
-      <header class="oc-view-header">
+      <header class="oc-view-header" id="oc-journal-header">
         <h1 id="journal-title" class="oc-title">Journal</h1>
         <p class="oc-view-sub">A private place for your heart. Only you can see this.</p>
       </header>
+      <div class="oc-view-scroll" id="oc-journal-scroll">
 
       <div class="oc-card" id="oc-checkin-card">
         <h2 class="oc-section-title">Today's check-in <span class="oc-muted">· under 30 seconds</span></h2>
@@ -88,33 +89,41 @@
         </div>
         <ul id="oc-journal-list" class="oc-journal-list"></ul>
       </div>
+
+      </div>
     </section>
 
     <!-- ============ FAITH ============ -->
     <section id="view-faith" class="oc-view" data-view="faith" hidden aria-labelledby="faith-title">
-      <header class="oc-view-header">
+      <header class="oc-view-header" id="oc-faith-header">
         <h1 id="faith-title" class="oc-title">Faith</h1>
         <p class="oc-view-sub">Fellowship and encouragement, wherever you are.</p>
       </header>
-      <div id="oc-faith-body"></div>
+      <div class="oc-view-scroll" id="oc-faith-scroll">
+        <div id="oc-faith-body"></div>
+      </div>
     </section>
 
     <!-- ============ KAPWA (COMMUNITY) ============ -->
     <section id="view-community" class="oc-view" data-view="community" hidden aria-labelledby="community-title">
-      <header class="oc-view-header">
+      <header class="oc-view-header" id="oc-community-header">
         <h1 id="community-title" class="oc-title">Kapwa</h1>
         <p class="oc-view-sub">A safe community. No likes, no followers — just kapatiran.</p>
       </header>
-      <div id="oc-community-body"></div>
+      <div class="oc-view-scroll" id="oc-community-scroll">
+        <div id="oc-community-body"></div>
+      </div>
     </section>
 
     <!-- ============ TULONG (SUPPORT) ============ -->
     <section id="view-support" class="oc-view" data-view="support" hidden aria-labelledby="support-title">
-      <header class="oc-view-header">
+      <header class="oc-view-header" id="oc-support-header">
         <h1 id="support-title" class="oc-title">Tulong</h1>
         <p class="oc-view-sub">Real help, real people, real numbers.</p>
       </header>
-      <div id="oc-support-body"></div>
+      <div class="oc-view-scroll" id="oc-support-scroll">
+        <div id="oc-support-body"></div>
+      </div>
     </section>
 
   </div>

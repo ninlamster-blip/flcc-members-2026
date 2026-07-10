@@ -19,8 +19,11 @@ function defaultState() {
     // Daily wellbeing check-ins, newest first: { date, mood 1-5, energy 1-5,
     // loneliness 1-5, hope 1-5, connected (bool), gratitude (string) }
     checkins: [],
-    // Private journal entries, newest first: { id, date, time, text }
+    // Private journal entries, newest first: { id, date, time, text, editedAt? }
     journal: [],
+    // In-progress "Write freely" text, autosaved so it's never lost if the
+    // tab closes or the member navigates away before pressing Save.
+    journalDraft: '',
     // Companion conversation: rolling window of { role, content, t }
     chat: { messages: [], lastTalkedDate: null },
     // Things the companion should remember about the user: { t, text }
@@ -117,6 +120,24 @@ export function addJournalEntry(text) {
 
 export function deleteJournalEntry(id) {
   state.journal = state.journal.filter((e) => e.id !== id);
+  save();
+}
+
+export function editJournalEntry(id, text) {
+  const entry = state.journal.find((e) => e.id === id);
+  if (!entry) return;
+  entry.text = text;
+  entry.editedAt = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  save();
+}
+
+export function saveJournalDraft(text) {
+  state.journalDraft = text;
+  save();
+}
+
+export function clearJournalDraft() {
+  state.journalDraft = '';
   save();
 }
 
