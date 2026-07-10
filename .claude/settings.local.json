@@ -5,7 +5,8 @@
   "permissions": {
     "allow": [
       "Bash(cat)",
-      "Bash(chmod +x /root/.claude/stop-hook-git-check.sh)"
+      "Bash(chmod +x /root/.claude/stop-hook-git-check.sh)",
+      "mcp__bf7c680d-5fdc-5ef4-b4a0-abadb619bf0a__send_later"
     ]
   }
 }
