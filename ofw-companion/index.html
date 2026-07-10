@@ -19,18 +19,6 @@
 
     <!-- ============ KAIBIGAN (COMPANION) ============ -->
     <section id="view-home" class="oc-view" data-view="home" aria-label="Kaibigan">
-      <header class="oc-home-header">
-        <div class="oc-kaibigan-bar">
-          <p class="oc-kaibigan-title">Kaibigan</p>
-          <p class="oc-kaibigan-user" id="oc-kaibigan-user" hidden></p>
-        </div>
-        <p class="oc-subgreeting oc-today-line">
-          <span id="oc-date-line"></span>
-          <button type="button" id="oc-weather-chip" class="oc-weather-chip" hidden></button>
-        </p>
-        <p class="oc-occasion" id="oc-occasion" hidden></p>
-      </header>
-
       <!-- Heart check-in cards (shown until answered today) -->
       <div class="oc-heart-checkin" id="oc-heart-checkin">
         <p class="oc-heart-question">Kumusta ang puso mo ngayon? <span class="oc-muted">Pili ka — pwedeng higit sa isa.</span></p>
@@ -108,13 +96,30 @@
 
   </div>
 
+  <!-- ============ KAIBIGAN HEADER ============ -->
+  <!-- Same WhatsApp-style collapsible mechanics as the shared header below,
+       just its own element (content/behavior differs slightly — driven by
+       the chat pane's scroll, not the window's). Lives outside the animated
+       view sections for the same reason as the shared header and composer:
+       their entrance animation makes them a containing block, which would
+       anchor this fixed header to the section's own position instead of
+       the viewport. -->
+  <header class="oc-home-header">
+    <p class="oc-kaibigan-title">Kaibigan<span class="oc-kaibigan-user" id="oc-kaibigan-user"></span></p>
+    <p class="oc-subgreeting oc-today-line">
+      <span id="oc-date-line"></span>
+      <button type="button" id="oc-weather-chip" class="oc-weather-chip" hidden></button>
+    </p>
+    <p class="oc-occasion" id="oc-occasion" hidden></p>
+  </header>
+
   <!-- ============ SHARED HEADER (Journal/Faith/Kapwa/Tulong) ============ -->
   <!-- One WhatsApp-style collapsible header, its title/subtitle swapped by
        app.js on each tab switch. Lives outside the animated view sections,
        same reason as the composer below: their entrance animation makes
        them a containing block, which would anchor this fixed header to the
        section's own position instead of the viewport. Kaibigan (home) has
-       its own header baked into its layout and never uses this one. -->
+       its own header above and never uses this one. -->
   <header class="oc-view-header" id="oc-shared-header" hidden>
     <h1 class="oc-title" id="oc-shared-header-title"></h1>
     <p class="oc-view-sub" id="oc-shared-header-sub"></p>

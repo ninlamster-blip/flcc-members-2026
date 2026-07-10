@@ -6,6 +6,7 @@ import {
   detectsCrisis, classifyHeart,
 } from './utils.js';
 import { openBreathing } from './sanctuary.js';
+import { createHeaderController } from './header.js';
 
 // Heart categories that deserve an immediate, gentle "Hinga Muna" offer.
 const HEAVY_CATS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
@@ -54,11 +55,9 @@ export async function initCompanion(context) {
     sendBtn: document.getElementById('oc-send-btn'),
   };
 
-  // Header reads like a chat contact bar: "Kaibigan" as the fixed title,
-  // the member's own name underneath — hidden until they've given one.
+  // Header reads like a chat contact bar, one line: "Kaibigan · Name".
   const name = getState().profile.name;
-  els.kaibiganUser.textContent = name;
-  els.kaibiganUser.hidden = !name;
+  els.kaibiganUser.textContent = name ? ` · ${name}` : '';
 
   renderHeartChips();
   renderHistory();
@@ -187,15 +186,31 @@ function autoGrow() {
   if (els.input.value) els.input.style.height = Math.min(els.input.scrollHeight, 120) + 'px';
 }
 
-// Fold the big greeting into a slim bar while the user reads up the
-// conversation (WhatsApp-style). Hysteresis (40px down / 8px up) prevents
-// flapping as the header resize itself changes the scroll geometry.
+// Same WhatsApp-style collapsible header as every other tab (see
+// js/header.js) — hides on scroll-down, snaps back and stays frozen in
+// place on scroll-up — just driven by the chat pane's own scroll instead
+// of the window's, since Kaibigan is the one tab that scrolls internally.
+let homeHeader = null;
+
 function setupHeaderCollapse() {
-  els.chat.addEventListener('scroll', () => {
-    const compact = document.body.classList.contains('oc-home-compact');
-    if (!compact && els.chat.scrollTop > 40) document.body.classList.add('oc-home-compact');
-    else if (compact && els.chat.scrollTop < 8) document.body.classList.remove('oc-home-compact');
-  }, { passive: true });
+  homeHeader = createHeaderController({
+    getScrollTop: () => els.chat.scrollTop,
+    header: document.querySelector('.oc-home-header'),
+    spacer: document.getElementById('view-home'),
+    baselinePadding: '0px',
+    // The ritual pill, audio drop, and not-okay button fold away in step
+    // with the header, so scrolling the conversation clears them the room
+    // WhatsApp-style collapsing promises.
+    onToggle: (hidden) => document.body.classList.toggle('oc-home-compact', hidden),
+  });
+  homeHeader.reset(); // establish the spacer padding right away — home is visible from first load, not from a nav click
+  els.chat.addEventListener('scroll', () => homeHeader.onScroll(), { passive: true });
+}
+
+// Called whenever the Kaibigan tab becomes active again, so it never opens
+// with a stale collapsed header from a previous scroll position.
+export function resetHomeHeader() {
+  homeHeader?.reset();
 }
 
 async function sendUserMessage(text, opts = {}) {
