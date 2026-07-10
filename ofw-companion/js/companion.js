@@ -303,9 +303,15 @@ function showTyping() {
   return div;
 }
 
+// A huge target rather than els.chat.scrollHeight: bubbles use
+// content-visibility for scroll performance on long conversations, so a
+// freshly-appended (or still off-screen) bubble's true height may not be
+// measured yet when this runs — scrollHeight read at that instant can
+// undershoot the real bottom. scrollTo() clamps any target to the actual
+// max automatically, so this always lands at the true bottom regardless.
 function scrollToEnd(smooth = true) {
   requestAnimationFrame(() => {
-    els.chat.scrollTo({ top: els.chat.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    els.chat.scrollTo({ top: 1e9, behavior: smooth ? 'smooth' : 'auto' });
   });
 }
 
