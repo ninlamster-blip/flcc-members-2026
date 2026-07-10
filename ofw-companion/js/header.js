@@ -1,88 +1,110 @@
-// WhatsApp-style collapsible header for Journal/Faith/Kapwa/Tulong — the
-// tabs that scroll at the window level (Kaibigan has its own internal-scroll
-// header collapse in companion.js, since its chat pane owns scrolling and
-// the window itself never moves there).
+// WhatsApp-style collapsible header, shared by every tab. Scrolling down
+// hides the header (translateY(-100%), eased); scrolling up snaps it
+// straight back (translateY(0), no transition — instant, the way
+// WhatsApp's own header reappears) and it stays put ("frozen") there. A
+// spacer element's top padding shrinks and grows in step so content never
+// jumps when the header's space disappears or returns.
 //
-// Scrolling down hides the header (translateY(-100%), eased); scrolling up
-// snaps it straight back (translateY(0), no transition — instant, the way
-// WhatsApp's own list header reappears). #oc-root's top padding shrinks and
-// grows in step so content never jumps when the header's space disappears
-// or returns.
+// Journal/Faith/Kapwa/Tulong share one fixed header (#oc-shared-header) and
+// scroll at the window level. Kaibigan has its own header baked into its
+// non-scrolling layout and scrolls internally (its chat pane, not the
+// window, moves) — see companion.js, which builds its controller from the
+// same createHeaderController() factory below so both behave identically.
 const HIDE_AFTER = 24; // px scrolled down before the header may hide at all
 const MOVE_THRESHOLD = 4; // ignore sub-pixel/rubber-band jitter
 
-let lastScrollY = window.scrollY;
-let hidden = false;
+// getScrollTop: () => number — current scroll position of whatever scrolls
+//   (window.scrollY, or a chat pane's scrollTop).
+// header: the element to slide off/on screen.
+// spacer: the element whose padding-top is kept in sync with the header's
+//   rendered height, so content underneath never jumps.
+// baselinePadding: the spacer's padding-top once the header is hidden.
+// onToggle(hidden): optional, called whenever the hidden/visible state
+//   changes — lets a caller fold other elements away in step (Kaibigan
+//   uses this to also tuck away the ritual pill and audio drop).
+export function createHeaderController({ getScrollTop, header, spacer, baselinePadding, onToggle }) {
+  let lastScrollTop = getScrollTop();
+  let hidden = false;
 
-// The shared header (see index.html) is only ever shown outside Kaibigan
-// (home), which has its own header baked into its non-scrolling layout.
-function activeHeader() {
+  function setHidden(next) {
+    if (hidden === next) return;
+    hidden = next;
+    if (next) {
+      header.style.transition = 'transform 0.3s ease';
+      header.style.transform = 'translateY(-100%)';
+      if (spacer) { spacer.style.transition = 'padding-top 0.3s ease'; spacer.style.paddingTop = baselinePadding; }
+    } else {
+      header.style.transition = 'transform 0.15s ease';
+      header.style.transform = 'translateY(0)';
+      if (spacer) { spacer.style.transition = 'padding-top 0.15s ease'; spacer.style.paddingTop = header.offsetHeight + 'px'; }
+    }
+    onToggle?.(next);
+  }
+
+  function onScroll() {
+    const y = getScrollTop();
+    const delta = y - lastScrollTop;
+    if (y <= HIDE_AFTER) setHidden(false);
+    else if (delta > MOVE_THRESHOLD) setHidden(true);
+    else if (delta < -MOVE_THRESHOLD) setHidden(false);
+    lastScrollTop = y;
+  }
+
+  // Forces the header fully visible with no transition — used when a tab
+  // is (re)opened, so it never starts hidden/collapsed from a previous
+  // scroll position.
+  function reset() {
+    lastScrollTop = getScrollTop();
+    hidden = false;
+    header.style.transition = 'none';
+    header.style.transform = 'translateY(0)';
+    if (spacer) { spacer.style.transition = 'none'; spacer.style.paddingTop = header.offsetHeight + 'px'; }
+    onToggle?.(false);
+    requestAnimationFrame(() => {
+      header.style.transition = '';
+      if (spacer) spacer.style.transition = '';
+    });
+  }
+
+  // Keeps the spacer padded to the header's actual rendered height whenever
+  // it changes shape while visible — window resize, the large-text setting,
+  // or content that loads in after the header first appeared (e.g. the
+  // weather chip, which shows up once geolocation/network resolve).
+  if (spacer && 'ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      if (!hidden) spacer.style.paddingTop = header.offsetHeight + 'px';
+    }).observe(header);
+  }
+
+  return { onScroll, reset };
+}
+
+// ── Journal/Faith/Kapwa/Tulong: one shared header, driven by window scroll ──
+
+let shared = null;
+
+function activeSharedHeader() {
   if (document.body.dataset.activeView === 'home') return null;
   const header = document.getElementById('oc-shared-header');
   return header && !header.hidden ? header : null;
 }
 
-function baselinePadding() {
-  return 'calc(env(safe-area-inset-top, 0px) + 20px)';
-}
-
-function setHidden(next, header) {
-  if (hidden === next) return;
-  hidden = next;
-  const root = document.getElementById('oc-root');
-  if (next) {
-    header.style.transition = 'transform 0.3s ease';
-    header.style.transform = 'translateY(-100%)';
-    if (root) { root.style.transition = 'padding-top 0.3s ease'; root.style.paddingTop = baselinePadding(); }
-  } else {
-    header.style.transition = 'transform 0.15s ease';
-    header.style.transform = 'translateY(0)';
-    if (root) { root.style.transition = 'padding-top 0.15s ease'; root.style.paddingTop = header.offsetHeight + 'px'; }
-  }
-}
-
 export function initScrollHeader() {
-  window.addEventListener('scroll', () => {
-    const header = activeHeader();
-    const y = window.scrollY;
-    if (!header) { lastScrollY = y; return; }
-
-    const delta = y - lastScrollY;
-    if (y <= HIDE_AFTER) {
-      setHidden(false, header);
-    } else if (delta > MOVE_THRESHOLD) {
-      setHidden(true, header);
-    } else if (delta < -MOVE_THRESHOLD) {
-      setHidden(false, header);
-    }
-    lastScrollY = y;
-  }, { passive: true });
-
-  window.addEventListener('resize', () => {
-    const header = activeHeader();
-    const root = document.getElementById('oc-root');
-    if (header && root && !hidden) root.style.paddingTop = header.offsetHeight + 'px';
+  shared = createHeaderController({
+    getScrollTop: () => window.scrollY,
+    header: document.getElementById('oc-shared-header'),
+    spacer: document.getElementById('oc-root'),
+    baselinePadding: 'calc(env(safe-area-inset-top, 0px) + 20px)',
   });
+
+  window.addEventListener('scroll', () => {
+    if (activeSharedHeader()) shared.onScroll();
+  }, { passive: true });
 }
 
 // Called on every tab switch so the newly-opened view always starts with
-// its header fully visible and #oc-root padded to match — no leftover
+// its header fully visible and its spacer padded to match — no leftover
 // hidden/collapsed state from whatever the member scrolled to last time.
 export function resetScrollHeader() {
-  lastScrollY = window.scrollY;
-  hidden = false;
-  const header = activeHeader();
-  const root = document.getElementById('oc-root');
-  if (header) {
-    header.style.transition = 'none';
-    header.style.transform = 'translateY(0)';
-  }
-  if (root) {
-    root.style.transition = 'none';
-    root.style.paddingTop = header ? header.offsetHeight + 'px' : baselinePadding();
-  }
-  requestAnimationFrame(() => {
-    if (header) header.style.transition = '';
-    if (root) root.style.transition = '';
-  });
+  if (activeSharedHeader()) shared.reset();
 }

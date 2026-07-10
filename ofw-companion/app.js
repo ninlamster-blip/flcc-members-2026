@@ -3,9 +3,9 @@
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
 import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
 import { loadJson, escapeHtml } from './js/utils.js';
-import { initCompanion, startNotOkayConversation } from './js/companion.js';
+import { initCompanion, startNotOkayConversation, resetHomeHeader } from './js/companion.js';
 import {
-  applyPeriodTheme, dateLine, occasionLine, initWeather, initAudioDrop,
+  dateLine, occasionLine, initWeather, initAudioDrop,
   ritualFor, currentPeriod, openBreathing, closeBreathing, initNotOkay,
 } from './js/sanctuary.js';
 import { initJournal, refreshJournal } from './js/journal.js';
@@ -110,6 +110,7 @@ function setupNav() {
       }
       window.scrollTo({ top: 0 });
       resetScrollHeader();
+      if (target === 'home') resetHomeHeader(); // never reopen Kaibigan with a stale collapsed header
     });
   });
 }
@@ -121,7 +122,6 @@ function goTo(tab) {
 }
 
 function setupSanctuary() {
-  applyPeriodTheme();
   document.getElementById('oc-date-line').textContent = dateLine();
 
   const occasion = occasionLine();

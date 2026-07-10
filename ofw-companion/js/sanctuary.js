@@ -15,10 +15,6 @@ export function currentPeriod(h = new Date().getHours()) {
   return 'night';
 }
 
-export function applyPeriodTheme() {
-  document.body.dataset.period = currentPeriod();
-}
-
 // ── Date & family occasions ──────────────────────────────────────────────────
 
 export function dateLine() {

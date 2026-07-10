@@ -115,18 +115,17 @@ input, textarea { font-family: inherit; color: var(--ink); }
 
 /* ── Headers ────────────────────────────────────────────────────────────── */
 
-/* Kaibigan is pure conversation — a compact WhatsApp-style contact bar
-   instead of a big greeting banner, so the chat gets most of the screen. */
-.oc-home-header { text-align: center; padding: 16px 56px 10px; }
+.oc-home-header { text-align: center; padding: 14px 56px 10px; }
 .oc-view-header { text-align: center; padding: 52px 44px 20px; }
 
-/* WhatsApp-style collapsible header (Journal/Faith/Kapwa/Tulong — the tabs
-   that scroll at the window level; Kaibigan has its own internal-scroll
-   collapse above, since its chat pane never lets the window itself scroll).
-   Pinned to the top of the viewport; JS in js/header.js toggles it out of
-   view with translateY on scroll-down and back on scroll-up, and shrinks
-   #oc-root's top padding to match so content never jumps. */
-.oc-view-header {
+/* WhatsApp-style collapsible header — every tab, including Kaibigan, uses
+   the exact same mechanics (see js/header.js): pinned to the top of the
+   viewport, JS toggles it out of view with translateY on scroll-down and
+   snaps it straight back — "frozen" in place — on scroll-up, shrinking a
+   spacer's top padding to match so content never jumps. Journal/Faith/
+   Kapwa/Tulong share one header and scroll at the window level; Kaibigan
+   has its own (its chat pane, not the window, scrolls). */
+.oc-home-header, .oc-view-header {
   position: fixed;
   top: 0; left: 0; right: 0;
   max-width: 620px;
@@ -146,20 +145,17 @@ body:not([data-active-view="home"]) #oc-root {
   line-height: 1.15;
 }
 
-/* Kaibigan's header reads like a chat contact bar: a fixed title and the
-   member's own name underneath, not a big time-of-day greeting. */
-.oc-kaibigan-bar { line-height: 1.25; }
+/* Kaibigan's header reads like a chat contact bar, one line: "Kaibigan ·
+   Name" — not a big time-of-day greeting. */
 .oc-kaibigan-title {
-  font-size: 1.3em;
+  font-size: 1.2em;
   font-weight: 700;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.oc-kaibigan-user {
-  color: var(--ink-soft);
-  font-size: 0.9em;
-  font-weight: 600;
-  margin-top: 2px;
-}
+.oc-kaibigan-user { color: var(--ink-soft); font-weight: 600; }
 
 .oc-subgreeting, .oc-view-sub {
   color: var(--ink-soft);
@@ -221,14 +217,6 @@ body:not([data-active-view="home"]) #oc-root {
 }
 
 /* ── Daily sanctuary ────────────────────────────────────────────────────── */
-
-/* The home header carries the light of the hour — dawn warmth, daylight,
-   dusk gold, evening calm. Subtle in both themes. */
-.oc-home-header { border-radius: 24px; }
-body[data-period="morning"] .oc-home-header { background: linear-gradient(160deg, rgba(255, 200, 130, 0.28), rgba(255, 240, 214, 0) 70%); }
-body[data-period="day"] .oc-home-header { background: linear-gradient(160deg, rgba(150, 205, 235, 0.25), rgba(235, 245, 250, 0) 70%); }
-body[data-period="dusk"] .oc-home-header { background: linear-gradient(160deg, rgba(233, 150, 90, 0.26), rgba(250, 230, 214, 0) 70%); }
-body[data-period="night"] .oc-home-header { background: linear-gradient(160deg, rgba(110, 120, 200, 0.2), rgba(220, 224, 250, 0) 70%); }
 
 .oc-today-line {
   display: flex;
@@ -599,26 +587,7 @@ body[data-active-view="home"] .oc-view[data-view="home"] {
   display: flex;
   flex-direction: column;
 }
-.oc-home-header, .oc-heart-checkin { flex-shrink: 0; }
-
-/* WhatsApp-style collapsing header: scrolling down into the conversation
-   folds the whole contact bar away so the chat gets nearly the full screen;
-   scrolling back to the top brings it right back. Kaibigan is pure
-   conversation, so unlike the other tabs' fixed header, this one collapses
-   its own flex space rather than sliding over content. */
-.oc-home-header {
-  overflow: hidden;
-  max-height: 220px;
-  opacity: 1;
-  transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
-}
-body.oc-home-compact .oc-home-header {
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  opacity: 0;
-  pointer-events: none;
-}
+.oc-heart-checkin { flex-shrink: 0; }
 
 .oc-chat {
   display: flex;
@@ -734,6 +703,10 @@ body.oc-home-compact .oc-home-header {
 
 /* Only the companion view shows the composer */
 body[data-active-view]:not([data-active-view="home"]) .oc-composer { display: none; }
+
+/* Only the companion view shows its own header (see the shared header for
+   the other tabs) */
+body[data-active-view]:not([data-active-view="home"]) .oc-home-header { display: none; }
 
 /* ── Journal ────────────────────────────────────────────────────────────── */
 
