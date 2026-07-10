@@ -16,7 +16,7 @@
 // window, moves) — see companion.js, which builds its controller from the
 // same createHeaderController() factory below so both behave identically.
 const HIDE_AFTER = 24; // px scrolled down before the header may hide at all
-const MOVE_THRESHOLD = 4; // ignore sub-pixel/rubber-band jitter
+const MOVE_THRESHOLD = 10; // net px of travel needed before reacting
 
 // getScrollTop: () => number — current scroll position of whatever scrolls
 //   (window.scrollY, or a chat pane's scrollTop).
@@ -28,7 +28,17 @@ const MOVE_THRESHOLD = 4; // ignore sub-pixel/rubber-band jitter
 //   changes — lets a caller fold other elements away in step (Kaibigan
 //   uses this to also tuck away the ritual pill and audio drop).
 export function createHeaderController({ getScrollTop, header, spacer, baselinePadding, onToggle }) {
-  let lastScrollTop = getScrollTop();
+  // anchor is the position we last made a hide/show decision from — NOT
+  // the previous frame's position. Comparing against the previous frame
+  // meant even one frame per animation frame (the earlier fix) was still
+  // vulnerable to real touch-scroll deceleration/settling noise: two
+  // consecutive frames can easily drift in opposite directions by a few
+  // px, which would cross a small threshold in both directions in a row
+  // and flip the header back and forth — visible as shaking. Anchoring to
+  // the last *decision* point means a decision only fires once genuine
+  // net travel accumulates from there, and small back-and-forth noise
+  // between frames can never cancel itself out into a false trigger.
+  let anchor = getScrollTop();
   let hidden = false;
   let ticking = false;
 
@@ -50,11 +60,21 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
   function process() {
     ticking = false;
     const y = getScrollTop();
-    const delta = y - lastScrollTop;
-    if (y <= HIDE_AFTER) setHidden(false);
-    else if (delta > MOVE_THRESHOLD) setHidden(true);
-    else if (delta < -MOVE_THRESHOLD) setHidden(false);
-    lastScrollTop = y;
+    if (y <= HIDE_AFTER) {
+      setHidden(false);
+      anchor = y;
+      return;
+    }
+    const delta = y - anchor;
+    if (delta > MOVE_THRESHOLD) {
+      setHidden(true);
+      anchor = y;
+    } else if (delta < -MOVE_THRESHOLD) {
+      setHidden(false);
+      anchor = y;
+    }
+    // else: not enough net travel from the anchor yet — leave it alone,
+    // so a momentary reversal can't get "banked" as new baseline noise.
   }
 
   // Raw scroll events can fire many times per animation frame (especially
@@ -72,7 +92,7 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
   // is (re)opened, so it never starts hidden/collapsed from a previous
   // scroll position.
   function reset() {
-    lastScrollTop = getScrollTop();
+    anchor = getScrollTop();
     hidden = false;
     header.style.transition = 'none';
     header.style.transform = 'translateY(0)';
