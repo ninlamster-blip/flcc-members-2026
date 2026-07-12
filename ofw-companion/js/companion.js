@@ -187,24 +187,29 @@ function autoGrow() {
 }
 
 // Same WhatsApp-style collapsible header as every other tab (see
-// js/header.js) — hides on scroll-down, snaps back and stays frozen in
-// place on scroll-up — just driven by the chat pane's own scroll instead
-// of the window's, since Kaibigan is the one tab that scrolls internally.
+// js/header.js), sticky and driven by the window's scroll — Kaibigan
+// scrolls at the window level like everything else now, rather than
+// internally in .oc-chat, so its sticky header stays part of the same
+// scroll iOS Safari's compositor tracks natively.
 let homeHeader = null;
+
+function isHomeActive() {
+  return document.body.dataset.activeView === 'home';
+}
 
 function setupHeaderCollapse() {
   homeHeader = createHeaderController({
-    getScrollTop: () => els.chat.scrollTop,
+    getScrollTop: () => window.scrollY,
     header: document.querySelector('.oc-home-header'),
-    spacer: document.getElementById('view-home'),
-    baselinePadding: '0px',
     // The ritual pill, audio drop, and not-okay button fold away in step
     // with the header, so scrolling the conversation clears them the room
     // WhatsApp-style collapsing promises.
     onToggle: (hidden) => document.body.classList.toggle('oc-home-compact', hidden),
   });
-  homeHeader.reset(); // establish the spacer padding right away — home is visible from first load, not from a nav click
-  els.chat.addEventListener('scroll', () => homeHeader.onScroll(), { passive: true });
+  homeHeader.reset(); // home is visible from first load, not from a nav click
+  window.addEventListener('scroll', () => {
+    if (isHomeActive()) homeHeader.onScroll();
+  }, { passive: true });
 }
 
 // Called whenever the Kaibigan tab becomes active again, so it never opens
@@ -303,15 +308,17 @@ function showTyping() {
   return div;
 }
 
-// A huge target rather than els.chat.scrollHeight: bubbles use
-// content-visibility for scroll performance on long conversations, so a
-// freshly-appended (or still off-screen) bubble's true height may not be
-// measured yet when this runs — scrollHeight read at that instant can
-// undershoot the real bottom. scrollTo() clamps any target to the actual
-// max automatically, so this always lands at the true bottom regardless.
+// Kaibigan scrolls at the window level now (see setupHeaderCollapse), not
+// internally in .oc-chat. A huge target rather than document.body's exact
+// height: bubbles use content-visibility for scroll performance on long
+// conversations, so a freshly-appended (or still off-screen) bubble's true
+// height may not be measured yet when this runs — reading the exact height
+// at that instant can undershoot the real bottom. scrollTo() clamps any
+// target to the actual max automatically, so this always lands at the true
+// bottom regardless.
 function scrollToEnd(smooth = true) {
   requestAnimationFrame(() => {
-    els.chat.scrollTo({ top: 1e9, behavior: smooth ? 'smooth' : 'auto' });
+    window.scrollTo({ top: 1e9, behavior: smooth ? 'smooth' : 'auto' });
   });
 }
 
