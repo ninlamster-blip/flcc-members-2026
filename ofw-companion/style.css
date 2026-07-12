@@ -115,52 +115,41 @@ input, textarea { font-family: inherit; color: var(--ink); }
 
 /* ── Headers ────────────────────────────────────────────────────────────── */
 
-.oc-home-header { text-align: center; padding: 14px 56px 10px; }
+.oc-home-header { text-align: center; padding: calc(env(safe-area-inset-top, 0px) + 14px) 56px 10px; }
 .oc-view-header { text-align: center; padding: calc(env(safe-area-inset-top, 0px) + 52px) 44px 20px; }
 
-/* WhatsApp-style collapsible header. JS (js/header.js) toggles it out of
-   view with translateY on scroll-down and snaps it straight back —
-   "frozen" in place — on scroll-up.
-   Journal/Faith/Kapwa/Tulong share one header (#oc-shared-header): it's
-   position: sticky, living as #oc-root's own first child, so it's part of
-   the normal scrolling flow that iOS Safari's compositor tracks natively
-   frame-by-frame — position: fixed elements are known to visually detach/
-   jump during momentum scrolling there instead, since Safari only
-   reconciles their position at certain points rather than every frame.
-   Sticky also means it reserves its own space automatically; no JS needs
-   to manage a spacer's padding for this header.
-   Kaibigan has its own header (.oc-home-header) and scrolls internally
-   (its chat pane, not the window, moves) — sticky isn't available to it
-   without restructuring its chat pane's own scroll container, so it
-   still uses position: fixed and its own JS-managed spacer padding. */
-.oc-view-header {
+/* WhatsApp-style collapsible header, identical mechanics on every tab
+   (see js/header.js): position: sticky, living as #oc-root's own first
+   child, so it's part of the normal scrolling flow that iOS Safari's
+   compositor tracks natively frame-by-frame. position: fixed elements are
+   known to visually detach/jump during momentum scrolling there instead,
+   since Safari only reconciles their position at certain points rather
+   than every frame — confirmed as the actual cause here, not a JS bug.
+   Sticky also reserves its own space in the flow automatically, so no JS
+   needs to manage a spacer's padding for either header. JS still toggles
+   translateY on scroll-down/scroll-up to hide/show it.
+   Kaibigan used to be the one tab that scrolled internally (its chat
+   pane, not the window) specifically so its header could sit outside
+   that scroll — now that the header is sticky instead, it needs to be
+   part of the SAME scroll as everything below it, so Kaibigan scrolls at
+   the window level too, like every other tab. */
+.oc-home-header, .oc-view-header {
   position: sticky;
   top: 0;
   z-index: 14;
   background: var(--bg);
   transform: translateY(0);
-}
-.oc-home-header {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  max-width: 620px;
-  margin: 0 auto;
-  z-index: 14;
-  background: var(--bg);
-  transform: translateY(0);
-}
-.oc-home-header, .oc-view-header {
   /* Force its own GPU compositing layer up front for the transform
      animation — cheap insurance regardless of positioning scheme. */
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-/* The sticky header now provides its own top spacing (including the
+/* Both headers now provide their own top spacing (including the
    safe-area inset) — #oc-root must not add a second helping in front of
-   it, or the header would visibly jump the moment it transitions from
+   them, or a header would visibly jump the moment it transitions from
    its normal-flow position to "stuck". */
-body:not([data-active-view="home"]) #oc-root {
+#oc-root {
   padding-top: 0;
 }
 
@@ -553,17 +542,9 @@ body.oc-home-compact .oc-audio-drop { display: none; }
 
 /* ── Heart check-in chips ───────────────────────────────────────────────── */
 
-/* Scrolls internally when the full feelings list is open, so the share
-   button is always reachable on small screens. */
 .oc-heart-checkin {
   margin: 6px 0 14px;
-  flex-shrink: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
 }
-body[data-active-view="home"] .oc-chat { min-height: 56px; }
 
 .oc-chip-row {
   display: flex;
@@ -594,37 +575,14 @@ body[data-active-view="home"] .oc-chat { min-height: 56px; }
 
 /* ── Chat ───────────────────────────────────────────────────────────────── */
 
-/* On the Kaibigan tab the page itself never scrolls: the header and heart
-   chips stay put, and only the conversation pane scrolls (with its own
-   rubber-band), like a real messaging app. */
-body[data-active-view="home"] {
-  height: 100dvh;
-  overflow: hidden;
-}
-body[data-active-view="home"] #oc-root {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-}
-body[data-active-view="home"] .oc-view[data-view="home"] {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-.oc-heart-checkin { flex-shrink: 0; }
-
+/* Kaibigan scrolls at the window level, same as every other tab — its
+   header is sticky (see above) and needs to be part of that same scroll
+   to work correctly and avoid iOS Safari's position: fixed jank. */
 .oc-chat {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 8px 2px 72px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
 }
 
 .oc-bubble {

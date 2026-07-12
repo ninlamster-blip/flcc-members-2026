@@ -35,6 +35,20 @@
       <p class="oc-view-sub" id="oc-shared-header-sub"></p>
     </header>
 
+    <!-- ============ KAIBIGAN HEADER ============ -->
+    <!-- Same sticky mechanics as the shared header above, just its own
+         element with different content (reads like a chat contact bar).
+         Lives here, as #oc-root's own first-section-level child (not
+         inside .oc-view), for the same containing-block reason. -->
+    <header class="oc-home-header">
+      <p class="oc-kaibigan-title">Kaibigan<span class="oc-kaibigan-user" id="oc-kaibigan-user"></span></p>
+      <p class="oc-subgreeting oc-today-line">
+        <span id="oc-date-line"></span>
+        <button type="button" id="oc-weather-chip" class="oc-weather-chip" hidden></button>
+      </p>
+      <p class="oc-occasion" id="oc-occasion" hidden></p>
+    </header>
+
     <!-- ============ KAIBIGAN (COMPANION) ============ -->
     <section id="view-home" class="oc-view" data-view="home" aria-label="Kaibigan">
       <!-- Heart check-in cards (shown until answered today) -->
@@ -113,23 +127,6 @@
     </section>
 
   </div>
-
-  <!-- ============ KAIBIGAN HEADER ============ -->
-  <!-- Same WhatsApp-style collapsible mechanics as the shared header below,
-       just its own element (content/behavior differs slightly — driven by
-       the chat pane's scroll, not the window's). Lives outside the animated
-       view sections for the same reason as the shared header and composer:
-       their entrance animation makes them a containing block, which would
-       anchor this fixed header to the section's own position instead of
-       the viewport. -->
-  <header class="oc-home-header">
-    <p class="oc-kaibigan-title">Kaibigan<span class="oc-kaibigan-user" id="oc-kaibigan-user"></span></p>
-    <p class="oc-subgreeting oc-today-line">
-      <span id="oc-date-line"></span>
-      <button type="button" id="oc-weather-chip" class="oc-weather-chip" hidden></button>
-    </p>
-    <p class="oc-occasion" id="oc-occasion" hidden></p>
-  </header>
 
   <!-- ============ COMPOSER (Kaibigan tab only) ============ -->
   <!-- Lives outside the animated view sections: their entrance animation makes
