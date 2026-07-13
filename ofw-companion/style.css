@@ -289,13 +289,24 @@ input, textarea { font-family: inherit; color: var(--ink); }
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease, font-size 0.2s ease, border-width 0.2s ease;
 }
 .oc-ritual-pill:active, .oc-notokay-btn:active { transform: scale(0.96); }
 .oc-notokay-btn { color: var(--calm); border-color: var(--calm-soft); background: var(--calm-soft); }
+.oc-ritual-pill { max-height: 40px; opacity: 1; overflow: hidden; }
 /* When the header folds for chatting, the ritual steps aside but "I'm not
-   okay" stays one tap away — help must never require scrolling. */
-body.oc-home-compact .oc-ritual-pill { display: none; }
+   okay" stays one tap away — help must never require scrolling. Animated
+   (max-height/opacity), not display:none — an instant layout pop here
+   landed in the same frame as the header's own slide-in transition and
+   read as a second flicker right as the header settled. */
+body.oc-home-compact .oc-ritual-pill {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  pointer-events: none;
+}
 body.oc-home-compact .oc-care-row { margin-bottom: 6px; }
 body.oc-home-compact .oc-notokay-btn { padding: 6px 14px; font-size: 0.82em; }
 
@@ -340,6 +351,10 @@ body.oc-home-compact .oc-notokay-btn { padding: 6px 14px; font-size: 0.82em; }
   background: var(--bg-raised);
   box-shadow: var(--shadow);
   flex-shrink: 0;
+  max-height: 90px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.2s ease, opacity 0.2s ease, margin 0.2s ease, padding 0.2s ease;
 }
 .oc-audio-play {
   flex: 0 0 auto;
@@ -356,7 +371,15 @@ body.oc-home-compact .oc-notokay-btn { padding: 6px 14px; font-size: 0.82em; }
 .oc-audio-play:disabled { opacity: 0.45; cursor: default; }
 .oc-audio-title { font-weight: 700; font-size: 0.92em; }
 .oc-audio-sub { color: var(--ink-faint); font-size: 0.84em; }
-body.oc-home-compact .oc-audio-drop { display: none; }
+body.oc-home-compact .oc-audio-drop {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
 
 /* Hinga Muna offer inside the conversation */
 .oc-hinga-offer { max-width: 96%; }

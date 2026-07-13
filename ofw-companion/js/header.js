@@ -1,29 +1,22 @@
-// WhatsApp-style collapsible header. Scrolling down hides the header
-// (translateY(-100%), eased); scrolling up snaps it straight back
-// (translateY(0), no transition — instant, the way WhatsApp's own header
-// reappears) and it stays put ("frozen") there.
+// WhatsApp-style collapsible header, identical mechanics on every tab.
+// Scrolling down hides the header (translateY(-100%), eased); scrolling up
+// snaps it straight back (translateY(0), no transition — instant, the way
+// WhatsApp's own header reappears) and it stays put ("frozen") there.
 //
-// Journal/Faith/Kapwa/Tulong share one header (#oc-shared-header),
-// position: sticky, and scroll at the window level — sticky headers are
-// part of the normal scrolling flow, which iOS Safari's compositor tracks
-// natively frame-by-frame, and they reserve their own space automatically
-// (no spacer/padding management needed).
+// Every tab scrolls at the window level, and every header is
+// position: sticky — see style.css. Sticky headers are part of the normal
+// scrolling flow, which iOS Safari's compositor tracks natively frame-by-
+// frame (position: fixed elements are known to visually detach/jump there
+// during momentum scrolling instead), and they reserve their own space in
+// the flow automatically, so no JS needs to manage a spacer's padding for
+// either header — the `spacer`/`baselinePadding` params below exist only
+// in case a future header needs that (e.g. isn't sticky for some reason).
 //
-// Kaibigan has its own header baked into its non-scrolling layout and
-// scrolls internally (its chat pane, not the window, moves). It can't use
-// sticky without restructuring that chat pane's own scroll container, so
-// it stays position: fixed — which does need a spacer element's top
-// padding kept in sync with the header's height so content underneath
-// never sits under it. That padding change is applied instantly, never
-// animated: unlike transform, animating padding forces the browser to
-// recompute layout for the whole spacer subtree on every frame, on the
-// main thread, at the exact moment it's competing with an active scroll
-// gesture for that same thread.
-//
-// Both build their controller from the same createHeaderController()
-// factory below, so the scroll-direction decision logic is identical —
-// only what each does with "hidden" (transform alone vs. transform +
-// spacer padding) differs.
+// Journal/Faith/Kapwa/Tulong share one header (#oc-shared-header). Kaibigan
+// has its own (different content, and it also folds away the ritual pill/
+// audio drop in step via onToggle) but is built from the same
+// createHeaderController() factory below, so the scroll-direction decision
+// logic is identical for both.
 const HIDE_AFTER = 24; // px scrolled down before the header may hide at all
 const MOVE_THRESHOLD = 10; // net px of travel needed before reacting
 
@@ -38,6 +31,17 @@ const MOVE_THRESHOLD = 10; // net px of travel needed before reacting
 // onToggle(hidden): optional, called whenever the hidden/visible state
 //   changes — lets a caller fold other elements away in step (Kaibigan
 //   uses this to also tuck away the ritual pill and audio drop).
+// A long scroll to the top is rarely one continuous gesture — it's usually
+// several swipes with a brief lift-and-regrip between them. That seam can
+// produce a real, brief reversal in reported scroll position (momentum
+// overshoot correcting itself, rubber-banding, etc.) well past what's
+// reasonable to call "sensor noise," so no fixed pixel threshold can
+// reliably tell it apart from a genuine direction change. This cooldown
+// instead uses time: right after any decision, further opposite-direction
+// triggers are ignored for a short window, since a spurious gesture-seam
+// blip resolves within a frame or two while a deliberate reversal persists.
+const REVERSAL_COOLDOWN_MS = 350;
+
 export function createHeaderController({ getScrollTop, header, spacer, baselinePadding, onToggle }) {
   // anchor is the position we last made a hide/show decision from — NOT
   // the previous frame's position. Comparing against the previous frame
@@ -52,6 +56,7 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
   let anchor = getScrollTop();
   let hidden = false;
   let ticking = false;
+  let cooldownUntil = 0;
 
   function setHidden(next) {
     if (hidden === next) return;
@@ -77,12 +82,22 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
       return;
     }
     const delta = y - anchor;
+    // anchor always tracks genuine net travel, cooldown or not — otherwise
+    // it goes stale mid-gesture and corrupts the delta for whatever comes
+    // next. The cooldown only gates the visual flip itself, and only when
+    // that flip would actually change the current state.
     if (delta > MOVE_THRESHOLD) {
-      setHidden(true);
       anchor = y;
+      if (!hidden && performance.now() >= cooldownUntil) {
+        setHidden(true);
+        cooldownUntil = performance.now() + REVERSAL_COOLDOWN_MS;
+      }
     } else if (delta < -MOVE_THRESHOLD) {
-      setHidden(false);
       anchor = y;
+      if (hidden && performance.now() >= cooldownUntil) {
+        setHidden(false);
+        cooldownUntil = performance.now() + REVERSAL_COOLDOWN_MS;
+      }
     }
     // else: not enough net travel from the anchor yet — leave it alone,
     // so a momentary reversal can't get "banked" as new baseline noise.
@@ -105,6 +120,7 @@ export function createHeaderController({ getScrollTop, header, spacer, baselineP
   function reset() {
     anchor = getScrollTop();
     hidden = false;
+    cooldownUntil = 0;
     header.style.transition = 'none';
     header.style.transform = 'translateY(0)';
     if (spacer) spacer.style.paddingTop = header.offsetHeight + 'px';
