@@ -670,10 +670,16 @@ body.oc-home-compact .oc-audio-drop {
 @keyframes oc-blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
 
 /* Composer: a compact one-line bar sitting directly on top of the tab bar,
-   like a messaging app. It grows only while typing a long message. */
+   like a messaging app. It grows only while typing a long message.
+   position: sticky, not fixed — same reasoning as the header (see
+   header.js): this is the one Kaibigan-only element still using fixed
+   positioning, and it sits right in view during the exact scroll gesture
+   (momentum scroll through the chat) where iOS Safari fails to keep a
+   fixed element's screen position in sync every frame. Sticky is part of
+   the normal window-level scroll flow Kaibigan now uses, so it's tracked
+   natively instead. */
 .oc-composer {
-  position: fixed;
-  left: 0; right: 0;
+  position: sticky;
   bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
   z-index: 20;
   display: flex;
