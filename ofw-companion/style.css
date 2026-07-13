@@ -614,15 +614,14 @@ body.oc-home-compact .oc-audio-drop {
   border-radius: 22px;
   animation: oc-fade-up 0.35s ease both;
   overflow-wrap: break-word;
-  /* A long conversation can mean dozens of bubbles. Without this, showing/
-     hiding the fixed header re-triggers one synchronous layout pass over
-     every bubble in the pane on every state change — cheap for the other
-     tabs' small, fixed card counts, but the cost here scales with however
-     long the chat has grown, which is exactly the kind of hitch that reads
-     as a stutter. content-visibility skips layout/paint for off-screen
-     bubbles entirely, making that cost roughly constant instead. */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 60px;
+  /* No content-visibility here (unlike .oc-journal-entry below): bubble
+     height varies hugely — a one-line reply vs. a full paragraph — so the
+     placeholder in contain-intrinsic-size was off by 100s of px for long
+     AI replies. Each one snapping to its real height right as it scrolled
+     into view was a bigger, more visible jump than the header-toggle
+     layout cost content-visibility was originally added here to avoid —
+     and that cost is gone anyway now that both headers are position:
+     sticky and no JS-driven spacer padding touches this list at all. */
 }
 .oc-bubble p + p { margin-top: 0.6em; }
 
@@ -671,10 +670,16 @@ body.oc-home-compact .oc-audio-drop {
 @keyframes oc-blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
 
 /* Composer: a compact one-line bar sitting directly on top of the tab bar,
-   like a messaging app. It grows only while typing a long message. */
+   like a messaging app. It grows only while typing a long message.
+   position: sticky, not fixed — same reasoning as the header (see
+   header.js): this is the one Kaibigan-only element still using fixed
+   positioning, and it sits right in view during the exact scroll gesture
+   (momentum scroll through the chat) where iOS Safari fails to keep a
+   fixed element's screen position in sync every frame. Sticky is part of
+   the normal window-level scroll flow Kaibigan now uses, so it's tracked
+   natively instead. */
 .oc-composer {
-  position: fixed;
-  left: 0; right: 0;
+  position: sticky;
   bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
   z-index: 20;
   display: flex;
