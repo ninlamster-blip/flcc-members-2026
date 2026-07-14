@@ -1,0 +1,489 @@
+/* Scripture Tetris — glass, gradient, dark-cosmic UI. */
+
+:root {
+  --bg-0: #0B0F1A;
+  --bg-1: #121A2E;
+  --bg-2: #1A2440;
+  --accent: #7C5CFF;
+  --accent-2: #5FE3FF;
+  --gold: #D6A756;
+  --text: #F3F5FB;
+  --text-dim: #A6AFC6;
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: radial-gradient(1200px 800px at 20% -10%, #23305a 0%, transparent 60%),
+              radial-gradient(1000px 700px at 100% 110%, #2a1f4d 0%, transparent 55%),
+              var(--bg-0);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.st-back-link {
+  position: fixed;
+  top: calc(10px + var(--safe-top));
+  left: 10px;
+  z-index: 60;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.st-root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: calc(56px + var(--safe-top)) 14px calc(96px + var(--safe-bottom));
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 14px;
+}
+
+/* ---------- Top bar ---------- */
+.st-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.st-logo {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.st-topbar-actions { display: flex; gap: 8px; }
+
+.st-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.st-icon-btn:active { transform: scale(0.94); }
+
+/* ---------- Layout ---------- */
+.st-game-layout {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.st-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 168px;
+  flex-shrink: 0;
+}
+
+.st-panel {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.st-panel-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.st-mini-canvas {
+  display: block;
+  margin: 0 auto;
+  image-rendering: pixelated;
+}
+
+.st-hud-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.st-hud-row strong {
+  font-size: 1.1rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.st-challenge p { font-size: 0.85rem; margin: 0 0 8px; color: var(--text); }
+.st-progress-track {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.st-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.4s ease;
+}
+
+.st-next-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.st-mini-canvas-sm { opacity: 0.65; transform: scale(0.86); }
+
+.st-full { width: 100%; margin-top: 8px; }
+
+/* ---------- Board ---------- */
+.st-board-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.st-board-canvas {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--glass-border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.25));
+  max-width: 100%;
+  height: min(72vh, 640px);
+  width: auto;
+}
+
+/* ---------- Buttons ---------- */
+.st-primary-btn {
+  background: linear-gradient(135deg, var(--accent), #9B7BFF);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 26px rgba(124, 92, 255, 0.45);
+  width: 100%;
+  margin-top: 6px;
+}
+.st-primary-btn:active { transform: scale(0.97); }
+
+.st-secondary-btn {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.st-secondary-btn:active { transform: scale(0.97); }
+
+/* ---------- Toasts & overlays on the board ---------- */
+.st-verse-toast, .st-streak-toast, .st-achievement-toast {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  background: rgba(15, 18, 32, 0.72);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  max-width: min(90%, 420px);
+  z-index: 15;
+  animation: st-fade-in-up 0.5s ease both;
+}
+
+.st-verse-toast { top: 24px; }
+.st-verse-text { margin: 0 0 6px; font-size: 1rem; font-style: italic; line-height: 1.4; }
+.st-verse-ref { margin: 0; font-size: 0.8rem; color: var(--gold); font-weight: 600; }
+
+.st-streak-toast { bottom: 24px; }
+.st-streak-toast p { margin: 0; font-size: 0.95rem; color: var(--accent-2); font-weight: 600; }
+
+/* Achievement toast lives in its own corner so it never collides with the
+   centered verse toast, even when both fire from the same line clear. */
+.st-achievement-toast {
+  top: 24px;
+  left: auto;
+  right: 16px;
+  transform: none;
+  max-width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  animation: st-slide-in-right 0.5s ease both;
+}
+.st-achievement-icon { font-size: 1.8rem; flex-shrink: 0; }
+.st-achievement-title { margin: 0; font-weight: 700; color: var(--gold); font-size: 0.88rem; }
+.st-achievement-desc { margin: 0; font-size: 0.75rem; color: var(--text-dim); }
+
+@keyframes st-slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.st-celebration {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 20;
+  background: radial-gradient(circle at center, rgba(124,92,255,0.28), rgba(11,15,26,0.55) 70%);
+  border-radius: var(--radius-lg);
+  animation: st-celebration-in 0.5s ease both;
+}
+.st-celebration-headline {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+.st-celebration-verse { font-size: 1.05rem; font-style: italic; max-width: 80%; margin: 0 0 6px; }
+.st-celebration-ref { color: var(--gold); font-weight: 700; margin: 0; }
+
+@keyframes st-fade-in-up {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes st-celebration-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- Full overlays (start / pause / game over) ---------- */
+.st-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 18, 0.72);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.st-overlay-card {
+  text-align: center;
+  max-width: 380px;
+  width: 100%;
+}
+.st-overlay-card h2 { margin: 0 0 8px; font-size: 1.6rem; }
+.st-overlay-sub { color: var(--text-dim); margin: 0 0 18px; }
+
+.st-daily-verse {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.st-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+#start-daily-verse-text { font-style: italic; margin: 0 0 6px; }
+
+.st-overlay-verse { font-style: italic; font-size: 1.05rem; margin: 0 0 4px; }
+.st-final-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 18px 0;
+}
+.st-final-stats div { display: flex; flex-direction: column; gap: 4px; }
+.st-final-stats span { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
+.st-final-stats strong { font-size: 1.3rem; }
+
+/* ---------- Touch controls ---------- */
+.st-touch-controls {
+  position: fixed;
+  bottom: calc(10px + var(--safe-bottom));
+  left: 0;
+  right: 0;
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 0 12px;
+  z-index: 40;
+}
+
+.st-touch-btn {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  color: var(--text);
+  border-radius: var(--radius-md);
+  font-size: 1.2rem;
+  padding: 16px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.st-touch-btn:active { background: rgba(255,255,255,0.16); transform: scale(0.96); }
+.st-touch-btn-wide { grid-column: span 2; font-weight: 700; letter-spacing: 0.05em; }
+
+@media (pointer: coarse) {
+  .st-touch-controls { display: grid; }
+  .st-root { padding-bottom: calc(150px + var(--safe-bottom)); }
+}
+
+/* Hide the D-pad while a full-screen overlay (start/pause/game over) owns
+   the screen — nothing back there to control, and it only invites mis-taps. */
+.st-hide-touch .st-touch-controls { display: none !important; }
+
+/* ---------- Modals ---------- */
+.st-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(6, 8, 14, 0.72);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.st-modal-card {
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 84vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+.st-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.st-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 14px 0 20px;
+}
+.st-stat-tile {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+.st-stat-tile span { display: block; font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+.st-stat-tile strong { font-size: 1.3rem; }
+
+.st-achievements-title { font-size: 1rem; margin: 6px 0 10px; }
+.st-achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 10px;
+}
+.st-achievement-tile {
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+.st-achievement-tile.unlocked { color: var(--text); border-color: rgba(214,167,86,0.5); }
+.st-achievement-tile .icon { display: block; font-size: 1.5rem; margin-bottom: 4px; filter: grayscale(1); opacity: 0.5; }
+.st-achievement-tile.unlocked .icon { filter: none; opacity: 1; }
+
+.st-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.95rem;
+}
+.st-toggle-row input { width: 20px; height: 20px; }
+
+.st-devo-verse { font-style: italic; font-size: 1.1rem; margin: 10px 0 4px; }
+.st-devo-body, .st-devo-prayer, .st-devo-question { color: var(--text-dim); line-height: 1.6; }
+
+/* ---------- Accessibility modes ---------- */
+.st-high-contrast { --bg-0: #000; --bg-1: #000; --bg-2: #111; --text: #fff; --text-dim: #ddd; --glass: rgba(255,255,255,0.12); --glass-border: rgba(255,255,255,0.4); }
+.st-large-text { font-size: 112%; }
+.st-reduced-motion * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .st-verse-toast, .st-streak-toast, .st-achievement-toast, .st-celebration { animation: none; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 760px), (orientation: portrait) {
+  .st-game-layout { flex-direction: column; align-items: center; }
+  .st-side { flex-direction: row; width: 100%; flex-wrap: wrap; justify-content: center; }
+  .st-board-canvas { height: min(58vh, 560px); }
+}
+
+@media (min-width: 761px) and (orientation: landscape) and (pointer: fine) {
+  .st-touch-controls { display: none !important; }
+}
