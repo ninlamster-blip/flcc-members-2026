@@ -85,7 +85,7 @@ export class BoardRenderer {
     ctx.translate(this.offsetX, 0);
 
     // grid
-    ctx.strokeStyle = this.highContrast ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.05)';
+    ctx.strokeStyle = this.highContrast ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.09)';
     ctx.lineWidth = 1;
     for (let c = 0; c <= COLS; c++) {
       ctx.beginPath(); ctx.moveTo(c * cell, 0); ctx.lineTo(c * cell, h); ctx.stroke();
@@ -93,6 +93,12 @@ export class BoardRenderer {
     for (let r = 0; r <= ROWS; r++) {
       ctx.beginPath(); ctx.moveTo(0, r * cell); ctx.lineTo(w, r * cell); ctx.stroke();
     }
+
+    // a brighter outline around the whole play field so its edge reads
+    // clearly against the dark background, not just the faint cell grid
+    ctx.strokeStyle = this.highContrast ? 'rgba(255,255,255,0.9)' : 'rgba(148, 128, 255, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, w - 2, h - 2);
 
     // locked cells
     for (let r = HIDDEN_ROWS; r < ROWS + HIDDEN_ROWS; r++) {
