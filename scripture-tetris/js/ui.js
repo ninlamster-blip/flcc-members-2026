@@ -14,15 +14,28 @@ export class BoardRenderer {
     this._resize();
   }
 
+  // Measures the wrapper (not the canvas itself — the canvas has no
+  // intrinsic size of its own once we're setting it here) so the board can
+  // be sized from whatever space flexbox actually gives it in both
+  // dimensions, rather than being locked to a fixed aspect-ratio height.
+  // That's what lets the board grow to fill a phone's width instead of
+  // shrinking to match a viewport-height guess.
   _resize() {
     const dpr = window.devicePixelRatio || 1;
-    const rect = this.canvas.getBoundingClientRect();
+    const rect = this.canvas.parentElement.getBoundingClientRect();
     const cell = Math.floor(Math.min(rect.width / COLS, rect.height / ROWS));
     this.cell = Math.max(cell, 8);
-    this.canvas.width = this.cell * COLS * dpr;
-    this.canvas.height = this.cell * ROWS * dpr;
+    const cssW = this.cell * COLS;
+    const cssH = this.cell * ROWS;
+    const targetW = Math.round(cssW * dpr);
+    const targetH = Math.round(cssH * dpr);
+    if (this.canvas.width !== targetW || this.canvas.height !== targetH) {
+      this.canvas.style.width = `${cssW}px`;
+      this.canvas.style.height = `${cssH}px`;
+      this.canvas.width = targetW;
+      this.canvas.height = targetH;
+    }
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.offsetX = (rect.width - this.cell * COLS) / 2;
   }
 
   _blockColor(key) {
@@ -80,9 +93,8 @@ export class BoardRenderer {
     const { ctx, cell } = this;
     const w = cell * COLS;
     const h = cell * ROWS;
-    ctx.clearRect(0, 0, w + this.offsetX * 2, h);
+    ctx.clearRect(0, 0, w, h);
     ctx.save();
-    ctx.translate(this.offsetX, 0);
 
     // grid
     ctx.strokeStyle = this.highContrast ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.09)';

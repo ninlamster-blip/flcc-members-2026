@@ -28,6 +28,27 @@
     </div>
   </header>
 
+  <!-- ============ MOBILE COMPACT BAR (phones/tablets only — keeps the
+       board itself as large as possible instead of competing with full
+       side panels for width) ============ -->
+  <div class="st-mobile-bar">
+    <canvas id="canvas-hold-m" width="88" height="88" class="st-mini-canvas"></canvas>
+    <div class="st-mobile-hud">
+      <div><span>Score</span><strong id="hud-score-m">0</strong></div>
+      <div><span>Level</span><strong id="hud-level-m">1</strong></div>
+      <div><span>Lines</span><strong id="hud-lines-m">0</strong></div>
+    </div>
+    <canvas id="canvas-next-0-m" width="88" height="88" class="st-mini-canvas"></canvas>
+    <div class="st-mobile-bar-actions">
+      <button type="button" id="btn-pause-m" class="st-mobile-iconbtn" aria-label="Pause">⏸</button>
+      <button type="button" id="btn-restart-m" class="st-mobile-iconbtn" aria-label="Restart">⟲</button>
+    </div>
+  </div>
+  <div class="st-mobile-challenge" id="daily-challenge-card-m">
+    <span id="challenge-label-m">Loading…</span>
+    <div class="st-progress-track"><div class="st-progress-fill" id="challenge-progress-m"></div></div>
+  </div>
+
   <!-- ============ GAME LAYOUT ============ -->
   <main class="st-game-layout">
 

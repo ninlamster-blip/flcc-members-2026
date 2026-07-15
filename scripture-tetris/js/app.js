@@ -8,6 +8,9 @@ import { todaysChallenge, evaluateProgress } from './dailyChallenge.js';
 
 const $ = (id) => document.getElementById(id);
 const todayKey = () => new Date().toISOString().slice(0, 10);
+// Small helper for pairs of elements that mirror the same value (desktop
+// panel + the compact mobile bar) so call sites don't repeat themselves.
+const setText = (ids, text) => ids.forEach((id) => { const el = $(id); if (el) el.textContent = text; });
 
 const boardCanvas = $('canvas-board');
 const renderer = new BoardRenderer(boardCanvas);
@@ -125,8 +128,11 @@ function applyAchievementUnlocks() {
 // ---------------- daily challenge ----------------
 function updateChallengeUI() {
   const progress = evaluateProgress(challenge, session);
-  $('challenge-label').textContent = `${challenge.label} — ${Math.min(progress.value, challenge.goal)}/${challenge.goal}`;
-  $('challenge-progress').style.width = `${Math.min(100, (progress.value / challenge.goal) * 100)}%`;
+  const label = `${challenge.label} — ${Math.min(progress.value, challenge.goal)}/${challenge.goal}`;
+  const pct = `${Math.min(100, (progress.value / challenge.goal) * 100)}%`;
+  setText(['challenge-label', 'challenge-label-m'], label);
+  $('challenge-progress').style.width = pct;
+  $('challenge-progress-m').style.width = pct;
   if (progress.done && !(stats.dailyChallenge && stats.dailyChallenge.day === challenge.day && stats.dailyChallenge.done)) {
     stats.dailyChallenge = { day: challenge.day, goal: challenge.goal, done: true };
     saveStats(stats);
@@ -138,7 +144,12 @@ function updateChallengeUI() {
 // ---------------- game event handling ----------------
 function onGameEvent(evt) {
   if (evt.type === 'rotate') { audio.rotate(); return; }
-  if (evt.type === 'hold') { audio.hold(); renderMini($('canvas-hold'), game.hold, { colorBlind: settings.colorBlind }); return; }
+  if (evt.type === 'hold') {
+    audio.hold();
+    renderMini($('canvas-hold'), game.hold, { colorBlind: settings.colorBlind });
+    renderMini($('canvas-hold-m'), game.hold, { colorBlind: settings.colorBlind });
+    return;
+  }
   if (evt.type === 'levelUp') {
     session.highestLevel = Math.max(session.highestLevel, evt.level);
     stats.highestLevelEver = Math.max(stats.highestLevelEver, evt.level);
@@ -181,9 +192,9 @@ function onGameEvent(evt) {
 }
 
 function updateHud(evt) {
-  $('hud-score').textContent = (evt.score ?? game.score).toLocaleString();
-  $('hud-level').textContent = evt.level ?? game.level;
-  $('hud-lines').textContent = evt.lines ?? game.lines;
+  setText(['hud-score', 'hud-score-m'], (evt.score ?? game.score).toLocaleString());
+  setText(['hud-level', 'hud-level-m'], evt.level ?? game.level);
+  setText(['hud-lines', 'hud-lines-m'], evt.lines ?? game.lines);
   const comboRow = $('hud-combo-row');
   if (game.combo > 0) {
     comboRow.hidden = false;
@@ -230,7 +241,9 @@ function refreshNextPreviews() {
   for (let i = 0; i < 5; i++) {
     renderMini($(`canvas-next-${i}`), preview[i], { colorBlind: settings.colorBlind });
   }
+  renderMini($('canvas-next-0-m'), preview[0], { colorBlind: settings.colorBlind });
   renderMini($('canvas-hold'), game.hold, { colorBlind: settings.colorBlind });
+  renderMini($('canvas-hold-m'), game.hold, { colorBlind: settings.colorBlind });
 }
 
 // ---------------- starting / restarting ----------------
@@ -266,7 +279,7 @@ function handleAction(action) {
   switch (action) {
     case 'left': if (game.move(-1)) audio.move(); break;
     case 'right': if (game.move(1)) audio.move(); break;
-    case 'softdrop': game.softDrop(); break;
+    case 'softdrop': if (game.softDrop()) updateHud({}); break;
     case 'harddrop': audio.hardDrop(); game.hardDrop(); refreshNextPreviews(); break;
     case 'rotateCW': game.rotate(1); break;
     case 'rotateCCW': game.rotate(-1); break;
@@ -335,6 +348,64 @@ wireTouch('tc-rotate', 'rotateCW', false);
 wireTouch('tc-hold', 'hold', false);
 wireTouch('tc-harddrop', 'harddrop', false);
 
+// ---------------- board gestures (native mobile feel, alongside the
+// dedicated buttons above) ----------------
+// Drag left/right to move a column at a time, drag down to soft-drop a row
+// at a time, a quick tap to rotate, and a firm upward swipe to hold.
+(function wireBoardGestures() {
+  const el = boardCanvas;
+  let active = false;
+  let startX = 0, startY = 0, startTime = 0;
+  let lastX = 0, lastY = 0;
+  let dxAccum = 0, dyAccum = 0;
+  let moved = false;
+
+  function reset() { active = false; dxAccum = 0; dyAccum = 0; moved = false; }
+
+  el.addEventListener('touchstart', (e) => {
+    if (!game || game.gameOver || game.paused) return;
+    audio.resume();
+    const t = e.changedTouches[0];
+    active = true;
+    startX = lastX = t.clientX;
+    startY = lastY = t.clientY;
+    startTime = performance.now();
+    dxAccum = 0; dyAccum = 0; moved = false;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', (e) => {
+    if (!active || !game || game.gameOver || game.paused) return;
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    const cell = Math.max(renderer.cell, 12);
+    dxAccum += t.clientX - lastX;
+    dyAccum += t.clientY - lastY;
+    lastX = t.clientX; lastY = t.clientY;
+
+    let hudDirty = false;
+    while (dxAccum >= cell) { if (game.move(1)) { audio.move(); moved = true; } dxAccum -= cell; }
+    while (dxAccum <= -cell) { if (game.move(-1)) { audio.move(); moved = true; } dxAccum += cell; }
+    while (dyAccum >= cell) { if (game.softDrop()) hudDirty = true; moved = true; dyAccum -= cell; }
+    if (hudDirty) updateHud({});
+  }, { passive: false });
+
+  el.addEventListener('touchend', (e) => {
+    if (!active || !game || game.gameOver || game.paused) { reset(); return; }
+    const t = e.changedTouches[0];
+    const totalDx = t.clientX - startX;
+    const totalDy = t.clientY - startY;
+    const dt = performance.now() - startTime;
+    if (!moved && dt < 300 && Math.abs(totalDx) < 12 && Math.abs(totalDy) < 12) {
+      game.rotate(1); // tap
+    } else if (!moved && totalDy < -40 && Math.abs(totalDx) < Math.abs(totalDy)) {
+      game.hold_(); refreshNextPreviews(); // swipe up
+    }
+    reset();
+  }, { passive: true });
+
+  el.addEventListener('touchcancel', reset, { passive: true });
+})();
+
 // ---------------- modal & button wiring ----------------
 function openModal(id) { $(id).hidden = false; }
 function closeModal(id) { $(id).hidden = true; }
@@ -348,6 +419,8 @@ $('btn-restart').addEventListener('click', startGame);
 $('btn-restart-from-pause').addEventListener('click', startGame);
 $('btn-resume').addEventListener('click', togglePause);
 $('btn-pause').addEventListener('click', togglePause);
+$('btn-pause-m').addEventListener('click', togglePause);
+$('btn-restart-m').addEventListener('click', startGame);
 
 $('btn-mute').addEventListener('click', () => {
   audio.setMuted(!audio.muted);
