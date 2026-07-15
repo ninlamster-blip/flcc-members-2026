@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0B0F1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="A polished, modern Tetris game with gentle Bible-verse encouragement after every line clear.">
+<title>Scripture Tetris</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%9D%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="st-back-link" href="../" aria-label="Back to app">←</a>
+
+<div id="st-root" class="st-root">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="st-topbar">
+    <h1 class="st-logo"><span aria-hidden="true">✝</span> Scripture Tetris</h1>
+    <div class="st-topbar-actions">
+      <button type="button" id="btn-devotional" class="st-icon-btn" title="Today's Reflection" aria-label="Today's Reflection">📖</button>
+      <button type="button" id="btn-stats" class="st-icon-btn" title="Statistics" aria-label="Statistics">📊</button>
+      <button type="button" id="btn-settings" class="st-icon-btn" title="Settings" aria-label="Settings">⚙️</button>
+      <button type="button" id="btn-mute" class="st-icon-btn" title="Mute" aria-label="Mute sound">🔊</button>
+    </div>
+  </header>
+
+  <!-- ============ MOBILE COMPACT BAR (phones/tablets only — keeps the
+       board itself as large as possible instead of competing with full
+       side panels for width) ============ -->
+  <div class="st-mobile-bar">
+    <canvas id="canvas-hold-m" width="88" height="88" class="st-mini-canvas"></canvas>
+    <div class="st-mobile-hud">
+      <div><span>Score</span><strong id="hud-score-m">0</strong></div>
+      <div><span>Level</span><strong id="hud-level-m">1</strong></div>
+      <div><span>Lines</span><strong id="hud-lines-m">0</strong></div>
+    </div>
+    <canvas id="canvas-next-0-m" width="88" height="88" class="st-mini-canvas"></canvas>
+    <div class="st-mobile-bar-actions">
+      <button type="button" id="btn-pause-m" class="st-mobile-iconbtn" aria-label="Pause">⏸</button>
+      <button type="button" id="btn-restart-m" class="st-mobile-iconbtn" aria-label="Restart">⟲</button>
+    </div>
+  </div>
+  <div class="st-mobile-challenge" id="daily-challenge-card-m">
+    <span id="challenge-label-m">Loading…</span>
+    <div class="st-progress-track"><div class="st-progress-fill" id="challenge-progress-m"></div></div>
+  </div>
+
+  <!-- ============ GAME LAYOUT ============ -->
+  <main class="st-game-layout">
+
+    <section class="st-side st-side-left" aria-label="Hold piece and statistics">
+      <div class="st-panel">
+        <h2 class="st-panel-title">Hold</h2>
+        <canvas id="canvas-hold" width="96" height="96" class="st-mini-canvas"></canvas>
+      </div>
+      <div class="st-panel st-hud">
+        <div class="st-hud-row"><span>Score</span><strong id="hud-score">0</strong></div>
+        <div class="st-hud-row"><span>Level</span><strong id="hud-level">1</strong></div>
+        <div class="st-hud-row"><span>Lines</span><strong id="hud-lines">0</strong></div>
+        <div class="st-hud-row" id="hud-combo-row" hidden><span>Combo</span><strong id="hud-combo">0</strong></div>
+      </div>
+      <div class="st-panel st-challenge" id="daily-challenge-card">
+        <h2 class="st-panel-title">Today's Challenge</h2>
+        <p id="challenge-label">Loading…</p>
+        <div class="st-progress-track"><div class="st-progress-fill" id="challenge-progress"></div></div>
+      </div>
+    </section>
+
+    <section class="st-board-wrap" aria-label="Game board">
+      <canvas id="canvas-board" class="st-board-canvas" role="img" aria-label="Tetris board"></canvas>
+
+      <!-- Verse toast — fades in after a line clear, never blocks input -->
+      <div id="verse-toast" class="st-verse-toast" aria-live="polite" hidden>
+        <p class="st-verse-text" id="verse-toast-text"></p>
+        <p class="st-verse-ref" id="verse-toast-ref"></p>
+      </div>
+
+      <!-- Big celebration banner for Double/Triple/Tetris -->
+      <div id="celebration" class="st-celebration" aria-live="polite" hidden>
+        <div class="st-celebration-headline" id="celebration-headline"></div>
+        <p class="st-celebration-verse" id="celebration-verse"></p>
+        <p class="st-celebration-ref" id="celebration-ref"></p>
+      </div>
+
+      <!-- Streak reminder -->
+      <div id="streak-toast" class="st-streak-toast" aria-live="polite" hidden>
+        <p id="streak-toast-text"></p>
+      </div>
+
+      <!-- Achievement slide-in -->
+      <div id="achievement-toast" class="st-achievement-toast" aria-live="polite" hidden>
+        <span class="st-achievement-icon" id="achievement-icon">🏆</span>
+        <div>
+          <p class="st-achievement-title" id="achievement-title"></p>
+          <p class="st-achievement-desc" id="achievement-desc"></p>
+        </div>
+      </div>
+
+      <!-- Start screen -->
+      <div id="overlay-start" class="st-overlay">
+        <div class="st-overlay-card">
+          <h2>Scripture Tetris</h2>
+          <p class="st-overlay-sub">Classic Tetris, with a little grace between every clear.</p>
+          <div class="st-daily-verse" id="start-daily-verse">
+            <p class="st-eyebrow">Today's Encouragement</p>
+            <p id="start-daily-verse-text"></p>
+            <p id="start-daily-verse-ref" class="st-verse-ref"></p>
+          </div>
+          <button type="button" id="btn-start" class="st-primary-btn">Play</button>
+        </div>
+      </div>
+
+      <!-- Pause menu -->
+      <div id="overlay-pause" class="st-overlay" hidden>
+        <div class="st-overlay-card">
+          <h2>Paused</h2>
+          <button type="button" id="btn-resume" class="st-primary-btn">Resume</button>
+          <button type="button" id="btn-restart-from-pause" class="st-secondary-btn">Restart</button>
+        </div>
+      </div>
+
+      <!-- Game over -->
+      <div id="overlay-gameover" class="st-overlay" hidden>
+        <div class="st-overlay-card">
+          <h2>Today's Journey Ends Here</h2>
+          <p class="st-overlay-verse" id="gameover-verse"></p>
+          <p class="st-verse-ref" id="gameover-ref"></p>
+          <div class="st-final-stats">
+            <div><span>Score</span><strong id="gameover-score">0</strong></div>
+            <div><span>Lines</span><strong id="gameover-lines">0</strong></div>
+            <div><span>Level</span><strong id="gameover-level">1</strong></div>
+          </div>
+          <button type="button" id="btn-play-again" class="st-primary-btn">Play Again</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="st-side st-side-right" aria-label="Next pieces">
+      <div class="st-panel">
+        <h2 class="st-panel-title">Next</h2>
+        <div class="st-next-list">
+          <canvas id="canvas-next-0" width="88" height="88" class="st-mini-canvas"></canvas>
+          <canvas id="canvas-next-1" width="72" height="72" class="st-mini-canvas st-mini-canvas-sm"></canvas>
+          <canvas id="canvas-next-2" width="72" height="72" class="st-mini-canvas st-mini-canvas-sm"></canvas>
+          <canvas id="canvas-next-3" width="72" height="72" class="st-mini-canvas st-mini-canvas-sm"></canvas>
+          <canvas id="canvas-next-4" width="72" height="72" class="st-mini-canvas st-mini-canvas-sm"></canvas>
+        </div>
+      </div>
+      <div class="st-panel">
+        <button type="button" id="btn-pause" class="st-secondary-btn st-full">Pause</button>
+        <button type="button" id="btn-restart" class="st-secondary-btn st-full">Restart</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ TOUCH CONTROLS ============ -->
+  <nav class="st-touch-controls" aria-label="Touch controls">
+    <button type="button" class="st-touch-btn" id="tc-left" aria-label="Move left">◀</button>
+    <button type="button" class="st-touch-btn" id="tc-right" aria-label="Move right">▶</button>
+    <button type="button" class="st-touch-btn" id="tc-rotate" aria-label="Rotate">⟳</button>
+    <button type="button" class="st-touch-btn" id="tc-hold" aria-label="Hold piece">HOLD</button>
+    <button type="button" class="st-touch-btn" id="tc-softdrop" aria-label="Soft drop">▼</button>
+    <button type="button" class="st-touch-btn st-touch-btn-wide" id="tc-harddrop" aria-label="Hard drop">DROP</button>
+  </nav>
+
+  <!-- ============ STATS MODAL ============ -->
+  <div id="modal-stats" class="st-modal" hidden>
+    <div class="st-modal-card">
+      <button type="button" class="st-modal-close" data-close="modal-stats" aria-label="Close">✕</button>
+      <h2>Your Journey</h2>
+      <div class="st-stats-grid" id="stats-grid"></div>
+      <h3 class="st-achievements-title">Achievements</h3>
+      <div class="st-achievements-grid" id="achievements-grid"></div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS MODAL ============ -->
+  <div id="modal-settings" class="st-modal" hidden>
+    <div class="st-modal-card">
+      <button type="button" class="st-modal-close" data-close="modal-settings" aria-label="Close">✕</button>
+      <h2>Settings</h2>
+      <label class="st-toggle-row"><span>Background music</span><input type="checkbox" id="set-music"></label>
+      <label class="st-toggle-row"><span>Sound effects</span><input type="checkbox" id="set-sound"></label>
+      <label class="st-toggle-row"><span>High contrast</span><input type="checkbox" id="set-contrast"></label>
+      <label class="st-toggle-row"><span>Color-blind friendly blocks</span><input type="checkbox" id="set-colorblind"></label>
+      <label class="st-toggle-row"><span>Reduced motion</span><input type="checkbox" id="set-motion"></label>
+      <label class="st-toggle-row"><span>Large text</span><input type="checkbox" id="set-largetext"></label>
+    </div>
+  </div>
+
+  <!-- ============ DEVOTIONAL MODAL ============ -->
+  <div id="modal-devotional" class="st-modal" hidden>
+    <div class="st-modal-card">
+      <button type="button" class="st-modal-close" data-close="modal-devotional" aria-label="Close">✕</button>
+      <p class="st-eyebrow">Today's Reflection</p>
+      <p class="st-devo-verse" id="devo-verse-text"></p>
+      <p class="st-verse-ref" id="devo-verse-ref"></p>
+      <p class="st-devo-body" id="devo-body"></p>
+      <h3>Prayer</h3>
+      <p class="st-devo-prayer" id="devo-prayer"></p>
+      <h3>Reflect</h3>
+      <p class="st-devo-question" id="devo-question"></p>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

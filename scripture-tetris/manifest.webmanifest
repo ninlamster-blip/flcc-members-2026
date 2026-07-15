@@ -1,0 +1,12 @@
+{
+  "name": "Scripture Tetris",
+  "short_name": "Scripture Tetris",
+  "description": "A polished, modern Tetris game with gentle Bible-verse encouragement after every line clear.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0B0F1A",
+  "theme_color": "#0B0F1A",
+  "orientation": "any",
+  "icons": []
+}
