@@ -43,9 +43,10 @@ function defaultState() {
     sermonNotes: '',
     onboarded: false,
     // Companion Brain: which suggestion card the member dismissed today, so
-    // it doesn't reappear until conditions change or a new day starts.
-    // Covered by the same export/erase controls as everything else here.
-    companionBrain: { dismissedId: null, dismissedDate: null },
+    // it doesn't reappear until conditions change or a new day starts; and
+    // when they last saw a weekly reflection, so it surfaces at most once a
+    // week. Covered by the same export/erase controls as everything else.
+    companionBrain: { dismissedId: null, dismissedDate: null, lastReflectionDate: null },
   };
 }
 
@@ -221,6 +222,11 @@ export function dismissCompanionSuggestion(id) {
 
 export function isCompanionSuggestionDismissed(id) {
   return state.companionBrain.dismissedDate === todayKey() && state.companionBrain.dismissedId === id;
+}
+
+export function markReflectionShown() {
+  state.companionBrain.lastReflectionDate = todayKey();
+  save();
 }
 
 // ── Privacy controls ─────────────────────────────────────────────────────────

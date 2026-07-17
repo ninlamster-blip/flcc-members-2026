@@ -28,6 +28,7 @@ import {
   isCompanionSuggestionDismissed,
 } from './state.js';
 import { todayKey, daysBetween } from './utils.js';
+import { buildWeeklySummary, structuredReflectionText } from './reflection-engine.js';
 
 const HEAVY_FEELINGS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
 
@@ -76,6 +77,13 @@ function chatSignal(s) {
   };
 }
 
+function reflectionSignal(s) {
+  const last = s.companionBrain.lastReflectionDate;
+  return {
+    daysSinceReflection: last ? daysBetween(last) : null,
+  };
+}
+
 export function buildContext() {
   const s = getState();
   return {
@@ -85,6 +93,7 @@ export function buildContext() {
     ...checkinSignal(s),
     ...heartSignal(),
     ...chatSignal(s),
+    ...reflectionSignal(s),
   };
 }
 
@@ -139,6 +148,25 @@ const RULES = [
     }),
   },
   {
+    // Lower urgency than any of the actionable nudges above — a look back
+    // at the week only matters once nothing more immediate needs attention.
+    // Gated to at most once every 7 days, and only when there's something
+    // to reflect on (see reflection-engine.js hasAnyActivity) — an empty
+    // reflection isn't worth interrupting anyone for.
+    id: 'weekly-reflection',
+    when: (c) => (c.daysSinceReflection === null || c.daysSinceReflection >= 7) && buildWeeklySummary().hasAnyActivity,
+    build: () => {
+      const summary = buildWeeklySummary();
+      return {
+        title: 'Ang linggo mo',
+        message: structuredReflectionText(summary),
+        cta: null,
+        action: { tab: 'home' },
+        isReflection: true, // hint to the caller: try to upgrade this with an AI narrative if connected
+      };
+    },
+  },
+  {
     id: 'encourage',
     when: () => true, // always matches — the default, encouraging fallback
     build: (c) => ({
@@ -174,9 +202,11 @@ export function getTopRecommendation() {
 // A short, plain-language hint for the AI's own conversation opener — never
 // shown to the user as-is, just context so the greeting can fold it in
 // naturally (same spirit as the existing "days away" note in ai.js). Skips
-// the always-on "encourage" fallback: that one isn't worth the AI reciting.
+// the always-on "encourage" fallback (not worth the AI reciting) and the
+// weekly reflection (shown as its own card, with its own AI narrative —
+// folding it into the greeting too would say the same thing twice).
 export function topRecommendationHint() {
   const top = getTopRecommendation();
-  if (!top || top.id === 'encourage') return '';
+  if (!top || top.id === 'encourage' || top.id === 'weekly-reflection') return '';
   return top.message;
 }
