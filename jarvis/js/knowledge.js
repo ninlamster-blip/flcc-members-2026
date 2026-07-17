@@ -11,21 +11,15 @@
 //     this version, Apple Newsroom and Ars Technica for the spec's
 //     Technology/Apple-ecosystem categories). Needs no Anthropic key, only a
 //     Worker URL.
-//   - General knowledge / search (real, only when connected): POST
-//     {proxyUrl}/proxy, same Claude call FLCC Kasama's ai.js makes, but
-//     with a system prompt that contains no personal data at all.
+//   - General knowledge / search (real, only when connected): the shared
+//     ai-client.js transport, but with a system prompt that contains no
+//     personal data at all — the personal agents (js/agents/*.js) use that
+//     same transport differently, with their own personalized prompts.
 // Both are optional: with nothing configured, this module still returns
 // well-formed "not connected" results instead of throwing, same offline-
 // first philosophy as the rest of this repo (see ofw-companion/README.md).
 import { todayKey } from './utils.js';
-
-// Shared with ofw-companion/js/ai.js and ask.html — same origin, same
-// church-wide connection, deliberately reused so a member who already set
-// up Ask FLCC gets JARVIS's Knowledge Tool with zero extra configuration.
-// Do not rename.
-const PROXY_URL_KEY = 'flcc-ask-proxy-url-v1';
-const PROXY_SECRET_KEY = 'flcc-ask-proxy-secret-v1';
-const API_KEY_KEY = 'flcc_ask_apikey';
+import { getConnection, isConnected, callAI } from './ai-client.js';
 
 const CACHE_KEY = 'flcc-jarvis-knowledge:v1';
 
@@ -51,22 +45,7 @@ function saveCache() {
   localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
 }
 
-function getConnection() {
-  try {
-    return {
-      proxyUrl: localStorage.getItem(PROXY_URL_KEY) || '',
-      proxySecret: localStorage.getItem(PROXY_SECRET_KEY) || '',
-      apiKey: localStorage.getItem(API_KEY_KEY) || '',
-    };
-  } catch {
-    return { proxyUrl: '', proxySecret: '', apiKey: '' };
-  }
-}
-
-export function isConnected() {
-  const { proxyUrl, apiKey } = getConnection();
-  return !!(proxyUrl || apiKey);
-}
+export { isConnected };
 
 // /news only exists on the Worker (it isn't a direct-Anthropic-key feature)
 // — a proxy URL is required even if the member otherwise uses a direct key.
@@ -95,22 +74,6 @@ export async function refreshNews() {
   }
 }
 
-function buildEndpointAndHeaders() {
-  const { proxyUrl, proxySecret, apiKey } = getConnection();
-  const headers = { 'Content-Type': 'application/json' };
-  let endpoint;
-  if (proxyUrl) {
-    endpoint = proxyUrl.replace(/\/+$/, '') + '/proxy';
-    if (proxySecret) headers['x-proxy-secret'] = proxySecret;
-  } else {
-    endpoint = 'https://api.anthropic.com/v1/messages';
-    headers['x-api-key'] = apiKey;
-    headers['anthropic-version'] = '2023-06-01';
-    headers['anthropic-dangerous-direct-browser-access'] = 'true';
-  }
-  return { endpoint, headers };
-}
-
 // General-knowledge Q&A / summarization — the spec's "Knowledge Tool:
 // search and summarize information." System prompt is intentionally bare:
 // no journal, no memories, no family names — this is the Global Knowledge
@@ -119,25 +82,11 @@ export async function askGlobalKnowledge(query) {
   if (!isConnected()) {
     return { ok: false, detail: 'No AI connection configured yet — Knowledge Tool can only serve cached news until one is set up.' };
   }
-  const { endpoint, headers } = buildEndpointAndHeaders();
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
-        system: 'You are a general-knowledge assistant. Answer briefly, plainly, and honestly (say so if unsure). You have no information about the user personally — answer only what is asked.',
-        messages: [{ role: 'user', content: query }],
-      }),
-    });
-    const data = await res.json().catch(() => null);
-    if (!res.ok) return { ok: false, detail: data?.error?.message || `Request failed (HTTP ${res.status})` };
-    const text = (data?.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
-    return { ok: true, detail: text || '(no answer returned)' };
-  } catch (err) {
-    return { ok: false, detail: `Couldn't reach the knowledge source: ${err.message}` };
-  }
+  return callAI({
+    system: 'You are a general-knowledge assistant. Answer briefly, plainly, and honestly (say so if unsure). You have no information about the user personally — answer only what is asked.',
+    message: query,
+    maxTokens: 400,
+  });
 }
 
 export function briefingShownToday() {

@@ -16,6 +16,8 @@
 // *what* to remember is Act's job; deciding what a memory *implies* is
 // Learn's job.
 
+import { uid } from './utils.js';
+
 const STORAGE_KEY = 'flcc-jarvis:v1';
 
 function defaultState() {
@@ -29,6 +31,7 @@ function defaultState() {
       profile: { name: 'Allen', location: 'Kuwait' },
       family: [], // { name, note }
       goals: [], // { text, addedAt }
+      reminders: [], // { id, text, addedAt } — Creator Agent's "create reminders"
       facts: [], // { t, text } — "Allen prefers gentle reminders" etc.
     },
     learned: {
@@ -102,6 +105,21 @@ export function rememberFact(text) {
 
 export function addGoal(text) {
   state.longTerm.goals.unshift({ text, addedAt: Date.now() });
+  save();
+}
+
+export function addReminder(text) {
+  state.longTerm.reminders.unshift({ id: uid(), text, addedAt: Date.now() });
+  save();
+}
+
+export function removeReminder(id) {
+  state.longTerm.reminders = state.longTerm.reminders.filter((r) => r.id !== id);
+  save();
+}
+
+export function addFamilyMember(name, note = '') {
+  state.longTerm.family.unshift({ name, note });
   save();
 }
 

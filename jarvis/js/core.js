@@ -12,14 +12,15 @@
 //   |          |          |          |
 //  Faith    Family    Creator    Knowledge
 //
-// V0.1 note: the four agents below are routing labels Plan already attaches
-// to each step (see plan.js) plus a short description for the UI — real
-// specialist modules with their own logic land in V0.3. Core's job today is
-// what the spec asks of it regardless of version: manage agents, decide who
-// handles what, coordinate actions, maintain context.
+// Since V0.3, Faith/Family/Creator are real modules (js/agents/*.js) with
+// their own understand()/plan() — plan.js routes to them directly, and the
+// AGENTS registry below reads its name/description straight off each
+// module instead of duplicating it. Knowledge (V0.2) stays engine-shaped
+// (js/knowledge.js) rather than growing a fourth agents/ module; it's
+// small enough that the extra layer wouldn't earn its keep yet.
 import { todayKey } from './utils.js';
 import {
-  rollShortTermIfNewDay, pushObservation, getMemory,
+  rollShortTermIfNewDay, pushObservation, getMemory, addGoal, addFamilyMember,
   recordFeedback as memoryRecordFeedback, exportMemory, eraseMemory as erasePersonalMemory,
 } from './memory.js';
 import { buildContext, describeContext } from './observe.js';
@@ -32,11 +33,14 @@ import {
   refreshNews, getCachedNews, askGlobalKnowledge, isConnected as knowledgeConnected,
   eraseKnowledgeCache,
 } from './knowledge.js';
+import * as faith from './agents/faith.js';
+import * as family from './agents/family.js';
+import * as creator from './agents/creator.js';
 
 export const AGENTS = {
-  faith: { name: 'Faith Agent', description: 'Devotions, prayer, scripture rhythms.' },
-  family: { name: 'Family Agent', description: 'Relationships, connection, screen-time balance.' },
-  creator: { name: 'Creator Agent', description: 'Ideas, reminders, generated content.' },
+  faith: { name: faith.name, description: faith.description },
+  family: { name: family.name, description: family.description },
+  creator: { name: creator.name, description: creator.description },
   knowledge: { name: 'Knowledge Agent', description: 'News, facts, general questions — kept separate from personal memory.' },
 };
 
@@ -119,3 +123,13 @@ export function eraseMemory() {
 // invoking the tool themselves, not JARVIS deciding to. Kept separate from
 // personal memory at every layer (see knowledge.js's own header comment).
 export { refreshNews, getCachedNews, askGlobalKnowledge, knowledgeConnected };
+
+// Direct Personal Agent access for the UI's own "generate" buttons and
+// small add-a-goal/family-member/reminder forms — same reasoning as the
+// Knowledge Tool access above: the user invoking a tool directly, not
+// JARVIS deciding to via Plan.
+export const generatePrayer = faith.generatePrayer;
+export const suggestConnectionIdea = family.suggestConnectionIdea;
+export const generateIdea = creator.generateIdea;
+export const createReminder = creator.createReminder;
+export { addGoal, addFamilyMember };

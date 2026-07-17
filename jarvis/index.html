@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0B0F14">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.2: Agentic Core + Knowledge Engine).">
+<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.3: Agentic Core + Knowledge + Personal Agents).">
 <title>JARVIS</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="style.css">
@@ -14,13 +14,13 @@
 <div id="jv-root">
 
   <header class="jv-header">
-    <h1>JARVIS <span class="jv-version">v0.2 — Agentic Core + Knowledge</span></h1>
+    <h1>JARVIS <span class="jv-version">v0.3 — Agentic Core + Knowledge + Personal Agents</span></h1>
     <p class="jv-sub">Observe &rarr; Understand &rarr; Plan &rarr; Act &rarr; Reflect &rarr; Learn</p>
   </header>
 
   <section class="jv-card" aria-label="Observe">
     <h2>1. Observe</h2>
-    <p class="jv-hint">V0.1 has no live Calendar/Home integrations yet, so feed JARVIS today's signals by hand — this is the same shape a real Calendar/Presence source will fill in automatically from V0.2 onward.</p>
+    <p class="jv-hint">There's no live Calendar/Home integration yet, so feed JARVIS today's signals by hand — this is the same shape a real Calendar/Presence source will fill in automatically once one exists.</p>
     <form id="jv-observe-form">
       <label>Allen's status
         <select name="allenStatus">
@@ -54,6 +54,52 @@
       <button type="submit">Ask</button>
     </form>
     <p id="jv-ask-answer" class="jv-context-line"></p>
+  </section>
+
+  <section class="jv-card" aria-label="Faith Agent">
+    <h2>🙏 Faith Agent <span class="jv-hint-inline">Devotions, prayer, scripture rhythms</span></h2>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-faith-prayer">Generate a prayer</button>
+    </div>
+    <p id="jv-faith-output" class="jv-context-line"></p>
+  </section>
+
+  <section class="jv-card" aria-label="Family Agent">
+    <h2>👨‍👩‍👦 Family Agent <span class="jv-hint-inline">Relationships, connection, screen-time balance</span></h2>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-family-idea">Suggest a connection idea</button>
+    </div>
+    <p id="jv-family-output" class="jv-context-line"></p>
+
+    <h3>Family members on file</h3>
+    <ul id="jv-family-list" class="jv-list"></ul>
+    <form id="jv-family-form" class="jv-ask-form">
+      <input type="text" name="name" placeholder="Name" style="flex:0 0 120px;">
+      <input type="text" name="note" placeholder="Note (e.g. son, loves gaming)">
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+  <section class="jv-card" aria-label="Creator Agent">
+    <h2>💡 Creator Agent <span class="jv-hint-inline">Ideas, reminders, generated content</span></h2>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-creator-idea">Suggest an idea</button>
+    </div>
+    <p id="jv-creator-output" class="jv-context-line"></p>
+
+    <h3>Reminders</h3>
+    <ul id="jv-reminder-list" class="jv-list"></ul>
+    <form id="jv-reminder-form" class="jv-ask-form">
+      <input type="text" name="text" placeholder="New reminder">
+      <button type="submit">Add</button>
+    </form>
+
+    <h3>Personal goals <span class="jv-hint-inline">(Plan gently surfaces these once a week)</span></h3>
+    <ul id="jv-goal-list" class="jv-list"></ul>
+    <form id="jv-goal-form" class="jv-ask-form">
+      <input type="text" name="text" placeholder="New goal">
+      <button type="submit">Add</button>
+    </form>
   </section>
 
   <section class="jv-card" aria-label="Current state" id="jv-context-card" hidden>

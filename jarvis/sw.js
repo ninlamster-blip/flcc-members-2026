@@ -1,12 +1,13 @@
 // Minimal offline cache for the JARVIS app shell, same pattern as
 // ../daily-blessing/sw.js and ../ofw-companion/sw.js.
-const CACHE = 'jarvis-v1';
+const CACHE = 'jarvis-v2';
 const SHELL = [
   './',
   './index.html',
   './style.css',
   './app.js',
   './js/utils.js',
+  './js/style.js',
   './js/memory.js',
   './js/observe.js',
   './js/understand.js',
@@ -14,9 +15,13 @@ const SHELL = [
   './js/act.js',
   './js/tools.js',
   './js/knowledge.js',
+  './js/ai-client.js',
   './js/reflect.js',
   './js/learn.js',
   './js/core.js',
+  './js/agents/faith.js',
+  './js/agents/family.js',
+  './js/agents/creator.js',
 ];
 
 self.addEventListener('install', (event) => {

@@ -8,7 +8,7 @@
 // Calendar and Home are still declared — so the registry shape doesn't
 // change later — but return a clear "not connected yet" result until V0.4
 // (Home) / a future Calendar source.
-import { rememberFact } from './memory.js';
+import { rememberFact, setPreference } from './memory.js';
 import { getCachedNews, askGlobalKnowledge, markBriefingShown } from './knowledge.js';
 
 function notImplemented(toolName, version) {
@@ -73,6 +73,16 @@ export const TOOLS = {
       if (query) return askGlobalKnowledge(query);
       markBriefingShown();
       return { ok: true, detail: newsBriefingText() };
+    },
+  },
+
+  goalsReminder: {
+    label: 'Creator Tool — goals reminder',
+    // Marks the weekly gate only once actually delivered — same rule the
+    // Knowledge Tool's daily briefing follows above.
+    run({ message }) {
+      setPreference('lastGoalsReviewDate', Date.now());
+      return { ok: true, detail: message };
     },
   },
 };

@@ -1,6 +1,7 @@
-// Demo dashboard for the JARVIS Agentic Core (V0.1). Wires the DOM to
-// core.js's tick()/approve()/deny()/recordFeedback() — no logic lives here,
-// this file only renders whatever the loop returns and forwards clicks.
+// Demo dashboard for the JARVIS Agentic Core. Wires the DOM to core.js's
+// tick()/approve()/deny()/recordFeedback() plus the Knowledge/Faith/Family/
+// Creator agents' direct capabilities — no logic lives here, this file only
+// renders whatever core.js returns and forwards clicks.
 import * as core from './js/core.js';
 import { getPreference } from './js/memory.js';
 
@@ -166,6 +167,54 @@ function renderNewsList() {
   }
 }
 
+function renderFamilyList() {
+  const { family } = core.getMemorySnapshot().longTerm;
+  const ul = $('#jv-family-list');
+  ul.innerHTML = '';
+  if (family.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No family members on file yet.' }));
+    return;
+  }
+  for (const f of family) {
+    const li = el('li', { className: 'jv-item' });
+    li.appendChild(el('div', { text: f.name }));
+    if (f.note) li.appendChild(el('div', { className: 'jv-item-empty', text: f.note }));
+    ul.appendChild(li);
+  }
+}
+
+function renderReminderList() {
+  const { reminders } = core.getMemorySnapshot().longTerm;
+  const ul = $('#jv-reminder-list');
+  ul.innerHTML = '';
+  if (reminders.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No reminders yet.' }));
+    return;
+  }
+  for (const r of reminders) {
+    ul.appendChild(el('li', { className: 'jv-item', text: r.text }));
+  }
+}
+
+function renderGoalList() {
+  const { goals } = core.getMemorySnapshot().longTerm;
+  const ul = $('#jv-goal-list');
+  ul.innerHTML = '';
+  if (goals.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No goals on file yet.' }));
+    return;
+  }
+  for (const g of goals) {
+    ul.appendChild(el('li', { className: 'jv-item', text: g.text }));
+  }
+}
+
+function renderAgentLists() {
+  renderFamilyList();
+  renderReminderList();
+  renderGoalList();
+}
+
 async function runTick(signals) {
   const report = await core.tick(signals);
 
@@ -221,6 +270,68 @@ $('#jv-ask-form').addEventListener('submit', async (e) => {
   answerEl.textContent = result.detail;
 });
 
+$('#jv-faith-prayer').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  const out = $('#jv-faith-output');
+  out.textContent = 'Writing…';
+  const result = await core.generatePrayer();
+  out.textContent = result.detail;
+  btn.disabled = false;
+});
+
+$('#jv-family-idea').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  const out = $('#jv-family-output');
+  out.textContent = 'Thinking…';
+  const result = await core.suggestConnectionIdea();
+  out.textContent = result.detail;
+  btn.disabled = false;
+});
+
+$('#jv-family-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  const name = data.get('name')?.toString().trim();
+  const note = data.get('note')?.toString().trim() || '';
+  if (!name) return;
+  core.addFamilyMember(name, note);
+  e.target.reset();
+  renderFamilyList();
+  renderMemory();
+});
+
+$('#jv-creator-idea').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  const out = $('#jv-creator-output');
+  out.textContent = 'Thinking…';
+  const result = await core.generateIdea();
+  out.textContent = result.detail;
+  btn.disabled = false;
+});
+
+$('#jv-reminder-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = new FormData(e.target).get('text')?.toString().trim();
+  if (!text) return;
+  core.createReminder(text);
+  e.target.reset();
+  renderReminderList();
+  renderMemory();
+});
+
+$('#jv-goal-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = new FormData(e.target).get('text')?.toString().trim();
+  if (!text) return;
+  core.addGoal(text);
+  e.target.reset();
+  renderGoalList();
+  renderMemory();
+});
+
 $('#jv-export').addEventListener('click', () => {
   const blob = new Blob([core.exportMemory()], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -236,9 +347,11 @@ $('#jv-erase').addEventListener('click', () => {
   core.eraseMemory();
   renderMemory();
   renderStyleLine();
+  renderAgentLists();
 });
 
 renderStyleLine();
 renderMemory();
 renderKnowledgeStatus();
 renderNewsList();
+renderAgentLists();
