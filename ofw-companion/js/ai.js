@@ -276,3 +276,23 @@ export async function wellbeingInsight() {
     maxTokens: 250,
   });
 }
+
+// ── Weekly reflection (js/reflection-engine.js) ──────────────────────────────
+// Turns a locally-computed weekly summary into a warm paragraph. Called only
+// when connected — the structured, non-AI text from reflection-engine.js is
+// always shown first and stands on its own if this fails or isn't reachable.
+export async function weeklyReflection(summary) {
+  const facts = [
+    summary.checkinCount > 0 ? `${summary.checkinCount} wellbeing check-in(s) this week` : null,
+    summary.journalCount > 0 ? `${summary.journalCount} journal entr${summary.journalCount === 1 ? 'y' : 'ies'} this week` : null,
+    summary.avgMoodWord ? `average mood this week: ${summary.avgMoodWord}` : null,
+    summary.moodTrend !== 'unknown' ? `mood trend vs. the week before: ${summary.moodTrend}` : null,
+    summary.gratitudeMoments.length ? `things they were grateful for this week: ${summary.gratitudeMoments.join('; ')}` : null,
+  ].filter(Boolean).join('\n');
+
+  return callClaude({
+    system: 'You are a gentle wellbeing companion for an Overseas Filipino Worker, writing a short weekly reflection. Warm, encouraging Taglish or English, 2-4 sentences, addressed directly to them (you/mo). NEVER judgmental or guilt-tripping, even if the week was quiet — a quiet week deserves gentleness, not a reminder of what they missed. Celebrate any gratitude or consistency genuinely, without exaggerating. If there is very little data, write something warm and general instead of commenting on the lack of activity. Output only the reflection, nothing else.',
+    messages: [{ role: 'user', content: facts ? `This week:\n${facts}` : 'Very little was recorded this week.' }],
+    maxTokens: 220,
+  });
+}

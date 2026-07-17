@@ -1,6 +1,6 @@
 // Kaibigan — the AI companion view: heart check-in, conversation, voice.
-import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion } from './state.js';
-import { companionReply, companionOpener, isConnected, speakNatural } from './ai.js';
+import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown } from './state.js';
+import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom, todayKey,
   detectsCrisis, classifyHeart,
@@ -8,6 +8,7 @@ import {
 import { openBreathing } from './sanctuary.js';
 import { createHeaderController } from './header.js';
 import { getTopRecommendation, topRecommendationHint } from './companion-brain.js';
+import { buildWeeklySummary } from './reflection-engine.js';
 
 // Heart categories that deserve an immediate, gentle "Hinga Muna" offer.
 const HEAVY_CATS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
@@ -109,6 +110,22 @@ function renderBrainCard() {
     els.brainCta.hidden = true;
   }
   els.brainCard.hidden = false;
+
+  if (currentBrainRec.isReflection) {
+    markReflectionShown(); // once shown (even just the structured text), don't show again for a week
+    if (isConnected()) {
+      const recId = currentBrainRec.id;
+      weeklyReflection(buildWeeklySummary())
+        .then((text) => {
+          // Guard against a stale response landing after the card moved on
+          // (dismissed, or a higher-priority suggestion replaced it).
+          if (currentBrainRec?.id === recId && !els.brainCard.hidden) {
+            els.brainMessage.textContent = text;
+          }
+        })
+        .catch(() => {}); // the structured fallback already shown stands on its own
+    }
+  }
 }
 
 export function refreshBrainCard() {
