@@ -1,5 +1,5 @@
 // Kaibigan — the AI companion view: heart check-in, conversation, voice.
-import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown } from './state.js';
+import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown, markMemoryFollowedUp } from './state.js';
 import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection, growthInsight } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom, todayKey,
@@ -10,6 +10,7 @@ import { createHeaderController } from './header.js';
 import { getTopRecommendation, topRecommendationHint } from './companion-brain.js';
 import { buildWeeklySummary } from './reflection-engine.js';
 import { findGrowthHighlight } from './growth-engine.js';
+import { pickGreetingHint } from './relationship-engine.js';
 
 // Companion Brain suggestion cards that come with their own AI narrative
 // upgrade: the structured (offline-safe) text renders first, and — only
@@ -234,12 +235,14 @@ async function maybeGreetNewDay() {
   }
   const typing = showTyping();
   try {
-    const opener = await companionOpener(daysAway, topRecommendationHint());
+    const hint = pickGreetingHint(topRecommendationHint());
+    const opener = await companionOpener(daysAway, hint.text);
     typing.remove();
     if (opener) {
       addChatMessage('assistant', opener);
       appendBubble('ai', opener);
       speakIfEnabled(opener);
+      if (hint.followUpMemoryText) markMemoryFollowedUp(hint.followUpMemoryText);
     }
   } catch {
     typing.remove();
