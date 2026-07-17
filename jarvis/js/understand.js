@@ -72,6 +72,17 @@ function morningDevotionUnderstanding(c) {
   };
 }
 
+function knowledgeBriefingUnderstanding(c) {
+  if (c.newsCount === 0 || c.knowledgeBriefingShownToday) return null;
+  return {
+    id: 'knowledge-briefing',
+    situation: `${c.newsCount} news headline${c.newsCount === 1 ? '' : 's'} available (Latest AI/world/tech news).`,
+    needsAttention: true,
+    intent: 'Fresh general knowledge is available and hasn\'t been shared today.',
+    goal: 'Keep Allen informed without overwhelming him with a full feed.',
+  };
+}
+
 function goalsReviewUnderstanding(c) {
   if (c.openGoals.length === 0) return null;
   return {
@@ -89,6 +100,7 @@ const DETECTORS = [
   workingUnderstanding,
   eveningWindDownUnderstanding,
   morningDevotionUnderstanding,
+  knowledgeBriefingUnderstanding,
   goalsReviewUnderstanding,
 ];
 

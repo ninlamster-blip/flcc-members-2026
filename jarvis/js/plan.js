@@ -107,6 +107,19 @@ export function buildPlan(context, understandings) {
     });
   }
 
+  const knowledgeBriefing = findings(understandings, 'knowledge-briefing');
+  if (knowledgeBriefing?.needsAttention) {
+    steps.push({
+      id: 'knowledge-briefing',
+      agent: 'knowledge',
+      mode: working ? 'wait' : 'notify',
+      requiresApproval: false,
+      target: 'allen',
+      message: `${knowledgeBriefing.situation} Want today's headlines?`,
+      tool: { name: 'knowledge', params: {} },
+    });
+  }
+
   const goals = findings(understandings, 'goals-review');
   if (goals) {
     const lastReviewed = getPreference('lastGoalsReviewDate', null);

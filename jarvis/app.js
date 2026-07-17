@@ -98,8 +98,8 @@ function renderPending(pending) {
     const approveBtn = el('button', { text: 'Approve & send' });
     const denyBtn = el('button', { text: 'Deny' });
     const outcome = el('div', { className: 'jv-feedback-given' });
-    approveBtn.addEventListener('click', () => {
-      const { result } = core.approve(step.id);
+    approveBtn.addEventListener('click', async () => {
+      const { result } = await core.approve(step.id);
       outcome.textContent = result.detail;
       actions.remove();
     });
@@ -142,8 +142,32 @@ function renderStyleLine() {
     `Current learned message style: "${getPreference('style', 'encouraging-first')}".`;
 }
 
-function runTick(signals) {
-  const report = core.tick(signals);
+function renderKnowledgeStatus() {
+  $('#jv-knowledge-status').textContent = core.knowledgeConnected()
+    ? 'AI connection found (shares FLCC Kasama\'s Ask FLCC setup on this device) — news and Q&A both available.'
+    : 'No AI connection configured on this device yet — set up a Worker URL in FLCC Kasama\'s Settings to enable live news and Q&A.';
+}
+
+function renderNewsList() {
+  const { items, fetchedAt } = core.getCachedNews();
+  const ul = $('#jv-news-list');
+  ul.innerHTML = '';
+  if (items.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No headlines cached yet — try "Refresh news".' }));
+    return;
+  }
+  const when = fetchedAt ? new Date(fetchedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '';
+  ul.appendChild(el('li', { className: 'jv-item-empty', text: `Fetched ${when}` }));
+  for (const item of items.slice(0, 8)) {
+    const li = el('li', { className: 'jv-item' });
+    li.appendChild(el('div', { text: `${item.sourceIcon || ''} ${item.headline}`.trim() }));
+    li.appendChild(el('div', { className: 'jv-item-empty', text: item.source }));
+    ul.appendChild(li);
+  }
+}
+
+async function runTick(signals) {
+  const report = await core.tick(signals);
 
   $('#jv-context-card').hidden = false;
   $('#jv-context-line').textContent = report.contextSummary || '(nothing observed)';
@@ -160,7 +184,7 @@ function runTick(signals) {
   renderMemory();
 }
 
-$('#jv-observe-form').addEventListener('submit', (e) => {
+$('#jv-observe-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const data = new FormData(e.target);
   const allenStatus = data.get('allenStatus');
@@ -168,12 +192,33 @@ $('#jv-observe-form').addEventListener('submit', (e) => {
   const devotionScheduled = data.get('devotionScheduled') === 'on';
   const environmentNote = data.get('environmentNote') || '';
 
-  runTick({
+  await runTick({
     presence: { Allen: allenStatus },
     events: devotionScheduled ? [{ label: 'Family devotion', note: '' }] : [],
     environmentNote,
     raw: { jaredGamingHours },
   });
+});
+
+$('#jv-refresh-news').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Refreshing…';
+  const result = await core.refreshNews();
+  btn.disabled = false;
+  btn.textContent = 'Refresh news';
+  renderNewsList();
+  if (!result.ok) $('#jv-knowledge-status').textContent = result.detail;
+});
+
+$('#jv-ask-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const query = new FormData(e.target).get('query')?.toString().trim();
+  if (!query) return;
+  const answerEl = $('#jv-ask-answer');
+  answerEl.textContent = 'Thinking…';
+  const result = await core.askGlobalKnowledge(query);
+  answerEl.textContent = result.detail;
 });
 
 $('#jv-export').addEventListener('click', () => {
@@ -195,3 +240,5 @@ $('#jv-erase').addEventListener('click', () => {
 
 renderStyleLine();
 renderMemory();
+renderKnowledgeStatus();
+renderNewsList();

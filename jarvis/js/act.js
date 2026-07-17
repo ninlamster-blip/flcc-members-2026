@@ -11,9 +11,12 @@
 //                         for the caller to hold until the user approves or
 //                         denies (see executeStep(), called later by
 //                         core.js's approve()).
+//
+// Async throughout: real tools do real I/O (the Knowledge Tool fetches
+// news/asks an AI over the network), so every step's tool.run() is awaited.
 import { TOOLS } from './tools.js';
 
-export function runPlan(steps) {
+export async function runPlan(steps) {
   const executed = [];
   const pending = [];
   const deferred = [];
@@ -27,7 +30,7 @@ export function runPlan(steps) {
       pending.push(step);
       continue;
     }
-    executed.push(executeStep(step));
+    executed.push(await executeStep(step));
   }
 
   return { executed, pending, deferred };
@@ -36,8 +39,8 @@ export function runPlan(steps) {
 // Runs exactly one step's tool and returns the result attached to the step
 // — shared by runPlan() above and core.js's approve()/deny() so an
 // approved step is executed through the same path as an automatic one.
-export function executeStep(step) {
+export async function executeStep(step) {
   const tool = TOOLS[step.tool.name];
-  const result = tool.run({ message: step.message, to: step.target, ...step.tool.params });
+  const result = await tool.run({ message: step.message, to: step.target, ...step.tool.params });
   return { step, result };
 }

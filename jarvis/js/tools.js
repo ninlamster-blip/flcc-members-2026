@@ -1,15 +1,24 @@
 // Agent Tools — the fixed toolset Act draws from, per the spec's "Agent
-// Tools" section. Each tool is `{ label, run(params) -> { ok, detail } }`.
+// Tools" section. Each tool is `{ label, run(params) -> { ok, detail } }`
+// (run may be async — act.js always awaits it).
 //
-// V0.1 wires up Memory and Communication for real (the pieces the Agentic
-// Core needs to close its own loop); Calendar, Home, and Knowledge are
-// declared now — so the registry shape doesn't change later — but return a
-// clear "not connected yet" result until their versions land (V0.2
-// Knowledge, V0.4 Home; Calendar awaits a real Calendar source).
+// Memory and Communication were wired up for real in V0.1; Knowledge joins
+// them in V0.2 (see knowledge.js — live news plus an optional AI-backed
+// search/summarize, kept structurally separate from Personal Memory).
+// Calendar and Home are still declared — so the registry shape doesn't
+// change later — but return a clear "not connected yet" result until V0.4
+// (Home) / a future Calendar source.
 import { rememberFact } from './memory.js';
+import { getCachedNews, askGlobalKnowledge, markBriefingShown } from './knowledge.js';
 
 function notImplemented(toolName, version) {
   return { ok: false, detail: `${toolName} isn't connected yet — arrives in ${version}.` };
+}
+
+function newsBriefingText() {
+  const { items } = getCachedNews();
+  if (!items.length) return 'No cached headlines yet — use "Refresh news" in the Knowledge panel first.';
+  return items.slice(0, 3).map((it) => `${it.sourceIcon || ''} ${it.headline}`.trim()).join(' | ');
 }
 
 export const TOOLS = {
@@ -57,8 +66,13 @@ export const TOOLS = {
 
   knowledge: {
     label: 'Knowledge Tool',
-    run() {
-      return notImplemented('Knowledge Tool', 'V0.2');
+    // Two modes: a free-text `query` (search/summarize, needs an AI
+    // connection) or the daily briefing (just today's cached headlines —
+    // works with only a Worker URL, no Anthropic key needed).
+    async run({ query }) {
+      if (query) return askGlobalKnowledge(query);
+      markBriefingShown();
+      return { ok: true, detail: newsBriefingText() };
     },
   },
 };

@@ -20,7 +20,7 @@
 import { todayKey } from './utils.js';
 import {
   rollShortTermIfNewDay, pushObservation, getMemory,
-  recordFeedback as memoryRecordFeedback, exportMemory, eraseMemory,
+  recordFeedback as memoryRecordFeedback, exportMemory, eraseMemory as erasePersonalMemory,
 } from './memory.js';
 import { buildContext, describeContext } from './observe.js';
 import { buildUnderstanding } from './understand.js';
@@ -28,12 +28,16 @@ import { buildPlan } from './plan.js';
 import { runPlan, executeStep } from './act.js';
 import { reflectOn } from './reflect.js';
 import { recordStyleOutcome } from './learn.js';
+import {
+  refreshNews, getCachedNews, askGlobalKnowledge, isConnected as knowledgeConnected,
+  eraseKnowledgeCache,
+} from './knowledge.js';
 
 export const AGENTS = {
   faith: { name: 'Faith Agent', description: 'Devotions, prayer, scripture rhythms.' },
   family: { name: 'Family Agent', description: 'Relationships, connection, screen-time balance.' },
   creator: { name: 'Creator Agent', description: 'Ideas, reminders, generated content.' },
-  knowledge: { name: 'Knowledge Agent', description: 'Memory, facts, information.' },
+  knowledge: { name: 'Knowledge Agent', description: 'News, facts, general questions — kept separate from personal memory.' },
 };
 
 // Steps from the most recent tick, keyed by id, so approve()/deny()/
@@ -43,7 +47,7 @@ export const AGENTS = {
 // tick is already in memory.js by the time this map would be lost.
 let lastSteps = new Map();
 
-export function tick(signals = {}) {
+export async function tick(signals = {}) {
   const today = todayKey();
   rollShortTermIfNewDay(today);
 
@@ -52,7 +56,7 @@ export function tick(signals = {}) {
 
   const understandings = buildUnderstanding(context);
   const plan = buildPlan(context, understandings);
-  const { executed, pending, deferred } = runPlan(plan);
+  const { executed, pending, deferred } = await runPlan(plan);
 
   lastSteps = new Map(plan.map((s) => [s.id, s]));
 
@@ -67,7 +71,7 @@ export function tick(signals = {}) {
   };
 }
 
-export function approve(actionId) {
+export async function approve(actionId) {
   const step = lastSteps.get(actionId);
   if (!step) return null;
   return executeStep(step);
@@ -99,4 +103,19 @@ export function getMemorySnapshot() {
   return getMemory();
 }
 
-export { exportMemory, eraseMemory };
+export { exportMemory };
+
+// "Erase everything" wipes both stores — Personal Memory and the Knowledge
+// Engine's own cache — even though they're deliberately separate the rest
+// of the time; from the user's side, one button should mean everything on
+// this device is gone.
+export function eraseMemory() {
+  erasePersonalMemory();
+  eraseKnowledgeCache();
+}
+
+// Direct Knowledge Tool access for the UI's "ask a question" / "refresh
+// news" controls — these don't go through Plan because they're the user
+// invoking the tool themselves, not JARVIS deciding to. Kept separate from
+// personal memory at every layer (see knowledge.js's own header comment).
+export { refreshNews, getCachedNews, askGlobalKnowledge, knowledgeConnected };

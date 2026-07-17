@@ -13,6 +13,7 @@ const SHELL = [
   './js/plan.js',
   './js/act.js',
   './js/tools.js',
+  './js/knowledge.js',
   './js/reflect.js',
   './js/learn.js',
   './js/core.js',

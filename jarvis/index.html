@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0B0F14">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.1 Agentic Core).">
+<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.2: Agentic Core + Knowledge Engine).">
 <title>JARVIS</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="style.css">
@@ -14,7 +14,7 @@
 <div id="jv-root">
 
   <header class="jv-header">
-    <h1>JARVIS <span class="jv-version">v0.1 — Agentic Core</span></h1>
+    <h1>JARVIS <span class="jv-version">v0.2 — Agentic Core + Knowledge</span></h1>
     <p class="jv-sub">Observe &rarr; Understand &rarr; Plan &rarr; Act &rarr; Reflect &rarr; Learn</p>
   </header>
 
@@ -38,6 +38,22 @@
       </label>
       <button type="submit" class="jv-primary">Run tick</button>
     </form>
+  </section>
+
+  <section class="jv-card" aria-label="Knowledge Engine">
+    <h2>Knowledge Engine <span class="jv-hint-inline">(Global Knowledge — kept separate from Personal Memory)</span></h2>
+    <p id="jv-knowledge-status" class="jv-hint"></p>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-refresh-news">Refresh news</button>
+    </div>
+    <ul id="jv-news-list" class="jv-list" style="margin-top:10px;"></ul>
+
+    <h3>Ask a general question</h3>
+    <form id="jv-ask-form" class="jv-ask-form">
+      <input type="text" name="query" placeholder="e.g. What's new with Apple this year?">
+      <button type="submit">Ask</button>
+    </form>
+    <p id="jv-ask-answer" class="jv-context-line"></p>
   </section>
 
   <section class="jv-card" aria-label="Current state" id="jv-context-card" hidden>

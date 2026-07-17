@@ -189,6 +189,22 @@ button {
   margin-top: 6px;
 }
 
+.jv-ask-form {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.jv-ask-form input {
+  flex: 1;
+}
+
+.jv-ask-form button {
+  background: var(--jv-bg);
+  border: 1px solid var(--jv-border);
+  color: var(--jv-text);
+}
+
 .jv-memory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

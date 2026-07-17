@@ -14,10 +14,12 @@
 //     boundary explicit means swapping a manual toggle for a real Calendar
 //     Tool later only changes where `signals` comes from, not this file.
 import { getMemory } from './memory.js';
+import { getCachedNews, briefingShownToday } from './knowledge.js';
 import { todayKey, partOfDay } from './utils.js';
 
 export function buildContext(signals = {}) {
   const mem = getMemory();
+  const news = getCachedNews();
   const now = new Date();
   return {
     today: todayKey(now),
@@ -31,9 +33,18 @@ export function buildContext(signals = {}) {
     // Weather/Home Tool output once those exist.
     environmentNote: signals.environmentNote || '',
     // Long-term memory surfaced into today's context, so Understand/Plan
-    // don't need to reach into memory.js themselves.
+    // don't need to reach into memory.js themselves. Personal — from
+    // memory.js.
     knownFacts: mem.longTerm.facts.slice(0, 5).map((f) => f.text),
     openGoals: mem.longTerm.goals.slice(0, 5).map((g) => g.text),
+    // Knowledge Context (Global Knowledge — from knowledge.js, a wholly
+    // separate store; see that file's header comment). Observe's job is to
+    // fuse personal and global context into one state for Understand/Plan
+    // to read; it does not blur where each piece of data actually lives.
+    newsHeadlines: news.items.slice(0, 3).map((it) => it.headline),
+    newsCount: news.items.length,
+    newsFetchedToday: news.fetchedAt ? todayKey(new Date(news.fetchedAt)) === todayKey(now) : false,
+    knowledgeBriefingShownToday: briefingShownToday(),
     // Raw interaction signals for this tick — e.g. a screen-time reading.
     ...signals.raw,
   };
