@@ -167,6 +167,42 @@ function renderNewsList() {
   }
 }
 
+function renderHomeStatus() {
+  $('#jv-home-status').textContent = core.homeConnected()
+    ? 'Home Assistant connection configured — device list and controls below are live.'
+    : 'No Home Assistant connection configured yet — enter its URL and a Long-Lived Access Token below.';
+}
+
+function renderDeviceList() {
+  const { devices, fetchedAt } = core.getCachedDevices();
+  const ul = $('#jv-device-list');
+  ul.innerHTML = '';
+  if (devices.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No devices cached yet — try "Refresh devices".' }));
+    return;
+  }
+  const when = fetchedAt ? new Date(fetchedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '';
+  ul.appendChild(el('li', { className: 'jv-item-empty', text: `Fetched ${when}` }));
+  for (const device of devices) {
+    const li = el('li', { className: 'jv-item' });
+    li.appendChild(el('div', { text: `${device.name} — ${device.state}` }));
+
+    const actions = el('div', { className: 'jv-item-actions' });
+    const outcome = el('div', { className: 'jv-feedback-given' });
+    for (const [label, action] of [['▶️', 'play'], ['⏸️', 'pause'], ['🔉', 'volumeDown'], ['🔊', 'volumeUp'], ['⏻', 'turnOff']]) {
+      const btn = el('button', { text: label });
+      btn.addEventListener('click', async () => {
+        const result = await core.controlDevice(device.entityId, action);
+        outcome.textContent = result.detail;
+      });
+      actions.appendChild(btn);
+    }
+    li.appendChild(actions);
+    li.appendChild(outcome);
+    ul.appendChild(li);
+  }
+}
+
 function renderFamilyList() {
   const { family } = core.getMemorySnapshot().longTerm;
   const ul = $('#jv-family-list');
@@ -270,6 +306,28 @@ $('#jv-ask-form').addEventListener('submit', async (e) => {
   answerEl.textContent = result.detail;
 });
 
+$('#jv-home-connect-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  const baseUrl = data.get('baseUrl')?.toString().trim();
+  const token = data.get('token')?.toString().trim();
+  if (!baseUrl || !token) return;
+  core.saveHomeConnection(baseUrl, token);
+  e.target.reset();
+  renderHomeStatus();
+});
+
+$('#jv-refresh-devices').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Refreshing…';
+  const result = await core.refreshDevices();
+  btn.disabled = false;
+  btn.textContent = 'Refresh devices';
+  renderDeviceList();
+  if (!result.ok) $('#jv-home-status').textContent = result.detail;
+});
+
 $('#jv-faith-prayer').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   btn.disabled = true;
@@ -354,4 +412,6 @@ renderStyleLine();
 renderMemory();
 renderKnowledgeStatus();
 renderNewsList();
+renderHomeStatus();
+renderDeviceList();
 renderAgentLists();

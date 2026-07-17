@@ -5,16 +5,20 @@
 //   "Allen is home. Time: 8:30 PM. Weather: Hot Kuwait evening.
 //    Family devotion scheduled. Jared gaming for 2 hours."
 //
-// V0.1 has no live Calendar/Home/Weather integrations yet (those are
-// V0.2-V0.4 in the spec's own roadmap), so this reads two kinds of source:
+// There's still no live Calendar/Weather integration, so this reads a mix
+// of sources:
 //   - Environment: computed locally (time, date, part of day) — always on.
+//   - Device/home status (real, since V0.4): home.js's cached Home
+//     Assistant device list — its own store, same fuse-but-separate
+//     pattern as Knowledge (see below).
 //   - Everything else (presence, family events, screen time, interests):
-//     passed in as `signals`, the same shape a future Calendar/Home/Message
+//     passed in as `signals`, the same shape a future Calendar/Message
 //     integration would eventually populate automatically. Keeping that
 //     boundary explicit means swapping a manual toggle for a real Calendar
 //     Tool later only changes where `signals` comes from, not this file.
 import { getMemory } from './memory.js';
 import { getCachedNews, briefingShownToday } from './knowledge.js';
+import { playingDeviceNames } from './home.js';
 import { todayKey, partOfDay } from './utils.js';
 
 export function buildContext(signals = {}) {
@@ -45,6 +49,10 @@ export function buildContext(signals = {}) {
     newsCount: news.items.length,
     newsFetchedToday: news.fetchedAt ? todayKey(new Date(news.fetchedAt)) === todayKey(now) : false,
     knowledgeBriefingShownToday: briefingShownToday(),
+    // Environment Context (device/home status — from home.js, its own
+    // store, kept separate the same way Knowledge is; see that file's
+    // header comment).
+    playingDevices: playingDeviceNames(),
     // Raw interaction signals for this tick — e.g. a screen-time reading.
     ...signals.raw,
   };
@@ -62,6 +70,9 @@ export function describeContext(c) {
   for (const e of c.events) parts.push(`${e.label}${e.note ? ` (${e.note})` : ''}.`);
   if (typeof c.jaredGamingHours === 'number' && c.jaredGamingHours > 0) {
     parts.push(`Jared gaming for ${c.jaredGamingHours} hour${c.jaredGamingHours === 1 ? '' : 's'}.`);
+  }
+  if (c.playingDevices.length > 0) {
+    parts.push(`Currently playing: ${c.playingDevices.join(', ')}.`);
   }
   return parts.join(' ');
 }

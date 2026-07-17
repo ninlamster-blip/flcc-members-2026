@@ -1,4 +1,4 @@
-# JARVIS Home Sanctuary — V0.3: Agentic Core + Knowledge + Personal Agents
+# JARVIS Home Sanctuary — V0.4: Agentic Core + Knowledge + Personal Agents + Home
 
 A standalone app (same pattern as `../ofw-companion` and `../daily-blessing`:
 vanilla ES modules, no build step, installable PWA) implementing the JARVIS
@@ -9,9 +9,10 @@ OBSERVE -> UNDERSTAND -> PLAN -> ACT -> REFLECT -> LEARN
 ```
 
 This covers **V0.1: Agentic Core** (Observe/Planning/Action engines, Memory),
-**V0.2: Knowledge** (News, Search, general intelligence), and **V0.3:
-Personal Agents** (Faith, Family, Creator) from the project's own
-development strategy. Real Home control (V0.4) is still ahead.
+**V0.2: Knowledge** (News, Search, general intelligence), **V0.3: Personal
+Agents** (Faith, Family, Creator), and **V0.4: Home** (Apple TV, HomePod,
+Bose, Home Assistant) — the full development-strategy roadmap the project
+spec laid out.
 
 ## Open it
 
@@ -25,20 +26,21 @@ Serve the repo root with any static file server and open `jarvis/index.html`
 | Observe | `js/observe.js` | Builds one unified context state from time/date (computed) plus presence/events/environment (fed in — see below) and recent long-term memory. |
 | Understand | `js/understand.js` | Cross-cutting detectors (do-not-disturb, the Knowledge briefing) plus each personal agent's own `understand()`, merged into one list. |
 | Plan | `js/plan.js` | Works out `working` (is Allen mid-focus) once, then routes to each agent's own `plan()` and merges the results into one ordered, prioritized action plan. |
-| Act | `js/act.js` + `js/tools.js` | Executes plan steps through a small tool registry (Communication, Memory, Knowledge; Calendar/Home are still stubbed until V0.4 / a Calendar source). Async throughout, since real tools do real I/O. |
+| Act | `js/act.js` + `js/tools.js` | Executes plan steps through a small tool registry (Communication, Memory, Knowledge, Home; Calendar is still stubbed until a real Calendar source exists). Async throughout, since real tools do real I/O. |
 | Reflect | `js/reflect.js` | Turns a user's 👍/👎 on an executed action into a reflection record. |
 | Learn | `js/learn.js` | Aggregates reflections into `js/memory.js`'s learned-preferences layer — today, which message style (encouraging vs. direct) gets a better response. |
-| Orchestrator | `js/core.js` | JARVIS CORE: runs the full loop each tick, routes to the Faith/Family/Creator agent modules and the Knowledge engine, holds the approval queue. |
+| Orchestrator | `js/core.js` | JARVIS CORE: runs the full loop each tick, routes to the Faith/Family/Creator agent modules and the Knowledge/Home engines, holds the approval queue. |
 | Memory | `js/memory.js` | Three layers — short-term (this session, rolls over daily), long-term (durable facts/goals/family/reminders), learned preferences — all in this device's `localStorage` only. |
 
-## No live Calendar/Home yet — this is where they plug in
+## No live Calendar/Presence yet — this is where it plugs in
 
-There's still no real Calendar, Weather, or Home integration, so `index.html`'s
-"Observe" form is a stand-in: it feeds `observe.js` the same shape a real
-Calendar/Presence/Home source will eventually populate automatically
-(`{ presence, events, environmentNote, raw }`). Wiring up a real source later
-only changes *where* those signals come from — nothing downstream (Understand,
-Plan, Act) needs to change.
+There's still no real Calendar or Presence integration, so `index.html`'s
+"Observe" form is a stand-in for that part: it feeds `observe.js` the same
+shape a real Calendar/Presence source will eventually populate automatically
+(`{ presence, events, environmentNote, raw }`). Device/home status is no
+longer part of that stand-in — see Home Engine below — and wiring up a real
+Calendar source later only changes *where* the remaining signals come from;
+nothing downstream (Understand, Plan, Act) needs to change.
 
 ## Knowledge Engine (V0.2)
 
@@ -104,6 +106,51 @@ so once due it would have fired on every tick forever. It now runs through
 its own tiny tool (`tools.js`'s `goalsReminder`) that marks the weekly gate
 at the same point the Knowledge Tool's daily briefing does — only once
 actually delivered.
+
+## Home Engine (V0.4)
+
+`js/home.js` covers the spec's "Home: Apple TV, HomePod, Bose, Home
+Assistant." Apple TV, HomePod, and Bose each speak their own local-network
+protocol (AirPlay, HomeKit, SoundTouch) that a static PWA has no way to
+reach directly — Home Assistant is the common layer real setups already
+use to bridge exactly those three into one place, and it has a clean,
+documented REST API a no-build-step app can call directly. Its own
+`localStorage` keys (a base URL and a Long-Lived Access Token, entered in
+the Home panel), separate from the church-wide Ask FLCC connection —
+Home Assistant is a different service entirely, so it isn't shared the way
+Knowledge's connection is.
+
+- **Device list** (real, live): `GET {baseUrl}/api/states`, filtered to
+  `media_player.*` entities — the domain Home Assistant's Apple TV,
+  HomePod/AirPlay, and Bose SoundTouch integrations all surface devices
+  under, regardless of brand.
+- **Control** (real): `POST {baseUrl}/api/services/media_player/<service>`
+  for play/pause/volume/turn-off, called directly from the Home panel's
+  per-device buttons — the user operating their own devices, same as
+  asking the Knowledge Tool a question directly.
+- **One proactive step, approval-gated**: Family Agent's new
+  `deviceDuringDevotionUnderstanding` reads `context.playingDevices` (which
+  `observe.js` fuses in from `home.js`, the same pattern it already uses
+  for Knowledge's news) and, if something's still playing when family
+  devotion is scheduled, plans a `suggest-pause-for-devotion` step. Unlike
+  the read-only news briefing, this one **changes physical device state**,
+  so — same reasoning as messaging Jared directly — it's always
+  `requiresApproval: true`. Approving it calls `home.js`'s
+  `pauseAllPlaying()` through `tools.js`'s `home` tool.
+- **Graceful offline degradation**: with no connection configured, every
+  Home function returns a well-formed `{ ok: false, detail }`, same as
+  Knowledge.
+- **Not a fifth agent**: Home stays engine-shaped like Knowledge rather
+  than growing its own `js/agents/` module — per the spec's own diagram,
+  it's a tool the four agents reach for (here, Family reaches for it),
+  not an agent in its own right.
+
+A known limitation worth naming: if this app is served over HTTPS (as it
+will be once deployed) and Home Assistant is only reachable over plain
+HTTP on the local network, the browser will block the request as mixed
+content. Home Assistant's own remote-access options (Nabu Casa, a
+reverse proxy with a certificate) route around this the same way they
+would for any other client — nothing here is JARVIS-specific.
 
 ## Safety Principle, in code
 

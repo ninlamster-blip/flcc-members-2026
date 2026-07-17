@@ -38,8 +38,30 @@ function eveningWindDownUnderstanding(c) {
   };
 }
 
+// Reads `context.playingDevices` — Environment Context that home.js (V0.4)
+// populates via Observe, the same fuse-but-separate pattern `screenTime`
+// above uses for personal signals and the Knowledge briefing uses for
+// news. Family Agent doesn't import home.js directly; it only reads the
+// unified context, same as every other detector here.
+function deviceDuringDevotionUnderstanding(c) {
+  if (c.playingDevices.length === 0) return null;
+  const devotionToday = c.events.some((e) => /devotion/i.test(e.label));
+  if (!devotionToday) return null;
+  return {
+    id: 'device-during-devotion',
+    situation: `${c.playingDevices.join(', ')} still playing, and family devotion is scheduled today.`,
+    needsAttention: true,
+    intent: 'A playing device may compete for attention during family devotion.',
+    goal: 'Protect family/faith time without deciding for anyone.',
+  };
+}
+
 export function understand(context) {
-  return [screenTimeUnderstanding(context), eveningWindDownUnderstanding(context)].filter(Boolean);
+  return [
+    screenTimeUnderstanding(context),
+    eveningWindDownUnderstanding(context),
+    deviceDuringDevotionUnderstanding(context),
+  ].filter(Boolean);
 }
 
 export function plan(context, { understandings, working }) {
@@ -87,6 +109,25 @@ export function plan(context, { understandings, working }) {
       target: 'allen',
       message: 'Your evening is winding down — a good moment to connect with family.',
       tool: { name: 'notify', params: {} },
+    });
+  }
+
+  const deviceDuringDevotion = understandings.find((u) => u.id === 'device-during-devotion');
+  if (deviceDuringDevotion?.needsAttention) {
+    steps.push({
+      id: 'suggest-pause-for-devotion',
+      agent: id,
+      // Like suggest-encouragement-to-jared above: 'ask-permission' steps
+      // sit quietly in the approval queue rather than notifying anyone, so
+      // there's nothing to defer even while Allen is working.
+      mode: 'ask-permission',
+      // Pausing a device is a real, physical-world action on shared home
+      // equipment — always gated, same reasoning as messaging Jared
+      // directly: JARVIS suggests, Allen decides.
+      requiresApproval: true,
+      target: 'home',
+      message: `${deviceDuringDevotion.situation} Pause for devotion?`,
+      tool: { name: 'home', params: {} },
     });
   }
 

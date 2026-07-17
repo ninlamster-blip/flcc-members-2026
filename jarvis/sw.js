@@ -1,6 +1,6 @@
 // Minimal offline cache for the JARVIS app shell, same pattern as
 // ../daily-blessing/sw.js and ../ofw-companion/sw.js.
-const CACHE = 'jarvis-v2';
+const CACHE = 'jarvis-v3';
 const SHELL = [
   './',
   './index.html',
@@ -15,6 +15,7 @@ const SHELL = [
   './js/act.js',
   './js/tools.js',
   './js/knowledge.js',
+  './js/home.js',
   './js/ai-client.js',
   './js/reflect.js',
   './js/learn.js',

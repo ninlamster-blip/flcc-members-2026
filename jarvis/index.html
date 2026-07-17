@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0B0F14">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.3: Agentic Core + Knowledge + Personal Agents).">
+<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.4: Agentic Core + Knowledge + Personal Agents + Home).">
 <title>JARVIS</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="style.css">
@@ -14,13 +14,13 @@
 <div id="jv-root">
 
   <header class="jv-header">
-    <h1>JARVIS <span class="jv-version">v0.3 — Agentic Core + Knowledge + Personal Agents</span></h1>
+    <h1>JARVIS <span class="jv-version">v0.4 — Agentic Core + Knowledge + Personal Agents + Home</span></h1>
     <p class="jv-sub">Observe &rarr; Understand &rarr; Plan &rarr; Act &rarr; Reflect &rarr; Learn</p>
   </header>
 
   <section class="jv-card" aria-label="Observe">
     <h2>1. Observe</h2>
-    <p class="jv-hint">There's no live Calendar/Home integration yet, so feed JARVIS today's signals by hand — this is the same shape a real Calendar/Presence source will fill in automatically once one exists.</p>
+    <p class="jv-hint">There's no live Calendar/Presence integration yet, so feed JARVIS today's signals by hand — this is the same shape a real Calendar source will fill in automatically once one exists. (Device/home status below is real, via Home Assistant.)</p>
     <form id="jv-observe-form">
       <label>Allen's status
         <select name="allenStatus">
@@ -100,6 +100,20 @@
       <input type="text" name="text" placeholder="New goal">
       <button type="submit">Add</button>
     </form>
+  </section>
+
+  <section class="jv-card" aria-label="Home">
+    <h2>🏠 Home <span class="jv-hint-inline">Apple TV, HomePod, Bose — via Home Assistant</span></h2>
+    <p id="jv-home-status" class="jv-hint"></p>
+    <form id="jv-home-connect-form" class="jv-ask-form">
+      <input type="text" name="baseUrl" placeholder="Home Assistant URL, e.g. http://homeassistant.local:8123">
+      <input type="password" name="token" placeholder="Long-Lived Access Token">
+      <button type="submit">Save</button>
+    </form>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-refresh-devices">Refresh devices</button>
+    </div>
+    <ul id="jv-device-list" class="jv-list" style="margin-top:10px;"></ul>
   </section>
 
   <section class="jv-card" aria-label="Current state" id="jv-context-card" hidden>
