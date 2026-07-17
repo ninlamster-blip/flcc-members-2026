@@ -1,5 +1,5 @@
 // Kaibigan — the AI companion view: heart check-in, conversation, voice.
-import { getState, addChatMessage, setHeartToday, heartToday, addMemory } from './state.js';
+import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion } from './state.js';
 import { companionReply, companionOpener, isConnected, speakNatural } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom, todayKey,
@@ -7,6 +7,7 @@ import {
 } from './utils.js';
 import { openBreathing } from './sanctuary.js';
 import { createHeaderController } from './header.js';
+import { getTopRecommendation, topRecommendationHint } from './companion-brain.js';
 
 // Heart categories that deserve an immediate, gentle "Hinga Muna" offer.
 const HEAVY_CATS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
@@ -40,11 +41,14 @@ let comfort = null;
 let els = {};
 let busy = false;
 let bound = false;
+let goToTab = () => {};
+let currentBrainRec = null;
 
 // Safe to call again after onboarding or settings changes — the composer and
 // voice listeners bind only once; everything else re-renders.
 export async function initCompanion(context) {
   comfort = context.comfort;
+  goToTab = context.goTo || (() => {});
   els = {
     kaibiganUser: document.getElementById('oc-kaibigan-user'),
     heartCheckin: document.getElementById('oc-heart-checkin'),
@@ -53,6 +57,11 @@ export async function initCompanion(context) {
     chat: document.getElementById('oc-chat'),
     input: document.getElementById('oc-input'),
     sendBtn: document.getElementById('oc-send-btn'),
+    brainCard: document.getElementById('oc-brain-card'),
+    brainTitle: document.getElementById('oc-brain-title'),
+    brainMessage: document.getElementById('oc-brain-message'),
+    brainCta: document.getElementById('oc-brain-cta'),
+    brainDismiss: document.getElementById('oc-brain-dismiss'),
   };
 
   // Header reads like a chat contact bar, one line: "Kaibigan · Name".
@@ -61,12 +70,59 @@ export async function initCompanion(context) {
 
   renderHeartChips();
   renderHistory();
+  renderBrainCard();
   if (!bound) {
     bound = true;
     setupComposer();
     setupHeaderCollapse();
+    els.brainDismiss.addEventListener('click', () => {
+      if (!currentBrainRec) return;
+      dismissCompanionSuggestion(currentBrainRec.id);
+      renderBrainCard();
+    });
+    els.brainCta.addEventListener('click', () => {
+      if (!currentBrainRec) return;
+      navigator.vibrate?.(8);
+      handleBrainAction(currentBrainRec.action);
+    });
     maybeGreetNewDay();
   }
+}
+
+// Companion Brain (js/companion-brain.js): the one or two most helpful
+// things to surface right now, decided from context the app already has —
+// journal gaps, mood trend, today's heart check-in. Re-run whenever Kaibigan
+// becomes active again (see exported refreshBrainCard) so it reflects
+// anything the member just did on another tab.
+function renderBrainCard() {
+  currentBrainRec = getTopRecommendation();
+  if (!currentBrainRec) {
+    els.brainCard.hidden = true;
+    return;
+  }
+  els.brainTitle.textContent = currentBrainRec.title;
+  els.brainMessage.textContent = currentBrainRec.message;
+  if (currentBrainRec.cta) {
+    els.brainCta.textContent = currentBrainRec.cta;
+    els.brainCta.hidden = false;
+  } else {
+    els.brainCta.hidden = true;
+  }
+  els.brainCard.hidden = false;
+}
+
+export function refreshBrainCard() {
+  if (els.brainCard) renderBrainCard();
+}
+
+function handleBrainAction(action) {
+  if (!action) return;
+  if (action.tab === 'home') {
+    if (action.focus === 'breathe') openBreathing();
+    else if (action.focus === 'heart') els.heartCheckin.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+  goToTab(action.tab);
 }
 
 function renderHeartChips() {
@@ -102,6 +158,7 @@ function renderHeartChips() {
     const chips = HEART_CHIPS.filter((c) => selected.has(c.id));
     setHeartToday(chips.map((c) => c.cat));
     els.heartCheckin.hidden = true;
+    renderBrainCard();
     await sendUserMessage(chips.map((c) => c.label).join(' · '), { heartChip: chips[0].cat });
     if (chips.some((c) => HEAVY_CATS.has(c.cat))) offerHingaMuna();
   };
@@ -147,7 +204,7 @@ async function maybeGreetNewDay() {
   }
   const typing = showTyping();
   try {
-    const opener = await companionOpener(daysAway);
+    const opener = await companionOpener(daysAway, topRecommendationHint());
     typing.remove();
     if (opener) {
       addChatMessage('assistant', opener);

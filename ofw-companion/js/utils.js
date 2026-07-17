@@ -7,6 +7,11 @@ export function todayKey(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+// Whole days between a YYYY-MM-DD date key and another (default: today).
+export function daysBetween(dateKey, otherKey = todayKey()) {
+  return Math.round((new Date(otherKey) - new Date(dateKey)) / 86400000);
+}
+
 export function friendlyDate(iso) {
   const d = new Date(iso + 'T12:00:00');
   if (Number.isNaN(d.getTime())) return iso;

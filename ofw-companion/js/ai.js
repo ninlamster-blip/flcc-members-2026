@@ -231,16 +231,22 @@ export async function companionReply(history) {
 }
 
 // A warm conversation opener that recalls something from memory. Used when
-// the user opens the companion for the first time on a new day.
-export async function companionOpener(daysAway = 0) {
+// the user opens the companion for the first time on a new day. `hint` is
+// an optional, plain-language nudge from the Companion Brain (js/companion-
+// brain.js) — e.g. "hasn't journaled in a few days" — folded in only if it
+// fits naturally, never recited as a checklist item.
+export async function companionOpener(daysAway = 0, hint = '') {
   const gapNote = daysAway >= 3
     ? ` It has been ${daysAway} days since we last talked — like a true friend, gently say you noticed and hope they are okay, without any guilt-tripping.`
+    : '';
+  const hintNote = hint
+    ? ` One more thing, only if it fits naturally and doesn't sound like a checklist: ${hint}`
     : '';
   const raw = await callClaude({
     system: companionSystemPrompt(),
     messages: [{
       role: 'user',
-      content: `(The app is opening a new day's conversation. Greet me warmly in one or two sentences. If you have a memory of something I shared before, gently ask about it — like a friend who remembered.${gapNote} Do not add a <memory> tag.)`,
+      content: `(The app is opening a new day's conversation. Greet me warmly in one or two sentences. If you have a memory of something I shared before, gently ask about it — like a friend who remembered.${gapNote}${hintNote} Do not add a <memory> tag.)`,
     }],
     maxTokens: 200,
   });
