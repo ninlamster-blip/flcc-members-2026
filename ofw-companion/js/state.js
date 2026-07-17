@@ -184,6 +184,17 @@ export function deleteMemory(index) {
   save();
 }
 
+// Marked once the Relationship Engine (js/relationship-engine.js) has had
+// the AI proactively ask about this memory, so the same one isn't picked
+// again while older, never-yet-followed-up memories are still waiting.
+export function markMemoryFollowedUp(text) {
+  const memory = state.memories.find((m) => m.text === text);
+  if (memory) {
+    memory.followedUpAt = Date.now();
+    save();
+  }
+}
+
 // ── Teaching notes ───────────────────────────────────────────────────────────
 export function saveTeachingNote(teachingDate, text) {
   const trimmed = String(text || '').trim();
