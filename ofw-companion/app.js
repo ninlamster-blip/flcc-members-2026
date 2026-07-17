@@ -3,7 +3,7 @@
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
 import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
 import { loadJson, escapeHtml } from './js/utils.js';
-import { initCompanion, startNotOkayConversation, resetHomeHeader } from './js/companion.js';
+import { initCompanion, startNotOkayConversation, resetHomeHeader, refreshBrainCard } from './js/companion.js';
 import {
   dateLine, occasionLine, initWeather, initAudioDrop,
   ritualFor, currentPeriod, openBreathing, closeBreathing, initNotOkay,
@@ -35,7 +35,7 @@ async function boot() {
     loadJson('data/biblestudy.json'),
     loadJson('data/audiodrops.json').catch(() => ({ drops: [] })),
   ]);
-  Object.assign(context, { comfort, verses, prayers, resources, biblestudy, audiodrops });
+  Object.assign(context, { comfort, verses, prayers, resources, biblestudy, audiodrops, goTo });
 
   document.body.classList.toggle('oc-large-text', getState().settings.largeText);
   document.getElementById('oc-nav-faith').style.display = getState().settings.faithEnabled ? '' : 'none';
@@ -110,7 +110,10 @@ function setupNav() {
       }
       window.scrollTo({ top: 0 });
       resetScrollHeader();
-      if (target === 'home') resetHomeHeader(); // never reopen Kaibigan with a stale collapsed header
+      if (target === 'home') {
+        resetHomeHeader(); // never reopen Kaibigan with a stale collapsed header
+        refreshBrainCard(); // reflect anything just done on another tab (e.g. a journal entry)
+      }
     });
   });
 }

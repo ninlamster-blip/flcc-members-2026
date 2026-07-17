@@ -381,6 +381,62 @@ body.oc-home-compact .oc-audio-drop {
   pointer-events: none;
 }
 
+/* Companion Brain suggestion card — same animated-collapse treatment as the
+   ritual pill / audio drop above (max-height/opacity, not display:none): an
+   instant layout pop here would land in the same frame as the header's own
+   slide-in transition and read as a flicker, same bug already fixed for
+   the other two. */
+.oc-brain-card {
+  position: relative;
+  padding: 14px 34px 14px 16px;
+  margin: 0 2px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow);
+  max-height: 160px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.2s ease, opacity 0.2s ease, margin 0.2s ease, padding 0.2s ease;
+}
+body.oc-home-compact .oc-brain-card {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+.oc-brain-title { font-weight: 700; font-size: 0.94em; margin-bottom: 3px; }
+.oc-brain-message { color: var(--ink-soft); font-size: 0.88em; line-height: 1.4; }
+.oc-brain-cta {
+  margin-top: 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #FFF8F2;
+  font-size: 0.86em;
+  font-weight: 600;
+  padding: 7px 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-brain-cta:active { transform: scale(0.96); }
+.oc-brain-dismiss {
+  position: absolute;
+  top: 10px; right: 10px;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 0.9em;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Hinga Muna offer inside the conversation */
 .oc-hinga-offer { max-width: 96%; }
 .oc-hinga-btn {

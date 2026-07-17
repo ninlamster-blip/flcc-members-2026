@@ -42,6 +42,10 @@ function defaultState() {
     // preaching — separate from the per-teaching notes above.
     sermonNotes: '',
     onboarded: false,
+    // Companion Brain: which suggestion card the member dismissed today, so
+    // it doesn't reappear until conditions change or a new day starts.
+    // Covered by the same export/erase controls as everything else here.
+    companionBrain: { dismissedId: null, dismissedDate: null },
   };
 }
 
@@ -207,6 +211,16 @@ export function heartToday() {
 
 export function heartFeelingsToday() {
   return state.heart.date === todayKey() ? (state.heart.feelings || []) : [];
+}
+
+// ── Companion Brain ──────────────────────────────────────────────────────────
+export function dismissCompanionSuggestion(id) {
+  state.companionBrain = { dismissedId: id, dismissedDate: todayKey() };
+  save();
+}
+
+export function isCompanionSuggestionDismissed(id) {
+  return state.companionBrain.dismissedDate === todayKey() && state.companionBrain.dismissedId === id;
 }
 
 // ── Privacy controls ─────────────────────────────────────────────────────────
