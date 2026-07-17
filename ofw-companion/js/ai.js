@@ -296,3 +296,16 @@ export async function weeklyReflection(summary) {
     maxTokens: 220,
   });
 }
+
+// ── Growth highlight (js/growth-engine.js) ───────────────────────────────────
+// Turns a single month-over-month highlight into a short, warm celebration.
+// Only ever called with a genuinely positive trend (growth-engine.js never
+// hands back a decline) — the instruction below just reinforces that so the
+// AI doesn't editorialize with a "but watch out for..." caveat.
+export async function growthInsight(highlight) {
+  return callClaude({
+    system: 'You are a gentle wellbeing companion for an Overseas Filipino Worker. You are given ONE specific positive trend noticed over the past month compared to the month before. Write 1-3 warm sentences in Taglish or English celebrating it genuinely and specifically, addressed directly to them (you/mo) — like a friend who noticed and is proud of them. Do not add any caution, caveat, or "but remember to also..." — this is a moment of encouragement, not advice. Output only the celebration, nothing else.',
+    messages: [{ role: 'user', content: `The trend noticed: ${highlight.text}` }],
+    maxTokens: 150,
+  });
+}

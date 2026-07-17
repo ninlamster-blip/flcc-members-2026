@@ -29,6 +29,7 @@ import {
 } from './state.js';
 import { todayKey, daysBetween } from './utils.js';
 import { buildWeeklySummary, structuredReflectionText } from './reflection-engine.js';
+import { findGrowthHighlight } from './growth-engine.js';
 
 const HEAVY_FEELINGS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
 
@@ -84,6 +85,13 @@ function reflectionSignal(s) {
   };
 }
 
+function growthSignal(s) {
+  const last = s.companionBrain.lastGrowthDate;
+  return {
+    daysSinceGrowth: last ? daysBetween(last) : null,
+  };
+}
+
 export function buildContext() {
   const s = getState();
   return {
@@ -94,6 +102,7 @@ export function buildContext() {
     ...heartSignal(),
     ...chatSignal(s),
     ...reflectionSignal(s),
+    ...growthSignal(s),
   };
 }
 
@@ -162,7 +171,26 @@ const RULES = [
         message: structuredReflectionText(summary),
         cta: null,
         action: { tab: 'home' },
-        isReflection: true, // hint to the caller: try to upgrade this with an AI narrative if connected
+        aiUpgradeKind: 'reflection', // hint to the caller: try to upgrade this with an AI narrative if connected
+      };
+    },
+  },
+  {
+    // Even lower urgency than the weekly reflection — a month-over-month
+    // pattern, gated to once a month, and only when there's a genuine
+    // positive trend (see growth-engine.js: it never reports a decline —
+    // that's mood-declining/journal-gap's job above, each paired with an
+    // offer of support rather than a scorecard).
+    id: 'growth-insight',
+    when: (c) => (c.daysSinceGrowth === null || c.daysSinceGrowth >= 30) && !!findGrowthHighlight(),
+    build: () => {
+      const highlight = findGrowthHighlight();
+      return {
+        title: 'May napansin kami',
+        message: highlight.text,
+        cta: null,
+        action: { tab: 'home' },
+        aiUpgradeKind: 'growth',
       };
     },
   },
@@ -202,11 +230,14 @@ export function getTopRecommendation() {
 // A short, plain-language hint for the AI's own conversation opener — never
 // shown to the user as-is, just context so the greeting can fold it in
 // naturally (same spirit as the existing "days away" note in ai.js). Skips
-// the always-on "encourage" fallback (not worth the AI reciting) and the
-// weekly reflection (shown as its own card, with its own AI narrative —
-// folding it into the greeting too would say the same thing twice).
+// recs that already get their own AI narrative on the card itself (weekly
+// reflection, growth insight — folding them into the greeting too would say
+// the same thing twice) and the always-on "encourage" fallback (not worth
+// the AI reciting).
+const HINT_EXCLUDED_IDS = new Set(['encourage', 'weekly-reflection', 'growth-insight']);
+
 export function topRecommendationHint() {
   const top = getTopRecommendation();
-  if (!top || top.id === 'encourage' || top.id === 'weekly-reflection') return '';
+  if (!top || HINT_EXCLUDED_IDS.has(top.id)) return '';
   return top.message;
 }
