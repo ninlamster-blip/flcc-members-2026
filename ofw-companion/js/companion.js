@@ -1,6 +1,6 @@
 // Kaibigan — the AI companion view: heart check-in, conversation, voice.
-import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown } from './state.js';
-import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection } from './ai.js';
+import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown } from './state.js';
+import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection, growthInsight } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom, todayKey,
   detectsCrisis, classifyHeart,
@@ -9,6 +9,18 @@ import { openBreathing } from './sanctuary.js';
 import { createHeaderController } from './header.js';
 import { getTopRecommendation, topRecommendationHint } from './companion-brain.js';
 import { buildWeeklySummary } from './reflection-engine.js';
+import { findGrowthHighlight } from './growth-engine.js';
+
+// Companion Brain suggestion cards that come with their own AI narrative
+// upgrade: the structured (offline-safe) text renders first, and — only
+// if connected — gets swapped for a warmer version once the AI responds.
+// Kept as a lookup rather than more branches in renderBrainCard so adding a
+// third upgradeable card (see reflection-engine.js / growth-engine.js for
+// the pattern) means adding one entry here, not touching the render logic.
+const AI_UPGRADES = {
+  reflection: { markShown: markReflectionShown, buildPayload: buildWeeklySummary, fetchNarrative: weeklyReflection },
+  growth: { markShown: markGrowthShown, buildPayload: findGrowthHighlight, fetchNarrative: growthInsight },
+};
 
 // Heart categories that deserve an immediate, gentle "Hinga Muna" offer.
 const HEAVY_CATS = new Set(['exhausted', 'heavy', 'anxious', 'lonely', 'homesick', 'invisible']);
@@ -111,11 +123,12 @@ function renderBrainCard() {
   }
   els.brainCard.hidden = false;
 
-  if (currentBrainRec.isReflection) {
-    markReflectionShown(); // once shown (even just the structured text), don't show again for a week
+  const upgrade = currentBrainRec.aiUpgradeKind && AI_UPGRADES[currentBrainRec.aiUpgradeKind];
+  if (upgrade) {
+    upgrade.markShown(); // once shown (even just the structured text), don't show again until the next gate window
     if (isConnected()) {
       const recId = currentBrainRec.id;
-      weeklyReflection(buildWeeklySummary())
+      upgrade.fetchNarrative(upgrade.buildPayload())
         .then((text) => {
           // Guard against a stale response landing after the card moved on
           // (dismissed, or a higher-priority suggestion replaced it).
