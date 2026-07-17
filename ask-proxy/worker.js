@@ -49,6 +49,9 @@ const RSS_FEEDS = [
   { name: 'ABS-CBN',     icon: '🇵🇭', url: 'https://news.abs-cbn.com/rss/headlines'           },
   { name: 'Inquirer',    icon: '📰', url: 'https://newsinfo.inquirer.net/feed'                 },
   { name: 'GMA News',    icon: '📺', url: 'https://www.gmanetwork.com/news/rss/news/feed.xml' },
+  // Technology (feeds JARVIS's Knowledge Engine — Technology/Apple ecosystem updates)
+  { name: 'Apple Newsroom', icon: '🍎', url: 'https://www.apple.com/newsroom/rss-feed.rss'    },
+  { name: 'Ars Technica',   icon: '💻', url: 'https://feeds.arstechnica.com/arstechnica/index' },
 ];
 
 const RSS2JSON = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';

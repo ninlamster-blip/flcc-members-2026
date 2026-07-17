@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B0F14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.3: Agentic Core + Knowledge + Personal Agents).">
+<title>JARVIS</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="jv-root">
+
+  <header class="jv-header">
+    <h1>JARVIS <span class="jv-version">v0.3 — Agentic Core + Knowledge + Personal Agents</span></h1>
+    <p class="jv-sub">Observe &rarr; Understand &rarr; Plan &rarr; Act &rarr; Reflect &rarr; Learn</p>
+  </header>
+
+  <section class="jv-card" aria-label="Observe">
+    <h2>1. Observe</h2>
+    <p class="jv-hint">There's no live Calendar/Home integration yet, so feed JARVIS today's signals by hand — this is the same shape a real Calendar/Presence source will fill in automatically once one exists.</p>
+    <form id="jv-observe-form">
+      <label>Allen's status
+        <select name="allenStatus">
+          <option value="home">Home</option>
+          <option value="working">Working</option>
+          <option value="away">Away</option>
+        </select>
+      </label>
+      <label>Jared's gaming hours today
+        <input type="number" name="jaredGamingHours" min="0" step="0.5" value="0">
+      </label>
+      <label class="jv-checkbox-row"><input type="checkbox" name="devotionScheduled"> Family devotion scheduled today</label>
+      <label>Environment note (weather / home status)
+        <input type="text" name="environmentNote" placeholder="Hot Kuwait evening">
+      </label>
+      <button type="submit" class="jv-primary">Run tick</button>
+    </form>
+  </section>
+
+  <section class="jv-card" aria-label="Knowledge Engine">
+    <h2>Knowledge Engine <span class="jv-hint-inline">(Global Knowledge — kept separate from Personal Memory)</span></h2>
+    <p id="jv-knowledge-status" class="jv-hint"></p>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-refresh-news">Refresh news</button>
+    </div>
+    <ul id="jv-news-list" class="jv-list" style="margin-top:10px;"></ul>
+
+    <h3>Ask a general question</h3>
+    <form id="jv-ask-form" class="jv-ask-form">
+      <input type="text" name="query" placeholder="e.g. What's new with Apple this year?">
+      <button type="submit">Ask</button>
+    </form>
+    <p id="jv-ask-answer" class="jv-context-line"></p>
+  </section>
+
+  <section class="jv-card" aria-label="Faith Agent">
+    <h2>🙏 Faith Agent <span class="jv-hint-inline">Devotions, prayer, scripture rhythms</span></h2>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-faith-prayer">Generate a prayer</button>
+    </div>
+    <p id="jv-faith-output" class="jv-context-line"></p>
+  </section>
+
+  <section class="jv-card" aria-label="Family Agent">
+    <h2>👨‍👩‍👦 Family Agent <span class="jv-hint-inline">Relationships, connection, screen-time balance</span></h2>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-family-idea">Suggest a connection idea</button>
+    </div>
+    <p id="jv-family-output" class="jv-context-line"></p>
+
+    <h3>Family members on file</h3>
+    <ul id="jv-family-list" class="jv-list"></ul>
+    <form id="jv-family-form" class="jv-ask-form">
+      <input type="text" name="name" placeholder="Name" style="flex:0 0 120px;">
+      <input type="text" name="note" placeholder="Note (e.g. son, loves gaming)">
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+  <section class="jv-card" aria-label="Creator Agent">
+    <h2>💡 Creator Agent <span class="jv-hint-inline">Ideas, reminders, generated content</span></h2>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-creator-idea">Suggest an idea</button>
+    </div>
+    <p id="jv-creator-output" class="jv-context-line"></p>
+
+    <h3>Reminders</h3>
+    <ul id="jv-reminder-list" class="jv-list"></ul>
+    <form id="jv-reminder-form" class="jv-ask-form">
+      <input type="text" name="text" placeholder="New reminder">
+      <button type="submit">Add</button>
+    </form>
+
+    <h3>Personal goals <span class="jv-hint-inline">(Plan gently surfaces these once a week)</span></h3>
+    <ul id="jv-goal-list" class="jv-list"></ul>
+    <form id="jv-goal-form" class="jv-ask-form">
+      <input type="text" name="text" placeholder="New goal">
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+  <section class="jv-card" aria-label="Current state" id="jv-context-card" hidden>
+    <h2>Current State</h2>
+    <p id="jv-context-line" class="jv-context-line"></p>
+  </section>
+
+  <section class="jv-card" aria-label="Understand" id="jv-understand-card" hidden>
+    <h2>2. Understand</h2>
+    <ul id="jv-understand-list" class="jv-list"></ul>
+  </section>
+
+  <section class="jv-card" aria-label="Plan and Act" id="jv-plan-card" hidden>
+    <h2>3-4. Plan &amp; Act</h2>
+
+    <h3>Executed</h3>
+    <ul id="jv-executed-list" class="jv-list"></ul>
+
+    <h3>Awaiting your approval <span class="jv-hint-inline">(reaches someone other than you — Safety Principle: never without approval)</span></h3>
+    <ul id="jv-pending-list" class="jv-list"></ul>
+
+    <h3>Deferred / waiting</h3>
+    <ul id="jv-deferred-list" class="jv-list"></ul>
+  </section>
+
+  <section class="jv-card" aria-label="Reflect and Learn">
+    <h2>5-6. Reflect &amp; Learn</h2>
+    <p class="jv-hint">Give feedback above (👍/👎 on an executed action) — JARVIS updates its learned message style from it.</p>
+    <p id="jv-style-line" class="jv-context-line"></p>
+  </section>
+
+  <section class="jv-card" aria-label="Memory">
+    <h2>Memory</h2>
+    <div class="jv-memory-grid">
+      <div>
+        <h3>Short-term</h3>
+        <pre id="jv-mem-short"></pre>
+      </div>
+      <div>
+        <h3>Long-term</h3>
+        <pre id="jv-mem-long"></pre>
+      </div>
+      <div>
+        <h3>Learned preferences</h3>
+        <pre id="jv-mem-learned"></pre>
+      </div>
+    </div>
+    <div class="jv-memory-actions">
+      <button type="button" id="jv-export">Export memory (JSON)</button>
+      <button type="button" id="jv-erase" class="jv-danger">Erase everything</button>
+    </div>
+  </section>
+
+  <footer class="jv-footer">
+    <p>Safety Principle: relationships, privacy, user control, then helpful action. Never spy, control people, manipulate behavior, or decide important things without approval. Everything above lives only in this browser's local storage.</p>
+  </footer>
+
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
