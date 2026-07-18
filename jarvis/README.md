@@ -1,4 +1,4 @@
-# JARVIS Home Sanctuary — V0.4: Agentic Core + Knowledge + Personal Agents + Home
+# JARVIS Home Sanctuary — V1.0: Proactive Intelligence
 
 A standalone app (same *conventions* as `../ofw-companion` and
 `../daily-blessing` — vanilla ES modules, no build step, installable PWA —
@@ -11,9 +11,12 @@ OBSERVE -> UNDERSTAND -> PLAN -> ACT -> REFLECT -> LEARN
 
 This covers **V0.1: Agentic Core** (Observe/Planning/Action engines, Memory),
 **V0.2: Knowledge** (News, Search, general intelligence), **V0.3: Personal
-Agents** (Faith, Family, Creator), and **V0.4: Home** (Apple TV, HomePod,
-Bose, Home Assistant) — the full development-strategy roadmap the project
-spec laid out.
+Agents** (Faith, Family, Creator), **V0.4: Home** (Apple TV, HomePod, Bose,
+Home Assistant), and a first real slice of **V1.0: the complete ecosystem**
+— the spec's own roadmap treats V1.0 as ongoing polish rather than a fixed
+checklist, so "complete" here means the loop can genuinely run itself
+instead of only reacting to a click; see Proactive Intelligence below, and
+"What V1.0 still doesn't cover" at the end of this file for what's left.
 
 ## Open it
 
@@ -52,6 +55,67 @@ makes on your behalf.
 | Learn | `js/learn.js` | Aggregates reflections into `js/memory.js`'s learned-preferences layer — today, which message style (encouraging vs. direct) gets a better response. |
 | Orchestrator | `js/core.js` | JARVIS CORE: runs the full loop each tick, routes to the Faith/Family/Creator agent modules and the Knowledge/Home engines, holds the approval queue. |
 | Memory | `js/memory.js` | Three layers — short-term (this session, rolls over daily), long-term (durable facts/goals/family/reminders), learned preferences — all in this device's `localStorage` only. |
+
+## Proactive Intelligence (V1.0)
+
+Through V0.4, `core.tick()` only ever ran from a manual "Run tick" click —
+a real rule engine, but not yet the spec's "JARVIS should behave like a
+personal AI companion that proactively helps the user, not only responds
+when asked." V1.0's first slice makes `tick()` safe to call on its own, on
+a timer, via the new Proactive Intelligence card at the top of the page:
+
+- **"Enable notifications"** requests real browser `Notification` permission
+  (requires a click — browsers won't grant it otherwise) so a `notify` step
+  actually surfaces as an OS notification even if the tab is backgrounded,
+  not just an update to the page you're not looking at.
+- **"Run automatically every N minutes"** starts a `setInterval` that calls
+  `core.tick()` reusing whatever was last entered in the Observe form (see
+  `app.js`'s `lastSignals`) — automatic ticks don't fabricate new
+  information, they just re-evaluate the loop against the last known state
+  as time itself moves forward (a new part of day, a new day rolling over)
+  and whatever Knowledge/Home have refreshed in the background.
+- **Foreground-only, and said so in the UI**: this is a browser tab, not a
+  native app or a server. There's no push-notification backend and no
+  Service Worker background sync wired up, so the interval only runs while
+  the tab stays open — closing it stops everything until it's reopened (at
+  which point, if "Run automatically" was left on, it resumes — see the
+  `flcc-jarvis-proactive-enabled-v1` preference in `app.js`). This is an
+  honest limitation of a no-build-step static PWA, not a bug to paper over.
+
+**The dedup problem this exposed, and how it's fixed**: before V1.0, only
+two of the app's several `notify`-mode steps had any cadence gating at all
+— the Knowledge briefing (`knowledge.js`'s own `lastBriefingDate`) and the
+weekly goals review (`tools.js`'s `goalsReminder`, added in V0.3 to fix a
+similar bug). Every other notify step (screen time, evening check-in,
+devotion reminders, the V0.4 device-during-devotion suggestion) had none —
+harmless when a human decides when to click "Run tick", but exactly the
+kind of repetitive reminder the spec's own Reflect/Learn example warns
+against once ticks fire automatically every few minutes. `core.tick()` now
+generalizes the fix for every agent at once, using new `shortTerm` state in
+`memory.js` that rolls over daily along with everything else short-term:
+
+- `notifiedIds` — a `notify` step won't fire again the same day once it
+  has.
+- `pendingApprovals` — an `ask-permission` step joins a **persistent**
+  queue instead of being recomputed fresh each tick. This matters more than
+  it sounds: recomputing pending items fresh every tick would either
+  duplicate an already-queued request, or — worse — silently drop one the
+  user hasn't acted on yet the moment a later tick's plan stops including
+  it (e.g. once `working` flips, or the triggering condition briefly
+  clears). Now a request sits in the queue until explicitly approved or
+  denied, surviving any number of ticks and even a page reload in between.
+- `resolvedIds` — once approved or denied, that id won't re-queue itself
+  later the same day even if the same situation is still true.
+- `rememberFact()` in `memory.js` also now skips an exact repeat of the
+  most recent long-term fact, so the record-tick step (which does still run
+  every tick — it's `act-automatically`, not gated) doesn't flood memory
+  with identical entries when nothing has actually changed between two
+  automatic ticks a few minutes apart.
+
+The "Already covered today" list on the Plan & Act card makes the dedup
+itself visible — same Safety Principle reasoning as everything else here:
+the user should be able to see what JARVIS decided not to repeat, not just
+what it did.
 
 ## No live Calendar/Presence yet — this is where it plugs in
 
@@ -183,6 +247,19 @@ would for any other client — nothing here is JARVIS-specific.
 - **Privacy / user control**: everything lives in `localStorage` on this
   device. "Export memory" and "Erase everything" in the Memory panel are the
   same one-tap export/erase pattern as the rest of this repo's apps.
+
+## What V1.0 still doesn't cover
+
+Named honestly rather than left implicit:
+
+- **No real Calendar/Presence source** — still the manual Observe form.
+- **V0.4 has only been tested against a mock Home Assistant REST API**, not
+  a real instance.
+- **No PWA icons** — `manifest.webmanifest`'s `icons` is still empty, unlike
+  `../ofw-companion`'s and `../daily-blessing`'s installed-icon treatment.
+- **Foreground-only proactivity** — see above. A genuinely always-on
+  assistant needs either a native shell or a push-notification backend;
+  neither exists here.
 
 ## Extending it
 
