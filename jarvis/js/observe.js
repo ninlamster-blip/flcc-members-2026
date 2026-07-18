@@ -5,24 +5,27 @@
 //   "Allen is home. Time: 8:30 PM. Weather: Hot Kuwait evening.
 //    Family devotion scheduled. Jared gaming for 2 hours."
 //
-// There's still no live Weather/Presence integration, so this reads a mix
-// of sources:
+// There's still no live Weather integration, so this reads a mix of
+// sources:
 //   - Environment: computed locally (time, date, part of day) — always on.
-//   - Device/home status (real, since V0.4): home.js's cached Home
-//     Assistant device list — its own store, same fuse-but-separate
-//     pattern as Knowledge (see below).
-//   - Calendar (real, as of this version): calendar.js's cached today's
-//     events, mapped into the same `{ label, note }` shape the manual
-//     "Family devotion scheduled today" checkbox always produced — this is
-//     the payoff of that shape being generic from V0.1: Faith Agent's
-//     scheduledDevotionUnderstanding() needed zero changes to start
-//     reacting to a real calendar instead of a checkbox.
-//   - Everything else (presence, screen time, interests): passed in as
-//     `signals`, the same shape a future Presence/Message integration
-//     would eventually populate automatically.
+//   - Device/home status *and* Presence (real, since V0.4 / this version):
+//     home.js's cached Home Assistant state — its own store, same
+//     fuse-but-separate pattern as Knowledge (see below). Presence maps
+//     Home Assistant's person.* entities onto 'home'/'working'/'away' and
+//     wins over the manual dropdown per-person when Home Assistant has an
+//     opinion — see the presence merge below.
+//   - Calendar (real, as of the previous version): calendar.js's cached
+//     today's events, mapped into the same `{ label, note }` shape the
+//     manual "Family devotion scheduled today" checkbox always produced —
+//     this is the payoff of that shape being generic from V0.1: Faith
+//     Agent's scheduledDevotionUnderstanding() needed zero changes to
+//     start reacting to a real calendar instead of a checkbox.
+//   - Everything else (screen time, interests): passed in as `signals`,
+//     the same shape a future Message integration would eventually
+//     populate automatically.
 import { getMemory } from './memory.js';
 import { getCachedNews, briefingShownToday } from './knowledge.js';
-import { playingDeviceNames } from './home.js';
+import { playingDeviceNames, getPresence } from './home.js';
 import { eventsToday } from './calendar.js';
 import { todayKey, partOfDay } from './utils.js';
 
@@ -35,9 +38,14 @@ export function buildContext(signals = {}) {
     today: todayKey(now),
     time: now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
     partOfDay: partOfDay(now),
-    // Personal context: who's around — supplied by the caller until a real
-    // Presence source exists.
-    presence: signals.presence || {}, // { [personName]: 'home'|'away'|'working'|'gaming' }
+    // Personal Context: who's around. Real Home Assistant presence (see
+    // home.js's getPresence()) wins per-person when it has an entry;
+    // the manual dropdown only fills in names Home Assistant doesn't
+    // cover. Unlike events (an array, so real+manual just add up), a
+    // presence status is one value per name — the two sources can
+    // genuinely disagree, so precedence has to be explicit rather than
+    // just concatenating.
+    presence: { ...(signals.presence || {}), ...getPresence() }, // { [personName]: 'home'|'away'|'working'|'gaming' }
     // Personal Context: what's scheduled — real calendar events for today,
     // plus anything still entered manually (both are the same shape, so
     // either can carry a "Family devotion" entry Faith Agent will notice).

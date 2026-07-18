@@ -1,4 +1,4 @@
-# JARVIS Home Sanctuary — V1.0: Proactive Intelligence + Calendar
+# JARVIS Home Sanctuary — V1.0: Proactive Intelligence + Calendar + Presence
 
 A standalone app (same *conventions* as `../ofw-companion` and
 `../daily-blessing` — vanilla ES modules, no build step, installable PWA —
@@ -138,15 +138,40 @@ itself visible — same Safety Principle reasoning as everything else here:
 the user should be able to see what JARVIS decided not to repeat, not just
 what it did.
 
-## No live Presence yet — this is where it plugs in
+## Presence — now real too, no new connection needed
 
-There's still no real Presence integration, so `index.html`'s "Observe" form
-is a stand-in for that one remaining part: it feeds `observe.js` the same
-shape a real Presence source will eventually populate automatically
-(`{ presence, raw }`). Device/home status (Home Engine) and scheduled events
-(Calendar Engine, below) are no longer part of that stand-in — wiring up a
-real Presence source later only changes *where* the last signal comes from;
-nothing downstream (Understand, Plan, Act) needs to change.
+There's no single "presence API" the way there's a REST API for devices or
+an ICS format for calendars — but Home Assistant already aggregates
+whatever a household uses to track where people are (a phone via its
+Companion App, a Find My integration, router-based detection, ...) into
+`person.*` entities with a `home` / `not_home` / zone-name state. That's
+returned by the exact same `GET /api/states` call `home.js` already makes
+for devices, so Presence needed no new connection, no new credentials, and
+no new panel — just reading more of a response that was already being
+fetched. See `home.js`'s `getPresence()`.
+
+- **Mapping**: Home Assistant's `home` state maps to `'home'`; a zone name
+  containing "work" (a real, common Home Assistant feature — Settings ->
+  Areas & Zones — but not something every install has configured) maps to
+  `'working'`; anything else (`not_home`, another zone, `unknown`,
+  `unavailable`) maps to `'away'`. Without a Work zone configured, presence
+  is honestly only ever `'home'` or `'away'` — a named gap, not a bug, same
+  spirit as Calendar's timezone-offset note.
+- **Real presence wins over the manual dropdown, per person** — the one
+  place this app's "real source overrides manual" pattern couldn't just be
+  concatenation the way Calendar's events are (two events don't conflict;
+  two opinions about whether Allen is home very much can). `observe.js`
+  spreads the manual signal first, then Home Assistant's presence on top,
+  so a real `person.*` entity always wins for any name it covers, and the
+  Observe form's dropdown becomes a fallback only for names Home Assistant
+  doesn't have an entity for.
+- **Verified in a real browser**: with the manual "Allen's status" dropdown
+  left at its default ("Home") and a mock Home Assistant reporting
+  `person.allen` in a "Work" zone, the do-not-disturb detector still
+  correctly read `'working'` from real presence and deferred the
+  screen-time nudge — the exact "Allen is working -> do not interrupt"
+  behavior the spec's own worked example describes, driven by real data
+  instead of a hand-set dropdown.
 
 ## Calendar Engine
 
@@ -296,12 +321,19 @@ above, since Home Assistant is a different service entirely.
   it's a tool the four agents reach for (here, Family reaches for it),
   not an agent in its own right.
 
-A known limitation worth naming: if this app is served over HTTPS (as it
-will be once deployed) and Home Assistant is only reachable over plain
-HTTP on the local network, the browser will block the request as mixed
-content. Home Assistant's own remote-access options (Nabu Casa, a
-reverse proxy with a certificate) route around this the same way they
-would for any other client — nothing here is JARVIS-specific.
+Two known limitations worth naming:
+
+- **CORS**: Home Assistant doesn't send CORS headers by default, so a
+  cross-origin fetch from the JARVIS page (its own origin, not Home
+  Assistant's) will likely be blocked by the browser before it even
+  reaches Home Assistant. Fix: add JARVIS's origin to `cors_allowed_origins`
+  under `http:` in `configuration.yaml`.
+- **Mixed content**: if this app is served over HTTPS (as it will be once
+  deployed) and Home Assistant is only reachable over plain HTTP on the
+  local network, the browser will block the request as mixed content.
+  Home Assistant's own remote-access options (Nabu Casa, a reverse proxy
+  with a certificate) route around this the same way they would for any
+  other client — nothing here is JARVIS-specific.
 
 ## Safety Principle, in code
 
@@ -320,13 +352,18 @@ would for any other client — nothing here is JARVIS-specific.
 
 Named honestly rather than left implicit:
 
-- **No real Presence source** — still the manual Observe form.
+- **Presence only distinguishes `'working'` from `'home'`/`'away'` if the
+  household has a Home Assistant zone named with "work" in it** —
+  otherwise it's honestly only ever `'home'` or `'away'`. See Presence
+  above.
 - **Calendar's timezone handling is one fixed UTC offset, not real IANA
   timezone data** — correct for a household in one timezone (see Calendar
   Engine above), wrong for a feed spanning several.
-- **V0.4 has only been tested against a mock Home Assistant REST API, and
-  V1.0's Calendar Engine only against a mock ICS server** — neither against
-  a real instance/feed yet.
+- **Home Assistant (devices + presence) and Calendar have only been tested
+  against mocks** (a mock REST API, a mock ICS server) — not a real
+  instance or feed yet. Home Assistant in particular will likely need
+  `cors_allowed_origins` configured (see Home Engine's note below) before
+  a real device/presence connection works at all.
 - **Foreground-only proactivity** — see above. A genuinely always-on
   assistant needs either a native shell or a push-notification backend;
   neither exists here.

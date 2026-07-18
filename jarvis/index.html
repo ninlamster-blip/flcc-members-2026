@@ -36,9 +36,9 @@
 
   <section class="jv-card" aria-label="Observe">
     <h2>1. Observe</h2>
-    <p class="jv-hint">There's no live Presence integration yet, so feed JARVIS Allen's status and Jared's screen time by hand — this is the same shape a real Presence source will fill in automatically once one exists. (Device/home status is real, via Home Assistant; scheduled events are real too, via Calendar below — the checkbox here is only a manual override/test aid on top of it, not the only source anymore.)</p>
+    <p class="jv-hint">Jared's screen time still has to be entered by hand — there's no source for that yet. Everything else below is now real when configured: Allen's status comes from Home Assistant's presence (this dropdown is only a fallback for whichever names Home Assistant doesn't have a person entity for), scheduled events come from Calendar, device/home status comes from Home Assistant too.</p>
     <form id="jv-observe-form">
-      <label>Allen's status
+      <label>Allen's status (fallback — real presence below overrides this per-name)
         <select name="allenStatus">
           <option value="home">Home</option>
           <option value="working">Working</option>
@@ -151,7 +151,7 @@
   </section>
 
   <section class="jv-card" aria-label="Home">
-    <h2>🏠 Home <span class="jv-hint-inline">Apple TV, HomePod, Bose — via Home Assistant</span></h2>
+    <h2>🏠 Home <span class="jv-hint-inline">Apple TV, HomePod, Bose + Presence — via Home Assistant</span></h2>
     <p id="jv-home-status" class="jv-hint"></p>
     <form id="jv-home-connect-form" class="jv-ask-form">
       <input type="text" name="baseUrl" placeholder="Home Assistant URL, e.g. http://homeassistant.local:8123">
@@ -159,9 +159,12 @@
       <button type="submit">Save</button>
     </form>
     <div class="jv-item-actions">
-      <button type="button" id="jv-refresh-devices">Refresh devices</button>
+      <button type="button" id="jv-refresh-devices">Refresh devices &amp; presence</button>
     </div>
     <ul id="jv-device-list" class="jv-list" style="margin-top:10px;"></ul>
+
+    <h3>Presence <span class="jv-hint-inline">from Home Assistant's person.* entities — overrides the manual dropdown per-person</span></h3>
+    <ul id="jv-presence-list" class="jv-list"></ul>
   </section>
 
   <section class="jv-card" aria-label="Current state" id="jv-context-card" hidden>

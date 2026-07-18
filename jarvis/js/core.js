@@ -49,7 +49,7 @@ import {
 import {
   refreshDevices, getCachedDevices, controlDevice, isConnected as homeConnected,
   getConnection as getHomeConnection, saveConnection as saveHomeConnection,
-  eraseHomeCache,
+  eraseHomeCache, getPresence,
 } from './home.js';
 import {
   refreshEvents, getCachedEvents, isConfigured as calendarConfigured,
@@ -197,7 +197,7 @@ export {
 // see tools.js and agents/family.js).
 export {
   refreshDevices, getCachedDevices, controlDevice, homeConnected,
-  getHomeConnection, saveHomeConnection,
+  getHomeConnection, saveHomeConnection, getPresence,
 };
 
 // Direct Calendar access for the UI's Calendar panel — same reasoning as

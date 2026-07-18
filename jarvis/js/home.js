@@ -1,11 +1,19 @@
-// Home Engine — V0.4's "Home: Apple TV, HomePod, Bose, Home Assistant."
+// Home Engine — V0.4's "Home: Apple TV, HomePod, Bose, Home Assistant,"
+// plus Presence (Personal Context): Home Assistant already aggregates
+// whatever a household uses to track where people are (a phone via its
+// Companion App, Find My via a custom integration, router-based detection,
+// ...) into `person.*` entities with a `home` / `not_home` / zone-name
+// state — the exact same /api/states call already used for devices below
+// also returns those, so Presence needs no new connection or credentials,
+// just reading more of a response already being fetched.
 //
-// Rather than three separate one-off integrations (Apple TV/AirPlay,
-// HomePod/HomeKit, and Bose SoundTouch each speak their own local-network
-// protocol, none of them reachable from a plain static PWA), this talks to
-// a Home Assistant instance's REST API — the common layer real setups
-// already use to bridge exactly those three ecosystems into one place, and
-// a clean, documented HTTP API a no-build-step app can actually call.
+// Rather than three separate one-off device integrations (Apple TV/
+// AirPlay, HomePod/HomeKit, and Bose SoundTouch each speak their own
+// local-network protocol, none of them reachable from a plain static PWA),
+// this talks to a Home Assistant instance's REST API — the common layer
+// real setups already use to bridge exactly those three ecosystems into
+// one place, and a clean, documented HTTP API a no-build-step app can
+// actually call.
 //
 // Own localStorage key, own connection settings — a *different* service
 // from JARVIS's own AI connection (js/ai-client.js), configured
@@ -18,7 +26,7 @@ const TOKEN_KEY = 'flcc-jarvis-home-token-v1';
 const CACHE_KEY = 'flcc-jarvis-home:v1';
 
 function defaultCache() {
-  return { devices: [], fetchedAt: null };
+  return { devices: [], people: [], fetchedAt: null };
 }
 
 function loadCache() {
@@ -68,9 +76,11 @@ export function getCachedDevices() {
   return cache;
 }
 
-// Only media_player entities — the domain Home Assistant's Apple
-// TV/AirPlay (HomePod)/Bose SoundTouch integrations all surface their
-// devices under, regardless of brand.
+// media_player entities — the domain Home Assistant's Apple TV/AirPlay
+// (HomePod)/Bose SoundTouch integrations all surface their devices under,
+// regardless of brand — and person entities, for Presence (see below).
+// One /api/states call covers both, so refreshing devices refreshes
+// presence too; there's no separate "sync presence" action in the UI.
 export async function refreshDevices() {
   const { baseUrl } = getConnection();
   if (!isConnected()) return { ok: false, detail: 'No Home Assistant connection configured yet.' };
@@ -86,9 +96,16 @@ export async function refreshDevices() {
         state: s.state, // 'playing' | 'paused' | 'idle' | 'off' | ...
         volume: s.attributes?.volume_level ?? null,
       }));
-    cache = { devices, fetchedAt: Date.now() };
+    const people = states
+      .filter((s) => s.entity_id.startsWith('person.'))
+      .map((s) => ({
+        entityId: s.entity_id,
+        name: s.attributes?.friendly_name || s.entity_id,
+        state: s.state, // 'home' | 'not_home' | a zone name
+      }));
+    cache = { devices, people, fetchedAt: Date.now() };
     saveCache();
-    return { ok: true, detail: `${devices.length} device(s) found.` };
+    return { ok: true, detail: `${devices.length} device(s), ${people.length} person(s) found.` };
   } catch (err) {
     return { ok: false, detail: `Couldn't reach Home Assistant: ${err.message}` };
   }
@@ -96,6 +113,27 @@ export async function refreshDevices() {
 
 export function playingDeviceNames() {
   return cache.devices.filter((d) => d.state === 'playing').map((d) => d.name);
+}
+
+// Maps Home Assistant's own state vocabulary onto the three statuses the
+// rest of JARVIS already understands (see plan.js's `working` check).
+// 'working' only ever appears if the household has set up a Home
+// Assistant zone whose name contains "work" (Settings -> Areas & Zones) —
+// a real, common HA feature, but not something every install has
+// configured. Without one, presence is only ever 'home' or 'away'; that's
+// an honest gap, not a bug, same spirit as Calendar's timezone-offset note.
+function mapPresenceState(haState) {
+  if (haState === 'home') return 'home';
+  if (/work/i.test(haState)) return 'working';
+  return 'away'; // 'not_home', another zone, 'unknown', 'unavailable', ...
+}
+
+// { [personName]: 'home' | 'working' | 'away' }, keyed by however each
+// person entity is named in Home Assistant — no hardcoded names.
+export function getPresence() {
+  const presence = {};
+  for (const p of cache.people) presence[p.name] = mapPresenceState(p.state);
+  return presence;
 }
 
 const SERVICE_BY_ACTION = {
