@@ -23,6 +23,26 @@ instead of only reacting to a click; see Proactive Intelligence below, and
 Serve the repo root with any static file server and open `jarvis/index.html`
 — no build step, no dependencies.
 
+## Icon
+
+`icons/` — the same file set and manifest wiring `../ofw-companion`'s
+`icons/` uses, so JARVIS installs to a home screen with a real icon instead
+of a generic placeholder. The design is literally the architecture diagram
+from the top of the project spec: a glowing JARVIS CORE with its four
+agents (Faith/Family/Creator/Knowledge) as satellites around it, each a
+different color.
+
+- `icon.svg` / `icon-maskable.svg` — the actual source, hand-editable if
+  the design ever needs to change. `icon-maskable.svg` is the same drawing
+  scaled into the ~80% "safe zone" the maskable-icon spec requires, since a
+  maskable icon can be cropped to any shape (circle, squircle, ...) by the
+  OS.
+- `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`,
+  `apple-touch-icon.png` — those two SVGs rendered to PNG at each size the
+  manifest/`<link>` tags need (PNG rather than SVG directly because
+  manifest icons and `apple-touch-icon` need concrete raster sizes, not a
+  scalable source).
+
 ## Fully standalone — independent of ofw-companion
 
 JARVIS shares this repository for hosting and nothing else. It never reads
@@ -255,8 +275,6 @@ Named honestly rather than left implicit:
 - **No real Calendar/Presence source** — still the manual Observe form.
 - **V0.4 has only been tested against a mock Home Assistant REST API**, not
   a real instance.
-- **No PWA icons** — `manifest.webmanifest`'s `icons` is still empty, unlike
-  `../ofw-companion`'s and `../daily-blessing`'s installed-icon treatment.
 - **Foreground-only proactivity** — see above. A genuinely always-on
   assistant needs either a native shell or a push-notification backend;
   neither exists here.

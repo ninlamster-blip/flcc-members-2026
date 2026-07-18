@@ -1,6 +1,6 @@
 // Minimal offline cache for the JARVIS app shell, same pattern as
 // ../daily-blessing/sw.js and ../ofw-companion/sw.js.
-const CACHE = 'jarvis-v5';
+const CACHE = 'jarvis-v6';
 const SHELL = [
   './',
   './index.html',
@@ -23,6 +23,11 @@ const SHELL = [
   './js/agents/faith.js',
   './js/agents/family.js',
   './js/agents/creator.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
+  './manifest.webmanifest',
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#EAF2FF"/>
+      <stop offset="35%" stop-color="#8FC1FF"/>
+      <stop offset="100%" stop-color="#3D6FE0"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6EA8FF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#6EA8FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- background fills the full canvas edge-to-edge, since a maskable
+       icon can be cropped to any shape (circle, squircle, ...) by the OS -->
+  <rect x="0" y="0" width="512" height="512" fill="#0B0F14"/>
+
+  <!-- everything else stays inside the ~80% "safe zone" the maskable-icon
+       spec requires, by scaling the same design down around the center -->
+  <g transform="translate(256,256) scale(0.72) translate(-256,-256)">
+    <g stroke="#3A4656" stroke-width="5" opacity="0.9">
+      <line x1="256" y1="256" x2="256" y2="123"/>
+      <line x1="256" y1="256" x2="389" y2="256"/>
+      <line x1="256" y1="256" x2="256" y2="389"/>
+      <line x1="256" y1="256" x2="123" y2="256"/>
+    </g>
+    <circle cx="256" cy="256" r="150" fill="url(#glow)"/>
+    <circle cx="256" cy="123" r="30" fill="#E8B84B"/>
+    <circle cx="389" cy="256" r="30" fill="#F0708A"/>
+    <circle cx="256" cy="389" r="30" fill="#4BC9A6"/>
+    <circle cx="123" cy="256" r="30" fill="#6EA8FF"/>
+    <circle cx="256" cy="256" r="96" fill="url(#core)"/>
+  </g>
+</svg>
