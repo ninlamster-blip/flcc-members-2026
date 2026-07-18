@@ -145,8 +145,8 @@ function renderStyleLine() {
 
 function renderKnowledgeStatus() {
   $('#jv-knowledge-status').textContent = core.knowledgeConnected()
-    ? 'AI connection found (shares FLCC Kasama\'s Ask FLCC setup on this device) — news and Q&A both available.'
-    : 'No AI connection configured on this device yet — set up a Worker URL in FLCC Kasama\'s Settings to enable live news and Q&A.';
+    ? 'AI connection configured — news and Q&A both available.'
+    : 'No AI connection configured yet — enter a Worker URL (and/or API key) above.';
 }
 
 function renderNewsList() {
@@ -163,6 +163,42 @@ function renderNewsList() {
     const li = el('li', { className: 'jv-item' });
     li.appendChild(el('div', { text: `${item.sourceIcon || ''} ${item.headline}`.trim() }));
     li.appendChild(el('div', { className: 'jv-item-empty', text: item.source }));
+    ul.appendChild(li);
+  }
+}
+
+function renderHomeStatus() {
+  $('#jv-home-status').textContent = core.homeConnected()
+    ? 'Home Assistant connection configured — device list and controls below are live.'
+    : 'No Home Assistant connection configured yet — enter its URL and a Long-Lived Access Token below.';
+}
+
+function renderDeviceList() {
+  const { devices, fetchedAt } = core.getCachedDevices();
+  const ul = $('#jv-device-list');
+  ul.innerHTML = '';
+  if (devices.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No devices cached yet — try "Refresh devices".' }));
+    return;
+  }
+  const when = fetchedAt ? new Date(fetchedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '';
+  ul.appendChild(el('li', { className: 'jv-item-empty', text: `Fetched ${when}` }));
+  for (const device of devices) {
+    const li = el('li', { className: 'jv-item' });
+    li.appendChild(el('div', { text: `${device.name} — ${device.state}` }));
+
+    const actions = el('div', { className: 'jv-item-actions' });
+    const outcome = el('div', { className: 'jv-feedback-given' });
+    for (const [label, action] of [['▶️', 'play'], ['⏸️', 'pause'], ['🔉', 'volumeDown'], ['🔊', 'volumeUp'], ['⏻', 'turnOff']]) {
+      const btn = el('button', { text: label });
+      btn.addEventListener('click', async () => {
+        const result = await core.controlDevice(device.entityId, action);
+        outcome.textContent = result.detail;
+      });
+      actions.appendChild(btn);
+    }
+    li.appendChild(actions);
+    li.appendChild(outcome);
     ul.appendChild(li);
   }
 }
@@ -249,6 +285,18 @@ $('#jv-observe-form').addEventListener('submit', async (e) => {
   });
 });
 
+$('#jv-ai-connect-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  core.saveAiConnection(
+    data.get('proxyUrl')?.toString() || '',
+    data.get('proxySecret')?.toString() || '',
+    data.get('apiKey')?.toString() || '',
+  );
+  e.target.reset();
+  renderKnowledgeStatus();
+});
+
 $('#jv-refresh-news').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   btn.disabled = true;
@@ -268,6 +316,28 @@ $('#jv-ask-form').addEventListener('submit', async (e) => {
   answerEl.textContent = 'Thinking…';
   const result = await core.askGlobalKnowledge(query);
   answerEl.textContent = result.detail;
+});
+
+$('#jv-home-connect-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  const baseUrl = data.get('baseUrl')?.toString().trim();
+  const token = data.get('token')?.toString().trim();
+  if (!baseUrl || !token) return;
+  core.saveHomeConnection(baseUrl, token);
+  e.target.reset();
+  renderHomeStatus();
+});
+
+$('#jv-refresh-devices').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Refreshing…';
+  const result = await core.refreshDevices();
+  btn.disabled = false;
+  btn.textContent = 'Refresh devices';
+  renderDeviceList();
+  if (!result.ok) $('#jv-home-status').textContent = result.detail;
 });
 
 $('#jv-faith-prayer').addEventListener('click', async (e) => {
@@ -354,4 +424,6 @@ renderStyleLine();
 renderMemory();
 renderKnowledgeStatus();
 renderNewsList();
+renderHomeStatus();
+renderDeviceList();
 renderAgentLists();

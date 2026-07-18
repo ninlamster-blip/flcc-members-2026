@@ -1,15 +1,19 @@
-// Shared AI transport — the same church-wide Ask FLCC connection
-// ofw-companion/js/ai.js already uses (same origin, same localStorage
-// keys, do not rename). Transport only: this module has no opinion about
-// what's asked or what a prompt contains. knowledge.js calls it for Global
-// Knowledge (neutral system prompts, no personal data); the personal
-// agents (js/agents/faith.js, family.js, creator.js) call it for
-// personalized generation (their own prompts, drawing on Personal Memory
-// that they gather themselves). Same client, deliberately different data
-// on each side — see each caller's own header comment.
-const PROXY_URL_KEY = 'flcc-ask-proxy-url-v1';
-const PROXY_SECRET_KEY = 'flcc-ask-proxy-secret-v1';
-const API_KEY_KEY = 'flcc_ask_apikey';
+// AI transport for JARVIS's own connection — entirely independent of
+// ofw-companion (FLCC Kasama)'s Ask FLCC setup. JARVIS is a standalone app:
+// its own localStorage keys, configured from its own Settings panel, never
+// read from or written to by any other app in this repo. Pointing it at
+// the same Cloudflare Worker ofw-companion uses is a choice the user can
+// make in JARVIS's own settings — it is not assumed, shared, or inherited.
+// Transport only: this module has no opinion about what's asked or what a
+// prompt contains. knowledge.js calls it for Global Knowledge (neutral
+// system prompts, no personal data); the personal agents (js/agents/
+// faith.js, family.js, creator.js) call it for personalized generation
+// (their own prompts, drawing on Personal Memory that they gather
+// themselves). Same client, deliberately different data on each side —
+// see each caller's own header comment.
+const PROXY_URL_KEY = 'flcc-jarvis-ai-url-v1';
+const PROXY_SECRET_KEY = 'flcc-jarvis-ai-secret-v1';
+const API_KEY_KEY = 'flcc-jarvis-ai-apikey-v1';
 
 export function getConnection() {
   try {
@@ -21,6 +25,12 @@ export function getConnection() {
   } catch {
     return { proxyUrl: '', proxySecret: '', apiKey: '' };
   }
+}
+
+export function saveConnection(proxyUrl, proxySecret, apiKey) {
+  localStorage.setItem(PROXY_URL_KEY, proxyUrl.trim());
+  localStorage.setItem(PROXY_SECRET_KEY, proxySecret.trim());
+  localStorage.setItem(API_KEY_KEY, apiKey.trim());
 }
 
 export function isConnected() {

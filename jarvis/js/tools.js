@@ -2,14 +2,14 @@
 // Tools" section. Each tool is `{ label, run(params) -> { ok, detail } }`
 // (run may be async — act.js always awaits it).
 //
-// Memory and Communication were wired up for real in V0.1; Knowledge joins
-// them in V0.2 (see knowledge.js — live news plus an optional AI-backed
-// search/summarize, kept structurally separate from Personal Memory).
-// Calendar and Home are still declared — so the registry shape doesn't
-// change later — but return a clear "not connected yet" result until V0.4
-// (Home) / a future Calendar source.
+// Memory and Communication were wired up for real in V0.1, Knowledge in
+// V0.2, Home in V0.4 (see knowledge.js / home.js — each its own engine,
+// kept structurally separate from Personal Memory). Calendar is still
+// declared — so the registry shape doesn't change later — but returns a
+// clear "not connected yet" result until a real Calendar source exists.
 import { rememberFact, setPreference } from './memory.js';
 import { getCachedNews, askGlobalKnowledge, markBriefingShown } from './knowledge.js';
+import { pauseAllPlaying } from './home.js';
 
 function notImplemented(toolName, version) {
   return { ok: false, detail: `${toolName} isn't connected yet — arrives in ${version}.` };
@@ -53,14 +53,18 @@ export const TOOLS = {
   calendar: {
     label: 'Calendar Tool',
     run() {
-      return notImplemented('Calendar Tool', 'V0.4 (Home) / a future Calendar source');
+      return notImplemented('Calendar Tool', 'a future Calendar source');
     },
   },
 
   home: {
     label: 'Home Tool',
-    run() {
-      return notImplemented('Home Tool', 'V0.4');
+    // Plan only ever asks this tool to pause everything (see
+    // agents/family.js's device-during-devotion step) — per-device
+    // play/pause/volume controls are user-driven from the Home panel and
+    // call home.js's controlDevice() directly, not through Plan.
+    async run() {
+      return pauseAllPlaying();
     },
   },
 

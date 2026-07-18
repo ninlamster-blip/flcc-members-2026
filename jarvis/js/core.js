@@ -15,9 +15,12 @@
 // Since V0.3, Faith/Family/Creator are real modules (js/agents/*.js) with
 // their own understand()/plan() — plan.js routes to them directly, and the
 // AGENTS registry below reads its name/description straight off each
-// module instead of duplicating it. Knowledge (V0.2) stays engine-shaped
-// (js/knowledge.js) rather than growing a fourth agents/ module; it's
-// small enough that the extra layer wouldn't earn its keep yet.
+// module instead of duplicating it. Knowledge (V0.2) and Home (V0.4) stay
+// engine-shaped (js/knowledge.js, js/home.js) rather than growing agents/
+// modules of their own — per the spec's own diagram, they're tools the
+// four agents above reach for (Family reaches for the Home Tool to pause a
+// device during devotion, see agents/family.js), not agents in their own
+// right.
 import { todayKey } from './utils.js';
 import {
   rollShortTermIfNewDay, pushObservation, getMemory, addGoal, addFamilyMember,
@@ -33,6 +36,14 @@ import {
   refreshNews, getCachedNews, askGlobalKnowledge, isConnected as knowledgeConnected,
   eraseKnowledgeCache,
 } from './knowledge.js';
+import {
+  getConnection as getAiConnection, saveConnection as saveAiConnection,
+} from './ai-client.js';
+import {
+  refreshDevices, getCachedDevices, controlDevice, isConnected as homeConnected,
+  getConnection as getHomeConnection, saveConnection as saveHomeConnection,
+  eraseHomeCache,
+} from './home.js';
 import * as faith from './agents/faith.js';
 import * as family from './agents/family.js';
 import * as creator from './agents/creator.js';
@@ -109,20 +120,36 @@ export function getMemorySnapshot() {
 
 export { exportMemory };
 
-// "Erase everything" wipes both stores — Personal Memory and the Knowledge
-// Engine's own cache — even though they're deliberately separate the rest
-// of the time; from the user's side, one button should mean everything on
-// this device is gone.
+// "Erase everything" wipes every store — Personal Memory, the Knowledge
+// Engine's cache, and the Home Engine's cache — even though they're
+// deliberately separate the rest of the time; from the user's side, one
+// button should mean everything on this device is gone. (Home Assistant's
+// own connection settings are credentials, not cached data, and are left
+// for the user to clear from the Home panel itself, same as Settings
+// elsewhere in this repo never auto-clears a saved connection.)
 export function eraseMemory() {
   erasePersonalMemory();
   eraseKnowledgeCache();
+  eraseHomeCache();
 }
 
 // Direct Knowledge Tool access for the UI's "ask a question" / "refresh
 // news" controls — these don't go through Plan because they're the user
 // invoking the tool themselves, not JARVIS deciding to. Kept separate from
 // personal memory at every layer (see knowledge.js's own header comment).
-export { refreshNews, getCachedNews, askGlobalKnowledge, knowledgeConnected };
+export {
+  refreshNews, getCachedNews, askGlobalKnowledge, knowledgeConnected,
+  getAiConnection, saveAiConnection,
+};
+
+// Direct Home Tool access for the UI's device-control panel — same
+// reasoning: the user operating their own devices directly, not JARVIS
+// deciding to via Plan (Plan only ever calls the 'home' tool's pauseAll,
+// see tools.js and agents/family.js).
+export {
+  refreshDevices, getCachedDevices, controlDevice, homeConnected,
+  getHomeConnection, saveHomeConnection,
+};
 
 // Direct Personal Agent access for the UI's own "generate" buttons and
 // small add-a-goal/family-member/reminder forms — same reasoning as the
