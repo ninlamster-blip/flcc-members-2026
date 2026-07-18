@@ -1,8 +1,9 @@
 # JARVIS Home Sanctuary — V0.4: Agentic Core + Knowledge + Personal Agents + Home
 
-A standalone app (same pattern as `../ofw-companion` and `../daily-blessing`:
-vanilla ES modules, no build step, installable PWA) implementing the JARVIS
-agentic loop:
+A standalone app (same *conventions* as `../ofw-companion` and
+`../daily-blessing` — vanilla ES modules, no build step, installable PWA —
+but no shared code or data with either) implementing the JARVIS agentic
+loop:
 
 ```
 OBSERVE -> UNDERSTAND -> PLAN -> ACT -> REFLECT -> LEARN
@@ -18,6 +19,26 @@ spec laid out.
 
 Serve the repo root with any static file server and open `jarvis/index.html`
 — no build step, no dependencies.
+
+## Fully standalone — independent of ofw-companion
+
+JARVIS shares this repository for hosting and nothing else. It never reads
+or writes any `localStorage` key another app in this repo uses, and it
+imports no code from `../ofw-companion` or anywhere else outside `jarvis/`.
+Every external connection JARVIS can use is configured from *inside
+JARVIS's own UI*, under its own keys:
+
+| Connection | Configured in | `localStorage` keys |
+|---|---|---|
+| AI (Knowledge Q&A + the personal agents' "generate" buttons) | Knowledge Engine panel | `flcc-jarvis-ai-url-v1`, `-secret-v1`, `-apikey-v1` |
+| News | (same AI connection above — see Knowledge Engine) | — |
+| Home Assistant | Home panel | `flcc-jarvis-home-url-v1`, `-token-v1` |
+
+Nothing is inherited automatically from FLCC Kasama or any other app —
+if you've already set up Ask FLCC there, you can point JARVIS's AI
+connection at the *same* Cloudflare Worker URL if you want to, but that's
+a choice made once, in JARVIS's own settings, not an assumption this app
+makes on your behalf.
 
 ## How the loop maps to files
 
@@ -52,22 +73,21 @@ separate module and a separate `localStorage` key
 it's two different stores that only meet inside `observe.js`'s unified
 context state.
 
-- **News** (real, live): `GET {proxyUrl}/news` on the same Cloudflare Worker
-  `../ofw-companion` already talks to (`../ask-proxy/worker.js`). That
-  Worker's RSS feed list now also includes Apple Newsroom and Ars Technica,
-  covering the spec's Technology/Apple-ecosystem knowledge categories
-  alongside its existing world/PH news sources. Needs only a Worker URL —
-  no Anthropic key required.
+- **News** (real, live): `GET {proxyUrl}/news`, where `proxyUrl` is
+  whatever Cloudflare Worker URL the user enters in the Knowledge Engine
+  panel — any Worker running `../ask-proxy/worker.js`'s code exposes this
+  endpoint (RSS from BBC/Guardian/NPR/Al Jazeera/ABS-CBN/Inquirer/GMA plus
+  Apple Newsroom and Ars Technica, covering the spec's Technology/Apple-
+  ecosystem categories). Needs only a Worker URL — no Anthropic key
+  required. JARVIS doesn't assume or share any particular Worker; the user
+  picks one (it can be the same Worker `../ofw-companion` uses, or a
+  different one entirely — JARVIS has no way to tell, and doesn't care).
 - **Search / general knowledge** (real, only when an AI connection exists):
-  `POST {proxyUrl}/proxy`, the same Claude call `../ofw-companion/js/ai.js`
-  makes, but with a system prompt that contains zero personal data —
-  intentionally, since this is the Global Knowledge side of the Memory
-  System, not a personal-agent conversation.
-- **Same connection, zero extra setup**: `knowledge.js` reads the identical
-  `flcc-ask-proxy-url-v1` / `flcc-ask-proxy-secret-v1` / `flcc_ask_apikey`
-  `localStorage` keys `../ofw-companion/js/ai.js` uses. Since both apps are
-  served from the same origin, a member who's already configured Ask FLCC
-  for Kaibigan gets JARVIS's Knowledge Tool for free.
+  `POST {proxyUrl}/proxy` (or a direct Anthropic API key), via `js/ai-client.js`
+  — JARVIS's own connection, its own `localStorage` keys, configured in the
+  same panel — with a system prompt that contains zero personal data.
+  Intentional: this is the Global Knowledge side of the Memory System, not
+  a personal-agent conversation.
 - **Graceful offline degradation**: with no connection configured, every
   Knowledge function returns a well-formed `{ ok: false, detail }` instead of
   throwing — same offline-first philosophy as the rest of this repo.
@@ -116,9 +136,8 @@ reach directly — Home Assistant is the common layer real setups already
 use to bridge exactly those three into one place, and it has a clean,
 documented REST API a no-build-step app can call directly. Its own
 `localStorage` keys (a base URL and a Long-Lived Access Token, entered in
-the Home panel), separate from the church-wide Ask FLCC connection —
-Home Assistant is a different service entirely, so it isn't shared the way
-Knowledge's connection is.
+the Home panel) — a separate connection from JARVIS's own AI connection
+above, since Home Assistant is a different service entirely.
 
 - **Device list** (real, live): `GET {baseUrl}/api/states`, filtered to
   `media_player.*` entities — the domain Home Assistant's Apple TV,

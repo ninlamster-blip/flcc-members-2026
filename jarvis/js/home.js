@@ -8,10 +8,10 @@
 // a clean, documented HTTP API a no-build-step app can actually call.
 //
 // Own localStorage key, own connection settings — a *different* service
-// from the church-wide Ask FLCC connection (js/ai-client.js), so it isn't
-// shared with ofw-companion the way that one is. Same offline-first shape
-// as knowledge.js: every function returns a well-formed { ok, detail }
-// instead of throwing when nothing is configured.
+// from JARVIS's own AI connection (js/ai-client.js), configured
+// separately in the Home panel. Same offline-first shape as knowledge.js:
+// every function returns a well-formed { ok, detail } instead of throwing
+// when nothing is configured.
 const BASE_URL_KEY = 'flcc-jarvis-home-url-v1';
 const TOKEN_KEY = 'flcc-jarvis-home-token-v1';
 

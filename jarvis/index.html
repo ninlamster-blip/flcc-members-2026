@@ -42,6 +42,19 @@
 
   <section class="jv-card" aria-label="Knowledge Engine">
     <h2>Knowledge Engine <span class="jv-hint-inline">(Global Knowledge — kept separate from Personal Memory)</span></h2>
+    <p class="jv-hint">JARVIS's own AI connection — independent of any other app. Powers Knowledge's news/Q&amp;A and the Faith/Family/Creator "generate" buttons below.</p>
+    <form id="jv-ai-connect-form">
+      <label>Worker URL
+        <input type="text" name="proxyUrl" placeholder="https://your-worker.workers.dev">
+      </label>
+      <label>Proxy secret (optional, if the Worker requires one)
+        <input type="password" name="proxySecret">
+      </label>
+      <label>...or a direct Anthropic API key (used only if no Worker URL is set)
+        <input type="password" name="apiKey">
+      </label>
+      <button type="submit" class="jv-primary">Save connection</button>
+    </form>
     <p id="jv-knowledge-status" class="jv-hint"></p>
     <div class="jv-item-actions">
       <button type="button" id="jv-refresh-news">Refresh news</button>

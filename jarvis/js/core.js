@@ -37,6 +37,9 @@ import {
   eraseKnowledgeCache,
 } from './knowledge.js';
 import {
+  getConnection as getAiConnection, saveConnection as saveAiConnection,
+} from './ai-client.js';
+import {
   refreshDevices, getCachedDevices, controlDevice, isConnected as homeConnected,
   getConnection as getHomeConnection, saveConnection as saveHomeConnection,
   eraseHomeCache,
@@ -134,7 +137,10 @@ export function eraseMemory() {
 // news" controls — these don't go through Plan because they're the user
 // invoking the tool themselves, not JARVIS deciding to. Kept separate from
 // personal memory at every layer (see knowledge.js's own header comment).
-export { refreshNews, getCachedNews, askGlobalKnowledge, knowledgeConnected };
+export {
+  refreshNews, getCachedNews, askGlobalKnowledge, knowledgeConnected,
+  getAiConnection, saveAiConnection,
+};
 
 // Direct Home Tool access for the UI's device-control panel — same
 // reasoning: the user operating their own devices directly, not JARVIS

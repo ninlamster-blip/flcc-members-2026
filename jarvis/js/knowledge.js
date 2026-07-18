@@ -4,20 +4,22 @@
 // data — its own cache lives under a different localStorage key so the
 // separation is structural, not just a comment.
 //
-// V0.2 sources:
-//   - News (real, live): GET {proxyUrl}/news on the same church-wide
-//     Cloudflare Worker FLCC Kasama already uses (see ask-proxy/worker.js —
-//     it fetches BBC/Guardian/NPR/Al Jazeera/ABS-CBN/Inquirer/GMA plus, as of
-//     this version, Apple Newsroom and Ars Technica for the spec's
-//     Technology/Apple-ecosystem categories). Needs no Anthropic key, only a
-//     Worker URL.
-//   - General knowledge / search (real, only when connected): the shared
+// Sources, both reached through JARVIS's own connection (js/ai-client.js —
+// its own localStorage keys, configured from JARVIS's own Settings panel,
+// entirely independent of any other app in this repo):
+//   - News (real, live): GET {proxyUrl}/news. Any Cloudflare Worker running
+//     ask-proxy/worker.js's code exposes this (it fetches BBC/Guardian/NPR/
+//     Al Jazeera/ABS-CBN/Inquirer/GMA plus Apple Newsroom and Ars Technica
+//     for the spec's Technology/Apple-ecosystem categories) — which Worker
+//     URL to use is entirely up to what the user enters in Settings. Needs
+//     no Anthropic key, only a Worker URL.
+//   - General knowledge / search (real, only when connected): the same
 //     ai-client.js transport, but with a system prompt that contains no
 //     personal data at all — the personal agents (js/agents/*.js) use that
 //     same transport differently, with their own personalized prompts.
 // Both are optional: with nothing configured, this module still returns
 // well-formed "not connected" results instead of throwing, same offline-
-// first philosophy as the rest of this repo (see ofw-companion/README.md).
+// first philosophy as the rest of this repo.
 import { todayKey } from './utils.js';
 import { getConnection, isConnected, callAI } from './ai-client.js';
 

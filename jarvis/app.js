@@ -145,8 +145,8 @@ function renderStyleLine() {
 
 function renderKnowledgeStatus() {
   $('#jv-knowledge-status').textContent = core.knowledgeConnected()
-    ? 'AI connection found (shares FLCC Kasama\'s Ask FLCC setup on this device) — news and Q&A both available.'
-    : 'No AI connection configured on this device yet — set up a Worker URL in FLCC Kasama\'s Settings to enable live news and Q&A.';
+    ? 'AI connection configured — news and Q&A both available.'
+    : 'No AI connection configured yet — enter a Worker URL (and/or API key) above.';
 }
 
 function renderNewsList() {
@@ -283,6 +283,18 @@ $('#jv-observe-form').addEventListener('submit', async (e) => {
     environmentNote,
     raw: { jaredGamingHours },
   });
+});
+
+$('#jv-ai-connect-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  core.saveAiConnection(
+    data.get('proxyUrl')?.toString() || '',
+    data.get('proxySecret')?.toString() || '',
+    data.get('apiKey')?.toString() || '',
+  );
+  e.target.reset();
+  renderKnowledgeStatus();
 });
 
 $('#jv-refresh-news').addEventListener('click', async (e) => {
