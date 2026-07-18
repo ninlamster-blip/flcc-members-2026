@@ -19,12 +19,13 @@
 // Since V0.3, Faith/Family/Creator are real modules (js/agents/*.js) with
 // their own understand()/plan() — plan.js routes to them directly, and the
 // AGENTS registry below reads its name/description straight off each
-// module instead of duplicating it. Knowledge (V0.2) and Home (V0.4) stay
-// engine-shaped (js/knowledge.js, js/home.js) rather than growing agents/
-// modules of their own — per the spec's own diagram, they're tools the
-// four agents above reach for (Family reaches for the Home Tool to pause a
-// device during devotion, see agents/family.js), not agents in their own
-// right.
+// module instead of duplicating it. Knowledge (V0.2), Home (V0.4), and
+// Calendar stay engine-shaped (js/knowledge.js, js/home.js,
+// js/calendar.js) rather than growing agents/ modules of their own — per
+// the spec's own diagram, they're tools/sources the four agents above
+// reach for or read from (Family reaches for the Home Tool to pause a
+// device during devotion; Faith reads Calendar's events via context, both
+// fused in by observe.js), not agents in their own right.
 import { todayKey } from './utils.js';
 import {
   rollShortTermIfNewDay, pushObservation, getMemory, addGoal, addFamilyMember,
@@ -50,6 +51,11 @@ import {
   getConnection as getHomeConnection, saveConnection as saveHomeConnection,
   eraseHomeCache,
 } from './home.js';
+import {
+  refreshEvents, getCachedEvents, isConfigured as calendarConfigured,
+  getIcsUrl, getTzOffsetMinutes, saveSettings as saveCalendarSettings,
+  eraseCalendarCache,
+} from './calendar.js';
 import * as faith from './agents/faith.js';
 import * as family from './agents/family.js';
 import * as creator from './agents/creator.js';
@@ -173,6 +179,7 @@ export function eraseMemory() {
   erasePersonalMemory();
   eraseKnowledgeCache();
   eraseHomeCache();
+  eraseCalendarCache();
 }
 
 // Direct Knowledge Tool access for the UI's "ask a question" / "refresh
@@ -191,6 +198,14 @@ export {
 export {
   refreshDevices, getCachedDevices, controlDevice, homeConnected,
   getHomeConnection, saveHomeConnection,
+};
+
+// Direct Calendar access for the UI's Calendar panel — same reasoning as
+// Knowledge/Home above. Plan never calls into calendar.js directly; it
+// only ever sees today's events already fused into context by observe.js.
+export {
+  refreshEvents, getCachedEvents, calendarConfigured,
+  getIcsUrl, getTzOffsetMinutes, saveCalendarSettings,
 };
 
 // Direct Personal Agent access for the UI's own "generate" buttons and

@@ -5,34 +5,43 @@
 //   "Allen is home. Time: 8:30 PM. Weather: Hot Kuwait evening.
 //    Family devotion scheduled. Jared gaming for 2 hours."
 //
-// There's still no live Calendar/Weather integration, so this reads a mix
+// There's still no live Weather/Presence integration, so this reads a mix
 // of sources:
 //   - Environment: computed locally (time, date, part of day) — always on.
 //   - Device/home status (real, since V0.4): home.js's cached Home
 //     Assistant device list — its own store, same fuse-but-separate
 //     pattern as Knowledge (see below).
-//   - Everything else (presence, family events, screen time, interests):
-//     passed in as `signals`, the same shape a future Calendar/Message
-//     integration would eventually populate automatically. Keeping that
-//     boundary explicit means swapping a manual toggle for a real Calendar
-//     Tool later only changes where `signals` comes from, not this file.
+//   - Calendar (real, as of this version): calendar.js's cached today's
+//     events, mapped into the same `{ label, note }` shape the manual
+//     "Family devotion scheduled today" checkbox always produced — this is
+//     the payoff of that shape being generic from V0.1: Faith Agent's
+//     scheduledDevotionUnderstanding() needed zero changes to start
+//     reacting to a real calendar instead of a checkbox.
+//   - Everything else (presence, screen time, interests): passed in as
+//     `signals`, the same shape a future Presence/Message integration
+//     would eventually populate automatically.
 import { getMemory } from './memory.js';
 import { getCachedNews, briefingShownToday } from './knowledge.js';
 import { playingDeviceNames } from './home.js';
+import { eventsToday } from './calendar.js';
 import { todayKey, partOfDay } from './utils.js';
 
 export function buildContext(signals = {}) {
   const mem = getMemory();
   const news = getCachedNews();
   const now = new Date();
+  const calendarEvents = eventsToday().map((e) => ({ label: e.title, note: e.location || '' }));
   return {
     today: todayKey(now),
     time: now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
     partOfDay: partOfDay(now),
-    // Personal context: who's around, what's scheduled — supplied by the
-    // caller until a real Calendar/Presence source exists.
+    // Personal context: who's around — supplied by the caller until a real
+    // Presence source exists.
     presence: signals.presence || {}, // { [personName]: 'home'|'away'|'working'|'gaming' }
-    events: signals.events || [], // [{ label, note }] — e.g. family devotion
+    // Personal Context: what's scheduled — real calendar events for today,
+    // plus anything still entered manually (both are the same shape, so
+    // either can carry a "Family devotion" entry Faith Agent will notice).
+    events: [...calendarEvents, ...(signals.events || [])], // [{ label, note }]
     // A free-text environment note (weather, home status) — same idea as
     // Weather/Home Tool output once those exist.
     environmentNote: signals.environmentNote || '',

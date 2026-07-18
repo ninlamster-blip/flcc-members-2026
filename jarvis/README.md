@@ -1,4 +1,4 @@
-# JARVIS Home Sanctuary — V1.0: Proactive Intelligence
+# JARVIS Home Sanctuary — V1.0: Proactive Intelligence + Calendar
 
 A standalone app (same *conventions* as `../ofw-companion` and
 `../daily-blessing` — vanilla ES modules, no build step, installable PWA —
@@ -55,6 +55,7 @@ JARVIS's own UI*, under its own keys:
 |---|---|---|
 | AI (Knowledge Q&A + the personal agents' "generate" buttons) | Knowledge Engine panel | `flcc-jarvis-ai-url-v1`, `-secret-v1`, `-apikey-v1` |
 | News | (same AI connection above — see Knowledge Engine) | — |
+| Calendar | Calendar panel | `flcc-jarvis-calendar-ics-url-v1`, `-tz-offset-v1` (routed through the same Worker URL as News, above) |
 | Home Assistant | Home panel | `flcc-jarvis-home-url-v1`, `-token-v1` |
 
 Nothing is inherited automatically from FLCC Kasama or any other app —
@@ -70,7 +71,7 @@ makes on your behalf.
 | Observe | `js/observe.js` | Builds one unified context state from time/date (computed) plus presence/events/environment (fed in — see below) and recent long-term memory. |
 | Understand | `js/understand.js` | Cross-cutting detectors (do-not-disturb, the Knowledge briefing) plus each personal agent's own `understand()`, merged into one list. |
 | Plan | `js/plan.js` | Works out `working` (is Allen mid-focus) once, then routes to each agent's own `plan()` and merges the results into one ordered, prioritized action plan. |
-| Act | `js/act.js` + `js/tools.js` | Executes plan steps through a small tool registry (Communication, Memory, Knowledge, Home; Calendar is still stubbed until a real Calendar source exists). Async throughout, since real tools do real I/O. |
+| Act | `js/act.js` + `js/tools.js` | Executes plan steps through a small tool registry (Communication, Memory, Knowledge, Home, Calendar). Async throughout, since real tools do real I/O. |
 | Reflect | `js/reflect.js` | Turns a user's 👍/👎 on an executed action into a reflection record. |
 | Learn | `js/learn.js` | Aggregates reflections into `js/memory.js`'s learned-preferences layer — today, which message style (encouraging vs. direct) gets a better response. |
 | Orchestrator | `js/core.js` | JARVIS CORE: runs the full loop each tick, routes to the Faith/Family/Creator agent modules and the Knowledge/Home engines, holds the approval queue. |
@@ -137,15 +138,62 @@ itself visible — same Safety Principle reasoning as everything else here:
 the user should be able to see what JARVIS decided not to repeat, not just
 what it did.
 
-## No live Calendar/Presence yet — this is where it plugs in
+## No live Presence yet — this is where it plugs in
 
-There's still no real Calendar or Presence integration, so `index.html`'s
-"Observe" form is a stand-in for that part: it feeds `observe.js` the same
-shape a real Calendar/Presence source will eventually populate automatically
-(`{ presence, events, environmentNote, raw }`). Device/home status is no
-longer part of that stand-in — see Home Engine below — and wiring up a real
-Calendar source later only changes *where* the remaining signals come from;
+There's still no real Presence integration, so `index.html`'s "Observe" form
+is a stand-in for that one remaining part: it feeds `observe.js` the same
+shape a real Presence source will eventually populate automatically
+(`{ presence, raw }`). Device/home status (Home Engine) and scheduled events
+(Calendar Engine, below) are no longer part of that stand-in — wiring up a
+real Presence source later only changes *where* the last signal comes from;
 nothing downstream (Understand, Plan, Act) needs to change.
+
+## Calendar Engine
+
+`js/calendar.js` covers the spec's "Personal Context: Calendar" — and
+proves out a claim this README has made since V0.1: "wiring up a real
+source later only changes *where* signals come from, nothing downstream
+needs to change." The manual "Family devotion scheduled today" checkbox in
+the Observe form was always a stand-in for exactly this.
+
+- **Routed through the Worker, same as News** — but unlike News (a fixed,
+  public feed list the Worker itself owns), a calendar is personal, so the
+  *client* supplies which feed to read: `GET {proxyUrl}/calendar?url=<ics-url>`.
+  Most calendar providers, including Google Calendar's own "Secret address
+  in iCal format," don't set CORS headers, so a browser can't read the feed
+  directly — the Worker fetches it server-side and returns parsed JSON.
+  Gated by `PROXY_SECRET` when the Worker has one set, unlike `/news`'s
+  open access, since this endpoint will fetch whatever URL it's given.
+- **A real, dependency-free ICS (RFC 5545) parser lives in
+  `ask-proxy/worker.js`** — line unfolding, `VEVENT` fields, and a
+  deliberately-scoped recurrence engine (`FREQ` of DAILY/WEEKLY/MONTHLY/
+  YEARLY, `INTERVAL`, `COUNT` or `UNTIL`, `BYDAY` for weekly events, capped
+  at 500 generated occurrences) covering the patterns real calendar exports
+  actually use for a weekly Bible study or a daily devotion — not a full
+  RFC 5545 engine (no `BYMONTHDAY`, `BYSETPOS`, nested `RDATE`/`EXRULE`).
+- **One named, deliberate limitation**: full IANA timezone data (regional
+  DST rules) is out of scope for a dependency-free single-file Worker, so a
+  floating/`TZID`-qualified event time (no `Z` suffix — what most real
+  calendar exports actually emit, to preserve wall-clock time across DST)
+  is interpreted using one fixed UTC offset the Calendar panel exposes as
+  "Timezone offset from UTC, in hours" (default 3, for Kuwait). Correct for
+  a feed entirely in one timezone; wrong for a feed mixing several.
+- **Real events flow into `context.events` automatically**: `observe.js`
+  merges `calendar.js`'s cached events for *today* into the same
+  `{ label, note }` shape the manual checkbox always produced, ahead of any
+  manually-entered ones. Faith Agent's `scheduledDevotionUnderstanding()`
+  needed zero changes to start reacting to a real calendar — verified in a
+  real browser: a daily-recurring "Family devotion" ICS event was detected
+  and produced the identical notify step the manual checkbox always did.
+- **Graceful offline degradation**: with no ICS URL or Worker URL
+  configured, every Calendar function returns a well-formed
+  `{ ok: false, detail }`, same as Knowledge and Home.
+- **Personal Context, not Global Knowledge** — worth naming explicitly:
+  unlike `js/knowledge.js`, calendar events are genuinely personal (Allen's
+  own schedule), not global/shared data. It's still kept as its own engine
+  with its own store, for the same "fuse in Observe, keep the stores apart"
+  structural reasoning the rest of this app already uses — not because it
+  belongs conceptually next to Knowledge.
 
 ## Knowledge Engine (V0.2)
 
@@ -272,9 +320,13 @@ would for any other client — nothing here is JARVIS-specific.
 
 Named honestly rather than left implicit:
 
-- **No real Calendar/Presence source** — still the manual Observe form.
-- **V0.4 has only been tested against a mock Home Assistant REST API**, not
-  a real instance.
+- **No real Presence source** — still the manual Observe form.
+- **Calendar's timezone handling is one fixed UTC offset, not real IANA
+  timezone data** — correct for a household in one timezone (see Calendar
+  Engine above), wrong for a feed spanning several.
+- **V0.4 has only been tested against a mock Home Assistant REST API, and
+  V1.0's Calendar Engine only against a mock ICS server** — neither against
+  a real instance/feed yet.
 - **Foreground-only proactivity** — see above. A genuinely always-on
   assistant needs either a native shell or a push-notification backend;
   neither exists here.
