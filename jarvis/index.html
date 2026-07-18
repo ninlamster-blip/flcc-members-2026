@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0B0F14">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V0.4: Agentic Core + Knowledge + Personal Agents + Home).">
+<meta name="description" content="JARVIS Home Sanctuary — Allen's agentic home AI companion (V1.0: Proactive Intelligence).">
 <title>JARVIS</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="style.css">
@@ -14,9 +14,23 @@
 <div id="jv-root">
 
   <header class="jv-header">
-    <h1>JARVIS <span class="jv-version">v0.4 — Agentic Core + Knowledge + Personal Agents + Home</span></h1>
+    <h1>JARVIS <span class="jv-version">v1.0 — Proactive Intelligence</span></h1>
     <p class="jv-sub">Observe &rarr; Understand &rarr; Plan &rarr; Act &rarr; Reflect &rarr; Learn</p>
   </header>
+
+  <section class="jv-card" aria-label="Proactive Intelligence">
+    <h2>Proactive Intelligence</h2>
+    <p class="jv-hint">Runs the loop on its own, re-using whatever you last entered below, instead of waiting for a click. Foreground-only: this is a browser tab, not a native app, so it only runs while this tab stays open — there's no server or push backend behind it (see README).</p>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-enable-notifications">Enable notifications</button>
+      <span id="jv-notification-status" class="jv-hint-inline"></span>
+    </div>
+    <label class="jv-checkbox-row" style="margin-top:10px;">
+      <input type="checkbox" id="jv-proactive-toggle"> Run automatically every
+      <input type="number" id="jv-proactive-interval" min="1" value="15" style="width:60px;"> minutes
+    </label>
+    <p id="jv-proactive-status" class="jv-hint"></p>
+  </section>
 
   <section class="jv-card" aria-label="Observe">
     <h2>1. Observe</h2>
@@ -150,6 +164,9 @@
 
     <h3>Deferred / waiting</h3>
     <ul id="jv-deferred-list" class="jv-list"></ul>
+
+    <h3>Already covered today <span class="jv-hint-inline">(won't repeat until tomorrow)</span></h3>
+    <ul id="jv-already-handled-list" class="jv-list"></ul>
   </section>
 
   <section class="jv-card" aria-label="Reflect and Learn">

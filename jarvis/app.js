@@ -131,6 +131,20 @@ function renderDeferred(deferred) {
   }
 }
 
+function renderAlreadyHandled(list) {
+  const ul = $('#jv-already-handled-list');
+  ul.innerHTML = '';
+  if (list.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'Nothing suppressed this tick.' }));
+    return;
+  }
+  for (const step of list) {
+    const li = el('li', { className: 'jv-item' });
+    li.appendChild(el('div', { className: 'jv-item-empty', text: step.message }));
+    ul.appendChild(li);
+  }
+}
+
 function renderMemory() {
   const mem = core.getMemorySnapshot();
   $('#jv-mem-short').textContent = JSON.stringify(mem.shortTerm, null, 2);
@@ -264,25 +278,98 @@ async function runTick(signals) {
   renderExecuted(report.executed);
   renderPending(report.pending);
   renderDeferred(report.deferred);
+  renderAlreadyHandled(report.alreadyHandledToday);
 
   renderStyleLine();
   renderMemory();
+  return report;
 }
 
-$('#jv-observe-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const data = new FormData(e.target);
+// The signals Proactive mode replays on a timer — whatever was last
+// submitted through the Observe form by hand. There's no live Calendar/
+// Presence source yet (see README), so "automatic" ticks still reason
+// from the most recently known state, not fabricated new information;
+// what genuinely changes tick to tick is time itself (part of day, a new
+// day rolling over) and whatever Knowledge/Home have refreshed.
+let lastSignals = { presence: {}, events: [], environmentNote: '', raw: { jaredGamingHours: 0 } };
+
+function signalsFromObserveForm() {
+  const data = new FormData($('#jv-observe-form'));
   const allenStatus = data.get('allenStatus');
   const jaredGamingHours = Number(data.get('jaredGamingHours')) || 0;
   const devotionScheduled = data.get('devotionScheduled') === 'on';
   const environmentNote = data.get('environmentNote') || '';
-
-  await runTick({
+  return {
     presence: { Allen: allenStatus },
     events: devotionScheduled ? [{ label: 'Family devotion', note: '' }] : [],
     environmentNote,
     raw: { jaredGamingHours },
-  });
+  };
+}
+
+$('#jv-observe-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  lastSignals = signalsFromObserveForm();
+  await runTick(lastSignals);
+});
+
+// ── Proactive Intelligence: notifications + the auto-tick scheduler ──────
+const PROACTIVE_KEY = 'flcc-jarvis-proactive-enabled-v1';
+let proactiveTimer = null;
+
+function renderNotificationStatus() {
+  const supported = typeof Notification !== 'undefined';
+  $('#jv-notification-status').textContent = !supported
+    ? 'Notifications not supported in this browser.'
+    : Notification.permission === 'granted'
+      ? 'Notifications enabled.'
+      : Notification.permission === 'denied'
+        ? 'Notifications blocked — allow them in your browser\'s site settings to use this.'
+        : 'Notifications not yet enabled.';
+}
+
+$('#jv-enable-notifications').addEventListener('click', async () => {
+  if (typeof Notification === 'undefined') return;
+  await Notification.requestPermission();
+  renderNotificationStatus();
+});
+
+function renderProactiveStatus(running) {
+  const minutes = $('#jv-proactive-interval').value || '15';
+  $('#jv-proactive-status').textContent = running
+    ? `Running automatically every ${minutes} minute(s) while this tab stays open. Last check: ${new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}.`
+    : 'Not running automatically — use "Run tick" manually, or turn this on.';
+}
+
+function stopProactive() {
+  if (proactiveTimer) clearInterval(proactiveTimer);
+  proactiveTimer = null;
+  localStorage.setItem(PROACTIVE_KEY, 'false');
+  renderProactiveStatus(false);
+}
+
+function startProactive() {
+  const minutes = Math.max(1, Number($('#jv-proactive-interval').value) || 15);
+  if (proactiveTimer) clearInterval(proactiveTimer);
+  proactiveTimer = setInterval(async () => {
+    await runTick(lastSignals);
+    renderProactiveStatus(true);
+  }, minutes * 60 * 1000);
+  localStorage.setItem(PROACTIVE_KEY, 'true');
+  renderProactiveStatus(true);
+}
+
+$('#jv-proactive-toggle').addEventListener('change', async (e) => {
+  if (e.target.checked) {
+    await runTick(lastSignals); // show something immediately, don't wait a full interval
+    startProactive();
+  } else {
+    stopProactive();
+  }
+});
+
+$('#jv-proactive-interval').addEventListener('change', () => {
+  if ($('#jv-proactive-toggle').checked) startProactive(); // restart with the new interval
 });
 
 $('#jv-ai-connect-form').addEventListener('submit', (e) => {
@@ -427,3 +514,15 @@ renderNewsList();
 renderHomeStatus();
 renderDeviceList();
 renderAgentLists();
+renderNotificationStatus();
+renderProactiveStatus(false);
+
+// Resume Proactive mode automatically if it was left on — same tab-reload
+// convenience as re-opening any other app to where you left it. This only
+// restores the on/off preference; Notification permission itself is a
+// browser-level grant that persists on its own and is never re-requested
+// without a click (browsers require a user gesture for that prompt).
+if (localStorage.getItem(PROACTIVE_KEY) === 'true') {
+  $('#jv-proactive-toggle').checked = true;
+  startProactive();
+}

@@ -26,6 +26,19 @@ function defaultState() {
       day: null, // date key this session belongs to — a new day resets it
       observations: [], // recent buildContext() snapshots, most recent last
       conversation: [], // { t, from: 'user'|'jarvis', text }
+      // "Have I already told Allen this today" bookkeeping for Proactive
+      // Intelligence (see core.js's tick()) — rolls over with the rest of
+      // shortTerm on a new day, which is exactly the cadence it needs:
+      // notifiedIds stops a `mode: 'notify'` step from firing more than
+      // once a day when ticks run automatically rather than on a click;
+      // resolvedIds stops an `ask-permission` step from re-queuing itself
+      // after the user has already approved or denied it today;
+      // pendingApprovals is the durable queue itself — earlier ticks'
+      // approval requests that haven't been resolved yet must keep
+      // showing up, not get silently recomputed away.
+      notifiedIds: {}, // { [stepId]: true }
+      resolvedIds: {}, // { [stepId]: 'approved' | 'denied' }
+      pendingApprovals: [], // [step, ...]
     },
     longTerm: {
       profile: { name: 'Allen', location: 'Kuwait' },
@@ -85,7 +98,10 @@ export function getMemory() {
 // leaks into today's decisions.
 export function rollShortTermIfNewDay(todayKey) {
   if (state.shortTerm.day !== todayKey) {
-    state.shortTerm = { day: todayKey, observations: [], conversation: [] };
+    state.shortTerm = {
+      day: todayKey, observations: [], conversation: [],
+      notifiedIds: {}, resolvedIds: {}, pendingApprovals: [],
+    };
     save();
   }
 }
@@ -99,6 +115,11 @@ export function pushObservation(context) {
 }
 
 export function rememberFact(text) {
+  // Skip an exact repeat of the most recent fact — harmless from a single
+  // click, but record-tick runs every automatic tick too (see core.js), and
+  // nothing changing between two ticks a few minutes apart is the normal
+  // case, not something worth another identical line in long-term memory.
+  if (state.longTerm.facts[0]?.text === text) return;
   state.longTerm.facts.unshift({ t: Date.now(), text });
   save();
 }
@@ -141,6 +162,44 @@ export function getPreference(key, fallback = null) {
   return Object.prototype.hasOwnProperty.call(state.learned.preferences, key)
     ? state.learned.preferences[key]
     : fallback;
+}
+
+// ── Proactive Intelligence bookkeeping (see core.js's tick()) ────────────
+
+export function wasNotifiedToday(stepId) {
+  return !!state.shortTerm.notifiedIds[stepId];
+}
+
+export function markNotifiedToday(stepId) {
+  state.shortTerm.notifiedIds[stepId] = true;
+  save();
+}
+
+export function wasResolvedToday(stepId) {
+  return !!state.shortTerm.resolvedIds[stepId];
+}
+
+export function markResolvedToday(stepId, outcome) {
+  state.shortTerm.resolvedIds[stepId] = outcome;
+  save();
+}
+
+export function getPendingApprovals() {
+  return state.shortTerm.pendingApprovals;
+}
+
+// Idempotent by step id — a step already sitting in the queue from an
+// earlier tick isn't added again just because a later tick still finds the
+// same situation true.
+export function addPendingApproval(step) {
+  if (state.shortTerm.pendingApprovals.some((s) => s.id === step.id)) return;
+  state.shortTerm.pendingApprovals.push(step);
+  save();
+}
+
+export function removePendingApproval(stepId) {
+  state.shortTerm.pendingApprovals = state.shortTerm.pendingApprovals.filter((s) => s.id !== stepId);
+  save();
 }
 
 export function exportMemory() {

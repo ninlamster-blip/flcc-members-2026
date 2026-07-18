@@ -2,9 +2,13 @@
 //
 // Runs the full OBSERVE -> UNDERSTAND -> PLAN -> ACT loop each tick, keeps
 // track of which specialist agent (Faith/Family/Creator/Knowledge) owns
-// each step, and holds the approval queue Act produces for anything that
-// reaches a third party. REFLECT/LEARN close the loop once the caller
+// each step, and holds the durable approval queue Act produces for anything
+// that reaches a third party. REFLECT/LEARN close the loop once the caller
 // reports how the user responded — see recordFeedback().
+//
+// tick() is deliberately safe to call on a timer (see app.js's Proactive
+// mode) and not just from a manual click — see the same-day dedup logic
+// inside it below.
 //
 //              JARVIS CORE
 //                   |
@@ -25,6 +29,8 @@ import { todayKey } from './utils.js';
 import {
   rollShortTermIfNewDay, pushObservation, getMemory, addGoal, addFamilyMember,
   recordFeedback as memoryRecordFeedback, exportMemory, eraseMemory as erasePersonalMemory,
+  wasNotifiedToday, markNotifiedToday, wasResolvedToday, markResolvedToday,
+  getPendingApprovals, addPendingApproval, removePendingApproval,
 } from './memory.js';
 import { buildContext, describeContext } from './observe.js';
 import { buildUnderstanding } from './understand.js';
@@ -55,13 +61,30 @@ export const AGENTS = {
   knowledge: { name: 'Knowledge Agent', description: 'News, facts, general questions — kept separate from personal memory.' },
 };
 
-// Steps from the most recent tick, keyed by id, so approve()/deny()/
+// Executed/deferred steps from the most recent tick, keyed by id, so
 // recordFeedback() can look one up without the caller re-threading state.
-// Deliberately in-memory only (not persisted) — it's this session's
-// pending work, not a durable record; anything worth keeping past this
-// tick is already in memory.js by the time this map would be lost.
+// Deliberately in-memory only (not persisted) — a thumbs up/down only ever
+// makes sense right after seeing the result in this same session; anything
+// worth keeping past that is already in memory.js. Pending approvals are
+// NOT looked up here — see the persistent queue below.
 let lastSteps = new Map();
 
+// Proactive Intelligence: tick() is safe to call automatically and
+// repeatedly (see app.js's scheduler), not just from a manual click. Two
+// things make that safe instead of spammy:
+//   - `notify` steps fire at most once a day per step id (wasNotifiedToday/
+//     markNotifiedToday) — screen-time, evening check-in, devotion
+//     reminders etc. previously had no such gate at all; only the
+//     Knowledge briefing and weekly goals review (each via their own
+//     one-off mechanism) did. This generalizes the same idea to every
+//     agent's notify steps in one place instead of each hand-rolling it.
+//   - `ask-permission` steps join a *persistent* queue (pendingApprovals)
+//     instead of being recomputed fresh each tick — recomputing them would
+//     either duplicate an already-queued request or, worse, silently drop
+//     one the user hasn't acted on yet the moment a later tick's plan
+//     stops including it. Once approved or denied, the id is marked
+//     resolved for the day so the same situation doesn't re-queue itself
+//     five minutes later.
 export async function tick(signals = {}) {
   const today = todayKey();
   rollShortTermIfNewDay(today);
@@ -70,31 +93,50 @@ export async function tick(signals = {}) {
   pushObservation(context);
 
   const understandings = buildUnderstanding(context);
-  const plan = buildPlan(context, understandings);
-  const { executed, pending, deferred } = await runPlan(plan);
+  const rawPlan = buildPlan(context, understandings);
 
-  lastSteps = new Map(plan.map((s) => [s.id, s]));
+  const runnable = [];
+  const alreadyHandled = [];
+  for (const step of rawPlan) {
+    if (step.mode === 'notify' && wasNotifiedToday(step.id)) { alreadyHandled.push(step); continue; }
+    if (step.requiresApproval && wasResolvedToday(step.id)) { alreadyHandled.push(step); continue; }
+    runnable.push(step);
+  }
+
+  const { executed, pending: newlyPending, deferred } = await runPlan(runnable);
+
+  for (const { step } of executed) {
+    if (step.mode === 'notify') markNotifiedToday(step.id);
+  }
+  for (const step of newlyPending) addPendingApproval(step);
+
+  lastSteps = new Map(rawPlan.map((s) => [s.id, s]));
 
   return {
     context,
     contextSummary: describeContext(context),
     understandings,
-    plan,
+    plan: rawPlan,
     executed,
-    pending,
-    deferred,
+    pending: getPendingApprovals(),
+    deferred, // mode: 'wait' only — genuinely waiting, not yet handled
+    alreadyHandledToday: alreadyHandled, // already notified/resolved earlier today — won't repeat
   };
 }
 
 export async function approve(actionId) {
-  const step = lastSteps.get(actionId);
+  const step = getPendingApprovals().find((s) => s.id === actionId) || lastSteps.get(actionId);
   if (!step) return null;
+  removePendingApproval(actionId);
+  markResolvedToday(actionId, 'approved');
   return executeStep(step);
 }
 
 export function deny(actionId) {
-  const step = lastSteps.get(actionId);
+  const step = getPendingApprovals().find((s) => s.id === actionId) || lastSteps.get(actionId);
   if (!step) return null;
+  removePendingApproval(actionId);
+  markResolvedToday(actionId, 'denied');
   return { step, result: { ok: false, detail: 'Denied by user — not sent.' } };
 }
 
