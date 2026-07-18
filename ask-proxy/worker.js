@@ -21,7 +21,9 @@
 //  8. Open the app → Ask FLCC tab → enter the Worker URL + Proxy Secret
 //
 // That's it — all members can now use Ask FLCC with no API key setup.
-// The worker also serves GET /news — live RSS headlines from trusted sources.
+// The worker also serves GET /news — live RSS headlines from trusted sources —
+// and GET /calendar?url=<ics-url> — a caller-supplied ICS feed, fetched and
+// parsed server-side (bypasses CORS, which most ICS providers don't set).
 //
 // OPTIONAL — Daily Blessing community counter:
 //  Go to your Worker → Settings → Bindings → Add binding → KV Namespace,
@@ -88,6 +90,176 @@ async function fetchNewsFeed(feed) {
   });
 }
 
+// ── GET /calendar — proxies + parses a personal ICS (iCalendar) feed URL ──
+// Unlike /news (a fixed, public feed list this Worker owns), a calendar is
+// personal — the caller supplies which feed to read via ?url=. This
+// endpoint exists only to do what a browser can't: fetch it server-side
+// (most ICS providers, including Google Calendar's own "secret address",
+// don't set CORS headers) and turn RFC 5545 text into plain JSON. Gated by
+// PROXY_SECRET like /proxy and /tts, since — unlike /news's fixed
+// allowlist — this will fetch whatever URL the caller supplies.
+
+function unfoldICS(text) {
+  // RFC 5545 line folding: a logical line may be split across several
+  // physical lines, each continuation starting with a single space or tab.
+  return text.replace(/\r\n/g, '\n').replace(/\n[ \t]/g, '');
+}
+
+function parseICSDateValue(value, tzOffsetMinutes) {
+  const v = (value || '').trim();
+  if (/^\d{8}$/.test(v)) {
+    // VALUE=DATE — an all-day event, no time component.
+    const y = +v.slice(0, 4), mo = +v.slice(4, 6), d = +v.slice(6, 8);
+    return { date: new Date(Date.UTC(y, mo - 1, d)), allDay: true };
+  }
+  const m = v.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/);
+  if (!m) return null;
+  const [, y, mo, d, h, mi, s, z] = m;
+  if (z) return { date: new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s)), allDay: false };
+  // No Z suffix: a "floating" or TZID-qualified local time. Full IANA
+  // timezone data is out of scope for a dependency-free single-file
+  // Worker (no DST rules, no per-region lookup), so this applies one fixed
+  // offset the caller supplies (?tzOffsetMinutes=, minutes east of UTC)
+  // instead of pretending to resolve arbitrary zones correctly. Good
+  // enough for one household's calendar in one timezone; wrong for a feed
+  // that mixes events across multiple zones.
+  const utcMs = Date.UTC(+y, +mo - 1, +d, +h, +mi, +s) - tzOffsetMinutes * 60000;
+  return { date: new Date(utcMs), allDay: false };
+}
+
+function parseICSLine(line) {
+  const colon = line.indexOf(':');
+  if (colon === -1) return null;
+  const [name, ...paramParts] = line.slice(0, colon).split(';');
+  const params = {};
+  for (const p of paramParts) {
+    const eq = p.indexOf('=');
+    if (eq !== -1) params[p.slice(0, eq)] = p.slice(eq + 1);
+  }
+  return { name: name.toUpperCase(), params, value: line.slice(colon + 1) };
+}
+
+const RRULE_DAY_INDEX = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
+const RRULE_FREQS = ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'];
+
+function parseRRule(value) {
+  const rule = {};
+  for (const part of value.split(';')) {
+    const [k, v] = part.split('=');
+    if (k) rule[k] = v;
+  }
+  return rule;
+}
+
+function addInterval(date, freq, interval) {
+  const d = new Date(date);
+  if (freq === 'DAILY') d.setUTCDate(d.getUTCDate() + interval);
+  else if (freq === 'WEEKLY') d.setUTCDate(d.getUTCDate() + interval * 7);
+  else if (freq === 'MONTHLY') d.setUTCMonth(d.getUTCMonth() + interval);
+  else if (freq === 'YEARLY') d.setUTCFullYear(d.getUTCFullYear() + interval);
+  return d;
+}
+
+// Deliberately not a full RFC 5545 recurrence engine — supports the
+// patterns real calendar exports actually use for the kind of things
+// JARVIS cares about (a weekly Bible study, a daily devotion, a monthly
+// meeting): FREQ of DAILY/WEEKLY/MONTHLY/YEARLY, INTERVAL, COUNT or UNTIL,
+// and BYDAY for weekly events. Anything fancier (BYMONTHDAY, BYSETPOS,
+// nested RDATE/EXRULE, ...) is silently ignored rather than mis-expanded.
+function expandRecurrence(dtstart, durationMs, rrule, exdateSet, windowStart, windowEnd) {
+  const freq = rrule.FREQ;
+  if (!RRULE_FREQS.includes(freq)) return [];
+  const interval = Math.max(1, parseInt(rrule.INTERVAL, 10) || 1);
+  const count = rrule.COUNT ? parseInt(rrule.COUNT, 10) : null;
+  const until = rrule.UNTIL ? parseICSDateValue(rrule.UNTIL, 0)?.date : null;
+  const byDay = rrule.BYDAY ? rrule.BYDAY.split(',').map((d) => d.replace(/^[+-]?\d+/, '')) : null;
+
+  const MAX_OCCURRENCES = 500; // safety cap against a runaway/malformed rule
+  const occurrences = [];
+  let cursor = new Date(dtstart);
+  let produced = 0;
+
+  while (cursor <= windowEnd && produced < MAX_OCCURRENCES) {
+    if (until && cursor > until) break;
+    if (count !== null && produced >= count) break;
+
+    if (freq === 'WEEKLY' && byDay) {
+      // One pass per week: emit every requested weekday inside it.
+      const weekStart = new Date(cursor);
+      weekStart.setUTCDate(weekStart.getUTCDate() - weekStart.getUTCDay());
+      for (const code of byDay) {
+        const dow = RRULE_DAY_INDEX[code];
+        if (dow === undefined) continue;
+        const occ = new Date(weekStart);
+        occ.setUTCDate(occ.getUTCDate() + dow);
+        occ.setUTCHours(dtstart.getUTCHours(), dtstart.getUTCMinutes(), dtstart.getUTCSeconds(), 0);
+        if (occ < dtstart || (until && occ > until)) continue;
+        if (occ >= windowStart && occ <= windowEnd && !exdateSet.has(occ.toISOString().slice(0, 10))) {
+          occurrences.push(occ);
+          produced++;
+        }
+      }
+    } else if (cursor >= windowStart && !exdateSet.has(cursor.toISOString().slice(0, 10))) {
+      occurrences.push(new Date(cursor));
+      produced++;
+    }
+    cursor = addInterval(cursor, freq, interval);
+  }
+
+  return occurrences.map((start) => ({ start, end: new Date(start.getTime() + durationMs) }));
+}
+
+function parseICS(text, { tzOffsetMinutes, windowStart, windowEnd }) {
+  const lines = unfoldICS(text).split('\n').map((l) => l.trim()).filter(Boolean);
+
+  const rawEvents = [];
+  let cur = null;
+  for (const line of lines) {
+    if (line === 'BEGIN:VEVENT') { cur = {}; continue; }
+    if (line === 'END:VEVENT') { if (cur) rawEvents.push(cur); cur = null; continue; }
+    if (!cur) continue;
+    const parsed = parseICSLine(line);
+    if (!parsed) continue;
+    if (parsed.name === 'SUMMARY') cur.summary = parsed.value;
+    else if (parsed.name === 'LOCATION') cur.location = parsed.value;
+    else if (parsed.name === 'UID') cur.uid = parsed.value;
+    else if (parsed.name === 'RRULE') cur.rrule = parsed.value;
+    else if (parsed.name === 'DTSTART') cur.dtstart = parsed.value;
+    else if (parsed.name === 'DTEND') cur.dtend = parsed.value;
+    else if (parsed.name === 'EXDATE') (cur.exdates = cur.exdates || []).push(parsed.value);
+  }
+
+  const results = [];
+  for (const ev of rawEvents) {
+    if (!ev.dtstart) continue;
+    const start = parseICSDateValue(ev.dtstart, tzOffsetMinutes);
+    if (!start) continue;
+    const end = ev.dtend ? parseICSDateValue(ev.dtend, tzOffsetMinutes) : null;
+    const durationMs = end ? (end.date - start.date) : (start.allDay ? 86400000 : 3600000);
+    const exdateSet = new Set(
+      (ev.exdates || []).map((v) => parseICSDateValue(v, tzOffsetMinutes)?.date.toISOString().slice(0, 10)).filter(Boolean)
+    );
+
+    if (ev.rrule) {
+      for (const occ of expandRecurrence(start.date, durationMs, parseRRule(ev.rrule), exdateSet, windowStart, windowEnd)) {
+        results.push({
+          uid: ev.uid, title: ev.summary || '(untitled)', location: ev.location || '',
+          start: occ.start.toISOString(), end: occ.end.toISOString(), allDay: start.allDay, recurring: true,
+        });
+      }
+    } else if (start.date >= windowStart && start.date <= windowEnd) {
+      results.push({
+        uid: ev.uid, title: ev.summary || '(untitled)', location: ev.location || '',
+        start: start.date.toISOString(), end: new Date(start.date.getTime() + durationMs).toISOString(),
+        allDay: start.allDay, recurring: false,
+      });
+    }
+  }
+
+  results.sort((a, b) => a.start.localeCompare(b.start));
+  return results.slice(0, 100);
+}
+
 export default {
   async fetch(request, env, ctx) {
     // Top-level catch — every response gets CORS headers, nothing escapes as a bare Cloudflare error
@@ -131,6 +303,52 @@ async function handleRequest(request, env, ctx) {
     return new Response(JSON.stringify({ items }), {
       headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
+  }
+
+  // ── GET /calendar — proxies + parses a caller-supplied ICS feed URL ──────
+  // Gated by PROXY_SECRET (when set), unlike /news's fixed allowlist above —
+  // this fetches whatever URL the caller passes, so it needs the same
+  // shared-secret gate /proxy and /tts use.
+  if (request.method === 'GET' && url.pathname === '/calendar') {
+    if (env.PROXY_SECRET) {
+      const incoming = request.headers.get('x-proxy-secret') || '';
+      if (incoming !== env.PROXY_SECRET) {
+        return new Response(
+          JSON.stringify({ error: { message: 'Invalid proxy secret.' } }),
+          { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    const icsUrl = url.searchParams.get('url');
+    if (!icsUrl || !/^https?:\/\//i.test(icsUrl)) {
+      return new Response(
+        JSON.stringify({ error: { message: 'Missing or invalid ?url= (must be http/https).' } }),
+        { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    const days = Math.min(60, Math.max(1, parseInt(url.searchParams.get('days'), 10) || 14));
+    // Minutes east of UTC, applied only to floating/TZID-qualified times
+    // that have no explicit Z suffix — see parseICSDateValue()'s comment.
+    // Defaults to +180 (Kuwait) since that is the one household this app
+    // is built for; any caller can override it.
+    const tzOffsetMinutes = Math.min(840, Math.max(-720, parseInt(url.searchParams.get('tzOffsetMinutes'), 10) || 180));
+    try {
+      const res = await fetch(icsUrl, { cf: { cacheTtl: 300 } });
+      if (!res.ok) throw new Error(`ICS source returned HTTP ${res.status}`);
+      const text = await res.text();
+      const now = new Date();
+      const windowStart = new Date(now.getTime() - 86400000); // include events that started earlier today
+      const windowEnd = new Date(now.getTime() + days * 86400000);
+      const events = parseICS(text, { tzOffsetMinutes, windowStart, windowEnd });
+      return new Response(JSON.stringify({ events }), {
+        headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
+      });
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: { message: `Couldn't read that calendar: ${err.message}` } }),
+        { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
   }
 
   // ── /api/daily-blessing/community — anonymous daily open counter ─────────

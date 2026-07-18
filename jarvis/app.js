@@ -217,6 +217,31 @@ function renderDeviceList() {
   }
 }
 
+function renderCalendarStatus() {
+  $('#jv-calendar-status').textContent = core.calendarConfigured()
+    ? 'Calendar configured — today\'s events feed Faith Agent\'s devotion detection automatically.'
+    : 'No calendar feed configured yet — paste an ICS URL above (needs a Worker URL set in Knowledge Engine too).';
+}
+
+function renderCalendarList() {
+  const { events, fetchedAt } = core.getCachedEvents();
+  const ul = $('#jv-calendar-list');
+  ul.innerHTML = '';
+  if (events.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No events cached yet — try "Refresh calendar".' }));
+    return;
+  }
+  const when = fetchedAt ? new Date(fetchedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '';
+  ul.appendChild(el('li', { className: 'jv-item-empty', text: `Fetched ${when}` }));
+  for (const ev of events.slice(0, 10)) {
+    const li = el('li', { className: 'jv-item' });
+    const when2 = ev.allDay ? 'All day' : new Date(ev.start).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    li.appendChild(el('div', { text: ev.title }));
+    li.appendChild(el('div', { className: 'jv-item-empty', text: `${when2}${ev.location ? ` — ${ev.location}` : ''}${ev.recurring ? ' (recurring)' : ''}` }));
+    ul.appendChild(li);
+  }
+}
+
 function renderFamilyList() {
   const { family } = core.getMemorySnapshot().longTerm;
   const ul = $('#jv-family-list');
@@ -286,11 +311,12 @@ async function runTick(signals) {
 }
 
 // The signals Proactive mode replays on a timer — whatever was last
-// submitted through the Observe form by hand. There's no live Calendar/
-// Presence source yet (see README), so "automatic" ticks still reason
-// from the most recently known state, not fabricated new information;
-// what genuinely changes tick to tick is time itself (part of day, a new
-// day rolling over) and whatever Knowledge/Home have refreshed.
+// submitted through the Observe form by hand. There's still no live
+// Presence source (see README), so "automatic" ticks reason from the most
+// recently known presence/screen-time state, not fabricated new
+// information; what genuinely changes tick to tick is time itself (part of
+// day, a new day rolling over) and whatever Knowledge/Home/Calendar have
+// refreshed in the background.
 let lastSignals = { presence: {}, events: [], environmentNote: '', raw: { jaredGamingHours: 0 } };
 
 function signalsFromObserveForm() {
@@ -427,6 +453,28 @@ $('#jv-refresh-devices').addEventListener('click', async (e) => {
   if (!result.ok) $('#jv-home-status').textContent = result.detail;
 });
 
+$('#jv-calendar-connect-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  const icsUrl = data.get('icsUrl')?.toString().trim();
+  const tzOffsetHours = data.get('tzOffsetHours')?.toString().trim();
+  if (!icsUrl) return;
+  core.saveCalendarSettings(icsUrl, tzOffsetHours);
+  e.target.reset();
+  renderCalendarStatus();
+});
+
+$('#jv-refresh-calendar').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Refreshing…';
+  const result = await core.refreshEvents();
+  btn.disabled = false;
+  btn.textContent = 'Refresh calendar';
+  renderCalendarList();
+  if (!result.ok) $('#jv-calendar-status').textContent = result.detail;
+});
+
 $('#jv-faith-prayer').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   btn.disabled = true;
@@ -513,6 +561,8 @@ renderKnowledgeStatus();
 renderNewsList();
 renderHomeStatus();
 renderDeviceList();
+renderCalendarStatus();
+renderCalendarList();
 renderAgentLists();
 renderNotificationStatus();
 renderProactiveStatus(false);

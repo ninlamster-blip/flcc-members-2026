@@ -16,7 +16,7 @@
 <div id="jv-root">
 
   <header class="jv-header">
-    <h1>JARVIS <span class="jv-version">v1.0 — Proactive Intelligence</span></h1>
+    <h1>JARVIS <span class="jv-version">v1.0 — Proactive Intelligence + Calendar</span></h1>
     <p class="jv-sub">Observe &rarr; Understand &rarr; Plan &rarr; Act &rarr; Reflect &rarr; Learn</p>
   </header>
 
@@ -36,7 +36,7 @@
 
   <section class="jv-card" aria-label="Observe">
     <h2>1. Observe</h2>
-    <p class="jv-hint">There's no live Calendar/Presence integration yet, so feed JARVIS today's signals by hand — this is the same shape a real Calendar source will fill in automatically once one exists. (Device/home status below is real, via Home Assistant.)</p>
+    <p class="jv-hint">There's no live Presence integration yet, so feed JARVIS Allen's status and Jared's screen time by hand — this is the same shape a real Presence source will fill in automatically once one exists. (Device/home status is real, via Home Assistant; scheduled events are real too, via Calendar below — the checkbox here is only a manual override/test aid on top of it, not the only source anymore.)</p>
     <form id="jv-observe-form">
       <label>Allen's status
         <select name="allenStatus">
@@ -48,7 +48,7 @@
       <label>Jared's gaming hours today
         <input type="number" name="jaredGamingHours" min="0" step="0.5" value="0">
       </label>
-      <label class="jv-checkbox-row"><input type="checkbox" name="devotionScheduled"> Family devotion scheduled today</label>
+      <label class="jv-checkbox-row"><input type="checkbox" name="devotionScheduled"> Family devotion scheduled today (manual override — Calendar below supplies this automatically when configured)</label>
       <label>Environment note (weather / home status)
         <input type="text" name="environmentNote" placeholder="Hot Kuwait evening">
       </label>
@@ -83,6 +83,25 @@
       <button type="submit">Ask</button>
     </form>
     <p id="jv-ask-answer" class="jv-context-line"></p>
+  </section>
+
+  <section class="jv-card" aria-label="Calendar">
+    <h2>📅 Calendar <span class="jv-hint-inline">Personal Context — routed through the same Worker as News</span></h2>
+    <p class="jv-hint">Paste a calendar's private ICS feed URL (Google Calendar: Settings → your calendar → "Secret address in iCal format"). Fetched and parsed server-side by the Worker above, since browsers can't read most ICS feeds directly (no CORS). Today's events feed Faith Agent's devotion detection automatically — no separate "on/off" needed.</p>
+    <form id="jv-calendar-connect-form">
+      <label>Calendar ICS feed URL
+        <input type="text" name="icsUrl" placeholder="https://calendar.google.com/calendar/ical/.../private-.../basic.ics">
+      </label>
+      <label>Timezone offset from UTC, in hours (default: 3, Kuwait)
+        <input type="number" name="tzOffsetHours" step="0.5" value="3">
+      </label>
+      <button type="submit" class="jv-primary">Save calendar</button>
+    </form>
+    <p id="jv-calendar-status" class="jv-hint"></p>
+    <div class="jv-item-actions">
+      <button type="button" id="jv-refresh-calendar">Refresh calendar</button>
+    </div>
+    <ul id="jv-calendar-list" class="jv-list" style="margin-top:10px;"></ul>
   </section>
 
   <section class="jv-card" aria-label="Faith Agent">

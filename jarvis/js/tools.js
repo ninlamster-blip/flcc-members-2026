@@ -3,22 +3,24 @@
 // (run may be async — act.js always awaits it).
 //
 // Memory and Communication were wired up for real in V0.1, Knowledge in
-// V0.2, Home in V0.4 (see knowledge.js / home.js — each its own engine,
-// kept structurally separate from Personal Memory). Calendar is still
-// declared — so the registry shape doesn't change later — but returns a
-// clear "not connected yet" result until a real Calendar source exists.
+// V0.2, Home in V0.4, Calendar just after V1.0's first slice (see
+// knowledge.js / home.js / calendar.js — each its own engine, kept
+// structurally separate from Personal Memory).
 import { rememberFact, setPreference } from './memory.js';
 import { getCachedNews, askGlobalKnowledge, markBriefingShown } from './knowledge.js';
 import { pauseAllPlaying } from './home.js';
-
-function notImplemented(toolName, version) {
-  return { ok: false, detail: `${toolName} isn't connected yet — arrives in ${version}.` };
-}
+import { eventsToday } from './calendar.js';
 
 function newsBriefingText() {
   const { items } = getCachedNews();
   if (!items.length) return 'No cached headlines yet — use "Refresh news" in the Knowledge panel first.';
   return items.slice(0, 3).map((it) => `${it.sourceIcon || ''} ${it.headline}`.trim()).join(' | ');
+}
+
+function calendarSummaryText() {
+  const events = eventsToday();
+  if (!events.length) return 'Nothing on the calendar for today.';
+  return events.map((e) => e.title).join(' | ');
 }
 
 export const TOOLS = {
@@ -53,7 +55,7 @@ export const TOOLS = {
   calendar: {
     label: 'Calendar Tool',
     run() {
-      return notImplemented('Calendar Tool', 'a future Calendar source');
+      return { ok: true, detail: calendarSummaryText() };
     },
   },
 

@@ -81,13 +81,13 @@ body {
   font-size: 0.8rem;
 }
 
-#jv-observe-form, #jv-ai-connect-form {
+#jv-observe-form, #jv-ai-connect-form, #jv-calendar-connect-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-#jv-observe-form label, #jv-ai-connect-form label {
+#jv-observe-form label, #jv-ai-connect-form label, #jv-calendar-connect-form label {
   display: flex;
   flex-direction: column;
   gap: 4px;
