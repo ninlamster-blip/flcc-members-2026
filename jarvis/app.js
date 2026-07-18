@@ -183,8 +183,22 @@ function renderNewsList() {
 
 function renderHomeStatus() {
   $('#jv-home-status').textContent = core.homeConnected()
-    ? 'Home Assistant connection configured — device list and controls below are live.'
+    ? 'Home Assistant connection configured — device list, presence, and controls below are live.'
     : 'No Home Assistant connection configured yet — enter its URL and a Long-Lived Access Token below.';
+}
+
+function renderPresenceList() {
+  const presence = core.getPresence();
+  const ul = $('#jv-presence-list');
+  ul.innerHTML = '';
+  const names = Object.keys(presence);
+  if (names.length === 0) {
+    ul.appendChild(el('li', { className: 'jv-item-empty', text: 'No person entities found yet — try "Refresh devices & presence".' }));
+    return;
+  }
+  for (const name of names) {
+    ul.appendChild(el('li', { className: 'jv-item', text: `${name} — ${presence[name]}` }));
+  }
 }
 
 function renderDeviceList() {
@@ -448,8 +462,9 @@ $('#jv-refresh-devices').addEventListener('click', async (e) => {
   btn.textContent = 'Refreshing…';
   const result = await core.refreshDevices();
   btn.disabled = false;
-  btn.textContent = 'Refresh devices';
+  btn.textContent = 'Refresh devices & presence';
   renderDeviceList();
+  renderPresenceList();
   if (!result.ok) $('#jv-home-status').textContent = result.detail;
 });
 
@@ -561,6 +576,7 @@ renderKnowledgeStatus();
 renderNewsList();
 renderHomeStatus();
 renderDeviceList();
+renderPresenceList();
 renderCalendarStatus();
 renderCalendarList();
 renderAgentLists();
