@@ -274,8 +274,9 @@ function countdownText(when) {
   return `Sa loob ng ${m} minuto — malapit na!`;
 }
 
-// Stable verse pick per (day, heart-state) so it doesn't shuffle on re-render.
-function verseForToday(heart) {
+// Stable verse pick per (day, heart-state) so it doesn't shuffle on
+// re-render. Exported for reuse by js/sanctuary-mode.js's evening ritual.
+export function verseForToday(heart) {
   const pool = data.verses[heart] || data.verses.neutral;
   const seed = todayKey().split('-').reduce((n, part) => n + Number(part), 0);
   return pool[seed % pool.length];

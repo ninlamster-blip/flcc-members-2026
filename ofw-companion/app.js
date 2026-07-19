@@ -8,6 +8,7 @@ import {
   dateLine, occasionLine, initWeather, initAudioDrop,
   ritualFor, currentPeriod, openBreathing, closeBreathing, initNotOkay,
 } from './js/sanctuary.js';
+import { initSanctuaryMode, openSanctuaryMode } from './js/sanctuary-mode.js';
 import { initJournal, refreshJournal } from './js/journal.js';
 import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
@@ -54,6 +55,7 @@ async function boot() {
   initCommunity(context);
   initPrayerChain(context);
   initSupport(context);
+  initSanctuaryMode(context);
 
   if ('serviceWorker' in navigator) {
     // When an updated service worker takes over (skipWaiting + claim), reload
@@ -145,6 +147,7 @@ function setupSanctuary() {
   pill.addEventListener('click', () => {
     navigator.vibrate?.(8);
     if (ritual.action === 'breathe') openBreathing();
+    else if (ritual.action === 'sanctuary') openSanctuaryMode();
     else goTo(ritual.action);
   });
 
