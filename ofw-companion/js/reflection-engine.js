@@ -1,9 +1,9 @@
-// Reflection Engine — a weekly, encouraging look back, built from the same
-// on-device data as the rest of the Companion Brain (js/companion-brain.js).
-// No DOM here, same reasoning as companion-brain.js: this only computes
-// facts and a plain-language fallback text from them; a caller decides how
-// and when to show it, and whether to upgrade the text with an AI narrative
-// (see ai.js weeklyReflection).
+// Reflection Engine — part of the Wellness Brain (see js/agent-brain.js for
+// the full five-brain map): a weekly, encouraging look back, built from
+// wellbeing check-ins and Journal entries. No DOM here, same reasoning as
+// agent-brain.js: this only computes facts and a plain-language fallback
+// text from them; a caller decides how and when to show it, and whether to
+// upgrade the text with an AI narrative (see ai.js weeklyReflection).
 //
 // Deliberately scoped to what's reliably computable today: wellbeing
 // check-ins and Journal entries both keep full dated history. Prayer

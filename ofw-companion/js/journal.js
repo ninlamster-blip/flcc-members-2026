@@ -1,5 +1,8 @@
 // Journal — daily wellbeing check-in (<30s), gentle insights, private entries
 // with a reusable log: save, clear, and log again as many times as you like.
+// The primary data source for the Wellness Brain (see js/agent-brain.js for
+// the full five-brain map) — reflection-engine.js and growth-engine.js both
+// read the check-ins and entries saved here.
 import { getState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry } from './state.js';
 import { wellbeingInsight, isConnected } from './ai.js';
 import { escapeHtml, friendlyDate } from './utils.js';

@@ -1,6 +1,6 @@
-// Growth Engine — spots longer-horizon patterns worth celebrating, built
-// from the same on-device data as the rest of the Companion Brain (see
-// js/companion-brain.js and js/reflection-engine.js for the same pattern:
+// Growth Engine — part of the Wellness Brain (see js/agent-brain.js for the
+// full five-brain map): spots longer-horizon patterns worth celebrating
+// (see js/agent-brain.js and js/reflection-engine.js for the same pattern:
 // no DOM here, just facts in and a plain highlight out).
 //
 // "Encourage growth, not score spirituality" — this module only ever
