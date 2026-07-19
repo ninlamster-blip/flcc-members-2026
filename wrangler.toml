@@ -34,3 +34,12 @@ database_id = "69cf3b5d-f610-48d0-b5a2-3b8ec3607032"
 # — without these two, notifications simply stay off; nothing breaks.
 [vars]
 VAPID_PUBLIC_KEY = "BCLTWSVRUpNgl_UB23W2QCSBRd1v5fgkE8Mm5KtrgDzCI0XM-fmDcZ8wQUnRxgx3UhSxbBWnUtzH_-unhU-cVyk"
+
+# Fires the evening Sanctuary reminder push once daily (see
+# ask-proxy/worker.js scheduled() / sendEveningSanctuaryReminder()). Cron
+# times are always UTC — 17:00 UTC = 20:00 Kuwait/AST time, matching the
+# client's own "evening" period boundary (ofw-companion/js/sanctuary.js
+# currentPeriod()). Opt-in per device; a no-op if VAPID isn't configured
+# above or nobody has the evening reminder toggle on.
+[triggers]
+crons = ["0 17 * * *"]

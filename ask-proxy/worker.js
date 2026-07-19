@@ -272,6 +272,14 @@ export default {
       );
     }
   },
+
+  // Fires once daily (see [triggers] crons in wrangler.toml) — the evening
+  // Sanctuary reminder push. Silently a no-op if VAPID isn't configured or
+  // nobody has opted in; never throws into the Cron Trigger's own retry/
+  // alerting machinery for an ordinary "nothing to send" case.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(sendEveningSanctuaryReminder(env).catch(() => {}));
+  },
 };
 
 async function handleRequest(request, env, ctx) {
@@ -568,6 +576,21 @@ async function ensurePrayerSchema(db) {
   if (!have.has('first_name')) alters.push(db.prepare(`ALTER TABLE prayers ADD COLUMN first_name TEXT`));
   if (!have.has('origin_country')) alters.push(db.prepare(`ALTER TABLE prayers ADD COLUMN origin_country TEXT`));
   if (alters.length) await db.batch(alters);
+
+  // Same self-migration for push_subscriptions: notify_prayers/notify_evening
+  // split one implicit "subscribed = wants prayer pushes" meaning into two
+  // explicit, independently-toggleable opt-ins sharing one browser-level
+  // subscription row (see the Evening Sanctuary reminder note below).
+  // Existing rows predate notify_evening entirely, so they default to 0
+  // (must be separately opted in) while notify_prayers defaults to 1 —
+  // preserving exactly what a pre-existing row already meant.
+  const { results: pushCols } = await db.prepare(`PRAGMA table_info(push_subscriptions)`).all();
+  const havePush = new Set((pushCols || []).map((c) => c.name));
+  const pushAlters = [];
+  if (!havePush.has('notify_prayers')) pushAlters.push(db.prepare(`ALTER TABLE push_subscriptions ADD COLUMN notify_prayers INTEGER DEFAULT 1`));
+  if (!havePush.has('notify_evening')) pushAlters.push(db.prepare(`ALTER TABLE push_subscriptions ADD COLUMN notify_evening INTEGER DEFAULT 0`));
+  if (pushAlters.length) await db.batch(pushAlters);
+
   kasamaSchemaReady = true;
 }
 
@@ -671,14 +694,14 @@ async function handlePrayerChain(request, env, url, ctx) {
   return jsonResponse({ error: { message: 'Not found' } }, 404);
 }
 
-// Sends an encrypted "bagong panalangin" push to every subscribed device
-// (fire-and-forget, called via ctx.waitUntil so it never delays the
-// submitter's response). Devices whose subscription has expired (push
-// service returns 404/410) are quietly removed.
-async function fanOutNewPrayerPush(db, env, prayer) {
+// Sends `payload` to every row in `subs` (fire-and-forget list, already
+// filtered by whichever notify_* flag the caller cares about). Devices
+// whose subscription has expired (push service returns 404/410) are
+// quietly removed — regardless of which feature(s) they'd opted into,
+// since a stale endpoint can't receive anything anymore either way.
+async function sendPushToSubscriptions(db, env, subs, payload) {
   if (!env.VAPID_PRIVATE_KEY_JWK || !env.VAPID_PUBLIC_KEY) return; // not configured
-  const { results } = await db.prepare(`SELECT id, endpoint, p256dh, auth FROM push_subscriptions`).all();
-  if (!results?.length) return;
+  if (!subs?.length) return;
 
   let privateKeyJwk;
   try {
@@ -692,15 +715,8 @@ async function fanOutNewPrayerPush(db, env, prayer) {
     subject: env.VAPID_SUBJECT || 'mailto:kasama@flcc.church',
   };
 
-  const excerpt = prayer.content.length > 90 ? prayer.content.slice(0, 90).trimEnd() + '…' : prayer.content;
-  const payload = {
-    title: 'Bagong panalangin sa Kadena 🕯️',
-    body: excerpt,
-    url: './index.html',
-  };
-
   const staleIds = [];
-  await Promise.allSettled(results.map(async (sub) => {
+  await Promise.allSettled(subs.map(async (sub) => {
     try {
       const res = await sendWebPush(sub, payload, vapid);
       if (res.status === 404 || res.status === 410) staleIds.push(sub.id);
@@ -714,8 +730,44 @@ async function fanOutNewPrayerPush(db, env, prayer) {
   }
 }
 
-// ── Push notification subscriptions ("bagong panalangin" alerts) ───────────
-// Optional, opt-in per device. To enable:
+// Sends an encrypted "bagong panalangin" push to every device that opted
+// into prayer notifications specifically (fire-and-forget, called via
+// ctx.waitUntil so it never delays the submitter's response).
+async function fanOutNewPrayerPush(db, env, prayer) {
+  const { results } = await db.prepare(`SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE notify_prayers = 1`).all();
+  const excerpt = prayer.content.length > 90 ? prayer.content.slice(0, 90).trimEnd() + '…' : prayer.content;
+  await sendPushToSubscriptions(db, env, results, {
+    title: 'Bagong panalangin sa Kadena 🕯️',
+    body: excerpt,
+    url: './index.html',
+  });
+}
+
+// Sends the evening Sanctuary reminder to every device that opted in
+// specifically (a separate opt-in from prayer notifications — see the
+// notify_evening column note above). Fired once daily by scheduled()
+// below; entirely generic and non-personalized (see the OFW Companion
+// conversation this was scoped from) — the real, personalized suggestion
+// still only ever lives on-device, decided by js/agent-brain.js the
+// moment someone actually opens the app.
+async function sendEveningSanctuaryReminder(env) {
+  if (!env.KASAMA_DB) return;
+  const db = env.KASAMA_DB;
+  await ensurePrayerSchema(db);
+  const { results } = await db.prepare(`SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE notify_evening = 1`).all();
+  await sendPushToSubscriptions(db, env, results, {
+    title: 'FLCC Kasama',
+    body: 'Kumusta ka ngayon? Panahon na para sa Sanctuary — isang tahimik na sandali kasama si Kaibigan. 🤍',
+    url: './index.html?open=sanctuary',
+  });
+}
+
+// ── Push notification subscriptions ─────────────────────────────────────────
+// Two independent opt-ins share this table: "bagong panalangin" (reactive,
+// fires when someone posts a prayer request) and the evening Sanctuary
+// reminder (scheduled, see the [triggers] crons entry in wrangler.toml and
+// scheduled() above — fires once daily, entirely generic/non-personalized).
+// Optional, opt-in per device. To enable either:
 //  1. Generate a VAPID key pair (see ask-proxy/webpush.js or run
 //     `node -e "..."` — ask an admin/Claude session for the one-liner).
 //  2. Worker → Settings → Variables and Secrets:
@@ -723,7 +775,7 @@ async function fanOutNewPrayerPush(db, env, prayer) {
 //     - Text    VAPID_PUBLIC_KEY      — the public key, base64url
 //     - Text    VAPID_SUBJECT         — mailto:you@example.com (optional)
 // Without these, /api/push/vapid-public-key reports { configured: false }
-// and the app's notification toggle simply stays hidden.
+// and both of the app's notification toggles simply stay hidden.
 async function handlePushSubscriptions(request, env, url) {
   if (url.pathname === '/api/push/vapid-public-key' && request.method === 'GET') {
     if (!env.VAPID_PUBLIC_KEY) return jsonResponse({ configured: false });
@@ -744,22 +796,43 @@ async function handlePushSubscriptions(request, env, url) {
     return jsonResponse({ error: { message: 'Invalid JSON body' } }, 400);
   }
 
-  if (url.pathname === '/api/push/subscribe') {
+  // Prayer notifications and the evening Sanctuary reminder are separate
+  // opt-ins that can share one browser-level push subscription (a device
+  // only needs one; these four endpoints just flip which notify_* flag(s)
+  // are set on that subscription's row). Subscribing to one never implies
+  // consent to the other — each INSERT only sets its own flag on a fresh
+  // row (leaving the other at its column default) and only touches its own
+  // flag in the ON CONFLICT update, so re-subscribing to one never
+  // resurrects or overwrites the other's existing value. Each unsubscribe
+  // clears only its own flag and deletes the row entirely only once BOTH
+  // are off — a device's client-side PushManager subscription itself is a
+  // separate resource the app decides when to tear down (see js/
+  // notifications.js), independent of this row's lifecycle.
+  if (url.pathname === '/api/push/subscribe' || url.pathname === '/api/push/evening/subscribe') {
     const { endpoint, keys } = body.subscription || body;
     if (typeof endpoint !== 'string' || !endpoint.startsWith('https://') ||
         typeof keys?.p256dh !== 'string' || typeof keys?.auth !== 'string') {
       return jsonResponse({ error: { message: 'Invalid push subscription' } }, 400);
     }
+    const isEvening = url.pathname === '/api/push/evening/subscribe';
+    const flagCol = isEvening ? 'notify_evening' : 'notify_prayers';
     await db.prepare(
-      `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)
-       ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth`
-    ).bind(crypto.randomUUID(), endpoint, keys.p256dh, keys.auth).run();
+      `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, notify_prayers, notify_evening)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth, ${flagCol} = 1`
+    ).bind(crypto.randomUUID(), endpoint, keys.p256dh, keys.auth, isEvening ? 0 : 1, isEvening ? 1 : 0).run();
     return jsonResponse({ configured: true, subscribed: true });
   }
 
-  if (url.pathname === '/api/push/unsubscribe') {
+  if (url.pathname === '/api/push/unsubscribe' || url.pathname === '/api/push/evening/unsubscribe') {
     const endpoint = String(body.endpoint || '');
-    if (endpoint) await db.prepare(`DELETE FROM push_subscriptions WHERE endpoint = ?`).bind(endpoint).run();
+    if (endpoint) {
+      const flagCol = url.pathname === '/api/push/evening/unsubscribe' ? 'notify_evening' : 'notify_prayers';
+      await db.prepare(`UPDATE push_subscriptions SET ${flagCol} = 0 WHERE endpoint = ?`).bind(endpoint).run();
+      await db.prepare(
+        `DELETE FROM push_subscriptions WHERE endpoint = ? AND notify_prayers = 0 AND notify_evening = 0`
+      ).bind(endpoint).run();
+    }
     return jsonResponse({ configured: true, subscribed: false });
   }
 

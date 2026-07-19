@@ -1,7 +1,19 @@
-// "Bagong panalangin" push notifications: opt-in per device. Same same-origin
-// default as the prayer chain (see prayerchain.js's apiBase note) — an unset
-// AI-chat proxy URL means "this same site", not "nothing configured".
+// "Bagong panalangin" (new prayer) and the evening Sanctuary reminder push
+// notifications — two independent opt-ins that can share one underlying
+// browser-level PushManager subscription (a device only needs one; the
+// server decides what to send based on which flags are set on that
+// subscription's row — see ask-proxy/worker.js). Enabled/disabled state is
+// tracked in localStorage as the UI's source of truth (the server is
+// authoritative for whether pushes actually fire) — same pattern as this
+// app's other settings.
+//
+// Same same-origin default as the prayer chain (see prayerchain.js's
+// apiBase note) — an unset AI-chat proxy URL means "this same site", not
+// "nothing configured".
 import { getConnection } from './ai.js';
+
+const PRAYER_KEY = 'flcc-kasama-notify-prayers';
+const EVENING_KEY = 'flcc-kasama-notify-evening';
 
 function apiBase() {
   const { proxyUrl } = getConnection();
@@ -22,7 +34,7 @@ export function pushSupported() {
 }
 
 // Whether the church Worker has a VAPID key configured at all. Lets the UI
-// hide the whole feature rather than offer a toggle that can only fail.
+// hide both notification toggles rather than offer one that can only fail.
 export async function pushConfiguredOnServer() {
   if (!pushSupported()) return false;
   try {
@@ -44,11 +56,35 @@ export async function currentSubscription() {
   }
 }
 
-export async function isEnabled() {
-  return !!(await currentSubscription());
+export const isPrayerNotifyEnabled = () => localStorage.getItem(PRAYER_KEY) === 'true';
+export const isEveningNotifyEnabled = () => localStorage.getItem(EVENING_KEY) === 'true';
+// Kept for the existing prayer-toggle call site — same thing, old name.
+export const isEnabled = isPrayerNotifyEnabled;
+
+// One-time migration: before the evening reminder existed, any live push
+// subscription implicitly meant "prayer notifications on" — the only thing
+// that existed. If we find one but no explicit flag yet (a device that
+// enabled notifications before this update), honor that instead of
+// silently losing their existing opt-in.
+export async function migrateLegacySubscription() {
+  if (localStorage.getItem(PRAYER_KEY) !== null) return; // already migrated, or a fresh device
+  const sub = await currentSubscription();
+  localStorage.setItem(PRAYER_KEY, sub ? 'true' : 'false');
 }
 
-export async function enableNotifications() {
+async function ensureSubscription(keyData) {
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
+    });
+  }
+  return sub;
+}
+
+async function subscribeTo(path, flagKey) {
   if (!pushSupported()) throw new Error('Hindi supported ng browser/device na ito ang push notifications.');
 
   const res = await fetch(apiBase() + '/api/push/vapid-public-key');
@@ -58,37 +94,41 @@ export async function enableNotifications() {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') throw new Error('Hindi pinayagan ang notifications sa browser settings.');
 
-  const reg = await navigator.serviceWorker.ready;
-  let sub = await reg.pushManager.getSubscription();
-  if (!sub) {
-    sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
-    });
-  }
-
+  const sub = await ensureSubscription(keyData);
   const subJson = sub.toJSON();
-  await fetch(apiBase() + '/api/push/subscribe', {
+  await fetch(apiBase() + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ subscription: { endpoint: subJson.endpoint, keys: subJson.keys } }),
   });
-  return sub;
+  localStorage.setItem(flagKey, 'true');
 }
 
-export async function disableNotifications() {
+async function unsubscribeFrom(path, flagKey, otherFlagKey) {
   const sub = await currentSubscription();
-  if (!sub) return;
-  const endpoint = sub.endpoint;
-  await sub.unsubscribe();
-  try {
-    await fetch(apiBase() + '/api/push/unsubscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ endpoint }),
-    });
-  } catch {
-    // Device-side unsubscribe already succeeded; a stale server row just
-    // gets pruned automatically the next time a push to it 404s/410s.
+  localStorage.setItem(flagKey, 'false');
+  if (sub?.endpoint) {
+    try {
+      await fetch(apiBase() + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: sub.endpoint }),
+      });
+    } catch {
+      // Device-side state below is what actually matters for the UI; a
+      // stale server row just gets pruned automatically next time a push
+      // to it 404s/410s.
+    }
+  }
+  // Only tear down the shared browser-level subscription once neither
+  // feature wants it anymore — otherwise disabling one would silently kill
+  // the other, since both ride on the same PushManager subscription.
+  if (sub && localStorage.getItem(otherFlagKey) !== 'true') {
+    await sub.unsubscribe().catch(() => {});
   }
 }
+
+export const enableNotifications = () => subscribeTo('/api/push/subscribe', PRAYER_KEY);
+export const disableNotifications = () => unsubscribeFrom('/api/push/unsubscribe', PRAYER_KEY, EVENING_KEY);
+export const enableEveningNotify = () => subscribeTo('/api/push/evening/subscribe', EVENING_KEY);
+export const disableEveningNotify = () => unsubscribeFrom('/api/push/evening/unsubscribe', EVENING_KEY, PRAYER_KEY);

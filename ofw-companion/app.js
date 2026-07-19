@@ -13,7 +13,10 @@ import { initJournal, refreshJournal } from './js/journal.js';
 import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
 import { initPrayerChain, markPrayersSeen } from './js/prayerchain.js';
-import { pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications } from './js/notifications.js';
+import {
+  pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications,
+  isEveningNotifyEnabled, enableEveningNotify, disableEveningNotify, migrateLegacySubscription,
+} from './js/notifications.js';
 import { initSupport, renderCrisisLines } from './js/support.js';
 import { initScrollHeader, resetScrollHeader } from './js/header.js';
 
@@ -56,6 +59,7 @@ async function boot() {
   initPrayerChain(context);
   initSupport(context);
   initSanctuaryMode(context);
+  maybeOpenSanctuaryFromNotification();
 
   if ('serviceWorker' in navigator) {
     // When an updated service worker takes over (skipWaiting + claim), reload
@@ -75,6 +79,18 @@ async function boot() {
       .then((reg) => reg.update())
       .catch(() => { /* offline shell is a bonus, not a requirement */ });
   }
+}
+
+// Tapping the evening Sanctuary reminder notification (see ask-proxy/
+// worker.js sendEveningSanctuaryReminder — url: './index.html?open=sanctuary')
+// should land directly in Sanctuary Mode, not require a second tap once the
+// app opens. The param is stripped immediately so a later reload of this
+// same tab doesn't reopen it unexpectedly.
+function maybeOpenSanctuaryFromNotification() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('open') !== 'sanctuary') return;
+  history.replaceState(null, '', location.pathname);
+  openSanctuaryMode();
 }
 
 // ── Navigation ───────────────────────────────────────────────────────────────
@@ -224,13 +240,20 @@ function renderSettings() {
     ${settingSwitch('voiceReplies', 'Spoken replies', 'Kaibigan reads replies aloud in a warm, natural voice. Needs the church voice key (ELEVENLABS_API_KEY) on the Worker — otherwise stays quiet.')}
     ${settingSwitch('largeText', 'Larger text', 'Bigger, easier-to-read letters everywhere')}
 
-    <div class="oc-settings-section" id="oc-notify-section" hidden>Kadena ng Panalangin</div>
+    <div class="oc-settings-section" id="oc-notify-section" hidden>Mga Abiso</div>
     <div class="oc-setting-row" id="oc-notify-row" hidden>
       <div style="flex:1">
-        <div class="oc-setting-label">🔔 Bagong panalangin notifications</div>
-        <div class="oc-setting-sub">Ipaalam sa akin kapag may bagong prayer request sa Kadena — kahit sarado ang app.</div>
+        <div class="oc-setting-label">🔔 Bagong panalangin sa Kadena</div>
+        <div class="oc-setting-sub">Ipaalam sa akin kapag may bagong prayer request — kahit sarado ang app.</div>
       </div>
       <button type="button" class="oc-switch" role="switch" aria-checked="false" id="oc-notify-switch" aria-label="Bagong panalangin notifications"></button>
+    </div>
+    <div class="oc-setting-row" id="oc-evening-notify-row" hidden>
+      <div style="flex:1">
+        <div class="oc-setting-label">🌙 Paalala sa gabi</div>
+        <div class="oc-setting-sub">Isang gentle na abiso tuwing gabi — isang paanyaya papasok sa Sanctuary. Isang beses sa isang araw lang, hindi ito personalized — ang totoong papasok sa Sanctuary ay tinitignan lang paglabas mo ng app.</div>
+      </div>
+      <button type="button" class="oc-switch" role="switch" aria-checked="false" id="oc-evening-notify-switch" aria-label="Evening Sanctuary reminder notifications"></button>
     </div>
 
     ${installSection()}
@@ -387,31 +410,43 @@ function renderSettings() {
 
 // Install-as-app section: one-tap on Android/Chrome, instructions on iPhone,
 // hidden entirely once already running standalone.
-// "Bagong panalangin" push notifications: a device preference, so it lives
-// in Settings rather than inline on the Kapwa tab. The whole section stays
-// hidden — never shown half-broken — until we know the church Worker
-// actually has a VAPID key configured.
+// Push notifications (two independent toggles — "bagong panalangin" and the
+// evening Sanctuary reminder, see js/notifications.js): a device
+// preference, so they live in Settings rather than inline elsewhere. The
+// whole section stays hidden — never shown half-broken — until we know the
+// church Worker actually has a VAPID key configured.
 async function wireNotifySwitch(body) {
   const configured = await pushConfiguredOnServer();
   if (!configured) return;
+  await migrateLegacySubscription();
+
   const section = body.querySelector('#oc-notify-section');
   const row = body.querySelector('#oc-notify-row');
   const sw = body.querySelector('#oc-notify-switch');
-  if (!section || !row || !sw) return; // settings sheet was closed/re-rendered before this resolved
+  const eveningRow = body.querySelector('#oc-evening-notify-row');
+  const eveningSw = body.querySelector('#oc-evening-notify-switch');
+  if (!section || !row || !sw || !eveningRow || !eveningSw) return; // settings sheet was closed/re-rendered before this resolved
   section.hidden = false;
   row.hidden = false;
-  sw.setAttribute('aria-checked', String(await pushIsEnabled()));
+  eveningRow.hidden = false;
+  sw.setAttribute('aria-checked', String(pushIsEnabled()));
+  eveningSw.setAttribute('aria-checked', String(isEveningNotifyEnabled()));
 
+  wireSwitch(sw, enableNotifications, disableNotifications, 'Naka-on na ang abiso — salamat! 🔔', 'Naka-off na ang abiso.');
+  wireSwitch(eveningSw, enableEveningNotify, disableEveningNotify, 'Naka-on na ang paalala sa gabi 🌙', 'Naka-off na ang paalala sa gabi.');
+}
+
+function wireSwitch(sw, enable, disable, onMessage, offMessage) {
   sw.addEventListener('click', async () => {
     const next = sw.getAttribute('aria-checked') !== 'true';
     sw.disabled = true;
     try {
       if (next) {
-        await enableNotifications();
-        toast('Naka-on na ang abiso — salamat! 🔔');
+        await enable();
+        toast(onMessage);
       } else {
-        await disableNotifications();
-        toast('Naka-off na ang abiso.');
+        await disable();
+        toast(offMessage);
       }
       sw.setAttribute('aria-checked', String(next));
     } catch (err) {
