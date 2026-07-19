@@ -273,10 +273,13 @@ export default {
     }
   },
 
-  // Fires once daily (see [triggers] crons in wrangler.toml) — the evening
-  // Sanctuary reminder push. Silently a no-op if VAPID isn't configured or
-  // nobody has opted in; never throws into the Cron Trigger's own retry/
-  // alerting machinery for an ordinary "nothing to send" case.
+  // Fires hourly (see [triggers] crons in wrangler.toml) — checks whether
+  // it's currently EVENING_LOCAL_HOUR in each opted-in device's own time
+  // zone and sends the Sanctuary reminder only to whoever's due right now
+  // (see sendEveningSanctuaryReminder). Silently a no-op if VAPID isn't
+  // configured or nobody's due this hour; never throws into the Cron
+  // Trigger's own retry/alerting machinery for an ordinary "nothing to
+  // send" case.
   async scheduled(event, env, ctx) {
     ctx.waitUntil(sendEveningSanctuaryReminder(env).catch(() => {}));
   },
@@ -589,6 +592,12 @@ async function ensurePrayerSchema(db) {
   const pushAlters = [];
   if (!havePush.has('notify_prayers')) pushAlters.push(db.prepare(`ALTER TABLE push_subscriptions ADD COLUMN notify_prayers INTEGER DEFAULT 1`));
   if (!havePush.has('notify_evening')) pushAlters.push(db.prepare(`ALTER TABLE push_subscriptions ADD COLUMN notify_evening INTEGER DEFAULT 0`));
+  // Minutes EAST of UTC (same sign convention as /calendar's tzOffsetMinutes
+  // param) — lets the evening reminder fire in each device's own evening
+  // instead of one fixed UTC time for everyone. NULL means "not supplied,"
+  // which the scheduled sender treats as "keep the old fixed-time
+  // behavior" rather than silently never firing for that device.
+  if (!havePush.has('tz_offset_minutes')) pushAlters.push(db.prepare(`ALTER TABLE push_subscriptions ADD COLUMN tz_offset_minutes INTEGER`));
   if (pushAlters.length) await db.batch(pushAlters);
 
   kasamaSchemaReady = true;
@@ -743,10 +752,22 @@ async function fanOutNewPrayerPush(db, env, prayer) {
   });
 }
 
+// Local hour the reminder should land at (matches sanctuary.js's own
+// "evening" period boundary) — and, for devices that never supplied a time
+// zone, the fixed UTC hour this used before per-device offsets existed
+// (17:00 UTC = 20:00 Kuwait), so they keep getting it at the same time
+// rather than silently losing the feature.
+const EVENING_LOCAL_HOUR = 20;
+const FALLBACK_UTC_HOUR = 17;
+
 // Sends the evening Sanctuary reminder to every device that opted in
 // specifically (a separate opt-in from prayer notifications — see the
-// notify_evening column note above). Fired once daily by scheduled()
-// below; entirely generic and non-personalized (see the OFW Companion
+// notify_evening column note above), timed to each device's own evening
+// where a time zone offset is known. scheduled() below now fires hourly;
+// this filters down to whoever's local clock reads EVENING_LOCAL_HOUR
+// right now, so any given device is only ever due in exactly one of the
+// day's 24 firings — no separate "already sent today" bookkeeping needed.
+// Entirely generic and non-personalized either way (see the OFW Companion
 // conversation this was scoped from) — the real, personalized suggestion
 // still only ever lives on-device, decided by js/agent-brain.js the
 // moment someone actually opens the app.
@@ -754,8 +775,23 @@ async function sendEveningSanctuaryReminder(env) {
   if (!env.KASAMA_DB) return;
   const db = env.KASAMA_DB;
   await ensurePrayerSchema(db);
-  const { results } = await db.prepare(`SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE notify_evening = 1`).all();
-  await sendPushToSubscriptions(db, env, results, {
+  const { results } = await db.prepare(
+    `SELECT id, endpoint, p256dh, auth, tz_offset_minutes FROM push_subscriptions WHERE notify_evening = 1`
+  ).all();
+  if (!results?.length) return;
+
+  const now = new Date();
+  const utcMinutesOfDay = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const due = results.filter((sub) => {
+    if (sub.tz_offset_minutes === null || sub.tz_offset_minutes === undefined) {
+      return now.getUTCHours() === FALLBACK_UTC_HOUR;
+    }
+    const localMinutesOfDay = ((utcMinutesOfDay + sub.tz_offset_minutes) % 1440 + 1440) % 1440;
+    return Math.floor(localMinutesOfDay / 60) === EVENING_LOCAL_HOUR;
+  });
+  if (!due.length) return;
+
+  await sendPushToSubscriptions(db, env, due, {
     title: 'FLCC Kasama',
     body: 'Kumusta ka ngayon? Panahon na para sa Sanctuary — isang tahimik na sandali kasama si Kaibigan. 🤍',
     url: './index.html?open=sanctuary',
@@ -816,11 +852,18 @@ async function handlePushSubscriptions(request, env, url) {
     }
     const isEvening = url.pathname === '/api/push/evening/subscribe';
     const flagCol = isEvening ? 'notify_evening' : 'notify_prayers';
+    // Only the evening endpoint ever carries a time zone offset — a plain
+    // prayer subscribe/re-subscribe has no reason to touch it, and must
+    // never clobber an existing evening subscriber's offset with NULL.
+    const tzOffsetMinutes = isEvening && Number.isInteger(body.tzOffsetMinutes)
+      ? Math.min(840, Math.max(-720, body.tzOffsetMinutes))
+      : null;
+    const setTz = tzOffsetMinutes !== null ? `, tz_offset_minutes = excluded.tz_offset_minutes` : '';
     await db.prepare(
-      `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, notify_prayers, notify_evening)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth, ${flagCol} = 1`
-    ).bind(crypto.randomUUID(), endpoint, keys.p256dh, keys.auth, isEvening ? 0 : 1, isEvening ? 1 : 0).run();
+      `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, notify_prayers, notify_evening, tz_offset_minutes)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth, ${flagCol} = 1${setTz}`
+    ).bind(crypto.randomUUID(), endpoint, keys.p256dh, keys.auth, isEvening ? 0 : 1, isEvening ? 1 : 0, tzOffsetMinutes).run();
     return jsonResponse({ configured: true, subscribed: true });
   }
 
