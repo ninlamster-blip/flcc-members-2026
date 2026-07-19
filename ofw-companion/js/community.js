@@ -1,5 +1,7 @@
 // Kapwa — safe community: fellowship groups, values, off-day connection.
-// Deliberately NOT social media: no likes, no followers, no feeds.
+// Deliberately NOT social media: no likes, no followers, no feeds. The
+// Community Brain (see js/agent-brain.js for the full five-brain map),
+// paired with prayerchain.js (Kadena ng Panalangin).
 import { escapeHtml } from './utils.js';
 
 export function initCommunity(context) {

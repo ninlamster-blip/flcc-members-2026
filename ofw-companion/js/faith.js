@@ -1,5 +1,7 @@
 // Faith — daily verse, personalized prayer, and the Virtual Bible Study
-// community led by Pastor Anson Dionisio.
+// community led by Pastor Anson Dionisio. The Faith Brain (see js/agent-
+// brain.js for the full five-brain map), paired with sanctuary-mode.js
+// (the evening ritual, which reuses this file's verse selection).
 import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, saveSermonNotes, addJournalEntry } from './state.js';
 import { personalPrayer, isConnected } from './ai.js';
 import { escapeHtml, todayKey, pickRandom } from './utils.js';

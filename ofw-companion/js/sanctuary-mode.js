@@ -1,9 +1,11 @@
 // Sanctuary Mode — a calm, minimal, full-screen evening ritual: a chosen
 // verse, a short reflection, a personalized prayer, a gratitude prompt, and
 // the breathing exercise, brought together in one quiet space instead of
-// scattered across tabs. An extension of the "Daily Sanctuary" widgets in
-// sanctuary.js (ritual pill, weather, occasion line) for the one time of
-// day — evening — that deserves its own dedicated moment.
+// scattered across tabs. Part of the Faith Brain (see js/agent-brain.js for
+// the full five-brain map), alongside faith.js. An extension of the "Daily
+// Sanctuary" widgets in sanctuary.js (ritual pill, weather, occasion line)
+// for the one time of day — evening — that deserves its own dedicated
+// moment.
 //
 // Selection is deliberate, never random: the verse and prayer are chosen
 // from what the member has already explicitly shared today (their heart

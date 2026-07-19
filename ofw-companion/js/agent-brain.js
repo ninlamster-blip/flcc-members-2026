@@ -1,13 +1,30 @@
-// Companion Brain — a lightweight, on-device orchestration layer that looks
-// across the heart check-in, wellbeing check-ins, Journal, and conversation
-// history to decide the one or two most helpful things to surface right
-// now, instead of leaving every feature to compete for attention on its own.
+// Agent Brain — the orchestrator. Looks across the heart check-in,
+// wellbeing check-ins, Journal, and conversation history to decide the one
+// or two most helpful things to surface right now, instead of leaving
+// every feature to compete for attention on its own.
 //
-// Everything it reads already lives in state.js under the same privacy
-// terms as today — on this device only, visible and erasable from Settings
-// (see "What Kaibigan remembers" / "Erase everything"). This module adds no
-// new remote storage and no new consent surface; the only new persisted
-// field (companionBrain.dismissedId) is covered by those same controls.
+// This is the "Agent Brain" in Project Sanctuary's five-brain vocabulary —
+// the piece that coordinates the other four rather than doing any one
+// thing itself. (Renamed from companion-brain.js: that name collided with
+// a different brain in the taxonomy — the Companion Brain is conversation,
+// memory, and empathy, i.e. companion.js + ai.js + relationship-engine.js
+// below — not this orchestrator.) The five, and what actually implements
+// each:
+//   - Companion Brain  — companion.js, ai.js, relationship-engine.js
+//   - Wellness Brain    — journal.js, reflection-engine.js, growth-engine.js
+//   - Faith Brain        — faith.js, sanctuary-mode.js
+//   - Community Brain   — community.js, prayerchain.js
+//   - Agent Brain (this file) — reads across all of the above, decides what
+//     to surface and when
+//
+// Everything this file reads already lives in state.js under the same
+// privacy terms as today — on this device only, visible and erasable from
+// Settings (see "What Kaibigan remembers" / "Erase everything"). This
+// module adds no new remote storage and no new consent surface; the only
+// new persisted field (companionBrain.dismissedId) is covered by those
+// same controls. (That field's name predates this rename too — left as-is
+// since renaming a state.js key means writing a migration for existing
+// members' saved data, for a cosmetic gain that isn't worth that risk.)
 //
 // No DOM here on purpose — this is the "orchestrator independent of the
 // UI" piece. A caller (companion.js today; conceivably a native shell

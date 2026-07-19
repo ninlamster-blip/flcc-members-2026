@@ -42,11 +42,14 @@ function defaultState() {
     // preaching — separate from the per-teaching notes above.
     sermonNotes: '',
     onboarded: false,
-    // Companion Brain: which suggestion card the member dismissed today, so
-    // it doesn't reappear until conditions change or a new day starts; when
-    // they last saw a weekly reflection (surfaces at most once a week); and
-    // when they last saw a growth highlight (at most once a month). Covered
-    // by the same export/erase controls as everything else.
+    // Agent Brain (js/agent-brain.js): which suggestion card the member
+    // dismissed today, so it doesn't reappear until conditions change or a
+    // new day starts; when they last saw a weekly reflection (surfaces at
+    // most once a week); and when they last saw a growth highlight (at
+    // most once a month). Covered by the same export/erase controls as
+    // everything else. (Field name kept as `companionBrain` — renaming a
+    // state.js key means writing a migration for existing members' saved
+    // data, for a cosmetic gain that isn't worth that risk.)
     companionBrain: { dismissedId: null, dismissedDate: null, lastReflectionDate: null, lastGrowthDate: null },
   };
 }
@@ -226,7 +229,7 @@ export function heartFeelingsToday() {
   return state.heart.date === todayKey() ? (state.heart.feelings || []) : [];
 }
 
-// ── Companion Brain ──────────────────────────────────────────────────────────
+// ── Agent Brain (js/agent-brain.js) ────────────────────────────────────────────
 export function dismissCompanionSuggestion(id) {
   state.companionBrain = { dismissedId: id, dismissedDate: todayKey() };
   save();

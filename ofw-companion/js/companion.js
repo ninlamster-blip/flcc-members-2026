@@ -1,4 +1,7 @@
 // Kaibigan — the AI companion view: heart check-in, conversation, voice.
+// Companion Brain UI (see js/agent-brain.js for the full five-brain map) —
+// paired with ai.js (the persona/system prompt) and relationship-engine.js
+// (deliberate memory follow-up).
 import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown, markMemoryFollowedUp } from './state.js';
 import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection, growthInsight } from './ai.js';
 import {
@@ -7,12 +10,12 @@ import {
 } from './utils.js';
 import { openBreathing } from './sanctuary.js';
 import { createHeaderController } from './header.js';
-import { getTopRecommendation, topRecommendationHint } from './companion-brain.js';
+import { getTopRecommendation, topRecommendationHint } from './agent-brain.js';
 import { buildWeeklySummary } from './reflection-engine.js';
 import { findGrowthHighlight } from './growth-engine.js';
 import { pickGreetingHint } from './relationship-engine.js';
 
-// Companion Brain suggestion cards that come with their own AI narrative
+// Agent Brain suggestion cards that come with their own AI narrative
 // upgrade: the structured (offline-safe) text renders first, and — only
 // if connected — gets swapped for a warmer version once the AI responds.
 // Kept as a lookup rather than more branches in renderBrainCard so adding a
@@ -103,7 +106,7 @@ export async function initCompanion(context) {
   }
 }
 
-// Companion Brain (js/companion-brain.js): the one or two most helpful
+// Agent Brain (js/agent-brain.js): the one or two most helpful
 // things to surface right now, decided from context the app already has —
 // journal gaps, mood trend, today's heart check-in. Re-run whenever Kaibigan
 // becomes active again (see exported refreshBrainCard) so it reflects

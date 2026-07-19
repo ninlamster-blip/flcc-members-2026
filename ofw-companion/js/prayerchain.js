@@ -1,4 +1,6 @@
-// Kadena ng Panalangin — the prayer stream on the Kapwa tab.
+// Kadena ng Panalangin — the prayer stream on the Kapwa tab. The Community
+// Brain (see js/agent-brain.js for the full five-brain map), alongside
+// community.js.
 //
 // Two flows:
 //   A. Ang Paghingi ng Saklolo — leave a request, with your first name and

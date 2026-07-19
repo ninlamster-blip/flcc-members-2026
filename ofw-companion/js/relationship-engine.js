@@ -3,8 +3,9 @@
 // missing your daughter — how are you feeling about that this week?"),
 // working through the backlog of shared memories in the order they were
 // given rather than leaving it to chance which one (if any) the AI happens
-// to bring up on its own. No DOM here, same pattern as the rest of the
-// Companion Brain.
+// to bring up on its own. Part of the Companion Brain (see js/agent-
+// brain.js for the full five-brain map) — companion.js and ai.js are the
+// other two pieces. No DOM here, same pattern as those.
 //
 // "Always rely on information the user intentionally shared and can
 // manage" — this reads from state.js's `memories`, the exact store the AI

@@ -1,6 +1,11 @@
 // AI client for FLCC Kasama. Reuses the church-wide Ask FLCC connection
 // (Cloudflare Worker proxy, or a direct Anthropic API key) so members who
 // already set up Ask FLCC get the companion with zero extra configuration.
+// The Kaibigan persona/system prompt here is the core of the Companion
+// Brain (see js/agent-brain.js for the full five-brain map); the personal-
+// prayer and weekly/growth narrative functions below are called from the
+// Faith Brain and Wellness Brain respectively — this file is shared
+// infrastructure (the Claude connection itself), not owned by one brain.
 import { getState, addMemory, heartFeelingsToday } from './state.js';
 import { todayKey } from './utils.js';
 
@@ -232,7 +237,7 @@ export async function companionReply(history) {
 
 // A warm conversation opener that recalls something from memory. Used when
 // the user opens the companion for the first time on a new day. `hint` is
-// an optional, plain-language nudge from the Companion Brain (js/companion-
+// an optional, plain-language nudge from the Agent Brain (js/agent-
 // brain.js) — e.g. "hasn't journaled in a few days" — folded in only if it
 // fits naturally, never recited as a checklist item.
 export async function companionOpener(daysAway = 0, hint = '') {
