@@ -9,10 +9,10 @@
 --
 -- (The Worker also runs these statements lazily with IF NOT EXISTS, so simply
 -- binding the database is enough — this file documents the canonical shape.
--- The Worker also self-migrates first_name/origin_country and
--- notify_prayers/notify_evening onto an already-deployed table via ALTER
--- TABLE, so existing databases pick up the new columns without a manual
--- migration step.)
+-- The Worker also self-migrates first_name/origin_country,
+-- notify_prayers/notify_evening, and tz_offset_minutes onto an
+-- already-deployed table via ALTER TABLE, so existing databases pick up
+-- the new columns without a manual migration step.)
 --
 -- Members choose to share their first name and country of origin with each
 -- request — both optional. The only fully anonymous per-user value is
@@ -47,20 +47,22 @@ CREATE INDEX IF NOT EXISTS idx_prayers_created_at
 
 -- Web Push subscriptions, shared by two independent opt-ins: "bagong
 -- panalangin" (reactive — fires when someone posts a prayer request) and
--- the evening Sanctuary reminder (scheduled once daily, see the Worker's
--- scheduled() handler and wrangler.toml's [triggers] crons). One row per
--- device; endpoint is the browser push service URL (unique per device/
--- installation), p256dh/auth are the device's own public key and auth
--- secret used to encrypt messages to it (RFC 8291) — never usable to
--- identify a person, only to deliver an encrypted notification.
--- notify_prayers/notify_evening are independent: subscribing to one never
--- implies consent to the other, even though both share this one row.
+-- the evening Sanctuary reminder (scheduled hourly, checking each device's
+-- own local time — see the Worker's scheduled() handler and
+-- wrangler.toml's [triggers] crons). One row per device; endpoint is the
+-- browser push service URL (unique per device/installation), p256dh/auth
+-- are the device's own public key and auth secret used to encrypt
+-- messages to it (RFC 8291) — never usable to identify a person, only to
+-- deliver an encrypted notification. notify_prayers/notify_evening are
+-- independent: subscribing to one never implies consent to the other,
+-- even though both share this one row.
 CREATE TABLE IF NOT EXISTS push_subscriptions (
-  id             TEXT PRIMARY KEY,
-  endpoint       TEXT NOT NULL UNIQUE,
-  p256dh         TEXT NOT NULL,
-  auth           TEXT NOT NULL,
-  notify_prayers INTEGER DEFAULT 1,   -- "bagong panalangin" opt-in
-  notify_evening INTEGER DEFAULT 0,   -- evening Sanctuary reminder opt-in
-  created_at     TEXT DEFAULT (datetime('now'))
+  id                 TEXT PRIMARY KEY,
+  endpoint           TEXT NOT NULL UNIQUE,
+  p256dh             TEXT NOT NULL,
+  auth               TEXT NOT NULL,
+  notify_prayers     INTEGER DEFAULT 1,   -- "bagong panalangin" opt-in
+  notify_evening     INTEGER DEFAULT 0,   -- evening Sanctuary reminder opt-in
+  tz_offset_minutes  INTEGER,             -- minutes east of UTC, shared only if notify_evening is on; NULL = unknown, falls back to a fixed UTC time
+  created_at         TEXT DEFAULT (datetime('now'))
 );

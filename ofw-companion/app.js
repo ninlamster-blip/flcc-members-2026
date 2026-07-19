@@ -15,7 +15,7 @@ import { initCommunity } from './js/community.js';
 import { initPrayerChain, markPrayersSeen } from './js/prayerchain.js';
 import {
   pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications,
-  isEveningNotifyEnabled, enableEveningNotify, disableEveningNotify, migrateLegacySubscription,
+  isEveningNotifyEnabled, enableEveningNotify, disableEveningNotify, migrateLegacySubscription, refreshEveningTzOffset,
 } from './js/notifications.js';
 import { initSupport, renderCrisisLines } from './js/support.js';
 import { initScrollHeader, resetScrollHeader } from './js/header.js';
@@ -251,7 +251,7 @@ function renderSettings() {
     <div class="oc-setting-row" id="oc-evening-notify-row" hidden>
       <div style="flex:1">
         <div class="oc-setting-label">🌙 Paalala sa gabi</div>
-        <div class="oc-setting-sub">Isang gentle na abiso tuwing gabi — isang paanyaya papasok sa Sanctuary. Isang beses sa isang araw lang, hindi ito personalized — ang totoong papasok sa Sanctuary ay tinitignan lang paglabas mo ng app.</div>
+        <div class="oc-setting-sub">Isang gentle na abiso tuwing gabi — isang paanyaya papasok sa Sanctuary. Isang beses sa isang araw lang, hindi ito personalized — ang totoong papasok sa Sanctuary ay tinitignan lang paglabas mo ng app. Para dumating ito sa gabi (hindi sa kung anong oras), ibinabahagi ng device mo ang general time zone lang — hindi eksaktong lokasyon.</div>
       </div>
       <button type="button" class="oc-switch" role="switch" aria-checked="false" id="oc-evening-notify-switch" aria-label="Evening Sanctuary reminder notifications"></button>
     </div>
@@ -294,7 +294,7 @@ function renderSettings() {
     <div class="oc-settings-section">Privacy</div>
     <div class="oc-setting-row"><div>
       <div class="oc-setting-label">Everything stays on this phone</div>
-      <div class="oc-setting-sub">Your journal, check-ins, and conversations are stored only on this device. No ads, no selling data, no tracking. Conversations are sent to the AI only to generate replies, through your church's private connection.</div>
+      <div class="oc-setting-sub">Your journal, check-ins, and conversations are stored only on this device. No ads, no selling data, no tracking. Conversations are sent to the AI only to generate replies, through your church's private connection. The one exception: turning on the evening Sanctuary reminder shares this device's rough time zone (not your exact location) so that reminder arrives in the evening instead of any random hour — nothing else about you is attached to it.</div>
     </div></div>
     <button type="button" class="oc-ghost-btn" id="oc-export-btn" style="width:100%;margin-top:10px">Download a copy of my data</button>
     <button type="button" class="oc-danger-btn" id="oc-clear-chat-btn">Clear conversation history</button>
@@ -431,6 +431,7 @@ async function wireNotifySwitch(body) {
   eveningRow.hidden = false;
   sw.setAttribute('aria-checked', String(pushIsEnabled()));
   eveningSw.setAttribute('aria-checked', String(isEveningNotifyEnabled()));
+  refreshEveningTzOffset(); // fire-and-forget — keeps the server's timing current if the member has traveled since last enabling it
 
   wireSwitch(sw, enableNotifications, disableNotifications, 'Naka-on na ang abiso — salamat! 🔔', 'Naka-off na ang abiso.');
   wireSwitch(eveningSw, enableEveningNotify, disableEveningNotify, 'Naka-on na ang paalala sa gabi 🌙', 'Naka-off na ang paalala sa gabi.');

@@ -84,7 +84,14 @@ async function ensureSubscription(keyData) {
   return sub;
 }
 
-async function subscribeTo(path, flagKey) {
+// Minutes EAST of UTC — same sign convention as /calendar's tzOffsetMinutes
+// param elsewhere in this app. getTimezoneOffset() is (UTC - local), the
+// opposite sign, hence the negation.
+function currentTzOffsetMinutes() {
+  return -new Date().getTimezoneOffset();
+}
+
+async function subscribeTo(path, flagKey, extraBody) {
   if (!pushSupported()) throw new Error('Hindi supported ng browser/device na ito ang push notifications.');
 
   const res = await fetch(apiBase() + '/api/push/vapid-public-key');
@@ -99,7 +106,7 @@ async function subscribeTo(path, flagKey) {
   await fetch(apiBase() + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ subscription: { endpoint: subJson.endpoint, keys: subJson.keys } }),
+    body: JSON.stringify({ subscription: { endpoint: subJson.endpoint, keys: subJson.keys }, ...extraBody }),
   });
   localStorage.setItem(flagKey, 'true');
 }
@@ -130,5 +137,29 @@ async function unsubscribeFrom(path, flagKey, otherFlagKey) {
 
 export const enableNotifications = () => subscribeTo('/api/push/subscribe', PRAYER_KEY);
 export const disableNotifications = () => unsubscribeFrom('/api/push/unsubscribe', PRAYER_KEY, EVENING_KEY);
-export const enableEveningNotify = () => subscribeTo('/api/push/evening/subscribe', EVENING_KEY);
+export const enableEveningNotify = () => subscribeTo('/api/push/evening/subscribe', EVENING_KEY, { tzOffsetMinutes: currentTzOffsetMinutes() });
 export const disableEveningNotify = () => unsubscribeFrom('/api/push/evening/unsubscribe', EVENING_KEY, PRAYER_KEY);
+
+// Keeps the server's record of this device's time zone current — worth
+// re-sending opportunistically (e.g. whenever Settings renders and the
+// reminder is already on) since it's only ever captured at subscribe time
+// otherwise. Silent best-effort: a stale offset just means the reminder
+// keeps firing at wherever it last knew, not a broken feature.
+export async function refreshEveningTzOffset() {
+  if (!isEveningNotifyEnabled()) return;
+  const sub = await currentSubscription();
+  if (!sub?.endpoint) return;
+  try {
+    const subJson = sub.toJSON();
+    await fetch(apiBase() + '/api/push/evening/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subscription: { endpoint: subJson.endpoint, keys: subJson.keys },
+        tzOffsetMinutes: currentTzOffsetMinutes(),
+      }),
+    });
+  } catch {
+    // best-effort — see comment above
+  }
+}
