@@ -137,7 +137,7 @@ export function ritualFor(period) {
   if (period === 'dusk') {
     return { text: 'Uminom ka na ba ng tubig? Unat-unat din', action: 'breathe' };
   }
-  return { text: 'Isulat ang isang pasasalamat bago matulog', action: 'journal' };
+  return { text: 'Pumasok sa Sanctuary — panalangin bago matulog', action: 'sanctuary' };
 }
 
 // ── Breathing exercise ───────────────────────────────────────────────────────

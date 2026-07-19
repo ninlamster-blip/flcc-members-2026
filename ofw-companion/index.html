@@ -229,6 +229,31 @@
     <button type="button" class="oc-ghost-btn" id="oc-breathe-close">Tapos na ako</button>
   </div>
 
+  <!-- ============ SANCTUARY MODE (evening ritual) ============ -->
+  <div id="oc-sanctuary" class="oc-sanctuary" hidden role="dialog" aria-modal="true" aria-label="Sanctuary">
+    <button type="button" class="oc-sanctuary-close" id="oc-sanctuary-close" aria-label="Close">✕</button>
+    <div class="oc-sanctuary-body">
+      <p class="oc-sanctuary-title">Sanctuary</p>
+      <p class="oc-sanctuary-reflection" id="oc-sanctuary-reflection"></p>
+
+      <div class="oc-sanctuary-block" id="oc-sanctuary-faith">
+        <p class="oc-sanctuary-verse" id="oc-sanctuary-verse-text"></p>
+        <p class="oc-sanctuary-verse-ref" id="oc-sanctuary-verse-ref"></p>
+        <p class="oc-sanctuary-prayer" id="oc-sanctuary-prayer-text"></p>
+        <button type="button" class="oc-ghost-btn oc-sanctuary-ghost" id="oc-sanctuary-prayer-btn" hidden></button>
+      </div>
+
+      <div class="oc-sanctuary-block">
+        <p class="oc-sanctuary-label">Isang bagay na ikinasasalamat mo ngayong gabi</p>
+        <input type="text" class="oc-text-input" id="oc-sanctuary-gratitude" maxlength="120" placeholder="Kahit maliit lang…">
+        <button type="button" class="oc-ghost-btn oc-sanctuary-ghost" id="oc-sanctuary-gratitude-save">Itago</button>
+        <p class="oc-sanctuary-done" id="oc-sanctuary-gratitude-done" hidden>Nakatago na — salamat sa pagbabahagi 🤍</p>
+      </div>
+
+      <button type="button" class="oc-ghost-btn oc-sanctuary-ghost" id="oc-sanctuary-breathe-btn">🫁 Huminga muna bago matulog</button>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="oc-toast" class="oc-toast" role="status" aria-live="polite" hidden></div>
 
