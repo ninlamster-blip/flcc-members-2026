@@ -8,6 +8,7 @@
 // infrastructure (the Claude connection itself), not owned by one brain.
 import { getState, addMemory, heartFeelingsToday } from './state.js';
 import { todayKey } from './utils.js';
+import { currentPeriod } from './sanctuary.js';
 
 // Shared with ask.html / index.html — do not rename.
 const PROXY_URL_KEY = 'flcc-ask-proxy-url-v1';
@@ -157,6 +158,20 @@ function recentWellbeingSummary() {
     .join('\n');
 }
 
+// The AI otherwise has no ground truth for the current moment beyond the
+// calendar date — nothing told it whether it's actually morning or night,
+// so it could greet someone with "sleep well" over morning coffee. Reads
+// the device's own local clock (the same source sanctuary.js's ritual
+// pill and Sanctuary Mode already use), computed fresh on every call —
+// never cached, since a long-running conversation can span real hours.
+const PERIOD_LABELS = { morning: 'morning', day: 'midday/afternoon', dusk: 'early evening', night: 'night — likely late or very early' };
+function timeContextLine() {
+  const now = new Date();
+  const period = currentPeriod(now.getHours());
+  const timeStr = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return `Right now it is ${timeStr}, ${PERIOD_LABELS[period] || period}, in their local time.`;
+}
+
 function memoriesBlock() {
   const { memories } = getState();
   if (!memories.length) return 'Nothing yet — this may be one of your first conversations.';
@@ -169,9 +184,10 @@ function companionSystemPrompt() {
   const faith = s.settings.faithEnabled;
   return `You are "Kaibigan", the caring companion inside FLCC Kasama — the app of the Filipino Language Christian Congregation (FLCC) for Overseas Filipino Workers, especially domestic workers who may only get one day off a month and go long stretches without a real conversation.
 
-You are talking with ${name}. Today is ${todayKey()}.
+You are talking with ${name}. Today is ${todayKey()}. ${timeContextLine()}
 
 WHO YOU ARE
+- Match your tone and any time-of-day language (good morning / good night / "sleep well" / "rest now" and the like) to the ACTUAL current time given above — never assume it's evening or night, or that they're about to sleep, unless it truly is right now.
 - A warm, genuine friend and an ENCOURAGER above all. In every reply, look for something true to affirm: their strength, their faithfulness, their love for family, their perseverance. Speak hope, never empty flattery.
 - A spiritual companion: your encouragement is rooted in God's love and faithfulness (see the Faith note below on when to make this explicit).
 - A companion only — never a replacement. You accompany them; you do not take the place of real friends, family, their pastor, professional counselors, or God Himself. Weave this in naturally and gently — about once every several exchanges, or whenever they seem to lean on you as their only support: "Nandito ako lagi, pero sana makausap mo rin si [pastor/kaibigan/pamilya] — mas mahalaga ang tunay na kasama."
@@ -251,7 +267,7 @@ export async function companionOpener(daysAway = 0, hint = '') {
     system: companionSystemPrompt(),
     messages: [{
       role: 'user',
-      content: `(The app is opening a new day's conversation. Greet me warmly in one or two sentences. If you have a memory of something I shared before, gently ask about it — like a friend who remembered.${gapNote}${hintNote} Do not add a <memory> tag.)`,
+      content: `(The app is opening a new day's conversation. Greet me warmly in one or two sentences, matching the actual current time of day given above (a "good morning" over coffee, not a "sleep well"). If you have a memory of something I shared before, gently ask about it — like a friend who remembered.${gapNote}${hintNote} Do not add a <memory> tag.)`,
     }],
     maxTokens: 200,
   });
