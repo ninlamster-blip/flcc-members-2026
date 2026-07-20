@@ -6,9 +6,19 @@
 // prayer and weekly/growth narrative functions below are called from the
 // Faith Brain and Wellness Brain respectively — this file is shared
 // infrastructure (the Claude connection itself), not owned by one brain.
-import { getState, addMemory, heartFeelingsToday } from './state.js';
+import { getState, updateState, addMemory, heartFeelingsToday } from './state.js';
 import { todayKey } from './utils.js';
 import { currentPeriod } from './sanctuary.js';
+
+// Same pattern as apiBase() in notifications.js/sanctuary.js/prayerchain.js:
+// an unset proxyUrl means "this same site" (relative fetch), not "no
+// server" — the church Worker that serves this app's own static files also
+// serves /news, so a relative fetch reaches it regardless of whether a
+// custom proxy URL is configured for chat specifically.
+function apiBase() {
+  const { proxyUrl } = getConnection();
+  return proxyUrl ? proxyUrl.replace(/\/+$/, '') : '';
+}
 
 // Shared with ask.html / index.html — do not rename.
 const PROXY_URL_KEY = 'flcc-ask-proxy-url-v1';
@@ -178,13 +188,52 @@ function memoriesBlock() {
   return memories.slice(0, 25).map((m) => `- ${m.text}`).join('\n');
 }
 
-function companionSystemPrompt() {
+// The church Worker's GET /news aggregates several RSS feeds (see
+// ask-proxy/worker.js RSS_FEEDS) for a different project's use too — this
+// keeps only the sources actually relevant to an OFW audience (world +
+// Philippines), leaving out the tech feeds that exist for that other tool.
+const NEWS_SOURCES_FOR_KAIBIGAN = new Set(['BBC News', 'The Guardian', 'NPR News', 'Al Jazeera', 'ABS-CBN', 'Inquirer', 'GMA News']);
+const NEWS_CACHE_MS = 45 * 60 * 1000; // same freshness window as the weather chip
+
+async function fetchLiveNews() {
+  try {
+    const res = await fetch(apiBase() + '/news');
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.items || []).filter((it) => NEWS_SOURCES_FOR_KAIBIGAN.has(it.source));
+  } catch {
+    return null; // offline, or this deployment doesn't have the Worker route — Kaibigan just goes without today's headlines
+  }
+}
+
+// Cached on-device like weather: a real network pull on every single chat
+// message would be wasteful and slow. Stale is better than nothing while
+// offline — only replaced once a fresh fetch actually succeeds.
+async function currentNewsItems() {
+  const cached = getState().newsCache;
+  if (cached && Date.now() - cached.at < NEWS_CACHE_MS) return cached.items;
+  const items = await fetchLiveNews();
+  if (items) {
+    updateState((st) => { st.newsCache = { at: Date.now(), items }; });
+    return items;
+  }
+  return cached?.items || [];
+}
+
+function newsBlock(items) {
+  if (!items.length) return 'No current headlines available right now — do not invent any; just skip current events unless they bring something specific up.';
+  return items.slice(0, 8).map((it) => `- [${it.source}, ${it.date}] ${it.headline}`).join('\n');
+}
+
+async function companionSystemPrompt() {
   const s = getState();
   const name = s.profile.name || 'kaibigan';
+  const country = s.profile.country;
   const faith = s.settings.faithEnabled;
+  const newsItems = await currentNewsItems();
   return `You are "Kaibigan", the caring companion inside FLCC Kasama — the app of the Filipino Language Christian Congregation (FLCC) for Overseas Filipino Workers, especially domestic workers who may only get one day off a month and go long stretches without a real conversation.
 
-You are talking with ${name}. Today is ${todayKey()}. ${timeContextLine()}
+You are talking with ${name}${country ? `, originally from ${country}` : ''}. Today is ${todayKey()}. ${timeContextLine()}
 
 WHO YOU ARE
 - Match your tone and any time-of-day language (good morning / good night / "sleep well" / "rest now" and the like) to the ACTUAL current time given above — never assume it's evening or night, or that they're about to sleep, unless it truly is right now.
@@ -197,11 +246,13 @@ WHO YOU ARE
 - You remember what they've shared (see MEMORIES below) and gently bring it up when it matters: "Last time you mentioned missing your daughter — kumusta ka na about that?"
 - You understand mixed emotions: a person can be happy but lonely, strong but exhausted, grateful but missing home. Never flatten what they feel into one label.
 - You understand the OFW reality: remittances, utang, employers good and bad, missed birthdays and Christmases, video calls that end too soon, the pressure to always appear strong for the family, day-offs that are too short, and the quiet ache of being needed for your money more than asked about your heart.
+- Be specific, not generic. Use their actual name, their actual home country/province if known, and actual details from MEMORIES — a real friend says "kumusta na si Angel?" not "kumusta na ang pamilya mo?" Avoid therapy-speak clichés ("I hear you," "that sounds really difficult," "it's valid to feel that way") — say what a close friend would actually say instead.
 
 WHAT YOU CAN HELP WITH
 - The Bible: quote verses accurately with their reference (use a widely used translation and name it, e.g. NIV or Ang Biblia for Filipino), find the verse they half-remember, and explain passages gently and faithfully. If a question is deep doctrine or a personal spiritual crisis, share what Scripture says and encourage them to bring it to Pastor Anson or the Bible study.
 - General knowledge: everyday questions are welcome — word meanings and translations, cooking, remittances and saving, health and legal basics, their host country, and the like. Answer briefly and clearly, then return the conversation to them as a person.
-- Honesty about limits: if you are not sure of a fact, say so plainly instead of guessing. For medical, legal, financial, or employment decisions, give general information only and point them to the proper professional or agency (see the Tulong tab).
+- Current events: you have a real, refreshed set of headlines below (CURRENT EVENTS) — world news and Philippines news specifically, since staying connected to home matters to them. Reference them naturally when relevant (they ask what's new, something reminds you of a headline, they mention missing home and a Philippines story fits) — never lead with news or bring it up unprompted in an emotional moment; their heart always comes first. Cite the source when you do ("according to Inquirer..."). Be gentle with heavy news (disasters, tragedy, conflict) — don't dwell on distressing details, especially anything about the Philippines, that could add to their worry rather than connect them to home.
+- Honesty about limits: if you are not sure of a fact — including anything beyond the headlines below, or events after your knowledge — say so plainly instead of guessing. For medical, legal, financial, or employment decisions, give general information only and point them to the proper professional or agency (see the Tulong tab).
 
 HOW YOU RESPOND
 - LISTEN FIRST. Never open with a Bible verse, advice, or a solution. The order is: acknowledge what they feel → ask or wonder gently → understand → encourage. Scripture and prayer come after understanding, and only when they fit the moment.
@@ -231,7 +282,10 @@ Today's heart check-in: ${heartFeelingsToday().join(', ') || 'not answered yet'}
 ${recentWellbeingSummary()}
 
 MEMORIES FROM PAST CONVERSATIONS
-${memoriesBlock()}`;
+${memoriesBlock()}
+
+CURRENT EVENTS (real headlines, World and Philippines — see the "current events" guidance above for when and how to use these)
+${newsBlock(newsItems)}`;
 }
 
 // Strip the <memory> tag from a reply, storing its contents.
@@ -244,7 +298,7 @@ function extractMemory(text) {
 export async function companionReply(history) {
   const messages = history.map((m) => ({ role: m.role, content: m.content }));
   const raw = await callClaude({
-    system: companionSystemPrompt(),
+    system: await companionSystemPrompt(),
     messages,
     maxTokens: 600,
   });
@@ -264,7 +318,7 @@ export async function companionOpener(daysAway = 0, hint = '') {
     ? ` One more thing, only if it fits naturally and doesn't sound like a checklist: ${hint}`
     : '';
   const raw = await callClaude({
-    system: companionSystemPrompt(),
+    system: await companionSystemPrompt(),
     messages: [{
       role: 'user',
       content: `(The app is opening a new day's conversation. Greet me warmly in one or two sentences, matching the actual current time of day given above (a "good morning" over coffee, not a "sleep well"). If you have a memory of something I shared before, gently ask about it — like a friend who remembered.${gapNote}${hintNote} Do not add a <memory> tag.)`,
