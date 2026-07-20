@@ -3,7 +3,7 @@
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
 import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
 import { loadJson, escapeHtml } from './js/utils.js';
-import { initCompanion, startNotOkayConversation, resetHomeHeader, refreshBrainCard } from './js/companion.js';
+import { initCompanion, startNotOkayConversation, resetHomeHeader, refreshBrainCard, maybeGreetAfterGap } from './js/companion.js';
 import {
   dateLine, occasionLine, initWeather, initAudioDrop,
   ritualFor, currentPeriod, openBreathing, closeBreathing, initNotOkay,
@@ -197,6 +197,7 @@ function setupSanctuary() {
     if (document.visibilityState !== 'visible') return;
     refreshDailySanctuaryBits();
     refreshBrainCard(); // same staleness risk — journal/mood context can be hours old
+    maybeGreetAfterGap(); // proactive "kumusta ka" if they've been away a while
     swRegistration?.update().catch(() => {});
   });
 }

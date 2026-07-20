@@ -24,8 +24,12 @@ function defaultState() {
     checkins: [],
     // Private journal entries, newest first: { id, date, time, text }
     journal: [],
-    // Companion conversation: rolling window of { role, content, t }
-    chat: { messages: [], lastTalkedDate: null },
+    // Companion conversation: rolling window of { role, content, t }.
+    // lastSeenAt (epoch ms) tracks the last time the app was actually in
+    // the foreground — distinct from lastTalkedDate (the calendar date of
+    // the last real message) — so Kaibigan can proactively greet after a
+    // real gap in presence, not just once per calendar day.
+    chat: { messages: [], lastTalkedDate: null, lastSeenAt: null },
     // Things the companion should remember about the user: { t, text }
     memories: [],
     // Heart check-in chosen today: { date, feeling (primary), feelings [] }
@@ -169,6 +173,15 @@ export function addChatMessage(role, content) {
 export function clearChat() {
   state.chat.messages = [];
   save();
+}
+
+// Records "the app was just in the foreground" and returns the *previous*
+// value, so the caller can measure the gap before it's overwritten.
+export function touchLastSeen() {
+  const previous = state.chat.lastSeenAt;
+  state.chat.lastSeenAt = Date.now();
+  save();
+  return previous;
 }
 
 // ── Memories ─────────────────────────────────────────────────────────────────
