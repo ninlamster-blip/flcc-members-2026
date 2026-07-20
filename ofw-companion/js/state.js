@@ -34,6 +34,9 @@ function defaultState() {
     geo: null,
     // Cached weather: { at, code, temp }
     weatherCache: null,
+    // Cached world/Philippines headlines for Kaibigan's conversation
+    // context: { at, items: [{ headline, summary, source, date }] }
+    newsCache: null,
     // Bible study: what the user is bringing this week { date, choiceId, note }
     bringing: null,
     // Private notes on Faith-tab teachings, keyed by teaching date

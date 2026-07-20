@@ -22,6 +22,12 @@ import { initScrollHeader, resetScrollHeader } from './js/header.js';
 
 const context = { toast };
 
+// Set once boot() registers the service worker; read again on visibility
+// resume (see setupSanctuary()) so a tab left open for days actually
+// re-checks for a new deploy instead of running whatever code happened to
+// be loaded whenever it was first opened.
+let swRegistration = null;
+
 // Captured install prompt (Android/Chrome fires this when the app qualifies
 // for standalone install and isn't installed yet).
 let installPrompt = null;
@@ -75,9 +81,8 @@ async function boot() {
         location.reload();
       });
     }
-    navigator.serviceWorker.register('sw.js')
-      .then((reg) => reg.update())
-      .catch(() => { /* offline shell is a bonus, not a requirement */ });
+    swRegistration = await navigator.serviceWorker.register('sw.js').catch(() => null);
+    swRegistration?.update().catch(() => {});
   }
 }
 
@@ -178,10 +183,21 @@ function setupSanctuary() {
   // the app the next morning could see last night's "time to sleep" ritual
   // and land in an evening-themed Sanctuary. Refresh whenever the tab
   // actually becomes visible again, not just once at boot.
+  //
+  // The service-worker update check has the exact same blind spot, and a
+  // more consequential one: boot() only ran reg.update() once, at whatever
+  // moment this tab first loaded. A tab kept open (just backgrounded and
+  // resumed) for days never re-checked, so it could go on running JS from
+  // before any later deploy indefinitely — every fix since then would
+  // silently never reach it, no matter how many times the member "reopens"
+  // the app, because switching back to an already-open tab isn't a reload.
+  // Re-checking here means the very next resume picks up whatever's newest
+  // and reloads once via the controllerchange listener above.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
     refreshDailySanctuaryBits();
     refreshBrainCard(); // same staleness risk — journal/mood context can be hours old
+    swRegistration?.update().catch(() => {});
   });
 }
 
