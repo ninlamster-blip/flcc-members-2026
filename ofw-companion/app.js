@@ -142,29 +142,24 @@ function goTo(tab) {
   document.querySelector(`.oc-nav-btn[data-nav="${tab}"]`)?.click();
 }
 
-function setupSanctuary() {
-  document.getElementById('oc-date-line').textContent = dateLine();
+// The ritual pill's own click handler; kept live here (not captured in a
+// closure at setup time) so a refresh() while the app was merely
+// backgrounded — not reloaded — actually changes what tapping the pill
+// does, not just its label.
+let currentRitual = null;
 
-  const occasion = occasionLine();
-  if (occasion) {
-    const el = document.getElementById('oc-occasion');
-    el.textContent = occasion;
-    el.hidden = false;
-  }
+function setupSanctuary() {
+  refreshDailySanctuaryBits();
 
   initWeather(document.getElementById('oc-weather-chip'));
   initAudioDrop(context.audiodrops);
 
-  // One gentle ritual invitation per time of day.
-  const ritual = ritualFor(currentPeriod());
-  const pill = document.getElementById('oc-ritual-pill');
-  pill.textContent = ritual.text;
-  pill.hidden = false;
-  pill.addEventListener('click', () => {
+  document.getElementById('oc-ritual-pill').addEventListener('click', () => {
     navigator.vibrate?.(8);
-    if (ritual.action === 'breathe') openBreathing();
-    else if (ritual.action === 'sanctuary') openSanctuaryMode();
-    else goTo(ritual.action);
+    if (!currentRitual) return;
+    if (currentRitual.action === 'breathe') openBreathing();
+    else if (currentRitual.action === 'sanctuary') openSanctuaryMode();
+    else goTo(currentRitual.action);
   });
 
   document.getElementById('oc-breathe-close').addEventListener('click', closeBreathing);
@@ -175,6 +170,32 @@ function setupSanctuary() {
     goTo,
     onTalk: () => { goTo('home'); startNotOkayConversation(); },
   });
+
+  // The date, "is it evening yet" ritual, and family-occasion line are all
+  // computed from the clock at the moment they're set — but on mobile,
+  // reopening a backgrounded PWA usually doesn't reload the page, so none
+  // of this ever re-ran even hours (or a full day) later. A member opening
+  // the app the next morning could see last night's "time to sleep" ritual
+  // and land in an evening-themed Sanctuary. Refresh whenever the tab
+  // actually becomes visible again, not just once at boot.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    refreshDailySanctuaryBits();
+    refreshBrainCard(); // same staleness risk — journal/mood context can be hours old
+  });
+}
+
+function refreshDailySanctuaryBits() {
+  document.getElementById('oc-date-line').textContent = dateLine();
+
+  const occasionEl = document.getElementById('oc-occasion');
+  const occasion = occasionLine();
+  occasionEl.textContent = occasion;
+  occasionEl.hidden = !occasion;
+
+  currentRitual = ritualFor(currentPeriod());
+  document.getElementById('oc-ritual-pill').textContent = currentRitual.text;
+  document.getElementById('oc-ritual-pill').hidden = false;
 }
 
 // ── Onboarding ───────────────────────────────────────────────────────────────
