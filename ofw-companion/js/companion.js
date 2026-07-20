@@ -2,10 +2,10 @@
 // Companion Brain UI (see js/agent-brain.js for the full five-brain map) —
 // paired with ai.js (the persona/system prompt) and relationship-engine.js
 // (deliberate memory follow-up).
-import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown, markMemoryFollowedUp } from './state.js';
+import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown, markMemoryFollowedUp, touchLastSeen } from './state.js';
 import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection, growthInsight } from './ai.js';
 import {
-  renderRichText, escapeHtml, pickRandom, todayKey,
+  renderRichText, escapeHtml, pickRandom,
   detectsCrisis, classifyHeart,
 } from './utils.js';
 import { openBreathing } from './sanctuary.js';
@@ -102,7 +102,7 @@ export async function initCompanion(context) {
       navigator.vibrate?.(8);
       handleBrainAction(currentBrainRec.action);
     });
-    maybeGreetNewDay();
+    maybeGreetAfterGap();
   }
 }
 
@@ -219,17 +219,23 @@ function welcomeText() {
   return `${intro} Kwentuhan mo ako — o magtanong ka lang: Bible verse, kahit anong gustong malaman. Kumusta ang puso mo ngayon?`;
 }
 
-// On a new day, ask the AI for a warm opener that recalls a memory ("Last
-// week you mentioned missing your daughter…") — and if days went by without
-// a word, say what a friend would say.
-async function maybeGreetNewDay() {
+// Kaibigan greets proactively once someone's been away from the app for a
+// real while — about an hour or more — not just once per calendar day, so
+// coming back mid-afternoon after a long shift gets a "kumusta ka" instead
+// of silence. lastSeenAt tracks actual foreground time (touchLastSeen(),
+// called here and on every visibilitychange resume in app.js) — distinct
+// from lastTalkedDate, so a tab merely left open in the background doesn't
+// reset the clock. If days went by, say what a friend would actually say.
+const GREET_GAP_MS = 60 * 60 * 1000; // ~1 hour away counts as "gone a while"
+
+export async function maybeGreetAfterGap() {
   const s = getState();
-  const today = todayKey();
-  if (!s.chat.messages.length) return;              // welcome bubble already shows
-  if (s.chat.lastTalkedDate === today) return;      // already talked today
-  const daysAway = s.chat.lastTalkedDate
-    ? Math.round((new Date(today) - new Date(s.chat.lastTalkedDate)) / 86400000)
-    : 0;
+  if (!s.chat.messages.length) { touchLastSeen(); return; } // welcome bubble already shows
+  const previousSeenAt = touchLastSeen();
+  if (!previousSeenAt) return;          // first time tracking this — nothing to compare yet
+  const gapMs = Date.now() - previousSeenAt;
+  if (gapMs < GREET_GAP_MS) return;     // still the same sitting
+  const daysAway = Math.floor(gapMs / 86400000);
   if (!isConnected()) {
     appendBubble('ai', daysAway >= 3
       ? `Ilang araw din tayong hindi nagkausap — hindi kita nakalimutan, at sana okay ka lang. Nandito lang ako. Kumusta ka?`
