@@ -189,10 +189,29 @@ function memoriesBlock() {
 }
 
 // The church Worker's GET /news aggregates several RSS feeds (see
-// ask-proxy/worker.js RSS_FEEDS) for a different project's use too — this
-// keeps only the sources actually relevant to an OFW audience (world +
-// Philippines), leaving out the tech feeds that exist for that other tool.
-const NEWS_SOURCES_FOR_KAIBIGAN = new Set(['BBC News', 'The Guardian', 'NPR News', 'Al Jazeera', 'ABS-CBN', 'Inquirer', 'GMA News']);
+// ask-proxy/worker.js RSS_FEEDS), shared with a different project's use
+// too — this is both which sources are relevant to an OFW audience (world
+// news, BBC and Reuters especially per request, Philippines news, and a
+// couple of brief tech headlines) AND how many of each to show, in one
+// place so the two can't drift apart. Order/count matters here: a flat
+// slice of the fetched list would just take whatever appears first — and
+// since /news returns items grouped by source, that would silently starve
+// every source after the first one or two once they alone fill the count
+// (the exact class of bug just fixed on the Worker's /news endpoint
+// itself). Per-source caps guarantee each named source actually shows up.
+const NEWS_SOURCE_CAPS = [
+  ['BBC News', 2],
+  ['Reuters', 2],
+  ['The Guardian', 1],
+  ['NPR News', 1],
+  ['Al Jazeera', 1],
+  ['ABS-CBN', 1],
+  ['Inquirer', 1],
+  ['GMA News', 1],
+  ['Apple Newsroom', 1],
+  ['Ars Technica', 1],
+];
+const NEWS_SOURCES_FOR_KAIBIGAN = new Set(NEWS_SOURCE_CAPS.map(([source]) => source));
 const NEWS_CACHE_MS = 45 * 60 * 1000; // same freshness window as the weather chip
 
 async function fetchLiveNews() {
@@ -222,7 +241,9 @@ async function currentNewsItems() {
 
 function newsBlock(items) {
   if (!items.length) return 'No current headlines available right now — do not invent any; just skip current events unless they bring something specific up.';
-  return items.slice(0, 8).map((it) => `- [${it.source}, ${it.date}] ${it.headline}`).join('\n');
+  const balanced = NEWS_SOURCE_CAPS.flatMap(([source, cap]) =>
+    items.filter((it) => it.source === source).slice(0, cap));
+  return balanced.map((it) => `- [${it.source}, ${it.date}] ${it.headline}`).join('\n');
 }
 
 async function companionSystemPrompt() {
@@ -252,7 +273,7 @@ WHO YOU ARE
 WHAT YOU CAN HELP WITH
 - The Bible: quote verses accurately with their reference (use a widely used translation and name it, e.g. NIV or Ang Biblia for Filipino), find the verse they half-remember, and explain passages gently and faithfully. If a question is deep doctrine or a personal spiritual crisis, share what Scripture says and encourage them to bring it to Pastor Anson or the Bible study.
 - General knowledge: everyday questions are welcome — word meanings and translations, cooking, remittances and saving, health and legal basics, their host country, and the like. Actually answer well — a real, useful, specific answer, not a rushed one-liner; being genuinely knowledgeable is part of being a good friend. It's fine to circle back to them as a person once you've actually helped, but don't cut a good answer short just to redirect.
-- Current events: you have a real, refreshed set of headlines below (CURRENT EVENTS) — world news and Philippines news specifically, since staying connected to home matters to them. Reference them naturally when relevant (they ask what's new, something reminds you of a headline, they mention missing home and a Philippines story fits) — never lead with news or bring it up unprompted in an emotional moment; their heart always comes first. Cite the source when you do ("according to Inquirer..."). Be gentle with heavy news (disasters, tragedy, conflict) — don't dwell on distressing details, especially anything about the Philippines, that could add to their worry rather than connect them to home.
+- Current events: you have a real, refreshed set of headlines below (CURRENT EVENTS) — world news (BBC and Reuters especially), Philippines news, and a couple of brief tech headlines, since staying connected to home and to what's new matters to them. Reference them naturally when relevant (they ask what's new, something reminds you of a headline, they mention missing home and a Philippines story fits, they mention their phone and a tech headline fits) — never lead with news or bring it up unprompted in an emotional moment; their heart always comes first. Keep it brief — a headline and a sentence, not a summary — and cite the source when you do ("according to Inquirer...", "saw on Reuters..."). Be gentle with heavy news (disasters, tragedy, conflict) — don't dwell on distressing details, especially anything about the Philippines, that could add to their worry rather than connect them to home.
 - Honesty about limits: if you are not sure of a fact — including anything beyond the headlines below, or events after your knowledge — say so plainly instead of guessing. For medical, legal, financial, or employment decisions, give general information only and point them to the proper professional or agency (see the Tulong tab).
 
 HOW YOU RESPOND
@@ -285,7 +306,7 @@ ${recentWellbeingSummary()}
 MEMORIES FROM PAST CONVERSATIONS
 ${memoriesBlock()}
 
-CURRENT EVENTS (real headlines, World and Philippines — see the "current events" guidance above for when and how to use these)
+CURRENT EVENTS (real headlines — World, Philippines, and a couple of brief Technology ones — see the "current events" guidance above for when and how to use these)
 ${newsBlock(newsItems)}`;
 }
 

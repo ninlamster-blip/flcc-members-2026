@@ -44,6 +44,10 @@ const CORS = {
 const RSS_FEEDS = [
   // International
   { name: 'BBC News',     icon: '🌐', url: 'https://feeds.bbci.co.uk/news/rss.xml'             },
+  // Reuters retired its own public RSS feeds years ago (no first-party URL
+  // to point at anymore) — Google News's RSS search, scoped to reuters.com,
+  // is the standard live workaround and returns genuine Reuters headlines.
+  { name: 'Reuters',      icon: '📈', url: 'https://news.google.com/rss/search?q=site:reuters.com+when:2d&hl=en-US&gl=US&ceid=US:en' },
   { name: 'The Guardian', icon: '🗞️', url: 'https://www.theguardian.com/world/rss'             },
   { name: 'NPR News',     icon: '📻', url: 'https://feeds.npr.org/1001/rss.xml'                },
   { name: 'Al Jazeera',  icon: '📡', url: 'https://www.aljazeera.com/xml/rss/all.xml'         },
@@ -51,7 +55,8 @@ const RSS_FEEDS = [
   { name: 'ABS-CBN',     icon: '🇵🇭', url: 'https://news.abs-cbn.com/rss/headlines'           },
   { name: 'Inquirer',    icon: '📰', url: 'https://newsinfo.inquirer.net/feed'                 },
   { name: 'GMA News',    icon: '📺', url: 'https://www.gmanetwork.com/news/rss/news/feed.xml' },
-  // Technology (feeds JARVIS's Knowledge Engine — Technology/Apple ecosystem updates)
+  // Technology (feeds JARVIS's Knowledge Engine, and now Kaibigan's brief
+  // tech-news mentions too — Technology/Apple ecosystem updates)
   { name: 'Apple Newsroom', icon: '🍎', url: 'https://www.apple.com/newsroom/rss-feed.rss'    },
   { name: 'Ars Technica',   icon: '💻', url: 'https://feeds.arstechnica.com/arstechnica/index' },
 ];
@@ -307,10 +312,18 @@ async function handleRequest(request, env, ctx) {
   // ── GET /news — live RSS headlines via rss2json (cached 5 min at edge) ────
   if (request.method === 'GET' && url.pathname === '/news') {
     const settled = await Promise.allSettled(RSS_FEEDS.map(fetchNewsFeed));
+    // Each feed already caps itself at 6 items (fetchNewsFeed's own slice) —
+    // there used to be a second, global .slice(0, 21) here too, which (since
+    // flatMap preserves RSS_FEEDS's declaration order) silently favored
+    // whichever feeds were listed first: 4 international feeds alone can
+    // supply up to 24 items, so everything declared after them — Philippines
+    // feeds, Technology feeds — could lose some or all of its items to a cap
+    // that had nothing to do with relevance, just array position. No global
+    // cap needed: consumers (Kaibigan's ai.js, JARVIS's knowledge.js) already
+    // filter to the sources and count they actually want.
     const items = settled
       .filter(r => r.status === 'fulfilled')
-      .flatMap(r => r.value)
-      .slice(0, 21);
+      .flatMap(r => r.value);
     return new Response(JSON.stringify({ items }), {
       headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
