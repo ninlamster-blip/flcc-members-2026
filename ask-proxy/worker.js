@@ -55,6 +55,11 @@ const RSS_FEEDS = [
   { name: 'ABS-CBN',     icon: '🇵🇭', url: 'https://news.abs-cbn.com/rss/headlines'           },
   { name: 'Inquirer',    icon: '📰', url: 'https://newsinfo.inquirer.net/feed'                 },
   { name: 'GMA News',    icon: '📺', url: 'https://www.gmanetwork.com/news/rss/news/feed.xml' },
+  // Showbiz — a widely-loved genre among the OFW audience Kaibigan serves.
+  // GMA Network runs its RSS by category on the same domain/path shape as
+  // the GMA News feed just above (…/rss/{category}/feed.xml), so this is
+  // the same source, just its showbiz section.
+  { name: 'GMA Showbiz', icon: '🎬', url: 'https://www.gmanetwork.com/news/rss/showbiz/feed.xml' },
   // Technology (feeds JARVIS's Knowledge Engine, and now Kaibigan's brief
   // tech-news mentions too — Technology/Apple ecosystem updates)
   { name: 'Apple Newsroom', icon: '🍎', url: 'https://www.apple.com/newsroom/rss-feed.rss'    },
