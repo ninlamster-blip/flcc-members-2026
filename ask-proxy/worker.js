@@ -61,8 +61,6 @@ const RSS_FEEDS = [
   { name: 'Ars Technica',   icon: '💻', url: 'https://feeds.arstechnica.com/arstechnica/index' },
 ];
 
-const RSS2JSON = 'https://api.rss2json.com/v1/api.json?count=6&rss_url=';
-
 function clean(str) {
   return (str || '')
     .replace(/<[^>]*>/g, ' ')
@@ -72,25 +70,77 @@ function clean(str) {
     .trim();
 }
 
+// A raw RSS/Atom field is often CDATA-wrapped ("<![CDATA[some <b>html</b>]]>")
+// so it can carry embedded markup — unwrap that FIRST. Running clean()
+// directly on a still-wrapped CDATA block would stop at the first real '>'
+// inside the embedded HTML (e.g. the one in "<b>"), truncating the field.
+function unwrapCdata(str) {
+  const m = String(str || '').match(/^\s*<!\[CDATA\[([\s\S]*)\]\]>\s*$/);
+  return m ? m[1] : str;
+}
+
+// Dependency-free RSS 2.0 / Atom parser — used instead of a third-party
+// RSS-to-JSON proxy (previously api.rss2json.com) after that service's
+// shared, keyless rate limit started intermittently failing every single
+// feed at once (one flaky third party taking down all 10 sources
+// together, unrelated to whether any individual feed was actually up).
+// Same "deliberately scoped, not a general parser" approach as the ICS
+// parser elsewhere in this Worker: RSS 2.0 <item> is the common case,
+// Atom <entry> is a defensive fallback since a feed could switch formats
+// without notice — not a claim of full RSS/Atom spec coverage.
+function extractTag(block, tagNames) {
+  for (const tag of tagNames) {
+    const m = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+    if (m) return clean(unwrapCdata(m[1]));
+  }
+  return '';
+}
+
+function extractLink(block) {
+  // RSS: <link>https://example.com/article</link> (plain text content).
+  const rss = block.match(/<link[^>]*>([^<]+)<\/link>/i);
+  if (rss && rss[1].trim()) return clean(unwrapCdata(rss[1]));
+  // Atom: <link href="https://example.com/article" ... /> (self-closing,
+  // no text content — the RSS pattern above won't match this at all).
+  const atom = block.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\/?>/i);
+  return atom ? atom[1] : '';
+}
+
+function feedDateToYmd(raw) {
+  const d = new Date(raw);
+  return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+}
+
+function parseFeedItems(xml) {
+  const blocks = xml.match(/<item\b[\s\S]*?<\/item>/gi) || xml.match(/<entry\b[\s\S]*?<\/entry>/gi) || [];
+  return blocks.map((block) => ({
+    title: extractTag(block, ['title']),
+    link: extractLink(block),
+    pubDate: extractTag(block, ['pubDate', 'published', 'updated', 'dc:date']),
+    description: extractTag(block, ['description', 'summary', 'content:encoded', 'content']),
+    guid: extractTag(block, ['guid', 'id']),
+  })).filter((it) => it.title);
+}
+
 async function fetchNewsFeed(feed) {
-  const res = await fetch(RSS2JSON + encodeURIComponent(feed.url), {
-    headers: { 'Accept': 'application/json' },
+  const res = await fetch(feed.url, {
+    headers: { 'Accept': 'application/rss+xml, application/xml, text/xml, */*', 'User-Agent': 'Mozilla/5.0 (compatible; FLCCKasamaBot/1.0)' },
     cf: { cacheTtl: 300 },
   });
-  if (!res.ok) throw new Error(`rss2json ${res.status} for ${feed.name}`);
-  const data = await res.json();
-  if (data.status !== 'ok' || !data.items?.length) throw new Error(`empty: ${feed.name}`);
-  return data.items.slice(0, 6).map(item => {
-    const raw = clean(item.description || item.content || '');
-    const summary = raw.length > 130 ? raw.slice(0, 130).trimEnd() + '…' : raw;
+  if (!res.ok) throw new Error(`${res.status} for ${feed.name}`);
+  const xml = await res.text();
+  const items = parseFeedItems(xml);
+  if (!items.length) throw new Error(`empty: ${feed.name}`);
+  return items.slice(0, 6).map(item => {
+    const summary = item.description.length > 130 ? item.description.slice(0, 130).trimEnd() + '…' : item.description;
     return {
       id: item.guid || item.link || item.title,
-      headline: clean(item.title || ''),
+      headline: item.title,
       summary,
-      date: (item.pubDate || '').slice(0, 10),
+      date: feedDateToYmd(item.pubDate),
       source: feed.name,
       sourceIcon: feed.icon,
-      link: item.link || '',
+      link: item.link,
     };
   });
 }
@@ -309,7 +359,7 @@ async function handleRequest(request, env, ctx) {
     });
   }
 
-  // ── GET /news — live RSS headlines via rss2json (cached 5 min at edge) ────
+  // ── GET /news — live RSS headlines, parsed directly (cached 5 min at edge) ─
   if (request.method === 'GET' && url.pathname === '/news') {
     const settled = await Promise.allSettled(RSS_FEEDS.map(fetchNewsFeed));
     // Each feed already caps itself at 6 items (fetchNewsFeed's own slice) —
