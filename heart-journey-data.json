@@ -1,0 +1,632 @@
+{
+  "meta": {
+    "title": "Heart Journey AI",
+    "subtitle": "A Christ-centered spiritual companion for FLCC - Abundance Church",
+    "translationNote": "Scripture quoted from the King James Version (public domain) unless noted otherwise.",
+    "safetyDisclaimer": "Heart Journey is a devotional companion, not a pastor, counselor, or substitute for Scripture, prayer, or your church community. It does not speak for God, predict outcomes, or diagnose or treat any condition. If you are in crisis or need pastoral or medical care, please reach out to a trusted pastor, elder, or qualified professional right away."
+  },
+  "emotions": [
+    { "key": "joyful", "label": "Joyful", "category": "joy_gratitude" },
+    { "key": "thankful", "label": "Thankful", "category": "joy_gratitude" },
+    { "key": "peaceful", "label": "Peaceful", "category": "peace_hope" },
+    { "key": "hopeful", "label": "Hopeful", "category": "peace_hope" },
+    { "key": "excited", "label": "Excited", "category": "peace_hope" },
+    { "key": "content", "label": "Content", "category": "joy_gratitude" },
+    { "key": "grateful", "label": "Grateful", "category": "joy_gratitude" },
+    { "key": "loved", "label": "Loved", "category": "joy_gratitude" },
+    { "key": "comforted", "label": "Comforted", "category": "joy_gratitude" },
+    { "key": "inspired", "label": "Inspired", "category": "peace_hope" },
+    { "key": "tired", "label": "Tired", "category": "weary" },
+    { "key": "burned_out", "label": "Burned Out", "category": "weary" },
+    { "key": "anxious", "label": "Anxious", "category": "anxious" },
+    { "key": "lonely", "label": "Lonely", "category": "lonely" },
+    { "key": "discouraged", "label": "Discouraged", "category": "discouraged_grief" },
+    { "key": "afraid", "label": "Afraid", "category": "anxious" },
+    { "key": "overwhelmed", "label": "Overwhelmed", "category": "anxious" },
+    { "key": "confused", "label": "Confused", "category": "uncertain" },
+    { "key": "tempted", "label": "Tempted", "category": "tempted" },
+    { "key": "angry", "label": "Angry", "category": "anger" },
+    { "key": "impatient", "label": "Impatient", "category": "anger" },
+    { "key": "ashamed", "label": "Ashamed", "category": "shame_guilt" },
+    { "key": "guilty", "label": "Guilty", "category": "shame_guilt" },
+    { "key": "broken", "label": "Broken", "category": "discouraged_grief" },
+    { "key": "grieving", "label": "Grieving", "category": "discouraged_grief" },
+    { "key": "financially_stressed", "label": "Financially Stressed", "category": "financial" },
+    { "key": "waiting", "label": "Waiting", "category": "uncertain" },
+    { "key": "doubting", "label": "Doubting", "category": "uncertain" },
+    { "key": "searching", "label": "Searching", "category": "uncertain" },
+    { "key": "unmotivated", "label": "Unmotivated", "category": "spiritual_dryness" },
+    { "key": "spiritually_dry", "label": "Spiritually Dry", "category": "spiritual_dryness" },
+    { "key": "homesick", "label": "Homesick", "category": "lonely" },
+    { "key": "missing_family", "label": "Missing My Family", "category": "lonely" },
+    { "key": "serving_far_from_home", "label": "Serving Far From Home", "category": "lonely" },
+    { "key": "unable_to_attend_church", "label": "Unable to Attend Church", "category": "distant_worship" },
+    { "key": "distant_from_god", "label": "Feeling Distant From God", "category": "spiritual_dryness" },
+    { "key": "close_to_god", "label": "Feeling Close To God", "category": "close_to_god" },
+    { "key": "need_wisdom", "label": "Need Wisdom", "category": "need_wisdom" },
+    { "key": "need_direction", "label": "Need Direction", "category": "need_direction" },
+    { "key": "need_strength", "label": "Need Strength", "category": "need_strength" },
+    { "key": "need_forgiveness", "label": "Need Forgiveness", "category": "need_forgiveness" },
+    { "key": "need_rest", "label": "Need Rest", "category": "need_rest" },
+    { "key": "need_courage", "label": "Need Courage", "category": "need_courage" },
+    { "key": "need_peace", "label": "Need Peace", "category": "need_peace" },
+    { "key": "need_joy", "label": "Need Joy", "category": "need_joy" },
+    { "key": "need_hope", "label": "Need Hope", "category": "need_hope" }
+  ],
+  "categoryMeta": {
+    "joy_gratitude":     { "theme": "Joy & Gratitude",         "prayerFocus": "thanksgiving and celebration of God's goodness",             "weekPatternMessage": "gratitude and joy" },
+    "peace_hope":        { "theme": "Peace & Hope",             "prayerFocus": "hope, wonder, and trust in what God is doing",               "weekPatternMessage": "hope and anticipation" },
+    "weary":             { "theme": "Rest for the Weary",       "prayerFocus": "rest and renewed strength",                                  "weekPatternMessage": "tiredness and weariness" },
+    "anxious":           { "theme": "God's Peace in Anxiety",   "prayerFocus": "peace that surpasses understanding",                        "weekPatternMessage": "anxiety and worry" },
+    "lonely":            { "theme": "Never Alone",              "prayerFocus": "the comfort of God's constant presence",                    "weekPatternMessage": "loneliness" },
+    "discouraged_grief": { "theme": "God Is Near the Brokenhearted", "prayerFocus": "comfort, healing, and nearness in sorrow",              "weekPatternMessage": "discouragement or grief" },
+    "uncertain":         { "theme": "Trusting God in the Unknown", "prayerFocus": "clarity, patience, and trust while waiting",              "weekPatternMessage": "uncertainty or waiting" },
+    "tempted":           { "theme": "Strength Against Temptation", "prayerFocus": "a way of escape and strength to resist",                 "weekPatternMessage": "temptation" },
+    "anger":             { "theme": "A Gentle and Quiet Spirit", "prayerFocus": "self-control and a slow-to-anger heart",                    "weekPatternMessage": "frustration or anger" },
+    "shame_guilt":       { "theme": "No Condemnation in Christ", "prayerFocus": "grace, forgiveness, and freedom from shame",               "weekPatternMessage": "guilt or shame" },
+    "financial":         { "theme": "God Our Provider",         "prayerFocus": "provision, wisdom, and trust with finances",                 "weekPatternMessage": "financial stress" },
+    "spiritual_dryness": { "theme": "Reviving a Thirsty Soul",  "prayerFocus": "a renewed hunger for God's presence",                        "weekPatternMessage": "spiritual dryness or distance from God" },
+    "close_to_god":      { "theme": "Abiding in Christ",        "prayerFocus": "deeper intimacy and consistency in walking with God",       "weekPatternMessage": "closeness to God" },
+    "distant_worship":   { "theme": "Worship Beyond Walls",     "prayerFocus": "the sense of God's presence even far from a church building", "weekPatternMessage": "being unable to gather with the church" }
+  },
+  "generalEncouragements": [
+    "Whatever season you're walking through, God has not left you — He is near, He is faithful, and He is at work even when you cannot see it.",
+    "Small, faithful steps matter. Showing up today to open your heart before God is itself an act of worship.",
+    "You don't have to have the right words. God hears the honest cry of His children.",
+    "Every faithful believer has walked through seasons like this one. You are not alone, and you are not behind.",
+    "God's mercies are new this morning, no matter how yesterday went.",
+    "This moment of reflection is enough for today. Tomorrow's grace will be there tomorrow.",
+    "Growth in Christ is rarely a straight line — keep returning to Him, one day at a time."
+  ],
+  "eveningOptions": [
+    { "key": "answered_prayer", "label": "God answered a prayer", "responseTone": "celebratory" },
+    { "key": "struggled", "label": "I struggled today", "responseTone": "compassionate" },
+    { "key": "joy", "label": "I experienced joy", "responseTone": "celebratory" },
+    { "key": "need_forgiveness", "label": "I need forgiveness", "responseTone": "gracious" },
+    { "key": "gods_faithfulness", "label": "I saw God's faithfulness", "responseTone": "grateful" }
+  ],
+  "eveningResponses": {
+    "answered_prayer": {
+      "reflection": "What a gift to see God move. Recording this moment matters — it becomes a stone of remembrance for the next season when you need to recall His faithfulness.",
+      "prayer": "Father, thank You for hearing and answering prayer. You are attentive to the details of our lives. Help {name} carry this answered prayer as a reminder of Your faithfulness in every season ahead. In Jesus' name, Amen.",
+      "verse": { "reference": "Psalm 116:1-2", "text": "I love the LORD, because he hath heard my voice and my supplications. Because he hath inclined his ear unto me, therefore will I call upon him as long as I live." }
+    },
+    "struggled": {
+      "reflection": "Struggling today doesn't mean you failed — it means you're human, and grace is exactly for people like us. God's strength is made perfect in weakness, not in perfection.",
+      "prayer": "Father, today was hard for {name}. Thank You that Your mercies are new every morning and Your grace is sufficient. Help {name} rest tonight in the truth that Your love does not depend on a good day. In Jesus' name, Amen.",
+      "verse": { "reference": "Lamentations 3:22-23", "text": "It is of the LORD's mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness." }
+    },
+    "joy": {
+      "reflection": "Every good gift comes from the Father of lights. Naming today's joy as coming from Him keeps your heart tethered to gratitude rather than circumstance.",
+      "prayer": "Father, thank You for the joy You placed in {name}'s day. Every good and perfect gift comes from You. May this joy point back to Your goodness again and again. In Jesus' name, Amen.",
+      "verse": { "reference": "James 1:17", "text": "Every good gift and every perfect gift is from above, and cometh down from the Father of lights, with whom is no variableness, neither shadow of turning." }
+    },
+    "need_forgiveness": {
+      "reflection": "Bringing this honestly to God tonight is itself a step of faith. He is faithful and just to forgive — not reluctantly, but completely, the moment you confess.",
+      "prayer": "Father, {name} comes to You honestly tonight, asking for forgiveness. Thank You that You are faithful and just to forgive and to cleanse from all unrighteousness. Help {name} receive Your grace and walk in freedom, not shame. In Jesus' name, Amen.",
+      "verse": { "reference": "1 John 1:9", "text": "If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness." }
+    },
+    "gods_faithfulness": {
+      "reflection": "Faithfulness noticed is faithfulness remembered. Thank you for pausing to see God's hand in the ordinary moments of today.",
+      "prayer": "Father, thank You for showing {name} Your faithfulness today. You have never failed, and You will not begin today. Build in {name} a heart that remembers Your goodness in every season. In Jesus' name, Amen.",
+      "verse": { "reference": "Lamentations 3:23", "text": "They are new every morning: great is thy faithfulness." }
+    }
+  },
+  "gratitudePlants": ["🌱", "🌿", "🍀", "🌷", "🌻", "🌼", "🌸", "🌳", "🌾", "🪷"],
+  "categories": {
+    "joy_gratitude": [
+      {
+        "reference": "Nehemiah 8:10",
+        "verseText": "Neither be ye sorry; for the joy of the LORD is your strength.",
+        "reflection": "Nehemiah spoke these words to a nation rediscovering God's Word after years of exile. Their first response was weeping — but Nehemiah redirected them toward joy, because joy rooted in God is not denial of hardship, it is strength for the road ahead.",
+        "historicalBackground": "This moment took place after the Israelites returned from Babylonian exile and rebuilt Jerusalem's walls. As Ezra read the Law aloud, the people wept in conviction, but the leaders reminded them that this was meant to be a day of celebration, not mourning.",
+        "crossReferences": ["Psalm 16:11", "Philippians 4:4"],
+        "bibleStory": { "title": "The Reading of the Law", "summary": "After decades in exile, the returned Israelites gathered as one to hear God's Word read aloud for the first time in a generation, and their sorrow turned to a feast of joy and gladness (Nehemiah 8)." },
+        "worshipSong": "\"10,000 Reasons (Bless the Lord)\" — Matt Redman",
+        "actionStep": "Text or tell one person today something specific you're grateful to God for.",
+        "reflectionQuestion": "Where in your life right now can you choose joy in the Lord as your strength, rather than joy based on circumstances?",
+        "journalPrompt": "Write down three things from this past week that reminded you of God's goodness.",
+        "memoryVerse": { "reference": "Nehemiah 8:10", "text": "The joy of the LORD is your strength." }
+      },
+      {
+        "reference": "Psalm 100:4-5",
+        "verseText": "Enter into his gates with thanksgiving, and into his courts with praise: be thankful unto him, and bless his name. For the LORD is good; his mercy is everlasting; and his truth endureth to all generations.",
+        "reflection": "Gratitude is the doorway into God's presence. This psalm calls worshippers to come with thanksgiving already on their lips, before circumstances are settled — because God's goodness is the constant, not the changing details of our day.",
+        "historicalBackground": "Psalm 100 was likely sung as pilgrims processed into the Temple courts in Jerusalem for corporate worship, reminding the whole community that thanksgiving is the appropriate posture for approaching a good and faithful God.",
+        "crossReferences": ["1 Thessalonians 5:18", "Psalm 107:1"],
+        "bibleStory": { "title": "The Ten Lepers", "summary": "Jesus healed ten men of leprosy, but only one returned to give thanks — and Jesus noted how easily gratitude is forgotten (Luke 17:11-19)." },
+        "worshipSong": "\"Good Good Father\" — Chris Tomlin",
+        "actionStep": "Write a short prayer of thanks before you check your phone this morning.",
+        "reflectionQuestion": "What is one blessing you've started taking for granted that deserves fresh thanks today?",
+        "journalPrompt": "Describe a moment this month when you clearly saw God's mercy toward you.",
+        "memoryVerse": { "reference": "Psalm 107:1", "text": "O give thanks unto the LORD, for he is good: for his mercy endureth for ever." }
+      }
+    ],
+    "peace_hope": [
+      {
+        "reference": "Romans 15:13",
+        "verseText": "Now the God of hope fill you with all joy and peace in believing, that ye may abound in hope, through the power of the Holy Ghost.",
+        "reflection": "Paul calls God 'the God of hope' — hope isn't a feeling we manufacture, it's a Person we abide in. When your own optimism runs dry, His hope can still fill you, because it doesn't depend on your circumstances but on His character.",
+        "historicalBackground": "Paul wrote Romans to a diverse church in the empire's capital, made up of both Jewish and Gentile believers navigating real tension. His prayer for hope and unity was meant to hold a fractured community together in faith.",
+        "crossReferences": ["Jeremiah 29:11", "Hebrews 6:19"],
+        "bibleStory": { "title": "Abraham's Hope Against Hope", "summary": "Abraham believed God's promise of a son even when it seemed biologically impossible, and his faith was counted to him as righteousness (Romans 4:18-22)." },
+        "worshipSong": "\"Living Hope\" — Phil Wickham",
+        "actionStep": "Name one situation you've been anxious about and hand it to God in a specific prayer today.",
+        "reflectionQuestion": "What would it look like to let the Holy Spirit fill you with hope today, rather than trying to talk yourself into optimism?",
+        "journalPrompt": "What are you hoping for right now, and what does Scripture say about the character of the God you're hoping in?",
+        "memoryVerse": { "reference": "Romans 15:13", "text": "Now the God of hope fill you with all joy and peace in believing." }
+      },
+      {
+        "reference": "Zephaniah 3:17",
+        "verseText": "The LORD thy God in the midst of thee is mighty; he will save, he will rejoice over thee with joy; he will rest in his love, he will joy over thee with singing.",
+        "reflection": "This is one of the most tender pictures of God in all of Scripture — He doesn't just tolerate you, He rejoices over you and sings. Whatever excitement or anticipation you feel today, God feels an even deeper delight over you as His child.",
+        "historicalBackground": "Zephaniah prophesied a message of coming judgment to Judah, yet ends with this astonishing promise of restoration — God delighting over His people even after their unfaithfulness, a picture of grace before the cross was ever preached.",
+        "crossReferences": ["Psalm 149:4", "1 John 3:1"],
+        "bibleStory": { "title": "The Father Runs to the Prodigal", "summary": "While the son was still far off, his father saw him and ran to embrace him — a picture of God's delight over His returning children (Luke 15:20)." },
+        "worshipSong": "\"Reckless Love\" — Cory Asbury",
+        "actionStep": "Spend two minutes today simply resting in the thought that God delights in you, not because of what you do, but because you're His.",
+        "reflectionQuestion": "How does it change your day to know God is rejoicing over you right now, not waiting for you to earn His delight?",
+        "journalPrompt": "What are you excited or hopeful about today, and how can you invite God into that anticipation?",
+        "memoryVerse": { "reference": "Zephaniah 3:17", "text": "He will rejoice over thee with joy; he will joy over thee with singing." }
+      }
+    ],
+    "weary": [
+      {
+        "reference": "Matthew 11:28-30",
+        "verseText": "Come unto me, all ye that labour and are heavy laden, and I will give you rest. Take my yoke upon you, and learn of me; for I am meek and lowly in heart: and ye shall find rest unto your souls. For my yoke is easy, and my burden is light.",
+        "reflection": "Jesus doesn't ask why you're tired before offering rest — He simply invites you. A yoke was shared between two oxen; Jesus is offering to carry the weight of your labor alongside you, not just watch from a distance.",
+        "historicalBackground": "Jesus spoke this to crowds worn down by the heavy religious burdens placed on them by some teachers of the law. His invitation was radical: rest was found not in more rule-keeping, but in a relationship with Him.",
+        "crossReferences": ["Isaiah 40:29-31", "Psalm 62:1"],
+        "bibleStory": { "title": "Elijah Under the Broom Tree", "summary": "Exhausted and afraid after confronting Jezebel's prophets, Elijah collapsed under a tree — and God's first response wasn't a rebuke, but sleep, food, and gentle presence (1 Kings 19:1-8)." },
+        "worshipSong": "\"Rest On Us\" — Maverick City Music",
+        "actionStep": "Give yourself permission to rest today — even ten quiet minutes without your phone.",
+        "reflectionQuestion": "What burden have you been carrying alone that Jesus is inviting you to bring to Him instead?",
+        "journalPrompt": "What is making you feel worn out right now, and what would it look like to hand that specific thing to God today?",
+        "memoryVerse": { "reference": "Matthew 11:28", "text": "Come unto me, all ye that labour and are heavy laden, and I will give you rest." }
+      },
+      {
+        "reference": "Isaiah 40:29-31",
+        "verseText": "He giveth power to the faint; and to them that have no might he increaseth strength... they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.",
+        "reflection": "Burnout often comes from running on our own strength for too long. Isaiah reminds a weary nation that renewal comes from waiting on the Lord — not from working harder, but from leaning on Him.",
+        "historicalBackground": "Isaiah wrote to a people questioning whether God had forgotten them during exile. His answer wasn't a pep talk about self-sufficiency, but a reminder of God's inexhaustible power available to the utterly exhausted.",
+        "crossReferences": ["Psalm 23:1-3", "2 Corinthians 12:9"],
+        "bibleStory": { "title": "Moses' Hands Held Up", "summary": "When Moses grew too tired to keep his hands raised in battle, Aaron and Hur held them up for him — a picture of God providing strength through community when our own runs out (Exodus 17:11-13)." },
+        "worshipSong": "\"Even If\" — MercyMe",
+        "actionStep": "Ask one trusted person to check in on you this week, rather than carrying burnout silently.",
+        "reflectionQuestion": "What would it look like this week to 'wait on the Lord' instead of pushing through on empty?",
+        "journalPrompt": "Where have you been relying on your own strength lately, and what would it look like to invite God into that area?",
+        "memoryVerse": { "reference": "Isaiah 40:31", "text": "They that wait upon the LORD shall renew their strength." }
+      }
+    ],
+    "anxious": [
+      {
+        "reference": "Philippians 4:6-7",
+        "verseText": "Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God. And the peace of God, which passeth all understanding, shall keep your hearts and minds through Christ Jesus.",
+        "reflection": "Paul wrote this from a prison cell, not a peaceful garden. He isn't offering theory — he's offering a practice: bring every anxious thought to God in prayer, with thanksgiving mixed in, and let His peace stand guard over your heart.",
+        "historicalBackground": "Paul wrote to the Philippian church while under Roman house arrest, uncertain if he would live or die. His call to 'be anxious for nothing' carries real weight because he modeled it in genuine hardship.",
+        "crossReferences": ["1 Peter 5:7", "John 14:27"],
+        "bibleStory": { "title": "Jesus Calms the Storm", "summary": "While the disciples panicked in a violent storm, Jesus slept peacefully, then spoke three words to the wind and waves — 'Peace, be still' (Mark 4:35-41)." },
+        "worshipSong": "\"Peace Be Still\" — The Belonging Co",
+        "actionStep": "Name your specific worry out loud in prayer right now, and thank God for one thing in the same breath.",
+        "reflectionQuestion": "What is one anxious thought you keep carrying instead of handing to God in prayer?",
+        "journalPrompt": "Write out exactly what's making you anxious today, then write it as a prayer request instead of a worry.",
+        "memoryVerse": { "reference": "Philippians 4:6", "text": "Be careful for nothing; but in every thing by prayer and supplication... let your requests be made known unto God." }
+      },
+      {
+        "reference": "1 Peter 5:7",
+        "verseText": "Casting all your care upon him; for he careth for you.",
+        "reflection": "This isn't a suggestion to manage your anxiety better — it's an invitation to transfer the weight entirely. Peter uses the image of casting, like throwing a heavy load off your own back and onto Someone able to carry it.",
+        "historicalBackground": "Peter wrote to believers scattered under real persecution across the Roman Empire. His readers had genuine reasons for fear, yet he still calls them to cast their anxiety on God because of who God is — not because their circumstances were safe.",
+        "crossReferences": ["Psalm 55:22", "Matthew 6:34"],
+        "bibleStory": { "title": "Peter Walking on Water", "summary": "Peter began to sink the moment he focused on the wind instead of Jesus — but the moment he cried out, Jesus immediately reached out and caught him (Matthew 14:28-31)." },
+        "worshipSong": "\"Way Maker\" — Sinach",
+        "actionStep": "Physically write your worry on paper, then pray over it and set it aside as an act of release.",
+        "reflectionQuestion": "What does it look like practically for you to 'cast' a specific care onto God today rather than just thinking about it?",
+        "journalPrompt": "What are you most tempted to control right now, and what would trusting God with it look like?",
+        "memoryVerse": { "reference": "1 Peter 5:7", "text": "Casting all your care upon him; for he careth for you." }
+      }
+    ],
+    "lonely": [
+      {
+        "reference": "Deuteronomy 31:6",
+        "verseText": "Be strong and of a good courage, fear not, nor be afraid of them: for the LORD thy God, he it is that doth go with thee; he will not fail thee, nor forsake thee.",
+        "reflection": "Moses spoke these words to a nation about to enter unfamiliar territory without him leading them. Loneliness often comes when a season changes — but God's presence is the one constant that travels with you into every new place.",
+        "historicalBackground": "Moses spoke this as his final charge to Israel before his death, as Joshua prepared to lead them into the Promised Land. It was a transition marked by uncertainty, yet grounded in the promise of God's abiding presence.",
+        "crossReferences": ["Hebrews 13:5", "Psalm 68:6"],
+        "bibleStory": { "title": "Hagar in the Wilderness", "summary": "Cast out and alone in the desert, Hagar encountered God, who saw her and provided for her — she named Him 'the God who sees me' (Genesis 16:7-13)." },
+        "worshipSong": "\"Never Alone\" — Tori Kelly",
+        "actionStep": "Reach out to one church member today, even with a short message, to reconnect with community.",
+        "reflectionQuestion": "In what area of life have you felt most alone lately, and how might God be inviting you into deeper community there?",
+        "journalPrompt": "Write about a time you felt isolated, and where you can now see God was present even when you didn't feel it.",
+        "memoryVerse": { "reference": "Deuteronomy 31:6", "text": "He will not fail thee, nor forsake thee." }
+      },
+      {
+        "reference": "Psalm 68:6",
+        "verseText": "God setteth the solitary in families.",
+        "reflection": "God's design has always been for His people to belong to one another. If you're feeling homesick or isolated, this verse points to His heart — He places the lonely into family, and the local church is part of how He does that today.",
+        "historicalBackground": "This psalm celebrates God's character as a defender of the vulnerable — the fatherless, the widow, and the solitary — showing that care for the isolated has always been central to who God is.",
+        "crossReferences": ["Hebrews 10:24-25", "1 Corinthians 12:26-27"],
+        "bibleStory": { "title": "Ruth and Naomi", "summary": "A widowed foreigner far from home, Ruth chose to stay with Naomi, and God wove her into a new family and a new future in Bethlehem (Ruth 1-4)." },
+        "worshipSong": "\"Family of God\" — Cody Carnes",
+        "actionStep": "Consider joining or reconnecting with a small group or fellowship this week.",
+        "reflectionQuestion": "Who in your church family could you invest in this week, even in a small way?",
+        "journalPrompt": "Describe what belonging looks like to you right now, and one step you could take toward it.",
+        "memoryVerse": { "reference": "Psalm 68:6", "text": "God setteth the solitary in families." }
+      },
+      {
+        "reference": "Genesis 39:2-3",
+        "verseText": "And the LORD was with Joseph, and he was a prosperous man; and he was in the house of his master the Egyptian. And his master saw that the LORD was with him, and that the LORD made all that he did to prosper in his hand.",
+        "reflection": "Joseph was sold away from his father's house into another man's household, in a country whose language and gods were not his own. Scripture doesn't skip past how painful that must have been — but it also doesn't wait until Joseph felt at home to say God was with him. If you're serving faithfully today in a household far from your own family, this is written for you: God was in that house before you ever walked into it.",
+        "historicalBackground": "Joseph was sold into slavery by his own brothers and taken to Egypt, where he served in the household of Potiphar, an officer of Pharaoh. Everything about his position was involuntary and unjust — yet the text repeatedly says 'the LORD was with Joseph,' even inside someone else's home, doing someone else's work.",
+        "crossReferences": ["Genesis 39:21", "Acts 7:9-10"],
+        "bibleStory": { "title": "Joseph in Potiphar's House", "summary": "Serving in an Egyptian household far from his family and homeland, Joseph remained faithful in his work and his character, and Scripture is careful to say God's presence went with him into every room of that house (Genesis 39:1-6)." },
+        "worshipSong": "\"Way Maker\" — Sinach",
+        "actionStep": "Say a short prayer over the specific place you work or serve today, asking God to make His presence known there, just as He did for Joseph.",
+        "reflectionQuestion": "What would it mean today to believe that God is present in the exact house, room, or job where you're serving right now — not just back home?",
+        "journalPrompt": "Write a prayer for the family you are far away from today, and another for God's presence in the place you are serving right now.",
+        "memoryVerse": { "reference": "Genesis 39:2", "text": "And the LORD was with Joseph, and he was a prosperous man." }
+      },
+      {
+        "reference": "Ruth 2:11-12",
+        "verseText": "It hath fully been shewed me, all that thou hast done unto thy mother in law since the death of thine husband: and how thou hast left thy father and thy mother, and the land of thy nativity, and art come unto a people which thou knewest not heretofore. The LORD recompense thy work, and a full reward be given thee of the LORD God of Israel, under whose wings thou art come to trust.",
+        "reflection": "Ruth left her own country to work in a field that wasn't hers, gathering leftover grain to provide for someone she loved. Boaz's blessing over her wasn't empty — it named exactly what she'd given up, and it asked God to repay work that no one back home could see. Whatever labor you're doing far from your own family right now, in a field or a house or a job that isn't really yours, God sees the whole cost of it, and He is not stingy with His reward.",
+        "historicalBackground": "Ruth was a Moabite widow who left her homeland to accompany her mother-in-law Naomi to Bethlehem, where she supported them both by gleaning leftover grain in the fields — one of the most vulnerable and low-status forms of labor available to a foreign widow at the time.",
+        "crossReferences": ["Colossians 3:23-24", "Hebrews 6:10"],
+        "bibleStory": { "title": "Ruth Gleaning in Boaz's Field", "summary": "A foreign widow with nothing of her own, Ruth worked hard in another family's field to provide for her household, and God noticed — leading her into provision and a new family through Boaz (Ruth 2)." },
+        "worshipSong": "\"Same God\" — Elevation Worship",
+        "actionStep": "If you're sending support back home or working for someone else's household today, offer that specific labor to God in prayer as an act of worship, not just survival.",
+        "reflectionQuestion": "Ruth's sacrifice was seen and named by Boaz before it was ever rewarded — what would it look like to trust that God sees your sacrifice even when no one around you names it?",
+        "journalPrompt": "What have you given up — home, family, comfort — to provide for the people you love, and how does it feel to bring that specific sacrifice to God today?",
+        "memoryVerse": { "reference": "Ruth 2:12", "text": "The LORD recompense thy work, and a full reward be given thee." }
+      }
+    ],
+    "distant_worship": [
+      {
+        "reference": "John 4:21-24",
+        "verseText": "Jesus saith unto her, Woman, believe me, the hour cometh, when ye shall neither in this mountain, nor yet at Jerusalem, worship the Father... But the hour cometh, and now is, when the true worshippers shall worship the Father in spirit and in truth: for the Father seeketh such to worship him. God is a Spirit: and they that worship him must worship him in spirit and in truth.",
+        "reflection": "The woman at the well assumed worship was tied to a specific mountain, a specific building. Jesus told her the truest worship was never about the location — it's about the heart. If your work schedule keeps you from a church service this week, that is a real loss worth grieving, but it does not put you outside the reach of true worship. Wherever you are right now can become holy ground.",
+        "historicalBackground": "Jesus spoke this to a Samaritan woman at a well outside Sychar, addressing a centuries-old dispute between Jews and Samaritans over the 'correct' mountain for worship. His answer reframed worship entirely — away from geography and toward the condition of the heart.",
+        "crossReferences": ["1 Corinthians 3:16", "Hebrews 10:19-22"],
+        "bibleStory": { "title": "The Woman at the Well", "summary": "A Samaritan woman met Jesus at a well in the middle of an ordinary workday, and He offered her true worship and living water right there — not in a temple, but in the middle of her routine (John 4:1-26)." },
+        "worshipSong": "\"Build My Life\" — Pat Barrett",
+        "actionStep": "Set aside ten minutes today, wherever you are, to pray, read a Psalm, or sing quietly — a small service of one, offered to God in spirit and truth.",
+        "reflectionQuestion": "What would it look like to treat the room you're standing in right now as a place true worship can happen, even if it isn't a sanctuary?",
+        "journalPrompt": "Write about what you miss most about gathering with your church, and ask God honestly to meet you in that gap this week.",
+        "memoryVerse": { "reference": "John 4:24", "text": "God is a Spirit: and they that worship him must worship him in spirit and in truth." }
+      },
+      {
+        "reference": "Daniel 6:10",
+        "verseText": "Now when Daniel knew that the writing was signed, he went into his house; and his windows being open in his chamber toward Jerusalem, he kneeled upon his knees three times a day, and prayed, and gave thanks before his God, as he did aforetime.",
+        "reflection": "Daniel served in a foreign palace, under a foreign king, thousands of miles from Jerusalem's temple — and still kept his own quiet rhythm of prayer, three times a day, exactly as he always had. No congregation, no building, sometimes no safety — and he still didn't stop. Your own small, private rhythm of prayer and Scripture, kept faithfully even when you can't gather with others, is not a lesser form of faith. It's the same faith Daniel kept in Babylon.",
+        "historicalBackground": "Daniel was a Hebrew exile serving in high office in the Babylonian and later Persian court, far from Jerusalem and its temple. When a law was passed specifically to trap him for his faith, he didn't change his private prayer habit at all — he simply kept doing what he had always done.",
+        "crossReferences": ["Psalm 55:17", "Acts 16:25"],
+        "bibleStory": { "title": "Daniel's Private Prayer Habit", "summary": "Far from the temple and under threat of death for it, Daniel kept his personal habit of praying three times a day toward Jerusalem — proof that faithful devotion doesn't require a building or a crowd (Daniel 6:1-10)." },
+        "worshipSong": "\"The Blessing\" — Kari Jobe & Cody Carnes",
+        "actionStep": "Choose one small prayer rhythm you can keep today no matter where you are or who's watching — even one minute, kept faithfully.",
+        "reflectionQuestion": "What would it look like to build a Daniel-like habit of prayer that doesn't depend on being able to attend a service?",
+        "journalPrompt": "Write about a personal prayer rhythm you could keep this week, even in a busy household or a demanding schedule.",
+        "memoryVerse": { "reference": "Daniel 6:10", "text": "He kneeled upon his knees three times a day, and prayed, and gave thanks before his God." }
+      }
+    ],
+    "discouraged_grief": [
+      {
+        "reference": "Psalm 34:18",
+        "verseText": "The LORD is nigh unto them that are of a broken heart; and saveth such as be of a contrite spirit.",
+        "reflection": "God does not distance Himself from your pain — He draws especially near to it. This verse promises not that grief will be quickly explained, but that you will not carry it alone.",
+        "historicalBackground": "David wrote this psalm after pretending to be insane to escape King Achish — a moment of real fear and desperation. Even from that low point, he testified that God had been close to him.",
+        "crossReferences": ["Matthew 5:4", "2 Corinthians 1:3-4"],
+        "bibleStory": { "title": "Jesus Weeps at Lazarus' Tomb", "summary": "Even knowing He would raise Lazarus from the dead, Jesus wept with the grieving family, showing that God fully enters into human sorrow (John 11:32-35)." },
+        "worshipSong": "\"It Is Well\" — Kristene DiMarco",
+        "actionStep": "Allow yourself to grieve honestly today rather than rushing past the pain — and share it with someone you trust.",
+        "reflectionQuestion": "What would it look like to invite God into your grief today rather than processing it alone?",
+        "journalPrompt": "Write honestly about what's discouraging or grieving you, without trying to tie it up with a neat conclusion.",
+        "memoryVerse": { "reference": "Psalm 34:18", "text": "The LORD is nigh unto them that are of a broken heart." }
+      },
+      {
+        "reference": "2 Corinthians 1:3-4",
+        "verseText": "Blessed be God, even the Father of our Lord Jesus Christ, the Father of mercies, and the God of all comfort; Who comforteth us in all our tribulation, that we may be able to comfort them which are in any trouble, by the comfort wherewith we ourselves are comforted of God.",
+        "reflection": "Paul writes that comfort is never just for us — the comfort we receive from God in our own pain equips us to comfort others walking through similar valleys. Your hard season is not wasted.",
+        "historicalBackground": "Paul wrote this after facing such severe hardship in Asia that he 'despaired even of life,' yet found God's comfort sustaining him through it, and later shared that comfort with the churches he served.",
+        "crossReferences": ["Psalm 147:3", "Isaiah 61:1-3"],
+        "bibleStory": { "title": "Joseph Comforts His Brothers", "summary": "After years of suffering betrayal and imprisonment, Joseph told his brothers, 'Ye thought evil against me; but God meant it unto good,' and comforted them (Genesis 50:19-21)." },
+        "worshipSong": "\"Goodness of God\" — Bethel Music",
+        "actionStep": "If you know someone else grieving, send them a message of comfort today — even a short one.",
+        "reflectionQuestion": "How might God want to use even this hard season in your life to comfort someone else later?",
+        "journalPrompt": "What comfort have you received from God in past hardship that you could offer someone else today?",
+        "memoryVerse": { "reference": "2 Corinthians 1:4", "text": "Who comforteth us in all our tribulation." }
+      }
+    ],
+    "uncertain": [
+      {
+        "reference": "Proverbs 3:5-6",
+        "verseText": "Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.",
+        "reflection": "Confusion often comes from trying to see the whole path at once. This proverb doesn't promise full clarity — it promises direction, one step at a time, as you trust and acknowledge God rather than relying only on your own reasoning.",
+        "historicalBackground": "This proverb is part of a father's wisdom teaching to his son, part of Israel's wisdom literature meant to shape everyday decision-making around reverence for God rather than self-reliance.",
+        "crossReferences": ["Psalm 32:8", "James 1:5-6"],
+        "bibleStory": { "title": "The Israelites Follow the Cloud", "summary": "Israel didn't know the whole route through the wilderness — they simply followed the pillar of cloud and fire, one day's journey at a time (Exodus 13:21-22)." },
+        "worshipSong": "\"Trust In God\" — Elevation Worship",
+        "actionStep": "Identify one decision you're uncertain about and pray specifically for God's direction today rather than trying to figure it out alone.",
+        "reflectionQuestion": "Where are you leaning on your own understanding instead of trusting God's direction right now?",
+        "journalPrompt": "What are you currently unsure about, and what is one small next step of faith you can take today, even without full clarity?",
+        "memoryVerse": { "reference": "Proverbs 3:5", "text": "Trust in the LORD with all thine heart; and lean not unto thine own understanding." }
+      },
+      {
+        "reference": "Habakkuk 2:3",
+        "verseText": "For the vision is yet for an appointed time... though it tarry, wait for it; because it will surely come, it will not tarry.",
+        "reflection": "Habakkuk questioned God openly about injustice and waited for an answer. Waiting in Scripture isn't passive resignation — it's active trust that God's timing, though it may feel delayed, is not the same as God being absent.",
+        "historicalBackground": "Habakkuk wrote during a time of national corruption in Judah, wrestling honestly with why God seemed silent about injustice. His book models bringing doubts directly to God rather than suppressing them.",
+        "crossReferences": ["Psalm 27:14", "Isaiah 40:31"],
+        "bibleStory": { "title": "Abraham and Sarah's Long Wait", "summary": "Abraham waited 25 years between God's promise of a son and Isaac's birth, learning to trust God's timing even when it seemed impossible (Genesis 12-21)." },
+        "worshipSong": "\"Do It Again\" — Elevation Worship",
+        "actionStep": "Write down what you're waiting on, and thank God in advance for His faithfulness in the waiting.",
+        "reflectionQuestion": "What is God possibly teaching you in this season of waiting or searching that a quick answer wouldn't teach you?",
+        "journalPrompt": "What questions are you currently bringing to God, and how does it feel to bring them honestly rather than hiding them?",
+        "memoryVerse": { "reference": "Habakkuk 2:3", "text": "Though it tarry, wait for it; because it will surely come." }
+      }
+    ],
+    "tempted": [
+      {
+        "reference": "1 Corinthians 10:13",
+        "verseText": "There hath no temptation taken you but such as is common to man: but God is faithful, who will not suffer you to be tempted above that ye are able; but will with the temptation also make a way to escape, that ye may be able to bear it.",
+        "reflection": "You are not uniquely weak for facing this temptation — it is common to every believer. But God is faithful to provide a way out, which means the escape route already exists; the invitation is to look for it and take it.",
+        "historicalBackground": "Paul wrote to the Corinthian church, a city known for its temptations toward idolatry and sexual immorality, reminding believers that Israel's wilderness failures were a warning, but God's faithfulness to provide escape remains constant.",
+        "crossReferences": ["James 4:7", "Matthew 26:41"],
+        "bibleStory": { "title": "Joseph Flees Temptation", "summary": "When Potiphar's wife pursued him persistently, Joseph didn't negotiate with the temptation — he fled the situation entirely (Genesis 39:6-12)." },
+        "worshipSong": "\"Yes I Will\" — Vertical Worship",
+        "actionStep": "Identify the specific 'way of escape' available to you right now — a person to call, an environment to leave, an accountability step to take — and take it today.",
+        "reflectionQuestion": "What practical 'way of escape' has God already provided that you've been hesitant to take?",
+        "journalPrompt": "What pattern or situation tends to lead you into temptation, and what boundary could you set this week?",
+        "memoryVerse": { "reference": "1 Corinthians 10:13", "text": "God is faithful, who will not suffer you to be tempted above that ye are able." }
+      }
+    ],
+    "anger": [
+      {
+        "reference": "James 1:19-20",
+        "verseText": "Let every man be swift to hear, slow to speak, slow to wrath: for the wrath of man worketh not the righteousness of God.",
+        "reflection": "James doesn't say anger is always sinful, but he warns that our anger rarely produces the righteous outcomes we imagine it will. The call is to slow down — to listen before reacting.",
+        "historicalBackground": "James wrote to Jewish believers scattered across the empire, addressing practical conflicts within the early church community, urging humility and self-control in relationships strained by real tension.",
+        "crossReferences": ["Ephesians 4:26-27", "Proverbs 15:1"],
+        "bibleStory": { "title": "Jonah's Anger at God's Mercy", "summary": "Jonah was furious that God showed mercy to Nineveh, and God gently questioned him, 'Doest thou well to be angry?' inviting him to examine his heart (Jonah 4)." },
+        "worshipSong": "\"Gentle and Lowly\" — Sovereign Grace Music",
+        "actionStep": "Before responding to whatever is frustrating you today, pause and pray for thirty seconds first.",
+        "reflectionQuestion": "What is underneath your anger right now — hurt, fear, injustice — and how can you bring that root honestly to God?",
+        "journalPrompt": "Write about what's triggering your frustration or impatience today, without judging yourself for feeling it.",
+        "memoryVerse": { "reference": "James 1:19", "text": "Let every man be swift to hear, slow to speak, slow to wrath." }
+      },
+      {
+        "reference": "Ephesians 4:26-27",
+        "verseText": "Be ye angry, and sin not: let not the sun go down upon your wrath: Neither give place to the devil.",
+        "reflection": "Scripture acknowledges anger as a real, sometimes appropriate emotion — the danger is letting it fester unresolved. Paul urges dealing with it the same day, before it hardens into bitterness.",
+        "historicalBackground": "Paul wrote to the Ephesian church about practical unity, addressing how believers from very different backgrounds were to relate to one another without allowing old patterns of conflict to divide the body of Christ.",
+        "crossReferences": ["Proverbs 29:11", "Colossians 3:8"],
+        "bibleStory": { "title": "Esau and Jacob Reconciled", "summary": "Esau had every reason to remain angry at Jacob for years of betrayal, yet chose to run and embrace him upon his return, releasing the anger he had carried (Genesis 33:1-4)." },
+        "worshipSong": "\"Make Room\" — Community Music",
+        "actionStep": "If there's unresolved anger toward someone, take one step toward resolving it today, even just in prayer.",
+        "reflectionQuestion": "Is there anger you've let sit unresolved that God is inviting you to release or address today?",
+        "journalPrompt": "What would it look like to bring this frustration to God honestly tonight before it turns into bitterness?",
+        "memoryVerse": { "reference": "Ephesians 4:26", "text": "Let not the sun go down upon your wrath." }
+      }
+    ],
+    "shame_guilt": [
+      {
+        "reference": "Romans 8:1",
+        "verseText": "There is therefore now no condemnation to them which are in Christ Jesus, who walk not after the flesh, but after the Spirit.",
+        "reflection": "Shame tells you that you are your failure. Grace tells you that in Christ, the verdict has already been rendered — not guilty. This isn't permission to keep sinning, it's freedom to stop hiding and start healing.",
+        "historicalBackground": "Paul writes this after a raw, honest chapter (Romans 7) admitting his own ongoing struggle with sin. Chapter 8 opens with relief — the condemnation he feared does not apply to those in Christ.",
+        "crossReferences": ["1 John 1:9", "Psalm 103:12"],
+        "bibleStory": { "title": "The Woman Caught in Adultery", "summary": "Facing public shame and condemnation, this woman was met by Jesus with both truth and mercy: 'Neither do I condemn thee: go, and sin no more' (John 8:1-11)." },
+        "worshipSong": "\"No Longer Slaves\" — Bethel Music",
+        "actionStep": "Speak this truth out loud today: 'There is no condemnation for me in Christ Jesus.' Let it replace the shame narrative in your head.",
+        "reflectionQuestion": "What shame have you been carrying that Jesus has already dealt with at the cross?",
+        "journalPrompt": "Write honestly about what you feel guilty or ashamed about, then write Romans 8:1 next to it as God's response.",
+        "memoryVerse": { "reference": "Romans 8:1", "text": "There is therefore now no condemnation to them which are in Christ Jesus." }
+      },
+      {
+        "reference": "Psalm 103:12",
+        "verseText": "As far as the east is from the west, so far hath he removed our transgressions from us.",
+        "reflection": "East and west never meet — unlike north and south, which have a midpoint. David's image is deliberate: when God forgives, He doesn't just distance your sin, He removes it entirely and permanently.",
+        "historicalBackground": "This psalm of David reflects on God's covenant character toward Israel, celebrating His compassion 'like as a father pitieth his children,' rooted in His steadfast love rather than their performance.",
+        "crossReferences": ["Micah 7:19", "Isaiah 1:18"],
+        "bibleStory": { "title": "David's Confession after Bathsheba", "summary": "After grave sin, David confessed honestly in Psalm 51 and received God's forgiveness, going on to be called 'a man after God's own heart' — proof that failure is not final with God (2 Samuel 12; Psalm 51)." },
+        "worshipSong": "\"Forgiven\" — Crowder",
+        "actionStep": "If guilt keeps resurfacing over something already confessed, tell a trusted pastor or mature believer and ask them to remind you of God's forgiveness.",
+        "reflectionQuestion": "Is there guilt you keep re-litigating that God has already removed 'as far as the east is from the west'?",
+        "journalPrompt": "What would it feel like to actually believe that this sin has been removed from you completely?",
+        "memoryVerse": { "reference": "Psalm 103:12", "text": "As far as the east is from the west, so far hath he removed our transgressions from us." }
+      }
+    ],
+    "financial": [
+      {
+        "reference": "Philippians 4:19",
+        "verseText": "But my God shall supply all your need according to his riches in glory by Christ Jesus.",
+        "reflection": "Paul writes this after thanking the Philippians for their financial gift to him — he had personally learned to be content in both plenty and want, and roots his confidence not in a balanced budget but in God's riches.",
+        "historicalBackground": "Paul wrote this letter from prison, thanking a church that had sacrificially supported his ministry despite their own limited resources, modeling generosity even amid financial hardship.",
+        "crossReferences": ["Matthew 6:31-33", "Psalm 37:25"],
+        "bibleStory": { "title": "Elijah and the Widow of Zarephath", "summary": "With almost nothing left, a widow shared her last meal with Elijah in faith, and God miraculously sustained her flour and oil throughout the famine (1 Kings 17:8-16)." },
+        "worshipSong": "\"Jehovah Jireh\" — Elevation Worship",
+        "actionStep": "Bring a specific financial concern to God in prayer today, and consider talking with a trusted mentor about wise next steps.",
+        "reflectionQuestion": "What would it look like to trust God as your provider in this specific financial pressure, without pretending the stress isn't real?",
+        "journalPrompt": "Write down your financial worry honestly, then write one practical step and one prayer alongside it.",
+        "memoryVerse": { "reference": "Philippians 4:19", "text": "My God shall supply all your need according to his riches in glory." }
+      }
+    ],
+    "spiritual_dryness": [
+      {
+        "reference": "Psalm 42:1-2",
+        "verseText": "As the hart panteth after the water brooks, so panteth my soul after thee, O God. My soul thirsteth for God, for the living God: when shall I come and appear before God?",
+        "reflection": "Even this psalmist's longing was itself a form of spiritual life — noticing the distance is often the first step back toward closeness. Dryness is not the same as abandonment; it can be an invitation to seek Him freshly.",
+        "historicalBackground": "This psalm was likely written during a time of exile or separation from the Temple, expressing deep longing for the corporate worship experience the psalmist could no longer access.",
+        "crossReferences": ["John 4:13-14", "Isaiah 55:1"],
+        "bibleStory": { "title": "The Woman at the Well", "summary": "Jesus offered a spiritually and relationally exhausted woman 'living water' that would become in her 'a well of water springing up into everlasting life' (John 4:1-26)." },
+        "worshipSong": "\"Thirsty\" — Tasha Cobbs Leonard",
+        "actionStep": "Set aside five unhurried minutes today just to sit quietly with Scripture, without an agenda beyond being present with God.",
+        "reflectionQuestion": "What has crowded out the time and attention you used to give to your relationship with God?",
+        "journalPrompt": "Write honestly about how distant or dry you feel spiritually right now, without trying to fix it in the same sentence.",
+        "memoryVerse": { "reference": "Psalm 42:1", "text": "As the hart panteth after the water brooks, so panteth my soul after thee, O God." }
+      },
+      {
+        "reference": "James 4:8",
+        "verseText": "Draw nigh to God, and he will draw nigh to you.",
+        "reflection": "This is a promise with a simple condition — the move doesn't have to be perfect or dramatic, just toward Him. God meets even the smallest step of return with His own nearness.",
+        "historicalBackground": "James wrote to believers who had drifted toward worldly values and conflict within the church, calling them back to humble repentance and renewed nearness to God.",
+        "crossReferences": ["Jeremiah 29:13", "Hosea 6:1-3"],
+        "bibleStory": { "title": "The Prodigal Son's Return", "summary": "The son merely rehearsed a speech and turned toward home — he hadn't even arrived yet when his father saw him and ran to meet him (Luke 15:17-20)." },
+        "worshipSong": "\"Come Back to Me\" — Steffany Gretzinger",
+        "actionStep": "Take one small, concrete step back toward God today — open your Bible, pray one honest sentence, or message your pastor.",
+        "reflectionQuestion": "What is one small step of 'drawing near' you can take today, without waiting until you feel more spiritually motivated?",
+        "journalPrompt": "What has your relationship with God felt like lately, and what's one honest thing you want to tell Him right now?",
+        "memoryVerse": { "reference": "James 4:8", "text": "Draw nigh to God, and he will draw nigh to you." }
+      }
+    ],
+    "close_to_god": [
+      {
+        "reference": "John 15:4-5",
+        "verseText": "Abide in me, and I in you. As the branch cannot bear fruit of itself, except it abide in the vine; no more can ye, except ye abide in me. I am the vine, ye are the branches: He that abideth in me, and I in him, the same bringeth forth much fruit.",
+        "reflection": "Closeness to God isn't meant to be a mountaintop moment you chase, but a daily abiding — like a branch continuously connected to the vine. Whatever brought you near today, the invitation is to stay.",
+        "historicalBackground": "Jesus spoke this to His disciples the night before His crucifixion, using an image every listener in that agricultural region would immediately understand — a vineyard's branches only bear fruit while connected to the vine.",
+        "crossReferences": ["Psalm 16:11", "Galatians 5:22-23"],
+        "bibleStory": { "title": "Mary at Jesus' Feet", "summary": "While Martha busied herself with tasks, Mary simply sat at Jesus' feet listening, and Jesus commended her for choosing 'that good part, which shall not be taken away from her' (Luke 10:38-42)." },
+        "worshipSong": "\"Abide\" — Christy Nockels",
+        "actionStep": "Protect the practice that's drawing you close to God right now — whether it's prayer, worship, or Scripture — by scheduling it again for tomorrow.",
+        "reflectionQuestion": "What is currently helping you abide closely with God, and how can you build a consistent rhythm around it?",
+        "journalPrompt": "Describe what closeness with God has felt like recently, and what you want to remember about this season.",
+        "memoryVerse": { "reference": "John 15:5", "text": "I am the vine, ye are the branches: He that abideth in me, and I in him, the same bringeth forth much fruit." }
+      }
+    ],
+    "need_wisdom": [
+      {
+        "reference": "James 1:5",
+        "verseText": "If any of you lack wisdom, let him ask of God, that giveth to all men liberally, and upbraideth not; and it shall be given him.",
+        "reflection": "God doesn't ration wisdom or make you feel foolish for asking. He gives generously to anyone who asks — the requirement isn't having it all figured out, just the humility to ask.",
+        "historicalBackground": "James wrote to believers facing trials and difficult decisions, encouraging them that wisdom for navigating hardship is available simply by asking a generous God, not by relying solely on human counsel.",
+        "crossReferences": ["Proverbs 2:6", "1 Kings 3:9-12"],
+        "bibleStory": { "title": "Solomon Asks for Wisdom", "summary": "Given the chance to ask God for anything, young King Solomon asked for wisdom to govern well, and God was pleased to grant it abundantly (1 Kings 3:5-12)." },
+        "worshipSong": "\"Wisdom\" — Hillsong Worship",
+        "actionStep": "Ask God specifically for wisdom about the decision in front of you, then talk it over with a trusted pastor or mentor.",
+        "reflectionQuestion": "What decision are you facing that you haven't yet brought honestly to God in prayer?",
+        "journalPrompt": "Write out the decision you need wisdom for, and one Scripture or godly counsel that might apply to it.",
+        "memoryVerse": { "reference": "James 1:5", "text": "If any of you lack wisdom, let him ask of God, that giveth to all men liberally." }
+      }
+    ],
+    "need_direction": [
+      {
+        "reference": "Psalm 32:8",
+        "verseText": "I will instruct thee and teach thee in the way which thou shalt go: I will guide thee with mine eye.",
+        "reflection": "This is God speaking in the first person, promising personal, attentive guidance — not a vague set of principles, but a Shepherd who watches and directs each step.",
+        "historicalBackground": "David wrote this psalm after experiencing the relief of confessed sin and forgiveness, and this promise of guidance follows directly from that renewed, close relationship with God.",
+        "crossReferences": ["Proverbs 16:9", "Isaiah 30:21"],
+        "bibleStory": { "title": "The Star Guides the Magi", "summary": "God guided seekers from a distant land with a star, leading them one step at a time until they found exactly where they needed to be (Matthew 2:1-11)." },
+        "worshipSong": "\"Way Maker\" — Sinach",
+        "actionStep": "Ask God for direction on your next step today — not the whole path, just the next faithful move.",
+        "reflectionQuestion": "What is the next small step of obedience you sense God inviting you toward, even without seeing the whole picture?",
+        "journalPrompt": "Where do you need direction right now, and what has God already made clear that you can act on today?",
+        "memoryVerse": { "reference": "Psalm 32:8", "text": "I will instruct thee and teach thee in the way which thou shalt go." }
+      }
+    ],
+    "need_strength": [
+      {
+        "reference": "Philippians 4:13",
+        "verseText": "I can do all things through Christ which strengtheneth me.",
+        "reflection": "Paul wrote this not from a place of comfort, but having just described learning contentment in both abundance and need. His strength wasn't self-generated — it flowed from Christ in every circumstance.",
+        "historicalBackground": "Paul wrote this from prison, thanking the Philippians for their support while testifying that his sense of sufficiency came from Christ regardless of his circumstances, whether full or hungry, abundant or in need.",
+        "crossReferences": ["Isaiah 40:29", "2 Corinthians 12:9-10"],
+        "bibleStory": { "title": "Samson's Final Strength", "summary": "Even after failure and loss, Samson cried out to God one final time for strength, and God answered him (Judges 16:28-30)." },
+        "worshipSong": "\"Strength Will Rise\" — Hillsong United",
+        "actionStep": "Ask God specifically for strength for the exact task in front of you today, rather than waiting to feel strong first.",
+        "reflectionQuestion": "What are you facing today that requires a strength beyond your own?",
+        "journalPrompt": "Where do you feel weak right now, and what would it look like to ask God for strength in that specific place?",
+        "memoryVerse": { "reference": "Philippians 4:13", "text": "I can do all things through Christ which strengtheneth me." }
+      }
+    ],
+    "need_forgiveness": [
+      {
+        "reference": "1 John 1:9",
+        "verseText": "If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.",
+        "reflection": "Confession isn't a formality to unlock forgiveness — it's simply agreeing with God about what's true. His forgiveness is not reluctant; it's guaranteed by His own faithful character.",
+        "historicalBackground": "John wrote to combat false teaching claiming believers could be sinless, reminding the church that honest confession — not denial or perfectionism — is the pathway to real fellowship with God.",
+        "crossReferences": ["Psalm 51:1-2", "Isaiah 1:18"],
+        "bibleStory": { "title": "The Prodigal Son's Confession", "summary": "The son rehearsed his confession and returned home expecting judgment, but was met instead with a robe, a ring, and a celebration (Luke 15:18-24)." },
+        "worshipSong": "\"Forgiven\" — Crowder",
+        "actionStep": "Bring the specific thing weighing on you to God in honest confession today, out loud if you can.",
+        "reflectionQuestion": "Is there something you've been avoiding bringing honestly to God?",
+        "journalPrompt": "Write an honest confession prayer, then write 1 John 1:9 underneath it as God's promised response.",
+        "memoryVerse": { "reference": "1 John 1:9", "text": "If we confess our sins, he is faithful and just to forgive us our sins." }
+      }
+    ],
+    "need_rest": [
+      {
+        "reference": "Matthew 11:28",
+        "verseText": "Come unto me, all ye that labour and are heavy laden, and I will give you rest.",
+        "reflection": "Rest, in Jesus' invitation, is relational before it's physical — it starts with coming to Him, not just stopping your activity. He offers to carry what's making you weary.",
+        "historicalBackground": "Jesus offered this to people worn down by rigid religious expectations, contrasting His 'easy yoke' with the exhausting burden of trying to earn favor through the law.",
+        "crossReferences": ["Psalm 23:1-3", "Exodus 33:14"],
+        "bibleStory": { "title": "The Sabbath Rest", "summary": "God Himself rested on the seventh day after creation, not from exhaustion but to model rhythm — establishing rest as a gift woven into creation from the beginning (Genesis 2:2-3)." },
+        "worshipSong": "\"Rest On Us\" — Maverick City Music",
+        "actionStep": "Schedule an actual block of rest this week — unplugged, unhurried time — and protect it like an appointment.",
+        "reflectionQuestion": "What is keeping you from receiving the rest Jesus is offering right now?",
+        "journalPrompt": "What would true rest — not just the absence of activity, but peace with God — look like for you this week?",
+        "memoryVerse": { "reference": "Matthew 11:28", "text": "Come unto me, all ye that labour and are heavy laden, and I will give you rest." }
+      }
+    ],
+    "need_courage": [
+      {
+        "reference": "Joshua 1:9",
+        "verseText": "Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.",
+        "reflection": "Joshua faced the daunting task of leading a nation into a land of giants and fortified cities. His courage wasn't rooted in his own ability, but in the certainty of God's presence wherever he went.",
+        "historicalBackground": "God spoke this to Joshua immediately after Moses' death, as Joshua inherited the enormous responsibility of leading Israel into the Promised Land — a moment demanding real courage in the face of real uncertainty.",
+        "crossReferences": ["Deuteronomy 31:6", "2 Timothy 1:7"],
+        "bibleStory": { "title": "David and Goliath", "summary": "Facing a giant that terrified an entire army, young David ran toward the battle with courage rooted not in his own strength, but in his confidence in the living God (1 Samuel 17)." },
+        "worshipSong": "\"Fear Is Not My Future\" — Maverick City Music",
+        "actionStep": "Take one courageous step today toward whatever you've been avoiding out of fear, trusting God goes with you.",
+        "reflectionQuestion": "What situation is requiring courage from you right now, and how does God's presence change how you face it?",
+        "journalPrompt": "What are you afraid of right now, and what would it look like to move forward in courage rather than waiting for fear to disappear first?",
+        "memoryVerse": { "reference": "Joshua 1:9", "text": "Be strong and of a good courage; be not afraid... for the LORD thy God is with thee whithersoever thou goest." }
+      }
+    ],
+    "need_peace": [
+      {
+        "reference": "John 14:27",
+        "verseText": "Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you. Let not your heart be troubled, neither let it be afraid.",
+        "reflection": "The peace Jesus offers isn't the absence of trouble — He said this the night before His crucifixion. It's a different kind of peace altogether, rooted in who He is rather than in circumstances being resolved.",
+        "historicalBackground": "Jesus spoke this to His disciples during the Last Supper, knowing He would soon be arrested and crucified, comforting them ahead of the most turbulent night of their lives.",
+        "crossReferences": ["Philippians 4:7", "Isaiah 26:3"],
+        "bibleStory": { "title": "Jesus Calms the Storm", "summary": "Jesus spoke peace directly into a raging storm, and the wind and waves obeyed Him instantly (Mark 4:39)." },
+        "worshipSong": "\"Peace\" — Bethel Music",
+        "actionStep": "Receive Christ's peace today by naming out loud the specific trouble in your heart and inviting His peace into it.",
+        "reflectionQuestion": "What would it mean to receive Christ's peace today even without your circumstances changing?",
+        "journalPrompt": "What is troubling your heart right now, and what does it look like to let Christ's peace stand guard over it?",
+        "memoryVerse": { "reference": "John 14:27", "text": "Peace I leave with you, my peace I give unto you." }
+      }
+    ],
+    "need_joy": [
+      {
+        "reference": "Psalm 16:11",
+        "verseText": "Thou wilt shew me the path of life: in thy presence is fulness of joy; at thy right hand there are pleasures for evermore.",
+        "reflection": "David locates real, lasting joy not in circumstances, but in God's presence itself. If joy feels far away, this verse points to where to look for it — not in a better day, but in nearness to God.",
+        "historicalBackground": "David wrote this psalm expressing deep trust in God amid uncertainty, ultimately finding his security and gladness not in outward stability, but in God's presence and promises.",
+        "crossReferences": ["Nehemiah 8:10", "Galatians 5:22"],
+        "bibleStory": { "title": "The Shepherds' Joy at Christ's Birth", "summary": "Ordinary shepherds encountered angels announcing 'good tidings of great joy' and went, found the newborn Christ, and returned glorifying God (Luke 2:8-20)." },
+        "worshipSong": "\"Joy\" — For King & Country",
+        "actionStep": "Spend a few minutes today simply being present with God in worship or prayer, inviting joy from His presence rather than a circumstance.",
+        "reflectionQuestion": "Where have you been looking for joy that God's presence alone can truly provide?",
+        "journalPrompt": "What would it look like to seek joy in God's presence today rather than waiting for outward circumstances to change?",
+        "memoryVerse": { "reference": "Psalm 16:11", "text": "In thy presence is fulness of joy." }
+      }
+    ],
+    "need_hope": [
+      {
+        "reference": "Jeremiah 29:11",
+        "verseText": "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.",
+        "reflection": "This promise was given to a people in exile, decades away from the restoration it described. Hope in Scripture is rarely about a quick fix — it's confidence that God's good plans hold even across a long, hard season.",
+        "historicalBackground": "Jeremiah wrote this letter to Israelites recently taken into Babylonian exile, encouraging them to settle in, keep living faithfully, and trust that God's plan for restoration was still unfolding, even 70 years later.",
+        "crossReferences": ["Romans 15:13", "Lamentations 3:21-23"],
+        "bibleStory": { "title": "Joseph's Long Road to Restoration", "summary": "Sold into slavery and imprisoned unjustly, Joseph waited over a decade before seeing God's plan unfold into his rise to save an entire nation (Genesis 37-45)." },
+        "worshipSong": "\"Living Hope\" — Phil Wickham",
+        "actionStep": "Write down one area where you need hope today, and one truth from Scripture you can hold onto in that wait.",
+        "reflectionQuestion": "What would it look like to trust God's good plan for you even in a season that doesn't yet make sense?",
+        "journalPrompt": "What are you hoping for right now, and how does knowing God's thoughts toward you are good change how you wait?",
+        "memoryVerse": { "reference": "Jeremiah 29:11", "text": "I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil." }
+      }
+    ]
+  }
+}

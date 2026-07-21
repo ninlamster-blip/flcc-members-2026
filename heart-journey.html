@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Heart Journey AI · FLCC Abundance Church</title>
+<meta name="description" content="A Christ-centered spiritual companion for daily reflection, prayer, and Scripture — Heart Journey AI for FLCC Abundance Church." />
+
+<link rel="manifest" href="heart-journey-manifest.json">
+<meta name="theme-color" content="#4B6B53">
+<link rel="icon" href="heart-journey-icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="heart-journey-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Heart Journey">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+
+<style>
+  :root {
+    --bg: #FAFAF5;
+    --surface: #FFFFFF;
+    --ink: #18181B;
+    --ink-muted: #52525B;
+    --ink-subtle: #A1A1AA;
+    --border: #E7E5DE;
+    --border-strong: #D4D4D0;
+    --accent: #4B6B53;
+    --accent-hover: #3B5542;
+    --accent-soft: #E9F0EA;
+    --gold: #B8862E;
+    --gold-soft: #FBF1DE;
+    --success: #15803D;
+    --success-soft: #DCFCE7;
+    --warning: #B45309;
+    --warning-soft: #FEF3C7;
+    --danger: #B91C1C;
+    --danger-soft: #FEE2E2;
+    --info: #1E40AF;
+    --info-soft: #DBEAFE;
+  }
+  *, *::before, *::after { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  html { font-size: 19px; } /* larger base so every rem-based size (Tailwind + custom) reads bigger */
+  html, body { background: var(--bg); color: var(--ink); margin: 0; min-height: 100%; }
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-feature-settings: "ss01", "ss03"; line-height: 1.6; }
+  .font-display { font-family: 'Fraunces', Georgia, serif; font-feature-settings: "ss01"; }
+
+  #root { min-height: 100dvh; display: flex; flex-direction: column; }
+
+  .fade-in { animation: fadeIn 0.4s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .page-header {
+    background: linear-gradient(180deg, rgba(233,240,234,0.55) 0%, rgba(250,250,245,0.94) 60%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .card-pad { padding: 1.25rem 1.375rem; }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:.4rem; padding:.55rem 1rem; border-radius:10px; font-size:.875rem; font-weight:500; border:1px solid transparent; cursor:pointer; font-family:inherit; transition: all .15s; }
+  .btn-primary { background: var(--accent); color:#fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { background: #D4D4D0; cursor:not-allowed; }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border-strong); }
+  .btn-ghost:hover { background: var(--bg); }
+  .btn-gold { background: var(--gold); color: #fff; }
+  .btn-gold:hover { background: #9C6E22; }
+  .btn-danger { background: transparent; color: var(--danger); border-color: #F3C6C6; }
+  .btn-danger:hover { background: var(--danger-soft); }
+  .btn-sm { padding: .35rem .7rem; font-size: .75rem; border-radius: 8px; }
+
+  .emo-chip { border: 1.5px solid var(--border-strong); background: var(--surface); border-radius: 999px; padding: .45rem .9rem; font-size: .8125rem; cursor: pointer; transition: all .15s; color: var(--ink-muted); user-select: none; }
+  .emo-chip:hover { border-color: var(--accent); color: var(--ink); }
+  .emo-chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .emo-chip.need.selected { background: var(--gold); border-color: var(--gold); }
+
+  .tab-pill { padding: .5rem .95rem; border-radius: 999px; font-size: .8125rem; font-weight: 500; cursor: pointer; border: 1px solid transparent; color: var(--ink-muted); white-space: nowrap; }
+  .tab-pill:hover { background: var(--bg); }
+  .tab-pill.active { background: var(--ink); color: #fff; }
+
+  .devo-section-label { font-size: .6875rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: .35rem; }
+  .verse-block { border-left: 3px solid var(--gold); background: var(--gold-soft); border-radius: 0 12px 12px 0; padding: .9rem 1.1rem; font-family: 'Fraunces', Georgia, serif; font-size: 1.0625rem; line-height: 1.65; color: #3f2f10; }
+  .verse-ref { font-size: .75rem; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: .04em; margin-top: .5rem; }
+
+  textarea, input[type=text], input[type=url], input[type=password] { font-family: inherit; }
+  .field { width: 100%; border: 1.5px solid var(--border-strong); border-radius: 12px; padding: .65rem .85rem; font-size: .875rem; background: #fff; outline: none; }
+  .field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(75,107,83,0.12); }
+
+  .safety-note { font-size: .75rem; color: var(--ink-subtle); line-height: 1.55; font-style: italic; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(24,24,27,0.5); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1.25rem; overflow-y: auto; }
+  .modal { background: var(--surface); border-radius: 18px; width: 100%; max-width: 520px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.3); padding: 1.5rem; border: 1px solid var(--border); margin: auto; }
+
+  .stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: .9rem 1rem; text-align: center; }
+  .stat-num { font-family: 'Fraunces', Georgia, serif; font-size: 1.5rem; font-weight: 600; color: var(--ink); }
+  .stat-label { font-size: .6875rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .04em; margin-top: .15rem; }
+
+  .plant-cell { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.25rem; background: var(--surface); border:1px solid var(--border); border-radius: 14px; padding: .85rem .5rem; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+  .plant-cell:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+
+  .md p { margin: 0 0 0.6em; }
+  .md p:last-child { margin-bottom: 0; }
+  .md ul, .md ol { margin: 0.4em 0; padding-left: 1.4em; }
+  .md strong { font-weight: 600; }
+  .md blockquote { border-left: 3px solid var(--accent); margin: .6em 0; padding: .2em 0 .2em .8em; color: var(--ink-muted); font-style: italic; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  @media (max-width: 640px) { .card-pad { padding: 1rem; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ─── Shared keys with Ask FLCC (ask.html) so the AI connection is configured once ──
+const ASK_PROXY_KEY        = 'flcc-ask-proxy-url-v1';
+const ASK_PROXY_SECRET_KEY = 'flcc-ask-proxy-secret-v1';
+const ASK_API_KEY          = 'flcc_ask_apikey';
+const ASK_MODEL_KEY        = 'flcc_ask_model';
+const MODEL_DEFAULT        = 'claude-haiku-4-5-20251001';
+
+// ─── Heart Journey's own storage (namespaced, on-device only) ──────────────
+const HJ = {
+  consent:  'hj_consent_v1',
+  name:     'hj_name_v1',
+  heartLog: 'hj_heart_log_v1',
+  journal:  'hj_journal_v1',
+  gratitude:'hj_gratitude_v1',
+  evening:  'hj_evening_v1',
+  prayers:  'hj_prayers_v1',
+  stats:    'hj_stats_v1',
+  memorized:'hj_memorized_v1',
+};
+
+function loadJSON(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+function saveJSON(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+
+function todayStr(d) { const x = d || new Date(); return x.getFullYear() + '-' + String(x.getMonth()+1).padStart(2,'0') + '-' + String(x.getDate()).padStart(2,'0'); }
+function monthStr(d) { const x = d || new Date(); return x.getFullYear() + '-' + String(x.getMonth()+1).padStart(2,'0'); }
+function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; } return Math.abs(h); }
+function pick(arr, seedStr) { return arr[hashStr(seedStr) % arr.length]; }
+function fmtDate(iso) { try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); } catch { return iso; } }
+
+// ─── Live weather for the greeting — a small, human touch, not a mood diagnosis ──
+// Defaults to the church's home city (Kuwait) rather than requesting the
+// member's precise location, so no location permission prompt is needed.
+const CHURCH_CITY = { lat: 29.3759, lon: 47.9774, place: 'Kuwait City' };
+const WEATHER_CODES = {
+  0:  { label: 'clear skies',            icon: '☀️' },
+  1:  { label: 'mostly clear skies',     icon: '🌤️' },
+  2:  { label: 'partly cloudy skies',    icon: '⛅' },
+  3:  { label: 'overcast, grey skies',   icon: '☁️', moodNote: "Grey skies can make a heart feel heavier too — but His mercies are new every morning, regardless of the weather." },
+  45: { label: 'foggy conditions',       icon: '🌫️', moodNote: "When the way ahead feels unclear, remember He still lights the very next step." },
+  48: { label: 'foggy conditions',       icon: '🌫️', moodNote: "When the way ahead feels unclear, remember He still lights the very next step." },
+  51: { label: 'a light drizzle',        icon: '🌦️', moodNote: "Even a grey, drizzly morning is still a morning He has made." },
+  53: { label: 'a drizzle',              icon: '🌦️', moodNote: "Even a grey, drizzly morning is still a morning He has made." },
+  55: { label: 'a steady drizzle',       icon: '🌦️', moodNote: "Even a grey, drizzly morning is still a morning He has made." },
+  61: { label: 'rain',                   icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  63: { label: 'rain',                   icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  65: { label: 'heavy rain',             icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  71: { label: 'snow',                   icon: '🌨️', moodNote: "Even in a cold season, His presence keeps you warm." },
+  73: { label: 'snow',                   icon: '🌨️', moodNote: "Even in a cold season, His presence keeps you warm." },
+  75: { label: 'heavy snow',             icon: '🌨️', moodNote: "Even in a cold season, His presence keeps you warm." },
+  80: { label: 'rain showers',           icon: '🌦️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  81: { label: 'rain showers',           icon: '🌦️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  82: { label: 'heavy rain showers',     icon: '🌧️', moodNote: "Rainy days can settle heavy on the heart — let it also remind you that God waters what's growing in you, even in hard seasons." },
+  95: { label: 'thunderstorms',          icon: '⛈️', moodNote: "Storms outside can mirror storms within — but the One who calmed the wind and waves is near you now too." },
+  96: { label: 'thunderstorms',          icon: '⛈️', moodNote: "Storms outside can mirror storms within — but the One who calmed the wind and waves is near you now too." },
+  99: { label: 'severe thunderstorms',   icon: '⛈️', moodNote: "Storms outside can mirror storms within — but the One who calmed the wind and waves is near you now too." },
+};
+async function fetchChurchCityWeather() {
+  const { lat, lon, place } = CHURCH_CITY;
+  const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`);
+  if (!res.ok) throw new Error('weather fetch failed');
+  const data = await res.json();
+  const cw = data.current_weather;
+  if (!cw) throw new Error('no current_weather in response');
+  const meta = WEATHER_CODES[cw.weathercode] || { label: 'mild weather', icon: '🌡️' };
+  return { tempC: Math.round(cw.temperature), place, ...meta };
+}
+
+// ─── Streak / stats helpers ─────────────────────────────────────────────────
+function bumpStreak(stats, field, lastField, dateStr) {
+  const s = { ...stats };
+  if (s[lastField] === dateStr) return s; // already counted today
+  if (s[lastField] && daysBetween(s[lastField], dateStr) === 1) s[field] = (s[field] || 0) + 1;
+  else s[field] = 1;
+  s[lastField] = dateStr;
+  return s;
+}
+
+const DEFAULT_STATS = { bibleStreak: 0, lastBibleDate: null, prayerStreak: 0, lastPrayerDate: null, answeredPrayers: 0, actsOfKindness: 0 };
+
+// ─── Personalization phrase pools ───────────────────────────────────────────
+// Opening lines are grouped by engagement tier so returning members read
+// something noticeably different from a first-time visitor, not the same
+// four templates everyone sees forever.
+const OPENING_LINES = {
+  new: [
+    (n, e) => `${n}, thank you for opening your heart today — feeling ${e}. This is the start of a journey, one honest day at a time.`,
+    (n, e) => `Welcome, ${n}. Today you're carrying ${e}, and that honesty is exactly where this journey begins.`,
+    (n, e) => `${n}, there's no wrong way to begin this. Today it's ${e} — let's bring that honestly before God.`,
+  ],
+  building: [
+    (n, e) => `${n}, today you're feeling ${e}. You've been showing up to reflect, and that consistency is already shaping something in you.`,
+    (n, e) => `Good to have you back, ${n}. Today it's ${e} — let's bring that honestly before God, the way you've been learning to.`,
+    (n, e) => `${n}, carrying ${e} today. A few days into this rhythm now, and it's already becoming part of how you meet each morning.`,
+  ],
+  established: [
+    (n, e) => `${n}, today's ${e} joins a season Heart Journey has walked with you for a while now — and today's Word meets you right in it.`,
+    (n, e) => `${n}, you've built a real rhythm of coming back here. Today that honesty looks like ${e}.`,
+    (n, e) => `${n}, by now this has become a steady part of your walk. Today you bring ${e}, and that steadiness itself is worth noticing.`,
+  ],
+  devoted: [
+    (n, e) => `${n}, this journey together has grown into something steady. Today you're carrying ${e}, and that steadiness is exactly what makes today's Word land differently than it might have when you started.`,
+    (n, e) => `${n}, few things say more about a life than what it keeps returning to — and you keep returning here. Today, that's ${e}.`,
+    (n, e) => `${n}, after all this time reflecting together, today's honesty is ${e}. Let's sit with that, the way you've learned to.`,
+  ],
+};
+const CHURCH_THEME_TEMPLATES = [
+  (theme) => `This month our church family is reflecting together on the theme of "${theme}" — let today's word be part of that same journey.`,
+  (theme) => `As our church walks through "${theme}" this month, consider how today's reflection connects to that shared season.`,
+];
+const PRAYER_OPENERS = [
+  (n, e) => `Today ${n} comes to You feeling ${e}.`,
+  (n, e) => `You see ${n} today, feeling ${e}.`,
+  (n, e) => `${n} brings You an honest heart today — feeling ${e}.`,
+];
+
+// ─── Engagement profile — a plain-language read of how long/consistently a
+// member has been using Heart Journey, so today's content can reference
+// their actual journey instead of reading identically for everyone. ──────────
+function categoryCountsInWindow(heartLog, hjData, todayIso, days, excludeToday) {
+  const cutoff = new Date(todayIso); cutoff.setDate(cutoff.getDate() - (days - 1));
+  const entries = heartLog.filter(h => {
+    if (excludeToday && h.date === todayIso) return false;
+    const d = new Date(h.date);
+    return d >= cutoff && d <= new Date(todayIso);
+  });
+  const counts = {};
+  entries.forEach(h => (h.emotions || []).forEach(k => {
+    const e = hjData.emotions.find(x => x.key === k);
+    if (e) counts[e.category] = (counts[e.category] || 0) + 1;
+  }));
+  return { counts, entries };
+}
+
+function findJournalEcho(journal, category, todayIso) {
+  const cutoff = new Date(todayIso); cutoff.setDate(cutoff.getDate() - 9);
+  const regexes = KEYWORD_CATEGORY_MAP.filter(([, c]) => c === category).map(([re]) => re);
+  if (!regexes.length) return null;
+  const match = journal.find(j => new Date(j.date) >= cutoff && regexes.some(re => re.test(j.text)));
+  if (!match) return null;
+  const snippet = match.text.length > 70 ? match.text.slice(0, 70).trim() + '…' : match.text;
+  return { snippet, date: match.date };
+}
+
+function computeEngagement({ heartLog, journal, gratitude, prayers, memorized, stats, category, todayIso }) {
+  const total = heartLog.length;
+  const tier = total <= 1 ? 'new' : total <= 6 ? 'building' : total <= 20 ? 'established' : 'devoted';
+  return {
+    tier,
+    totalCheckins: total,
+    streakBible: stats.bibleStreak || 0,
+    streakPrayer: stats.prayerStreak || 0,
+    memorizedCount: memorized.length,
+    gratitudeCount: gratitude.length,
+    answeredPrayers: stats.answeredPrayers || 0,
+    openPrayerCount: prayers.filter(p => !p.answered).length,
+    journalEcho: findJournalEcho(journal, category, todayIso),
+  };
+}
+
+function milestoneClause(name, eng) {
+  if (eng.tier === 'new') return null;
+  const parts = [];
+  if (eng.streakBible >= 3) parts.push(`${eng.streakBible} days in a row of returning to Scripture`);
+  if (eng.memorizedCount >= 1) parts.push(`${eng.memorizedCount} verse${eng.memorizedCount === 1 ? '' : 's'} tucked into memory`);
+  if (eng.gratitudeCount >= 3) parts.push(`${eng.gratitudeCount} gratitude entries planted`);
+  if (eng.answeredPrayers >= 1) parts.push(`${eng.answeredPrayers} answered prayer${eng.answeredPrayers === 1 ? '' : 's'} recorded`);
+  if (!parts.length) return null;
+  return `Along the way, ${name} has built ${listJoin(parts)} — small, faithful evidence of grace at work.`;
+}
+
+function journalEchoClause(echo) {
+  if (!echo) return null;
+  return `A few days ago you wrote in your journal: "${echo.snippet}" — that still feels close to today's Word. You're not walking through this alone.`;
+}
+
+// ─── Member-specific seed — so two members with the same mood on the same
+// day don't read verbatim-identical phrasing. Persisted once on this device.
+function getMemberSeed() {
+  try {
+    let s = localStorage.getItem('hj_member_seed_v1');
+    if (!s) { s = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('hj_member_seed_v1', s); }
+    return s;
+  } catch { return 'anon'; }
+}
+
+function buildPersonalReflection({ name, emotionsPhrase, devotion, eng, churchTheme, memberSeed, category, dateStr }) {
+  const opening = pick(OPENING_LINES[eng.tier], dateStr + category + memberSeed)(name, emotionsPhrase);
+  const journeyNote = [milestoneClause(name, eng), journalEchoClause(eng.journalEcho)].filter(Boolean).join(' ') || null;
+  const themeLine = (churchTheme && hashStr(dateStr + memberSeed) % 3 === 0)
+    ? pick(CHURCH_THEME_TEMPLATES, dateStr + memberSeed)(churchTheme) : null;
+  return { opening, journeyNote, base: devotion.reflection, themeLine };
+}
+
+function buildPrayer({ name, emotionsPhrase, focus, eng, memberSeed, dateStr, category }) {
+  const lines = ['Father,', '', pick(PRAYER_OPENERS, dateStr + category + memberSeed + 'p')(name, emotionsPhrase)];
+  lines.push(`Meet ${name} with ${focus}.`);
+  if (eng.tier !== 'new' && eng.streakBible >= 3) {
+    lines.push(`Thank You that for ${eng.streakBible} days now, ${name} has kept returning to You — please keep sustaining that faithfulness.`);
+  }
+  if (eng.answeredPrayers >= 1) {
+    lines.push(`Thank You for the ${eng.answeredPrayers} answered prayer${eng.answeredPrayers === 1 ? '' : 's'} already recorded in ${name}'s journey — You are faithful.`);
+  }
+  if (eng.openPrayerCount >= 1) {
+    lines.push(`Continue to hold the ${eng.openPrayerCount} request${eng.openPrayerCount === 1 ? '' : 's'} ${name} is still waiting on.`);
+  }
+  lines.push(`Teach ${name} to trust You more with each step of today.`);
+  lines.push('');
+  lines.push("In Jesus' name, Amen.");
+  return lines.join('\n');
+}
+
+function buildEncouragement({ eng, memberSeed, dateStr, generalPool }) {
+  const base = pick(generalPool, dateStr + 'enc' + memberSeed);
+  if (eng.tier === 'new' || eng.totalCheckins < 2) return base;
+  return `You've now returned to reflect ${eng.totalCheckins} times. ${base}`;
+}
+
+function buildActionStep({ eng, devotion }) {
+  const step = devotion.actionStep.charAt(0).toLowerCase() + devotion.actionStep.slice(1);
+  if (eng.tier === 'new') return devotion.actionStep;
+  if (eng.tier === 'building') return `Since you're building a rhythm here, try this: ${step}`;
+  return `You've shown real consistency in this journey — here's today's next step: ${step}`;
+}
+
+function listJoin(arr) {
+  if (arr.length === 0) return "what's on your heart";
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return arr[0] + ' and ' + arr[1];
+  return arr.slice(0, -1).join(', ') + ', and ' + arr[arr.length - 1];
+}
+
+// ─── Category selection from chosen emotions / free text ───────────────────
+const FALLBACK_ROTATION = ['peace_hope', 'joy_gratitude', 'need_hope', 'weary', 'uncertain'];
+const KEYWORD_CATEGORY_MAP = [
+  [/tired|exhaust|burn.?out|sleep/i, 'weary'],
+  [/anx|worry|worried|panic|overwhelm|afraid|scare/i, 'anxious'],
+  [/lonely|alone|isolat|homesick/i, 'lonely'],
+  [/sad|grie|loss|broke|depress|discourag/i, 'discouraged_grief'],
+  [/confus|doubt|unsure|search|wait/i, 'uncertain'],
+  [/tempt/i, 'tempted'],
+  [/angr|mad|frustrat|impatien/i, 'anger'],
+  [/asham|guilt|regret/i, 'shame_guilt'],
+  [/money|financ|debt|bill|job loss|unemploy/i, 'financial'],
+  [/distant|dry|numb|apath|unmotivat/i, 'spiritual_dryness'],
+  [/close to god|intimacy|abiding/i, 'close_to_god'],
+  [/thank|joy|grateful|bless|content|peace|hope|excite|love|comfort|inspir/i, 'joy_gratitude'],
+];
+
+function categoryForEmotions(selectedKeys, emotionsData, freeText, dateStr) {
+  const counts = {};
+  selectedKeys.forEach(k => {
+    const e = emotionsData.find(x => x.key === k);
+    if (e) counts[e.category] = (counts[e.category] || 0) + 1;
+  });
+  const cats = Object.keys(counts);
+  if (cats.length > 0) {
+    let best = cats[0];
+    cats.forEach(c => { if (counts[c] > counts[best]) best = c; });
+    return best;
+  }
+  if (freeText && freeText.trim()) {
+    for (const [re, cat] of KEYWORD_CATEGORY_MAP) if (re.test(freeText)) return cat;
+  }
+  return pick(FALLBACK_ROTATION, dateStr);
+}
+
+function getDevotion(hjData, category, dateStr) {
+  const pool = (hjData.categories[category] || hjData.categories.joy_gratitude);
+  const idx = hashStr(dateStr + '|' + category) % pool.length;
+  return pool[idx];
+}
+
+// ─── Weekly emotional pattern recognition ───────────────────────────────────
+function weeklyPattern(heartLog, hjData, todayIso) {
+  const { counts, entries } = categoryCountsInWindow(heartLog, hjData, todayIso, 7, false);
+  let topCat = null, topN = 0;
+  Object.entries(counts).forEach(([c, n]) => { if (n > topN) { topN = n; topCat = c; } });
+  if (topCat && topN >= 3 && entries.length >= 3) return { category: topCat, count: topN, days: entries.length };
+  return null;
+}
+
+// ─── Safety-guarded system prompt for the AI Conversation tab ──────────────
+function buildCompanionSystemPrompt(ctx) {
+  return `You are "Heart Journey," a Christ-centered spiritual companion inside the FLCC - Abundance Church app. You help members reflect on Scripture, prayer, and their walk with Christ.
+
+## Absolute rules — never break these
+1. Never claim to speak for God. Never say "God told me" or "God is saying to you specifically."
+2. Never predict the future, promise healing, miracles, or specific outcomes.
+3. Never diagnose a mental health condition or replace medical/psychological care. If someone describes symptoms of crisis, self-harm, abuse, or a medical concern, gently and clearly encourage them to reach out immediately to a trusted pastor, counselor, doctor, or emergency services — do not attempt to handle it yourself.
+4. Never replace the role of pastors, elders, or the local church community. Regularly encourage the member to bring deeper matters to their pastors or a mature believer.
+5. Ground every spiritual answer in Scripture, and cite the reference (book, chapter, verse).
+6. Be warm, humble, and honest — if you don't know something, say so rather than guessing.
+
+## Context
+${ctx.name ? `The member's name is ${ctx.name}.` : ''}
+${ctx.churchTheme ? `This month's church-wide theme is "${ctx.churchTheme}".` : ''}
+${ctx.recentEmotions ? `They have recently described feeling: ${ctx.recentEmotions}.` : ''}
+Today's date: ${ctx.today}.
+
+## Style
+Keep answers conversational, warm, and reasonably concise (a few short paragraphs at most unless asked for more). Use plain language over theological jargon. When quoting Scripture, use the King James Version (KJV) unless the member asks for another translation, and always cite the reference.`;
+}
+
+// ─── Fetch helper for the Anthropic proxy / direct API (mirrors ask.html) ──
+async function callCompanion({ apiKey, model, proxyUrl, proxySecret, systemPrompt, messages }) {
+  const endpoint = proxyUrl ? (proxyUrl.replace(/\/$/, '') + '/proxy') : 'https://api.anthropic.com/v1/messages';
+  const headers = { 'Content-Type': 'application/json' };
+  if (proxyUrl) { if (proxySecret) headers['x-proxy-secret'] = proxySecret; }
+  else { headers['x-api-key'] = apiKey; headers['anthropic-version'] = '2023-06-01'; headers['anthropic-dangerous-direct-browser-access'] = 'true'; }
+
+  const res = await fetch(endpoint, {
+    method: 'POST', headers,
+    body: JSON.stringify({ model: model || MODEL_DEFAULT, max_tokens: 800, system: systemPrompt, messages }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data) throw new Error(data?.error?.message || `Request failed (${res.status})`);
+  const text = (data.content || []).map(b => b.text || '').join('');
+  return text || "I wasn't able to form a response — please try again.";
+}
+
+// ─── Onboarding / Privacy Consent ──────────────────────────────────────────
+function ConsentScreen({ safetyDisclaimer, onAccept, ministry }) {
+  const [name, setName] = useState('');
+  const [ack, setAck] = useState(false);
+  return (
+    <div className="fade-in max-w-lg mx-auto px-4 py-10">
+      <div className="text-center mb-6">
+        <div className="text-4xl mb-3">🌿</div>
+        <h1 className="font-display text-2xl font-semibold">Welcome to Heart Journey</h1>
+        <p className="text-sm mt-2" style={{ color: 'var(--ink-muted)' }}>A quiet companion for your daily walk with Christ.</p>
+      </div>
+      <div className="mb-4"><UrgentCareNote ministry={ministry} /></div>
+      <div className="card card-pad mb-4">
+        <div className="text-sm font-semibold mb-2">What Heart Journey is</div>
+        <p className="text-sm mb-3" style={{ color: 'var(--ink-muted)', lineHeight: 1.6 }}>
+          A devotional companion for reflection, Scripture, prayer, and journaling — built to point you toward God, not replace Him.
+        </p>
+        <div className="text-sm font-semibold mb-2">What it is not</div>
+        <p className="text-sm mb-3" style={{ color: 'var(--ink-muted)', lineHeight: 1.6 }}>{safetyDisclaimer}</p>
+        <div className="text-sm font-semibold mb-2">Your data</div>
+        <ul className="text-sm space-y-1" style={{ color: 'var(--ink-muted)', lineHeight: 1.6, paddingLeft: '1.1rem', listStyle: 'disc' }}>
+          <li>Your journal, prayers, and heart-check history are stored only in this browser (on your device) — not on a church server.</li>
+          <li>Nothing is sold or used for advertising.</li>
+          <li>If you use the AI Conversation or "reflect with AI" features, that specific text is sent to an AI provider (Anthropic) to generate a response.</li>
+          <li>Today's weather in the greeting is fetched from Open-Meteo, a public weather API, for the church's home city — not your personal location.</li>
+          <li>You can delete all Heart Journey data at any time from the Privacy tab.</li>
+        </ul>
+      </div>
+      <div className="card card-pad mb-4">
+        <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--ink-muted)' }}>WHAT SHOULD WE CALL YOU?</label>
+        <input className="field" placeholder="Your first name" value={name} onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && name.trim() && ack && onAccept(name.trim())} />
+      </div>
+      <label className="flex items-start gap-2 text-sm mb-5 cursor-pointer" style={{ color: 'var(--ink-muted)' }}>
+        <input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} style={{ marginTop: 3 }} />
+        <span>I understand Heart Journey is a devotional tool, not a pastor, counselor, or medical provider, and I consent to my reflections being stored on this device.</span>
+      </label>
+      <button className="btn btn-primary w-full" disabled={!name.trim() || !ack} onClick={() => onAccept(name.trim())}>
+        Begin My Journey
+      </button>
+    </div>
+  );
+}
+
+// ─── Heart Check ────────────────────────────────────────────────────────────
+const MOOD_ORDER = ['joyful','thankful','grateful','loved','comforted','content','peaceful','hopeful','excited','inspired',
+  'tired','burned_out','unmotivated','anxious','overwhelmed','afraid','lonely','homesick','missing_family','serving_far_from_home',
+  'unable_to_attend_church','discouraged','broken','grieving',
+  'confused','doubting','searching','waiting','tempted','angry','impatient','ashamed','guilty','financially_stressed',
+  'spiritually_dry','distant_from_god','close_to_god'];
+const NEED_ORDER = ['need_wisdom','need_direction','need_strength','need_forgiveness','need_rest','need_courage','need_peace','need_joy','need_hope'];
+
+function HeartCheck({ emotionsData, onSubmit, greetingName, weather }) {
+  const [selected, setSelected] = useState([]);
+  const [freeText, setFreeText] = useState('');
+  const byKey = k => emotionsData.find(e => e.key === k);
+  const toggle = k => setSelected(s => s.includes(k) ? s.filter(x => x !== k) : [...s, k]);
+
+  return (
+    <div className="fade-in">
+      <h2 className="font-display text-xl sm:text-2xl font-semibold mb-1">Good {greetingTime()}, {greetingName}</h2>
+      {weather && (
+        <p className="text-sm mb-2" style={{ color: 'var(--ink-muted)' }}>
+          {weather.icon} It's {weather.tempC}°C with {weather.label} in {weather.place} this {greetingTime()}.
+          {weather.moodNote && <span> {weather.moodNote}</span>}
+        </p>
+      )}
+      <p className="text-sm mb-5" style={{ color: 'var(--ink-muted)' }}>How is your heart today?</p>
+
+      <div className="mb-4">
+        <div className="devo-section-label">How I'm feeling</div>
+        <div className="flex flex-wrap gap-2">
+          {MOOD_ORDER.map(k => byKey(k) && (
+            <button key={k} className={`emo-chip ${selected.includes(k) ? 'selected' : ''}`} onClick={() => toggle(k)}>{byKey(k).label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-5">
+        <div className="devo-section-label">What I need today</div>
+        <div className="flex flex-wrap gap-2">
+          {NEED_ORDER.map(k => byKey(k) && (
+            <button key={k} className={`emo-chip need ${selected.includes(k) ? 'selected' : ''}`} onClick={() => toggle(k)}>{byKey(k).label}</button>
+          ))}
+        </div>
+      </div>
+
+      <textarea className="field mb-4" rows={3} placeholder="Or just tell God (and Heart Journey) what's on your heart in your own words…"
+        value={freeText} onChange={e => setFreeText(e.target.value)} />
+
+      <button className="btn btn-primary" onClick={() => onSubmit(selected, freeText)}>Continue to Today's Word →</button>
+    </div>
+  );
+}
+function greetingTime() { const h = new Date().getHours(); return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'; }
+
+// ─── Today's devotional card ────────────────────────────────────────────────
+function DevotionalCard({ name, category, categoryMeta, devotion, churchTheme, memorized, onMemorize, onPrayed, onJournalFromPrompt, emotionLabels, heartLog, journal, gratitude, prayers, stats }) {
+  const meta = categoryMeta[category] || { theme: 'Today\'s Word', prayerFocus: 'Your peace and presence' };
+  const emotionsPhrase = listJoin(emotionLabels || []);
+  const dateStr = todayStr();
+  const memberSeed = getMemberSeed();
+  const eng = computeEngagement({ heartLog, journal, gratitude, prayers, memorized, stats, category, todayIso: dateStr });
+  const reflection = buildPersonalReflection({ name, emotionsPhrase, devotion, eng, churchTheme, memberSeed, category, dateStr });
+  const prayerText = buildPrayer({ name, emotionsPhrase, focus: meta.prayerFocus, eng, memberSeed, dateStr, category });
+  const encouragement = buildEncouragement({ eng, memberSeed, dateStr, generalPool: GENERAL_ENCOURAGEMENTS_REF.current });
+  const actionStep = buildActionStep({ eng, devotion });
+  const isMemorized = memorized.includes(devotion.reference + '|' + devotion.memoryVerse.reference);
+
+  return (
+    <div className="fade-in space-y-4">
+      <div className="card card-pad">
+        <div className="devo-section-label">{meta.theme}</div>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{reflection.opening}</p>
+      </div>
+
+      <div className="card card-pad">
+        <div className="devo-section-label">Today's Scripture</div>
+        <div className="verse-block">“{devotion.verseText}”<div className="verse-ref">{devotion.reference} · KJV</div></div>
+      </div>
+
+      <div className="card card-pad">
+        <div className="devo-section-label">Personal Reflection</div>
+        {reflection.journeyNote && <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--accent)' }}>{reflection.journeyNote}</p>}
+        <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--ink)' }}>{reflection.base}</p>
+        {reflection.themeLine && <p className="text-sm italic" style={{ color: 'var(--ink-muted)' }}>{reflection.themeLine}</p>}
+      </div>
+
+      <div className="card card-pad">
+        <div className="devo-section-label">Today's Prayer</div>
+        <p className="text-sm whitespace-pre-line leading-relaxed mb-3" style={{ color: 'var(--ink)' }}>{prayerText}</p>
+        <button className="btn btn-ghost btn-sm" onClick={onPrayed}>🙏 I prayed this</button>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="card card-pad">
+          <div className="devo-section-label">Encouragement</div>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{encouragement}</p>
+        </div>
+        <div className="card card-pad">
+          <div className="devo-section-label">One Action Step</div>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>{actionStep}</p>
+        </div>
+      </div>
+
+      <div className="card card-pad">
+        <div className="devo-section-label">Memory Verse</div>
+        <p className="text-sm font-medium mb-2" style={{ color: 'var(--ink)' }}>"{devotion.memoryVerse.text}" — {devotion.memoryVerse.reference}</p>
+        <button className={`btn btn-sm ${isMemorized ? 'btn-primary' : 'btn-ghost'}`} onClick={onMemorize}>{isMemorized ? '✓ Memorized' : 'Mark as Memorized'}</button>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="card card-pad">
+          <div className="devo-section-label">Related Bible Story</div>
+          <p className="text-sm font-semibold mb-1">{devotion.bibleStory.title}</p>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-muted)' }}>{devotion.bibleStory.summary}</p>
+        </div>
+        <div className="card card-pad">
+          <div className="devo-section-label">Suggested Worship Song</div>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--ink)' }}>🎵 {devotion.worshipSong}</p>
+        </div>
+      </div>
+
+      <div className="card card-pad">
+        <div className="devo-section-label">Historical Background</div>
+        <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--ink-muted)' }}>{devotion.historicalBackground}</p>
+        <div className="text-xs" style={{ color: 'var(--ink-subtle)' }}>Cross references: {devotion.crossReferences.join(', ')}</div>
+      </div>
+
+      <div className="card card-pad">
+        <div className="devo-section-label">Reflection Question</div>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--ink)' }}>{devotion.reflectionQuestion}</p>
+        <div className="devo-section-label">Journal Prompt</div>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--ink)' }}>{devotion.journalPrompt}</p>
+        <button className="btn btn-gold btn-sm" onClick={() => onJournalFromPrompt(devotion.journalPrompt)}>Write in Journal →</button>
+      </div>
+
+      <p className="safety-note text-center px-4">This is a devotional reflection, not a message from God — offered to point you toward Scripture, prayer, and your church family.</p>
+    </div>
+  );
+}
+const GENERAL_ENCOURAGEMENTS_REF = { current: [] };
+
+// ─── Weekly pattern banner ──────────────────────────────────────────────────
+function PatternBanner({ pattern, categoryMeta }) {
+  if (!pattern) return null;
+  const meta = categoryMeta[pattern.category];
+  if (!meta) return null;
+  return (
+    <div className="card card-pad mb-4" style={{ background: 'var(--accent-soft)', borderColor: 'var(--accent)' }}>
+      <p className="text-sm" style={{ color: 'var(--ink)' }}>
+        Many people experience seasons like this. This week you've often shared feelings tied to <strong>{meta.weekPatternMessage}</strong> ({pattern.count} of your last {pattern.days} check-ins). This week's journey will keep gently pointing you toward {meta.theme.toLowerCase()}.
+      </p>
+    </div>
+  );
+}
+
+// ─── Journal tab ─────────────────────────────────────────────────────────────
+function offlineJournalReflection(text, hjData) {
+  for (const [re, cat] of KEYWORD_CATEGORY_MAP) {
+    if (re.test(text)) {
+      const meta = hjData.categoryMeta[cat];
+      const devo = getDevotion(hjData, cat, todayStr());
+      return { summary: `Thank you for writing this out honestly. What you've shared touches on ${meta ? meta.weekPatternMessage : 'something real'} — you're not alone in that.`, verse: devo.reference, verseText: devo.verseText, question: devo.reflectionQuestion };
+    }
+  }
+  return { summary: 'Thank you for writing this out. Bringing your honest thoughts to God — even in a journal — is itself a form of prayer.', verse: 'Psalm 62:8', verseText: 'Trust in him at all times; ye people, pour out your heart before him: God is a refuge for us.', question: 'Is there a next step you sense God inviting you toward after writing this?' };
+}
+
+function JournalTab({ hjData, journal, setJournal, aiConfig, prefillPrompt, onClearPrefill }) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [aiReflection, setAiReflection] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => { if (prefillPrompt) { setText(''); } }, [prefillPrompt]);
+
+  const save = async (useAI) => {
+    if (!text.trim()) return;
+    const entry = { id: Date.now(), date: todayStr(), text: text.trim(), prompt: prefillPrompt || null };
+    setJournal([entry, ...journal]);
+    setError(null);
+    if (useAI && (aiConfig.proxyUrl || aiConfig.apiKey)) {
+      setBusy(true);
+      try {
+        const sys = buildCompanionSystemPrompt({ name: aiConfig.name, today: todayStr() }) +
+          '\n\nThe member just wrote a private journal entry. Respond with: 1) a brief, warm, non-judgmental reflection (2-3 sentences, never shaming), 2) one relevant Bible verse with reference, 3) one gentle reflection question. Keep the whole response under 150 words.';
+        const reply = await callCompanion({ ...aiConfig, systemPrompt: sys, messages: [{ role: 'user', content: text.trim() }] });
+        setAiReflection(reply);
+      } catch (e) { setError(e.message); setAiReflection(null); }
+      setBusy(false);
+    } else {
+      setAiReflection(null);
+    }
+    setText('');
+    onClearPrefill();
+  };
+
+  const offline = text.trim() ? null : null;
+
+  return (
+    <div className="fade-in space-y-4">
+      <div>
+        <h2 className="font-display text-xl font-semibold mb-1">Journal</h2>
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>A private space to process your thoughts with God. Saved only on this device.</p>
+      </div>
+      {prefillPrompt && <div className="card card-pad" style={{ background: 'var(--gold-soft)' }}><p className="text-sm">Prompt: {prefillPrompt}</p></div>}
+      <div className="card card-pad">
+        <textarea className="field mb-3" rows={6} placeholder="What's on your heart today?" value={text} onChange={e => setText(e.target.value)} />
+        <div className="flex flex-wrap gap-2">
+          <button className="btn btn-ghost" disabled={!text.trim() || busy} onClick={() => save(false)}>Save Entry</button>
+          <button className="btn btn-primary" disabled={!text.trim() || busy} onClick={() => save(true)}>{busy ? 'Reflecting…' : '✨ Save & Reflect with AI'}</button>
+        </div>
+        {error && <p className="text-xs mt-2" style={{ color: 'var(--danger)' }}>{error} — showing an offline reflection instead is available on your next entry.</p>}
+      </div>
+      {aiReflection && (
+        <div className="card card-pad">
+          <div className="devo-section-label">AI Reflection</div>
+          <p className="text-sm leading-relaxed whitespace-pre-line">{aiReflection}</p>
+          <p className="safety-note mt-2">Generated by AI to encourage reflection — not a message from God or professional counsel.</p>
+        </div>
+      )}
+      <div className="space-y-3">
+        {journal.length === 0 && <p className="text-sm" style={{ color: 'var(--ink-subtle)' }}>No journal entries yet.</p>}
+        {journal.map(j => {
+          const off = offlineJournalReflection(j.text, hjData);
+          return (
+            <div key={j.id} className="card card-pad">
+              <div className="text-xs mb-1" style={{ color: 'var(--ink-subtle)' }}>{fmtDate(j.date)}</div>
+              {j.prompt && <div className="text-xs italic mb-2" style={{ color: 'var(--accent)' }}>Prompt: {j.prompt}</div>}
+              <p className="text-sm mb-2 whitespace-pre-line">{j.text}</p>
+              <div className="text-xs pt-2 mt-1" style={{ borderTop: '1px dashed var(--border)', color: 'var(--ink-muted)' }}>{off.summary} <span className="italic">"{off.verseText}" — {off.verse}</span></div>
+              <button className="btn btn-danger btn-sm mt-2" onClick={() => setJournal(journal.filter(x => x.id !== j.id))}>Delete</button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Evening Reflection tab ─────────────────────────────────────────────────
+function EveningTab({ hjData, name, evening, setEvening, onAddGratitude, stats, setStats }) {
+  const [choice, setChoice] = useState(null);
+  const already = evening.find(e => e.date === todayStr());
+
+  const submit = (key) => {
+    const resp = hjData.eveningResponses[key];
+    const entry = { date: todayStr(), key, prayer: resp.prayer.replace(/\{name\}/g, name), reflection: resp.reflection, verse: resp.verse };
+    setEvening([entry, ...evening.filter(e => e.date !== todayStr())]);
+    setChoice(key);
+    if (key === 'answered_prayer') setStats(s => ({ ...s, answeredPrayers: (s.answeredPrayers || 0) + 1 }));
+  };
+
+  const shown = already || (choice && evening.find(e => e.date === todayStr()));
+
+  return (
+    <div className="fade-in space-y-4">
+      <div>
+        <h2 className="font-display text-xl font-semibold mb-1">Evening Reflection</h2>
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Before bed — how did today go?</p>
+      </div>
+      {!shown && (
+        <div className="flex flex-wrap gap-2">
+          {hjData.eveningOptions.map(o => (
+            <button key={o.key} className="emo-chip" onClick={() => submit(o.key)}>{o.label}</button>
+          ))}
+        </div>
+      )}
+      {shown && (
+        <div className="space-y-4">
+          <div className="card card-pad">
+            <div className="devo-section-label">Closing Reflection</div>
+            <p className="text-sm leading-relaxed">{shown.reflection}</p>
+          </div>
+          <div className="card card-pad">
+            <div className="devo-section-label">Thanksgiving Prayer</div>
+            <p className="text-sm whitespace-pre-line leading-relaxed">{shown.prayer}</p>
+          </div>
+          <div className="verse-block">"{shown.verse.text}"<div className="verse-ref">{shown.verse.reference} · KJV</div></div>
+          {(shown.key === 'gods_faithfulness' || shown.key === 'answered_prayer' || shown.key === 'joy') && (
+            <button className="btn btn-gold btn-sm" onClick={() => onAddGratitude(shown.key === 'answered_prayer' ? 'An answered prayer today' : (shown.key === 'joy' ? 'A joyful moment today' : 'Saw God\'s faithfulness today'))}>🌱 Plant this in my Gratitude Garden</button>
+          )}
+          <p className="text-sm italic" style={{ color: 'var(--ink-subtle)' }}>Tomorrow's word is already prepared for you — rest well.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Gratitude Garden ────────────────────────────────────────────────────────
+function stageForCount(n, plants) {
+  if (n >= 8) return plants[7 % plants.length];
+  if (n >= 5) return plants[4 % plants.length];
+  if (n >= 3) return plants[2 % plants.length];
+  return plants[0];
+}
+function GardenTab({ gratitude, setGratitude, plants }) {
+  const [text, setText] = useState('');
+  const [openMonth, setOpenMonth] = useState(null);
+
+  const byMonth = useMemo(() => {
+    const m = {};
+    gratitude.forEach(g => { (m[monthStr(new Date(g.date))] = m[monthStr(new Date(g.date))] || []).push(g); });
+    return m;
+  }, [gratitude]);
+  const months = Object.keys(byMonth).sort().reverse();
+
+  const add = () => {
+    if (!text.trim()) return;
+    setGratitude([{ id: Date.now(), date: todayStr(), text: text.trim() }, ...gratitude]);
+    setText('');
+  };
+
+  return (
+    <div className="fade-in space-y-4">
+      <div>
+        <h2 className="font-display text-xl font-semibold mb-1">Gratitude Garden</h2>
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Every gratitude you plant grows a little each month — a picture of God's faithfulness over time.</p>
+      </div>
+      <div className="card card-pad flex gap-2 flex-wrap">
+        <input className="field flex-1" style={{ minWidth: 200 }} placeholder="What are you thankful for today?" value={text}
+          onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} />
+        <button className="btn btn-primary" onClick={add}>🌱 Plant It</button>
+      </div>
+      {months.length === 0 && <p className="text-sm" style={{ color: 'var(--ink-subtle)' }}>Your garden is empty — plant your first gratitude above.</p>}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+        {months.map(m => (
+          <div key={m} className="plant-cell" onClick={() => setOpenMonth(m)}>
+            <div style={{ fontSize: '2rem' }}>{stageForCount(byMonth[m].length, plants)}</div>
+            <div className="text-xs font-medium">{new Date(m + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}</div>
+            <div className="text-xs" style={{ color: 'var(--ink-subtle)' }}>{byMonth[m].length} {byMonth[m].length === 1 ? 'entry' : 'entries'}</div>
+          </div>
+        ))}
+      </div>
+      {openMonth && (
+        <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setOpenMonth(null)}>
+          <div className="modal">
+            <div className="flex justify-between items-center mb-3">
+              <div className="font-display text-lg font-semibold">{new Date(openMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
+              <button className="btn btn-ghost btn-sm" onClick={() => setOpenMonth(null)}>Close</button>
+            </div>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {byMonth[openMonth].map(g => (
+                <div key={g.id} className="card card-pad">
+                  <div className="text-xs mb-1" style={{ color: 'var(--ink-subtle)' }}>{fmtDate(g.date)}</div>
+                  <p className="text-sm">{g.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Spiritual Growth Timeline ───────────────────────────────────────────────
+function TimelineTab({ stats, journal, gratitude, memorized, prayers, heartLog }) {
+  const tiles = [
+    { label: 'Bible Reading Streak', value: `${stats.bibleStreak || 0} 🔥` },
+    { label: 'Prayer Streak', value: `${stats.prayerStreak || 0} 🙏` },
+    { label: 'Journal Entries', value: journal.length },
+    { label: 'Gratitude Entries', value: gratitude.length },
+    { label: 'Verses Memorized', value: memorized.length },
+    { label: 'Answered Prayers', value: stats.answeredPrayers || 0 },
+    { label: 'People Prayed For', value: prayers.length },
+    { label: 'Acts of Kindness', value: stats.actsOfKindness || 0 },
+    { label: 'Heart Check-ins', value: heartLog.length },
+  ];
+  return (
+    <div className="fade-in space-y-4">
+      <div>
+        <h2 className="font-display text-xl font-semibold mb-1">Spiritual Growth Timeline</h2>
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Milestones, not scorekeeping — a gentle record of your walk with Christ.</p>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {tiles.map(t => (
+          <div key={t.label} className="stat-tile">
+            <div className="stat-num">{t.value}</div>
+            <div className="stat-label">{t.label}</div>
+          </div>
+        ))}
+      </div>
+      {memorized.length > 0 && (
+        <div className="card card-pad">
+          <div className="devo-section-label">Verses You've Memorized</div>
+          <ul className="text-sm space-y-1" style={{ paddingLeft: '1.1rem', listStyle: 'disc' }}>
+            {memorized.map(m => <li key={m}>{m.split('|')[1]}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Prayer Wall ─────────────────────────────────────────────────────────────
+function PrayerWallTab({ prayers, setPrayers, hjData, prayerLead, setStats, onAddGratitude }) {
+  const [text, setText] = useState('');
+
+  const suggest = (t) => {
+    for (const [re, cat] of KEYWORD_CATEGORY_MAP) if (re.test(t)) return getDevotion(hjData, cat, t);
+    return getDevotion(hjData, 'need_hope', t);
+  };
+
+  const add = () => {
+    if (!text.trim()) return;
+    const devo = suggest(text.trim());
+    setPrayers([{ id: Date.now(), date: todayStr(), text: text.trim(), answered: false, verse: devo.reference, verseText: devo.verseText }, ...prayers]);
+    setText('');
+  };
+
+  const markAnswered = (p) => {
+    setPrayers(prayers.map(x => x.id === p.id ? { ...x, answered: true } : x));
+    setStats(s => ({ ...s, answeredPrayers: (s.answeredPrayers || 0) + 1 }));
+    onAddGratitude(`Answered prayer: ${p.text}`);
+  };
+
+  const share = (p) => {
+    const msg = `Prayer request from Heart Journey (${prayerLead.headName || 'Prayer Ministry'}):\n\n${p.text}`;
+    if (prayerLead.whatsapp) {
+      window.open(`https://wa.me/${prayerLead.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    } else {
+      navigator.clipboard?.writeText(msg);
+      alert('Your church hasn\'t added a Prayer Ministry contact number yet, so we copied your request to the clipboard — you can paste it into a message to your prayer team.');
+    }
+  };
+
+  return (
+    <div className="fade-in space-y-4">
+      <div>
+        <h2 className="font-display text-xl font-semibold mb-1">Prayer Wall</h2>
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Requests stay private on this device unless you choose to share them with the prayer team.</p>
+      </div>
+      <div className="card card-pad flex gap-2 flex-wrap">
+        <input className="field flex-1" style={{ minWidth: 200 }} placeholder="What would you like prayer for?" value={text}
+          onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} />
+        <button className="btn btn-primary" onClick={add}>Add Request</button>
+      </div>
+      <div className="space-y-3">
+        {prayers.length === 0 && <p className="text-sm" style={{ color: 'var(--ink-subtle)' }}>No prayer requests yet.</p>}
+        {prayers.map(p => (
+          <div key={p.id} className="card card-pad">
+            <div className="flex justify-between items-start gap-2">
+              <div className="text-xs" style={{ color: 'var(--ink-subtle)' }}>{fmtDate(p.date)}{p.answered && <span style={{ color: 'var(--success)' }}> · Answered ✓</span>}</div>
+            </div>
+            <p className="text-sm my-1.5">{p.text}</p>
+            <p className="text-xs italic mb-2" style={{ color: 'var(--gold)' }}>Related: "{p.verseText}" — {p.verse}</p>
+            <div className="flex flex-wrap gap-2">
+              {!p.answered && <button className="btn btn-ghost btn-sm" onClick={() => markAnswered(p)}>✓ Mark Answered</button>}
+              <button className="btn btn-ghost btn-sm" onClick={() => share(p)}>Share with Prayer Team →</button>
+              <button className="btn btn-danger btn-sm" onClick={() => setPrayers(prayers.filter(x => x.id !== p.id))}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── AI Conversation tab ─────────────────────────────────────────────────────
+function Md({ text }) {
+  const html = useMemo(() => { try { return marked.parse(text || '', { breaks: true, gfm: true }); } catch { return text; } }, [text]);
+  return <div className="md text-sm" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+const ASK_SUGGESTIONS = [
+  'Why do I feel distant from God?',
+  'Help me understand forgiveness.',
+  'What does the Bible say about anxiety?',
+  'How should I pray today?',
+];
+
+function ConnectAIModal({ onSave, onClose }) {
+  const [tab, setTab] = useState('proxy');
+  const [proxy, setProxy] = useState('');
+  const [secret, setSecret] = useState('');
+  const [key, setKey] = useState('');
+  return (
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="font-display text-xl font-semibold mb-3">Connect AI</div>
+        <div className="flex gap-1 mb-4 p-0.5 rounded-lg" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+          {[['proxy', 'Proxy URL'], ['key', 'My API Key']].map(([v, label]) => (
+            <button key={v} onClick={() => setTab(v)} className="flex-1 text-xs font-medium py-1.5 px-2 rounded-md"
+              style={tab === v ? { background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid var(--border)' } : { color: 'var(--ink-muted)', background: 'transparent', border: '1px solid transparent' }}>{label}</button>
+          ))}
+        </div>
+        {tab === 'proxy' ? (
+          <>
+            <p className="text-xs mb-3" style={{ color: 'var(--ink-subtle)' }}>Ask your church admin for a Worker/proxy URL, or run your own — see the project README.</p>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--ink-muted)' }}>WORKER / PROXY URL</label>
+            <input className="field mb-2" placeholder="https://your-proxy.workers.dev" value={proxy} onChange={e => setProxy(e.target.value)} />
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--ink-muted)' }}>PROXY SECRET <span style={{ fontWeight: 400 }}>(optional)</span></label>
+            <input className="field mb-4" type="password" placeholder="Leave blank if none" value={secret} onChange={e => setSecret(e.target.value)} />
+            <button className="btn btn-primary w-full" disabled={!proxy.trim()} onClick={() => onSave({ proxy: proxy.trim(), secret: secret.trim() })}>Save & Connect</button>
+          </>
+        ) : (
+          <>
+            <p className="text-xs mb-3" style={{ color: 'var(--ink-subtle)' }}>Your key is saved only in this browser and sent directly to Anthropic — never through a third-party server.</p>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--ink-muted)' }}>API KEY</label>
+            <input className="field mb-4" type="password" placeholder="sk-ant-api03-…" value={key} onChange={e => setKey(e.target.value)} />
+            <button className="btn btn-primary w-full" disabled={!key.trim()} onClick={() => onSave({ key: key.trim() })}>Save</button>
+          </>
+        )}
+        <button className="btn btn-ghost w-full mt-2" onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function AskCompanionTab({ aiConfig, hasConnection, onConnected }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [showConnect, setShowConnect] = useState(false);
+  const endRef = useRef(null);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, busy]);
+
+  const send = async (overrideText) => {
+    const text = (overrideText || input).trim();
+    if (!text || busy) return;
+    const history = [...messages, { role: 'user', content: text }];
+    setMessages(history); setInput(''); setBusy(true); setError(null);
+    try {
+      const sys = buildCompanionSystemPrompt({ name: aiConfig.name, today: todayStr(), churchTheme: aiConfig.churchTheme });
+      const reply = await callCompanion({ ...aiConfig, systemPrompt: sys, messages: history });
+      setMessages([...history, { role: 'assistant', content: reply }]);
+    } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
+
+  const saveConnection = ({ proxy, secret, key }) => {
+    if (proxy !== undefined) { localStorage.setItem(ASK_PROXY_KEY, proxy); if (secret) localStorage.setItem(ASK_PROXY_SECRET_KEY, secret); }
+    if (key !== undefined) localStorage.setItem(ASK_API_KEY, key);
+    setShowConnect(false);
+    onConnected();
+  };
+
+  if (!hasConnection) {
+    return (
+      <div className="fade-in card card-pad text-center">
+        <p className="text-sm mb-3" style={{ color: 'var(--ink-muted)' }}>AI Conversation isn't connected yet. Connect a church-provided proxy or your own Anthropic API key to enable it.</p>
+        <button className="btn btn-primary" onClick={() => setShowConnect(true)}>Connect AI →</button>
+        <p className="safety-note mt-4">In the meantime, explore your offline devotional in the Today tab, or write in your Journal.</p>
+        {showConnect && <ConnectAIModal onSave={saveConnection} onClose={() => setShowConnect(false)} />}
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in flex flex-col" style={{ height: 'calc(100vh - 220px)', minHeight: 400 }}>
+      <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
+        {messages.length === 0 && (
+          <div className="grid sm:grid-cols-2 gap-2 mb-4">
+            {ASK_SUGGESTIONS.map(s => <button key={s} className="card card-pad text-left text-sm" style={{ cursor: 'pointer' }} onClick={() => send(s)}>{s}</button>)}
+          </div>
+        )}
+        {messages.map((m, i) => (
+          <div key={i} className={m.role === 'user' ? 'flex justify-end' : ''}>
+            <div className="card card-pad" style={m.role === 'user' ? { background: 'var(--ink)', color: '#fff', maxWidth: '80%' } : { maxWidth: '90%' }}>
+              {m.role === 'user' ? <p className="text-sm">{m.content}</p> : <Md text={m.content} />}
+            </div>
+          </div>
+        ))}
+        {busy && <div className="text-sm" style={{ color: 'var(--ink-subtle)' }}>Reflecting…</div>}
+        {error && <div className="text-sm" style={{ color: 'var(--danger)' }}>{error}</div>}
+        <div ref={endRef} />
+      </div>
+      <div className="flex gap-2">
+        <input className="field flex-1" placeholder="Ask about Scripture, prayer, or your walk with God…" value={input}
+          onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} />
+        <button className="btn btn-primary" disabled={!input.trim() || busy} onClick={() => send()}>Send</button>
+      </div>
+      <p className="safety-note mt-2">Answers are AI-generated to encourage reflection on Scripture — always weigh them against the Bible and your pastors' counsel.</p>
+    </div>
+  );
+}
+
+// ─── Urgent care — a real, human way to reach help right now ───────────────
+function UrgentCareNote({ ministry }) {
+  const phoneDigits = ministry?.phone ? ministry.phone.replace(/[^0-9+]/g, '') : null;
+  const waDigits = ministry?.whatsapp ? ministry.whatsapp.replace(/[^0-9]/g, '') : null;
+  return (
+    <div className="card card-pad" style={{ background: 'var(--danger-soft)', borderColor: '#F3C6C6' }}>
+      <div className="text-sm font-semibold mb-2" style={{ color: 'var(--danger)' }}>If you need help right now</div>
+      <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--ink)' }}>
+        Heart Journey is a devotional tool — it cannot respond in an emergency. If you are in crisis, thinking of harming yourself, in danger, or need urgent care, please don't wait on this app. Call your lead pastor or a spiritual leader you trust right away, or contact local emergency services immediately.
+      </p>
+      {ministry?.headName ? (
+        <p className="text-sm">
+          <strong>{ministry.headTitle || 'Ministry Leader'}:</strong> {ministry.headName}
+          {phoneDigits && <> · <a href={`tel:${phoneDigits}`} className="underline font-medium">Call</a></>}
+          {waDigits && <> · <a href={`https://wa.me/${waDigits}`} target="_blank" rel="noreferrer" className="underline font-medium">WhatsApp</a></>}
+        </p>
+      ) : (
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Reach out to any pastor, elder, or ministry leader at FLCC — Abundance Church.</p>
+      )}
+    </div>
+  );
+}
+
+// ─── Privacy & Settings tab ──────────────────────────────────────────────────
+function PrivacyTab({ safetyDisclaimer, onDeleteAll, name, onRename }) {
+  const [renaming, setRenaming] = useState(false);
+  const [newName, setNewName] = useState(name);
+  return (
+    <div className="fade-in space-y-4">
+      <div>
+        <h2 className="font-display text-xl font-semibold mb-1">Privacy & Safety</h2>
+      </div>
+      <div className="card card-pad">
+        <div className="text-sm font-semibold mb-2">What Heart Journey is not</div>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--ink-muted)' }}>{safetyDisclaimer}</p>
+      </div>
+      <div className="card card-pad">
+        <div className="text-sm font-semibold mb-2">Your data</div>
+        <ul className="text-sm space-y-1.5" style={{ color: 'var(--ink-muted)', lineHeight: 1.6, paddingLeft: '1.1rem', listStyle: 'disc' }}>
+          <li>All journal entries, heart-check history, prayers, and gratitude entries are stored only in this browser's local storage — never on a church server.</li>
+          <li>Nothing is sold, shared, or used for advertising.</li>
+          <li>The AI Conversation and "Reflect with AI" journal feature send only the specific text you submit to Anthropic's API (directly or via the church's proxy) to generate a response.</li>
+          <li>Sharing a prayer request with the Prayer Team is fully optional and only happens when you tap "Share."</li>
+          <li>Today's weather in the greeting is fetched from Open-Meteo, a public weather API, for the church's home city — not your personal location.</li>
+        </ul>
+      </div>
+      <div className="card card-pad">
+        <div className="text-sm font-semibold mb-2">Your name</div>
+        {renaming ? (
+          <div className="flex gap-2">
+            <input className="field" value={newName} onChange={e => setNewName(e.target.value)} />
+            <button className="btn btn-primary btn-sm" onClick={() => { onRename(newName.trim() || name); setRenaming(false); }}>Save</button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{name}</span>
+            <button className="btn btn-ghost btn-sm" onClick={() => setRenaming(true)}>Change</button>
+          </div>
+        )}
+      </div>
+      <div className="card card-pad">
+        <div className="text-sm font-semibold mb-2" style={{ color: 'var(--danger)' }}>Delete my Heart Journey data</div>
+        <p className="text-sm mb-3" style={{ color: 'var(--ink-muted)' }}>This permanently deletes all journal entries, prayers, gratitude, and progress from this device. This cannot be undone.</p>
+        <button className="btn btn-danger" onClick={onDeleteAll}>Delete Everything</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── PWA install prompt ──────────────────────────────────────────────────────
+const INSTALL_DISMISSED_KEY = 'hj_install_dismissed_v1';
+const INSTALL_DISMISS_DAYS = 14;
+
+function isStandaloneDisplay() {
+  return window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function isIOSDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+function InstallBanner({ deferredPrompt, onInstalled }) {
+  const [dismissed, setDismissed] = useState(() => {
+    const ts = Number(localStorage.getItem(INSTALL_DISMISSED_KEY) || 0);
+    return ts && daysBetween(new Date(ts), new Date()) < INSTALL_DISMISS_DAYS;
+  });
+  const [installing, setInstalling] = useState(false);
+  const ios = isIOSDevice();
+
+  if (dismissed || isStandaloneDisplay() || (!deferredPrompt && !ios)) return null;
+
+  const dismiss = () => { localStorage.setItem(INSTALL_DISMISSED_KEY, String(Date.now())); setDismissed(true); };
+
+  const install = async () => {
+    if (!deferredPrompt) return;
+    setInstalling(true);
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice.catch(() => null);
+    setInstalling(false);
+    if (choice?.outcome === 'accepted') onInstalled();
+    else dismiss();
+  };
+
+  return (
+    <div className="card card-pad mb-4 fade-in" style={{ background: 'var(--accent-soft)', borderColor: 'var(--accent)' }}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold mb-1">🌿 Add Heart Journey to your home screen</div>
+          {ios ? (
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              Tap the Share icon <span aria-hidden="true">⬆️</span> in Safari, then "Add to Home Screen" — so it's one tap away, every day.
+            </p>
+          ) : (
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Install it like an app for quick, one-tap access each day — no app store needed.</p>
+          )}
+        </div>
+        <button className="icon-btn" onClick={dismiss} aria-label="Dismiss">✕</button>
+      </div>
+      {!ios && (
+        <button className="btn btn-primary btn-sm mt-3" disabled={installing} onClick={install}>{installing ? 'Installing…' : 'Install'}</button>
+      )}
+    </div>
+  );
+}
+
+// ─── Streak-at-risk nudge — gentle, never guilt-inducing ────────────────────
+function StreakNudge({ streak }) {
+  const hour = new Date().getHours();
+  if (hour < 17 || streak < 2) return null;
+  return (
+    <div className="card card-pad mb-4 fade-in" style={{ background: 'var(--gold-soft)', borderColor: 'var(--gold)' }}>
+      <p className="text-sm" style={{ color: 'var(--ink)' }}>
+        Your {streak}-day streak is still here waiting for today — a quiet moment before the day ends keeps it going. No pressure, just an invitation. 🌙
+      </p>
+    </div>
+  );
+}
+
+// ─── App shell ───────────────────────────────────────────────────────────────
+const TABS = [
+  { key: 'today',   label: 'Today' },
+  { key: 'journal', label: 'Journal' },
+  { key: 'evening', label: 'Evening' },
+  { key: 'garden',  label: 'Garden' },
+  { key: 'timeline',label: 'Timeline' },
+  { key: 'prayer',  label: 'Prayer Wall' },
+  { key: 'ask',     label: 'Ask' },
+  { key: 'privacy', label: 'Privacy' },
+];
+
+function App() {
+  const [hjData, setHjData] = useState(null);
+  const [churchData, setChurchData] = useState(null);
+  const [prayerData, setPrayerData] = useState(null);
+  const [weather, setWeather] = useState(null);
+
+  const [consent, setConsent] = useState(() => loadJSON(HJ.consent, false));
+  const [name, setName] = useState(() => loadJSON(HJ.name, ''));
+
+  const [heartLog, setHeartLog] = useState(() => loadJSON(HJ.heartLog, []));
+  const [journal, setJournal] = useState(() => loadJSON(HJ.journal, []));
+  const [gratitude, setGratitude] = useState(() => loadJSON(HJ.gratitude, []));
+  const [evening, setEvening] = useState(() => loadJSON(HJ.evening, []));
+  const [prayers, setPrayers] = useState(() => loadJSON(HJ.prayers, []));
+  const [stats, setStats] = useState(() => loadJSON(HJ.stats, DEFAULT_STATS));
+  const [memorized, setMemorized] = useState(() => loadJSON(HJ.memorized, []));
+
+  const [tab, setTab] = useState('today');
+  const [journalPrefill, setJournalPrefill] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./heart-journey-sw.js').catch(() => {});
+    }
+    const onBeforeInstall = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+  }, []);
+
+  useEffect(() => saveJSON(HJ.heartLog, heartLog), [heartLog]);
+  useEffect(() => saveJSON(HJ.journal, journal), [journal]);
+  useEffect(() => saveJSON(HJ.gratitude, gratitude), [gratitude]);
+  useEffect(() => saveJSON(HJ.evening, evening), [evening]);
+  useEffect(() => saveJSON(HJ.prayers, prayers), [prayers]);
+  useEffect(() => saveJSON(HJ.stats, stats), [stats]);
+  useEffect(() => saveJSON(HJ.memorized, memorized), [memorized]);
+
+  useEffect(() => {
+    fetch('heart-journey-data.json').then(r => r.json()).then(d => { GENERAL_ENCOURAGEMENTS_REF.current = d.generalEncouragements; setHjData(d); }).catch(() => {});
+    fetch('data.json').then(r => r.json()).then(setChurchData).catch(() => {});
+    fetch('prayer.json').then(r => r.json()).then(setPrayerData).catch(() => {});
+    fetchChurchCityWeather().then(setWeather).catch(() => {});
+  }, []);
+
+  const churchTheme = churchData?.themes?.[monthStr()] || null;
+  const prayerLead = prayerData?.ministry || {};
+  const [connectVersion, setConnectVersion] = useState(0);
+
+  const aiConfig = useMemo(() => ({
+    apiKey: localStorage.getItem(ASK_API_KEY) || '',
+    model: localStorage.getItem(ASK_MODEL_KEY) || MODEL_DEFAULT,
+    proxyUrl: localStorage.getItem(ASK_PROXY_KEY) || '',
+    proxySecret: localStorage.getItem(ASK_PROXY_SECRET_KEY) || '',
+    name, churchTheme,
+  }), [name, churchTheme, connectVersion]);
+  const hasConnection = !!(aiConfig.apiKey || aiConfig.proxyUrl);
+
+  const todayEntry = heartLog.find(h => h.date === todayStr());
+
+  const submitHeartCheck = (emotions, freeText) => {
+    const entry = { date: todayStr(), emotions, freeText };
+    setHeartLog([entry, ...heartLog.filter(h => h.date !== todayStr())]);
+    setStats(s => bumpStreak(s, 'bibleStreak', 'lastBibleDate', todayStr()));
+  };
+
+  const addGratitude = (text) => setGratitude(g => [{ id: Date.now(), date: todayStr(), text }, ...g]);
+
+  const deleteAll = () => {
+    if (!confirm('Delete all Heart Journey data from this device? This cannot be undone.')) return;
+    Object.values(HJ).forEach(k => localStorage.removeItem(k));
+    setHeartLog([]); setJournal([]); setGratitude([]); setEvening([]); setPrayers([]); setStats(DEFAULT_STATS); setMemorized([]);
+    setConsent(false); setName('');
+  };
+
+  if (!consent) {
+    return <ConsentScreen safetyDisclaimer={hjData?.meta?.safetyDisclaimer || 'Heart Journey does not replace Scripture, prayer, pastors, or professional care.'}
+      ministry={churchData?.ministry}
+      onAccept={(n) => { setName(n); saveJSON(HJ.name, n); setConsent(true); saveJSON(HJ.consent, true); }} />;
+  }
+  if (!hjData) return <div className="fade-in text-center py-20 text-sm" style={{ color: 'var(--ink-muted)' }}>Loading Heart Journey…</div>;
+
+  const category = todayEntry ? categoryForEmotions(todayEntry.emotions, hjData.emotions, todayEntry.freeText, todayStr()) : null;
+  const devotion = category ? getDevotion(hjData, category, todayStr()) : null;
+  const pattern = weeklyPattern(heartLog, hjData, todayStr());
+
+  return (
+    <div>
+      <header className="page-header">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 pb-3">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🌿</span>
+              <span className="font-display text-lg font-semibold">Heart Journey</span>
+            </div>
+          </div>
+          <nav className="flex flex-wrap gap-1.5">
+            {TABS.map(t => <button key={t.key} className={`tab-pill ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>)}
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+        <InstallBanner deferredPrompt={deferredPrompt} onInstalled={() => setDeferredPrompt(null)} />
+        {tab === 'today' && (
+          !todayEntry
+            ? (
+              <div>
+                <StreakNudge streak={stats.bibleStreak || 0} />
+                <HeartCheck emotionsData={hjData.emotions} onSubmit={submitHeartCheck} greetingName={name} weather={weather} />
+              </div>
+            )
+            : (
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <div className="text-xs" style={{ color: 'var(--ink-subtle)' }}>{fmtDate(todayStr())}</div>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setHeartLog(heartLog.filter(h => h.date !== todayStr()))}>Redo Heart Check</button>
+                </div>
+                <PatternBanner pattern={pattern} categoryMeta={hjData.categoryMeta} />
+                <DevotionalCard name={name} category={category} categoryMeta={hjData.categoryMeta} devotion={devotion} churchTheme={churchTheme}
+                  stats={stats} memorized={memorized} heartLog={heartLog} journal={journal} gratitude={gratitude} prayers={prayers}
+                  emotionLabels={(todayEntry.emotions || []).map(k => hjData.emotions.find(e => e.key === k)?.label?.toLowerCase()).filter(Boolean)}
+                  onMemorize={() => { const key = devotion.reference + '|' + devotion.memoryVerse.reference; setMemorized(m => m.includes(key) ? m.filter(x => x !== key) : [...m, key]); }}
+                  onPrayed={() => setStats(s => bumpStreak(s, 'prayerStreak', 'lastPrayerDate', todayStr()))}
+                  onJournalFromPrompt={(p) => { setJournalPrefill(p); setTab('journal'); }} />
+              </div>
+            )
+        )}
+        {tab === 'journal' && <JournalTab hjData={hjData} journal={journal} setJournal={setJournal} aiConfig={aiConfig} prefillPrompt={journalPrefill} onClearPrefill={() => setJournalPrefill(null)} />}
+        {tab === 'evening' && <EveningTab hjData={hjData} name={name} evening={evening} setEvening={setEvening} onAddGratitude={addGratitude} stats={stats} setStats={setStats} />}
+        {tab === 'garden' && <GardenTab gratitude={gratitude} setGratitude={setGratitude} plants={hjData.gratitudePlants} />}
+        {tab === 'timeline' && <TimelineTab stats={stats} journal={journal} gratitude={gratitude} memorized={memorized} prayers={prayers} heartLog={heartLog} />}
+        {tab === 'prayer' && <PrayerWallTab prayers={prayers} setPrayers={setPrayers} hjData={hjData} prayerLead={prayerLead} setStats={setStats} onAddGratitude={addGratitude} />}
+        {tab === 'ask' && <AskCompanionTab aiConfig={aiConfig} hasConnection={hasConnection} onConnected={() => setConnectVersion(v => v + 1)} />}
+        {tab === 'privacy' && <PrivacyTab safetyDisclaimer={hjData.meta.safetyDisclaimer} onDeleteAll={deleteAll} name={name} onRename={(n) => { setName(n); saveJSON(HJ.name, n); }} />}
+      </main>
+      <footer className="text-center text-xs py-6" style={{ color: 'var(--ink-subtle)' }}>
+        {hjData.meta.translationNote}
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
