@@ -12,7 +12,7 @@ remembered. You are not alone."**
 
 | Tab | What it is |
 |---|---|
-| **Kaibigan** | An AI companion that listens in warm Taglish, validates before advising, remembers what you share ("Last week you mentioned missing your daughter…"), and understands OFW realities — homesickness, emotional exhaustion, feeling invisible, fear about work and family. Includes a daily "Kumusta ang puso mo?" heart check-in and optional spoken replies. |
+| **Kaibigan** | An AI companion that listens in warm Taglish, validates before advising, remembers what you share ("Last week you mentioned missing your daughter…"), and understands OFW realities — homesickness, emotional exhaustion, feeling invisible, fear about work and family. Includes a daily "Kumusta ang puso mo?" heart check-in, optional spoken replies, sharing a photo for Kaibigan to actually look at, and speaking a message instead of typing it. |
 | **Journal** | A under-30-second daily wellbeing check-in (mood, energy, loneliness, hope, connection, gratitude), gentle non-clinical insights, and a private free-writing journal with search. |
 | **Faith** | Verse and prayer matched to today's heart, AI-personalized prayer, and the FLCC Virtual Church led by **Pastor Anson Dionisio** — services every Sunday and Wednesday 10:30 PM Kuwait time and K.S.A. every Saturday 10:30 AM, "What are you bringing into this week's study?", past teachings with discussion questions. Fully optional — can be switched off. |
 | **Kapwa** | The safe community: Women's and Men's Fellowship (every Wednesday, 8:30 PM Kuwait time), community values (no likes, no followers — just kapatiran), and off-day connection ideas. |

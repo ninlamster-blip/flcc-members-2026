@@ -517,6 +517,55 @@ async function handleRequest(request, env, ctx) {
     });
   }
 
+  // ── POST /stt → voice input, transcribed via ElevenLabs Scribe ───────────
+  // The other direction from /tts, reusing the exact same ELEVENLABS_API_KEY
+  // secret — one voice key covers both a member hearing Kaibigan speak and
+  // Kaibigan understanding what they said. Without the key, this simply
+  // isn't available (same "stays quiet/unavailable" philosophy as /tts).
+  if (url.pathname === '/stt') {
+    if (env.PROXY_SECRET) {
+      const incoming = request.headers.get('x-proxy-secret') || '';
+      if (incoming !== env.PROXY_SECRET) {
+        return new Response(
+          JSON.stringify({ error: { message: 'Invalid proxy secret.' } }),
+          { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    if (!env.ELEVENLABS_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: { message: 'Voice input not configured on this Worker.' } }),
+        { status: 501, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    const audioBlob = await request.blob();
+    if (!audioBlob.size) {
+      return new Response(
+        JSON.stringify({ error: { message: 'No audio received' } }),
+        { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    const sttForm = new FormData();
+    sttForm.append('model_id', 'scribe_v1');
+    sttForm.append('file', audioBlob, 'audio.webm');
+    const sttResp = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+      method: 'POST',
+      headers: { 'xi-api-key': env.ELEVENLABS_API_KEY },
+      body: sttForm,
+    });
+    if (!sttResp.ok) {
+      const detail = await sttResp.text().catch(() => '');
+      return new Response(
+        JSON.stringify({ error: { message: `Voice input error (${sttResp.status}): ${detail.slice(0, 200)}` } }),
+        { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      );
+    }
+    const sttData = await sttResp.json();
+    return new Response(JSON.stringify({ text: sttData.text || '' }), {
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+
   // ── POST /proxy → Anthropic proxy (explicit path avoids asset-routing conflicts) ──
   // Also accept POST to any path for backwards compatibility
   if (!env.ANTHROPIC_API_KEY) {

@@ -143,10 +143,23 @@
        them a containing block, which would anchor this fixed bar to the
        section instead of the viewport and float it above the tab bar. -->
   <div class="oc-composer">
-    <textarea id="oc-input" class="oc-input" rows="1" placeholder="Kwentuhan mo ako…" aria-label="Message your companion"></textarea>
-    <button type="button" id="oc-send-btn" class="oc-send-btn" aria-label="Send message">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z"/></svg>
-    </button>
+    <div class="oc-photo-preview" id="oc-photo-preview" hidden>
+      <img id="oc-photo-preview-img" alt="">
+      <button type="button" id="oc-photo-preview-remove" class="oc-photo-preview-remove" aria-label="Remove photo">✕</button>
+    </div>
+    <div class="oc-composer-row">
+      <input type="file" id="oc-photo-input" accept="image/*" hidden>
+      <button type="button" id="oc-photo-btn" class="oc-composer-btn" aria-label="Share a photo">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8a2 2 0 0 1 2-2h1.5l1-1.5h7l1 1.5H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      </button>
+      <textarea id="oc-input" class="oc-input" rows="1" placeholder="Kwentuhan mo ako…" aria-label="Message your companion"></textarea>
+      <button type="button" id="oc-mic-btn" class="oc-composer-btn" aria-label="Record a voice message">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <button type="button" id="oc-send-btn" class="oc-send-btn" aria-label="Send message">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- ============ BOTTOM NAV ============ -->

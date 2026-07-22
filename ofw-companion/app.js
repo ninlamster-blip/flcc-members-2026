@@ -332,7 +332,7 @@ function renderSettings() {
     <div class="oc-settings-section">Privacy</div>
     <div class="oc-setting-row"><div>
       <div class="oc-setting-label">Everything stays on this phone</div>
-      <div class="oc-setting-sub">Your journal, check-ins, and conversations are stored only on this device. No ads, no selling data, no tracking. Conversations are sent to the AI only to generate replies, through your church's private connection. The one exception: turning on the evening Sanctuary reminder shares this device's rough time zone (not your exact location) so that reminder arrives in the evening instead of any random hour — nothing else about you is attached to it.</div>
+      <div class="oc-setting-sub">Your journal, check-ins, and conversations are stored only on this device. No ads, no selling data, no tracking. Conversations — including any photo you choose to share or anything you say by voice — are sent to the AI only to generate that one reply, through your church's private connection; the Worker itself never stores them. The one exception: turning on the evening Sanctuary reminder shares this device's rough time zone (not your exact location) so that reminder arrives in the evening instead of any random hour — nothing else about you is attached to it.</div>
     </div></div>
     <button type="button" class="oc-ghost-btn" id="oc-export-btn" style="width:100%;margin-top:10px">Download a copy of my data</button>
     <button type="button" class="oc-danger-btn" id="oc-clear-chat-btn">Clear conversation history</button>

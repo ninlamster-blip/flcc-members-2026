@@ -160,11 +160,29 @@ export function deleteJournalEntry(id) {
 
 // ── Companion chat ───────────────────────────────────────────────────────────
 const CHAT_WINDOW = 60;
+// A compressed photo is still tens to low-hundreds of KB — keeping all of
+// them across a 60-message window risks pushing localStorage toward its
+// quota. Only the most recent few keep their actual image data; older
+// ones fall back to a plain text placeholder (the AI itself is only ever
+// shown the most recent photo anyway — see companionReply in ai.js).
+const MAX_STORED_IMAGES = 4;
 
-export function addChatMessage(role, content) {
-  state.chat.messages.push({ role, content, t: Date.now() });
+export function addChatMessage(role, content, image) {
+  const msg = { role, content, t: Date.now() };
+  if (image) msg.image = image;
+  state.chat.messages.push(msg);
   if (state.chat.messages.length > CHAT_WINDOW) {
     state.chat.messages = state.chat.messages.slice(-CHAT_WINDOW);
+  }
+  let kept = 0;
+  for (let i = state.chat.messages.length - 1; i >= 0; i--) {
+    const m = state.chat.messages[i];
+    if (!m.image) continue;
+    kept++;
+    if (kept > MAX_STORED_IMAGES) {
+      if (!m.content) m.content = '[Nagpadala ng litrato / sent a photo]';
+      delete m.image;
+    }
   }
   state.chat.lastTalkedDate = todayKey();
   save();

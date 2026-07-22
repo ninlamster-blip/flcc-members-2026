@@ -3,10 +3,10 @@
 // paired with ai.js (the persona/system prompt) and relationship-engine.js
 // (deliberate memory follow-up).
 import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown, markMemoryFollowedUp, touchLastSeen } from './state.js';
-import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection, growthInsight } from './ai.js';
+import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection, growthInsight, transcribeAudio } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom,
-  detectsCrisis, classifyHeart,
+  detectsCrisis, classifyHeart, compressImageFile,
 } from './utils.js';
 import { openBreathing } from './sanctuary.js';
 import { createHeaderController } from './header.js';
@@ -74,6 +74,12 @@ export async function initCompanion(context) {
     chat: document.getElementById('oc-chat'),
     input: document.getElementById('oc-input'),
     sendBtn: document.getElementById('oc-send-btn'),
+    photoBtn: document.getElementById('oc-photo-btn'),
+    photoInput: document.getElementById('oc-photo-input'),
+    photoPreview: document.getElementById('oc-photo-preview'),
+    photoPreviewImg: document.getElementById('oc-photo-preview-img'),
+    photoPreviewRemove: document.getElementById('oc-photo-preview-remove'),
+    micBtn: document.getElementById('oc-mic-btn'),
     brainCard: document.getElementById('oc-brain-card'),
     brainTitle: document.getElementById('oc-brain-title'),
     brainMessage: document.getElementById('oc-brain-message'),
@@ -207,7 +213,7 @@ function renderHistory() {
     appendBubble('ai', welcomeText());
     return;
   }
-  for (const m of messages) appendBubble(m.role === 'user' ? 'user' : 'ai', m.content);
+  for (const m of messages) appendBubble(m.role === 'user' ? 'user' : 'ai', m.content, m.image);
   scrollToEnd(false);
 }
 
@@ -264,19 +270,104 @@ export function startNotOkayConversation() {
   sendUserMessage('Hindi ako okay ngayon. 🌧️', { heartChip: 'heavy' });
 }
 
+// The photo a member has picked but not sent yet — cleared once the
+// message actually goes out (or they remove it from the preview strip).
+let pendingImage = null;
+
 function setupComposer() {
   const send = () => {
     const text = els.input.value.trim();
-    if (!text || busy) return;
+    if ((!text && !pendingImage) || busy) return;
     els.input.value = '';
     autoGrow();
-    sendUserMessage(text);
+    const image = pendingImage;
+    clearPendingImage();
+    sendUserMessage(text, { image });
   };
   els.sendBtn.addEventListener('click', send);
   els.input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   });
   els.input.addEventListener('input', autoGrow);
+
+  setupPhotoShare();
+  setupVoiceInput();
+}
+
+function clearPendingImage() {
+  pendingImage = null;
+  els.photoPreview.hidden = true;
+  els.photoPreviewImg.src = '';
+  els.photoInput.value = '';
+}
+
+function setupPhotoShare() {
+  els.photoBtn.addEventListener('click', () => els.photoInput.click());
+  els.photoInput.addEventListener('change', async () => {
+    const file = els.photoInput.files?.[0];
+    if (!file) return;
+    try {
+      pendingImage = await compressImageFile(file);
+      els.photoPreviewImg.src = pendingImage;
+      els.photoPreview.hidden = false;
+    } catch {
+      clearPendingImage(); // corrupt/unreadable file — fail quiet, they can just try again
+    }
+  });
+  els.photoPreviewRemove.addEventListener('click', clearPendingImage);
+}
+
+// Speech-to-text, not the existing speakNatural() (which is the opposite
+// direction — the AI speaking its replies aloud). Transcribed text lands
+// in the composer for them to review/edit, same as typing normally — never
+// auto-sent, since a mis-heard word should be easy to fix before it goes out.
+let mediaRecorder = null;
+let recordedChunks = [];
+
+function setupVoiceInput() {
+  els.micBtn.addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    } else {
+      startRecording();
+    }
+  });
+}
+
+async function startRecording() {
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch {
+    els.input.placeholder = 'Hindi ma-access ang mic — check ang permission sa browser settings.';
+    setTimeout(() => { els.input.placeholder = 'Kwentuhan mo ako…'; }, 3000);
+    return;
+  }
+  recordedChunks = [];
+  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.addEventListener('dataavailable', (e) => { if (e.data.size) recordedChunks.push(e.data); });
+  mediaRecorder.addEventListener('stop', async () => {
+    stream.getTracks().forEach((t) => t.stop());
+    els.micBtn.classList.remove('is-recording');
+    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    if (blob.size < 1000) return; // too short to be real speech — ignore quietly
+    els.input.placeholder = 'Ginagawang text...';
+    try {
+      const text = await transcribeAudio(blob);
+      if (text) {
+        els.input.value = els.input.value ? `${els.input.value} ${text}` : text;
+        autoGrow();
+      }
+    } catch {
+      // Voice input not configured or the service failed — same quiet-
+      // failure philosophy as speakNatural(): no error dialog, they can
+      // just type instead.
+    } finally {
+      els.input.placeholder = 'Kwentuhan mo ako…';
+    }
+  });
+  mediaRecorder.start();
+  els.micBtn.classList.add('is-recording');
 }
 
 function autoGrow() {
@@ -322,8 +413,8 @@ async function sendUserMessage(text, opts = {}) {
   busy = true;
   els.sendBtn.disabled = true;
 
-  appendBubble('user', text);
-  addChatMessage('user', text);
+  appendBubble('user', text, opts.image);
+  addChatMessage('user', text, opts.image);
   scrollToEnd();
 
   if (detectsCrisis(text)) {
@@ -390,10 +481,11 @@ function offerHingaMuna() {
   });
 }
 
-function appendBubble(kind, text) {
+function appendBubble(kind, text, image) {
   const div = document.createElement('div');
   div.className = `oc-bubble oc-bubble-${kind}`;
-  div.innerHTML = renderRichText(text);
+  const imgHtml = image ? `<img class="oc-bubble-img" src="${escapeHtml(image)}" alt="">` : '';
+  div.innerHTML = imgHtml + (text ? renderRichText(text) : '');
   els.chat.appendChild(div);
   return div;
 }
