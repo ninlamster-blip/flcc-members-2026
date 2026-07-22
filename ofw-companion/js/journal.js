@@ -296,16 +296,48 @@ function renderEntries(query = '') {
 // across currencies — a KWD total and a PHP total are different numbers
 // that would be actively misleading added together.
 
+// Same currency-defaulting rule as addRemittance() itself in state.js — an
+// empty currency field means KWD, since that's the whole app's default.
+function isKwdCurrency(value) {
+  const trimmed = String(value || '').trim().toUpperCase();
+  return trimmed === '' || trimmed === 'KWD';
+}
+
+// Live-updates the "≈ ₱X.XX" preview under the amount/currency row as a
+// member types — using the same cached rate the exchange-rate chip already
+// shows, so this needs no extra fetch of its own. Silently hides if the
+// entered currency isn't KWD, the amount isn't a real number yet, or no
+// rate has been fetched yet (offline on first-ever use, say).
+function updatePhpPreview() {
+  const preview = document.getElementById('oc-remit-php-preview');
+  if (!preview) return;
+  const amountInput = document.getElementById('oc-remit-amount');
+  const currencyInput = document.getElementById('oc-remit-currency');
+  const amount = Number(amountInput.value);
+  const phpPerKwd = getState().exchangeRateCache?.phpPerKwd;
+
+  if (!amount || amount <= 0 || !isKwdCurrency(currencyInput.value) || !phpPerKwd) {
+    preview.hidden = true;
+    return;
+  }
+  preview.textContent = `≈ ₱${(amount * phpPerKwd).toFixed(2)}`;
+  preview.hidden = false;
+}
+
 function setupRemittances() {
+  const amountInput = document.getElementById('oc-remit-amount');
+  const currencyInput = document.getElementById('oc-remit-currency');
+  amountInput.addEventListener('input', updatePhpPreview);
+  currencyInput.addEventListener('input', updatePhpPreview);
+
   document.getElementById('oc-remit-save').addEventListener('click', () => {
-    const amountInput = document.getElementById('oc-remit-amount');
-    const currencyInput = document.getElementById('oc-remit-currency');
     const noteInput = document.getElementById('oc-remit-note');
     if (!Number(amountInput.value) || Number(amountInput.value) <= 0) return;
     addRemittance({ amount: amountInput.value, currency: currencyInput.value, note: noteInput.value });
     amountInput.value = '';
     currencyInput.value = '';
     noteInput.value = '';
+    updatePhpPreview();
     toast('Naitala ang padala mo 💸');
     renderRemittances();
   });
@@ -466,6 +498,7 @@ async function initExchangeRate() {
   const show = (phpPerKwd) => {
     el.textContent = `💱 Ngayon: 1 KWD ≈ ₱${phpPerKwd.toFixed(2)}`;
     el.hidden = false;
+    updatePhpPreview(); // the rate just became available (or changed) — refresh the live conversion too
   };
 
   const cached = getState().exchangeRateCache;
