@@ -705,6 +705,149 @@ body.oc-home-compact .oc-brain-card {
 .oc-sanctuary-ghost { margin-top: 12px; }
 #oc-sanctuary-gratitude { margin-bottom: 0; }
 
+/* ── Faith Blocks (wellness mini-game) ──────────────────────────────────── */
+.oc-faithblocks-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.88em;
+  font-weight: 600;
+  padding: 9px 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-faithblocks-btn:active { transform: scale(0.96); }
+
+.oc-faithblocks {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  animation: oc-sanctuary-fade 0.4s ease both;
+}
+.oc-fb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+.oc-fb-close {
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 1.1em;
+  padding: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.oc-fb-lines { color: var(--ink-soft); font-size: 0.9em; font-weight: 600; }
+
+.oc-fb-board-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+.oc-fb-board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 6 / 11;
+  background: var(--bg-soft);
+  border-radius: var(--radius);
+  padding: 6px;
+}
+.oc-fb-cell {
+  border-radius: 6px;
+  background: transparent;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.oc-fb-cell.is-filled {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  animation: oc-fb-land 0.15s ease both;
+}
+@keyframes oc-fb-land { from { transform: scale(0.85); } to { transform: scale(1); } }
+/* Soft, distinguishable piece colors — same warm/calm family as the rest of
+   the app's palette, plus a few gentle additions since seven pieces need
+   seven readable hues. Not tied to light/dark theme (a game board needs
+   consistent piece colors regardless), chosen at a mid-tone lightness that
+   reads clearly on both var(--bg) values. */
+.oc-fb-cell.oc-fb-c1 { background: #6FA8A0; }
+.oc-fb-cell.oc-fb-c2 { background: #D9B15F; }
+.oc-fb-cell.oc-fb-c3 { background: #A98BC4; }
+.oc-fb-cell.oc-fb-c4 { background: #8FBB74; }
+.oc-fb-cell.oc-fb-c5 { background: #D98B6B; }
+.oc-fb-cell.oc-fb-c6 { background: #7FA6C9; }
+.oc-fb-cell.oc-fb-c7 { background: #E0A860; }
+
+.oc-fb-controls {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  flex-shrink: 0;
+  margin-top: 14px;
+  max-width: 420px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.oc-fb-btn {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--ink);
+  font-size: 1.6em;
+  padding: 18px 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: var(--shadow);
+}
+.oc-fb-btn:active { transform: scale(0.94); }
+.oc-fb-btn-accent { background: var(--accent-soft); color: var(--accent-ink); }
+
+.oc-fb-modal-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.35);
+}
+.oc-fb-modal-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-raised);
+  border-radius: var(--radius);
+  padding: 26px 22px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.oc-fb-break-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.15em;
+  font-style: italic;
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+.oc-fb-break-ref { color: var(--ink-faint); font-size: 0.9em; margin-bottom: 20px; }
+.oc-fb-intervene-title { font-weight: 700; font-size: 1.1em; margin-bottom: 6px; }
+.oc-fb-intervene-sub { color: var(--ink-soft); font-size: 0.92em; margin-bottom: 16px; }
+.oc-fb-end-title { font-weight: 700; font-size: 1.15em; margin-bottom: 8px; }
+.oc-fb-end-sub { color: var(--ink-soft); font-size: 0.95em; margin-bottom: 20px; line-height: 1.5; }
+
 /* ── Heart check-in chips ───────────────────────────────────────────────── */
 
 .oc-heart-checkin {

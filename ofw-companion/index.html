@@ -63,6 +63,7 @@
       <div class="oc-care-row">
         <button type="button" id="oc-ritual-pill" class="oc-ritual-pill" hidden></button>
         <button type="button" id="oc-notokay-btn" class="oc-notokay-btn">I'm not okay today</button>
+        <button type="button" id="oc-faithblocks-btn" class="oc-faithblocks-btn">🎮 Faith Blocks</button>
       </div>
 
       <!-- Isang Minutong Salita — daily 1-minute audio verse/prayer -->
@@ -284,6 +285,57 @@
     <p class="oc-breathe-label" id="oc-breathe-label">Huminga… breathe in</p>
     <p class="oc-breathe-sub">Sundan mo lang ang bilog. Walang madaliin.</p>
     <button type="button" class="oc-ghost-btn" id="oc-breathe-close">Tapos na ako</button>
+  </div>
+
+  <!-- ============ FAITH BLOCKS (wellness mini-game) ============ -->
+  <div id="oc-faithblocks" class="oc-faithblocks" hidden role="dialog" aria-modal="true" aria-label="Faith Blocks">
+    <div class="oc-fb-header">
+      <button type="button" class="oc-fb-close" id="oc-fb-close" aria-label="Close Faith Blocks">✕</button>
+      <p class="oc-fb-lines" id="oc-fb-lines"></p>
+    </div>
+
+    <div class="oc-fb-board-wrap" id="oc-fb-board-wrap">
+      <div class="oc-fb-board" id="oc-fb-board"></div>
+    </div>
+
+    <div class="oc-fb-controls">
+      <button type="button" class="oc-fb-btn" id="oc-fb-left" aria-label="Move left">◀</button>
+      <button type="button" class="oc-fb-btn oc-fb-btn-accent" id="oc-fb-rotate" aria-label="Rotate">⟳</button>
+      <button type="button" class="oc-fb-btn" id="oc-fb-right" aria-label="Move right">▶</button>
+      <button type="button" class="oc-fb-btn oc-fb-btn-accent" id="oc-fb-drop" aria-label="Drop to bottom">⬇</button>
+    </div>
+
+    <!-- Scripture / gentle-encouragement break between rounds -->
+    <div class="oc-fb-modal-wrap" id="oc-fb-break" hidden>
+      <div class="oc-fb-modal-card">
+        <p class="oc-fb-break-text" id="oc-fb-break-text"></p>
+        <p class="oc-fb-break-ref" id="oc-fb-break-ref"></p>
+        <button type="button" class="oc-primary-btn" id="oc-fb-break-continue">Magpatuloy</button>
+      </div>
+    </div>
+
+    <!-- Gentle "you've been playing a while" break offer — no guilt, no pressure -->
+    <div class="oc-fb-modal-wrap" id="oc-fb-intervene" hidden>
+      <div class="oc-fb-modal-card">
+        <p class="oc-fb-intervene-title">Matagal ka nang naglalaro</p>
+        <p class="oc-fb-intervene-sub">Walang pilitan — ikaw ang bahala kung ano ang susunod.</p>
+        <button type="button" class="oc-notokay-option" data-fb-intervene="continue"><span>🎮</span><span>Magpatuloy sa laro</span></button>
+        <button type="button" class="oc-notokay-option" data-fb-intervene="break"><span>🌤️</span><span>Magpahinga muna</span></button>
+        <button type="button" class="oc-notokay-option" data-fb-intervene="pray"><span>🙏</span><span>Manalangin</span></button>
+        <button type="button" class="oc-notokay-option" data-fb-intervene="journal"><span>📝</span><span>Magsulat sa Journal</span></button>
+        <button type="button" class="oc-notokay-option" data-fb-intervene="breathe"><span>🫁</span><span>Huminga muna</span></button>
+      </div>
+    </div>
+
+    <!-- Gentle end-of-round screen — never "GAME OVER" -->
+    <div class="oc-fb-modal-wrap" id="oc-fb-end" hidden>
+      <div class="oc-fb-modal-card">
+        <p class="oc-fb-end-title" id="oc-fb-end-title"></p>
+        <p class="oc-fb-end-sub" id="oc-fb-end-sub"></p>
+        <button type="button" class="oc-primary-btn" id="oc-fb-retry">Ulitin</button>
+        <button type="button" class="oc-ghost-btn" id="oc-fb-end-close" style="margin-top:8px">Tapos na ako</button>
+      </div>
+    </div>
   </div>
 
   <!-- ============ SANCTUARY MODE (evening ritual) ============ -->
