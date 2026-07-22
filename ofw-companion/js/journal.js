@@ -3,7 +3,7 @@
 // The primary data source for the Wellness Brain (see js/agent-brain.js for
 // the full five-brain map) — reflection-engine.js and growth-engine.js both
 // read the check-ins and entries saved here.
-import { getState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry, addRemittance, deleteRemittance } from './state.js';
+import { getState, updateState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry, addRemittance, deleteRemittance } from './state.js';
 import { wellbeingInsight, isConnected } from './ai.js';
 import { escapeHtml, friendlyDate, todayKey } from './utils.js';
 
@@ -32,6 +32,7 @@ export function initJournal(context) {
   renderEntries();
   setupRemittances();
   renderRemittances();
+  initExchangeRate();
 }
 
 // Re-render when the tab is opened, so entries added elsewhere (e.g. a
@@ -41,6 +42,7 @@ export function refreshJournal() {
   renderInsightCard();
   renderEntries(document.getElementById('oc-journal-search').value.trim().toLowerCase());
   renderRemittances();
+  initExchangeRate();
 }
 
 // ── Daily check-in ───────────────────────────────────────────────────────────
@@ -345,4 +347,39 @@ function renderRemittances() {
       renderRemittances();
     });
   });
+}
+
+// ── Exchange rate (open.er-api.com, free, no key) ────────────────────────────
+// KWD → PHP specifically, not a generic converter — this church's members
+// are Kuwait-based (see README), so that's the one rate actually relevant
+// on the padala card, same "one clearly useful thing, not a general tool"
+// instinct as the rest of this app. Same cache-then-refresh pattern as
+// sanctuary.js's weather chip.
+async function fetchExchangeRate() {
+  const res = await fetch('https://open.er-api.com/v6/latest/KWD');
+  if (!res.ok) throw new Error('rate unavailable');
+  const data = await res.json();
+  if (data.result !== 'success' || !data.rates?.PHP) throw new Error('rate unavailable');
+  return data.rates.PHP;
+}
+
+async function initExchangeRate() {
+  const el = document.getElementById('oc-exchange-rate');
+  if (!el) return;
+
+  const show = (phpPerKwd) => {
+    el.textContent = `💱 Ngayon: 1 KWD ≈ ₱${phpPerKwd.toFixed(2)}`;
+    el.hidden = false;
+  };
+
+  const cached = getState().exchangeRateCache;
+  if (cached && Date.now() - cached.at < 45 * 60 * 1000) { show(cached.phpPerKwd); return; }
+  if (cached) show(cached.phpPerKwd); // stale is better than blank while we refresh
+  else el.hidden = true; // nothing to show yet — don't leave an unrelated earlier render's state lingering
+
+  try {
+    const phpPerKwd = await fetchExchangeRate();
+    updateState((st) => { st.exchangeRateCache = { at: Date.now(), phpPerKwd }; });
+    show(phpPerKwd);
+  } catch { /* offline — the cached or hidden line stands */ }
 }
