@@ -214,6 +214,36 @@ function lifeDetailsBlock() {
   return lines.length ? lines.join('\n') : 'Nothing added yet.';
 }
 
+// Personal prayer requests (state.js `prayerRequests`), distinct from the
+// community Kadena ng Panalangin — this is what makes a genuine "you
+// prayed for this a while ago, and now..." callback possible instead of
+// that only ever being a scripted line: real requests, real elapsed time,
+// pre-computed the same way lifeDetailsBlock() pre-computes day counts.
+function prayerRequestsBlock() {
+  const { prayerRequests } = getState();
+  if (!prayerRequests.length) return 'Nothing logged yet.';
+  const today = todayKey();
+  const lines = [];
+  const unanswered = prayerRequests.filter((p) => !p.answered);
+  const recentlyAnswered = prayerRequests.filter((p) => p.answered && daysBetween(p.answeredDate, today) <= 90);
+  if (unanswered.length) {
+    lines.push('Still praying for (not yet marked answered):');
+    for (const p of unanswered.slice(0, 10)) {
+      const days = daysBetween(p.date, today);
+      lines.push(`- "${p.text}" — requested ${days} day${days === 1 ? '' : 's'} ago`);
+    }
+  }
+  if (recentlyAnswered.length) {
+    lines.push('Recently answered — a real moment to celebrate if it fits naturally, never forced:');
+    for (const p of recentlyAnswered.slice(0, 5)) {
+      const requestedDaysAgo = daysBetween(p.date, today);
+      const answeredDaysAgo = daysBetween(p.answeredDate, today);
+      lines.push(`- "${p.text}" — originally requested ${requestedDaysAgo} days ago, answered ${answeredDaysAgo} day${answeredDaysAgo === 1 ? '' : 's'} ago${p.answeredNote ? ` (${p.answeredNote})` : ''}`);
+    }
+  }
+  return lines.length ? lines.join('\n') : 'Nothing currently active — everything logged has aged past the recent-celebration window.';
+}
+
 // The church Worker's GET /news aggregates several RSS feeds (see
 // ask-proxy/worker.js RSS_FEEDS), shared with a different project's use
 // too — this is both which sources are relevant to an OFW audience (world
@@ -315,7 +345,8 @@ HOW YOU RESPOND
 - Reinforce dignity: they are a whole person, not just a worker or a provider.
 - If they seem emotionally vulnerable toward risky relationships or scams, never shame them — gently affirm their worth and guide toward safe, healthy connection.
 ${faith
-  ? '- Faith: the user has faith features ON. Be freely spiritual: offer to pray with them, weave in a short fitting scripture or a word of God\'s faithfulness, and invite them to church life: FLCC worship every Friday 10:00 AM at the National Evangelical Church in Kuwait compound (led by Rev. Jopet Alim), the FLCC Virtual Church online (Sundays & Wednesdays 10:30 PM Kuwait time; K.S.A. Saturdays 10:30 AM, led by Pastor Anson Dionisio), and the fellowship groups. Lead with compassion and listen first — encourage, never preach at them, and remind them that God Himself, not you, is their true refuge.'
+  ? `- Faith: the user has faith features ON. Be freely spiritual: offer to pray with them, weave in a short fitting scripture or a word of God's faithfulness, and invite them to church life: FLCC worship every Friday 10:00 AM at the National Evangelical Church in Kuwait compound (led by Rev. Jopet Alim), the FLCC Virtual Church online (Sundays & Wednesdays 10:30 PM Kuwait time; K.S.A. Saturdays 10:30 AM, led by Pastor Anson Dionisio), and the fellowship groups. Lead with compassion and listen first — encourage, never preach at them, and remind them that God Himself, not you, is their true refuge.
+- PRAYER REQUESTS below has their own logged prayers with real elapsed time. If one was recently marked answered, that's a genuine moment worth celebrating with them when it naturally fits ("you prayed for this X days ago — and now...") — never force it into an unrelated moment, and never invent that something was answered when it wasn't logged as such. For a long-unanswered one, only bring it up gently if the conversation is already headed there; don't turn every chat into a status check on their prayer list.`
   : '- Faith: the user has faith features OFF. Do not bring up religious content unless they ask.'}
 
 BOUNDARIES
@@ -335,6 +366,9 @@ ${recentWellbeingSummary()}
 
 LIFE DETAILS (structured facts they've entered in Settings — employer, contract, vacation, family. Day counts are pre-computed; trust them over your own math)
 ${lifeDetailsBlock()}
+${faith ? `
+PRAYER REQUESTS (their own private prayer log, from the Faith tab — see the "faith" guidance above for when and how to use these)
+${prayerRequestsBlock()}` : ''}
 
 MEMORIES FROM PAST CONVERSATIONS
 ${memoriesBlock()}
