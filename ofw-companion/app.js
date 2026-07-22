@@ -14,6 +14,7 @@ import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
 import { initPrayerChain, markPrayersSeen } from './js/prayerchain.js';
 import { initTestimonies } from './js/testimonies.js';
+import { initFaithBlocks } from './js/faith-blocks.js';
 import {
   pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications,
   isEveningNotifyEnabled, enableEveningNotify, disableEveningNotify, migrateLegacySubscription, refreshEveningTzOffset,
@@ -66,6 +67,7 @@ async function boot() {
   initPrayerChain(context);
   initTestimonies(context);
   initSupport(context);
+  initFaithBlocks(context);
   initSanctuaryMode(context);
   maybeOpenSanctuaryFromNotification();
 

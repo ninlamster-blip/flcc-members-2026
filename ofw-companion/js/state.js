@@ -43,6 +43,12 @@ function defaultState() {
     // anywhere; joining still happens the same human way it always has
     // (message your fellowship leader).
     interestedGroups: [],
+    // Faith Blocks (wellness mini-game, js/faith-blocks.js): a light session
+    // log, newest first — { date, startedAt (epoch ms), durationMs,
+    // linesCleared }. Purely local, same as everything else — this is the
+    // foundation for Agent Brain to eventually notice patterns ("you often
+    // play after a hard day"), not a behavioral-analytics system in itself.
+    faithBlocksSessions: [],
     // SAFETY pillar: a private on-device photo library of important
     // documents (passport, visa, contract) — { id, name, dateAdded, image
     // (data URL) }, newest first. On-device only, same as everything else
@@ -261,6 +267,19 @@ export function toggleGroupInterest(groupName) {
   const i = state.interestedGroups.indexOf(groupName);
   if (i === -1) state.interestedGroups.push(groupName);
   else state.interestedGroups.splice(i, 1);
+  save();
+}
+
+// ── Faith Blocks sessions (wellness mini-game) ────────────────────────────────
+export function logFaithBlocksSession({ startedAt, durationMs, linesCleared }) {
+  if (!Number.isFinite(durationMs) || durationMs < 3000) return; // too short to mean anything
+  state.faithBlocksSessions.unshift({
+    date: todayKey(),
+    startedAt,
+    durationMs,
+    linesCleared: linesCleared || 0,
+  });
+  if (state.faithBlocksSessions.length > 60) state.faithBlocksSessions.length = 60;
   save();
 }
 
