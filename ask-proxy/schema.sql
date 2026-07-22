@@ -45,35 +45,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_prayer_interactions_unique
 CREATE INDEX IF NOT EXISTS idx_prayers_created_at
   ON prayers (created_at DESC);
 
--- Mga Sagot sa Panalangin — a member's own personal prayer log (kept fully
--- on-device, see ofw-companion/js/state.js `prayerRequests`) can optionally
--- be shared here once marked answered, as encouragement for the wider
--- congregation. Same shape and same privacy posture as `prayers` above —
--- first_name/origin_country are member-supplied and optional, country_code
--- is Cloudflare-stamped, and praise_count is a un-linkable-hash-deduplicated
--- reaction rather than anything identity-bearing.
-CREATE TABLE IF NOT EXISTS testimonies (
-  id             TEXT PRIMARY KEY,
-  content        TEXT NOT NULL,
-  country_code   TEXT,
-  first_name     TEXT,
-  origin_country TEXT,
-  praise_count   INTEGER DEFAULT 0,
-  created_at     TEXT DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS testimony_interactions (
-  id           TEXT PRIMARY KEY,
-  testimony_id TEXT NOT NULL,
-  user_hash    TEXT NOT NULL
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_testimony_interactions_unique
-  ON testimony_interactions (testimony_id, user_hash);
-
-CREATE INDEX IF NOT EXISTS idx_testimonies_created_at
-  ON testimonies (created_at DESC);
-
 -- Web Push subscriptions, shared by two independent opt-ins: "bagong
 -- panalangin" (reactive — fires when someone posts a prayer request) and
 -- the evening Sanctuary reminder (scheduled hourly, checking each device's

@@ -214,36 +214,6 @@ function lifeDetailsBlock() {
   return lines.length ? lines.join('\n') : 'Nothing added yet.';
 }
 
-// Personal prayer requests (state.js `prayerRequests`), distinct from the
-// community Kadena ng Panalangin — this is what makes a genuine "you
-// prayed for this a while ago, and now..." callback possible instead of
-// that only ever being a scripted line: real requests, real elapsed time,
-// pre-computed the same way lifeDetailsBlock() pre-computes day counts.
-function prayerRequestsBlock() {
-  const { prayerRequests } = getState();
-  if (!prayerRequests.length) return 'Nothing logged yet.';
-  const today = todayKey();
-  const lines = [];
-  const unanswered = prayerRequests.filter((p) => !p.answered);
-  const recentlyAnswered = prayerRequests.filter((p) => p.answered && daysBetween(p.answeredDate, today) <= 90);
-  if (unanswered.length) {
-    lines.push('Still praying for (not yet marked answered):');
-    for (const p of unanswered.slice(0, 10)) {
-      const days = daysBetween(p.date, today);
-      lines.push(`- "${p.text}" — requested ${days} day${days === 1 ? '' : 's'} ago`);
-    }
-  }
-  if (recentlyAnswered.length) {
-    lines.push('Recently answered — a real moment to celebrate if it fits naturally, never forced:');
-    for (const p of recentlyAnswered.slice(0, 5)) {
-      const requestedDaysAgo = daysBetween(p.date, today);
-      const answeredDaysAgo = daysBetween(p.answeredDate, today);
-      lines.push(`- "${p.text}" — originally requested ${requestedDaysAgo} days ago, answered ${answeredDaysAgo} day${answeredDaysAgo === 1 ? '' : 's'} ago${p.answeredNote ? ` (${p.answeredNote})` : ''}`);
-    }
-  }
-  return lines.length ? lines.join('\n') : 'Nothing currently active — everything logged has aged past the recent-celebration window.';
-}
-
 // The church Worker's GET /news aggregates several RSS feeds (see
 // ask-proxy/worker.js RSS_FEEDS), shared with a different project's use
 // too — this is both which sources are relevant to an OFW audience (world
@@ -366,9 +336,6 @@ ${recentWellbeingSummary()}
 
 LIFE DETAILS (structured facts they've entered in Settings — employer, contract, vacation, family. Day counts are pre-computed; trust them over your own math)
 ${lifeDetailsBlock()}
-${faith ? `
-PRAYER REQUESTS (their own private prayer log, from the Faith tab — see the "faith" guidance above for when and how to use these)
-${prayerRequestsBlock()}` : ''}
 
 MEMORIES FROM PAST CONVERSATIONS
 ${memoriesBlock()}

@@ -13,7 +13,6 @@ import { initJournal, refreshJournal } from './js/journal.js';
 import { initFaith, render as renderFaith } from './js/faith.js';
 import { initCommunity } from './js/community.js';
 import { initPrayerChain, markPrayersSeen } from './js/prayerchain.js';
-import { initTestimonies } from './js/testimonies.js';
 import { initFaithBlocks } from './js/faith-blocks.js';
 import {
   pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications,
@@ -65,7 +64,6 @@ async function boot() {
   initFaith(context);
   initCommunity(context);
   initPrayerChain(context);
-  initTestimonies(context);
   initSupport(context);
   initFaithBlocks(context);
   initSanctuaryMode(context);
