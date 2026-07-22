@@ -3,9 +3,13 @@
 // Community Brain (see js/agent-brain.js for the full five-brain map),
 // paired with prayerchain.js (Kadena ng Panalangin).
 import { escapeHtml } from './utils.js';
+import { getState, toggleGroupInterest } from './state.js';
+
+let goTo = () => {};
 
 export function initCommunity(context) {
   const { biblestudy, resources } = context;
+  goTo = context.goTo;
   const body = document.getElementById('oc-community-body');
 
   body.innerHTML = `
@@ -22,15 +26,7 @@ export function initCommunity(context) {
 
     <div class="oc-card">
       <h2 class="oc-section-title">Fellowship groups</h2>
-      ${biblestudy.groups.map((g) => `
-        <div class="oc-group">
-          <div class="oc-group-icon" aria-hidden="true">${g.icon}</div>
-          <div>
-            <div class="oc-group-name">${escapeHtml(g.name)}</div>
-            <div class="oc-group-detail">${escapeHtml(g.detail)}</div>
-            <div class="oc-group-meets">${escapeHtml(g.meets)}</div>
-          </div>
-        </div>`).join('')}
+      <div id="oc-fellowship-groups"></div>
       <p class="oc-muted" style="margin-top:10px">To join a group, message your fellowship leader — a real person will welcome you in.</p>
     </div>
 
@@ -46,4 +42,47 @@ export function initCommunity(context) {
           </div>
         </div>`).join('')}
     </div>`;
+
+  renderFellowshipGroups(biblestudy.groups);
+}
+
+// Rendered into its own #oc-fellowship-groups mount point (not the whole
+// #oc-community-body) so tapping "I'm interested" doesn't wipe out
+// #oc-prayer-chain/#oc-testimonies, which prayerchain.js/testimonies.js
+// render into independently and don't re-render on their own.
+function renderFellowshipGroups(groups) {
+  const wrap = document.getElementById('oc-fellowship-groups');
+  const interested = new Set(getState().interestedGroups);
+
+  wrap.innerHTML = groups.map((g) => {
+    const isInterested = interested.has(g.name);
+    return `
+      <div class="oc-group">
+        <div class="oc-group-icon" aria-hidden="true">${g.icon}</div>
+        <div style="flex:1">
+          <div class="oc-group-name">${escapeHtml(g.name)}</div>
+          <div class="oc-group-detail">${escapeHtml(g.detail)}</div>
+          <div class="oc-group-meets">${escapeHtml(g.meets)}</div>
+          ${isInterested ? `<p class="oc-muted" style="margin-top:6px">💌 Nakatala ang interes mo. <a href="#" data-goto-tulong>Tingnan ang church contact sa Tulong</a> para makipag-ugnayan.</p>` : ''}
+        </div>
+        <button type="button" class="oc-ghost-btn oc-group-interest-btn${isInterested ? ' is-interested' : ''}" data-group-interest="${escapeHtml(g.name)}" style="white-space:nowrap;align-self:center">
+          ${isInterested ? '💌 Interesado ✓' : '💌 Interesado ako'}
+        </button>
+      </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-group-interest]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      navigator.vibrate?.(8);
+      toggleGroupInterest(btn.dataset.groupInterest);
+      renderFellowshipGroups(groups);
+    });
+  });
+
+  wrap.querySelectorAll('[data-goto-tulong]').forEach((a) => {
+    a.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      goTo('support');
+    });
+  });
 }

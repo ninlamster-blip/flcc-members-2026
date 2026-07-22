@@ -35,6 +35,14 @@ function defaultState() {
     // the budget card, or both — logging a padala twice, once in each, is
     // a mild inconvenience, not a bug worth a risky data migration).
     budgetEntries: [],
+    // COMMUNITY pillar: fellowship group names the member tapped "I'm
+    // interested" on (data/biblestudy.json groups have no stable id — the
+    // group's own `name` is the key, same tolerance for admin-editable
+    // content as teachingNotes below being keyed by date rather than id).
+    // Purely a personal, on-device reminder to follow up — never sent
+    // anywhere; joining still happens the same human way it always has
+    // (message your fellowship leader).
+    interestedGroups: [],
     // SAFETY pillar: a private on-device photo library of important
     // documents (passport, visa, contract) — { id, name, dateAdded, image
     // (data URL) }, newest first. On-device only, same as everything else
@@ -245,6 +253,14 @@ export function addBudgetEntry({ type, category, amount, currency, note }) {
 
 export function deleteBudgetEntry(id) {
   state.budgetEntries = state.budgetEntries.filter((e) => e.id !== id);
+  save();
+}
+
+// ── Fellowship group interest (COMMUNITY pillar) ─────────────────────────────
+export function toggleGroupInterest(groupName) {
+  const i = state.interestedGroups.indexOf(groupName);
+  if (i === -1) state.interestedGroups.push(groupName);
+  else state.interestedGroups.splice(i, 1);
   save();
 }
 
