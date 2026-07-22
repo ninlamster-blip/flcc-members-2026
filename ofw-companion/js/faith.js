@@ -4,7 +4,8 @@
 // (the evening ritual, which reuses this file's verse selection).
 import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, saveSermonNotes, addJournalEntry, addPrayerRequest, markPrayerAnswered, deletePrayerRequest } from './state.js';
 import { personalPrayer, isConnected } from './ai.js';
-import { escapeHtml, todayKey, pickRandom, friendlyDate, daysBetween } from './utils.js';
+import { escapeHtml, todayKey, pickRandom, friendlyDate, daysBetween, firstNameOf } from './utils.js';
+import { shareTestimony } from './testimonies.js';
 
 let data = {}; // { verses, prayers, biblestudy }
 let toast = () => {};
@@ -288,11 +289,28 @@ function renderPrayerRequestList(body) {
   list.querySelectorAll('[data-answer-prayerreq]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const note = prompt('Paano ito sinagot? (optional — I-OK lang kung gusto mong itago sa pagitan mo at ng Diyos)') || '';
-      markPrayerAnswered(btn.dataset.answerPrayerreq, note);
+      const id = btn.dataset.answerPrayerreq;
+      markPrayerAnswered(id, note);
       toast('Salamat sa Diyos! 🙌');
       renderPrayerRequestList(body);
+      offerToShareTestimony(getState().prayerRequests.find((p) => p.id === id));
     });
   });
+}
+
+// Optional, one-time nudge after marking a prayer answered: offer to share
+// it into Kapwa's Mga Sagot sa Panalangin feed (js/testimonies.js) as
+// encouragement for the wider congregation. Purely opt-in — declining or
+// closing the prompt leaves the prayer exactly as private as it already was.
+function offerToShareTestimony(prayer) {
+  if (!prayer) return;
+  if (!confirm('Gusto mo bang ibahagi ito sa Kapwa bilang inspirasyon sa iba? Puwede mong palitan ang teksto bago ipadala.')) return;
+  const content = prompt('I-edit kung gusto (opsyonal), tapos OK para ibahagi:', prayer.text) ?? '';
+  if (!content.trim()) return;
+  const { profile } = getState();
+  shareTestimony({ content: content.trim(), firstName: firstNameOf(profile.name), originCountry: profile.country || '' })
+    .then(() => toast('Naibahagi sa Kapwa! 🙌'))
+    .catch((err) => toast(`Hindi naibahagi — subukan ulit. (${err.message})`));
 }
 
 function wirePrayerRequests(body) {
