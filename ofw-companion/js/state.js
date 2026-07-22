@@ -49,6 +49,21 @@ function defaultState() {
     // preaching — separate from the per-teaching notes above.
     sermonNotes: '',
     onboarded: false,
+    // LIFE pillar: structured facts about their life abroad — distinct from
+    // `memories` below (free-text things the AI noticed in conversation).
+    // This is the foundation for countdowns and proactive nudges (contract
+    // ending soon, an upcoming vacation, a family birthday) — features that
+    // need an actual date to work from, not a sentence buried in a memory.
+    // Birthdays only ever use the month+day of the stored date to recur
+    // annually; whatever year was picked in the date input is not used for
+    // anything (a member who doesn't remember/want to share the exact year
+    // can pick any plausible one).
+    life: {
+      employer: '',
+      contractEndDate: '',   // YYYY-MM-DD, optional
+      vacationDate: '',      // YYYY-MM-DD, optional — next planned trip home
+      family: [],            // { id, name, relation, birthday: 'YYYY-MM-DD' | '' }
+    },
     // Agent Brain (js/agent-brain.js): which suggestion card the member
     // dismissed today, so it doesn't reappear until conditions change or a
     // new day starts; when they last saw a weekly reflection (surfaces at
@@ -230,6 +245,31 @@ export function markMemoryFollowedUp(text) {
     memory.followedUpAt = Date.now();
     save();
   }
+}
+
+// ── Life details (LIFE pillar: employer, contract, vacation, family) ────────
+export function setLifeInfo({ employer, contractEndDate, vacationDate }) {
+  state.life.employer = String(employer || '').trim().slice(0, 80);
+  state.life.contractEndDate = contractEndDate || '';
+  state.life.vacationDate = vacationDate || '';
+  save();
+}
+
+export function addFamilyMember({ name, relation, birthday }) {
+  const trimmedName = String(name || '').trim().slice(0, 40);
+  if (!trimmedName) return;
+  state.life.family.push({
+    id: uid(),
+    name: trimmedName,
+    relation: String(relation || '').trim().slice(0, 30),
+    birthday: birthday || '',
+  });
+  save();
+}
+
+export function deleteFamilyMember(id) {
+  state.life.family = state.life.family.filter((m) => m.id !== id);
+  save();
 }
 
 // ── Teaching notes ───────────────────────────────────────────────────────────

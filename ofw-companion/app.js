@@ -1,6 +1,6 @@
 // FLCC Kasama — entry point. Wires navigation, onboarding, settings,
 // crisis support, and the five views together.
-import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory } from './js/state.js';
+import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory, setLifeInfo, addFamilyMember, deleteFamilyMember } from './js/state.js';
 import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
 import { loadJson, escapeHtml } from './js/utils.js';
 import { initCompanion, startNotOkayConversation, resetHomeHeader, refreshBrainCard, maybeGreetAfterGap } from './js/companion.js';
@@ -273,6 +273,32 @@ function renderSettings() {
       </div>
     </div>
 
+    <div class="oc-settings-section">Life details</div>
+    <div class="oc-setting-row"><div style="flex:1">
+      <div class="oc-setting-sub" style="margin-bottom:8px">Helps Kaibigan count down with you and remember what matters. Optional, stays on this device.</div>
+      <div class="oc-setting-label">Employer</div>
+      <input type="text" class="oc-text-input" id="oc-set-employer" value="${escapeHtml(s.life.employer)}" maxlength="80" placeholder="e.g. Al Rashid family" style="margin-top:6px">
+      <div class="oc-setting-label" style="margin-top:14px">Contract end date</div>
+      <input type="date" class="oc-text-input" id="oc-set-contract-end" value="${escapeHtml(s.life.contractEndDate)}" style="margin-top:6px">
+      <div class="oc-setting-label" style="margin-top:14px">Next vacation / trip home</div>
+      <input type="date" class="oc-text-input" id="oc-set-vacation" value="${escapeHtml(s.life.vacationDate)}" style="margin-top:6px">
+    </div></div>
+
+    <div class="oc-setting-row"><div style="flex:1">
+      <div class="oc-setting-label">Family</div>
+      ${s.life.family.length ? s.life.family.map((m) => `
+        <div class="oc-entry-meta" style="padding:6px 0">
+          <span style="color:var(--ink-soft);flex:1">${escapeHtml(m.name)}${m.relation ? ` — ${escapeHtml(m.relation)}` : ''}${m.birthday ? ` · 🎂 ${birthdayLabel(m.birthday)}` : ''}</span>
+          <button type="button" class="oc-entry-delete" data-forget-family="${m.id}" aria-label="Remove ${escapeHtml(m.name)}">✕</button>
+        </div>`).join('') : '<div class="oc-setting-sub">No family added yet.</div>'}
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        <input type="text" class="oc-text-input" id="oc-fam-name" placeholder="Name" style="flex:1;min-width:100px">
+        <input type="text" class="oc-text-input" id="oc-fam-relation" placeholder="Relation (e.g. Anak)" style="flex:1;min-width:100px">
+      </div>
+      <input type="date" class="oc-text-input" id="oc-fam-birthday" style="margin-top:6px">
+      <button type="button" class="oc-ghost-btn" id="oc-fam-add" style="margin-top:8px;width:100%">Add family member</button>
+    </div></div>
+
     <div class="oc-settings-section">Experience</div>
     ${settingSwitch('faithEnabled', 'Faith features', 'Prayers, devotionals, and the Bible study community')}
     ${settingSwitch('voiceReplies', 'Spoken replies', 'Kaibigan reads replies aloud in a warm, natural voice. Needs the church voice key (ELEVENLABS_API_KEY) on the Worker — otherwise stays quiet.')}
@@ -409,6 +435,22 @@ function renderSettings() {
     });
   });
 
+  body.querySelectorAll('[data-forget-family]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      deleteFamilyMember(btn.dataset.forgetFamily);
+      renderSettings();
+    });
+  });
+
+  body.querySelector('#oc-fam-add').addEventListener('click', () => {
+    const name = body.querySelector('#oc-fam-name').value;
+    const relation = body.querySelector('#oc-fam-relation').value;
+    const birthday = body.querySelector('#oc-fam-birthday').value;
+    if (!name.trim()) return;
+    addFamilyMember({ name, relation, birthday });
+    renderSettings();
+  });
+
   body.querySelector('#oc-export-btn').addEventListener('click', () => {
     const blob = new Blob([exportAll()], { type: 'application/json' });
     const a = document.createElement('a');
@@ -435,6 +477,11 @@ function renderSettings() {
     const name = body.querySelector('#oc-set-name').value.trim();
     const country = body.querySelector('#oc-set-country').value.trim();
     updateState((st) => { st.profile.name = name; st.profile.country = country; });
+    setLifeInfo({
+      employer: body.querySelector('#oc-set-employer').value,
+      contractEndDate: body.querySelector('#oc-set-contract-end').value,
+      vacationDate: body.querySelector('#oc-set-vacation').value,
+    });
     saveConnection({
       proxyUrl: body.querySelector('#oc-set-proxy').value,
       proxySecret: body.querySelector('#oc-set-secret').value,
@@ -519,6 +566,14 @@ function connectionHint(message) {
   if (/failed to fetch|networkerror|load failed/i.test(message)) return 'Hindi maabot ang address — tingnan ang spelling ng Worker URL at ang internet mo.';
   if (/404/.test(message)) return 'Mali yata ang Worker URL — dapat ito ang address ng Worker mo, hal. https://pangalan.workers.dev.';
   return 'Kung hindi malinaw, kopyahin ang error na ito at ipakita sa church admin.';
+}
+
+// Birthdays only ever use month+day (see state.js's `life.family` comment)
+// — formatted without a year so it doesn't imply one that wasn't given.
+function birthdayLabel(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 function settingSwitch(key, label, sub) {

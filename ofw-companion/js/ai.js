@@ -7,7 +7,7 @@
 // Faith Brain and Wellness Brain respectively — this file is shared
 // infrastructure (the Claude connection itself), not owned by one brain.
 import { getState, updateState, addMemory, heartFeelingsToday } from './state.js';
-import { todayKey } from './utils.js';
+import { todayKey, daysBetween } from './utils.js';
 import { currentPeriod } from './sanctuary.js';
 
 // Same pattern as apiBase() in notifications.js/sanctuary.js/prayerchain.js:
@@ -188,6 +188,32 @@ function memoriesBlock() {
   return memories.slice(0, 25).map((m) => `- ${m.text}`).join('\n');
 }
 
+// Structured facts (state.js `life`) rather than free-text memories — this
+// hands the AI ready-made day counts instead of asking it to do date math
+// itself, which large language models are notoriously unreliable at.
+function lifeDetailsBlock() {
+  const { life } = getState();
+  const lines = [];
+  if (life.employer) lines.push(`Employer: ${life.employer}`);
+  if (life.contractEndDate) {
+    const days = daysBetween(todayKey(), life.contractEndDate);
+    lines.push(`Contract end date: ${life.contractEndDate}${days >= 0 ? ` (${days} day${days === 1 ? '' : 's'} from today)` : ' (already passed — may have been renewed or already ended)'}`);
+  }
+  if (life.vacationDate) {
+    const days = daysBetween(todayKey(), life.vacationDate);
+    lines.push(`Next vacation/trip home: ${life.vacationDate}${days >= 0 ? ` (${days} day${days === 1 ? '' : 's'} from today)` : ' (already passed)'}`);
+  }
+  if (life.family.length) {
+    lines.push('Family:');
+    for (const m of life.family) {
+      let entry = `- ${m.name}${m.relation ? ` (${m.relation})` : ''}`;
+      if (m.birthday) entry += ` — birthday ${m.birthday.slice(5)}`; // MM-DD only, see state.js
+      lines.push(entry);
+    }
+  }
+  return lines.length ? lines.join('\n') : 'Nothing added yet.';
+}
+
 // The church Worker's GET /news aggregates several RSS feeds (see
 // ask-proxy/worker.js RSS_FEEDS), shared with a different project's use
 // too — this is both which sources are relevant to an OFW audience (world
@@ -270,7 +296,8 @@ WHO YOU ARE
 - You remember what they've shared (see MEMORIES below) and gently bring it up when it matters: "Last time you mentioned missing your daughter — kumusta ka na about that?"
 - You understand mixed emotions: a person can be happy but lonely, strong but exhausted, grateful but missing home. Never flatten what they feel into one label.
 - You understand the OFW reality: remittances, utang, employers good and bad, missed birthdays and Christmases, video calls that end too soon, the pressure to always appear strong for the family, day-offs that are too short, and the quiet ache of being needed for your money more than asked about your heart.
-- Be specific, not generic. Use their actual name, their actual home country/province if known, and actual details from MEMORIES — a real friend says "kumusta na si Angel?" not "kumusta na ang pamilya mo?" Avoid therapy-speak clichés ("I hear you," "that sounds really difficult," "it's valid to feel that way") — say what a close friend would actually say instead.
+- Be specific, not generic. Use their actual name, their actual home country/province if known, and actual details from MEMORIES and LIFE DETAILS — a real friend says "kumusta na si Angel?" not "kumusta na ang pamilya mo?" Avoid therapy-speak clichés ("I hear you," "that sounds really difficult," "it's valid to feel that way") — say what a close friend would actually say instead.
+- LIFE DETAILS below has real family names and real day counts to a contract end date or vacation — weave these in naturally when they fit (a family member's actual birthday coming up, genuine excitement as a vacation gets close), never as a recited checklist and never every single message.
 
 WHAT YOU CAN HELP WITH
 - The Bible: quote verses accurately with their reference (use a widely used translation and name it, e.g. NIV or Ang Biblia for Filipino), find the verse they half-remember, and explain passages gently and faithfully. If a question is deep doctrine or a personal spiritual crisis, share what Scripture says and encourage them to bring it to Pastor Anson or the Bible study.
@@ -305,6 +332,9 @@ Only add a memory when there is genuinely something new. The tag is stripped bef
 RECENT WELLBEING (from their private check-ins on this device)
 Today's heart check-in: ${heartFeelingsToday().join(', ') || 'not answered yet'}
 ${recentWellbeingSummary()}
+
+LIFE DETAILS (structured facts they've entered in Settings — employer, contract, vacation, family. Day counts are pre-computed; trust them over your own math)
+${lifeDetailsBlock()}
 
 MEMORIES FROM PAST CONVERSATIONS
 ${memoriesBlock()}
