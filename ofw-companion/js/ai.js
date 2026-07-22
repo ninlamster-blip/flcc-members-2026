@@ -379,6 +379,28 @@ export async function companionReply(history) {
   return extractMemory(raw);
 }
 
+// A gentle, in-context check-in when the member has gone quiet mid-
+// conversation for a while — not a new topic, a continuation: "still
+// here, still listening," the way a real friend sends a second text
+// rather than assuming something is wrong. Given the real conversation
+// history so it can reference what they last said instead of a generic
+// "are you there?". Distinct from companionOpener() (a new day's first
+// greeting) and Agent Brain's own nudges (home-screen cards, not chat
+// messages) — this one lands directly in the chat.
+export async function companionFollowup(history) {
+  const messages = history.map((m) => ({ role: m.role, content: m.content || (m.image ? '[a photo, shared earlier]' : '') }));
+  messages.push({
+    role: 'user',
+    content: '(I went quiet for a bit mid-conversation — I might be busy, thinking, or just distracted, not necessarily upset. Gently check in, in one short warm sentence, like a caring friend sending a second text. Reference what I last said if it fits naturally; otherwise a simple "still here for you" nudge is fine. Do not repeat a question you already asked, and do not assume anything is wrong. Do not add a <memory> tag.)',
+  });
+  const raw = await callClaude({
+    system: await companionSystemPrompt(),
+    messages,
+    maxTokens: 150,
+  });
+  return extractMemory(raw);
+}
+
 // ── Voice input (speech-to-text) ─────────────────────────────────────────────
 // Goes through the church Worker's /stt endpoint, which reuses the exact
 // same ELEVENLABS_API_KEY secret spoken replies already need (ElevenLabs'
