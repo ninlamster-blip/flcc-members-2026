@@ -18,6 +18,7 @@ function defaultState() {
       // cost per message — kind to the church's shared API budget.
       model: 'claude-haiku-4-5-20251001',
       modelChosenByUser: false,
+      faithBlocksSound: true, // soft synthesized tones — off doesn't affect haptics
     },
     // Daily wellbeing check-ins, newest first: { date, mood 1-5, energy 1-5,
     // loneliness 1-5, hope 1-5, connected (bool), gratitude (string) }
