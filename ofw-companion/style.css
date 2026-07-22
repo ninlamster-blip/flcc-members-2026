@@ -729,15 +729,17 @@ body.oc-home-compact .oc-brain-card {
   background: var(--bg);
   padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
   animation: oc-sanctuary-fade 0.4s ease both;
+  overscroll-behavior: contain; /* a swipe near the edge must never pull the page instead of moving a piece */
 }
 .oc-fb-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   flex-shrink: 0;
   margin-bottom: 8px;
 }
-.oc-fb-close {
+.oc-fb-close, .oc-fb-sound {
   border: none;
   background: none;
   color: var(--ink-faint);
@@ -755,6 +757,13 @@ body.oc-home-compact .oc-brain-card {
   align-items: center;
   justify-content: center;
   min-height: 0;
+  /* The whole board area is the swipe surface (left/right/down/tap-to-
+     rotate) — touch-action: none stops the browser's own scroll/zoom
+     gesture recognizer from racing our pointer handlers and eating swipes,
+     which is what made touch swiping feel unreliable before this. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .oc-fb-board {
   display: grid;

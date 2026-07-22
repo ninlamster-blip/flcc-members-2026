@@ -15,7 +15,7 @@
 // No score chase on purpose — lines cleared are shown quietly, never framed
 // as a number to beat. Never "GAME OVER"; never "YOU WIN".
 import { pickRandom } from './utils.js';
-import { logFaithBlocksSession } from './state.js';
+import { getState, updateState, logFaithBlocksSession } from './state.js';
 import { openBreathing } from './sanctuary.js';
 
 const COLS = 6;
@@ -45,6 +45,53 @@ const END_TITLES = ['Magaling!', 'Isang hakbang paglaya.', 'Salamat sa oras na i
 let els = {};
 let goTo = () => {};
 let versePool = [];
+
+// ── Sound (soft synthesized tones, no audio files needed — stays fully
+// offline and needs no new assets) ──────────────────────────────────────────
+// Lazily created on the first real tap (browsers require a user gesture
+// before audio can play), and gently gained — this is a wellness break, not
+// an arcade, so nothing here should startle anyone in a shared room.
+let audioCtx = null;
+
+function ensureAudioCtx() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  if (!audioCtx) audioCtx = new Ctx();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function beep({ freq, duration, type = 'sine', gain = 0.04, delay = 0 }) {
+  const ctx = ensureAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(g);
+  g.connect(ctx.destination);
+  const t0 = ctx.currentTime + delay;
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(gain, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+  osc.start(t0);
+  osc.stop(t0 + duration + 0.03);
+}
+
+function playSound(kind) {
+  if (!getState().settings.faithBlocksSound) return;
+  if (kind === 'move') beep({ freq: 260, duration: 0.06, gain: 0.025 });
+  else if (kind === 'rotate') beep({ freq: 380, duration: 0.07, gain: 0.03 });
+  else if (kind === 'lock') beep({ freq: 150, duration: 0.09, type: 'triangle', gain: 0.045 });
+  else if (kind === 'lineClear') {
+    beep({ freq: 523.25, duration: 0.14, gain: 0.045 }); // C5
+    beep({ freq: 659.25, duration: 0.14, gain: 0.045, delay: 0.08 }); // E5
+    beep({ freq: 783.99, duration: 0.18, gain: 0.045, delay: 0.16 }); // G5
+  } else if (kind === 'gameOver') {
+    beep({ freq: 392.0, duration: 0.2, gain: 0.035 }); // G4
+    beep({ freq: 329.63, duration: 0.3, gain: 0.035, delay: 0.18 }); // E4
+  }
+}
 
 let board = [];
 let current = null;
@@ -147,6 +194,9 @@ function lockPiece() {
   if (cleared > 0) {
     totalLinesCleared += cleared;
     linesSinceBreak += cleared;
+    playSound('lineClear');
+  } else {
+    playSound('lock');
   }
 
   current = next;
@@ -168,6 +218,7 @@ function tryMove(dc) {
   if (!collides(current.shape, current.row, current.col + dc)) {
     current.col += dc;
     render();
+    playSound('move');
   }
 }
 
@@ -179,6 +230,7 @@ function tryRotate() {
       current.shape = rotated;
       current.col += dc;
       render();
+      playSound('rotate');
       return;
     }
   }
@@ -280,6 +332,7 @@ function gameOver() {
   clearInterval(interventionTimer);
   logCurrentSession();
   render();
+  playSound('gameOver');
   els.endTitle.textContent = pickRandom(END_TITLES);
   els.endSub.textContent = totalLinesCleared > 0
     ? `${totalLinesCleared} na linya ang nalinis mo. Isang hakbang paglaya.`
@@ -295,16 +348,27 @@ function closeOverlay() {
 }
 
 // ── Swipe gestures on the board (tap = rotate, matching the spec) ───────────
+// Pointer capture + explicit touch-action: none (see style.css) so the
+// browser's own scroll/zoom gesture recognizer never races these handlers
+// and swallows a swipe partway through — the failure mode that made touch
+// controls feel unreliable before this.
 function setupSwipe(zone) {
   let startX = 0;
   let startY = 0;
   let startT = 0;
-  zone.addEventListener('pointerdown', (e) => {
+  let tracking = false;
+
+  const onDown = (e) => {
+    tracking = true;
     startX = e.clientX;
     startY = e.clientY;
     startT = Date.now();
-  });
-  zone.addEventListener('pointerup', (e) => {
+    zone.setPointerCapture?.(e.pointerId);
+  };
+
+  const onUp = (e) => {
+    if (!tracking) return;
+    tracking = false;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     if (Date.now() - startT > 800) return; // too slow to read as a swipe
@@ -317,7 +381,17 @@ function setupSwipe(zone) {
     } else if (dy > SWIPE) {
       hardDrop();
     }
-  });
+  };
+
+  zone.addEventListener('pointerdown', onDown);
+  zone.addEventListener('pointerup', onUp);
+  zone.addEventListener('pointercancel', () => { tracking = false; });
+}
+
+function updateSoundBtn() {
+  const on = getState().settings.faithBlocksSound;
+  els.soundBtn.textContent = on ? '🔊' : '🔇';
+  els.soundBtn.setAttribute('aria-label', on ? 'Mute sound' : 'Unmute sound');
 }
 
 export function initFaithBlocks(context) {
@@ -328,6 +402,7 @@ export function initFaithBlocks(context) {
     launchBtn: document.getElementById('oc-faithblocks-btn'),
     overlay: document.getElementById('oc-faithblocks'),
     closeBtn: document.getElementById('oc-fb-close'),
+    soundBtn: document.getElementById('oc-fb-sound'),
     lines: document.getElementById('oc-fb-lines'),
     boardWrap: document.getElementById('oc-fb-board-wrap'),
     board: document.getElementById('oc-fb-board'),
@@ -354,6 +429,13 @@ export function initFaithBlocks(context) {
     startGame();
   });
   els.closeBtn.addEventListener('click', closeOverlay);
+
+  updateSoundBtn();
+  els.soundBtn.addEventListener('click', () => {
+    updateState((s) => { s.settings.faithBlocksSound = !s.settings.faithBlocksSound; });
+    updateSoundBtn();
+    if (getState().settings.faithBlocksSound) playSound('move'); // a quick confirmation blip
+  });
 
   els.left.addEventListener('click', () => { navigator.vibrate?.(6); tryMove(-1); });
   els.right.addEventListener('click', () => { navigator.vibrate?.(6); tryMove(1); });
