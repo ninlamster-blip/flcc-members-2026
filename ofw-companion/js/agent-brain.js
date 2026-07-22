@@ -17,6 +17,12 @@
 //   - Agent Brain (this file) — reads across all of the above, decides what
 //     to surface and when
 //
+// The SAFETY pillar (support.js's Tulong tab) has no dedicated brain of its
+// own, same as LIFE (state.js `life`) above it — both are simple enough to
+// live as signals + rules directly in this file rather than a separate
+// module. See safetySignal() and the sustained-hardship/no-documents-saved
+// rules below.
+//
 // Everything this file reads already lives in state.js under the same
 // privacy terms as today — on this device only, visible and erasable from
 // Settings (see "What Kaibigan remembers" / "Erase everything"). This
@@ -77,7 +83,20 @@ function checkinSignal(s) {
   return {
     daysSinceCheckin: s.checkins[0] ? daysBetween(s.checkins[0].date) : null,
     moodTrend,
+    // A sustained count, not a trend — moodTrend can read "steady" while
+    // still being steadily hard. Needs at least 5 check-ins to say
+    // anything, same reasoning as moodTrend's own 4-check-in floor.
+    hardDaysRecent: recent.length >= 5 ? recent.filter((c) => c.mood <= 2).length : 0,
+    recentCheckinCount: recent.length,
   };
+}
+
+// SAFETY pillar (support.js's Tulong tab) signal — whether the member has
+// ever saved a document to the on-device vault, so the Decision Engine
+// below can nudge them to do it before it's actually needed (a contract
+// ending or a trip home), not only after.
+function safetySignal(s) {
+  return { documentCount: s.documents.length };
 }
 
 function heartSignal() {
@@ -148,6 +167,7 @@ export function buildContext() {
     ...reflectionSignal(s),
     ...growthSignal(s),
     ...lifeSignal(s),
+    ...safetySignal(s),
   };
 }
 
@@ -165,6 +185,24 @@ const RULES = [
       message: 'Gusto mo bang mag-isang minutong paghinga, o kausapin si Kaibigan tungkol dito?',
       cta: 'Hinga muna',
       action: { tab: 'home', focus: 'breathe' },
+    }),
+  },
+  {
+    // SAFETY pillar — a sustained pattern, not just one hard day (that's
+    // heavy-today's job above) or a short relative trend (mood-declining's,
+    // below — kept lower-priority since a trend can be noisy while this is
+    // an absolute floor). Gently opens the door to Tulong's real hotlines
+    // and church contacts — works even without an AI connection, unlike
+    // the system prompt's own "direct persistent despair to Tulong"
+    // instruction, which only fires mid-conversation. Never diagnoses;
+    // just says the door is there.
+    id: 'sustained-hardship',
+    when: (c) => c.recentCheckinCount >= 5 && c.hardDaysRecent >= 4,
+    build: () => ({
+      title: 'Hindi ka nag-iisa dito',
+      message: 'Mabigat ang mga huling araw mo. May mga totoong tao na handang makinig — hindi lang app. Narito ang Tulong kung gusto mong makipag-usap sa isang tao ngayon.',
+      cta: 'Buksan ang Tulong',
+      action: { tab: 'support' },
     }),
   },
   {
@@ -215,6 +253,23 @@ const RULES = [
         : `${c.daysUntilVacation} araw na lang bago ang bakasyon mo. Excited ka na ba?`,
       cta: null,
       action: { tab: 'home' },
+    }),
+  },
+  {
+    // SAFETY pillar — best timed around a real transition (a contract
+    // ending, a trip home) rather than as a generic recurring nag, so it
+    // shares its trigger window with contract-ending-soon/vacation-
+    // approaching above instead of firing on its own schedule.
+    id: 'no-documents-saved',
+    when: (c) => c.documentCount === 0 && (
+      (c.daysUntilContractEnd !== null && c.daysUntilContractEnd >= 0 && c.daysUntilContractEnd <= 30) ||
+      (c.daysUntilVacation !== null && c.daysUntilVacation >= 0 && c.daysUntilVacation <= 14)
+    ),
+    build: () => ({
+      title: 'Ligtas ba ang mga dokumento mo?',
+      message: 'Malapit nang may malaking pagbabago — magandang panahon para kumuha ng litrato ng pasaporte, visa, o kontrata mo, para andito kahit kailan mo kailanganin.',
+      cta: 'Buksan ang Tulong',
+      action: { tab: 'support' },
     }),
   },
   {
