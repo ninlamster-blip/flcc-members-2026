@@ -1046,6 +1046,28 @@ body[data-active-view]:not([data-active-view="home"]) .oc-home-header { display:
 }
 .oc-entry-text { white-space: pre-wrap; overflow-wrap: break-word; }
 
+/* Document vault (Tulong / My documents) */
+.oc-doc-list { display: flex; flex-direction: column; gap: 8px; }
+.oc-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.oc-doc-thumb {
+  width: 46px; height: 46px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+.oc-doc-meta { flex: 1; min-width: 0; }
+.oc-doc-name { font-weight: 600; }
+.oc-doc-date { font-size: 0.82em; color: var(--ink-faint); }
+.oc-doc-viewer-img { display: block; max-width: 100%; border-radius: 14px; margin-top: 10px; }
+
 .oc-journey-dots {
   display: flex;
   gap: 6px;

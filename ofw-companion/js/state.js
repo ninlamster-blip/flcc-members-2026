@@ -28,6 +28,13 @@ function defaultState() {
     // { id, date, amount, currency, note }. Kept separate from `life`
     // (which is single current-state facts) since this is a growing history.
     remittances: [],
+    // SAFETY pillar: a private on-device photo library of important
+    // documents (passport, visa, contract) — { id, name, dateAdded, image
+    // (data URL) }, newest first. On-device only, same as everything else
+    // here — never sent to the AI or anywhere else. No extra encryption
+    // beyond the device's own lock screen (explicit product decision, not
+    // an oversight — see the "My documents" card's own on-screen note).
+    documents: [],
     // Companion conversation: rolling window of { role, content, t }.
     // lastSeenAt (epoch ms) tracks the last time the app was actually in
     // the foreground — distinct from lastTalkedDate (the calendar date of
@@ -193,6 +200,23 @@ export function addRemittance({ amount, currency, note }) {
 
 export function deleteRemittance(id) {
   state.remittances = state.remittances.filter((r) => r.id !== id);
+  save();
+}
+
+// ── Documents (SAFETY pillar) ────────────────────────────────────────────────
+export function addDocument({ name, image }) {
+  if (!image) return;
+  state.documents.unshift({
+    id: uid(),
+    name: String(name || '').trim().slice(0, 60) || 'Document',
+    dateAdded: todayKey(),
+    image,
+  });
+  save();
+}
+
+export function deleteDocument(id) {
+  state.documents = state.documents.filter((d) => d.id !== id);
   save();
 }
 
