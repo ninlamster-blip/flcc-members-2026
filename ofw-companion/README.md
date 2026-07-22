@@ -16,7 +16,7 @@ remembered. You are not alone."**
 | **Journal** | A under-30-second daily wellbeing check-in (mood, energy, loneliness, hope, connection, gratitude), gentle non-clinical insights, a private free-writing journal with search, and a remittance log (amount, currency, note) with a running monthly total per currency. |
 | **Faith** | Verse and prayer matched to today's heart, AI-personalized prayer, and the FLCC Virtual Church led by **Pastor Anson Dionisio** — services every Sunday and Wednesday 10:30 PM Kuwait time and K.S.A. every Saturday 10:30 AM, "What are you bringing into this week's study?", past teachings with discussion questions. Fully optional — can be switched off. |
 | **Kapwa** | The safe community: Women's and Men's Fellowship (every Wednesday, 8:30 PM Kuwait time), community values (no likes, no followers — just kapatiran), and off-day connection ideas. |
-| **Tulong** | OFW Support Center: crisis lines, DMW/OWWA, embassy directory, migrant-worker organizations, and church contacts. |
+| **Tulong** | OFW Support Center: crisis lines, DMW/OWWA, embassy directory, migrant-worker organizations, church contacts, and a private on-device document vault (passport, visa, contract photos). |
 
 ## How the AI works
 
