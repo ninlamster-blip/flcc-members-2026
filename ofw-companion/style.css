@@ -727,7 +727,7 @@ body.oc-home-compact .oc-brain-card {
   display: flex;
   flex-direction: column;
   background: var(--bg);
-  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 10px calc(env(safe-area-inset-bottom, 0px) + 10px);
   animation: oc-sanctuary-fade 0.4s ease both;
   overscroll-behavior: contain; /* a swipe near the edge must never pull the page instead of moving a piece */
 }
@@ -737,7 +737,7 @@ body.oc-home-compact .oc-brain-card {
   justify-content: space-between;
   gap: 8px;
   flex-shrink: 0;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .oc-fb-close, .oc-fb-sound {
   border: none;
@@ -769,9 +769,11 @@ body.oc-home-compact .oc-brain-card {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 4px;
-  width: 100%;
-  max-width: 360px;
-  aspect-ratio: 6 / 11;
+  /* Width and height are set directly in px by faith-blocks.js's fitBoard()
+     — it measures the actual available space in #oc-fb-board-wrap and
+     picks whichever dimension is the tighter fit, so the board (and every
+     tile in it) is always as big as the screen genuinely allows, on any
+     phone, not sized off a guessed CSS aspect-ratio. */
   background: var(--bg-soft);
   border-radius: var(--radius);
   padding: 6px;
@@ -786,6 +788,12 @@ body.oc-home-compact .oc-brain-card {
   animation: oc-fb-land 0.15s ease both;
 }
 @keyframes oc-fb-land { from { transform: scale(0.85); } to { transform: scale(1); } }
+/* Landing-spot preview — an outline only, never a solid fill, so it never
+   reads as an already-placed block. */
+.oc-fb-cell.is-ghost {
+  box-shadow: inset 0 0 0 2px var(--ink-faint);
+  opacity: 0.5;
+}
 /* Soft, distinguishable piece colors — same warm/calm family as the rest of
    the app's palette, plus a few gentle additions since seven pieces need
    seven readable hues. Not tied to light/dark theme (a game board needs
@@ -802,9 +810,9 @@ body.oc-home-compact .oc-brain-card {
 .oc-fb-controls {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
-  margin-top: 14px;
+  margin-top: 8px;
   max-width: 420px;
   width: 100%;
   margin-left: auto;

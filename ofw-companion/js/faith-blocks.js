@@ -19,9 +19,20 @@ import { getState, updateState, logFaithBlocksSession } from './state.js';
 import { openBreathing } from './sanctuary.js';
 
 const COLS = 6;
-const ROWS = 11;
+// Taller than classic Tetris's 20 rows would feel on 6 wide columns, but
+// chosen to roughly match a phone's own usable aspect ratio once the
+// header/controls are subtracted — see fitBoard() below, which measures
+// the actual available space at runtime and sizes the board (and every
+// tile) to fill as much of the screen as that ratio allows, rather than
+// guessing a fixed size in CSS. A board this shape also stays forgiving:
+// ordinary, unhurried play shouldn't top out every round.
+const ROWS = 12;
 const LINES_PER_BREAK = 3;
 const INTERVENE_AFTER_MS = 20 * 60 * 1000;
+// Constant, unhurried pace — no speed-up ramp. This is a wellness break,
+// not a challenge to beat; gravity should never be the thing creating
+// pressure to decide fast.
+const DROP_INTERVAL_MS = 850;
 
 const PIECES = [
   { shape: [[1, 1, 1, 1]], color: 'oc-fb-c1' }, // I
@@ -161,14 +172,10 @@ function clearFullLines() {
   return cleared;
 }
 
-function dropIntervalMs() {
-  return Math.max(500, 900 - Math.floor(totalLinesCleared / 3) * 40);
-}
-
 function armDropTimer() {
   clearTimeout(dropTimer);
   if (paused || gameEnded) return;
-  dropTimer = setTimeout(tick, dropIntervalMs());
+  dropTimer = setTimeout(tick, DROP_INTERVAL_MS);
 }
 
 function tick() {
@@ -244,9 +251,30 @@ function hardDrop() {
   armDropTimer();
 }
 
+// Where the current piece would land if hard-dropped right now.
+function ghostRow() {
+  let r = current.row;
+  while (!collides(current.shape, r + 1, current.col)) r += 1;
+  return r;
+}
+
+// A faint landing-spot outline for the current piece — seeing exactly
+// where a hard-drop will land before committing to it removes the anxiety
+// of an irreversible surprise, which matters more here than in a
+// competitive Tetris (this is meant to be relaxing, not tense).
 function render() {
   const display = board.map((row) => row.slice());
+  const ghostCells = new Set();
   if (current) {
+    const gRow = ghostRow();
+    if (gRow !== current.row) {
+      current.shape.forEach((row, r) => row.forEach((v, c) => {
+        if (!v) return;
+        const br = gRow + r;
+        const bc = current.col + c;
+        if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) ghostCells.add(br * COLS + bc);
+      }));
+    }
     current.shape.forEach((row, r) => row.forEach((v, c) => {
       if (!v) return;
       const br = current.row + r;
@@ -255,7 +283,11 @@ function render() {
     }));
   }
   els.board.innerHTML = display.flat()
-    .map((cell) => `<div class="oc-fb-cell${cell ? ` is-filled ${cell}` : ''}"></div>`)
+    .map((cell, i) => {
+      if (cell) return `<div class="oc-fb-cell is-filled ${cell}"></div>`;
+      if (ghostCells.has(i)) return '<div class="oc-fb-cell is-ghost"></div>';
+      return '<div class="oc-fb-cell"></div>';
+    })
     .join('');
   els.lines.textContent = `🧱 ${totalLinesCleared}`;
 }
@@ -278,6 +310,22 @@ function pauseForBreak() {
 
 function resumeFromBreak() {
   els.break.hidden = true;
+  paused = false;
+  armDropTimer();
+}
+
+// ── Manual pause — a member may get pulled away mid-round, or just want to
+// stop and think without gravity forcing a decision. No-op if some other
+// modal (break/intervention/end) already has the game paused. ─────────────
+function pauseGame() {
+  if (paused || gameEnded || !current) return;
+  paused = true;
+  clearTimeout(dropTimer);
+  els.pause.hidden = false;
+}
+
+function resumeGame() {
+  els.pause.hidden = true;
   paused = false;
   armDropTimer();
 }
@@ -319,6 +367,7 @@ function startGame() {
   interventionShownThisSession = false;
   els.break.hidden = true;
   els.intervene.hidden = true;
+  els.pause.hidden = true;
   els.end.hidden = true;
   render();
   armDropTimer();
@@ -394,6 +443,28 @@ function updateSoundBtn() {
   els.soundBtn.setAttribute('aria-label', on ? 'Mute sound' : 'Unmute sound');
 }
 
+// Measures the actual available space in #oc-fb-board-wrap and sizes the
+// board to fill as much of it as the COLS:ROWS ratio allows — whichever
+// dimension is the tighter fit wins, so the board (and every tile) is
+// always as big as the real screen genuinely has room for, rather than a
+// size guessed ahead of time in CSS. A no-op while the overlay is hidden
+// (nothing to measure yet).
+function fitBoard() {
+  if (!els.overlay || els.overlay.hidden) return;
+  const availW = els.boardWrap.clientWidth;
+  const availH = els.boardWrap.clientHeight;
+  if (!availW || !availH) return;
+  const ratio = COLS / ROWS;
+  let w = availW;
+  let h = w / ratio;
+  if (h > availH) {
+    h = availH;
+    w = h * ratio;
+  }
+  els.board.style.width = `${Math.floor(w)}px`;
+  els.board.style.height = `${Math.floor(h)}px`;
+}
+
 export function initFaithBlocks(context) {
   goTo = context.goTo;
   versePool = flattenVerses(context.verses);
@@ -403,6 +474,7 @@ export function initFaithBlocks(context) {
     overlay: document.getElementById('oc-faithblocks'),
     closeBtn: document.getElementById('oc-fb-close'),
     soundBtn: document.getElementById('oc-fb-sound'),
+    pauseBtn: document.getElementById('oc-fb-pause-btn'),
     lines: document.getElementById('oc-fb-lines'),
     boardWrap: document.getElementById('oc-fb-board-wrap'),
     board: document.getElementById('oc-fb-board'),
@@ -415,6 +487,8 @@ export function initFaithBlocks(context) {
     breakRef: document.getElementById('oc-fb-break-ref'),
     breakContinue: document.getElementById('oc-fb-break-continue'),
     intervene: document.getElementById('oc-fb-intervene'),
+    pause: document.getElementById('oc-fb-pause'),
+    pauseResume: document.getElementById('oc-fb-pause-resume'),
     end: document.getElementById('oc-fb-end'),
     endTitle: document.getElementById('oc-fb-end-title'),
     endSub: document.getElementById('oc-fb-end-sub'),
@@ -426,8 +500,11 @@ export function initFaithBlocks(context) {
   els.launchBtn.addEventListener('click', () => {
     navigator.vibrate?.(8);
     els.overlay.hidden = false;
+    fitBoard();
     startGame();
   });
+  window.addEventListener('resize', fitBoard);
+  window.addEventListener('orientationchange', fitBoard);
   els.closeBtn.addEventListener('click', closeOverlay);
 
   updateSoundBtn();
@@ -442,6 +519,9 @@ export function initFaithBlocks(context) {
   els.rotate.addEventListener('click', () => { navigator.vibrate?.(6); tryRotate(); });
   els.drop.addEventListener('click', () => { navigator.vibrate?.(10); hardDrop(); });
   setupSwipe(els.boardWrap);
+
+  els.pauseBtn.addEventListener('click', () => { navigator.vibrate?.(6); pauseGame(); });
+  els.pauseResume.addEventListener('click', resumeGame);
 
   els.breakContinue.addEventListener('click', resumeFromBreak);
 
