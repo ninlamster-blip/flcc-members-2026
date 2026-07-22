@@ -208,6 +208,7 @@ function lockPiece() {
 
   current = next;
   next = randomPiece();
+  renderNextPreview();
 
   if (collides(current.shape, current.row, current.col)) {
     gameOver();
@@ -292,6 +293,26 @@ function render() {
   els.lines.textContent = `🧱 ${totalLinesCleared}`;
 }
 
+// A small always-visible preview of the upcoming piece — lets a member plan
+// ahead calmly instead of reacting to a surprise the instant it spawns.
+// Normalized onto a fixed 4x4 grid (big enough for any piece shape here) so
+// the preview box never changes size as different pieces come up.
+function renderNextPreview() {
+  if (!els.nextPreview || !next) return;
+  const size = 4;
+  const grid = Array.from({ length: size }, () => Array(size).fill(null));
+  const { shape, colorClass } = next;
+  const offR = Math.floor((size - shape.length) / 2);
+  const offC = Math.floor((size - shape[0].length) / 2);
+  shape.forEach((row, r) => row.forEach((v, c) => {
+    if (!v) return;
+    grid[offR + r][offC + c] = colorClass;
+  }));
+  els.nextPreview.innerHTML = grid.flat()
+    .map((cell) => `<div class="oc-fb-next-cell oc-fb-cell${cell ? ` is-filled ${cell}` : ''}"></div>`)
+    .join('');
+}
+
 // ── Scripture / encouragement break, every few line clears ──────────────────
 function pauseForBreak() {
   paused = true;
@@ -310,22 +331,6 @@ function pauseForBreak() {
 
 function resumeFromBreak() {
   els.break.hidden = true;
-  paused = false;
-  armDropTimer();
-}
-
-// ── Manual pause — a member may get pulled away mid-round, or just want to
-// stop and think without gravity forcing a decision. No-op if some other
-// modal (break/intervention/end) already has the game paused. ─────────────
-function pauseGame() {
-  if (paused || gameEnded || !current) return;
-  paused = true;
-  clearTimeout(dropTimer);
-  els.pause.hidden = false;
-}
-
-function resumeGame() {
-  els.pause.hidden = true;
   paused = false;
   armDropTimer();
 }
@@ -367,9 +372,9 @@ function startGame() {
   interventionShownThisSession = false;
   els.break.hidden = true;
   els.intervene.hidden = true;
-  els.pause.hidden = true;
   els.end.hidden = true;
   render();
+  renderNextPreview();
   armDropTimer();
   startInterventionWatch();
 }
@@ -474,7 +479,7 @@ export function initFaithBlocks(context) {
     overlay: document.getElementById('oc-faithblocks'),
     closeBtn: document.getElementById('oc-fb-close'),
     soundBtn: document.getElementById('oc-fb-sound'),
-    pauseBtn: document.getElementById('oc-fb-pause-btn'),
+    nextPreview: document.getElementById('oc-fb-next'),
     lines: document.getElementById('oc-fb-lines'),
     boardWrap: document.getElementById('oc-fb-board-wrap'),
     board: document.getElementById('oc-fb-board'),
@@ -487,8 +492,6 @@ export function initFaithBlocks(context) {
     breakRef: document.getElementById('oc-fb-break-ref'),
     breakContinue: document.getElementById('oc-fb-break-continue'),
     intervene: document.getElementById('oc-fb-intervene'),
-    pause: document.getElementById('oc-fb-pause'),
-    pauseResume: document.getElementById('oc-fb-pause-resume'),
     end: document.getElementById('oc-fb-end'),
     endTitle: document.getElementById('oc-fb-end-title'),
     endSub: document.getElementById('oc-fb-end-sub'),
@@ -503,8 +506,13 @@ export function initFaithBlocks(context) {
     fitBoard();
     startGame();
   });
-  window.addEventListener('resize', fitBoard);
-  window.addEventListener('orientationchange', fitBoard);
+  // Deliberately NOT listening on window 'resize': mobile browsers fire it
+  // constantly while playing as the address bar auto-hides/shows on touch,
+  // which made the board visibly grow mid-tap and never settle back to its
+  // original size. orientationchange (an actual device rotation) is a much
+  // rarer, more deliberate signal, so it's the only thing worth re-fitting
+  // for once the game is already open.
+  window.addEventListener('orientationchange', () => setTimeout(fitBoard, 200));
   els.closeBtn.addEventListener('click', closeOverlay);
 
   updateSoundBtn();
@@ -519,9 +527,6 @@ export function initFaithBlocks(context) {
   els.rotate.addEventListener('click', () => { navigator.vibrate?.(6); tryRotate(); });
   els.drop.addEventListener('click', () => { navigator.vibrate?.(10); hardDrop(); });
   setupSwipe(els.boardWrap);
-
-  els.pauseBtn.addEventListener('click', () => { navigator.vibrate?.(6); pauseGame(); });
-  els.pauseResume.addEventListener('click', resumeGame);
 
   els.breakContinue.addEventListener('click', resumeFromBreak);
 

@@ -751,6 +751,22 @@ body.oc-home-compact .oc-brain-card {
 }
 .oc-fb-lines { color: var(--ink-soft); font-size: 0.9em; font-weight: 600; }
 
+/* Susunod — the upcoming piece, always visible so a member can plan ahead
+   calmly instead of reacting to a surprise the instant it spawns. Fixed
+   4x4 mini-grid regardless of the piece's actual shape, so this box never
+   changes size. */
+.oc-fb-next {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  width: 32px;
+  height: 32px;
+  padding: 3px;
+  background: var(--bg-soft);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
 .oc-fb-board-wrap {
   flex: 1;
   display: flex;
