@@ -440,12 +440,6 @@ async function handleRequest(request, env, ctx) {
     return handlePrayerChain(request, env, url, ctx);
   }
 
-  // ── /api/testimonies — Mga Sagot sa Panalangin, shared from a member's
-  // own answered prayer log (see ofw-companion/js/faith.js) ────────────────
-  if (url.pathname === '/api/testimonies' || url.pathname === '/api/testimonies/praise') {
-    return handleTestimonies(request, env, url);
-  }
-
   // ── /api/push — "new prayer" browser push notifications (opt-in) ─────────
   if (url.pathname.startsWith('/api/push/')) {
     return handlePushSubscriptions(request, env, url);
@@ -693,24 +687,6 @@ async function ensurePrayerSchema(db) {
       auth TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
     )`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS testimonies (
-      id TEXT PRIMARY KEY,
-      content TEXT NOT NULL,
-      country_code TEXT,
-      first_name TEXT,
-      origin_country TEXT,
-      praise_count INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now'))
-    )`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS testimony_interactions (
-      id TEXT PRIMARY KEY,
-      testimony_id TEXT NOT NULL,
-      user_hash TEXT NOT NULL
-    )`),
-    db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_testimony_interactions_unique
-      ON testimony_interactions (testimony_id, user_hash)`),
-    db.prepare(`CREATE INDEX IF NOT EXISTS idx_testimonies_created_at
-      ON testimonies (created_at DESC)`),
   ]);
   // Self-migrate onto a table created before first_name/origin_country
   // existed — SQLite has no "ADD COLUMN IF NOT EXISTS", so check first.
@@ -838,91 +814,6 @@ async function handlePrayerChain(request, env, url, ctx) {
       counted: true,
       prayerCount: row?.prayer_count ?? null,
       message: 'Salamat, kapatid — dinala mo siya sa panalangin. 🤍',
-    });
-  }
-
-  return jsonResponse({ error: { message: 'Not found' } }, 404);
-}
-
-// Same shape and same privacy posture as handlePrayerChain above — this is
-// deliberately read/react only, no free-text composer: a testimony only
-// ever originates from a member's own answered prayer (js/faith.js), never
-// posted directly here, so there's no separate submission-abuse surface to
-// worry about beyond what /api/prayers already handles.
-async function handleTestimonies(request, env, url) {
-  if (!env.KASAMA_DB) {
-    return jsonResponse({ configured: false });
-  }
-  const db = env.KASAMA_DB;
-  await ensurePrayerSchema(db);
-
-  if (request.method === 'GET' && url.pathname === '/api/testimonies') {
-    const { results } = await db.prepare(
-      `SELECT id, content, country_code, first_name, origin_country, praise_count, created_at
-       FROM testimonies ORDER BY created_at DESC LIMIT 30`
-    ).all();
-    const testimonies = (results || []).map((t) => ({ ...t, country_name: countryNameFor(t.country_code) }));
-    return jsonResponse({ configured: true, testimonies });
-  }
-
-  if (request.method !== 'POST') {
-    return jsonResponse({ error: { message: 'Method not allowed' } }, 405);
-  }
-
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return jsonResponse({ error: { message: 'Invalid JSON body' } }, 400);
-  }
-
-  // POST /api/testimonies — share an answered prayer as encouragement
-  if (url.pathname === '/api/testimonies') {
-    const content = String(body.content || '').replace(/[\u0000-\u001F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500);
-    if (content.length < 5) {
-      return jsonResponse({ error: { message: 'Kulang pa ang mensahe.' } }, 400);
-    }
-    const cfCountry = request.cf?.country;
-    const countryCode = /^[A-Z]{2}$/.test(String(cfCountry || '')) ? cfCountry : null;
-    const firstName = cleanShortField(body.firstName, 40);
-    const originCountry = cleanShortField(body.originCountry, 60);
-    const testimony = {
-      id: crypto.randomUUID(),
-      content,
-      country_code: countryCode,
-      first_name: firstName,
-      origin_country: originCountry,
-      praise_count: 0,
-    };
-    await db.prepare(
-      `INSERT INTO testimonies (id, content, country_code, first_name, origin_country) VALUES (?, ?, ?, ?, ?)`
-    ).bind(testimony.id, testimony.content, testimony.country_code, testimony.first_name, testimony.origin_country).run();
-    return jsonResponse({ configured: true, testimony: { ...testimony, country_name: countryNameFor(countryCode) } });
-  }
-
-  // POST /api/testimonies/praise — "🙌 Papuri!"
-  if (url.pathname === '/api/testimonies/praise') {
-    const testimonyId = String(body.testimonyId || '');
-    const userHash = String(body.userHash || '');
-    if (!/^[0-9a-f-]{8,64}$/i.test(testimonyId) || !/^[0-9a-f]{64}$/i.test(userHash)) {
-      return jsonResponse({ error: { message: 'Invalid testimonyId or userHash' } }, 400);
-    }
-    const insert = await db.prepare(
-      `INSERT OR IGNORE INTO testimony_interactions (id, testimony_id, user_hash) VALUES (?, ?, ?)`
-    ).bind(crypto.randomUUID(), testimonyId, userHash).run();
-
-    if ((insert.meta?.changes ?? 0) === 0) {
-      return jsonResponse({ configured: true, counted: false, message: 'Nadagdag ka na dati pa. 🤍' });
-    }
-    await db.prepare(
-      `UPDATE testimonies SET praise_count = praise_count + 1 WHERE id = ?`
-    ).bind(testimonyId).run();
-    const row = await db.prepare(`SELECT praise_count FROM testimonies WHERE id = ?`).bind(testimonyId).first();
-    return jsonResponse({
-      configured: true,
-      counted: true,
-      praiseCount: row?.praise_count ?? null,
-      message: 'Salamat sa Diyos! 🙌',
     });
   }
 

@@ -36,14 +36,6 @@ function defaultState() {
     // the budget card, or both — logging a padala twice, once in each, is
     // a mild inconvenience, not a bug worth a risky data migration).
     budgetEntries: [],
-    // COMMUNITY pillar: fellowship group names the member tapped "I'm
-    // interested" on (data/biblestudy.json groups have no stable id — the
-    // group's own `name` is the key, same tolerance for admin-editable
-    // content as teachingNotes below being keyed by date rather than id).
-    // Purely a personal, on-device reminder to follow up — never sent
-    // anywhere; joining still happens the same human way it always has
-    // (message your fellowship leader).
-    interestedGroups: [],
     // Faith Blocks (wellness mini-game, js/faith-blocks.js): a light session
     // log, newest first — { date, startedAt (epoch ms), durationMs,
     // linesCleared }. Purely local, same as everything else — this is the
@@ -57,15 +49,6 @@ function defaultState() {
     // beyond the device's own lock screen (explicit product decision, not
     // an oversight — see the "My documents" card's own on-screen note).
     documents: [],
-    // FAITH pillar: a private log of personal prayer requests, newest
-    // first — { id, date, text, answered, answeredDate, answeredNote }.
-    // Distinct from the community Kadena ng Panalangin (prayerchain.js,
-    // server-backed, shared with the congregation) — this is a personal,
-    // on-device-only list so the member can mark their own prayers
-    // answered over time and Kaibigan can genuinely follow up ("you
-    // prayed for this a while ago — kumusta na?") or celebrate when one is
-    // marked answered, without any of it ever leaving the device.
-    prayerRequests: [],
     // Companion conversation: rolling window of { role, content, t }.
     // lastSeenAt (epoch ms) tracks the last time the app was actually in
     // the foreground — distinct from lastTalkedDate (the calendar date of
@@ -263,14 +246,6 @@ export function deleteBudgetEntry(id) {
   save();
 }
 
-// ── Fellowship group interest (COMMUNITY pillar) ─────────────────────────────
-export function toggleGroupInterest(groupName) {
-  const i = state.interestedGroups.indexOf(groupName);
-  if (i === -1) state.interestedGroups.push(groupName);
-  else state.interestedGroups.splice(i, 1);
-  save();
-}
-
 // ── Faith Blocks sessions (wellness mini-game) ────────────────────────────────
 export function logFaithBlocksSession({ startedAt, durationMs, linesCleared }) {
   if (!Number.isFinite(durationMs) || durationMs < 3000) return; // too short to mean anything
@@ -298,35 +273,6 @@ export function addDocument({ name, image }) {
 
 export function deleteDocument(id) {
   state.documents = state.documents.filter((d) => d.id !== id);
-  save();
-}
-
-// ── Prayer requests (FAITH pillar) ───────────────────────────────────────────
-export function addPrayerRequest(text) {
-  const trimmed = String(text || '').trim();
-  if (!trimmed) return;
-  state.prayerRequests.unshift({
-    id: uid(),
-    date: todayKey(),
-    text: trimmed.slice(0, 300),
-    answered: false,
-    answeredDate: null,
-    answeredNote: '',
-  });
-  save();
-}
-
-export function markPrayerAnswered(id, note) {
-  const p = state.prayerRequests.find((r) => r.id === id);
-  if (!p) return;
-  p.answered = true;
-  p.answeredDate = todayKey();
-  p.answeredNote = String(note || '').trim().slice(0, 300);
-  save();
-}
-
-export function deletePrayerRequest(id) {
-  state.prayerRequests = state.prayerRequests.filter((r) => r.id !== id);
   save();
 }
 
