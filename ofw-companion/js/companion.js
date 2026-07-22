@@ -323,6 +323,14 @@ function setupPhotoShare() {
 // auto-sent, since a mis-heard word should be easy to fix before it goes out.
 let mediaRecorder = null;
 let recordedChunks = [];
+let silenceCtx = null;
+let silenceRaf = null;
+let silenceTimer = null;
+let maxDurationTimer = null;
+
+const SILENCE_RMS_THRESHOLD = 0.02; // below this reads as quiet, not speech
+const SILENCE_STOP_MS = 1800; // auto-stop this long after the voice trails off
+const MAX_RECORD_MS = 60000; // hard safety cap regardless of silence detection
 
 function setupVoiceInput() {
   els.micBtn.addEventListener('click', () => {
@@ -332,6 +340,53 @@ function setupVoiceInput() {
       startRecording();
     }
   });
+}
+
+function stopIfRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+}
+
+// Listens to the raw mic stream (separately from the MediaRecorder, which
+// only ever sees the encoded output) and auto-stops recording ~1.8s after
+// the member finishes talking — "type to text after I finished talking"
+// without needing a second manual tap. A stray loud noise won't finalize
+// early since the timer only ever starts once real voice has been heard,
+// and it keeps getting pushed back for as long as they keep talking.
+function watchForSilence(stream) {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return; // no Web Audio support here — manual tap-to-stop still works
+  silenceCtx = new Ctx();
+  const source = silenceCtx.createMediaStreamSource(stream);
+  const analyser = silenceCtx.createAnalyser();
+  analyser.fftSize = 512;
+  source.connect(analyser);
+  const data = new Uint8Array(analyser.frequencyBinCount);
+
+  const tick = () => {
+    analyser.getByteTimeDomainData(data);
+    let sumSquares = 0;
+    for (let i = 0; i < data.length; i++) {
+      const v = (data[i] - 128) / 128;
+      sumSquares += v * v;
+    }
+    const rms = Math.sqrt(sumSquares / data.length);
+    if (rms > SILENCE_RMS_THRESHOLD) {
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(stopIfRecording, SILENCE_STOP_MS);
+    }
+    silenceRaf = requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+function stopWatchingSilence() {
+  if (silenceRaf) cancelAnimationFrame(silenceRaf);
+  silenceRaf = null;
+  clearTimeout(silenceTimer);
+  silenceTimer = null;
+  clearTimeout(maxDurationTimer);
+  maxDurationTimer = null;
+  if (silenceCtx) { silenceCtx.close().catch(() => {}); silenceCtx = null; }
 }
 
 async function startRecording() {
@@ -347,6 +402,7 @@ async function startRecording() {
   mediaRecorder = new MediaRecorder(stream);
   mediaRecorder.addEventListener('dataavailable', (e) => { if (e.data.size) recordedChunks.push(e.data); });
   mediaRecorder.addEventListener('stop', async () => {
+    stopWatchingSilence();
     stream.getTracks().forEach((t) => t.stop());
     els.micBtn.classList.remove('is-recording');
     const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
@@ -357,17 +413,23 @@ async function startRecording() {
       if (text) {
         els.input.value = els.input.value ? `${els.input.value} ${text}` : text;
         autoGrow();
+        els.input.placeholder = 'Kwentuhan mo ako…';
+      } else {
+        els.input.placeholder = 'Walang narinig — subukan ulit.';
+        setTimeout(() => { els.input.placeholder = 'Kwentuhan mo ako…'; }, 3000);
       }
-    } catch {
-      // Voice input not configured or the service failed — same quiet-
-      // failure philosophy as speakNatural(): no error dialog, they can
-      // just type instead.
-    } finally {
-      els.input.placeholder = 'Kwentuhan mo ako…';
+    } catch (err) {
+      // Surfaced, not swallowed — a silent failure here reads as "the mic
+      // just doesn't work" with no way to tell why (not configured on the
+      // church's Worker vs. a real network hiccup vs. something else).
+      els.input.placeholder = `Hindi na-gawang text: ${err.message}`;
+      setTimeout(() => { els.input.placeholder = 'Kwentuhan mo ako…'; }, 4000);
     }
   });
   mediaRecorder.start();
   els.micBtn.classList.add('is-recording');
+  watchForSilence(stream);
+  maxDurationTimer = setTimeout(stopIfRecording, MAX_RECORD_MS);
 }
 
 function autoGrow() {
