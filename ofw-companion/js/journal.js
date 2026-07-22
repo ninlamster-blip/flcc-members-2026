@@ -3,9 +3,9 @@
 // The primary data source for the Wellness Brain (see js/agent-brain.js for
 // the full five-brain map) — reflection-engine.js and growth-engine.js both
 // read the check-ins and entries saved here.
-import { getState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry } from './state.js';
+import { getState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry, addRemittance, deleteRemittance } from './state.js';
 import { wellbeingInsight, isConnected } from './ai.js';
-import { escapeHtml, friendlyDate } from './utils.js';
+import { escapeHtml, friendlyDate, todayKey } from './utils.js';
 
 const MOODS = [
   { value: 1, emoji: '😞' },
@@ -30,6 +30,8 @@ export function initJournal(context) {
   renderInsightCard();
   setupFreeWriting();
   renderEntries();
+  setupRemittances();
+  renderRemittances();
 }
 
 // Re-render when the tab is opened, so entries added elsewhere (e.g. a
@@ -38,6 +40,7 @@ export function refreshJournal() {
   renderCheckin();
   renderInsightCard();
   renderEntries(document.getElementById('oc-journal-search').value.trim().toLowerCase());
+  renderRemittances();
 }
 
 // ── Daily check-in ───────────────────────────────────────────────────────────
@@ -279,6 +282,67 @@ function renderEntries(query = '') {
     li.addEventListener('click', () => {
       const entry = getState().journal.find((e) => e.id === li.dataset.entry);
       if (entry) loadEntryIntoEditor(entry);
+    });
+  });
+}
+
+// ── Remittances (LIFE pillar) ────────────────────────────────────────────────
+// Amounts are logged per their own currency and never converted or summed
+// across currencies — a KWD total and a PHP total are different numbers
+// that would be actively misleading added together.
+
+function setupRemittances() {
+  document.getElementById('oc-remit-save').addEventListener('click', () => {
+    const amountInput = document.getElementById('oc-remit-amount');
+    const currencyInput = document.getElementById('oc-remit-currency');
+    const noteInput = document.getElementById('oc-remit-note');
+    if (!Number(amountInput.value) || Number(amountInput.value) <= 0) return;
+    addRemittance({ amount: amountInput.value, currency: currencyInput.value, note: noteInput.value });
+    amountInput.value = '';
+    currencyInput.value = '';
+    noteInput.value = '';
+    toast('Naitala ang padala mo 💸');
+    renderRemittances();
+  });
+}
+
+function remittanceThisMonthTotals() {
+  const thisMonth = todayKey().slice(0, 7); // YYYY-MM
+  const totals = {};
+  for (const r of getState().remittances) {
+    if (!r.date.startsWith(thisMonth)) continue;
+    totals[r.currency] = (totals[r.currency] || 0) + r.amount;
+  }
+  return totals;
+}
+
+function renderRemittances() {
+  const totalEl = document.getElementById('oc-remittance-total');
+  const totals = remittanceThisMonthTotals();
+  const totalParts = Object.entries(totals).map(([cur, amt]) => `${amt.toFixed(2)} ${cur}`);
+  totalEl.textContent = totalParts.length ? `Ngayong buwan: ${totalParts.join(' · ')}` : 'Wala pang naitatala ngayong buwan.';
+
+  const list = document.getElementById('oc-remittance-list');
+  const items = getState().remittances;
+  if (!items.length) {
+    list.innerHTML = '<li class="oc-journal-entry oc-muted">Wala pang tala. Idagdag ang unang padala mo sa itaas.</li>';
+    return;
+  }
+  list.innerHTML = items.slice(0, 100).map((r) => `
+    <li class="oc-journal-entry" data-remit="${r.id}">
+      <div class="oc-entry-meta">
+        <span>${friendlyDate(r.date)} · ${r.amount.toFixed(2)} ${escapeHtml(r.currency)}</span>
+        <button type="button" class="oc-entry-delete" data-delete-remit="${r.id}" aria-label="Delete this entry">✕</button>
+      </div>
+      ${r.note ? `<div class="oc-entry-text">${escapeHtml(r.note)}</div>` : ''}
+    </li>`).join('');
+
+  list.querySelectorAll('[data-delete-remit]').forEach((btn) => {
+    btn.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      if (!confirm('Delete this entry forever?')) return;
+      deleteRemittance(btn.dataset.deleteRemit);
+      renderRemittances();
     });
   });
 }
