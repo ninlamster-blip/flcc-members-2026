@@ -28,6 +28,13 @@ function defaultState() {
     // { id, date, amount, currency, note }. Kept separate from `life`
     // (which is single current-state facts) since this is a growing history.
     remittances: [],
+    // LIFE pillar: a fuller monthly budget — both income and categorized
+    // expenses — newest first: { id, date, type: 'income'|'expense',
+    // category (expense only), amount, currency, note }. Kept separate from
+    // `remittances` above (a member can keep using the quick padala log,
+    // the budget card, or both — logging a padala twice, once in each, is
+    // a mild inconvenience, not a bug worth a risky data migration).
+    budgetEntries: [],
     // SAFETY pillar: a private on-device photo library of important
     // documents (passport, visa, contract) — { id, name, dateAdded, image
     // (data URL) }, newest first. On-device only, same as everything else
@@ -212,6 +219,32 @@ export function addRemittance({ amount, currency, note }) {
 
 export function deleteRemittance(id) {
   state.remittances = state.remittances.filter((r) => r.id !== id);
+  save();
+}
+
+// ── Budget (LIFE pillar) ─────────────────────────────────────────────────────
+// Amounts are logged per their own currency and never summed across
+// currencies, same reasoning as the remittance log above.
+export const BUDGET_CATEGORIES = ['Padala', 'Pagkain', 'Pabahay', 'Kuryente/Tubig', 'Transportasyon', 'Ipon', 'Iba pa'];
+
+export function addBudgetEntry({ type, category, amount, currency, note }) {
+  const num = Number(amount);
+  if (!Number.isFinite(num) || num <= 0) return;
+  if (type !== 'income' && type !== 'expense') return;
+  state.budgetEntries.unshift({
+    id: uid(),
+    date: todayKey(),
+    type,
+    category: type === 'expense' ? (BUDGET_CATEGORIES.includes(category) ? category : 'Iba pa') : null,
+    amount: num,
+    currency: String(currency || '').trim().toUpperCase().slice(0, 6) || 'KWD',
+    note: String(note || '').trim().slice(0, 120),
+  });
+  save();
+}
+
+export function deleteBudgetEntry(id) {
+  state.budgetEntries = state.budgetEntries.filter((e) => e.id !== id);
   save();
 }
 
