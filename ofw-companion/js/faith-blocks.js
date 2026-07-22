@@ -19,12 +19,14 @@ import { getState, updateState, logFaithBlocksSession } from './state.js';
 import { openBreathing } from './sanctuary.js';
 
 const COLS = 6;
-// Tall and forgiving on purpose — a short board topped out constantly under
-// ordinary, unhurried play, which is the opposite of relaxing. A taller
-// board plus a steady (non-escalating) drop speed below means a round
-// lasts long enough to actually unwind in, and ending is the exception,
-// not the rhythm.
-const ROWS = 16;
+// Taller than classic Tetris's 20 rows would feel on 6 wide columns, but
+// chosen to roughly match a phone's own usable aspect ratio once the
+// header/controls are subtracted — see fitBoard() below, which measures
+// the actual available space at runtime and sizes the board (and every
+// tile) to fill as much of the screen as that ratio allows, rather than
+// guessing a fixed size in CSS. A board this shape also stays forgiving:
+// ordinary, unhurried play shouldn't top out every round.
+const ROWS = 12;
 const LINES_PER_BREAK = 3;
 const INTERVENE_AFTER_MS = 20 * 60 * 1000;
 // Constant, unhurried pace — no speed-up ramp. This is a wellness break,
@@ -441,6 +443,28 @@ function updateSoundBtn() {
   els.soundBtn.setAttribute('aria-label', on ? 'Mute sound' : 'Unmute sound');
 }
 
+// Measures the actual available space in #oc-fb-board-wrap and sizes the
+// board to fill as much of it as the COLS:ROWS ratio allows — whichever
+// dimension is the tighter fit wins, so the board (and every tile) is
+// always as big as the real screen genuinely has room for, rather than a
+// size guessed ahead of time in CSS. A no-op while the overlay is hidden
+// (nothing to measure yet).
+function fitBoard() {
+  if (!els.overlay || els.overlay.hidden) return;
+  const availW = els.boardWrap.clientWidth;
+  const availH = els.boardWrap.clientHeight;
+  if (!availW || !availH) return;
+  const ratio = COLS / ROWS;
+  let w = availW;
+  let h = w / ratio;
+  if (h > availH) {
+    h = availH;
+    w = h * ratio;
+  }
+  els.board.style.width = `${Math.floor(w)}px`;
+  els.board.style.height = `${Math.floor(h)}px`;
+}
+
 export function initFaithBlocks(context) {
   goTo = context.goTo;
   versePool = flattenVerses(context.verses);
@@ -476,8 +500,11 @@ export function initFaithBlocks(context) {
   els.launchBtn.addEventListener('click', () => {
     navigator.vibrate?.(8);
     els.overlay.hidden = false;
+    fitBoard();
     startGame();
   });
+  window.addEventListener('resize', fitBoard);
+  window.addEventListener('orientationchange', fitBoard);
   els.closeBtn.addEventListener('click', closeOverlay);
 
   updateSoundBtn();
