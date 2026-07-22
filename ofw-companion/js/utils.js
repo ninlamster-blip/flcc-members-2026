@@ -12,6 +12,37 @@ export function daysBetween(dateKey, otherKey = todayKey()) {
   return Math.round((new Date(otherKey) - new Date(dateKey)) / 86400000);
 }
 
+// A birthday only stores month+day meaningfully (see state.js's
+// `life.family` comment) — this finds its next real occurrence, rolling
+// into next year if this year's has already passed.
+function nextAnnualOccurrence(monthDayDate, today) {
+  const [, mm, dd] = monthDayDate.split('-');
+  const year = Number(today.slice(0, 4));
+  const thisYear = `${year}-${mm}-${dd}`;
+  return daysBetween(today, thisYear) < 0 ? `${year + 1}-${mm}-${dd}` : thisYear;
+}
+
+// Given the LIFE pillar's structured facts (state.js `life`), finds
+// whichever upcoming date — vacation, contract end, or a family member's
+// next birthday — is soonest. Returns null if nothing is set or every
+// non-recurring date (vacation/contract) has already passed.
+export function nearestCountdown(life, today = todayKey()) {
+  const candidates = [];
+  if (life.vacationDate) candidates.push({ label: 'Susunod na bakasyon', icon: '🏝️', date: life.vacationDate });
+  if (life.contractEndDate) candidates.push({ label: 'Katapusan ng kontrata', icon: '📄', date: life.contractEndDate });
+  for (const m of life.family || []) {
+    if (!m.birthday) continue;
+    candidates.push({ label: `Kaarawan ni ${m.name}`, icon: '🎂', date: nextAnnualOccurrence(m.birthday, today) });
+  }
+  let best = null;
+  for (const c of candidates) {
+    const days = daysBetween(today, c.date);
+    if (days < 0) continue; // vacation/contract already passed — not recurring, just skip
+    if (!best || days < best.days) best = { ...c, days };
+  }
+  return best;
+}
+
 export function friendlyDate(iso) {
   const d = new Date(iso + 'T12:00:00');
   if (Number.isNaN(d.getTime())) return iso;

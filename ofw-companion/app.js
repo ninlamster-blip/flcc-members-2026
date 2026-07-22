@@ -2,7 +2,7 @@
 // crisis support, and the five views together.
 import { getState, updateState, exportAll, eraseAll, clearChat, deleteMemory, setLifeInfo, addFamilyMember, deleteFamilyMember } from './js/state.js';
 import { getConnection, saveConnection, isConnected, testConnection } from './js/ai.js';
-import { loadJson, escapeHtml } from './js/utils.js';
+import { loadJson, escapeHtml, nearestCountdown } from './js/utils.js';
 import { initCompanion, startNotOkayConversation, resetHomeHeader, refreshBrainCard, maybeGreetAfterGap } from './js/companion.js';
 import {
   dateLine, occasionLine, initWeather, initAudioDrop,
@@ -210,6 +210,15 @@ function refreshDailySanctuaryBits() {
   occasionEl.textContent = occasion;
   occasionEl.hidden = !occasion;
 
+  const countdownEl = document.getElementById('oc-countdown-chip');
+  const countdown = nearestCountdown(getState().life);
+  countdownEl.hidden = !countdown;
+  if (countdown) {
+    countdownEl.textContent = countdown.days === 0
+      ? `${countdown.icon} ${countdown.label} — ngayon na!`
+      : `${countdown.icon} ${countdown.label} — ${countdown.days} araw na lang`;
+  }
+
   currentRitual = ritualFor(currentPeriod());
   document.getElementById('oc-ritual-pill').textContent = currentRitual.text;
   document.getElementById('oc-ritual-pill').hidden = false;
@@ -252,8 +261,13 @@ function setupCrisis() {
 function setupSettings() {
   const sheet = document.getElementById('oc-settings');
   const openBtn = document.getElementById('oc-settings-btn');
-  openBtn.addEventListener('click', () => { renderSettings(); sheet.hidden = false; });
+  const open = () => { renderSettings(); sheet.hidden = false; };
+  openBtn.addEventListener('click', open);
   sheet.addEventListener('click', (e) => { if (e.target === sheet) sheet.hidden = true; });
+  // Tapping the countdown chip goes straight to where it's edited (Life
+  // details in Settings) — same instinct as tapping any other summary to
+  // see/change what's behind it.
+  document.getElementById('oc-countdown-chip').addEventListener('click', open);
 }
 
 function renderSettings() {
