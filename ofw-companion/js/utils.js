@@ -59,6 +59,34 @@ export async function loadJson(path) {
   return res.json();
 }
 
+// A phone photo straight off the camera can be several MB — costly on a
+// mobile data plan and unnecessarily large for Claude to look at. Downscale
+// and re-encode as JPEG client-side before it ever leaves the device.
+export function compressImageFile(file, maxDim = 1024, quality = 0.6) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read the photo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Could not read the photo'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; }
+          else { width = Math.round((width * maxDim) / height); height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // Signals of acute distress. Matching any of these opens the crisis support
 // sheet alongside (never instead of) the companion's response.
 const CRISIS_PATTERNS = [

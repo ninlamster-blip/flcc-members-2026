@@ -275,6 +275,7 @@ WHO YOU ARE
 WHAT YOU CAN HELP WITH
 - The Bible: quote verses accurately with their reference (use a widely used translation and name it, e.g. NIV or Ang Biblia for Filipino), find the verse they half-remember, and explain passages gently and faithfully. If a question is deep doctrine or a personal spiritual crisis, share what Scripture says and encourage them to bring it to Pastor Anson or the Bible study.
 - General knowledge: everyday questions are welcome — word meanings and translations, cooking, remittances and saving, health and legal basics, their host country, and the like. Actually answer well — a real, useful, specific answer, not a rushed one-liner; being genuinely knowledgeable is part of being a good friend. It's fine to circle back to them as a person once you've actually helped, but don't cut a good answer short just to redirect.
+- Photos: sometimes they'll share one. Actually look at it and react specifically and warmly to what's really in it — the food they cooked, the kids they care for, a view, a selfie — the way a close friend looking at a real photo would, never a generic "nice photo!" If a photo shows something concerning (an injury, unsafe conditions, distress), respond to that directly and gently, same as you would if they'd described it in words.
 - Current events: you have a real, refreshed set of headlines below (CURRENT EVENTS) — world news (BBC and Reuters especially), Philippines news, showbiz (a genre this audience genuinely loves — feel free to bring up a fun one yourself, not only when asked), and a couple of brief tech headlines, since staying connected to home and to what's new matters to them. Reference them naturally when relevant (they ask what's new, something reminds you of a headline, they mention missing home and a Philippines story fits, they mention their phone and a tech headline fits, or a light showbiz headline just fits a cheerful moment) — never lead with news or bring it up unprompted in an emotional moment; their heart always comes first. Keep it brief — a headline and a sentence, not a summary — and always name the source, every single time you mention any headline, no exceptions, even a passing "wala namang malaking balita" summary ("according to Inquirer...", "saw on Reuters...", "walang malaking balita ayon sa BBC ngayon"). Be gentle with heavy news (disasters, tragedy, conflict) — don't dwell on distressing details, especially anything about the Philippines, that could add to their worry rather than connect them to home.
 - Honesty about limits: if you are not sure of a fact — including anything beyond the headlines below, or events after your knowledge — say so plainly instead of guessing. For medical, legal, financial, or employment decisions, give general information only and point them to the proper professional or agency (see the Tulong tab).
 
@@ -319,14 +320,47 @@ function extractMemory(text) {
   return text.replace(/<memory>[\s\S]*?<\/memory>/gi, '').trim();
 }
 
+function imageContentBlock(dataUrl) {
+  const m = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
+  return { type: 'image', source: { type: 'base64', media_type: m ? m[1] : 'image/jpeg', data: m ? m[2] : dataUrl } };
+}
+
+// Only the CURRENT turn's photo (if any) is actually sent as image data —
+// re-sending every earlier photo on every subsequent message would balloon
+// the request and cost for no benefit; the AI doesn't need to keep
+// re-looking at a photo from several messages ago to continue a
+// conversation naturally.
 export async function companionReply(history) {
-  const messages = history.map((m) => ({ role: m.role, content: m.content }));
+  const lastIndex = history.length - 1;
+  const messages = history.map((m, i) => {
+    if (i === lastIndex && m.image) {
+      const content = [imageContentBlock(m.image)];
+      if (m.content) content.push({ type: 'text', text: m.content });
+      return { role: m.role, content };
+    }
+    return { role: m.role, content: m.content || (m.image ? '[a photo, shared earlier]' : '') };
+  });
   const raw = await callClaude({
     system: await companionSystemPrompt(),
     messages,
     maxTokens: 600,
   });
   return extractMemory(raw);
+}
+
+// ── Voice input (speech-to-text) ─────────────────────────────────────────────
+// Goes through the church Worker's /stt endpoint, which reuses the exact
+// same ELEVENLABS_API_KEY secret spoken replies already need (ElevenLabs'
+// Scribe model does both directions) — a member who's already set up
+// natural voice replies gets voice input for free, no second key to add.
+export async function transcribeAudio(blob) {
+  const { proxySecret } = getConnection();
+  const headers = {};
+  if (proxySecret) headers['x-proxy-secret'] = proxySecret;
+  const res = await fetch(apiBase() + '/stt', { method: 'POST', headers, body: blob });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error?.message || `Request failed (${res.status})`);
+  return (data?.text || '').trim();
 }
 
 // A warm conversation opener that recalls something from memory. Used when
