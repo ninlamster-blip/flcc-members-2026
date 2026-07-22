@@ -258,6 +258,17 @@ input, textarea { font-family: inherit; color: var(--ink); }
   border-radius: var(--radius-sm);
   padding: 9px 14px;
 }
+/* Same look as .oc-occasion above, but it's a <button> (opens Settings to
+   edit the underlying Life details) so it needs its own reset. */
+.oc-countdown-chip {
+  display: block;
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
 
 .oc-heart-question {
   text-align: center;
