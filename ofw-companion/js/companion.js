@@ -257,7 +257,8 @@ export async function maybeGreetAfterGap() {
     typing.remove();
     if (opener) {
       addChatMessage('assistant', opener);
-      appendBubble('ai', opener);
+      const bubble = appendBubble('ai', '');
+      await typewriterReveal(bubble, opener);
       speakIfEnabled(opener);
       if (hint.followUpMemoryText) markMemoryFollowedUp(hint.followUpMemoryText);
       resetIdleWatch();
@@ -534,7 +535,8 @@ async function maybeSendFollowup() {
   typing.remove();
 
   addChatMessage('assistant', reply);
-  appendBubble('ai', reply);
+  const bubble = appendBubble('ai', '');
+  await typewriterReveal(bubble, reply);
   scrollToEnd();
   speakIfEnabled(reply);
 
@@ -573,7 +575,8 @@ async function sendUserMessage(text, opts = {}) {
   typing.remove();
 
   addChatMessage('assistant', reply);
-  appendBubble('ai', reply);
+  const bubble = appendBubble('ai', '');
+  await typewriterReveal(bubble, reply);
   scrollToEnd();
   speakIfEnabled(reply);
 
@@ -630,10 +633,38 @@ function appendBubble(kind, text, image) {
 function showTyping() {
   const div = document.createElement('div');
   div.className = 'oc-typing';
-  div.innerHTML = '<span></span><span></span><span></span>';
+  div.innerHTML = '<div class="oc-thinking-orb"></div>';
   els.chat.appendChild(div);
   scrollToEnd();
   return div;
+}
+
+const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Reveals a just-arrived reply word by word instead of popping in fully
+// formed — the "loading to write" feel, like watching someone actually
+// type. Duration is capped so a long reply never becomes tediously slow to
+// read; prefers-reduced-motion skips straight to the full text. Renders
+// through renderRichText() at every step (not raw text) so markdown still
+// resolves correctly once a bolded/italicized phrase's closing marker
+// appears — a half-open ** for a frame or two is a normal, harmless
+// streaming-text artifact, same as any real streaming chat UI.
+async function typewriterReveal(bubble, fullText) {
+  if (!fullText || reducedMotion()) {
+    bubble.innerHTML = renderRichText(fullText || '');
+    return;
+  }
+  const tokens = fullText.split(/(\s+)/);
+  const stepMs = Math.min(35, Math.max(10, 900 / tokens.length));
+  bubble.classList.add('oc-bubble-writing');
+  let shown = '';
+  for (const token of tokens) {
+    shown += token;
+    bubble.innerHTML = renderRichText(shown);
+    scrollToEnd(false);
+    await new Promise((r) => setTimeout(r, stepMs));
+  }
+  bubble.classList.remove('oc-bubble-writing');
 }
 
 // Kaibigan scrolls at the window level now (see setupHeaderCollapse), not

@@ -974,25 +974,70 @@ body.oc-home-compact .oc-brain-card {
   max-width: 94%;
 }
 
+/* "Kaibigan is thinking" — a soft glowing, breathing orb rather than static
+   dots, so waiting for a reply feels like someone alive is on the other
+   end, not a machine polling. Colors are the app's own palette (never a
+   literal Siri blue/pink) — the spin comes from the conic-gradient sweep,
+   the pulse from the blurred halo breathing on its own independent
+   animation (a separate box via ::after, so its transform never fights
+   the orb's own rotation — two transforms on one element would just
+   overwrite each other every frame instead of combining). */
 .oc-typing {
   align-self: flex-start;
   display: flex;
-  gap: 5px;
+  align-items: center;
   padding: 16px 18px;
   background: var(--bubble-ai);
   border-radius: 22px;
   border-bottom-left-radius: 8px;
   box-shadow: var(--shadow);
 }
-.oc-typing span {
-  width: 7px; height: 7px;
+.oc-thinking-orb {
+  position: relative;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--ink-faint);
-  animation: oc-blink 1.2s ease infinite;
+  background: conic-gradient(from 0deg, var(--accent), var(--gold), var(--calm), var(--accent));
+  filter: blur(1.5px) saturate(1.35);
+  animation: oc-orb-spin 2.2s linear infinite;
 }
-.oc-typing span:nth-child(2) { animation-delay: 0.18s; }
-.oc-typing span:nth-child(3) { animation-delay: 0.36s; }
-@keyframes oc-blink { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+.oc-thinking-orb::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: inherit;
+  filter: blur(9px);
+  opacity: 0.55;
+  animation: oc-orb-breathe 1.5s ease-in-out infinite;
+}
+@keyframes oc-orb-spin { to { transform: rotate(360deg); } }
+@keyframes oc-orb-breathe {
+  0%, 100% { transform: scale(0.8); opacity: 0.4; }
+  50% { transform: scale(1.25); opacity: 0.7; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oc-thinking-orb, .oc-thinking-orb::after { animation: none; }
+}
+
+/* The reply's own text revealing itself word by word as it "writes" —
+   see typewriterReveal() in companion.js. A blinking caret at the leading
+   edge while it's still going sells the "actively being typed" feel;
+   removed the instant it finishes. */
+.oc-bubble-writing::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--ink-faint);
+  animation: oc-caret-blink 0.8s step-end infinite;
+}
+@keyframes oc-caret-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .oc-bubble-writing::after { animation: none; }
+}
 
 /* Composer: a compact one-line bar sitting directly on top of the tab bar,
    like a messaging app. It grows only while typing a long message.
