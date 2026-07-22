@@ -3,7 +3,7 @@
 // paired with ai.js (the persona/system prompt) and relationship-engine.js
 // (deliberate memory follow-up).
 import { getState, addChatMessage, setHeartToday, heartToday, addMemory, dismissCompanionSuggestion, markReflectionShown, markGrowthShown, markMemoryFollowedUp, touchLastSeen } from './state.js';
-import { companionReply, companionOpener, isConnected, speakNatural, weeklyReflection, growthInsight, transcribeAudio } from './ai.js';
+import { companionReply, companionOpener, companionFollowup, isConnected, speakNatural, weeklyReflection, growthInsight, transcribeAudio } from './ai.js';
 import {
   renderRichText, escapeHtml, pickRandom,
   detectsCrisis, classifyHeart, compressImageFile,
@@ -110,6 +110,7 @@ export async function initCompanion(context) {
     });
     maybeGreetAfterGap();
   }
+  resetIdleWatch();
 }
 
 // Agent Brain (js/agent-brain.js): the one or two most helpful
@@ -246,6 +247,7 @@ export async function maybeGreetAfterGap() {
     appendBubble('ai', daysAway >= 3
       ? `Ilang araw din tayong hindi nagkausap — hindi kita nakalimutan, at sana okay ka lang. Nandito lang ako. Kumusta ka?`
       : pickRandom(comfort.neutral));
+    resetIdleWatch();
     return;
   }
   const typing = showTyping();
@@ -258,6 +260,7 @@ export async function maybeGreetAfterGap() {
       appendBubble('ai', opener);
       speakIfEnabled(opener);
       if (hint.followUpMemoryText) markMemoryFollowedUp(hint.followUpMemoryText);
+      resetIdleWatch();
     }
   } catch {
     typing.remove();
@@ -288,7 +291,12 @@ function setupComposer() {
   els.input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   });
-  els.input.addEventListener('input', autoGrow);
+  els.input.addEventListener('input', () => { autoGrow(); resetIdleWatch(); });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) clearTimeout(idleTimer);
+    else if (isHomeActive()) resetIdleWatch();
+  });
 
   setupPhotoShare();
   setupVoiceInput();
@@ -468,12 +476,78 @@ function setupHeaderCollapse() {
 // with a stale collapsed header from a previous scroll position.
 export function resetHomeHeader() {
   homeHeader?.reset();
+  resetIdleWatch(); // coming back to an existing conversation should re-arm the "still here?" watch
+}
+
+// ── Proactive "still here?" follow-up ────────────────────────────────────────
+// A real friend doesn't just wait in silence when someone goes quiet
+// mid-conversation — they check in. If the member pauses (composer idle, no
+// new message, no reply pending) for a while, Kaibigan gently follows up on
+// its own instead of just sitting there. Gated so this only ever fires
+// where it makes sense: an actual conversation already exists, the member
+// is actually looking at the Kaibigan tab, and nothing else is in flight.
+// Capped at two nudges per quiet spell so it reads as caring, not naggy —
+// sending anything at all resets the count.
+const FOLLOWUP_DELAY_MS = 22000; // ~20-30s, matching what was asked for
+const FOLLOWUP_MAX_PER_SPELL = 2;
+const FOLLOWUP_FALLBACKS = [
+  'Andito lang ako kung gusto mong magpatuloy — walang bilisan. 🤍',
+  'Kumusta? Nandito lang ako, nakikinig.',
+  'Okay lang kung tumigil ka muna — narito pa rin ako pag handa ka na.',
+];
+let idleTimer = null;
+let followupCount = 0;
+
+function armIdleWatch() {
+  clearTimeout(idleTimer);
+  if (busy || followupCount >= FOLLOWUP_MAX_PER_SPELL) return;
+  if (!getState().chat.messages.length) return; // nothing said yet — nothing to follow up on
+  idleTimer = setTimeout(maybeSendFollowup, FOLLOWUP_DELAY_MS);
+}
+
+// Any real activity (typing, sending, a reply just landing, or returning to
+// an existing conversation) starts the quiet-spell count over.
+function resetIdleWatch() {
+  followupCount = 0;
+  armIdleWatch();
+}
+
+async function maybeSendFollowup() {
+  if (busy || document.hidden || !isHomeActive()) return; // conditions changed — next real activity will re-arm this naturally
+  followupCount += 1;
+
+  busy = true;
+  els.sendBtn.disabled = true;
+  const typing = showTyping();
+  let reply;
+  try {
+    reply = isConnected() ? await companionFollowup(getState().chat.messages) : pickRandom(FOLLOWUP_FALLBACKS);
+  } catch {
+    // A failed proactive nudge should fail silently — there was no user
+    // action to report an error against.
+    typing.remove();
+    busy = false;
+    els.sendBtn.disabled = false;
+    armIdleWatch();
+    return;
+  }
+  typing.remove();
+
+  addChatMessage('assistant', reply);
+  appendBubble('ai', reply);
+  scrollToEnd();
+  speakIfEnabled(reply);
+
+  busy = false;
+  els.sendBtn.disabled = false;
+  armIdleWatch(); // still capped by FOLLOWUP_MAX_PER_SPELL above
 }
 
 async function sendUserMessage(text, opts = {}) {
   if (busy) return;
   busy = true;
   els.sendBtn.disabled = true;
+  clearTimeout(idleTimer);
 
   appendBubble('user', text, opts.image);
   addChatMessage('user', text, opts.image);
@@ -505,6 +579,7 @@ async function sendUserMessage(text, opts = {}) {
 
   busy = false;
   els.sendBtn.disabled = false;
+  resetIdleWatch();
 }
 
 // Rule-based comfort when no AI connection exists. Validate first, then a
