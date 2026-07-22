@@ -44,7 +44,7 @@ import {
   getState, heartFeelingsToday,
   isCompanionSuggestionDismissed,
 } from './state.js';
-import { todayKey, daysBetween } from './utils.js';
+import { todayKey, daysBetween, nextAnnualOccurrence } from './utils.js';
 import { buildWeeklySummary, structuredReflectionText } from './reflection-engine.js';
 import { findGrowthHighlight } from './growth-engine.js';
 
@@ -109,6 +109,33 @@ function growthSignal(s) {
   };
 }
 
+// LIFE pillar (state.js `life`) prediction signals — day counts to
+// whatever's coming up, so the Decision Engine below can nudge before a
+// milestone rather than only reacting after. Birthday uses the soonest
+// one across all family members, not every family member's own countdown
+// — one nudge for the nearest, same "one thing at a time" spirit as
+// every other rule here.
+function lifeSignal(s) {
+  const life = s.life;
+  const today = todayKey();
+  let daysUntilBirthday = null;
+  let upcomingBirthdayName = null;
+  for (const m of life.family || []) {
+    if (!m.birthday) continue;
+    const days = daysBetween(today, nextAnnualOccurrence(m.birthday, today));
+    if (daysUntilBirthday === null || days < daysUntilBirthday) {
+      daysUntilBirthday = days;
+      upcomingBirthdayName = m.name;
+    }
+  }
+  return {
+    daysUntilContractEnd: life.contractEndDate ? daysBetween(today, life.contractEndDate) : null,
+    daysUntilVacation: life.vacationDate ? daysBetween(today, life.vacationDate) : null,
+    daysUntilBirthday,
+    upcomingBirthdayName,
+  };
+}
+
 export function buildContext() {
   const s = getState();
   return {
@@ -120,6 +147,7 @@ export function buildContext() {
     ...chatSignal(s),
     ...reflectionSignal(s),
     ...growthSignal(s),
+    ...lifeSignal(s),
   };
 }
 
@@ -146,6 +174,46 @@ const RULES = [
       title: 'Kumusta ka nga pala?',
       message: 'Medyo mas mabigat ang huling mga araw mo kumpara sa nakaraang linggo. Gusto mo bang mag-usap?',
       cta: 'Kausapin si Kaibigan',
+      action: { tab: 'home' },
+    }),
+  },
+  {
+    // A real transition worth acknowledging gently, not just a date on a
+    // calendar — matches mood-declining's level of care since this can be
+    // an anxious moment (job security, an uncertain next step) as easily
+    // as a hopeful one.
+    id: 'contract-ending-soon',
+    when: (c) => c.daysUntilContractEnd !== null && c.daysUntilContractEnd >= 0 && c.daysUntilContractEnd <= 30,
+    build: (c) => ({
+      title: 'Papalapit na ang katapusan ng kontrata mo',
+      message: c.daysUntilContractEnd === 0
+        ? 'Ngayon na ang huling araw ng kontrata mo — malaking bagay ito. Kumusta ang pakiramdam mo?'
+        : `${c.daysUntilContractEnd} araw na lang bago matapos ang kontrata mo. Malaking transition ito — gusto mo bang pag-usapan, o ipanalangin natin ito?`,
+      cta: 'Kausapin si Kaibigan',
+      action: { tab: 'home' },
+    }),
+  },
+  {
+    id: 'family-birthday-soon',
+    when: (c) => c.daysUntilBirthday !== null && c.daysUntilBirthday >= 0 && c.daysUntilBirthday <= 7,
+    build: (c) => ({
+      title: c.daysUntilBirthday === 0 ? `Kaarawan ni ${c.upcomingBirthdayName} ngayon!` : `Papalapit na ang kaarawan ni ${c.upcomingBirthdayName}`,
+      message: c.daysUntilBirthday === 0
+        ? `Ngayon ang kaarawan ni ${c.upcomingBirthdayName} — baka gusto mong tumawag o magpadala ng masayang mensahe.`
+        : `${c.daysUntilBirthday} araw na lang bago ang kaarawan ni ${c.upcomingBirthdayName}. Gusto mo bang tulungan kang mag-isip ng espesyal na mensahe?`,
+      cta: 'Kausapin si Kaibigan',
+      action: { tab: 'home' },
+    }),
+  },
+  {
+    id: 'vacation-approaching',
+    when: (c) => c.daysUntilVacation !== null && c.daysUntilVacation >= 0 && c.daysUntilVacation <= 14,
+    build: (c) => ({
+      title: c.daysUntilVacation === 0 ? 'Bakasyon mo na ngayon!' : 'Papalapit na ang bakasyon mo!',
+      message: c.daysUntilVacation === 0
+        ? 'Ngayon na! Sana maging maganda at mapagpahinga ang oras mo kasama ang mga mahal mo.'
+        : `${c.daysUntilVacation} araw na lang bago ang bakasyon mo. Excited ka na ba?`,
+      cta: null,
       action: { tab: 'home' },
     }),
   },
