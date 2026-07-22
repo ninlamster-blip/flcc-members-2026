@@ -35,6 +35,15 @@ function defaultState() {
     // beyond the device's own lock screen (explicit product decision, not
     // an oversight — see the "My documents" card's own on-screen note).
     documents: [],
+    // FAITH pillar: a private log of personal prayer requests, newest
+    // first — { id, date, text, answered, answeredDate, answeredNote }.
+    // Distinct from the community Kadena ng Panalangin (prayerchain.js,
+    // server-backed, shared with the congregation) — this is a personal,
+    // on-device-only list so the member can mark their own prayers
+    // answered over time and Kaibigan can genuinely follow up ("you
+    // prayed for this a while ago — kumusta na?") or celebrate when one is
+    // marked answered, without any of it ever leaving the device.
+    prayerRequests: [],
     // Companion conversation: rolling window of { role, content, t }.
     // lastSeenAt (epoch ms) tracks the last time the app was actually in
     // the foreground — distinct from lastTalkedDate (the calendar date of
@@ -217,6 +226,35 @@ export function addDocument({ name, image }) {
 
 export function deleteDocument(id) {
   state.documents = state.documents.filter((d) => d.id !== id);
+  save();
+}
+
+// ── Prayer requests (FAITH pillar) ───────────────────────────────────────────
+export function addPrayerRequest(text) {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return;
+  state.prayerRequests.unshift({
+    id: uid(),
+    date: todayKey(),
+    text: trimmed.slice(0, 300),
+    answered: false,
+    answeredDate: null,
+    answeredNote: '',
+  });
+  save();
+}
+
+export function markPrayerAnswered(id, note) {
+  const p = state.prayerRequests.find((r) => r.id === id);
+  if (!p) return;
+  p.answered = true;
+  p.answeredDate = todayKey();
+  p.answeredNote = String(note || '').trim().slice(0, 300);
+  save();
+}
+
+export function deletePrayerRequest(id) {
+  state.prayerRequests = state.prayerRequests.filter((r) => r.id !== id);
   save();
 }
 

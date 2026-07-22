@@ -2,9 +2,9 @@
 // community led by Pastor Anson Dionisio. The Faith Brain (see js/agent-
 // brain.js for the full five-brain map), paired with sanctuary-mode.js
 // (the evening ritual, which reuses this file's verse selection).
-import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, saveSermonNotes, addJournalEntry } from './state.js';
+import { getState, updateState, heartToday, todaysCheckin, saveTeachingNote, saveSermonNotes, addJournalEntry, addPrayerRequest, markPrayerAnswered, deletePrayerRequest } from './state.js';
 import { personalPrayer, isConnected } from './ai.js';
-import { escapeHtml, todayKey, pickRandom } from './utils.js';
+import { escapeHtml, todayKey, pickRandom, friendlyDate, daysBetween } from './utils.js';
 
 let data = {}; // { verses, prayers, biblestudy }
 let toast = () => {};
@@ -61,6 +61,14 @@ export function render() {
       <h2 class="oc-section-title">A prayer for you today</h2>
       <p class="oc-prayer-text" id="oc-prayer-text">${escapeHtml(data.prayers[heart] || data.prayers.neutral)}</p>
       ${isConnected() ? '<button type="button" class="oc-ghost-btn" id="oc-prayer-btn">🙏 Pray with me — a prayer just for my heart</button>' : ''}
+    </div>
+
+    <div class="oc-card">
+      <h2 class="oc-section-title">Aking mga panalangin <span class="oc-muted">· my prayer requests</span></h2>
+      <p class="oc-muted" style="margin-bottom:10px">Pribado ito sa device mo lang — iba ito sa Kadena ng Panalangin sa Kapwa. Idagdag ang idinadalangin mo, at markahan pag sinagot na.</p>
+      <input type="text" id="oc-prayerreq-input" class="oc-text-input" maxlength="300" placeholder="Ano ang idinadalangin mo?">
+      <button type="button" class="oc-ghost-btn" id="oc-prayerreq-add" style="margin-top:8px;width:100%">Idagdag</button>
+      <div id="oc-prayerreq-list" style="margin-top:12px"></div>
     </div>
 
     ${bs.congregation ? `
@@ -149,6 +157,7 @@ export function render() {
     </div>`;
 
   wireSermonNotes(body);
+  wirePrayerRequests(body);
 
   body.querySelector('#oc-carry-save')?.addEventListener('click', () => {
     const input = body.querySelector('#oc-carry-truth');
@@ -230,6 +239,71 @@ function wireSermonNotes(body) {
       clearTimeout(fadeTimer);
       fadeTimer = setTimeout(() => { status.textContent = ''; }, 2000);
     }, 600);
+  });
+}
+
+// ── Personal prayer requests ─────────────────────────────────────────────────
+// Private, on-device — distinct from the community Kadena ng Panalangin
+// (js/prayerchain.js). Marking one answered is the payoff moment: shown
+// immediately here (works fully offline), and also fed into ai.js's system
+// prompt so Kaibigan can genuinely reference it later ("you prayed for this
+// a while ago...") rather than that only ever being a scripted line.
+function renderPrayerRequestItem(p) {
+  if (p.answered) {
+    const daysToAnswer = daysBetween(p.date, p.answeredDate);
+    return `
+      <div class="oc-checkin-done" style="margin-bottom:8px">
+        <span class="oc-big-check">🙌</span>
+        <div style="flex:1">
+          ${escapeHtml(p.text)}
+          <div class="oc-checkin-summary">Sinagot noong ${friendlyDate(p.answeredDate)}${daysToAnswer > 0 ? ` — ${daysToAnswer} araw mula nang idalangin` : ''}${p.answeredNote ? `. ${escapeHtml(p.answeredNote)}` : ''}</div>
+        </div>
+        <button type="button" class="oc-entry-delete" data-delete-prayerreq="${p.id}" aria-label="Delete">✕</button>
+      </div>`;
+  }
+  return `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="flex:1">${escapeHtml(p.text)}<br><span class="oc-muted" style="font-size:0.85em">${friendlyDate(p.date)}</span></span>
+      <button type="button" class="oc-ghost-btn" data-answer-prayerreq="${p.id}" style="padding:6px 12px;font-size:0.85em;white-space:nowrap">Sagot na? ✓</button>
+      <button type="button" class="oc-entry-delete" data-delete-prayerreq="${p.id}" aria-label="Delete">✕</button>
+    </div>`;
+}
+
+function renderPrayerRequestList(body) {
+  const list = body.querySelector('#oc-prayerreq-list');
+  if (!list) return;
+  const items = getState().prayerRequests;
+  list.innerHTML = items.length
+    ? items.map(renderPrayerRequestItem).join('')
+    : '<p class="oc-muted">Wala pa — idagdag ang una mong idinadalangin sa itaas.</p>';
+
+  list.querySelectorAll('[data-delete-prayerreq]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (!confirm('Delete this prayer request forever?')) return;
+      deletePrayerRequest(btn.dataset.deletePrayerreq);
+      renderPrayerRequestList(body);
+    });
+  });
+
+  list.querySelectorAll('[data-answer-prayerreq]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const note = prompt('Paano ito sinagot? (optional — I-OK lang kung gusto mong itago sa pagitan mo at ng Diyos)') || '';
+      markPrayerAnswered(btn.dataset.answerPrayerreq, note);
+      toast('Salamat sa Diyos! 🙌');
+      renderPrayerRequestList(body);
+    });
+  });
+}
+
+function wirePrayerRequests(body) {
+  renderPrayerRequestList(body);
+  body.querySelector('#oc-prayerreq-add')?.addEventListener('click', () => {
+    const input = body.querySelector('#oc-prayerreq-input');
+    const text = input.value.trim();
+    if (!text) return;
+    addPrayerRequest(text);
+    input.value = '';
+    renderPrayerRequestList(body);
   });
 }
 
