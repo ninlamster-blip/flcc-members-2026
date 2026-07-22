@@ -24,6 +24,10 @@ function defaultState() {
     checkins: [],
     // Private journal entries, newest first: { id, date, time, text }
     journal: [],
+    // LIFE pillar: a private log of remittances sent, newest first —
+    // { id, date, amount, currency, note }. Kept separate from `life`
+    // (which is single current-state facts) since this is a growing history.
+    remittances: [],
     // Companion conversation: rolling window of { role, content, t }.
     // lastSeenAt (epoch ms) tracks the last time the app was actually in
     // the foreground — distinct from lastTalkedDate (the calendar date of
@@ -170,6 +174,25 @@ export function updateJournalEntry(id, { title = '', text }) {
 
 export function deleteJournalEntry(id) {
   state.journal = state.journal.filter((e) => e.id !== id);
+  save();
+}
+
+// ── Remittances (LIFE pillar) ────────────────────────────────────────────────
+export function addRemittance({ amount, currency, note }) {
+  const num = Number(amount);
+  if (!Number.isFinite(num) || num <= 0) return;
+  state.remittances.unshift({
+    id: uid(),
+    date: todayKey(),
+    amount: num,
+    currency: String(currency || '').trim().toUpperCase().slice(0, 6) || 'KWD',
+    note: String(note || '').trim().slice(0, 120),
+  });
+  save();
+}
+
+export function deleteRemittance(id) {
+  state.remittances = state.remittances.filter((r) => r.id !== id);
   save();
 }
 

@@ -120,6 +120,20 @@
         </div>
         <ul id="oc-journal-list" class="oc-journal-list"></ul>
       </div>
+
+      <!-- LIFE pillar: a private log of remittances sent — same rolling
+           save-and-log-again pattern as the free-writing card above. -->
+      <div class="oc-card">
+        <h2 class="oc-section-title">Padala <span class="oc-muted">· remittance log</span></h2>
+        <div id="oc-remittance-total" class="oc-setting-sub" style="margin-bottom:10px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input type="number" id="oc-remit-amount" class="oc-text-input" min="0" step="0.01" placeholder="Amount" style="flex:1;min-width:100px">
+          <input type="text" id="oc-remit-currency" class="oc-text-input" maxlength="6" placeholder="KWD" style="width:80px">
+        </div>
+        <input type="text" id="oc-remit-note" class="oc-text-input" maxlength="120" placeholder="Note (optional) — e.g. Para kay Nanay" style="margin-top:8px">
+        <button type="button" class="oc-primary-btn" id="oc-remit-save" style="margin-top:10px">Save padala</button>
+        <ul id="oc-remittance-list" class="oc-journal-list" style="margin-top:14px"></ul>
+      </div>
     </section>
 
     <!-- ============ FAITH ============ -->
