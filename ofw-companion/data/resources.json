@@ -38,8 +38,14 @@
       "url": "https://owwa.gov.ph"
     },
     {
+      "name": "Philippine Embassy — Kuwait",
+      "detail": "Building 257, Street 213, Block 2, Sabah Al Salem, State of Kuwait. Ask for ATN (Assistance-to-Nationals) or the Migrant Workers Office (MWO).",
+      "contact": "See dfa.gov.ph directory below for the current phone/email",
+      "url": "https://www.google.com/maps/search/?api=1&query=Building+257+Street+213+Block+2+Sabah+Al+Salem+Kuwait"
+    },
+    {
       "name": "Philippine Embassies & Consulates Directory",
-      "detail": "Find the address and hotline of the Philippine Embassy or Consulate nearest you. Ask for ATN (Assistance-to-Nationals) or the Migrant Workers Office (MWO/POLO).",
+      "detail": "For members outside Kuwait: find the address and hotline of the Philippine Embassy or Consulate nearest you. Ask for ATN (Assistance-to-Nationals) or the Migrant Workers Office (MWO/POLO).",
       "contact": "dfa.gov.ph directory",
       "url": "https://dfa.gov.ph/list-of-philippine-embassies-and-consulates-general"
     },
