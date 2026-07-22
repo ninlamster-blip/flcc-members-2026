@@ -14,8 +14,10 @@ export function daysBetween(dateKey, otherKey = todayKey()) {
 
 // A birthday only stores month+day meaningfully (see state.js's
 // `life.family` comment) — this finds its next real occurrence, rolling
-// into next year if this year's has already passed.
-function nextAnnualOccurrence(monthDayDate, today) {
+// into next year if this year's has already passed. Exported for
+// agent-brain.js's own birthday-specific nudge, which needs this same
+// rollover math independent of nearestCountdown's cross-category picking.
+export function nextAnnualOccurrence(monthDayDate, today) {
   const [, mm, dd] = monthDayDate.split('-');
   const year = Number(today.slice(0, 4));
   const thisYear = `${year}-${mm}-${dd}`;
