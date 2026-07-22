@@ -3,7 +3,7 @@
 // The primary data source for the Wellness Brain (see js/agent-brain.js for
 // the full five-brain map) — reflection-engine.js and growth-engine.js both
 // read the check-ins and entries saved here.
-import { getState, updateState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry, addRemittance, deleteRemittance } from './state.js';
+import { getState, updateState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry, addRemittance, deleteRemittance, addBudgetEntry, deleteBudgetEntry, BUDGET_CATEGORIES } from './state.js';
 import { wellbeingInsight, isConnected } from './ai.js';
 import { escapeHtml, friendlyDate, todayKey } from './utils.js';
 
@@ -32,6 +32,8 @@ export function initJournal(context) {
   renderEntries();
   setupRemittances();
   renderRemittances();
+  setupBudget();
+  renderBudget();
   initExchangeRate();
 }
 
@@ -42,6 +44,7 @@ export function refreshJournal() {
   renderInsightCard();
   renderEntries(document.getElementById('oc-journal-search').value.trim().toLowerCase());
   renderRemittances();
+  renderBudget();
   initExchangeRate();
 }
 
@@ -345,6 +348,99 @@ function renderRemittances() {
       if (!confirm('Delete this entry forever?')) return;
       deleteRemittance(btn.dataset.deleteRemit);
       renderRemittances();
+    });
+  });
+}
+
+// ── Budget (LIFE pillar) ──────────────────────────────────────────────────────
+// A fuller picture than the padala log alone: income plus categorized
+// expenses. Same per-currency, never-summed-across-currencies rule as the
+// remittance log above.
+
+let budgetType = 'income';
+
+function setupBudget() {
+  const incomeBtn = document.getElementById('oc-budget-type-income');
+  const expenseBtn = document.getElementById('oc-budget-type-expense');
+  const categorySelect = document.getElementById('oc-budget-category');
+
+  if (!categorySelect.options.length) {
+    categorySelect.innerHTML = BUDGET_CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  const setType = (type) => {
+    budgetType = type;
+    incomeBtn.classList.toggle('is-selected', type === 'income');
+    expenseBtn.classList.toggle('is-selected', type === 'expense');
+    categorySelect.hidden = type !== 'expense';
+  };
+  incomeBtn.addEventListener('click', () => setType('income'));
+  expenseBtn.addEventListener('click', () => setType('expense'));
+
+  document.getElementById('oc-budget-save').addEventListener('click', () => {
+    const amountInput = document.getElementById('oc-budget-amount');
+    const currencyInput = document.getElementById('oc-budget-currency');
+    const noteInput = document.getElementById('oc-budget-note');
+    if (!Number(amountInput.value) || Number(amountInput.value) <= 0) return;
+    addBudgetEntry({
+      type: budgetType,
+      category: categorySelect.value,
+      amount: amountInput.value,
+      currency: currencyInput.value,
+      note: noteInput.value,
+    });
+    amountInput.value = '';
+    currencyInput.value = '';
+    noteInput.value = '';
+    toast(budgetType === 'income' ? 'Naitala ang kita mo 💰' : 'Naitala ang gastos mo 📝');
+    renderBudget();
+  });
+}
+
+function budgetThisMonthTotals() {
+  const thisMonth = todayKey().slice(0, 7); // YYYY-MM
+  const income = {};
+  const expense = {};
+  for (const e of getState().budgetEntries) {
+    if (!e.date.startsWith(thisMonth)) continue;
+    const bucket = e.type === 'income' ? income : expense;
+    bucket[e.currency] = (bucket[e.currency] || 0) + e.amount;
+  }
+  return { income, expense };
+}
+
+function renderBudget() {
+  const summaryEl = document.getElementById('oc-budget-summary');
+  const { income, expense } = budgetThisMonthTotals();
+  const currencies = new Set([...Object.keys(income), ...Object.keys(expense)]);
+  const lines = [...currencies].map((cur) => {
+    const inc = income[cur] || 0;
+    const exp = expense[cur] || 0;
+    return `${cur}: +${inc.toFixed(2)} / -${exp.toFixed(2)} = ${(inc - exp).toFixed(2)}`;
+  });
+  summaryEl.textContent = lines.length ? `Ngayong buwan — ${lines.join(' · ')}` : 'Wala pang naitatala ngayong buwan.';
+
+  const list = document.getElementById('oc-budget-list');
+  const items = getState().budgetEntries;
+  if (!items.length) {
+    list.innerHTML = '<li class="oc-journal-entry oc-muted">Wala pang tala. Idagdag ang una mong kita o gastos sa itaas.</li>';
+    return;
+  }
+  list.innerHTML = items.slice(0, 100).map((e) => `
+    <li class="oc-journal-entry" data-budget="${e.id}">
+      <div class="oc-entry-meta">
+        <span>${friendlyDate(e.date)} · ${e.type === 'income' ? '+' : '-'}${e.amount.toFixed(2)} ${escapeHtml(e.currency)}${e.category ? ` · ${escapeHtml(e.category)}` : ''}</span>
+        <button type="button" class="oc-entry-delete" data-delete-budget="${e.id}" aria-label="Delete this entry">✕</button>
+      </div>
+      ${e.note ? `<div class="oc-entry-text">${escapeHtml(e.note)}</div>` : ''}
+    </li>`).join('');
+
+  list.querySelectorAll('[data-delete-budget]').forEach((btn) => {
+    btn.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      if (!confirm('Delete this entry forever?')) return;
+      deleteBudgetEntry(btn.dataset.deleteBudget);
+      renderBudget();
     });
   });
 }

@@ -135,6 +135,25 @@
         <button type="button" class="oc-primary-btn" id="oc-remit-save" style="margin-top:10px">Save padala</button>
         <ul id="oc-remittance-list" class="oc-journal-list" style="margin-top:14px"></ul>
       </div>
+
+      <!-- LIFE pillar: the fuller budget — income + categorized expenses,
+           not just outgoing padala. Same rolling save-and-log-again pattern. -->
+      <div class="oc-card">
+        <h2 class="oc-section-title">Badyet <span class="oc-muted">· buwanang kita at gastos</span></h2>
+        <div id="oc-budget-summary" class="oc-setting-sub" style="margin-bottom:10px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" role="group" aria-label="Uri">
+          <button type="button" class="oc-scale-dot is-selected" id="oc-budget-type-income" data-budget-type="income">Kita (Income)</button>
+          <button type="button" class="oc-scale-dot" id="oc-budget-type-expense" data-budget-type="expense">Gastos (Expense)</button>
+        </div>
+        <select id="oc-budget-category" class="oc-text-input" style="margin-bottom:8px" hidden></select>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input type="number" id="oc-budget-amount" class="oc-text-input" min="0" step="0.01" placeholder="Amount" style="flex:1;min-width:100px">
+          <input type="text" id="oc-budget-currency" class="oc-text-input" maxlength="6" placeholder="KWD" style="width:80px">
+        </div>
+        <input type="text" id="oc-budget-note" class="oc-text-input" maxlength="120" placeholder="Note (optional)" style="margin-top:8px">
+        <button type="button" class="oc-primary-btn" id="oc-budget-save" style="margin-top:10px">Save entry</button>
+        <ul id="oc-budget-list" class="oc-journal-list" style="margin-top:14px"></ul>
+      </div>
     </section>
 
     <!-- ============ FAITH ============ -->
