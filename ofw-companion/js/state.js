@@ -61,6 +61,9 @@ function defaultState() {
     // Cached world/Philippines/showbiz/tech headlines for Kaibigan's conversation
     // context: { at, items: [{ headline, summary, source, date }] }
     newsCache: null,
+    // Cached exchange rate for the remittance card (Journal tab) — how many
+    // Philippine Pesos per 1 KWD today: { at, phpPerKwd }
+    exchangeRateCache: null,
     // Bible study: what the user is bringing this week { date, choiceId, note }
     bringing: null,
     // Private notes on Faith-tab teachings, keyed by teaching date
