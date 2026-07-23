@@ -292,6 +292,34 @@ async function fetchMuzainiScriptDebug(scriptPath) {
 // unwrap the response the same way the widget's own success handler does
 // (JSON.parse on a nested responseBusinessData string). Meant to finish
 // the investigation in one visit instead of another back-and-forth round.
+const BASEURL_ASSIGN_REGEX = /base[_]?url\s*=\s*["']([^"']*)["']/i;
+
+// "baseurl" turned out not to be assigned inline on foreign-currency.html
+// itself — it's a small site-wide config value, so it's most likely set in
+// one of the shared scripts every page loads (see the scriptSrcs list from
+// an earlier debug round) rather than the page markup. Tries each in turn
+// server-side instead of making a human fetch-and-check them one by one.
+const BASEURL_CANDIDATE_SCRIPTS = ['/js/custom.js', '/js/loader.js', '/js/jpreloader.js', '/js/ForeignCustom.js', '/js/webslidemenu.js'];
+
+async function findMuzainiBaseurl(pageHtml) {
+  const inPage = pageHtml.match(BASEURL_ASSIGN_REGEX);
+  if (inPage) return { value: inPage[1], foundIn: 'foreign-currency.html (inline)' };
+
+  for (const scriptPath of BASEURL_CANDIDATE_SCRIPTS) {
+    try {
+      const res = await fetch(`https://www.muzaini.com${scriptPath}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
+        cf: { cacheTtl: 1800 },
+      });
+      if (!res.ok) continue;
+      const js = await res.text();
+      const m = js.match(BASEURL_ASSIGN_REGEX);
+      if (m) return { value: m[1], foundIn: scriptPath };
+    } catch { /* try the next candidate */ }
+  }
+  return null;
+}
+
 async function fetchMuzainiResolve() {
   const result = { step: 'fetch-page' };
   try {
@@ -303,22 +331,23 @@ async function fetchMuzainiResolve() {
     if (!pageRes.ok) return { ...result, ok: false, pageStatus: pageRes.status };
     const html = await pageRes.text();
 
-    const baseurlMatch = html.match(/base[_]?url\s*=\s*["']([^"']*)["']/i);
     result.step = 'find-baseurl';
-    result.baseurlFound = !!baseurlMatch;
-    result.baseurlValue = baseurlMatch ? baseurlMatch[1] : null;
-    if (!baseurlMatch) {
-      // Not inline after all — dump a wider net of assignment-looking
-      // lines mentioning "url" so there's still something to go on.
+    const found = await findMuzainiBaseurl(html);
+    result.baseurlFound = !!found;
+    result.baseurlValue = found ? found.value : null;
+    result.baseurlFoundIn = found ? found.foundIn : null;
+    if (!found) {
+      // Still nothing — dump a wider net of assignment-looking lines
+      // mentioning "url" from the page itself so there's something to go on.
       const urlishLines = [];
       const lineRegex = /^.*\burl\b.*=.*$/gim;
       let lm;
       while ((lm = lineRegex.exec(html)) && urlishLines.length < 20) urlishLines.push(lm[0].trim());
-      return { ...result, ok: false, urlishLines };
+      return { ...result, ok: false, checkedScripts: BASEURL_CANDIDATE_SCRIPTS, urlishLines };
     }
 
     const apiPath = 'api/ServicesAPI/ForeignCurrency';
-    const candidate = baseurlMatch[1] + apiPath;
+    const candidate = found.value + apiPath;
     const resolvedApiUrl = new URL(candidate, pageUrl).toString();
     result.resolvedApiUrl = resolvedApiUrl;
     result.step = 'call-api';
