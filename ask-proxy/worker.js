@@ -158,7 +158,7 @@ async function fetchNewsFeed(feed) {
 // picking up an unrelated number — 1 KWD has been worth roughly 150–250
 // PHP for years, so anything outside that reads as a parse miss, not a
 // real rate. Returns full diagnostics (not just the number) so GET
-// /exchange-rate?debug=1 can show exactly where the scrape is landing —
+// /exchange-rate-debug can show exactly where the scrape is landing —
 // whether muzaini.com even responded, whether "PHP" appears in the raw
 // HTML at all (it won't if the rate is rendered client-side by JS, since
 // this is a plain server-side fetch with no browser/JS execution), and
@@ -456,18 +456,20 @@ async function handleRequest(request, env, ctx) {
   // falls back to open.er-api.com's mid-market rate if that ever comes up
   // empty or out of range, so the conversion never just breaks. Cached at
   // the edge so normal traffic doesn't re-fetch either upstream per request.
-  if (request.method === 'GET' && url.pathname === '/exchange-rate') {
-    // ?debug=1 — uncached, bypasses the fallback entirely, and reports
-    // exactly what the Al Muzaini scrape saw. Meant for a human to visit
-    // directly in a browser while diagnosing a bad/fallback rate, not for
-    // the app itself to call.
-    if (url.searchParams.get('debug') === '1') {
-      const debug = await fetchMuzainiDebug();
-      return new Response(JSON.stringify(debug, null, 2), {
-        headers: { ...CORS, 'Content-Type': 'application/json' },
-      });
-    }
+  // A separate no-query-string path (rather than /exchange-rate?debug=1) —
+  // easy to mistype/autocomplete-away in a mobile browser's address bar,
+  // which is exactly what happened trying to diagnose a bad scrape live.
+  // Uncached, bypasses the fallback entirely, and reports exactly what the
+  // Al Muzaini scrape saw. Meant for a human to visit directly, not for the
+  // app itself to call.
+  if (request.method === 'GET' && url.pathname === '/exchange-rate-debug') {
+    const debug = await fetchMuzainiDebug();
+    return new Response(JSON.stringify(debug, null, 2), {
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
 
+  if (request.method === 'GET' && url.pathname === '/exchange-rate') {
     const cache = caches.default;
     const cacheKey = new Request(url.toString(), request);
     const cached = await cache.match(cacheKey);
