@@ -270,6 +270,11 @@ async function fetchMuzainiScriptDebug(scriptPath) {
       jsLength: js.length,
       callHits,
       urlHits: [...new Set(urlHits)],
+      // Small scripts (like this widget's own file) are cheap to just
+      // return whole — faster than guessing which other regex to add next
+      // when e.g. "baseurl" turns out to be a variable defined elsewhere in
+      // the same file rather than a literal URL a regex would catch.
+      fullSource: js.length < 20000 ? js : null,
     };
   } catch (err) {
     return { ok: false, error: String((err && err.message) || err), scriptPath };
