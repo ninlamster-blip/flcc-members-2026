@@ -156,19 +156,27 @@ export class VisualEngine {
     }
   }
 
-  _spawnRing(flavor, hue) {
+  _spawnRing(flavor, hue, strength = 1) {
     const slot = this.ringPool.find((r) => !r.active);
     if (!slot) return;
+    // A soft hit still reads as a ring, a hard hit reads noticeably bigger —
+    // 0.55..1.15x range keeps quiet passages from looking dead while giving
+    // loud hits real punch.
+    const intensity = 0.55 + Math.min(1, strength) * 0.6;
+    const baseScale = (flavor === 'snare' ? 0.6 : 0.4) * (0.8 + intensity * 0.3);
     slot.active = true;
     slot.life = 0;
     slot.flavor = flavor;
+    slot.baseScale = baseScale;
+    slot.baseOpacity = (flavor === 'snare' ? 0.9 : 0.7) * intensity;
+    slot.growth = (flavor === 'snare' ? 5.5 : 3.2) * (0.85 + intensity * 0.35);
     slot.maxLife = flavor === 'snare' ? 0.45 : 0.9;
     slot.mesh.visible = true;
-    slot.mesh.scale.setScalar(flavor === 'snare' ? 0.6 : 0.4);
+    slot.mesh.scale.setScalar(baseScale);
     slot.mesh.rotation.z = Math.random() * Math.PI;
     slot.mesh.rotation.x = flavor === 'snare' ? (Math.random() - 0.5) * 0.6 + Math.PI / 2 : Math.PI / 2 + (Math.random() - 0.5) * 1.4;
     slot.mesh.material.color.setHSL(hue, 0.8, flavor === 'snare' ? 0.85 : 0.6);
-    slot.mesh.material.opacity = flavor === 'snare' ? 0.9 : 0.65;
+    slot.mesh.material.opacity = slot.baseOpacity;
   }
 
   _updateRings(dt) {
@@ -177,9 +185,8 @@ export class VisualEngine {
       slot.life += dt;
       const t = slot.life / slot.maxLife;
       if (t >= 1) { slot.active = false; slot.mesh.visible = false; continue; }
-      const growth = slot.flavor === 'snare' ? 5.5 : 3.2;
-      slot.mesh.scale.setScalar((slot.flavor === 'snare' ? 0.6 : 0.4) + t * growth);
-      slot.mesh.material.opacity = (slot.flavor === 'snare' ? 0.9 : 0.65) * (1 - t);
+      slot.mesh.scale.setScalar(slot.baseScale + t * slot.growth);
+      slot.mesh.material.opacity = slot.baseOpacity * (1 - t);
     }
   }
 
@@ -340,12 +347,12 @@ export class VisualEngine {
     this._snareFlash *= Math.pow(0.0008, dt);
 
     if (bands.kick.hit) {
-      this._kickImpulse = Math.min(1.4, this._kickImpulse + bands.kick.strength * 1.3 + 0.4);
-      this._spawnRing('kick', directorState.hue);
+      this._kickImpulse = Math.min(1.9, this._kickImpulse + bands.kick.strength * 1.8 + 0.55);
+      this._spawnRing('kick', directorState.hue, bands.kick.strength);
     }
     if (bands.snare.hit) {
-      this._snareFlash = Math.min(0.4, this._snareFlash + 0.32);
-      this._spawnRing('snare', directorState.secondaryHue);
+      this._snareFlash = Math.min(0.55, this._snareFlash + 0.4);
+      this._spawnRing('snare', directorState.secondaryHue, bands.snare.strength);
     }
 
     // Background
@@ -355,14 +362,14 @@ export class VisualEngine {
 
     // Core
     const bassEnergy = (bands.kick.energy + bands.bass.energy) / 2;
-    const targetScale = 1 + bassEnergy * 0.55 + this._kickImpulse * 0.7;
-    this.core.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 1 - Math.pow(0.001, dt));
+    const targetScale = 1 + bassEnergy * 0.85 + this._kickImpulse * 1.0;
+    this.core.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 1 - Math.pow(0.0006, dt));
     this.coreWire.scale.copy(this.core.scale).multiplyScalar(1.015);
     this.core.rotation.y += dt * (0.12 + overallEnergySmoothed * 0.3);
     this.core.rotation.x += dt * 0.05;
     this.coreWire.rotation.copy(this.core.rotation);
-    this.coreMat.emissive.setHSL(directorState.hue, 0.85, 0.5 + this._kickImpulse * 0.15);
-    this.coreMat.emissiveIntensity = 0.9 + overallEnergySmoothed * 1.4 + this._kickImpulse * 1.2;
+    this.coreMat.emissive.setHSL(directorState.hue, 0.85, 0.5 + this._kickImpulse * 0.18);
+    this.coreMat.emissiveIntensity = 0.9 + overallEnergySmoothed * 1.6 + this._kickImpulse * 1.8;
 
     this._updateRings(dt);
     this._updateParticles(dt, elapsed, directorState.secondaryHue, bands.hihat);
@@ -370,20 +377,20 @@ export class VisualEngine {
 
     // Lighting
     this.coreLight.color.setHSL(directorState.hue, 0.85, 0.55);
-    this.coreLight.intensity = 1.4 + overallEnergySmoothed * 4 + this._kickImpulse * 5;
+    this.coreLight.intensity = 1.4 + overallEnergySmoothed * 4.5 + this._kickImpulse * 7;
 
     // Camera choreography: slow autonomous orbit + kick punch + bass shake
     this._cameraTheta += dt * 0.12 * directorState.cameraSpeed;
-    const shakeAmt = bassEnergy * 0.06;
+    const shakeAmt = bassEnergy * 0.09;
     const shakeX = Math.sin(elapsed * 11) * shakeAmt + Math.sin(elapsed * 5.3) * shakeAmt * 0.5;
     const shakeY = Math.cos(elapsed * 9) * shakeAmt;
-    const radius = 7.2 - this._kickImpulse * 0.9;
+    const radius = 7.2 - this._kickImpulse * 1.3;
     this.camera.position.set(
       Math.sin(this._cameraTheta) * radius + shakeX,
       Math.sin(this._cameraPhi + elapsed * 0.05) * 1.2 + shakeY,
       Math.cos(this._cameraTheta) * radius
     );
-    this.camera.fov = this.baseFov + this._kickImpulse * 6;
+    this.camera.fov = this.baseFov + this._kickImpulse * 9;
     this.camera.updateProjectionMatrix();
     this.camera.lookAt(0, 0, 0);
 

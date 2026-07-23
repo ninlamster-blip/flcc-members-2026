@@ -196,6 +196,7 @@ async function loadTrack(index, { autoplay = false } = {}) {
   const track = playlist[index];
   if (!track) return;
   currentIndex = index;
+  director.reset(); // snap to a fitting theme quickly instead of drifting there
 
   if (!track.url) track.url = trackObjectUrl(URL.createObjectURL(track.file));
   audioEl.src = track.url;
@@ -316,6 +317,7 @@ root.addEventListener('drop', (e) => {
 useMicBtn.addEventListener('click', async () => {
   try {
     await audioEngine.connectMicrophone();
+    director.reset();
     hideDropHint();
     player.hidden = true;
     themePill.hidden = false;
