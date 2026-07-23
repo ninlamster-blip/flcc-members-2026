@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#05050a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="FLCC Music Visualizer — a real-time, audio-reactive visual engine for worship and practice. Plug in a live feed or drop in a track and watch kick, bass, snare, hi-hats and vocals drive the scene.">
+<title>Music Visualizer — FLCC</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="mv-root">
+
+  <canvas id="mv-canvas" aria-hidden="true"></canvas>
+
+  <div id="mv-drop-hint">
+    <div class="mv-drop-card">
+      <div class="mv-drop-icon">&#127925;</div>
+      <h1>Music Visualizer</h1>
+      <p>A real-time visual engine for worship and practice. Bass, kick, snare, hi-hats and
+        vocals each drive their own part of the scene — the AI Visual Director picks the
+        palette and pacing as the song moves.</p>
+      <div class="mv-drop-actions">
+        <button type="button" id="mv-pick-file" class="mv-btn mv-btn-accent">Choose audio files&hellip;</button>
+        <button type="button" id="mv-use-mic" class="mv-btn mv-btn-ghost">Use microphone / live feed</button>
+      </div>
+      <p class="mv-drop-hint-small">or drag &amp; drop audio files anywhere on this page</p>
+    </div>
+  </div>
+
+  <div id="mv-overlay">
+    <div id="mv-theme-pill" class="mv-fade" hidden></div>
+
+    <a href="../" id="mv-back" class="mv-icon-btn mv-top-left" title="Back to dashboard" aria-label="Back to dashboard">&larr;</a>
+    <button type="button" id="mv-fullscreen" class="mv-icon-btn mv-top-right" title="Toggle fullscreen" aria-label="Toggle fullscreen">&#x26F6;</button>
+
+    <div id="mv-player" class="mv-fade" hidden>
+      <div class="mv-art-wrap">
+        <img id="mv-art" alt="" draggable="false">
+        <div id="mv-art-fallback">&#127925;</div>
+      </div>
+
+      <div class="mv-meta">
+        <div id="mv-title" class="mv-title">&mdash;</div>
+        <div id="mv-artist" class="mv-artist">&mdash;</div>
+
+        <div class="mv-progress-row">
+          <span id="mv-time-current" class="mv-time">0:00</span>
+          <input type="range" id="mv-seek" class="mv-seek" min="0" max="1000" value="0" step="1" aria-label="Seek">
+          <span id="mv-time-remaining" class="mv-time">-0:00</span>
+        </div>
+
+        <div class="mv-controls-row">
+          <button type="button" id="mv-prev" class="mv-icon-btn" title="Previous track" aria-label="Previous track">&#9198;</button>
+          <button type="button" id="mv-playpause" class="mv-icon-btn mv-play-btn" title="Play/Pause" aria-label="Play or pause">&#9654;</button>
+          <button type="button" id="mv-next" class="mv-icon-btn" title="Next track" aria-label="Next track">&#9197;</button>
+          <div class="mv-volume-wrap">
+            <span aria-hidden="true">&#128266;</span>
+            <input type="range" id="mv-volume" class="mv-volume" min="0" max="1" value="0.85" step="0.01" aria-label="Volume">
+          </div>
+          <button type="button" id="mv-add-more" class="mv-icon-btn" title="Add more tracks" aria-label="Add more tracks">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mv-perf" class="mv-perf" hidden></div>
+  </div>
+
+  <input type="file" id="mv-file-input" accept="audio/*" multiple hidden>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
