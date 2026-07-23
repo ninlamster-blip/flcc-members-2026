@@ -22,6 +22,8 @@ export function initSupport(context) {
     <div class="oc-emergency-card">
       <div class="oc-emergency-title">🆘 ${escapeHtml(resources.emergency.title)}</div>
       <p class="oc-emergency-note">${escapeHtml(resources.emergency.note)}</p>
+      <button type="button" class="oc-ghost-btn" id="oc-share-location-btn" style="width:100%;margin-top:8px">📍 I-share ang lokasyon ko ngayon</button>
+      <p id="oc-share-location-status" class="oc-setting-sub" style="margin-top:6px" hidden></p>
     </div>
 
     <div class="oc-card">
@@ -57,6 +59,56 @@ export function initSupport(context) {
 
   setupDocumentVault();
   renderDocuments();
+  bindShareLocationButton('oc-share-location-btn', 'oc-share-location-status');
+}
+
+// ── Share My Location (SAFETY pillar) ────────────────────────────────────
+// On-demand only, every single time — this app tracks no one continuously
+// and nothing about it is ever sent to any server of ours (same "stays on
+// your device" promise as the document vault above). A tap asks the
+// browser fresh for one current position, builds a plain Google Maps link,
+// and hands it to the member's own share sheet (WhatsApp, SMS, whoever
+// they pick) — never sent anywhere by the app itself. Exported so the
+// crisis sheet (wired in app.js) can reuse the exact same behavior.
+export function shareMyLocation(statusEl) {
+  const show = (msg) => { if (statusEl) { statusEl.textContent = msg; statusEl.hidden = !msg; } };
+
+  if (!navigator.geolocation) {
+    show('Hindi supported ng browser na ito ang pag-share ng lokasyon.');
+    return;
+  }
+  show('Kinukuha ang lokasyon mo…');
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+      const text = `Narito ako ngayon: ${mapsUrl}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ text, url: mapsUrl });
+          show('');
+          return;
+        } catch {
+          // Cancelled the share sheet, or share isn't fully wired up here —
+          // clipboard is still a real way to get the link to someone.
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        show('Kinopya ang link ng lokasyon mo — i-paste ito sa mensahe mo.');
+      } catch {
+        show(`Lokasyon: ${mapsUrl}`);
+      }
+    },
+    () => show('Hindi ma-access ang lokasyon — check ang permission sa browser settings.'),
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function bindShareLocationButton(btnId, statusId) {
+  const btn = document.getElementById(btnId);
+  const statusEl = document.getElementById(statusId);
+  btn?.addEventListener('click', () => shareMyLocation(statusEl));
 }
 
 // ── Document vault (SAFETY pillar) ───────────────────────────────────────────

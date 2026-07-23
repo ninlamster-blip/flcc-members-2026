@@ -18,7 +18,7 @@ import {
   pushConfiguredOnServer, isEnabled as pushIsEnabled, enableNotifications, disableNotifications,
   isEveningNotifyEnabled, enableEveningNotify, disableEveningNotify, migrateLegacySubscription, refreshEveningTzOffset,
 } from './js/notifications.js';
-import { initSupport, renderCrisisLines } from './js/support.js';
+import { initSupport, renderCrisisLines, shareMyLocation } from './js/support.js';
 import { initScrollHeader, resetScrollHeader } from './js/header.js';
 
 const context = { toast };
@@ -254,6 +254,9 @@ function setupCrisis() {
   renderCrisisLines(context.resources);
   document.addEventListener('oc:crisis', () => { sheet.hidden = false; });
   document.getElementById('oc-crisis-close').addEventListener('click', () => { sheet.hidden = true; });
+  document.getElementById('oc-crisis-share-location-btn').addEventListener('click', () => {
+    shareMyLocation(document.getElementById('oc-crisis-share-location-status'));
+  });
 }
 
 // ── Settings & privacy ───────────────────────────────────────────────────────
