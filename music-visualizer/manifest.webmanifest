@@ -1,0 +1,16 @@
+{
+  "name": "FLCC Music Visualizer",
+  "short_name": "Visualizer",
+  "description": "A real-time, audio-reactive music visualization engine for worship and practice — kick, bass, snare, hi-hats, and vocals each drive their own part of the scene.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#05050a",
+  "theme_color": "#05050a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
