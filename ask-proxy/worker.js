@@ -157,23 +157,43 @@ async function fetchNewsFeed(feed) {
 // specific tag/class structure. A sanity range (100–400) guards against
 // picking up an unrelated number — 1 KWD has been worth roughly 150–250
 // PHP for years, so anything outside that reads as a parse miss, not a
-// real rate, and this returns null so the caller falls back.
-async function fetchMuzainiPhpRate() {
+// real rate. Returns full diagnostics (not just the number) so GET
+// /exchange-rate?debug=1 can show exactly where the scrape is landing —
+// whether muzaini.com even responded, whether "PHP" appears in the raw
+// HTML at all (it won't if the rate is rendered client-side by JS, since
+// this is a plain server-side fetch with no browser/JS execution), and
+// what number (if any) the regex pulled out — without needing someone to
+// paste page source by hand every time this needs debugging.
+async function fetchMuzainiDebug() {
   try {
     const res = await fetch('https://www.muzaini.com/', {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
       cf: { cacheTtl: 1800 },
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { ok: false, status: res.status };
     const html = await res.text();
+    const phpIndex = html.search(/PHP/i);
     const match = html.match(/PHP[^0-9]{0,60}(\d{2,3}(?:\.\d{1,4})?)/i);
-    if (!match) return null;
-    const rate = parseFloat(match[1]);
-    if (!Number.isFinite(rate) || rate < 100 || rate > 400) return null;
-    return rate;
-  } catch {
-    return null;
+    const rate = match ? parseFloat(match[1]) : null;
+    const rateAccepted = rate != null && Number.isFinite(rate) && rate >= 100 && rate <= 400;
+    return {
+      ok: true,
+      status: res.status,
+      htmlLength: html.length,
+      phpMentionFound: phpIndex !== -1,
+      phpContextSnippet: phpIndex !== -1 ? html.slice(Math.max(0, phpIndex - 40), phpIndex + 120) : null,
+      matchedText: match ? match[0] : null,
+      extractedRate: rate,
+      rateAccepted,
+    };
+  } catch (err) {
+    return { ok: false, error: String((err && err.message) || err) };
   }
+}
+
+async function fetchMuzainiPhpRate() {
+  const debug = await fetchMuzainiDebug();
+  return debug.rateAccepted ? debug.extractedRate : null;
 }
 
 // Fallback mid-market rate — same source the app used before this endpoint
@@ -437,6 +457,17 @@ async function handleRequest(request, env, ctx) {
   // empty or out of range, so the conversion never just breaks. Cached at
   // the edge so normal traffic doesn't re-fetch either upstream per request.
   if (request.method === 'GET' && url.pathname === '/exchange-rate') {
+    // ?debug=1 — uncached, bypasses the fallback entirely, and reports
+    // exactly what the Al Muzaini scrape saw. Meant for a human to visit
+    // directly in a browser while diagnosing a bad/fallback rate, not for
+    // the app itself to call.
+    if (url.searchParams.get('debug') === '1') {
+      const debug = await fetchMuzainiDebug();
+      return new Response(JSON.stringify(debug, null, 2), {
+        headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+
     const cache = caches.default;
     const cacheKey = new Request(url.toString(), request);
     const cached = await cache.match(cacheKey);
