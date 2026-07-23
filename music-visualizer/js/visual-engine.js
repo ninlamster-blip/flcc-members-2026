@@ -127,7 +127,7 @@ export class VisualEngine {
   }
 
   _buildCore() {
-    const geo = new THREE.IcosahedronGeometry(1.1, 3);
+    const geo = new THREE.IcosahedronGeometry(0.55, 3);
     this.coreMat = new THREE.MeshStandardMaterial({
       color: 0x111122, emissive: 0xff6a2c, emissiveIntensity: 1.1,
       metalness: 0.35, roughness: 0.35,
