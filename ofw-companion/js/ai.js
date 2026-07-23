@@ -110,6 +110,13 @@ export async function testConnection() {
 // Kaibigan stays quiet. Returns true if audio played.
 
 let ttsUnavailable = false; // remembered per session to avoid repeat failures
+// One <audio> element, reused for every reply rather than a fresh `new
+// Audio()` per call. Matters specifically for Kaibigan's proactive
+// follow-up (companionFollowup) — that one fires off an idle timer, not a
+// tap, so there's no fresh user gesture backing it, and browsers' autoplay
+// policies are far more willing to let an already-played-on-this-origin
+// element resume than to start a brand-new one cold. Doesn't guarantee
+// every strict mobile browser allows it, but it's the standard mitigation.
 let currentAudio = null;
 
 export async function speakNatural(text) {
@@ -142,8 +149,13 @@ export async function speakNatural(text) {
       return false;
     }
     const blob = await res.blob();
-    currentAudio?.pause();
-    currentAudio = new Audio(URL.createObjectURL(blob));
+    if (!currentAudio) {
+      currentAudio = new Audio();
+    } else {
+      currentAudio.pause();
+      if (currentAudio.src) URL.revokeObjectURL(currentAudio.src);
+    }
+    currentAudio.src = URL.createObjectURL(blob);
     currentAudio.addEventListener('ended', () => URL.revokeObjectURL(currentAudio.src), { once: true });
     await currentAudio.play();
     return true;
