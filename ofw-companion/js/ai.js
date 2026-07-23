@@ -401,6 +401,38 @@ export async function companionFollowup(history) {
   return extractMemory(raw);
 }
 
+// ── Document vault: reading a photo for its expiry date ──────────────────────
+// A passport/visa/iqama that quietly lapses is a real, disruptive problem for
+// an OFW — this lets the Tulong tab warn ahead of time (see agent-brain.js's
+// document-expiring-soon rule) instead of only after. Best-effort: a blurry
+// photo, a document with no printed expiry, or no AI connection just comes
+// back with expiryDate null — treated by the caller as "nothing to remind
+// about," never as an error to surface to the member.
+export async function analyzeDocument(imageDataUrl, hintName = '') {
+  const raw = await callClaude({
+    system: 'You are reading a photo of a personal document (passport, visa, iqama/residency permit, work contract, ID, insurance card, etc.) for an Overseas Filipino Worker. Reply with ONLY a single JSON object, no other text and no markdown fences, in exactly this shape: {"documentType": "short label such as Passport, Visa, Iqama, or Kontrata", "expiryDate": "YYYY-MM-DD, or null if no expiry/valid-until date is visible or legible", "confidence": "high" or "low"}. If the photo is blurry, cropped, or a date is not clearly legible, use "low" confidence and null rather than guessing a date.',
+    messages: [{
+      role: 'user',
+      content: [
+        imageContentBlock(imageDataUrl),
+        { type: 'text', text: hintName ? `The member labeled this document: "${hintName}".` : 'Identify this document.' },
+      ],
+    }],
+    maxTokens: 200,
+  });
+  try {
+    const match = raw.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(match ? match[0] : raw);
+    return {
+      documentType: typeof parsed.documentType === 'string' ? parsed.documentType.trim().slice(0, 60) : null,
+      expiryDate: typeof parsed.expiryDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(parsed.expiryDate) ? parsed.expiryDate : null,
+      confidence: parsed.confidence === 'high' ? 'high' : 'low',
+    };
+  } catch {
+    return { documentType: null, expiryDate: null, confidence: 'low' };
+  }
+}
+
 // ── Voice input (speech-to-text) ─────────────────────────────────────────────
 // Goes through the church Worker's /stt endpoint, which reuses the exact
 // same ELEVENLABS_API_KEY secret spoken replies already need (ElevenLabs'

@@ -27,6 +27,7 @@ export function initCommunity(context) {
             <div class="oc-group-name">${escapeHtml(g.name)}</div>
             <div class="oc-group-detail">${escapeHtml(g.detail)}</div>
             <div class="oc-group-meets">${escapeHtml(g.meets)}</div>
+            ${g.meetLink ? `<a class="oc-group-meet-link" href="${escapeHtml(g.meetLink)}" target="_blank" rel="noopener noreferrer">🎥 Sumali sa Google Meet</a>` : ''}
           </div>
         </div>`).join('')}
       <p class="oc-muted" style="margin-top:10px">To join a group, message your fellowship leader — a real person will welcome you in.</p>

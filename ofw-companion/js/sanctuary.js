@@ -88,42 +88,6 @@ export async function initWeather(chipEl) {
   }, { once: true });
 }
 
-// ── Isang Minutong Salita (1-minute audio drop) ──────────────────────────────
-// Plays the newest entry in data/audiodrops.json that has an audio src.
-// Until real recordings are added, it shows a warm placeholder state.
-
-export function initAudioDrop(audiodrops) {
-  const card = document.getElementById('oc-audio-drop');
-  const playBtn = document.getElementById('oc-audio-play');
-  const title = document.getElementById('oc-audio-title');
-  const sub = document.getElementById('oc-audio-sub');
-  const audio = document.getElementById('oc-audio-el');
-
-  const drop = (audiodrops.drops || []).filter((d) => d.src).pop();
-  card.hidden = false;
-  title.textContent = audiodrops.title || 'Isang Minutong Salita';
-
-  if (!drop) {
-    sub.textContent = audiodrops.placeholderNote || 'Malapit na, kapatid.';
-    playBtn.disabled = true;
-    return;
-  }
-
-  sub.textContent = drop.title;
-  audio.src = drop.src;
-  playBtn.addEventListener('click', () => {
-    navigator.vibrate?.(8);
-    if (audio.paused) {
-      audio.play().catch(() => { sub.textContent = 'Hindi ma-play ngayon — subukan ulit mamaya.'; });
-      playBtn.textContent = '❚❚';
-    } else {
-      audio.pause();
-      playBtn.textContent = '▶';
-    }
-  });
-  audio.addEventListener('ended', () => { playBtn.textContent = '▶'; });
-}
-
 // ── Daily ritual pill ────────────────────────────────────────────────────────
 // One gentle invitation per time of day — a rhythm, not a notification.
 
