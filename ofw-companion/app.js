@@ -5,7 +5,7 @@ import { getConnection, saveConnection, isConnected, testConnection } from './js
 import { loadJson, escapeHtml, nearestCountdown } from './js/utils.js';
 import { initCompanion, startNotOkayConversation, resetHomeHeader, refreshBrainCard, maybeGreetAfterGap } from './js/companion.js';
 import {
-  dateLine, occasionLine, initWeather, initAudioDrop,
+  dateLine, occasionLine, initWeather,
   ritualFor, currentPeriod, openBreathing, closeBreathing, initNotOkay,
 } from './js/sanctuary.js';
 import { initSanctuaryMode, openSanctuaryMode } from './js/sanctuary-mode.js';
@@ -38,15 +38,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 async function boot() {
-  const [comfort, verses, prayers, resources, biblestudy, audiodrops] = await Promise.all([
+  const [comfort, verses, prayers, resources, biblestudy] = await Promise.all([
     loadJson('data/comfort.json'),
     loadJson('data/verses.json'),
     loadJson('data/prayers.json'),
     loadJson('data/resources.json'),
     loadJson('data/biblestudy.json'),
-    loadJson('data/audiodrops.json').catch(() => ({ drops: [] })),
   ]);
-  Object.assign(context, { comfort, verses, prayers, resources, biblestudy, audiodrops, goTo });
+  Object.assign(context, { comfort, verses, prayers, resources, biblestudy, goTo });
 
   document.body.classList.toggle('oc-large-text', getState().settings.largeText);
   document.getElementById('oc-nav-faith').style.display = getState().settings.faithEnabled ? '' : 'none';
@@ -159,7 +158,6 @@ function setupSanctuary() {
   refreshDailySanctuaryBits();
 
   initWeather(document.getElementById('oc-weather-chip'));
-  initAudioDrop(context.audiodrops);
 
   document.getElementById('oc-ritual-pill').addEventListener('click', () => {
     navigator.vibrate?.(8);

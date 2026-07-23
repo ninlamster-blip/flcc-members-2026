@@ -94,9 +94,24 @@ function checkinSignal(s) {
 // SAFETY pillar (support.js's Tulong tab) signal — whether the member has
 // ever saved a document to the on-device vault, so the Decision Engine
 // below can nudge them to do it before it's actually needed (a contract
-// ending or a trip home), not only after.
+// ending or a trip home), not only after. Also the soonest expiry date
+// across every saved document (see js/ai.js's analyzeDocument, which fills
+// this in), the same "nearest across a whole list" pattern as
+// lifeSignal's birthday countdown — one nudge for whichever document is
+// closest to lapsing, not one per document.
 function safetySignal(s) {
-  return { documentCount: s.documents.length };
+  const today = todayKey();
+  let daysUntilDocumentExpiry = null;
+  let expiringDocumentName = null;
+  for (const d of s.documents) {
+    if (!d.expiryDate) continue;
+    const days = daysBetween(today, d.expiryDate);
+    if (daysUntilDocumentExpiry === null || days < daysUntilDocumentExpiry) {
+      daysUntilDocumentExpiry = days;
+      expiringDocumentName = d.name;
+    }
+  }
+  return { documentCount: s.documents.length, daysUntilDocumentExpiry, expiringDocumentName };
 }
 
 function heartSignal() {
@@ -253,6 +268,25 @@ const RULES = [
         : `${c.daysUntilVacation} araw na lang bago ang bakasyon mo. Excited ka na ba?`,
       cta: null,
       action: { tab: 'home' },
+    }),
+  },
+  {
+    // SAFETY pillar — a passport/visa/iqama that lapses unnoticed is a real,
+    // disruptive problem, so this fires well ahead (30 days, same window as
+    // contract-ending-soon) rather than only once it's already urgent.
+    // Ranked above no-documents-saved below: an expiry in hand is more
+    // pressing than the general "you have none saved" nudge.
+    id: 'document-expiring-soon',
+    when: (c) => c.daysUntilDocumentExpiry !== null && c.daysUntilDocumentExpiry <= 30,
+    build: (c) => ({
+      title: c.daysUntilDocumentExpiry < 0 ? 'May dokumentong nag-expire na' : 'May dokumentong malapit nang mag-expire',
+      message: c.daysUntilDocumentExpiry < 0
+        ? `Nag-expire na ang ${c.expiringDocumentName} mo. Palitan agad kung kaya, at siguraduhing updated ang litrato sa Tulong tab.`
+        : c.daysUntilDocumentExpiry === 0
+          ? `Nag-e-expire ngayon ang ${c.expiringDocumentName} mo.`
+          : `${c.daysUntilDocumentExpiry} araw na lang bago mag-expire ang ${c.expiringDocumentName} mo. Magandang panahon para mag-renew.`,
+      cta: 'Buksan ang Tulong',
+      action: { tab: 'support' },
     }),
   },
   {

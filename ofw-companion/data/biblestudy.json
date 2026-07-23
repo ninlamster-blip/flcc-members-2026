@@ -72,7 +72,7 @@
   },
   "groups": [
     { "icon": "🌸", "name": "Women's Fellowship", "detail": "Sisters supporting sisters — encouragement, prayer, and honest kwentuhan.", "meets": "Every Wednesday, 8:30 PM (Kuwait time)" },
-    { "icon": "🛡️", "name": "Men's Fellowship", "detail": "Brotherhood for OFW men — accountability, prayer, and real talk about providing from afar.", "meets": "Every Wednesday, 8:30 PM (Kuwait time)" }
+    { "icon": "🛡️", "name": "Men's Fellowship", "detail": "Brotherhood for OFW men — accountability, prayer, and real talk about providing from afar.", "meets": "Every Wednesday, 8:30 PM (Kuwait time)", "meetLink": "https://meet.google.com/uby-qzrp-qwn" }
   ],
   "communityValues": [
     "No likes. No followers. No popularity — just kapatiran (family in Christ).",

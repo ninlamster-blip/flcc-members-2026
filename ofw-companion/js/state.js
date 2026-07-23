@@ -262,12 +262,26 @@ export function logFaithBlocksSession({ startedAt, durationMs, linesCleared }) {
 // ── Documents (SAFETY pillar) ────────────────────────────────────────────────
 export function addDocument({ name, image }) {
   if (!image) return;
-  state.documents.unshift({
+  const doc = {
     id: uid(),
     name: String(name || '').trim().slice(0, 60) || 'Document',
     dateAdded: todayKey(),
     image,
-  });
+    // Filled in later by analyzeDocument() (js/ai.js) reading the photo —
+    // null until then, and stays null for documents with no visible expiry
+    // (a plain contract, an ID card) or when the AI can't read it.
+    expiryDate: null,
+  };
+  state.documents.unshift(doc);
+  save();
+  return doc.id;
+}
+
+export function updateDocument(id, updates) {
+  const doc = state.documents.find((d) => d.id === id);
+  if (!doc) return;
+  if (updates.name !== undefined) doc.name = String(updates.name).trim().slice(0, 60) || 'Document';
+  if (updates.expiryDate !== undefined) doc.expiryDate = updates.expiryDate;
   save();
 }
 

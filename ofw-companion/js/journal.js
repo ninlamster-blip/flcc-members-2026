@@ -320,7 +320,8 @@ function updatePhpPreview() {
     preview.hidden = true;
     return;
   }
-  preview.textContent = `≈ ₱${(amount * phpPerKwd).toFixed(2)}`;
+  const php = amount * phpPerKwd;
+  preview.textContent = `≈ ₱${php.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   preview.hidden = false;
 }
 
@@ -508,7 +509,8 @@ async function initExchangeRate() {
 
   const show = (phpPerKwd, source) => {
     const label = source === 'muzaini' ? 'Al Muzaini' : 'pandaigdigang rate';
-    el.textContent = `💱 Ngayon: 1 KWD ≈ ₱${phpPerKwd.toFixed(2)} (${label})`;
+    el.innerHTML = `💱 Ngayon: 1 KWD ≈ ₱${phpPerKwd.toFixed(2)} (${label})`
+      + `<div class="oc-exchange-rate-disclaimer">Tinatayang halaga lamang — maaaring iba sa aktwal na rate sa exchange house.</div>`;
     el.hidden = false;
     updatePhpPreview(); // the rate just became available (or changed) — refresh the live conversion too
   };

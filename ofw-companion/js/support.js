@@ -1,7 +1,8 @@
 // Tulong — OFW Support Center: emergency lines, government agencies,
 // support organizations, church contacts, and a private document vault.
-import { getState, addDocument, deleteDocument } from './state.js';
-import { escapeHtml, friendlyDate, compressImageFile } from './utils.js';
+import { getState, addDocument, updateDocument, deleteDocument } from './state.js';
+import { escapeHtml, friendlyDate, compressImageFile, daysBetween, todayKey } from './utils.js';
+import { isConnected, analyzeDocument } from './ai.js';
 
 export function initSupport(context) {
   const { resources } = context;
@@ -76,10 +77,12 @@ function setupDocumentVault() {
     if (!file) return;
     try {
       const image = await compressImageFile(file, DOC_MAX_DIM, DOC_QUALITY);
-      addDocument({ name: nameInput.value, image });
+      const name = nameInput.value;
+      const id = addDocument({ name, image });
       nameInput.value = '';
       fileInput.value = '';
       renderDocuments();
+      readDocumentExpiry(id, image, name);
     } catch {
       // Unreadable/corrupt file — fail quiet, they can just try again.
       fileInput.value = '';
@@ -91,10 +94,43 @@ function setupDocumentVault() {
   });
 }
 
+// Fire-and-forget: reads the just-added photo for an expiry date so the
+// Agent Brain (see js/agent-brain.js's document-expiring-soon rule) can warn
+// ahead of time. Runs after the document already shows in the list — no
+// spinner, no blocking the upload flow — and fails silently offline or on a
+// blurry photo, since a missing expiry date is just a document with nothing
+// to remind about, not a broken feature.
+async function readDocumentExpiry(id, image, name) {
+  if (!isConnected()) return;
+  try {
+    const { expiryDate } = await analyzeDocument(image, name);
+    if (expiryDate) {
+      updateDocument(id, { expiryDate });
+      renderDocuments();
+    }
+  } catch { /* offline or AI error — the document is still saved either way */ }
+}
+
 function openDocumentViewer(doc) {
   document.getElementById('oc-doc-viewer-title').textContent = doc.name;
   document.getElementById('oc-doc-viewer-img').src = doc.image;
   document.getElementById('oc-doc-viewer').hidden = false;
+}
+
+// A document within 30 days of (or past) its expiry is called out in the
+// list itself, not just in the Agent Brain's home-screen nudge — someone
+// scrolling through Tulong should see it too, since that's exactly where
+// they'd come to check.
+function expiryLineHtml(d) {
+  if (!d.expiryDate) return '';
+  const days = daysBetween(todayKey(), d.expiryDate);
+  const urgent = days <= 30;
+  const label = days < 0
+    ? `Nag-expire na noong ${friendlyDate(d.expiryDate)}`
+    : days === 0
+      ? 'Nag-e-expire ngayon'
+      : `Mag-e-expire: ${friendlyDate(d.expiryDate)} (${days} araw)`;
+  return `<div class="oc-doc-expiry${urgent ? ' oc-doc-expiry-urgent' : ''}">${escapeHtml(label)}</div>`;
 }
 
 function renderDocuments() {
@@ -110,9 +146,23 @@ function renderDocuments() {
       <div class="oc-doc-meta">
         <div class="oc-doc-name">${escapeHtml(d.name)}</div>
         <div class="oc-doc-date">${friendlyDate(d.dateAdded)}</div>
+        ${expiryLineHtml(d)}
       </div>
+      <button type="button" class="oc-entry-edit" data-edit-doc="${d.id}" aria-label="Edit ${escapeHtml(d.name)}">✎</button>
       <button type="button" class="oc-entry-delete" data-delete-doc="${d.id}" aria-label="Delete ${escapeHtml(d.name)}">✕</button>
     </div>`).join('');
+
+  list.querySelectorAll('[data-edit-doc]').forEach((btn) => {
+    btn.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      const doc = getState().documents.find((d) => d.id === btn.dataset.editDoc);
+      if (!doc) return;
+      const name = prompt('Anong uri ng dokumento ito?', doc.name);
+      if (name === null) return; // cancelled
+      updateDocument(doc.id, { name });
+      renderDocuments();
+    });
+  });
 
   list.querySelectorAll('[data-delete-doc]').forEach((btn) => {
     btn.addEventListener('click', (evt) => {
