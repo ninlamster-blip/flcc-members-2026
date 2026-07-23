@@ -4,35 +4,40 @@
 // percussive hit-rate) and picks a mood/theme, crossfading into it instead
 // of hard-cutting. Hues are 0..1 (THREE.Color#setHSL convention).
 
+// reactivity scales how hard kick/snare hits actually punch the scene (core
+// pulse, ring size/brightness, camera dolly, bloom flash) — this is what
+// makes the same kick drum hit differently depending on what the director
+// thinks the song is: a hard-hitting EDM/Rock drop should slam the camera,
+// the same transient in a Classical passage should barely nudge it.
 const THEMES = [
   {
     name: 'Worship', hue: 0.10, secondaryHue: 0.07, bgHue: 0.08, sat: 0.65, bgLight: 0.045,
-    particleDensity: 0.7, cameraSpeed: 0.55, bloomBase: 1.05,
+    particleDensity: 0.7, cameraSpeed: 0.55, bloomBase: 1.05, reactivity: 0.85,
     score(s) { return clamp01(1 - Math.abs(s.energy - 0.35) * 1.2) * 0.6 + clamp01(1 - Math.abs((s.bpm || 80) - 78) / 60) * 0.4; },
   },
   {
     name: 'Rock', hue: 0.98, secondaryHue: 0.06, bgHue: 0.0, sat: 0.75, bgLight: 0.03,
-    particleDensity: 1.1, cameraSpeed: 1.55, bloomBase: 1.25,
+    particleDensity: 1.1, cameraSpeed: 1.55, bloomBase: 1.25, reactivity: 1.3,
     score(s) { return clamp01(s.energy * 1.3) * 0.5 + clamp01(s.hitRate / 3) * 0.3 + clamp01(s.bassDominance) * 0.2; },
   },
   {
     name: 'Jazz', hue: 0.74, secondaryHue: 0.80, bgHue: 0.72, sat: 0.55, bgLight: 0.04,
-    particleDensity: 0.5, cameraSpeed: 0.45, bloomBase: 0.95,
+    particleDensity: 0.5, cameraSpeed: 0.45, bloomBase: 0.95, reactivity: 0.75,
     score(s) { return clamp01(1 - s.energy) * 0.45 + clamp01(1 - s.hitRate / 2) * 0.35 + clamp01(s.trebleEnergy) * 0.2; },
   },
   {
     name: 'EDM', hue: 0.52, secondaryHue: 0.88, bgHue: 0.6, sat: 0.85, bgLight: 0.035,
-    particleDensity: 1.7, cameraSpeed: 1.85, bloomBase: 1.55,
+    particleDensity: 1.7, cameraSpeed: 1.85, bloomBase: 1.55, reactivity: 1.55,
     score(s) { return clamp01(s.energy * 1.4) * 0.45 + clamp01(((s.bpm || 0) - 118) / 60) * 0.35 + clamp01(s.hitRate / 4) * 0.2; },
   },
   {
     name: 'Classical', hue: 0.58, secondaryHue: 0.11, bgHue: 0.6, sat: 0.35, bgLight: 0.05,
-    particleDensity: 0.45, cameraSpeed: 0.4, bloomBase: 0.9,
+    particleDensity: 0.45, cameraSpeed: 0.4, bloomBase: 0.9, reactivity: 0.6,
     score(s) { return clamp01(1 - s.energy * 1.3) * 0.5 + clamp01(1 - s.hitRate / 1.5) * 0.35 + clamp01(1 - s.bassDominance) * 0.15; },
   },
   {
     name: 'Ambient', hue: 0.55, secondaryHue: 0.75, bgHue: 0.6, sat: 0.4, bgLight: 0.04,
-    particleDensity: 0.65, cameraSpeed: 0.6, bloomBase: 1.0,
+    particleDensity: 0.65, cameraSpeed: 0.6, bloomBase: 1.0, reactivity: 0.8,
     score() { return 0.22; }, // quiet fallback so *something* always scores reasonably
   },
 ];
@@ -60,6 +65,7 @@ export class AIDirector {
     this.palette = {
       hue: this.currentTheme.hue, secondaryHue: this.currentTheme.secondaryHue,
       bgHue: this.currentTheme.bgHue, sat: this.currentTheme.sat, bgLight: this.currentTheme.bgLight,
+      reactivity: this.currentTheme.reactivity,
     };
 
     this._hitTimestamps = [];
@@ -112,6 +118,7 @@ export class AIDirector {
       particleDensity: this.currentTheme.particleDensity,
       cameraSpeed: this.currentTheme.cameraSpeed * (0.85 + energy * 0.35),
       bloomStrength: this.currentTheme.bloomBase + energy * 0.7,
+      reactivity: this.palette.reactivity,
       energy,
       bpm: stats.bpm,
     };
@@ -154,5 +161,6 @@ export class AIDirector {
     this.palette.bgHue = lerpHue(this.palette.bgHue, target.bgHue, t);
     this.palette.sat = lerp(this.palette.sat, target.sat, t);
     this.palette.bgLight = lerp(this.palette.bgLight, target.bgLight, t);
+    this.palette.reactivity = lerp(this.palette.reactivity, target.reactivity, t);
   }
 }
