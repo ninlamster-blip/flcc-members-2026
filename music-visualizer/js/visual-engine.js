@@ -1,0 +1,422 @@
+import * as THREE from 'three';
+
+const RING_POOL_SIZE = 14;
+const MAX_PARTICLES = 3000;
+const MIN_PARTICLES = 500;
+
+function makeGlowSprite() {
+  const size = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+const BG_VERTEX = `
+varying vec3 vPos;
+void main() {
+  vPos = position;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`;
+
+const BG_FRAGMENT = `
+varying vec3 vPos;
+uniform float uTime;
+uniform vec3 uColorA;
+uniform vec3 uColorB;
+
+float hash(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453123); }
+float vnoise(vec3 p) {
+  vec3 i = floor(p); vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float n000 = hash(i), n100 = hash(i + vec3(1,0,0));
+  float n010 = hash(i + vec3(0,1,0)), n110 = hash(i + vec3(1,1,0));
+  float n001 = hash(i + vec3(0,0,1)), n101 = hash(i + vec3(1,0,1));
+  float n011 = hash(i + vec3(0,1,1)), n111 = hash(i + vec3(1,1,1));
+  float nx00 = mix(n000, n100, f.x), nx10 = mix(n010, n110, f.x);
+  float nx01 = mix(n001, n101, f.x), nx11 = mix(n011, n111, f.x);
+  float nxy0 = mix(nx00, nx10, f.y), nxy1 = mix(nx01, nx11, f.y);
+  return mix(nxy0, nxy1, f.z);
+}
+
+void main() {
+  vec3 p = normalize(vPos) * 2.4 + vec3(0.0, uTime * 0.012, uTime * 0.006);
+  float n = vnoise(p * 1.5) * 0.55 + vnoise(p * 3.1 + 10.0) * 0.3 + vnoise(p * 6.5 + 20.0) * 0.15;
+  vec3 col = mix(uColorA, uColorB, smoothstep(0.25, 0.85, n));
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+export class VisualEngine {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.clock = new THREE.Clock();
+    this.composer = null;
+    this.bloomPass = null;
+    this._particleBudget = MAX_PARTICLES;
+
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setSize(window.innerWidth, window.innerHeight, false);
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 100);
+    this.baseFov = 52;
+
+    this._cameraTheta = 0;
+    this._cameraPhi = 1.35;
+    this._kickImpulse = 0;
+    this._snareFlash = 0;
+
+    this._buildBackground();
+    this._buildCore();
+    this._buildRings();
+    this._buildParticles(this._particleBudget);
+    this._buildRibbons();
+    this._buildLights();
+    this._buildFlashOverlay();
+
+    window.addEventListener('resize', () => this.resize());
+  }
+
+  async initPostFX() {
+    try {
+      const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }] = await Promise.all([
+        import('three/addons/postprocessing/EffectComposer.js'),
+        import('three/addons/postprocessing/RenderPass.js'),
+        import('three/addons/postprocessing/UnrealBloomPass.js'),
+      ]);
+      this.composer = new EffectComposer(this.renderer);
+      this.composer.addPass(new RenderPass(this.scene, this.camera));
+      this.bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight), 1.1, 0.75, 0.15
+      );
+      this.composer.addPass(this.bloomPass);
+      this.resize();
+    } catch (err) {
+      // CDN unreachable or examples path changed — fall back to plain rendering.
+      console.warn('[music-visualizer] bloom postprocessing unavailable, rendering without it', err);
+      this.composer = null;
+    }
+  }
+
+  _buildBackground() {
+    const geo = new THREE.SphereGeometry(50, 32, 24);
+    this.bgUniforms = {
+      uTime: { value: 0 },
+      uColorA: { value: new THREE.Color(0x05050a) },
+      uColorB: { value: new THREE.Color(0x120814) },
+    };
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: BG_VERTEX,
+      fragmentShader: BG_FRAGMENT,
+      uniforms: this.bgUniforms,
+      side: THREE.BackSide,
+      depthWrite: false,
+    });
+    this.bgMesh = new THREE.Mesh(geo, mat);
+    this.scene.add(this.bgMesh);
+  }
+
+  _buildCore() {
+    const geo = new THREE.IcosahedronGeometry(1.35, 3);
+    this.coreMat = new THREE.MeshStandardMaterial({
+      color: 0x111122, emissive: 0xff6a2c, emissiveIntensity: 1.1,
+      metalness: 0.35, roughness: 0.35,
+    });
+    this.core = new THREE.Mesh(geo, this.coreMat);
+    this.scene.add(this.core);
+
+    this.coreWireMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.16 });
+    this.coreWire = new THREE.Mesh(geo.clone(), this.coreWireMat);
+    this.coreWire.scale.setScalar(1.015);
+    this.scene.add(this.coreWire);
+  }
+
+  _buildRings() {
+    const geo = new THREE.TorusGeometry(1, 0.035, 8, 64);
+    this.ringPool = [];
+    for (let i = 0; i < RING_POOL_SIZE; i++) {
+      const mat = new THREE.MeshBasicMaterial({
+        color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.visible = false;
+      mesh.rotation.x = Math.PI / 2;
+      this.scene.add(mesh);
+      this.ringPool.push({ mesh, active: false, life: 0, maxLife: 1, flavor: 'kick' });
+    }
+  }
+
+  _spawnRing(flavor, hue) {
+    const slot = this.ringPool.find((r) => !r.active);
+    if (!slot) return;
+    slot.active = true;
+    slot.life = 0;
+    slot.flavor = flavor;
+    slot.maxLife = flavor === 'snare' ? 0.45 : 0.9;
+    slot.mesh.visible = true;
+    slot.mesh.scale.setScalar(flavor === 'snare' ? 0.6 : 0.4);
+    slot.mesh.rotation.z = Math.random() * Math.PI;
+    slot.mesh.rotation.x = flavor === 'snare' ? (Math.random() - 0.5) * 0.6 + Math.PI / 2 : Math.PI / 2 + (Math.random() - 0.5) * 1.4;
+    slot.mesh.material.color.setHSL(hue, 0.8, flavor === 'snare' ? 0.85 : 0.6);
+    slot.mesh.material.opacity = flavor === 'snare' ? 0.9 : 0.65;
+  }
+
+  _updateRings(dt) {
+    for (const slot of this.ringPool) {
+      if (!slot.active) continue;
+      slot.life += dt;
+      const t = slot.life / slot.maxLife;
+      if (t >= 1) { slot.active = false; slot.mesh.visible = false; continue; }
+      const growth = slot.flavor === 'snare' ? 5.5 : 3.2;
+      slot.mesh.scale.setScalar((slot.flavor === 'snare' ? 0.6 : 0.4) + t * growth);
+      slot.mesh.material.opacity = (slot.flavor === 'snare' ? 0.9 : 0.65) * (1 - t);
+    }
+  }
+
+  _buildParticles(count) {
+    if (this.particles) {
+      this.scene.remove(this.particles);
+      this.particles.geometry.dispose();
+      this.particles.material.dispose();
+    }
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const radii = new Float32Array(count);
+    const phis = new Float32Array(count);
+    const thetas = new Float32Array(count);
+    const speeds = new Float32Array(count);
+    const sparkle = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      radii[i] = 2.2 + Math.random() * 4.5;
+      phis[i] = Math.acos(2 * Math.random() - 1);
+      thetas[i] = Math.random() * Math.PI * 2;
+      speeds[i] = 0.05 + Math.random() * 0.18;
+      this._writeParticlePosition(positions, i, radii[i], phis[i], thetas[i]);
+      colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = 0.6;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.05, vertexColors: true, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+      map: this._glowSprite || (this._glowSprite = makeGlowSprite()),
+    });
+
+    this.particles = new THREE.Points(geo, mat);
+    this.scene.add(this.particles);
+    this._particleState = { count, radii, phis, thetas, speeds, sparkle };
+  }
+
+  _writeParticlePosition(positions, i, r, phi, theta) {
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = r * Math.cos(phi);
+    positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+  }
+
+  _updateParticles(dt, elapsed, secondaryHue, hihat) {
+    const { count, radii, phis, thetas, speeds, sparkle } = this._particleState;
+    const positions = this.particles.geometry.attributes.position.array;
+    const colors = this.particles.geometry.attributes.color.array;
+
+    if (hihat.hit) {
+      const burst = Math.min(count, 40);
+      for (let b = 0; b < burst; b++) {
+        sparkle[(Math.random() * count) | 0] = 1;
+      }
+    }
+
+    const baseColor = new THREE.Color().setHSL(secondaryHue, 0.75, 0.55);
+    const sparkColor = new THREE.Color(0xffffff);
+    const tmp = new THREE.Color();
+
+    for (let i = 0; i < count; i++) {
+      thetas[i] += speeds[i] * dt * 0.25;
+      const wobble = Math.sin(elapsed * 0.6 + i) * 0.15;
+      this._writeParticlePosition(positions, i, radii[i] + wobble, phis[i], thetas[i]);
+
+      if (sparkle[i] > 0) sparkle[i] = Math.max(0, sparkle[i] - dt * 2.2);
+      tmp.copy(baseColor).lerp(sparkColor, sparkle[i]);
+      colors[i * 3] = tmp.r;
+      colors[i * 3 + 1] = tmp.g;
+      colors[i * 3 + 2] = tmp.b;
+    }
+
+    this.particles.geometry.attributes.position.needsUpdate = true;
+    this.particles.geometry.attributes.color.needsUpdate = true;
+    this.particles.rotation.y = elapsed * 0.03;
+  }
+
+  _buildRibbons() {
+    this.ribbons = [];
+    const RIBBON_COUNT = 5;
+    const POINTS = 80;
+    for (let i = 0; i < RIBBON_COUNT; i++) {
+      const positions = new Float32Array(POINTS * 3);
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.LineBasicMaterial({
+        color: 0xffffff, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending,
+      });
+      const line = new THREE.Line(geo, mat);
+      this.scene.add(line);
+      this.ribbons.push({
+        line, points: POINTS, phase: Math.random() * Math.PI * 2,
+        tilt: (Math.random() - 0.5) * Math.PI, radiusOffset: 2.6 + i * 0.35,
+      });
+    }
+  }
+
+  _updateRibbons(elapsed, vocalsEnergy, hue) {
+    for (let r = 0; r < this.ribbons.length; r++) {
+      const rb = this.ribbons[r];
+      const positions = rb.line.geometry.attributes.position.array;
+      const amp = 0.4 + vocalsEnergy * 1.6;
+      for (let i = 0; i < rb.points; i++) {
+        const t = i / (rb.points - 1);
+        const angle = t * Math.PI * 2 + elapsed * 0.3 + rb.phase;
+        const x = Math.cos(angle) * rb.radiusOffset;
+        const z = Math.sin(angle) * rb.radiusOffset;
+        const y = Math.sin(angle * 3 + elapsed * 1.4 + rb.phase) * amp * Math.sin(t * Math.PI);
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y + Math.sin(rb.tilt) * 0.3;
+        positions[i * 3 + 2] = z;
+      }
+      rb.line.geometry.attributes.position.needsUpdate = true;
+      rb.line.rotation.x = rb.tilt * 0.3;
+      rb.line.material.opacity = 0.08 + vocalsEnergy * 0.55;
+      rb.line.material.color.setHSL((hue + r * 0.03) % 1, 0.7, 0.6);
+    }
+  }
+
+  _buildLights() {
+    this.coreLight = new THREE.PointLight(0xff6a2c, 2, 30, 2);
+    this.scene.add(this.coreLight);
+    this.scene.add(new THREE.AmbientLight(0x404050, 0.6));
+  }
+
+  _buildFlashOverlay() {
+    const geo = new THREE.PlaneGeometry(2, 2);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthTest: false, depthWrite: false });
+    this.flashMesh = new THREE.Mesh(geo, mat);
+    this.flashCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 2);
+    this.flashCamera.position.z = 1;
+    this.flashScene = new THREE.Scene();
+    this.flashScene.add(this.flashMesh);
+  }
+
+  setParticleBudget(n) {
+    const clamped = Math.max(MIN_PARTICLES, Math.min(MAX_PARTICLES, Math.round(n)));
+    if (Math.abs(clamped - this._particleBudget) < 150) return;
+    this._particleBudget = clamped;
+    this._buildParticles(clamped);
+  }
+
+  setPixelRatioScale(scale) {
+    const target = Math.min(window.devicePixelRatio || 1, 2) * scale;
+    this.renderer.setPixelRatio(Math.max(0.6, Math.min(2, target)));
+  }
+
+  update(features, directorState) {
+    const dt = Math.min(0.05, this.clock.getDelta());
+    const elapsed = this.clock.elapsedTime;
+    const { bands, overallEnergySmoothed } = features;
+
+    // Impulse decay
+    this._kickImpulse *= Math.pow(0.0025, dt);
+    this._snareFlash *= Math.pow(0.0008, dt);
+
+    if (bands.kick.hit) {
+      this._kickImpulse = Math.min(1.4, this._kickImpulse + bands.kick.strength * 1.3 + 0.4);
+      this._spawnRing('kick', directorState.hue);
+    }
+    if (bands.snare.hit) {
+      this._snareFlash = Math.min(0.4, this._snareFlash + 0.32);
+      this._spawnRing('snare', directorState.secondaryHue);
+    }
+
+    // Background
+    this.bgUniforms.uTime.value = elapsed;
+    this.bgUniforms.uColorA.value.setHSL(directorState.bgHue, directorState.sat * 0.5, directorState.bgLight);
+    this.bgUniforms.uColorB.value.setHSL(directorState.hue, directorState.sat * 0.6, directorState.bgLight + 0.06);
+
+    // Core
+    const bassEnergy = (bands.kick.energy + bands.bass.energy) / 2;
+    const targetScale = 1 + bassEnergy * 0.55 + this._kickImpulse * 0.7;
+    this.core.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 1 - Math.pow(0.001, dt));
+    this.coreWire.scale.copy(this.core.scale).multiplyScalar(1.015);
+    this.core.rotation.y += dt * (0.12 + overallEnergySmoothed * 0.3);
+    this.core.rotation.x += dt * 0.05;
+    this.coreWire.rotation.copy(this.core.rotation);
+    this.coreMat.emissive.setHSL(directorState.hue, 0.85, 0.5 + this._kickImpulse * 0.15);
+    this.coreMat.emissiveIntensity = 0.9 + overallEnergySmoothed * 1.4 + this._kickImpulse * 1.2;
+
+    this._updateRings(dt);
+    this._updateParticles(dt, elapsed, directorState.secondaryHue, bands.hihat);
+    this._updateRibbons(elapsed, bands.vocals.energy, directorState.secondaryHue);
+
+    // Lighting
+    this.coreLight.color.setHSL(directorState.hue, 0.85, 0.55);
+    this.coreLight.intensity = 1.4 + overallEnergySmoothed * 4 + this._kickImpulse * 5;
+
+    // Camera choreography: slow autonomous orbit + kick punch + bass shake
+    this._cameraTheta += dt * 0.12 * directorState.cameraSpeed;
+    const shakeAmt = bassEnergy * 0.06;
+    const shakeX = Math.sin(elapsed * 11) * shakeAmt + Math.sin(elapsed * 5.3) * shakeAmt * 0.5;
+    const shakeY = Math.cos(elapsed * 9) * shakeAmt;
+    const radius = 7.2 - this._kickImpulse * 0.9;
+    this.camera.position.set(
+      Math.sin(this._cameraTheta) * radius + shakeX,
+      Math.sin(this._cameraPhi + elapsed * 0.05) * 1.2 + shakeY,
+      Math.cos(this._cameraTheta) * radius
+    );
+    this.camera.fov = this.baseFov + this._kickImpulse * 6;
+    this.camera.updateProjectionMatrix();
+    this.camera.lookAt(0, 0, 0);
+
+    // Snare flash overlay
+    this.flashMesh.material.opacity = this._snareFlash;
+
+    return { fov: this.camera.fov };
+  }
+
+  render() {
+    if (this.composer) {
+      if (this.bloomPass) this.bloomPass.strength = this._lastBloom || 1.1;
+      this.composer.render();
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
+    if (this._snareFlash > 0.002) {
+      this.renderer.autoClear = false;
+      this.renderer.render(this.flashScene, this.flashCamera);
+      this.renderer.autoClear = true;
+    }
+  }
+
+  setBloomStrength(v) {
+    this._lastBloom = v;
+    if (this.bloomPass) this.bloomPass.strength = v;
+  }
+
+  resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h, false);
+    if (this.composer) this.composer.setSize(w, h);
+  }
+}
