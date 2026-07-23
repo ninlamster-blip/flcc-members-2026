@@ -176,6 +176,24 @@ async function fetchMuzainiDebug() {
     const match = html.match(/PHP[^0-9]{0,60}(\d{2,3}(?:\.\d{1,4})?)/i);
     const rate = match ? parseFloat(match[1]) : null;
     const rateAccepted = rate != null && Number.isFinite(rate) && rate >= 100 && rate <= 400;
+
+    // If the static HTML has no rate near "PHP" (e.g. it only appears as a
+    // <option> in a currency picker), the rate is almost certainly filled
+    // in by client-side JS after the page loads — which this plain
+    // server-side fetch never runs. These two scans hunt for where that JS
+    // might actually get its numbers from: same-origin script files worth
+    // inspecting by hand, and any quoted string anywhere in the page that
+    // looks like it could be a rates/convert/ajax endpoint URL.
+    const scriptSrcs = [];
+    const scriptSrcRegex = /<script[^>]+src=["']([^"']+)["']/gi;
+    let sm;
+    while ((sm = scriptSrcRegex.exec(html)) && scriptSrcs.length < 30) scriptSrcs.push(sm[1]);
+
+    const apiHints = [];
+    const apiHintRegex = /(["'])((?:https?:)?\/{0,2}[^"'\s]{0,160}(?:rate|exchange|currency|convert|ajax|api)[^"'\s]{0,40})\1/gi;
+    let am;
+    while ((am = apiHintRegex.exec(html)) && apiHints.length < 15) apiHints.push(am[2]);
+
     return {
       ok: true,
       status: res.status,
@@ -185,6 +203,8 @@ async function fetchMuzainiDebug() {
       matchedText: match ? match[0] : null,
       extractedRate: rate,
       rateAccepted,
+      scriptSrcs,
+      apiHints,
     };
   } catch (err) {
     return { ok: false, error: String((err && err.message) || err) };
