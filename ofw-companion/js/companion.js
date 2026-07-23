@@ -254,7 +254,7 @@ export async function maybeGreetAfterGap() {
   try {
     const hint = pickGreetingHint(topRecommendationHint());
     const opener = await companionOpener(daysAway, hint.text);
-    typing.remove();
+    stopTyping(typing);
     if (opener) {
       addChatMessage('assistant', opener);
       appendBubble('ai', opener);
@@ -263,7 +263,7 @@ export async function maybeGreetAfterGap() {
       resetIdleWatch();
     }
   } catch {
-    typing.remove();
+    stopTyping(typing);
   }
 }
 
@@ -525,13 +525,13 @@ async function maybeSendFollowup() {
   } catch {
     // A failed proactive nudge should fail silently — there was no user
     // action to report an error against.
-    typing.remove();
+    stopTyping(typing);
     busy = false;
     els.sendBtn.disabled = false;
     armIdleWatch();
     return;
   }
-  typing.remove();
+  stopTyping(typing);
 
   addChatMessage('assistant', reply);
   appendBubble('ai', reply);
@@ -570,7 +570,7 @@ async function sendUserMessage(text, opts = {}) {
     reply = offlineReply(text, opts.heartChip)
       + `\n\n*(Hindi ako makakonekta sa AI ngayon — ${err.message}. Pero nandito pa rin ako.)*`;
   }
-  typing.remove();
+  stopTyping(typing);
 
   addChatMessage('assistant', reply);
   appendBubble('ai', reply);
@@ -627,13 +627,70 @@ function appendBubble(kind, text, image) {
   return div;
 }
 
+// A soft, wordless hum that swells and fades once per second — the exact
+// period of the orb's own CSS pulse (see .oc-orb-pulse, 1s ease-in-out) —
+// so the sound and the visual breathe together instead of two unrelated
+// things happening to share a screen. Synthesized with Web Audio rather
+// than a shipped audio file (this app has no build step and no asset
+// pipeline): a carrier tone amplitude-modulated by a 1Hz LFO, which the
+// audio clock itself keeps in lockstep with real time — far steadier than
+// a setInterval-driven envelope, and it costs nothing to start/stop.
+// Respects the same voiceReplies setting spoken replies do, since a member
+// who muted the app's voice almost certainly doesn't want a new hum either.
+function startThinkingHum() {
+  if (!getState().settings.voiceReplies) return null;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 220; // a low, warm tone — not a beep or chime
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.02; // base — the LFO swings this up to ~0.04, down to ~0
+
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 1; // one swell per second, matching oc-orb-pulse
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 0.02;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain); // audio-rate modulation of the carrier's volume
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    lfo.start();
+
+    let stopped = false;
+    return () => {
+      if (stopped) return;
+      stopped = true;
+      try {
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15); // fade, not a click
+        setTimeout(() => { osc.stop(); lfo.stop(); ctx.close(); }, 200);
+      } catch { /* already torn down — nothing left to clean up */ }
+    };
+  } catch {
+    return null; // Web Audio unavailable/blocked — the orb just stays silent
+  }
+}
+
 function showTyping() {
   const div = document.createElement('div');
   div.className = 'oc-typing';
   div.innerHTML = '<div class="oc-orb-pulse"><div class="oc-thinking-orb"></div></div>';
   els.chat.appendChild(div);
   scrollToEnd();
+  div._stopThinkingHum = startThinkingHum();
   return div;
+}
+
+function stopTyping(typing) {
+  typing._stopThinkingHum?.();
+  typing.remove();
 }
 
 // Kaibigan scrolls at the window level now (see setupHeaderCollapse), not
