@@ -7,12 +7,12 @@
 // of true source separation.
 
 const BAND_DEFS = [
-  { key: 'kick',      lo: 20,   hi: 60,    percussive: true,  refractoryMs: 110 },
+  { key: 'kick',      lo: 20,   hi: 60,    percussive: true,  refractoryMs: 85, thresholdMult: 1.3 },
   { key: 'bass',      lo: 60,   hi: 250,   percussive: false },
   { key: 'lowGuitar', lo: 250,  hi: 500,   percussive: false },
   { key: 'vocals',    lo: 500,  hi: 2000,  percussive: false },
-  { key: 'snare',     lo: 2000, hi: 4000,  percussive: true,  refractoryMs: 90 },
-  { key: 'hihat',     lo: 4000, hi: 8000,  percussive: true,  refractoryMs: 55 },
+  { key: 'snare',     lo: 2000, hi: 4000,  percussive: true,  refractoryMs: 70, thresholdMult: 1.32 },
+  { key: 'hihat',     lo: 4000, hi: 8000,  percussive: true,  refractoryMs: 40, thresholdMult: 1.28 },
   { key: 'cymbals',   lo: 8000, hi: 16000, percussive: false },
 ];
 
@@ -20,6 +20,13 @@ const HISTORY_LEN = 45; // ~0.75s at 60fps, used for adaptive onset thresholds
 const BPM_WINDOW_MS = 8000;
 const MIN_ONSET_INTERVAL_S = 0.28; // ~214 BPM ceiling
 const MAX_ONSET_INTERVAL_S = 1.10; // ~55 BPM floor
+
+// Compands raw band energy (already 0..1) so moderate hits read as visually
+// punchy without needing near-clipping input — a straight linear mapping
+// makes everything short of a very loud mix look flat and under-reactive.
+function punch(v, power = 0.7) {
+  return v <= 0 ? 0 : Math.pow(v, power);
+}
 
 export class AudioEngine {
   constructor() {
@@ -45,7 +52,10 @@ export class AudioEngine {
     this.context = new Ctx();
     this.analyser = this.context.createAnalyser();
     this.analyser.fftSize = 2048;
-    this.analyser.smoothingTimeConstant = 0.75;
+    // Lower than the AnalyserNode default (0.8) — less inter-frame smoothing
+    // means transients (kick/snare/hihat attacks) show up sharply instead of
+    // getting blurred out, which is what "reactive to the beat" needs.
+    this.analyser.smoothingTimeConstant = 0.55;
     this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
   }
 
@@ -125,7 +135,7 @@ export class AudioEngine {
       let hit = false;
       if (def.percussive && hist.length >= 8) {
         const mean = hist.reduce((a, v) => a + v, 0) / hist.length;
-        const threshold = Math.max(0.06, mean * 1.55);
+        const threshold = Math.max(0.045, mean * def.thresholdMult);
         const lastHit = this._lastHitAt.get(def.key) || 0;
         if (avg > threshold && (now - lastHit) > def.refractoryMs) {
           hit = true;
@@ -136,7 +146,8 @@ export class AudioEngine {
         }
       }
 
-      bands[def.key] = { energy: avg, hit, strength: hit ? avg : 0 };
+      const energy = punch(avg);
+      bands[def.key] = { energy, hit, strength: hit ? energy : 0 };
     }
 
     const overallEnergy = overallCount ? (overallSum / (overallCount * 255)) : 0;

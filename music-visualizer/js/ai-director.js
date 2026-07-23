@@ -46,7 +46,9 @@ function lerpHue(a, b, t) {
   return ((a + diff * t) % 1 + 1) % 1;
 }
 
-const STABLE_FRAMES_TO_SWITCH = 150; // ~2.5s at 60fps — avoids flicker between close scores
+const STABLE_FRAMES_TO_SWITCH = 130; // ~2.2s at 60fps — avoids flicker between close scores mid-song
+const FAST_LOCK_FRAMES = 10; // ~0.15s — used right after a new track starts, see reset()
+const FAST_LOCK_MS = 3500; // how long after reset() the fast-lock window stays open
 const PALETTE_LERP_RATE = 1.1; // per second
 
 export class AIDirector {
@@ -62,6 +64,18 @@ export class AIDirector {
 
     this._hitTimestamps = [];
     this._energyHistory = [];
+    this._fastLockUntil = 0;
+  }
+
+  /** Call when a new track starts — lets the director snap to a fitting
+   * theme almost immediately from the first second of audio, instead of
+   * crawling there over the ~2s hysteresis window meant to prevent
+   * mid-song flicker (which reads as sluggish right when a song begins). */
+  reset() {
+    this._hitTimestamps = [];
+    this.candidateTheme = null;
+    this.candidateStableFrames = 0;
+    this._fastLockUntil = performance.now() + FAST_LOCK_MS;
   }
 
   update(features, dtSeconds) {
@@ -84,8 +98,8 @@ export class AIDirector {
       trebleEnergy,
     };
 
-    this._pickTheme(stats);
-    this._advancePalette(dtSeconds);
+    this._pickTheme(stats, now);
+    this._advancePalette(dtSeconds, now < this._fastLockUntil);
 
     const energy = stats.energy;
     return {
@@ -103,7 +117,7 @@ export class AIDirector {
     };
   }
 
-  _pickTheme(stats) {
+  _pickTheme(stats, now) {
     let best = THEMES[0];
     let bestScore = -Infinity;
     for (const theme of THEMES) {
@@ -124,15 +138,16 @@ export class AIDirector {
       this.candidateStableFrames = 1;
     }
 
-    if (this.candidateStableFrames >= STABLE_FRAMES_TO_SWITCH) {
+    const framesNeeded = now < this._fastLockUntil ? FAST_LOCK_FRAMES : STABLE_FRAMES_TO_SWITCH;
+    if (this.candidateStableFrames >= framesNeeded) {
       this.currentTheme = best;
       this.candidateTheme = null;
       this.candidateStableFrames = 0;
     }
   }
 
-  _advancePalette(dtSeconds) {
-    const t = clamp01(PALETTE_LERP_RATE * dtSeconds);
+  _advancePalette(dtSeconds, fastLock) {
+    const t = clamp01((fastLock ? PALETTE_LERP_RATE * 3 : PALETTE_LERP_RATE) * dtSeconds);
     const target = this.currentTheme;
     this.palette.hue = lerpHue(this.palette.hue, target.hue, t);
     this.palette.secondaryHue = lerpHue(this.palette.secondaryHue, target.secondaryHue, t);
