@@ -281,6 +281,83 @@ async function fetchMuzainiScriptDebug(scriptPath) {
   }
 }
 
+// /exchange-rate-debug?resolve=1 — the one-shot version of everything the
+// last several debug rounds built up to: find where "baseurl" (used by
+// ForeignCustom.js as `baseurl + "api/ServicesAPI/ForeignCurrency"`) is
+// actually assigned — almost certainly inline in foreign-currency.html's
+// own <script> markup, which a plain HTML fetch can already see even
+// though it can't run that JS — then build the real API URL from it, call
+// it server-side the same way the page's own AJAX call would (GET,
+// X-Requested-With so it doesn't look like a direct browser hit), and
+// unwrap the response the same way the widget's own success handler does
+// (JSON.parse on a nested responseBusinessData string). Meant to finish
+// the investigation in one visit instead of another back-and-forth round.
+async function fetchMuzainiResolve() {
+  const result = { step: 'fetch-page' };
+  try {
+    const pageUrl = 'https://www.muzaini.com/foreign-currency.html';
+    const pageRes = await fetch(pageUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
+      cf: { cacheTtl: 1800 },
+    });
+    if (!pageRes.ok) return { ...result, ok: false, pageStatus: pageRes.status };
+    const html = await pageRes.text();
+
+    const baseurlMatch = html.match(/base[_]?url\s*=\s*["']([^"']*)["']/i);
+    result.step = 'find-baseurl';
+    result.baseurlFound = !!baseurlMatch;
+    result.baseurlValue = baseurlMatch ? baseurlMatch[1] : null;
+    if (!baseurlMatch) {
+      // Not inline after all — dump a wider net of assignment-looking
+      // lines mentioning "url" so there's still something to go on.
+      const urlishLines = [];
+      const lineRegex = /^.*\burl\b.*=.*$/gim;
+      let lm;
+      while ((lm = lineRegex.exec(html)) && urlishLines.length < 20) urlishLines.push(lm[0].trim());
+      return { ...result, ok: false, urlishLines };
+    }
+
+    const apiPath = 'api/ServicesAPI/ForeignCurrency';
+    const candidate = baseurlMatch[1] + apiPath;
+    const resolvedApiUrl = new URL(candidate, pageUrl).toString();
+    result.resolvedApiUrl = resolvedApiUrl;
+    result.step = 'call-api';
+
+    const apiRes = await fetch(resolvedApiUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': pageUrl,
+      },
+    });
+    result.apiStatus = apiRes.status;
+    result.apiContentType = apiRes.headers.get('content-type');
+    const apiText = await apiRes.text();
+    result.rawBodySnippet = apiText.slice(0, 2000);
+    if (!apiRes.ok) return { ...result, ok: false };
+
+    result.step = 'parse-outer-json';
+    const outer = JSON.parse(apiText);
+    if (!outer.responseBusinessData) return { ...result, ok: false, outerKeys: Object.keys(outer) };
+
+    result.step = 'parse-inner-json';
+    const inner = JSON.parse(outer.responseBusinessData);
+    result.innerSample = JSON.stringify(inner).slice(0, 2000);
+
+    // The inner payload's exact shape is unknown — could be an array of
+    // currency rows or an object keyed by currency code — so search
+    // broadly for a PHP entry rather than assuming one structure.
+    const rows = Array.isArray(inner) ? inner : (Array.isArray(inner?.data) ? inner.data : [inner]);
+    const phpRow = rows.find((r) => r && Object.values(r).some((v) => typeof v === 'string' && v.toUpperCase() === 'PHP'));
+    result.phpRow = phpRow || null;
+
+    return { ...result, ok: true };
+  } catch (err) {
+    return { ...result, ok: false, error: String((err && err.message) || err) };
+  }
+}
+
 // Fallback mid-market rate — same source the app used before this endpoint
 // existed. Free, no key, but a generic reference number rather than any
 // specific exchange house's real counter rate.
@@ -547,6 +624,15 @@ async function handleRequest(request, env, ctx) {
   // Uncached, bypasses the fallback entirely, and reports exactly what the
   // Al Muzaini scrape saw. Meant for a human to visit directly, not for the
   // app itself to call.
+  // No query string, same reason as /exchange-rate-debug below — a param
+  // (?resolve=1) already proved easy to drop en route on a mobile browser.
+  if (request.method === 'GET' && url.pathname === '/exchange-rate-resolve') {
+    const debug = await fetchMuzainiResolve();
+    return new Response(JSON.stringify(debug, null, 2), {
+      headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+    });
+  }
+
   if (request.method === 'GET' && url.pathname === '/exchange-rate-debug') {
     const scriptPath = url.searchParams.get('script');
     const debug = scriptPath
