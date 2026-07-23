@@ -30,6 +30,9 @@ body {
 
 /* ---------- Drop / welcome screen ---------- */
 
+#mv-drop-hint[hidden] {
+  display: none;
+}
 #mv-drop-hint {
   position: fixed;
   inset: 0;
