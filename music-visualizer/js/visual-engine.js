@@ -127,7 +127,7 @@ export class VisualEngine {
   }
 
   _buildCore() {
-    const geo = new THREE.IcosahedronGeometry(1.35, 3);
+    const geo = new THREE.IcosahedronGeometry(1.1, 3);
     this.coreMat = new THREE.MeshStandardMaterial({
       color: 0x111122, emissive: 0xff6a2c, emissiveIntensity: 1.1,
       metalness: 0.35, roughness: 0.35,
@@ -346,13 +346,18 @@ export class VisualEngine {
     this._kickImpulse *= Math.pow(0.0025, dt);
     this._snareFlash *= Math.pow(0.0008, dt);
 
+    // reactivity comes from the AI Director's current theme read — the same
+    // kick drum should slam an EDM/Rock scene and barely nudge a Classical
+    // one, which is what makes the direction feel genre-aware rather than
+    // just a fixed color filter over identical physics.
+    const reactivity = directorState.reactivity ?? 1;
     if (bands.kick.hit) {
-      this._kickImpulse = Math.min(1.9, this._kickImpulse + bands.kick.strength * 1.8 + 0.55);
-      this._spawnRing('kick', directorState.hue, bands.kick.strength);
+      this._kickImpulse = Math.min(1.9, this._kickImpulse + (bands.kick.strength * 1.8 + 0.55) * reactivity);
+      this._spawnRing('kick', directorState.hue, bands.kick.strength * reactivity);
     }
     if (bands.snare.hit) {
-      this._snareFlash = Math.min(0.55, this._snareFlash + 0.4);
-      this._spawnRing('snare', directorState.secondaryHue, bands.snare.strength);
+      this._snareFlash = Math.min(0.55, this._snareFlash + 0.4 * reactivity);
+      this._spawnRing('snare', directorState.secondaryHue, bands.snare.strength * reactivity);
     }
 
     // Background
@@ -402,7 +407,10 @@ export class VisualEngine {
 
   render() {
     if (this.composer) {
-      if (this.bloomPass) this.bloomPass.strength = this._lastBloom || 1.1;
+      // Base ambient bloom (from the director's theme+energy read) plus a
+      // beat-synced flash so the glow itself visibly pops in time with the
+      // kick, not just the core's shape.
+      if (this.bloomPass) this.bloomPass.strength = Math.min(3.2, (this._lastBloom || 1.1) + this._kickImpulse * 0.9);
       this.composer.render();
     } else {
       this.renderer.render(this.scene, this.camera);
