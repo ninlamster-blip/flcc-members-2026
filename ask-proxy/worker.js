@@ -232,6 +232,50 @@ async function fetchMuzainiPhpRate() {
   return debug.rateAccepted ? debug.extractedRate : null;
 }
 
+// /exchange-rate-debug?script=/js/ForeignCustom.js — both the homepage and
+// the foreign-currency.html page turned out to be the same JS-driven
+// calculator widget (a currency <select>, not a static table), so the real
+// rate almost certainly comes from an AJAX call that widget's own script
+// fires once a currency is picked. This fetches that script's raw source
+// (same-origin, so no CORS issue server-side) and hunts for the call
+// itself — jQuery $.ajax/$.get/$.post, fetch(), or XMLHttpRequest — plus
+// any quoted URL/path near it, so the actual endpoint can be found without
+// needing someone to read minified JS by hand.
+async function fetchMuzainiScriptDebug(scriptPath) {
+  try {
+    const fullPath = scriptPath.startsWith('/') ? scriptPath : '/' + scriptPath;
+    const res = await fetch(`https://www.muzaini.com${fullPath}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
+      cf: { cacheTtl: 1800 },
+    });
+    if (!res.ok) return { ok: false, status: res.status, scriptPath };
+    const js = await res.text();
+
+    const callHits = [];
+    const callRegex = /(\$\.ajax|\$\.get|\$\.post|fetch\(|new XMLHttpRequest|\.open\(\s*["']GET["'])/gi;
+    let cm;
+    while ((cm = callRegex.exec(js)) && callHits.length < 12) {
+      callHits.push(js.slice(Math.max(0, cm.index - 20), cm.index + 220).replace(/\s+/g, ' ').trim());
+    }
+
+    const urlHits = [];
+    const urlRegex = /(["'`])((?:https?:)?\/[^"'`\s]{2,150})\1/gi;
+    let um;
+    while ((um = urlRegex.exec(js)) && urlHits.length < 25) urlHits.push(um[2]);
+
+    return {
+      ok: true,
+      scriptPath,
+      status: res.status,
+      jsLength: js.length,
+      callHits,
+      urlHits: [...new Set(urlHits)],
+    };
+  } catch (err) {
+    return { ok: false, error: String((err && err.message) || err), scriptPath };
+  }
+}
+
 // Fallback mid-market rate — same source the app used before this endpoint
 // existed. Free, no key, but a generic reference number rather than any
 // specific exchange house's real counter rate.
@@ -499,7 +543,10 @@ async function handleRequest(request, env, ctx) {
   // Al Muzaini scrape saw. Meant for a human to visit directly, not for the
   // app itself to call.
   if (request.method === 'GET' && url.pathname === '/exchange-rate-debug') {
-    const debug = await fetchMuzainiDebug(url.searchParams.get('path') || '/');
+    const scriptPath = url.searchParams.get('script');
+    const debug = scriptPath
+      ? await fetchMuzainiScriptDebug(scriptPath)
+      : await fetchMuzainiDebug(url.searchParams.get('path') || '/');
     return new Response(JSON.stringify(debug, null, 2), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
