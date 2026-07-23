@@ -553,7 +553,14 @@ async function handleRequest(request, env, ctx) {
       ? await fetchMuzainiScriptDebug(scriptPath)
       : await fetchMuzainiDebug(url.searchParams.get('path') || '/');
     return new Response(JSON.stringify(debug, null, 2), {
-      headers: { ...CORS, 'Content-Type': 'application/json' },
+      // The last two rounds of debugging kept showing an identical, stale
+      // response even after new fields were deployed — with no explicit
+      // cache directive here, something between the Worker and the screen
+      // (most likely the browser's own heuristic caching, since this is a
+      // GET with no query-string variation the first few times) was free to
+      // reuse an old copy. This response is a live diagnostic snapshot, so
+      // it must never be reused.
+      headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store, no-cache, must-revalidate' },
     });
   }
 
