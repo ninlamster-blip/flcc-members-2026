@@ -158,21 +158,36 @@ async function fetchNewsFeed(feed) {
 // picking up an unrelated number — 1 KWD has been worth roughly 150–250
 // PHP for years, so anything outside that reads as a parse miss, not a
 // real rate. Returns full diagnostics (not just the number) so GET
-// /exchange-rate-debug can show exactly where the scrape is landing —
-// whether muzaini.com even responded, whether "PHP" appears in the raw
-// HTML at all (it won't if the rate is rendered client-side by JS, since
-// this is a plain server-side fetch with no browser/JS execution), and
-// what number (if any) the regex pulled out — without needing someone to
-// paste page source by hand every time this needs debugging.
-async function fetchMuzainiDebug() {
+// /exchange-rate-debug (optionally ?path=/some/page.html) can show exactly
+// where the scrape is landing — whether muzaini.com even responded,
+// whether "PHP" appears in the raw HTML at all (it won't if the rate is
+// rendered client-side by JS, since this is a plain server-side fetch with
+// no browser/JS execution), and what number (if any) the regex pulled out
+// — without needing someone to paste page source by hand every time this
+// needs debugging. The ?path= override exists because the homepage's rate
+// widget turned out to be JS-driven (see apiHints/scriptSrcs below); it
+// lets a candidate page (e.g. a dedicated rates table) get checked without
+// a new deploy per guess.
+async function fetchMuzainiDebug(path = '/') {
   try {
-    const res = await fetch('https://www.muzaini.com/', {
+    const res = await fetch(`https://www.muzaini.com${path.startsWith('/') ? path : '/' + path}`, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
       cf: { cacheTtl: 1800 },
     });
-    if (!res.ok) return { ok: false, status: res.status };
+    if (!res.ok) return { ok: false, status: res.status, path };
     const html = await res.text();
-    const phpIndex = html.search(/PHP/i);
+
+    // Every "PHP" occurrence, not just the first — a rates table lists many
+    // currencies, so the Philippine Peso row could be anywhere in it.
+    const phpOccurrences = [];
+    const phpFindRegex = /PHP/gi;
+    let fm;
+    while ((fm = phpFindRegex.exec(html)) && phpOccurrences.length < 6) {
+      phpOccurrences.push({
+        context: html.slice(Math.max(0, fm.index - 40), fm.index + 160),
+        nearbyNumber: (html.slice(fm.index, fm.index + 220).match(/(\d{2,3}(?:\.\d{1,4})?)/) || [])[1] || null,
+      });
+    }
     const match = html.match(/PHP[^0-9]{0,60}(\d{2,3}(?:\.\d{1,4})?)/i);
     const rate = match ? parseFloat(match[1]) : null;
     const rateAccepted = rate != null && Number.isFinite(rate) && rate >= 100 && rate <= 400;
@@ -196,10 +211,11 @@ async function fetchMuzainiDebug() {
 
     return {
       ok: true,
+      path,
       status: res.status,
       htmlLength: html.length,
-      phpMentionFound: phpIndex !== -1,
-      phpContextSnippet: phpIndex !== -1 ? html.slice(Math.max(0, phpIndex - 40), phpIndex + 120) : null,
+      phpMentionFound: phpOccurrences.length > 0,
+      phpOccurrences,
       matchedText: match ? match[0] : null,
       extractedRate: rate,
       rateAccepted,
@@ -207,7 +223,7 @@ async function fetchMuzainiDebug() {
       apiHints,
     };
   } catch (err) {
-    return { ok: false, error: String((err && err.message) || err) };
+    return { ok: false, error: String((err && err.message) || err), path };
   }
 }
 
@@ -483,7 +499,7 @@ async function handleRequest(request, env, ctx) {
   // Al Muzaini scrape saw. Meant for a human to visit directly, not for the
   // app itself to call.
   if (request.method === 'GET' && url.pathname === '/exchange-rate-debug') {
-    const debug = await fetchMuzainiDebug();
+    const debug = await fetchMuzainiDebug(url.searchParams.get('path') || '/');
     return new Response(JSON.stringify(debug, null, 2), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
