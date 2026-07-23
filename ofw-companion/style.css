@@ -986,7 +986,7 @@ body.oc-home-compact .oc-brain-card {
   align-self: flex-start;
   display: flex;
   align-items: center;
-  padding: 16px 18px;
+  padding: 18px 20px;
   background: var(--bubble-ai);
   border-radius: 22px;
   border-bottom-left-radius: 8px;
@@ -994,35 +994,35 @@ body.oc-home-compact .oc-brain-card {
 }
 .oc-orb-pulse {
   display: inline-flex;
-  animation: oc-orb-pulse 1.4s ease-in-out infinite;
+  animation: oc-orb-pulse 1s ease-in-out infinite;
 }
 .oc-thinking-orb {
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: conic-gradient(from 0deg, var(--accent), var(--gold), var(--calm), var(--accent));
-  filter: blur(1.5px) saturate(1.35);
+  filter: blur(2px) saturate(1.35);
   animation: oc-orb-spin 2.2s linear infinite;
 }
 .oc-thinking-orb::after {
   content: '';
   position: absolute;
-  inset: -7px;
+  inset: -11px;
   border-radius: 50%;
   background: inherit;
-  filter: blur(9px);
+  filter: blur(13px);
   opacity: 0.55;
-  animation: oc-orb-breathe 1.4s ease-in-out infinite;
+  animation: oc-orb-breathe 1s ease-in-out infinite;
 }
 @keyframes oc-orb-spin { to { transform: rotate(360deg); } }
 @keyframes oc-orb-pulse {
   0%, 100% { transform: scale(0.8); }
-  50% { transform: scale(1.65); }
+  50% { transform: scale(1.7); }
 }
 @keyframes oc-orb-breathe {
   0%, 100% { transform: scale(0.8); opacity: 0.35; }
-  50% { transform: scale(1.5); opacity: 0.75; }
+  50% { transform: scale(1.55); opacity: 0.75; }
 }
 @media (prefers-reduced-motion: reduce) {
   .oc-orb-pulse, .oc-thinking-orb, .oc-thinking-orb::after { animation: none; }
