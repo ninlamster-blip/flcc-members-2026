@@ -9,11 +9,21 @@
 // makes the same kick drum hit differently depending on what the director
 // thinks the song is: a hard-hitting EDM/Rock drop should slam the camera,
 // the same transient in a Classical passage should barely nudge it.
+// Scores a BPM match without letting an *undetected* tempo (common for
+// non-percussive genres — acoustic, classical, jazz ballads never lock a
+// clean onset train) silently favor whichever theme's fallback number
+// happens to equal its own target. Missing data gets a modest, deliberately
+// sub-neutral credit instead of a free ride.
+function bpmScore(bpm, target, spread) {
+  if (bpm == null) return 0.3;
+  return clamp01(1 - Math.abs(bpm - target) / spread);
+}
+
 const THEMES = [
   {
     name: 'Worship', hue: 0.10, secondaryHue: 0.07, bgHue: 0.08, sat: 0.65, bgLight: 0.045,
     particleDensity: 0.7, cameraSpeed: 0.55, bloomBase: 1.05, reactivity: 0.85,
-    score(s) { return clamp01(1 - Math.abs(s.energy - 0.35) * 1.2) * 0.6 + clamp01(1 - Math.abs((s.bpm || 80) - 78) / 60) * 0.4; },
+    score(s) { return clamp01(1 - Math.abs(s.energy - 0.35) * 1.8) * 0.6 + bpmScore(s.bpm, 78, 60) * 0.4; },
   },
   {
     name: 'Rock', hue: 0.98, secondaryHue: 0.06, bgHue: 0.0, sat: 0.75, bgLight: 0.03,
@@ -23,17 +33,56 @@ const THEMES = [
   {
     name: 'Jazz', hue: 0.74, secondaryHue: 0.80, bgHue: 0.72, sat: 0.55, bgLight: 0.04,
     particleDensity: 0.5, cameraSpeed: 0.45, bloomBase: 0.95, reactivity: 0.75,
-    score(s) { return clamp01(1 - s.energy) * 0.45 + clamp01(1 - s.hitRate / 2) * 0.35 + clamp01(s.trebleEnergy) * 0.2; },
+    score(s) { return clamp01(1 - s.energy) * 0.3 + clamp01(1 - s.hitRate / 3) * 0.25 + clamp01(s.trebleEnergy * 1.8) * 0.45; },
   },
   {
     name: 'EDM', hue: 0.52, secondaryHue: 0.88, bgHue: 0.6, sat: 0.85, bgLight: 0.035,
     particleDensity: 1.7, cameraSpeed: 1.85, bloomBase: 1.55, reactivity: 1.55,
-    score(s) { return clamp01(s.energy * 1.4) * 0.45 + clamp01(((s.bpm || 0) - 118) / 60) * 0.35 + clamp01(s.hitRate / 4) * 0.2; },
+    score(s) { return clamp01(s.energy * 1.4) * 0.45 + bpmScore(s.bpm, 128, 45) * 0.35 + clamp01(s.hitRate / 4) * 0.2; },
   },
   {
     name: 'Classical', hue: 0.58, secondaryHue: 0.11, bgHue: 0.6, sat: 0.35, bgLight: 0.05,
     particleDensity: 0.45, cameraSpeed: 0.4, bloomBase: 0.9, reactivity: 0.6,
-    score(s) { return clamp01(1 - s.energy * 1.3) * 0.5 + clamp01(1 - s.hitRate / 1.5) * 0.35 + clamp01(1 - s.bassDominance) * 0.15; },
+    score(s) {
+      return clamp01(1 - s.energy * 1.3) * 0.4
+           + clamp01(1 - s.hitRate / 1.5) * 0.3
+           + clamp01(1 - s.bassDominance) * 0.15
+           + clamp01(1 - s.vocalsEnergy * 1.5) * 0.15;
+    },
+  },
+  {
+    // Acoustic: guitar/vocal centric, little to no drum kit, not bass-heavy.
+    name: 'Acoustic', hue: 0.13, secondaryHue: 0.09, bgHue: 0.11, sat: 0.5, bgLight: 0.045,
+    particleDensity: 0.55, cameraSpeed: 0.5, bloomBase: 0.95, reactivity: 0.7,
+    score(s) {
+      return clamp01(1 - Math.abs(s.energy - 0.28) * 2.2) * 0.3
+           + clamp01(1 - s.hitRate / 1.2) * 0.3
+           + clamp01(1 - s.bassDominance * 1.3) * 0.2
+           + clamp01(s.vocalsEnergy * 1.3) * 0.2;
+    },
+  },
+  {
+    // R&B: slow-mid groove, bass-forward but smooth (not aggressive hits),
+    // vocal-led.
+    name: 'R&B', hue: 0.83, secondaryHue: 0.90, bgHue: 0.85, sat: 0.65, bgLight: 0.035,
+    particleDensity: 0.75, cameraSpeed: 0.6, bloomBase: 1.1, reactivity: 0.95,
+    score(s) {
+      return clamp01(1 - Math.abs(s.energy - 0.45) * 1.8) * 0.3
+           + bpmScore(s.bpm, 82, 45) * 0.2
+           + clamp01(s.bassDominance * 1.1) * 0.2
+           + clamp01(s.vocalsEnergy * 1.3) * 0.3;
+    },
+  },
+  {
+    // Soft: ballads, ambient pop, intimate vocal-forward low-energy songs.
+    name: 'Soft', hue: 0.88, secondaryHue: 0.95, bgHue: 0.9, sat: 0.42, bgLight: 0.055,
+    particleDensity: 0.4, cameraSpeed: 0.35, bloomBase: 0.85, reactivity: 0.55,
+    score(s) {
+      return clamp01(1 - s.energy * 2.2) * 0.3
+           + bpmScore(s.bpm, 68, 40) * 0.15
+           + clamp01(1 - s.hitRate / 0.8) * 0.2
+           + clamp01(s.vocalsEnergy * 1.4) * 0.35;
+    },
   },
   {
     name: 'Ambient', hue: 0.55, secondaryHue: 0.75, bgHue: 0.6, sat: 0.4, bgLight: 0.04,
@@ -102,6 +151,7 @@ export class AIDirector {
       hitRate,
       bassDominance,
       trebleEnergy,
+      vocalsEnergy: bands.vocals.energy,
     };
 
     this._pickTheme(stats, now);
