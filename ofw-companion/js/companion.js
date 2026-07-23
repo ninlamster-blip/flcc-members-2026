@@ -419,9 +419,15 @@ async function startRecording() {
     try {
       const text = await transcribeAudio(blob);
       if (text) {
-        els.input.value = els.input.value ? `${els.input.value} ${text}` : text;
+        // Sent straight away, not just dropped into the input box — the
+        // point of talking instead of typing is a real back-and-forth, not
+        // an extra tap on Send after every recording. Anything already
+        // typed comes along too, rather than being silently lost.
+        const combined = els.input.value ? `${els.input.value} ${text}` : text;
+        els.input.value = '';
         autoGrow();
         els.input.placeholder = 'Kwentuhan mo ako…';
+        sendUserMessage(combined);
       } else {
         els.input.placeholder = 'Walang narinig — subukan ulit.';
         setTimeout(() => { els.input.placeholder = 'Kwentuhan mo ako…'; }, 3000);
