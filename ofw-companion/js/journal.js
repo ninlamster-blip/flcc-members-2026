@@ -4,7 +4,7 @@
 // the full five-brain map) — reflection-engine.js and growth-engine.js both
 // read the check-ins and entries saved here.
 import { getState, updateState, todaysCheckin, saveCheckin, addJournalEntry, updateJournalEntry, deleteJournalEntry, addRemittance, deleteRemittance, addBudgetEntry, deleteBudgetEntry, BUDGET_CATEGORIES } from './state.js';
-import { wellbeingInsight, isConnected } from './ai.js';
+import { wellbeingInsight, isConnected, getConnection } from './ai.js';
 import { escapeHtml, friendlyDate, todayKey } from './utils.js';
 
 const MOODS = [
@@ -477,38 +477,50 @@ function renderBudget() {
   });
 }
 
-// ── Exchange rate (open.er-api.com, free, no key) ────────────────────────────
+// ── Exchange rate (Al Muzaini Exchange's own posted rate) ────────────────────
 // KWD → PHP specifically, not a generic converter — this church's members
 // are Kuwait-based (see README), so that's the one rate actually relevant
 // on the padala card, same "one clearly useful thing, not a general tool"
-// instinct as the rest of this app. Same cache-then-refresh pattern as
+// instinct as the rest of this app. Fetched via the church Worker's GET
+// /exchange-rate (same apiBase() pattern as prayerchain.js/notifications.js —
+// an unset proxy URL just means "this same site"), which scrapes Al
+// Muzaini's actual counter rate server-side (a browser fetch straight to
+// muzaini.com would hit CORS) and falls back to a generic mid-market rate
+// on its own if that scrape ever fails — so this stays simple and doesn't
+// need its own fallback logic. Same cache-then-refresh pattern as
 // sanctuary.js's weather chip.
+function apiBase() {
+  const { proxyUrl } = getConnection();
+  return proxyUrl ? proxyUrl.replace(/\/+$/, '') : '';
+}
+
 async function fetchExchangeRate() {
-  const res = await fetch('https://open.er-api.com/v6/latest/KWD');
+  const res = await fetch(apiBase() + '/exchange-rate');
   if (!res.ok) throw new Error('rate unavailable');
   const data = await res.json();
-  if (data.result !== 'success' || !data.rates?.PHP) throw new Error('rate unavailable');
-  return data.rates.PHP;
+  if (!data.phpPerKwd) throw new Error('rate unavailable');
+  return { phpPerKwd: data.phpPerKwd, source: data.source };
 }
 
 async function initExchangeRate() {
   const el = document.getElementById('oc-exchange-rate');
   if (!el) return;
 
-  const show = (phpPerKwd) => {
-    el.textContent = `💱 Ngayon: 1 KWD ≈ ₱${phpPerKwd.toFixed(2)}`;
+  const show = (phpPerKwd, source) => {
+    const label = source === 'muzaini' ? 'Al Muzaini' : 'pandaigdigang rate';
+    el.textContent = `💱 Ngayon: 1 KWD ≈ ₱${phpPerKwd.toFixed(2)} (${label})`;
     el.hidden = false;
     updatePhpPreview(); // the rate just became available (or changed) — refresh the live conversion too
   };
 
   const cached = getState().exchangeRateCache;
-  if (cached && Date.now() - cached.at < 45 * 60 * 1000) { show(cached.phpPerKwd); return; }
-  if (cached) show(cached.phpPerKwd); // stale is better than blank while we refresh
+  if (cached && Date.now() - cached.at < 45 * 60 * 1000) { show(cached.phpPerKwd, cached.source); return; }
+  if (cached) show(cached.phpPerKwd, cached.source); // stale is better than blank while we refresh
   else el.hidden = true; // nothing to show yet — don't leave an unrelated earlier render's state lingering
 
   try {
-    const phpPerKwd = await fetchExchangeRate();
-    updateState((st) => { st.exchangeRateCache = { at: Date.now(), phpPerKwd }; });
-    show(phpPerKwd);
+    const { phpPerKwd, source } = await fetchExchangeRate();
+    updateState((st) => { st.exchangeRateCache = { at: Date.now(), phpPerKwd, source }; });
+    show(phpPerKwd, source);
   } catch { /* offline — the cached or hidden line stands */ }
 }

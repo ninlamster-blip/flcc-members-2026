@@ -150,6 +150,47 @@ async function fetchNewsFeed(feed) {
   });
 }
 
+// Al Muzaini Exchange (muzaini.com) publishes their own posted PHP rate
+// somewhere on their site; the exact markup is unknown and can change
+// without notice, so this searches the raw HTML text for "PHP" and pulls
+// the nearest plausible decimal number instead of depending on any
+// specific tag/class structure. A sanity range (100–400) guards against
+// picking up an unrelated number — 1 KWD has been worth roughly 150–250
+// PHP for years, so anything outside that reads as a parse miss, not a
+// real rate, and this returns null so the caller falls back.
+async function fetchMuzainiPhpRate() {
+  try {
+    const res = await fetch('https://www.muzaini.com/', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
+      cf: { cacheTtl: 1800 },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const match = html.match(/PHP[^0-9]{0,60}(\d{2,3}(?:\.\d{1,4})?)/i);
+    if (!match) return null;
+    const rate = parseFloat(match[1]);
+    if (!Number.isFinite(rate) || rate < 100 || rate > 400) return null;
+    return rate;
+  } catch {
+    return null;
+  }
+}
+
+// Fallback mid-market rate — same source the app used before this endpoint
+// existed. Free, no key, but a generic reference number rather than any
+// specific exchange house's real counter rate.
+async function fetchOpenErApiPhpRate() {
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/KWD');
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.result !== 'success' || !data.rates?.PHP) return null;
+    return data.rates.PHP;
+  } catch {
+    return null;
+  }
+}
+
 // ── GET /calendar — proxies + parses a personal ICS (iCalendar) feed URL ──
 // Unlike /news (a fixed, public feed list this Worker owns), a calendar is
 // personal — the caller supplies which feed to read via ?url=. This
@@ -382,6 +423,42 @@ async function handleRequest(request, env, ctx) {
     return new Response(JSON.stringify({ items }), {
       headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
+  }
+
+  // ── GET /exchange-rate — live KWD→PHP rate for the Padala conversion ─────
+  // Scrapes Al Muzaini Exchange's own posted rate — what a member would
+  // actually get walking up to their counter, not a generic mid-market
+  // number — since that's the one most OFWs here actually remit through
+  // and most (especially those working in the house) have no time to check
+  // in person. Al Muzaini's page markup isn't a stable contract (a
+  // marketing site, not an API), so this hunts the raw HTML text for a
+  // plausible PHP figure rather than depending on any specific tag/class;
+  // falls back to open.er-api.com's mid-market rate if that ever comes up
+  // empty or out of range, so the conversion never just breaks. Cached at
+  // the edge so normal traffic doesn't re-fetch either upstream per request.
+  if (request.method === 'GET' && url.pathname === '/exchange-rate') {
+    const cache = caches.default;
+    const cacheKey = new Request(url.toString(), request);
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+
+    let phpPerKwd = await fetchMuzainiPhpRate();
+    let source = 'muzaini';
+    if (phpPerKwd == null) {
+      phpPerKwd = await fetchOpenErApiPhpRate();
+      source = 'open-er-api';
+    }
+    if (phpPerKwd == null) {
+      return new Response(JSON.stringify({ error: { message: 'rate unavailable' } }), {
+        status: 502, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const response = new Response(JSON.stringify({ phpPerKwd, source }), {
+      headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=1800' },
+    });
+    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
   }
 
   // ── GET /calendar — proxies + parses a caller-supplied ICS feed URL ──────
