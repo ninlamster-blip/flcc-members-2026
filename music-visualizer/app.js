@@ -110,9 +110,26 @@ function showVisualsUnavailableNotice() {
   overlay.appendChild(notice);
 }
 
+// Some iOS/Android file sources (Files app document providers, cloud
+// storage, etc.) report an empty or generic File.type even for perfectly
+// valid audio. The <input accept="audio/*"> already scoped what the native
+// picker allowed to be selected in the first place, so an unset type isn't
+// grounds to reject it — only reject files we can positively tell are NOT
+// audio, so drag-and-drop of a random non-audio file still gets caught.
+function isLikelyAudio(file) {
+  if (file.type.startsWith('audio/')) return true;
+  if (/\.(mp3|wav|m4a|mp4|ogg|oga|opus|flac|aac|aiff?|caf|weba|webm)$/i.test(file.name)) return true;
+  return !file.type;
+}
+
 async function addFiles(fileList) {
-  const files = Array.from(fileList).filter((f) => f.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|flac|aac)$/i.test(f.name));
-  if (!files.length) return;
+  const incoming = Array.from(fileList);
+  if (!incoming.length) return;
+  const files = incoming.filter(isLikelyAudio);
+  if (!files.length) {
+    alert("That doesn't look like an audio file — try MP3, WAV, M4A, OGG, FLAC, or AAC.");
+    return;
+  }
 
   const startIndex = playlist.length;
   for (const file of files) {
@@ -122,7 +139,12 @@ async function addFiles(fileList) {
   hideDropHint();
   if (currentIndex === -1) {
     currentIndex = startIndex;
-    await loadTrack(currentIndex, { autoplay: true });
+    try {
+      await loadTrack(currentIndex, { autoplay: true });
+    } catch (err) {
+      console.error('[music-visualizer] failed to load track', err);
+      alert("Couldn't open that file. Try a different one, or reload the page and try again.");
+    }
   }
 
   // Parse metadata in the background so the UI isn't blocked on large files.
@@ -178,7 +200,11 @@ async function loadTrack(index, { autoplay = false } = {}) {
   if (!track.url) track.url = trackObjectUrl(URL.createObjectURL(track.file));
   audioEl.src = track.url;
 
-  audioEngine.connectAudioElement(audioEl);
+  // Show the player and track info first — playback itself doesn't depend
+  // on the analysis graph below, and this way a failure in that graph (seen
+  // on some browsers' stricter Web Audio implementations) degrades to
+  // "plays, but doesn't react visually" instead of "looks like nothing
+  // happened at all."
   player.hidden = false;
   themePill.hidden = false;
   hideLiveBadge();
@@ -189,6 +215,12 @@ async function loadTrack(index, { autoplay = false } = {}) {
     artistEl.textContent = '…';
     artImg.hidden = true;
     artFallback.style.display = 'flex';
+  }
+
+  try {
+    audioEngine.connectAudioElement(audioEl);
+  } catch (err) {
+    console.warn('[music-visualizer] audio analysis unavailable, playback continues without visuals', err);
   }
 
   if (autoplay) {
@@ -219,6 +251,14 @@ playPauseBtn.addEventListener('click', () => {
 audioEl.addEventListener('play', updatePlayPauseIcon);
 audioEl.addEventListener('pause', updatePlayPauseIcon);
 audioEl.addEventListener('ended', playNext);
+audioEl.addEventListener('error', () => {
+  // MediaError codes: 1 aborted, 2 network, 3 decode, 4 src not supported.
+  const err = audioEl.error;
+  const track = playlist[currentIndex];
+  const name = track ? (track.title || track.file.name) : 'this track';
+  console.warn('[music-visualizer] audio error', err?.code, err?.message);
+  alert(`Couldn't play ${name} — the file may be corrupted or in a format this browser can't decode.`);
+});
 
 prevBtn.addEventListener('click', playPrev);
 nextBtn.addEventListener('click', playNext);
