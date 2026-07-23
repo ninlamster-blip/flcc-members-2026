@@ -1,5 +1,7 @@
+// VisualEngine is loaded dynamically, below — it pulls in Three.js from a
+// CDN, and a static import here would mean a slow/unreachable network takes
+// the whole module (playback, file picker, mic — everything) down with it.
 import { AudioEngine } from './js/audio-engine.js';
-import { VisualEngine } from './js/visual-engine.js';
 import { AIDirector } from './js/ai-director.js';
 import { parseID3, guessFromFilename } from './js/id3.js';
 
@@ -39,9 +41,8 @@ audioEl.preload = 'auto';
 audioEl.volume = parseFloat(volumeEl.value);
 
 const audioEngine = new AudioEngine();
-const visualEngine = new VisualEngine(canvas);
 const director = new AIDirector();
-visualEngine.initPostFX();
+let visualEngine = null;
 
 const playlist = [];
 let currentIndex = -1;
@@ -95,6 +96,18 @@ function showLiveBadge() {
 
 function hideLiveBadge() {
   if (liveBadge) liveBadge.hidden = true;
+}
+
+function showVisualsUnavailableNotice() {
+  const notice = document.createElement('div');
+  Object.assign(notice.style, {
+    position: 'fixed', top: '64px', left: '50%', transform: 'translateX(-50%)',
+    padding: '8px 16px', borderRadius: '999px', background: 'rgba(12,12,16,0.6)',
+    border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(245,245,240,0.75)',
+    fontSize: '0.75rem', backdropFilter: 'blur(10px)', zIndex: '21', textAlign: 'center',
+  });
+  notice.textContent = "Visuals couldn't load (offline?) — audio still plays.";
+  overlay.appendChild(notice);
 }
 
 async function addFiles(fileList) {
@@ -310,7 +323,8 @@ function trackFrameTime(ms) {
   }
 }
 
-// ---- Main loop ----
+// ---- Main loop (only runs once the visual engine is up — audio playback
+// and all the controls above work regardless, whether or not it ever is) ----
 
 let lastFrame = performance.now();
 function frame(now) {
@@ -328,7 +342,18 @@ function frame(now) {
 
   requestAnimationFrame(frame);
 }
-requestAnimationFrame(frame);
+
+(async () => {
+  try {
+    const { VisualEngine } = await import('./js/visual-engine.js');
+    visualEngine = new VisualEngine(canvas);
+    await visualEngine.initPostFX();
+    requestAnimationFrame(frame);
+  } catch (err) {
+    console.warn('[music-visualizer] visual engine unavailable, continuing audio-only', err);
+    showVisualsUnavailableNotice();
+  }
+})();
 
 window.addEventListener('beforeunload', () => {
   for (const url of objectUrls) URL.revokeObjectURL(url);
