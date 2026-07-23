@@ -12,7 +12,7 @@ function defaultState() {
     profile: { name: '', country: '' },
     settings: {
       faithEnabled: true,
-      voiceReplies: false,
+      voiceReplies: true,
       largeText: false,
       // Haiku by default: warm, capable, and roughly a tenth of Sonnet's
       // cost per message — kind to the church's shared API budget.
