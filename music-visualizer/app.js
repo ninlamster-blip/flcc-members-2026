@@ -19,6 +19,11 @@ const $ = (sel) => document.querySelector(sel);
 const root = $('#mv-root');
 const canvas = $('#mv-canvas');
 const ambientGlow = $('#mv-ambient-glow');
+const screensaverEl = $('#mv-screensaver');
+const screensaverArt = $('#mv-screensaver-art');
+const screensaverText = $('#mv-screensaver-text');
+const screensaverTitle = $('#mv-screensaver-title');
+const screensaverArtist = $('#mv-screensaver-artist');
 const dropHint = $('#mv-drop-hint');
 const overlay = $('#mv-overlay');
 const themePill = $('#mv-theme-pill');
@@ -150,6 +155,7 @@ function showDropHint() {
   momentsPanel.hidden = true;
   updatePerformanceView(); // no current track — hides the performance-mode overlays too
   renderDnaGlyph(null); // hides the DNA badge too
+  hideScreensaver();
   hideLiveBadge();
 }
 
@@ -853,6 +859,7 @@ async function loadTrack(index, { autoplay = false } = {}) {
   if (!lyricsPanel.hidden) renderLyricsPanel();
   if (!momentsPanel.hidden) renderMomentsPanel(track);
   updatePerformanceView();
+  resetScreensaverTimer();
 
   try {
     audioEngine.connectAudioElement(audioEl);
@@ -1200,7 +1207,7 @@ function togglePerformanceMode() {
   const active = root.classList.toggle('mv-performance-mode');
   performanceToggleBtn.classList.toggle('mv-active', active);
   performanceToggleBtn.title = active ? 'Exit performance mode' : 'Performance mode';
-  if (active) root.requestFullscreen?.().catch(() => {});
+  if (active) { root.requestFullscreen?.().catch(() => {}); hideScreensaver(); }
   else if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
   updatePerformanceView();
   resetIdleTimer();
@@ -1336,7 +1343,53 @@ function resetIdleTimer() {
     root.classList.add('mv-idle');
   }, 4500);
 }
+// ---- Idle screensaver ----
+// After a much longer stretch of no interaction — and only while a track
+// is actually playing, not paused — hides all UI chrome and shows a
+// slowly drifting, oversized piece of album art (or, lacking that, an
+// equally oversized title/artist typographic treatment) over the
+// already-running, already-audio-reactive Three.js scene. See style.css
+// for the visual side; this is just the show/hide/schedule logic. Doesn't
+// engage during Performance Mode, which already has its own idle behavior
+// suited to a live-event context rather than an unattended display.
+
+const SCREENSAVER_DELAY_MS = 60000;
+let screensaverTimer = null;
+
+function showScreensaver() {
+  const track = playlist[currentIndex];
+  if (!track || audioEl.paused || root.classList.contains('mv-performance-mode')) return;
+  if (track.artUrl) {
+    screensaverArt.src = track.artUrl;
+    screensaverArt.hidden = false;
+    screensaverText.hidden = true;
+  } else {
+    screensaverTitle.textContent = track.title || track.file.name;
+    screensaverArtist.textContent = track.artist || '';
+    screensaverText.hidden = false;
+    screensaverArt.hidden = true;
+  }
+  screensaverEl.hidden = false;
+  root.classList.add('mv-screensaver');
+}
+
+function hideScreensaver() {
+  screensaverEl.hidden = true;
+  root.classList.remove('mv-screensaver');
+}
+
+function resetScreensaverTimer() {
+  hideScreensaver();
+  clearTimeout(screensaverTimer);
+  screensaverTimer = setTimeout(showScreensaver, SCREENSAVER_DELAY_MS);
+}
+
+audioEl.addEventListener('pause', hideScreensaver);
+audioEl.addEventListener('play', resetScreensaverTimer);
+
 ['pointermove', 'pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
   window.addEventListener(evt, resetIdleTimer, { passive: true });
+  window.addEventListener(evt, resetScreensaverTimer, { passive: true });
 });
 resetIdleTimer();
+resetScreensaverTimer();
