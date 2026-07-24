@@ -82,6 +82,7 @@ export class VisualEngine {
     // motion that can be genuinely uncomfortable or risky for photosensitive
     // viewers; a clean boom-then-settle on actual beats is not.
     this._shakeImpulse = 0;
+    this._lastMomentId = 0;
 
     this._buildBackground();
     this._buildCore();
@@ -241,6 +242,20 @@ export class VisualEngine {
     positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
   }
 
+  // The AI Director's occasional "moment" — a much bigger sparkle burst
+  // than a single hi-hat hit gives, for a one-off "the scene just did
+  // something" beat roughly every 7-13s. Still just the existing
+  // sparkle-decay system (gradual fade, not an instant flash), just a lot
+  // more particles at once.
+  _burstParticles() {
+    if (!this._particleState) return;
+    const { count, sparkle } = this._particleState;
+    const burstCount = Math.min(count, Math.round(count * 0.35));
+    for (let i = 0; i < burstCount; i++) {
+      sparkle[(Math.random() * count) | 0] = 1;
+    }
+  }
+
   _updateParticles(dt, elapsed, secondaryHue, hihat) {
     const { count, radii, phis, thetas, speeds, sparkle } = this._particleState;
     const positions = this.particles.geometry.attributes.position.array;
@@ -379,6 +394,25 @@ export class VisualEngine {
       this._spawnRing('snare', directorState.secondaryHue, bands.snare.strength * reactivity);
     }
 
+    // Beat anticipation — a small glow ramp in the final stretch before a
+    // *predicted* beat (from the audio engine's BPM-phase estimate), so the
+    // reaction feels anticipated rather than always trailing the actual
+    // detection by a frame or two. Capped small, purely additive to the
+    // already-gentle emissive term below, and only active once BPM is
+    // genuinely locked — never an independent flash of its own.
+    let beatAnticipation = 0;
+    if (features.beatPhase != null) {
+      const t = Math.max(0, features.beatPhase - 0.82) / 0.18;
+      beatAnticipation = t * t; // ease-in: barely there until right at the end
+    }
+
+    // One-shot "moment" from the director (a particle burst, currently) —
+    // fires once per new momentId, not every frame it stays the same.
+    if (directorState.momentType === 'burst' && directorState.momentId !== this._lastMomentId) {
+      this._lastMomentId = directorState.momentId;
+      this._burstParticles();
+    }
+
     // Background
     this.bgUniforms.uTime.value = elapsed;
     this.bgUniforms.uColorA.value.setHSL(directorState.bgHue, directorState.sat * 0.5, directorState.bgLight);
@@ -394,7 +428,7 @@ export class VisualEngine {
     this.core.rotation.x += dt * 0.05;
     this.coreWire.rotation.copy(this.core.rotation);
     this.coreMat.emissive.setHSL(directorState.hue, 0.85, 0.5 + this._kickImpulse * 0.18);
-    this.coreMat.emissiveIntensity = 0.85 + overallEnergySmoothed * 1.0 + this._kickImpulse * 1.8;
+    this.coreMat.emissiveIntensity = 0.85 + overallEnergySmoothed * 1.0 + this._kickImpulse * 1.8 + beatAnticipation * 0.35 * reactivity;
 
     this._updateRings(dt);
     this._updateParticles(dt, elapsed, directorState.secondaryHue, bands.hihat);
@@ -404,22 +438,32 @@ export class VisualEngine {
     this.coreLight.color.setHSL(directorState.hue, 0.85, 0.55);
     this.coreLight.intensity = 1.4 + overallEnergySmoothed * 2.5 + this._kickImpulse * 7;
 
-    // Camera choreography: slow autonomous orbit + kick/bass punch. The
-    // "vibrate" is _shakeImpulse only — a brief, decaying jolt set on
-    // kick/bass hits above, not a continuous shake driven by raw sustained
-    // bass level (see the constructor comment on _shakeImpulse for why that
-    // distinction matters here).
-    this._cameraTheta += dt * 0.12 * directorState.cameraSpeed;
+    // Camera choreography: the AI Director periodically hands over a
+    // different "move" (orbit/push/drift/flythrough, see ai-director.js) as
+    // sceneParams, smoothly crossfaded — this is what keeps a whole song
+    // from feeling like one looping animation. The "vibrate" on top is
+    // _shakeImpulse only — a brief, decaying jolt set on kick/bass hits
+    // above, not a continuous shake driven by raw sustained bass level (see
+    // the constructor comment on _shakeImpulse for why that distinction
+    // matters here).
+    const sp = directorState.sceneParams || { radiusBase: 7.2, radiusAmp: 0, radiusFreq: 0, thetaSpeedMult: 1, driftAmp: 0, fovBias: 0 };
+    this._cameraTheta += dt * 0.12 * directorState.cameraSpeed * sp.thetaSpeedMult;
     const shakeAmt = this._shakeImpulse * 0.13;
     const shakeX = Math.sin(elapsed * 11) * shakeAmt + Math.sin(elapsed * 5.3) * shakeAmt * 0.5;
     const shakeY = Math.cos(elapsed * 9) * shakeAmt;
-    const radius = 7.2 - this._kickImpulse * 1.3;
+    const modeRadius = sp.radiusBase + Math.sin(elapsed * sp.radiusFreq) * sp.radiusAmp;
+    // flythrough's radius range is small enough that a hard kick at the
+    // near-phase could otherwise push this negative, flipping the camera
+    // straight through the core to the opposite side — clamp well clear of
+    // the core (radius 0.55) and the near clip plane.
+    const radius = Math.max(1.2, modeRadius - this._kickImpulse * 1.3);
+    const driftY = Math.sin(this._cameraPhi + elapsed * 0.05) * 1.2 + Math.sin(elapsed * 0.17) * sp.driftAmp;
     this.camera.position.set(
       Math.sin(this._cameraTheta) * radius + shakeX,
-      Math.sin(this._cameraPhi + elapsed * 0.05) * 1.2 + shakeY,
+      driftY + shakeY,
       Math.cos(this._cameraTheta) * radius
     );
-    this.camera.fov = this.baseFov + this._kickImpulse * 9;
+    this.camera.fov = this.baseFov + sp.fovBias + this._kickImpulse * 9;
     this.camera.updateProjectionMatrix();
     this.camera.lookAt(0, 0, 0);
 
