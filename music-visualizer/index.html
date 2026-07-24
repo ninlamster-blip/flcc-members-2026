@@ -100,6 +100,7 @@
             <input type="range" id="mv-volume" class="mv-volume" min="0" max="1" value="0.85" step="0.01" aria-label="Volume">
           </div>
           <button type="button" id="mv-lyrics-toggle" class="mv-icon-btn" title="Lyrics" aria-label="Show lyrics">&#128220;</button>
+          <button type="button" id="mv-moments-toggle" class="mv-icon-btn" title="Moments" aria-label="Show bookmarked moments">&#128278;</button>
           <button type="button" id="mv-queue-toggle" class="mv-icon-btn" title="Up next" aria-label="Show playback queue">&#9776;</button>
           <button type="button" id="mv-add-more" class="mv-icon-btn" title="Add more tracks" aria-label="Add more tracks">+</button>
         </div>
@@ -130,6 +131,17 @@
         </div>
         <ul id="mv-lyrics-lines" class="mv-lyrics-lines" hidden></ul>
       </div>
+    </div>
+
+    <div id="mv-moments-panel" class="mv-fade" hidden>
+      <div class="mv-moments-header">
+        <span class="mv-moments-title">Moments</span>
+        <div class="mv-moments-header-actions">
+          <button type="button" id="mv-moments-add" class="mv-icon-btn mv-queue-icon-btn" title="Bookmark this moment" aria-label="Bookmark this moment">+</button>
+          <button type="button" id="mv-moments-close" class="mv-icon-btn" title="Close" aria-label="Close moments">&times;</button>
+        </div>
+      </div>
+      <ul id="mv-moments-list" class="mv-moments-list"></ul>
     </div>
 
     <div id="mv-dna-panel" class="mv-fade" hidden>
