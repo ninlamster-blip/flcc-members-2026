@@ -33,6 +33,13 @@ const addMoreBtn = $('#mv-add-more');
 const useMicBtn = $('#mv-use-mic');
 const fullscreenBtn = $('#mv-fullscreen');
 
+const queueToggleBtn = $('#mv-queue-toggle');
+const queuePanel = $('#mv-queue-panel');
+const queueList = $('#mv-queue-list');
+const queueCloseBtn = $('#mv-queue-close');
+const shuffleBtn = $('#mv-shuffle');
+const repeatBtn = $('#mv-repeat');
+
 // -- Persistent playback graph: one <audio> element for the whole session,
 // src swapped per track. createMediaElementSource can only bind once per
 // element, so a fresh Audio() per track would leak/duplicate audio graphs.
@@ -50,6 +57,13 @@ let isSeeking = false;
 let liveBadge = null;
 const objectUrls = new Set();
 
+// 'off' | 'all' | 'one' — cycled by the repeat button.
+let repeatMode = 'off';
+let shuffleOn = false;
+// Actually-played order, so "previous" during shuffle goes back to where
+// you came from instead of jumping to array index - 1.
+let playHistory = [];
+
 function trackObjectUrl(url) { objectUrls.add(url); return url; }
 
 function formatTime(seconds) {
@@ -63,6 +77,7 @@ function showDropHint() {
   dropHint.hidden = false;
   player.hidden = true;
   themePill.hidden = true;
+  queuePanel.hidden = true;
   hideLiveBadge();
 }
 
@@ -135,6 +150,7 @@ async function addFiles(fileList) {
   for (const file of files) {
     playlist.push({ file, ready: false });
   }
+  renderQueue();
 
   hideDropHint();
   if (currentIndex === -1) {
@@ -190,13 +206,17 @@ function applyTrackMeta(track) {
       artwork: track.artUrl ? [{ src: track.artUrl, sizes: '512x512', type: 'image/png' }] : [],
     });
   }
+  renderQueue();
 }
 
 async function loadTrack(index, { autoplay = false } = {}) {
   const track = playlist[index];
   if (!track) return;
   currentIndex = index;
+  playHistory.push(index);
+  if (playHistory.length > 200) playHistory.shift();
   director.reset(); // snap to a fitting theme quickly instead of drifting there
+  renderQueue();
 
   if (!track.url) track.url = trackObjectUrl(URL.createObjectURL(track.file));
   audioEl.src = track.url;
@@ -234,13 +254,120 @@ function updatePlayPauseIcon() {
   playPauseBtn.innerHTML = audioEl.paused ? '&#9654;' : '&#10074;&#10074;';
 }
 
-function playNext() {
-  if (currentIndex < playlist.length - 1) loadTrack(currentIndex + 1, { autoplay: true });
+function pickNextIndex() {
+  if (repeatMode === 'one') return currentIndex;
+  if (shuffleOn) {
+    if (playlist.length <= 1) return currentIndex;
+    let next;
+    do { next = Math.floor(Math.random() * playlist.length); } while (next === currentIndex);
+    return next;
+  }
+  if (currentIndex < playlist.length - 1) return currentIndex + 1;
+  return repeatMode === 'all' ? 0 : -1;
 }
+
+function playNext() {
+  const next = pickNextIndex();
+  if (next === -1) { updatePlayPauseIcon(); return; } // end of queue, nothing left to play
+  if (next === currentIndex) { audioEl.currentTime = 0; audioEl.play().catch(() => {}); return; }
+  loadTrack(next, { autoplay: true });
+}
+
 function playPrev() {
   if (audioEl.currentTime > 3) { audioEl.currentTime = 0; return; }
+  // Shuffle: go back to wherever we actually came from, not array index - 1.
+  if (shuffleOn && playHistory.length > 1) {
+    playHistory.pop(); // drop the current track
+    const prev = playHistory.pop(); // this gets re-pushed by loadTrack()
+    loadTrack(prev, { autoplay: true });
+    return;
+  }
   if (currentIndex > 0) loadTrack(currentIndex - 1, { autoplay: true });
   else audioEl.currentTime = 0;
+}
+
+function cycleRepeatMode() {
+  repeatMode = repeatMode === 'off' ? 'all' : repeatMode === 'all' ? 'one' : 'off';
+  repeatBtn.classList.toggle('mv-active', repeatMode !== 'off');
+  repeatBtn.innerHTML = repeatMode === 'one' ? '&#128258;' : '&#128257;';
+  repeatBtn.title = repeatMode === 'off' ? 'Repeat: off' : repeatMode === 'all' ? 'Repeat: all' : 'Repeat: one';
+}
+
+function toggleShuffle() {
+  shuffleOn = !shuffleOn;
+  shuffleBtn.classList.toggle('mv-active', shuffleOn);
+  shuffleBtn.title = shuffleOn ? 'Shuffle: on' : 'Shuffle: off';
+}
+
+function renderQueue() {
+  queueList.innerHTML = '';
+  if (!playlist.length) {
+    const li = document.createElement('li');
+    li.className = 'mv-queue-empty';
+    li.textContent = 'Nothing queued yet — add some tracks.';
+    queueList.appendChild(li);
+    return;
+  }
+  playlist.forEach((track, i) => {
+    const li = document.createElement('li');
+    li.className = 'mv-queue-item' + (i === currentIndex ? ' mv-queue-item-active' : '');
+    li.dataset.index = String(i);
+
+    const art = document.createElement('div');
+    art.className = 'mv-queue-item-art';
+    if (track.artUrl) {
+      const img = document.createElement('img');
+      img.src = track.artUrl;
+      img.alt = '';
+      art.appendChild(img);
+    } else {
+      art.textContent = '\u{1F3B5}';
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'mv-queue-item-meta';
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'mv-queue-item-title';
+    titleDiv.textContent = track.title || track.file.name;
+    const artistDiv = document.createElement('div');
+    artistDiv.className = 'mv-queue-item-artist';
+    artistDiv.textContent = track.artist || (track.ready ? 'Unknown artist' : '…');
+    meta.append(titleDiv, artistDiv);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'mv-queue-item-remove';
+    removeBtn.setAttribute('aria-label', `Remove ${track.title || track.file.name} from queue`);
+    removeBtn.innerHTML = '&times;';
+
+    li.append(art, meta, removeBtn);
+    queueList.appendChild(li);
+  });
+}
+
+function removeFromQueue(index) {
+  const track = playlist[index];
+  if (!track) return;
+  const wasPlaying = index === currentIndex;
+  if (track.url) objectUrls.delete(track.url); // still valid until beforeunload revokes it in bulk
+  playlist.splice(index, 1);
+  playHistory = playHistory.filter((i) => i !== index).map((i) => (i > index ? i - 1 : i));
+
+  if (!playlist.length) {
+    currentIndex = -1;
+    audioEl.pause();
+    audioEl.removeAttribute('src');
+    showDropHint();
+    return;
+  }
+
+  if (index < currentIndex) currentIndex--;
+  else if (wasPlaying) {
+    const next = Math.min(index, playlist.length - 1);
+    loadTrack(next, { autoplay: !audioEl.paused });
+    return;
+  }
+  renderQueue();
 }
 
 // ---- Playback UI wiring ----
@@ -283,6 +410,28 @@ seekEl.addEventListener('change', () => {
 });
 
 volumeEl.addEventListener('input', () => { audioEl.volume = parseFloat(volumeEl.value); });
+
+// ---- Up Next queue ----
+
+queueToggleBtn.addEventListener('click', () => {
+  queuePanel.hidden = !queuePanel.hidden;
+  if (!queuePanel.hidden) renderQueue();
+});
+queueCloseBtn.addEventListener('click', () => { queuePanel.hidden = true; });
+shuffleBtn.addEventListener('click', toggleShuffle);
+repeatBtn.addEventListener('click', cycleRepeatMode);
+
+queueList.addEventListener('click', (e) => {
+  const removeBtn = e.target.closest('.mv-queue-item-remove');
+  const item = e.target.closest('.mv-queue-item');
+  if (!item) return;
+  const index = parseInt(item.dataset.index, 10);
+  if (removeBtn) {
+    removeFromQueue(index);
+  } else if (index !== currentIndex) {
+    loadTrack(index, { autoplay: true });
+  }
+});
 
 if ('mediaSession' in navigator) {
   navigator.mediaSession.setActionHandler('play', () => audioEl.play().catch(() => {}));
