@@ -232,6 +232,21 @@ body {
    timer in app.js). Any interaction restores it instantly. */
 .mv-format-badge.mv-idle { opacity: 0; }
 
+/* Shown when this exact file (by name+size — see fingerprint.js) has been
+   played on this device before: mood/tempo/favorite scene from past plays,
+   read from localStorage. Never claims cross-device or audio-content
+   recognition, just "this browser has seen this file." */
+.mv-memory-badge {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.02em;
+  color: rgba(245,245,240,0.5);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 2px;
+  transition: opacity 1.2s ease;
+}
+.mv-memory-badge.mv-idle { opacity: 0; }
+
 /* ---------- Song structure timeline ---------- */
 /* Heuristic (repetition + position based) section detection — not trained,
    not lyric-aware, and honest about it (see structure-analyzer.js). Colored

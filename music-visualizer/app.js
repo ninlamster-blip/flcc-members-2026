@@ -7,6 +7,10 @@ import { parseID3, guessFromFilename } from './js/id3.js';
 // No CDN dependency (unlike VisualEngine) — safe to import statically.
 import { analyzeStructure } from './js/structure-analyzer.js';
 import { parseLyrics, estimateLyricsTiming, findActiveLineIndex } from './js/lyrics.js';
+import {
+  fingerprintTrack, loadMemory, saveMemory, withStructure,
+  recordPlaySession, averageCompletion, favoriteScene, SCENE_LABELS,
+} from './js/fingerprint.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -24,6 +28,7 @@ const artFallback = $('#mv-art-fallback');
 const titleEl = $('#mv-title');
 const artistEl = $('#mv-artist');
 const formatBadge = $('#mv-format-badge');
+const memoryBadge = $('#mv-memory-badge');
 const structureRow = $('#mv-structure-row');
 const structureLabel = $('#mv-structure-label');
 const structureBar = $('#mv-structure-bar');
@@ -84,6 +89,19 @@ let shuffleOn = false;
 // Actually-played order, so "previous" during shuffle goes back to where
 // you came from instead of jumping to array index - 1.
 let playHistory = [];
+
+// ---- Listening-session tracking, for song "memory" (fingerprint.js) ----
+// Accumulated for whichever track is currently loaded, folded into that
+// track's stored memory the moment a *different* track loads (or the page
+// unloads) — see finalizeListeningSession().
+let sessionFingerprint = null;
+let sessionMaxTime = 0; // furthest currentTime reached, for completion %
+let sessionSceneDurationsMs = {};
+let sessionLastSceneMode = null;
+let sessionLastSceneModeAt = 0;
+let sessionMood = null;
+let sessionThemeName = null;
+let sessionBpm = null;
 
 function trackObjectUrl(url) { objectUrls.add(url); return url; }
 
@@ -292,8 +310,19 @@ structureBar.addEventListener('click', (e) => {
 async function analyzeTrackStructure(track) {
   if (track.structure !== undefined) return; // already analyzed (or attempted)
   track.structure = null; // mark "in progress" so we don't kick this off twice
+
+  const fp = fingerprintTrack(track.file);
+  const memory = loadMemory(fp);
+  if (memory && memory.structure) {
+    // Same file, played before — skip re-running the FFT pass entirely.
+    track.structure = memory.structure;
+    if (playlist[currentIndex] === track) renderStructureBar(track);
+    return;
+  }
+
   try {
     track.structure = await analyzeStructure(track.file);
+    if (track.structure) saveMemory(fp, withStructure(memory, track.structure));
   } catch (err) {
     console.warn('[music-visualizer] structure analysis failed', err);
     track.structure = null;
@@ -429,6 +458,85 @@ lyricsLinesEl.addEventListener('click', (e) => {
   if (line && isFinite(line.time)) audioEl.currentTime = line.time;
 });
 
+// ---- Song memory / fingerprinting ----
+// Recognizes "this exact file, played again" (filename+size — see
+// fingerprint.js) and remembers, per device: cached structure analysis (so
+// a repeat play skips re-running the FFT pass), the mood/tempo last seen,
+// how much of the track is typically listened to, and which camera scene
+// mode has spent the most time on screen for it.
+
+function flushSceneDwell(nowMs) {
+  if (sessionLastSceneMode) {
+    const elapsed = nowMs - sessionLastSceneModeAt;
+    sessionSceneDurationsMs[sessionLastSceneMode] = (sessionSceneDurationsMs[sessionLastSceneMode] || 0) + elapsed;
+  }
+  sessionLastSceneModeAt = nowMs;
+}
+
+function trackSceneDwell(cameraMode, nowMs) {
+  if (cameraMode === sessionLastSceneMode) return;
+  flushSceneDwell(nowMs);
+  sessionLastSceneMode = cameraMode;
+}
+
+function finalizeListeningSession() {
+  if (!sessionFingerprint) return;
+  flushSceneDwell(performance.now());
+  const duration = audioEl.duration;
+  const completionRatio = isFinite(duration) && duration > 0 ? sessionMaxTime / duration : 0;
+  // Skip essentially-instant skips — not a meaningful "play" to remember.
+  if (sessionMaxTime > 1) {
+    const existing = loadMemory(sessionFingerprint);
+    const memory = recordPlaySession(existing, {
+      completionRatio,
+      mood: sessionMood,
+      themeName: sessionThemeName,
+      bpm: sessionBpm,
+      sceneDurationsMs: sessionSceneDurationsMs,
+    });
+    saveMemory(sessionFingerprint, memory);
+  }
+  sessionFingerprint = null;
+}
+
+function startListeningSession(track) {
+  sessionFingerprint = fingerprintTrack(track.file);
+  sessionMaxTime = 0;
+  sessionSceneDurationsMs = {};
+  sessionLastSceneMode = null;
+  sessionLastSceneModeAt = performance.now();
+  sessionMood = null;
+  sessionThemeName = null;
+  sessionBpm = null;
+}
+
+function renderMemoryBadge(track) {
+  const memory = loadMemory(fingerprintTrack(track.file));
+  if (!memory || memory.playCount < 1) { memoryBadge.hidden = true; return; }
+  const parts = ['\u{1F9E0} Recognized'];
+  if (memory.mood) parts.push(`${memory.mood.emoji} ${memory.mood.label}`);
+  if (memory.bpm) parts.push(`${memory.bpm} BPM`);
+  const scene = favoriteScene(memory);
+  if (scene) parts.push(SCENE_LABELS[scene] || scene);
+  parts.push(`played ${memory.playCount}×`);
+  parts.push(`~${Math.round(averageCompletion(memory) * 100)}% avg listen`);
+  memoryBadge.textContent = parts.join(' · ');
+  memoryBadge.hidden = false;
+}
+
+// Once the current track's structure is settled (from cache or freshly
+// analyzed), gets a head start on the very next queued track — only one
+// ahead, deliberately, so a long playlist doesn't burn battery analyzing
+// songs that might never play. Uses idle time so it never competes with
+// playback or UI responsiveness.
+function schedulePreAnalysis() {
+  const next = playlist[currentIndex + 1];
+  if (!next || next.structure !== undefined) return;
+  const run = () => analyzeTrackStructure(next);
+  if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 4000 });
+  else setTimeout(run, 1500);
+}
+
 function applyTrackMeta(track) {
   titleEl.textContent = track.title || track.file.name;
   artistEl.textContent = track.artist || 'Unknown artist';
@@ -456,7 +564,9 @@ function applyTrackMeta(track) {
 async function loadTrack(index, { autoplay = false } = {}) {
   const track = playlist[index];
   if (!track) return;
+  finalizeListeningSession(); // fold the outgoing track's play into its memory before switching
   currentIndex = index;
+  startListeningSession(track);
   playHistory.push(index);
   if (playHistory.length > 200) playHistory.shift();
   director.reset(); // snap to a fitting theme quickly instead of drifting there
@@ -482,8 +592,10 @@ async function loadTrack(index, { autoplay = false } = {}) {
     artFallback.style.display = 'flex';
   }
   updateFormatBadge();
+  renderMemoryBadge(track);
   renderStructureBar(track); // shows a cached result immediately, or hides the bar
   analyzeTrackStructure(track); // no-op if already analyzed/in progress
+  schedulePreAnalysis(); // get a head start on the next queued track while this one plays
   if (!lyricsPanel.hidden) renderLyricsPanel();
 
   try {
@@ -603,6 +715,7 @@ function removeFromQueue(index) {
   playHistory = playHistory.filter((i) => i !== index).map((i) => (i > index ? i - 1 : i));
 
   if (!playlist.length) {
+    finalizeListeningSession();
     currentIndex = -1;
     audioEl.pause();
     audioEl.removeAttribute('src');
@@ -644,6 +757,7 @@ nextBtn.addEventListener('click', playNext);
 audioEl.addEventListener('timeupdate', () => {
   updateStructureHighlight(audioEl.currentTime);
   updateLyricsHighlight(audioEl.currentTime);
+  if (audioEl.currentTime > sessionMaxTime) sessionMaxTime = audioEl.currentTime;
   if (isSeeking || !isFinite(audioEl.duration)) return;
   const pct = (audioEl.currentTime / audioEl.duration) * 1000;
   seekEl.value = String(pct);
@@ -799,6 +913,10 @@ function frame(now) {
   visualEngine.render();
   updateThemePill(directorState.themeName, directorState.mood);
   updateAmbientGlow(directorState, features.overallEnergySmoothed);
+  trackSceneDwell(directorState.cameraMode, performance.now());
+  sessionMood = directorState.mood;
+  sessionThemeName = directorState.themeName;
+  if (directorState.bpm != null) sessionBpm = directorState.bpm;
   trackFrameTime((performance.now() - now) || 1);
 
   requestAnimationFrame(frame);
@@ -817,6 +935,7 @@ function frame(now) {
 })();
 
 window.addEventListener('beforeunload', () => {
+  finalizeListeningSession();
   for (const url of objectUrls) URL.revokeObjectURL(url);
 });
 
@@ -834,8 +953,12 @@ window.addEventListener('keydown', (e) => {
 let idleTimer = null;
 function resetIdleTimer() {
   formatBadge.classList.remove('mv-idle');
+  memoryBadge.classList.remove('mv-idle');
   clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => formatBadge.classList.add('mv-idle'), 4500);
+  idleTimer = setTimeout(() => {
+    formatBadge.classList.add('mv-idle');
+    memoryBadge.classList.add('mv-idle');
+  }, 4500);
 }
 ['pointermove', 'pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
   window.addEventListener(evt, resetIdleTimer, { passive: true });
