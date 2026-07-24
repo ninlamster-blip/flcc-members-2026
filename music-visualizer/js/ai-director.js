@@ -179,6 +179,10 @@ export class AIDirector {
     this.sceneParams = { ...CAMERA_MODES.orbit };
     this._momentId = 0;
     this._momentType = null;
+    // Public, externally settable — app.js's Focus/Party visual-mode presets
+    // use this to rotate camera moves less often (Focus) or more often
+    // (Party) without touching the rotation logic itself. 1 = unchanged.
+    this.sceneChangeMultiplier = 1;
     this._nextSceneChangeAt = performance.now() + this._randomSceneInterval();
 
     // Director agent state — see the file header for what this layer does.
@@ -190,7 +194,7 @@ export class AIDirector {
   }
 
   _randomSceneInterval() {
-    return SCENE_CHANGE_MIN_MS + Math.random() * (SCENE_CHANGE_MAX_MS - SCENE_CHANGE_MIN_MS);
+    return (SCENE_CHANGE_MIN_MS + Math.random() * (SCENE_CHANGE_MAX_MS - SCENE_CHANGE_MIN_MS)) * this.sceneChangeMultiplier;
   }
 
   /** Call when a new track starts — lets the director snap to a fitting
