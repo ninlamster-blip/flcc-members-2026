@@ -105,6 +105,24 @@ const FAST_LOCK_FRAMES = 10; // ~0.15s — used right after a new track starts, 
 const FAST_LOCK_MS = 3500; // how long after reset() the fast-lock window stays open
 const PALETTE_LERP_RATE = 1.1; // per second
 
+// Camera "moves" the director rotates between periodically, independent of
+// the mood/theme cycle above — this is what keeps a single song from
+// feeling like a looping animation instead of a directed performance. Each
+// mode is a set of MOTION PARAMETERS, not a hard camera position, and
+// sceneParams below is crossfaded toward whichever mode is current at
+// SCENE_PARAM_LERP_RATE — slow and cinematic, so a mode change is a
+// gradual drift into a different move, never a cut.
+const CAMERA_MODES = {
+  orbit:      { radiusBase: 7.2, radiusAmp: 0.0, radiusFreq: 0.00, thetaSpeedMult: 1.00, driftAmp: 0.0, fovBias: 0 },
+  push:       { radiusBase: 6.4, radiusAmp: 2.0, radiusFreq: 0.045, thetaSpeedMult: 0.35, driftAmp: 0.0, fovBias: -2 },
+  drift:      { radiusBase: 7.6, radiusAmp: 0.5, radiusFreq: 0.09, thetaSpeedMult: 0.55, driftAmp: 1.4, fovBias: 0 },
+  flythrough: { radiusBase: 3.4, radiusAmp: 1.6, radiusFreq: 0.12, thetaSpeedMult: 1.40, driftAmp: 0.4, fovBias: 6 },
+};
+const CAMERA_MODE_NAMES = Object.keys(CAMERA_MODES);
+const SCENE_CHANGE_MIN_MS = 7000;
+const SCENE_CHANGE_MAX_MS = 13000;
+const SCENE_PARAM_LERP_RATE = 0.35; // per second
+
 export class AIDirector {
   constructor() {
     this.currentTheme = THEMES[THEMES.length - 1];
@@ -120,6 +138,16 @@ export class AIDirector {
     this._hitTimestamps = [];
     this._energyHistory = [];
     this._fastLockUntil = 0;
+
+    this.cameraMode = 'orbit';
+    this.sceneParams = { ...CAMERA_MODES.orbit };
+    this._momentId = 0;
+    this._momentType = null;
+    this._nextSceneChangeAt = performance.now() + this._randomSceneInterval();
+  }
+
+  _randomSceneInterval() {
+    return SCENE_CHANGE_MIN_MS + Math.random() * (SCENE_CHANGE_MAX_MS - SCENE_CHANGE_MIN_MS);
   }
 
   /** Call when a new track starts — lets the director snap to a fitting
@@ -131,6 +159,11 @@ export class AIDirector {
     this.candidateTheme = null;
     this.candidateStableFrames = 0;
     this._fastLockUntil = performance.now() + FAST_LOCK_MS;
+    // Every song opens on a calm, familiar orbit — scene variety kicks in
+    // a while after that, not the instant a track starts.
+    this.cameraMode = 'orbit';
+    this._momentType = null;
+    this._nextSceneChangeAt = performance.now() + this._randomSceneInterval();
   }
 
   update(features, dtSeconds) {
@@ -156,6 +189,8 @@ export class AIDirector {
 
     this._pickTheme(stats, now);
     this._advancePalette(dtSeconds, now < this._fastLockUntil);
+    this._pickSceneMode(now);
+    this._advanceSceneParams(dtSeconds);
 
     const energy = stats.energy;
     return {
@@ -169,9 +204,57 @@ export class AIDirector {
       cameraSpeed: this.currentTheme.cameraSpeed * (0.85 + energy * 0.35),
       bloomStrength: this.currentTheme.bloomBase + energy * 0.7,
       reactivity: this.palette.reactivity,
+      cameraMode: this.cameraMode,
+      sceneParams: this.sceneParams,
+      momentId: this._momentId,
+      momentType: this._momentType,
       energy,
       bpm: stats.bpm,
     };
+  }
+
+  // Periodically hands the camera a different "move" to crossfade into —
+  // orbit/push/drift/flythrough — weighted by how energetic the current
+  // theme read is, so a Rock/EDM passage is more likely to get a flythrough
+  // and a Classical/Soft one drifts instead. Never during the fast-lock
+  // window right as a song starts (too much already changing at once), and
+  // never repeats the mode it's already in.
+  _pickSceneMode(now) {
+    if (now < this._nextSceneChangeAt) return;
+    this._nextSceneChangeAt = now + this._randomSceneInterval();
+    if (now < this._fastLockUntil) return;
+
+    const reactivity = this.palette.reactivity;
+    const weights = {
+      orbit: 0.5,
+      push: 0.45,
+      drift: Math.max(0.15, 0.65 - reactivity * 0.35),
+      flythrough: Math.max(0.1, reactivity * 0.55),
+    };
+    const candidates = CAMERA_MODE_NAMES.filter((m) => m !== this.cameraMode);
+    const totalWeight = candidates.reduce((sum, m) => sum + weights[m], 0);
+    let roll = Math.random() * totalWeight;
+    let chosen = candidates[candidates.length - 1];
+    for (const mode of candidates) {
+      roll -= weights[mode];
+      if (roll <= 0) { chosen = mode; break; }
+    }
+    this.cameraMode = chosen;
+
+    // Occasionally punctuate a mode change with a one-shot particle burst —
+    // not every time (that would itself become a repetitive pattern).
+    if (Math.random() < 0.4) {
+      this._momentId++;
+      this._momentType = 'burst';
+    }
+  }
+
+  _advanceSceneParams(dtSeconds) {
+    const t = clamp01(SCENE_PARAM_LERP_RATE * dtSeconds);
+    const target = CAMERA_MODES[this.cameraMode];
+    for (const key of Object.keys(target)) {
+      this.sceneParams[key] = lerp(this.sceneParams[key], target[key], t);
+    }
   }
 
   _pickTheme(stats, now) {

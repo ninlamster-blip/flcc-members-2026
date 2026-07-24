@@ -155,12 +155,15 @@ export class AudioEngine {
 
     this._pruneOnsets(now);
     const bpm = this._estimateBpm(now);
+    const { beatPhase, nextBeatAt } = this._estimateBeatPhase(now, bpm);
 
     return {
       bands,
       overallEnergy,
       overallEnergySmoothed: this._energySmoothed,
       bpm,
+      beatPhase,
+      nextBeatAt,
       mode: this.mode,
       time: now,
     };
@@ -192,10 +195,32 @@ export class AudioEngine {
     return this._bpmSmoothed;
   }
 
+  // Predicts *when* the next beat should land from the onsets already seen,
+  // rather than only reacting once one arrives — this is what lets the
+  // visuals start their attack a touch early and land exactly on the beat
+  // instead of always trailing it by a detection delay. Deliberately
+  // returns null (no prediction) rather than guessing once the anchor goes
+  // stale — a wrong confident prediction reads as worse than none.
+  _estimateBeatPhase(now, bpm) {
+    const stamps = this._onsetTimestamps;
+    if (bpm == null || !stamps.length) return { beatPhase: null, nextBeatAt: null };
+    const lastOnset = stamps[stamps.length - 1];
+    const intervalMs = 60000 / bpm;
+    const sinceLast = now - lastOnset;
+    if (sinceLast > intervalMs * 2.5) return { beatPhase: null, nextBeatAt: null };
+    return {
+      beatPhase: (sinceLast % intervalMs) / intervalMs,
+      nextBeatAt: lastOnset + Math.ceil(sinceLast / intervalMs) * intervalMs,
+    };
+  }
+
   _emptyFeatures() {
     const bands = {};
     for (const def of BAND_DEFS) bands[def.key] = { energy: 0, hit: false, strength: 0 };
-    return { bands, overallEnergy: 0, overallEnergySmoothed: 0, bpm: null, mode: this.mode, time: performance.now() };
+    return {
+      bands, overallEnergy: 0, overallEnergySmoothed: 0, bpm: null,
+      beatPhase: null, nextBeatAt: null, mode: this.mode, time: performance.now(),
+    };
   }
 }
 
