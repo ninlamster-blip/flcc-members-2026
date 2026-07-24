@@ -4,6 +4,8 @@
 import { AudioEngine } from './js/audio-engine.js';
 import { AIDirector } from './js/ai-director.js';
 import { parseID3, guessFromFilename } from './js/id3.js';
+// No CDN dependency (unlike VisualEngine) — safe to import statically.
+import { analyzeStructure } from './js/structure-analyzer.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -21,6 +23,9 @@ const artFallback = $('#mv-art-fallback');
 const titleEl = $('#mv-title');
 const artistEl = $('#mv-artist');
 const formatBadge = $('#mv-format-badge');
+const structureRow = $('#mv-structure-row');
+const structureLabel = $('#mv-structure-label');
+const structureBar = $('#mv-structure-bar');
 const seekEl = $('#mv-seek');
 const timeCurrentEl = $('#mv-time-current');
 const timeRemainingEl = $('#mv-time-remaining');
@@ -213,6 +218,74 @@ function updateFormatBadge() {
   formatBadge.textContent = parts.join(' · ');
 }
 
+// ---- Song structure timeline ----
+// Heuristic (repetition + position based) — see structure-analyzer.js for
+// exactly what "Chorus"/"Verse"/"Bridge" do and don't mean here.
+
+function structureSegColor(label) {
+  if (label === 'Chorus') return 'var(--mv-accent)';
+  if (label === 'Bridge') return 'hsl(280, 45%, 58%)';
+  if (label.startsWith('Verse')) return 'hsl(205, 55%, 55%)';
+  return 'rgba(255,255,255,0.22)'; // Intro / Outro
+}
+
+function renderStructureBar(track) {
+  structureBar.innerHTML = '';
+  const segments = track?.structure;
+  if (!segments || !segments.length) {
+    structureRow.hidden = true;
+    structureBar.hidden = true;
+    return;
+  }
+  structureRow.hidden = false;
+  structureBar.hidden = false;
+  for (const seg of segments) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mv-structure-seg';
+    btn.style.flex = `${Math.max(0.001, seg.end - seg.start)} 0 0%`;
+    btn.style.background = structureSegColor(seg.label);
+    btn.title = `${seg.label} (${formatTime(seg.start)}–${formatTime(seg.end)})`;
+    btn.dataset.start = String(seg.start);
+    structureBar.appendChild(btn);
+  }
+  updateStructureHighlight(audioEl.currentTime);
+}
+
+function updateStructureHighlight(currentTime) {
+  const segments = playlist[currentIndex]?.structure;
+  if (!segments) return;
+  const idx = segments.findIndex((s) => currentTime >= s.start && currentTime < s.end);
+  const seg = segments[idx];
+  structureLabel.textContent = seg ? seg.label : '';
+  const buttons = structureBar.children;
+  for (let i = 0; i < buttons.length; i++) {
+    buttons[i].classList.toggle('mv-structure-seg-active', i === idx);
+  }
+}
+
+structureBar.addEventListener('click', (e) => {
+  const btn = e.target.closest('.mv-structure-seg');
+  if (!btn) return;
+  audioEl.currentTime = parseFloat(btn.dataset.start);
+});
+
+// Runs the (CPU-heavier) structure analysis in the background once per
+// track, lazily — only for whichever track is actually playing, not
+// eagerly for the whole queue, so loading a big playlist doesn't burn
+// battery analyzing songs that might never play.
+async function analyzeTrackStructure(track) {
+  if (track.structure !== undefined) return; // already analyzed (or attempted)
+  track.structure = null; // mark "in progress" so we don't kick this off twice
+  try {
+    track.structure = await analyzeStructure(track.file);
+  } catch (err) {
+    console.warn('[music-visualizer] structure analysis failed', err);
+    track.structure = null;
+  }
+  if (playlist[currentIndex] === track) renderStructureBar(track);
+}
+
 function applyTrackMeta(track) {
   titleEl.textContent = track.title || track.file.name;
   artistEl.textContent = track.artist || 'Unknown artist';
@@ -266,6 +339,8 @@ async function loadTrack(index, { autoplay = false } = {}) {
     artFallback.style.display = 'flex';
   }
   updateFormatBadge();
+  renderStructureBar(track); // shows a cached result immediately, or hides the bar
+  analyzeTrackStructure(track); // no-op if already analyzed/in progress
 
   try {
     audioEngine.connectAudioElement(audioEl);
@@ -423,6 +498,7 @@ prevBtn.addEventListener('click', playPrev);
 nextBtn.addEventListener('click', playNext);
 
 audioEl.addEventListener('timeupdate', () => {
+  updateStructureHighlight(audioEl.currentTime);
   if (isSeeking || !isFinite(audioEl.duration)) return;
   const pct = (audioEl.currentTime / audioEl.duration) * 1000;
   seekEl.value = String(pct);
