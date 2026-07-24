@@ -359,6 +359,40 @@ export class VisualEngine {
     this.renderer.setPixelRatio(Math.max(0.6, Math.min(2, target)));
   }
 
+  // Live renderer stats for the perf dashboard (see app.js) — all read
+  // directly off Three.js's own renderer.info bookkeeping, nothing
+  // separately tracked or estimated.
+  getStats() {
+    const info = this.renderer.info;
+    return {
+      particleCount: this._particleState?.count ?? 0,
+      particleBudget: this._particleBudget,
+      drawCalls: info.render.calls,
+      triangles: info.render.triangles,
+      geometries: info.memory.geometries,
+      textures: info.memory.textures,
+      pixelRatio: this.renderer.getPixelRatio(),
+      canvasWidth: this.renderer.domElement.width,
+      canvasHeight: this.renderer.domElement.height,
+    };
+  }
+
+  // Best-effort GPU renderer string via the (widely but not universally
+  // supported, and often masked for privacy) WEBGL_debug_renderer_info
+  // extension. Computed once and cached, since it can't change mid-session.
+  // Returns null wherever the browser doesn't expose it — never fabricated.
+  getGpuInfo() {
+    if (this._gpuInfo !== undefined) return this._gpuInfo;
+    try {
+      const gl = this.renderer.getContext();
+      const ext = gl.getExtension('WEBGL_debug_renderer_info');
+      this._gpuInfo = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null;
+    } catch {
+      this._gpuInfo = null;
+    }
+    return this._gpuInfo;
+  }
+
   update(features, directorState) {
     const dt = Math.min(0.05, this.clock.getDelta());
     const elapsed = this.clock.elapsedTime;

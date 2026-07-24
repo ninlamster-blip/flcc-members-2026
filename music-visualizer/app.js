@@ -1291,12 +1291,39 @@ function updateAmbientGlow(directorState, energySmoothed) {
   ambientGlow.style.opacity = String(Math.min(0.55, 0.15 + energySmoothed * 0.4));
 }
 
-// ---- Adaptive performance monitor ----
+// ---- Adaptive performance monitor / GPU dashboard ----
+// Same "d" key toggle and hidden-by-default behavior as before — this is a
+// power-user/tuning panel, not something to clutter the stage view with —
+// just a richer readout once it's open, pulling real numbers straight out
+// of Three.js's own renderer.info bookkeeping (see visual-engine.js's
+// getStats/getGpuInfo) rather than anything separately estimated.
 
 const BASE_PARTICLE_BUDGET = 1800;
 let qualityScale = 1;
 let frameTimes = [];
 let lastPerfCheck = performance.now();
+
+function updatePerfDashboard(avgMs) {
+  if (perfEl.hidden) return;
+  const stats = visualEngine.getStats();
+  const lines = [
+    `${(1000 / avgMs).toFixed(0)} fps · ${avgMs.toFixed(1)}ms · quality ${qualityScale.toFixed(2)}`,
+    `particles ${stats.particleCount} / ${stats.particleBudget}`,
+    `draw calls ${stats.drawCalls} · triangles ${stats.triangles.toLocaleString()}`,
+    `geometries ${stats.geometries} · textures ${stats.textures}`,
+    `render ${stats.canvasWidth}×${stats.canvasHeight} @ ${stats.pixelRatio.toFixed(2)}x (screen ${window.devicePixelRatio || 1}x)`,
+  ];
+  // performance.memory is a non-standard Chrome/Edge-only API — omitted
+  // entirely elsewhere rather than shown as a fake/zeroed row.
+  if (performance.memory) {
+    const usedMb = performance.memory.usedJSHeapSize / 1048576;
+    const totalMb = performance.memory.totalJSHeapSize / 1048576;
+    lines.push(`JS heap ${usedMb.toFixed(0)}MB / ${totalMb.toFixed(0)}MB`);
+  }
+  const gpu = visualEngine.getGpuInfo();
+  if (gpu) lines.push(gpu);
+  perfEl.textContent = lines.join('\n');
+}
 
 function trackFrameTime(ms) {
   frameTimes.push(ms);
@@ -1308,9 +1335,7 @@ function trackFrameTime(ms) {
   if (avg > 22 && qualityScale > 0.4) qualityScale = Math.max(0.4, qualityScale - 0.12);
   else if (avg < 13 && qualityScale < 1) qualityScale = Math.min(1, qualityScale + 0.08);
   visualEngine.setPixelRatioScale(0.55 + qualityScale * 0.45);
-  if (perfEl.hidden === false) {
-    perfEl.textContent = `${(1000 / avg).toFixed(0)} fps · q${qualityScale.toFixed(2)}`;
-  }
+  updatePerfDashboard(avg);
 }
 
 // ---- Main loop (only runs once the visual engine is up — audio playback
