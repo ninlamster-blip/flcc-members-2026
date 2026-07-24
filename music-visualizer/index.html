@@ -75,9 +75,22 @@
             <span aria-hidden="true">&#128266;</span>
             <input type="range" id="mv-volume" class="mv-volume" min="0" max="1" value="0.85" step="0.01" aria-label="Volume">
           </div>
+          <button type="button" id="mv-queue-toggle" class="mv-icon-btn" title="Up next" aria-label="Show playback queue">&#9776;</button>
           <button type="button" id="mv-add-more" class="mv-icon-btn" title="Add more tracks" aria-label="Add more tracks">+</button>
         </div>
       </div>
+    </div>
+
+    <div id="mv-queue-panel" class="mv-fade" hidden>
+      <div class="mv-queue-header">
+        <span class="mv-queue-title">Up Next</span>
+        <div class="mv-queue-header-actions">
+          <button type="button" id="mv-shuffle" class="mv-icon-btn mv-queue-icon-btn" title="Shuffle" aria-label="Toggle shuffle">&#128256;</button>
+          <button type="button" id="mv-repeat" class="mv-icon-btn mv-queue-icon-btn" title="Repeat" aria-label="Cycle repeat mode">&#128257;</button>
+          <button type="button" id="mv-queue-close" class="mv-icon-btn" title="Close" aria-label="Close queue">&times;</button>
+        </div>
+      </div>
+      <ul id="mv-queue-list" class="mv-queue-list"></ul>
     </div>
 
     <div id="mv-perf" class="mv-perf" hidden></div>
