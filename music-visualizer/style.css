@@ -138,8 +138,10 @@ body {
 .mv-icon-btn:hover { background: rgba(255,255,255,0.16); }
 .mv-icon-btn:active { transform: scale(0.94); }
 
-.mv-top-left { position: fixed; top: 18px; left: 18px; }
-.mv-top-right { position: fixed; top: 18px; right: 18px; }
+/* z-index above every panel (including the performance-mode overlays
+   below) so these stay reachable no matter what else is showing. */
+.mv-top-left { position: fixed; top: 18px; left: 18px; z-index: 25; }
+.mv-top-right { position: fixed; top: 18px; right: 18px; z-index: 25; }
 
 #mv-theme-pill {
   position: fixed;
@@ -457,9 +459,127 @@ body {
 .mv-queue-item-remove:hover { background: rgba(255,255,255,0.12); color: var(--mv-ink); }
 .mv-queue-empty { padding: 22px 14px; text-align: center; font-size: 0.8rem; color: var(--mv-ink-muted); }
 
+/* ---------- Performance mode ---------- */
+/* For projecting/casting during a live set: strips the normal player chrome
+   down to just transport controls (which still auto-hide on idle, like a
+   screensaver), replaces the title/artist block with a large lower-third,
+   and — when the current track has lyrics saved — takes over the center of
+   the screen with a big, high-contrast, auto-scrolling lyrics view. Pure
+   layout/typography work, no change to the Three.js visual engine itself. */
+
+#mv-root.mv-performance-mode #mv-player .mv-art-wrap,
+#mv-root.mv-performance-mode #mv-player .mv-title,
+#mv-root.mv-performance-mode #mv-player .mv-artist,
+#mv-root.mv-performance-mode #mv-player .mv-format-badge,
+#mv-root.mv-performance-mode #mv-player .mv-memory-badge,
+#mv-root.mv-performance-mode #mv-player .mv-structure-row,
+#mv-root.mv-performance-mode #mv-player .mv-structure-bar,
+#mv-root.mv-performance-mode #mv-player .mv-progress-row,
+#mv-root.mv-performance-mode #mv-player .mv-volume-wrap,
+#mv-root.mv-performance-mode #mv-player #mv-lyrics-toggle,
+#mv-root.mv-performance-mode #mv-player #mv-queue-toggle,
+#mv-root.mv-performance-mode #mv-player #mv-add-more {
+  display: none;
+}
+#mv-root.mv-performance-mode #mv-player {
+  background: none;
+  justify-content: center;
+  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+}
+#mv-root.mv-performance-mode #mv-player .mv-controls-row { margin-top: 0; }
+/* Reuses the same idle-timer mechanism as the format/memory badges
+   (resetIdleTimer in app.js, which now also toggles .mv-idle on #mv-root),
+   just scoped to performance mode so normal playback UX elsewhere is
+   unaffected. */
+#mv-root.mv-performance-mode.mv-idle #mv-player .mv-controls-row {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.mv-performance-lowerthird {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 100px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  padding: 0 24px;
+  /* !important: a direct child of #mv-overlay, whose `> *` rule (see above)
+     otherwise forces pointer-events back to auto on specificity alone. */
+  pointer-events: none !important;
+  z-index: 19; /* under the top-corner icon buttons, above canvas+glow */
+}
+.mv-pf-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+}
+.mv-pf-artist {
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  color: var(--mv-ink-muted);
+  margin-top: 4px;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.6);
+}
+.mv-pf-next {
+  margin-top: 14px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mv-accent);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(12,12,16,0.55);
+  border: 1px solid var(--mv-panel-border);
+  backdrop-filter: blur(10px);
+}
+
+.mv-performance-lyrics {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none !important; /* see the lower-third comment above */
+  background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.35), rgba(0,0,0,0.55) 75%);
+}
+.mv-pf-lyrics-lines {
+  max-height: 70vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  text-align: center;
+  padding: 8vh 8vw;
+}
+.mv-pf-lyrics-lines::-webkit-scrollbar { display: none; }
+.mv-pf-lyrics-line {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(1.4rem, 4.5vw, 2.8rem);
+  line-height: 1.5;
+  color: rgba(245,245,240,0.32);
+  text-shadow: 0 2px 24px rgba(0,0,0,0.5);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+.mv-pf-lyrics-line.mv-pf-lyrics-line-active {
+  color: var(--mv-ink);
+  transform: scale(1.04);
+}
+
+/* Both rules above set `display: flex` unconditionally at equal specificity
+   to the browser's native `[hidden] { display: none }`, and win on cascade
+   order — so the `hidden` attribute alone wouldn't actually hide them.
+   `[hidden]` combined with the class outranks both on specificity. */
+.mv-performance-lowerthird[hidden],
+.mv-performance-lyrics[hidden] {
+  display: none;
+}
+
 @media (max-width: 640px) {
   #mv-player { flex-wrap: wrap; }
   .mv-volume-wrap { display: none; }
   .mv-drop-card { padding: 28px 20px; }
   #mv-queue-panel, #mv-lyrics-panel { bottom: 168px; left: 8px; right: 8px; }
+  .mv-performance-lowerthird { bottom: 84px; }
 }
