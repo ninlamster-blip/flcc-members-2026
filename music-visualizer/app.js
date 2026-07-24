@@ -2,7 +2,7 @@
 // CDN, and a static import here would mean a slow/unreachable network takes
 // the whole module (playback, file picker, mic — everything) down with it.
 import { AudioEngine } from './js/audio-engine.js';
-import { AIDirector } from './js/ai-director.js';
+import { AIDirector, themeByName } from './js/ai-director.js';
 import { parseID3, guessFromFilename } from './js/id3.js';
 // No CDN dependency (unlike VisualEngine) — safe to import statically.
 import { analyzeStructure } from './js/structure-analyzer.js';
@@ -13,6 +13,7 @@ import {
 } from './js/fingerprint.js';
 import { analyzeAudioStats, buildDnaVector, dnaPolygonPoints } from './js/visual-dna.js';
 import { loadMoments, addMoment, updateMomentNote, removeMoment } from './js/memory-moments.js';
+import { loadWorld, saveWorld, addLandmark, dominantTint } from './js/world-memory.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -102,6 +103,11 @@ audioEl.volume = parseFloat(volumeEl.value);
 const audioEngine = new AudioEngine();
 const director = new AIDirector();
 let visualEngine = null;
+
+// Persistent "world" — see world-memory.js. Loaded once at startup, grows
+// by one landmark per meaningfully-played track, persisted across browser
+// sessions the same way everything else in this app is (localStorage).
+const world = loadWorld();
 
 const playlist = [];
 let currentIndex = -1;
@@ -538,6 +544,15 @@ function finalizeListeningSession() {
       sceneDurationsMs: sessionSceneDurationsMs,
     });
     saveMemory(sessionFingerprint, memory);
+
+    addLandmark(world, {
+      hue: sessionHue,
+      sat: 0.6,
+      energy: sessionDnaSampleCount > 0 ? sessionEnergySum / sessionDnaSampleCount : 0.4,
+      themeName: sessionThemeName,
+    });
+    saveWorld(world);
+    visualEngine?.setLandmarks(world.landmarks);
   }
   sessionFingerprint = null;
 }
@@ -1357,6 +1372,8 @@ function frame(now) {
   directorState.reactivity *= visualPreset.reactivity;
   visualEngine.setParticleBudget(BASE_PARTICLE_BUDGET * qualityScale * directorState.particleDensity);
   visualEngine.setBloomStrength(Math.min(2.6, directorState.bloomStrength));
+  const worldTint = dominantTint(world, themeByName);
+  if (worldTint) visualEngine.setWorldTint(worldTint.hue, worldTint.sat);
   visualEngine.update(features, directorState);
   visualEngine.render();
   updateThemePill(directorState.themeName, directorState.mood);
@@ -1379,6 +1396,7 @@ function frame(now) {
     const { VisualEngine } = await import('./js/visual-engine.js');
     visualEngine = new VisualEngine(canvas);
     await visualEngine.initPostFX();
+    visualEngine.setLandmarks(world.landmarks); // show whatever the world has already accumulated
     requestAnimationFrame(frame);
   } catch (err) {
     console.warn('[music-visualizer] visual engine unavailable, continuing audio-only', err);
