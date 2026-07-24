@@ -115,7 +115,12 @@ body {
 #mv-overlay > * { pointer-events: auto; }
 
 .mv-fade { transition: opacity 0.5s ease, transform 0.5s ease; }
-.mv-fade[hidden] { display: flex !important; opacity: 0; pointer-events: none; }
+/* !important needed on pointer-events: `#mv-overlay > *` (an ID selector)
+   otherwise outranks this class+attribute selector and would leave a
+   hidden-but-opacity-0 panel still capturing clicks meant for whatever
+   else shares its fixed position (e.g. the queue and lyrics panels, which
+   sit at the same coordinates when only one of them is open). */
+.mv-fade[hidden] { display: flex !important; opacity: 0; pointer-events: none !important; }
 
 .mv-icon-btn {
   width: 40px; height: 40px;
@@ -307,6 +312,81 @@ body {
 
 .mv-icon-btn.mv-active { background: var(--mv-accent); border-color: transparent; color: white; }
 
+/* ---------- Lyrics panel ---------- */
+/* Real LRC sync when the pasted/uploaded text has [mm:ss.xx] time tags;
+   otherwise lines are spread evenly across the track's duration as a rough
+   estimate (see lyrics.js) and the badge below says so — never presented
+   as more precise than it is. */
+
+#mv-lyrics-panel {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 128px;
+  max-height: min(52vh, 460px);
+  display: flex;
+  flex-direction: column;
+  background: var(--mv-panel);
+  border: 1px solid var(--mv-panel-border);
+  border-radius: 16px;
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+  z-index: 22;
+}
+.mv-lyrics-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 8px 10px 14px;
+  border-bottom: 1px solid var(--mv-panel-border);
+  flex: 0 0 auto;
+}
+.mv-lyrics-title { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 0.9rem; }
+.mv-lyrics-header-actions { display: flex; align-items: center; gap: 6px; }
+.mv-lyrics-sync-badge {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--mv-ink-muted);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+}
+.mv-lyrics-sync-badge.mv-lyrics-synced { color: var(--mv-accent); background: rgba(234,88,12,0.14); }
+
+.mv-lyrics-body { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px; }
+.mv-lyrics-empty p { margin: 0 0 10px; font-size: 0.82rem; color: var(--mv-ink-muted); }
+#mv-lyrics-textarea {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--mv-ink);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--mv-panel-border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.mv-lyrics-form-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.mv-lyrics-upload-label { font-size: 0.8rem; padding: 0.6rem 0.9rem; }
+
+.mv-lyrics-lines { list-style: none; margin: 0; padding: 0; }
+.mv-lyrics-lines li {
+  padding: 6px 4px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(245,245,240,0.4);
+  transition: color 0.25s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+.mv-lyrics-lines li:hover { color: rgba(245,245,240,0.7); }
+.mv-lyrics-lines li.mv-lyrics-line-active {
+  color: var(--mv-ink);
+  font-weight: 600;
+  transform: scale(1.02);
+}
+
 /* ---------- Up Next queue panel ---------- */
 
 #mv-queue-panel {
@@ -366,5 +446,5 @@ body {
   #mv-player { flex-wrap: wrap; }
   .mv-volume-wrap { display: none; }
   .mv-drop-card { padding: 28px 20px; }
-  #mv-queue-panel { bottom: 168px; left: 8px; right: 8px; }
+  #mv-queue-panel, #mv-lyrics-panel { bottom: 168px; left: 8px; right: 8px; }
 }

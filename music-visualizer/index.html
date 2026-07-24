@@ -82,9 +82,36 @@
             <span aria-hidden="true">&#128266;</span>
             <input type="range" id="mv-volume" class="mv-volume" min="0" max="1" value="0.85" step="0.01" aria-label="Volume">
           </div>
+          <button type="button" id="mv-lyrics-toggle" class="mv-icon-btn" title="Lyrics" aria-label="Show lyrics">&#128220;</button>
           <button type="button" id="mv-queue-toggle" class="mv-icon-btn" title="Up next" aria-label="Show playback queue">&#9776;</button>
           <button type="button" id="mv-add-more" class="mv-icon-btn" title="Add more tracks" aria-label="Add more tracks">+</button>
         </div>
+      </div>
+    </div>
+
+    <div id="mv-lyrics-panel" class="mv-fade" hidden>
+      <div class="mv-lyrics-header">
+        <span class="mv-lyrics-title">Lyrics</span>
+        <div class="mv-lyrics-header-actions">
+          <span id="mv-lyrics-sync-badge" class="mv-lyrics-sync-badge" hidden></span>
+          <button type="button" id="mv-lyrics-edit" class="mv-icon-btn mv-queue-icon-btn" title="Edit lyrics" aria-label="Edit lyrics" hidden>&#9998;</button>
+          <button type="button" id="mv-lyrics-close" class="mv-icon-btn" title="Close" aria-label="Close lyrics">&times;</button>
+        </div>
+      </div>
+      <div id="mv-lyrics-body" class="mv-lyrics-body">
+        <div id="mv-lyrics-empty" class="mv-lyrics-empty" hidden>
+          <p id="mv-lyrics-empty-hint">No lyrics for this track yet — paste them below, synced or plain.</p>
+          <textarea id="mv-lyrics-textarea" rows="8" placeholder="Paste lyrics here — plain text, or .lrc-formatted with [mm:ss.xx] tags for real sync."></textarea>
+          <div class="mv-lyrics-form-actions">
+            <label class="mv-btn mv-btn-ghost mv-lyrics-upload-label">
+              Upload .lrc / .txt&hellip;
+              <input type="file" id="mv-lyrics-file-input" accept=".lrc,.txt,text/plain" hidden>
+            </label>
+            <button type="button" id="mv-lyrics-remove" class="mv-btn mv-btn-ghost" hidden>Remove lyrics</button>
+            <button type="button" id="mv-lyrics-save" class="mv-btn mv-btn-accent">Save lyrics</button>
+          </div>
+        </div>
+        <ul id="mv-lyrics-lines" class="mv-lyrics-lines" hidden></ul>
       </div>
     </div>
 

@@ -6,6 +6,7 @@ import { AIDirector } from './js/ai-director.js';
 import { parseID3, guessFromFilename } from './js/id3.js';
 // No CDN dependency (unlike VisualEngine) — safe to import statically.
 import { analyzeStructure } from './js/structure-analyzer.js';
+import { parseLyrics, estimateLyricsTiming, findActiveLineIndex } from './js/lyrics.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -47,6 +48,19 @@ const queueCloseBtn = $('#mv-queue-close');
 const shuffleBtn = $('#mv-shuffle');
 const repeatBtn = $('#mv-repeat');
 
+const lyricsToggleBtn = $('#mv-lyrics-toggle');
+const lyricsPanel = $('#mv-lyrics-panel');
+const lyricsCloseBtn = $('#mv-lyrics-close');
+const lyricsEditBtn = $('#mv-lyrics-edit');
+const lyricsSyncBadge = $('#mv-lyrics-sync-badge');
+const lyricsEmpty = $('#mv-lyrics-empty');
+const lyricsEmptyHint = $('#mv-lyrics-empty-hint');
+const lyricsTextarea = $('#mv-lyrics-textarea');
+const lyricsFileInput = $('#mv-lyrics-file-input');
+const lyricsSaveBtn = $('#mv-lyrics-save');
+const lyricsRemoveBtn = $('#mv-lyrics-remove');
+const lyricsLinesEl = $('#mv-lyrics-lines');
+
 // -- Persistent playback graph: one <audio> element for the whole session,
 // src swapped per track. createMediaElementSource can only bind once per
 // element, so a fresh Audio() per track would leak/duplicate audio graphs.
@@ -85,6 +99,7 @@ function showDropHint() {
   player.hidden = true;
   themePill.hidden = true;
   queuePanel.hidden = true;
+  lyricsPanel.hidden = true;
   hideLiveBadge();
 }
 
@@ -286,6 +301,134 @@ async function analyzeTrackStructure(track) {
   if (playlist[currentIndex] === track) renderStructureBar(track);
 }
 
+// ---- Lyrics ----
+// LRC time tags ([mm:ss.xx]) give real sync; plain pasted text has no
+// timing at all, so it's spread evenly across the track (lyrics.js) and
+// labeled "Estimated timing" rather than presented as if it were accurate.
+// Saved lyrics persist in localStorage keyed by filename+size — a
+// best-effort identifier, not a guaranteed-unique one, since there's no
+// backend to key them by anything sturdier.
+
+function lyricsStorageKey(track) {
+  return `mv-lyrics::${track.file.name}::${track.file.size}`;
+}
+
+function loadStoredLyrics(track) {
+  if (track.lyrics !== undefined) return; // already loaded/attempted this session
+  try {
+    const raw = localStorage.getItem(lyricsStorageKey(track));
+    track.lyrics = raw ? JSON.parse(raw) : null;
+  } catch {
+    track.lyrics = null;
+  }
+}
+
+function saveLyricsToStorage(track) {
+  try {
+    if (track.lyrics) localStorage.setItem(lyricsStorageKey(track), JSON.stringify(track.lyrics));
+    else localStorage.removeItem(lyricsStorageKey(track));
+  } catch { /* storage full/unavailable — lyrics still work for this session */ }
+}
+
+function showLyricsForm(track) {
+  lyricsEmpty.hidden = false;
+  lyricsLinesEl.hidden = true;
+  lyricsEditBtn.hidden = true;
+  lyricsSyncBadge.hidden = true;
+  const has = track.lyrics && track.lyrics.lines?.length;
+  lyricsTextarea.value = has ? track.lyrics.rawText || '' : '';
+  lyricsEmptyHint.textContent = has
+    ? 'Editing lyrics for this track.'
+    : 'No lyrics for this track yet — paste them below, synced or plain.';
+  lyricsRemoveBtn.hidden = !has;
+}
+
+function showLyricsDisplay(track) {
+  lyricsEmpty.hidden = true;
+  lyricsLinesEl.hidden = false;
+  lyricsEditBtn.hidden = false;
+  lyricsSyncBadge.hidden = false;
+  lyricsSyncBadge.textContent = track.lyrics.synced ? 'Synced' : 'Estimated timing';
+  lyricsSyncBadge.classList.toggle('mv-lyrics-synced', track.lyrics.synced);
+  lyricsLinesEl.innerHTML = '';
+  track.lyrics.lines.forEach((line, i) => {
+    const li = document.createElement('li');
+    li.textContent = line.text;
+    li.dataset.index = String(i);
+    lyricsLinesEl.appendChild(li);
+  });
+  updateLyricsHighlight(audioEl.currentTime);
+}
+
+function renderLyricsPanel() {
+  const track = playlist[currentIndex];
+  if (!track) return;
+  loadStoredLyrics(track);
+  const has = track.lyrics && track.lyrics.lines?.length;
+  if (has) showLyricsDisplay(track);
+  else showLyricsForm(track);
+}
+
+function updateLyricsHighlight(currentTime) {
+  if (lyricsPanel.hidden) return; // no point scrolling a hidden panel
+  const track = playlist[currentIndex];
+  const lines = track?.lyrics?.lines;
+  if (!lines || !lines.length) return;
+  const idx = findActiveLineIndex(lines, currentTime);
+  const items = lyricsLinesEl.children;
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.toggle('mv-lyrics-line-active', i === idx);
+  }
+  if (idx >= 0 && items[idx]) items[idx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+function saveLyricsFromTextarea() {
+  const track = playlist[currentIndex];
+  if (!track) return;
+  const text = lyricsTextarea.value;
+  if (!text.trim()) return;
+  const parsed = parseLyrics(text);
+  if (!parsed.lines.length) {
+    alert("Couldn't find any lyric lines in that text.");
+    return;
+  }
+  if (!parsed.synced) parsed.lines = estimateLyricsTiming(parsed.lines, audioEl.duration);
+  track.lyrics = { ...parsed, rawText: text };
+  saveLyricsToStorage(track);
+  renderLyricsPanel();
+}
+
+lyricsToggleBtn.addEventListener('click', () => {
+  lyricsPanel.hidden = !lyricsPanel.hidden;
+  if (!lyricsPanel.hidden) { queuePanel.hidden = true; renderLyricsPanel(); }
+});
+lyricsCloseBtn.addEventListener('click', () => { lyricsPanel.hidden = true; });
+lyricsEditBtn.addEventListener('click', () => {
+  const track = playlist[currentIndex];
+  if (track) showLyricsForm(track);
+});
+lyricsRemoveBtn.addEventListener('click', () => {
+  const track = playlist[currentIndex];
+  if (!track) return;
+  track.lyrics = null;
+  saveLyricsToStorage(track);
+  renderLyricsPanel();
+});
+lyricsSaveBtn.addEventListener('click', saveLyricsFromTextarea);
+lyricsFileInput.addEventListener('change', async () => {
+  const file = lyricsFileInput.files[0];
+  if (!file) return;
+  lyricsTextarea.value = await file.text();
+  lyricsFileInput.value = '';
+});
+lyricsLinesEl.addEventListener('click', (e) => {
+  const li = e.target.closest('li');
+  if (!li) return;
+  const track = playlist[currentIndex];
+  const line = track?.lyrics?.lines?.[parseInt(li.dataset.index, 10)];
+  if (line && isFinite(line.time)) audioEl.currentTime = line.time;
+});
+
 function applyTrackMeta(track) {
   titleEl.textContent = track.title || track.file.name;
   artistEl.textContent = track.artist || 'Unknown artist';
@@ -341,6 +484,7 @@ async function loadTrack(index, { autoplay = false } = {}) {
   updateFormatBadge();
   renderStructureBar(track); // shows a cached result immediately, or hides the bar
   analyzeTrackStructure(track); // no-op if already analyzed/in progress
+  if (!lyricsPanel.hidden) renderLyricsPanel();
 
   try {
     audioEngine.connectAudioElement(audioEl);
@@ -499,6 +643,7 @@ nextBtn.addEventListener('click', playNext);
 
 audioEl.addEventListener('timeupdate', () => {
   updateStructureHighlight(audioEl.currentTime);
+  updateLyricsHighlight(audioEl.currentTime);
   if (isSeeking || !isFinite(audioEl.duration)) return;
   const pct = (audioEl.currentTime / audioEl.duration) * 1000;
   seekEl.value = String(pct);
@@ -522,7 +667,7 @@ volumeEl.addEventListener('input', () => { audioEl.volume = parseFloat(volumeEl.
 
 queueToggleBtn.addEventListener('click', () => {
   queuePanel.hidden = !queuePanel.hidden;
-  if (!queuePanel.hidden) renderQueue();
+  if (!queuePanel.hidden) { lyricsPanel.hidden = true; renderQueue(); }
 });
 queueCloseBtn.addEventListener('click', () => { queuePanel.hidden = true; });
 shuffleBtn.addEventListener('click', toggleShuffle);
