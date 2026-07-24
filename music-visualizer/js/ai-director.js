@@ -118,6 +118,15 @@ const THEMES = [
   },
 ];
 
+// Read-only lookup for other modules that need a theme's real hue/sat
+// without duplicating the THEMES table — used by world-memory.js to color
+// the persistent world from actual theme data rather than inventing its
+// own palette.
+export function themeByName(name) {
+  const theme = THEMES.find((t) => t.name === name);
+  return theme ? { hue: theme.hue, sat: theme.sat } : null;
+}
+
 function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
 function lerp(a, b, t) { return a + (b - a) * t; }

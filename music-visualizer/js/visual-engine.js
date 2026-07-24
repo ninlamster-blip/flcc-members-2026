@@ -89,6 +89,7 @@ export class VisualEngine {
     this._buildRings();
     this._buildParticles(this._particleBudget);
     this._buildRibbons();
+    this._buildLandmarks();
     this._buildLights();
     this._buildFlashOverlay();
 
@@ -331,6 +332,66 @@ export class VisualEngine {
     }
   }
 
+  // ---- Persistent world: an accumulating belt of landmarks, one per
+  // track actually listened to (see world-memory.js for what decides
+  // that and how each landmark's color/size is derived). Sits well
+  // outside the core/particle field (which tops out ~6.7 units from
+  // center) and the camera's typical orbit radius (~3.4-7.6), so it
+  // reads as a distant, slowly-turning "skyline" rather than competing
+  // with the foreground reactive elements. setLandmarks() is called at
+  // most once per finished track, never per frame — this is cheap. ----
+
+  _buildLandmarks() {
+    this.landmarkGroup = new THREE.Group();
+    this.scene.add(this.landmarkGroup);
+    this._landmarkGeo = new THREE.IcosahedronGeometry(1, 0);
+    this._landmarkMeshes = [];
+  }
+
+  setLandmarks(landmarks) {
+    for (const mesh of this._landmarkMeshes) {
+      this.landmarkGroup.remove(mesh);
+      mesh.material.dispose(); // geometry is shared (this._landmarkGeo) — not disposed per-mesh
+    }
+    this._landmarkMeshes = [];
+    for (const lm of landmarks) {
+      const mat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color().setHSL(lm.hue, lm.sat, 0.55),
+        emissive: new THREE.Color().setHSL(lm.hue, lm.sat, 0.28),
+        emissiveIntensity: 0.6,
+        metalness: 0.25,
+        roughness: 0.55,
+      });
+      const mesh = new THREE.Mesh(this._landmarkGeo, mat);
+      const radius = 8 + (lm.radiusOffset ?? 0.5) * 3;
+      mesh.position.set(
+        Math.cos(lm.angle) * radius,
+        Math.sin(lm.tilt ?? 0) * 3,
+        Math.sin(lm.angle) * radius
+      );
+      mesh.scale.setScalar(Math.max(0.12, lm.size ?? 0.4) * 0.35);
+      this.landmarkGroup.add(mesh);
+      this._landmarkMeshes.push(mesh);
+    }
+  }
+
+  // Sets the target hue/saturation the background should very gradually
+  // tint toward, from the session's actually-listened-to theme history
+  // (world-memory.js#dominantTint). null = no tint, background renders
+  // exactly as it always has.
+  setWorldTint(hue, sat) {
+    this._worldTintHue = hue;
+    this._worldTintSat = sat;
+  }
+
+  _updateLandmarks(elapsed) {
+    this.landmarkGroup.rotation.y = elapsed * 0.008; // very slow drift — "the world," not "the scene"
+    for (const mesh of this._landmarkMeshes) {
+      mesh.rotation.x += 0.0015;
+      mesh.rotation.y += 0.001;
+    }
+  }
+
   _buildLights() {
     this.coreLight = new THREE.PointLight(0xff6a2c, 2, 30, 2);
     this.scene.add(this.coreLight);
@@ -451,6 +512,16 @@ export class VisualEngine {
     this.bgUniforms.uTime.value = elapsed;
     this.bgUniforms.uColorA.value.setHSL(directorState.bgHue, directorState.sat * 0.5, directorState.bgLight);
     this.bgUniforms.uColorB.value.setHSL(directorState.hue, directorState.sat * 0.6, directorState.bgLight + 0.06);
+    // Persistent-world tint (see setWorldTint) — a small, slow-changing
+    // blend toward the session's overall listening history, layered on
+    // top of the moment-to-moment theme colors above rather than
+    // replacing them. No-op entirely until at least one track has
+    // finished and world-memory.js has something to report.
+    if (this._worldTintHue != null) {
+      const tint = new THREE.Color().setHSL(this._worldTintHue, (this._worldTintSat ?? 0.5) * 0.5, directorState.bgLight + 0.03);
+      this.bgUniforms.uColorA.value.lerp(tint, 0.18);
+      this.bgUniforms.uColorB.value.lerp(tint, 0.18);
+    }
 
     // Core — scale/glow track the smoothed overall level only very gently
     // (a slow-moving loudness trend is not a flash risk) and lean on the
@@ -467,6 +538,7 @@ export class VisualEngine {
     this._updateRings(dt);
     this._updateParticles(dt, elapsed, directorState.secondaryHue, bands.hihat);
     this._updateRibbons(elapsed, bands.vocals.energy, directorState.secondaryHue);
+    this._updateLandmarks(elapsed);
 
     // Lighting
     this.coreLight.color.setHSL(directorState.hue, 0.85, 0.55);
