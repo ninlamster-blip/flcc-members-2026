@@ -3,6 +3,21 @@
 // features the visual engine does (energy, BPM, bass/treble balance,
 // percussive hit-rate) and picks a mood/theme, crossfading into it instead
 // of hard-cutting. Hues are 0..1 (THREE.Color#setHSL convention).
+//
+// Two layers of "direction" happen here, both plain rule-based heuristics —
+// no learning, no memory across songs, nothing that would justify calling
+// this an ML agent:
+//
+// 1. Reactive: theme/mood scoring and camera-mode rotation, both driven by
+//    the current moment's audio features (see THEMES and _pickSceneMode).
+// 2. Anticipatory ("director agent"): a periodic self-check (_agentTick)
+//    that asks "has anything happened lately?" and, when a track's song
+//    structure has been analyzed (structure-analyzer.js), a lookahead
+//    (_updateStructureAwareness) that ramps particle density / bloom /
+//    camera speed up or down in the seconds before a section boundary,
+//    based on whether the next section measures louder or quieter than the
+//    current one. It's a smooth ramp, not a countdown — nothing is shown
+//    on screen naming what's about to happen, it's just felt.
 
 // reactivity scales how hard kick/snare hits actually punch the scene (core
 // pulse, ring size/brightness, camera dolly, bloom flash) — this is what
@@ -135,6 +150,15 @@ const SCENE_CHANGE_MIN_MS = 7000;
 const SCENE_CHANGE_MAX_MS = 13000;
 const SCENE_PARAM_LERP_RATE = 0.35; // per second
 
+// ---- Director agent: periodic self-check + structure lookahead ----
+const AGENT_TICK_MS = 2600; // how often the agent "checks in" on itself
+const MONOTONY_MS = 18000; // force a moment if nothing has visibly happened in this long
+const MONOTONY_MIN_ENERGY = 0.12; // ...but not during a genuinely quiet passage
+const ANTICIPATION_WINDOW_S = 6; // seconds before a segment boundary where build-up begins
+const ANTICIPATION_ENERGY_DELTA = 0.015; // |energy delta| below this reads as "about the same," not louder/quieter
+const ANTICIPATION_LERP_RATE = 2.5; // per second — smooth ramp, not a snap
+const ARRIVAL_RESCHEDULE_MS = [250, 650]; // how soon a camera-mode change can land right on an "up" arrival
+
 export class AIDirector {
   constructor() {
     this.currentTheme = THEMES[THEMES.length - 1];
@@ -156,6 +180,13 @@ export class AIDirector {
     this._momentId = 0;
     this._momentType = null;
     this._nextSceneChangeAt = performance.now() + this._randomSceneInterval();
+
+    // Director agent state — see the file header for what this layer does.
+    this._lastMomentAt = performance.now();
+    this._nextAgentTickAt = performance.now() + AGENT_TICK_MS;
+    this._lastSegmentIndex = -1;
+    this._anticipation = 0; // 0..1, how close to a predicted section boundary
+    this._anticipationDirection = 0; // smoothed -1..1: heading into a quieter/louder section
   }
 
   _randomSceneInterval() {
@@ -176,9 +207,20 @@ export class AIDirector {
     this.cameraMode = 'orbit';
     this._momentType = null;
     this._nextSceneChangeAt = performance.now() + this._randomSceneInterval();
+
+    this._lastMomentAt = performance.now();
+    this._nextAgentTickAt = performance.now() + AGENT_TICK_MS;
+    this._lastSegmentIndex = -1;
+    this._anticipation = 0;
+    this._anticipationDirection = 0;
   }
 
-  update(features, dtSeconds) {
+  // `structureContext`, when given, is `{ currentTime, segments }` — the
+  // playing track's song-structure segments (structure-analyzer.js) and the
+  // current playback position in seconds. Omit it (no analysis yet, or none
+  // found) and the agent simply has no lookahead to work with — everything
+  // else behaves exactly as before.
+  update(features, dtSeconds, structureContext) {
     const now = features.time;
     const { bands } = features;
 
@@ -203,8 +245,22 @@ export class AIDirector {
     this._advancePalette(dtSeconds, now < this._fastLockUntil);
     this._pickSceneMode(now);
     this._advanceSceneParams(dtSeconds);
+    this._updateStructureAwareness(structureContext, now, dtSeconds);
+    this._agentTick(now, stats.energy);
 
     const energy = stats.energy;
+
+    // Structure-aware build/settle: ramps toward an upcoming louder section
+    // (denser particles, brighter bloom, quicker camera) or eases toward a
+    // quieter one (the inverse), based on the real per-segment energy
+    // measured during structure analysis — not a guess. Purely felt, no
+    // on-screen countdown; capped modest so it shades the theme's own read
+    // rather than overriding it.
+    const anticipationBoost = this._anticipation * this._anticipationDirection;
+    const particleDensity = this.currentTheme.particleDensity * (1 + anticipationBoost * 0.35);
+    const cameraSpeedMult = (0.85 + energy * 0.35) * (1 + anticipationBoost * 0.25);
+    const bloomStrength = this.currentTheme.bloomBase + energy * 0.7 + anticipationBoost * 0.5;
+
     return {
       themeName: this.currentTheme.name,
       mood: this.currentTheme.mood,
@@ -213,14 +269,15 @@ export class AIDirector {
       bgHue: this.palette.bgHue,
       sat: this.palette.sat,
       bgLight: this.palette.bgLight,
-      particleDensity: this.currentTheme.particleDensity,
-      cameraSpeed: this.currentTheme.cameraSpeed * (0.85 + energy * 0.35),
-      bloomStrength: this.currentTheme.bloomBase + energy * 0.7,
+      particleDensity,
+      cameraSpeed: this.currentTheme.cameraSpeed * cameraSpeedMult,
+      bloomStrength,
       reactivity: this.palette.reactivity,
       cameraMode: this.cameraMode,
       sceneParams: this.sceneParams,
       momentId: this._momentId,
       momentType: this._momentType,
+      anticipation: anticipationBoost,
       energy,
       bpm: stats.bpm,
     };
@@ -259,6 +316,73 @@ export class AIDirector {
     if (Math.random() < 0.4) {
       this._momentId++;
       this._momentType = 'burst';
+      this._lastMomentAt = now;
+    }
+  }
+
+  // Structure lookahead: finds which segment is currently playing and, if
+  // a next one exists, ramps _anticipation/_anticipationDirection toward it
+  // over the final ANTICIPATION_WINDOW_S seconds. Also fires a "landing"
+  // burst the instant playback actually crosses into a new segment, and —
+  // only when arriving at a measurably louder section — pulls the next
+  // scene-mode rotation forward so a camera change has a chance to land
+  // right on the arrival instead of at its own unrelated schedule.
+  _updateStructureAwareness(structureContext, now, dtSeconds) {
+    let targetAnticipation = 0;
+    let targetDirection = 0;
+
+    if (structureContext && structureContext.segments && structureContext.segments.length) {
+      const { segments, currentTime } = structureContext;
+      const idx = segments.findIndex((s) => currentTime >= s.start && currentTime < s.end);
+
+      if (idx !== -1 && idx !== this._lastSegmentIndex && this._lastSegmentIndex !== -1) {
+        this._momentId++;
+        this._momentType = 'burst';
+        this._lastMomentAt = now;
+
+        const arriving = segments[idx];
+        const previous = segments[idx - 1];
+        if (previous && arriving.energy - previous.energy > ANTICIPATION_ENERGY_DELTA
+            && this._nextSceneChangeAt - now > 2500) {
+          const [minMs, maxMs] = ARRIVAL_RESCHEDULE_MS;
+          this._nextSceneChangeAt = now + minMs + Math.random() * (maxMs - minMs);
+        }
+      }
+      this._lastSegmentIndex = idx;
+
+      if (idx !== -1 && idx + 1 < segments.length) {
+        const current = segments[idx];
+        const next = segments[idx + 1];
+        const timeToNext = current.end - currentTime;
+        if (timeToNext > 0 && timeToNext <= ANTICIPATION_WINDOW_S
+            && isFinite(current.energy) && isFinite(next.energy)) {
+          targetAnticipation = clamp01(1 - timeToNext / ANTICIPATION_WINDOW_S);
+          const delta = next.energy - current.energy;
+          targetDirection = delta > ANTICIPATION_ENERGY_DELTA ? 1 : delta < -ANTICIPATION_ENERGY_DELTA ? -1 : 0;
+        }
+      }
+    } else {
+      this._lastSegmentIndex = -1;
+    }
+
+    const t = clamp01(ANTICIPATION_LERP_RATE * dtSeconds);
+    this._anticipation = lerp(this._anticipation, targetAnticipation, t);
+    this._anticipationDirection = lerp(this._anticipationDirection, targetDirection, t);
+  }
+
+  // "Is this getting repetitive?" — a periodic self-check independent of
+  // both the theme scorer and the scene-mode rotation. If nothing has
+  // visibly happened in a while (no scene change, no structure arrival) and
+  // the track isn't just genuinely quiet, give the scene something to do
+  // rather than waiting on the natural rotation's own dice roll.
+  _agentTick(now, energy) {
+    if (now < this._nextAgentTickAt) return;
+    this._nextAgentTickAt = now + AGENT_TICK_MS * (0.85 + Math.random() * 0.3);
+
+    if (now - this._lastMomentAt > MONOTONY_MS && energy > MONOTONY_MIN_ENERGY) {
+      this._momentId++;
+      this._momentType = 'burst';
+      this._lastMomentAt = now;
     }
   }
 

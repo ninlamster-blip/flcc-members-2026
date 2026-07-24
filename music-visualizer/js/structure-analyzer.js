@@ -263,7 +263,11 @@ export function computeStructure(featureVectors, energies, duration) {
 
   const { clusters, assignment } = clusterSegments(meanVectors);
   const labels = labelSegments(segments, assignment, clusters, duration, segmentEnergy);
-  return segments.map((seg, i) => ({ ...seg, label: labels[i] }));
+  // energy is each segment's average raw (unnormalized) magnitude — only
+  // meaningful relative to other segments of the *same* track, which is all
+  // the director agent uses it for (is the next section louder or quieter
+  // than this one).
+  return segments.map((seg, i) => ({ ...seg, label: labels[i], energy: segmentEnergy[i] }));
 }
 
 // ---------------- ANALYZE STRUCTURE (browser-only: needs decodeAudioData) ----------------
