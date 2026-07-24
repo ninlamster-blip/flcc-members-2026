@@ -227,6 +227,43 @@ body {
    timer in app.js). Any interaction restores it instantly. */
 .mv-format-badge.mv-idle { opacity: 0; }
 
+/* ---------- Song structure timeline ---------- */
+/* Heuristic (repetition + position based) section detection — not trained,
+   not lyric-aware, and honest about it (see structure-analyzer.js). Colored
+   segment blocks proportional to duration; click any to jump there. */
+
+.mv-structure-row {
+  margin-top: 4px;
+  min-height: 1em;
+}
+.mv-structure-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--mv-accent);
+}
+
+.mv-structure-bar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  margin-top: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.mv-structure-seg {
+  height: 100%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(255,255,255,0.18);
+  opacity: 0.55;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.mv-structure-seg:hover { opacity: 0.85; }
+.mv-structure-seg.mv-structure-seg-active { opacity: 1; transform: scaleY(1.5); }
+
 .mv-progress-row {
   display: flex; align-items: center; gap: 8px;
   margin-top: 6px;
