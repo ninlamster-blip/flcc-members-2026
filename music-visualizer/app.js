@@ -8,9 +8,10 @@ import { parseID3, guessFromFilename } from './js/id3.js';
 import { analyzeStructure } from './js/structure-analyzer.js';
 import { parseLyrics, estimateLyricsTiming, findActiveLineIndex } from './js/lyrics.js';
 import {
-  fingerprintTrack, loadMemory, saveMemory, withStructure,
+  fingerprintTrack, loadMemory, saveMemory, withStructure, withDnaStats,
   recordPlaySession, averageCompletion, favoriteScene, SCENE_LABELS,
 } from './js/fingerprint.js';
+import { analyzeAudioStats, buildDnaVector, dnaPolygonPoints } from './js/visual-dna.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -52,6 +53,12 @@ const pfArtistEl = $('#mv-pf-artist');
 const pfNextEl = $('#mv-pf-next');
 const performanceLyricsView = $('#mv-performance-lyrics');
 const pfLyricsLinesEl = $('#mv-pf-lyrics-lines');
+const dnaBadge = $('#mv-dna-badge');
+const dnaBadgePoly = $('#mv-dna-badge-poly');
+const dnaPanel = $('#mv-dna-panel');
+const dnaCloseBtn = $('#mv-dna-close');
+const dnaSvgPoly = $('#mv-dna-poly');
+const dnaStatsEl = $('#mv-dna-stats');
 
 const queueToggleBtn = $('#mv-queue-toggle');
 const queuePanel = $('#mv-queue-panel');
@@ -109,6 +116,14 @@ let sessionLastSceneModeAt = 0;
 let sessionMood = null;
 let sessionThemeName = null;
 let sessionBpm = null;
+// Running averages for Visual DNA's "energy"/"vocal presence" axes — these
+// deliberately reflect what's actually been heard so far this session, not
+// a whole-file measurement, so the glyph settles in over the first several
+// seconds of playback rather than jumping straight to a final shape.
+let sessionEnergySum = 0;
+let sessionVocalsSum = 0;
+let sessionDnaSampleCount = 0;
+let sessionHue = 0.069; // ~matches --mv-accent orange; updated live once the visual engine is running
 
 function trackObjectUrl(url) { objectUrls.add(url); return url; }
 
@@ -125,7 +140,9 @@ function showDropHint() {
   themePill.hidden = true;
   queuePanel.hidden = true;
   lyricsPanel.hidden = true;
+  dnaPanel.hidden = true;
   updatePerformanceView(); // no current track — hides the performance-mode overlays too
+  renderDnaGlyph(null); // hides the DNA badge too
   hideLiveBadge();
 }
 
@@ -438,7 +455,7 @@ function saveLyricsFromTextarea() {
 
 lyricsToggleBtn.addEventListener('click', () => {
   lyricsPanel.hidden = !lyricsPanel.hidden;
-  if (!lyricsPanel.hidden) { queuePanel.hidden = true; renderLyricsPanel(); }
+  if (!lyricsPanel.hidden) { queuePanel.hidden = true; dnaPanel.hidden = true; renderLyricsPanel(); }
 });
 lyricsCloseBtn.addEventListener('click', () => { lyricsPanel.hidden = true; });
 lyricsEditBtn.addEventListener('click', () => {
@@ -502,6 +519,8 @@ function finalizeListeningSession() {
       mood: sessionMood,
       themeName: sessionThemeName,
       bpm: sessionBpm,
+      avgEnergy: sessionDnaSampleCount > 0 ? sessionEnergySum / sessionDnaSampleCount : null,
+      avgVocalPresence: sessionDnaSampleCount > 0 ? sessionVocalsSum / sessionDnaSampleCount : null,
       sceneDurationsMs: sessionSceneDurationsMs,
     });
     saveMemory(sessionFingerprint, memory);
@@ -518,6 +537,9 @@ function startListeningSession(track) {
   sessionMood = null;
   sessionThemeName = null;
   sessionBpm = null;
+  sessionEnergySum = 0;
+  sessionVocalsSum = 0;
+  sessionDnaSampleCount = 0;
 }
 
 function renderMemoryBadge(track) {
@@ -541,11 +563,108 @@ function renderMemoryBadge(track) {
 // playback or UI responsiveness.
 function schedulePreAnalysis() {
   const next = playlist[currentIndex + 1];
-  if (!next || next.structure !== undefined) return;
-  const run = () => analyzeTrackStructure(next);
+  if (!next) return;
+  const run = () => {
+    if (next.structure === undefined) analyzeTrackStructure(next);
+    if (next.dnaStats === undefined) analyzeTrackDna(next);
+  };
   if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 4000 });
   else setTimeout(run, 1500);
 }
+
+// ---- Visual DNA ----
+// A five-axis "fingerprint" glyph per track — see visual-dna.js for exactly
+// what each axis means and where it comes from. Stereo width/dynamic range
+// are measured once (cached like structure analysis); tempo/energy/vocal
+// presence reflect what's actually been observed while playing, converging
+// over the first several seconds rather than being computed all at once.
+
+async function analyzeTrackDna(track) {
+  if (track.dnaStats !== undefined) return; // already analyzed (or attempted)
+  track.dnaStats = null; // mark "in progress"
+
+  const fp = fingerprintTrack(track.file);
+  const memory = loadMemory(fp);
+  if (memory && memory.dnaStats) {
+    track.dnaStats = memory.dnaStats;
+    if (playlist[currentIndex] === track) renderDnaGlyph(track);
+    return;
+  }
+
+  try {
+    const stats = await analyzeAudioStats(track.file);
+    track.dnaStats = stats;
+    if (stats) saveMemory(fp, withDnaStats(memory, stats));
+  } catch (err) {
+    console.warn('[music-visualizer] visual DNA analysis failed', err);
+    track.dnaStats = null;
+  }
+  if (playlist[currentIndex] === track) renderDnaGlyph(track);
+}
+
+function currentDnaVector(track) {
+  const memory = loadMemory(fingerprintTrack(track.file));
+  const bpm = sessionBpm ?? memory?.bpm ?? null;
+  const energy = sessionDnaSampleCount > 0 ? sessionEnergySum / sessionDnaSampleCount : memory?.avgEnergy ?? null;
+  const vocalPresence = sessionDnaSampleCount > 0 ? sessionVocalsSum / sessionDnaSampleCount : memory?.avgVocalPresence ?? null;
+  const stats = track.dnaStats;
+  return buildDnaVector({
+    bpm, energy, vocalPresence,
+    stereoWidth: stats?.stereoWidth ?? null,
+    dynamicRangeDb: stats?.dynamicRangeDb ?? null,
+  });
+}
+
+function renderDnaGlyph(track) {
+  if (!track) { dnaBadge.hidden = true; dnaPanel.hidden = true; return; }
+  const vector = currentDnaVector(track);
+  const hueDeg = Math.round(sessionHue * 360);
+  const color = `hsl(${hueDeg}, 70%, 62%)`;
+
+  dnaBadgePoly.setAttribute('points', dnaPolygonPoints(vector, 8, 10, 10));
+  dnaBadgePoly.style.fill = color;
+  dnaBadgePoly.style.stroke = color;
+  dnaBadge.hidden = false;
+
+  if (!dnaPanel.hidden) renderDnaPanel(track, vector, color);
+}
+
+function renderDnaPanel(track, vector, color) {
+  dnaSvgPoly.setAttribute('points', dnaPolygonPoints(vector, 40, 50, 50));
+  dnaSvgPoly.style.fill = color.replace('hsl', 'hsla').replace(')', ', 0.35)');
+  dnaSvgPoly.style.stroke = color;
+
+  const stats = track.dnaStats;
+  const bpmValue = sessionBpm ?? loadMemory(fingerprintTrack(track.file))?.bpm ?? null;
+  const rows = [
+    ['Tempo', bpmValue != null ? `${Math.round(bpmValue)} BPM` : 'Detecting…'],
+    ['Energy', `${Math.round(vector.energy * 100)}%`],
+    ['Stereo width', stats != null ? `${Math.round(vector.stereoWidth * 100)}%` : 'Analyzing…'],
+    ['Dynamic range', stats && stats.dynamicRangeDb != null ? `${stats.dynamicRangeDb.toFixed(1)} dB` : stats != null ? 'N/A' : 'Analyzing…'],
+    ['Vocal presence', `${Math.round(vector.vocalPresence * 100)}%`],
+  ];
+  dnaStatsEl.innerHTML = '';
+  for (const [label, value] of rows) {
+    const li = document.createElement('li');
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = label;
+    const valueStrong = document.createElement('strong');
+    valueStrong.textContent = value;
+    li.append(labelSpan, valueStrong);
+    dnaStatsEl.appendChild(li);
+  }
+}
+
+dnaBadge.addEventListener('click', () => {
+  dnaPanel.hidden = !dnaPanel.hidden;
+  if (!dnaPanel.hidden) {
+    queuePanel.hidden = true;
+    lyricsPanel.hidden = true;
+    const track = playlist[currentIndex];
+    if (track) renderDnaGlyph(track);
+  }
+});
+dnaCloseBtn.addEventListener('click', () => { dnaPanel.hidden = true; });
 
 function applyTrackMeta(track) {
   titleEl.textContent = track.title || track.file.name;
@@ -605,6 +724,8 @@ async function loadTrack(index, { autoplay = false } = {}) {
   renderMemoryBadge(track);
   renderStructureBar(track); // shows a cached result immediately, or hides the bar
   analyzeTrackStructure(track); // no-op if already analyzed/in progress
+  analyzeTrackDna(track); // no-op if already analyzed/in progress
+  renderDnaGlyph(track);
   schedulePreAnalysis(); // get a head start on the next queued track while this one plays
   if (!lyricsPanel.hidden) renderLyricsPanel();
   updatePerformanceView();
@@ -770,6 +891,7 @@ audioEl.addEventListener('timeupdate', () => {
   updateLyricsHighlight(audioEl.currentTime);
   updatePerformanceLyricsHighlight(audioEl.currentTime);
   updateNextCue();
+  if (playlist[currentIndex]) renderDnaGlyph(playlist[currentIndex]);
   if (audioEl.currentTime > sessionMaxTime) sessionMaxTime = audioEl.currentTime;
   if (isSeeking || !isFinite(audioEl.duration)) return;
   const pct = (audioEl.currentTime / audioEl.duration) * 1000;
@@ -794,7 +916,7 @@ volumeEl.addEventListener('input', () => { audioEl.volume = parseFloat(volumeEl.
 
 queueToggleBtn.addEventListener('click', () => {
   queuePanel.hidden = !queuePanel.hidden;
-  if (!queuePanel.hidden) { lyricsPanel.hidden = true; renderQueue(); }
+  if (!queuePanel.hidden) { lyricsPanel.hidden = true; dnaPanel.hidden = true; renderQueue(); }
 });
 queueCloseBtn.addEventListener('click', () => { queuePanel.hidden = true; });
 shuffleBtn.addEventListener('click', toggleShuffle);
@@ -1041,6 +1163,10 @@ function frame(now) {
   sessionMood = directorState.mood;
   sessionThemeName = directorState.themeName;
   if (directorState.bpm != null) sessionBpm = directorState.bpm;
+  if (directorState.hue != null) sessionHue = directorState.hue;
+  sessionEnergySum += features.overallEnergySmoothed;
+  sessionVocalsSum += features.bands.vocals.energy;
+  sessionDnaSampleCount++;
   trackFrameTime((performance.now() - now) || 1);
 
   requestAnimationFrame(frame);
