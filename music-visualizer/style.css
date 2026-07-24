@@ -294,6 +294,14 @@ body {
   margin-top: 1px;
 }
 
+/* ---------- Focus / Party visual mode ---------- */
+/* The actual visual intensity (particles/bloom/camera speed/beat
+   reactivity) is a plain JS multiplier layered over the AI Director's own
+   output — see app.js. This is just Party's one CSS-only touch, "larger
+   typography," since Focus doesn't call for any layout change. */
+#mv-root[data-visual-mode="party"] .mv-title { font-size: 1.05rem; }
+#mv-root[data-visual-mode="party"] #mv-theme-pill { font-size: 0.8rem; padding: 7px 16px; }
+
 .mv-format-badge {
   font-family: 'Geist Mono', monospace;
   font-size: 0.65rem;

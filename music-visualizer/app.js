@@ -70,6 +70,7 @@ const momentsPanel = $('#mv-moments-panel');
 const momentsAddBtn = $('#mv-moments-add');
 const momentsCloseBtn = $('#mv-moments-close');
 const momentsListEl = $('#mv-moments-list');
+const visualModeBtn = $('#mv-visual-mode');
 
 const queueToggleBtn = $('#mv-queue-toggle');
 const queuePanel = $('#mv-queue-panel');
@@ -795,6 +796,46 @@ momentsAddBtn.addEventListener('click', () => {
   renderMomentsPanel(track);
 });
 
+// ---- Focus / Party visual mode ----
+// Layers a simple multiplier over the AI Director's own particleDensity/
+// bloomStrength/cameraSpeed/reactivity output (applied in frame(), below)
+// and its scene-mode rotation cadence (director.sceneChangeMultiplier).
+// Doesn't change what the director *decides* (genre/mood/theme), only how
+// intensely the result gets expressed — Focus calms everything down and
+// slows scene changes for background/study listening, Party punches
+// everything up and rotates scenes faster for a social setting.
+
+const VISUAL_MODE_ORDER = ['normal', 'focus', 'party'];
+const VISUAL_MODE_PRESETS = {
+  normal: { particleDensity: 1, bloomStrength: 1, cameraSpeed: 1, reactivity: 1, sceneChangeMult: 1 },
+  focus: { particleDensity: 0.45, bloomStrength: 0.6, cameraSpeed: 0.35, reactivity: 0.5, sceneChangeMult: 2.2 },
+  party: { particleDensity: 1.35, bloomStrength: 1.3, cameraSpeed: 1.4, reactivity: 1.35, sceneChangeMult: 0.55 },
+};
+const VISUAL_MODE_ICONS = { normal: '\u{1F39A}\u{FE0F}', focus: '\u{1F3AF}', party: '\u{1F389}' };
+const VISUAL_MODE_LABELS = { normal: 'Normal', focus: 'Focus', party: 'Party' };
+
+let visualMode = 'normal';
+try {
+  const stored = localStorage.getItem('mv-visual-mode');
+  if (VISUAL_MODE_ORDER.includes(stored)) visualMode = stored;
+} catch { /* storage unavailable — default to normal */ }
+
+function applyVisualMode() {
+  visualModeBtn.innerHTML = VISUAL_MODE_ICONS[visualMode];
+  visualModeBtn.title = `Visual mode: ${VISUAL_MODE_LABELS[visualMode]} — tap to cycle`;
+  visualModeBtn.classList.toggle('mv-active', visualMode !== 'normal');
+  root.dataset.visualMode = visualMode;
+  director.sceneChangeMultiplier = VISUAL_MODE_PRESETS[visualMode].sceneChangeMult;
+}
+applyVisualMode();
+
+visualModeBtn.addEventListener('click', () => {
+  const idx = VISUAL_MODE_ORDER.indexOf(visualMode);
+  visualMode = VISUAL_MODE_ORDER[(idx + 1) % VISUAL_MODE_ORDER.length];
+  try { localStorage.setItem('mv-visual-mode', visualMode); } catch { /* storage full/unavailable */ }
+  applyVisualMode();
+});
+
 function applyTrackMeta(track) {
   titleEl.textContent = track.title || track.file.name;
   artistEl.textContent = track.artist || 'Unknown artist';
@@ -1284,12 +1325,17 @@ function frame(now) {
   const track = playlist[currentIndex];
   const structureContext = track?.structure ? { currentTime: audioEl.currentTime, segments: track.structure } : null;
   const directorState = director.update(features, dt, structureContext);
+  const visualPreset = VISUAL_MODE_PRESETS[visualMode];
+  directorState.particleDensity *= visualPreset.particleDensity;
+  directorState.bloomStrength *= visualPreset.bloomStrength;
+  directorState.cameraSpeed *= visualPreset.cameraSpeed;
+  directorState.reactivity *= visualPreset.reactivity;
   visualEngine.setParticleBudget(BASE_PARTICLE_BUDGET * qualityScale * directorState.particleDensity);
   visualEngine.setBloomStrength(Math.min(2.6, directorState.bloomStrength));
   visualEngine.update(features, directorState);
   visualEngine.render();
   updateThemePill(directorState.themeName, directorState.mood);
-  updateAmbientGlow(directorState, features.overallEnergySmoothed);
+  updateAmbientGlow(directorState, features.overallEnergySmoothed * visualPreset.bloomStrength);
   trackSceneDwell(directorState.cameraMode, performance.now());
   sessionMood = directorState.mood;
   sessionThemeName = directorState.themeName;
