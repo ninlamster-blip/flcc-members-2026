@@ -790,7 +790,9 @@ function frame(now) {
   lastFrame = now;
 
   const features = audioEngine.update();
-  const directorState = director.update(features, dt);
+  const track = playlist[currentIndex];
+  const structureContext = track?.structure ? { currentTime: audioEl.currentTime, segments: track.structure } : null;
+  const directorState = director.update(features, dt, structureContext);
   visualEngine.setParticleBudget(BASE_PARTICLE_BUDGET * qualityScale * directorState.particleDensity);
   visualEngine.setBloomStrength(Math.min(2.6, directorState.bloomStrength));
   visualEngine.update(features, directorState);
