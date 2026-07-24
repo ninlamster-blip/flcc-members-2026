@@ -67,6 +67,11 @@
       <div class="mv-art-wrap">
         <img id="mv-art" alt="" draggable="false">
         <div id="mv-art-fallback">&#127925;</div>
+        <button type="button" id="mv-dna-badge" class="mv-dna-badge" title="Visual DNA" aria-label="Show visual DNA" hidden>
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <polygon id="mv-dna-badge-poly" points=""></polygon>
+          </svg>
+        </button>
       </div>
 
       <div class="mv-meta">
@@ -124,6 +129,20 @@
           </div>
         </div>
         <ul id="mv-lyrics-lines" class="mv-lyrics-lines" hidden></ul>
+      </div>
+    </div>
+
+    <div id="mv-dna-panel" class="mv-fade" hidden>
+      <div class="mv-dna-header">
+        <span class="mv-dna-title">Visual DNA</span>
+        <button type="button" id="mv-dna-close" class="mv-icon-btn" title="Close" aria-label="Close visual DNA">&times;</button>
+      </div>
+      <div class="mv-dna-body">
+        <svg id="mv-dna-svg" viewBox="0 0 100 100" class="mv-dna-svg" aria-hidden="true">
+          <polygon id="mv-dna-grid" class="mv-dna-grid" points="50.0,10.0 88.0,37.6 73.5,82.4 26.5,82.4 12.0,37.6"></polygon>
+          <polygon id="mv-dna-poly" class="mv-dna-poly" points=""></polygon>
+        </svg>
+        <ul id="mv-dna-stats" class="mv-dna-stats"></ul>
       </div>
     </div>
 

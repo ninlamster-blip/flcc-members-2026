@@ -47,6 +47,14 @@ export function withStructure(existing, structure) {
   return memory;
 }
 
+/** Attaches (or replaces) the one-time offline DNA stats (stereo width,
+ * dynamic range — see visual-dna.js) without touching anything else. */
+export function withDnaStats(existing, stats) {
+  const memory = existing ? { ...existing } : emptyMemory();
+  memory.dnaStats = stats;
+  return memory;
+}
+
 function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
 /** Folds one finished (or abandoned) play session into a track's stored
@@ -63,6 +71,8 @@ export function recordPlaySession(existing, session) {
   if (session.mood) memory.mood = session.mood;
   if (session.themeName) memory.themeName = session.themeName;
   if (session.bpm != null && isFinite(session.bpm)) memory.bpm = Math.round(session.bpm);
+  if (session.avgEnergy != null && isFinite(session.avgEnergy)) memory.avgEnergy = session.avgEnergy;
+  if (session.avgVocalPresence != null && isFinite(session.avgVocalPresence)) memory.avgVocalPresence = session.avgVocalPresence;
   for (const [mode, ms] of Object.entries(session.sceneDurationsMs || {})) {
     memory.sceneDurationsMs[mode] = (memory.sceneDurationsMs[mode] || 0) + ms;
   }

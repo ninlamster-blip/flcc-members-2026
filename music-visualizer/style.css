@@ -197,6 +197,26 @@ body {
   border: 1px solid var(--mv-panel-border);
 }
 #mv-art { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Small "fingerprint sticker" in the corner of the album art — click opens
+   the full Visual DNA panel. Polygon fill/stroke are set from JS (mood
+   hue); shape is set from JS too (visual-dna.js#dnaPolygonPoints). */
+.mv-dna-badge {
+  position: absolute;
+  right: 2px; bottom: 2px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(5,5,10,0.6);
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.mv-dna-badge polygon { transition: fill 0.6s ease, stroke 0.6s ease, points 0.6s ease; }
+/* Same `display: flex` vs native `[hidden] { display: none }` specificity
+   tie as elsewhere in this file — see the .mv-fade[hidden] comment above. */
+.mv-dna-badge[hidden] { display: none; }
 #mv-art[hidden] { display: none; }
 #mv-art-fallback {
   position: absolute; inset: 0;
@@ -403,6 +423,56 @@ body {
   font-weight: 600;
   transform: scale(1.02);
 }
+
+/* ---------- Visual DNA panel ---------- */
+/* Two axes (stereo width, dynamic range) are a one-time real measurement of
+   the file; the other three (tempo, energy, vocal presence) reflect what's
+   actually been observed while playing, so the shape settles in over the
+   first several seconds rather than snapping to a final value instantly.
+   See visual-dna.js for exactly what each axis means. */
+
+#mv-dna-panel {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 128px;
+  max-height: min(52vh, 420px);
+  display: flex;
+  flex-direction: column;
+  background: var(--mv-panel);
+  border: 1px solid var(--mv-panel-border);
+  border-radius: 16px;
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+  z-index: 22;
+}
+.mv-dna-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 8px 10px 14px;
+  border-bottom: 1px solid var(--mv-panel-border);
+  flex: 0 0 auto;
+}
+.mv-dna-title { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 0.9rem; }
+.mv-dna-body {
+  display: flex; align-items: center; gap: 18px;
+  padding: 18px;
+  overflow-y: auto;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.mv-dna-svg { width: 150px; height: 150px; flex: 0 0 auto; }
+.mv-dna-grid { fill: none; stroke: rgba(255,255,255,0.14); stroke-width: 1; }
+.mv-dna-poly { fill: rgba(234,88,12,0.3); stroke: var(--mv-accent); stroke-width: 1.5; transition: fill 0.6s ease, stroke 0.6s ease, points 0.6s ease; }
+.mv-dna-stats { list-style: none; margin: 0; padding: 0; min-width: 160px; flex: 1 1 160px; }
+.mv-dna-stats li {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.8rem;
+}
+.mv-dna-stats li:last-child { border-bottom: none; }
+.mv-dna-stats li span { color: var(--mv-ink-muted); }
+.mv-dna-stats li strong { font-family: 'Geist Mono', monospace; font-weight: 500; }
 
 /* ---------- Up Next queue panel ---------- */
 
