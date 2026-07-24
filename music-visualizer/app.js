@@ -45,6 +45,13 @@ const pickFileBtn = $('#mv-pick-file');
 const addMoreBtn = $('#mv-add-more');
 const useMicBtn = $('#mv-use-mic');
 const fullscreenBtn = $('#mv-fullscreen');
+const performanceToggleBtn = $('#mv-performance-toggle');
+const performanceLowerThird = $('#mv-performance-lowerthird');
+const pfTitleEl = $('#mv-pf-title');
+const pfArtistEl = $('#mv-pf-artist');
+const pfNextEl = $('#mv-pf-next');
+const performanceLyricsView = $('#mv-performance-lyrics');
+const pfLyricsLinesEl = $('#mv-pf-lyrics-lines');
 
 const queueToggleBtn = $('#mv-queue-toggle');
 const queuePanel = $('#mv-queue-panel');
@@ -118,6 +125,7 @@ function showDropHint() {
   themePill.hidden = true;
   queuePanel.hidden = true;
   lyricsPanel.hidden = true;
+  updatePerformanceView(); // no current track — hides the performance-mode overlays too
   hideLiveBadge();
 }
 
@@ -425,6 +433,7 @@ function saveLyricsFromTextarea() {
   track.lyrics = { ...parsed, rawText: text };
   saveLyricsToStorage(track);
   renderLyricsPanel();
+  updatePerformanceView();
 }
 
 lyricsToggleBtn.addEventListener('click', () => {
@@ -442,6 +451,7 @@ lyricsRemoveBtn.addEventListener('click', () => {
   track.lyrics = null;
   saveLyricsToStorage(track);
   renderLyricsPanel();
+  updatePerformanceView();
 });
 lyricsSaveBtn.addEventListener('click', saveLyricsFromTextarea);
 lyricsFileInput.addEventListener('change', async () => {
@@ -597,6 +607,7 @@ async function loadTrack(index, { autoplay = false } = {}) {
   analyzeTrackStructure(track); // no-op if already analyzed/in progress
   schedulePreAnalysis(); // get a head start on the next queued track while this one plays
   if (!lyricsPanel.hidden) renderLyricsPanel();
+  updatePerformanceView();
 
   try {
     audioEngine.connectAudioElement(audioEl);
@@ -757,6 +768,8 @@ nextBtn.addEventListener('click', playNext);
 audioEl.addEventListener('timeupdate', () => {
   updateStructureHighlight(audioEl.currentTime);
   updateLyricsHighlight(audioEl.currentTime);
+  updatePerformanceLyricsHighlight(audioEl.currentTime);
+  updateNextCue();
   if (audioEl.currentTime > sessionMaxTime) sessionMaxTime = audioEl.currentTime;
   if (isSeeking || !isFinite(audioEl.duration)) return;
   const pct = (audioEl.currentTime / audioEl.duration) * 1000;
@@ -847,6 +860,117 @@ useMicBtn.addEventListener('click', async () => {
 fullscreenBtn.addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen();
   else root.requestFullscreen().catch(() => {});
+});
+
+// ---- Performance mode ----
+// For projecting during a live set: strips the player chrome down to just
+// transport controls, shows a clean lower-third instead of the normal
+// title/artist block, and — when the current track has lyrics saved — a
+// big, high-contrast, auto-scrolling lyrics view takes over the center of
+// the screen. See style.css for the layout; this is just the state/data
+// side of it.
+
+// Cached so the "Next: …" cue doesn't re-roll a different track every tick
+// while shuffle is on — computed once when the cue window is entered, not
+// on every timeupdate.
+let cachedNextCueForTrackIndex = -1;
+let cachedNextCueIndex = -1;
+
+function renderPerformanceLyrics(track) {
+  pfLyricsLinesEl.innerHTML = '';
+  track.lyrics.lines.forEach((line, i) => {
+    const div = document.createElement('div');
+    div.className = 'mv-pf-lyrics-line';
+    div.textContent = line.text;
+    div.dataset.index = String(i);
+    pfLyricsLinesEl.appendChild(div);
+  });
+  updatePerformanceLyricsHighlight(audioEl.currentTime);
+}
+
+function updatePerformanceLyricsHighlight(currentTime) {
+  if (performanceLyricsView.hidden) return;
+  const track = playlist[currentIndex];
+  const lines = track?.lyrics?.lines;
+  if (!lines || !lines.length) return;
+  const idx = findActiveLineIndex(lines, currentTime);
+  const items = pfLyricsLinesEl.children;
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.toggle('mv-pf-lyrics-line-active', i === idx);
+  }
+  if (idx >= 0 && items[idx]) items[idx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+// Re-derives what performance mode should currently be showing for the
+// loaded track — call whenever the track changes, lyrics are saved/removed
+// for it, or performance mode itself is toggled.
+function updatePerformanceView() {
+  const active = root.classList.contains('mv-performance-mode');
+  const track = playlist[currentIndex];
+  if (!active || !track) {
+    performanceLowerThird.hidden = true;
+    performanceLyricsView.hidden = true;
+    return;
+  }
+  performanceLowerThird.hidden = false;
+  pfTitleEl.textContent = track.title || track.file.name;
+  pfArtistEl.textContent = track.artist || '';
+
+  const hasLyrics = track.lyrics && track.lyrics.lines && track.lyrics.lines.length;
+  performanceLyricsView.hidden = !hasLyrics;
+  if (hasLyrics) renderPerformanceLyrics(track);
+}
+
+// A small "Next: <title>" cue in the final stretch of a track, so whoever's
+// running sound/slides gets a heads-up before the transition — not an
+// exact prediction of a section change (that's the AI Director's job),
+// just "the queue is about to advance."
+function updateNextCue() {
+  if (!root.classList.contains('mv-performance-mode') || !isFinite(audioEl.duration)) {
+    pfNextEl.hidden = true;
+    cachedNextCueForTrackIndex = -1;
+    return;
+  }
+  const remaining = audioEl.duration - audioEl.currentTime;
+  if (remaining > 6 || remaining <= 0) {
+    pfNextEl.hidden = true;
+    cachedNextCueForTrackIndex = -1;
+    return;
+  }
+  if (cachedNextCueForTrackIndex !== currentIndex) {
+    cachedNextCueForTrackIndex = currentIndex;
+    cachedNextCueIndex = pickNextIndex();
+  }
+  const nextTrack = cachedNextCueIndex !== -1 && cachedNextCueIndex !== currentIndex ? playlist[cachedNextCueIndex] : null;
+  if (nextTrack) {
+    pfNextEl.hidden = false;
+    pfNextEl.textContent = `Next: ${nextTrack.title || nextTrack.file.name}`;
+  } else {
+    pfNextEl.hidden = true;
+  }
+}
+
+function togglePerformanceMode() {
+  const active = root.classList.toggle('mv-performance-mode');
+  performanceToggleBtn.classList.toggle('mv-active', active);
+  performanceToggleBtn.title = active ? 'Exit performance mode' : 'Performance mode';
+  if (active) root.requestFullscreen?.().catch(() => {});
+  else if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  updatePerformanceView();
+  resetIdleTimer();
+}
+performanceToggleBtn.addEventListener('click', togglePerformanceMode);
+
+// If the operator exits fullscreen some other way (Esc, browser chrome),
+// drop performance mode too rather than leaving it in a stripped-down
+// non-fullscreen state that doesn't match either mode's expectations.
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && root.classList.contains('mv-performance-mode')) {
+    root.classList.remove('mv-performance-mode');
+    performanceToggleBtn.classList.remove('mv-active');
+    performanceToggleBtn.title = 'Performance mode';
+    updatePerformanceView();
+  }
 });
 
 // ---- Theme pill (shown as a "mood" — same underlying read, framed the
@@ -954,10 +1078,12 @@ let idleTimer = null;
 function resetIdleTimer() {
   formatBadge.classList.remove('mv-idle');
   memoryBadge.classList.remove('mv-idle');
+  root.classList.remove('mv-idle'); // only visibly affects anything while in performance mode — see style.css
   clearTimeout(idleTimer);
   idleTimer = setTimeout(() => {
     formatBadge.classList.add('mv-idle');
     memoryBadge.classList.add('mv-idle');
+    root.classList.add('mv-idle');
   }, 4500);
 }
 ['pointermove', 'pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
