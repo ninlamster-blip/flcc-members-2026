@@ -75,6 +75,13 @@ export class VisualEngine {
     this._cameraPhi = 1.35;
     this._kickImpulse = 0;
     this._snareFlash = 0;
+    // Decaying, event-only camera jolt — deliberately NOT driven by
+    // continuous per-frame energy (see update()). A scene that vibrates
+    // constantly in response to raw sustained bass level, rather than
+    // settling between discrete hits, is the kind of rapid, high-frequency
+    // motion that can be genuinely uncomfortable or risky for photosensitive
+    // viewers; a clean boom-then-settle on actual beats is not.
+    this._shakeImpulse = 0;
 
     this._buildBackground();
     this._buildCore();
@@ -342,9 +349,12 @@ export class VisualEngine {
     const elapsed = this.clock.elapsedTime;
     const { bands, overallEnergySmoothed } = features;
 
-    // Impulse decay
+    // Impulse decay — everything below is boom-on-event-then-settle, not
+    // continuously driven by raw per-frame energy. See the comment on
+    // _shakeImpulse in the constructor for why.
     this._kickImpulse *= Math.pow(0.0025, dt);
     this._snareFlash *= Math.pow(0.0008, dt);
+    this._shakeImpulse *= Math.pow(0.002, dt);
 
     // reactivity comes from the AI Director's current theme read — the same
     // kick drum should slam an EDM/Rock scene and barely nudge a Classical
@@ -353,7 +363,16 @@ export class VisualEngine {
     const reactivity = directorState.reactivity ?? 1;
     if (bands.kick.hit) {
       this._kickImpulse = Math.min(1.9, this._kickImpulse + (bands.kick.strength * 1.8 + 0.55) * reactivity);
+      this._shakeImpulse = Math.min(1, this._shakeImpulse + bands.kick.strength * 0.9 * reactivity);
       this._spawnRing('kick', directorState.hue, bands.kick.strength * reactivity);
+    }
+    if (bands.bass.hit) {
+      // Bass notes aren't as sharp-edged as a kick drum, so a gentler boom —
+      // no ring of its own (kick's ring already reads as "the low end hit"
+      // when they land together, which is common) — just adds to the same
+      // impulse/shake so a strong bass note still visibly registers.
+      this._kickImpulse = Math.min(1.9, this._kickImpulse + bands.bass.strength * 1.1 * reactivity);
+      this._shakeImpulse = Math.min(1, this._shakeImpulse + bands.bass.strength * 0.6 * reactivity);
     }
     if (bands.snare.hit) {
       this._snareFlash = Math.min(0.55, this._snareFlash + 0.4 * reactivity);
@@ -365,16 +384,17 @@ export class VisualEngine {
     this.bgUniforms.uColorA.value.setHSL(directorState.bgHue, directorState.sat * 0.5, directorState.bgLight);
     this.bgUniforms.uColorB.value.setHSL(directorState.hue, directorState.sat * 0.6, directorState.bgLight + 0.06);
 
-    // Core
-    const bassEnergy = (bands.kick.energy + bands.bass.energy) / 2;
-    const targetScale = 1 + bassEnergy * 0.85 + this._kickImpulse * 1.0;
+    // Core — scale/glow track the smoothed overall level only very gently
+    // (a slow-moving loudness trend is not a flash risk) and lean on the
+    // event-driven impulse for the actual "boom."
+    const targetScale = 1 + overallEnergySmoothed * 0.18 + this._kickImpulse * 1.1;
     this.core.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 1 - Math.pow(0.0006, dt));
     this.coreWire.scale.copy(this.core.scale).multiplyScalar(1.015);
     this.core.rotation.y += dt * (0.12 + overallEnergySmoothed * 0.3);
     this.core.rotation.x += dt * 0.05;
     this.coreWire.rotation.copy(this.core.rotation);
     this.coreMat.emissive.setHSL(directorState.hue, 0.85, 0.5 + this._kickImpulse * 0.18);
-    this.coreMat.emissiveIntensity = 0.9 + overallEnergySmoothed * 1.6 + this._kickImpulse * 1.8;
+    this.coreMat.emissiveIntensity = 0.85 + overallEnergySmoothed * 1.0 + this._kickImpulse * 1.8;
 
     this._updateRings(dt);
     this._updateParticles(dt, elapsed, directorState.secondaryHue, bands.hihat);
@@ -382,11 +402,15 @@ export class VisualEngine {
 
     // Lighting
     this.coreLight.color.setHSL(directorState.hue, 0.85, 0.55);
-    this.coreLight.intensity = 1.4 + overallEnergySmoothed * 4.5 + this._kickImpulse * 7;
+    this.coreLight.intensity = 1.4 + overallEnergySmoothed * 2.5 + this._kickImpulse * 7;
 
-    // Camera choreography: slow autonomous orbit + kick punch + bass shake
+    // Camera choreography: slow autonomous orbit + kick/bass punch. The
+    // "vibrate" is _shakeImpulse only — a brief, decaying jolt set on
+    // kick/bass hits above, not a continuous shake driven by raw sustained
+    // bass level (see the constructor comment on _shakeImpulse for why that
+    // distinction matters here).
     this._cameraTheta += dt * 0.12 * directorState.cameraSpeed;
-    const shakeAmt = bassEnergy * 0.09;
+    const shakeAmt = this._shakeImpulse * 0.13;
     const shakeX = Math.sin(elapsed * 11) * shakeAmt + Math.sin(elapsed * 5.3) * shakeAmt * 0.5;
     const shakeY = Math.cos(elapsed * 9) * shakeAmt;
     const radius = 7.2 - this._kickImpulse * 1.3;

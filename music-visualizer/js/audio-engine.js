@@ -7,8 +7,8 @@
 // of true source separation.
 
 const BAND_DEFS = [
-  { key: 'kick',      lo: 20,   hi: 60,    percussive: true,  refractoryMs: 85, thresholdMult: 1.3 },
-  { key: 'bass',      lo: 60,   hi: 250,   percussive: false },
+  { key: 'kick',      lo: 20,   hi: 60,    percussive: true,  refractoryMs: 85,  thresholdMult: 1.3 },
+  { key: 'bass',      lo: 60,   hi: 250,   percussive: true,  refractoryMs: 140, thresholdMult: 1.4 },
   { key: 'lowGuitar', lo: 250,  hi: 500,   percussive: false },
   { key: 'vocals',    lo: 500,  hi: 2000,  percussive: false },
   { key: 'snare',     lo: 2000, hi: 4000,  percussive: true,  refractoryMs: 70, thresholdMult: 1.32 },
