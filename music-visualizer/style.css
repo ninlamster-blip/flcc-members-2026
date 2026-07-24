@@ -223,11 +223,22 @@ body {
   box-shadow: 0 0 8px var(--mv-accent);
 }
 
+/* GPU/perf dashboard — hidden by default, toggled with the "d" key (see
+   app.js). A background panel now that it holds several lines of real
+   Three.js renderer.info stats rather than one floating fps readout. */
 .mv-perf {
   position: fixed; bottom: 12px; right: 12px;
   font-family: 'Geist Mono', monospace;
   font-size: 0.65rem;
-  color: rgba(245,245,240,0.35);
+  line-height: 1.6;
+  color: rgba(245,245,240,0.55);
+  white-space: pre-line;
+  text-align: right;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(12,12,16,0.55);
+  border: 1px solid var(--mv-panel-border);
+  backdrop-filter: blur(8px);
 }
 
 /* ---------- Player bar ---------- */
