@@ -9,6 +9,7 @@ const $ = (sel) => document.querySelector(sel);
 
 const root = $('#mv-root');
 const canvas = $('#mv-canvas');
+const ambientGlow = $('#mv-ambient-glow');
 const dropHint = $('#mv-drop-hint');
 const overlay = $('#mv-overlay');
 const themePill = $('#mv-theme-pill');
@@ -19,6 +20,7 @@ const artImg = $('#mv-art');
 const artFallback = $('#mv-art-fallback');
 const titleEl = $('#mv-title');
 const artistEl = $('#mv-artist');
+const formatBadge = $('#mv-format-badge');
 const seekEl = $('#mv-seek');
 const timeCurrentEl = $('#mv-time-current');
 const timeRemainingEl = $('#mv-time-remaining');
@@ -186,6 +188,31 @@ async function addFiles(fileList) {
   });
 }
 
+const FORMAT_LABELS = {
+  mp3: 'MP3', wav: 'WAV', m4a: 'AAC', mp4: 'AAC', aac: 'AAC', ogg: 'OGG', oga: 'OGG',
+  opus: 'Opus', flac: 'FLAC', aiff: 'AIFF', aif: 'AIFF', caf: 'CAF', weba: 'WebA', webm: 'WebM',
+};
+
+function formatLabelFromFilename(filename) {
+  const ext = (filename.match(/\.([a-z0-9]+)$/i)?.[1] || '').toLowerCase();
+  return FORMAT_LABELS[ext] || (ext ? ext.toUpperCase() : 'Audio');
+}
+
+// Bitrate here is filesize/duration (the standard "average bitrate"
+// estimate) not read from encoder headers — labeled with "~" so it doesn't
+// read as more precise than it is, especially for VBR files.
+function updateFormatBadge() {
+  const track = playlist[currentIndex];
+  if (!track) { formatBadge.textContent = ''; return; }
+  const parts = [formatLabelFromFilename(track.file.name)];
+  if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+    const kbps = Math.round((track.file.size * 8) / audioEl.duration / 1000);
+    if (isFinite(kbps) && kbps > 0) parts.push(`~${kbps} kbps`);
+  }
+  if (audioEngine.context) parts.push(`${(audioEngine.context.sampleRate / 1000).toFixed(1)} kHz`);
+  formatBadge.textContent = parts.join(' · ');
+}
+
 function applyTrackMeta(track) {
   titleEl.textContent = track.title || track.file.name;
   artistEl.textContent = track.artist || 'Unknown artist';
@@ -206,6 +233,7 @@ function applyTrackMeta(track) {
       artwork: track.artUrl ? [{ src: track.artUrl, sizes: '512x512', type: 'image/png' }] : [],
     });
   }
+  updateFormatBadge();
   renderQueue();
 }
 
@@ -237,9 +265,11 @@ async function loadTrack(index, { autoplay = false } = {}) {
     artImg.hidden = true;
     artFallback.style.display = 'flex';
   }
+  updateFormatBadge();
 
   try {
     audioEngine.connectAudioElement(audioEl);
+    updateFormatBadge(); // sample rate becomes known once the context exists
   } catch (err) {
     console.warn('[music-visualizer] audio analysis unavailable, playback continues without visuals', err);
   }
@@ -379,6 +409,7 @@ playPauseBtn.addEventListener('click', () => {
 audioEl.addEventListener('play', updatePlayPauseIcon);
 audioEl.addEventListener('pause', updatePlayPauseIcon);
 audioEl.addEventListener('ended', playNext);
+audioEl.addEventListener('loadedmetadata', updateFormatBadge); // duration wasn't known until now — refresh the bitrate estimate
 audioEl.addEventListener('error', () => {
   // MediaError codes: 1 aborted, 2 network, 3 decode, 4 src not supported.
   const err = audioEl.error;
@@ -483,13 +514,28 @@ fullscreenBtn.addEventListener('click', () => {
   else root.requestFullscreen().catch(() => {});
 });
 
-// ---- Theme pill ----
+// ---- Theme pill (shown as a "mood" — same underlying read, framed the
+// way a listener thinks about it rather than the internal genre name) ----
 
 let lastThemeName = null;
-function updateThemePill(name) {
-  if (name === lastThemeName) return;
-  lastThemeName = name;
-  themePill.innerHTML = `<span class="mv-theme-dot"></span>${name}`;
+function updateThemePill(themeName, mood) {
+  if (themeName === lastThemeName) return;
+  lastThemeName = themeName;
+  const label = mood ? `${mood.emoji} ${mood.label}` : themeName;
+  themePill.innerHTML = `<span class="mv-theme-dot"></span>${label}`;
+}
+
+// ---- Ambient edge glow (Ambilight-style) ----
+// Driven only by the director's current hue/saturation and the already-
+// smoothed overall energy — never a per-hit impulse — so it drifts gently
+// rather than flashing along with the boom/vibrate reactions elsewhere.
+
+function updateAmbientGlow(directorState, energySmoothed) {
+  const hueDeg = Math.round(directorState.hue * 360);
+  const sat = Math.round(directorState.sat * 100);
+  const light = 35 + Math.round(energySmoothed * 15);
+  ambientGlow.style.setProperty('--mv-glow-color', `hsl(${hueDeg}, ${sat}%, ${light}%)`);
+  ambientGlow.style.opacity = String(Math.min(0.55, 0.15 + energySmoothed * 0.4));
 }
 
 // ---- Adaptive performance monitor ----
@@ -528,7 +574,8 @@ function frame(now) {
   visualEngine.setBloomStrength(Math.min(2.6, directorState.bloomStrength));
   visualEngine.update(features, directorState);
   visualEngine.render();
-  updateThemePill(directorState.themeName);
+  updateThemePill(directorState.themeName, directorState.mood);
+  updateAmbientGlow(directorState, features.overallEnergySmoothed);
   trackFrameTime((performance.now() - now) || 1);
 
   requestAnimationFrame(frame);
@@ -555,3 +602,19 @@ window.addEventListener('beforeunload', () => {
 window.addEventListener('keydown', (e) => {
   if (e.key === 'd' || e.key === 'D') perfEl.hidden = !perfEl.hidden;
 });
+
+// The format/bitrate detail line fades out after a few seconds of no
+// interaction — genuinely useful once, not worth permanently competing with
+// title/artist for attention. Only this one small line, not the whole
+// player bar, since this app also runs unattended on a projector during a
+// service, where dimming the actual controls would be the wrong call.
+let idleTimer = null;
+function resetIdleTimer() {
+  formatBadge.classList.remove('mv-idle');
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => formatBadge.classList.add('mv-idle'), 4500);
+}
+['pointermove', 'pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
+  window.addEventListener(evt, resetIdleTimer, { passive: true });
+});
+resetIdleTimer();
