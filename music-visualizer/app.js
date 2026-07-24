@@ -12,6 +12,7 @@ import {
   recordPlaySession, averageCompletion, favoriteScene, SCENE_LABELS,
 } from './js/fingerprint.js';
 import { analyzeAudioStats, buildDnaVector, dnaPolygonPoints } from './js/visual-dna.js';
+import { loadMoments, addMoment, updateMomentNote, removeMoment } from './js/memory-moments.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -59,6 +60,11 @@ const dnaPanel = $('#mv-dna-panel');
 const dnaCloseBtn = $('#mv-dna-close');
 const dnaSvgPoly = $('#mv-dna-poly');
 const dnaStatsEl = $('#mv-dna-stats');
+const momentsToggleBtn = $('#mv-moments-toggle');
+const momentsPanel = $('#mv-moments-panel');
+const momentsAddBtn = $('#mv-moments-add');
+const momentsCloseBtn = $('#mv-moments-close');
+const momentsListEl = $('#mv-moments-list');
 
 const queueToggleBtn = $('#mv-queue-toggle');
 const queuePanel = $('#mv-queue-panel');
@@ -141,6 +147,7 @@ function showDropHint() {
   queuePanel.hidden = true;
   lyricsPanel.hidden = true;
   dnaPanel.hidden = true;
+  momentsPanel.hidden = true;
   updatePerformanceView(); // no current track — hides the performance-mode overlays too
   renderDnaGlyph(null); // hides the DNA badge too
   hideLiveBadge();
@@ -455,7 +462,7 @@ function saveLyricsFromTextarea() {
 
 lyricsToggleBtn.addEventListener('click', () => {
   lyricsPanel.hidden = !lyricsPanel.hidden;
-  if (!lyricsPanel.hidden) { queuePanel.hidden = true; dnaPanel.hidden = true; renderLyricsPanel(); }
+  if (!lyricsPanel.hidden) { queuePanel.hidden = true; dnaPanel.hidden = true; momentsPanel.hidden = true; renderLyricsPanel(); }
 });
 lyricsCloseBtn.addEventListener('click', () => { lyricsPanel.hidden = true; });
 lyricsEditBtn.addEventListener('click', () => {
@@ -660,11 +667,127 @@ dnaBadge.addEventListener('click', () => {
   if (!dnaPanel.hidden) {
     queuePanel.hidden = true;
     lyricsPanel.hidden = true;
+    momentsPanel.hidden = true;
     const track = playlist[currentIndex];
     if (track) renderDnaGlyph(track);
   }
 });
 dnaCloseBtn.addEventListener('click', () => { dnaPanel.hidden = true; });
+
+// ---- Memory Moments ----
+// User-created bookmarks within a track — see memory-moments.js for exactly
+// what's stored. The visual-state label describes what the AI Director was
+// doing at capture time (mood/theme + camera move); it's not a promise that
+// jumping back there recreates the same pixels, since the scene is
+// genuinely reactive to whatever's actually playing.
+
+function captureCanvasThumbnail(maxWidth = 160) {
+  const source = visualEngine?.renderer?.domElement;
+  if (!source || !source.width || !source.height) return null;
+  try {
+    const scale = maxWidth / source.width;
+    const w = maxWidth;
+    const h = Math.round(source.height * scale);
+    const off = document.createElement('canvas');
+    off.width = w;
+    off.height = h;
+    off.getContext('2d').drawImage(source, 0, 0, w, h);
+    return off.toDataURL('image/jpeg', 0.6);
+  } catch (err) {
+    console.warn('[music-visualizer] could not capture a moment thumbnail', err);
+    return null;
+  }
+}
+
+function renderMomentsPanel(track) {
+  momentsListEl.innerHTML = '';
+  if (!track) return;
+  const moments = loadMoments(fingerprintTrack(track.file));
+  if (!moments.length) {
+    const li = document.createElement('li');
+    li.className = 'mv-moments-empty';
+    li.textContent = 'No moments bookmarked yet — tap + while a part of the song stands out.';
+    momentsListEl.appendChild(li);
+    return;
+  }
+  for (const moment of moments) {
+    const li = document.createElement('li');
+    li.className = 'mv-moment-item';
+    li.dataset.id = moment.id;
+
+    const thumb = document.createElement('div');
+    thumb.className = 'mv-moment-thumb';
+    if (moment.thumbnail) {
+      const img = document.createElement('img');
+      img.src = moment.thumbnail;
+      img.alt = '';
+      thumb.appendChild(img);
+    } else {
+      thumb.textContent = '\u{1F516}';
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'mv-moment-meta';
+    const timeBtn = document.createElement('button');
+    timeBtn.type = 'button';
+    timeBtn.className = 'mv-moment-time';
+    timeBtn.textContent = formatTime(moment.time);
+    timeBtn.addEventListener('click', () => { audioEl.currentTime = moment.time; });
+    const visualSpan = document.createElement('span');
+    visualSpan.className = 'mv-moment-visual';
+    visualSpan.textContent = moment.visualLabel || '';
+    const noteInput = document.createElement('input');
+    noteInput.type = 'text';
+    noteInput.className = 'mv-moment-note';
+    noteInput.placeholder = 'Add a note…';
+    noteInput.value = moment.note || '';
+    noteInput.addEventListener('change', () => {
+      const current = playlist[currentIndex];
+      if (current) updateMomentNote(fingerprintTrack(current.file), moment.id, noteInput.value);
+    });
+    meta.append(timeBtn, visualSpan, noteInput);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'mv-moment-remove';
+    removeBtn.innerHTML = '&times;';
+    removeBtn.setAttribute('aria-label', 'Remove moment');
+    removeBtn.addEventListener('click', () => {
+      const current = playlist[currentIndex];
+      if (!current) return;
+      removeMoment(fingerprintTrack(current.file), moment.id);
+      renderMomentsPanel(current);
+    });
+
+    li.append(thumb, meta, removeBtn);
+    momentsListEl.appendChild(li);
+  }
+}
+
+momentsToggleBtn.addEventListener('click', () => {
+  momentsPanel.hidden = !momentsPanel.hidden;
+  if (!momentsPanel.hidden) {
+    queuePanel.hidden = true;
+    lyricsPanel.hidden = true;
+    dnaPanel.hidden = true;
+    renderMomentsPanel(playlist[currentIndex]);
+  }
+});
+momentsCloseBtn.addEventListener('click', () => { momentsPanel.hidden = true; });
+momentsAddBtn.addEventListener('click', () => {
+  const track = playlist[currentIndex];
+  if (!track || !isFinite(audioEl.currentTime)) return;
+  const visualLabelParts = [];
+  if (sessionMood) visualLabelParts.push(`${sessionMood.emoji} ${sessionMood.label}`);
+  else if (sessionThemeName) visualLabelParts.push(sessionThemeName);
+  if (sessionLastSceneMode) visualLabelParts.push(SCENE_LABELS[sessionLastSceneMode] || sessionLastSceneMode);
+  addMoment(fingerprintTrack(track.file), {
+    time: audioEl.currentTime,
+    visualLabel: visualLabelParts.join(' · '),
+    thumbnail: captureCanvasThumbnail(),
+  });
+  renderMomentsPanel(track);
+});
 
 function applyTrackMeta(track) {
   titleEl.textContent = track.title || track.file.name;
@@ -728,6 +851,7 @@ async function loadTrack(index, { autoplay = false } = {}) {
   renderDnaGlyph(track);
   schedulePreAnalysis(); // get a head start on the next queued track while this one plays
   if (!lyricsPanel.hidden) renderLyricsPanel();
+  if (!momentsPanel.hidden) renderMomentsPanel(track);
   updatePerformanceView();
 
   try {
@@ -916,7 +1040,7 @@ volumeEl.addEventListener('input', () => { audioEl.volume = parseFloat(volumeEl.
 
 queueToggleBtn.addEventListener('click', () => {
   queuePanel.hidden = !queuePanel.hidden;
-  if (!queuePanel.hidden) { lyricsPanel.hidden = true; dnaPanel.hidden = true; renderQueue(); }
+  if (!queuePanel.hidden) { lyricsPanel.hidden = true; dnaPanel.hidden = true; momentsPanel.hidden = true; renderQueue(); }
 });
 queueCloseBtn.addEventListener('click', () => { queuePanel.hidden = true; });
 shuffleBtn.addEventListener('click', toggleShuffle);
