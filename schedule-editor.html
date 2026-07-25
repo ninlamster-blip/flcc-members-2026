@@ -11,6 +11,7 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+<script src="./church-config.js"></script>
 <style>
   :root {
     --bg:#F8F7F2; --surface:#FFFFFF; --ink:#1A1A1E; --ink-2:#3D3D44; --ink-3:#6E6E78; --ink-4:#A8A8B3;
@@ -143,7 +144,8 @@ const { useState, useEffect, useMemo, useCallback } = React;
 
 const DATA_URL     = './data.json';
 const GH_TOKEN_KEY = 'flcc-sched-editor-token-v1';
-const GH_REPO      = 'ninlamster-blip/flcc-members-2026';
+// Resolved per copy of the app — see church-config.js. Each church publishes
+// to its own repo, so this must never be a hardcoded repo name.
 const GH_FILE      = 'data.json';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -582,7 +584,7 @@ function TokenModal({onSave,onClose}){
         </p>
         <ol style={{fontSize:'.8125rem',color:'var(--ink-3)',paddingLeft:18,lineHeight:2,marginBottom:18}}>
           <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens → <strong>Fine-grained tokens</strong></li>
-          <li>Repository access → <strong>flcc-members-2026 only</strong></li>
+          <li>Repository access → Only select repositories → <strong>{resolveChurchRepoSafe()?.split('/')[1] || 'your own copy of this app'}</strong> — that one only, never another church's copy</li>
           <li>Permissions → Contents → <strong>Read and write</strong> → Generate</li>
           <li>Copy the token and paste below</li>
         </ol>
@@ -684,14 +686,15 @@ function App(){
     if(!ghToken){setShowSetup(true);return;}
     setGhPublishing(true);setGhStatus('');
     try{
+      const repo=resolveChurchRepo();
       const updatedData={...fullData,schedule,workers,themes,events};
       const content=JSON.stringify(updatedData,null,2);
       const encoded=btoa(unescape(encodeURIComponent(content)));
-      const getR=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
+      const getR=await fetch(`https://api.github.com/repos/${repo}/contents/${GH_FILE}`,{
         headers:{Authorization:`Bearer ${ghToken}`,Accept:'application/vnd.github+json'}
       });
       const existing=getR.ok?await getR.json():null;
-      const putR=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
+      const putR=await fetch(`https://api.github.com/repos/${repo}/contents/${GH_FILE}`,{
         method:'PUT',
         headers:{Authorization:`Bearer ${ghToken}`,Accept:'application/vnd.github+json','Content-Type':'application/json'},
         body:JSON.stringify({message:`Update ${activeTab} — ${new Date().toLocaleDateString()}`,content:encoded,...(existing?.sha?{sha:existing.sha}:{})})
