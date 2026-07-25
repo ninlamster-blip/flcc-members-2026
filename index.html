@@ -14,6 +14,7 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+<script src="./church-config.js"></script>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 
 <style>
@@ -4116,7 +4117,7 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
         );
       })()}
 
-      {/* Lead Pastor — Ptr. Justin Flores */}
+      {/* Lead Pastor — whoever holds worker id ptr-01 */}
       {justinFlores && (
         <div className="card p-6 mb-4" style={{ borderTop: '3px solid var(--accent)', background: 'linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 35%)' }}>
           <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>✝️ Lead Pastor</div>
@@ -4125,7 +4126,7 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
         </div>
       )}
 
-      {/* Ptr. Doddie Arciaga */}
+      {/* Second pastor — whoever holds worker id ptr-02 */}
       {doddieArciaga && (
         <div className="card p-6 mb-4" style={{ borderTop: '3px solid #6366F1' }}>
           <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>✝️ Pastor</div>
@@ -4303,7 +4304,7 @@ function ConflictModal({ entry, role, me, ministry, isPrayer, isMusic, onClose }
               rows={3}
               value={note}
               onChange={e => setNote(e.target.value)}
-              placeholder="Anything else Sis. Amazelle should know?"
+              placeholder="Anything else the ministry head should know?"
             />
           </div>
         </div>
@@ -4978,7 +4979,7 @@ const EQUIP_RESOURCES = [
   { id: 'r6',  title: 'The Bible Project (YouTube)',  type: 'video',          url: 'https://www.youtube.com/@thebibleproject', description: 'Animated Bible overviews and theological education. Free on YouTube.', category: 'bible-study', courseId: 'bible-study', featured: true },
   { id: 'r7',  title: 'Worship Playlist',             type: 'playlist',       url: '#', description: 'Curated worship songs for personal devotion and quiet time.', category: 'worship', courseId: null, featured: false },
   { id: 'r8',  title: 'Sermon Notes: Philippians 4:8', type: 'sermon-notes', url: '#', description: 'Notes from our media consumption series. On renewing your mind.', category: 'sermons', courseId: null, featured: false },
-  { id: 'r9',  title: 'New Believer Starter Pack',    type: 'pdf',            url: '#', description: 'Compilation of essential materials for newly saved members at FLCC - Farwaniya 1.', category: 'new-believers', courseId: 'new-believer', featured: false },
+  { id: 'r9',  title: 'New Believer Starter Pack',    type: 'pdf',            url: '#', description: 'Compilation of essential materials for newly saved members.', category: 'new-believers', courseId: 'new-believer', featured: false },
   { id: 'r10', title: 'Through the Bible — J. Vernon McGee', type: 'audio',  url: '#', description: 'Classic through-the-Bible audio teaching. The full Bible in 5 years.', category: 'bible-study', courseId: null, featured: false },
   { id: 'r11', title: 'Church Manual 2026',           type: 'guide',          url: '#', description: 'FLCC official church operations, ministry guidelines, and governance document.', category: 'church', courseId: null, featured: false },
   { id: 'r12', title: 'Discipleship Journal',         type: 'devotional',     url: '#', description: 'Weekly reflection guide for discipleship groups. Includes questions and memory verses.', category: 'discipleship', courseId: 'discipleship', featured: false },
@@ -5931,7 +5932,7 @@ function exportNoteToPDF(note, meta) {
     ${note.updatedAt ? `<span>Last edited: ${new Date(note.updatedAt).toLocaleString()}</span>` : ''}
   </div>
   ${note.body ? `<div class="body-text">${note.body}</div>` : ''}
-  <div class="ftr">FLCC - Farwaniya 1 · Personal Sermon Journal</div>
+  <div class="ftr">${CHURCH_CONFIG.churchName} · Personal Sermon Journal</div>
   </body></html>`;
   const win = window.open('', '_blank');
   if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 350); }
@@ -8145,7 +8146,7 @@ function AskPastorTab({ data }) {
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="FLCC · Pastoral" title="Ask the Pastor">
-        Submit your question anonymously. Ptr. Justin or Ptr. Doddie will answer during the weekly Q&amp;A.
+        Submit your question anonymously. One of our pastors will answer during the weekly Q&amp;A.
       </SectionHeading>
 
       {/* Submit form */}
@@ -14860,7 +14861,7 @@ function GivingTab({ givingData, me }) {
         <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--ink-subtle)' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📭</div>
           <div className="font-display" style={{ fontSize: '1.25rem', marginBottom: 8 }}>No giving records yet</div>
-          <p style={{ fontSize: '.875rem', lineHeight: 1.6 }}>No tithe or offering records found for <strong>{selName}</strong>. Check with Sis. Annabelle if you believe this is incorrect.</p>
+          <p style={{ fontSize: '.875rem', lineHeight: 1.6 }}>No tithe or offering records found for <strong>{selName}</strong>. Check with the finance ministry if you believe this is incorrect.</p>
         </div>
       )}
 
@@ -14966,7 +14967,7 @@ function GivingTab({ givingData, me }) {
 
           {/* Privacy note */}
           <div style={{ fontSize: '.7rem', color: 'var(--ink-subtle)', textAlign: 'center', lineHeight: 1.5 }}>
-            🔒 Only you can see your giving history. Data is managed by Sis. Annabelle and updated by the Finance Ministry.
+            🔒 Only you can see your giving history. Data is managed by the finance ministry and updated by the Finance Ministry.
           </div>
         </div>
       )}

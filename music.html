@@ -239,7 +239,7 @@ const { useState, useEffect, useMemo, useReducer, useRef } = React;
 const STORAGE_KEY = 'flcc-music-os-v1';
 const APP_VERSION = '1.0';
 
-// Default roles — Edmund can edit these in Settings tab
+// Default roles — the ministry lead can edit these in the Settings tab
 const DEFAULT_ROLES = [
   { key: 'lead',        label: 'Worship Leader' },
   { key: 'vocal',       label: 'Backup Vocal' },
@@ -254,7 +254,7 @@ const DEFAULT_SERVICE_TYPES = [
 ];
 
 // =============================================================================
-// SEED DATA — from Allen's photos (Feb / Mar / Apr 2026)
+// SEED DATA — from the ministry's own photos (Feb / Mar / Apr 2026)
 // =============================================================================
 
 // Music team — mix of individuals (matched to main Schedule OS IDs where possible) and groups
@@ -353,7 +353,7 @@ function defaultState() {
       lastUpdated: new Date().toISOString(),
     },
     ministry: {
-      headName: 'Bro. Edmund Gabriel',
+      headName: '',
       headTitle: 'Music Ministry Lead',
       whatsapp: '',
       messenger: '',
@@ -919,7 +919,7 @@ function WorkerEditModal({ worker, onSave, onDelete, onClose }) {
               </div>
               <div className="col-span-2">
                 <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
-                <input className="input mt-1" value={w.name} onChange={e => setW({ ...w, name: e.target.value })} placeholder="e.g. Jenarlyn Culao" />
+                <input className="input mt-1" value={w.name} onChange={e => setW({ ...w, name: e.target.value })} placeholder="e.g. Sis. Maria Santos" />
               </div>
             </div>
           )}
@@ -1259,7 +1259,7 @@ function DataTab({ state, dispatch }) {
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
-            <input className="input mt-1" value={m.headName || ''} onChange={e => setMinistry({ headName: e.target.value })} placeholder="e.g. Bro. Edmund Gabriel" />
+            <input className="input mt-1" value={m.headName || ''} onChange={e => setMinistry({ headName: e.target.value })} placeholder="e.g. Bro. Juan dela Cruz" />
           </div>
           <div>
             <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Title / Role</label>

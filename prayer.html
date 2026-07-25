@@ -297,7 +297,7 @@ const SEED_TEAMS = [
   { id: 'team-fellowship',   name: 'Fellowship Ministry',             leader: '' },
   { id: 'team-finance',      name: 'Finance Team',                    leader: '' },
   { id: 'team-admin',        name: 'Admin Ministry',                  leader: '' },
-  { id: 'team-prayer',       name: 'Prayer Ministry',                 leader: 'Bro. Wilson Guerzon' },
+  { id: 'team-prayer',       name: 'Prayer Ministry',                 leader: '' },
   { id: 'team-discipleship', name: 'Discipleship Ministry',           leader: '' },
   { id: 'team-auxiliary',    name: 'Auxiliary (Men-Women-Single)',    leader: '' },
 ];
@@ -415,7 +415,7 @@ function defaultState() {
       lastUpdated: new Date().toISOString(),
     },
     ministry: {
-      headName: 'Bro. Wilson Guerzon',
+      headName: '',
       headTitle: 'Prayer Ministry Lead',
       whatsapp: '',
       messenger: '',
@@ -1366,7 +1366,7 @@ function TeamsTab({ state, dispatch }) {
               </div>
               <div>
                 <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Leader (optional)</label>
-                <input className="input mt-1" value={editing.leader || ''} onChange={e => setEditing({ ...editing, leader: e.target.value })} placeholder="e.g. Bro. Wilson Guerzon" />
+                <input className="input mt-1" value={editing.leader || ''} onChange={e => setEditing({ ...editing, leader: e.target.value })} placeholder="e.g. Bro. Juan dela Cruz" />
               </div>
             </div>
             <div className="flex justify-between gap-2 mt-6">
@@ -1472,7 +1472,7 @@ function WorkerEditModal({ worker, onSave, onDelete, onClose }) {
             </div>
             <div className="col-span-2">
               <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
-              <input className="input mt-1" value={w.name} onChange={e => setW({ ...w, name: e.target.value })} placeholder="e.g. Wilson Guerzon" />
+              <input className="input mt-1" value={w.name} onChange={e => setW({ ...w, name: e.target.value })} placeholder="e.g. Juan dela Cruz" />
             </div>
           </div>
           <div>
@@ -1787,7 +1787,7 @@ function DataTab({ state, dispatch }) {
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Name</label>
-            <input className="input mt-1" value={m.headName || ''} onChange={e => setMinistry({ headName: e.target.value })} placeholder="e.g. Bro. Wilson Guerzon" />
+            <input className="input mt-1" value={m.headName || ''} onChange={e => setMinistry({ headName: e.target.value })} placeholder="e.g. Bro. Juan dela Cruz" />
           </div>
           <div>
             <label className="text-xs font-medium tracking-widest uppercase ink-subtle">Title / Role</label>
@@ -1862,7 +1862,7 @@ function App() {
 
   useEffect(() => { saveState(state); }, [state]);
 
-  // Fetch main schedule (data.json) so Wilson sees who the coordinator/presider is per service date
+  // Fetch main schedule (data.json) so the prayer lead sees who the coordinator/presider is per service date
   useEffect(() => {
     fetch(`./data.json?t=${Date.now()}`)
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
