@@ -34,20 +34,39 @@ function resolveWith(hostname, pathname, configuredRepo) {
   }
 }
 
-/* THROWS is the correct answer wherever the repo genuinely cannot be known.
- * Refusing to publish is always better than publishing somewhere unintended. */
+/* THROWS is the correct answer wherever the repo cannot be known, and wherever
+ * the answer would be another church's repo. Refusing to publish is always
+ * better than publishing somewhere unintended.
+ *
+ * ABU = ninlamster-blip/flcc-members-2026, the value a fresh fork inherits. */
+const ABU = 'ninlamster-blip/flcc-members-2026';
+
 const CASES = [
-  ['project site (the normal case)',  'ninlamster-blip.github.io', '/flcc-members-2026/attendance.html', '',                          'ninlamster-blip/flcc-members-2026'],
-  ['a fork, config left untouched',   'shekinah-kw.github.io',     '/flcc-shekinah/attendance.html',     '',                          'shekinah-kw/flcc-shekinah'],
-  ['repo root, no trailing slash',    'agape-kw.github.io',        '/flcc-agape',                        '',                          'agape-kw/flcc-agape'],
-  ['repo root, dotted repo name',     'flcc-gil.github.io',        '/flcc.app/',                         '',                          'flcc-gil/flcc.app'],
-  ['user site, page at root',         'flcc-hotk.github.io',       '/attendance.html',                   '',                          'flcc-hotk/flcc-hotk.github.io'],
-  ['user site, bare root',            'flcc-jaoc.github.io',       '/',                                  '',                          'flcc-jaoc/flcc-jaoc.github.io'],
-  ['explicit config wins over URL',   'ninlamster-blip.github.io', '/flcc-members-2026/x.html',          'mtcc-kw/flcc-mtcc',         'mtcc-kw/flcc-mtcc'],
-  ['custom domain, config set',       'flccshekinah.org',          '/attendance.html',                   'shekinah-kw/flcc-shekinah', 'shekinah-kw/flcc-shekinah'],
-  ['custom domain, no config',        'flccshekinah.org',          '/attendance.html',                   '',                          'THROWS'],
-  ['worker domain, no config',        'flcc.workers.dev',          '/attendance.html',                   '',                          'THROWS'],
-  ['opened as a local file',          '',                          '/attendance.html',                   '',                          'THROWS'],
+  // ── Abundance, whose config names its own repo ──
+  ['pages url, config agrees',        'ninlamster-blip.github.io', '/flcc-members-2026/attendance.html', ABU,                         ABU],
+  ['workers.dev preview',             'flcc-members-2026.ninlamster.workers.dev', '/attendance.html',    ABU,                         ABU],
+  ['workers.dev branch preview',      'claude-x-flcc-members-2026.ninlamster.workers.dev', '/x.html',    ABU,                         ABU],
+
+  // ── A church that ran setup: config filled in from its own git remote ──
+  ['set-up fork on pages',            'shekinah-kw.github.io',     '/flcc-shekinah/attendance.html',     'shekinah-kw/flcc-shekinah', 'shekinah-kw/flcc-shekinah'],
+  ['set-up fork on custom domain',    'flccshekinah.org',          '/attendance.html',                   'shekinah-kw/flcc-shekinah', 'shekinah-kw/flcc-shekinah'],
+
+  // ── A fork that never ran setup: config still points at Abundance while the
+  //    page is served from the fork's own address. Must never publish. ──
+  ['unconfigured fork, pages url',    'shekinah-kw.github.io',     '/flcc-shekinah/attendance.html',     ABU,                         'THROWS'],
+  ['unconfigured fork, user site',    'flcc-hotk.github.io',       '/attendance.html',                   ABU,                         'THROWS'],
+
+  // ── Empty config falls back to reading the Pages URL ──
+  ['empty config, project site',      'shekinah-kw.github.io',     '/flcc-shekinah/attendance.html',     '',                          'shekinah-kw/flcc-shekinah'],
+  ['empty config, no trailing slash', 'agape-kw.github.io',        '/flcc-agape',                        '',                          'agape-kw/flcc-agape'],
+  ['empty config, dotted repo name',  'flcc-gil.github.io',        '/flcc.app/',                         '',                          'flcc-gil/flcc.app'],
+  ['empty config, user site page',    'flcc-hotk.github.io',       '/attendance.html',                   '',                          'flcc-hotk/flcc-hotk.github.io'],
+  ['empty config, user site root',    'flcc-jaoc.github.io',       '/',                                  '',                          'flcc-jaoc/flcc-jaoc.github.io'],
+
+  // ── Nothing to go on ──
+  ['empty config, custom domain',     'flccshekinah.org',          '/attendance.html',                   '',                          'THROWS'],
+  ['empty config, workers.dev',       'flcc.workers.dev',          '/attendance.html',                   '',                          'THROWS'],
+  ['empty config, local file',        '',                          '/attendance.html',                   '',                          'THROWS'],
   ['malformed config value',          'x.github.io',               '/r/a.html',                          'not-a-repo',                'THROWS'],
 ];
 

@@ -30,6 +30,7 @@
  * ------------------------------------------------------------------------- */
 
 import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -128,17 +129,68 @@ const write = (relPath, text) => {
 const readJSON  = (relPath) => JSON.parse(readFileSync(p(relPath), 'utf8'));
 const writeJSON = (relPath, obj) => write(relPath, JSON.stringify(obj, null, 2) + '\n');
 
-/* ─── 1. church-config.js ────────────────────────────────────────────────── */
+/* ─── 1. church-config.js ────────────────────────────────────────────────────
+ * The publish target comes from this clone's own git remote. It has to be
+ * written down rather than worked out in the browser, because the app is also
+ * served from a workers.dev address, which carries no owner or repo to read. */
+function detectRepoFromGitRemote() {
+  let url;
+  try {
+    url = execFileSync('git', ['remote', 'get-url', 'origin'], {
+      cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;   // no git, or no origin remote
+  }
+  // A GitHub remote ends in /owner/repo, whichever form it takes:
+  //   git@github.com:owner/repo.git
+  //   https://github.com/owner/repo(.git)
+  //   https://user@host/git/owner/repo.git   (proxied clones)
+  // Matching on the last two segments rather than the host covers all of them.
+  const m = url.replace(/\.git$/i, '').match(/[:/]([\w.-]+)\/([\w.-]+)$/);
+  if (!m) return null;
+  const repo = `${m[1]}/${m[2]}`;
+
+  if (!/github\.com/i.test(url)) {
+    console.warn(
+      `\n  Note: origin is ${url}\n` +
+      `        Read as "${repo}" — check that is your GitHub owner/repo, and\n` +
+      '        correct repo in church-config.js if it is not.\n'
+    );
+  }
+  return repo;
+}
+
 {
+  const detectedRepo = detectRepoFromGitRemote();
   const src = readFileSync(p('church-config.js'), 'utf8');
-  const updated = src
+  let updated = src
     .replace(/^(\s*churchName:\s*)'[^']*'/m,    `$1'${NEW_FULL}'`)
     .replace(/^(\s*satelliteName:\s*)'[^']*'/m, `$1'${NEW}'`)
     .replace(/^(\s*sector:\s*)'[^']*'/m,        `$1'${SECTOR}'`)
     // Comments name Abundance as the worked example; keep them truthful.
     .replace(/\(e\.g\. "Abundance-Fri"\)/g, `(e.g. "${NEW}-Fri")`);
+
+  // Empty rather than stale: an empty value falls back to detecting the repo
+  // from a Pages URL, whereas the previous church's value would aim this
+  // copy's Publish button at their data.
+  updated = updated.replace(
+    /^(\s*repo:\s*)'[^']*'/m, `$1'${detectedRepo ?? ''}'`
+  );
+
   write('church-config.js', updated);
-  changes.push('church-config.js — identity set');
+  changes.push(
+    detectedRepo
+      ? `church-config.js — identity set, publishes to ${detectedRepo}`
+      : 'church-config.js — identity set; repo left empty (no git remote found)'
+  );
+  if (!detectedRepo) {
+    console.warn(
+      '\n  !! No git remote found, so the publish target could not be filled in.\n' +
+      '     On a github.io address the app detects it from the URL and will work\n' +
+      '     anyway. On a custom domain, set repo in church-config.js by hand.\n'
+    );
+  }
 }
 
 /* ─── 2. Rebranding ──────────────────────────────────────────────────────────

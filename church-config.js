@@ -30,20 +30,22 @@ window.CHURCH_CONFIG = {
 
   /* Where the admin pages publish to: "owner/repo" on GitHub.
    *
-   * Leave this EMPTY to auto-detect from the GitHub Pages URL — which is what
-   * you want in almost every case. A copy served from
-   * `yourname.github.io/your-repo/` detects `yourname/your-repo` by itself, so
-   * a fresh fork publishes to its own repo with no configuration at all.
+   * `tools/setup-church.mjs` fills this in from the fork's own git remote, so a
+   * church that ran setup is already pointing at itself.
    *
-   * Set it explicitly ONLY if this copy is served from somewhere that isn't
-   * github.io (a custom domain, or the Cloudflare Worker in wrangler.toml),
-   * because the URL carries no owner/repo to detect in that case.
+   * It needs to be explicit because this app is served from two places: GitHub
+   * Pages, where the address reveals the repo, and the Cloudflare Worker in
+   * wrangler.toml (a `workers.dev` address), where it does not. Publishing has
+   * to work from both.
    *
-   * Getting this wrong is the one mistake with real consequences: it points
-   * one church's "Publish" button at another church's data. It never silently
-   * misfires — if detection fails, publishing stops with an error rather than
-   * guessing. */
-  repo: '',
+   * Left empty, it falls back to detecting the repo from a GitHub Pages URL.
+   *
+   * Getting this wrong is the one mistake here with real consequences: it aims
+   * one church's "Publish" button at another church's data. So it never
+   * silently misfires — if the value is missing, or disagrees with the Pages
+   * URL the app is being served from, publishing stops with an error instead
+   * of guessing. */
+  repo: 'ninlamster-blip/flcc-members-2026',
 };
 
 /* ---------------------------------------------------------------------------
@@ -55,17 +57,48 @@ window.CHURCH_CONFIG = {
  * ------------------------------------------------------------------------- */
 window.resolveChurchRepo = function resolveChurchRepo() {
   const configured = (window.CHURCH_CONFIG?.repo || '').trim();
-  if (configured) {
-    if (!/^[\w.-]+\/[\w.-]+$/.test(configured)) {
-      throw new Error(
-        `church-config.js has repo: "${configured}", which is not in the ` +
-        `expected "owner/repo" form. Fix that line and reload.`
-      );
-    }
-    return configured;
+  if (configured && !/^[\w.-]+\/[\w.-]+$/.test(configured)) {
+    throw new Error(
+      `church-config.js has repo: "${configured}", which is not in the ` +
+      `expected "owner/repo" form. Fix that line and reload.`
+    );
   }
 
-  // Auto-detect from a GitHub Pages URL.
+  const detected = detectRepoFromPagesUrl();
+
+  /* A fork that was never set up still carries the original church's repo in
+   * its config while being served from its own Pages address. Publishing then
+   * would write to the church it was copied from. The Pages URL is proof of
+   * which repo is actually serving this page, so a disagreement is stopped
+   * here — it is the one case where being unhelpful is the helpful thing. */
+  if (configured && detected && detected !== configured) {
+    throw new Error(
+      'This copy of the app is not set up yet.\n\n' +
+      `church-config.js says it publishes to "${configured}", but this page is ` +
+      `being served from "${detected}".\n\n` +
+      'Publishing has been stopped, because it would write to the church this ' +
+      'copy was made from instead of your own.\n\n' +
+      'Fix: run  node tools/setup-church.mjs --church "<your church>"  in your ' +
+      'own clone, then commit and push. See docs/NEW-CHURCH-SETUP.md.'
+    );
+  }
+
+  if (configured) return configured;
+  if (detected) return detected;
+
+  throw new Error(
+    'Cannot tell which GitHub repository to publish to.\n\n' +
+    `This page is open at ${location.hostname || 'a local file'}, which is not ` +
+    'a github.io address, so the repository cannot be detected automatically.\n\n' +
+    'Fix: open church-config.js and set repo to your own "owner/repo" ' +
+    '(for example "shekinah-kuwait/flcc-shekinah-2026"), then reload this page.'
+  );
+};
+
+/* The repo a GitHub Pages address implies, or null anywhere else — a custom
+ * domain or the Cloudflare Worker's workers.dev address carries no owner or
+ * repo to read. */
+function detectRepoFromPagesUrl() {
   const host = location.hostname.toLowerCase();
   const gh = host.match(/^([\w-]+)\.github\.io$/);
   if (gh) {
@@ -85,15 +118,8 @@ window.resolveChurchRepo = function resolveChurchRepo() {
     if (segments.length === 0 || looksLikeAPage) return `${owner}/${host}`;
     return `${owner}/${segments[0]}`;
   }
-
-  throw new Error(
-    'Cannot tell which GitHub repository to publish to.\n\n' +
-    `This page is open at ${location.hostname || 'a local file'}, which is not ` +
-    'a github.io address, so the repository cannot be detected automatically.\n\n' +
-    'Fix: open church-config.js and set repo to your own "owner/repo" ' +
-    '(for example "shekinah-kuwait/flcc-shekinah-2026"), then reload this page.'
-  );
-};
+  return null;
+}
 
 /* Same resolution, for places that want to *show* the repo (setup help text)
  * rather than publish to it — returns null instead of throwing, so an

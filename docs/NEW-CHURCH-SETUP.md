@@ -104,13 +104,15 @@ https://<your-github-name>.github.io/<your-repo>/
 
 ### 4. Check where it publishes
 
-The admin pages write your data back to GitHub. They work out which repository
-from the address they are open at, so a copy on `github.io` needs no
-configuration.
+The admin pages write your data back to GitHub. Step 2 already filled the
+target in from your clone's `origin` remote — you will have seen it printed as
+`publishes to your-name/your-repo`.
 
-Confirm it anyway — open `attendance.html` on your live site and look at the
-token setup panel. It should name **your** repository. If it does not, or if
-you use a custom domain, set it by hand in `church-config.js`:
+Confirm it on the live site anyway: open `attendance.html` and look at the token
+setup panel. It should name **your** repository.
+
+If you serve the app from a custom domain and the value is empty, set it by hand
+in `church-config.js`:
 
 ```js
 repo: 'your-github-name/your-repo',
@@ -121,6 +123,11 @@ You can check the logic without a browser:
 ```bash
 node tools/church-config.test.mjs
 ```
+
+**If a copy is left unconfigured**, publishing refuses to run rather than
+writing to the church the copy was made from. The error names the mismatch and
+points back at step 2, so a missed setup shows up as a clear message rather
+than as another church's data being overwritten.
 
 ### 5. Create your publishing token
 
