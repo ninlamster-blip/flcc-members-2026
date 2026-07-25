@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>FLCC Attendance — Steward Dashboard</title>
-<meta name="description" content="Private attendance steward app for FLCC - Farwaniya 1" />
+<meta name="description" content="Private attendance steward app for church attendance stewards" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
@@ -216,7 +216,7 @@ function persistState(s) {
 }
 function defaultState() {
   return {
-    meta: { churchName: 'FLCC - Farwaniya 1', stewardName: '', gasUrl: '', lastSync: null },
+    meta: { churchName: CHURCH_CONFIG.churchName, stewardName: '', gasUrl: '', lastSync: null },
     sessions: [],
     customMembers: [],
   };
@@ -346,7 +346,7 @@ function buildAttendanceJSON(state) {
   const sorted = [...state.sessions].sort((a,b) => b.date.localeCompare(a.date));
   return {
     meta: {
-      churchName:    state.meta.churchName || 'FLCC - Farwaniya 1',
+      churchName:    state.meta.churchName || CHURCH_CONFIG.churchName,
       publishedAt:   new Date().toISOString(),
       totalSessions: sorted.length,
     },
@@ -1114,7 +1114,7 @@ function AnalyticsTab({ state, members }) {
           <button onClick={()=>{
             const [y,m]=selectedMonth.split('-');
             const mLabel=new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-            const lines=[`FLCC - Farwaniya 1 · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`,``];
+            const lines=[`${CHURCH_CONFIG.churchName} · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`,``];
             lines.push('Sessions:');
             for (const s of monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date))) {
               const sum=getSessionSummary(s,members.length);
@@ -1356,7 +1356,7 @@ function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, syncErr
     URL.revokeObjectURL(url);
   };
 
-  // Weekly summary for Ptr. Justin — formatted for Messenger
+  // Weekly summary for the pastor — formatted for Messenger
   const generateWeeklySummary = () => {
     const today = todayISO();
     const weekAgo = (() => {
@@ -1466,11 +1466,11 @@ function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, syncErr
     }
 
     lines.push(`Recorded by: ${m.stewardName || 'Attendance Steward'}`);
-    lines.push(`FLCC - Farwaniya 1 · Attendance OS`);
+    lines.push(`${CHURCH_CONFIG.churchName} · Attendance OS`);
 
     const text = lines.join('\n');
     navigator.clipboard.writeText(text)
-      .then(() => alert('✓ Weekly summary copied! Paste it in your Messenger to Ptr. Justin.'))
+      .then(() => alert('✓ Weekly summary copied! Paste it in your Messenger to the pastor.'))
       .catch(() => alert('Copy failed. Please try again.'));
   };
 
@@ -1488,7 +1488,7 @@ function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, syncErr
           </div>
           <div>
             <label style={{ fontSize:'0.75rem', color:'var(--ink-muted)' }}>Church name</label>
-            <input className="input" style={{ marginTop:4 }} value={m.churchName||''} onChange={e=>set({churchName:e.target.value})} placeholder="FLCC - Farwaniya 1" />
+            <input className="input" style={{ marginTop:4 }} value={m.churchName||''} onChange={e=>set({churchName:e.target.value})} placeholder={CHURCH_CONFIG.churchName} />
           </div>
         </div>
       </div>
@@ -1526,9 +1526,9 @@ function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, syncErr
         )}
       </div>
 
-      {/* For Ptr. Justin — Weekly Summary */}
+      {/* For the pastor — Weekly Summary */}
       <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#6D28D9' }}>
-        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#6D28D9' }}>For Ptr. Justin — Weekly Summary</div>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#6D28D9' }}>For the pastor — Weekly Summary</div>
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.6 }}>
           Generates a formatted Messenger-ready text with this week's sessions, monthly average, top 5 faithful members, and anyone needing pastoral follow-up.
         </p>
@@ -1539,9 +1539,9 @@ function SettingsTab({ state, dispatch, ghToken, setGhToken, syncStatus, syncErr
         {!state.sessions.length && <div style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', marginTop:6, textAlign:'center' }}>Record at least one session first.</div>}
       </div>
 
-      {/* For Allen — Admin Review */}
+      {/* For the admin — Admin Review */}
       <div className="card" style={{ padding:16, marginBottom:14, borderColor:ATT_ACCENT }}>
-        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:ATT_ACCENT }}>For Allen — Admin Review</div>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:ATT_ACCENT }}>For the admin — Admin Review</div>
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.6 }}>
           After every service, tap <strong>Publish attendance to GitHub</strong> above. The members dashboard updates within seconds — no file uploads, no Google Sheets required.
         </p>
@@ -1653,7 +1653,7 @@ function buildFollowUpMessage(flag, stewardName, churchName) {
   if (flag.level === 'priority') {
     return `Hi ${displayName}! 😊
 
-This is ${stewardName || 'your church family'} from ${churchName || 'FLCC - Farwaniya 1'}.
+This is ${stewardName || 'your church family'} from ${churchName || CHURCH_CONFIG.churchName}.
 
 We've noticed we haven't seen you for a while now and we genuinely miss you. You are an important part of our congregation and your presence means a lot to all of us. 🙏
 
@@ -1664,17 +1664,17 @@ If there's anything going on or any way we can support you, please don't hesitat
 We're praying for you. God bless! ✝️
 
 — ${stewardName || 'FLCC Pastoral Team'}
-${churchName || 'FLCC - Farwaniya 1'}`;
+${churchName || CHURCH_CONFIG.churchName}`;
   }
 
   return `Hi ${displayName}! 😊
 
-This is ${stewardName || 'your church family'} from ${churchName || 'FLCC - Farwaniya 1'}. We missed you the past ${plural} and just wanted to check in on you.
+This is ${stewardName || 'your church family'} from ${churchName || CHURCH_CONFIG.churchName}. We missed you the past ${plural} and just wanted to check in on you.
 
 Hope you and your family are doing well. We're praying for you and look forward to seeing you again soon! 🙏
 
 God bless,
-${stewardName || 'FLCC - Farwaniya 1'}`;
+${stewardName || CHURCH_CONFIG.churchName}`;
 }
 
 function CareTab({ state, members }) {
@@ -1691,7 +1691,7 @@ function CareTab({ state, members }) {
   const priority = careFlags.filter(f => f.level === 'priority');
 
   const stewardName  = state.meta.stewardName  || 'Pastoral Team';
-  const churchName   = state.meta.churchName   || 'FLCC - Farwaniya 1';
+  const churchName   = state.meta.churchName   || CHURCH_CONFIG.churchName;
 
   const copyFullReport = () => {
     const today = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -1740,7 +1740,7 @@ function CareTab({ state, members }) {
     lines.push(`${churchName} · Attendance OS`);
 
     navigator.clipboard.writeText(lines.join('\n'))
-      .then(() => alert('✓ Pastoral care report copied! Paste it in Messenger to Ptr. Justin.'))
+      .then(() => alert('✓ Pastoral care report copied! Paste it in Messenger to the pastor.'))
       .catch(() => alert('Copy failed.'));
   };
 
@@ -1799,7 +1799,7 @@ function CareTab({ state, members }) {
             background:'#7C3AED',color:'white',border:'none',cursor:'pointer',
             fontSize:'0.9375rem',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:8,
           }}>
-            📋 Copy full report for Ptr. Justin
+            📋 Copy full report for the pastor
           </button>
 
           {/* Priority flags */}
@@ -2076,7 +2076,7 @@ function App() {
           <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:10 }}>
             <div>
               <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', color:ATT_ACCENT }}>
-                {state.meta.churchName||'FLCC - Farwaniya 1'} · Attendance OS
+                {state.meta.churchName||CHURCH_CONFIG.churchName} · Attendance OS
               </div>
               <div className="font-display" style={{ fontSize:'1.625rem', fontWeight:600, lineHeight:1.2 }}>
                 📋 Attendance

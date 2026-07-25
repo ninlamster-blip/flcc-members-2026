@@ -84,6 +84,13 @@ starting from a copy: the BOTR vision, purpose and statement of faith
 course material, the ministry team names, and every Bible study and reading
 tool.
 
+One kept file is worth knowing about. `botr-schedule.json` is the rota for the
+network's Friday morning service at the National Evangelical Church — the
+service all twelve churches share — so it names network ministers rather than
+your members, and it carries over deliberately. But no admin page can edit it,
+so it will go stale. Edit the file directly, or ignore it; nothing else depends
+on it.
+
 After it runs, check for yourself before publishing anything:
 
 ```bash

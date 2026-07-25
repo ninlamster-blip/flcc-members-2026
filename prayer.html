@@ -1862,7 +1862,7 @@ function App() {
 
   useEffect(() => { saveState(state); }, [state]);
 
-  // Fetch main schedule (data.json) so Wilson sees who the coordinator/presider is per service date
+  // Fetch main schedule (data.json) so the prayer lead sees who the coordinator/presider is per service date
   useEffect(() => {
     fetch(`./data.json?t=${Date.now()}`)
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
