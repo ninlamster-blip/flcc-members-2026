@@ -752,7 +752,10 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
 // CONSTANTS
 // =============================================================================
 
-const ROLES = [
+// The service roles this church uses. Each church in the network sets its own
+// in data.json (the schedule editor writes them); these are the fallback for
+// data published before roles were configurable.
+const DEFAULT_ROLES = [
   { key: 'presider', label: 'Presider' },
   { key: 'songLeader', label: 'Song Leader' },
   { key: 'preacher', label: 'Preacher' },
@@ -761,6 +764,34 @@ const ROLES = [
   { key: 'communionAssistant2', label: 'Communion Asst.' },
   { key: 'foodInCharge', label: 'Food-in-Charge' },
 ];
+
+// Set once when data.json loads — see applyChurchRoles(). A copy of this app
+// serves one church, so a module-level value is enough and every existing
+// reader of ROLES keeps working unchanged.
+let ROLES = DEFAULT_ROLES;
+
+// Which roles to name in a compact summary card. A church's own leading roles
+// if it has them, otherwise simply the first roles it does have — so a church
+// that runs Usher and Multimedia instead of Communion Assistants still sees
+// its people here rather than an empty card.
+function summaryRolesFor(entry, workers, limit = 2) {
+  const preferred = ['preacher', 'presider'];
+  const assigned = k => entry.roles?.[k];
+  const keys = [
+    ...preferred.filter(k => ROLES.some(r => r.key === k) && assigned(k)),
+    ...ROLES.map(r => r.key).filter(k => !preferred.includes(k) && assigned(k)),
+  ];
+  return keys.slice(0, limit).map(k => ({
+    key: k,
+    label: ROLES.find(r => r.key === k)?.label || k,
+    worker: workers.find(w => w.id === entry.roles[k]),
+  })).filter(x => x.worker);
+}
+
+function applyChurchRoles(d) {
+  const fromData = Array.isArray(d?.roles) ? d.roles.filter(r => r && r.key) : [];
+  ROLES = fromData.length ? fromData : DEFAULT_ROLES;
+}
 
 const EVENT_TYPES = [
   { key: 'bible-study',    label: 'Bible Study',    dot: '#D97706' },
@@ -1875,6 +1906,33 @@ function ServiceDetails({ entry, workers, highlightId }) {
 
   const hasCommunion = parseISODate(entry.date).getDate() <= 7;
 
+  /* The layout below is arranged around the seven roles this app was first
+   * built for — communion paired and shown only in the first week of the
+   * month, food-in-charge on its own row. A church running a different set
+   * (an Usher, a Multimedia role, no communion assistants) would see TBDs for
+   * roles it does not have and never see the roles it does, so it gets a plain
+   * grid of its own roles instead. */
+  const classicKeys = ['presider','songLeader','preacher','pastoralPrayer','communionAssistant1','foodInCharge'];
+  const usesClassicRoles = classicKeys.every(k => ROLES.some(r => r.key === k));
+
+  if (!usesClassicRoles) {
+    return (
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        {entry.isSpecial && (
+          <div className="col-span-2">
+            <em style={{ color: 'var(--accent)' }}>{entry.specialNote || 'Special event'}</em>
+          </div>
+        )}
+        {ROLES.map(r => (
+          <div key={r.key}>
+            <span className="ink-muted text-xs">{r.label} · </span>{wd(entry.roles?.[r.key])}
+          </div>
+        ))}
+        {entry.swapped && <div className="col-span-2"><Pill tone="info">⇄ swap</Pill></div>}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
       <div><span className="ink-muted text-xs">Presider · </span>{wd(entry.roles.presider)}</div>
@@ -2631,16 +2689,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                 <div className="home-card-eyebrow">{daysAway(nextFriday.date)} · Friday · {data.meta?.serviceTimes?.Friday || '4:30 PM'}</div>
                 <div className="home-card-title">{formatDateLong(nextFriday.date)}</div>
                 <div className="home-card-body text-xs ink-muted">
-                  {(() => {
-                    const preacher = data.workers.find(w => w.id === nextFriday.roles.preacher);
-                    const presider = data.workers.find(w => w.id === nextFriday.roles.presider);
-                    return (
-                      <>
-                        {preacher && <div>Preacher · {workerShort(preacher)}</div>}
-                        {presider && <div>Presider · {workerShort(presider)}</div>}
-                      </>
-                    );
-                  })()}
+                  {summaryRolesFor(nextFriday, data.workers).map(r => (
+                    <div key={r.key}>{r.label} · {workerShort(r.worker)}</div>
+                  ))}
                 </div>
                 <div className="home-card-actions">
                   <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); saveServiceICS(nextFriday); }}>📅 Save</button>
@@ -2652,16 +2703,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                 <div className="home-card-eyebrow">{daysAway(nextSunday.date)} · Sunday · {data.meta?.serviceTimes?.Sunday || '6:30 PM'}</div>
                 <div className="home-card-title">{formatDateLong(nextSunday.date)}</div>
                 <div className="home-card-body text-xs ink-muted">
-                  {(() => {
-                    const preacher = data.workers.find(w => w.id === nextSunday.roles.preacher);
-                    const presider = data.workers.find(w => w.id === nextSunday.roles.presider);
-                    return (
-                      <>
-                        {preacher && <div>Preacher · {workerShort(preacher)}</div>}
-                        {presider && <div>Presider · {workerShort(presider)}</div>}
-                      </>
-                    );
-                  })()}
+                  {summaryRolesFor(nextSunday, data.workers).map(r => (
+                    <div key={r.key}>{r.label} · {workerShort(r.worker)}</div>
+                  ))}
                 </div>
                 <div className="home-card-actions">
                   <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); saveServiceICS(nextSunday); }}>📅 Save</button>
@@ -15038,6 +15082,7 @@ function App() {
       })
       .then(d => {
         if (!d.workers || !d.schedule) throw new Error('Data file is missing workers or schedule.');
+        applyChurchRoles(d);
         setData(d);
         setLastLoaded(Date.now());
       })

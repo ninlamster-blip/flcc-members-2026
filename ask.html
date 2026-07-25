@@ -702,12 +702,16 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
   const musicWorkersById  = Object.fromEntries((music.workers || []).map(w => [w.id, w]));
   const prayerWorkersById = Object.fromEntries((prayer.workers || []).map(w => [w.id, w]));
 
+  // Labels for the roles this church uses. data.json's own `roles` win, so a
+  // church that renamed a role — or added one — gets its own wording in the
+  // assistant's answers instead of a bare key.
   const ROLE_LABELS = {
     presider: 'Presider', songLeader: 'Song Leader', preacher: 'Preacher',
     pastoralPrayer: 'Pastoral Prayer', communionAssistant1: 'Communion Asst. 1',
     communionAssistant2: 'Communion Asst. 2', foodInCharge: 'Food In Charge',
     exhorter: 'Exhorter', lead: 'Worship Leader', vocal: 'Backup Vocal',
     instrument: 'Instrumentalist',
+    ...Object.fromEntries((data.roles || []).filter(r => r?.key).map(r => [r.key, r.label || r.key])),
   };
   const rl = r => ROLE_LABELS[r] || r;
 

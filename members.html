@@ -638,7 +638,10 @@ const { useState, useEffect, useMemo, useRef } = React;
 // CONSTANTS
 // =============================================================================
 
-const ROLES = [
+// Per-church service roles — see data.json `roles`, written by the schedule
+// editor. These are the fallback for data published before they were
+// configurable.
+const DEFAULT_ROLES = [
   { key: 'presider', label: 'Presider' },
   { key: 'songLeader', label: 'Song Leader' },
   { key: 'preacher', label: 'Preacher' },
@@ -647,6 +650,13 @@ const ROLES = [
   { key: 'communionAssistant2', label: 'Communion Asst.' },
   { key: 'foodInCharge', label: 'Food-in-Charge' },
 ];
+
+let ROLES = DEFAULT_ROLES;
+
+function applyChurchRoles(d) {
+  const fromData = Array.isArray(d?.roles) ? d.roles.filter(r => r && r.key) : [];
+  ROLES = fromData.length ? fromData : DEFAULT_ROLES;
+}
 
 const EVENT_TYPES = [
   { key: 'bible-study',    label: 'Bible Study',    dot: '#D97706' },
@@ -6134,6 +6144,7 @@ function App() {
       })
       .then(d => {
         if (!d.workers || !d.schedule) throw new Error('Data file is missing workers or schedule.');
+        applyChurchRoles(d);
         setData(d);
         setLastLoaded(Date.now());
       })

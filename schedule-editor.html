@@ -150,7 +150,11 @@ const GH_FILE      = 'data.json';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-const ROLE_DEFS = [
+// Each church sets its own service roles on the Roles tab; they are stored in
+// data.json as `roles` and read by the members app and the assistant. These
+// seven are Abundance's, and the fallback for data published before roles
+// were configurable.
+const DEFAULT_ROLE_DEFS = [
   { key:'preacher',            label:'Preacher' },
   { key:'pastoralPrayer',      label:'Pastoral Prayer' },
   { key:'presider',            label:'Presider' },
@@ -160,11 +164,17 @@ const ROLE_DEFS = [
   { key:'foodInCharge',        label:'Food In Charge' },
 ];
 
-const ROLE_LABELS = Object.fromEntries(ROLE_DEFS.map(r=>[r.key,r.label]));
+// Set from data.json on load — see the loader in App(). One copy of this app
+// serves one church, so a module-level list keeps every existing reader
+// working untouched.
+let ROLE_DEFS = DEFAULT_ROLE_DEFS;
+
+const roleLabel = key => ROLE_DEFS.find(r=>r.key===key)?.label || key;
 
 const TABS = [
   { id:'schedule', icon:'📅', label:'Schedule' },
   { id:'workers',  icon:'👥', label:'Workers'  },
+  { id:'roles',    icon:'🎽', label:'Roles'    },
   { id:'themes',   icon:'📖', label:'Themes'   },
   { id:'events',   icon:'🗓', label:'Events'   },
 ];
@@ -366,7 +376,7 @@ function WorkersTab({workers,onChange,onDirty}){
                   <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
                     {w.eligibleRoles.slice(0,3).map(r=>(
                       <span key={r} style={{fontSize:'.625rem',padding:'1px 6px',borderRadius:999,background:'var(--bg)',border:'1px solid var(--border-2)',color:'var(--ink-3)',fontWeight:500}}>
-                        {ROLE_LABELS[r]||r}
+                        {roleLabel(r)}
                       </span>
                     ))}
                     {w.eligibleRoles.length>3&&<span style={{fontSize:'.625rem',color:'var(--ink-4)'}}>+{w.eligibleRoles.length-3} more</span>}
@@ -435,6 +445,86 @@ function WorkersTab({workers,onChange,onDirty}){
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ─── Themes Tab ───────────────────────────────────────────────────────────────
+// ─── Roles Tab ────────────────────────────────────────────────────────────────
+// Which service roles this church fills each week. Every church in the network
+// runs its own copy of this app with its own roles — some have an Usher or a
+// Multimedia role, some have no Food In Charge — so the list is data, not code.
+function RolesTab({roles,onChange,onDirty,schedule}){
+  // How many times each role is actually assigned, so nobody deletes a role
+  // that a year of schedule still refers to without being told.
+  const usage = useMemo(()=>{
+    const count={};
+    for(const e of schedule||[]) for(const [k,v] of Object.entries(e.roles||{})) if(v) count[k]=(count[k]||0)+1;
+    return count;
+  },[schedule]);
+
+  const update = (i,patch)=>{onChange(roles.map((r,idx)=>idx===i?{...r,...patch}:r));onDirty();};
+  const move   = (i,dir)=>{
+    const j=i+dir; if(j<0||j>=roles.length) return;
+    const next=[...roles]; [next[i],next[j]]=[next[j],next[i]];
+    onChange(next);onDirty();
+  };
+  const add = ()=>{
+    onChange([...roles,{key:`role-${Date.now().toString(36)}`,label:''}]);onDirty();
+  };
+  const del = i=>{
+    const r=roles[i], n=usage[r.key]||0;
+    const msg = n
+      ? `"${r.label||r.key}" is assigned in ${n} service${n===1?'':'s'}. Removing it hides it from the schedule, but those assignments stay in the data and come back if you add the role again. Remove it?`
+      : `Remove "${r.label||r.key}"?`;
+    if(confirm(msg)){onChange(roles.filter((_,idx)=>idx!==i));onDirty();}
+  };
+
+  return (
+    <div style={{maxWidth:680}}>
+      <p style={{color:'var(--ink-3)',fontSize:'.9rem',marginBottom:16,lineHeight:1.6}}>
+        The roles your church fills each service. They set the fields on the Schedule tab,
+        what workers can be eligible for, and what the members app and assistant show.
+        Drag order is the order they appear.
+      </p>
+      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:16}}>
+        <button onClick={add} style={{padding:'.5rem 1rem',borderRadius:10,background:'var(--accent)',color:'#fff',border:'none',fontWeight:700,fontSize:'.875rem',cursor:'pointer',fontFamily:'Geist,sans-serif'}}>
+          + Add Role
+        </button>
+      </div>
+
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {roles.map((r,i)=>(
+          <div key={r.key} className="service-card fade-up" style={{animationDelay:`${i*30}ms`,padding:'12px 14px',display:'flex',alignItems:'center',gap:12}}>
+            <div style={{display:'flex',flexDirection:'column',gap:2}}>
+              <button onClick={()=>move(i,-1)} disabled={i===0} title="Move up"
+                style={{border:'none',background:'transparent',cursor:i===0?'default':'pointer',opacity:i===0?.25:.7,fontSize:'.7rem',padding:0,lineHeight:1}}>▲</button>
+              <button onClick={()=>move(i,1)} disabled={i===roles.length-1} title="Move down"
+                style={{border:'none',background:'transparent',cursor:i===roles.length-1?'default':'pointer',opacity:i===roles.length-1?.25:.7,fontSize:'.7rem',padding:0,lineHeight:1}}>▼</button>
+            </div>
+            <div style={{flex:1}}>
+              <div className="field-label">Role name</div>
+              <input className="field-input" value={r.label||''} placeholder="e.g. Usher"
+                onChange={e=>update(i,{label:e.target.value})}/>
+            </div>
+            <div style={{minWidth:96,textAlign:'right',fontSize:'.75rem',color:'var(--ink-4)'}}>
+              {usage[r.key] ? `${usage[r.key]} assigned` : 'unused'}
+            </div>
+            <button onClick={()=>del(i)} title="Remove role"
+              style={{border:'none',background:'transparent',color:'var(--danger)',cursor:'pointer',fontSize:'1rem',padding:'0 2px'}}>✕</button>
+          </div>
+        ))}
+        {!roles.length && (
+          <div style={{padding:'24px 16px',textAlign:'center',color:'var(--ink-4)',fontSize:'.875rem'}}>
+            No roles yet. Add the ones your church fills each service.
+          </div>
+        )}
+      </div>
+
+      <p style={{color:'var(--ink-4)',fontSize:'.75rem',marginTop:18,lineHeight:1.6}}>
+        Renaming a role keeps its assignments. Publishing saves the list to data.json,
+        and the members app picks it up on its next refresh.
+      </p>
     </div>
   );
 }
@@ -611,6 +701,7 @@ function App(){
   const [workers,     setWorkers]     = useState([]);
   const [themes,      setThemes]      = useState({});
   const [events,      setEvents]      = useState([]);
+  const [roles,       setRoles]       = useState(DEFAULT_ROLE_DEFS);
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState('');
   const [activeTab,   setActiveTab]   = useState('schedule');
@@ -633,6 +724,10 @@ function App(){
         setWorkers(data.workers||[]);
         setThemes(data.themes||{});
         setEvents(data.events||[]);
+        const loadedRoles = Array.isArray(data.roles) && data.roles.length
+          ? data.roles.filter(r=>r&&r.key) : DEFAULT_ROLE_DEFS;
+        ROLE_DEFS = loadedRoles;
+        setRoles(loadedRoles);
         setLoading(false);
       })
       .catch(e=>{setError('Could not load data.json: '+e.message);setLoading(false);});
@@ -687,7 +782,7 @@ function App(){
     setGhPublishing(true);setGhStatus('');
     try{
       const repo=resolveChurchRepo();
-      const updatedData={...fullData,schedule,workers,themes,events};
+      const updatedData={...fullData,schedule,workers,themes,events,roles};
       const content=JSON.stringify(updatedData,null,2);
       const encoded=btoa(unescape(encodeURIComponent(content)));
       const getR=await fetch(`https://api.github.com/repos/${repo}/contents/${GH_FILE}`,{
@@ -858,6 +953,7 @@ function App(){
         )}
 
         {activeTab==='workers'&&<WorkersTab workers={workers} onChange={setWorkers} onDirty={markDirty}/>}
+        {activeTab==='roles'  &&<RolesTab   roles={roles}     onChange={rs=>{ROLE_DEFS=rs;setRoles(rs);}} onDirty={markDirty} schedule={schedule}/>}
         {activeTab==='themes' &&<ThemesTab  themes={themes}   onChange={setThemes}  onDirty={markDirty}/>}
         {activeTab==='events' &&<EventsTab  events={events}   onChange={setEvents}  onDirty={markDirty}/>}
       </main>
