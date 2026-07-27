@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>FLCC Music OS — Music Ministry Dashboard</title>
-<meta name="description" content="Music Ministry dashboard for FLCC - Abundance Church. Configurable roles, services, and team scheduling." />
+<meta name="description" content="Music Ministry dashboard for the FLCC BOTR church network. Configurable roles, services, and team scheduling." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +14,9 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+
+<!-- Which church's music ministry this dashboard is for. -->
+<script src="./church.js"></script>
 
 <style>
   :root {
@@ -236,7 +239,8 @@ const { useState, useEffect, useMemo, useReducer, useRef } = React;
 // CONSTANTS
 // =============================================================================
 
-const STORAGE_KEY = 'flcc-music-os-v1';
+const CHURCH      = window.FLCC;
+const STORAGE_KEY = CHURCH.key('flcc-music-os-v1');
 const APP_VERSION = '1.0';
 
 // Default roles — Edmund can edit these in Settings tab
@@ -347,7 +351,7 @@ function saveState(state) {
 function defaultState() {
   return {
     meta: {
-      churchName: 'FLCC - Abundance Church',
+      churchName: CHURCH.name,
       ministryName: 'Music Ministry',
       version: APP_VERSION,
       lastUpdated: new Date().toISOString(),
@@ -1237,7 +1241,7 @@ function DataTab({ state, dispatch }) {
         <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>For FLCC Members</div>
         <div className="font-display text-2xl font-semibold">Publish for Members</div>
         <p className="ink-muted text-sm mt-2 max-w-xl mb-4">
-          Generate <code className="font-mono text-xs px-1 py-0.5 rounded" style={{ background: '#F4F4F0' }}>music.json</code> and upload it to the FLCC members repo. The music ministry schedule appears in the members view automatically.
+          Generate <code className="font-mono text-xs px-1 py-0.5 rounded" style={{ background: '#F4F4F0' }}>music.json</code> and upload it to <code className="font-mono text-xs">{CHURCH.publishPath('music.json')}</code> in the members repo. The music ministry schedule then appears in {CHURCH.short}'s members view automatically.
         </p>
         <div className="grid sm:grid-cols-2 gap-3 mb-4">
           <button className="btn btn-accent" onClick={publishForMembers} disabled={!ministryComplete}>↓ Generate music.json</button>
@@ -1333,7 +1337,7 @@ function App() {
   useEffect(() => { saveState(state); }, [state]);
 
   const fetchMain = () => {
-    fetch(`./data.json?t=${Date.now()}`)
+    fetch(`${CHURCH.data('data.json')}?t=${Date.now()}`)
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(d => {
         if (d?.schedule && d?.workers) { setMainData(d); setMainDataLoadedAt(Date.now()); }

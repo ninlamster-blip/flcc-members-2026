@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "churchName": "FLCC - GIL",
+    "publishedAt": "",
+    "version": "1.0",
+    "serviceTimes": {
+      "Friday": "",
+      "Sunday": ""
+    }
+  },
+  "ministry": {
+    "headName": "",
+    "headTitle": "Fellowship Ministry Head",
+    "whatsapp": "",
+    "messenger": "",
+    "phone": "",
+    "email": ""
+  },
+  "workers": [],
+  "themes": {},
+  "schedule": [],
+  "events": []
+}

@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "churchName": "FLCC - <Church Name>",
+    "ministryName": "Music Ministry",
+    "publishedAt": "",
+    "version": "1.0"
+  },
+  "ministry": {
+    "headName": "",
+    "headTitle": "Music Ministry Lead",
+    "whatsapp": "",
+    "messenger": "",
+    "phone": "",
+    "email": ""
+  },
+  "roles": [
+    {
+      "key": "lead",
+      "label": "Worship Leader"
+    },
+    {
+      "key": "vocal",
+      "label": "Backup Vocal"
+    },
+    {
+      "key": "instrument",
+      "label": "Instrumentalist"
+    }
+  ],
+  "serviceTypes": [
+    {
+      "key": "Friday",
+      "label": "Friday Service",
+      "dot": "#10B981"
+    },
+    {
+      "key": "Sunday",
+      "label": "Sunday Service",
+      "dot": "#3B82F6"
+    }
+  ],
+  "workers": [],
+  "entries": [],
+  "settings": {}
+}
