@@ -242,5 +242,79 @@ const db = fakeD1();
     'the subscriber whose push service returned 410 was pruned from the database');
 }
 
+// ── POST /api/publish/attendance — a steward publishes with a passcode ─────
+// The property that matters: the church comes from the passcode, never from
+// the request, so a steward cannot reach another church's file.
+{
+  console.log('\n— attendance publish —');
+
+  const env = {
+    ATTENDANCE_PASSCODES: JSON.stringify({ shekinah: 'shek-pass', abundance: 'abun-pass' }),
+    GITHUB_TOKEN: 'gh-token',
+    GITHUB_REPO: 'example/repo',
+  };
+  const validBody = (passcode, extra = {}) => JSON.stringify({
+    passcode,
+    steward: 'Sis. Ana',
+    content: {
+      meta: { churchName: 'FLCC - Shekinah' },
+      sessions: [{ id: 's1', date: '2026-07-24', records: [] }],
+    },
+    ...extra,
+  });
+  const post = (body, e = env) => worker.fetch(
+    new Request('https://x/api/publish/attendance', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+    }), e, { waitUntil() {} }
+  );
+
+  // Capture the GitHub calls instead of making them.
+  const originalFetch = globalThis.fetch;
+  let puts = [];
+  globalThis.fetch = async (url, opts = {}) => {
+    if (String(url).includes('api.github.com')) {
+      if ((opts.method || 'GET') === 'GET') return new Response('{}', { status: 404 });
+      puts.push({ url: String(url), body: JSON.parse(opts.body) });
+      return new Response(JSON.stringify({ commit: { sha: 'deadbeef' } }), { status: 200 });
+    }
+    return originalFetch(url, opts);
+  };
+
+  try {
+    const ok = await post(validBody('shek-pass'));
+    const okBody = await ok.json();
+    assert(ok.status === 200, 'a valid passcode publishes');
+    assert(okBody.church === 'shekinah', 'the response names the church the passcode belongs to');
+    assert(puts.length === 1 && puts[0].url.endsWith('/contents/churches/shekinah/attendance.json'),
+      `the write went to that church's own file (${puts[0]?.url})`);
+    assert(/Sis\. Ana/.test(puts[0].body.message), 'the commit message credits the steward');
+
+    // Abundance's files predate the churches/ folder and stayed at the root.
+    puts = [];
+    await post(validBody('abun-pass'));
+    assert(puts[0].url.endsWith('/contents/attendance.json'), 'abundance still publishes to the repo root');
+
+    // The attack this design exists to stop.
+    puts = [];
+    const crossChurch = await post(validBody('shek-pass', { church: 'abundance', path: 'index.html' }));
+    assert(crossChurch.status === 200, 'naming another church in the body is not an error…');
+    assert(puts[0].url.endsWith('/contents/churches/shekinah/attendance.json'),
+      '…it is simply ignored — the passcode still decides the file');
+
+    puts = [];
+    const wrong = await post(validBody('not-a-passcode'));
+    assert(wrong.status === 401, 'an unknown passcode is rejected');
+    assert(puts.length === 0, 'nothing is written when the passcode is wrong');
+
+    const junk = await post(JSON.stringify({ passcode: 'shek-pass', content: { hello: 'world' } }));
+    assert(junk.status === 400, 'a valid passcode still cannot write arbitrary content');
+
+    const off = await post(validBody('shek-pass'), { ATTENDANCE_PASSCODES: '', GITHUB_TOKEN: '' });
+    assert(off.status === 503, 'the endpoint stays off until the Worker has its secrets');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
 console.log(failures ? `\n${failures} FAILURE(S)` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

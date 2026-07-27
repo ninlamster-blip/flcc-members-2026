@@ -765,6 +765,11 @@ async function handleRequest(request, env, ctx) {
     return handlePushSubscriptions(request, env, url);
   }
 
+  // ── /api/publish/attendance — church stewards publish their own numbers ──
+  if (url.pathname === '/api/publish/attendance') {
+    return handleAttendancePublish(request, env);
+  }
+
   // ── All other non-POST requests ──────────────────────────────────────────
   // Static files (HTML, JSON, etc.) are served directly by Cloudflare's edge
   // before the Worker runs, so env.ASSETS is not available here.
@@ -1379,5 +1384,163 @@ async function handleDailyBlessingCommunity(request, env, url) {
 
   return new Response(JSON.stringify({ error: { message: 'Method not allowed' } }), {
     status: 405, headers: { ...CORS, 'Content-Type': 'application/json' },
+  });
+}
+
+// =============================================================================
+// POST /api/publish/attendance — a church steward publishes their own numbers
+// =============================================================================
+//
+// WHY THIS EXISTS
+//   Schedules (data.json) are maintained centrally by one admin, who has a
+//   GitHub token. Attendance is different: it is recorded every service, at
+//   13 different churches, by 13 different stewards. Handing each of them a
+//   GitHub token would mean 13 people managing credentials that can write the
+//   whole repository. Instead they get a passcode, and this endpoint holds the
+//   only token.
+//
+// THE RULE THAT MAKES THIS SAFE
+//   The church is derived from the passcode, never from the request. A caller
+//   cannot ask to write another church's file, because they never get to name
+//   a file at all — the passcode alone decides the one path this endpoint will
+//   write, and it can only ever be that church's attendance.json.
+//
+// SETUP (one time, on the Worker — Settings → Variables and Secrets)
+//   Secret  ATTENDANCE_PASSCODES  {"shekinah":"…","mtcc":"…"}  church → passcode
+//   Secret  GITHUB_TOKEN          fine-grained token, Contents: read+write on
+//                                 this repo only
+//   Text    GITHUB_REPO           owner/repo (defaults to the FLCC members repo)
+//
+// Without those secrets the endpoint stays off and says so — nothing else in
+// the Worker is affected, and the editors fall back to their existing
+// token-based publishing.
+
+const PUBLISH_REPO_DEFAULT = 'ninlamster-blip/flcc-members-2026';
+const MAX_ATTENDANCE_BYTES = 1024 * 1024;   // ~1 MB; a year of sessions is far less
+
+/** Where a church's attendance.json lives. Mirrors FLCC.publishPath() in
+ *  church.js — Abundance's files predate the churches/ folder and stayed at the
+ *  repo root, everyone else lives under churches/<slug>/. */
+function attendancePathFor(slug) {
+  return slug === 'abundance' ? 'attendance.json' : `churches/${slug}/attendance.json`;
+}
+
+/** Compare without leaking how much of the passcode was right. */
+function timingSafeEqual(a, b) {
+  const enc = new TextEncoder();
+  const x = enc.encode(String(a));
+  const y = enc.encode(String(b));
+  // Length alone is not secret, but keep the comparison itself constant-time.
+  if (x.length !== y.length) return false;
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+}
+
+/** The passcode decides the church. Returns a slug, or null if no match. */
+function churchForPasscode(env, passcode) {
+  if (!passcode) return null;
+  let map;
+  try {
+    map = JSON.parse(env.ATTENDANCE_PASSCODES || '{}');
+  } catch (e) {
+    return null;
+  }
+  for (const [slug, code] of Object.entries(map)) {
+    if (code && timingSafeEqual(code, passcode)) return slug;
+  }
+  return null;
+}
+
+/** Reject anything that isn't recognisably an attendance file, so a valid
+ *  passcode still can't turn attendance.json into arbitrary content. */
+function validateAttendance(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return 'not an object';
+  if (!payload.meta || typeof payload.meta !== 'object') return 'missing meta';
+  if (!Array.isArray(payload.sessions)) return 'missing sessions[]';
+  for (const s of payload.sessions) {
+    if (!s || typeof s !== 'object') return 'malformed session';
+    if (typeof s.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s.date)) return 'malformed session date';
+    if (s.records && !Array.isArray(s.records)) return 'malformed session records';
+  }
+  return null;
+}
+
+/** Base64 for GitHub's Contents API. Chunked rather than spread — a whole
+ *  year of attendance is big enough to blow the argument limit in one call. */
+function base64(bytes) {
+  let binary = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
+function publishError(message, status) {
+  return new Response(JSON.stringify({ error: { message } }), {
+    status, headers: { ...CORS, 'Content-Type': 'application/json' },
+  });
+}
+
+async function handleAttendancePublish(request, env) {
+  if (request.method !== 'POST') return publishError('Method not allowed', 405);
+
+  if (!env.ATTENDANCE_PASSCODES || !env.GITHUB_TOKEN) {
+    return publishError(
+      'Passcode publishing is not set up on this Worker yet. Ask your admin to add the ATTENDANCE_PASSCODES and GITHUB_TOKEN secrets.',
+      503
+    );
+  }
+
+  const raw = await request.text();
+  if (raw.length > MAX_ATTENDANCE_BYTES) return publishError('Attendance file is too large.', 413);
+
+  let body;
+  try { body = JSON.parse(raw); } catch (e) { return publishError('Could not read the request.', 400); }
+
+  const slug = churchForPasscode(env, body.passcode);
+  if (!slug) return publishError('That passcode was not recognised.', 401);
+
+  const problem = validateAttendance(body.content);
+  if (problem) return publishError(`That does not look like an attendance file (${problem}).`, 400);
+
+  const path = attendancePathFor(slug);
+  const repo = env.GITHUB_REPO || PUBLISH_REPO_DEFAULT;
+  const api = `https://api.github.com/repos/${repo}/contents/${path}`;
+  const headers = {
+    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+    // GitHub rejects API requests without a User-Agent.
+    'User-Agent': 'flcc-attendance-publisher',
+  };
+
+  const existing = await fetch(api, { headers });
+  const sha = existing.ok ? (await existing.json())?.sha : undefined;
+
+  const content = JSON.stringify(body.content, null, 2);
+  const encoded = base64(new TextEncoder().encode(content));
+  const steward = typeof body.steward === 'string' ? body.steward.slice(0, 60).trim() : '';
+  const today = new Date().toISOString().slice(0, 10);
+
+  const put = await fetch(api, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({
+      message: `Update ${path} — ${today}${steward ? ` (${steward})` : ''}`,
+      content: encoded,
+      ...(sha ? { sha } : {}),
+    }),
+  });
+
+  if (!put.ok) {
+    const detail = await put.json().catch(() => ({}));
+    return publishError(detail?.message || `GitHub responded ${put.status}`, 502);
+  }
+
+  const result = await put.json().catch(() => ({}));
+  return new Response(JSON.stringify({ ok: true, church: slug, path, commit: result?.commit?.sha || null }), {
+    headers: { ...CORS, 'Content-Type': 'application/json' },
   });
 }

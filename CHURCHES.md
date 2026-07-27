@@ -57,21 +57,69 @@ regenerates the `/c/` links. Commit, then send `/c/living-hope/` to its leaders.
 If you edit the registry in `church.js` by hand, re-run
 `node scripts/build-church-links.mjs` so the pretty links match.
 
-## How leaders publish
+## Who updates what
 
-Unchanged from how Abundance has always worked: the leader opens the editor,
-connects a fine-grained GitHub token once, and Publish writes the JSON back to
-the repo. What's new is that each editor writes **only its own church's file** —
-`schedule-editor.html?church=shekinah` can only ever overwrite
-`churches/shekinah/data.json`, and the editor header shows the church and the
-exact file before anything is published.
+Two different jobs, two different answers:
 
-Worth being clear about the limit: this is scoping, not enforcement. The token
-a leader holds is a repo token, so a determined leader could still write outside
-their folder by other means. Moving publishing behind the Cloudflare Worker —
-one server-side token, a per-church passcode, writes restricted to that church's
-folder — is the planned follow-up and the point at which this becomes a real
-boundary. Until then, hand tokens only to leaders you'd trust with the repo.
+| | Who | How |
+| --- | --- | --- |
+| **Schedule, workers, themes, events** (`data.json`) | one central admin | `schedule-editor.html?church=<slug>`, GitHub token |
+| **Attendance** (`attendance.json`) | that church's own steward | `attendance.html?church=<slug>`, church passcode |
+
+Schedules are monthly and centralised — churches submit theirs to the admin,
+who enters them. Attendance is per service, at 13 churches, so it can't route
+through one person; each steward publishes their own.
+
+A steward can add visitors and new faces themselves (they're stored in
+`attendance.json`), but the roster of regular members comes from `data.json` —
+so a new member has to reach the admin. **A church's attendance app is not
+usable until its `data.json` has a workers list**; before that the steward just
+sees "No workers found".
+
+### Setting up passcode publishing (one time)
+
+On the Worker → Settings → Variables and Secrets:
+
+| Kind | Name | Value |
+| --- | --- | --- |
+| Secret | `ATTENDANCE_PASSCODES` | `{"shekinah":"…","mtcc":"…"}` — church slug → passcode |
+| Secret | `GITHUB_TOKEN` | fine-grained token, Contents: read+write, this repo only |
+| Text | `GITHUB_REPO` | `owner/repo` (optional; defaults to this repo) |
+
+Then send each steward their link and their passcode. They enter it once in
+Settings and never think about it again — nothing expires.
+
+The reason this is safe: **the church is derived from the passcode, never from
+the request.** A steward never names a file, so there is no file to point
+somewhere else — the passcode alone decides the single path the endpoint will
+write, and it can only be that church's `attendance.json`. A valid passcode
+also can't write arbitrary content: the payload is rejected unless it looks
+like an attendance file. Both properties are covered by tests in
+`ask-proxy/worker.test.mjs` (`node ask-proxy/worker.test.mjs`).
+
+To revoke a church, change its passcode in the secret and hand out the new one.
+
+Until those secrets exist the endpoint returns a clear "not set up yet" and
+nothing else in the Worker is affected. Stewards without a passcode can still
+record attendance — it just stays on their device.
+
+## The admin's token
+
+The schedule editor still publishes with a fine-grained GitHub token, the way
+Abundance always has — one admin, one token, switching church with
+`?church=<slug>`. Each editor writes **only its own church's file**
+(`schedule-editor.html?church=shekinah` can only overwrite
+`churches/shekinah/data.json`) and shows the church and exact destination in
+its header before anything is published.
+
+Be clear-eyed about what that scoping is: a guardrail, not a wall. A GitHub
+token can write anything in the repo, so the editor pointing at one file is a
+convention the app follows, not something the token enforces. That's fine for a
+single trusted admin — it is exactly why stewards get passcodes instead.
+
+The prayer and music dashboards still export a `.json` for manual upload; they
+have no publish button yet. If those ministries end up spread across churches
+too, they're the next candidates for passcode publishing.
 
 ## Storage on a shared device
 
@@ -83,7 +131,7 @@ nobody who is already using the app loses anything.
 Device-wide preferences stay shared across churches on purpose: Bible
 translation, Bible reading plan, game scores, and the Ask API key.
 
-## Not multi-tenant yet
+## Still network-wide
 
 The Cloudflare Worker's prayer chain and push notifications (`ask-proxy/`,
 used by `ofw-companion/`) are network-wide by design — one anonymous chain for
