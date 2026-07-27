@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "churchName": "FLCC - <Church Name>",
+    "ministryName": "Prayer Ministry",
+    "publishedAt": "",
+    "version": "1.0"
+  },
+  "ministry": {
+    "headName": "",
+    "headTitle": "Prayer Ministry Lead",
+    "whatsapp": "",
+    "messenger": "",
+    "phone": "",
+    "email": ""
+  },
+  "teams": [],
+  "workers": [],
+  "themes": {},
+  "intercessory": [],
+  "meetings": []
+}

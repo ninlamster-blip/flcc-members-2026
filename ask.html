@@ -16,6 +16,9 @@
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 
+<!-- Which church the assistant answers for. -->
+<script src="./church.js"></script>
+
 <style>
   :root {
     --bg: #FAFAF5;
@@ -458,6 +461,7 @@
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
+const CHURCH               = window.FLCC;
 const STORAGE_KEY_API      = 'flcc_ask_apikey';
 const STORAGE_KEY_MODEL    = 'flcc_ask_model';
 const ASK_PROXY_KEY        = 'flcc-ask-proxy-url-v1';
@@ -695,6 +699,18 @@ function generateFlccNews(data, prayer, botrData, liveStats) {
 }
 
 // ─── System prompt ────────────────────────────────────────────────────────────────────────────────
+// One contact line per ministry, from that church's own published data —
+// every church has different leaders, so none of this can be hardcoded.
+function ministryLine(m) {
+  if (!m || !m.headName) return '(not yet published)';
+  const contacts = [
+    m.whatsapp && `WhatsApp: ${m.whatsapp}`,
+    m.phone && m.phone !== m.whatsapp && `Phone: ${m.phone}`,
+    m.email && `Email: ${m.email}`,
+  ].filter(Boolean).join(' | ');
+  return contacts ? `${m.headName} | ${contacts}` : m.headName;
+}
+
 function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, flccNews = [], externalNews = []) {
   const today = new Date().toISOString().split('T')[0];
 
@@ -875,16 +891,17 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
     `  • ${em.name}: ${em.headName} | WhatsApp: ${em.whatsapp || '—'}`
   ).join('\n');
 
-  return `You are the FLCC Church Assistant — a warm, knowledgeable, and encouraging AI for FLCC - Abundance Church (also called Abundance Church), part of the FLCC BOTR Church Network. You help church members with anything: the service schedule, member assignments, Bible passages, Christian theology, and general knowledge.
+  return `You are the FLCC Church Assistant — a warm, knowledgeable, and encouraging AI for ${data.meta?.churchName || CHURCH.name} (also called ${CHURCH.short}), part of the FLCC BOTR Church Network. You help church members with anything: the service schedule, member assignments, Bible passages, Christian theology, and general knowledge.
 
 ## Today's Date
 ${today}
 
 ## Church Overview
-- **Name**: FLCC - Abundance Church
-- **Fellowship Ministry Head**: Sis. Amazelle De Jesus | WhatsApp/Phone: +96595590217 | Email: amazelle@yahoo.com
-- **Music Ministry Lead**: Bro. Edmund Gabriel | WhatsApp: +96555667788
-- **Prayer Ministry Lead**: Bro. Wilson Guerzon | WhatsApp: +96566299452 | Email: wilson_guerzon@yahoo.com
+- **Name**: ${data.meta?.churchName || CHURCH.name}
+- **Sector**: ${CHURCH.church.sector}
+- **Fellowship Ministry Head**: ${ministryLine(data.ministry)}
+- **Music Ministry Lead**: ${ministryLine(music?.ministry)}
+- **Prayer Ministry Lead**: ${ministryLine(prayer?.ministry)}
 - **Main Worship Service — Friday**: ${data.meta?.serviceTimes?.Friday || '4:30 PM'}
 - **Main Worship Service — Sunday**: ${data.meta?.serviceTimes?.Sunday || '6:30 PM'} (every Sunday)
 
@@ -1161,12 +1178,12 @@ function App() {
   // Load static JSON data, then fetch live BOTR stats in the background
   useEffect(() => {
     Promise.all([
-      fetch('data.json').then(r => r.json()),
-      fetch('music.json').then(r => r.json()),
-      fetch('prayer.json').then(r => r.json()),
-      fetch('equip.json').then(r => r.json()).catch(() => ({})),
-      fetch('botr.json').then(r => r.json()).catch(() => ({})),
-      fetch('attendance.json').then(r => r.json()).catch(() => ({})),
+      fetch(CHURCH.data('data.json')).then(r => r.json()),
+      fetch(CHURCH.data('music.json')).then(r => r.json()).catch(() => ({})),
+      fetch(CHURCH.data('prayer.json')).then(r => r.json()).catch(() => ({})),
+      fetch(CHURCH.data('equip.json')).then(r => r.json()).catch(() => ({})),
+      fetch('botr.json').then(r => r.json()).catch(() => ({})),   // network-wide
+      fetch(CHURCH.data('attendance.json')).then(r => r.json()).catch(() => ({})),
     ]).then(([data, music, prayer, equip, botrData, attendance]) => {
       setAppData({ data, music, prayer, equip, botrData, attendance });
       // Non-blocking: live BOTR standings from Google Sheets
@@ -1361,7 +1378,7 @@ function App() {
               Ask FLCC
             </div>
             <div className="text-xs truncate" style={{color:'var(--ink-subtle)'}}>
-              Your Church Assistant · Abundance Church
+              Your Church Assistant · {CHURCH.short}
             </div>
           </div>
         </div>

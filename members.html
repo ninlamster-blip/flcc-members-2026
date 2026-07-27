@@ -15,6 +15,11 @@
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
 
+<!-- Resolves which church this visitor is on, and where its data lives. Must
+     load before the app: the data URLs and storage keys below are built from it. -->
+<script src="./church.js"></script>
+<script>document.title = window.FLCC.name + ' · Schedule for Members';</script>
+
 <style>
   :root {
     --bg: #FAFAF5;
@@ -664,13 +669,15 @@ const CONFLICT_REASONS = [
   'Other (explain in note)',
 ];
 
-const ME_KEY             = 'flcc-members-me';
-const DATA_URL           = './data.json';
-const PRAYER_DATA_URL    = './prayer.json';
-const MUSIC_DATA_URL     = './music.json';
-const EQUIP_DATA_URL     = './equip.json';
-const ATTENDANCE_DATA_URL = './attendance.json';
-const GIVING_DATA_URL    = './finance-members.json';
+// Church-scoped data + storage — see church.js.
+const CHURCH             = window.FLCC;
+const ME_KEY             = CHURCH.key('flcc-members-me');
+const DATA_URL           = CHURCH.data('data.json');
+const PRAYER_DATA_URL    = CHURCH.data('prayer.json');
+const MUSIC_DATA_URL     = CHURCH.data('music.json');
+const EQUIP_DATA_URL     = CHURCH.data('equip.json');
+const ATTENDANCE_DATA_URL = CHURCH.data('attendance.json');
+const GIVING_DATA_URL    = CHURCH.data('finance-members.json');
 const MUSIC_ACCENT = '#EA580C';
 
 const PRAYER_ROLES = [
@@ -705,7 +712,7 @@ function findMusicMatch(memberWorker, musicWorkers) {
 // PERSONAL EVENTS — device-private, category-tagged, conflict-aware
 // =============================================================================
 
-const PERSONAL_EVENTS_KEY = 'flcc-personal-events-v1';
+const PERSONAL_EVENTS_KEY = CHURCH.key('flcc-personal-events-v1');
 
 const PERSONAL_CATEGORIES = [
   { key: 'work',     label: 'Work',     color: '#3B82F6', emoji: '💼' },
@@ -1786,7 +1793,7 @@ function LiftingUpCard({ data, me, attendanceData }) {
         {absentMembers.map((w, i) => {
           const name = `${w.title ? w.title + ' ' : ''}${w.name}`;
           const firstName = w.name.split(' ')[0];
-          const msg = `Hi ${firstName}! 👋\n\nWe've been missing you at our services! Just want you to know you are always in our prayers and we care about you. The FLCC family is stronger with you in it — we hope to see you soon!\n\nWith love from FLCC - Abundance Family 🙏\n— ${senderName}`;
+          const msg = `Hi ${firstName}! 👋\n\nWe've been missing you at our services! Just want you to know you are always in our prayers and we care about you. The FLCC family is stronger with you in it — we hope to see you soon!\n\nWith love from ${CHURCH.family} 🙏\n— ${senderName}`;
           return (
             <div key={w.id} className="flex items-center justify-between gap-3 flex-wrap"
               style={{ paddingBottom: i < absentMembers.length - 1 ? '0.75rem' : 0, borderBottom: i < absentMembers.length - 1 ? '1px solid var(--border)' : 'none' }}>
@@ -3114,8 +3121,8 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
 
   const SERVICE_LABELS = {
     'BOTR-NECK': 'BOTR-NECK',
-    'Friday': 'Abundance-Fri',
-    'Sunday': 'Abundance-Sun',
+    'Friday': `${CHURCH.short}-Fri`,
+    'Sunday': `${CHURCH.short}-Sun`,
   };
 
   return (
@@ -3395,9 +3402,9 @@ function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConfli
 const EQUIP_ACCENT = '#16A34A';
 const EQUIP_SOFT  = '#DCFCE7';
 const EQUIP_TINT  = '#F0FDF4';
-const EQUIP_PROGRESS_KEY = 'flcc-equip-progress-v1';
-const EQUIP_BOOKMARKS_KEY = 'flcc-equip-bookmarks-v1';
-const EQUIP_ACTIVITY_KEY  = 'flcc-equip-activity-v1';
+const EQUIP_PROGRESS_KEY = CHURCH.key('flcc-equip-progress-v1');
+const EQUIP_BOOKMARKS_KEY = CHURCH.key('flcc-equip-bookmarks-v1');
+const EQUIP_ACTIVITY_KEY  = CHURCH.key('flcc-equip-activity-v1');
 
 const TRACK_META = {
   foundation:     { label: 'Foundation',     color: '#16A34A', icon: '🌱' },
@@ -4350,7 +4357,7 @@ function EquipAdmin({ progress }) {
 const SN_NOTES_GREEN  = '#16A34A';
 const SN_NOTES_SOFT   = '#DCFCE7';
 const SN_NOTES_TINT   = '#F0FDF4';
-const SERMON_NOTES_STORE_KEY = 'flcc-sermon-notes-v1';
+const SERMON_NOTES_STORE_KEY = CHURCH.key('flcc-sermon-notes-v1');
 
 function loadSermonNotes()       { try { return JSON.parse(localStorage.getItem(SERMON_NOTES_STORE_KEY) || '{}'); } catch { return {}; } }
 function persistSermonNotes(n)   { try { localStorage.setItem(SERMON_NOTES_STORE_KEY, JSON.stringify(n)); } catch {} }
@@ -5875,7 +5882,7 @@ const TABS = [
   { key: 'about',      label: 'About' },
 ];
 
-const GIVING_KEY = 'flcc-giving-name-v1';
+const GIVING_KEY = CHURCH.key('flcc-giving-name-v1');
 const GIVING_GOLD = '#D97706';
 
 // ── number to words (KWD) ───────────────────────────────────────────────────

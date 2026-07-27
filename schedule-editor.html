@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Schedule Editor — FLCC</title>
+<script>window.addEventListener('DOMContentLoaded',function(){document.title='Schedule Editor — '+window.FLCC.short;});</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,600;9..144,0,700;9..144,1,400&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -11,6 +12,10 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+
+<!-- Which church's schedule is being edited. Decides both the roster loaded
+     and the file Publish writes to. -->
+<script src="./church.js"></script>
 <style>
   :root {
     --bg:#F8F7F2; --surface:#FFFFFF; --ink:#1A1A1E; --ink-2:#3D3D44; --ink-3:#6E6E78; --ink-4:#A8A8B3;
@@ -141,10 +146,13 @@
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useCallback } = React;
 
-const DATA_URL     = './data.json';
-const GH_TOKEN_KEY = 'flcc-sched-editor-token-v1';
+const CHURCH       = window.FLCC;
+const DATA_URL     = CHURCH.data('data.json');
+const GH_TOKEN_KEY = CHURCH.key('flcc-sched-editor-token-v1');
 const GH_REPO      = 'ninlamster-blip/flcc-members-2026';
-const GH_FILE      = 'data.json';
+// Scoped to the active church — this editor can only overwrite its own
+// church's schedule file.
+const GH_FILE      = CHURCH.publishPath('data.json');
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -694,7 +702,7 @@ function App(){
       const putR=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
         method:'PUT',
         headers:{Authorization:`Bearer ${ghToken}`,Accept:'application/vnd.github+json','Content-Type':'application/json'},
-        body:JSON.stringify({message:`Update ${activeTab} — ${new Date().toLocaleDateString()}`,content:encoded,...(existing?.sha?{sha:existing.sha}:{})})
+        body:JSON.stringify({message:`Update ${GH_FILE} (${activeTab}) — ${new Date().toLocaleDateString()}`,content:encoded,...(existing?.sha?{sha:existing.sha}:{})})
       });
       if(!putR.ok){const e=await putR.json().catch(()=>({}));throw new Error(e.message||`HTTP ${putR.status}`);}
       setGhStatus('ok');setDirty(false);
@@ -723,7 +731,10 @@ function App(){
       <aside className="sidebar">
         <div style={{marginBottom:20}}>
           <div className="font-display" style={{fontSize:'1.0625rem',fontWeight:600,color:'var(--ink)',marginBottom:2}}>📅 Schedule Editor</div>
-          <div style={{fontSize:'.75rem',color:'var(--ink-4)'}}>FLCC · Abundance Church</div>
+          <div style={{fontSize:'.75rem',color:'var(--ink-4)',display:'flex',alignItems:'center',gap:6}}>
+            <span style={{flex:'none',width:8,height:8,borderRadius:'50%',background:CHURCH.accent}} />
+            {CHURCH.name} · <span style={{fontFamily:'ui-monospace,monospace'}}>{GH_FILE}</span>
+          </div>
         </div>
 
         {/* Tab nav */}

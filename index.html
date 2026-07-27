@@ -16,6 +16,11 @@
 <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 
+<!-- Resolves which church this visitor is on, and where its data lives. Must
+     load before the app: the data URLs and storage keys below are built from it. -->
+<script src="./church.js"></script>
+<script>document.title = window.FLCC.name + ' · Schedule for Members';</script>
+
 <style>
   :root {
     --bg: #FAFAF5;
@@ -778,19 +783,26 @@ const CONFLICT_REASONS = [
   'Other (explain in note)',
 ];
 
-const ME_KEY             = 'flcc-members-me';
-const DATA_URL           = './data.json';
-const PRAYER_DATA_URL    = './prayer.json';
-const MUSIC_DATA_URL     = './music.json';
-const EQUIP_DATA_URL     = './equip.json';
-const ATTENDANCE_DATA_URL = './attendance.json';
-const GIVING_DATA_URL    = './finance-members.json';
-const WORSHIP_DATA_URL   = './worship.json';
+// ── Church-scoped data + storage ─────────────────────────────────────────────
+// Every church runs these same files; only the data behind them differs.
+// FLCC.data() points at the active church's folder, FLCC.key() keeps one
+// church's members from overwriting another's on a shared device. (Abundance
+// keeps the original un-prefixed keys, so nobody loses what's already saved.)
+const CHURCH             = window.FLCC;
+const ME_KEY             = CHURCH.key('flcc-members-me');
+const DATA_URL           = CHURCH.data('data.json');
+const PRAYER_DATA_URL    = CHURCH.data('prayer.json');
+const MUSIC_DATA_URL     = CHURCH.data('music.json');
+const EQUIP_DATA_URL     = CHURCH.data('equip.json');
+const ATTENDANCE_DATA_URL = CHURCH.data('attendance.json');
+const GIVING_DATA_URL    = CHURCH.data('finance-members.json');
+const WORSHIP_DATA_URL   = CHURCH.data('worship.json');
+// Network-wide, shared by all 13 churches — not per church.
 const BOTR_SCHEDULE_URL  = './botr-schedule.json';
-const ASK_PASTOR_KEY     = 'flcc-ask-pastor-v1';
-const SELF_BIRTHDAY_KEY  = 'flcc-self-birthday-v1';
-const PRAYER_LOG_KEY     = 'flcc-prayer-log-v1';
-const GOSPEL_KEY         = 'flcc-gospel-count-v1';
+const ASK_PASTOR_KEY     = CHURCH.key('flcc-ask-pastor-v1');
+const SELF_BIRTHDAY_KEY  = CHURCH.key('flcc-self-birthday-v1');
+const PRAYER_LOG_KEY     = CHURCH.key('flcc-prayer-log-v1');
+const GOSPEL_KEY         = CHURCH.key('flcc-gospel-count-v1');
 const BOTR_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
 const BOTR_2026_TARGET   = 54000;
 const MUSIC_ACCENT = '#EA580C';
@@ -819,7 +831,7 @@ function generatePrayerMeetingAssignmentMessage(meeting, worker, roleLabel, chur
 }
 
 // ── Assignment Notifications ──────────────────────────────────────────────────
-const NOTIF_KEY = 'flcc-notifs-seen-v1';
+const NOTIF_KEY = CHURCH.key('flcc-notifs-seen-v1');
 const loadNotifSeen = () => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) || []; } catch { return []; } };
 const saveNotifSeen = s => { try { localStorage.setItem(NOTIF_KEY, JSON.stringify(s)); } catch {} };
 
@@ -880,7 +892,7 @@ const PRAYER_PROMPTS = [
 const ENCOURAGE_PRESETS = [
   '🙏 Praying for you today! God sees your faithfulness and He is always with you.',
   '🔥 What a blessing you are to our church! Your service and sacrifice mean so much to all of us.',
-  '❤️ You are a true gift to FLCC - Abundance Family! We thank God for you every single day.',
+  `❤️ You are a true gift to ${CHURCH.family}! We thank God for you every single day.`,
   '✨ Keep shining for Jesus! The way you serve and love others is a true inspiration to us all.',
 ];
 function getBibleReadingForDay(dayOfYear) {
@@ -928,7 +940,7 @@ function findMusicMatch(memberWorker, musicWorkers) {
 // PERSONAL EVENTS — device-private, category-tagged, conflict-aware
 // =============================================================================
 
-const PERSONAL_EVENTS_KEY = 'flcc-personal-events-v1';
+const PERSONAL_EVENTS_KEY = CHURCH.key('flcc-personal-events-v1');
 
 const PERSONAL_CATEGORIES = [
   { key: 'work',     label: 'Work',     color: '#3B82F6', emoji: '💼' },
@@ -1612,13 +1624,13 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
             <div className="text-xs tracking-widest uppercase mb-1" style={{ color: '#A33B2A' }}>Ministry Card</div>
             <div className="font-bold" style={{ fontSize: '1.15rem', letterSpacing: '0.02em', color: '#18181B' }}>{me.title ? me.title + ' ' : ''}{me.name}</div>
             <div className="text-sm font-medium mt-0.5" style={{ color: '#A33B2A' }}>{me.designation || 'Church Leader'}</div>
-            <div className="text-xs mt-1" style={{ color: '#52525B' }}>{data.meta?.churchName || 'FLCC - Abundance Church'}</div>
+            <div className="text-xs mt-1" style={{ color: '#52525B' }}>{data.meta?.churchName || CHURCH.name}</div>
           </div>
           <button className="text-xs px-3 py-1 rounded-lg flex-shrink-0"
             style={{ background: 'rgba(163,59,42,0.1)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.2)', cursor: 'pointer' }}
             onClick={() => {
               const roleList = (me.eligibleRoles || []).map(r => ROLES.find(x => x.key === r)?.label || r).join(', ');
-              const card = `${me.title ? me.title + ' ' : ''}${me.name}\n${me.designation || 'Church Leader'}\n${data.meta?.churchName || 'FLCC - Abundance Church'}${roleList ? '\n\nService Roles: ' + roleList : ''}\n\n#FLCC #AbundanceFamily`;
+              const card = `${me.title ? me.title + ' ' : ''}${me.name}\n${me.designation || 'Church Leader'}\n${data.meta?.churchName || CHURCH.name}${roleList ? '\n\nService Roles: ' + roleList : ''}\n\n#FLCC ${CHURCH.hashtag}`;
               try { navigator.clipboard.writeText(card); alert('Ministry card copied!'); } catch {}
             }}>
             Copy
@@ -2074,7 +2086,7 @@ function EncourageModal({ worker, data, onClose }) {
   function send() {
     const msg = selected !== null ? ENCOURAGE_PRESETS[selected] : custom.trim();
     if (!msg) return;
-    const full = `Hi ${name}! 👋\n\n${msg}\n\n— From FLCC - Abundance Family 🙏`;
+    const full = `Hi ${name}! 👋\n\n${msg}\n\n— From ${CHURCH.family} 🙏`;
     const recipient = worker.messenger || data.ministry?.messenger;
     if (recipient) {
       window.open(`https://m.me/${recipient}?text=${encodeURIComponent(full)}`, '_blank');
@@ -2337,7 +2349,7 @@ function LiftingUpCard({ data, me, attendanceData }) {
         {absentMembers.map((w, i) => {
           const name = `${w.title ? w.title + ' ' : ''}${w.name}`;
           const firstName = w.name.split(' ')[0];
-          const msg = `Hi ${firstName}! 👋\n\nWe've been missing you at our services! Just want you to know you are always in our prayers and we care about you. The FLCC family is stronger with you in it — we hope to see you soon!\n\nWith love from FLCC - Abundance Family 🙏\n— ${senderName}`;
+          const msg = `Hi ${firstName}! 👋\n\nWe've been missing you at our services! Just want you to know you are always in our prayers and we care about you. The FLCC family is stronger with you in it — we hope to see you soon!\n\nWith love from ${CHURCH.family} 🙏\n— ${senderName}`;
           return (
             <div key={w.id} className="flex items-center justify-between gap-3 flex-wrap"
               style={{ paddingBottom: i < absentMembers.length - 1 ? '0.75rem' : 0, borderBottom: i < absentMembers.length - 1 ? '1px solid var(--border)' : 'none' }}>
@@ -2553,8 +2565,8 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           </div>
           <div className="text-sm" style={{ color: isMyBirthday ? '#9D174D' : '#9A3412', lineHeight: 1.6 }}>
             {isMyBirthday
-              ? `Today is YOUR special day and the whole FLCC family celebrates YOU! 🙏 May God shower you with His blessings, fill your heart with joy, and surround you with His love all year long. We are so grateful you are part of our family — from FLCC - Abundance Family!`
-              : `Today is YOUR special day and the whole FLCC family celebrates your marriage! 🙏 May God continue to strengthen your bond, fill your home with joy, and let your love grow deeper every single day. You are a beautiful blessing to our family — from FLCC - Abundance Family!`}
+              ? `Today is YOUR special day and the whole FLCC family celebrates YOU! 🙏 May God shower you with His blessings, fill your heart with joy, and surround you with His love all year long. We are so grateful you are part of our family — from ${CHURCH.family}!`
+              : `Today is YOUR special day and the whole FLCC family celebrates your marriage! 🙏 May God continue to strengthen your bond, fill your home with joy, and let your love grow deeper every single day. You are a beautiful blessing to our family — from ${CHURCH.family}!`}
           </div>
         </div>
       )}
@@ -2744,7 +2756,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     style={{ color: '#BE185D' }}
                     onClick={() => {
                       const name = `${b.worker.title ? b.worker.title + ' ' : ''}${b.worker.name}`;
-                      const msg = `🎂 Happy Birthday, ${name}! 🎉\n\nMay this special day be filled with joy, love, and God's abundant grace. We thank God for the gift of your life and the blessing you are to our church family.\n\nWith love and prayers, from FLCC - Abundance Family! 🙏`;
+                      const msg = `🎂 Happy Birthday, ${name}! 🎉\n\nMay this special day be filled with joy, love, and God's abundant grace. We thank God for the gift of your life and the blessing you are to our church family.\n\nWith love and prayers, from ${CHURCH.family}! 🙏`;
                       const recipient = b.worker.messenger || data.ministry?.messenger;
                       if (recipient) {
                         window.open(`https://m.me/${recipient}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -2783,7 +2795,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     style={{ color: '#C2410C' }}
                     onClick={() => {
                       const name = `${a.worker.title ? a.worker.title + ' ' : ''}${a.worker.name}`;
-                      const msg = `💍 Happy Anniversary, ${name}! 🎉\n\nMay God continue to bless your marriage with love, faith, and joy that grows stronger every year. We are grateful for the beautiful example you are to our church family.\n\nWith love and prayers, from FLCC - Abundance Family! 🙏`;
+                      const msg = `💍 Happy Anniversary, ${name}! 🎉\n\nMay God continue to bless your marriage with love, faith, and joy that grows stronger every year. We are grateful for the beautiful example you are to our church family.\n\nWith love and prayers, from ${CHURCH.family}! 🙏`;
                       const recipient = a.worker.messenger || data.ministry?.messenger;
                       if (recipient) {
                         window.open(`https://m.me/${recipient}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -3871,6 +3883,49 @@ function DayDetailSheet({ date, onClose, services, events, data, prayerData, mus
 }
 
 // --- About tab ---
+// ── Church switcher ───────────────────────────────────────────────────────────
+// Every church in the network runs this same app. Switching reloads into the
+// other church's data; each church's saved identity, notes and progress are
+// kept apart (see FLCC.key), so nothing is lost by looking around.
+function ChurchSwitcher() {
+  const [copied, setCopied] = useState(false);
+  const link = CHURCH.prettyUrl();
+
+  const copyLink = () => {
+    try { navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch (_) {}
+  };
+
+  return (
+    <div className="card p-6 mb-4">
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Your church</div>
+      <div className="flex items-center gap-2 mb-3">
+        <span style={{ flex: 'none', width: 12, height: 12, borderRadius: '50%', background: CHURCH.accent }} />
+        <span className="font-display text-xl font-semibold">{CHURCH.name}</span>
+      </div>
+      <label className="text-xs ink-muted block mb-1" htmlFor="church-switch">Switch church</label>
+      <select
+        id="church-switch"
+        value={CHURCH.slug}
+        onChange={e => CHURCH.setChurch(e.target.value)}
+        className="w-full text-sm"
+        style={{ padding: '0.5rem 0.625rem', borderRadius: 10, border: '1px solid var(--border-strong)', background: 'var(--surface)', color: 'var(--ink)' }}
+      >
+        {CHURCH.bySector().map(g => (
+          <optgroup key={g.sector} label={`${g.sector} Sector`}>
+            {g.churches.map(c => <option key={c.slug} value={c.slug}>{c.short}</option>)}
+          </optgroup>
+        ))}
+      </select>
+      <div className="text-xs ink-subtle mt-3">
+        Share this church's link:{' '}
+        <button onClick={copyLink} className="underline" style={{ color: 'var(--accent)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>
+          {copied ? 'Copied ✓' : link}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, botrLive, botrLiveStatus, onRefreshBotr }) {
   const m  = data.ministry || {};
   const pm = prayerData?.ministry || null;
@@ -3887,6 +3942,8 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
       <SectionHeading eyebrow="About" title={data.meta.churchName}>
         This members view is read-only and shows the latest schedule published by the admin.
       </SectionHeading>
+
+      <ChurchSwitcher />
 
       {/* Ask the Pastor */}
       <div className="mb-6">
@@ -4121,7 +4178,7 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
         <div className="card p-6 mb-4" style={{ borderTop: '3px solid var(--accent)', background: 'linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 35%)' }}>
           <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>✝️ Lead Pastor</div>
           <div className="font-display text-2xl font-semibold">{justinFlores.title} {justinFlores.name}</div>
-          <div className="text-sm ink-muted mt-1">Senior Pastor · FLCC Abundance</div>
+          <div className="text-sm ink-muted mt-1">Senior Pastor · {CHURCH.plainName}</div>
         </div>
       )}
 
@@ -4130,7 +4187,7 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
         <div className="card p-6 mb-4" style={{ borderTop: '3px solid #6366F1' }}>
           <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>✝️ Pastor</div>
           <div className="font-display text-2xl font-semibold">{doddieArciaga.title} {doddieArciaga.name}</div>
-          <div className="text-sm ink-muted mt-1">Pastor · FLCC Abundance</div>
+          <div className="text-sm ink-muted mt-1">Pastor · {CHURCH.plainName}</div>
         </div>
       )}
 
@@ -4425,8 +4482,8 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
 
   const SERVICE_LABELS = {
     'BOTR-NECK': 'BOTR-NECK',
-    'Friday': 'Abundance-Fri',
-    'Sunday': 'Abundance-Sun',
+    'Friday': `${CHURCH.short}-Fri`,
+    'Sunday': `${CHURCH.short}-Sun`,
   };
 
   return (
@@ -4830,9 +4887,9 @@ function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConfli
 const EQUIP_ACCENT = '#16A34A';
 const EQUIP_SOFT  = '#DCFCE7';
 const EQUIP_TINT  = '#F0FDF4';
-const EQUIP_PROGRESS_KEY = 'flcc-equip-progress-v1';
-const EQUIP_BOOKMARKS_KEY = 'flcc-equip-bookmarks-v1';
-const EQUIP_ACTIVITY_KEY  = 'flcc-equip-activity-v1';
+const EQUIP_PROGRESS_KEY = CHURCH.key('flcc-equip-progress-v1');
+const EQUIP_BOOKMARKS_KEY = CHURCH.key('flcc-equip-bookmarks-v1');
+const EQUIP_ACTIVITY_KEY  = CHURCH.key('flcc-equip-activity-v1');
 
 const TRACK_META = {
   foundation:     { label: 'Foundation',     color: '#16A34A', icon: '🌱' },
@@ -5906,7 +5963,7 @@ function EquipAdmin({ progress }) {
 const SN_NOTES_GREEN  = '#16A34A';
 const SN_NOTES_SOFT   = '#DCFCE7';
 const SN_NOTES_TINT   = '#F0FDF4';
-const SERMON_NOTES_STORE_KEY = 'flcc-sermon-notes-v1';
+const SERMON_NOTES_STORE_KEY = CHURCH.key('flcc-sermon-notes-v1');
 
 function loadSermonNotes()       { try { return JSON.parse(localStorage.getItem(SERMON_NOTES_STORE_KEY) || '{}'); } catch { return {}; } }
 function persistSermonNotes(n)   { try { localStorage.setItem(SERMON_NOTES_STORE_KEY, JSON.stringify(n)); } catch {} }
@@ -7863,7 +7920,7 @@ function buildChurchContext(data, prayerData, musicData, equipData, botrData = {
   ).join('\n');
   const botrChurches = (botr.satelliteChurches||[]).map(s=>`  ${s.church} (${s.sector})`).join('\n');
 
-  return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta?.churchName||'FLCC - Abundance Church'} (Full Life Christian Church).
+  return `You are "Ask FLCC" — the warm, knowledgeable AI assistant for ${data.meta?.churchName||CHURCH.name} (Full Life Christian Church).
 You have complete knowledge of the church: members, schedules, ministries, events, BOTR network, and more.
 Be warm, encouraging, and helpful. Address members by their proper titles (Bro./Sis./Ptr./Rev.).
 You know the Bible deeply and can answer Christian faith questions. When quoting Scripture, give the reference.
@@ -10526,7 +10583,7 @@ function ArenaWarriorCardScreen({ me, state, charLevel, onShare, onBack }) {
       `Badges Earned: ${(state.earnedBadges||[]).length}`,
       `Battles Won: ${state.battlesWon||0}`,
       '',
-      'Growing in faith at FLCC Abundance Church',
+      `Growing in faith at ${CHURCH.name}`,
     ];
     try { navigator.clipboard.writeText(lines.join('\n')); } catch (_) {}
     onShare();
@@ -14772,7 +14829,7 @@ const TABS = [
   { key: 'about',    label: 'About' },
 ];
 
-const GIVING_KEY = 'flcc-giving-name-v1';
+const GIVING_KEY = CHURCH.key('flcc-giving-name-v1');
 const GIVING_GOLD = '#D97706';
 
 // ── number to words (KWD) ───────────────────────────────────────────────────
@@ -15252,7 +15309,7 @@ function App() {
               </h1>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <a href="ask.html" className="ask-pill">💬 Ask FLCC</a>
+              <a href={CHURCH.url('ask.html')} className="ask-pill">💬 Ask FLCC</a>
               {me && <NotificationBell me={me} data={data} notifSeen={notifSeen} onMarkSeen={handleMarkNotifSeen} />}
             </div>
           </div>
