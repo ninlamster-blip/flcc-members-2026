@@ -8163,6 +8163,14 @@ function AskPastorTab({ data }) {
     if (pastors.length && !pastorId) setPastorId(pastors[0].id);
   }, [pastors, pastorId]);
 
+  // Each church has its own pastors — name whoever is in this church's roster.
+  const pastorNames = useMemo(() => {
+    const names = pastors.map(p => [p.title, p.name.split(' ')[0]].filter(Boolean).join(' '));
+    if (names.length === 0) return '';
+    if (names.length === 1) return names[0];
+    return names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1];
+  }, [pastors]);
+
   const submit = () => {
     if (!text.trim()) return;
     const p = pastors.find(w => w.id === pastorId);
@@ -8202,7 +8210,7 @@ function AskPastorTab({ data }) {
   return (
     <div className="fade-in">
       <SectionHeading eyebrow="FLCC · Pastoral" title="Ask the Pastor">
-        Submit your question anonymously. Ptr. Justin or Ptr. Doddie will answer during the weekly Q&amp;A.
+        Submit your question anonymously. {pastorNames || 'Your pastor'} will answer during the weekly Q&amp;A.
       </SectionHeading>
 
       {/* Submit form */}

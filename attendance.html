@@ -2080,7 +2080,7 @@ function App() {
         <div className="hdr-strip" />
         <div style={{ maxWidth:700, margin:'0 auto', padding:'16px 18px 0' }}>
           <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:10 }}>
-            <div>
+            <div style={{ minWidth:0 }}>
               <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', color:ATT_ACCENT }}>
                 {state.meta.churchName||CHURCH.name} · Attendance OS
               </div>
@@ -2092,10 +2092,10 @@ function App() {
                   the church in the URL, so this is worth stating plainly. */}
               <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:4, fontSize:'0.6875rem', color:'var(--ink-subtle)' }}>
                 <span style={{ flex:'none', width:8, height:8, borderRadius:'50%', background:CHURCH.accent }} />
-                <span>{CHURCH.short} · publishes to <span style={{ fontFamily:'ui-monospace,monospace' }}>{GH_FILE}</span></span>
+                <span style={{ whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{CHURCH.short} · publishes to <span style={{ fontFamily:'ui-monospace,monospace' }}>{GH_FILE}</span></span>
               </div>
             </div>
-            <div style={{ textAlign:'right', fontSize:'0.75rem', color:'var(--ink-subtle)' }}>
+            <div style={{ textAlign:'right', fontSize:'0.75rem', color:'var(--ink-subtle)', flex:'none', whiteSpace:'nowrap' }}>
               {state.meta.stewardName && <div style={{ fontWeight:500, color:'var(--ink-muted)' }}>{state.meta.stewardName}</div>}
               <div>{todayStr}</div>
               {syncStatus==='syncing' && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#D97706', fontWeight:500 }}>Saving…</span></div>}
