@@ -2,7 +2,7 @@
   "meta": {
     "churchName": "FLCC - Abundance Church",
     "ministryName": "Music Ministry",
-    "publishedAt": "2026-05-21T08:10:29.226Z",
+    "publishedAt": "2026-07-28T15:34:35.355Z",
     "version": "1.0"
   },
   "ministry": {
@@ -550,6 +550,110 @@
       "service": "PrayerMeeting",
       "assignments": {
         "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-08-02-sunday",
+      "date": "2026-08-02",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "sis-15"
+      }
+    },
+    {
+      "id": "m-2026-08-06-prayermeeting",
+      "date": "2026-08-06",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-hope"
+      }
+    },
+    {
+      "id": "m-2026-08-07-friday",
+      "date": "2026-08-07",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-08-09-sunday",
+      "date": "2026-08-09",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-09"
+      }
+    },
+    {
+      "id": "m-2026-08-12-prayermeeting",
+      "date": "2026-08-12",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "grp-cpm"
+      }
+    },
+    {
+      "id": "m-2026-08-14-friday",
+      "date": "2026-08-14",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-01"
+      }
+    },
+    {
+      "id": "m-2026-08-16-sunday",
+      "date": "2026-08-16",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "mus-01"
+      }
+    },
+    {
+      "id": "m-2026-08-20-prayermeeting",
+      "date": "2026-08-20",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "bro-07"
+      }
+    },
+    {
+      "id": "m-2026-08-21-friday",
+      "date": "2026-08-21",
+      "service": "Friday",
+      "assignments": {
+        "lead": "bro-03"
+      }
+    },
+    {
+      "id": "m-2026-08-23-sunday",
+      "date": "2026-08-23",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-02"
+      }
+    },
+    {
+      "id": "m-2026-08-27-prayermeeting",
+      "date": "2026-08-27",
+      "service": "PrayerMeeting",
+      "assignments": {
+        "lead": "sis-18"
+      }
+    },
+    {
+      "id": "m-2026-08-28-friday",
+      "date": "2026-08-28",
+      "service": "Friday",
+      "assignments": {
+        "lead": "ptr-01"
+      }
+    },
+    {
+      "id": "m-2026-08-30-sunday",
+      "date": "2026-08-30",
+      "service": "Sunday",
+      "assignments": {
+        "lead": "bro-03"
       }
     }
   ],
