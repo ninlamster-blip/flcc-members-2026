@@ -143,6 +143,9 @@ const GH_FILE     = CHURCH.publishPath('attendance.json');
 const PASSCODE_KEY = CHURCH.key('flcc-attendance-passcode-v1');
 const PUBLISH_BASE_KEY = CHURCH.key('flcc-attendance-publish-base-v1');
 const DATA_URL    = CHURCH.data('data.json');
+// The published copy of this church's own attendance — read back on load so a
+// steward's records follow her to any browser, not just the one she recorded on.
+const ATT_URL     = CHURCH.data('attendance.json');
 const VERSION     = '1.0';
 const ATT_ACCENT  = '#0284C7';
 
@@ -232,6 +235,9 @@ function defaultState() {
     meta: { churchName: CHURCH.name, stewardName: '', gasUrl: '', lastSync: null },
     sessions: [],
     customMembers: [],
+    // Sessions deleted on this device, so pulling the published file back down
+    // doesn't resurrect them. Kept forever — they are two short strings each.
+    deletedSessions: [],
   };
 }
 function migrate(s) {
@@ -239,6 +245,7 @@ function migrate(s) {
   if (!s.meta) s.meta = defaultState().meta;
   if (!s.sessions) s.sessions = [];
   if (!s.customMembers) s.customMembers = [];
+  if (!s.deletedSessions) s.deletedSessions = [];
   return s;
 }
 
@@ -368,9 +375,80 @@ function buildAttendanceJSON(state) {
       date:         s.date,
       service:      s.service,
       serviceLabel: s.serviceLabel || s.service,
+      // Carried so another device can pull this session back down intact and
+      // tell whose copy is newer. The dashboards ignore what they don't read.
+      updatedAt:    sessionStamp(s),
+      totalMembers: s.totalMembers || 0,
       summary:      getSessionSummary(s),
-      records:      (s.records || []).map(r => ({ memberId: r.memberId, memberName: r.memberName, status: r.status })),
+      records:      (s.records || []).map(r => ({ memberId: r.memberId, memberName: r.memberName, ministry: r.ministry || '', status: r.status })),
     })),
+    // Visitors and new faces live only on the device that added them unless
+    // they travel with the file.
+    customMembers: state.customMembers || [],
+  };
+}
+
+// ─── Pulling the published file back down ─────────────────────────────────────
+// localStorage is per browser, so a steward who records on her phone sees
+// nothing when she opens the same link on a laptop. Everything she publishes is
+// already in her church's attendance.json, so the app reads it back on load and
+// merges it with whatever this device has.
+
+/** When a session was last touched, as an ISO string. Older sessions predate
+ *  updatedAt, so fall back to the newest thing they do carry. */
+function sessionStamp(s, fallback) {
+  const times = [s?.updatedAt, s?.createdAt, ...((s?.records) || []).map(r => r.timestamp)].filter(Boolean);
+  times.sort();
+  return times[times.length - 1] || fallback || '';
+}
+
+/** A published session in the shape the app keeps locally. */
+function sessionFromPublished(s, publishedAt) {
+  const { summary, ...rest } = s;
+  return {
+    ...rest,
+    serviceLabel: s.serviceLabel || s.service,
+    totalMembers: s.totalMembers || summary?.total || (s.records || []).length,
+    records:      (s.records || []).map(r => ({ ...r })),
+    updatedAt:    sessionStamp(s, publishedAt),
+    synced:       true,
+  };
+}
+
+/** Merge the published file into this device's state. Returns null when the
+ *  file adds nothing new, so an unchanged load never touches storage.
+ *
+ *  Newest wins per session, and the result is always a union — a device that
+ *  had been offline for weeks can never publish its stale copy over someone
+ *  else's newer one. A session deleted here stays deleted unless it was
+ *  recorded again elsewhere afterwards. */
+function mergePublished(state, remote) {
+  const publishedAt = remote?.meta?.publishedAt || '';
+  const tombstones  = new Map((state.deletedSessions || []).map(d => [d.id, d.at || '']));
+  const byId        = new Map((state.sessions || []).map(s => [s.id, s]));
+  let added = 0, refreshed = 0;
+
+  for (const raw of (remote?.sessions || [])) {
+    if (!raw || !raw.id) continue;
+    const incoming = sessionFromPublished(raw, publishedAt);
+    const stamp    = incoming.updatedAt;
+    const deletedAt = tombstones.get(raw.id);
+    if (deletedAt !== undefined && deletedAt >= stamp) continue;
+
+    const mine = byId.get(raw.id);
+    if (!mine)                              { byId.set(raw.id, incoming); added++; }
+    else if (stamp > sessionStamp(mine, '')) { byId.set(raw.id, { ...mine, ...incoming }); refreshed++; }
+  }
+
+  const haveMember  = new Set((state.customMembers || []).map(m => m.id));
+  const newMembers  = (remote?.customMembers || []).filter(m => m?.id && !haveMember.has(m.id));
+
+  if (!added && !refreshed && !newMembers.length) return null;
+  return {
+    sessions:      [...byId.values()],
+    customMembers: [...(state.customMembers || []), ...newMembers],
+    added,
+    refreshed,
   };
 }
 
@@ -441,15 +519,30 @@ function reducer(state, action) {
   let next;
   switch (action.type) {
     case 'UPSERT_SESSION': {
-      const i = state.sessions.findIndex(s=>s.id===action.session.id);
+      // Every edit is stamped so the same session recorded on two devices can be
+      // resolved newest-wins when the published file is pulled back down.
+      const session = { ...action.session, updatedAt: new Date().toISOString() };
+      const i = state.sessions.findIndex(s=>s.id===session.id);
       const sessions = i>=0
-        ? state.sessions.map(s=>s.id===action.session.id?action.session:s)
-        : [...state.sessions, action.session];
+        ? state.sessions.map(s=>s.id===session.id?session:s)
+        : [...state.sessions, session];
       next = { ...state, sessions };
       break;
     }
     case 'DELETE_SESSION':
-      next = { ...state, sessions: state.sessions.filter(s=>s.id!==action.id) };
+      next = {
+        ...state,
+        sessions: state.sessions.filter(s=>s.id!==action.id),
+        deletedSessions: [
+          ...(state.deletedSessions||[]).filter(d=>d.id!==action.id),
+          { id: action.id, at: new Date().toISOString() },
+        ],
+      };
+      break;
+    // Result of merging the published attendance.json into what's on this
+    // device — computed in mergePublished(), applied here so it persists.
+    case 'MERGE_PUBLISHED':
+      next = { ...state, sessions: action.sessions, customMembers: action.customMembers };
       break;
     case 'ADD_CUSTOM_MEMBER':
       next = { ...state, customMembers: [...state.customMembers, action.member] };
@@ -1593,7 +1686,7 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
       <div className="card" style={{ padding:16, marginBottom:14, borderColor:ATT_ACCENT }}>
         <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:ATT_ACCENT }}>For your admin — Review</div>
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.6 }}>
-          After every service, tap <strong>Publish attendance to GitHub</strong> above. The members dashboard updates within seconds — no file uploads, no Google Sheets required.
+          Once your passcode is connected below, every service uploads on its own a few seconds after the last tap — no file uploads, no Google Sheets required. That upload is also what lets you open this app on another phone or browser and still see your records.
         </p>
         <a href={`https://github.com/${GH_REPO}/blob/main/${GH_FILE}`}
           target="_blank" rel="noopener"
@@ -1649,7 +1742,10 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
         ) : (
           <div>
             <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.6 }}>
-              <strong>One-time setup:</strong> enter the passcode your admin gave you for {CHURCH.short}. After that, every service uploads on its own.
+              <strong>Until this is connected, everything you record stays inside this one browser.</strong> It survives closing the app, but it never reaches the members dashboard, and opening the same link on another phone or browser shows nothing.
+            </div>
+            <div style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:10, lineHeight:1.6 }}>
+              <strong>One-time setup:</strong> enter the passcode your admin gave you for {CHURCH.short}. After that, every service uploads on its own — and any browser you enter the passcode on picks up what you have already recorded.
             </div>
             <div style={{ display:'flex', gap:6 }}>
               <input
@@ -2075,6 +2171,10 @@ function App() {
   const [passcode, setPasscode]  = useState(() => { try { return localStorage.getItem(PASSCODE_KEY)||''; } catch { return ''; } });
   const [syncStatus, setSyncStatus] = useState(''); // '' | 'syncing' | 'saved' | 'error'
   const [syncErrMsg, setSyncErrMsg] = useState('');
+  const [pulled,     setPulled]     = useState(null); // { added, refreshed } from the published file
+  // Bumped once when a pull lands, so the Today tab — which reads today's
+  // session when it mounts — picks up a service recorded on another device.
+  const [pullSeq,    setPullSeq]    = useState(0);
   const syncTimer   = useRef(null);
   const syncLock    = useRef(false);
   const stateRef    = useRef(state);
@@ -2100,9 +2200,11 @@ function App() {
     }
   }, [ghToken, passcode]);
 
-  // Auto-publish to GitHub 5 s after the last attendance change
+  // Auto-publish 5 s after the last attendance change. A steward publishes with
+  // a passcode and never has a token — gating this on the token alone left her
+  // work sitting in localStorage, visible on that one browser and nowhere else.
   useEffect(() => {
-    if (!ghToken || !state.sessions.length) return;
+    if ((!passcode && !ghToken) || !state.sessions.length) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(runSync, 5000);
     return () => clearTimeout(syncTimer.current);
@@ -2112,6 +2214,26 @@ function App() {
     if (syncTimer.current) clearTimeout(syncTimer.current);
     runSync();
   }, [runSync]);
+
+  // Pull this church's published attendance back down on load, so opening the
+  // link on a second browser (or a replaced phone) shows the work already
+  // recorded instead of an empty app. Anything on this device that isn't in the
+  // file yet is kept — the merge is a union, never a replacement.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${ATT_URL}?t=${Date.now()}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(remote => {
+        if (cancelled || !remote) return;
+        const merged = mergePublished(stateRef.current, remote);
+        if (!merged) return;
+        dispatch({ type:'MERGE_PUBLISHED', sessions: merged.sessions, customMembers: merged.customMembers });
+        setPulled({ added: merged.added, refreshed: merged.refreshed });
+        setPullSeq(n => n + 1);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Fetch data.json for workers + schedule
   useEffect(()=>{
@@ -2178,6 +2300,14 @@ function App() {
               {syncStatus==='syncing' && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#D97706', fontWeight:500 }}>Saving…</span></div>}
               {syncStatus==='saved'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-ok"/><span style={{ color:'#16A34A', fontWeight:500 }}>Saved ✓</span></div>}
               {syncStatus==='error'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-err"/><span style={{ color:'#DC2626', fontWeight:500 }}>Sync error</span></div>}
+              {/* Nothing connected means nothing leaves this browser — say so
+                  where she can see it, not only in Settings. */}
+              {!passcode && !ghToken && !!state.sessions.length && (
+                <button onClick={()=>setTab('settings')}
+                  style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2, background:'none', border:'none', padding:0, cursor:'pointer', font:'inherit', color:'#D97706', fontWeight:500 }}>
+                  <div className="sync-dot sync-dot-pend"/><span>This browser only</span>
+                </button>
+              )}
             </div>
           </div>
           <nav style={{ display:'flex', overflowX:'auto', scrollbarWidth:'none' }}>
@@ -2202,9 +2332,23 @@ function App() {
         </div>
       )}
 
+      {/* What the published file brought back — worth naming, since on a new
+          browser it is the difference between an empty app and her records. */}
+      {pulled && (pulled.added > 0 || pulled.refreshed > 0) && (
+        <div style={{ maxWidth:700, margin:'16px auto 0', padding:'10px 14px', borderRadius:10, background:'#F0F9FF', border:'1px solid #BAE6FD', fontSize:'0.8125rem', color:'#075985', display:'flex', alignItems:'center', gap:10 }}>
+          <span style={{ flex:1 }}>
+            ☁ Loaded {pulled.added > 0 && <strong>{pulled.added} service{pulled.added===1?'':'s'}</strong>}
+            {pulled.added > 0 && pulled.refreshed > 0 && ' and '}
+            {pulled.refreshed > 0 && <><strong>{pulled.refreshed} update{pulled.refreshed===1?'':'s'}</strong></>}
+            {' '}from {CHURCH.short}'s published records.
+          </span>
+          <button onClick={()=>setPulled(null)} style={{ background:'none', border:'none', color:'#075985', cursor:'pointer', fontSize:'1rem', lineHeight:1, padding:0 }} aria-label="Dismiss">×</button>
+        </div>
+      )}
+
       {/* Tab content */}
       <main style={{ maxWidth:700, margin:'0 auto' }}>
-        <div key={tab} className="tab-content-area">
+        <div key={`${tab}-${pullSeq}`} className="tab-content-area">
           {tab==='today'     && <TodayTab     members={members} state={state} dispatch={dispatch} schedule={schedule} />}
           {tab==='history'   && <HistoryTab   state={state} dispatch={dispatch} members={members} />}
           {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
@@ -2215,7 +2359,7 @@ function App() {
       </main>
 
       <footer style={{ maxWidth:700, margin:'0 auto', padding:'3rem 1.5rem 6rem', fontSize:'0.75rem', color:'var(--ink-subtle)', textAlign:'center' }}>
-        FLCC Attendance OS · Steward: {state.meta.stewardName||'(set name in Settings)'} · Data stored locally
+        FLCC Attendance OS · Steward: {state.meta.stewardName||'(set name in Settings)'} · {(passcode || ghToken) ? `Saved on this device and published to ${CHURCH.short}` : 'Saved on this device only'}
       </footer>
     </div>
   );
