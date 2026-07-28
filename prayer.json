@@ -2,7 +2,7 @@
   "meta": {
     "churchName": "FLCC - Abundance Church",
     "ministryName": "Prayer Ministry",
-    "publishedAt": "2026-06-21T00:00:00.000Z",
+    "publishedAt": "2026-07-28T15:36:08.374Z",
     "version": "1.0"
   },
   "ministry": {
@@ -91,7 +91,16 @@
     {"id": "ip-2026-07-05-sunday", "date": "2026-07-05", "service": "Sunday", "teamId": "team-worship", "startTime": "18:15", "endTime": "18:30", "notes": ""},
     {"id": "ip-2026-07-12-sunday", "date": "2026-07-12", "service": "Sunday", "teamId": "team-finance", "startTime": "18:15", "endTime": "18:30", "notes": ""},
     {"id": "ip-2026-07-19-sunday", "date": "2026-07-19", "service": "Sunday", "teamId": "team-auxiliary", "startTime": "18:15", "endTime": "18:30", "notes": ""},
-    {"id": "ip-2026-07-26-sunday", "date": "2026-07-26", "service": "Sunday", "teamId": "team-discipleship", "startTime": "18:15", "endTime": "18:30", "notes": ""}
+    {"id": "ip-2026-07-26-sunday", "date": "2026-07-26", "service": "Sunday", "teamId": "team-discipleship", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-08-07-friday", "date": "2026-08-07", "service": "Friday", "teamId": "team-worship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-08-14-friday", "date": "2026-08-14", "service": "Friday", "teamId": "team-fellowship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-08-21-friday", "date": "2026-08-21", "service": "Friday", "teamId": "team-admin", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-08-28-friday", "date": "2026-08-28", "service": "Friday", "teamId": "team-discipleship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-08-02-sunday", "date": "2026-08-02", "service": "Sunday", "teamId": "team-worship", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-08-09-sunday", "date": "2026-08-09", "service": "Sunday", "teamId": "team-finance", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-08-16-sunday", "date": "2026-08-16", "service": "Sunday", "teamId": "team-evangelism", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-08-23-sunday", "date": "2026-08-23", "service": "Sunday", "teamId": "team-prayer", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-08-30-sunday", "date": "2026-08-30", "service": "Sunday", "teamId": "team-auxiliary", "startTime": "18:15", "endTime": "18:30", "notes": ""}
   ],
   "meetings": [
     {"id": "pm-2026-04-02", "date": "2026-04-02", "startTime": "18:30", "type": "sectoral", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "F&T", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
@@ -111,6 +120,10 @@
     {"id": "pm-2026-07-08", "date": "2026-07-08", "startTime": "18:00", "type": "corporate", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "MTCC", "venue": "CPM-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
     {"id": "pm-2026-07-16", "date": "2026-07-16", "startTime": "18:30", "type": "fasting", "presiderId": "pw-sandra-gabriel", "exhorterId": "bro-07", "songLeaderId": null, "coordinator": "", "venue": "Abundance Hall (Hosted by: Santos Fam)", "isVirtual": false, "foodInChargeText": "", "notes": ""},
     {"id": "pm-2026-07-23", "date": "2026-07-23", "startTime": "18:30", "type": "regular", "presiderId": "sis-18", "exhorterId": "pw-1778609033558", "songLeaderId": null, "coordinator": "", "venue": "De Jesus Family Flat", "isVirtual": false, "foodInChargeText": "", "notes": ""},
-    {"id": "pm-2026-07-30", "date": "2026-07-30", "startTime": "18:30", "type": "thanksgiving", "presiderId": "sis-13", "exhorterId": "ptr-01", "songLeaderId": null, "coordinator": "", "venue": "Abundance Hall", "isVirtual": false, "foodInChargeText": "JULY CELEBRANT", "notes": ""}
+    {"id": "pm-2026-07-30", "date": "2026-07-30", "startTime": "18:30", "type": "thanksgiving", "presiderId": "sis-13", "exhorterId": "ptr-01", "songLeaderId": null, "coordinator": "", "venue": "Abundance Hall", "isVirtual": false, "foodInChargeText": "JULY CELEBRANT", "notes": ""},
+    {"id": "pm-2026-08-06", "date": "2026-08-06", "startTime": "18:30", "type": "sectoral", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "F&T", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-08-12", "date": "2026-08-12", "startTime": "18:00", "type": "corporate", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "SHEKINAH", "venue": "CPM-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-08-20", "date": "2026-08-20", "startTime": "18:30", "type": "fasting", "presiderId": "bro-04", "exhorterId": "pw-1779804041427", "songLeaderId": "bro-07", "coordinator": "", "venue": "Arciaga Family Flat", "isVirtual": false, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-08-27", "date": "2026-08-27", "startTime": "18:30", "type": "thanksgiving", "presiderId": "sis-20", "exhorterId": "ptr-02", "songLeaderId": "sis-18", "coordinator": "", "venue": "Abundance Hall", "isVirtual": false, "foodInChargeText": "AUGUST CELEBRANT", "notes": ""}
   ]
 }
