@@ -797,8 +797,9 @@ const EQUIP_DATA_URL     = CHURCH.data('equip.json');
 const ATTENDANCE_DATA_URL = CHURCH.data('attendance.json');
 const GIVING_DATA_URL    = CHURCH.data('finance-members.json');
 const WORSHIP_DATA_URL   = CHURCH.data('worship.json');
-// Network-wide, shared by all 13 churches — not per church.
-const BOTR_SCHEDULE_URL  = './botr-schedule.json';
+// BOTR Friday's own Friday-morning service. Only that church ships the file,
+// so the card on Home simply doesn't appear for anyone else.
+const BOTR_SCHEDULE_URL  = CHURCH.data('botr-schedule.json');
 const ASK_PASTOR_KEY     = CHURCH.key('flcc-ask-pastor-v1');
 const SELF_BIRTHDAY_KEY  = CHURCH.key('flcc-self-birthday-v1');
 const PRAYER_LOG_KEY     = CHURCH.key('flcc-prayer-log-v1');
@@ -2395,7 +2396,7 @@ function BOTRScheduleCard({ botrData }) {
 
   return (
     <div className="mb-5">
-      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">⛪ FLCC BOTR · Friday Morning</div>
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">⛪ {botrData.meta?.churchName || CHURCH.name} · {botrData.meta?.service || 'Friday Morning'}</div>
       <div className="home-card">
         <div className="home-card-eyebrow">{when} · Friday · {serviceTime}</div>
         <div className="home-card-title">{formatDateLong(next.date)}</div>
@@ -15163,7 +15164,7 @@ function App() {
       })
       .catch(() => setWorshipData(false))
       .finally(checkDone);
-    // Optional: botr-schedule.json
+    // Optional: botr-schedule.json — present only for BOTR Friday
     fetch(`${BOTR_SCHEDULE_URL}?t=${Date.now()}`)
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(b => {
