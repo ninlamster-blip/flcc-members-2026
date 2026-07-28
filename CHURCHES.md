@@ -33,12 +33,18 @@ churches/_template/…                         ← skeletons to copy from
 each one's data sits. Every page loads it before the app and then reads
 `FLCC.data('data.json')` — no page hardcodes a path.
 
-**Shared by the whole network** (not per church): `botr.json`,
-`botr-schedule.json`, the Bible tools, World Watch, Faith Map, Equip content,
-the games, `ofw-companion/` and `daily-blessing/`.
+**Shared by the whole network** (not per church): `botr.json`, the Bible
+tools, World Watch, Faith Map, Equip content, the games, `ofw-companion/` and
+`daily-blessing/`.
 
 **Per church**: members and workers, the service schedule, attendance, prayer
 ministry, music ministry, worship songs, giving.
+
+One church has an extra file: `churches/botr-friday/botr-schedule.json` is
+BOTR Friday's Friday-morning service, shown as a card on its Home tab. It used
+to sit at the root and appear for every church. It has its own shape — plain
+names rather than roster IDs — so it is still hand-edited rather than managed
+in the schedule editor.
 
 A church only needs `data.json` and `attendance.json` to go live. Every other
 ministry file is optional — until it exists, the app simply hides that tab. To
