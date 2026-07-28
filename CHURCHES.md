@@ -134,6 +134,29 @@ like an attendance file. Both properties are covered by tests in
 
 To revoke a church, change its passcode in the secret and hand out the new one.
 
+### Recording on more than one device
+
+A steward's records live in `localStorage`, which belongs to one browser. She
+bookmarks the app on her phone, records a service, opens the same link on a
+laptop — and sees an empty app. Two things keep her work with her:
+
+- **Every tap is published.** Auto-sync used to fire only when a GitHub token
+  was connected, which no steward has, so a passcode steward's work never left
+  her browser. A passcode now publishes on the same five-second timer.
+- **The published file is read back on load.** The app fetches its own church's
+  `attendance.json` and merges it into the device. Newest wins per session
+  (that's what the `updatedAt` stamp on each session is for), the result is
+  always a union, and a session deleted on a device stays deleted unless
+  someone recorded it again afterwards. A device that has been closed for
+  weeks therefore can't publish its stale copy over anyone's newer one.
+
+She still enters the passcode once per browser — that is what identifies her
+church, and it is deliberately not something a link can carry.
+
+The merge is the one place where records could be lost, so it is tested:
+`node attendance.test.mjs` runs the real functions lifted out of
+`attendance.html`.
+
 Until those secrets exist the endpoint returns a clear "not set up yet" and
 nothing else in the Worker is affected. Stewards without a passcode can still
 record attendance — it just stays on their device.
