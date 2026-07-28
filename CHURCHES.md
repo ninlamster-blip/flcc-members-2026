@@ -1,6 +1,6 @@
 # Running the app for the whole BOTR network
 
-All 13 churches share **one copy** of the app — the same `index.html`, the same
+All 14 churches share **one copy** of the app — the same `index.html`, the same
 editors, the same design. Nothing is forked per church. Only the data behind it
 differs, so a feature added once shows up for everyone, and no church's app can
 drift away from the others' visually.
@@ -67,7 +67,7 @@ Two different jobs, two different answers:
 | **Attendance** (`attendance.json`) | that church's own steward | `attendance.html?church=<slug>`, church passcode |
 
 Schedules are monthly and centralised — churches submit theirs to the admin,
-who enters them. Attendance is per service, at 13 churches, so it can't route
+who enters them. Attendance is per service, at 14 churches, so it can't route
 through one person; each steward publishes their own.
 
 A steward can add visitors and new faces themselves (they're stored in

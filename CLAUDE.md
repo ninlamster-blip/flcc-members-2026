@@ -2,7 +2,7 @@
 
 ## Multi-church
 
-All 13 BOTR churches share these same files — same structure, same design, only
+All 14 BOTR churches share these same files — same structure, same design, only
 the data differs. `church.js` is the source of truth for which churches exist
 and where each one's data lives; pages read `FLCC.data('file.json')` and
 `FLCC.key('storage-key')` rather than hardcoding paths or keys. See
