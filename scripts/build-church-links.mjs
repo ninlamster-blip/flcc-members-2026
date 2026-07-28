@@ -10,7 +10,7 @@
  *
  *   node scripts/build-church-links.mjs
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ROOT, readRegistry } from './lib/registry.mjs';
 
@@ -96,7 +96,43 @@ ${groups}
 `;
 }
 
+/* roster.html is sent to church leaders as a file — over WhatsApp, over email —
+ * so it can't load church.js at run time. Its church list is stamped in here
+ * instead, which keeps it honest: the registry stays the one source of truth,
+ * and this file is regenerated from it rather than hand-maintained. */
+async function stampRosterChurches(registry) {
+  const path = join(ROOT, 'roster.html');
+  const src = await readFile(path, 'utf8');
+  const START = '/* CHURCHES-START';
+  const END = '/* CHURCHES-END */';
+  const s = src.indexOf(START);
+  const e = src.indexOf(END);
+  if (s === -1 || e === -1) throw new Error('roster.html: CHURCHES markers not found');
+  const head = src.slice(0, src.indexOf('\n', s) + 1);
+  const rows = registry
+    .map((c) => `  { slug: '${c.slug}', name: '${c.name.replace(/'/g, "\\'")}', accent: '${c.accent}' }`)
+    .join(',\n');
+  let out = `${head}var CHURCHES = [\n${rows}\n];\n${src.slice(e)}`;
+
+  // The <option>s are stamped as real markup too. A leader may open this file
+  // in a preview pane or a stripped-down browser; the church list has to be
+  // visible without JavaScript having built it.
+  const OPT_START = '<!-- OPTIONS-START -->';
+  const OPT_END = '<!-- OPTIONS-END -->';
+  const os = out.indexOf(OPT_START);
+  const oe = out.indexOf(OPT_END);
+  if (os === -1 || oe === -1) throw new Error('roster.html: OPTIONS markers not found');
+  const options = [
+    '      <option value="">— Choose your church —</option>',
+    ...registry.map((c) => `      <option value="${c.slug}">${c.name.replace(/&/g, '&amp;')}</option>`),
+  ].join('\n');
+  out = `${out.slice(0, os + OPT_START.length)}\n${options}\n${out.slice(oe)}`;
+
+  await writeFile(path, out);
+}
+
 const registry = await readRegistry();
+await stampRosterChurches(registry);
 await mkdir(join(ROOT, 'c'), { recursive: true });
 await writeFile(join(ROOT, 'c', 'index.html'), pickerPage(registry));
 for (const church of registry) {
