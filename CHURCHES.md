@@ -65,11 +65,26 @@ If you edit the registry in `church.js` by hand, re-run
 
 ## Collecting a church's member list
 
-`roster.html?church=<slug>` is a form to send a church so they can give you
-their members without touching the editors. They type or paste names, the
-titles (Bro./Sis./Ptr./…) are picked up from the start of each line, and they
-send the result back as pasted text or a downloaded `.json`. The draft is saved
-on their device as they go.
+`roster.html` is a form to send a church so they can give you their members
+without touching the editors. They type or paste names, the titles
+(Bro./Sis./Ptr./…) are picked up from the start of each line, and they send the
+result back as pasted text or a downloaded `.json`. Birthdays and wedding
+anniversaries are optional per person, folded behind a per-row toggle so a long
+list stays readable; both come back as `MM-DD`, which is what `data.json`
+already stores. The draft is saved on their device as they go.
+
+Send it either way:
+
+- **as a link** — `roster.html?church=shekinah` pre-selects their church
+- **as a file** — attach `roster.html` to a WhatsApp or email message; they open
+  it from their downloads and pick their church from the dropdown
+
+It is deliberately self-contained for that second case: no CDN scripts, no
+`church.js`, no web fonts, nothing fetched at all, so it works with no internet.
+That is also why its church list is stamped in by
+`scripts/build-church-links.mjs` rather than read from the registry at run time
+— **re-run that script after adding a church** or the attached copy won't list
+it.
 
 Nothing is submitted anywhere on its own — the admin loads what comes back into
 that church's `data.json`. The downloaded file already carries a `workers[]`

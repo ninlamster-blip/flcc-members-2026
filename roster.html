@@ -3,317 +3,565 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Member List — FLCC</title>
+<title>FLCC — Member List</title>
 <meta name="description" content="Send your church's member list to the FLCC admin." />
+<!--
+  ============================================================================
+  MEMBER LIST FORM
+  ----------------------------------------------------------------------------
+  Deliberately self-contained: no CDN scripts, no church.js, no fonts to
+  fetch, nothing to install. A church leader can be sent this file over
+  WhatsApp or email, open it from their downloads with no internet, fill it
+  in, and send the result back. The same file also works served from the site
+  as roster.html?church=<slug>, which pre-selects their church.
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
-
-<!-- Which church this list belongs to. -->
-<script src="./church.js"></script>
-<script>document.title = window.FLCC.short + ' — Member List';</script>
-
+  Because there is no church.js here, the church list is stamped in below by
+  scripts/build-church-links.mjs — re-run that after editing the registry.
+  ============================================================================
+-->
 <style>
   :root {
     --bg:#F8F7F2; --surface:#FFFFFF; --ink:#1A1A1E; --ink-2:#3D3D44; --ink-3:#6E6E78; --ink-4:#A8A8B3;
     --border:#E8E6DF; --border-2:#D5D2C8;
     --accent:#A33B2A; --accent-hover:#7E2D1F;
-    --success:#16A34A; --success-soft:#DCFCE7;
-    --warning:#D97706; --warning-soft:#FEF3C7;
-    --danger:#DC2626;
+    --success:#16A34A; --danger:#DC2626;
   }
   *{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
-  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Geist',ui-sans-serif,system-ui,sans-serif;}
-  .font-display{font-family:'Fraunces',Georgia,serif;letter-spacing:-.01em;}
+  /* Sized up for older eyes — the people filling this in are often elders
+     typing on a phone. Everything below is in rem, so this one line lifts the
+     whole page together. */
+  html{font-size:18px;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Geist',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;}
+  h1{font-family:Georgia,'Times New Roman',serif;letter-spacing:-.01em;}
 
   .wrap{max-width:640px;margin:0 auto;padding:1.75rem 1.125rem 5rem;}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.125rem;margin-bottom:1rem;}
-  .eyebrow{font-size:.6875rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-4);}
+  .eyebrow{font-size:.8125rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);}
+  .muted{color:var(--ink-3);font-size:1rem;line-height:1.65;}
+  .subtle{color:var(--ink-3);font-size:.9375rem;line-height:1.6;}
 
-  .field-label{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px;}
-  .field-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:.5rem .7rem;font-size:.9375rem;color:var(--ink);font-family:'Geist',sans-serif;transition:border-color .15s,box-shadow .15s,background .15s;outline:none;}
-  .field-input:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px rgba(163,59,42,.12);}
-  textarea.field-input{min-height:120px;resize:vertical;line-height:1.6;}
+  input,select,textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;
+    padding:.6rem .75rem;font-size:1.0625rem;color:var(--ink);font-family:inherit;outline:none;
+    transition:border-color .15s,box-shadow .15s,background .15s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface);
+    box-shadow:0 0 0 3px rgba(163,59,42,.12);}
+  textarea{min-height:150px;resize:vertical;line-height:1.7;}
 
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.55rem 1rem;border-radius:10px;font-size:.875rem;font-weight:600;border:1.5px solid transparent;cursor:pointer;transition:all .18s;white-space:nowrap;font-family:'Geist',sans-serif;}
-  .btn:active{transform:scale(.97);}
-  .btn:disabled{opacity:.45;cursor:not-allowed;}
-  .btn-accent{background:var(--accent);color:#fff;}
-  .btn-accent:hover:not(:disabled){background:var(--accent-hover);}
-  .btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--border-2);}
-  .btn-ghost:hover:not(:disabled){background:var(--bg);}
-  .btn-ok{background:var(--success);color:#fff;}
+  button{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.65rem 1.1rem;
+    border-radius:10px;font-size:1rem;font-weight:600;border:1.5px solid transparent;cursor:pointer;
+    transition:all .18s;font-family:inherit;}
+  button:active{transform:scale(.97);}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  .accent{background:var(--accent);color:#fff;}
+  .accent:hover:not(:disabled){background:var(--accent-hover);}
+  .ghost{background:transparent;color:var(--ink-2);border-color:var(--border-2);}
+  .ghost:hover:not(:disabled){background:var(--bg);}
+  .ok{background:var(--success);color:#fff;}
+  .x{background:none;border:none;padding:0 .35rem;color:var(--ink-3);font-size:1.5rem;line-height:1;cursor:pointer;}
 
-  .row{display:flex;align-items:center;gap:.4rem;padding:.5rem 0;border-bottom:1px solid var(--border);}
+  .row{display:flex;align-items:center;gap:.4rem;padding:.5rem 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
   .row:last-child{border-bottom:none;}
-  .pill{display:inline-flex;align-items:center;padding:.15rem .5rem;border-radius:999px;font-size:.6875rem;font-weight:600;background:var(--bg);color:var(--ink-3);border:1px solid var(--border);}
-  .link-btn{background:none;border:none;padding:0;cursor:pointer;font:inherit;color:var(--accent);text-decoration:underline;}
-  .muted{color:var(--ink-3);font-size:.8125rem;line-height:1.6;}
-  .subtle{color:var(--ink-4);font-size:.75rem;line-height:1.55;}
+  .row select.t{width:88px;flex:none;padding:.4rem .35rem;font-size:.9375rem;}
+  .row input.n{flex:1;min-width:110px;padding:.4rem .55rem;font-size:1rem;}
+  .row select.m{width:78px;flex:none;padding:.4rem .25rem;font-size:.9375rem;}
+  .row select.d{width:66px;flex:none;padding:.4rem .25rem;font-size:.9375rem;}
+  /* Dates are folded away by default: most rows don't need them, and four
+     dropdowns on one line is unusable on a phone. */
+  .datebtn{background:transparent;border:1.5px solid var(--border-2);color:var(--ink-3);
+    padding:.35rem .6rem;font-size:.9375rem;border-radius:8px;font-weight:500;white-space:nowrap;
+    max-width:190px;overflow:hidden;text-overflow:ellipsis;display:block;}
+  .datebtn.set{border-color:var(--accent);color:var(--accent);}
+  .dates{flex-basis:100%;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;
+    padding:.5rem 0 .25rem;}
+  .dates .grp{display:flex;align-items:center;gap:.3rem;}
+  .dates .lbl{font-size:.9375rem;color:var(--ink-2);white-space:nowrap;}
+  .pill{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:999px;font-size:.875rem;
+    font-weight:600;background:var(--bg);color:var(--ink-2);border:1px solid var(--border);}
+  .dot{flex:none;width:11px;height:11px;border-radius:50%;background:var(--accent);}
+  .stack{display:grid;gap:.5rem;}
+  /* Bigger text needs room: on a narrow phone these rows stack rather than
+     squeezing a name field down to "Full na…". */
+  .flex{display:flex;gap:.5rem;flex-wrap:wrap;}
+  .flex input{flex:1 1 150px;min-width:150px;}
+  .flex select,.flex button{flex:none;}
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div class="wrap">
+  <header style="margin-bottom:1.25rem">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span class="dot" id="churchDot"></span>
+      <span class="eyebrow" id="churchLabel">FLCC BOTR Network</span>
+    </div>
+    <h1 style="margin:0 0 .5rem;font-size:2rem;font-weight:600">Member List</h1>
+    <p class="muted" style="margin:0">
+      List everyone who serves or attends regularly. Send it back to your FLCC admin and they'll load it
+      into the app — after that your church's schedule and attendance work like everyone else's.
+      Birthdays and wedding anniversaries are optional, but if you add them the app greets each person
+      on their day.
+    </p>
+  </header>
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo, useRef } = React;
+  <!-- Which church. Pre-selected when opened from a link; a plain dropdown
+       when the file was sent as an attachment. -->
+  <div class="card" id="churchCard">
+    <div class="eyebrow" style="margin-bottom:.625rem">Your church</div>
+    <select id="church">
+<!-- OPTIONS-START -->
+      <option value="">— Choose your church —</option>
+      <option value="abundance">FLCC - Abundance Church</option>
+      <option value="fb">FLCC - FB</option>
+      <option value="ft">FLCC - F&amp;T</option>
+      <option value="cornerstone">FLCC - Cornerstone</option>
+      <option value="botr-friday">FLCC - BOTR Friday</option>
+      <option value="botr-sunday">FLCC - BOTR Sunday</option>
+      <option value="shekinah">FLCC - Shekinah</option>
+      <option value="agape">FLCC - Agape</option>
+      <option value="hotk">FLCC - HOTK</option>
+      <option value="mtcc">FLCC - MTCC</option>
+      <option value="gil">FLCC - GIL</option>
+      <option value="jaoc">FLCC - JAOC</option>
+      <option value="harvester">FLCC - Harvester</option>
+      <option value="virtual">FLCC - Virtual Church</option>
+<!-- OPTIONS-END -->
+    </select>
+    <div class="subtle" style="margin-top:.5rem">Pick yours so the admin knows whose list this is.</div>
+  </div>
 
-const CHURCH    = window.FLCC;
-const DRAFT_KEY = CHURCH.key('flcc-roster-draft-v1');
+  <div class="card">
+    <div class="eyebrow" style="margin-bottom:.625rem">Add a member</div>
+    <div class="flex" style="margin-bottom:.5rem">
+      <select id="title" style="width:92px;flex:none"></select>
+      <input id="name" placeholder="Full name" />
+      <button class="accent" id="addOne" style="flex:none" disabled>Add</button>
+    </div>
+    <div class="subtle">Use <strong>Fam.</strong> for a couple or family counted as one. Add birthdays and anniversaries afterwards by tapping <strong>＋ dates</strong> on any name.</div>
+  </div>
 
-// The titles used across the existing rosters. "Fam." marks a couple or family
-// counted as one unit, which data.json already models as type: 'family'.
-const TITLES = ['Bro.', 'Sis.', 'Ptr.', 'Ptra.', 'Rev.', 'Fam.', ''];
+  <div class="card">
+    <div class="eyebrow" style="margin-bottom:.625rem">Or paste your whole list</div>
+    <textarea id="bulk" placeholder="One name per line, for example:&#10;&#10;Ptr. Juan Dela Cruz&#10;Sis. Maria Santos&#10;Bro. Allen Reyes&#10;Fam. Gomez"></textarea>
+    <div style="display:flex;align-items:center;gap:.625rem;margin-top:.625rem;flex-wrap:wrap">
+      <button class="accent" id="addBulk" disabled>Add these names</button>
+      <span class="subtle">Bro./Sis./Ptr. at the start of a line is picked up automatically.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem">
+      <div class="eyebrow">Your list</div>
+      <span class="pill" id="count">0 members</span>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow" style="margin-bottom:.625rem">Who is sending this</div>
+    <div class="flex">
+      <input id="byName" placeholder="Your name" />
+      <input id="byPhone" placeholder="Phone / WhatsApp" />
+    </div>
+    <div class="subtle" style="margin-top:.5rem">So the admin knows who to ask if something needs checking.</div>
+  </div>
+
+  <div class="card" style="border-color:var(--accent)">
+    <div class="eyebrow" style="color:var(--accent);margin-bottom:.375rem">Send to your admin</div>
+    <p class="muted" style="margin-top:0">Either one works — pick whichever is easier for you.</p>
+    <div class="stack">
+      <button class="accent" id="copy" disabled>📋 Copy the list (paste into WhatsApp)</button>
+      <button class="ghost" id="download" disabled>↓ Download the file and send it</button>
+    </div>
+    <div class="subtle" id="hint" style="margin-top:.5rem">Choose your church and add at least one name.</div>
+  </div>
+
+  <p class="subtle" style="text-align:center">
+    Nothing is sent anywhere on its own — your list stays on this device until you send it.
+    Service roles are assigned by the admin afterwards.
+  </p>
+</div>
+
+<script>
+/* CHURCHES-START — stamped from church.js by scripts/build-church-links.mjs */
+var CHURCHES = [
+  { slug: 'abundance', name: 'FLCC - Abundance Church', accent: '#A33B2A' },
+  { slug: 'fb', name: 'FLCC - FB', accent: '#B45309' },
+  { slug: 'ft', name: 'FLCC - F&T', accent: '#C2410C' },
+  { slug: 'cornerstone', name: 'FLCC - Cornerstone', accent: '#9A3412' },
+  { slug: 'botr-friday', name: 'FLCC - BOTR Friday', accent: '#1D4ED8' },
+  { slug: 'botr-sunday', name: 'FLCC - BOTR Sunday', accent: '#4338CA' },
+  { slug: 'shekinah', name: 'FLCC - Shekinah', accent: '#1E40AF' },
+  { slug: 'agape', name: 'FLCC - Agape', accent: '#0E7490' },
+  { slug: 'hotk', name: 'FLCC - HOTK', accent: '#0F766E' },
+  { slug: 'mtcc', name: 'FLCC - MTCC', accent: '#15803D' },
+  { slug: 'gil', name: 'FLCC - GIL', accent: '#4D7C0F' },
+  { slug: 'jaoc', name: 'FLCC - JAOC', accent: '#6D28D9' },
+  { slug: 'harvester', name: 'FLCC - Harvester', accent: '#7E22CE' },
+  { slug: 'virtual', name: 'FLCC - Virtual Church', accent: '#BE185D' }
+];
+/* CHURCHES-END */
+
+var TITLES = ['Bro.', 'Sis.', 'Ptr.', 'Ptra.', 'Rev.', 'Fam.', ''];
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 // data.json ids are readable and grouped by title — sis-01, bro-04, ptr-01.
-// ptr-01 and ptr-02 are meaningful to the app: it shows those two as the
-// church's pastors, so listing pastors first in that order is worth doing.
-const ID_PREFIX = { 'Bro.': 'bro', 'Sis.': 'sis', 'Ptr.': 'ptr', 'Ptra.': 'ptra', 'Rev.': 'rev', 'Fam.': 'fam', '': 'mem' };
+var ID_PREFIX = { 'Bro.':'bro', 'Sis.':'sis', 'Ptr.':'ptr', 'Ptra.':'ptra', 'Rev.':'rev', 'Fam.':'fam', '':'mem' };
 
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var people = [];
+var church = null;
 
-// Birthdays are stored the way data.json stores them: "MM-DD", no year.
-const bMonth = v => (v || '').split('-')[0] || '';
-const bDay   = v => (v || '').split('-')[1] || '';
-const setMonth = (v, m) => m ? `${m}-${bDay(v) || '01'}` : '';
-const setDay   = (v, d) => bMonth(v) ? `${bMonth(v)}-${d || '01'}` : '';
+// ── Storage. Keyed per church so two churches on one shared phone don't
+//    overwrite each other's half-finished list. Silently skipped when the file
+//    is opened straight off the filesystem with storage disabled.
+function draftKey() { return 'flcc-roster-draft-' + (church ? church.slug : 'unset'); }
+function saveDraft() {
+  try {
+    localStorage.setItem(draftKey(), JSON.stringify({
+      people: people,
+      by: { name: byName.value, phone: byPhone.value },
+      savedAt: new Date().toISOString()
+    }));
+  } catch (e) {}
+}
+function loadDraft() {
+  try {
+    var d = JSON.parse(localStorage.getItem(draftKey()) || 'null');
+    if (d && Array.isArray(d.people)) {
+      people = d.people.map(function (p) {
+        return { title: p.title || '', name: p.name || '', birthday: p.birthday || '', anniversary: p.anniversary || '' };
+      });
+      if (d.by) { byName.value = d.by.name || ''; byPhone.value = d.by.phone || ''; }
+    }
+  } catch (e) {}
+}
 
+// ── Reading a pasted list the way people actually write one ────────────────
 function parseLine(line) {
-  const text = line.trim().replace(/^[-•*\d.)\s]+/, '').trim();
+  var text = line.replace(/^[\s\-•*\d.)]+/, '').trim();
   if (!text) return null;
-  for (const t of TITLES) {
-    if (t && text.toLowerCase().startsWith(t.toLowerCase())) {
-      return { title: t, name: text.slice(t.length).trim(), birthday: '' };
+  for (var i = 0; i < TITLES.length; i++) {
+    var t = TITLES[i];
+    if (t && text.toLowerCase().indexOf(t.toLowerCase()) === 0) {
+      return { title: t, name: text.slice(t.length).trim(), birthday: '', anniversary: '' };
     }
   }
-  // "Pastor Juan" / "Sister Maria" — spelled out rather than abbreviated.
-  const spelled = [['pastora ','Ptra.'],['pastor ','Ptr.'],['reverend ','Rev.'],['brother ','Bro.'],['sister ','Sis.'],['family ','Fam.']];
-  for (const [word, title] of spelled) {
-    if (text.toLowerCase().startsWith(word)) return { title, name: text.slice(word.length).trim(), birthday: '' };
+  // Spelled out rather than abbreviated.
+  var spelled = [['pastora ','Ptra.'],['pastor ','Ptr.'],['reverend ','Rev.'],
+                 ['brother ','Bro.'],['sister ','Sis.'],['family ','Fam.']];
+  for (var j = 0; j < spelled.length; j++) {
+    if (text.toLowerCase().indexOf(spelled[j][0]) === 0) {
+      return { title: spelled[j][1], name: text.slice(spelled[j][0].length).trim(), birthday: '', anniversary: '' };
+    }
   }
-  return { title: '', name: text, birthday: '' };
+  return { title: '', name: text, birthday: '', anniversary: '' };
 }
 
-function loadDraft() {
-  try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); return Array.isArray(d?.people) ? d : null; } catch (e) { return null; }
-}
-function saveDraft(people, contact) {
-  try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ people, contact, savedAt: new Date().toISOString() })); } catch (e) {}
-}
+// Birthdays are stored the way data.json stores them: "MM-DD", no year.
+function bMonth(v) { return (v || '').split('-')[0] || ''; }
+function bDay(v)   { return (v || '').split('-')[1] || ''; }
 
-/** The workers[] array as data.json wants it. Roles are left empty on purpose —
- *  the admin assigns who can take which service role in the schedule editor. */
-function buildWorkers(people) {
-  const counters = {};
-  return people.filter(p => p.name.trim()).map(p => {
-    const prefix = ID_PREFIX[p.title] || 'mem';
+/** The workers[] array as data.json wants it. Roles stay empty on purpose —
+ *  the admin assigns who may take which service role in the schedule editor. */
+function buildWorkers() {
+  var counters = {};
+  return people.filter(function (p) { return p.name.trim(); }).map(function (p) {
+    var prefix = ID_PREFIX[p.title] || 'mem';
     counters[prefix] = (counters[prefix] || 0) + 1;
     return {
-      id: `${prefix}-${String(counters[prefix]).padStart(2, '0')}`,
+      id: prefix + '-' + String(counters[prefix]).padStart(2, '0'),
       name: p.name.trim(),
       title: p.title,
       type: p.title === 'Fam.' ? 'family' : 'individual',
       eligibleRoles: [],
       status: 'active',
       birthday: p.birthday || '',
+      anniversary: p.anniversary || ''
     };
   });
 }
 
-function App() {
-  const draft = useRef(loadDraft()).current;
-  const [people, setPeople]   = useState(() => draft?.people || []);
-  const [contact, setContact] = useState(() => draft?.contact || { name: '', phone: '' });
-  const [bulk, setBulk]       = useState('');
-  const [title, setTitle]     = useState('');
-  const [name, setName]       = useState('');
-  const [copied, setCopied]   = useState('');
+// ── Elements ───────────────────────────────────────────────────────────────
+var churchSel = document.getElementById('church');
+var churchCard = document.getElementById('churchCard');
+var churchLabel = document.getElementById('churchLabel');
+var churchDot = document.getElementById('churchDot');
+var titleSel = document.getElementById('title');
+var nameInp = document.getElementById('name');
+var addOneBtn = document.getElementById('addOne');
+var bulkTxt = document.getElementById('bulk');
+var addBulkBtn = document.getElementById('addBulk');
+var listEl = document.getElementById('list');
+var countEl = document.getElementById('count');
+var byName = document.getElementById('byName');
+var byPhone = document.getElementById('byPhone');
+var copyBtn = document.getElementById('copy');
+var downloadBtn = document.getElementById('download');
+var hintEl = document.getElementById('hint');
 
-  useEffect(() => { saveDraft(people, contact); }, [people, contact]);
+// ── Build the fixed dropdowns once ─────────────────────────────────────────
+// The church <option>s are real markup, not built here: this file gets
+// forwarded and opened in whatever viewer a leader happens to have, and a
+// dropdown that only exists once JavaScript runs is a dropdown that can show
+// up empty. CHURCHES below is still what names and colours the choice.
+TITLES.forEach(function (t) {
+  var o = document.createElement('option');
+  o.value = t; o.textContent = t || '—';
+  titleSel.appendChild(o);
+});
+// Start with no title rather than "Bro." — a default here silently mislabels
+// every woman whose name gets typed without changing it.
+titleSel.value = '';
 
-  const workers = useMemo(() => buildWorkers(people), [people]);
+// Which rows have their dates open. Not part of the list itself — nothing here
+// is worth saving, it's just what the leader is currently looking at.
+var openDates = {};
 
-  const addOne = () => {
-    if (!name.trim()) return;
-    setPeople(p => [...p, { title, name: name.trim(), birthday: '' }]);
-    setName('');
-  };
-
-  const addBulk = () => {
-    const parsed = bulk.split('\n').map(parseLine).filter(Boolean);
-    if (!parsed.length) return;
-    setPeople(p => [...p, ...parsed]);
-    setBulk('');
-  };
-
-  const update = (i, patch) => setPeople(p => p.map((x, j) => j === i ? { ...x, ...patch } : x));
-  const remove = (i) => setPeople(p => p.filter((_, j) => j !== i));
-
-  const asText = () => {
-    const lines = [
-      `${CHURCH.name} — Member List`,
-      `${people.length} member${people.length === 1 ? '' : 's'}`,
-      contact.name ? `Submitted by: ${contact.name}${contact.phone ? ' · ' + contact.phone : ''}` : '',
-      '',
-      ...people.filter(p => p.name.trim()).map((p, i) =>
-        `${i + 1}. ${[p.title, p.name].filter(Boolean).join(' ')}${p.birthday ? ` (birthday ${p.birthday})` : ''}`),
-    ].filter(l => l !== null);
-    return lines.join('\n');
-  };
-
-  const asJSON = () => JSON.stringify({
-    church: CHURCH.slug,
-    churchName: CHURCH.name,
-    submittedBy: contact,
-    submittedAt: new Date().toISOString(),
-    workers,
-  }, null, 2);
-
-  const copy = (what, text) => {
-    navigator.clipboard.writeText(text)
-      .then(() => { setCopied(what); setTimeout(() => setCopied(''), 2200); })
-      .catch(() => alert('Copy failed — select the text and copy it manually.'));
-  };
-
-  const download = () => {
-    const blob = new Blob([asJSON()], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `${CHURCH.slug}-members.json`; a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const ready = people.some(p => p.name.trim());
-
-  return (
-    <div className="wrap">
-      <header style={{ marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span style={{ flex: 'none', width: 11, height: 11, borderRadius: '50%', background: CHURCH.accent }} />
-          <span className="eyebrow">{CHURCH.name}</span>
-        </div>
-        <h1 className="font-display" style={{ margin: '0 0 .375rem', fontSize: '1.75rem', fontWeight: 600 }}>Member List</h1>
-        <p className="muted" style={{ margin: 0 }}>
-          List everyone who serves or attends regularly. Send it back to your FLCC admin and they'll load it into
-          the app — after that your church's schedule and attendance work like everyone else's.
-        </p>
-      </header>
-
-      {/* Add one at a time */}
-      <div className="card">
-        <div className="eyebrow" style={{ marginBottom: '.625rem' }}>Add a member</div>
-        <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.5rem' }}>
-          <select className="field-input" style={{ width: 92, flex: 'none' }} value={title} onChange={e => setTitle(e.target.value)}>
-            {TITLES.map(t => <option key={t || 'none'} value={t}>{t || '—'}</option>)}
-          </select>
-          <input
-            className="field-input" placeholder="Full name" value={name}
-            onChange={e => setName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addOne()}
-          />
-          <button className="btn btn-accent" style={{ flex: 'none' }} onClick={addOne} disabled={!name.trim()}>Add</button>
-        </div>
-        <div className="subtle">Use <strong>Fam.</strong> for a couple or family counted as one.</div>
-      </div>
-
-      {/* Or paste the whole list */}
-      <div className="card">
-        <div className="eyebrow" style={{ marginBottom: '.625rem' }}>Or paste your whole list</div>
-        <textarea
-          className="field-input"
-          placeholder={'One name per line, for example:\n\nPtr. Juan Dela Cruz\nSis. Maria Santos\nBro. Allen Reyes\nFam. Gomez'}
-          value={bulk} onChange={e => setBulk(e.target.value)}
-        />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.625rem', marginTop: '.625rem' }}>
-          <button className="btn btn-accent" onClick={addBulk} disabled={!bulk.trim()}>Add these names</button>
-          <span className="subtle">Bro./Sis./Ptr. at the start of a line is picked up automatically.</span>
-        </div>
-      </div>
-
-      {/* The list so far */}
-      <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.625rem' }}>
-          <div className="eyebrow">Your list</div>
-          <span className="pill">{people.length} {people.length === 1 ? 'member' : 'members'}</span>
-        </div>
-
-        {people.length === 0 ? (
-          <div className="muted" style={{ padding: '1rem 0', textAlign: 'center' }}>
-            No one added yet. Start above — your list is saved on this device as you go.
-          </div>
-        ) : people.map((p, i) => (
-          <div className="row" key={i}>
-            <select className="field-input" style={{ width: 70, flex: 'none', padding: '.3rem .3rem', fontSize: '.8125rem' }}
-              value={p.title} onChange={e => update(i, { title: e.target.value })} title="Title">
-              {TITLES.map(t => <option key={t || 'none'} value={t}>{t || '—'}</option>)}
-            </select>
-            <input className="field-input" style={{ flex: 1, minWidth: 0, padding: '.3rem .5rem', fontSize: '.875rem' }}
-              value={p.name} onChange={e => update(i, { name: e.target.value })} />
-            {/* Birthday is optional and split in two — one 372-option list per
-                row adds up fast on a long roster and a cheap phone. */}
-            <select className="field-input" style={{ width: 54, flex: 'none', padding: '.3rem .15rem', fontSize: '.75rem' }}
-              value={bMonth(p.birthday)} onChange={e => update(i, { birthday: setMonth(p.birthday, e.target.value) })} title="Birth month">
-              <option value="">🎂</option>
-              {MONTHS.map((m, mi) => <option key={m} value={String(mi + 1).padStart(2, '0')}>{m.slice(0, 3)}</option>)}
-            </select>
-            <select className="field-input" style={{ width: 46, flex: 'none', padding: '.3rem .15rem', fontSize: '.75rem' }}
-              value={bDay(p.birthday)} onChange={e => update(i, { birthday: setDay(p.birthday, e.target.value) })}
-              title="Birth day" disabled={!bMonth(p.birthday)}>
-              <option value="">–</option>
-              {Array.from({ length: 31 }, (_, di) => <option key={di} value={String(di + 1).padStart(2, '0')}>{di + 1}</option>)}
-            </select>
-            <button className="link-btn" style={{ color: 'var(--ink-4)', textDecoration: 'none', fontSize: '1.125rem' }}
-              onClick={() => remove(i)} title="Remove">×</button>
-          </div>
-        ))}
-      </div>
-
-      {/* Who's sending it */}
-      <div className="card">
-        <div className="eyebrow" style={{ marginBottom: '.625rem' }}>Who is sending this</div>
-        <div style={{ display: 'flex', gap: '.5rem' }}>
-          <input className="field-input" placeholder="Your name" value={contact.name}
-            onChange={e => setContact(c => ({ ...c, name: e.target.value }))} />
-          <input className="field-input" placeholder="Phone / WhatsApp" value={contact.phone}
-            onChange={e => setContact(c => ({ ...c, phone: e.target.value }))} />
-        </div>
-        <div className="subtle" style={{ marginTop: '.5rem' }}>
-          So the admin knows who to ask if something needs checking.
-        </div>
-      </div>
-
-      {/* Send it */}
-      <div className="card" style={{ borderColor: 'var(--accent)' }}>
-        <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: '.375rem' }}>Send to your admin</div>
-        <p className="muted" style={{ marginTop: 0 }}>
-          Either one works — pick whichever is easier for you.
-        </p>
-        <div style={{ display: 'grid', gap: '.5rem' }}>
-          <button className={`btn ${copied === 'text' ? 'btn-ok' : 'btn-accent'}`} disabled={!ready}
-            onClick={() => copy('text', asText())}>
-            {copied === 'text' ? '✓ Copied — now paste it in your message' : '📋 Copy the list (paste into WhatsApp)'}
-          </button>
-          <button className="btn btn-ghost" disabled={!ready} onClick={download}>
-            ↓ Download the file and send it
-          </button>
-        </div>
-        {!ready && <div className="subtle" style={{ marginTop: '.5rem' }}>Add at least one name first.</div>}
-      </div>
-
-      <p className="subtle" style={{ textAlign: 'center' }}>
-        Nothing is sent anywhere on its own — your list stays on this device until you send it.
-        Service roles are assigned by the admin afterwards.
-      </p>
-    </div>
-  );
+/** What the collapsed button says, so a filled-in date is never hidden. */
+function dateSummary(p) {
+  var bits = [];
+  if (p.birthday) bits.push('🎂 ' + prettyDate(p.birthday));
+  if (p.anniversary) bits.push('💍 ' + prettyDate(p.anniversary));
+  return bits.length ? bits.join(' · ') : '＋ dates';
+}
+function prettyDate(v) {
+  var m = parseInt(bMonth(v), 10);
+  return m ? MONTHS[m - 1] + ' ' + parseInt(bDay(v), 10) : '';
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+/** A labelled month + day pair. Split in two rather than one 372-option list —
+ *  that adds up fast on a long roster and a cheap phone. */
+function datePair(label, value, onChange) {
+  var grp = document.createElement('div');
+  grp.className = 'grp';
+
+  var lbl = document.createElement('span');
+  lbl.className = 'lbl'; lbl.textContent = label;
+
+  var m = document.createElement('select');
+  m.className = 'm'; m.title = label + ' month';
+  m.appendChild(option('', '—', !bMonth(value)));
+  MONTHS.forEach(function (mo, mi) {
+    var v = String(mi + 1).padStart(2, '0');
+    m.appendChild(option(v, mo, v === bMonth(value)));
+  });
+
+  var d = document.createElement('select');
+  d.className = 'd'; d.title = label + ' day';
+  d.appendChild(option('', '–', !bDay(value)));
+  for (var k = 1; k <= 31; k++) {
+    var dv = String(k).padStart(2, '0');
+    d.appendChild(option(dv, String(k), dv === bDay(value)));
+  }
+  d.disabled = !bMonth(value);
+
+  m.onchange = function () {
+    onChange(m.value ? m.value + '-' + (bDay(value) || '01') : '');
+    saveDraft(); render();
+  };
+  d.onchange = function () {
+    if (bMonth(value)) { onChange(bMonth(value) + '-' + (d.value || '01')); saveDraft(); render(); }
+  };
+
+  grp.appendChild(lbl); grp.appendChild(m); grp.appendChild(d);
+  return grp;
+}
+
+function option(value, text, selected) {
+  var o = document.createElement('option');
+  o.value = value; o.textContent = text;
+  if (selected) o.selected = true;
+  return o;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  listEl.innerHTML = '';
+  if (!people.length) {
+    var empty = document.createElement('div');
+    empty.className = 'muted';
+    empty.style.cssText = 'padding:1rem 0;text-align:center';
+    empty.textContent = 'No one added yet. Start above — your list is saved on this device as you go.';
+    listEl.appendChild(empty);
+  }
+  people.forEach(function (p, i) {
+    var row = document.createElement('div');
+    row.className = 'row';
+
+    var t = document.createElement('select');
+    t.className = 't'; t.title = 'Title';
+    TITLES.forEach(function (v) { t.appendChild(option(v, v || '—', v === p.title)); });
+    t.onchange = function () { p.title = t.value; saveDraft(); };
+
+    var n = document.createElement('input');
+    n.className = 'n'; n.value = p.name;
+    n.oninput = function () { p.name = n.value; refreshActions(); saveDraft(); };
+
+    var toggle = document.createElement('button');
+    toggle.className = 'datebtn' + (p.birthday || p.anniversary ? ' set' : '');
+    toggle.textContent = dateSummary(p);
+    toggle.title = 'Birthday and wedding anniversary';
+    toggle.onclick = function () {
+      if (openDates[i]) delete openDates[i]; else openDates[i] = true;
+      render();
+    };
+
+    var x = document.createElement('button');
+    x.className = 'x'; x.textContent = '×'; x.title = 'Remove';
+    x.onclick = function () { people.splice(i, 1); delete openDates[i]; saveDraft(); render(); };
+
+    row.appendChild(t); row.appendChild(n); row.appendChild(toggle); row.appendChild(x);
+
+    if (openDates[i]) {
+      var dates = document.createElement('div');
+      dates.className = 'dates';
+      dates.appendChild(datePair('🎂 Birthday', p.birthday, function (v) { p.birthday = v; }));
+      dates.appendChild(datePair('💍 Anniversary', p.anniversary, function (v) { p.anniversary = v; }));
+      row.appendChild(dates);
+    }
+
+    listEl.appendChild(row);
+  });
+
+  countEl.textContent = people.length + (people.length === 1 ? ' member' : ' members');
+  refreshActions();
+}
+
+function refreshActions() {
+  var named = people.some(function (p) { return p.name.trim(); });
+  var ready = !!church && named;
+  copyBtn.disabled = !ready;
+  downloadBtn.disabled = !ready;
+  addOneBtn.disabled = !nameInp.value.trim();
+  addBulkBtn.disabled = !bulkTxt.value.trim();
+  hintEl.textContent = ready ? ''
+    : !church ? 'Choose your church above first.'
+    : 'Add at least one name.';
+}
+
+// ── What the admin receives ────────────────────────────────────────────────
+function asText() {
+  var lines = [
+    church.name + ' — Member List',
+    people.length + (people.length === 1 ? ' member' : ' members')
+  ];
+  if (byName.value.trim()) {
+    lines.push('Submitted by: ' + byName.value.trim() + (byPhone.value.trim() ? ' · ' + byPhone.value.trim() : ''));
+  }
+  lines.push('');
+  people.filter(function (p) { return p.name.trim(); }).forEach(function (p, i) {
+    var dates = [];
+    if (p.birthday) dates.push('birthday ' + p.birthday);
+    if (p.anniversary) dates.push('anniversary ' + p.anniversary);
+    lines.push((i + 1) + '. ' + [p.title, p.name].filter(Boolean).join(' ') +
+      (dates.length ? ' (' + dates.join(', ') + ')' : ''));
+  });
+  return lines.join('\n');
+}
+
+function asJSON() {
+  return JSON.stringify({
+    church: church.slug,
+    churchName: church.name,
+    submittedBy: { name: byName.value.trim(), phone: byPhone.value.trim() },
+    submittedAt: new Date().toISOString(),
+    workers: buildWorkers()
+  }, null, 2);
+}
+
+// ── Wiring ─────────────────────────────────────────────────────────────────
+function setChurch(slug, lockIn) {
+  var found = null;
+  for (var i = 0; i < CHURCHES.length; i++) if (CHURCHES[i].slug === slug) found = CHURCHES[i];
+  church = found;
+  if (found) {
+    churchSel.value = found.slug;
+    churchLabel.textContent = found.name;
+    churchDot.style.background = found.accent;
+    document.title = found.name + ' — Member List';
+    // Opened from their own link: no reason to show a chooser they could get wrong.
+    if (lockIn) churchCard.style.display = 'none';
+    loadDraft();
+  }
+  render();
+}
+
+churchSel.onchange = function () { people = []; setChurch(churchSel.value, false); };
+
+nameInp.oninput = refreshActions;
+bulkTxt.oninput = refreshActions;
+
+addOneBtn.onclick = function () {
+  if (!nameInp.value.trim()) return;
+  people.push({ title: titleSel.value, name: nameInp.value.trim(), birthday: '', anniversary: '' });
+  nameInp.value = '';
+  saveDraft(); render(); nameInp.focus();
+};
+nameInp.onkeydown = function (e) { if (e.key === 'Enter') addOneBtn.onclick(); };
+
+addBulkBtn.onclick = function () {
+  var parsed = bulkTxt.value.split('\n').map(parseLine).filter(Boolean);
+  if (!parsed.length) return;
+  people = people.concat(parsed);
+  bulkTxt.value = '';
+  saveDraft(); render();
+};
+
+byName.oninput = saveDraft;
+byPhone.oninput = saveDraft;
+
+copyBtn.onclick = function () {
+  var text = asText();
+  var done = function () {
+    copyBtn.textContent = '✓ Copied — now paste it in your message';
+    copyBtn.className = 'ok';
+    setTimeout(function () {
+      copyBtn.textContent = '📋 Copy the list (paste into WhatsApp)';
+      copyBtn.className = 'accent';
+    }, 2200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+  } else {
+    fallbackCopy(text, done);
+  }
+};
+
+// file:// pages don't always get the clipboard API — select-and-copy still works.
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+  if (ok) done(); else window.prompt('Copy your list:', text);
+}
+
+downloadBtn.onclick = function () {
+  var blob = new Blob([asJSON()], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = church.slug + '-members.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+};
+
+// ── Start ──────────────────────────────────────────────────────────────────
+// From a link: roster.html?church=shekinah, or /c/shekinah/ style paths.
+var fromUrl = '';
+try {
+  var q = (location.search.match(/[?&]church=([a-z0-9-]+)/i) || [])[1];
+  var pth = (location.pathname.match(/\/c\/([a-z0-9-]+)(\/|$)/i) || [])[1];
+  fromUrl = (q || pth || '').toLowerCase();
+} catch (e) {}
+
+if (fromUrl) setChurch(fromUrl, true);
+else render();
 </script>
 </body>
 </html>
