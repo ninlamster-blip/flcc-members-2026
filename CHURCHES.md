@@ -63,6 +63,20 @@ regenerates the `/c/` links. Commit, then send `/c/living-hope/` to its leaders.
 If you edit the registry in `church.js` by hand, re-run
 `node scripts/build-church-links.mjs` so the pretty links match.
 
+## Collecting a church's member list
+
+`roster.html?church=<slug>` is a form to send a church so they can give you
+their members without touching the editors. They type or paste names, the
+titles (Bro./Sis./Ptr./…) are picked up from the start of each line, and they
+send the result back as pasted text or a downloaded `.json`. The draft is saved
+on their device as they go.
+
+Nothing is submitted anywhere on its own — the admin loads what comes back into
+that church's `data.json`. The downloaded file already carries a `workers[]`
+array in the shape `data.json` wants, with ids assigned (`sis-01`, `ptr-01`, …)
+and `eligibleRoles` left empty, since service roles are the admin's to assign
+in the schedule editor.
+
 ## Who updates what
 
 Two different jobs, two different answers:
