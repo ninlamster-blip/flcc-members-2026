@@ -290,8 +290,10 @@ export function modal({ title, body, actions = [], wide = false, onClose }) {
   document.body.style.overflow = 'hidden';
   openModals += 1;
   document.addEventListener('keydown', onKey, true);
+  // Focus synchronously: a deferred focus() lands *after* a fast typist (or a
+  // browser autofill) has already started in another field, and yanks them back.
   const firstInput = panel.querySelector('input, select, textarea, button:not([aria-label="Close"])');
-  if (firstInput) setTimeout(() => firstInput.focus(), 40);
+  if (firstInput) firstInput.focus({ preventScroll: true });
 
   return { close, element: panel };
 }
