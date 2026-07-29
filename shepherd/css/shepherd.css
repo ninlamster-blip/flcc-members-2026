@@ -269,7 +269,13 @@ h4 { font-size: 0.875rem; }
 .panel { background: var(--surface-2); border-radius: var(--radius); padding: var(--space-4); }
 
 .stat { display: flex; flex-direction: column; gap: 2px; }
-.stat__value { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+/* Money in KWD is long ("KWD 18,621.000"), so the figure scales down rather
+   than running out of its card. */
+.stat__value {
+  font-size: clamp(1.15rem, 1.1rem + .9vw, 1.75rem);
+  font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+  line-height: 1.15; overflow-wrap: anywhere;
+}
 .stat__label { font-size: 0.8125rem; color: var(--ink-2); }
 .stat__delta { font-size: 0.75rem; font-weight: 600; }
 .stat__delta--up { color: var(--ok); }
