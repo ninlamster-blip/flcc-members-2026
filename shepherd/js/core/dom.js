@@ -200,9 +200,7 @@ export function icon(name, opts = {}) {
     'aria-hidden': 'true',
     focusable: 'false',
   });
-  for (const segment of d.split('M').filter(Boolean)) {
-    svg.appendChild(h('path', { d: `M${segment}` }));
-  }
+  svg.appendChild(h('path', { d }));
   return svg;
 }
 
