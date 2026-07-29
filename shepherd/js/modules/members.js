@@ -21,6 +21,7 @@ import { downloadCSV } from '../core/exporters.js';
 import {
   openRecordModal, deleteRecord, newButton, statusBadge, memberName, matches, sentence,
 } from './_shared.js';
+import { canReadCounselingNote } from '../core/policies.js';
 
 export async function render(ctx, route) {
   if (route.params[0]) {
@@ -501,7 +502,7 @@ function counselingSection(ctx, member) {
     return card({ title: 'Counselling notes', children: [lockedNotice('Counselling')] });
   }
   const notes = db.where('counseling', (n) => n.memberId === member.id)
-    .filter((n) => !n.restricted || n.createdBy === ctx.user.id || ctx.user.role === 'senior_pastor')
+    .filter((n) => canReadCounselingNote(ctx.user, n))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return card({

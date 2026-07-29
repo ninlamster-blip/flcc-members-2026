@@ -310,7 +310,13 @@ export class App {
 
     // Any data change re-renders the current screen: the dashboard a treasurer
     // is looking at updates the moment a gift is recorded on someone else's tab.
-    this._unsubscribeDb = this.db.subscribe(() => this.scheduleRefresh());
+    // Audit entries are the exception — they are written by almost everything
+    // (including generating an AI draft), and re-rendering on them would wipe
+    // out the very output the user just asked for.
+    this._unsubscribeDb = this.db.subscribe((collection) => {
+      if (collection === 'audit') return;
+      this.scheduleRefresh();
+    });
     window.addEventListener('storage', (e) => {
       if (e.key && e.key.startsWith(`shepherd/v1/t/${this.tenant.id}/`)) this.reloadFromStorage();
     });

@@ -20,6 +20,7 @@ import { formatDate, relativeTime, isoDate, daysBetween, formatNumber } from '..
 import { blank, COLLECTIONS } from '../core/schema.js';
 import { sha256Hex } from '../core/crypto.js';
 import { newButton, statusBadge, matches, sentence, deleteRecord } from './_shared.js';
+import { expiryStatus } from '../core/policies.js';
 
 const CATEGORIES = COLLECTIONS.documents.fields.category.options;
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -43,7 +44,10 @@ export async function render(ctx, route) {
 
   const now = new Date();
   const documents = db.all('documents');
-  const expiring = documents.filter((d) => d.expiresOn && daysBetween(now, d.expiresOn) <= 60 && daysBetween(now, d.expiresOn) >= -30);
+  const expiring = documents.filter((d) => {
+    const status = expiryStatus(d.expiresOn, now);
+    return status.due && status.days >= -30;
+  });
 
   let query = '';
   let category = '';
@@ -100,8 +104,8 @@ export async function render(ctx, route) {
       expiring.length ? card({
         className: 'no-print',
         children: [h('div.stack.stack--sm', ...expiring.map((doc) => {
-          const days = daysBetween(now, doc.expiresOn);
-          return h('div', { class: `insight insight--${days < 14 ? 'urgent' : 'attention'}` },
+          const { days, severity } = expiryStatus(doc.expiresOn, now);
+          return h('div', { class: `insight insight--${severity}` },
             h('span.insight__mark'),
             h('div', { style: { flex: '1' } },
               h('div.insight__title', `${doc.title} ${days < 0 ? 'expired' : 'expires'} ${relativeTime(doc.expiresOn)}`),

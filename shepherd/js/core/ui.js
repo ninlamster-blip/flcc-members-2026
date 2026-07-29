@@ -24,7 +24,7 @@ export function page({ title, subtitle, eyebrow, actions = [], narrow = false, c
         h('div', null,
           h('h1', null, title),
           subtitle && h('p.muted', null, subtitle)),
-        actions.length ? h('div.row', { class: 'no-print' }, ...actions) : null)),
+        actions.length ? h('div.row.row--wrap', { class: 'no-print' }, ...actions) : null)),
     ...children);
 }
 

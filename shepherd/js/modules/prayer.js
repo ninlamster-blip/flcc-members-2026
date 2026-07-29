@@ -14,6 +14,7 @@ import {
 } from '../core/ui.js';
 import { formatDate, relativeTime, isoDate } from '../core/format.js';
 import { openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord } from './_shared.js';
+import { canSeePrayer } from '../core/policies.js';
 
 const REQUEST_FIELDS = ['title', 'detail', 'memberId', 'requestedBy', 'category', 'visibility', 'urgent', 'status', 'chainId'];
 
@@ -315,9 +316,7 @@ function pointsTab(ctx) {
 
 /* ── visibility ──────────────────────────────────────────────────────────── */
 
-/** Wall → anyone who may read prayer; leaders → leadership; private → author. */
+/** The rule itself lives in core/policies.js, where it is tested. */
 function canSee(ctx, request) {
-  if (request.visibility === 'private') return request.createdBy === ctx.user.id || ctx.can('counseling:read');
-  if (request.visibility === 'leaders') return ctx.can('leadership:read') || ctx.can('care:read');
-  return true;
+  return canSeePrayer(ctx.user, request);
 }

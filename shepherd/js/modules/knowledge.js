@@ -22,6 +22,7 @@ import { COLLECTIONS } from '../core/schema.js';
 import { blank } from '../core/schema.js';
 import { openRecordModal, newButton, matches, sentence, deleteRecord } from './_shared.js';
 import { routeForHit } from '../app.js';
+import { KNOWLEDGE_EXCLUDED } from '../core/policies.js';
 
 const SUGGESTIONS = [
   'What did the council decide about the retreat?',
@@ -233,8 +234,8 @@ function sourcesTab(ctx) {
         h('div.panel', { style: { marginTop: '16px' } },
           h('strong.small', 'Never included'),
           h('p.small.muted', { style: { marginTop: '4px' } },
-            'Counselling notes and financial records are excluded from the knowledge centre for everyone, '
-            + 'regardless of role. They are read in their own modules, by people who hold those permissions, '
+            `Excluded for everyone, regardless of role: ${KNOWLEDGE_EXCLUDED.map((c) => (COLLECTIONS[c] || { label: c }).label).join(', ')}. `
+            + 'They are read in their own modules, by people who hold those permissions, '
             + 'and are never summarised into an answer.')),
       ],
     }),

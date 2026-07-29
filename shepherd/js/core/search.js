@@ -11,6 +11,7 @@
 
 import { COLLECTIONS, COLLECTION_NAMES, searchableText, docTitle } from './schema.js';
 import { can } from './rbac.js';
+import { NEVER_INDEXED } from './policies.js';
 
 const STOP_WORDS = new Set(['the', 'and', 'for', 'with', 'that', 'this', 'from', 'was', 'are', 'has', 'have', 'our', 'his', 'her', 'their', 'you', 'not', 'but', 'all', 'any', 'can', 'will']);
 
@@ -45,7 +46,10 @@ export class SearchIndex {
     if (!this.stale.size) return;
     for (const collection of this.stale) {
       const def = COLLECTIONS[collection];
-      if (!def || collection === 'audit') continue;
+      // Counselling, finance and account records are never indexed at all —
+      // see policies.js. Permission filtering happens too, but this is the
+      // rule that does not depend on getting a role right.
+      if (!def || NEVER_INDEXED.includes(collection)) continue;
 
       // Drop the collection's old entries.
       for (const [ref, doc] of [...this.docs]) {

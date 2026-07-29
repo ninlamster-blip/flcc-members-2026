@@ -156,12 +156,13 @@ export function seedTenant(db, { user = null, now = new Date() } = {}) {
       const share = Math.round(members.length * base * summerDip * (0.85 + ((week % 5) * 0.06)));
       const present = members.slice(0, Math.min(members.length, Math.max(8, share))).map((m) => m.id);
       const visitors = (week % 4 === 0 ? 3 : 1) + (service === 'Friday Worship' ? 2 : 0);
+      const attended = present.filter((_, idx) => (idx + week) % 7 !== 0);
       db.insert('attendance', blank('attendance', {
         date: isoDate(date),
         service,
-        memberIds: present.filter((_, idx) => (idx + week) % 7 !== 0),
+        memberIds: attended,
         visitors,
-        total: present.length + visitors,
+        total: attended.length + visitors,
       }), opts);
     }
   }

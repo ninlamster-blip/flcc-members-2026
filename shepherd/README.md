@@ -1,0 +1,156 @@
+# Shepherd
+
+A secure operating system for church leaders in Kuwait, built to travel across
+the Gulf.
+
+Shepherd is a **separate application** from the FLCC Members app in this
+repository. It shares no code, no data, no storage keys and no links with it —
+`church.js`, `FLCC.*` and the `churches/` data files are untouched. It lives
+entirely under `shepherd/`.
+
+```
+https://<your-site>/shepherd/
+```
+
+## What it is for
+
+A pastor in the Gulf spends hours a week on administration that nobody trained
+them for: who has stopped coming, who needs a visit, whether the lease is about
+to expire, what the council actually decided, who is on the rota, and what the
+books say. Shepherd holds all of that in one place and — this is the part that
+matters — **notices things**, so the answer to "who needs me this week" is on
+the first screen rather than buried in a spreadsheet nobody opens.
+
+## Getting started
+
+1. Serve the repository over HTTP (`python3 -m http.server`, GitHub Pages, or
+   the Cloudflare Worker already configured in `wrangler.toml`) and open
+   `/shepherd/`.
+2. **Set up a church.** You become its first administrator. Choose a passphrase
+   you will not lose: it encrypts the church's counselling notes, finances and
+   documents, and nobody can reset it for you.
+3. Tick **Add example data** the first time. It fills every screen with a
+   demonstration congregation so you can see what the app is for. Remove it
+   later from **Settings → Data**.
+
+Opening `file://` will not work — ES modules need a real origin.
+
+## The modules
+
+| Module | What it does |
+| --- | --- |
+| **Dashboard** | Today's schedule, what Shepherd noticed, attendance trend, follow-ups, prayer, coming events, birthdays, finance snapshot, recent activity |
+| **People** | Directory, families, ministries, attendance recording, and a profile that gathers everything known about one person |
+| **Member care** | Follow-ups and visits, plus who the records say has gone quiet — absences, new believers, the care list, celebrations |
+| **Prayer centre** | Wall, leaders-only and private requests, chains, answered prayer, a generated prayer-meeting sheet |
+| **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
+| **Worship** | Song library searchable by theme, key, mood, season, language and lyrics; setlists; team and rehearsals |
+| **Preaching** | Sermon archive, series planning, illustrations and quotes, and an assistant that drafts the work *around* the sermon |
+| **Leadership** | Committees, minutes, action items with owners and dates, a decision log that keeps the rationale, annual goals |
+| **Finance** | Giving, expenses, budgets, projects, approvals — encrypted, role-restricted, exportable |
+| **Document vault** | Encrypted files with version history, fingerprints and expiry reminders |
+| **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
+| **Communications** | Announcements and messages prepared for WhatsApp, email, SMS, bulletin |
+| **Reports** | Attendance, growth, volunteers, giving, prayer, events — PDF, Excel, CSV |
+| **Assistant** | Everything Shepherd noticed, and every drafting task, in one place |
+| **Settings** | Church profile, users and roles, security, AI, backup, audit log |
+
+## Roles
+
+Eleven roles, from Super Admin down to Member, each with a plain-English
+description in **Settings → Users & roles**. Permissions are `resource:action`
+pairs; a user's role can be topped up or trimmed individually. Checks happen in
+the navigation, in the router and — the one that counts — in the database,
+which refuses a write the acting user may not make.
+
+Two rules are worth knowing:
+
+- A **church administrator does not hold counselling permission.** Running the
+  platform and reading a pastor's counselling file are different jobs.
+- **Nobody approves their own spending.** An expense over the church's
+  threshold enters as pending and needs someone who did not record it.
+
+## Security, honestly
+
+**What is protected**
+
+- Counselling notes, finance, budgets, projects and the document vault are
+  encrypted with AES-GCM before anything is written. Each church has a random
+  256-bit vault key, wrapped per user with a key derived from their passphrase
+  (PBKDF2-SHA-256, 310 000 iterations).
+- Churches are isolated structurally: a database is bound to one tenant and
+  handed storage locked to that tenant's key prefix.
+- Optional TOTP two-factor (RFC 6238) with single-use recovery codes.
+- An append-only audit log of every create, update, delete, sign-in and export.
+- Sessions live in `sessionStorage` — a reload keeps you in, closing the tab
+  does not — plus a 45-minute idle lock.
+- Counselling, finance and account records are never added to the search index
+  and never reach the knowledge centre, for any role.
+
+**What is not**
+
+- A lost passphrase means lost encrypted records. There is no recovery, by
+  design; write it down and keep it somewhere physically safe.
+- Anything already running on the device with the browser is out of scope.
+- Exports are ordinary files. Once a CSV leaves the app, it is as safe as the
+  device it lands on.
+- Backups are manual. Take one from **Settings → Data**, regularly.
+
+## AI
+
+Two different things share the word:
+
+- **Insights** — absences, overdue follow-ups, expiring documents, budget
+  overruns, volunteer shortages, attendance trends — are computed on the device
+  from the church's own records. No model, no network. This works offline.
+- **Drafting** — sermon assets, meeting summaries, announcements, translations,
+  knowledge answers — uses a language model when the church configures an
+  endpoint in **Settings → AI**, and falls back to structured local drafts when
+  it does not.
+
+Everything generated carries `aiGenerated`, the model and the time, and is
+shown behind a visible badge. Counselling notes, finance and the vault are
+never included in an AI request.
+
+The endpoint contract is deliberately small — any proxy that accepts
+
+```http
+POST <endpoint>
+x-proxy-secret: <optional>
+{ "model": "...", "system": "...", "messages": [{ "role": "user", "content": "..." }] }
+```
+
+and answers with Anthropic-style `{ content: [{ type: "text", text }] }` or a
+plain `{ text }` will work.
+
+## Offline and mobile
+
+A service worker caches the shell and each module the first time it is opened,
+so the app keeps working on a bad connection. The mobile layout is its own
+layout — bottom navigation, full-width sheets, 44px targets — not a squeezed
+desktop. Add it to the home screen and it runs standalone.
+
+## Development
+
+No build step, no dependencies. Edit a file, reload the page.
+
+```bash
+python3 -m http.server 8787          # then open /shepherd/
+node --test shepherd/test/*.test.mjs # 78 tests, no dependencies
+```
+
+The test suite covers tenant isolation, permissions, the crypto (including the
+RFC 6238 test vectors), sign-in and two-factor, search, insights, exports, the
+policy rules and the seed data. It runs in Node against the same modules the
+browser loads.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for how it is put together and where to
+add things.
+
+## Compliance
+
+Shepherd keeps your records, their versions and an audit trail so you can
+answer questions about them. It does not give legal advice. What a church must
+register, retain or report differs across Kuwait, Bahrain, Qatar, the UAE, Oman
+and Saudi Arabia — verify your own obligations with the relevant authorities or
+a local adviser.

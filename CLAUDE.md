@@ -8,6 +8,15 @@ and where each one's data lives; pages read `FLCC.data('file.json')` and
 `FLCC.key('storage-key')` rather than hardcoding paths or keys. See
 `CHURCHES.md` before adding a church, a data file, or a localStorage key.
 
+## Shepherd
+
+`shepherd/` is a **separate application**, not part of the FLCC Members app.
+It has its own tenant registry, its own `shepherd/v1/…` storage namespace, its
+own design system and its own tests, and it must never import `church.js`,
+read `FLCC.*`, touch the `churches/` data files, or link to and from the FLCC
+pages. Work on one does not imply work on the other. See
+`shepherd/ARCHITECTURE.md` before adding a module or a collection.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection

@@ -24,11 +24,9 @@ import { blank } from '../core/schema.js';
 import { financeSnapshot } from '../core/ai.js';
 import { downloadCSV, downloadExcel, printReport } from '../core/exporters.js';
 import { openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord, money } from './_shared.js';
+import { needsApproval, canApproveTransaction, DEFAULT_APPROVAL_THRESHOLD } from '../core/policies.js';
 
 const TX_FIELDS = ['kind', 'date', 'amount', 'category', 'department', 'projectId', 'description', 'method', 'memberId', 'anonymous', 'receiptRef', 'status'];
-
-/** Above this, an expense needs a second pair of eyes. Per-church setting. */
-const DEFAULT_APPROVAL_THRESHOLD = 100;
 
 export async function render(ctx, route) {
   const { db } = ctx;
@@ -248,10 +246,7 @@ export function recordTransaction(ctx, defaults = {}) {
     fields: TX_FIELDS,
     defaults: { date: isoDate(new Date()), currency: ctx.settings.currency, ...defaults },
     onSaved: async (saved) => {
-      if (saved.kind !== 'expense') return;
-      if (Number(saved.amount) <= threshold) return;
-      if (saved.status === 'approved' || saved.status === 'rejected') return;
-      if (saved.status === 'pending-approval') return;
+      if (!needsApproval(saved, threshold)) return;
       ctx.db.update('transactions', saved.id, { status: 'pending-approval' });
       await ctx.db.flush();
       toast(`Over ${money(threshold)} — sent for approval.`, { variant: '' });
@@ -325,8 +320,8 @@ function approvalsTab(ctx) {
       subtitle: `Anything above ${money(threshold)} needs a second pair of eyes.`,
       children: [pending.length
         ? list(pending.map((tx) => {
+          const verdict = canApproveTransaction(ctx.user, tx);
           const isOwnEntry = tx.createdBy === ctx.user.id;
-          const canApprove = ctx.can('finance:approve') && !isOwnEntry;
           return h('div.list__item',
             h('div.list__body',
               h('div.list__title', tx.description || tx.category),
@@ -335,11 +330,11 @@ function approvalsTab(ctx) {
                 `recorded by ${(db.find('users', tx.createdBy) || {}).name || 'someone'}`,
               ].filter(Boolean).join(' · '))),
             h('strong.nums', money(tx.amount)),
-            canApprove
+            verdict.ok
               ? h('div.row',
                 h('button.btn.btn--sm', { onClick: () => decide(ctx, tx, 'rejected') }, 'Reject'),
                 h('button.btn.btn--sm.btn--primary', { onClick: () => decide(ctx, tx, 'approved') }, icon('check', { size: 14 }), 'Approve'))
-              : badge(isOwnEntry ? 'You recorded this' : 'Awaiting an approver', 'warn'));
+              : badge(isOwnEntry ? 'You recorded this' : verdict.reason || 'Awaiting an approver', 'warn'));
         }))
         : h('p.small.muted', 'Nothing waiting.')],
     }),
@@ -364,8 +359,9 @@ function approvalsTab(ctx) {
 }
 
 async function decide(ctx, tx, status) {
-  if (tx.createdBy === ctx.user.id) {
-    toast('You cannot approve an entry you recorded. Ask another approver.', { variant: 'danger' });
+  const verdict = canApproveTransaction(ctx.user, tx);
+  if (!verdict.ok) {
+    toast(verdict.reason, { variant: 'danger' });
     return;
   }
   const ok = await confirm({
