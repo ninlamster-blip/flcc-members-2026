@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Shepherd — for church leaders in Kuwait</title>
+<meta name="description" content="A secure platform for church leaders: member care, prayer, worship, preaching, events, finance, documents and reporting. Built for Kuwait, ready for the Gulf." />
+<meta name="theme-color" content="#FBFBFA" />
+<meta name="color-scheme" content="light dark" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Shepherd" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232F6F5E'/%3E%3Cpath d='M16 6v6M13 9h6M10 26V14l6-4 6 4v12M14 26v-5h4v5' stroke='white' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/shepherd.css" />
+
+<script>
+  // Theme before first paint, so a dark-mode user never sees a white flash.
+  (function () {
+    try {
+      var pref = localStorage.getItem('shepherd/v1/theme') || 'auto';
+      var dark = pref === 'dark' || (pref === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      document.documentElement.dataset.themePref = pref;
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+
+<div id="root">
+  <div class="auth">
+    <div class="auth__card stack" aria-busy="true">
+      <div class="skeleton" style="height:46px;width:46px;border-radius:14px"></div>
+      <div class="skeleton" style="height:28px;width:180px"></div>
+      <div class="skeleton" style="height:190px;border-radius:18px"></div>
+    </div>
+  </div>
+</div>
+
+<noscript>
+  <div class="auth">
+    <div class="auth__card card stack">
+      <h1 class="display">Shepherd needs JavaScript</h1>
+      <p class="muted">This app runs entirely in your browser — that is how your church's records stay on your own device. Please enable JavaScript to continue.</p>
+    </div>
+  </div>
+</noscript>
+
+<script type="module">
+  import { App } from './js/app.js';
+
+  const app = new App({ root: document.getElementById('root') });
+  window.shepherd = app; // handy in the console; nothing depends on it
+  app.start().catch((err) => {
+    console.error('[shepherd] failed to start', err);
+    document.getElementById('root').innerHTML =
+      '<div class="auth"><div class="auth__card card stack">'
+      + '<h1 class="display">Shepherd could not start</h1>'
+      + '<p class="muted">' + (err && err.message ? err.message : 'Unknown error') + '</p>'
+      + '<p class="small subtle">If this keeps happening, your browser may be blocking local storage. '
+      + 'Private windows in some browsers do this.</p></div></div>';
+  });
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => { /* offline support is a bonus, not a requirement */ });
+    });
+  }
+</script>
+
+</body>
+</html>

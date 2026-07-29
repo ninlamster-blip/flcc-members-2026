@@ -1,0 +1,800 @@
+/**
+ * The intelligence layer.
+ *
+ * Two halves, and the split matters:
+ *
+ *   1. INSIGHTS — computed, on-device, always available. "Twelve people have
+ *      not been seen in three weeks", "the lease expires in 40 days", "the
+ *      youth rota is two volunteers short on Friday". No model, no network,
+ *      no data leaving the building. This is most of what a pastor actually
+ *      needs, and it works on a phone with no signal.
+ *
+ *   2. GENERATION — drafting: sermon outlines, meeting summaries,
+ *      announcements, translations. Uses a language model when the church has
+ *      configured an endpoint; falls back to structured local drafts built
+ *      from the church's own records when it has not. Either way the result
+ *      is labelled.
+ *
+ * EVERY generated artefact carries `aiGenerated: true` plus the model and the
+ * time. The UI renders that as a visible badge and requires acknowledgement
+ * before anything is marked as sent — a church should never quote a machine
+ * to its congregation without knowing it did.
+ */
+
+import { daysUntilAnnual, daysBetween, isoDate, formatMoney, formatDate } from './format.js';
+import { can } from './rbac.js';
+
+/* ── configuration ───────────────────────────────────────────────────────── */
+
+/**
+ * @typedef {object} AIConfig
+ * @property {string} endpoint  HTTPS endpoint that proxies a model. Empty = local only.
+ * @property {string} secret    Sent as `x-proxy-secret`.
+ * @property {string} model
+ * @property {boolean} enabled
+ */
+
+/** @type {AIConfig} */
+export const DEFAULT_AI_CONFIG = { endpoint: '', secret: '', model: 'claude-sonnet-4-5', enabled: true };
+
+export const AI_TASKS = {
+  'sermon.outline':      'Sermon outline',
+  'sermon.applications': 'Applications & discussion questions',
+  'sermon.children':     "Children's version",
+  'sermon.youth':        'Youth version',
+  'sermon.smallgroup':   'Small-group guide',
+  'sermon.social':       'Social media summary',
+  'meeting.agenda':      'Meeting agenda',
+  'meeting.summary':     'Meeting summary & action items',
+  'announcement.draft':  'Announcement',
+  'message.whatsapp':    'WhatsApp message',
+  'message.email':       'Email',
+  'prayer.points':       'Prayer points',
+  'event.checklist':     'Event checklist',
+  'report.summary':      'Report summary',
+  'translate':           'Translation',
+  'knowledge.answer':    'Answer from church documents',
+  'bible.study':         'Bible study',
+};
+
+export const LANGUAGES = ['English', 'Arabic', 'Tagalog'];
+
+/* ── the assistant ───────────────────────────────────────────────────────── */
+
+export class Assistant {
+  /**
+   * @param {{db: import('./db.js').Database, search?: import('./search.js').SearchIndex,
+   *          config?: Partial<AIConfig>, fetchImpl?: typeof fetch}} options
+   */
+  constructor({ db, search = null, config = {}, fetchImpl } = {}) {
+    this.db = db;
+    this.search = search;
+    this.config = { ...DEFAULT_AI_CONFIG, ...config };
+    this.fetch = fetchImpl || (typeof fetch === 'function' ? fetch.bind(globalThis) : null);
+  }
+
+  setConfig(partial) {
+    this.config = { ...this.config, ...partial };
+  }
+
+  get remoteAvailable() {
+    return !!(this.config.enabled && this.config.endpoint && this.fetch);
+  }
+
+  /**
+   * Run a task.
+   * @param {keyof typeof AI_TASKS} task
+   * @param {object} input
+   * @returns {Promise<{task: string, text: string, aiGenerated: true, model: string,
+   *                    createdAt: string, source: 'model'|'local', sources?: object[]}>}
+   */
+  async run(task, input = {}) {
+    const started = Date.now();
+    const local = buildLocalDraft(task, input, this.db);
+    let text = local.text;
+    let source = /** @type {'model'|'local'} */ ('local');
+    let model = 'shepherd-local';
+
+    if (this.remoteAvailable) {
+      try {
+        const response = await this._callModel(local.prompt, local.system);
+        if (response) {
+          text = response;
+          source = 'model';
+          model = this.config.model;
+        }
+      } catch (err) {
+        // A failed model call must never lose the user's work: the local draft
+        // is already in hand, so hand that over and say why.
+        text = `${local.text}\n\n— Drafted on this device: the AI service could not be reached (${err.message}).`;
+      }
+    }
+
+    const result = {
+      task,
+      text,
+      aiGenerated: true,
+      model,
+      source,
+      createdAt: new Date().toISOString(),
+      tookMs: Date.now() - started,
+      sources: local.sources || [],
+    };
+    if (this.db && this.db.actor) {
+      this.db.log('ai.generate', `${AI_TASKS[task] || task} generated with ${model}.`);
+    }
+    return result;
+  }
+
+  async _callModel(prompt, system) {
+    const body = {
+      model: this.config.model,
+      max_tokens: 1600,
+      system,
+      messages: [{ role: 'user', content: prompt }],
+    };
+    const res = await this.fetch(this.config.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.config.secret ? { 'x-proxy-secret': this.config.secret } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    // Anthropic Messages shape, or a plain { text }.
+    if (Array.isArray(data.content)) {
+      return data.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n').trim();
+    }
+    return String(data.text || data.completion || '').trim() || null;
+  }
+
+  /**
+   * Answer a natural-language question using ONLY records this user may read.
+   * @param {string} question
+   * @param {object} user
+   */
+  async answer(question, user) {
+    const hits = this.search ? this.search.search(question, { user, limit: 6 }) : [];
+    const context = hits.map((hit, i) => `[${i + 1}] ${hit.title} — ${hit.snippet}`).join('\n');
+    const result = await this.run('knowledge.answer', { question, context, hits });
+    return { ...result, sources: hits };
+  }
+}
+
+/* ── local drafting ──────────────────────────────────────────────────────── */
+
+const SYSTEM = `You are Shepherd, an assistant for church leaders in Kuwait and the wider Gulf.
+Write plainly and warmly. Assume a multicultural congregation (Filipino, Indian, Arab, Western).
+Never invent facts about the church — use only what the user gives you.
+You assist a pastor's preparation; you never replace it.`;
+
+/**
+ * Build the local draft AND the prompt that would be sent to a model. The
+ * local draft is a real, usable artefact — it is assembled from the church's
+ * own records, not filler.
+ *
+ * @returns {{text: string, prompt: string, system: string, sources?: object[]}}
+ */
+export function buildLocalDraft(task, input, db) {
+  const church = (input && input.churchName) || 'the church';
+  switch (task) {
+    case 'sermon.outline': {
+      const { title = 'Untitled', passage = '', bigIdea = '' } = input;
+      return {
+        system: SYSTEM,
+        prompt: `Draft a preaching outline.\nTitle: ${title}\nPassage: ${passage}\nBig idea: ${bigIdea}\n`
+          + 'Give: one-sentence big idea, three movements each with the verses it rests on, '
+          + 'an introduction that earns attention, and a closing call. Keep it a skeleton the preacher fills.',
+        text: [
+          `# ${title}`,
+          passage ? `**Passage** ${passage}` : '',
+          bigIdea ? `**Big idea** ${bigIdea}` : '**Big idea** _one sentence you could say from memory_',
+          '',
+          '## Introduction',
+          '- Open with something the congregation already feels this week.',
+          `- Name the tension the passage answers${passage ? ` in ${passage}` : ''}.`,
+          '',
+          '## Movement 1 — What the text says',
+          '- Read the passage; explain its setting in one or two sentences.',
+          '- The one thing the original hearers would not have missed.',
+          '',
+          '## Movement 2 — What it means',
+          '- The doctrine underneath, stated simply.',
+          '- Where the congregation would misread it, and why.',
+          '',
+          '## Movement 3 — What it asks of us',
+          '- One concrete change for this week, not five vague ones.',
+          '',
+          '## Close',
+          '- Return to the introduction and answer it.',
+          '- A sentence a tired person could carry home.',
+        ].filter(Boolean).join('\n'),
+      };
+    }
+
+    case 'sermon.applications': {
+      const { title = '', passage = '' } = input;
+      return {
+        system: SYSTEM,
+        prompt: `For a sermon titled "${title}" on ${passage}, give six discussion questions (two observation, two interpretation, two application) and three concrete applications for working adults, families, and single migrant workers.`,
+        text: [
+          '## Discussion questions',
+          '1. What does the passage actually say — in your own words?',
+          '2. Which detail did you not notice before?',
+          '3. What does this tell us about God?',
+          '4. What does it assume about people?',
+          '5. Where does this press on your week?',
+          '6. What would obedience look like by Friday?',
+          '',
+          '## Applications',
+          '- **For workers on long shifts:** one habit that survives a 12-hour day.',
+          '- **For families:** one conversation to have at the table this week.',
+          '- **For those far from home:** one way to receive care, not only give it.',
+        ].join('\n'),
+      };
+    }
+
+    case 'sermon.children':
+      return {
+        system: SYSTEM,
+        prompt: `Rewrite this sermon for children aged 6–11: "${input.title}" (${input.passage}). One big idea, a story, an activity, a memory verse. Simple words, no abstraction.`,
+        text: [
+          `## ${input.title || 'This Sunday'} — for children`,
+          '**Big idea (say it three times):** _one short sentence_',
+          '**Story:** tell the passage as a story, with one character to follow.',
+          '**Ask:** two questions they can answer out loud.',
+          '**Do:** a two-minute activity that acts out the big idea.',
+          '**Memory verse:** the shortest verse that carries the idea.',
+        ].join('\n'),
+      };
+
+    case 'sermon.youth':
+      return {
+        system: SYSTEM,
+        prompt: `Rewrite this sermon for teenagers: "${input.title}" (${input.passage}). Honest, not preachy; one real-life tension; three talking points; one challenge for the week.`,
+        text: [
+          `## ${input.title || 'This Sunday'} — for youth`,
+          '**The tension:** name something they actually face (school, family expectations, phones, belonging).',
+          '**Three talking points:** short, honest, no clichés.',
+          '**The challenge:** one thing to try this week, small enough to succeed at.',
+        ].join('\n'),
+      };
+
+    case 'sermon.smallgroup':
+      return {
+        system: SYSTEM,
+        prompt: `Write a 45-minute small-group guide from the sermon "${input.title}" on ${input.passage}: opener, read, five questions, prayer focus.`,
+        text: [
+          `## Small-group guide — ${input.title || 'this week'}`,
+          '**Opener (5 min):** a light question that gets everyone talking.',
+          `**Read (5 min):** ${input.passage || 'the passage'}, aloud, twice.`,
+          '**Discuss (25 min):** observation → meaning → application, five questions.',
+          '**Pray (10 min):** in pairs, for the one application each person names.',
+        ].join('\n'),
+      };
+
+    case 'sermon.social':
+      return {
+        system: SYSTEM,
+        prompt: `Write three short social posts (under 220 characters) from the sermon "${input.title}" on ${input.passage}. No hype, no emoji spam.`,
+        text: [
+          `1. ${input.bigIdea || input.title || 'The big idea'} — ${input.passage || ''}`.trim(),
+          '2. A single quotable line from the sermon.',
+          '3. An invitation: when you meet, and who is welcome (everyone).',
+        ].join('\n'),
+      };
+
+    case 'meeting.agenda': {
+      const open = db ? db.where('actionItems', (a) => a.status !== 'done' && a.status !== 'dropped') : [];
+      return {
+        system: SYSTEM,
+        prompt: `Draft an agenda for a ${input.title || 'leadership'} meeting on ${input.date || 'the next meeting'}. Carry over these open items: ${open.map((a) => a.title).join('; ') || 'none'}.`,
+        text: [
+          `# ${input.title || 'Leadership meeting'} — ${input.date ? formatDate(input.date) : 'agenda'}`,
+          '',
+          '1. Opening prayer (5 min)',
+          '2. Minutes of the last meeting (5 min)',
+          ...(open.length ? ['3. Carried-over actions:', ...open.slice(0, 8).map((a) => `   - ${a.title}${a.ownerId ? '' : ' (no owner yet)'}`)] : ['3. Carried-over actions: none outstanding']),
+          `${open.length ? 4 : 4}. Main business (30 min)`,
+          '5. Finance report (10 min)',
+          '6. Pastoral care round-up (10 min)',
+          '7. Decisions to record',
+          '8. Date of next meeting, closing prayer',
+        ].join('\n'),
+      };
+    }
+
+    case 'meeting.summary': {
+      const minutes = String(input.minutes || '');
+      const lines = minutes.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+      const actions = lines.filter((l) => /\b(will|to do|action|follow up|by \w+day|assign)/i.test(l));
+      const decisions = lines.filter((l) => /\b(decided|agreed|approved|resolved)\b/i.test(l));
+      return {
+        system: SYSTEM,
+        prompt: `Summarise these minutes in five bullets, then list decisions and action items with owners and dates if stated.\n\n${minutes}`,
+        text: [
+          '## Summary',
+          ...(lines.slice(0, 5).map((l) => `- ${l.slice(0, 160)}`)),
+          '',
+          '## Decisions',
+          ...(decisions.length ? decisions.map((l) => `- ${l}`) : ['- None recorded.']),
+          '',
+          '## Action items',
+          ...(actions.length ? actions.map((l) => `- ${l}`) : ['- None identified.']),
+        ].join('\n'),
+      };
+    }
+
+    case 'announcement.draft':
+      return {
+        system: SYSTEM,
+        prompt: `Write a church announcement for ${church}. Subject: ${input.subject || ''}. Details: ${input.details || ''}. Audience: ${input.audience || 'the whole congregation'}. Warm, under 120 words, one clear action.`,
+        text: [
+          `**${input.subject || 'Announcement'}**`,
+          '',
+          input.details || 'Add the details here — what, when, where, and who it is for.',
+          '',
+          `Please ${input.action || 'let us know if you are coming'}.`,
+          '',
+          `— ${church}`,
+        ].join('\n'),
+      };
+
+    case 'message.whatsapp':
+      return {
+        system: SYSTEM,
+        prompt: `Write a WhatsApp message (under 90 words, warm, no formatting beyond line breaks) about: ${input.subject || ''}. ${input.details || ''}`,
+        text: [
+          `Peace to you 🙏`,
+          '',
+          input.details || input.subject || 'Add the message here.',
+          '',
+          `— ${church}`,
+        ].join('\n'),
+      };
+
+    case 'message.email':
+      return {
+        system: SYSTEM,
+        prompt: `Write a short church email. Subject: ${input.subject}. Details: ${input.details}. Sign off from ${church}.`,
+        text: [
+          `Subject: ${input.subject || '(subject)'}`,
+          '',
+          'Dear friends,',
+          '',
+          input.details || 'Add the body here.',
+          '',
+          'Grace and peace,',
+          church,
+        ].join('\n'),
+      };
+
+    case 'prayer.points': {
+      const requests = db ? db.where('prayers', (p) => p.status === 'open' || p.status === 'praying') : [];
+      const urgent = requests.filter((p) => p.urgent);
+      return {
+        system: SYSTEM,
+        prompt: `Turn these prayer requests into eight short prayer points for a prayer meeting. Group them and keep names only where the request is public.\n${requests.map((p) => `- ${p.title} (${p.category})`).join('\n')}`,
+        text: [
+          '## Prayer points',
+          ...(urgent.length ? ['**Urgent**', ...urgent.slice(0, 5).map((p) => `- ${p.title}`), ''] : []),
+          '**Our people**',
+          ...requests.filter((p) => !p.urgent).slice(0, 8).map((p) => `- ${p.title}`),
+          '',
+          '**Our church**',
+          '- For the leaders as they plan and decide.',
+          '- For those who serve week after week without being seen.',
+          '',
+          '**Beyond us**',
+          '- For workers far from family, and for those waiting on papers.',
+          '- For peace in this land and the region.',
+        ].join('\n'),
+      };
+    }
+
+    case 'event.checklist': {
+      const type = input.type || 'event';
+      const base = {
+        retreat: ['Book the venue and confirm in writing', 'Transport and pick-up points', 'Rooming list', 'Meals and dietary needs', 'Programme and speakers', 'Registration and payments', 'First-aid kit and emergency contacts', 'Consent forms for minors', 'Sound and worship gear', 'Photography consent'],
+        baptism: ['Confirm candidates and interviews', 'Baptism class dates', 'Water, towels and changing space', 'Robes / clothing', 'Certificates printed', 'Testimony order', 'Photographer', 'Family invitations', 'Records updated after the service'],
+        conference: ['Speakers confirmed and travel booked', 'Venue and capacity', 'Registration desk and badges', 'Programme printed', 'Translation needs', 'Sound, screens, recording', 'Refreshments', 'Volunteer rota', 'Budget sign-off', 'Feedback form'],
+        training: ['Curriculum and handouts', 'Trainer confirmed', 'Room and seating', 'Attendance sheet', 'Certificates', 'Follow-up plan'],
+        communion: ['Elements prepared', 'Servers briefed', 'Table and linens', 'Words of institution chosen', 'Provision for those who cannot come forward'],
+      }[type] || ['Purpose and date agreed', 'Venue booked', 'Budget approved', 'Volunteers assigned', 'Communication sent', 'Set-up and clean-up rota', 'Attendance recorded', 'Debrief scheduled'];
+      return {
+        system: SYSTEM,
+        prompt: `List the tasks for a church ${type} called "${input.title || ''}" on ${input.date || ''}, with owners and how far ahead each is due.`,
+        text: [`## ${input.title || type} — checklist`, ...base.map((t) => `- [ ] ${t}`)].join('\n'),
+      };
+    }
+
+    case 'report.summary':
+      return {
+        system: SYSTEM,
+        prompt: `Summarise this church report in four sentences for a leadership meeting, then name one thing to celebrate and one thing to watch.\n\n${input.data || ''}`,
+        text: [
+          '## Summary',
+          input.data ? String(input.data).split('\n').slice(0, 6).join('\n') : 'Add the figures to summarise.',
+          '',
+          '**Celebrate:** the clearest positive movement above.',
+          '**Watch:** the number heading the wrong way, and who owns it.',
+        ].join('\n'),
+      };
+
+    case 'translate':
+      return {
+        system: SYSTEM,
+        prompt: `Translate the following into ${input.language || 'Arabic'}. Keep it natural for a church audience, not literal. Preserve line breaks.\n\n${input.text || ''}`,
+        text: `[Translation into ${input.language || 'Arabic'} needs the AI service. Configure it in Settings → AI, or ask a bilingual member to review this text:]\n\n${input.text || ''}`,
+      };
+
+    case 'bible.study':
+      return {
+        system: SYSTEM,
+        prompt: `Write a four-session Bible study on ${input.topic || input.passage || 'the passage'}, each session with a passage, three questions and a practice.`,
+        text: [
+          `# Bible study — ${input.topic || input.passage || 'series'}`,
+          '',
+          ...[1, 2, 3, 4].flatMap((n) => [
+            `## Session ${n}`,
+            '- **Read:** passage',
+            '- **Ask:** what it says / what it means / what it asks',
+            '- **Practise:** one thing to do before the next session',
+            '',
+          ]),
+        ].join('\n'),
+      };
+
+    case 'knowledge.answer': {
+      const { question = '', context = '', hits = [] } = input;
+      return {
+        system: `${SYSTEM}\nAnswer ONLY from the supplied church records. If they do not contain the answer, say so plainly and name what document would need to exist.`,
+        prompt: `Question: ${question}\n\nChurch records:\n${context || '(none found)'}\n\nAnswer in under 150 words and cite the numbered records you used.`,
+        sources: hits,
+        text: hits.length
+          ? [
+            `**From this church's own records** (${hits.length} match${hits.length === 1 ? '' : 'es'}):`,
+            '',
+            ...hits.map((hit, i) => `${i + 1}. **${hit.title}** — ${hit.snippet}`),
+            '',
+            '_Shown as found. Connect an AI service in Settings → AI for a written answer that draws these together._',
+          ].join('\n')
+          : `Nothing in this church's records answers "${question}". If it should, add the document or minute it — Shepherd only answers from what the church has recorded.`,
+      };
+    }
+
+    default:
+      return {
+        system: SYSTEM,
+        prompt: String(input.prompt || input.text || ''),
+        text: 'This assistant task is not available on this device. Configure an AI service in Settings → AI.',
+      };
+  }
+}
+
+/* ── insights ────────────────────────────────────────────────────────────── */
+
+/**
+ * @typedef {object} Insight
+ * @property {string} id
+ * @property {'care'|'celebration'|'operations'|'finance'|'growth'|'risk'} kind
+ * @property {'urgent'|'attention'|'info'} severity
+ * @property {string} title
+ * @property {string} detail
+ * @property {string} [action] route to act on it
+ * @property {string} [actionLabel]
+ */
+
+/**
+ * Everything Shepherd noticed, computed from this church's own records.
+ * Permission-filtered: a volunteer never sees a finance insight.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {object} user
+ * @param {{now?: Date, settings?: object}} [opts]
+ * @returns {Insight[]}
+ */
+export function computeInsights(db, user, opts = {}) {
+  const now = opts.now || new Date();
+  const settings = opts.settings || {};
+  /** @type {Insight[]} */
+  const out = [];
+  const push = (insight) => out.push(insight);
+
+  /* People who have quietly stopped coming. */
+  if (can(user, 'care:read') || can(user, 'members:read')) {
+    const absent = absentMembers(db, { now, weeks: settings.followUpAfterWeeks || 3 });
+    if (absent.length) {
+      push({
+        id: 'absent',
+        kind: 'care',
+        severity: absent.length > 8 ? 'urgent' : 'attention',
+        title: `${absent.length} ${absent.length === 1 ? 'person has' : 'people have'} not been seen for ${settings.followUpAfterWeeks || 3}+ weeks`,
+        detail: absent.slice(0, 4).map((m) => m.fullName).join(', ') + (absent.length > 4 ? `, and ${absent.length - 4} more` : ''),
+        action: '#/care',
+        actionLabel: 'Open follow-ups',
+      });
+    }
+
+    const newBelievers = db.where('members', (m) => m.newBeliever && !m.archived
+      && daysBetween(m.joinedOn || m.createdAt, now) <= 90);
+    if (newBelievers.length) {
+      push({
+        id: 'new-believers',
+        kind: 'growth',
+        severity: 'attention',
+        title: `${newBelievers.length} new believer${newBelievers.length === 1 ? '' : 's'} in the last 90 days`,
+        detail: 'Each one needs a person, not a programme. Assign someone this week.',
+        action: '#/members?filter=new-believer',
+        actionLabel: 'See who',
+      });
+    }
+
+    const overdue = db.where('care', (c) => !c.completedAt && c.dueDate && new Date(c.dueDate) < now);
+    if (overdue.length) {
+      push({
+        id: 'overdue-care',
+        kind: 'care',
+        severity: overdue.some((c) => c.priority === 'urgent') ? 'urgent' : 'attention',
+        title: `${overdue.length} follow-up${overdue.length === 1 ? '' : 's'} past due`,
+        detail: overdue.slice(0, 3).map((c) => c.summary).join(' · '),
+        action: '#/care',
+        actionLabel: 'Work through them',
+      });
+    }
+
+    const celebrations = upcomingCelebrations(db, { now, days: 7 });
+    if (celebrations.length) {
+      push({
+        id: 'celebrations',
+        kind: 'celebration',
+        severity: 'info',
+        title: `${celebrations.length} birthday${celebrations.length === 1 ? '' : 's'} and anniversar${celebrations.length === 1 ? 'y' : 'ies'} this week`,
+        detail: celebrations.slice(0, 4).map((c) => `${c.name} (${c.label})`).join(', '),
+        action: '#/members?filter=celebrations',
+        actionLabel: 'Send greetings',
+      });
+    }
+  }
+
+  /* Volunteer shortages on the rota. */
+  if (can(user, 'events:read')) {
+    const shortages = volunteerShortages(db, { now });
+    if (shortages.length) {
+      push({
+        id: 'volunteers',
+        kind: 'operations',
+        severity: 'attention',
+        title: `${shortages.length} event${shortages.length === 1 ? '' : 's'} short of volunteers`,
+        detail: shortages.slice(0, 3).map((s) => `${s.title}: ${s.unassigned} unassigned`).join(' · '),
+        action: '#/events',
+        actionLabel: 'Fill the rota',
+      });
+    }
+  }
+
+  /* Documents about to expire — leases, insurance, licences. */
+  if (can(user, 'documents:read')) {
+    const expiring = db.where('documents', (d) => d.expiresOn && daysBetween(now, d.expiresOn) <= 60 && daysBetween(now, d.expiresOn) >= -30);
+    if (expiring.length) {
+      push({
+        id: 'expiring-docs',
+        kind: 'risk',
+        severity: expiring.some((d) => daysBetween(now, d.expiresOn) < 14) ? 'urgent' : 'attention',
+        title: `${expiring.length} document${expiring.length === 1 ? '' : 's'} expiring soon`,
+        detail: expiring.slice(0, 3).map((d) => `${d.title} (${formatDate(d.expiresOn)})`).join(' · '),
+        action: '#/documents',
+        actionLabel: 'Review the vault',
+      });
+    }
+  }
+
+  /* Budget lines running hot. */
+  if (can(user, 'finance:read')) {
+    const year = now.getFullYear();
+    const budgets = db.where('budgets', (b) => b.year === year);
+    const spend = new Map();
+    for (const tx of db.where('transactions', (t) => t.kind === 'expense' && new Date(t.date).getFullYear() === year)) {
+      spend.set(tx.category, (spend.get(tx.category) || 0) + Number(tx.amount || 0));
+    }
+    const overruns = budgets
+      .map((b) => ({ ...b, spent: spend.get(b.category) || 0 }))
+      .filter((b) => b.amount > 0 && b.spent / b.amount >= 0.9);
+    if (overruns.length) {
+      push({
+        id: 'budget',
+        kind: 'finance',
+        severity: overruns.some((b) => b.spent > b.amount) ? 'urgent' : 'attention',
+        title: `${overruns.length} budget line${overruns.length === 1 ? '' : 's'} at or over 90%`,
+        detail: overruns.slice(0, 3).map((b) => `${b.category}: ${formatMoney(b.spent)} of ${formatMoney(b.amount)}`).join(' · '),
+        action: '#/finance',
+        actionLabel: 'Open finance',
+      });
+    }
+
+    const pending = db.where('transactions', (t) => t.status === 'pending-approval');
+    if (pending.length && can(user, 'finance:approve')) {
+      push({
+        id: 'approvals',
+        kind: 'finance',
+        severity: 'attention',
+        title: `${pending.length} payment${pending.length === 1 ? '' : 's'} waiting for approval`,
+        detail: pending.slice(0, 3).map((t) => `${t.description || t.category} — ${formatMoney(t.amount)}`).join(' · '),
+        action: '#/finance?tab=approvals',
+        actionLabel: 'Review',
+      });
+    }
+  }
+
+  /* Attendance trend. */
+  if (can(user, 'members:read')) {
+    const trend = attendanceTrend(db, { now, weeks: 8 });
+    if (trend.direction === 'down' && Math.abs(trend.changePct) >= 12) {
+      push({
+        id: 'attendance-down',
+        kind: 'growth',
+        severity: 'attention',
+        title: `Attendance is down ${Math.abs(Math.round(trend.changePct))}% over eight weeks`,
+        detail: `Averaging ${Math.round(trend.recentAverage)} against ${Math.round(trend.priorAverage)} before. Worth naming at the next leaders' meeting.`,
+        action: '#/reports',
+        actionLabel: 'See the numbers',
+      });
+    } else if (trend.direction === 'up' && trend.changePct >= 12) {
+      push({
+        id: 'attendance-up',
+        kind: 'growth',
+        severity: 'info',
+        title: `Attendance is up ${Math.round(trend.changePct)}% over eight weeks`,
+        detail: `Averaging ${Math.round(trend.recentAverage)}. Make sure the newcomers are being met by name.`,
+        action: '#/reports',
+        actionLabel: 'See the numbers',
+      });
+    }
+  }
+
+  /* Prayer that has gone quiet. */
+  if (can(user, 'prayer:read')) {
+    const stale = db.where('prayers', (p) => (p.status === 'open' || p.status === 'praying')
+      && daysBetween(p.updatedAt || p.createdAt, now) > 30);
+    if (stale.length >= 3) {
+      push({
+        id: 'stale-prayer',
+        kind: 'care',
+        severity: 'info',
+        title: `${stale.length} prayer requests have had no update in a month`,
+        detail: 'Ask how they are. Answered prayer that nobody records is a testimony the church never hears.',
+        action: '#/prayer',
+        actionLabel: 'Open prayer centre',
+      });
+    }
+  }
+
+  const order = { urgent: 0, attention: 1, info: 2 };
+  return out.sort((a, b) => order[a.severity] - order[b.severity]);
+}
+
+/* ── the computations behind the insights (also used directly by modules) ── */
+
+/** People with no attendance mark in the last `weeks` weeks. */
+export function absentMembers(db, { now = new Date(), weeks = 3 } = {}) {
+  const cutoff = new Date(now.getTime() - weeks * 7 * 864e5);
+  const seen = new Map();
+  for (const session of db.all('attendance')) {
+    const date = new Date(session.date);
+    for (const id of session.memberIds || []) {
+      if (!seen.has(id) || date > seen.get(id)) seen.set(id, date);
+    }
+  }
+  return db
+    .where('members', (m) => !m.archived && (m.status === 'member' || m.status === 'regular'))
+    .map((m) => ({ ...m, lastSeen: seen.get(m.id) || null }))
+    .filter((m) => !m.lastSeen || m.lastSeen < cutoff)
+    .sort((a, b) => (a.lastSeen ? a.lastSeen.getTime() : 0) - (b.lastSeen ? b.lastSeen.getTime() : 0));
+}
+
+/** Birthdays and anniversaries inside the next `days` days. */
+export function upcomingCelebrations(db, { now = new Date(), days = 30 } = {}) {
+  const out = [];
+  for (const member of db.where('members', (m) => !m.archived)) {
+    if (member.birthDate) {
+      const inDays = daysUntilAnnual(member.birthDate, now);
+      if (inDays <= days) out.push({ memberId: member.id, name: member.fullName, label: 'birthday', date: member.birthDate, inDays });
+    }
+    if (member.anniversary) {
+      const inDays = daysUntilAnnual(member.anniversary, now);
+      if (inDays <= days) out.push({ memberId: member.id, name: member.fullName, label: 'anniversary', date: member.anniversary, inDays });
+    }
+  }
+  return out.sort((a, b) => a.inDays - b.inDays);
+}
+
+/** Upcoming events whose task list still has unassigned roles. */
+export function volunteerShortages(db, { now = new Date(), days = 21 } = {}) {
+  return db
+    .where('events', (e) => e.status !== 'cancelled' && new Date(e.startsAt) >= now
+      && daysBetween(now, e.startsAt) <= days)
+    .map((event) => {
+      const tasks = db.where('eventTasks', (t) => t.eventId === event.id);
+      const unassigned = tasks.filter((t) => !t.ownerId && !t.done).length;
+      return { id: event.id, title: event.title, startsAt: event.startsAt, unassigned, total: tasks.length };
+    })
+    .filter((e) => e.unassigned > 0)
+    .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
+}
+
+/**
+ * Attendance over the last `weeks` weeks against the `weeks` before that.
+ * @returns {{recentAverage: number, priorAverage: number, changePct: number, direction: 'up'|'down'|'flat', points: {date: string, total: number}[]}}
+ */
+export function attendanceTrend(db, { now = new Date(), weeks = 8 } = {}) {
+  const sessions = db.all('attendance')
+    .map((s) => ({ date: s.date, total: Number(s.total || (s.memberIds || []).length + Number(s.visitors || 0)) }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const windowMs = weeks * 7 * 864e5;
+  const recentFrom = now.getTime() - windowMs;
+  const priorFrom = recentFrom - windowMs;
+  const recent = sessions.filter((s) => new Date(s.date).getTime() >= recentFrom);
+  const prior = sessions.filter((s) => {
+    const t = new Date(s.date).getTime();
+    return t >= priorFrom && t < recentFrom;
+  });
+
+  const avg = (list) => (list.length ? list.reduce((sum, s) => sum + s.total, 0) / list.length : 0);
+  const recentAverage = avg(recent);
+  const priorAverage = avg(prior);
+  const changePct = priorAverage ? ((recentAverage - priorAverage) / priorAverage) * 100 : 0;
+  return {
+    recentAverage,
+    priorAverage,
+    changePct,
+    direction: changePct > 2 ? 'up' : changePct < -2 ? 'down' : 'flat',
+    points: sessions.slice(-Math.max(weeks * 2, 12)),
+  };
+}
+
+/** Suggested rota: who has served least recently gets asked first. */
+export function suggestVolunteers(db, { role, count = 2, exclude = [] } = {}) {
+  const lastServed = new Map();
+  for (const task of db.all('eventTasks')) {
+    if (!task.ownerId) continue;
+    const at = new Date(task.updatedAt || task.createdAt).getTime();
+    if (!lastServed.has(task.ownerId) || at > lastServed.get(task.ownerId)) lastServed.set(task.ownerId, at);
+  }
+  return db
+    .where('members', (m) => !m.archived && m.status !== 'visitor' && !exclude.includes(m.id)
+      && (!role || (m.ministries || []).some((x) => String(x).toLowerCase().includes(String(role).toLowerCase()))))
+    .map((m) => ({ member: m, lastServed: lastServed.get(m.id) || 0 }))
+    .sort((a, b) => a.lastServed - b.lastServed)
+    .slice(0, count);
+}
+
+/** Giving and expenses for a period, by category — the finance snapshot. */
+export function financeSnapshot(db, { from, to } = {}) {
+  const start = from ? new Date(from) : new Date(new Date().getFullYear(), 0, 1);
+  const end = to ? new Date(to) : new Date();
+  const inRange = db.where('transactions', (t) => {
+    const date = new Date(t.date);
+    return date >= start && date <= end && t.status !== 'rejected';
+  });
+  const giving = inRange.filter((t) => t.kind === 'giving');
+  const expenses = inRange.filter((t) => t.kind === 'expense');
+  const sum = (list) => list.reduce((total, t) => total + Number(t.amount || 0), 0);
+  const byCategory = (list) => {
+    const map = new Map();
+    for (const t of list) map.set(t.category, (map.get(t.category) || 0) + Number(t.amount || 0));
+    return [...map].map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
+  };
+  return {
+    from: isoDate(start),
+    to: isoDate(end),
+    giving: sum(giving),
+    expenses: sum(expenses),
+    net: sum(giving) - sum(expenses),
+    givingByCategory: byCategory(giving),
+    expensesByCategory: byCategory(expenses),
+    count: inRange.length,
+  };
+}
