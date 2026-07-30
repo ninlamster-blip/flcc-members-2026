@@ -36,7 +36,7 @@ import { isCommunionScheduled, canEnrollInCourse } from './policies.js';
  */
 
 /** @type {AIConfig} */
-export const DEFAULT_AI_CONFIG = { endpoint: '', secret: '', model: 'claude-sonnet-4-5', enabled: true };
+export const DEFAULT_AI_CONFIG = { endpoint: '', secret: '', model: 'claude-sonnet-5', enabled: true };
 
 export const AI_TASKS = {
   'sermon.outline':      'Sermon outline',

@@ -475,7 +475,7 @@ function aiTab(ctx) {
               ctx.app.saveAIConfig({
                 endpoint: endpointInput.value.trim(),
                 secret: secretInput.value,
-                model: modelInput.value.trim() || 'claude-sonnet-4-5',
+                model: modelInput.value.trim() || 'claude-sonnet-5',
                 enabled,
               });
               ctx.db.log('settings.ai', `AI ${enabled && endpointInput.value ? 'connected' : 'set to on-device only'}.`);
