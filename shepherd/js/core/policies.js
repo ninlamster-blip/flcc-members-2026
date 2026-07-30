@@ -45,6 +45,24 @@ export function canApproveTransaction(user, tx) {
   return { ok: true };
 }
 
+/* ── worship ─────────────────────────────────────────────────────────────── */
+
+/**
+ * Communion is not held every week. The rule: the first Friday and the first
+ * Sunday of each month — which, since services only ever fall on those two
+ * weekdays, is simply "the calendar date is 7 or earlier". A leader can
+ * override either way (`communionOverride: 'yes'|'no'`) for an exception —
+ * a fifth Friday communion, or a first Sunday skipped for a baptism service.
+ *
+ * @param {{date: string, communionOverride?: 'auto'|'yes'|'no'}} record
+ */
+export function isCommunionScheduled(record) {
+  if (!record || !record.date) return false;
+  if (record.communionOverride === 'yes') return true;
+  if (record.communionOverride === 'no') return false;
+  return new Date(record.date).getDate() <= 7;
+}
+
 /* ── prayer ──────────────────────────────────────────────────────────────── */
 
 /**

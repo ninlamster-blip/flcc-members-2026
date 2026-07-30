@@ -122,16 +122,19 @@ Roles carry sets of permissions; users may hold extra `grants` and
 `revocations`, with revocation winning. Nobody can assign a role above their
 own rank.
 
-`ministry_head` holds `leadership:read`/`write` — running one ministry
-includes running its workspace and schedule in the leadership hub, which is
-why that role reaches further into `leadership` than its rank alone would
-suggest. Ministry-*instance* scoping (a ministry head should only edit their
-own ministry's meetings, not every church's) is enforced at the workspace
-boundary (`canAccessMinistryWorkspace` in `policies.js`), not at the
-permission level — the permission system stays coarse-grained, matching how
-every other resource in the app works (a treasurer can edit any finance
-record, not one department's). A true per-instance ACL is a deeper change,
-not attempted here.
+`ministry_head` holds `leadership:read` broadly — reading the whole hub is
+what running a ministry's workspace requires — but not the blanket
+`leadership:write` its rank might suggest. Writing is scoped two ways:
+*workspace* access (a ministry head may open only their own ministry's
+workspace: `canAccessMinistryWorkspace` in `policies.js`) and a genuine
+per-instance ACL on the two record types that carry a ministry dimension
+(`actionItems`, `annualPlans`): `Database._assertWritable()` falls back to a
+collection's `instanceWrite` check when the coarse `leadership:write`
+permission is absent, and `canWriteActionItem`/`canWriteAnnualPlan` in
+`policies.js` scope that to records whose `ministryId` matches one the
+acting user actually leads (`ledMinistries`). Meetings, decisions,
+committees and goals have no ministry dimension in the data model, so
+`ministry_head` reaches those only through `leadership:read`, never write.
 
 ## Intelligence
 
@@ -140,13 +143,29 @@ not attempted here.
 - `computeInsights(db, user)` and the functions under it — `absentMembers`,
   `attendanceTrend`, `volunteerShortages`, `financeSnapshot`,
   `upcomingCelebrations`, `suggestVolunteers`, `ministryHealthScore`,
-  `buildBriefing`, `suggestForRole` — are pure computation over the church's
-  own records, permission-filtered, no network. Everything on the
-  dashboard's "Shepherd noticed", the AI executive briefing, ministry health
-  scores and the worship-schedule assignment suggestions comes from here and
-  works offline. `ministryHealthScore` returns its breakdown alongside the
-  score deliberately — the UI shows the four factors, not just a number, so
-  the heuristic stays inspectable rather than a black box.
+  `buildBriefing`, `suggestForRole`, `worshipShortages`, `serviceReadiness` —
+  are pure computation over the church's own records, permission-filtered, no
+  network. Everything on the dashboard's "Shepherd noticed", the AI
+  executive briefing, ministry health scores and the worship-schedule
+  assignment suggestions comes from here and works offline.
+  `ministryHealthScore` returns its breakdown alongside the score
+  deliberately — the UI shows the four factors, not just a number, so the
+  heuristic stays inspectable rather than a black box.
+
+Worship services follow the same pattern. `SERVICE_TEMPLATES` (Friday/Sunday)
+supplies the title, order of service and communion checklist a leader would
+otherwise type by hand; `isCommunionScheduled` in `policies.js` is the rule
+itself (first Friday/first Sunday of the month, or an explicit
+`communionOverride`), used identically by the service card, the smart
+assignment engine (never suggests a communion minister on a non-communion
+date), and the calendar's colour coding. `serviceReadiness` counts a
+service's *core* roles filled against its total — parking and photography
+are excluded as the spec's two optional roles, and the communion minister
+role only counts toward the total on a date communion actually applies —
+and both the service list and the Leadership Dashboard's Friday/Sunday
+countdown cards render the same number, never two different ideas of
+"ready". None of this calls a model: a service is either staffed or it
+isn't, and that is a fact to compute, not draft.
 - `Assistant.run(task, input)` drafts. With an endpoint configured it calls a
   model; without one it returns `buildLocalDraft(...)`, which is a real
   artefact assembled from the church's records, not a placeholder. A failed

@@ -32,6 +32,13 @@
 
 import { canWriteActionItem, canWriteAnnualPlan } from './policies.js';
 
+/**
+ * The two recurring worship services every BOTR church runs, plus room for
+ * an administrator to record something else (a Christmas Eve service, a
+ * baptism Sunday) without inventing a new enum value for every one-off.
+ */
+export const SERVICE_TYPES = ['friday', 'sunday', 'other'];
+
 const person = {
   fullName:     { label: 'Full name', type: 'string', required: true },
   preferredName:{ label: 'Preferred name', type: 'string' },
@@ -239,22 +246,57 @@ export const COLLECTIONS = {
     label: 'Service schedule',
     resource: 'worship',
     titleField: 'service',
-    searchable: ['service', 'notes'],
+    searchable: ['service', 'theme', 'scripture', 'notes'],
     fields: {
+      // General information
       date:            { label: 'Date', type: 'date', required: true },
-      service:         { label: 'Service', type: 'string', required: true, default: 'Friday Worship' },
+      serviceType:     { label: 'Service type', type: 'enum', options: SERVICE_TYPES, default: 'friday', required: true },
+      service:         { label: 'Service title', type: 'string', required: true, default: 'Friday Worship' },
+      theme:           { label: 'Theme', type: 'string' },
+      scripture:       { label: 'Scripture', type: 'string' },
       preacherId:      { label: 'Preacher', type: 'ref', ref: 'members' },
-      worshipLeaderId: { label: 'Worship leader', type: 'ref', ref: 'members' },
-      songLeaderId:    { label: 'Song leader', type: 'ref', ref: 'members' },
-      openingPrayerId: { label: 'Opening prayer', type: 'ref', ref: 'members' },
-      offeringId:      { label: 'Offering', type: 'ref', ref: 'members' },
-      communionId:     { label: 'Communion', type: 'ref', ref: 'members' },
+      presidingLeaderId: { label: 'Presiding leader', type: 'ref', ref: 'members' },
+      notes:           { label: 'Notes', type: 'text' },
+
+      // Worship team — one combined role, not two
+      worshipSongLeaderId: { label: 'Worship & Song Leader', type: 'ref', ref: 'members' },
+
+      // Emcee — opening prayer and the tithes & offering exhortation are the
+      // emcee's job, not separate roles to staff.
+      emceeId:         { label: 'Emcee', type: 'ref', ref: 'members' },
+
+      // Communion — not every week; see policies.isCommunionScheduled.
+      communionOverride:   {
+        label: 'Communion', type: 'enum', options: ['auto', 'yes', 'no'], default: 'auto',
+        help: 'Automatic: the first Friday and first Sunday of each month. Override only for an exception.',
+      },
+      communionMinisterId: { label: 'Assigned minister', type: 'ref', ref: 'members' },
+      communionNotes:      { label: 'Preparation notes', type: 'text' },
+      communionChecklist:  { label: 'Elements checklist', type: 'list' },
+
+      // Children & Youth — handled together during the service, not as
+      // separate assignments.
+      childrenYouthLeaderId:    { label: 'Leader', type: 'ref', ref: 'members' },
+      childrenYouthAssistantId: { label: 'Assistant', type: 'ref', ref: 'members' },
+      childrenYouthClassroom:   { label: 'Classroom', type: 'string' },
+      childrenYouthAttendance:  { label: 'Attendance', type: 'number' },
+      childrenYouthLesson:      { label: 'Lesson', type: 'string' },
+      childrenYouthNotes:       { label: 'Notes', type: 'text' },
+
+      // Additional roles
       mediaId:         { label: 'Media', type: 'ref', ref: 'members' },
       soundId:         { label: 'Sound', type: 'ref', ref: 'members' },
       usherId:         { label: 'Usher', type: 'ref', ref: 'members' },
-      childrenTeacherIds: { label: 'Children teachers', type: 'list', ref: 'members' },
-      youthLeaderId:   { label: 'Youth leader', type: 'ref', ref: 'members' },
-      notes:           { label: 'Notes', type: 'text' },
+      securityId:      { label: 'Security', type: 'ref', ref: 'members' },
+      hospitalityId:   { label: 'Hospitality', type: 'ref', ref: 'members' },
+      prayerTeamId:    { label: 'Prayer team', type: 'ref', ref: 'members' },
+      parkingId:       { label: 'Parking', type: 'ref', ref: 'members' },
+      photographyId:   { label: 'Photography', type: 'ref', ref: 'members' },
+
+      // Planning
+      rehearsalAt:     { label: 'Rehearsal / practice', type: 'datetime' },
+      orderOfService:  { label: 'Order of service', type: 'text' },
+      status:          { label: 'Status', type: 'enum', options: ['planning', 'confirmed', 'completed', 'cancelled'], default: 'planning' },
     },
   },
 

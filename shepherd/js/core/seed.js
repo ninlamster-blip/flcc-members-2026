@@ -13,6 +13,7 @@
 
 import { isoDate, addDays } from './format.js';
 import { blank } from './schema.js';
+import { SERVICE_TEMPLATES } from './ai.js';
 
 const PEOPLE = [
   ['Ruth Antonio', 'female', 'Philippines', 'Salmiya'], ['Jomar Antonio', 'male', 'Philippines', 'Salmiya'],
@@ -231,24 +232,39 @@ export function seedTenant(db, { user = null, now = new Date() } = {}) {
 
   /* Annual worship service schedule — the weeks line up with the Friday
      attendance already seeded above, so past services show "recorded" and
-     future ones show "pending" exactly as they would in a real church. */
-  const makeService = (date, idx) => db.insert('serviceSchedule', blank('serviceSchedule', {
+     future ones show "pending" exactly as they would in a real church.
+     Friday and Sunday are seeded from the same two templates a real church
+     picks when creating a service, and one upcoming service is forced onto
+     the communion override so the indicator is visible without waiting for
+     the calendar to land on a first Friday or first Sunday. */
+  const makeService = (serviceType, date, idx) => db.insert('serviceSchedule', blank('serviceSchedule', {
     date: isoDate(date),
-    service: 'Friday Worship',
+    serviceType,
+    ...SERVICE_TEMPLATES[serviceType],
+    theme: SERMON_TITLES[idx % SERMON_TITLES.length][0],
+    scripture: SERMON_TITLES[idx % SERMON_TITLES.length][1],
     preacherId: members[0].id,
-    worshipLeaderId: members[(idx + 1) % members.length].id,
-    songLeaderId: members[(idx + 4) % members.length].id,
-    openingPrayerId: members[(idx + 7) % members.length].id,
-    offeringId: members[(idx + 10) % members.length].id,
-    communionId: idx % 4 === 0 ? members[0].id : null,
+    presidingLeaderId: members[(idx + 3) % members.length].id,
+    worshipSongLeaderId: members[(idx + 1) % members.length].id,
+    emceeId: members[(idx + 6) % members.length].id,
+    communionOverride: idx === 2 ? 'yes' : 'auto',
+    communionMinisterId: members[0].id,
     mediaId: members[(idx + 2) % members.length].id,
     soundId: members[(idx + 5) % members.length].id,
     usherId: members[(idx + 8) % members.length].id,
-    childrenTeacherIds: [members[(idx + 11) % members.length].id, members[(idx + 12) % members.length].id],
-    youthLeaderId: members[(idx + 13) % members.length].id,
+    securityId: members[(idx + 9) % members.length].id,
+    hospitalityId: members[(idx + 14) % members.length].id,
+    prayerTeamId: members[(idx + 15) % members.length].id,
+    photographyId: idx % 3 === 0 ? members[(idx + 16) % members.length].id : null,
+    childrenYouthLeaderId: members[(idx + 11) % members.length].id,
+    childrenYouthAssistantId: members[(idx + 12) % members.length].id,
+    childrenYouthClassroom: idx % 2 === 0 ? 'Room 1' : 'Room 2',
+    status: date < now ? 'completed' : 'confirmed',
   }), opts);
-  [3, 2, 1, 0].forEach((week, idx) => makeService(addDays(now, -week * 7 - 2), idx));
-  [1, 2, 3, 4].forEach((week, idx) => makeService(addDays(now, week * 7 - 2), idx + 4));
+  [3, 2, 1, 0].forEach((week, idx) => makeService('friday', addDays(now, -week * 7 - 2), idx));
+  [1, 2, 3, 4].forEach((week, idx) => makeService('friday', addDays(now, week * 7 - 2), idx + 4));
+  [3, 2, 1, 0].forEach((week, idx) => makeService('sunday', addDays(now, -week * 7), idx + 1));
+  [1, 2, 3, 4].forEach((week, idx) => makeService('sunday', addDays(now, week * 7), idx + 5));
 
   /* Preaching */
   const series = db.insert('series', blank('series', {

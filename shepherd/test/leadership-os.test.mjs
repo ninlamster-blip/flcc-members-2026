@@ -12,8 +12,9 @@ import { blank } from '../js/core/schema.js';
 import { isoDate, addDays } from '../js/core/format.js';
 import {
   ministryHealthScore, buildBriefing, suggestForRole, serviceAssignees, SERVICE_ROLE_FIELDS,
+  CORE_SERVICE_ROLES, SERVICE_TEMPLATES, serviceReadiness, worshipShortages,
 } from '../js/core/ai.js';
-import { canAccessMinistryWorkspace, ledMinistries } from '../js/core/policies.js';
+import { canAccessMinistryWorkspace, ledMinistries, isCommunionScheduled } from '../js/core/policies.js';
 import { can, ROLES } from '../js/core/rbac.js';
 
 const CHURCH_ADMIN = { id: 'u1', name: 'Ruth', role: 'church_admin' };
@@ -95,11 +96,11 @@ test('suggestions match the ministry, skip who is already on the service, and sk
   const alreadyOn = db.insert('members', blank('members', { fullName: 'Already Assigned', status: 'member', ministries: ['Worship'] }));
   db.insert('members', blank('members', { fullName: 'Wrong Ministry', status: 'member', ministries: ['Youth'] }));
 
-  const record = { date: serviceDate, worshipLeaderId: alreadyOn.id };
+  const record = { date: serviceDate, presidingLeaderId: alreadyOn.id };
   const alreadyAssigned = serviceAssignees(record);
   assert.deepEqual(alreadyAssigned, [alreadyOn.id]);
 
-  const candidates = suggestForRole(db, { roleKey: 'songLeaderId', date: serviceDate, alreadyAssigned });
+  const candidates = suggestForRole(db, { roleKey: 'worshipSongLeaderId', date: serviceDate, alreadyAssigned });
   const ids = candidates.map((c) => c.member.id);
 
   assert.ok(ids.includes(eligible.id), 'the eligible worship-ministry member is offered');
@@ -122,10 +123,8 @@ test('whoever served least recently is offered first', async () => {
 
 test('SERVICE_ROLE_FIELDS and serviceAssignees agree on what counts as assigned', () => {
   const record = Object.fromEntries(SERVICE_ROLE_FIELDS.map(([key], i) => [key, `m${i}`]));
-  record.childrenTeacherIds = ['mc1', 'mc2'];
   const assignees = serviceAssignees(record);
   for (const [key] of SERVICE_ROLE_FIELDS) assert.ok(assignees.includes(record[key]));
-  assert.ok(assignees.includes('mc1') && assignees.includes('mc2'));
 });
 
 /* ── ministry workspace access ───────────────────────────────────────────── */
@@ -234,9 +233,54 @@ test('a service schedule record round-trips with every role assignable', async (
   const db = await tenantDb();
   const preacher = db.insert('members', blank('members', { fullName: 'Preacher', status: 'member' }));
   const record = db.insert('serviceSchedule', blank('serviceSchedule', {
-    date: '2026-08-07', service: 'Friday Worship', preacherId: preacher.id, childrenTeacherIds: [preacher.id],
+    date: '2026-08-07', serviceType: 'friday', service: 'Friday Worship',
+    preacherId: preacher.id, childrenYouthLeaderId: preacher.id,
   }));
   assert.equal(db.find('serviceSchedule', record.id).preacherId, preacher.id);
+  assert.equal(db.find('serviceSchedule', record.id).childrenYouthLeaderId, preacher.id);
+});
+
+/* ── worship service redesign: templates, communion, readiness ──────────── */
+
+test('communion is automatic on the first Friday or first Sunday of the month, and can be overridden', () => {
+  assert.equal(isCommunionScheduled({ date: '2026-08-07' }), true, 'the 7th is within the first week');
+  assert.equal(isCommunionScheduled({ date: '2026-08-14' }), false, 'the 14th is not');
+  assert.equal(isCommunionScheduled({ date: '2026-08-14', communionOverride: 'yes' }), true, 'an explicit override always wins');
+  assert.equal(isCommunionScheduled({ date: '2026-08-07', communionOverride: 'no' }), false, 'including turning it off on a first Friday');
+});
+
+test('service readiness counts core roles, excludes the optional ones, and only counts communion when it applies', () => {
+  const bareService = { date: '2026-08-14', communionOverride: 'auto' }; // not a communion week
+  const bare = serviceReadiness(bareService);
+  assert.equal(bare.filled, 0);
+  assert.ok(!CORE_SERVICE_ROLES.some(([key]) => key === 'parkingId' || key === 'photographyId'), 'parking and photography never count toward readiness');
+
+  const communionWeek = { date: '2026-08-07', communionOverride: 'auto', communionMinisterId: 'm1' };
+  const withMinister = serviceReadiness(communionWeek);
+  const withoutCommunion = serviceReadiness({ ...communionWeek, date: '2026-08-14' });
+  assert.equal(withMinister.total, withoutCommunion.total + 1, 'the communion minister role only counts on a communion week');
+  assert.equal(withMinister.filled, 1);
+});
+
+test('the Friday and Sunday templates supply a title and a default order of service', () => {
+  assert.equal(SERVICE_TEMPLATES.friday.service, 'Friday Worship');
+  assert.equal(SERVICE_TEMPLATES.sunday.service, 'Sunday Worship');
+  assert.match(SERVICE_TEMPLATES.friday.orderOfService, /Praise & Worship/);
+});
+
+test('worshipShortages lists upcoming services that are not fully staffed, soonest first', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-08-01T09:00:00');
+  db.insert('serviceSchedule', blank('serviceSchedule', {
+    date: '2026-08-14', serviceType: 'friday', service: 'Friday Worship', preacherId: 'm1',
+  }));
+  db.insert('serviceSchedule', blank('serviceSchedule', {
+    date: '2026-08-07', serviceType: 'friday', service: 'Friday Worship',
+  }));
+  const shortages = worshipShortages(db, { now });
+  assert.equal(shortages.length, 2);
+  assert.equal(shortages[0].date, '2026-08-07', 'the sooner short-staffed service is listed first');
+  assert.ok(shortages.every((s) => s.filled < s.total));
 });
 
 test('an annual plan belongs to one ministry and one year', async () => {

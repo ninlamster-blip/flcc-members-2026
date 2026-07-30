@@ -23,6 +23,7 @@
 
 import { daysUntilAnnual, daysBetween, isoDate, formatMoney, formatDate } from './format.js';
 import { can } from './rbac.js';
+import { isCommunionScheduled } from './policies.js';
 
 /* ── configuration ───────────────────────────────────────────────────────── */
 
@@ -624,6 +625,22 @@ export function computeInsights(db, user, opts = {}) {
     }
   }
 
+  /* Worship services not yet fully staffed. */
+  if (can(user, 'worship:read')) {
+    const short = worshipShortages(db, { now });
+    if (short.length) {
+      push({
+        id: 'worship-shortages',
+        kind: 'operations',
+        severity: daysBetween(now, short[0].date) <= 3 ? 'urgent' : 'attention',
+        title: `${short.length} upcoming service${short.length === 1 ? '' : 's'} not yet fully staffed`,
+        detail: short.slice(0, 3).map((s) => `${s.service} (${formatDate(s.date)}): ${s.filled}/${s.total} roles filled`).join(' · '),
+        action: '#/leadership?tab=schedule',
+        actionLabel: 'Open the schedule',
+      });
+    }
+  }
+
   /* Documents about to expire — leases, insurance, licences. */
   if (can(user, 'documents:read')) {
     const expiring = db.where('documents', (d) => d.expiresOn && daysBetween(now, d.expiresOn) <= 60 && daysBetween(now, d.expiresOn) >= -30);
@@ -863,8 +880,9 @@ export function financeSnapshot(db, { from, to } = {}) {
  */
 export function suggestForRole(db, { roleKey, date, alreadyAssigned = [] } = {}) {
   const ministryMatch = {
-    worshipLeaderId: 'worship', songLeaderId: 'worship', mediaId: 'media',
-    soundId: 'media', usherId: 'ushering', childrenTeacherIds: 'children', youthLeaderId: 'youth',
+    worshipSongLeaderId: 'worship', mediaId: 'media', soundId: 'media', usherId: 'ushering',
+    childrenYouthLeaderId: 'children', childrenYouthAssistantId: 'children',
+    prayerTeamId: 'prayer', hospitalityId: 'hospitality', securityId: 'security',
   }[roleKey] || null;
 
   const serviceDate = new Date(date);
@@ -888,17 +906,67 @@ export function suggestForRole(db, { roleKey, date, alreadyAssigned = [] } = {})
     .slice(0, 5);
 }
 
-/** Every role-field on a service record that takes one member (not a list). */
+/**
+ * Every role-field on a service record that takes one member. Opening prayer
+ * and the tithes & offering exhortation are not listed here — they are the
+ * Emcee's job, not separate roles to staff (see `EMCEE_RESPONSIBILITIES`).
+ * Parking and photography are last because they are the two the spec marks
+ * optional; `CORE_SERVICE_ROLES` below excludes them from readiness scoring.
+ */
 export const SERVICE_ROLE_FIELDS = [
-  ['preacherId', 'Preacher'], ['worshipLeaderId', 'Worship leader'], ['songLeaderId', 'Song leader'],
-  ['openingPrayerId', 'Opening prayer'], ['offeringId', 'Offering'], ['communionId', 'Communion'],
-  ['mediaId', 'Media'], ['soundId', 'Sound'], ['usherId', 'Usher'], ['youthLeaderId', 'Youth leader'],
+  ['preacherId', 'Preacher'], ['presidingLeaderId', 'Presiding leader'],
+  ['worshipSongLeaderId', 'Worship & Song Leader'], ['emceeId', 'Emcee'],
+  ['communionMinisterId', 'Communion minister'],
+  ['childrenYouthLeaderId', 'Children & Youth leader'], ['childrenYouthAssistantId', 'Children & Youth assistant'],
+  ['mediaId', 'Media'], ['soundId', 'Sound'], ['usherId', 'Usher'],
+  ['securityId', 'Security'], ['hospitalityId', 'Hospitality'], ['prayerTeamId', 'Prayer team'],
+  ['parkingId', 'Parking'], ['photographyId', 'Photography'],
 ];
+
+/** What the Emcee is responsible for on every service — shown under their name, never asked as a separate role. */
+export const EMCEE_RESPONSIBILITIES = ['Opening Prayer', 'Tithes & Offering Exhortation'];
+
+/** The two recurring templates a new service starts from. */
+export const SERVICE_TEMPLATES = {
+  friday: {
+    service: 'Friday Worship',
+    orderOfService: 'Praise & Worship\nOpening Prayer\nAnnouncements\nTithes & Offering\nMessage\nResponse & Ministry Time\nClosing Prayer',
+    communionChecklist: ['Bread prepared', 'Cups filled', 'Table and linens set'],
+  },
+  sunday: {
+    service: 'Sunday Worship',
+    orderOfService: 'Praise & Worship\nOpening Prayer\nAnnouncements\nTithes & Offering\nMessage\nResponse & Ministry Time\nClosing Prayer\nBenediction',
+    communionChecklist: ['Bread prepared', 'Cups filled', 'Table and linens set'],
+  },
+  other: { service: '', orderOfService: '', communionChecklist: [] },
+};
 
 /** Every member already holding a role on one service record — used to avoid double-booking. */
 export function serviceAssignees(record) {
-  const ids = SERVICE_ROLE_FIELDS.map(([key]) => record[key]).concat(record.childrenTeacherIds || []);
-  return ids.filter(Boolean);
+  return SERVICE_ROLE_FIELDS.map(([key]) => record[key]).filter(Boolean);
+}
+
+/**
+ * Roles that count toward "is this service ready" — the two the spec marks
+ * optional (parking, photography) are excluded, and the communion minister
+ * only counts on a day communion is actually scheduled.
+ */
+export const CORE_SERVICE_ROLES = SERVICE_ROLE_FIELDS.filter(([key]) => key !== 'parkingId' && key !== 'photographyId');
+
+/** How staffed one service is — the "preparation status" a leader actually wants to see at a glance. */
+export function serviceReadiness(record) {
+  const roles = CORE_SERVICE_ROLES.filter(([key]) => key !== 'communionMinisterId' || isCommunionScheduled(record));
+  const filled = roles.filter(([key]) => record[key]).length;
+  return { filled, total: roles.length, pct: roles.length ? Math.round((filled / roles.length) * 100) : 100 };
+}
+
+/** Upcoming Friday/Sunday services that are not yet fully staffed — the worship-specific volunteer shortage. */
+export function worshipShortages(db, { now = new Date(), days = 21 } = {}) {
+  return db
+    .where('serviceSchedule', (s) => new Date(s.date) >= new Date(now.toDateString()) && daysBetween(now, s.date) <= days)
+    .map((record) => ({ id: record.id, date: record.date, service: record.service, ...serviceReadiness(record) }))
+    .filter((s) => s.filled < s.total)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
 /* ── ministry health ─────────────────────────────────────────────────────── */

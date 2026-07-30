@@ -78,11 +78,20 @@ Behind the dashboard, **Leadership** in the sidebar holds the rest of it:
 - **Ministry workspaces** — each ministry's roster, open tasks, annual plan,
   tagged documents and a computed health score, open only to that ministry's
   recorded lead (or church-wide leadership).
-- **Annual worship service schedule** — one record per service with every
-  role named (preacher, worship leader, song leader, media, sound, ushers,
-  children's teachers, youth leader), a **smart assignment** suggestion per
-  empty role (whoever matches the ministry, served least recently, isn't
-  already on that service, and isn't marked away), and PDF/Excel/CSV export.
+- **Annual worship service schedule** — Friday and Sunday services created
+  from a template that fills in the title, order of service and a default
+  communion checklist, plus **smart defaults**: the top least-recently-served,
+  ministry-matched candidate is offered for every empty role rather than left
+  blank. One record per service names a combined **Worship & Song Leader**,
+  an **Emcee** (whose opening-prayer and tithes-and-offering responsibilities
+  are shown automatically, never assigned as separate roles), an
+  automatically-scheduled **Communion** section (first Friday and first
+  Sunday of the month, overridable for an exception), a combined
+  **Children & Youth** section (leader, assistant, classroom, attendance,
+  lesson), and the rest of the rota (media, sound, ushers, security,
+  hospitality, prayer team, and optional parking/photography). A **List** and
+  a color-coded **Calendar** view, a per-service preparation-status readout,
+  and PDF/Excel/CSV export.
 - **My tasks** — action items, event jobs and care visits assigned to you,
   wherever they came from, in one Today/Overdue/Upcoming/Completed view.
 - **Ministry health** — a transparent 0–100 score per ministry from task

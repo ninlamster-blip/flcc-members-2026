@@ -13,10 +13,10 @@ import {
 } from '../core/ui.js';
 import {
   computeInsights, attendanceTrend, upcomingCelebrations, financeSnapshot, absentMembers,
-  buildBriefing, ministryHealthScore, SERVICE_ROLE_FIELDS,
+  buildBriefing, ministryHealthScore, SERVICE_ROLE_FIELDS, serviceReadiness,
 } from '../core/ai.js';
-import { ledMinistries } from '../core/policies.js';
-import { formatDate, formatDateParts, formatTime, relativeTime, isoDate, addDays, formatMoney, daysBetween } from '../core/format.js';
+import { ledMinistries, isCommunionScheduled } from '../core/policies.js';
+import { formatDate, formatDateParts, formatTime, formatDateTime, relativeTime, isoDate, addDays, formatMoney, daysBetween } from '../core/format.js';
 import { memberName, statusBadge, healthTone } from './_shared.js';
 
 /**
@@ -224,30 +224,55 @@ function ministryHealthOverviewCard(ctx, now) {
   });
 }
 
-/* ── upcoming service assignment widget ──────────────────────────────────── */
+/* ── upcoming service widgets — the Leadership Dashboard ─────────────────── */
 
+/**
+ * The two recurring services, side by side, each with its own countdown,
+ * this user's assigned role(s), the communion indicator, the practice
+ * schedule if one is set, and a preparation-status readout — rather than a
+ * single "next service" card that hides whichever of Friday/Sunday is
+ * further off. Volunteer shortages are covered separately by the
+ * worship-shortages insight in "Shepherd noticed", not duplicated here.
+ */
 function upcomingServiceWidget(ctx, now) {
-  const { db, user } = ctx;
-  const upcoming = db.where('serviceSchedule', (s) => new Date(s.date) >= new Date(now.toDateString()))
+  const { db } = ctx;
+  const nextFriday = db.where('serviceSchedule', (s) => s.serviceType === 'friday' && new Date(s.date) >= new Date(now.toDateString()))
     .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-  if (!upcoming) return null;
-
-  const days = Math.round((new Date(upcoming.date) - new Date(now.toDateString())) / 864e5);
-  const myRoles = SERVICE_ROLE_FIELDS
-    .filter(([key]) => user.memberId && upcoming[key] === user.memberId)
-    .map(([, label]) => label);
-  if (user.memberId && (upcoming.childrenTeacherIds || []).includes(user.memberId)) myRoles.push('Children teacher');
+  const nextSunday = db.where('serviceSchedule', (s) => s.serviceType === 'sunday' && new Date(s.date) >= new Date(now.toDateString()))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+  if (!nextFriday && !nextSunday) return null;
 
   return card({
-    title: 'Upcoming service',
-    subtitle: `${upcoming.service} · ${formatDate(upcoming.date, { weekday: 'long', day: 'numeric', month: 'long' })}`,
-    actions: [badge(days === 0 ? 'Today' : `${days} day${days === 1 ? '' : 's'} remaining`, days <= 1 ? 'accent' : '')],
-    children: [myRoles.length
-      ? h('div.stack.stack--sm', ...myRoles.map((role) => h('div.row', icon('check', { size: 15 }), h('span.small', `You are assigned as ${role}`))))
-      : h('p.small.muted', 'You are not assigned to a role on this service.'),
-      h('div.row', { style: { marginTop: '10px' } },
-        h('button.btn.btn--sm', { onClick: () => ctx.navigate('/leadership?tab=schedule') }, 'Open the schedule'))],
+    title: 'Upcoming services',
+    children: [h('div.grid.grid--2',
+      ...[nextFriday, nextSunday].filter(Boolean).map((service) => serviceCountdownCard(ctx, now, service)))],
   });
+}
+
+function serviceCountdownCard(ctx, now, service) {
+  const { user } = ctx;
+  const days = Math.round((new Date(service.date) - new Date(now.toDateString())) / 864e5);
+  const myRoles = SERVICE_ROLE_FIELDS
+    .filter(([key]) => user.memberId && service[key] === user.memberId)
+    .map(([, label]) => label);
+  const readiness = serviceReadiness(service);
+  const communion = isCommunionScheduled(service);
+
+  return h('div.card.card--tight',
+    h('div.row.row--between.row--wrap',
+      h('div', null,
+        h('strong', service.service),
+        h('div.tiny.subtle', formatDate(service.date, { weekday: 'long', day: 'numeric', month: 'long' }))),
+      badge(days === 0 ? 'Today' : `${days} day${days === 1 ? '' : 's'}`, days <= 1 ? 'accent' : '')),
+    h('div.chip-list', { style: { marginTop: '8px' } },
+      communion ? badge('Communion', 'accent') : null,
+      badge(`${readiness.filled}/${readiness.total} roles filled`, readiness.filled >= readiness.total ? 'ok' : readiness.filled === 0 ? 'danger' : 'warn'),
+      service.rehearsalAt ? badge(`Practice ${formatDateTime(service.rehearsalAt)}`, '') : null),
+    h('div', { style: { marginTop: '8px' } }, myRoles.length
+      ? h('div.stack.stack--sm', ...myRoles.map((role) => h('div.row', icon('check', { size: 15 }), h('span.small', `You are assigned as ${role}`))))
+      : h('p.small.muted', 'You are not assigned to a role on this service.')),
+    h('div.row', { style: { marginTop: '10px' } },
+      h('button.btn.btn--sm', { onClick: () => ctx.navigate('/leadership?tab=schedule') }, 'Open the schedule')));
 }
 
 /* ── widgets ─────────────────────────────────────────────────────────────── */
