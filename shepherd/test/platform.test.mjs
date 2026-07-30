@@ -14,7 +14,7 @@ import { can, assertCan, ROLES, assignableRoles, effectivePermissions, Permissio
 import { validate, blank, searchableText, COLLECTION_NAMES, ENCRYPTED_COLLECTIONS } from '../js/core/schema.js';
 import { SearchIndex, tokenize } from '../js/core/search.js';
 import {
-  computeInsights, absentMembers, upcomingCelebrations, attendanceTrend,
+  computeInsights, activeNotifications, absentMembers, upcomingCelebrations, attendanceTrend,
   financeSnapshot, volunteerShortages, suggestVolunteers, buildLocalDraft, Assistant,
 } from '../js/core/ai.js';
 import { toCSV, toExcelXml, toICS } from '../js/core/exporters.js';
@@ -400,6 +400,38 @@ test('insights are ordered with the urgent ones first', async () => {
   db.insert('members', blank('members', { fullName: 'Birthday', status: 'member', birthDate: isoDate(addDays(now, 2)) }));
   const insights = computeInsights(db, { role: 'church_admin' }, { now });
   assert.equal(insights[0].severity, 'urgent');
+});
+
+/* ── smart notifications ─────────────────────────────────────────────────── */
+
+test('activeNotifications hides a dismissed insight until the underlying detail changes', () => {
+  const now = new Date('2026-06-10');
+  const insight = { id: 'absent', severity: 'attention', title: 'x', detail: '3 people quiet' };
+  const dismissal = { insightId: 'absent', detail: '3 people quiet', createdAt: isoDate(addDays(now, -1)) };
+
+  assert.deepEqual(activeNotifications([insight], [dismissal], { now }), [], 'dismissed yesterday, same detail — stays hidden');
+
+  const changed = { ...insight, detail: '5 people quiet' };
+  assert.deepEqual(activeNotifications([changed], [dismissal], { now }), [changed], 'the count changed — surfaced again');
+});
+
+test('activeNotifications brings a dismissed insight back after the snooze window, even with no change', () => {
+  const now = new Date('2026-06-10');
+  const insight = { id: 'absent', severity: 'attention', title: 'x', detail: '3 people quiet' };
+  const staleDismissal = { insightId: 'absent', detail: '3 people quiet', createdAt: isoDate(addDays(now, -8)) };
+  const freshDismissal = { insightId: 'absent', detail: '3 people quiet', createdAt: isoDate(addDays(now, -1)) };
+
+  assert.deepEqual(activeNotifications([insight], [staleDismissal], { now, snoozeDays: 7 }), [insight]);
+  assert.deepEqual(activeNotifications([insight], [freshDismissal], { now, snoozeDays: 7 }), []);
+});
+
+test('activeNotifications only ever considers the most recent dismissal for a given insight', () => {
+  const now = new Date('2026-06-10');
+  const insight = { id: 'absent', severity: 'attention', title: 'x', detail: '3 people quiet' };
+  const old = { insightId: 'absent', detail: '9 people quiet', createdAt: isoDate(addDays(now, -20)) };
+  const recent = { insightId: 'absent', detail: '3 people quiet', createdAt: isoDate(addDays(now, -1)) };
+
+  assert.deepEqual(activeNotifications([insight], [old, recent], { now }), [], 'the recent dismissal matches, so it stays hidden');
 });
 
 /* ── assistant ───────────────────────────────────────────────────────────── */

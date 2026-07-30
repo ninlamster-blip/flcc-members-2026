@@ -157,8 +157,8 @@ journal tab itself ever queries.
   `attendanceTrend`, `volunteerShortages`, `financeSnapshot`,
   `upcomingCelebrations`, `suggestVolunteers`, `ministryHealthScore`,
   `ministryHealthTrend`, `churchHealthOverview`, `successionRisk`,
-  `volunteerWellBeing`, `pastoralCareOverview`, `buildBriefing`, `suggestForRole`,
-  `worshipShortages`, `serviceReadiness` — are pure computation over the church's own records,
+  `volunteerWellBeing`, `pastoralCareOverview`, `activeNotifications`, `buildBriefing`,
+  `suggestForRole`, `worshipShortages`, `serviceReadiness` — are pure computation over the church's own records,
   permission-filtered, no network. Everything on the dashboard's "Shepherd
   noticed", the AI executive briefing, ministry health scores and the
   worship-schedule assignment suggestions comes from here and works offline.
@@ -231,6 +231,26 @@ journal tab itself ever queries.
   insight on the dashboard, gated on `leadership:read` like the rest of the
   leadership-facing insights — but only when something is genuinely urgent,
   so a healthy church's dashboard stays quiet about both.
+
+  **Smart notifications.** `computeInsights`' ids are stable categories
+  (`'absent'`, `'succession-risk'`), not one-off events, so a plain
+  dismissed-ids list would silence a whole category forever after a single
+  glance. `activeNotifications(insights, dismissals, {now, snoozeDays = 7})`
+  is the "smart" part: dismissing an insight hides it only until either its
+  `detail` text actually changes (a different count, a different name — the
+  underlying facts moved) or `snoozeDays` passes, whichever comes first —
+  nothing is silenced by accident, permanently. Dismissals are their own
+  collection (`dismissals`, one row per dismissal, not a growing array field)
+  so each is its own auditable record; `preferences` holds one row per user
+  for the opt-in browser-notification toggle. Both are self-owned
+  (`canAccessOwnPreferences` in policies.js — the same `createdBy === user.id`
+  shape as `canAccessJournalEntry`, but without journal's "no role may ever
+  bypass it" treatment, since a dismissed-insight list is not privacy-critical
+  the way a journal entry is). `notifyIfEnabled` in dashboard.js fires a real
+  `Notification` for anything still `'urgent'` after filtering, the honest
+  way a client-only app can: opt-in, and only while the tab is open — Shepherd
+  has no server to push through when it is closed, and says so rather than
+  implying more.
 
 Worship services follow the same pattern. `SERVICE_TEMPLATES` (Friday/Sunday)
 supplies the title, order of service and communion checklist a leader would

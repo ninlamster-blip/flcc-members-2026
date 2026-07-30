@@ -120,6 +120,20 @@ export function canAccessJournalEntry(user, entry) {
   return !!(user && entry && entry.createdBy && entry.createdBy === user.id);
 }
 
+/* ── per-user preferences (dismissed insights, notification settings) ────── */
+
+/**
+ * A user's own dismissed-insight record or notification preference — not
+ * privacy-critical the way a journal entry is, just self-owned settings, so
+ * this does not need `journal`'s "no role may ever bypass it" treatment.
+ *
+ * @param {{id: string}} user
+ * @param {{createdBy?: string}} record
+ */
+export function canAccessOwnPreferences(user, record) {
+  return !!(user && record && record.createdBy && record.createdBy === user.id);
+}
+
 /* ── knowledge ───────────────────────────────────────────────────────────── */
 
 /**

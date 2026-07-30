@@ -12,7 +12,7 @@ import {
   page, card, stat, statCard, listItem, list, barChart, emptyState, badge, avatar, progress,
 } from '../core/ui.js';
 import {
-  computeInsights, attendanceTrend, upcomingCelebrations, financeSnapshot, absentMembers,
+  computeInsights, activeNotifications, attendanceTrend, upcomingCelebrations, financeSnapshot, absentMembers,
   buildBriefing, ministryHealthScore, SERVICE_ROLE_FIELDS, serviceReadiness,
 } from '../core/ai.js';
 import { ledMinistries, isCommunionScheduled } from '../core/policies.js';
@@ -51,9 +51,12 @@ function dashboardMode(ctx) {
 export async function render(ctx) {
   const { db, user } = ctx;
   const now = new Date();
-  const insights = computeInsights(db, user, { settings: ctx.settings });
+  const dismissals = db.where('dismissals', (d) => d.createdBy === user.id);
+  const insights = activeNotifications(computeInsights(db, user, { settings: ctx.settings }), dismissals, { now });
   const briefing = buildBriefing(db, user, { now, settings: ctx.settings });
   const mode = dashboardMode(ctx);
+
+  notifyIfEnabled(ctx, insights);
 
   const columns = h('div.grid.grid--main-side',
     h('div.stack', briefingCard(briefing), ...mainColumn(ctx, now, insights, mode)),
@@ -93,7 +96,7 @@ function mainColumn(ctx, now, insights, mode) {
     out.push(card({
       title: 'Shepherd noticed',
       subtitle: 'Computed from your own records on this device.',
-      actions: [h('span.badge.badge--ai', icon('sparkles', { size: 12 }), 'Insights')],
+      actions: [notificationToggle(ctx), h('span.badge.badge--ai', icon('sparkles', { size: 12 }), 'Insights')],
       children: [h('div.stack.stack--sm', ...insights.slice(0, 6).map((insight) => insightCard(ctx, insight)))],
     }));
   }
@@ -317,7 +320,70 @@ function insightCard(ctx, insight) {
       h('div.insight__detail', null, insight.detail)),
     insight.action
       ? h('button.btn.btn--sm', { onClick: () => ctx.navigate(insight.action.replace('#', '')) }, insight.actionLabel || 'Open')
-      : null);
+      : null,
+    h('button.icon-btn', {
+      'aria-label': 'Dismiss',
+      title: 'Dismiss — comes back if this changes, or after a week',
+      onClick: async () => {
+        ctx.db.insert('dismissals', { insightId: insight.id, detail: insight.detail || '' });
+        await ctx.db.flush();
+        ctx.refresh();
+      },
+    }, icon('x', { size: 14 })));
+}
+
+/**
+ * A small opt-in toggle for native browser notifications on urgent insights
+ * — client-side only, and only while this tab is open, since Shepherd has no
+ * server to push through. Stored per user in `preferences`.
+ */
+function notificationToggle(ctx) {
+  const { db, user } = ctx;
+  if (typeof Notification === 'undefined') return null;
+  const pref = db.where('preferences', (p) => p.createdBy === user.id)[0];
+  const enabled = !!(pref && pref.browserNotifications) && Notification.permission === 'granted';
+
+  return h(`button.icon-btn${enabled ? '.icon-btn--active' : ''}`, {
+    'aria-label': enabled ? 'Browser alerts on' : 'Enable browser alerts',
+    title: enabled ? 'Browser alerts on for urgent insights — click to turn off' : 'Get a browser alert for urgent insights while this tab is open',
+    onClick: async () => {
+      if (enabled) {
+        if (pref) { ctx.db.update('preferences', pref.id, { browserNotifications: false }); await ctx.db.flush(); }
+        ctx.refresh();
+        return;
+      }
+      const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      if (pref) ctx.db.update('preferences', pref.id, { browserNotifications: true });
+      else ctx.db.insert('preferences', { browserNotifications: true });
+      await ctx.db.flush();
+      ctx.refresh();
+    },
+  }, icon('bell', { size: 14 }));
+}
+
+/** Fire a real browser notification for anything urgent this session hasn't already shown. */
+function notifyIfEnabled(ctx, insights) {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  const pref = ctx.db.where('preferences', (p) => p.createdBy === ctx.user.id)[0];
+  if (!pref || !pref.browserNotifications) return;
+
+  const storageKey = `shepherd-notified-${ctx.tenant.id}-${ctx.user.id}`;
+  let alreadyShown;
+  try {
+    alreadyShown = new Set(JSON.parse(sessionStorage.getItem(storageKey) || '[]'));
+  } catch {
+    alreadyShown = new Set();
+  }
+
+  for (const insight of insights) {
+    if (insight.severity !== 'urgent') continue;
+    const key = `${insight.id}::${insight.detail || ''}`;
+    if (alreadyShown.has(key)) continue;
+    alreadyShown.add(key);
+    try { new Notification(insight.title, { body: insight.detail }); } catch { /* best-effort only */ }
+  }
+  sessionStorage.setItem(storageKey, JSON.stringify([...alreadyShown]));
 }
 
 function todaySchedule(ctx, now) {

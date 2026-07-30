@@ -849,6 +849,40 @@ export function computeInsights(db, user, opts = {}) {
   return out.sort((a, b) => order[a.severity] - order[b.severity]);
 }
 
+/* ── smart notifications ──────────────────────────────────────────────────── */
+
+/**
+ * Which of `computeInsights`' output is still worth surfacing, given what
+ * this reader has already dismissed. Insight ids are stable categories
+ * ('absent', 'succession-risk'), not one-off events, so a plain dismissed-ids
+ * list would silence a whole category forever after a single glance — the
+ * "smart" part is bringing it back the moment the underlying facts actually
+ * change (a different count, a different name in the detail line) rather
+ * than making a leader choose between "see this every day" and "never see
+ * it again". Absent a change, a dismissal still expires after `snoozeDays`,
+ * so nothing is silenced permanently by accident.
+ *
+ * @param {Insight[]} insights
+ * @param {{insightId: string, detail?: string, createdAt: string}[]} dismissals
+ * @param {{now?: Date, snoozeDays?: number}} [opts]
+ * @returns {Insight[]}
+ */
+export function activeNotifications(insights, dismissals = [], { now = new Date(), snoozeDays = 7 } = {}) {
+  const latestByInsight = new Map();
+  for (const dismissal of dismissals) {
+    const existing = latestByInsight.get(dismissal.insightId);
+    if (!existing || new Date(dismissal.createdAt) > new Date(existing.createdAt)) {
+      latestByInsight.set(dismissal.insightId, dismissal);
+    }
+  }
+  return insights.filter((insight) => {
+    const dismissal = latestByInsight.get(insight.id);
+    if (!dismissal) return true;
+    if ((dismissal.detail || '') !== (insight.detail || '')) return true;
+    return daysBetween(dismissal.createdAt, now) >= snoozeDays;
+  });
+}
+
 /* ── the computations behind the insights (also used directly by modules) ── */
 
 /** People with no attendance mark in the last `weeks` weeks. */

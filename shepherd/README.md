@@ -39,7 +39,7 @@ Opening `file://` will not work — ES modules need a real origin.
 
 | Module | What it does |
 | --- | --- |
-| **Dashboard** | Today's schedule, what Shepherd noticed, attendance trend, follow-ups, prayer, coming events, birthdays, finance snapshot, recent activity |
+| **Dashboard** | Today's schedule, what Shepherd noticed — dismissible and "smart" about coming back only when it changes or a week passes — attendance trend, follow-ups, prayer, coming events, birthdays, finance snapshot, recent activity |
 | **People** | Directory, families, ministries, attendance recording, and a profile that gathers everything known about one person — including their Equip training, certificates and leadership readiness |
 | **Member care** | Follow-ups and visits, plus who the records say has gone quiet — absences, new believers, the care list, celebrations |
 | **Prayer centre** | Wall, leaders-only and private requests, chains, answered prayer, a generated prayer-meeting sheet |
@@ -276,6 +276,10 @@ Three rules are worth knowing:
 - Exports are ordinary files. Once a CSV leaves the app, it is as safe as the
   device it lands on.
 - Backups are manual. Take one from **Settings → Data**, regularly.
+- Browser notifications for urgent insights (an opt-in bell toggle on the
+  dashboard) only fire while the tab is open. Shepherd has no server, so
+  there is no push when the app is closed — the toggle says as much rather
+  than promising a notification that cannot arrive.
 
 ## AI
 
@@ -323,7 +327,7 @@ No build step, no dependencies. Edit a file, reload the page.
 
 ```bash
 python3 -m http.server 8787          # then open /shepherd/
-node --test shepherd/test/*.test.mjs # 141 tests, no dependencies
+node --test shepherd/test/*.test.mjs # 144 tests, no dependencies
 ```
 
 The test suite covers tenant isolation, permissions, the crypto (including the

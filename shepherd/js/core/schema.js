@@ -30,7 +30,9 @@
  * @property {Record<string, FieldDef>} fields
  */
 
-import { canWriteActionItem, canWriteAnnualPlan, canWriteEnrollment, canAccessJournalEntry } from './policies.js';
+import {
+  canWriteActionItem, canWriteAnnualPlan, canWriteEnrollment, canAccessJournalEntry, canAccessOwnPreferences,
+} from './policies.js';
 
 /**
  * The two recurring worship services every BOTR church runs, plus room for
@@ -261,6 +263,39 @@ export const COLLECTIONS = {
       tags:     { label: 'Tags', type: 'list' },
       linkedDecisionId: { label: 'Related decision', type: 'ref', ref: 'decisions' },
       linkedMeetingId:  { label: 'Related meeting', type: 'ref', ref: 'meetings' },
+    },
+  },
+
+  /**
+   * One row per (user, insight-kind) dismissal — not one row per user with a
+   * growing array, so each dismissal is its own auditable record. Recording
+   * `detail` alongside it is what makes this "smart": `activeNotifications`
+   * in ai.js brings the insight back the moment the underlying facts change
+   * (a different count, a different name), rather than silencing a category
+   * forever after one look. `resource: 'dashboard'` reuses the widely-held
+   * `dashboard:read`; only `canAccessOwnPreferences` (self-only) governs the
+   * write, since a dismissal is a personal "I've seen this," not a shared
+   * record for anyone else to edit.
+   */
+  dismissals: {
+    label: 'Dismissed insights',
+    resource: 'dashboard',
+    instanceWrite: canAccessOwnPreferences,
+    titleField: 'insightId',
+    fields: {
+      insightId: { label: 'Insight', type: 'string', required: true },
+      detail:    { label: 'Detail at dismissal', type: 'text' },
+    },
+  },
+
+  /** One row per user: personal dashboard preferences, self-owned like `dismissals`. */
+  preferences: {
+    label: 'Dashboard preferences',
+    resource: 'dashboard',
+    instanceWrite: canAccessOwnPreferences,
+    titleField: 'id',
+    fields: {
+      browserNotifications: { label: 'Browser notifications for urgent insights', type: 'bool', default: false },
     },
   },
 
