@@ -274,6 +274,11 @@ export const COLLECTIONS = {
       // emcee's job, not separate roles to staff.
       emceeId:         { label: 'Emcee', type: 'ref', ref: 'members' },
 
+      // Some churches assign the pastoral/opening prayer as its own named
+      // role rather than folding it into the emcee's job — this sits
+      // alongside the emcee model rather than replacing it, so either fits.
+      pastoralPrayerId: { label: 'Pastoral prayer', type: 'ref', ref: 'members' },
+
       // Communion — not every week; see policies.isCommunionScheduled.
       communionOverride:   {
         label: 'Communion', type: 'enum', options: ['auto', 'yes', 'no'], default: 'auto',
@@ -301,6 +306,7 @@ export const COLLECTIONS = {
       prayerTeamId:    { label: 'Prayer team', type: 'ref', ref: 'members' },
       parkingId:       { label: 'Parking', type: 'ref', ref: 'members' },
       photographyId:   { label: 'Photography', type: 'ref', ref: 'members' },
+      foodInCharge:    { label: 'Food in charge', type: 'string', help: 'Often a family or a pair, not one person — free text rather than a single member.' },
 
       // Planning
       rehearsalAt:     { label: 'Rehearsal / practice', type: 'datetime' },

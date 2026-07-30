@@ -980,6 +980,7 @@ export function suggestForRole(db, { roleKey, date, alreadyAssigned = [] } = {})
 export const SERVICE_ROLE_FIELDS = [
   ['preacherId', 'Preacher'], ['presidingLeaderId', 'Presiding leader'],
   ['worshipSongLeaderId', 'Worship & Song Leader'], ['emceeId', 'Emcee'],
+  ['pastoralPrayerId', 'Pastoral prayer'],
   ['communionMinisterId', 'Communion minister'],
   ['childrenYouthLeaderId', 'Children & Youth leader'], ['childrenYouthAssistantId', 'Children & Youth assistant'],
   ['mediaId', 'Media'], ['soundId', 'Sound'], ['usherId', 'Usher'],

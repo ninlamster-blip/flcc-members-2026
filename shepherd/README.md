@@ -166,6 +166,48 @@ Plan Progress") — Equip has a rotating set of daily verses, not a year-long
 plan, because Shepherd does not track reading-plan data yet and a real one
 deserves more than a placeholder.
 
+## Import
+
+**Settings → Data → Import from a spreadsheet.** A church coming to Shepherd
+already has a roster and a worker's schedule somewhere — usually a Google
+Form response sheet and a worker's-schedule spreadsheet, not a blank
+product. Two importers turn a CSV export of either into real records,
+entirely on the device doing the import:
+
+- **Import members** reads either the reduced per-church-sheet shape
+  (Complete Name, Sex, Civil Status, Date of Birth, Address, Mobile
+  Number/Email Address) or the richer form-response shape (adds Ministry
+  Interest/s, Satellite Church, Joining Year, Spouse Name, Wedding
+  Anniversary) — whatever columns are present get used, nothing else is
+  required. An optional "satellite church" filter scopes a multi-church
+  export down to the one church being imported into. Members whose name
+  already matches an existing record are skipped, not duplicated.
+- **Import worship schedule** reads Date, Service (Friday/Sunday), Theme,
+  Presider, Song Leader, Preacher, Pastoral Prayer, Food-in-Charge and
+  Communion Assistants. Names are matched against People — stripping common
+  titles (Bro./Sis./Ptr./Pastor/Elder) and tolerating reordering — and
+  anyone not found is left unassigned rather than guessed at or silently
+  auto-created; the preview lists exactly which names didn't match before
+  anything is written. A date with no year of its own (a worker's schedule
+  headed "AUGUST 2026" listing "07-Aug") uses a year supplied once for the
+  whole file.
+
+Both importers only read CSV (`core/csv.js`, no dependency) — a real .xlsx
+parser means inflating a zip and walking its XML, a meaningful chunk of code
+for a format every spreadsheet tool already exports to CSV in one click, so
+the import screen asks for that instead. `core/importers.js` (`parseMembersCSV`,
+`parseScheduleCSV`, `matchMemberByName`) is pure and covered directly by
+`test/import.test.mjs` — no browser, no fixtures with anyone's real data in
+them.
+
+**Every byte of this stays on the device doing the import.** Nothing is
+uploaded anywhere; the file is read with the browser's own File API, parsed
+in memory, shown in a preview so the admin sees exactly what will be
+created, and only written to that church's own local database when they
+confirm. This repository never seeds or commits real names, phone numbers,
+or addresses from any real congregation — the demonstration data everyone
+sees on first login (`core/seed.js`) is entirely invented.
+
 ## Roles
 
 Eleven roles, from Super Admin down to Member, each with a plain-English

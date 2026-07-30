@@ -17,6 +17,8 @@ import { COUNTRIES } from '../core/tenant.js';
 import { generateTotpSecret, totpUri, verifyTotp } from '../core/crypto.js';
 import { downloadJSON } from '../core/exporters.js';
 import { seedTenant, clearSeedData } from '../core/seed.js';
+import { blank } from '../core/schema.js';
+import { parseMembersCSV, parseScheduleCSV, matchMemberByName, normalizeName } from '../core/importers.js';
 import { sentence, deleteRecord, refOptions } from './_shared.js';
 
 export async function render(ctx, route) {
@@ -44,7 +46,7 @@ export async function render(ctx, route) {
     title: 'Settings',
     subtitle: ctx.tenant.name,
     children: [
-      h('div', { style: { marginBottom: '18px' } },
+      h('div', { style: { marginBottom: '18px', overflowX: 'auto', paddingBottom: '4px' } },
         segmented({ options: tabs, value: tab, onChange: (value) => ctx.navigate(`/settings?tab=${value}`) })),
       body,
     ],
@@ -515,7 +517,7 @@ function dataTab(ctx) {
         h('p.small.muted',
           'The export is a JSON file containing everything, decrypted, because it has to be readable to be useful. '
           + 'Treat it exactly as you would a printed set of the church\'s records: keep it somewhere safe, and delete old copies.'),
-        h('div.row', { style: { marginTop: '12px' } },
+        h('div.row.row--wrap', { style: { marginTop: '12px' } },
           h('button.btn.btn--primary', {
             onClick: () => {
               const snapshot = db.exportAll();
@@ -537,6 +539,16 @@ function dataTab(ctx) {
         ],
         rows: counts,
       })],
+    }),
+    card({
+      title: 'Import from a spreadsheet',
+      subtitle: 'Bring in a real roster or worker\'s schedule. Parsed entirely on this device — the file never leaves your browser.',
+      children: [
+        h('p.small.muted', 'Export to CSV first (Google Sheets/Excel: File → Download → CSV, comma-separated values), then choose it below.'),
+        h('div.row.row--wrap', { style: { marginTop: '12px' } },
+          h('button.btn', { onClick: () => importMembers(ctx) }, icon('users', { size: 15 }), 'Import members'),
+          h('button.btn', { onClick: () => importSchedule(ctx) }, icon('calendar', { size: 15 }), 'Import worship schedule')),
+      ],
     }),
     card({
       title: 'Example data',
@@ -591,6 +603,152 @@ function restore(ctx) {
       ctx.db.log('restore', `Restored from a backup taken ${snapshot.exportedAt || 'at an unknown time'}.`);
       await ctx.db.flush();
       toast('Restored.', { variant: 'ok' });
+      ctx.refresh();
+    },
+  });
+}
+
+/**
+ * Import members from a CSV export — the reduced per-church sheet shape
+ * (Complete Name, Sex, Civil Status, Date of Birth, Address, Mobile/Email)
+ * or the richer form-response shape (adds Ministry Interest/s, Satellite
+ * Church, Joining Year, Spouse, Anniversary) both work; whatever columns are
+ * present get used. Existing members with the same name are skipped rather
+ * than duplicated.
+ */
+function importMembers(ctx) {
+  const { db } = ctx;
+  const fileInput = h('input.input', { type: 'file', accept: '.csv,text/csv' });
+  const filterInput = input({ placeholder: 'e.g. Abundance — leave blank to import every row' });
+  const preview = h('div');
+  let parsed = null;
+
+  const parseAndPreview = async () => {
+    preview.textContent = '';
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) { parsed = null; return; }
+    const text = await file.text();
+    parsed = parseMembersCSV(text, { satelliteChurchFilter: filterInput.value });
+    const existing = new Set(db.all('members').map((m) => normalizeName(m.fullName)));
+    const dupes = parsed.records.filter((r) => existing.has(normalizeName(r.fullName))).length;
+    preview.appendChild(h('div.stack.stack--sm',
+      h('p.small', `${parsed.records.length} member${parsed.records.length === 1 ? '' : 's'} ready to import`
+        + `${dupes ? ` (${dupes} look already in People and will be skipped)` : ''}.`),
+      parsed.warnings.length ? h('div.stack.stack--sm', ...parsed.warnings.slice(0, 8).map((w) => h('p.tiny.subtle', w))) : null,
+      parsed.records.length ? h('div.chip-list', ...parsed.records.slice(0, 24).map((r) => h('span.chip', r.fullName)),
+        parsed.records.length > 24 ? h('span.tiny.subtle', `and ${parsed.records.length - 24} more…`) : null) : null));
+  };
+  fileInput.addEventListener('change', parseAndPreview);
+  filterInput.addEventListener('input', parseAndPreview);
+
+  formModal({
+    title: 'Import members from a spreadsheet',
+    submitLabel: 'Import',
+    wide: true,
+    fields: [
+      h('p.small.muted',
+        'Recognised columns: Complete Name, Sex, Civil Status, Date of Birth, Address, Ministry Interest/s, '
+        + 'Joining Year, Spouse Name, Wedding Anniversary, Mobile Number/Email Address, Satellite Church — '
+        + 'whatever is present is used, nothing else is required.'),
+      field({ label: 'CSV file', control: fileInput }),
+      field({ label: 'Only import one satellite church (optional)', control: filterInput,
+        help: 'Use this when the file covers more than one church — matched against a "Satellite Church" column if the file has one.' }),
+      preview,
+    ],
+    onSubmit: async () => {
+      if (!parsed) throw new Error('Choose a CSV file first.');
+      const existing = new Set(db.all('members').map((m) => normalizeName(m.fullName)));
+      let created = 0;
+      let skipped = 0;
+      for (const record of parsed.records) {
+        const key = normalizeName(record.fullName);
+        if (existing.has(key)) { skipped += 1; continue; }
+        db.insert('members', blank('members', record));
+        existing.add(key);
+        created += 1;
+      }
+      await db.flush();
+      toast(`${created} member${created === 1 ? '' : 's'} imported${skipped ? `, ${skipped} skipped as likely duplicates` : ''}.`, { variant: 'ok' });
+      ctx.refresh();
+    },
+  });
+}
+
+/**
+ * Import a worker's schedule — Date, Service (Friday/Sunday), Presider, Song
+ * Leader, Preacher, Pastoral Prayer, Food-in-Charge, Communion Assistants.
+ * Names are matched against People; anyone not found is left unassigned
+ * rather than guessed at or auto-created.
+ */
+function importSchedule(ctx) {
+  const { db } = ctx;
+  const fileInput = h('input.input', { type: 'file', accept: '.csv,text/csv' });
+  const yearInput = input({ type: 'number', value: String(new Date().getFullYear()) });
+  const preview = h('div');
+  let parsed = null;
+
+  const parseAndPreview = async () => {
+    preview.textContent = '';
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) { parsed = null; return; }
+    const text = await file.text();
+    parsed = parseScheduleCSV(text, { defaultYear: Number(yearInput.value) || undefined });
+    const members = db.all('members');
+    const unmatched = new Set();
+    for (const r of parsed.records) {
+      for (const nameField of ['presiderName', 'songLeaderName', 'preacherName', 'pastoralPrayerName']) {
+        if (r[nameField] && !matchMemberByName(members, r[nameField])) unmatched.add(r[nameField]);
+      }
+    }
+    preview.appendChild(h('div.stack.stack--sm',
+      h('p.small', `${parsed.records.length} service${parsed.records.length === 1 ? '' : 's'} ready to import.`),
+      parsed.warnings.length ? h('div.stack.stack--sm', ...parsed.warnings.slice(0, 8).map((w) => h('p.tiny.subtle', w))) : null,
+      unmatched.size ? h('div', null,
+        h('p.small', { style: { fontWeight: '600', marginTop: '8px' } },
+          `${unmatched.size} name${unmatched.size === 1 ? '' : 's'} not found in People — those roles will be left unassigned:`),
+        h('div.chip-list', ...[...unmatched].map((n) => h('span.chip', n)))) : null));
+  };
+  fileInput.addEventListener('change', parseAndPreview);
+  yearInput.addEventListener('input', parseAndPreview);
+
+  formModal({
+    title: 'Import a worship service schedule',
+    submitLabel: 'Import',
+    wide: true,
+    fields: [
+      h('p.small.muted',
+        'Recognised columns: Date, Service (Friday/Sunday), Theme, Presider, Song Leader, Preacher, Pastoral Prayer, '
+        + 'Food-in-Charge, Communion Assistants. A date with no year of its own (like "07-Aug") uses the year below.'),
+      field({ label: 'CSV file', control: fileInput }),
+      field({ label: 'Year (for dates with no year of their own)', control: yearInput }),
+      preview,
+    ],
+    onSubmit: async () => {
+      if (!parsed) throw new Error('Choose a CSV file first.');
+      const members = db.all('members');
+      const existingKeys = new Set(db.all('serviceSchedule').map((s) => `${s.date}|${s.serviceType}`));
+      let created = 0;
+      let skipped = 0;
+      for (const record of parsed.records) {
+        const key = `${record.date}|${record.serviceType}`;
+        if (existingKeys.has(key)) { skipped += 1; continue; }
+        db.insert('serviceSchedule', blank('serviceSchedule', {
+          date: record.date,
+          serviceType: record.serviceType,
+          service: record.service,
+          theme: record.theme,
+          presidingLeaderId: (matchMemberByName(members, record.presiderName) || {}).id || null,
+          worshipSongLeaderId: (matchMemberByName(members, record.songLeaderName) || {}).id || null,
+          preacherId: (matchMemberByName(members, record.preacherName) || {}).id || null,
+          pastoralPrayerId: (matchMemberByName(members, record.pastoralPrayerName) || {}).id || null,
+          foodInCharge: record.foodInCharge,
+          communionNotes: record.communionNote,
+        }));
+        existingKeys.add(key);
+        created += 1;
+      }
+      await db.flush();
+      toast(`${created} service${created === 1 ? '' : 's'} imported${skipped ? `, ${skipped} skipped as already scheduled` : ''}.`, { variant: 'ok' });
       ctx.refresh();
     },
   });

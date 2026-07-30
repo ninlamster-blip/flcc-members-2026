@@ -713,7 +713,7 @@ function serviceRow(ctx, record) {
   const communion = isCommunionScheduled(record);
   const readiness = serviceReadiness(record);
   // Emcee and communion minister carry auto-shown detail beneath the name; every other role is a plain chip.
-  const DEDICATED_ROLES = ['presidingLeaderId', 'emceeId', 'communionMinisterId', 'childrenYouthLeaderId', 'childrenYouthAssistantId'];
+  const DEDICATED_ROLES = ['presidingLeaderId', 'emceeId', 'pastoralPrayerId', 'communionMinisterId', 'childrenYouthLeaderId', 'childrenYouthAssistantId'];
   const chipRoles = SERVICE_ROLE_FIELDS.filter(([key]) => !DEDICATED_ROLES.includes(key) && record[key]);
 
   return card({
@@ -741,6 +741,7 @@ function serviceRow(ctx, record) {
         record.emceeId ? h('div.small',
           `Emcee: ${memberName(db, record.emceeId)}`,
           h('div.tiny.subtle', `Responsibilities: ${EMCEE_RESPONSIBILITIES.join(' · ')}`)) : null,
+        record.pastoralPrayerId ? h('div.small', `Pastoral prayer: ${memberName(db, record.pastoralPrayerId)}`) : null,
         communion ? h('div.small',
           h('span.badge.badge--accent', 'Communion'),
           ` ${record.communionMinisterId ? memberName(db, record.communionMinisterId) : 'no minister assigned yet'}`,
@@ -751,8 +752,9 @@ function serviceRow(ctx, record) {
           + `${record.childrenYouthClassroom ? ` · ${record.childrenYouthClassroom}` : ''}`
           + `${record.childrenYouthAttendance != null ? ` · ${record.childrenYouthAttendance} present` : ''}`) : null),
       h('div.chip-list', { style: { marginTop: '10px' } },
-        ...chipRoles.map(([key, label]) => h('span.chip', `${label}: ${memberName(db, record[key])}`))),
-      !chipRoles.length && !record.presidingLeaderId && !record.emceeId ? h('p.small.muted', { style: { marginTop: '8px' } }, 'Nothing assigned yet.') : null,
+        ...chipRoles.map(([key, label]) => h('span.chip', `${label}: ${memberName(db, record[key])}`)),
+        record.foodInCharge ? h('span.chip', `Food: ${record.foodInCharge}`) : null),
+      !chipRoles.length && !record.foodInCharge && !record.presidingLeaderId && !record.emceeId ? h('p.small.muted', { style: { marginTop: '8px' } }, 'Nothing assigned yet.') : null,
     ],
   });
 }
@@ -810,6 +812,7 @@ function exportSchedule(ctx, records, format) {
     { label: 'Service', key: 'service' }, { label: 'Theme', key: 'theme' }, { label: 'Scripture', key: 'scripture' },
     { label: 'Communion', value: (r) => (isCommunionScheduled(r) ? 'Yes' : 'No') },
     ...SERVICE_ROLE_FIELDS.map(([key, label]) => ({ label, value: (r) => memberName(ctx.db, r[key], '') })),
+    { label: 'Food in charge', key: 'foodInCharge' },
     { label: 'Status', key: 'status' },
   ];
   if (format === 'excel') downloadExcel(`${ctx.tenant.id}-worship-schedule.xls`, [{ name: 'Schedule', columns, rows: records }]);
@@ -826,10 +829,12 @@ function printSchedule(ctx, records, year) {
       { label: 'Preacher', value: (r) => memberName(ctx.db, r.preacherId, '') },
       { label: 'Worship & Song', value: (r) => memberName(ctx.db, r.worshipSongLeaderId, '') },
       { label: 'Emcee', value: (r) => memberName(ctx.db, r.emceeId, '') },
+      { label: 'Pastoral prayer', value: (r) => memberName(ctx.db, r.pastoralPrayerId, '') },
       { label: 'Communion', value: (r) => (isCommunionScheduled(r) ? 'Yes' : 'No') },
       { label: 'Media', value: (r) => memberName(ctx.db, r.mediaId, '') },
       { label: 'Sound', value: (r) => memberName(ctx.db, r.soundId, '') },
       { label: 'Usher', value: (r) => memberName(ctx.db, r.usherId, '') },
+      { label: 'Food in charge', key: 'foodInCharge' },
     ],
     rows: records,
   });
@@ -858,6 +863,7 @@ function openServiceModal(ctx, { doc = null } = {}) {
     presidingLeaderId: refSelect(source.presidingLeaderId),
     worshipSongLeaderId: refSelect(source.worshipSongLeaderId),
     emceeId: refSelect(source.emceeId),
+    pastoralPrayerId: refSelect(source.pastoralPrayerId),
     communionMinisterId: refSelect(source.communionMinisterId),
     childrenYouthLeaderId: refSelect(source.childrenYouthLeaderId),
     childrenYouthAssistantId: refSelect(source.childrenYouthAssistantId),
@@ -893,6 +899,7 @@ function openServiceModal(ctx, { doc = null } = {}) {
   const childrenAttendanceInput = input({ type: 'number', value: source.childrenYouthAttendance ?? '' });
   const childrenLessonInput = input({ value: source.childrenYouthLesson || '' });
   const childrenNotesArea = textarea({ value: source.childrenYouthNotes || '' });
+  const foodInChargeInput = input({ value: source.foodInCharge || '', placeholder: 'Often a family or a pair, not one person' });
 
   const communionDetail = h('div');
   const redrawCommunion = () => {
@@ -924,7 +931,7 @@ function openServiceModal(ctx, { doc = null } = {}) {
     const date = dateInput.value;
     if (!date) return;
     const already = Object.values(roles).map((c) => c.value).filter(Boolean);
-    for (const key of ['preacherId', 'presidingLeaderId', 'worshipSongLeaderId', 'emceeId', 'mediaId', 'soundId', 'usherId', 'securityId', 'hospitalityId', 'prayerTeamId', 'childrenYouthLeaderId', 'childrenYouthAssistantId']) {
+    for (const key of ['preacherId', 'presidingLeaderId', 'worshipSongLeaderId', 'emceeId', 'pastoralPrayerId', 'mediaId', 'soundId', 'usherId', 'securityId', 'hospitalityId', 'prayerTeamId', 'childrenYouthLeaderId', 'childrenYouthAssistantId']) {
       const control = roles[key];
       if (control.value) continue;
       const [top] = suggestForRole(db, { roleKey: key, date, alreadyAssigned: already });
@@ -956,8 +963,10 @@ function openServiceModal(ctx, { doc = null } = {}) {
       h('div.form-grid', field({ label: 'Worship & Song Leader', control: roles.worshipSongLeaderId }))),
 
     section('Emcee',
-      h('div.form-grid', field({ label: 'Emcee', control: roles.emceeId })),
-      h('p.tiny.subtle', `Responsibilities: ${EMCEE_RESPONSIBILITIES.join(' · ')} — shown automatically, not assigned separately.`)),
+      h('div.form-grid',
+        field({ label: 'Emcee', control: roles.emceeId }),
+        field({ label: 'Pastoral prayer', control: roles.pastoralPrayerId, help: 'Only needed where this is its own named role, separate from the emcee.' })),
+      h('p.tiny.subtle', `Emcee responsibilities: ${EMCEE_RESPONSIBILITIES.join(' · ')} — shown automatically, not assigned separately.`)),
 
     section('Communion',
       h('div.form-grid', field({ label: 'Communion', control: communionOverrideSelect, help: 'Automatic: the first Friday and first Sunday of each month.' })),
@@ -981,7 +990,8 @@ function openServiceModal(ctx, { doc = null } = {}) {
         field({ label: 'Hospitality', control: roles.hospitalityId }),
         field({ label: 'Prayer team', control: roles.prayerTeamId }),
         field({ label: 'Parking (optional)', control: roles.parkingId }),
-        field({ label: 'Photography (optional)', control: roles.photographyId }))),
+        field({ label: 'Photography (optional)', control: roles.photographyId }),
+        field({ label: 'Food in charge', control: foodInChargeInput }))),
 
     section('Planning',
       h('div.form-grid',
@@ -1006,6 +1016,7 @@ function openServiceModal(ctx, { doc = null } = {}) {
         notes: notesArea.value,
         worshipSongLeaderId: roles.worshipSongLeaderId.value || null,
         emceeId: roles.emceeId.value || null,
+        pastoralPrayerId: roles.pastoralPrayerId.value || null,
         communionOverride: communionOverrideSelect.value,
         communionMinisterId: roles.communionMinisterId.value || null,
         communionNotes: communionNotesArea.value,
@@ -1024,6 +1035,7 @@ function openServiceModal(ctx, { doc = null } = {}) {
         prayerTeamId: roles.prayerTeamId.value || null,
         parkingId: roles.parkingId.value || null,
         photographyId: roles.photographyId.value || null,
+        foodInCharge: foodInChargeInput.value,
         rehearsalAt: rehearsalInput.value ? new Date(rehearsalInput.value).toISOString() : null,
         orderOfService: orderInput.value,
         status: statusSelect.value,

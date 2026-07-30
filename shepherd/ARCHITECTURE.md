@@ -235,6 +235,38 @@ array of `{title, type, summary, quiz}` on the course's `lessons` field,
 type `object`), seeded or edited as JSON. A rich video-upload/drag-and-drop
 lesson builder is a separate feature this pass does not attempt.
 
+## Import
+
+`core/csv.js` (`parseCSV`, `mapColumns`) and `core/importers.js`
+(`parseMembersCSV`, `parseScheduleCSV`, `matchMemberByName`) are pure
+functions with no DOM dependency — `settings.js`'s two import flows are the
+only caller, but the parsing itself is fully unit-tested without a browser
+(`test/import.test.mjs`).
+
+- `mapColumns` matches a spreadsheet's actual header row against a list of
+  accepted aliases per field, case/whitespace-insensitively — the same
+  column is "Complete Name" in one export and "Full Name" in another, and
+  a column that isn't present is simply not used rather than required.
+- `matchMemberByName` is deliberately conservative: it strips common titles
+  (Bro./Sis./Ptr./Pastor/Elder/…), tries an exact normalized match, then a
+  match where every word in the query appears somewhere in the candidate's
+  name (survives reordering — a worker's schedule and a member roster
+  rarely spell a name the same way twice). It returns `null` — never a
+  guess — when nothing matches or more than one candidate ties, and the
+  import preview lists every unmatched name before anything is written so
+  the admin can fix it by hand.
+- Import is CSV-only on purpose. Reading a real `.xlsx` means inflating a
+  zip and walking its XML — a meaningful amount of code for a format every
+  spreadsheet tool already exports to CSV in one click; the import screens
+  ask for that instead of shipping a parser for the binary format.
+- The whole flow is client-side: `settings.js` reads the chosen file with
+  the browser's File API, parses it in memory, renders a preview, and only
+  calls `ctx.db.insert(...)` — the same call every other screen in Shepherd
+  makes — once the admin confirms. Nothing is uploaded, and nothing about a
+  real import (names, phone numbers, addresses) is ever written to this
+  repository; `core/seed.js`'s demonstration data is invented, not sourced
+  from a real congregation, specifically so that stays true.
+
 ## Routing
 
 `#/<module>/<param>?<query>`, with `#/c/<tenantId>/...` accepted so a church
