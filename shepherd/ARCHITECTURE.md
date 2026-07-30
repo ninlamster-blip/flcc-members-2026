@@ -65,7 +65,13 @@ Isolation is structural rather than conventional:
 3. `importAll()` refuses a snapshot whose `tenantId` does not match.
 
 There is no query that can cross churches, because there is no key that can
-express one.
+express one. `core/network.js` (the Lead Pastor's Network Overview) does not
+change this: it never opens a `Database` across tenants in a single call — it
+loops the local registry and opens one tenant's `Database` at a time, with no
+vault key unless the caller already holds an unlocked session for that
+tenant. Encrypted collections stay encrypted per the rule below regardless of
+who is asking; only the ordinary, unencrypted collections a keyless open
+already exposes get aggregated.
 
 ## Data flow
 
@@ -421,7 +427,7 @@ holds records it cannot read.
 
 ## Testing
 
-`node --test shepherd/test/*.test.mjs` — six suites, no dependencies:
+`node --test shepherd/test/*.test.mjs` — seven suites, no dependencies:
 
 - `security.test.mjs` — passphrases, vault wrapping, encryption, TOTP against
   the RFC vectors, sign-in, 2FA, recovery codes, passphrase change.
@@ -437,6 +443,10 @@ holds records it cannot read.
   enrollment writes, learning progress, recommendations, leadership readiness.
 - `import.test.mjs` — the CSV import layer: parsing, header matching, member
   and schedule domain parsers, name matching.
+- `network.test.mjs` — the Lead Pastor's Network Overview: role permissions,
+  per-church aggregation, that an unvisited church comes back empty rather
+  than erroring, that encrypted collections stay locked without a vault key,
+  and reuse of an already-unlocked session.
 
 Core modules never touch `window` at import time, which is what lets the same
 files run under Node and in the browser.
