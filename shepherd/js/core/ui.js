@@ -146,9 +146,18 @@ export function barChart(data, { format = (v) => v } = {}) {
     }, h('span', null, d.label)))));
 }
 
+/**
+ * @param {number} value
+ * @param {number} max
+ * @param {{variant?: string}} [opts] Explicit tone. Pass '' to force the
+ *   plain accent bar regardless of percentage — the automatic "high % is
+ *   dangerous" colouring below is right for budgets and quotas, and wrong
+ *   for a metric where 100% is the best possible outcome (e.g. a ministry
+ *   health breakdown row).
+ */
 export function progress(value, max, { variant } = {}) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
-  const tone = variant || (pct >= 100 ? 'danger' : pct >= 90 ? 'warn' : '');
+  const tone = variant !== undefined ? variant : (pct >= 100 ? 'danger' : pct >= 90 ? 'warn' : '');
   return h('div.progress', { role: 'progressbar', 'aria-valuenow': Math.round(pct), 'aria-valuemin': 0, 'aria-valuemax': 100 },
     h('div', { class: `progress__bar${tone ? ` progress__bar--${tone}` : ''}`, style: { width: `${pct}%` } }));
 }

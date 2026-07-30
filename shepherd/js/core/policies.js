@@ -106,6 +106,30 @@ export function knowledgeMayUse(collection) {
  */
 export const NEVER_INDEXED = KNOWLEDGE_EXCLUDED;
 
+/* ── ministry workspaces ─────────────────────────────────────────────────── */
+
+/**
+ * A ministry workspace is narrower than the `leadership` permission: "runs the
+ * whole leadership hub" and "leads the Worship ministry" are different
+ * things. Access is: church-wide leadership roles (full access to every
+ * workspace), or being the specific ministry's recorded lead.
+ *
+ * @param {{id: string, role: string, memberId?: string|null}} user
+ * @param {{leadId?: string|null}} ministry
+ */
+export function canAccessMinistryWorkspace(user, ministry) {
+  if (!user) return false;
+  if (can(user, 'leadership:manage') || user.role === 'church_admin' || user.role === 'senior_pastor') return true;
+  if (!ministry || !ministry.leadId) return false;
+  return !!user.memberId && user.memberId === ministry.leadId;
+}
+
+/** Ministries a given user leads, church-wide roles aside. */
+export function ledMinistries(db, user) {
+  if (!user || !user.memberId) return [];
+  return db.all('ministries').filter((m) => m.leadId === user.memberId);
+}
+
 /* ── documents ───────────────────────────────────────────────────────────── */
 
 /**

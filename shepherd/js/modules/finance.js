@@ -41,6 +41,10 @@ export async function render(ctx, route) {
     });
   }
 
+  if (route.query.new === '1' && ctx.can('finance:write')) {
+    setTimeout(() => recordTransaction(ctx, route.query.kind ? { kind: route.query.kind } : {}), 0);
+  }
+
   const tab = route.query.tab || 'overview';
   const year = Number(route.query.year) || new Date().getFullYear();
 

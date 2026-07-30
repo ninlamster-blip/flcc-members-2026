@@ -13,33 +13,79 @@ import {
 } from '../core/ui.js';
 import {
   computeInsights, attendanceTrend, upcomingCelebrations, financeSnapshot, absentMembers,
+  buildBriefing, ministryHealthScore, SERVICE_ROLE_FIELDS,
 } from '../core/ai.js';
+import { ledMinistries } from '../core/policies.js';
 import { formatDate, formatDateParts, formatTime, relativeTime, isoDate, addDays, formatMoney, daysBetween } from '../core/format.js';
-import { memberName, statusBadge } from './_shared.js';
+import { memberName, statusBadge, healthTone } from './_shared.js';
+
+/**
+ * Which of the role-based dashboards this login sees.
+ *
+ * The spec asks for a bespoke layout per ministry (Worship, Children, Youth,
+ * Evangelism, Discipleship). Five of those overlap almost entirely in what
+ * real data backs them — roster, tasks, shortages, health — so rather than
+ * invent widgets for data Shepherd does not track (memory verses, conversion
+ * statistics, a discipleship pathway), they share one adaptable "ministry
+ * lead" template keyed by whichever ministry this user actually leads.
+ * Finance (treasurer) and the Senior Pastor overview get their own, because
+ * finance.js and the church-wide insights genuinely support something
+ * different for them.
+ */
+function dashboardMode(ctx) {
+  const { user, db } = ctx;
+  if (user.role === 'senior_pastor') return { key: 'senior_pastor', label: 'Senior Pastor' };
+  if (user.role === 'treasurer') return { key: 'finance', label: 'Finance leader' };
+
+  const led = ledMinistries(db, user);
+  if (led.length) {
+    const preferredOrder = [/worship/i, /children/i, /youth/i, /evangelism/i, /discipleship/i];
+    const preferred = preferredOrder.map((re) => led.find((m) => re.test(m.name))).find(Boolean);
+    const ministry = preferred || led[0];
+    return { key: 'ministry', label: `${ministry.name} leader`, ministry };
+  }
+  if (['church_admin', 'secretary'].includes(user.role)) return { key: 'admin', label: 'Admin' };
+  return { key: 'generic', label: '' };
+}
 
 export async function render(ctx) {
   const { db, user } = ctx;
   const now = new Date();
   const insights = computeInsights(db, user, { settings: ctx.settings });
+  const briefing = buildBriefing(db, user, { now, settings: ctx.settings });
+  const mode = dashboardMode(ctx);
 
   const columns = h('div.grid.grid--main-side',
-    h('div.stack', ...mainColumn(ctx, now, insights)),
-    h('div.stack', ...sideColumn(ctx, now)));
+    h('div.stack', briefingCard(briefing), ...mainColumn(ctx, now, insights, mode)),
+    h('div.stack', ...sideColumn(ctx, now, mode)));
 
   return page({
-    eyebrow: greeting(now),
+    eyebrow: `${greeting(now)}${mode.label ? ` · ${mode.label}` : ''}`,
     title: firstName(user.name),
     subtitle: `${ctx.tenant.name} · ${formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}`,
-    actions: quickActions(ctx),
+    actions: quickActions(ctx, mode),
     children: [columns],
+  });
+}
+
+/* ── the morning briefing ────────────────────────────────────────────────── */
+
+function briefingCard(lines) {
+  return card({
+    title: 'This week',
+    actions: [badge('Personalised for you')],
+    children: [h('ul', { style: { margin: 0, paddingLeft: '20px', display: 'grid', gap: '6px' } },
+      ...lines.map((line) => h('li.small', line)))],
   });
 }
 
 /* ── columns ─────────────────────────────────────────────────────────────── */
 
-function mainColumn(ctx, now, insights) {
-  const { db, user } = ctx;
+function mainColumn(ctx, now, insights, mode) {
   const out = [];
+
+  if (mode.key === 'finance') out.push(...financeLeaderCards(ctx, now));
+  if (mode.key === 'ministry') out.push(...ministryLeaderCards(ctx, now, mode.ministry));
 
   out.push(statRow(ctx, now));
 
@@ -54,21 +100,154 @@ function mainColumn(ctx, now, insights) {
 
   out.push(todaySchedule(ctx, now));
 
-  if (ctx.can('members:read')) out.push(attendanceCard(ctx, now));
-  if (ctx.can('care:read')) out.push(followUpsCard(ctx, now));
-  if (ctx.can('prayer:read')) out.push(prayerCard(ctx));
+  if (ctx.can('worship:read')) {
+    const widget = upcomingServiceWidget(ctx, now);
+    if (widget) out.push(widget);
+  }
+  if (ctx.can('members:read') && mode.key !== 'ministry') out.push(attendanceCard(ctx, now));
+  if (ctx.can('care:read') && mode.key !== 'finance') out.push(followUpsCard(ctx, now));
+  if (ctx.can('prayer:read') && mode.key !== 'finance') out.push(prayerCard(ctx));
 
   return out;
 }
 
-function sideColumn(ctx, now) {
+function sideColumn(ctx, now, mode) {
   const out = [];
   if (ctx.can('events:read')) out.push(upcomingEvents(ctx, now));
   if (ctx.can('members:read')) out.push(celebrationsCard(ctx, now));
-  if (ctx.can('finance:read')) out.push(financeCard(ctx, now));
-  if (ctx.can('members:read')) out.push(visitorsCard(ctx, now));
+  if (mode.key !== 'finance' && ctx.can('finance:read')) out.push(financeCard(ctx, now));
+  if (mode.key !== 'ministry' && ctx.can('members:read')) out.push(visitorsCard(ctx, now));
+  if ((mode.key === 'senior_pastor' || mode.key === 'admin') && ctx.can('leadership:read')) out.push(ministryHealthOverviewCard(ctx, now));
   out.push(activityCard(ctx));
   return out;
+}
+
+/* ── finance leader ──────────────────────────────────────────────────────── */
+
+function financeLeaderCards(ctx, now) {
+  const { db } = ctx;
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const snapshot = financeSnapshot(db, { from: monthStart, to: now });
+  const pending = db.where('transactions', (t) => t.status === 'pending-approval')
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const expiringFinanceDocs = db.where('documents', (d) => d.category === 'finance' && d.expiresOn && daysBetween(now, d.expiresOn) <= 60);
+
+  return [
+    h('div.grid.grid--3',
+      statCard({ value: formatMoney(snapshot.giving), label: 'Given this month' }),
+      statCard({ value: formatMoney(snapshot.expenses), label: 'Spent this month' }),
+      statCard({ value: pending.length, label: 'Awaiting approval' })),
+    card({
+      title: 'Financial reports awaiting approval',
+      actions: [h('button.btn.btn--sm', { onClick: () => ctx.navigate('/finance?tab=approvals') }, 'Open')],
+      children: [pending.length
+        ? list(pending.slice(0, 6).map((tx) => listItem({
+          title: tx.description || tx.category,
+          meta: `${formatMoney(tx.amount)} · ${formatDate(tx.date)}`,
+          onClick: () => ctx.navigate('/finance?tab=approvals'),
+        })))
+        : emptyState({ title: 'Nothing waiting', iconName: 'check' })],
+    }),
+    card({
+      title: 'Ministry spending this month',
+      children: [snapshot.expensesByCategory.length
+        ? h('div.stack.stack--sm', ...snapshot.expensesByCategory.slice(0, 6).map((row) => h('div.row.row--between.small',
+          h('span', row.category), h('span.nums', formatMoney(row.amount)))))
+        : h('p.small.muted', 'Nothing recorded yet this month.')],
+    }),
+    expiringFinanceDocs.length ? card({
+      title: 'Audit reminders',
+      subtitle: 'Finance documents expiring soon',
+      children: [list(expiringFinanceDocs.map((d) => listItem({
+        title: d.title,
+        meta: `Expires ${formatDate(d.expiresOn)}`,
+        onClick: () => ctx.navigate(`/documents/${d.id}`),
+      })))],
+    }) : null,
+  ].filter(Boolean);
+}
+
+/* ── ministry leader (worship / children / youth / evangelism / discipleship) */
+
+function ministryLeaderCards(ctx, now, ministry) {
+  const { db } = ctx;
+  const health = ministryHealthScore(db, ministry, { now });
+  const serving = db.where('members', (m) => !m.archived && (m.ministries || []).includes(ministry.name));
+  const tasks = db.all('eventTasks').filter((t) => serving.some((m) => m.id === t.ownerId) && !t.done)
+    .concat(db.where('actionItems', (a) => a.ministryId === ministry.id && a.status !== 'done' && a.status !== 'dropped'));
+
+  return [
+    card({
+      title: ministry.name,
+      subtitle: ministry.purpose,
+      actions: [badge(`${health.score}% ${health.rating}`, healthTone(health.score)), h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/leadership?tab=workspaces&ministry=${ministry.id}`) }, 'Workspace')],
+      children: [
+        h('div.row', { style: { gap: '24px' } },
+          stat({ value: serving.length, label: 'Serving' }),
+          stat({ value: tasks.length, label: 'Open tasks' }),
+          stat({ value: health.tasksOverdue, label: 'Overdue' })),
+        health.needed && serving.length < health.needed
+          ? h('p.small.muted', { style: { marginTop: '10px' } }, `Short ${health.needed - serving.length} of ${health.needed} volunteers needed.`)
+          : null,
+      ],
+    }),
+    tasks.length ? card({
+      title: 'Open tasks',
+      children: [list(tasks.slice(0, 6).map((task) => listItem({
+        title: task.title,
+        meta: task.dueDate ? `due ${formatDate(task.dueDate)}` : 'no date',
+        onClick: () => ctx.navigate('/leadership?tab=tasks'),
+      })))],
+    }) : null,
+  ].filter(Boolean);
+}
+
+/* ── senior pastor / admin: health across every ministry ────────────────── */
+
+function ministryHealthOverviewCard(ctx, now) {
+  const { db } = ctx;
+  const ministries = db.all('ministries');
+  if (!ministries.length) return null;
+  const scored = ministries.map((m) => ({ ministry: m, health: ministryHealthScore(db, m, { now }) }))
+    .sort((a, b) => a.health.score - b.health.score);
+
+  return card({
+    title: 'Ministry health',
+    subtitle: 'Computed from tasks, coverage and recent activity.',
+    actions: [h('button.btn.btn--sm', { onClick: () => ctx.navigate('/leadership?tab=health') }, 'Details')],
+    children: [list(scored.map(({ ministry, health }) => listItem({
+      title: ministry.name,
+      meta: `${health.serving} serving${health.needed ? ` of ${health.needed}` : ''}`,
+      trailing: badge(`${health.score}%`, healthTone(health.score)),
+      onClick: () => ctx.navigate(`/leadership?tab=workspaces&ministry=${ministry.id}`),
+    })))],
+  });
+}
+
+/* ── upcoming service assignment widget ──────────────────────────────────── */
+
+function upcomingServiceWidget(ctx, now) {
+  const { db, user } = ctx;
+  const upcoming = db.where('serviceSchedule', (s) => new Date(s.date) >= new Date(now.toDateString()))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+  if (!upcoming) return null;
+
+  const days = Math.round((new Date(upcoming.date) - new Date(now.toDateString())) / 864e5);
+  const myRoles = SERVICE_ROLE_FIELDS
+    .filter(([key]) => user.memberId && upcoming[key] === user.memberId)
+    .map(([, label]) => label);
+  if (user.memberId && (upcoming.childrenTeacherIds || []).includes(user.memberId)) myRoles.push('Children teacher');
+
+  return card({
+    title: 'Upcoming service',
+    subtitle: `${upcoming.service} · ${formatDate(upcoming.date, { weekday: 'long', day: 'numeric', month: 'long' })}`,
+    actions: [badge(days === 0 ? 'Today' : `${days} day${days === 1 ? '' : 's'} remaining`, days <= 1 ? 'accent' : '')],
+    children: [myRoles.length
+      ? h('div.stack.stack--sm', ...myRoles.map((role) => h('div.row', icon('check', { size: 15 }), h('span.small', `You are assigned as ${role}`))))
+      : h('p.small.muted', 'You are not assigned to a role on this service.'),
+      h('div.row', { style: { marginTop: '10px' } },
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate('/leadership?tab=schedule') }, 'Open the schedule'))],
+  });
 }
 
 /* ── widgets ─────────────────────────────────────────────────────────────── */
@@ -336,14 +515,32 @@ function activityCard(ctx) {
 
 /* ── quick actions ───────────────────────────────────────────────────────── */
 
-function quickActions(ctx) {
+function quickActions(ctx, mode) {
   const actions = [];
-  if (ctx.can('members:write')) actions.push(['Add person', 'users', '/members?new=1']);
-  if (ctx.can('prayer:write')) actions.push(['Prayer request', 'heart', '/prayer?new=1']);
-  if (ctx.can('care:write')) actions.push(['Log a visit', 'check', '/care?new=1']);
-  if (ctx.can('events:write')) actions.push(['New event', 'calendar', '/events?new=1']);
-  if (ctx.can('assistant:read')) actions.push(['Ask Shepherd', 'sparkles', '/assistant']);
-  return actions.slice(0, 3).map(([label, iconName, route]) =>
+
+  if (mode.key === 'finance' && ctx.can('finance:write')) {
+    actions.push(['Add expense', 'wallet', '/finance?new=1&kind=expense']);
+    actions.push(['Record offering', 'wallet', '/finance?new=1&kind=giving']);
+    if (ctx.can('finance:approve')) actions.push(['Approve request', 'check', '/finance?tab=approvals']);
+    actions.push(['Export report', 'download', '/finance']);
+  } else if (mode.key === 'ministry') {
+    actions.push(['Ministry workspace', 'shield', `/leadership?tab=workspaces&ministry=${mode.ministry.id}`]);
+    if (ctx.can('leadership:write')) actions.push(['Add task', 'plus', '/leadership?tab=tasks']);
+    if (ctx.can('worship:write')) actions.push(['Worship schedule', 'calendar', '/leadership?tab=schedule']);
+  } else if (mode.key === 'admin') {
+    if (ctx.can('worship:write')) actions.push(['Assign volunteer', 'users', '/leadership?tab=schedule']);
+    if (ctx.can('communications:write')) actions.push(['Add announcement', 'megaphone', '/communications?tab=compose']);
+    actions.push(['Update member', 'users', '/members']);
+    actions.push(['Print attendance', 'file', '/members?tab=attendance']);
+  } else {
+    if (ctx.can('members:write')) actions.push(['Add person', 'users', '/members?new=1']);
+    if (ctx.can('prayer:write')) actions.push(['Prayer request', 'heart', '/prayer?new=1']);
+    if (ctx.can('care:write')) actions.push(['Log a visit', 'check', '/care?new=1']);
+    if (ctx.can('events:write')) actions.push(['New event', 'calendar', '/events?new=1']);
+    if (ctx.can('assistant:read')) actions.push(['Ask Shepherd', 'sparkles', '/assistant']);
+  }
+
+  return actions.slice(0, 4).map(([label, iconName, route]) =>
     h('button.btn', { onClick: () => ctx.navigate(route) }, icon(iconName, { size: 15 }), label));
 }
 

@@ -108,12 +108,12 @@ export const ROLES = {
   ministry_head: {
     label: 'Ministry Head',
     rank: 40,
-    description: 'Runs one ministry: its people, rota, events and requests.',
+    description: 'Runs one ministry: its people, rota, events and requests, and its own workspace in the leadership hub.',
     permissions: [
       'dashboard:read', 'members:read', 'care:read', 'worship:read', 'worship:write',
       'prayer:read', 'prayer:write', 'events:read', 'events:write', 'documents:read',
       'knowledge:read', 'communications:read', 'communications:write', 'reports:read',
-      'assistant:read', 'assistant:write',
+      'assistant:read', 'assistant:write', 'leadership:read', 'leadership:write',
     ],
   },
   treasurer: {

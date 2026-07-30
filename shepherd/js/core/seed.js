@@ -43,6 +43,8 @@ const MINISTRIES = [
   ['Prayer', 'Keeps the prayer chain and the Tuesday prayer meeting.', 'Tuesday 8pm', 5],
   ['Media & Sound', 'Sound, slides and the recording.', 'Rotating', 4],
   ['Care & Visitation', 'Hospital visits, bereavement, practical help.', 'As needed', 5],
+  ['Evangelism', 'Outreach, first contact and the road to baptism.', 'Saturday mornings', 4],
+  ['Discipleship', 'Small groups and the path from new believer to leader.', 'Wednesday 7pm', 4],
 ];
 
 const SONGS = [
@@ -227,6 +229,27 @@ export function seedTenant(db, { user = null, now = new Date() } = {}) {
     }), opts);
   }
 
+  /* Annual worship service schedule — the weeks line up with the Friday
+     attendance already seeded above, so past services show "recorded" and
+     future ones show "pending" exactly as they would in a real church. */
+  const makeService = (date, idx) => db.insert('serviceSchedule', blank('serviceSchedule', {
+    date: isoDate(date),
+    service: 'Friday Worship',
+    preacherId: members[0].id,
+    worshipLeaderId: members[(idx + 1) % members.length].id,
+    songLeaderId: members[(idx + 4) % members.length].id,
+    openingPrayerId: members[(idx + 7) % members.length].id,
+    offeringId: members[(idx + 10) % members.length].id,
+    communionId: idx % 4 === 0 ? members[0].id : null,
+    mediaId: members[(idx + 2) % members.length].id,
+    soundId: members[(idx + 5) % members.length].id,
+    usherId: members[(idx + 8) % members.length].id,
+    childrenTeacherIds: [members[(idx + 11) % members.length].id, members[(idx + 12) % members.length].id],
+    youthLeaderId: members[(idx + 13) % members.length].id,
+  }), opts);
+  [3, 2, 1, 0].forEach((week, idx) => makeService(addDays(now, -week * 7 - 2), idx));
+  [1, 2, 3, 4].forEach((week, idx) => makeService(addDays(now, week * 7 - 2), idx + 4));
+
   /* Preaching */
   const series = db.insert('series', blank('series', {
     title: 'Far From Home',
@@ -328,6 +351,35 @@ export function seedTenant(db, { user = null, now = new Date() } = {}) {
     title, progress, target, unit, year: now.getFullYear(), ownerId: members[0].id,
   }), opts));
 
+  /* Annual planning — vision, objectives, KPIs and budget, per ministry. */
+  const worshipMinistry = ministries.find((m) => m.name === 'Worship');
+  const childrenMinistry = ministries.find((m) => m.name === 'Children');
+  if (worshipMinistry) {
+    db.insert('annualPlans', blank('annualPlans', {
+      ministryId: worshipMinistry.id,
+      year: now.getFullYear(),
+      title: 'Worship Ministry Plan',
+      vision: 'Lead the congregation into unhurried, Christ-centred worship, in a room that sounds like how many nations already call this church home.',
+      objectives: ['Recruit two more vocalists', 'Introduce one Tagalog song a month', 'Build a rehearsal recording library'],
+      kpis: ['4 vocalists on rotation', '12 songs recorded', 'Rehearsal attendance above 80%'],
+      budget: 1200,
+      volunteerNeeds: 'Two vocalists, one keyboardist.',
+      status: 'active',
+    }), opts);
+  }
+  if (childrenMinistry) {
+    db.insert('annualPlans', blank('annualPlans', {
+      ministryId: childrenMinistry.id,
+      year: now.getFullYear(),
+      title: "Children's Ministry Plan",
+      vision: "Every child under our roof knows the Bible's big story by the time they reach youth group.",
+      objectives: ['Finish the two-year curriculum cycle', 'Train two new teachers', 'Reduce teacher turnover'],
+      kpis: ['90% curriculum completion', '2 teachers trained', 'Under 20% turnover'],
+      budget: 400,
+      status: 'active',
+    }), opts);
+  }
+
   /* Finance */
   const year = now.getFullYear();
   const budgetLines = [['Rent', 9600], ['Utilities', 1800], ['Ministry supplies', 2400], ['Benevolence', 3600], ['Events', 3000], ['Media & equipment', 1500], ['Staff support', 7200]];
@@ -398,6 +450,15 @@ export function seedTenant(db, { user = null, now = new Date() } = {}) {
     sentAt: status === 'sent' ? new Date(addDays(now, -5)).toISOString() : null,
   }), opts));
 
+  // Link the signed-in account to a member profile, so the role-based
+  // dashboard, the leader task centre and ministry workspace access — all of
+  // which key off a user's linked member — have something real to show on
+  // the very first login rather than the "link your profile" empty state.
+  if (user && !user.memberId && db.find('users', user.id)) {
+    db.update('users', user.id, { memberId: members[0].id }, { skipPermission: true, skipAudit: true });
+    user.memberId = members[0].id;
+  }
+
   db.setActor(actorWas);
   if (user) db.setActor(user);
   db.log('seed', 'Example data added.');
@@ -409,7 +470,8 @@ export function clearSeedData(db) {
   for (const name of ['members', 'families', 'attendance', 'care', 'counseling', 'ministries',
     'committees', 'meetings', 'actionItems', 'decisions', 'goals', 'songs', 'setlists',
     'series', 'sermons', 'illustrations', 'prayers', 'prayerChains', 'events', 'eventTasks',
-    'checkins', 'budgets', 'transactions', 'projects', 'documents', 'knowledge', 'announcements']) {
+    'checkins', 'budgets', 'transactions', 'projects', 'documents', 'knowledge', 'announcements',
+    'serviceSchedule', 'annualPlans']) {
     db.data.set(name, new Map());
     db.dirty.add(name);
   }

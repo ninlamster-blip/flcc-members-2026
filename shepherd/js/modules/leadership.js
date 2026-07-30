@@ -1,5 +1,9 @@
 /**
- * Leadership hub — committees, meetings, action items, decisions and goals.
+ * Leadership hub — committees, meetings, action items, decisions, goals, and
+ * the wider leadership operating system: ministry workspaces, the annual
+ * worship service schedule, a leader's own task list, computed ministry
+ * health, the leadership directory, annual planning, and a permission-
+ * filtered activity timeline.
  *
  * The thing churches lose is not the minutes; it is *why* something was
  * decided, and what was supposed to happen next. So the decision log is a
@@ -13,13 +17,26 @@
 import { h, icon } from '../core/dom.js';
 import {
   page, card, table, list, listItem, emptyState, badge, segmented, statCard, avatar,
-  toast, aiOutput, progress, searchField, modal,
+  toast, aiOutput, progress, searchField, modal, field, textarea,
 } from '../core/ui.js';
-import { formatDate, formatDateTime, relativeTime, isoDate } from '../core/format.js';
-import { blank } from '../core/schema.js';
-import { openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord } from './_shared.js';
+import { formatDate, formatDateTime, formatMoney, relativeTime, isoDate, daysBetween } from '../core/format.js';
+import { COLLECTIONS } from '../core/schema.js';
+import {
+  openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord, healthTone,
+} from './_shared.js';
+import {
+  ministryHealthScore, suggestForRole, SERVICE_ROLE_FIELDS, serviceAssignees,
+} from '../core/ai.js';
+import { canAccessMinistryWorkspace } from '../core/policies.js';
+import { roleLabel } from '../core/rbac.js';
+import { downloadCSV, downloadExcel, printReport } from '../core/exporters.js';
 
 const MEETING_FIELDS = ['title', 'date', 'committeeId', 'attendees', 'agenda', 'minutes', 'confidential'];
+const SERVICE_FIELDS = [
+  'date', 'service', 'preacherId', 'worshipLeaderId', 'songLeaderId', 'openingPrayerId',
+  'offeringId', 'communionId', 'mediaId', 'soundId', 'usherId', 'childrenTeacherIds', 'youthLeaderId', 'notes',
+];
+const PLAN_FIELDS = ['ministryId', 'year', 'title', 'vision', 'objectives', 'kpis', 'budget', 'volunteerNeeds', 'status'];
 
 export async function render(ctx, route) {
   if (route.params[0]) {
@@ -38,20 +55,33 @@ export async function render(ctx, route) {
       : tab === 'decisions' ? decisionsTab(ctx)
       : tab === 'goals' ? goalsTab(ctx)
       : tab === 'committees' ? committeesTab(ctx)
+      : tab === 'workspaces' ? workspacesTab(ctx, route)
+      : tab === 'schedule' ? scheduleTab(ctx, route)
+      : tab === 'tasks' ? tasksTab(ctx)
+      : tab === 'health' ? healthTab(ctx)
+      : tab === 'directory' ? directoryTab(ctx)
+      : tab === 'planner' ? plannerTab(ctx)
+      : tab === 'timeline' ? timelineTab(ctx)
       : meetingsTab(ctx),
   );
 
   return page({
     title: 'Leadership',
-    subtitle: 'Committees, minutes, decisions and the plan for the year.',
-    actions: [newButton(ctx, 'leadership', 'New meeting', () => openRecordModal(ctx, { collection: 'meetings', fields: MEETING_FIELDS }))].filter(Boolean),
+    subtitle: 'Every ministry, its people, its plan, and its part in Sunday.',
+    actions: [
+      tab === 'schedule'
+        ? newButton(ctx, 'worship', 'New service', () => openRecordModal(ctx, { collection: 'serviceSchedule', fields: SERVICE_FIELDS }))
+        : tab === 'planner'
+          ? newButton(ctx, 'leadership', 'New plan', () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year: new Date().getFullYear() } }))
+          : newButton(ctx, 'leadership', 'New meeting', () => openRecordModal(ctx, { collection: 'meetings', fields: MEETING_FIELDS })),
+    ].filter(Boolean),
     children: [
       h('div.grid.grid--4', { style: { marginBottom: '18px' } },
         statCard({ value: db.all('meetings').length, label: 'Meetings recorded' }),
         statCard({ value: openActions.length, label: 'Open actions' }),
         statCard({ value: overdue.length, label: 'Overdue' }),
         statCard({ value: db.all('decisions').length, label: 'Decisions logged' })),
-      h('div', { style: { marginBottom: '18px' } },
+      h('div', { style: { marginBottom: '18px', overflowX: 'auto', paddingBottom: '4px' } },
         segmented({
           options: [
             { value: 'meetings', label: 'Meetings' },
@@ -59,6 +89,13 @@ export async function render(ctx, route) {
             { value: 'decisions', label: 'Decisions' },
             { value: 'goals', label: 'Goals' },
             { value: 'committees', label: 'Committees' },
+            { value: 'workspaces', label: 'Ministry Workspaces' },
+            { value: 'schedule', label: 'Worship Schedule' },
+            { value: 'tasks', label: 'My Tasks' },
+            { value: 'health', label: 'Ministry Health' },
+            { value: 'directory', label: 'Directory' },
+            { value: 'planner', label: 'Annual Planner' },
+            { value: 'timeline', label: 'Timeline' },
           ],
           value: tab,
           onChange: (value) => ctx.navigate(`/leadership?tab=${value}`),
@@ -418,4 +455,513 @@ function committeesTab(ctx) {
         detail: 'A committee groups its meetings, its members and its mandate.',
         iconName: 'shield',
       }));
+}
+
+/* ── ministry workspaces ─────────────────────────────────────────────────── */
+
+function workspacesTab(ctx, route) {
+  const { db } = ctx;
+
+  if (route.query.ministry) {
+    const ministry = db.find('ministries', route.query.ministry);
+    if (!ministry) return emptyState({ title: 'Ministry not found', iconName: 'shield' });
+    if (!canAccessMinistryWorkspace(ctx.user, ministry)) {
+      return emptyState({
+        title: 'Not your workspace',
+        detail: `Only ${ministry.name}'s lead, and church-wide leadership, can open this. If that should be you, ask an administrator to set you as its lead in People → Ministries and link your account to your member profile in Settings → Users.`,
+        iconName: 'lock',
+      });
+    }
+    return ministryWorkspaceDetail(ctx, ministry);
+  }
+
+  const ministries = db.all('ministries');
+  if (!ministries.length) {
+    return emptyState({ title: 'No ministries recorded', detail: 'Add one from People → Ministries first.', iconName: 'shield' });
+  }
+
+  return h('div.grid.grid--3', ...ministries.map((ministry) => {
+    const health = ministryHealthScore(db, ministry);
+    const serving = db.where('members', (m) => !m.archived && (m.ministries || []).includes(ministry.name));
+    const accessible = canAccessMinistryWorkspace(ctx.user, ministry);
+    return card({
+      tight: true,
+      children: [
+        h('div.row.row--between',
+          h('strong', ministry.name),
+          badge(`${health.score}%`, healthTone(health.score))),
+        h('p.small.muted', { style: { marginTop: '4px' } }, ministry.purpose || ''),
+        h('p.tiny.subtle', { style: { marginTop: '8px' } },
+          `${serving.length} serving${ministry.leadId ? ` · led by ${memberName(db, ministry.leadId)}` : ' · no lead assigned'}`),
+        h('div.row', { style: { marginTop: '10px' } },
+          accessible
+            ? h('button.btn.btn--sm.btn--primary', { onClick: () => ctx.navigate(`/leadership?tab=workspaces&ministry=${ministry.id}`) }, 'Open workspace')
+            : badge('Lead only', 'warn')),
+      ],
+    });
+  }));
+}
+
+function ministryWorkspaceDetail(ctx, ministry) {
+  const { db } = ctx;
+  const health = ministryHealthScore(db, ministry);
+  const serving = db.where('members', (m) => !m.archived && (m.ministries || []).includes(ministry.name));
+  const year = new Date().getFullYear();
+  const plan = db.first('annualPlans', (p) => p.ministryId === ministry.id && p.year === year);
+  const tasks = db.all('eventTasks').filter((t) => serving.some((m) => m.id === t.ownerId))
+    .concat(db.where('actionItems', (a) => a.ministryId === ministry.id));
+  const openTasks = tasks.filter((t) => !t.done && t.status !== 'done');
+  const docs = db.where('documents', (d) => (d.tags || []).some((tag) => String(tag).toLowerCase() === ministry.name.toLowerCase()));
+  const spend = ctx.can('finance:read')
+    ? db.where('transactions', (t) => t.kind === 'expense' && t.department === ministry.name && new Date(t.date).getFullYear() === year)
+      .reduce((total, t) => total + Number(t.amount || 0), 0)
+    : null;
+
+  const header = card({
+    children: [h('div.row.row--wrap',
+      h('div', { style: { flex: '1', minWidth: '220px' } },
+        h('h2', ministry.name),
+        ministry.purpose ? h('p.muted', ministry.purpose) : null,
+        h('div.row', { style: { marginTop: '8px', gap: '6px', flexWrap: 'wrap' } },
+          badge(`${health.score}% ${health.rating}`, healthTone(health.score)),
+          ministry.leadId ? badge(`Led by ${memberName(db, ministry.leadId)}`) : badge('No lead assigned', 'warn'),
+          ministry.meetingDay ? badge(ministry.meetingDay) : null)),
+      ctx.can('members:write')
+        ? h('button.btn.btn--sm', { onClick: () => openRecordModal(ctx, { collection: 'ministries', doc: ministry }) }, icon('edit', { size: 14 }), 'Edit ministry')
+        : null)],
+  });
+
+  const rosterCard = card({
+    title: 'Members serving',
+    subtitle: `${serving.length}${ministry.minVolunteers ? ` of ${ministry.minVolunteers} needed` : ''}`,
+    children: [serving.length
+      ? list(serving.map((m) => listItem({
+        leading: avatar(m.fullName, { size: 'sm' }), title: m.fullName, meta: m.area || '',
+        onClick: () => ctx.navigate(`/members/${m.id}`),
+      })))
+      : emptyState({ title: 'Nobody recorded yet', detail: 'Set this ministry on a member\'s profile in People.', iconName: 'users' })],
+  });
+
+  const tasksCard = card({
+    title: 'Tasks',
+    subtitle: `${openTasks.length} open`,
+    actions: [ctx.can('leadership:write')
+      ? h('button.btn.btn--sm', { onClick: () => openRecordModal(ctx, { collection: 'actionItems', defaults: { ministryId: ministry.id }, hidden: ['ministryId'] }) }, icon('plus', { size: 14 }), 'Add')
+      : null].filter(Boolean),
+    children: [openTasks.length
+      ? list(openTasks.slice(0, 8).map((t) => listItem({ title: t.title, meta: t.dueDate ? `due ${formatDate(t.dueDate)}` : 'no date' })))
+      : emptyState({ title: 'Nothing open', iconName: 'check' })],
+  });
+
+  const planCard = card({
+    title: `${year} plan`,
+    actions: [ctx.can('leadership:write')
+      ? h('button.btn.btn--sm', {
+        onClick: () => openRecordModal(ctx, {
+          collection: 'annualPlans', doc: plan, fields: PLAN_FIELDS,
+          defaults: { ministryId: ministry.id, year }, hidden: plan ? [] : [],
+        }),
+      }, plan ? 'Edit' : 'Create')
+      : null].filter(Boolean),
+    children: [plan
+      ? h('div.stack.stack--sm',
+        plan.vision ? h('p.small', plan.vision) : null,
+        (plan.objectives || []).length ? h('div', null, h('p.eyebrow', 'Objectives'), h('div.chip-list', ...plan.objectives.map((o) => h('span.chip', o)))) : null,
+        plan.budget ? h('p.small.muted', `Budget: ${formatMoney(plan.budget)}`) : null)
+      : h('p.small.muted', `No ${year} plan yet. Vision, objectives, KPIs and budget for this ministry belong here — see the Annual Planner tab.`)],
+  });
+
+  const docsCard = card({
+    title: 'Documents',
+    subtitle: 'Tagged with this ministry\'s name in the vault',
+    children: [docs.length
+      ? list(docs.map((d) => listItem({ title: d.title, meta: sentence(d.category), onClick: () => ctx.navigate(`/documents/${d.id}`) })))
+      : h('p.small.muted', `Tag a document "${ministry.name}" in the document vault to see it here.`)],
+  });
+
+  const linksCard = card({
+    title: 'Elsewhere',
+    subtitle: 'Budget, calendar, announcements and prayer live in their own modules',
+    children: [h('div.row.row--wrap',
+      spend !== null ? h('button.btn.btn--sm', { onClick: () => ctx.navigate('/finance?tab=expenses') }, `${formatMoney(spend)} spent in ${year}`) : null,
+      ctx.can('events:read') ? h('button.btn.btn--sm', { onClick: () => ctx.navigate('/events') }, icon('calendar', { size: 14 }), 'Calendar') : null,
+      ctx.can('communications:read') ? h('button.btn.btn--sm', { onClick: () => ctx.navigate('/communications') }, icon('megaphone', { size: 14 }), 'Announcements') : null,
+      ctx.can('prayer:read') ? h('button.btn.btn--sm', { onClick: () => ctx.navigate('/prayer') }, icon('heart', { size: 14 }), 'Prayer requests') : null)],
+  });
+
+  return h('div.stack',
+    h('button.btn.btn--sm', { onClick: () => ctx.navigate('/leadership?tab=workspaces') }, icon('arrowLeft', { size: 14 }), 'All workspaces'),
+    header,
+    h('div.grid.grid--main-side',
+      h('div.stack', rosterCard, tasksCard),
+      h('div.stack', planCard, docsCard, linksCard)));
+}
+
+/* ── annual worship service schedule ─────────────────────────────────────── */
+
+function scheduleTab(ctx, route) {
+  const { db } = ctx;
+  const year = Number(route.query.year) || new Date().getFullYear();
+  const records = db.where('serviceSchedule', (s) => new Date(s.date).getFullYear() === year)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const years = new Set(db.all('serviceSchedule').map((s) => new Date(s.date).getFullYear()));
+  years.add(year);
+  const yearList = [...years].sort((a, b) => b - a);
+
+  return h('div.stack',
+    h('div.row.row--wrap',
+      h('select.select', {
+        style: { maxWidth: '120px' }, 'aria-label': 'Year',
+        onChange: (e) => ctx.navigate(`/leadership?tab=schedule&year=${e.target.value}`),
+      }, ...yearList.map((y) => h('option', { value: y, selected: y === year }, String(y)))),
+      h('div.spacer'),
+      records.length ? h('button.btn.btn--sm', { onClick: () => exportSchedule(ctx, records, 'excel') }, icon('download', { size: 14 }), 'Excel') : null,
+      records.length ? h('button.btn.btn--sm', { onClick: () => exportSchedule(ctx, records, 'csv') }, icon('download', { size: 14 }), 'CSV') : null,
+      records.length ? h('button.btn.btn--sm', { onClick: () => printSchedule(ctx, records, year) }, icon('file', { size: 14 }), 'Print / PDF') : null),
+    records.length
+      ? h('div.stack.stack--sm', ...records.map((record) => serviceRow(ctx, record)))
+      : emptyState({
+        title: `No services scheduled in ${year}`,
+        detail: 'One record per service, with every role — preacher, worship, media, sound, ushers, teachers.',
+        iconName: 'calendar',
+        action: newButton(ctx, 'worship', 'New service', () => openRecordModal(ctx, {
+          collection: 'serviceSchedule', fields: SERVICE_FIELDS, defaults: { date: isoDate(new Date()) },
+        })),
+      }));
+}
+
+function serviceRow(ctx, record) {
+  const { db } = ctx;
+  const attended = db.first('attendance', (a) => a.date === record.date && a.service === record.service);
+  const assignments = SERVICE_ROLE_FIELDS.map(([key, label]) => [label, record[key]]).filter(([, id]) => id);
+  const childrenTeachers = (record.childrenTeacherIds || []).map((id) => memberName(db, id));
+
+  return card({
+    tight: true,
+    children: [
+      h('div.row.row--between.row--wrap',
+        h('div', null,
+          h('strong', record.service),
+          h('div.tiny.subtle', formatDate(record.date, { weekday: 'long', day: 'numeric', month: 'long' }))),
+        h('div.row',
+          badge(attended ? 'Attendance recorded' : 'Attendance pending', attended ? 'ok' : 'warn'),
+          ctx.can('worship:write')
+            ? h('button.btn.btn--sm', { onClick: () => suggestAssignments(ctx, record) }, icon('sparkles', { size: 14 }), 'Suggest')
+            : null,
+          ctx.can('worship:write')
+            ? h('button.icon-btn', { 'aria-label': 'Edit', onClick: () => openRecordModal(ctx, { collection: 'serviceSchedule', doc: record, fields: SERVICE_FIELDS }) }, icon('edit', { size: 15 }))
+            : null)),
+      h('div.chip-list', { style: { marginTop: '10px' } },
+        ...assignments.map(([label, id]) => h('span.chip', `${label}: ${memberName(db, id)}`)),
+        ...(childrenTeachers.length ? [h('span.chip', `Children: ${childrenTeachers.join(', ')}`)] : [])),
+      !assignments.length && !childrenTeachers.length ? h('p.small.muted', { style: { marginTop: '8px' } }, 'Nothing assigned yet.') : null,
+    ],
+  });
+}
+
+/** The smart assignment engine: least-recently-served, ministry-matched, conflict-checked. */
+function suggestAssignments(ctx, record) {
+  const empty = SERVICE_ROLE_FIELDS.filter(([key]) => !record[key]);
+  if (!empty.length) {
+    toast('Every named role on this service is already filled.');
+    return;
+  }
+  const assigned = serviceAssignees(record);
+  const rows = empty.map(([key, label]) => {
+    const candidates = suggestForRole(ctx.db, { roleKey: key, date: record.date, alreadyAssigned: assigned });
+    const pick = h('select.select', null,
+      h('option', { value: '' }, 'Leave unassigned'),
+      ...candidates.map(({ member, lastServed }) => h('option', { value: member.id },
+        `${member.fullName}${lastServed ? ` — last served ${relativeTime(lastServed)}` : ' — has not served yet'}`)));
+    return { key, pick, node: field({ label, control: pick }) };
+  });
+
+  const ref = modal({
+    title: 'Suggested assignments',
+    body: h('div.stack',
+      h('p.small.muted', 'Whoever matches the ministry and served least recently is offered first — skipping anyone already on this service, or marked away.'),
+      ...rows.map((r) => r.node)),
+    actions: [
+      h('button.btn', { onClick: () => ref.close() }, 'Cancel'),
+      h('button.btn.btn--primary', {
+        onClick: async () => {
+          const patch = {};
+          let count = 0;
+          for (const { key, pick } of rows) {
+            if (!pick.value) continue;
+            patch[key] = pick.value;
+            count += 1;
+          }
+          if (count) {
+            ctx.db.update('serviceSchedule', record.id, patch);
+            await ctx.db.flush();
+          }
+          toast(count ? `${count} assigned.` : 'Nothing assigned.', { variant: count ? 'ok' : '' });
+          ref.close();
+          ctx.refresh();
+        },
+      }, 'Assign'),
+    ],
+  });
+}
+
+function exportSchedule(ctx, records, format) {
+  const columns = [
+    { label: 'Date', value: (r) => r.date }, { label: 'Service', key: 'service' },
+    ...SERVICE_ROLE_FIELDS.map(([key, label]) => ({ label, value: (r) => memberName(ctx.db, r[key], '') })),
+    { label: 'Children teachers', value: (r) => (r.childrenTeacherIds || []).map((id) => memberName(ctx.db, id)).join('; ') },
+  ];
+  if (format === 'excel') downloadExcel(`${ctx.tenant.id}-worship-schedule.xls`, [{ name: 'Schedule', columns, rows: records }]);
+  else downloadCSV(`${ctx.tenant.id}-worship-schedule.csv`, records, columns);
+  ctx.db.log('export', `Exported the worship schedule (${records.length} services).`);
+  toast('Exported.', { variant: 'ok' });
+}
+
+function printSchedule(ctx, records, year) {
+  const tableNode = table({
+    columns: [
+      { label: 'Date', value: (r) => formatDate(r.date) }, { label: 'Service', key: 'service' },
+      { label: 'Preacher', value: (r) => memberName(ctx.db, r.preacherId, '') },
+      { label: 'Worship', value: (r) => memberName(ctx.db, r.worshipLeaderId, '') },
+      { label: 'Media', value: (r) => memberName(ctx.db, r.mediaId, '') },
+      { label: 'Sound', value: (r) => memberName(ctx.db, r.soundId, '') },
+      { label: 'Usher', value: (r) => memberName(ctx.db, r.usherId, '') },
+    ],
+    rows: records,
+  });
+  printReport({ title: `${ctx.tenant.name} — worship schedule ${year}`, subtitle: `Prepared ${formatDate(new Date())}`, nodes: [tableNode] });
+  ctx.db.log('export', `Printed the ${year} worship schedule.`);
+}
+
+/* ── leader task centre ──────────────────────────────────────────────────── */
+
+function tasksTab(ctx) {
+  const { db, user } = ctx;
+  if (!user.memberId) {
+    return emptyState({
+      title: 'Link your account to a member profile',
+      detail: 'Ask a church administrator to set this in Settings → Users & roles, so your own tasks — and your ministry workspace, if you lead one — can be found.',
+      iconName: 'users',
+    });
+  }
+
+  const now = new Date();
+  const mine = [
+    ...db.where('actionItems', (a) => a.ownerId === user.memberId).map((a) => ({ ...a, kind: 'Action', done: a.status === 'done' })),
+    ...db.where('eventTasks', (t) => t.ownerId === user.memberId).map((t) => ({ ...t, kind: 'Event task' })),
+    ...(ctx.can('care:read') ? db.where('care', (c) => c.assignedTo === user.id)
+      .map((c) => ({ ...c, title: c.summary, kind: 'Care', done: !!c.completedAt })) : []),
+  ];
+
+  const overdue = mine.filter((t) => !t.done && t.dueDate && new Date(t.dueDate) < now);
+  const today = mine.filter((t) => !t.done && t.dueDate && isoDate(t.dueDate) === isoDate(now));
+  const upcoming = mine.filter((t) => !t.done && !overdue.includes(t) && !today.includes(t));
+  const done = mine.filter((t) => t.done);
+
+  const section = (label, items) => (items.length ? card({
+    title: `${label} (${items.length})`,
+    children: [list(items.map((t) => taskRow(ctx, t)))],
+  }) : null);
+
+  return h('div.stack',
+    h('div.grid.grid--4',
+      statCard({ value: overdue.length, label: 'Overdue' }),
+      statCard({ value: today.length, label: 'Today' }),
+      statCard({ value: upcoming.length, label: 'Upcoming' }),
+      statCard({ value: done.length, label: 'Completed' })),
+    section('Overdue', overdue),
+    section('Today', today),
+    section('Upcoming', upcoming.slice(0, 20)),
+    section('Recently completed', done.slice(-8).reverse()),
+    mine.length ? null : emptyState({ title: 'Nothing assigned to you', detail: 'Action items, event jobs and care visits you own will appear here.', iconName: 'check' }));
+}
+
+function taskRow(ctx, item) {
+  return listItem({
+    title: item.title,
+    meta: [item.kind, item.dueDate ? `due ${formatDate(item.dueDate)}` : 'no date'].filter(Boolean).join(' · '),
+    trailing: item.done ? badge('Done', 'ok') : h('button.btn.btn--sm', {
+      onClick: async () => {
+        if (item.kind === 'Action') ctx.db.update('actionItems', item.id, { status: 'done' });
+        else if (item.kind === 'Event task') ctx.db.update('eventTasks', item.id, { done: true });
+        else if (item.kind === 'Care') ctx.db.update('care', item.id, { completedAt: new Date().toISOString() });
+        await ctx.db.flush();
+        toast('Marked done.', { variant: 'ok' });
+        ctx.refresh();
+      },
+    }, 'Done'),
+  });
+}
+
+/* ── ministry health ─────────────────────────────────────────────────────── */
+
+function healthTab(ctx) {
+  const { db } = ctx;
+  const ministries = db.all('ministries');
+  if (!ministries.length) return emptyState({ title: 'No ministries recorded', iconName: 'shield' });
+
+  const scored = ministries.map((ministry) => ({ ministry, health: ministryHealthScore(db, ministry) }))
+    .sort((a, b) => a.health.score - b.health.score);
+
+  return h('div.stack',
+    h('p.small.muted', 'A heuristic score from task completion, overdue work, volunteer coverage against stated need, and recent activity — a place to look first, not a judgement.'),
+    h('div.grid.grid--2', ...scored.map(({ ministry, health }) => card({
+      title: ministry.name,
+      actions: [badge(`${health.score}% ${health.rating}`, healthTone(health.score))],
+      children: [
+        h('div.stack.stack--sm', ...health.breakdown.map((row) => h('div', null,
+          h('div.row.row--between', h('span.tiny.muted', row.label), h('span.tiny', `${row.value}%`)),
+          progress(row.value, 100, { variant: '' })))),
+        h('p.tiny.subtle', { style: { marginTop: '8px' } },
+          `${health.serving} serving${health.needed ? ` of ${health.needed} needed` : ''} · ${health.tasksOpen} open tasks · ${health.tasksOverdue} overdue`),
+        h('button.btn.btn--sm', { style: { marginTop: '8px' }, onClick: () => ctx.navigate(`/leadership?tab=workspaces&ministry=${ministry.id}`) }, 'Open workspace'),
+      ],
+    }))));
+}
+
+/* ── leadership directory ────────────────────────────────────────────────── */
+
+const CHURCH_LEADERSHIP_ROLES = ['senior_pastor', 'pastor', 'elder', 'treasurer', 'secretary', 'church_admin'];
+
+function directoryTab(ctx) {
+  const { db } = ctx;
+  const entries = [];
+
+  for (const ministry of db.all('ministries')) {
+    if (ministry.leadId) entries.push({ name: memberName(db, ministry.leadId, '—'), role: `${ministry.name} lead`, memberId: ministry.leadId });
+  }
+  for (const committee of db.all('committees')) {
+    if (committee.chairId) entries.push({ name: memberName(db, committee.chairId, '—'), role: `${committee.name} chair`, memberId: committee.chairId });
+  }
+  for (const user of db.all('users')) {
+    if (!CHURCH_LEADERSHIP_ROLES.includes(user.role) || user.suspended) continue;
+    entries.push({ name: user.memberId ? memberName(db, user.memberId, user.name) : user.name, role: roleLabel(user.role), memberId: user.memberId });
+  }
+
+  if (!entries.length) {
+    return emptyState({ title: 'No leaders recorded yet', detail: 'Set a lead on a ministry, or a chair on a committee, to build the directory.', iconName: 'users' });
+  }
+
+  return card({
+    title: 'Who leads what',
+    subtitle: 'Ministry leads, committee chairs, and church-wide leadership.',
+    children: [table({
+      columns: [{ label: 'Name', value: (r) => r.name }, { label: 'Role', value: (r) => r.role }],
+      rows: entries,
+      onRowClick: (r) => (r.memberId ? ctx.navigate(`/members/${r.memberId}`) : undefined),
+    })],
+  });
+}
+
+/* ── annual planning ─────────────────────────────────────────────────────── */
+
+function plannerTab(ctx) {
+  const { db } = ctx;
+  const year = new Date().getFullYear();
+  const plans = db.all('annualPlans').sort((a, b) => (b.year || 0) - (a.year || 0));
+
+  return h('div.stack',
+    plans.length
+      ? h('div.grid.grid--2', ...plans.map((plan) => {
+        const ministry = db.find('ministries', plan.ministryId);
+        return card({
+          title: plan.title,
+          subtitle: `${ministry ? ministry.name : 'Unknown ministry'} · ${plan.year}`,
+          actions: [statusBadge(plan.status)],
+          children: [
+            plan.vision ? h('p.small.muted', plan.vision) : null,
+            (plan.objectives || []).length
+              ? h('div', { style: { marginTop: '8px' } }, h('p.eyebrow', 'Objectives'), h('div.chip-list', ...plan.objectives.map((o) => h('span.chip', o))))
+              : null,
+            (plan.kpis || []).length
+              ? h('div', { style: { marginTop: '8px' } }, h('p.eyebrow', 'KPIs'), h('div.chip-list', ...plan.kpis.map((k) => h('span.chip', k))))
+              : null,
+            plan.budget ? h('p.small', { style: { marginTop: '8px' } }, `Budget: ${formatMoney(plan.budget)}`) : null,
+            ctx.can('leadership:write')
+              ? h('div.row', { style: { marginTop: '10px' } },
+                h('button.btn.btn--sm', { onClick: () => openRecordModal(ctx, { collection: 'annualPlans', doc: plan, fields: PLAN_FIELDS }) }, 'Edit'),
+                h('button.btn.btn--sm', { onClick: () => quarterlyReview(ctx, plan) }, 'Quarterly review'))
+              : null,
+          ],
+        });
+      }))
+      : emptyState({
+        title: 'No annual plans yet',
+        detail: 'Vision, objectives, KPIs, budget and volunteer needs, per ministry, per year — reviewed each quarter.',
+        iconName: 'chart',
+        action: newButton(ctx, 'leadership', 'New plan', () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year } })),
+      }));
+}
+
+function quarterlyReview(ctx, plan) {
+  const q1 = textarea({ value: plan.q1Review || '' });
+  const q2 = textarea({ value: plan.q2Review || '' });
+  const q3 = textarea({ value: plan.q3Review || '' });
+  const q4 = textarea({ value: plan.q4Review || '' });
+
+  const ref = modal({
+    title: `${plan.title} — quarterly review`,
+    wide: true,
+    body: h('div.form-grid',
+      field({ label: 'Q1', control: q1, full: true }), field({ label: 'Q2', control: q2, full: true }),
+      field({ label: 'Q3', control: q3, full: true }), field({ label: 'Q4', control: q4, full: true })),
+    actions: [
+      h('button.btn', { onClick: () => ref.close() }, 'Cancel'),
+      h('button.btn.btn--primary', {
+        onClick: async () => {
+          ctx.db.update('annualPlans', plan.id, { q1Review: q1.value, q2Review: q2.value, q3Review: q3.value, q4Review: q4.value });
+          await ctx.db.flush();
+          toast('Saved.', { variant: 'ok' });
+          ref.close();
+          ctx.refresh();
+        },
+      }, 'Save'),
+    ],
+  });
+}
+
+/* ── leadership timeline ─────────────────────────────────────────────────── */
+
+const TIMELINE_COLLECTIONS = ['meetings', 'decisions', 'actionItems', 'events', 'announcements', 'transactions', 'documents', 'serviceSchedule', 'annualPlans'];
+
+function timelineTab(ctx) {
+  const { db } = ctx;
+  const entries = db.all('audit')
+    .filter((e) => e.collection && TIMELINE_COLLECTIONS.includes(e.collection))
+    .filter((e) => {
+      const def = COLLECTIONS[e.collection];
+      return def && ctx.can(`${def.resource}:read`);
+    })
+    .sort((a, b) => new Date(b.at) - new Date(a.at))
+    .slice(0, 150);
+
+  if (!entries.length) {
+    return emptyState({
+      title: 'Nothing yet',
+      detail: 'Meetings, decisions, events, finance and documents appear here as they happen — only what you are permitted to see.',
+      iconName: 'clock',
+    });
+  }
+
+  const groups = new Map();
+  for (const entry of entries) {
+    const label = dayLabel(entry.at);
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(entry);
+  }
+
+  return h('div.stack', ...[...groups].map(([label, items]) => card({
+    title: label,
+    children: [h('div.timeline', ...items.map((entry) => h('div.timeline__item',
+      h('div.small', entry.summary),
+      h('div.tiny.subtle', `${entry.actorName || 'system'} · ${relativeTime(entry.at)}`))))],
+  })));
+}
+
+function dayLabel(at) {
+  const days = daysBetween(at, new Date());
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return formatDate(at, { weekday: 'long', day: 'numeric', month: 'long' });
 }

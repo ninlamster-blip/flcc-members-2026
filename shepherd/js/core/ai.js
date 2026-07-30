@@ -798,3 +798,172 @@ export function financeSnapshot(db, { from, to } = {}) {
     count: inRange.length,
   };
 }
+
+/* ── smart assignment (the annual worship schedule) ─────────────────────── */
+
+/**
+ * Suggest who should fill one role on one service date: whoever matches the
+ * ministry for that role, has not already been asked for another role on the
+ * same service, is not marked away, and has served least recently. This is
+ * deliberately the same "least recently served" heuristic as
+ * {@link suggestVolunteers} — consistency between the events rota and the
+ * worship schedule matters more than either being clever.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {{roleKey: string, date: string|Date, alreadyAssigned?: string[]}} opts
+ */
+export function suggestForRole(db, { roleKey, date, alreadyAssigned = [] } = {}) {
+  const ministryMatch = {
+    worshipLeaderId: 'worship', songLeaderId: 'worship', mediaId: 'media',
+    soundId: 'media', usherId: 'ushering', childrenTeacherIds: 'children', youthLeaderId: 'youth',
+  }[roleKey] || null;
+
+  const serviceDate = new Date(date);
+  const lastServed = new Map();
+  for (const record of db.all('serviceSchedule')) {
+    const at = new Date(record.date).getTime();
+    const value = record[roleKey];
+    const ids = Array.isArray(value) ? value : [value].filter(Boolean);
+    for (const id of ids) {
+      if (!lastServed.has(id) || at > lastServed.get(id)) lastServed.set(id, at);
+    }
+  }
+
+  return db
+    .where('members', (m) => !m.archived && m.status !== 'visitor'
+      && !alreadyAssigned.includes(m.id)
+      && (!m.awayUntil || new Date(m.awayUntil) < serviceDate)
+      && (!ministryMatch || (m.ministries || []).some((x) => String(x).toLowerCase().includes(ministryMatch))))
+    .map((m) => ({ member: m, lastServed: lastServed.get(m.id) || 0 }))
+    .sort((a, b) => a.lastServed - b.lastServed)
+    .slice(0, 5);
+}
+
+/** Every role-field on a service record that takes one member (not a list). */
+export const SERVICE_ROLE_FIELDS = [
+  ['preacherId', 'Preacher'], ['worshipLeaderId', 'Worship leader'], ['songLeaderId', 'Song leader'],
+  ['openingPrayerId', 'Opening prayer'], ['offeringId', 'Offering'], ['communionId', 'Communion'],
+  ['mediaId', 'Media'], ['soundId', 'Sound'], ['usherId', 'Usher'], ['youthLeaderId', 'Youth leader'],
+];
+
+/** Every member already holding a role on one service record — used to avoid double-booking. */
+export function serviceAssignees(record) {
+  const ids = SERVICE_ROLE_FIELDS.map(([key]) => record[key]).concat(record.childrenTeacherIds || []);
+  return ids.filter(Boolean);
+}
+
+/* ── ministry health ─────────────────────────────────────────────────────── */
+
+/**
+ * A heuristic 0–100 score per ministry, so a pastor can see at a glance which
+ * ministries are running well and which need attention. It is deliberately
+ * transparent rather than a black box: the breakdown is returned alongside
+ * the score, and the UI shows it.
+ *
+ * Composition: task completion (35%), overdue-free-ness (20%), volunteer
+ * coverage against the ministry's stated need (25%), and recent activity —
+ * any task touched in the last 30 days (20%). A ministry with no tasks at
+ * all scores on coverage and activity only, so a quiet-but-fully-staffed
+ * ministry is not penalised for having nothing overdue.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {object} ministry
+ * @param {{now?: Date}} [opts]
+ */
+export function ministryHealthScore(db, ministry, { now = new Date() } = {}) {
+  const serving = db.where('members', (m) => !m.archived && (m.ministries || []).includes(ministry.name));
+  const tasks = db.all('eventTasks').filter((t) => serving.some((m) => m.id === t.ownerId))
+    .concat(db.where('actionItems', (a) => a.ministryId === ministry.id));
+
+  const done = tasks.filter((t) => t.done || t.status === 'done').length;
+  const overdue = tasks.filter((t) => !t.done && t.status !== 'done' && t.dueDate && new Date(t.dueDate) < now).length;
+  const open = tasks.length - done;
+
+  const completionScore = tasks.length ? (done / tasks.length) * 100 : 70; // no history yet — neutral, not penalised
+  const overdueScore = open ? Math.max(0, 100 - (overdue / open) * 100) : 100;
+  const coverageScore = ministry.minVolunteers
+    ? Math.min(100, (serving.length / ministry.minVolunteers) * 100)
+    : (serving.length ? 100 : 40);
+  const recentCutoff = new Date(now.getTime() - 30 * 864e5);
+  const recentlyActive = tasks.some((t) => new Date(t.updatedAt || t.createdAt || 0) >= recentCutoff);
+  const activityScore = tasks.length ? (recentlyActive ? 100 : 30) : 60;
+
+  const score = Math.round(
+    completionScore * 0.35 + overdueScore * 0.2 + coverageScore * 0.25 + activityScore * 0.2,
+  );
+  const rating = score >= 90 ? 'Excellent' : score >= 75 ? 'Healthy' : score >= 60 ? 'Needs improvement' : 'Attention needed';
+
+  return {
+    score, rating,
+    serving: serving.length,
+    needed: ministry.minVolunteers || 0,
+    tasksOpen: open,
+    tasksOverdue: overdue,
+    breakdown: [
+      { label: 'Task completion', value: Math.round(completionScore) },
+      { label: 'No overdue work', value: Math.round(overdueScore) },
+      { label: 'Volunteer coverage', value: Math.round(coverageScore) },
+      { label: 'Recent activity', value: Math.round(activityScore) },
+    ],
+  };
+}
+
+/* ── AI executive briefing ───────────────────────────────────────────────── */
+
+/**
+ * "Good morning, Allen." A personalised, role-tailored morning summary built
+ * entirely from computation — like the rest of the insights layer, this is
+ * facts the church already knows, formatted for a two-second read, not a
+ * model's opinion. No `aiGenerated` label is needed for the same reason
+ * {@link computeInsights} does not carry one.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {object} user
+ * @param {{now?: Date, settings?: object}} [opts]
+ * @returns {string[]} short lines, most relevant first
+ */
+export function buildBriefing(db, user, { now = new Date(), settings = {} } = {}) {
+  const lines = [];
+  const weekAhead = new Date(now.getTime() + 7 * 864e5);
+
+  if (can(user, 'worship:read')) {
+    const services = db.where('serviceSchedule', (s) => new Date(s.date) >= now && new Date(s.date) <= weekAhead).length
+      || db.where('events', (e) => e.type === 'service' && new Date(e.startsAt) >= now && new Date(e.startsAt) <= weekAhead).length;
+    if (services) lines.push(`${services} upcoming worship service${services === 1 ? '' : 's'} this week.`);
+    const shortages = volunteerShortages(db, { now, days: 7 });
+    if (shortages.length) lines.push(`${shortages.map((s) => s.title).slice(0, 2).join(', ')} ${shortages.length === 1 ? 'is' : 'are'} short of volunteers.`);
+  }
+
+  if (can(user, 'members:read')) {
+    const celebrations = upcomingCelebrations(db, { now, days: 7 });
+    const birthdays = celebrations.filter((c) => c.label === 'birthday').length;
+    const anniversaries = celebrations.filter((c) => c.label === 'anniversary').length;
+    if (birthdays) lines.push(`${birthdays} member${birthdays === 1 ? '' : 's'} celebrating a birthday.`);
+    if (anniversaries) lines.push(`${anniversaries} wedding anniversar${anniversaries === 1 ? 'y' : 'ies'}.`);
+
+    const trend = attendanceTrend(db, { now, weeks: 4 });
+    if (Math.abs(trend.changePct) >= 12) {
+      lines.push(`Attendance is ${trend.direction === 'up' ? 'up' : 'down'} ${Math.abs(Math.round(trend.changePct))}% over four weeks.`);
+    }
+  }
+
+  if (can(user, 'members:read')) {
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const visitors = db.where('members', (m) => m.status === 'visitor' && new Date(m.joinedOn || m.createdAt) >= monthStart).length;
+    if (visitors) lines.push(`${visitors} first-time visitor${visitors === 1 ? '' : 's'} awaiting follow-up.`);
+  }
+
+  if (can(user, 'finance:read')) {
+    const pending = db.where('transactions', (t) => t.status === 'pending-approval').length;
+    if (pending) lines.push(`${pending} finance ${pending === 1 ? 'entry is' : 'entries are'} awaiting approval.`);
+  }
+
+  if (can(user, 'leadership:read')) {
+    const overdue = db.where('actionItems', (a) => a.status !== 'done' && a.status !== 'dropped'
+      && a.dueDate && new Date(a.dueDate) < now).length;
+    if (overdue) lines.push(`${overdue} leadership action${overdue === 1 ? '' : 's'} overdue.`);
+  }
+
+  if (!lines.length) lines.push('Nothing urgent — a clear week is a good week to check in on someone anyway.');
+  return lines;
+}

@@ -257,6 +257,11 @@ export const STATUS_TONES = {
   urgent: 'danger', priority: 'danger', watch: 'warn', normal: '', low: '',
 };
 
+/** Badge tone for a computed ministry health score (see core/ai.js ministryHealthScore). */
+export function healthTone(score) {
+  return score >= 90 ? 'ok' : score >= 75 ? 'accent' : score >= 60 ? 'warn' : 'danger';
+}
+
 export function statusBadge(value) {
   if (!value) return null;
   return badge(sentence(value), STATUS_TONES[value] ?? '');

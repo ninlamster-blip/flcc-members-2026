@@ -122,15 +122,31 @@ Roles carry sets of permissions; users may hold extra `grants` and
 `revocations`, with revocation winning. Nobody can assign a role above their
 own rank.
 
+`ministry_head` holds `leadership:read`/`write` — running one ministry
+includes running its workspace and schedule in the leadership hub, which is
+why that role reaches further into `leadership` than its rank alone would
+suggest. Ministry-*instance* scoping (a ministry head should only edit their
+own ministry's meetings, not every church's) is enforced at the workspace
+boundary (`canAccessMinistryWorkspace` in `policies.js`), not at the
+permission level — the permission system stays coarse-grained, matching how
+every other resource in the app works (a treasurer can edit any finance
+record, not one department's). A true per-instance ACL is a deeper change,
+not attempted here.
+
 ## Intelligence
 
 `ai.js` has two halves that must not be confused:
 
 - `computeInsights(db, user)` and the functions under it — `absentMembers`,
   `attendanceTrend`, `volunteerShortages`, `financeSnapshot`,
-  `upcomingCelebrations`, `suggestVolunteers` — are pure computation over the
-  church's own records, permission-filtered, no network. Everything on the
-  dashboard's "Shepherd noticed" comes from here and works offline.
+  `upcomingCelebrations`, `suggestVolunteers`, `ministryHealthScore`,
+  `buildBriefing`, `suggestForRole` — are pure computation over the church's
+  own records, permission-filtered, no network. Everything on the
+  dashboard's "Shepherd noticed", the AI executive briefing, ministry health
+  scores and the worship-schedule assignment suggestions comes from here and
+  works offline. `ministryHealthScore` returns its breakdown alongside the
+  score deliberately — the UI shows the four factors, not just a number, so
+  the heuristic stays inspectable rather than a black box.
 - `Assistant.run(task, input)` drafts. With an endpoint configured it calls a
   model; without one it returns `buildLocalDraft(...)`, which is a real
   artefact assembled from the church's records, not a placeholder. A failed
@@ -138,6 +154,9 @@ own rank.
 
 Every result is `{ aiGenerated: true, model, source, createdAt }` and is
 rendered through `aiOutput()`, which cannot display it without the badge.
+`buildBriefing` and the insight functions carry no such label — like the
+rest of the insights layer, they are facts the church already has, formatted
+for a two-second read, not a model's output.
 
 ## Routing
 

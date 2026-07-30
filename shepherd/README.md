@@ -46,7 +46,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
 | **Worship** | Song library searchable by theme, key, mood, season, language and lyrics; setlists; team and rehearsals |
 | **Preaching** | Sermon archive, series planning, illustrations and quotes, and an assistant that drafts the work *around* the sermon |
-| **Leadership** | Committees, minutes, action items with owners and dates, a decision log that keeps the rationale, annual goals |
+| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
 | **Finance** | Giving, expenses, budgets, projects, approvals — encrypted, role-restricted, exportable |
 | **Document vault** | Encrypted files with version history, fingerprints and expiry reminders |
 | **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
@@ -54,6 +54,58 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Reports** | Attendance, growth, volunteers, giving, prayer, events — PDF, Excel, CSV |
 | **Assistant** | Everything Shepherd noticed, and every drafting task, in one place |
 | **Settings** | Church profile, users and roles, security, AI, backup, audit log |
+
+## The leadership operating system
+
+Signing in shows a dashboard shaped by what you actually lead, not a generic
+one:
+
+- **Senior Pastor** and **Finance (treasurer)** get their own layout — a
+  church-wide overview with ministry health across every ministry, or a
+  finance-specific view with approvals, ministry spending and audit
+  reminders.
+- Whoever leads a specific **ministry** (Worship, Children, Youth, Evangelism,
+  Discipleship, or any other) gets that ministry's own card, task list and
+  health score, plus quick actions into its workspace and the worship
+  schedule.
+- Everyone gets an **AI executive briefing** — "3 upcoming services, 1
+  wedding anniversary, 2 finance entries awaiting approval" — computed the
+  same way as the rest of the insights layer: on-device, from this church's
+  own records, permission-filtered, no model involved.
+
+Behind the dashboard, **Leadership** in the sidebar holds the rest of it:
+
+- **Ministry workspaces** — each ministry's roster, open tasks, annual plan,
+  tagged documents and a computed health score, open only to that ministry's
+  recorded lead (or church-wide leadership).
+- **Annual worship service schedule** — one record per service with every
+  role named (preacher, worship leader, song leader, media, sound, ushers,
+  children's teachers, youth leader), a **smart assignment** suggestion per
+  empty role (whoever matches the ministry, served least recently, isn't
+  already on that service, and isn't marked away), and PDF/Excel/CSV export.
+- **My tasks** — action items, event jobs and care visits assigned to you,
+  wherever they came from, in one Today/Overdue/Upcoming/Completed view.
+- **Ministry health** — a transparent 0–100 score per ministry from task
+  completion, overdue work, volunteer coverage and recent activity, with its
+  breakdown shown, not hidden behind a single number.
+- **Leadership directory**, **annual planner** (vision, objectives, KPIs,
+  budget, quarterly review per ministry per year), and a **timeline** — a
+  day-grouped feed built from the real audit log, so it only ever shows what
+  actually happened, filtered to what the reader may see.
+
+Five of the ministry-specific dashboards (Worship, Children, Youth,
+Evangelism, Discipleship) deliberately share one adaptable template rather
+than each inventing its own widgets — Shepherd doesn't track a memory-verse
+rotation or a discipleship pathway yet, so the shared template shows what is
+genuinely backed by data (roster, tasks, health, shortages) instead of
+fabricating the rest. A ministry lead needs their user account linked to
+their member profile (**Settings → Users & roles**) for their personalised
+dashboard, task list and workspace access to resolve.
+
+Shepherd deliberately does **not** treat the FLCC Members app's member data
+as a shared database — see "Multi-church" in the repository root's
+`CLAUDE.md`. Each product keeps its own storage; nothing here reads or
+writes `church.js` or the `churches/` data files.
 
 ## Roles
 

@@ -17,7 +17,7 @@ import { COUNTRIES } from '../core/tenant.js';
 import { generateTotpSecret, totpUri, verifyTotp } from '../core/crypto.js';
 import { downloadJSON } from '../core/exporters.js';
 import { seedTenant, clearSeedData } from '../core/seed.js';
-import { sentence, deleteRecord } from './_shared.js';
+import { sentence, deleteRecord, refOptions } from './_shared.js';
 
 export async function render(ctx, route) {
   const tab = route.query.tab || 'church';
@@ -209,6 +209,7 @@ function addUser(ctx) {
     value: 'volunteer',
   });
   const passInput = input({ type: 'password', required: true, autocomplete: 'new-password' });
+  const memberSelect = select({ options: refOptions(ctx.db, 'members', { emptyLabel: 'Not linked yet' }), value: '' });
 
   formModal({
     title: 'Add a user',
@@ -221,19 +222,25 @@ function addUser(ctx) {
         field({ label: 'Full name', control: nameInput, full: true }),
         field({ label: 'Email', control: emailInput }),
         field({ label: 'Role', control: roleSelect }),
-        field({ label: 'Initial passphrase', control: passInput, help: 'At least 10 characters.' })),
+        field({ label: 'Initial passphrase', control: passInput, help: 'At least 10 characters.' }),
+        field({
+          label: 'Linked member profile', control: memberSelect, full: true,
+          help: 'Ties this account to a person record — needed for their personalised leadership dashboard, ministry workspace access and task list.',
+        })),
     ],
     onSubmit: async () => {
-      await ctx.session.createUser({
+      const created = await ctx.session.createUser({
         db: ctx.db,
         actorVaultKey: ctx.session.vaultKey,
         name: nameInput.value,
         email: emailInput.value,
         role: roleSelect.value,
         passphrase: passInput.value,
+        memberId: memberSelect.value || null,
       });
       toast(`${nameInput.value} can now sign in.`, { variant: 'ok' });
       ctx.refresh();
+      return created;
     },
   });
 }
@@ -245,6 +252,7 @@ function editUser(ctx, user) {
   });
   let suspended = !!user.suspended;
   const suspendBox = checkbox({ label: 'Suspend this account', checked: suspended, onChange: (value) => { suspended = value; } });
+  const memberSelect = select({ options: refOptions(ctx.db, 'members', { emptyLabel: 'Not linked' }), value: user.memberId || '' });
 
   const grants = new Set(user.grants || []);
   const grantOptions = ['counseling:read', 'counseling:write', 'finance:read', 'finance:approve', 'documents:write', 'audit:read'];
@@ -260,6 +268,10 @@ function editUser(ctx, user) {
     fields: [
       h('p.small.muted', `${user.email} · last signed in ${user.lastLoginAt ? relativeTime(user.lastLoginAt) : 'never'}`),
       field({ label: 'Role', control: roleSelect }),
+      field({
+        label: 'Linked member profile', control: memberSelect,
+        help: 'Needed to match this leader to a ministry, a rota assignment, and their own task list.',
+      }),
       h('div.field',
         h('label.field__label', 'Extra permissions'),
         h('p.tiny.subtle', 'Granted on top of the role. Use sparingly — the role is the thing people understand.'),
@@ -270,7 +282,9 @@ function editUser(ctx, user) {
         ...user.devices.map((device) => h('p.tiny.subtle', `${device.label} · last seen ${relativeTime(device.lastSeenAt)}`))) : null,
     ],
     onSubmit: async () => {
-      ctx.db.update('users', user.id, { role: roleSelect.value, suspended, grants: [...grants] });
+      ctx.db.update('users', user.id, {
+        role: roleSelect.value, suspended, grants: [...grants], memberId: memberSelect.value || null,
+      });
       ctx.db.log('users.update', `${user.name}: role ${roleSelect.value}${suspended ? ', suspended' : ''}.`);
       await ctx.db.flush();
       toast('Saved.', { variant: 'ok' });
