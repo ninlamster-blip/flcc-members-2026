@@ -18,8 +18,8 @@ import { can, ROLES } from '../js/core/rbac.js';
 
 const CHURCH_ADMIN = { id: 'u1', name: 'Ruth', role: 'church_admin' };
 
-async function tenantDb(actor = CHURCH_ADMIN) {
-  return new Database({ tenantId: 'grace', storage: memoryStorage(), actor }).open();
+async function tenantDb(actor = CHURCH_ADMIN, storage = memoryStorage()) {
+  return new Database({ tenantId: 'grace', storage, actor }).open();
 }
 
 /* ── ministry health ─────────────────────────────────────────────────────── */
@@ -162,11 +162,70 @@ test('ledMinistries finds exactly the ministries this account leads', async () =
 
 /* ── RBAC: a ministry head can reach the leadership hub ─────────────────── */
 
-test('a ministry head can read and write the leadership hub, to run their own workspace', () => {
+test('a ministry head reads the whole leadership hub, but holds no blanket write', () => {
   const ministryHead = { role: 'ministry_head' };
   assert.equal(can(ministryHead, 'leadership:read'), true);
-  assert.equal(can(ministryHead, 'leadership:write'), true);
+  assert.equal(can(ministryHead, 'leadership:write'), false, 'writing is scoped per-record, not granted church-wide');
   assert.ok(ROLES.ministry_head.permissions.includes('leadership:read'));
+  assert.ok(!ROLES.ministry_head.permissions.includes('leadership:write'));
+});
+
+/* ── per-instance ministry write scoping (enforced in Database, not just UI) */
+
+test('a ministry head writes their own ministry\'s tasks and plan, not another\'s', async () => {
+  const storage = memoryStorage();
+  const setup = await tenantDb(CHURCH_ADMIN, storage);
+  const lead = setup.insert('members', blank('members', { fullName: 'Ministry Lead', status: 'member' }));
+  const worship = setup.insert('ministries', blank('ministries', { name: 'Worship', leadId: lead.id }));
+  const youth = setup.insert('ministries', blank('ministries', { name: 'Youth', leadId: 'someone-else' }));
+  await setup.flush();
+
+  const head = { id: 'u-head', role: 'ministry_head', memberId: lead.id };
+  const db = new Database({ tenantId: 'grace', storage, actor: head });
+  await db.open();
+
+  // Their own ministry: allowed.
+  const ownTask = db.insert('actionItems', { title: 'Book the sound engineer', ministryId: worship.id });
+  assert.equal(ownTask.ministryId, worship.id);
+  db.update('actionItems', ownTask.id, { status: 'done' });
+  assert.equal(db.find('actionItems', ownTask.id).status, 'done');
+
+  const ownPlan = db.insert('annualPlans', { ministryId: worship.id, year: 2026, title: 'Worship Plan' });
+  db.update('annualPlans', ownPlan.id, { vision: 'Grow the team' });
+  assert.equal(db.find('annualPlans', ownPlan.id).vision, 'Grow the team');
+
+  // Someone else's ministry: refused.
+  assert.throws(() => db.insert('actionItems', { title: 'Plan the youth retreat', ministryId: youth.id }), /permission/i);
+  assert.throws(() => db.insert('annualPlans', { ministryId: youth.id, year: 2026, title: 'Youth Plan' }), /permission/i);
+
+  // No ministry at all (an unscoped, church-wide item): also refused.
+  assert.throws(() => db.insert('actionItems', { title: 'General action, nobody\'s ministry' }), /permission/i);
+
+  // Church-wide governance with no ministry dimension: read-only for a ministry head.
+  assert.throws(() => db.insert('meetings', { title: 'Council', date: '2026-01-01' }), /permission/i);
+  assert.equal(can(head, 'leadership:read'), true, 'but they can still see meetings, decisions, goals and committees');
+});
+
+test('completing your own assigned task works regardless of which ministry it belongs to', async () => {
+  const storage = memoryStorage();
+  const setup = await tenantDb(CHURCH_ADMIN, storage);
+  const worker = setup.insert('members', blank('members', { fullName: 'Task Owner', status: 'member' }));
+  const someoneElse = setup.insert('members', blank('members', { fullName: 'Someone Else', status: 'member' }));
+  const worship = setup.insert('ministries', blank('ministries', { name: 'Worship' }));
+  const ownTask = setup.insert('actionItems', { title: 'Set up chairs', ownerId: worker.id, ministryId: worship.id });
+  const othersTask = setup.insert('actionItems', { title: 'Print the bulletin', ownerId: someoneElse.id, ministryId: worship.id });
+  await setup.flush();
+
+  // A ministry head who leads nothing, but owns one of these two tasks.
+  const nobody = { id: 'u-nobody', role: 'ministry_head', memberId: worker.id };
+  const db = new Database({ tenantId: 'grace', storage, actor: nobody });
+  await db.open();
+
+  db.update('actionItems', ownTask.id, { status: 'done' });
+  assert.equal(db.find('actionItems', ownTask.id).status, 'done');
+
+  // But not someone else's task in that same ministry, since they lead neither.
+  assert.throws(() => db.update('actionItems', othersTask.id, { status: 'done' }), /permission/i);
 });
 
 /* ── schema ──────────────────────────────────────────────────────────────── */

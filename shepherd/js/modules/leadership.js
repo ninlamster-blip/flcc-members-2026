@@ -19,7 +19,7 @@ import {
   page, card, table, list, listItem, emptyState, badge, segmented, statCard, avatar,
   toast, aiOutput, progress, searchField, modal, field, textarea,
 } from '../core/ui.js';
-import { formatDate, formatDateTime, formatMoney, relativeTime, isoDate, daysBetween } from '../core/format.js';
+import { formatDate, formatDateTime, formatMoney, formatDateParts, relativeTime, isoDate, daysBetween } from '../core/format.js';
 import { COLLECTIONS } from '../core/schema.js';
 import {
   openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord, healthTone,
@@ -27,7 +27,7 @@ import {
 import {
   ministryHealthScore, suggestForRole, SERVICE_ROLE_FIELDS, serviceAssignees,
 } from '../core/ai.js';
-import { canAccessMinistryWorkspace } from '../core/policies.js';
+import { canAccessMinistryWorkspace, canWriteActionItem, ledMinistries } from '../core/policies.js';
 import { roleLabel } from '../core/rbac.js';
 import { downloadCSV, downloadExcel, printReport } from '../core/exporters.js';
 
@@ -72,7 +72,9 @@ export async function render(ctx, route) {
       tab === 'schedule'
         ? newButton(ctx, 'worship', 'New service', () => openRecordModal(ctx, { collection: 'serviceSchedule', fields: SERVICE_FIELDS }))
         : tab === 'planner'
-          ? newButton(ctx, 'leadership', 'New plan', () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year: new Date().getFullYear() } }))
+          ? (canPlanAnything(ctx)
+            ? h('button.btn.btn--primary', { onClick: () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year: new Date().getFullYear() } }) }, icon('plus', { size: 16 }), 'New plan')
+            : null)
           : newButton(ctx, 'leadership', 'New meeting', () => openRecordModal(ctx, { collection: 'meetings', fields: MEETING_FIELDS })),
     ].filter(Boolean),
     children: [
@@ -265,12 +267,15 @@ async function summarise(ctx, meeting, host) {
 function actionRow(ctx, action) {
   const { db } = ctx;
   const overdue = action.dueDate && new Date(action.dueDate) < new Date() && action.status !== 'done';
+  // Full leadership can edit any action item; otherwise the same scoped rule
+  // the database itself enforces — your own ministry's, or your own assignment.
+  const mayWrite = ctx.can('leadership:write') || canWriteActionItem(ctx.user, action, db);
   return h('div.list__item',
     h('input', {
       type: 'checkbox',
       checked: action.status === 'done',
       'aria-label': `Mark "${action.title}" done`,
-      disabled: !ctx.can('leadership:write'),
+      disabled: !mayWrite,
       onChange: async (e) => {
         ctx.db.update('actionItems', action.id, { status: e.target.checked ? 'done' : 'open' });
         await ctx.db.flush();
@@ -284,7 +289,7 @@ function actionRow(ctx, action) {
         action.dueDate ? `due ${formatDate(action.dueDate)}` : 'no date',
       ].join(' · '))),
     overdue ? badge('Overdue', 'danger') : statusBadge(action.status),
-    ctx.can('leadership:write')
+    mayWrite
       ? h('button.icon-btn', { 'aria-label': 'Edit', onClick: () => openRecordModal(ctx, { collection: 'actionItems', doc: action }) }, icon('edit', { size: 15 }))
       : null);
 }
@@ -542,10 +547,11 @@ function ministryWorkspaceDetail(ctx, ministry) {
       : emptyState({ title: 'Nobody recorded yet', detail: 'Set this ministry on a member\'s profile in People.', iconName: 'users' })],
   });
 
+  const canManage = canAccessMinistryWorkspace(ctx.user, ministry);
   const tasksCard = card({
     title: 'Tasks',
     subtitle: `${openTasks.length} open`,
-    actions: [ctx.can('leadership:write')
+    actions: [canManage
       ? h('button.btn.btn--sm', { onClick: () => openRecordModal(ctx, { collection: 'actionItems', defaults: { ministryId: ministry.id }, hidden: ['ministryId'] }) }, icon('plus', { size: 14 }), 'Add')
       : null].filter(Boolean),
     children: [openTasks.length
@@ -555,7 +561,7 @@ function ministryWorkspaceDetail(ctx, ministry) {
 
   const planCard = card({
     title: `${year} plan`,
-    actions: [ctx.can('leadership:write')
+    actions: [canManage
       ? h('button.btn.btn--sm', {
         onClick: () => openRecordModal(ctx, {
           collection: 'annualPlans', doc: plan, fields: PLAN_FIELDS,
@@ -602,6 +608,7 @@ function ministryWorkspaceDetail(ctx, ministry) {
 function scheduleTab(ctx, route) {
   const { db } = ctx;
   const year = Number(route.query.year) || new Date().getFullYear();
+  const view = route.query.view === 'calendar' ? 'calendar' : 'list';
   const records = db.where('serviceSchedule', (s) => new Date(s.date).getFullYear() === year)
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -613,22 +620,90 @@ function scheduleTab(ctx, route) {
     h('div.row.row--wrap',
       h('select.select', {
         style: { maxWidth: '120px' }, 'aria-label': 'Year',
-        onChange: (e) => ctx.navigate(`/leadership?tab=schedule&year=${e.target.value}`),
+        onChange: (e) => ctx.navigate(`/leadership?tab=schedule&view=${view}&year=${e.target.value}`),
       }, ...yearList.map((y) => h('option', { value: y, selected: y === year }, String(y)))),
+      segmented({
+        options: [{ value: 'list', label: 'List' }, { value: 'calendar', label: 'Calendar' }],
+        value: view,
+        onChange: (v) => ctx.navigate(`/leadership?tab=schedule&view=${v}&year=${year}`),
+      }),
       h('div.spacer'),
       records.length ? h('button.btn.btn--sm', { onClick: () => exportSchedule(ctx, records, 'excel') }, icon('download', { size: 14 }), 'Excel') : null,
       records.length ? h('button.btn.btn--sm', { onClick: () => exportSchedule(ctx, records, 'csv') }, icon('download', { size: 14 }), 'CSV') : null,
       records.length ? h('button.btn.btn--sm', { onClick: () => printSchedule(ctx, records, year) }, icon('file', { size: 14 }), 'Print / PDF') : null),
-    records.length
-      ? h('div.stack.stack--sm', ...records.map((record) => serviceRow(ctx, record)))
-      : emptyState({
+    !records.length
+      ? emptyState({
         title: `No services scheduled in ${year}`,
         detail: 'One record per service, with every role — preacher, worship, media, sound, ushers, teachers.',
         iconName: 'calendar',
         action: newButton(ctx, 'worship', 'New service', () => openRecordModal(ctx, {
           collection: 'serviceSchedule', fields: SERVICE_FIELDS, defaults: { date: isoDate(new Date()) },
         })),
-      }));
+      })
+      : view === 'calendar'
+        ? scheduleCalendar(ctx, records, year)
+        : h('div.stack.stack--sm', ...records.map((record) => serviceRow(ctx, record))));
+}
+
+/** A wall-calendar view of the year: one grid per month, each staffed service coloured by how complete its roster is. */
+function scheduleCalendar(ctx, records, year) {
+  const byDate = new Map();
+  for (const record of records) {
+    if (!byDate.has(record.date)) byDate.set(record.date, []);
+    byDate.get(record.date).push(record);
+  }
+  return h('div.stack',
+    h('div.cal-legend',
+      h('span.small.muted', 'Fully staffed'), dotBadge('ok'),
+      h('span.small.muted', 'Partly staffed'), dotBadge('warn'),
+      h('span.small.muted', 'Nothing assigned'), dotBadge('danger')),
+    h('div.cal-year', ...Array.from({ length: 12 }, (_, month) => monthGrid(ctx, year, month, byDate))));
+}
+
+function dotBadge(tone) {
+  return h('span.cal-day__dot', { class: `cal-day--${tone}`, style: { width: '10px', height: '10px', borderRadius: '50%' } });
+}
+
+function monthGrid(ctx, year, month, byDate) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = new Date(year, month, 1).getDay();
+  const cells = [];
+  for (let i = 0; i < startOffset; i += 1) cells.push(h('div.cal-day.cal-day--empty'));
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateKey = isoDate(new Date(year, month, day));
+    cells.push(dayCell(ctx, day, dateKey, byDate.get(dateKey) || []));
+  }
+  return h('div.cal-month',
+    h('h3.cal-month__title', formatDateParts(new Date(year, month, 1), { month: 'long' })),
+    h('div.cal-grid.cal-grid--head', ...['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w) => h('span.cal-weekday', w))),
+    h('div.cal-grid', ...cells));
+}
+
+function dayCell(ctx, day, dateKey, dayRecords) {
+  if (!dayRecords.length) return h('div.cal-day', h('span', String(day)));
+  const tone = staffingTone(dayRecords);
+  return h('button.cal-day.cal-day--has', {
+    type: 'button',
+    class: `cal-day--${tone}`,
+    'aria-label': `${dayRecords.length > 1 ? `${dayRecords.length} services` : dayRecords[0].service} on ${formatDate(dateKey)}`,
+    onClick: () => openDayModal(ctx, dateKey, dayRecords),
+  }, h('span', String(day)), h('span.cal-day__dot'));
+}
+
+/** Fully staffed only if every service that day fills every named role. */
+function staffingTone(dayRecords) {
+  const ratios = dayRecords.map((r) => SERVICE_ROLE_FIELDS.filter(([key]) => r[key]).length / SERVICE_ROLE_FIELDS.length);
+  if (ratios.every((r) => r >= 1)) return 'ok';
+  if (ratios.every((r) => r <= 0)) return 'danger';
+  return 'warn';
+}
+
+function openDayModal(ctx, dateKey, dayRecords) {
+  const ref = modal({
+    title: formatDate(dateKey, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    body: h('div.stack.stack--sm', ...dayRecords.map((record) => serviceRow(ctx, record))),
+    actions: [h('button.btn', { onClick: () => ref.close() }, 'Close')],
+  });
 }
 
 function serviceRow(ctx, record) {
@@ -878,7 +953,8 @@ function plannerTab(ctx) {
               ? h('div', { style: { marginTop: '8px' } }, h('p.eyebrow', 'KPIs'), h('div.chip-list', ...plan.kpis.map((k) => h('span.chip', k))))
               : null,
             plan.budget ? h('p.small', { style: { marginTop: '8px' } }, `Budget: ${formatMoney(plan.budget)}`) : null,
-            ctx.can('leadership:write')
+            // Full leadership manages any plan; a ministry head only theirs.
+            (ctx.can('leadership:write') || ledMinistries(db, ctx.user).some((m) => m.id === plan.ministryId))
               ? h('div.row', { style: { marginTop: '10px' } },
                 h('button.btn.btn--sm', { onClick: () => openRecordModal(ctx, { collection: 'annualPlans', doc: plan, fields: PLAN_FIELDS }) }, 'Edit'),
                 h('button.btn.btn--sm', { onClick: () => quarterlyReview(ctx, plan) }, 'Quarterly review'))
@@ -890,8 +966,15 @@ function plannerTab(ctx) {
         title: 'No annual plans yet',
         detail: 'Vision, objectives, KPIs, budget and volunteer needs, per ministry, per year — reviewed each quarter.',
         iconName: 'chart',
-        action: newButton(ctx, 'leadership', 'New plan', () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year } })),
+        action: canPlanAnything(ctx)
+          ? h('button.btn.btn--primary', { onClick: () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year } }) }, icon('plus', { size: 16 }), 'New plan')
+          : null,
       }));
+}
+
+/** Full leadership, or leads at least one ministry worth planning for. */
+function canPlanAnything(ctx) {
+  return ctx.can('leadership:write') || ledMinistries(ctx.db, ctx.user).length > 0;
 }
 
 function quarterlyReview(ctx, plan) {

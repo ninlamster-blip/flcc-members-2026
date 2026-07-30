@@ -27,7 +27,7 @@
 
 import { uid } from './id.js';
 import { namespaced, tenantPrefix } from './storage.js';
-import { assertCan } from './rbac.js';
+import { can, assertCan, PermissionError } from './rbac.js';
 import { collectionDef, COLLECTION_NAMES, validate, docTitle } from './schema.js';
 import { encryptJSON, decryptJSON, isCiphertext } from './crypto.js';
 
@@ -175,6 +175,21 @@ export class Database {
     return map;
   }
 
+  /**
+   * The resource-level check (`${resource}:write`) is the common case. A
+   * collection can additionally declare `instanceWrite(user, record, db)` in
+   * its schema definition for a narrower, record-specific allowance — e.g. a
+   * ministry head who does not hold blanket `leadership:write` but may still
+   * write their own ministry's tasks and plan (see core/policies.js). Either
+   * one is enough; neither means the write is refused, here, not just in
+   * the UI that happened to ask for it.
+   */
+  _assertWritable(def, record) {
+    if (can(this.actor, `${def.resource}:write`)) return;
+    if (typeof def.instanceWrite === 'function' && def.instanceWrite(this.actor, record, this)) return;
+    throw new PermissionError(`${def.resource}:write`);
+  }
+
   /* ── writes ────────────────────────────────────────────────────────── */
 
   /**
@@ -184,8 +199,6 @@ export class Database {
    */
   insert(collection, doc, opts = {}) {
     const def = collectionDef(collection);
-    if (!opts.skipPermission) assertCan(this.actor, `${def.resource}:write`);
-
     const now = new Date().toISOString();
     const record = {
       ...doc,
@@ -195,6 +208,8 @@ export class Database {
       createdBy: doc.createdBy || (this.actor && this.actor.id) || null,
       updatedBy: (this.actor && this.actor.id) || null,
     };
+    if (!opts.skipPermission) this._assertWritable(def, record);
+
     const result = validate(collection, record);
     if (!result.ok) throw new ValidationError(result.errors);
 
@@ -207,8 +222,6 @@ export class Database {
 
   update(collection, id, patch, opts = {}) {
     const def = collectionDef(collection);
-    if (!opts.skipPermission) assertCan(this.actor, `${def.resource}:write`);
-
     const existing = this._map(collection).get(id);
     if (!existing) throw new Error(`${def.label}: no record ${id}`);
 
@@ -219,6 +232,8 @@ export class Database {
       updatedAt: new Date().toISOString(),
       updatedBy: (this.actor && this.actor.id) || null,
     };
+    if (!opts.skipPermission) this._assertWritable(def, record);
+
     const result = validate(collection, record);
     if (!result.ok) throw new ValidationError(result.errors);
 

@@ -106,6 +106,34 @@ export function knowledgeMayUse(collection) {
  */
 export const NEVER_INDEXED = KNOWLEDGE_EXCLUDED;
 
+/* ── leadership: ministry-scoped instance write ─────────────────────────── */
+
+/**
+ * `leadership:write` is a broad grant across meetings, decisions,
+ * committees, goals, action items and annual plans — right for a
+ * church-wide leadership role, wrong for a ministry head, who should be able
+ * to touch only the two record types that actually carry a `ministryId`:
+ * their own ministry's tasks and its annual plan. Meetings, decisions,
+ * committees and goals have no ministry dimension in the data model (a
+ * "meeting" belongs to a committee, which is a different thing from a
+ * ministry by design), so there is no honest way to scope those down —
+ * `ministry_head` gets `leadership:read` for them and nothing narrower.
+ *
+ * These are the fallback `Database.insert`/`update` checks when the coarse
+ * `leadership:write` permission is absent (see `Database._assertWritable`
+ * and each collection's `instanceWrite` in schema.js).
+ */
+export function canWriteActionItem(user, record, db) {
+  if (user && user.memberId && record.ownerId === user.memberId) return true; // completing your own assignment is always yours to do
+  if (!record.ministryId) return false;
+  return ledMinistries(db, user).some((m) => m.id === record.ministryId);
+}
+
+export function canWriteAnnualPlan(user, record, db) {
+  if (!record.ministryId) return false;
+  return ledMinistries(db, user).some((m) => m.id === record.ministryId);
+}
+
 /* ── ministry workspaces ─────────────────────────────────────────────────── */
 
 /**

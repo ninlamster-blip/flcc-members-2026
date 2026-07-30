@@ -30,6 +30,8 @@
  * @property {Record<string, FieldDef>} fields
  */
 
+import { canWriteActionItem, canWriteAnnualPlan } from './policies.js';
+
 const person = {
   fullName:     { label: 'Full name', type: 'string', required: true },
   preferredName:{ label: 'Preferred name', type: 'string' },
@@ -188,6 +190,7 @@ export const COLLECTIONS = {
     resource: 'leadership',
     titleField: 'title',
     searchable: ['title', 'detail'],
+    instanceWrite: canWriteActionItem,
     fields: {
       title:    { label: 'Action', type: 'string', required: true },
       detail:   { label: 'Detail', type: 'text' },
@@ -260,6 +263,7 @@ export const COLLECTIONS = {
     resource: 'leadership',
     titleField: 'title',
     searchable: ['title', 'vision', 'objectives'],
+    instanceWrite: canWriteAnnualPlan,
     fields: {
       ministryId:  { label: 'Ministry', type: 'ref', ref: 'ministries', required: true },
       year:        { label: 'Year', type: 'number', required: true },

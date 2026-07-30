@@ -108,12 +108,12 @@ export const ROLES = {
   ministry_head: {
     label: 'Ministry Head',
     rank: 40,
-    description: 'Runs one ministry: its people, rota, events and requests, and its own workspace in the leadership hub.',
+    description: 'Runs one ministry: its people, rota, events and requests, and its own workspace in the leadership hub. Reads the whole leadership hub, but can only write its own ministry\'s tasks and annual plan — not another ministry\'s, nor church-wide meetings and decisions.',
     permissions: [
       'dashboard:read', 'members:read', 'care:read', 'worship:read', 'worship:write',
       'prayer:read', 'prayer:write', 'events:read', 'events:write', 'documents:read',
       'knowledge:read', 'communications:read', 'communications:write', 'reports:read',
-      'assistant:read', 'assistant:write', 'leadership:read', 'leadership:write',
+      'assistant:read', 'assistant:write', 'leadership:read',
     ],
   },
   treasurer: {

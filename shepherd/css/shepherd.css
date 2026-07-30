@@ -620,6 +620,30 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
   border: 1px dashed var(--border-2); border-radius: var(--radius); color: var(--ink-2);
 }
 
+/* ── worship schedule calendar ───────────────────────────────────────────── */
+.cal-year { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--space-4); }
+.cal-month {
+  border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3);
+  background: var(--surface);
+}
+.cal-month__title { font-size: 0.875rem; margin-bottom: var(--space-2); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-grid--head { margin-bottom: 4px; }
+.cal-weekday { font-size: 0.625rem; color: var(--ink-3); text-align: center; }
+.cal-day {
+  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; border-radius: 6px; font-size: 0.75rem; color: var(--ink-2);
+  border: 1px solid transparent; background: none; font-family: inherit; padding: 0;
+}
+.cal-day--empty { visibility: hidden; }
+.cal-day--has { cursor: pointer; font-weight: 600; }
+.cal-day--has:hover, .cal-day--has:focus-visible { border-color: var(--border-2); }
+.cal-day--ok { background: var(--ok-soft); color: var(--ok); }
+.cal-day--warn { background: var(--warn-soft); color: var(--warn); }
+.cal-day--danger { background: var(--danger-soft); color: var(--danger); }
+.cal-day__dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; }
+
 @media print {
   .sidebar, .topbar, .tabbar, .fab, .toasts, .no-print { display: none !important; }
   .app { display: block; }
