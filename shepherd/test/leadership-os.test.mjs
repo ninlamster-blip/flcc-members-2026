@@ -11,9 +11,9 @@ import { Database } from '../js/core/db.js';
 import { blank } from '../js/core/schema.js';
 import { isoDate, addDays } from '../js/core/format.js';
 import {
-  ministryHealthScore, ministryHealthTrend, churchHealthOverview, buildBriefing, suggestForRole,
-  serviceAssignees, SERVICE_ROLE_FIELDS, CORE_SERVICE_ROLES, SERVICE_TEMPLATES, serviceReadiness,
-  worshipShortages,
+  ministryHealthScore, ministryHealthTrend, churchHealthOverview, successionRisk, volunteerWellBeing,
+  buildBriefing, suggestForRole, serviceAssignees, SERVICE_ROLE_FIELDS, CORE_SERVICE_ROLES,
+  SERVICE_TEMPLATES, serviceReadiness, worshipShortages,
 } from '../js/core/ai.js';
 import { canAccessMinistryWorkspace, ledMinistries, isCommunionScheduled } from '../js/core/policies.js';
 import { can, ROLES } from '../js/core/rbac.js';
@@ -167,6 +167,99 @@ test('church health overview recommends only on dimensions that are actually str
     const dim = overview.dimensions.find((d) => rec.startsWith(d.label));
     assert.ok(dim && (dim.status === 'critical' || dim.status === 'needs-attention'));
   }
+});
+
+/* ── succession planning ──────────────────────────────────────────────────── */
+
+test('successionRisk flags a ministry with no lead, and one with a lead but no deputy or bench, as urgent', async () => {
+  const db = await tenantDb();
+  const leaderless = db.insert('ministries', blank('ministries', { name: 'Missions' }));
+  const soloLed = db.insert('ministries', blank('ministries', { name: 'Youth' }));
+  const soloMember = db.insert('members', blank('members', { fullName: 'Solo Lead', status: 'member', ministries: ['Youth'] }));
+  db.update('ministries', soloLed.id, { leadId: soloMember.id });
+
+  const risks = successionRisk(db);
+  const missions = risks.find((r) => r.id === leaderless.id);
+  const youth = risks.find((r) => r.id === soloLed.id);
+  assert.equal(missions.risk, 'urgent');
+  assert.match(missions.reason, /no one currently leads/i);
+  assert.equal(youth.risk, 'urgent');
+  assert.match(youth.reason, /no deputy/i);
+});
+
+test('successionRisk downgrades to attention once a bench exists, and to low risk once a deputy is also named alongside a bench', async () => {
+  const db = await tenantDb();
+  const ministry = db.insert('ministries', blank('ministries', { name: 'Worship' }));
+  const lead = db.insert('members', blank('members', { fullName: 'Lead', status: 'member', ministries: ['Worship'] }));
+  const helper = db.insert('members', blank('members', { fullName: 'Helper', status: 'member', ministries: ['Worship'] }));
+  db.update('ministries', ministry.id, { leadId: lead.id });
+
+  const withBench = successionRisk(db).find((r) => r.id === ministry.id);
+  assert.equal(withBench.risk, 'attention');
+  assert.equal(withBench.bench, 1);
+
+  // Naming the only other server as deputy leaves no one else at all —
+  // still a real risk, just a different one (no reason to call it "low").
+  db.update('ministries', ministry.id, { deputyId: helper.id });
+  const deputyButNoBench = successionRisk(db).find((r) => r.id === ministry.id);
+  assert.equal(deputyButNoBench.risk, 'attention');
+  assert.equal(deputyButNoBench.bench, 0);
+
+  const another = db.insert('members', blank('members', { fullName: 'Another', status: 'member', ministries: ['Worship'] }));
+  const withDeputyAndBench = successionRisk(db).find((r) => r.id === ministry.id);
+  assert.equal(withDeputyAndBench.risk, 'info');
+  assert.equal(withDeputyAndBench.hasDeputy, true);
+  assert.equal(withDeputyAndBench.bench, 1);
+  assert.ok(another.id);
+});
+
+test('successionRisk checks committees the same way, by chair and deputy chair', async () => {
+  const db = await tenantDb();
+  const committee = db.insert('committees', blank('committees', { name: 'Building Fund' }));
+  const risks = successionRisk(db);
+  const found = risks.find((r) => r.role === 'committee' && r.id === committee.id);
+  assert.ok(found, 'expected the committee to appear in successionRisk');
+  assert.equal(found.risk, 'urgent');
+});
+
+/* ── volunteer well-being ─────────────────────────────────────────────────── */
+
+test('volunteerWellBeing scores a volunteer in one ministry with no open tasks near 100', async () => {
+  const db = await tenantDb();
+  const member = db.insert('members', blank('members', { fullName: 'Rested Volunteer', status: 'member', ministries: ['Prayer'] }));
+  const wellBeing = volunteerWellBeing(db, { now: new Date() });
+  const entry = wellBeing.find((v) => v.memberId === member.id);
+  assert.ok(entry.score >= 90, `expected a lightly-loaded volunteer to score near 100, got ${entry.score}`);
+  assert.equal(entry.status, 'excellent');
+});
+
+test('volunteerWellBeing scores lower for someone in several ministries with overdue tasks', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const member = db.insert('members', blank('members', {
+    fullName: 'Stretched Volunteer', status: 'member', ministries: ['Worship', 'Youth', 'Ushering'],
+  }));
+  db.insert('eventTasks', blank('eventTasks', {
+    eventId: 'e1', title: 'Overdue one', ownerId: member.id, done: false,
+    dueDate: isoDate(addDays(now, -5)), createdAt: isoDate(addDays(now, -10)),
+  }));
+  db.insert('eventTasks', blank('eventTasks', {
+    eventId: 'e1', title: 'Overdue two', ownerId: member.id, done: false,
+    dueDate: isoDate(addDays(now, -3)), createdAt: isoDate(addDays(now, -10)),
+  }));
+
+  const wellBeing = volunteerWellBeing(db, { now });
+  const entry = wellBeing.find((v) => v.memberId === member.id);
+  assert.equal(entry.ministryCount, 3);
+  assert.equal(entry.overdueTasks, 2);
+  assert.ok(entry.score < 70, `expected a stretched volunteer to score under 70, got ${entry.score}`);
+});
+
+test('volunteerWellBeing only includes members recorded as serving somewhere', async () => {
+  const db = await tenantDb();
+  db.insert('members', blank('members', { fullName: 'Not Serving', status: 'member' }));
+  const wellBeing = volunteerWellBeing(db, { now: new Date() });
+  assert.equal(wellBeing.length, 0);
 });
 
 /* ── AI executive briefing ───────────────────────────────────────────────── */

@@ -26,8 +26,9 @@ import {
   refOptions, friendly,
 } from './_shared.js';
 import {
-  ministryHealthScore, ministryHealthTrend, churchHealthOverview, suggestForRole, SERVICE_ROLE_FIELDS,
-  serviceAssignees, SERVICE_TEMPLATES, EMCEE_RESPONSIBILITIES, serviceReadiness,
+  ministryHealthScore, ministryHealthTrend, churchHealthOverview, successionRisk, volunteerWellBeing,
+  suggestForRole, SERVICE_ROLE_FIELDS, serviceAssignees, SERVICE_TEMPLATES, EMCEE_RESPONSIBILITIES,
+  serviceReadiness,
 } from '../core/ai.js';
 import { canAccessMinistryWorkspace, canWriteActionItem, ledMinistries, isCommunionScheduled } from '../core/policies.js';
 import { roleLabel } from '../core/rbac.js';
@@ -58,6 +59,8 @@ export async function render(ctx, route) {
       : tab === 'tasks' ? tasksTab(ctx)
       : tab === 'health' ? healthTab(ctx)
       : tab === 'churchhealth' ? churchHealthTab(ctx)
+      : tab === 'succession' ? successionTab(ctx)
+      : tab === 'wellbeing' ? wellBeingTab(ctx)
       : tab === 'directory' ? directoryTab(ctx)
       : tab === 'planner' ? plannerTab(ctx)
       : tab === 'timeline' ? timelineTab(ctx)
@@ -95,6 +98,8 @@ export async function render(ctx, route) {
             { value: 'tasks', label: 'My Tasks' },
             { value: 'health', label: 'Ministry Health' },
             { value: 'churchhealth', label: 'Church Health' },
+            { value: 'succession', label: 'Succession' },
+            { value: 'wellbeing', label: 'Volunteer Well-Being' },
             { value: 'directory', label: 'Directory' },
             { value: 'planner', label: 'Annual Planner' },
             { value: 'timeline', label: 'Timeline' },
@@ -1185,6 +1190,63 @@ function churchHealthTab(ctx) {
       })
       : null,
   );
+}
+
+/* ── succession planning ─────────────────────────────────────────────────── */
+
+const RISK_TONES = { urgent: 'danger', attention: 'warn', info: '' };
+const RISK_LABELS = { urgent: 'No plan', attention: 'Partial plan', info: 'Covered' };
+
+function successionTab(ctx) {
+  const { db } = ctx;
+  const risks = successionRisk(db);
+  if (!risks.length) return emptyState({ title: 'No ministries or committees recorded', iconName: 'shield' });
+
+  return h('div.stack',
+    h('p.small.muted', 'Who could step in if a lead had to step back — a named deputy, and how many others are recorded as serving alongside them. Not a judgement of anyone currently leading.'),
+    h('div.grid.grid--2', ...risks.map((r) => card({
+      title: r.name,
+      subtitle: r.role === 'ministry' ? 'Ministry' : 'Committee',
+      actions: [badge(RISK_LABELS[r.risk], RISK_TONES[r.risk])],
+      children: [
+        h('div.stack.stack--sm',
+          h('p.small', `Lead: ${r.hasLead ? memberName(db, r.leadId) : '— none named —'}`),
+          h('p.small', `Deputy: ${r.hasDeputy ? memberName(db, r.deputyId) : '— none named —'}`),
+          h('p.small', `${r.bench} other${r.bench === 1 ? '' : 's'} recorded serving here${r.benchReadiness != null ? ` · averaging ${r.benchReadiness}% leader-training readiness` : ''}`)),
+        h('p.tiny.subtle', { style: { marginTop: '8px' } }, r.reason),
+        h('button.btn.btn--sm', {
+          style: { marginTop: '8px' },
+          onClick: () => (r.role === 'ministry'
+            ? openRecordModal(ctx, { collection: 'ministries', doc: db.find('ministries', r.id) })
+            : openRecordModal(ctx, { collection: 'committees', doc: db.find('committees', r.id) })),
+        }, r.hasDeputy ? 'Edit' : 'Name a deputy'),
+      ],
+    }))));
+}
+
+/* ── volunteer well-being ─────────────────────────────────────────────────── */
+
+function wellBeingTab(ctx) {
+  const { db } = ctx;
+  const wellBeing = volunteerWellBeing(db);
+  if (!wellBeing.length) return emptyState({ title: 'No one is recorded as serving in a ministry yet', iconName: 'heart' });
+
+  return h('div.stack',
+    h('p.small.muted', 'A signal, not a verdict — how many ministries someone serves in, how many tasks and worship-service roles are theirs right now. A falling number is worth a conversation, not an accusation.'),
+    card({
+      children: [table({
+        columns: [
+          { label: 'Volunteer', value: (r) => memberName(db, r.memberId) },
+          { label: 'Ministries', value: (r) => r.ministryCount },
+          { label: 'Open tasks', value: (r) => r.openTasks },
+          { label: 'Overdue', value: (r) => r.overdueTasks },
+          { label: 'Upcoming service roles (8 wks)', value: (r) => r.upcomingRoles },
+          { label: 'Well-being', value: (r) => badge(`${r.score}% ${r.statusLabel}`, healthTone(r.score)) },
+        ],
+        rows: wellBeing,
+        onRowClick: (r) => ctx.navigate(`/members/${r.memberId}`),
+      })],
+    }));
 }
 
 /* ── leadership directory ────────────────────────────────────────────────── */

@@ -816,6 +816,35 @@ export function computeInsights(db, user, opts = {}) {
     }
   }
 
+  /* Ministries and committees that depend on exactly one person continuing. */
+  if (can(user, 'leadership:read')) {
+    const urgentSuccession = successionRisk(db).filter((r) => r.risk === 'urgent');
+    if (urgentSuccession.length) {
+      push({
+        id: 'succession-risk',
+        kind: 'risk',
+        severity: 'attention',
+        title: `${urgentSuccession.length} ${urgentSuccession.length === 1 ? 'role has' : 'roles have'} no succession plan`,
+        detail: urgentSuccession.slice(0, 3).map((r) => `${r.name}: ${r.reason}`).join(' · '),
+        action: '#/leadership?tab=succession',
+        actionLabel: 'Open succession planning',
+      });
+    }
+
+    const overloaded = volunteerWellBeing(db, { now }).filter((v) => v.status === 'critical');
+    if (overloaded.length) {
+      push({
+        id: 'volunteer-load',
+        kind: 'care',
+        severity: 'attention',
+        title: `${overloaded.length} ${overloaded.length === 1 ? 'volunteer is' : 'volunteers are'} carrying an unusually heavy load`,
+        detail: 'Several ministries, a stack of overdue tasks, or a packed worship rota — worth a check-in before it becomes burnout.',
+        action: '#/leadership?tab=wellbeing',
+        actionLabel: 'Open volunteer well-being',
+      });
+    }
+  }
+
   const order = { urgent: 0, attention: 1, info: 2 };
   return out.sort((a, b) => order[a.severity] - order[b.severity]);
 }
@@ -1319,6 +1348,122 @@ export function churchHealthOverview(db, { now = new Date() } = {}) {
       .map((d) => `${d.label}: ${CHURCH_HEALTH_RECOMMENDATIONS[d.key] || 'worth a closer look at the next leadership meeting.'}`),
     notTracked: ['Small Group Participation — Shepherd does not track small groups yet.'],
   };
+}
+
+/* ── succession planning ─────────────────────────────────────────────────── */
+
+const RISK_ORDER = { urgent: 2, attention: 1, info: 0 };
+
+function successionEntry(db, {
+  role, id, name, leadId, deputyId, servingIds,
+}) {
+  const hasLead = !!leadId;
+  const hasDeputy = !!deputyId;
+  const bench = servingIds.filter((memberId) => memberId !== leadId && memberId !== deputyId).length;
+
+  const readinessScores = servingIds
+    .filter((memberId) => memberId !== leadId)
+    .map((memberId) => leadershipReadiness(db, { memberId }))
+    .filter((r) => r.total > 0);
+  const benchReadiness = readinessScores.length
+    ? Math.round(readinessScores.reduce((sum, r) => sum + r.score, 0) / readinessScores.length)
+    : null;
+
+  let risk = 'info';
+  let reason = 'A deputy is named, and others are recorded as serving alongside the lead.';
+  if (!hasLead) {
+    risk = 'urgent';
+    reason = 'No one currently leads this.';
+  } else if (!hasDeputy && bench === 0) {
+    risk = 'urgent';
+    reason = 'One person only — no deputy, and no one else recorded as serving here.';
+  } else if (!hasDeputy) {
+    risk = 'attention';
+    reason = `No named deputy — ${bench} other${bench === 1 ? '' : 's'} serving here, but no one is named to step in.`;
+  } else if (bench === 0) {
+    risk = 'attention';
+    reason = 'A deputy is named, but no one else is recorded as serving here.';
+  }
+
+  return {
+    role, id, name, leadId, deputyId, hasLead, hasDeputy, bench, benchReadiness, risk, reason,
+  };
+}
+
+/**
+ * Where leadership depends on exactly one person continuing, with nobody
+ * named to step in. Every active ministry and every committee is checked the
+ * same way: is there a lead, is there a named deputy, and — if not — how
+ * many other people are even recorded as serving alongside them, because a
+ * missing deputy matters far less when three volunteers already know the
+ * role than when the lead is the only person involved at all. A bench
+ * member's own `leadershipReadiness` (their share of completed
+ * leader-restricted Equip training) is surfaced too, so "who could step in"
+ * has a real, computed answer rather than a guess.
+ *
+ * @param {import('./db.js').Database} db
+ */
+export function successionRisk(db) {
+  const entries = [];
+
+  for (const ministry of db.all('ministries')) {
+    if (ministry.archived || ministry.active === false) continue;
+    const servingIds = db.where('members', (m) => !m.archived && (m.ministries || []).includes(ministry.name)).map((m) => m.id);
+    entries.push(successionEntry(db, {
+      role: 'ministry', id: ministry.id, name: ministry.name, leadId: ministry.leadId, deputyId: ministry.deputyId, servingIds,
+    }));
+  }
+
+  for (const committee of db.all('committees')) {
+    entries.push(successionEntry(db, {
+      role: 'committee', id: committee.id, name: committee.name, leadId: committee.chairId, deputyId: committee.deputyChairId, servingIds: committee.memberIds || [],
+    }));
+  }
+
+  return entries.sort((a, b) => RISK_ORDER[b.risk] - RISK_ORDER[a.risk]);
+}
+
+/* ── volunteer well-being ─────────────────────────────────────────────────── */
+
+/**
+ * A signal, not a verdict: who is carrying the most right now, computed from
+ * how many ministries someone serves in, how many open and overdue tasks are
+ * theirs, and how many worship-service roles they are booked for over the
+ * next eight weeks. Scored the same direction as ministry and church health
+ * — 100 is comfortable, a falling number is worth a conversation, not an
+ * accusation. Only members recorded as serving somewhere are included; this
+ * says nothing about anyone who is not on a ministry roster.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {{now?: Date}} [opts]
+ */
+export function volunteerWellBeing(db, { now = new Date() } = {}) {
+  const servingMembers = db.where('members', (m) => !m.archived && (m.ministries || []).length);
+  const weekAhead = new Date(now.getTime() + 56 * 864e5);
+  const upcomingServices = db.where('serviceSchedule', (s) => new Date(s.date) >= now && new Date(s.date) <= weekAhead);
+
+  return servingMembers.map((member) => {
+    const ministryCount = (member.ministries || []).length;
+    const openTasks = db.where('eventTasks', (t) => t.ownerId === member.id && !t.done).length;
+    const overdueTasks = db.where('eventTasks', (t) => t.ownerId === member.id && !t.done && t.dueDate && new Date(t.dueDate) < now).length;
+    const upcomingRoles = upcomingServices.filter((s) => serviceAssignees(s).includes(member.id)).length;
+
+    const ministryLoad = ministryCount <= 1 ? 100 : Math.max(30, 100 - (ministryCount - 1) * 25);
+    const taskLoad = overdueTasks > 0 ? Math.max(20, 100 - overdueTasks * 25) : Math.max(50, 100 - openTasks * 10);
+    const serviceLoad = upcomingRoles <= 2 ? 100 : Math.max(30, 100 - (upcomingRoles - 2) * 15);
+    const score = Math.round(ministryLoad * 0.4 + taskLoad * 0.35 + serviceLoad * 0.25);
+
+    return {
+      memberId: member.id,
+      ministryCount,
+      openTasks,
+      overdueTasks,
+      upcomingRoles,
+      score,
+      status: HEALTH_STATUS(score),
+      statusLabel: HEALTH_STATUS_LABEL[HEALTH_STATUS(score)],
+    };
+  }).sort((a, b) => a.score - b.score);
 }
 
 /* ── AI executive briefing ───────────────────────────────────────────────── */

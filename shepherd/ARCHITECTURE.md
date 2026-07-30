@@ -143,12 +143,12 @@ committees and goals have no ministry dimension in the data model, so
 - `computeInsights(db, user)` and the functions under it — `absentMembers`,
   `attendanceTrend`, `volunteerShortages`, `financeSnapshot`,
   `upcomingCelebrations`, `suggestVolunteers`, `ministryHealthScore`,
-  `ministryHealthTrend`, `churchHealthOverview`, `buildBriefing`,
-  `suggestForRole`, `worshipShortages`, `serviceReadiness` — are pure
-  computation over the church's own records, permission-filtered, no
-  network. Everything on the dashboard's "Shepherd noticed", the AI
-  executive briefing, ministry health scores and the worship-schedule
-  assignment suggestions comes from here and works offline.
+  `ministryHealthTrend`, `churchHealthOverview`, `successionRisk`,
+  `volunteerWellBeing`, `buildBriefing`, `suggestForRole`, `worshipShortages`,
+  `serviceReadiness` — are pure computation over the church's own records,
+  permission-filtered, no network. Everything on the dashboard's "Shepherd
+  noticed", the AI executive briefing, ministry health scores and the
+  worship-schedule assignment suggestions comes from here and works offline.
   `ministryHealthScore` returns its breakdown alongside the score
   deliberately — the UI shows every factor, not just a number, so the
   heuristic stays inspectable rather than a black box. It weighs seven
@@ -183,6 +183,33 @@ committees and goals have no ministry dimension in the data model, so
   one-line human detail. Its `notTracked` array names "Small Group
   Participation" explicitly, because Shepherd has no small-groups concept
   anywhere in its schema — an honest disclosed gap beats a fabricated number.
+
+  `successionRisk(db)` checks every active ministry and every committee the
+  same way: is there a lead, is there a named deputy (`ministries.deputyId`,
+  `committees.deputyChairId` — both optional, additive fields), and if not,
+  how many other people are recorded as serving alongside them (the "bench")
+  — a missing deputy matters far less when three volunteers already know the
+  role than when the lead is the only person involved at all. `risk` is
+  `'urgent'` only when there is no lead at all, or the lead is genuinely
+  alone; `'attention'` when a deputy or a bench is missing but not both;
+  `'info'` once a deputy is named and at least one other person is serving
+  too. A bench member's own `leadershipReadiness` is averaged in as
+  `benchReadiness` so "who could step in" has a computed answer, not a guess.
+
+  `volunteerWellBeing(db, {now})` is a load signal, not a verdict: for every
+  member recorded as serving in at least one ministry, it weighs how many
+  ministries they serve in, their open and overdue tasks, and how many
+  worship-service roles they are booked for over the next eight weeks, into
+  a score using the same 90/75/60 status bands as the rest of the health
+  functions — a falling number is a cue to check in, not an accusation.
+  Members serving nowhere are excluded entirely; this says nothing about
+  anyone not on a ministry roster.
+
+  Both feed `computeInsights`: an `'urgent'` succession entry or a
+  `'critical'` well-being score becomes a `kind: 'risk'`/`kind: 'care'`
+  insight on the dashboard, gated on `leadership:read` like the rest of the
+  leadership-facing insights — but only when something is genuinely urgent,
+  so a healthy church's dashboard stays quiet about both.
 
 Worship services follow the same pattern. `SERVICE_TEMPLATES` (Friday/Sunday)
 supplies the title, order of service and communion checklist a leader would

@@ -46,7 +46,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
 | **Worship** | Song library searchable by theme, key, mood, season, language and lyrics; setlists; team and rehearsals |
 | **Preaching** | Sermon archive, series planning, illustrations and quotes, and an assistant that drafts the work *around* the sermon |
-| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
+| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, succession planning, volunteer well-being, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
 | **Finance** | Giving, expenses, budgets, projects, approvals — encrypted, role-restricted, exportable |
 | **Document vault** | Encrypted files with version history, fingerprints and expiry reminders |
 | **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
@@ -108,6 +108,13 @@ Behind the dashboard, **Leadership** in the sidebar holds the rest of it:
   with its own status and detail, recommendations only where genuinely
   needed, and an honest note on what Shepherd does not yet track (small
   groups).
+- **Succession planning** — every ministry and committee checked for a named
+  deputy and a genuine bench of others serving alongside the lead, flagged
+  urgent only when a role has no lead at all or the lead is genuinely alone.
+- **Volunteer well-being** — a load signal per serving member (ministries
+  served, open and overdue tasks, upcoming worship-service roles), sorted so
+  the most stretched volunteers surface first — a cue for a check-in, not a
+  verdict.
 - **Leadership directory**, **annual planner** (vision, objectives, KPIs,
   budget, quarterly review per ministry per year), and a **timeline** — a
   day-grouped feed built from the real audit log, so it only ever shows what
@@ -305,7 +312,7 @@ No build step, no dependencies. Edit a file, reload the page.
 
 ```bash
 python3 -m http.server 8787          # then open /shepherd/
-node --test shepherd/test/*.test.mjs # 129 tests, no dependencies
+node --test shepherd/test/*.test.mjs # 135 tests, no dependencies
 ```
 
 The test suite covers tenant isolation, permissions, the crypto (including the
