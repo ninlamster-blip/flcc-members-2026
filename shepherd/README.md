@@ -55,6 +55,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Equip** | A learning platform: a course library across sixteen discipleship and ministry categories, structured learning paths, quizzes, an AI learning coach, auto-issued certificates, and a personal growth dashboard with a computed leadership-readiness score |
 | **Assistant** | Everything Shepherd noticed, a free-form "ask anything" box, and every drafting task, in one place |
 | **Settings** | Church profile, users and roles, security, AI, backup, audit log |
+| **Network Overview** | Read-only, for whoever holds the **Lead Pastor** role: a rollup of every church already signed into on this device — members, ministries, open care items, a health score — never finance, counselling, the journal or documents, which stay locked per church |
 
 ## The leadership operating system
 
@@ -240,7 +241,7 @@ sees on first login (`core/seed.js`) is entirely invented.
 
 ## Roles
 
-Eleven roles, from Super Admin down to Member, each with a plain-English
+Twelve roles, from Super Admin down to Member, each with a plain-English
 description in **Settings → Users & roles**. Permissions are `resource:action`
 pairs; a user's role can be topped up or trimmed individually. Checks happen in
 the navigation, in the router and — the one that counts — in the database,
@@ -256,6 +257,31 @@ Three rules are worth knowing:
   Unlike a restricted counselling note, the leadership journal has no
   override role. No role is ever granted write access to another leader's
   entry; only its author can.
+
+**Lead Pastor** sits one rank above Senior Pastor: the same full pastoral
+standing within whichever church they are signed into, plus `network:read` —
+the one permission that unlocks the Network Overview module. It is added per
+church, the same as any other role, to whoever oversees the network as a
+whole rather than leading a single congregation. See "Network Overview"
+below for what that module can and cannot see.
+
+## Network Overview
+
+A rollup for the Lead Pastor role, not a new kind of access to any one
+church's data. It lists every church already present in this device's local
+registry and, for each, opens a `Database` exactly the way a signed-out
+session would — with no vault key. Ordinary, unencrypted operational records
+(members, ministries, attendance, care) load and get aggregated into a
+per-church row: member count, ministry count, open care items, a health
+score. Finance, counselling notes, the leadership journal and the document
+vault stay encrypted and simply do not decrypt without a key, so they never
+appear.
+
+It can only ever see a church that this browser has already signed into at
+least once — there is no server, so there is no reaching a church nobody has
+opened here before. A Lead Pastor is added to each church they oversee the
+same way any other user is added, one church at a time; the network view
+does not create a login that spans churches.
 
 ## Security, honestly
 
@@ -333,7 +359,7 @@ No build step, no dependencies. Edit a file, reload the page.
 
 ```bash
 python3 -m http.server 8787          # then open /shepherd/
-node --test shepherd/test/*.test.mjs # 146 tests, no dependencies
+node --test shepherd/test/*.test.mjs # 152 tests, no dependencies
 ```
 
 The test suite covers tenant isolation, permissions, the crypto (including the

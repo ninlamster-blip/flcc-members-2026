@@ -29,6 +29,7 @@ const AI_CONFIG_KEY = 'shepherd/v1/ai-config';
 /** Navigation — order is the order in the sidebar. */
 export const MODULES = [
   { id: 'dashboard',      title: 'Dashboard',      icon: 'home',      resource: 'dashboard',      group: 'Today',    mobile: true,  load: () => import('./modules/dashboard.js') },
+  { id: 'network',        title: 'Network Overview', icon: 'church',  resource: 'network',        group: 'Today',                   load: () => import('./modules/network.js') },
   { id: 'members',        title: 'People',         icon: 'users',     resource: 'members',        group: 'Care',     mobile: true,  load: () => import('./modules/members.js') },
   { id: 'care',           title: 'Member care',    icon: 'heart',     resource: 'care',           group: 'Care',                    load: () => import('./modules/care.js') },
   { id: 'prayer',         title: 'Prayer centre',  icon: 'heart',     resource: 'prayer',         group: 'Care',     mobile: true,  load: () => import('./modules/prayer.js') },
@@ -480,7 +481,13 @@ export class App {
     });
   }
 
-  async handleSignOut(reason) {
+  /**
+   * @param {string} reason
+   * @param {string} [targetTenantId] jump straight to this church's own
+   *   sign-in form instead of the generic picker — used by the Network
+   *   Overview's "Open this church" action (see `tenantFromLocation`).
+   */
+  async handleSignOut(reason, targetTenantId) {
     if (this._unsubscribeDb) this._unsubscribeDb();
     if (this.db) await this.db.flush();
     await this.session.signOut(reason, this.db);
@@ -488,7 +495,7 @@ export class App {
     if (this.search) this.search.dispose();
     this.db = null;
     this.router = null;
-    window.location.hash = '';
+    window.location.hash = targetTenantId ? `#/c/${targetTenantId}/` : '';
     this.renderAuth();
     if (reason === 'idle') toast('Signed out after 45 minutes of inactivity.', { variant: '' });
   }

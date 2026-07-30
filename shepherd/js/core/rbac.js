@@ -25,6 +25,7 @@ export const RESOURCES = {
   counseling:    'Counselling notes',
   leadership:    'Leadership hub',
   journal:       'Leadership journal',
+  network:       'Network overview (all churches on this device)',
   worship:       'Worship & music',
   preaching:     'Preaching & sermons',
   prayer:        'Prayer centre',
@@ -72,6 +73,17 @@ export const ROLES = {
       'dashboard:*', 'members:*', 'care:*', 'leadership:*', 'journal:read', 'worship:*', 'preaching:*',
       'prayer:*', 'events:*', 'finance:*', 'documents:*', 'knowledge:*', 'equip:*',
       'communications:*', 'reports:*', 'assistant:*', 'settings:*', 'users:*', 'audit:read',
+    ],
+  },
+  lead_pastor: {
+    label: 'Lead Pastor (network)',
+    rank: 75,
+    description: 'Oversees every church in the network, not just one — the same full pastoral standing as a Senior Pastor within whichever church they are signed into, plus the cross-church Network Overview. Added per church, the same as any other role; sees the network summary only for churches already present on this device.',
+    permissions: [
+      'dashboard:*', 'members:*', 'care:*', 'counseling:*', 'leadership:*', 'journal:read', 'worship:read',
+      'worship:write', 'preaching:*', 'prayer:*', 'events:*', 'finance:read', 'finance:approve',
+      'finance:export', 'documents:*', 'knowledge:*', 'equip:*', 'communications:*', 'reports:*',
+      'assistant:*', 'settings:read', 'users:read', 'audit:read', 'network:read',
     ],
   },
   senior_pastor: {
