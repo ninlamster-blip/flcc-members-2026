@@ -55,6 +55,7 @@ export const AI_TASKS = {
   'translate':           'Translation',
   'knowledge.answer':    'Answer from church documents',
   'bible.study':         'Bible study',
+  'assistant.ask':       'Ask Shepherd',
 };
 
 export const LANGUAGES = ['English', 'Arabic', 'Tagalog'];
@@ -152,6 +153,9 @@ export class Assistant {
 
   /**
    * Answer a natural-language question using ONLY records this user may read.
+   * Powers the Knowledge Centre's "ask your documents" box — deliberately
+   * confined, because that screen's whole point is "what does the church's
+   * own paperwork say".
    * @param {string} question
    * @param {object} user
    */
@@ -161,13 +165,34 @@ export class Assistant {
     const result = await this.run('knowledge.answer', { question, context, hits });
     return { ...result, sources: hits };
   }
+
+  /**
+   * A general-purpose question — the Assistant screen's "Ask Shepherd" box.
+   * Unlike `answer()`, this is not confined to the church's own paperwork:
+   * scripture, theology, ministry practice, and the world outside the app
+   * are all fair game. Relevant records this user may read are still pulled
+   * in as optional context, permission-filtered the same way, so "when's
+   * the next elders' meeting" gets a real answer alongside "what does
+   * Ephesians 4 mean".
+   * @param {string} question
+   * @param {object} user
+   */
+  async ask(question, user) {
+    const hits = this.search ? this.search.search(question, { user, limit: 6 }) : [];
+    const context = hits.map((hit, i) => `[${i + 1}] ${hit.title} — ${hit.snippet}`).join('\n');
+    const result = await this.run('assistant.ask', { question, context, hits });
+    return { ...result, sources: hits };
+  }
 }
 
 /* ── local drafting ──────────────────────────────────────────────────────── */
 
 const SYSTEM = `You are Shepherd, an assistant for church leaders in Kuwait and the wider Gulf.
 Write plainly and warmly. Assume a multicultural congregation (Filipino, Indian, Arab, Western).
-Never invent facts about the church — use only what the user gives you.
+Draw freely on your general knowledge — scripture, theology, church history, ministry practice,
+world events, and everyday facts — wherever it helps; do not limit yourself to what is in the app.
+The one thing you must never do is invent specific facts about THIS church (its people, numbers,
+history, or decisions) that were not given to you — say plainly when you don't know one of those.
 You assist a pastor's preparation; you never replace it.`;
 
 /**
@@ -462,6 +487,30 @@ export function buildLocalDraft(task, input, db) {
             '_Shown as found. Connect an AI service in Settings → AI for a written answer that draws these together._',
           ].join('\n')
           : `Nothing in this church's records answers "${question}". If it should, add the document or minute it — Shepherd only answers from what the church has recorded.`,
+      };
+    }
+
+    case 'assistant.ask': {
+      const { question = '', context = '', hits = [] } = input;
+      return {
+        system: `${SYSTEM}\nThe records below, if any, are what this user may read of this church's own data — use them for anything specific to this church. Everything else is yours to answer from what you already know.`,
+        prompt: `Question: ${question}\n\nThis church's own records that might be relevant (may be empty or irrelevant):\n${context || '(none found)'}\n\n`
+          + 'Answer in under 200 words. If the church\'s records answered it, say so and cite the numbered ones; '
+          + 'otherwise just answer from what you know.',
+        sources: hits,
+        text: hits.length
+          ? [
+            `**Found in this church's own records** (${hits.length} match${hits.length === 1 ? '' : 'es'}):`,
+            '',
+            ...hits.map((hit, i) => `${i + 1}. **${hit.title}** — ${hit.snippet}`),
+            '',
+            '_This device can match your question against your church\'s records, but has no general knowledge of its own — '
+            + 'connect an AI service in Settings → AI for a written answer that reasons about scripture, theology, '
+            + 'ministry practice, or anything beyond the app._',
+          ].join('\n')
+          : 'This device found nothing in your church\'s own records for that, and has no general knowledge of its own to '
+            + `answer "${question}" without help. Connect an AI service in Settings → AI to have Shepherd actually answer `
+            + 'questions like this one — scripture, theology, ministry advice, or anything else.',
       };
     }
 

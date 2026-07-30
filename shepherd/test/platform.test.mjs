@@ -465,6 +465,48 @@ test('the knowledge assistant answers only from records the reader may see', asy
   assert.match(denied.text, /Nothing in this church/);
 });
 
+test('unlike the knowledge assistant, "ask Shepherd" is not confined to church records', async () => {
+  const db = await tenantDb();
+  const noHits = await new Assistant({ db, search: new SearchIndex(db) }).ask('what does Ephesians 4 mean', ADMIN);
+  assert.equal(noHits.sources.length, 0);
+  assert.match(noHits.text, /no general knowledge of its own/);
+  assert.doesNotMatch(noHits.text, /Nothing in this church's records answers/);
+});
+
+test('"ask Shepherd" still surfaces this church\'s own records when they are relevant', async () => {
+  const db = await tenantDb();
+  db.insert('meetings', blank('meetings', {
+    title: 'Council — April', date: new Date().toISOString(),
+    minutes: 'Decided the youth ministry will meet on Friday evenings from now on.',
+  }));
+  const assistant = new Assistant({ db, search: new SearchIndex(db) });
+
+  const found = await assistant.ask('what did we decide about youth ministry', ADMIN);
+  assert.equal(found.sources.length, 1);
+  assert.match(found.text, /youth ministry/i);
+
+  const denied = await assistant.ask('what did we decide about youth ministry', { role: 'volunteer' });
+  assert.equal(denied.sources.length, 0, 'a role without leadership:read must not see the meeting minutes either');
+});
+
+test('a configured model is told to draw on general knowledge, not just church records', async () => {
+  const db = await tenantDb();
+  let sentSystem = '';
+  const assistant = new Assistant({
+    db,
+    config: { enabled: true, endpoint: 'https://ai.example/proxy', model: 'test-model' },
+    fetchImpl: async (url, init) => {
+      sentSystem = JSON.parse(init.body).system;
+      return { ok: true, json: async () => ({ content: [{ type: 'text', text: 'Ephesians 4 calls the church to unity.' }] }) };
+    },
+  });
+  const result = await assistant.ask('what does Ephesians 4 mean', ADMIN);
+  assert.equal(result.source, 'model');
+  assert.equal(result.text, 'Ephesians 4 calls the church to unity.');
+  assert.match(sentSystem, /general knowledge/i);
+  assert.match(sentSystem, /invent specific facts about THIS church/i);
+});
+
 test('checklists differ by event type', () => {
   const baptism = buildLocalDraft('event.checklist', { type: 'baptism' }, null).text;
   const retreat = buildLocalDraft('event.checklist', { type: 'retreat' }, null).text;

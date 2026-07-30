@@ -52,7 +52,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
 | **Communications** | Announcements and messages prepared for WhatsApp, email, SMS, bulletin |
 | **Reports** | Attendance, growth, volunteers, giving, prayer, events — PDF, Excel, CSV |
-| **Assistant** | Everything Shepherd noticed, and every drafting task, in one place |
+| **Assistant** | Everything Shepherd noticed, a free-form "ask anything" box, and every drafting task, in one place |
 | **Settings** | Church profile, users and roles, security, AI, backup, audit log |
 
 ## The leadership operating system
@@ -156,9 +156,15 @@ Two different things share the word:
   overruns, volunteer shortages, attendance trends — are computed on the device
   from the church's own records. No model, no network. This works offline.
 - **Drafting** — sermon assets, meeting summaries, announcements, translations,
-  knowledge answers — uses a language model when the church configures an
-  endpoint in **Settings → AI**, and falls back to structured local drafts when
-  it does not.
+  knowledge answers, and free-form questions asked through **Assistant → Ask
+  Shepherd** — uses a language model when the church configures an endpoint in
+  **Settings → AI**, and falls back to structured local drafts when it does
+  not. "Ask Shepherd" is deliberately not confined to the church's own
+  paperwork the way the Knowledge Centre's document search is: it draws on
+  scripture, theology, ministry practice and general knowledge too, pulling in
+  whatever of the church's own records are relevant as extra context. The one
+  thing it will never do is invent a specific fact *about this church* that
+  was not given to it.
 
 Everything generated carries `aiGenerated`, the model and the time, and is
 shown behind a visible badge. Counselling notes, finance and the vault are

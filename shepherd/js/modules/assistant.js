@@ -39,17 +39,21 @@ const TASK_GROUPS = [
 export async function render(ctx, route) {
   const tab = route.query.tab || 'noticed';
   const body = h('div');
-  body.appendChild(tab === 'draft' ? draftTab(ctx, route) : noticedTab(ctx));
+  body.appendChild(tab === 'draft' ? draftTab(ctx, route) : tab === 'ask' ? askTab(ctx) : noticedTab(ctx));
 
   return page({
     title: 'Assistant',
     subtitle: ctx.assistant.remoteAvailable
-      ? `Insights on this device · drafting with ${ctx.assistant.config.model}`
+      ? `Insights on this device · thinking with ${ctx.assistant.config.model}`
       : 'Insights and drafts, computed on this device',
     children: [
       h('div', { style: { marginBottom: '18px' } },
         segmented({
-          options: [{ value: 'noticed', label: 'What Shepherd noticed' }, { value: 'draft', label: 'Draft something' }],
+          options: [
+            { value: 'noticed', label: 'What Shepherd noticed' },
+            { value: 'ask', label: 'Ask Shepherd' },
+            { value: 'draft', label: 'Draft something' },
+          ],
           value: tab,
           onChange: (value) => ctx.navigate(`/assistant?tab=${value}`),
         })),
@@ -93,6 +97,50 @@ function noticedTab(ctx) {
           ? h('button.btn.btn--sm', { onClick: () => ctx.navigate(insight.action.replace('#', '')) }, insight.actionLabel || 'Open')
           : null)))],
     })));
+}
+
+/* ── ask ─────────────────────────────────────────────────────────────────── */
+
+/**
+ * Free-form questions — scripture, theology, ministry practice, world
+ * knowledge, or this church's own records — not confined to a fixed task
+ * template the way "Draft something" is. `ctx.assistant.ask()` pulls in
+ * whatever of this church's records the asking user may read as optional
+ * context, but is never limited to them.
+ */
+function askTab(ctx) {
+  const output = h('div');
+  const questionBox = textarea({ placeholder: 'What does Ephesians 4 mean? How should we plan a baptism Sunday? When is the next elders\' meeting? Ask anything.' });
+
+  const ask = async () => {
+    const question = questionBox.value.trim();
+    if (!question) return;
+    output.textContent = '';
+    output.appendChild(card({ children: [h('p.small.muted', 'Thinking…')] }));
+    const result = await ctx.assistant.ask(question, ctx.user);
+    output.textContent = '';
+    output.appendChild(card({
+      title: question,
+      children: [
+        aiOutput({ result }),
+        result.sources && result.sources.length
+          ? h('div.chip-list', { style: { marginTop: '10px' } }, ...result.sources.map((s) => h('span.chip', s.title)))
+          : null,
+      ],
+    }));
+  };
+
+  return h('div.stack',
+    card({
+      title: 'Ask Shepherd anything',
+      subtitle: 'Not just what this church has recorded — scripture, theology, ministry advice, and the world outside the app too.',
+      children: [
+        h('div.stack.stack--sm',
+          field({ label: 'Your question', control: questionBox, full: true }),
+          h('button.btn.btn--primary', { onClick: ask }, icon('sparkles', { size: 15 }), 'Ask')),
+      ],
+    }),
+    output);
 }
 
 /* ── draft ───────────────────────────────────────────────────────────────── */

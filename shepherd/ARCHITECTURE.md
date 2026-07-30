@@ -152,6 +152,22 @@ not attempted here.
   artefact assembled from the church's records, not a placeholder. A failed
   model call falls back to the local draft rather than losing the user's work.
 
+Within generation, two of the tasks answer questions rather than draft
+documents, and they are scoped differently on purpose:
+
+- `Assistant.answer(question, user)` (task `knowledge.answer`) is the Knowledge
+  Centre's document search: confined to records this user may read, and
+  honest when nothing in them answers the question.
+- `Assistant.ask(question, user)` (task `assistant.ask`) is the Assistant
+  screen's "Ask Shepherd" box: relevant church records are pulled in as
+  optional context the same permission-filtered way, but the answer is not
+  confined to them — the `SYSTEM` prompt explicitly tells the model to draw on
+  scripture, theology, ministry practice and general knowledge, and forbids
+  only inventing specific facts *about this church* it was not given. Offline
+  (no endpoint configured), the local draft is honest about the difference:
+  it can still match the question against the church's records, but says
+  plainly that it has no general knowledge of its own to answer with.
+
 Every result is `{ aiGenerated: true, model, source, createdAt }` and is
 rendered through `aiOutput()`, which cannot display it without the badge.
 `buildBriefing` and the insight functions carry no such label — like the
