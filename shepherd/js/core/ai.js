@@ -843,6 +843,20 @@ export function computeInsights(db, user, opts = {}) {
         actionLabel: 'Open volunteer well-being',
       });
     }
+
+    /* Decisions past their own stated review date. */
+    const dueForReview = db.where('decisions', (d) => d.reviewOn && new Date(d.reviewOn) <= now);
+    if (dueForReview.length) {
+      push({
+        id: 'decisions-review',
+        kind: 'risk',
+        severity: dueForReview.some((d) => daysBetween(d.reviewOn, now) > 30) ? 'urgent' : 'attention',
+        title: `${dueForReview.length} decision${dueForReview.length === 1 ? ' is' : 's are'} due for review`,
+        detail: dueForReview.slice(0, 3).map((d) => `${d.title} (review was due ${formatDate(d.reviewOn)})`).join(' · '),
+        action: '#/leadership?tab=decisions',
+        actionLabel: 'Open the decision log',
+      });
+    }
   }
 
   const order = { urgent: 0, attention: 1, info: 2 };

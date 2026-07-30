@@ -1356,16 +1356,17 @@ const CHURCH_LEADERSHIP_ROLES = ['senior_pastor', 'pastor', 'elder', 'treasurer'
 function directoryTab(ctx) {
   const { db } = ctx;
   const entries = [];
+  const risks = new Map(successionRisk(db).map((r) => [`${r.role}:${r.id}`, r]));
 
   for (const ministry of db.all('ministries')) {
-    if (ministry.leadId) entries.push({ name: memberName(db, ministry.leadId, '—'), role: `${ministry.name} lead`, memberId: ministry.leadId });
+    if (ministry.leadId) entries.push({ name: memberName(db, ministry.leadId, '—'), role: `${ministry.name} lead`, memberId: ministry.leadId, risk: risks.get(`ministry:${ministry.id}`) });
   }
   for (const committee of db.all('committees')) {
-    if (committee.chairId) entries.push({ name: memberName(db, committee.chairId, '—'), role: `${committee.name} chair`, memberId: committee.chairId });
+    if (committee.chairId) entries.push({ name: memberName(db, committee.chairId, '—'), role: `${committee.name} chair`, memberId: committee.chairId, risk: risks.get(`committee:${committee.id}`) });
   }
   for (const user of db.all('users')) {
     if (!CHURCH_LEADERSHIP_ROLES.includes(user.role) || user.suspended) continue;
-    entries.push({ name: user.memberId ? memberName(db, user.memberId, user.name) : user.name, role: roleLabel(user.role), memberId: user.memberId });
+    entries.push({ name: user.memberId ? memberName(db, user.memberId, user.name) : user.name, role: roleLabel(user.role), memberId: user.memberId, risk: null });
   }
 
   if (!entries.length) {
@@ -1376,7 +1377,11 @@ function directoryTab(ctx) {
     title: 'Who leads what',
     subtitle: 'Ministry leads, committee chairs, and church-wide leadership.',
     children: [table({
-      columns: [{ label: 'Name', value: (r) => r.name }, { label: 'Role', value: (r) => r.role }],
+      columns: [
+        { label: 'Name', value: (r) => r.name },
+        { label: 'Role', value: (r) => r.role },
+        { label: 'Succession', value: (r) => (r.risk ? badge(RISK_LABELS[r.risk.risk], RISK_TONES[r.risk.risk]) : '—') },
+      ],
       rows: entries,
       onRowClick: (r) => (r.memberId ? ctx.navigate(`/members/${r.memberId}`) : undefined),
     })],
@@ -1394,10 +1399,11 @@ function plannerTab(ctx) {
     plans.length
       ? h('div.grid.grid--2', ...plans.map((plan) => {
         const ministry = db.find('ministries', plan.ministryId);
+        const health = ministry ? ministryHealthScore(db, ministry) : null;
         return card({
           title: plan.title,
           subtitle: `${ministry ? ministry.name : 'Unknown ministry'} · ${plan.year}`,
-          actions: [statusBadge(plan.status)],
+          actions: [health ? badge(`${health.score}% health`, healthTone(health.score)) : null, statusBadge(plan.status)].filter(Boolean),
           children: [
             plan.vision ? h('p.small.muted', plan.vision) : null,
             (plan.objectives || []).length

@@ -402,6 +402,35 @@ test('insights are ordered with the urgent ones first', async () => {
   assert.equal(insights[0].severity, 'urgent');
 });
 
+test('a decision past its own review date surfaces as an insight, more urgently the longer it has waited', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-10');
+  db.insert('decisions', blank('decisions', {
+    title: 'Approve the new sound system', date: isoDate(addDays(now, -100)), decision: 'Approved.', reviewOn: isoDate(addDays(now, -5)),
+  }));
+  const insights = computeInsights(db, { role: 'church_admin' }, { now });
+  const found = insights.find((i) => i.id === 'decisions-review');
+  assert.ok(found);
+  assert.equal(found.severity, 'attention', 'five days overdue is not yet urgent');
+  assert.match(found.detail, /Approve the new sound system/);
+
+  db.insert('decisions', blank('decisions', {
+    title: 'Old benevolence policy', date: isoDate(addDays(now, -400)), decision: 'Approved.', reviewOn: isoDate(addDays(now, -60)),
+  }));
+  const laterInsights = computeInsights(db, { role: 'church_admin' }, { now });
+  assert.equal(laterInsights.find((i) => i.id === 'decisions-review').severity, 'urgent', 'sixty days overdue is urgent');
+});
+
+test('a decision not yet due for review does not appear', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-10');
+  db.insert('decisions', blank('decisions', {
+    title: 'Future review', date: isoDate(now), decision: 'Approved.', reviewOn: isoDate(addDays(now, 30)),
+  }));
+  const insights = computeInsights(db, { role: 'church_admin' }, { now });
+  assert.ok(!insights.some((i) => i.id === 'decisions-review'));
+});
+
 /* ── smart notifications ─────────────────────────────────────────────────── */
 
 test('activeNotifications hides a dismissed insight until the underlying detail changes', () => {

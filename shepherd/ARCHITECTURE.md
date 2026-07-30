@@ -252,6 +252,26 @@ journal tab itself ever queries.
   has no server to push through when it is closed, and says so rather than
   implying more.
 
+  A decision's own `reviewOn` date (already on the `decisions` schema, unused
+  until now) surfaces the same way once it passes: `computeInsights` pushes
+  a `'decisions-review'` insight, `'urgent'` once a decision is more than 30
+  days overdue for review rather than merely due. No new field, no new
+  collection — an existing one simply had nobody reading it.
+
+  `reports.js`'s `leadershipReport` is not new computation either: one
+  printable, exportable page over `churchHealthOverview`, `ministryHealthScore`
+  and `successionRisk`, for the audience that wants a document rather than a
+  live screen (a council meeting, a board packet). It is also the reason a
+  `table()` cell should never hold a long free-text field: a "Why" column
+  once tried to carry `successionRisk`'s `reason` text and squeezed to a
+  near-empty-looking, 280px-tall row on a narrow phone rather than staying
+  legible — table cells wrap by default and given no minimum width will keep
+  shrinking rather than force a scrollbar. The fix, and the pattern every
+  other report already follows, is to keep table columns short and scannable
+  and put prose of any length in its own `<p>` line instead (see the risk
+  list in `leadershipReport`, or `churchHealthOverview`'s per-dimension
+  `detail` lines on the live Church Health tab).
+
 Worship services follow the same pattern. `SERVICE_TEMPLATES` (Friday/Sunday)
 supplies the title, order of service and communion checklist a leader would
 otherwise type by hand; `isCommunionScheduled` in `policies.js` is the rule
@@ -401,14 +421,22 @@ holds records it cannot read.
 
 ## Testing
 
-`node --test shepherd/test/*.test.mjs` — three suites, no dependencies:
+`node --test shepherd/test/*.test.mjs` — six suites, no dependencies:
 
 - `security.test.mjs` — passphrases, vault wrapping, encryption, TOTP against
   the RFC vectors, sign-in, 2FA, recovery codes, passphrase change.
 - `platform.test.mjs` — isolation, database, permissions, schema, search,
-  insights, exports, seed data, routing.
+  insights, smart notifications, exports, seed data, routing.
 - `policies.test.mjs` — self-approval, prayer visibility, restricted
-  counselling notes, what is never indexed, document expiry.
+  counselling notes, the leadership journal's author-only boundary, what is
+  never indexed, document expiry.
+- `leadership-os.test.mjs` — ministry/church health, succession planning,
+  volunteer well-being, the pastoral care rollup, the AI briefing, smart
+  worship-schedule assignment, ministry workspace access.
+- `equip.test.mjs` — the learning platform: course gating, per-member
+  enrollment writes, learning progress, recommendations, leadership readiness.
+- `import.test.mjs` — the CSV import layer: parsing, header matching, member
+  and schedule domain parsers, name matching.
 
 Core modules never touch `window` at import time, which is what lets the same
 files run under Node and in the browser.

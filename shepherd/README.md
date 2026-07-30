@@ -46,12 +46,12 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
 | **Worship** | Song library searchable by theme, key, mood, season, language and lyrics; setlists; team and rehearsals |
 | **Preaching** | Sermon archive, series planning, illustrations and quotes, and an assistant that drafts the work *around* the sermon |
-| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, succession planning, volunteer well-being, a pastoral care rollup, a private leadership journal, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
+| **Leadership** | The leadership operating system: committees, minutes, a decision log with review-date insights, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, succession planning, volunteer well-being, a pastoral care rollup, a private leadership journal, a succession-aware leadership directory, annual planning with quarterly review and inline ministry health, and a permission-filtered activity timeline |
 | **Finance** | Giving, expenses, budgets, projects, approvals — encrypted, role-restricted, exportable |
 | **Document vault** | Encrypted files with version history, fingerprints and expiry reminders |
 | **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
 | **Communications** | Announcements and messages prepared for WhatsApp, email, SMS, bulletin |
-| **Reports** | Attendance, growth, volunteers, giving, prayer, events — PDF, Excel, CSV |
+| **Reports** | Attendance, growth, volunteers, giving, prayer, events, leadership (church health, ministry health, succession gaps) — PDF, Excel, CSV |
 | **Equip** | A learning platform: a course library across sixteen discipleship and ministry categories, structured learning paths, quizzes, an AI learning coach, auto-issued certificates, and a personal growth dashboard with a computed leadership-readiness score |
 | **Assistant** | Everything Shepherd noticed, a free-form "ask anything" box, and every drafting task, in one place |
 | **Settings** | Church profile, users and roles, security, AI, backup, audit log |
@@ -122,10 +122,16 @@ Behind the dashboard, **Leadership** in the sidebar holds the rest of it:
 - **Leadership journal** — a private place to reflect, genuinely for your
   eyes only: no role, not even the senior pastor or a church administrator,
   is ever granted write access to another leader's entry.
-- **Leadership directory**, **annual planner** (vision, objectives, KPIs,
-  budget, quarterly review per ministry per year), and a **timeline** — a
-  day-grouped feed built from the real audit log, so it only ever shows what
-  actually happened, filtered to what the reader may see.
+- **Leadership directory**, now with a succession column per leader so a
+  missing deputy is visible at a glance, not just on the Succession tab.
+- **Annual planner** (vision, objectives, KPIs, budget, quarterly review per
+  ministry per year), each plan showing its ministry's current health score
+  for context while planning.
+- A **timeline** — a day-grouped feed built from the real audit log, so it
+  only ever shows what actually happened, filtered to what the reader may see.
+- The **decision log**'s own `reviewOn` date now surfaces as a dashboard
+  insight once it passes, more urgently the longer it has waited — the same
+  computed-not-drafted pattern as everything else Shepherd notices.
 
 Five of the ministry-specific dashboards (Worship, Children, Youth,
 Evangelism, Discipleship) deliberately share one adaptable template rather
@@ -327,7 +333,7 @@ No build step, no dependencies. Edit a file, reload the page.
 
 ```bash
 python3 -m http.server 8787          # then open /shepherd/
-node --test shepherd/test/*.test.mjs # 144 tests, no dependencies
+node --test shepherd/test/*.test.mjs # 146 tests, no dependencies
 ```
 
 The test suite covers tenant isolation, permissions, the crypto (including the

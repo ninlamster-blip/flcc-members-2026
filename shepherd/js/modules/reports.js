@@ -12,9 +12,12 @@ import {
   page, card, table, segmented, statCard, barChart, emptyState, badge, toast, progress, aiOutput,
 } from '../core/ui.js';
 import { formatDate, formatDateParts, formatMoney, isoDate, addDays, formatNumber } from '../core/format.js';
-import { attendanceTrend, financeSnapshot, absentMembers } from '../core/ai.js';
+import {
+  attendanceTrend, financeSnapshot, absentMembers, churchHealthOverview, ministryHealthScore,
+  successionRisk, volunteerWellBeing,
+} from '../core/ai.js';
 import { downloadCSV, downloadExcel, printReport } from '../core/exporters.js';
-import { memberName, sentence } from './_shared.js';
+import { memberName, sentence, healthTone } from './_shared.js';
 
 export async function render(ctx, route) {
   const tab = route.query.tab || 'attendance';
@@ -29,6 +32,7 @@ export async function render(ctx, route) {
     giving: () => givingReport(ctx, from, now),
     prayer: () => prayerReport(ctx, from, now),
     events: () => eventsReport(ctx, from, now),
+    leadership: () => leadershipReport(ctx, now),
   };
 
   const built = (reports[tab] || reports.attendance)();
@@ -48,18 +52,20 @@ export async function render(ctx, route) {
     ].filter(Boolean),
     children: [
       h('div.row.row--wrap', { style: { marginBottom: '18px' } },
-        segmented({
-          options: [
-            { value: 'attendance', label: 'Attendance' },
-            { value: 'growth', label: 'Growth' },
-            { value: 'volunteers', label: 'Volunteers' },
-            ...(ctx.can('finance:read') ? [{ value: 'giving', label: 'Giving' }] : []),
-            { value: 'prayer', label: 'Prayer' },
-            { value: 'events', label: 'Events' },
-          ],
-          value: tab,
-          onChange: (value) => ctx.navigate(`/reports?tab=${value}&months=${months}`),
-        }),
+        h('div', { style: { overflowX: 'auto', paddingBottom: '4px', maxWidth: '100%' } },
+          segmented({
+            options: [
+              { value: 'attendance', label: 'Attendance' },
+              { value: 'growth', label: 'Growth' },
+              { value: 'volunteers', label: 'Volunteers' },
+              ...(ctx.can('finance:read') ? [{ value: 'giving', label: 'Giving' }] : []),
+              { value: 'prayer', label: 'Prayer' },
+              { value: 'events', label: 'Events' },
+              ...(ctx.can('leadership:read') ? [{ value: 'leadership', label: 'Leadership' }] : []),
+            ],
+            value: tab,
+            onChange: (value) => ctx.navigate(`/reports?tab=${value}&months=${months}`),
+          })),
         h('div.spacer'),
         segmented({
           options: [{ value: 3, label: '3m' }, { value: 6, label: '6m' }, { value: 12, label: '12m' }, { value: 24, label: '24m' }],
@@ -415,6 +421,81 @@ function eventsReport(ctx, from, now) {
     export: (format) => exportRows(ctx, format, 'events', rows, [
       { key: 'title', label: 'Event' }, { key: 'type', label: 'Type' }, { key: 'date', label: 'Date' },
       { key: 'attended', label: 'Checked in' }, { key: 'tasks', label: 'Tasks' },
+    ]),
+  };
+}
+
+/* ── leadership ──────────────────────────────────────────────────────────── */
+
+/**
+ * Not new computation — one printable, exportable page over the same
+ * church health, ministry health, succession and well-being functions the
+ * Leadership tabs already show live, for the audience that actually wants a
+ * document out of it: a council meeting, a board packet, a handover file.
+ */
+function leadershipReport(ctx, now) {
+  const { db } = ctx;
+  if (!ctx.can('leadership:read')) {
+    return { title: 'Leadership', node: emptyState({ title: 'Not available to your role', iconName: 'lock' }) };
+  }
+
+  const overview = churchHealthOverview(db, { now });
+  const ministries = db.all('ministries').map((ministry) => ({ ministry, health: ministryHealthScore(db, ministry, { now }) }))
+    .sort((a, b) => a.health.score - b.health.score);
+  const risks = successionRisk(db).filter((r) => r.risk !== 'info');
+  const wellBeing = volunteerWellBeing(db, { now });
+  const stretched = wellBeing.filter((v) => v.status === 'needs-attention' || v.status === 'critical');
+
+  const ministryRows = ministries.map(({ ministry, health }) => ({
+    ministry: ministry.name, score: health.score, rating: health.rating, serving: health.serving, needed: health.needed,
+  }));
+  const ministryTable = table({
+    columns: [
+      { label: 'Ministry', key: 'ministry' },
+      { label: 'Score', numeric: true, value: (r) => `${r.score}%` },
+      { label: 'Rating', key: 'rating' },
+      { label: 'Serving', numeric: true, value: (r) => `${r.serving}${r.needed ? ` of ${r.needed}` : ''}` },
+    ],
+    rows: ministryRows,
+  });
+
+  const riskRows = risks.map((r) => ({
+    name: r.name, role: r.role === 'ministry' ? 'Ministry' : 'Committee', risk: r.risk, reason: r.reason,
+  }));
+  // A table cell wraps long free text into a tall, near-empty-looking row on
+  // a narrow screen — every other table in this file keeps to short,
+  // scannable columns and puts prose in its own line instead, so the risk
+  // reason gets a list, not a "Why" table column.
+  const riskList = riskRows.length
+    ? h('div.stack.stack--sm', ...riskRows.map((r) => h('div', null,
+      h('div.row.row--between',
+        h('strong.small', `${r.name} (${r.role})`),
+        badge(sentence(r.risk), r.risk === 'urgent' ? 'danger' : 'warn')),
+      h('p.tiny.subtle', r.reason))))
+    : h('p.small.muted', 'Every ministry and committee has a named deputy and a bench of others serving alongside the lead.');
+
+  const node = h('div.stack',
+    h('div.grid.grid--4',
+      statCard({ value: `${overview.score}%`, label: `Church health — ${overview.statusLabel}` }),
+      statCard({ value: ministries.length, label: 'Ministries' }),
+      statCard({ value: risks.length, label: 'Succession gaps' }),
+      statCard({ value: stretched.length, label: 'Volunteers stretched' })),
+    card({
+      title: 'Church health by dimension',
+      children: [h('div.grid.grid--3', ...overview.dimensions.map((dim) => h('div.stack.stack--sm', { style: { padding: '10px', border: '1px solid var(--border, #e5e5e5)', borderRadius: '8px' } },
+        h('div.row.row--between', h('span.small', dim.label), badge(`${dim.score}%`, healthTone(dim.score))),
+        h('p.tiny.subtle', dim.detail))))],
+    }),
+    card({ title: 'Ministry health', children: [ministryTable] }),
+    card({ title: 'Succession gaps', children: [riskList] }));
+
+  return {
+    title: 'Leadership report',
+    node,
+    printNodes: [ministryTable, riskList],
+    export: (format) => exportRows(ctx, format, 'leadership', ministryRows, [
+      { key: 'ministry', label: 'Ministry' }, { key: 'score', label: 'Score' }, { key: 'rating', label: 'Rating' },
+      { key: 'serving', label: 'Serving' }, { key: 'needed', label: 'Needed' },
     ]),
   };
 }
