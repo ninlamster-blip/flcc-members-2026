@@ -1,0 +1,31 @@
+{
+  "name": "Shepherd — church leadership platform",
+  "short_name": "Shepherd",
+  "description": "Member care, prayer, worship, preaching, events, finance and documents for church leaders in Kuwait and the Gulf.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FBFBFA",
+  "theme_color": "#2F6F5E",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Dashboard", "url": "./index.html#/dashboard" },
+    { "name": "People", "url": "./index.html#/members" },
+    { "name": "Prayer centre", "url": "./index.html#/prayer" }
+  ]
+}
