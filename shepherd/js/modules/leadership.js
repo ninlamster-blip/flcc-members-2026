@@ -38,6 +38,7 @@ import { downloadCSV, downloadExcel, printReport } from '../core/exporters.js';
 
 const MEETING_FIELDS = ['title', 'date', 'committeeId', 'attendees', 'agenda', 'minutes', 'confidential'];
 const PLAN_FIELDS = ['ministryId', 'year', 'title', 'vision', 'objectives', 'kpis', 'budget', 'volunteerNeeds', 'status'];
+const TASK_FIELDS = ['title', 'detail', 'dueDate', 'ministryId'];
 
 export async function render(ctx, route) {
   if (route.params[0]) {
@@ -81,9 +82,17 @@ export async function render(ctx, route) {
           ? (canPlanAnything(ctx)
             ? h('button.btn.btn--primary', { onClick: () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year: new Date().getFullYear() } }) }, icon('plus', { size: 16 }), 'New plan')
             : null)
-          : ['journal', 'health', 'churchhealth', 'succession', 'wellbeing', 'care', 'directory', 'timeline'].includes(tab)
-            ? null
-            : newButton(ctx, 'leadership', 'New meeting', () => openRecordModal(ctx, { collection: 'meetings', fields: MEETING_FIELDS })),
+          : tab === 'tasks'
+            ? (ctx.user.memberId
+              ? h('button.btn.btn--primary', {
+                onClick: () => openRecordModal(ctx, {
+                  collection: 'actionItems', fields: TASK_FIELDS, defaults: { ownerId: ctx.user.memberId, status: 'open' },
+                }),
+              }, icon('plus', { size: 16 }), 'New task')
+              : null)
+            : ['journal', 'health', 'churchhealth', 'succession', 'wellbeing', 'care', 'directory', 'timeline'].includes(tab)
+              ? null
+              : newButton(ctx, 'leadership', 'New meeting', () => openRecordModal(ctx, { collection: 'meetings', fields: MEETING_FIELDS })),
     ].filter(Boolean),
     children: [
       h('div.grid.grid--4', { style: { marginBottom: '18px' } },

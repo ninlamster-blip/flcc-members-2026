@@ -19,7 +19,7 @@ import {
   page, card, table, list, listItem, emptyState, badge, segmented, statCard, progress,
   toast, modal, searchField, barChart, aiOutput, confirm,
 } from '../core/ui.js';
-import { formatDate, formatDateParts, formatMoney, isoDate, relativeTime } from '../core/format.js';
+import { formatDate, formatDateParts, formatMoney, isoDate, addDays, relativeTime } from '../core/format.js';
 import { blank } from '../core/schema.js';
 import { financeSnapshot } from '../core/ai.js';
 import { downloadCSV, downloadExcel, printReport } from '../core/exporters.js';
@@ -63,11 +63,11 @@ export async function render(ctx, route) {
     title: 'Finance',
     subtitle: `${year} · ${ctx.settings.currency}. Encrypted on this device.`,
     actions: [
-      ctx.can('finance:export') ? h('button.btn', { onClick: () => exportFinance(ctx, year) }, icon('download', { size: 15 }), 'Export') : null,
+      ctx.can('finance:export') ? h('button.btn', { onClick: () => exportFinance(ctx) }, icon('download', { size: 15 }), 'Export') : null,
       newButton(ctx, 'finance', 'Record', () => recordTransaction(ctx)),
     ].filter(Boolean),
     children: [
-      h('div', { style: { marginBottom: '18px' } },
+      h('div', { style: { marginBottom: '18px', overflowX: 'auto', paddingBottom: '4px' } },
         segmented({
           options: [
             { value: 'overview', label: 'Overview' },
@@ -388,10 +388,29 @@ async function decide(ctx, tx, status) {
 
 /* ── export ──────────────────────────────────────────────────────────────── */
 
-function exportFinance(ctx, year) {
+/**
+ * Rolling windows ending today, the same convention `reports.js` uses for
+ * its month-range selector — "last month" is 30 days back, not the previous
+ * calendar month, so it lines up with "last 3/6 months" rather than being
+ * the one calendar-aligned exception.
+ */
+function financePeriods(now) {
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  return [
+    { value: 'month', label: 'This month', from: startOfMonth, to: now },
+    { value: 'lastMonth', label: 'Last month', from: addDays(now, -30), to: now },
+    { value: 'last3', label: 'Last 3 months', from: addDays(now, -90), to: now },
+    { value: 'last6', label: 'Last 6 months', from: addDays(now, -180), to: now },
+    { value: 'lastYear', label: 'Last year', from: addDays(now, -365), to: now },
+  ];
+}
+
+function exportFinance(ctx) {
   const { db } = ctx;
-  const rows = db.where('transactions', (t) => new Date(t.date).getFullYear() === year)
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const now = new Date();
+  const periods = financePeriods(now);
+  let period = periods[0];
+
   const columns = [
     { label: 'Date', value: (t) => t.date },
     { label: 'Type', value: (t) => t.kind },
@@ -404,36 +423,54 @@ function exportFinance(ctx, year) {
     { label: `Amount (${ctx.settings.currency})`, value: (t) => Number(t.amount || 0) },
   ];
 
-  const ref = modal({
-    title: `Export ${year}`,
-    body: h('div.stack',
-      h('p.small.muted', `${rows.length} entries. Financial records — treat the file the way you would the ledger.`),
+  const rowsFor = (p) => db.where('transactions', (t) => new Date(t.date) >= p.from && new Date(t.date) <= p.to)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const body = h('div');
+  const draw = () => {
+    const rows = rowsFor(period);
+    body.textContent = '';
+    body.appendChild(h('div.stack',
+      h('div', { style: { overflowX: 'auto', paddingBottom: '4px' } },
+        segmented({
+          options: periods.map((p) => ({ value: p.value, label: p.label })),
+          value: period.value,
+          onChange: (value) => { period = periods.find((p) => p.value === value); draw(); },
+        })),
+      h('p.small.muted', `${rows.length} entries · ${formatDate(period.from)} – ${formatDate(period.to)}. Financial records — treat the file the way you would the ledger.`),
       h('div.quick-actions',
         h('button.quick-action', {
           onClick: () => {
-            downloadExcel(`${ctx.tenant.id}-finance-${year}.xls`, [{ name: `Finance ${year}`, columns, rows }]);
-            ctx.db.log('export', `Exported ${rows.length} financial entries for ${year} to Excel.`);
+            const currentRows = rowsFor(period);
+            downloadExcel(`${ctx.tenant.id}-finance-${period.value}.xls`, [{ name: `Finance — ${period.label}`, columns, rows: currentRows }]);
+            ctx.db.log('export', `Exported ${currentRows.length} financial entries (${period.label}) to Excel.`);
             ref.close();
           },
         }, icon('download', { size: 16 }), 'Excel'),
         h('button.quick-action', {
           onClick: () => {
-            downloadCSV(`${ctx.tenant.id}-finance-${year}.csv`, rows, columns);
-            ctx.db.log('export', `Exported ${rows.length} financial entries for ${year} to CSV.`);
+            const currentRows = rowsFor(period);
+            downloadCSV(`${ctx.tenant.id}-finance-${period.value}.csv`, currentRows, columns);
+            ctx.db.log('export', `Exported ${currentRows.length} financial entries (${period.label}) to CSV.`);
             ref.close();
           },
         }, icon('download', { size: 16 }), 'CSV'),
         h('button.quick-action', {
           onClick: () => {
-            printFinance(ctx, year, rows);
+            printFinance(ctx, period);
             ref.close();
           },
-        }, icon('file', { size: 16 }), 'PDF / print'))),
-  });
+        }, icon('file', { size: 16 }), 'PDF / print'))));
+  };
+  draw();
+
+  const ref = modal({ title: 'Export', body });
 }
 
-function printFinance(ctx, year, rows) {
-  const snapshot = financeSnapshot(ctx.db, { from: new Date(year, 0, 1), to: new Date(year, 11, 31, 23, 59, 59) });
+function printFinance(ctx, period) {
+  const rows = ctx.db.where('transactions', (t) => new Date(t.date) >= period.from && new Date(t.date) <= period.to)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const snapshot = financeSnapshot(ctx.db, { from: period.from, to: period.to });
   const stats = h('div', { class: 'stat-grid' },
     h('div.stat', h('b', money(snapshot.giving)), 'Total giving'),
     h('div.stat', h('b', money(snapshot.expenses)), 'Total expenses'),
@@ -450,9 +487,9 @@ function printFinance(ctx, year, rows) {
       h('td', money(t.amount))))));
 
   printReport({
-    title: `${ctx.tenant.name} — financial report ${year}`,
-    subtitle: `Prepared ${formatDate(new Date())} by ${ctx.user.name}. Currency: ${ctx.settings.currency}.`,
+    title: `${ctx.tenant.name} — financial report`,
+    subtitle: `${period.label} (${formatDate(period.from)} – ${formatDate(period.to)}). Prepared ${formatDate(new Date())} by ${ctx.user.name}. Currency: ${ctx.settings.currency}.`,
     nodes: [stats, tableNode],
   });
-  ctx.db.log('export', `Printed the ${year} financial report.`);
+  ctx.db.log('export', `Printed the financial report (${period.label}).`);
 }
