@@ -11,8 +11,9 @@ import { Database } from '../js/core/db.js';
 import { blank } from '../js/core/schema.js';
 import { isoDate, addDays } from '../js/core/format.js';
 import {
-  ministryHealthScore, buildBriefing, suggestForRole, serviceAssignees, SERVICE_ROLE_FIELDS,
-  CORE_SERVICE_ROLES, SERVICE_TEMPLATES, serviceReadiness, worshipShortages,
+  ministryHealthScore, ministryHealthTrend, churchHealthOverview, buildBriefing, suggestForRole,
+  serviceAssignees, SERVICE_ROLE_FIELDS, CORE_SERVICE_ROLES, SERVICE_TEMPLATES, serviceReadiness,
+  worshipShortages,
 } from '../js/core/ai.js';
 import { canAccessMinistryWorkspace, ledMinistries, isCommunionScheduled } from '../js/core/policies.js';
 import { can, ROLES } from '../js/core/rbac.js';
@@ -36,12 +37,12 @@ test('a fully staffed, up-to-date ministry scores well; an understaffed, overdue
   const singer2 = db.insert('members', blank('members', { fullName: 'Singer Two', status: 'member', ministries: ['Worship'] }));
   const lonely = db.insert('members', blank('members', { fullName: 'Lonely Leader', status: 'member', ministries: ['Youth'] }));
 
-  db.insert('eventTasks', blank('eventTasks', { eventId: 'e1', title: 'Set up', ownerId: singer.id, done: true }));
-  db.insert('eventTasks', blank('eventTasks', { eventId: 'e1', title: 'Sound check', ownerId: singer2.id, done: true, updatedAt: now.toISOString() }));
+  db.insert('eventTasks', blank('eventTasks', { eventId: 'e1', title: 'Set up', ownerId: singer.id, done: true, createdAt: isoDate(addDays(now, -5)) }));
+  db.insert('eventTasks', blank('eventTasks', { eventId: 'e1', title: 'Sound check', ownerId: singer2.id, done: true, createdAt: isoDate(addDays(now, -5)), updatedAt: now.toISOString() }));
   // One understaffed ministry, one overdue task, untouched for two months —
   // every factor in the formula pointing the same direction.
   db.insert('eventTasks', blank('eventTasks', {
-    eventId: 'e2', title: 'Plan retreat', ownerId: lonely.id, done: false,
+    eventId: 'e2', title: 'Plan retreat', ownerId: lonely.id, done: false, createdAt: isoDate(addDays(now, -70)),
     dueDate: isoDate(addDays(now, -10)), updatedAt: new Date(addDays(now, -60)).toISOString(),
   }));
 
@@ -49,10 +50,13 @@ test('a fully staffed, up-to-date ministry scores well; an understaffed, overdue
   const badScore = ministryHealthScore(db, struggling, { now });
 
   assert.ok(goodScore.score > badScore.score, `expected ${goodScore.score} > ${badScore.score}`);
-  assert.equal(goodScore.rating, 'Excellent');
+  // Perfect on the four original factors, neutral (untested) on the three new
+  // ones — "Healthy", not "Excellent"; excellence now requires more than the
+  // original formula measured.
+  assert.equal(goodScore.rating, 'Healthy');
   assert.ok(badScore.score < 60, `expected an understaffed ministry with an overdue, stale task to score under 60, got ${badScore.score}`);
   assert.equal(badScore.rating, 'Attention needed');
-  assert.equal(goodScore.breakdown.length, 4);
+  assert.equal(goodScore.breakdown.length, 7);
 });
 
 test('a ministry with no history yet is not penalised for having nothing overdue', async () => {
@@ -61,6 +65,108 @@ test('a ministry with no history yet is not penalised for having nothing overdue
   const score = ministryHealthScore(db, ministry, { now: new Date() });
   assert.equal(score.tasksOverdue, 0);
   assert.ok(score.score > 0);
+});
+
+test('ministry health factors in goal progress, training completion and member engagement', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const ministry = db.insert('ministries', blank('ministries', { name: 'Worship' }));
+  const member = db.insert('members', blank('members', { fullName: 'Worship One', status: 'member', ministries: ['Worship'] }));
+
+  db.insert('goals', blank('goals', {
+    title: 'Grow the worship team', ministryId: ministry.id, year: 2026, progress: 90, target: 100,
+    createdAt: isoDate(addDays(now, -5)),
+  }));
+  const course = db.insert('courses', blank('courses', { title: 'Worship Basics', category: 'Worship Ministry' }));
+  db.insert('enrollments', blank('enrollments', {
+    memberId: member.id, courseId: course.id, status: 'completed', createdAt: isoDate(addDays(now, -5)),
+  }));
+  db.insert('attendance', blank('attendance', { date: isoDate(now), memberIds: [member.id] }));
+
+  const score = ministryHealthScore(db, ministry, { now });
+  const byLabel = Object.fromEntries(score.breakdown.map((b) => [b.label, b.value]));
+  assert.ok(byLabel['Goal progress'] >= 85, `expected goal progress near 90, got ${byLabel['Goal progress']}`);
+  assert.equal(byLabel['Training completion'], 100);
+  assert.equal(byLabel['Member engagement'], 100);
+  assert.equal(score.breakdown.find((b) => b.label === 'Budget utilisation'), undefined);
+});
+
+test('ministry health only scores budget utilisation when a matching budget line exists', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const ministry = db.insert('ministries', blank('ministries', { name: 'Missions' }));
+  db.insert('budgets', blank('budgets', { name: 'Missions annual budget', year: 2026, category: 'Missions', amount: 1000 }));
+  db.insert('transactions', blank('transactions', {
+    kind: 'expense', category: 'Missions', amount: 400, date: isoDate(now),
+  }));
+
+  const withBudget = ministryHealthScore(db, ministry, { now });
+  const label = withBudget.breakdown.find((b) => b.label === 'Budget utilisation');
+  assert.ok(label, 'expected a Budget utilisation entry when a matching budget line exists');
+  assert.equal(label.value, 100);
+
+  const noBudgetMinistry = db.insert('ministries', blank('ministries', { name: 'Unbudgeted' }));
+  const withoutBudget = ministryHealthScore(db, noBudgetMinistry, { now });
+  assert.equal(withoutBudget.breakdown.find((b) => b.label === 'Budget utilisation'), undefined);
+});
+
+test('ministry health surfaces weaknesses and matching recommendations, honestly', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const ministry = db.insert('ministries', blank('ministries', { name: 'Youth', minVolunteers: 6 }));
+  db.insert('members', blank('members', { fullName: 'Solo Leader', status: 'member', ministries: ['Youth'] }));
+
+  const score = ministryHealthScore(db, ministry, { now });
+  assert.ok(score.weaknesses.includes('Volunteer coverage'));
+  assert.equal(score.recommendations.length, score.weaknesses.length);
+  assert.ok(score.recommendations.some((r) => /volunteers/i.test(r)));
+});
+
+test('ministry health trend recomputes honestly as of earlier points in time', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const ministry = db.insert('ministries', blank('ministries', { name: 'Worship', minVolunteers: 1 }));
+  db.insert('members', blank('members', {
+    fullName: 'Late Joiner', status: 'member', ministries: ['Worship'], createdAt: now.toISOString(),
+  }));
+
+  const trend = ministryHealthTrend(db, ministry, { now, points: 3, intervalDays: 30 });
+  assert.equal(trend.length, 3);
+  assert.equal(trend[2].date, isoDate(now));
+  // The volunteer did not exist 60 days ago, so coverage — and therefore the
+  // overall score — should genuinely have been lower back then.
+  assert.ok(trend[0].score <= trend[2].score, `expected an earlier score <= today's, got ${trend[0].score} vs ${trend[2].score}`);
+});
+
+/* ── church health overview ───────────────────────────────────────────────── */
+
+test('church health overview returns a status per dimension and discloses what it does not track', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  db.insert('ministries', blank('ministries', { name: 'Worship', minVolunteers: 1 }));
+  db.insert('members', blank('members', { fullName: 'Regular Member', status: 'member', ministries: ['Worship'] }));
+
+  const overview = churchHealthOverview(db, { now });
+  assert.ok(overview.score >= 0 && overview.score <= 100);
+  assert.ok(['excellent', 'healthy', 'needs-attention', 'critical'].includes(overview.status));
+  assert.equal(overview.dimensions.length, 9);
+  for (const dim of overview.dimensions) {
+    assert.ok(dim.key && dim.label && dim.detail, `dimension ${dim.key} missing a field`);
+    assert.ok(['excellent', 'healthy', 'needs-attention', 'critical'].includes(dim.status));
+  }
+  assert.ok(overview.notTracked.some((n) => /small group/i.test(n)));
+});
+
+test('church health overview recommends only on dimensions that are actually struggling', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  // No ministries, no members, no history at all — every dimension defaults
+  // to the neutral 70, which is "needs-attention" but not "critical".
+  const overview = churchHealthOverview(db, { now });
+  for (const rec of overview.recommendations) {
+    const dim = overview.dimensions.find((d) => rec.startsWith(d.label));
+    assert.ok(dim && (dim.status === 'critical' || dim.status === 'needs-attention'));
+  }
 });
 
 /* ── AI executive briefing ───────────────────────────────────────────────── */

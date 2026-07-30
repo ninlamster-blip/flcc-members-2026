@@ -17,7 +17,7 @@
 import { h, icon } from '../core/dom.js';
 import {
   page, card, table, list, listItem, emptyState, badge, segmented, statCard, avatar,
-  toast, aiOutput, progress, searchField, modal, field, textarea, select, input, tagInput, formModal,
+  toast, aiOutput, progress, barChart, searchField, modal, field, textarea, select, input, tagInput, formModal,
 } from '../core/ui.js';
 import { formatDate, formatDateTime, formatMoney, formatDateParts, relativeTime, isoDate, daysBetween } from '../core/format.js';
 import { COLLECTIONS, SERVICE_TYPES } from '../core/schema.js';
@@ -26,8 +26,8 @@ import {
   refOptions, friendly,
 } from './_shared.js';
 import {
-  ministryHealthScore, suggestForRole, SERVICE_ROLE_FIELDS, serviceAssignees,
-  SERVICE_TEMPLATES, EMCEE_RESPONSIBILITIES, serviceReadiness,
+  ministryHealthScore, ministryHealthTrend, churchHealthOverview, suggestForRole, SERVICE_ROLE_FIELDS,
+  serviceAssignees, SERVICE_TEMPLATES, EMCEE_RESPONSIBILITIES, serviceReadiness,
 } from '../core/ai.js';
 import { canAccessMinistryWorkspace, canWriteActionItem, ledMinistries, isCommunionScheduled } from '../core/policies.js';
 import { roleLabel } from '../core/rbac.js';
@@ -57,6 +57,7 @@ export async function render(ctx, route) {
       : tab === 'schedule' ? scheduleTab(ctx, route)
       : tab === 'tasks' ? tasksTab(ctx)
       : tab === 'health' ? healthTab(ctx)
+      : tab === 'churchhealth' ? churchHealthTab(ctx)
       : tab === 'directory' ? directoryTab(ctx)
       : tab === 'planner' ? plannerTab(ctx)
       : tab === 'timeline' ? timelineTab(ctx)
@@ -93,6 +94,7 @@ export async function render(ctx, route) {
             { value: 'schedule', label: 'Worship Schedule' },
             { value: 'tasks', label: 'My Tasks' },
             { value: 'health', label: 'Ministry Health' },
+            { value: 'churchhealth', label: 'Church Health' },
             { value: 'directory', label: 'Directory' },
             { value: 'planner', label: 'Annual Planner' },
             { value: 'timeline', label: 'Timeline' },
@@ -386,7 +388,8 @@ function goalsTab(ctx) {
     goals.length
       ? h('div.grid.grid--2', ...goals.map((goal) => card({
         title: goal.title,
-        subtitle: [goal.year, goal.ownerId ? memberName(db, goal.ownerId) : null].filter(Boolean).join(' · '),
+        subtitle: [goal.year, goal.ownerId ? memberName(db, goal.ownerId) : null,
+          goal.ministryId ? (db.find('ministries', goal.ministryId) || {}).name : null].filter(Boolean).join(' · '),
         actions: [statusBadge(goal.status)],
         children: [
           goal.detail ? h('p.small.muted', goal.detail) : null,
@@ -1126,19 +1129,62 @@ function healthTab(ctx) {
     .sort((a, b) => a.health.score - b.health.score);
 
   return h('div.stack',
-    h('p.small.muted', 'A heuristic score from task completion, overdue work, volunteer coverage against stated need, and recent activity — a place to look first, not a judgement.'),
-    h('div.grid.grid--2', ...scored.map(({ ministry, health }) => card({
-      title: ministry.name,
-      actions: [badge(`${health.score}% ${health.rating}`, healthTone(health.score))],
+    h('p.small.muted', 'A heuristic score from task completion, overdue work, volunteer coverage, recent activity, goal progress, training completion, member engagement, and — where a budget line matches — spending discipline. A place to look first, not a judgement.'),
+    h('div.grid.grid--2', ...scored.map(({ ministry, health }) => {
+      const trend = ministryHealthTrend(db, ministry, { points: 4, intervalDays: 30 });
+      return card({
+        title: ministry.name,
+        actions: [badge(`${health.score}% ${health.rating}`, healthTone(health.score))],
+        children: [
+          h('div.stack.stack--sm', ...health.breakdown.map((row) => h('div', null,
+            h('div.row.row--between', h('span.tiny.muted', row.label), h('span.tiny', `${row.value}%`)),
+            progress(row.value, 100, { variant: '' })))),
+          h('p.tiny.subtle', { style: { marginTop: '8px' } },
+            `${health.serving} serving${health.needed ? ` of ${health.needed} needed` : ''} · ${health.tasksOpen} open tasks · ${health.tasksOverdue} overdue`),
+          barChart(trend.map((t) => ({ label: formatDate(t.date, { year: undefined }), value: t.score })), { format: (v) => `${v}%` }),
+          health.strengths.length
+            ? h('p.tiny', { style: { color: 'var(--ok, #2a9d5c)' } }, `Strong: ${health.strengths.join(', ')}`)
+            : null,
+          health.recommendations.length
+            ? h('div.stack.stack--xs', ...health.recommendations.map((r) => h('p.tiny.subtle', `→ ${r}`)))
+            : null,
+          h('button.btn.btn--sm', { style: { marginTop: '8px' }, onClick: () => ctx.navigate(`/leadership?tab=workspaces&ministry=${ministry.id}`) }, 'Open workspace'),
+        ].filter(Boolean),
+      });
+    })));
+}
+
+/* ── church health overview ──────────────────────────────────────────────── */
+
+function churchHealthTab(ctx) {
+  const { db } = ctx;
+  const overview = churchHealthOverview(db);
+
+  return h('div.stack',
+    h('p.small.muted', 'One status per question a leader actually asks — computed from this church\'s own records, not a single number pretending to answer all of them at once.'),
+    card({
+      title: 'Overall church health',
+      actions: [badge(`${overview.score}% ${overview.statusLabel}`, healthTone(overview.score))],
       children: [
-        h('div.stack.stack--sm', ...health.breakdown.map((row) => h('div', null,
-          h('div.row.row--between', h('span.tiny.muted', row.label), h('span.tiny', `${row.value}%`)),
-          progress(row.value, 100, { variant: '' })))),
-        h('p.tiny.subtle', { style: { marginTop: '8px' } },
-          `${health.serving} serving${health.needed ? ` of ${health.needed} needed` : ''} · ${health.tasksOpen} open tasks · ${health.tasksOverdue} overdue`),
-        h('button.btn.btn--sm', { style: { marginTop: '8px' }, onClick: () => ctx.navigate(`/leadership?tab=workspaces&ministry=${ministry.id}`) }, 'Open workspace'),
+        h('div.grid.grid--3', ...overview.dimensions.map((dim) => h('div.stack.stack--sm', { style: { padding: '10px', border: '1px solid var(--border, #e5e5e5)', borderRadius: '8px' } },
+          h('div.row.row--between', h('span.small', dim.label), badge(`${dim.score}%`, healthTone(dim.score))),
+          progress(dim.score, 100, { variant: '' }),
+          h('p.tiny.subtle', dim.detail)))),
       ],
-    }))));
+    }),
+    overview.recommendations.length
+      ? card({
+        title: 'Where to focus',
+        children: [h('div.stack.stack--sm', ...overview.recommendations.map((r) => h('p.small', `• ${r}`)))],
+      })
+      : null,
+    overview.notTracked.length
+      ? card({
+        title: 'Not yet tracked',
+        children: [h('div.stack.stack--sm', ...overview.notTracked.map((n) => h('p.tiny.subtle', n)))],
+      })
+      : null,
+  );
 }
 
 /* ── leadership directory ────────────────────────────────────────────────── */

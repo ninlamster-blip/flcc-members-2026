@@ -244,6 +244,7 @@ export const COLLECTIONS = {
       detail:  { label: 'Detail', type: 'text' },
       year:    { label: 'Year', type: 'number' },
       ownerId: { label: 'Owner', type: 'ref', ref: 'members' },
+      ministryId: { label: 'Ministry', type: 'ref', ref: 'ministries', help: 'Optional — feeds this goal into that ministry\'s health score.' },
       target:  { label: 'Target', type: 'number', default: 100 },
       progress:{ label: 'Progress', type: 'number', default: 0 },
       unit:    { label: 'Unit', type: 'string', default: '%' },

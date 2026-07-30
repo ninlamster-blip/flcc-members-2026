@@ -143,14 +143,46 @@ committees and goals have no ministry dimension in the data model, so
 - `computeInsights(db, user)` and the functions under it — `absentMembers`,
   `attendanceTrend`, `volunteerShortages`, `financeSnapshot`,
   `upcomingCelebrations`, `suggestVolunteers`, `ministryHealthScore`,
-  `buildBriefing`, `suggestForRole`, `worshipShortages`, `serviceReadiness` —
-  are pure computation over the church's own records, permission-filtered, no
+  `ministryHealthTrend`, `churchHealthOverview`, `buildBriefing`,
+  `suggestForRole`, `worshipShortages`, `serviceReadiness` — are pure
+  computation over the church's own records, permission-filtered, no
   network. Everything on the dashboard's "Shepherd noticed", the AI
   executive briefing, ministry health scores and the worship-schedule
   assignment suggestions comes from here and works offline.
   `ministryHealthScore` returns its breakdown alongside the score
-  deliberately — the UI shows the four factors, not just a number, so the
-  heuristic stays inspectable rather than a black box.
+  deliberately — the UI shows every factor, not just a number, so the
+  heuristic stays inspectable rather than a black box. It weighs seven
+  factors (task completion, no overdue work, volunteer coverage, recent
+  activity, goal progress, training completion, member engagement) plus an
+  eighth, budget utilisation, that only appears when a budget line actually
+  matches the ministry by name — a ministry with no budget is not scored on
+  one it does not have. Two of the factors are deliberately neutral-default
+  rather than punitive: training completion and member engagement fall back
+  to 70 (not 0) whenever the *church as a whole* has no completed
+  enrollments, or no attendance record, in the relevant window — because the
+  absence of any tracked data anywhere is not this ministry's failing.
+  `strengths` and `weaknesses` are the breakdown rows at or above 85 and
+  below 60 respectively; `recommendations` maps each weakness through a fixed
+  lookup table of one-line, actionable text — never a model call, since these
+  are direct consequences of a computed number, not something to draft.
+  Every task/goal factor filters its records to `createdAt <= now`, which is
+  what makes `ministryHealthTrend(db, ministry, {now, points, intervalDays})`
+  honest: it recomputes the same score at successively earlier points in
+  time using only the records that genuinely existed by then, rather than
+  fabricating a history. A ministry seeded five minutes ago shows a flat
+  line — that is the honest answer, not an empty chart.
+
+  `churchHealthOverview(db, {now})` is the church-wide counterpart: nine
+  independently-scored dimensions (attendance growth, volunteer engagement,
+  prayer activity, leadership development, member retention, visitor
+  retention, giving trends, training completion, department health — the
+  last one an average of every ministry's `ministryHealthScore`) rather than
+  one number claiming to answer nine different questions at once. Each
+  dimension carries its own status band (excellent/healthy/needs-attention/
+  critical, at the same 90/75/60 thresholds `ministryHealthScore` uses) and a
+  one-line human detail. Its `notTracked` array names "Small Group
+  Participation" explicitly, because Shepherd has no small-groups concept
+  anywhere in its schema — an honest disclosed gap beats a fabricated number.
 
 Worship services follow the same pattern. `SERVICE_TEMPLATES` (Friday/Sunday)
 supplies the title, order of service and communion checklist a leader would

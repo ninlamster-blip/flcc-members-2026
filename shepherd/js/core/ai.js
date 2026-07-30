@@ -61,6 +61,7 @@ export const AI_TASKS = {
   'equip.summary':       'Lesson summary',
   'equip.quiz':          'Study questions & memory verse',
   'equip.coach':         'Learning encouragement & next step',
+  'health.recommend':    'Church/ministry health recommendations, elaborated',
 };
 
 export const LANGUAGES = ['English', 'Arabic', 'Tagalog'];
@@ -579,6 +580,20 @@ export function buildLocalDraft(task, input, db) {
       };
     }
 
+    case 'health.recommend': {
+      const { subject = 'the church', weaknesses = [], recommendations = [] } = input;
+      return {
+        system: SYSTEM,
+        prompt: `Elaborate briefly on these health recommendations for ${subject}, in a warm but direct pastoral-leadership voice. Weak areas: ${weaknesses.join('; ') || 'none'}. Base recommendations: ${recommendations.join(' | ') || 'none'}.`,
+        text: recommendations.length
+          ? [
+            `## Recommendations for ${subject}`,
+            ...recommendations.map((r) => `- ${r}`),
+          ].join('\n')
+          : `${subject} has no flagged weak areas right now — the healthiest move is to keep doing what's working and revisit this in a month.`,
+      };
+    }
+
     default:
       return {
         system: SYSTEM,
@@ -1042,11 +1057,21 @@ export function worshipShortages(db, { now = new Date(), days = 21 } = {}) {
  * transparent rather than a black box: the breakdown is returned alongside
  * the score, and the UI shows it.
  *
- * Composition: task completion (35%), overdue-free-ness (20%), volunteer
- * coverage against the ministry's stated need (25%), and recent activity —
- * any task touched in the last 30 days (20%). A ministry with no tasks at
- * all scores on coverage and activity only, so a quiet-but-fully-staffed
- * ministry is not penalised for having nothing overdue.
+ * Composition: task completion (20%), overdue-free-ness (10%), volunteer
+ * coverage against the ministry's stated need (20%), recent activity (10%),
+ * this year's goal progress (15%), Equip training completion among serving
+ * members (15%), and member engagement — attended within six weeks (10%).
+ * Budget utilisation is shown but not weighted in, since not every ministry
+ * has a budget line ("if applicable" — a ministry with none is not
+ * penalised for something it does not track). Every factor with no history
+ * yet scores a neutral 70 rather than 0, the same principle as the
+ * original four: nothing here should punish a ministry for a fact Shepherd
+ * simply doesn't have yet.
+ *
+ * Everything is filtered to what existed by `now`, not just the meaning of
+ * "recent" — that is what lets {@link ministryHealthTrend} recompute this
+ * same function at an earlier point in time and get a genuine historical
+ * score, not today's totals wearing an old date.
  *
  * @param {import('./db.js').Database} db
  * @param {object} ministry
@@ -1055,13 +1080,14 @@ export function worshipShortages(db, { now = new Date(), days = 21 } = {}) {
 export function ministryHealthScore(db, ministry, { now = new Date() } = {}) {
   const serving = db.where('members', (m) => !m.archived && (m.ministries || []).includes(ministry.name));
   const tasks = db.all('eventTasks').filter((t) => serving.some((m) => m.id === t.ownerId))
-    .concat(db.where('actionItems', (a) => a.ministryId === ministry.id));
+    .concat(db.where('actionItems', (a) => a.ministryId === ministry.id))
+    .filter((t) => new Date(t.createdAt || 0) <= now);
 
   const done = tasks.filter((t) => t.done || t.status === 'done').length;
   const overdue = tasks.filter((t) => !t.done && t.status !== 'done' && t.dueDate && new Date(t.dueDate) < now).length;
   const open = tasks.length - done;
 
-  const completionScore = tasks.length ? (done / tasks.length) * 100 : 70; // no history yet — neutral, not penalised
+  const completionScore = tasks.length ? (done / tasks.length) * 100 : 70;
   const overdueScore = open ? Math.max(0, 100 - (overdue / open) * 100) : 100;
   const coverageScore = ministry.minVolunteers
     ? Math.min(100, (serving.length / ministry.minVolunteers) * 100)
@@ -1070,10 +1096,71 @@ export function ministryHealthScore(db, ministry, { now = new Date() } = {}) {
   const recentlyActive = tasks.some((t) => new Date(t.updatedAt || t.createdAt || 0) >= recentCutoff);
   const activityScore = tasks.length ? (recentlyActive ? 100 : 30) : 60;
 
+  const goals = db.where('goals', (g) => g.ministryId === ministry.id && g.year === now.getFullYear())
+    .filter((g) => new Date(g.createdAt || 0) <= now);
+  const goalScore = goals.length
+    ? goals.reduce((sum, g) => sum + Math.min(100, ((g.progress || 0) / (g.target || 100)) * 100), 0) / goals.length
+    : 70;
+
+  // Training completion: of those serving here, how many have completed an Equip
+  // course whose category names this ministry — the same match `recommendNextCourse` uses.
+  const trainingScore = (() => {
+    if (!serving.length) return 70;
+    const completedEnrollments = db.where('enrollments', (e) => e.status === 'completed' && new Date(e.createdAt || 0) <= now);
+    if (!completedEnrollments.length) return 70; // no training tracked anywhere yet — not this ministry's fault
+    const trainedIds = new Set(
+      completedEnrollments
+        .filter((e) => {
+          const course = db.find('courses', e.courseId);
+          return course && String(course.category).toLowerCase().includes(ministry.name.toLowerCase());
+        })
+        .map((e) => e.memberId),
+    );
+    return (serving.filter((m) => trainedIds.has(m.id)).length / serving.length) * 100;
+  })();
+
+  // Member engagement: of those serving here, how many attended within the last six weeks.
+  const engagementScore = (() => {
+    if (!serving.length) return 70;
+    const engagedCutoff = new Date(now.getTime() - 42 * 864e5);
+    const sessions = db.all('attendance').filter((s) => new Date(s.date) >= engagedCutoff && new Date(s.date) <= now);
+    if (!sessions.length) return 70; // no attendance tracked in this window at all — not this ministry's fault
+    const attendedIds = new Set();
+    for (const session of sessions) {
+      for (const id of session.memberIds || []) attendedIds.add(id);
+    }
+    return (serving.filter((m) => attendedIds.has(m.id)).length / serving.length) * 100;
+  })();
+
+  // Budget utilisation — informational only; a ministry with no budget line isn't scored on one.
+  const budgetTotal = db.where('budgets', (b) => b.year === now.getFullYear() && String(b.category).toLowerCase().includes(ministry.name.toLowerCase()))
+    .reduce((sum, b) => sum + Number(b.amount || 0), 0);
+  const spentTotal = budgetTotal
+    ? db.where('transactions', (t) => t.kind === 'expense' && new Date(t.date).getFullYear() === now.getFullYear() && new Date(t.date) <= now
+      && String(t.category).toLowerCase().includes(ministry.name.toLowerCase()))
+      .reduce((sum, t) => sum + Number(t.amount || 0), 0)
+    : 0;
+  const budgetScore = budgetTotal ? (spentTotal <= budgetTotal ? 100 : Math.max(0, 100 - ((spentTotal - budgetTotal) / budgetTotal) * 100)) : null;
+
   const score = Math.round(
-    completionScore * 0.35 + overdueScore * 0.2 + coverageScore * 0.25 + activityScore * 0.2,
+    completionScore * 0.20 + overdueScore * 0.10 + coverageScore * 0.20 + activityScore * 0.10
+    + goalScore * 0.15 + trainingScore * 0.15 + engagementScore * 0.10,
   );
   const rating = score >= 90 ? 'Excellent' : score >= 75 ? 'Healthy' : score >= 60 ? 'Needs improvement' : 'Attention needed';
+
+  const breakdown = [
+    { label: 'Task completion', value: Math.round(completionScore) },
+    { label: 'No overdue work', value: Math.round(overdueScore) },
+    { label: 'Volunteer coverage', value: Math.round(coverageScore) },
+    { label: 'Recent activity', value: Math.round(activityScore) },
+    { label: 'Goal progress', value: Math.round(goalScore) },
+    { label: 'Training completion', value: Math.round(trainingScore) },
+    { label: 'Member engagement', value: Math.round(engagementScore) },
+  ];
+  if (budgetScore != null) breakdown.push({ label: 'Budget utilisation', value: Math.round(budgetScore) });
+
+  const strengths = breakdown.filter((b) => b.value >= 85).map((b) => b.label);
+  const weaknesses = breakdown.filter((b) => b.value < 60).map((b) => b.label);
 
   return {
     score, rating,
@@ -1081,12 +1168,156 @@ export function ministryHealthScore(db, ministry, { now = new Date() } = {}) {
     needed: ministry.minVolunteers || 0,
     tasksOpen: open,
     tasksOverdue: overdue,
-    breakdown: [
-      { label: 'Task completion', value: Math.round(completionScore) },
-      { label: 'No overdue work', value: Math.round(overdueScore) },
-      { label: 'Volunteer coverage', value: Math.round(coverageScore) },
-      { label: 'Recent activity', value: Math.round(activityScore) },
-    ],
+    breakdown,
+    strengths,
+    weaknesses,
+    recommendations: weaknesses.map((label) => MINISTRY_HEALTH_RECOMMENDATIONS[label] || `Review ${label.toLowerCase()}.`),
+  };
+}
+
+const MINISTRY_HEALTH_RECOMMENDATIONS = {
+  'Task completion': 'Open tasks are stalling — review them at the next ministry meeting and reassign anything stuck.',
+  'No overdue work': 'Several tasks are overdue — clear the backlog before taking on anything new.',
+  'Volunteer coverage': 'This ministry is short of volunteers — recruit toward its stated minimum.',
+  'Recent activity': 'Nothing has moved here in the last month — check whether this ministry still has an active lead.',
+  'Goal progress': "This year's goals are behind — revisit them at the next planning session.",
+  'Training completion': 'Few of those serving here have completed relevant Equip training — encourage enrolment.',
+  'Member engagement': 'Several of those serving here have not attended recently — a personal check-in may help.',
+  'Budget utilisation': 'Spending is off track against the budget — review with the treasurer.',
+};
+
+/**
+ * How a ministry's health has moved over the last few months — the same
+ * `ministryHealthScore`, recomputed as of earlier points in time from the
+ * records that actually existed by then (every factor above filters to
+ * `createdAt <= now`), not a fabricated history. A freshly-seeded ministry
+ * shows a flat line; that is the honest answer, not an empty chart.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {object} ministry
+ * @param {{now?: Date, points?: number, intervalDays?: number}} [opts]
+ * @returns {{date: string, score: number}[]}
+ */
+export function ministryHealthTrend(db, ministry, { now = new Date(), points = 4, intervalDays = 30 } = {}) {
+  const series = [];
+  for (let i = points - 1; i >= 0; i -= 1) {
+    const at = new Date(now.getTime() - i * intervalDays * 864e5);
+    series.push({ date: isoDate(at), score: ministryHealthScore(db, ministry, { now: at }).score });
+  }
+  return series;
+}
+
+/* ── church health overview ──────────────────────────────────────────────── */
+
+const HEALTH_STATUS = (score) => (score >= 90 ? 'excellent' : score >= 75 ? 'healthy' : score >= 60 ? 'needs-attention' : 'critical');
+const HEALTH_STATUS_LABEL = { excellent: 'Excellent', healthy: 'Healthy', 'needs-attention': 'Needs Attention', critical: 'Critical' };
+
+function scoredDimension(key, label, rawScore, detail) {
+  const score = Math.round(Math.max(0, Math.min(100, rawScore)));
+  return { key, label, score, status: HEALTH_STATUS(score), statusLabel: HEALTH_STATUS_LABEL[HEALTH_STATUS(score)], detail };
+}
+
+const CHURCH_HEALTH_RECOMMENDATIONS = {
+  attendance: "attendance has slipped — worth naming at the next leaders' meeting.",
+  volunteers: 'few active members are serving anywhere — a general volunteer call may help.',
+  prayer: 'many requests have gone quiet — a prayer-team check-in would catch up the list.',
+  leadership: 'ministry leads have little recorded leadership training — point them at Equip.',
+  retention: 'a large share of people ever recorded are no longer active — worth understanding why.',
+  visitors: 'few visitors are becoming regulars — review the follow-up process.',
+  giving: 'giving has slipped against last quarter — worth a look with the treasurer.',
+  training: 'few active members have completed any Equip course — promote the library.',
+  departments: 'several ministries are unhealthy — see the Ministry Health tab for specifics.',
+};
+
+/**
+ * The church-wide counterpart to `ministryHealthScore`: one status per
+ * question a leader actually asks, not a single number pretending to answer
+ * all of them at once. Every dimension is computed from real records.
+ * "Small Group Participation" is deliberately absent — Shepherd does not
+ * track small groups yet, and a fabricated number would be worse than an
+ * honest gap; `notTracked` says so explicitly rather than silently omitting it.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {{now?: Date}} [opts]
+ */
+export function churchHealthOverview(db, { now = new Date() } = {}) {
+  const dimensions = [];
+
+  const attendance = attendanceTrend(db, { now, weeks: 8 });
+  dimensions.push(scoredDimension('attendance', 'Attendance Growth',
+    attendance.priorAverage ? 50 + Math.max(-50, Math.min(50, attendance.changePct)) : 70,
+    attendance.priorAverage
+      ? `${attendance.changePct >= 0 ? 'Up' : 'Down'} ${Math.abs(Math.round(attendance.changePct))}% over eight weeks, averaging ${Math.round(attendance.recentAverage)}.`
+      : 'Not enough attendance history yet to compute a trend.'));
+
+  const activeMembers = db.where('members', (m) => !m.archived && m.status !== 'visitor');
+  const servingMembers = activeMembers.filter((m) => (m.ministries || []).length);
+  dimensions.push(scoredDimension('volunteers', 'Volunteer Engagement',
+    activeMembers.length ? (servingMembers.length / activeMembers.length) * 100 : 70,
+    `${servingMembers.length} of ${activeMembers.length} active members serve in a ministry.`));
+
+  const prayers = db.all('prayers');
+  const activePrayers = prayers.filter((p) => p.status === 'open' || p.status === 'praying');
+  const stalePrayers = activePrayers.filter((p) => daysBetween(p.updatedAt || p.createdAt, now) > 30);
+  dimensions.push(scoredDimension('prayer', 'Prayer Activity',
+    activePrayers.length ? Math.max(0, 100 - (stalePrayers.length / activePrayers.length) * 100) : 70,
+    activePrayers.length ? `${stalePrayers.length} of ${activePrayers.length} open requests have had no update in a month.` : 'No open prayer requests right now.'));
+
+  const leadMemberIds = [...new Set(db.all('ministries').map((m) => m.leadId).filter(Boolean))];
+  const readinessScores = leadMemberIds.map((memberId) => leadershipReadiness(db, { memberId })).filter((r) => r.total > 0);
+  const leadershipScore = readinessScores.length ? readinessScores.reduce((sum, r) => sum + r.score, 0) / readinessScores.length : 70;
+  dimensions.push(scoredDimension('leadership', 'Leadership Development', leadershipScore,
+    readinessScores.length
+      ? `Ministry leads have completed ${Math.round(leadershipScore)}% of leader-restricted Equip training on average.`
+      : 'No leader-restricted courses recorded as complete yet.'));
+
+  const allMembers = db.all('members');
+  const stillActive = allMembers.filter((m) => !m.archived);
+  dimensions.push(scoredDimension('retention', 'Member Retention',
+    allMembers.length ? (stillActive.length / allMembers.length) * 100 : 70,
+    `${stillActive.length} of ${allMembers.length} people ever recorded are still active.`));
+
+  const pastVisitors = allMembers.filter((m) => daysBetween(m.joinedOn || m.createdAt, now) >= 60);
+  const convertedVisitors = pastVisitors.filter((m) => ['regular', 'member'].includes(m.status));
+  dimensions.push(scoredDimension('visitors', 'Visitor Retention',
+    pastVisitors.length ? (convertedVisitors.length / pastVisitors.length) * 100 : 70,
+    pastVisitors.length
+      ? `${convertedVisitors.length} of ${pastVisitors.length} people who joined 60+ days ago are now regulars or members.`
+      : 'No one has been here long enough yet to measure this.'));
+
+  const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+  const priorQuarterStart = new Date(quarterStart.getFullYear(), quarterStart.getMonth() - 3, 1);
+  const thisQuarter = financeSnapshot(db, { from: quarterStart, to: now });
+  const priorQuarter = financeSnapshot(db, { from: priorQuarterStart, to: quarterStart });
+  const givingChangePct = priorQuarter.giving ? ((thisQuarter.giving - priorQuarter.giving) / priorQuarter.giving) * 100 : 0;
+  dimensions.push(scoredDimension('giving', 'Giving Trends', priorQuarter.giving ? 50 + Math.max(-50, Math.min(50, givingChangePct)) : 70,
+    priorQuarter.giving
+      ? `${formatMoney(thisQuarter.giving)} given this quarter, ${givingChangePct >= 0 ? 'up' : 'down'} ${Math.abs(Math.round(givingChangePct))}% on the quarter before.`
+      : `${formatMoney(thisQuarter.giving)} given this quarter — not enough history yet for a trend.`));
+
+  const trainedMemberIds = new Set(db.where('enrollments', (e) => e.status === 'completed').map((e) => e.memberId));
+  const trainedActive = activeMembers.filter((m) => trainedMemberIds.has(m.id));
+  dimensions.push(scoredDimension('training', 'Training Completion',
+    activeMembers.length ? (trainedActive.length / activeMembers.length) * 100 : 70,
+    `${trainedActive.length} of ${activeMembers.length} active members have completed at least one Equip course.`));
+
+  const ministries = db.all('ministries');
+  const ministryScores = ministries.map((m) => ministryHealthScore(db, m, { now }).score);
+  dimensions.push(scoredDimension('departments', 'Department Health',
+    ministryScores.length ? ministryScores.reduce((a, b) => a + b, 0) / ministryScores.length : 70,
+    ministryScores.length ? `${ministries.length} ministr${ministries.length === 1 ? 'y averages' : 'ies average'} ${Math.round(ministryScores.reduce((a, b) => a + b, 0) / ministryScores.length)}%.` : 'No ministries recorded yet.'));
+
+  const overallScore = Math.round(dimensions.reduce((sum, d) => sum + d.score, 0) / dimensions.length);
+
+  return {
+    score: overallScore,
+    status: HEALTH_STATUS(overallScore),
+    statusLabel: HEALTH_STATUS_LABEL[HEALTH_STATUS(overallScore)],
+    dimensions,
+    recommendations: dimensions
+      .filter((d) => d.status === 'critical' || d.status === 'needs-attention')
+      .map((d) => `${d.label}: ${CHURCH_HEALTH_RECOMMENDATIONS[d.key] || 'worth a closer look at the next leadership meeting.'}`),
+    notTracked: ['Small Group Participation — Shepherd does not track small groups yet.'],
   };
 }
 

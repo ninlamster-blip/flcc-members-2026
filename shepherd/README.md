@@ -46,7 +46,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
 | **Worship** | Song library searchable by theme, key, mood, season, language and lyrics; setlists; team and rehearsals |
 | **Preaching** | Sermon archive, series planning, illustrations and quotes, and an assistant that drafts the work *around* the sermon |
-| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
+| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
 | **Finance** | Giving, expenses, budgets, projects, approvals — encrypted, role-restricted, exportable |
 | **Document vault** | Encrypted files with version history, fingerprints and expiry reminders |
 | **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
@@ -96,8 +96,18 @@ Behind the dashboard, **Leadership** in the sidebar holds the rest of it:
 - **My tasks** — action items, event jobs and care visits assigned to you,
   wherever they came from, in one Today/Overdue/Upcoming/Completed view.
 - **Ministry health** — a transparent 0–100 score per ministry from task
-  completion, overdue work, volunteer coverage and recent activity, with its
-  breakdown shown, not hidden behind a single number.
+  completion, overdue work, volunteer coverage, recent activity, goal
+  progress, training completion, member engagement, and — only where a
+  budget line actually matches — spending discipline, with the full
+  breakdown, a four-month trend, strengths, weaknesses and one-line
+  recommendations shown, not hidden behind a single number.
+- **Church health overview** — the church-wide counterpart: nine
+  independently-scored dimensions (attendance growth, volunteer engagement,
+  prayer activity, leadership development, member retention, visitor
+  retention, giving trends, training completion, department health) each
+  with its own status and detail, recommendations only where genuinely
+  needed, and an honest note on what Shepherd does not yet track (small
+  groups).
 - **Leadership directory**, **annual planner** (vision, objectives, KPIs,
   budget, quarterly review per ministry per year), and a **timeline** — a
   day-grouped feed built from the real audit log, so it only ever shows what
@@ -295,7 +305,7 @@ No build step, no dependencies. Edit a file, reload the page.
 
 ```bash
 python3 -m http.server 8787          # then open /shepherd/
-node --test shepherd/test/*.test.mjs # 78 tests, no dependencies
+node --test shepherd/test/*.test.mjs # 129 tests, no dependencies
 ```
 
 The test suite covers tenant isolation, permissions, the crypto (including the
