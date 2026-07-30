@@ -193,6 +193,48 @@ rendered through `aiOutput()`, which cannot display it without the badge.
 rest of the insights layer, they are facts the church already has, formatted
 for a two-second read, not a model's output.
 
+## Equip
+
+Four collections: `courses`, `learningPaths`, `enrollments`, `certificates`
+(all `resource: 'equip'`). The permission shape mirrors the leadership
+per-instance ACL exactly:
+
+- `equip:read` is granted to every role — Equip is for members and leaders.
+- `equip:write` (catalogue authoring — creating/editing courses and paths) is
+  admin-held (`church_admin`, `senior_pastor`).
+- An ordinary member still tracks their *own* learning without holding
+  `equip:write`: `enrollments.instanceWrite` is `policies.canWriteEnrollment`,
+  the same shape as `canWriteActionItem` — `Database._assertWritable()` falls
+  back to it when the coarse permission is absent, scoped to `record.memberId
+  === user.memberId`. `certificates` reuses the identical function: a member
+  may only ever issue a certificate naming themselves, the same trust
+  boundary already placed on their own enrollment record, not a new one.
+- `leaderOnly` courses (Biblical Leadership, Church Governance, Child
+  Protection Essentials, …) are gated by `policies.canEnrollInCourse`: open to
+  `leadership:read` or `equip:write`, locked otherwise. This is a role check,
+  not an instance check — unlike enrollment ownership, "is this course
+  leader-only" does not depend on which record it is.
+
+Insights, not fabrication: `learningProgress`, `recommendNextCourse` and
+`leadershipReadiness` in `core/ai.js` are pure computation over enrollment and
+course records — no model, and the same numbers back the Equip dashboard,
+My Learning, and the Training & Equip card on a member's People profile, so
+none of the three ever disagrees with the others. `recommendNextCourse`
+prefers a course whose prerequisites are already met and whose category
+matches a ministry the member serves in; `leadershipReadiness` is a plain
+count (leader-restricted courses completed, out of how many exist), returned
+alongside the score for the same reason `ministryHealthScore` returns its
+breakdown — a number alone invites "readiness for what, exactly". The AI
+coach (`equip.explain`, `equip.summary`, `equip.quiz`, `equip.coach`) only
+drafts encouragement and study aids *around* those computed facts, and
+carries the usual `aiGenerated` label.
+
+Course authoring reuses the generic schema-driven editor (`openRecordModal`)
+rather than a bespoke lesson-authoring UI — lessons are structured data (an
+array of `{title, type, summary, quiz}` on the course's `lessons` field,
+type `object`), seeded or edited as JSON. A rich video-upload/drag-and-drop
+lesson builder is a separate feature this pass does not attempt.
+
 ## Routing
 
 `#/<module>/<param>?<query>`, with `#/c/<tenantId>/...` accepted so a church

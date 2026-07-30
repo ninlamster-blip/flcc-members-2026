@@ -15,6 +15,184 @@ import { isoDate, addDays } from './format.js';
 import { blank } from './schema.js';
 import { SERVICE_TEMPLATES } from './ai.js';
 
+/**
+ * A representative slice of the catalogue, not all sixteen categories in
+ * full — ten courses across the categories a small church actually starts
+ * with, each with real (if brief) lessons, a quiz and discussion questions,
+ * so the library, a course detail screen and a completed certificate all
+ * have something honest to show. The schema and the UI both support the
+ * full sixteen-category catalogue the spec describes; this is what ships
+ * with a fresh church, not a ceiling.
+ */
+const COURSES = [
+  {
+    title: 'New Believer Foundations', category: 'Foundations of the Christian Faith', level: 'beginner',
+    duration: '3 lessons · 45 min', instructor: 'Pastor Ruth Antonio',
+    description: 'The first steps of following Jesus: what changed, what to expect, and how to keep going.',
+    objectives: ['Explain what happens at conversion', 'Build a habit of daily prayer and reading', 'Know where to bring questions'],
+    lessons: [
+      { title: 'What Just Happened to Me', type: 'video', summary: 'New life in Christ, in plain language — not a feeling to chase, a fact to stand on.' },
+      { title: 'Talking With God', type: 'audio', summary: 'A simple pattern for prayer any new believer can start today.' },
+      {
+        title: 'Finding Your People', type: 'reading', summary: 'Why a small group and a Sunday habit matter more than a perfect prayer life.',
+        quiz: [{ question: 'What matters most in the first month of following Jesus?', options: ['A perfect prayer life', 'Consistency, not perfection', 'Reading the whole Bible at once'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['What is one thing that has already changed since you decided to follow Jesus?', 'Who could you ask when you have a question you are embarrassed to ask?'],
+  },
+  {
+    title: 'Growing as a Disciple', category: 'Discipleship', level: 'beginner',
+    duration: '4 lessons · 1 hr', instructor: 'Pastor Jomar Antonio',
+    description: 'Habits that make faith durable: Scripture, prayer, community, and service.',
+    objectives: ['Build a rhythm of Scripture and prayer', 'Identify one place to serve'],
+    prerequisites: [],
+    lessons: [
+      { title: 'A Rhythm, Not a Rulebook', type: 'video', summary: 'Discipleship as a way of life, not a checklist that runs out.' },
+      { title: 'Scripture You Can Actually Keep Up With', type: 'reading', summary: 'A realistic reading plan for a full-time worker.' },
+      { title: 'Serving Without Burning Out', type: 'audio', summary: 'Why every disciple serves somewhere, and how to pick where.' },
+      {
+        title: 'Community Is Not Optional', type: 'reading', summary: 'What a small group actually gives you that Sunday alone does not.',
+        quiz: [{ question: 'What is discipleship best described as?', options: ['A checklist to finish', 'A rhythm of life', 'A class you graduate from'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['What rhythm already works for you, and what keeps breaking it?'],
+  },
+  {
+    title: 'Prayer That Works', category: 'Prayer', level: 'beginner',
+    duration: '3 lessons · 40 min', instructor: 'Sarah Whitfield',
+    description: 'Practical prayer for people who feel like they are bad at it.',
+    objectives: ['Pray with more honesty and less performance', 'Keep a simple prayer list'],
+    lessons: [
+      { title: 'Prayer Is a Conversation', type: 'video', summary: 'Why prayer does not need better vocabulary, only more honesty.' },
+      {
+        title: 'When Prayer Feels Unanswered', type: 'reading', summary: 'Lament as prayer that has not given up — Psalm 13 as a model.',
+        quiz: [{ question: 'What does the lesson say lament is?', options: ['A lack of faith', 'Prayer that has not given up', 'Something to avoid'], answer: 1 }],
+      },
+      { title: 'Keeping a Prayer List That Lasts', type: 'audio', summary: 'A five-minute weekly habit that keeps intercession from fading.' },
+    ],
+    discussionQuestions: ['What is one prayer you have stopped praying because it felt unanswered?'],
+  },
+  {
+    title: 'How to Study the Bible', category: 'Bible Study', level: 'beginner',
+    duration: '4 lessons · 1 hr', instructor: 'Bijoy Thomas',
+    description: 'Observation, interpretation, application — a simple method for reading any passage well.',
+    objectives: ['Read a passage in its context', 'Ask three questions of any text: what it says, what it means, what it asks'],
+    lessons: [
+      { title: 'Context Is Everything', type: 'video', summary: 'Who wrote it, to whom, and why — before asking what it means for you.' },
+      { title: 'What It Says', type: 'reading', summary: 'Slow, careful observation before interpretation.' },
+      { title: 'What It Means', type: 'reading', summary: 'The doctrine underneath, stated simply.' },
+      {
+        title: 'What It Asks of Us', type: 'audio', summary: 'Turning meaning into one concrete change for the week.',
+        quiz: [{ question: 'What comes first in this method?', options: ['Application', 'Observation', 'A commentary'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['Pick a verse you think you already understand — what did slowing down change?'],
+  },
+  {
+    title: 'Worship Team Essentials', category: 'Worship Ministry', level: 'intermediate',
+    duration: '3 lessons · 50 min', instructor: 'Elmer Villanueva',
+    description: 'Leading sung worship as a team, not a performance — for anyone new to the rota.',
+    objectives: ['Understand the order of service and its purpose', 'Rehearse and lead with humility'],
+    lessons: [
+      { title: 'Worship Is Not the Warm-Up', type: 'video', summary: 'The theology behind why the songs matter as much as the sermon.' },
+      { title: 'Leading a Team Well', type: 'reading', summary: 'Cueing, communication, and covering for each other on stage.' },
+      {
+        title: 'Handling a Bad Sunday', type: 'audio', summary: 'What to do when the mix is wrong or a cue is missed — mid-song.',
+        quiz: [{ question: 'What does the lesson say worship on stage is?', options: ['A performance', 'A team act of service', 'The worship leader\'s moment'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['Describe a Sunday that did not go to plan — what actually mattered by the end?'],
+  },
+  {
+    title: 'Teaching Children Well', category: "Children's Ministry", level: 'intermediate',
+    duration: '3 lessons · 55 min', instructor: 'Christine Okafor',
+    description: 'Age-appropriate teaching, classroom management, and keeping children safe.',
+    objectives: ['Plan a lesson children will remember', 'Manage a classroom without losing warmth'],
+    lessons: [
+      { title: 'How Children Actually Learn', type: 'video', summary: 'One big idea, a story, an activity — not a lecture in miniature.' },
+      { title: 'A Room That Runs Itself', type: 'reading', summary: 'Structure and routine as kindness, not control.' },
+      {
+        title: 'Keeping Children Safe', type: 'reading', summary: 'The two-adult rule, sign-in/sign-out, and what to do if something concerns you.',
+        quiz: [{ question: 'What is the minimum adult presence per classroom?', options: ['One trusted adult', 'Two adults, always', 'Whoever is available'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['What is the one thing you want a child to remember from a whole year in your class?'],
+  },
+  {
+    title: 'Sharing Your Faith', category: 'Evangelism', level: 'beginner',
+    duration: '3 lessons · 45 min', instructor: 'Renjith Mathew',
+    description: 'Ordinary conversations about faith, without a script or a sales pitch.',
+    objectives: ['Tell your own story in under two minutes', 'Ask better questions than you give answers'],
+    lessons: [
+      { title: 'Your Story Is Evidence', type: 'video', summary: 'A two-minute testimony that is honest, not polished.' },
+      {
+        title: 'Questions Open Doors Scripts Close', type: 'reading', summary: 'Curiosity over argument, every time.',
+        quiz: [{ question: 'What does the lesson recommend leading with?', options: ['An argument', 'A question', 'A tract'], answer: 1 }],
+      },
+      { title: 'When Someone Says No', type: 'audio', summary: 'Leaving the door open instead of forcing it.' },
+    ],
+    discussionQuestions: ['Who is one person you already have a real relationship with who does not yet follow Jesus?'],
+  },
+  {
+    title: 'Biblical Leadership', category: 'Leadership Development', level: 'advanced', leaderOnly: true,
+    duration: '4 lessons · 1.5 hr', instructor: 'Senior Pastor',
+    description: 'What Scripture actually asks of a leader — restricted to those carrying leadership responsibility.',
+    objectives: ['Distinguish authority from control', 'Lead through seasons of conflict without losing people'],
+    lessons: [
+      { title: 'Leadership as Service', type: 'video', summary: 'Foot-washing as the model, not the exception.' },
+      { title: 'Qualifications, Not Just Gifting', type: 'reading', summary: '1 Timothy 3 and Titus 1, read honestly.' },
+      { title: 'Leading Through Conflict', type: 'reading', summary: 'Naming a problem without losing the person.' },
+      {
+        title: 'Finishing Well', type: 'audio', summary: 'Succession and handing off responsibility without clinging to it.',
+        quiz: [{ question: 'What model does the lesson use for leadership?', options: ['Command and control', 'Foot-washing service', 'Popularity'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['Where has your authority been more about control than service recently?'],
+  },
+  {
+    title: 'Church Governance', category: 'Church Administration', level: 'advanced', leaderOnly: true,
+    duration: '3 lessons · 1 hr', instructor: 'Church Administrator',
+    description: 'How decisions actually get made and recorded — for elders, committee chairs, and staff.',
+    objectives: ['Understand the decision-and-minutes cycle', 'Know what needs a vote and what does not'],
+    lessons: [
+      { title: 'Who Decides What', type: 'video', summary: 'Reserved matters, delegated matters, and the difference.' },
+      { title: 'Minutes That Actually Help', type: 'reading', summary: 'Recording the decision, the reason, and the review date.' },
+      {
+        title: 'When to Slow Down', type: 'reading', summary: 'The decisions worth a second meeting before they are made.',
+        quiz: [{ question: 'What should good minutes always capture, beyond the decision?', options: ['Nothing extra', 'The reason and a review date', 'Just attendance'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['What is a decision your church made recently without writing down why?'],
+  },
+  {
+    title: 'Child Protection Essentials', category: 'Pastoral Care', level: 'intermediate', leaderOnly: true,
+    duration: '2 lessons · 40 min', instructor: 'Church Administrator',
+    description: 'Every leader\'s responsibility to keep children and vulnerable people safe.',
+    objectives: ['Recognise a concern', 'Know exactly who to tell, and how fast'],
+    lessons: [
+      { title: 'Your Duty of Care', type: 'video', summary: 'Every leader\'s baseline responsibility, no exceptions for tenure or role.' },
+      {
+        title: 'What to Do If You Are Concerned', type: 'reading', summary: 'Report, do not investigate — and never promise secrecy.',
+        quiz: [{ question: 'If a child discloses something concerning, what should you never promise?', options: ['To listen', 'To keep it secret', 'To tell a leader'], answer: 1 }],
+      },
+    ],
+    discussionQuestions: ['Do you know, right now, exactly who you would tell if you were concerned?'],
+  },
+];
+
+const LEARNING_PATHS = [
+  {
+    title: 'New Believer Path', audience: 'Anyone in their first year of faith',
+    description: 'The foundation every new believer needs, in the order that actually helps.',
+    courseTitles: ['New Believer Foundations', 'Growing as a Disciple', 'Prayer That Works', 'How to Study the Bible'],
+  },
+  {
+    title: 'Ministry Leader Path', audience: 'Ministry heads, elders and staff stepping into greater responsibility',
+    description: 'The training every leader needs before they carry more responsibility.',
+    courseTitles: ['Biblical Leadership', 'Church Governance', 'Child Protection Essentials'],
+  },
+];
+
 const PEOPLE = [
   ['Ruth Antonio', 'female', 'Philippines', 'Salmiya'], ['Jomar Antonio', 'male', 'Philippines', 'Salmiya'],
   ['Grace Villanueva', 'female', 'Philippines', 'Hawally'], ['Elmer Villanueva', 'male', 'Philippines', 'Hawally'],
@@ -465,6 +643,54 @@ export function seedTenant(db, { user = null, now = new Date() } = {}) {
     title, body, channel, status,
     sentAt: status === 'sent' ? new Date(addDays(now, -5)).toISOString() : null,
   }), opts));
+
+  /* Equip — learning & training */
+  const courseByTitle = new Map();
+  for (const spec of COURSES) {
+    const { prerequisites: prereqTitles, ...rest } = spec;
+    const course = db.insert('courses', blank('courses', {
+      ...rest,
+      prerequisites: (prereqTitles || []).map((t) => courseByTitle.get(t)).filter(Boolean),
+    }), opts);
+    courseByTitle.set(spec.title, course);
+  }
+  for (const path of LEARNING_PATHS) {
+    db.insert('learningPaths', blank('learningPaths', {
+      title: path.title,
+      description: path.description,
+      audience: path.audience,
+      courseIds: path.courseTitles.map((t) => courseByTitle.get(t).id),
+    }), opts);
+  }
+  // A little learning history for the member the signed-in account links to
+  // below, so the Equip dashboard has a completed course, a certificate and
+  // one course in progress on the very first visit, not an empty screen.
+  const foundations = courseByTitle.get('New Believer Foundations');
+  const discipleship = courseByTitle.get('Growing as a Disciple');
+  const prayerCourse = courseByTitle.get('Prayer That Works');
+  if (foundations) {
+    db.insert('enrollments', blank('enrollments', {
+      memberId: members[0].id, courseId: foundations.id, status: 'completed',
+      completedLessons: (foundations.lessons || []).map((_, i) => String(i)),
+      startedAt: isoDate(addDays(now, -40)), completedAt: isoDate(addDays(now, -30)),
+    }), opts);
+    db.insert('certificates', blank('certificates', {
+      memberId: members[0].id, courseId: foundations.id, courseTitle: foundations.title,
+      instructor: foundations.instructor, issuedAt: isoDate(addDays(now, -30)),
+      certificateNumber: `CERT-${new Date(addDays(now, -30)).getFullYear()}-0001`,
+      verificationId: `ver_${foundations.id}${members[0].id}`.slice(0, 24),
+    }), opts);
+  }
+  if (discipleship) {
+    db.insert('enrollments', blank('enrollments', {
+      memberId: members[0].id, courseId: discipleship.id, status: 'in-progress',
+      completedLessons: (discipleship.lessons || []).slice(0, 2).map((_, i) => String(i)),
+      startedAt: isoDate(addDays(now, -10)),
+    }), opts);
+  }
+  if (prayerCourse) {
+    db.insert('enrollments', blank('enrollments', { memberId: members[1].id, courseId: prayerCourse.id, status: 'not-started' }), opts);
+  }
 
   // Link the signed-in account to a member profile, so the role-based
   // dashboard, the leader task centre and ministry workspace access — all of

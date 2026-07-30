@@ -23,7 +23,7 @@
 
 import { daysUntilAnnual, daysBetween, isoDate, formatMoney, formatDate } from './format.js';
 import { can } from './rbac.js';
-import { isCommunionScheduled } from './policies.js';
+import { isCommunionScheduled, canEnrollInCourse } from './policies.js';
 
 /* ── configuration ───────────────────────────────────────────────────────── */
 
@@ -57,6 +57,10 @@ export const AI_TASKS = {
   'knowledge.answer':    'Answer from church documents',
   'bible.study':         'Bible study',
   'assistant.ask':       'Ask Shepherd',
+  'equip.explain':       'Explain a passage',
+  'equip.summary':       'Lesson summary',
+  'equip.quiz':          'Study questions & memory verse',
+  'equip.coach':         'Learning encouragement & next step',
 };
 
 export const LANGUAGES = ['English', 'Arabic', 'Tagalog'];
@@ -512,6 +516,66 @@ export function buildLocalDraft(task, input, db) {
           : 'This device found nothing in your church\'s own records for that, and has no general knowledge of its own to '
             + `answer "${question}" without help. Connect an AI service in Settings → AI to have Shepherd actually answer `
             + 'questions like this one — scripture, theology, ministry advice, or anything else.',
+      };
+    }
+
+    case 'equip.explain': {
+      const { passage = '', question = '' } = input;
+      const subject = passage || question || 'this passage';
+      return {
+        system: SYSTEM,
+        prompt: `Explain ${subject} for someone studying it in an Equip course: historical context, plain meaning, one honest application today. Sound biblical teaching, not speculation.`,
+        text: [
+          `## ${subject}`,
+          '**Context:** who wrote it, to whom, and why.',
+          '**Plain meaning:** what the text is actually saying, in a sentence or two.',
+          '**Today:** one honest way this shapes how we live.',
+        ].join('\n'),
+      };
+    }
+
+    case 'equip.summary': {
+      const { title = '', content = '' } = input;
+      const lines = String(content || '').split(/\n+/).map((l) => l.trim()).filter(Boolean);
+      return {
+        system: SYSTEM,
+        prompt: `Summarise this lesson ("${title}") in five bullet points a learner could review before a quiz.\n\n${content}`,
+        text: [
+          `## ${title || 'Lesson summary'}`,
+          ...(lines.length ? lines.slice(0, 5).map((l) => `- ${l.slice(0, 160)}`) : ['- Add the lesson content to summarise.']),
+        ].join('\n'),
+      };
+    }
+
+    case 'equip.quiz': {
+      const { title = '', passage = '' } = input;
+      return {
+        system: SYSTEM,
+        prompt: `Write five study questions and one memory-verse challenge for a lesson titled "${title}"${passage ? ` on ${passage}` : ''}.`,
+        text: [
+          `## Study questions — ${title || 'this lesson'}`,
+          '1. What is the one thing you want to remember from this lesson?',
+          '2. Where did this challenge something you assumed?',
+          '3. Who could you share this with this week?',
+          '4. What would change if you took this seriously?',
+          '5. What question are you left with?',
+          '',
+          '## Memory verse challenge',
+          passage
+            ? `Memorise ${passage} and recite it to someone else in your group before the next session.`
+            : 'Choose the shortest verse from this lesson and recite it from memory next session.',
+        ].join('\n'),
+      };
+    }
+
+    case 'equip.coach': {
+      const { name = '', nextCourse = '', hours = 0, completedCount = 0 } = input;
+      return {
+        system: SYSTEM,
+        prompt: `Write two encouraging sentences to ${name || 'a learner'} who has completed ${completedCount} course(s) and ${hours} learning hour(s), recommending "${nextCourse}" next.`,
+        text: completedCount
+          ? `You've put in ${hours} hour${hours === 1 ? '' : 's'} across ${completedCount} course${completedCount === 1 ? '' : 's'} — that's real, steady growth.${nextCourse ? ` "${nextCourse}" is a good next step.` : ' Keep going.'}`
+          : `Every course starts with a first lesson.${nextCourse ? ` "${nextCourse}" is a good place to begin.` : ' Take a look at the library and pick one that speaks to where you are.'}`,
       };
     }
 
@@ -1083,4 +1147,72 @@ export function buildBriefing(db, user, { now = new Date(), settings = {} } = {}
 
   if (!lines.length) lines.push('Nothing urgent — a clear week is a good week to check in on someone anyway.');
   return lines;
+}
+
+/* ── equip: learning & training ──────────────────────────────────────────── */
+
+/** "3h 30m", "90 min", "2 hours" — whatever a course's free-text duration says, as a number of hours. */
+function parseDurationHours(duration) {
+  const str = String(duration || '');
+  const hourMatch = str.match(/(\d+(?:\.\d+)?)\s*h/i);
+  const minMatch = str.match(/(\d+(?:\.\d+)?)\s*m/i);
+  return (hourMatch ? Number(hourMatch[1]) : 0) + (minMatch ? Number(minMatch[1]) / 60 : 0);
+}
+
+/**
+ * One member's learning profile: what they have completed and are partway
+ * through, the certificates they hold, and an hours estimate from each
+ * completed course's stated duration. Pure computation over enrollment and
+ * course records — this is what the Equip dashboard and a member's profile
+ * card both read, so they never show two different ideas of "done".
+ */
+export function learningProgress(db, user) {
+  const memberId = user && user.memberId;
+  const enrollments = memberId ? db.where('enrollments', (e) => e.memberId === memberId) : [];
+  const completed = enrollments.filter((e) => e.status === 'completed');
+  const inProgress = enrollments.filter((e) => e.status === 'in-progress');
+  const certificates = memberId
+    ? db.where('certificates', (c) => c.memberId === memberId).sort((a, b) => new Date(b.issuedAt) - new Date(a.issuedAt))
+    : [];
+  const hours = completed.reduce((total, e) => total + parseDurationHours((db.find('courses', e.courseId) || {}).duration), 0);
+  return { enrollments, completed, inProgress, certificates, hours: Math.round(hours * 10) / 10 };
+}
+
+/**
+ * The next course worth suggesting: not already completed, not gated behind
+ * a role the user lacks, prerequisites already satisfied where the course
+ * has any, and — where there is a choice — one that matches a ministry the
+ * member actually serves in. No model; this is the same "obvious next step"
+ * a discipleship pastor would name by hand.
+ */
+export function recommendNextCourse(db, user) {
+  const memberId = user && user.memberId;
+  const enrollments = memberId ? db.where('enrollments', (e) => e.memberId === memberId) : [];
+  const completedIds = new Set(enrollments.filter((e) => e.status === 'completed').map((e) => e.courseId));
+  const member = memberId ? db.find('members', memberId) : null;
+  const candidates = db.where('courses', (c) => !c.archived && !completedIds.has(c.id) && canEnrollInCourse(user, c));
+  if (!candidates.length) return null;
+  const ready = candidates.filter((c) => (c.prerequisites || []).every((p) => completedIds.has(p)));
+  const pool = ready.length ? ready : candidates;
+  const ministries = (member && member.ministries) || [];
+  const matched = pool.find((c) => ministries.some((m) => String(c.category).toLowerCase().includes(String(m).toLowerCase())));
+  return matched || pool[0];
+}
+
+/**
+ * How ready this member is for greater leadership responsibility, by the one
+ * fact Shepherd can actually measure: how many of the leader-restricted
+ * courses they have completed. Transparent on purpose — a number alone
+ * invites the question "readiness for what, exactly", so the breakdown is
+ * returned alongside it, the same as `ministryHealthScore`.
+ */
+export function leadershipReadiness(db, user) {
+  const memberId = user && user.memberId;
+  const leaderCourses = db.where('courses', (c) => c.leaderOnly && !c.archived);
+  if (!leaderCourses.length) return { score: 0, completed: 0, total: 0 };
+  const completedIds = new Set(
+    (memberId ? db.where('enrollments', (e) => e.memberId === memberId && e.status === 'completed') : []).map((e) => e.courseId),
+  );
+  const completed = leaderCourses.filter((c) => completedIds.has(c.id)).length;
+  return { score: Math.round((completed / leaderCourses.length) * 100), completed, total: leaderCourses.length };
 }

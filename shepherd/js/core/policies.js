@@ -110,7 +110,7 @@ export function canReadCounselingNote(user, note) {
  * sensitive records are read in their own module by the people who hold those
  * permissions, and are never summarised into an answer.
  */
-export const KNOWLEDGE_EXCLUDED = ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit'];
+export const KNOWLEDGE_EXCLUDED = ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit', 'enrollments', 'certificates'];
 
 export function knowledgeMayUse(collection) {
   return !KNOWLEDGE_EXCLUDED.includes(collection);
@@ -150,6 +150,32 @@ export function canWriteActionItem(user, record, db) {
 export function canWriteAnnualPlan(user, record, db) {
   if (!record.ministryId) return false;
   return ledMinistries(db, user).some((m) => m.id === record.ministryId);
+}
+
+/* ── equip: learning & training ──────────────────────────────────────────── */
+
+/**
+ * An enrollment/progress record belongs to one member; nobody else's
+ * learning is theirs to mark complete or bookmark. `equip:write` (course
+ * authoring) is a separate, admin-held permission — this is the instance
+ * fallback so an ordinary member can still track their own course without
+ * holding it, the same shape as `canWriteActionItem`/`canWriteAnnualPlan`.
+ */
+export function canWriteEnrollment(user, record) {
+  return !!(user && user.memberId && record.memberId === user.memberId);
+}
+
+/**
+ * Certain courses — church governance, child protection, counselling basics
+ * — are restricted to those who actually carry leadership responsibility,
+ * not opened to every member. `leaderOnly` courses require a role that
+ * holds `leadership:read` (every leadership-track role, from ministry head
+ * up) or explicit `equip:write` (whoever manages the catalogue can always
+ * preview what they publish).
+ */
+export function canEnrollInCourse(user, course) {
+  if (!course || !course.leaderOnly) return true;
+  return can(user, 'leadership:read') || can(user, 'equip:write');
 }
 
 /* ── ministry workspaces ─────────────────────────────────────────────────── */

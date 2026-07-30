@@ -35,6 +35,7 @@ export const MODULES = [
   { id: 'events',         title: 'Events',         icon: 'calendar',  resource: 'events',         group: 'Gather',   mobile: true,  load: () => import('./modules/events.js') },
   { id: 'worship',        title: 'Worship',        icon: 'music',     resource: 'worship',        group: 'Gather',                  load: () => import('./modules/worship.js') },
   { id: 'preaching',      title: 'Preaching',      icon: 'book',      resource: 'preaching',      group: 'Gather',                  load: () => import('./modules/preaching.js') },
+  { id: 'equip',          title: 'Equip',          icon: 'graduation', resource: 'equip',         group: 'Grow',     mobile: true,  load: () => import('./modules/equip.js') },
   { id: 'leadership',     title: 'Leadership',     icon: 'shield',    resource: 'leadership',     group: 'Lead',                    load: () => import('./modules/leadership.js') },
   { id: 'finance',        title: 'Finance',        icon: 'wallet',    resource: 'finance',        group: 'Lead',                    load: () => import('./modules/finance.js') },
   { id: 'documents',      title: 'Document vault', icon: 'folder',    resource: 'documents',      group: 'Lead',                    load: () => import('./modules/documents.js') },

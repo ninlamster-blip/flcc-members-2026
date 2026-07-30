@@ -40,7 +40,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | Module | What it does |
 | --- | --- |
 | **Dashboard** | Today's schedule, what Shepherd noticed, attendance trend, follow-ups, prayer, coming events, birthdays, finance snapshot, recent activity |
-| **People** | Directory, families, ministries, attendance recording, and a profile that gathers everything known about one person |
+| **People** | Directory, families, ministries, attendance recording, and a profile that gathers everything known about one person — including their Equip training, certificates and leadership readiness |
 | **Member care** | Follow-ups and visits, plus who the records say has gone quiet — absences, new believers, the care list, celebrations |
 | **Prayer centre** | Wall, leaders-only and private requests, chains, answered prayer, a generated prayer-meeting sheet |
 | **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
@@ -52,6 +52,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
 | **Communications** | Announcements and messages prepared for WhatsApp, email, SMS, bulletin |
 | **Reports** | Attendance, growth, volunteers, giving, prayer, events — PDF, Excel, CSV |
+| **Equip** | A learning platform: a course library across sixteen discipleship and ministry categories, structured learning paths, quizzes, an AI learning coach, auto-issued certificates, and a personal growth dashboard with a computed leadership-readiness score |
 | **Assistant** | Everything Shepherd noticed, a free-form "ask anything" box, and every drafting task, in one place |
 | **Settings** | Church profile, users and roles, security, AI, backup, audit log |
 
@@ -115,6 +116,55 @@ Shepherd deliberately does **not** treat the FLCC Members app's member data
 as a shared database — see "Multi-church" in the repository root's
 `CLAUDE.md`. Each product keeps its own storage; nothing here reads or
 writes `church.js` or the `churches/` data files.
+
+## Equip
+
+A learning platform, not a document repository — for members and leaders
+alike, everyone holds `equip:read` by default.
+
+- **Course library** — ten courses ship with a fresh church, across categories
+  from Foundations of the Christian Faith to Church Governance; the schema and
+  UI support the full sixteen-category catalogue the product is meant to
+  cover, this is a representative starting point, not a ceiling. Each course
+  has lessons (video/audio/reading/pdf, with a summary), objectives,
+  prerequisites, a discussion guide, and — on some lessons — a short quiz.
+- **Learning paths** string courses together in order and track progress
+  automatically, showing which course is next.
+- **Leader training** — courses like Biblical Leadership, Church Governance
+  and Child Protection Essentials are marked `leaderOnly` and gated by
+  `policies.canEnrollInCourse`: open to any role holding `leadership:read`
+  (every leadership-track role) or `equip:write` (whoever manages the
+  catalogue), locked for everyone else.
+- **The AI learning coach** explains a passage, summarises a lesson, drafts
+  more study questions and a memory-verse challenge, and turns a computed
+  recommendation into two encouraging sentences — the same insights/drafting
+  split as the rest of the app: what course to take next is computed, not
+  guessed; the encouragement around it is drafted and labelled.
+- **Certificates** are issued automatically on completion (church name,
+  student, course, instructor, date, a certificate number and a verification
+  ID) and download as a printable PDF.
+- **My Learning** — a personal growth dashboard: courses completed, hours,
+  certificates, skills acquired (the categories of what you've finished), a
+  transparent **leadership readiness** score (leader-restricted courses
+  completed, out of how many exist — a count, not an opinion), and an annual
+  learning goal a church administrator can set.
+- Every enrollment belongs to one member the same way a ministry-scoped
+  action item does: `policies.canWriteEnrollment` is the identical
+  per-instance ACL shape as `canWriteActionItem`, so an ordinary member
+  tracks their own progress without holding the catalogue-authoring
+  `equip:write` permission.
+- A member's completed courses, certificates and leadership readiness surface
+  on their **People** profile, so whoever is assigning a volunteer or
+  identifying a future leader sees training history in the same place as
+  everything else known about that person.
+
+Not attempted this pass, and worth naming rather than faking: a rich
+video-upload/drag-and-drop lesson-authoring UI (lessons are structured data,
+edited as JSON through the course editor, or seeded); a live class-scheduling
+system ("Upcoming Classes"); and a full daily Bible reading plan ("Reading
+Plan Progress") — Equip has a rotating set of daily verses, not a year-long
+plan, because Shepherd does not track reading-plan data yet and a real one
+deserves more than a placeholder.
 
 ## Roles
 

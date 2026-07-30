@@ -33,6 +33,7 @@ export const RESOURCES = {
   knowledge:     'Knowledge centre',
   communications:'Communications',
   reports:       'Reports',
+  equip:         'Equip — learning & training',
   assistant:     'AI assistant',
   settings:      'Church settings',
   users:         'Users & roles',
@@ -68,7 +69,7 @@ export const ROLES = {
     description: 'Runs this church on Shepherd: users, settings, and every module inside it.',
     permissions: [
       'dashboard:*', 'members:*', 'care:*', 'leadership:*', 'worship:*', 'preaching:*',
-      'prayer:*', 'events:*', 'finance:*', 'documents:*', 'knowledge:*',
+      'prayer:*', 'events:*', 'finance:*', 'documents:*', 'knowledge:*', 'equip:*',
       'communications:*', 'reports:*', 'assistant:*', 'settings:*', 'users:*', 'audit:read',
     ],
   },
@@ -79,7 +80,7 @@ export const ROLES = {
     permissions: [
       'dashboard:*', 'members:*', 'care:*', 'counseling:*', 'leadership:*', 'worship:read',
       'worship:write', 'preaching:*', 'prayer:*', 'events:*', 'finance:read', 'finance:approve',
-      'finance:export', 'documents:*', 'knowledge:*', 'communications:*', 'reports:*',
+      'finance:export', 'documents:*', 'knowledge:*', 'equip:*', 'communications:*', 'reports:*',
       'assistant:*', 'settings:read', 'users:read', 'audit:read',
     ],
   },
@@ -90,7 +91,7 @@ export const ROLES = {
     permissions: [
       'dashboard:read', 'members:read', 'members:write', 'care:*', 'counseling:*',
       'leadership:read', 'worship:read', 'preaching:*', 'prayer:*', 'events:read',
-      'events:write', 'documents:read', 'knowledge:read', 'knowledge:write',
+      'events:write', 'documents:read', 'knowledge:read', 'knowledge:write', 'equip:read',
       'communications:read', 'communications:write', 'reports:read', 'assistant:*',
     ],
   },
@@ -101,7 +102,7 @@ export const ROLES = {
     permissions: [
       'dashboard:read', 'members:read', 'care:read', 'care:write', 'leadership:read',
       'leadership:write', 'worship:read', 'preaching:read', 'prayer:read', 'prayer:write',
-      'events:read', 'events:write', 'documents:read', 'knowledge:read',
+      'events:read', 'events:write', 'documents:read', 'knowledge:read', 'equip:read',
       'communications:read', 'reports:read', 'assistant:read', 'assistant:write',
     ],
   },
@@ -112,7 +113,7 @@ export const ROLES = {
     permissions: [
       'dashboard:read', 'members:read', 'care:read', 'worship:read', 'worship:write',
       'prayer:read', 'prayer:write', 'events:read', 'events:write', 'documents:read',
-      'knowledge:read', 'communications:read', 'communications:write', 'reports:read',
+      'knowledge:read', 'equip:read', 'communications:read', 'communications:write', 'reports:read',
       'assistant:read', 'assistant:write', 'leadership:read',
     ],
   },
@@ -122,7 +123,7 @@ export const ROLES = {
     description: 'Owns the books. Finance in full; people only as far as giving requires.',
     permissions: [
       'dashboard:read', 'members:read', 'finance:*', 'documents:read', 'documents:write',
-      'reports:read', 'reports:export', 'events:read', 'assistant:read', 'assistant:write',
+      'reports:read', 'reports:export', 'events:read', 'equip:read', 'assistant:read', 'assistant:write',
       'audit:read',
     ],
   },
@@ -133,7 +134,7 @@ export const ROLES = {
     permissions: [
       'dashboard:read', 'members:read', 'members:write', 'care:read', 'leadership:read',
       'leadership:write', 'events:*', 'documents:read', 'documents:write', 'knowledge:read',
-      'knowledge:write', 'communications:*', 'reports:read', 'reports:export',
+      'knowledge:write', 'equip:read', 'communications:*', 'reports:read', 'reports:export',
       'assistant:read', 'assistant:write', 'prayer:read',
     ],
   },
@@ -143,14 +144,14 @@ export const ROLES = {
     description: 'Serves on a team: their rota, their events, the prayer wall.',
     permissions: [
       'dashboard:read', 'worship:read', 'events:read', 'prayer:read', 'prayer:write',
-      'knowledge:read', 'assistant:read',
+      'knowledge:read', 'equip:read', 'assistant:read',
     ],
   },
   member: {
     label: 'Member',
     rank: 10,
     description: 'Optional congregation access: prayer wall, events, announcements.',
-    permissions: ['dashboard:read', 'events:read', 'prayer:read', 'prayer:write', 'knowledge:read'],
+    permissions: ['dashboard:read', 'events:read', 'prayer:read', 'prayer:write', 'knowledge:read', 'equip:read'],
   },
 };
 

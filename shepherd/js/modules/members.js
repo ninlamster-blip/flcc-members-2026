@@ -12,11 +12,11 @@
 import { h, icon } from '../core/dom.js';
 import {
   page, card, table, list, listItem, emptyState, badge, avatar, searchField, segmented,
-  stat, chips, modal, toast, lockedNotice,
+  stat, chips, modal, toast, lockedNotice, progress,
 } from '../core/ui.js';
 import { formatDate, formatDateParts, relativeTime, isoDate, daysUntilAnnual, addDays, pluralize } from '../core/format.js';
 import { blank } from '../core/schema.js';
-import { absentMembers, upcomingCelebrations } from '../core/ai.js';
+import { absentMembers, upcomingCelebrations, learningProgress, leadershipReadiness } from '../core/ai.js';
 import { downloadCSV } from '../core/exporters.js';
 import {
   openRecordModal, deleteRecord, newButton, statusBadge, memberName, matches, sentence,
@@ -450,6 +450,8 @@ function profile(ctx, member) {
 
   const counselingCard = ctx.can('counseling:read') ? counselingSection(ctx, member) : null;
 
+  const equipCard = ctx.can('equip:read') ? trainingCard(ctx, member) : null;
+
   const prayerCard = prayers.length ? card({
     title: 'Prayer requests',
     children: [list(prayers.map((prayer) => listItem({
@@ -490,8 +492,46 @@ function profile(ctx, member) {
       h('div.stack', header,
         h('div.grid.grid--main-side',
           h('div.stack', details, careCard, counselingCard, prayerCard),
-          h('div.stack', familyCard, emergency, attendanceCard, dangerZone))),
+          h('div.stack', familyCard, emergency, attendanceCard, equipCard, dangerZone))),
     ],
+  });
+}
+
+/**
+ * Training & Equip: completed courses, certificates and a leadership-readiness
+ * readout, read here by whoever is assigning volunteers or identifying a
+ * future ministry leader — the seam between discipleship, training and
+ * service the spec asks for. Computed the same way Equip's own dashboards
+ * are (`core/ai.js`), just keyed to this member instead of the viewer.
+ */
+function trainingCard(ctx, member) {
+  const { db } = ctx;
+  const pseudoUser = { memberId: member.id };
+  const learning = learningProgress(db, pseudoUser);
+  const readiness = leadershipReadiness(db, pseudoUser);
+
+  if (!learning.completed.length && !learning.inProgress.length && !learning.certificates.length) {
+    return card({ title: 'Training & Equip', children: [h('p.small.muted', null, 'No Equip courses completed yet.')] });
+  }
+
+  return card({
+    title: 'Training & Equip',
+    subtitle: 'Completed courses, certificates and ministry readiness.',
+    actions: [h('button.btn.btn--sm', { onClick: () => ctx.navigate('/equip') }, 'Open Equip')],
+    children: [
+      h('div.row', { style: { gap: '24px', marginBottom: '12px' } },
+        stat({ value: learning.completed.length, label: 'Completed' }),
+        stat({ value: learning.certificates.length, label: 'Certificates' })),
+      readiness.total ? h('div', { style: { marginBottom: '12px' } },
+        progress(readiness.score, 100, { variant: '' }),
+        h('p.tiny.subtle', { style: { marginTop: '4px' } }, `Leadership readiness: ${readiness.completed} of ${readiness.total} leader-training courses complete.`)) : null,
+      learning.completed.length
+        ? h('div.chip-list', ...learning.completed.map((e) => {
+          const course = db.find('courses', e.courseId);
+          return course ? h('span.chip', course.title) : null;
+        }).filter(Boolean))
+        : null,
+    ].filter(Boolean),
   });
 }
 

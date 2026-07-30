@@ -30,7 +30,7 @@
  * @property {Record<string, FieldDef>} fields
  */
 
-import { canWriteActionItem, canWriteAnnualPlan } from './policies.js';
+import { canWriteActionItem, canWriteAnnualPlan, canWriteEnrollment } from './policies.js';
 
 /**
  * The two recurring worship services every BOTR church runs, plus room for
@@ -38,6 +38,14 @@ import { canWriteActionItem, canWriteAnnualPlan } from './policies.js';
  * baptism Sunday) without inventing a new enum value for every one-off.
  */
 export const SERVICE_TYPES = ['friday', 'sunday', 'other'];
+
+/** Equip's course categories — discipleship and ministry training, not just Bible knowledge. */
+export const EQUIP_CATEGORIES = [
+  'Foundations of the Christian Faith', 'Discipleship', 'Leadership Development', 'Evangelism',
+  'Prayer', 'Bible Study', 'Worship Ministry', "Children's Ministry", 'Youth Ministry',
+  'Marriage & Family', 'Finance & Stewardship', 'Church Administration', 'Pastoral Care',
+  'Missions', 'Apologetics', 'Spiritual Formation',
+];
 
 const person = {
   fullName:     { label: 'Full name', type: 'string', required: true },
@@ -80,6 +88,7 @@ export const COLLECTIONS = {
       awayUntil:     { label: 'Away until', type: 'date', help: 'Set when someone is travelling or unavailable to serve — the rota suggestion skips them until this date.' },
       notes:         { label: 'General notes', type: 'text', help: 'Non-confidential. Counselling notes live in their own permissioned file.' },
       photoColor:    { label: 'Avatar colour', type: 'string' },
+      learningGoal:  { label: 'Annual learning goal (courses)', type: 'number', help: 'Used by Equip → My Learning to show progress toward a yearly target.' },
       archived:      { label: 'Archived', type: 'bool', default: false },
     },
   },
@@ -584,6 +593,85 @@ export const COLLECTIONS = {
       sourceId: { label: 'Source id', type: 'string' },
       reviewedBy: { label: 'Reviewed by', type: 'ref', ref: 'users' },
       aiGenerated: { label: 'AI drafted', type: 'bool', default: false },
+    },
+  },
+
+  courses: {
+    label: 'Courses',
+    resource: 'equip',
+    titleField: 'title',
+    searchable: ['title', 'description', 'category', 'instructor'],
+    fields: {
+      title:        { label: 'Title', type: 'string', required: true },
+      category:     { label: 'Category', type: 'enum', options: EQUIP_CATEGORIES, default: EQUIP_CATEGORIES[0], required: true },
+      description:  { label: 'Description', type: 'text' },
+      instructor:   { label: 'Instructor', type: 'string' },
+      duration:     { label: 'Duration', type: 'string' },
+      level:        { label: 'Level', type: 'enum', options: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
+      prerequisites: { label: 'Prerequisites', type: 'list', ref: 'courses' },
+      objectives:   { label: 'Objectives', type: 'list' },
+      // Each lesson: { title, type: 'video'|'audio'|'reading'|'pdf', summary,
+      // quiz: [{ question, options, answer }] }. Authored as structured data —
+      // seeded, or edited as JSON — rather than through a WYSIWYG lesson
+      // builder, which is a separate feature this pass does not attempt.
+      lessons:      { label: 'Lessons', type: 'object' },
+      discussionQuestions: { label: 'Discussion questions', type: 'list' },
+      leaderOnly:   { label: 'Leader training', type: 'bool', default: false, help: 'Restricted to ministry leadership roles — see policies.canEnrollInCourse.' },
+      archived:     { label: 'Archived', type: 'bool', default: false },
+    },
+  },
+
+  learningPaths: {
+    label: 'Learning paths',
+    resource: 'equip',
+    titleField: 'title',
+    searchable: ['title', 'description', 'audience'],
+    fields: {
+      title:       { label: 'Title', type: 'string', required: true },
+      description: { label: 'Description', type: 'text' },
+      audience:    { label: 'Who it is for', type: 'string' },
+      courseIds:   { label: 'Courses, in order', type: 'list', ref: 'courses' },
+    },
+  },
+
+  enrollments: {
+    label: 'Enrollments',
+    resource: 'equip',
+    titleField: 'courseId',
+    instanceWrite: canWriteEnrollment,
+    fields: {
+      memberId:         { label: 'Member', type: 'ref', ref: 'members', required: true },
+      courseId:         { label: 'Course', type: 'ref', ref: 'courses', required: true },
+      status:           { label: 'Status', type: 'enum', options: ['not-started', 'in-progress', 'completed'], default: 'not-started' },
+      completedLessons: { label: 'Completed lessons', type: 'list' },
+      quizScore:        { label: 'Quiz score', type: 'number' },
+      bookmarked:       { label: 'Bookmarked', type: 'bool', default: false },
+      startedAt:        { label: 'Started', type: 'date' },
+      completedAt:      { label: 'Completed', type: 'date' },
+      certificateId:    { label: 'Certificate', type: 'ref', ref: 'certificates' },
+    },
+  },
+
+  /**
+   * Issued by the completion flow in equip.js, not through a generic form.
+   * `instanceWrite` reuses `canWriteEnrollment` (it only reads `memberId`):
+   * a member may only ever issue a certificate that names themselves —
+   * the same trust boundary the client already places on their own
+   * enrollment record, not a new one.
+   */
+  certificates: {
+    label: 'Certificates',
+    resource: 'equip',
+    titleField: 'certificateNumber',
+    instanceWrite: canWriteEnrollment,
+    fields: {
+      memberId:          { label: 'Member', type: 'ref', ref: 'members', required: true },
+      courseId:          { label: 'Course', type: 'ref', ref: 'courses', required: true },
+      courseTitle:       { label: 'Course title', type: 'string', required: true },
+      instructor:        { label: 'Instructor', type: 'string' },
+      issuedAt:          { label: 'Issued', type: 'date', required: true },
+      certificateNumber: { label: 'Certificate number', type: 'string', required: true },
+      verificationId:    { label: 'Verification ID', type: 'string', required: true },
     },
   },
 
