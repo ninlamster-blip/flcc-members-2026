@@ -102,6 +102,24 @@ export function canReadCounselingNote(user, note) {
   return !!user && user.role === 'senior_pastor';
 }
 
+/* ── leadership journal ──────────────────────────────────────────────────── */
+
+/**
+ * A leadership journal entry is a personal reflection, not a shared church
+ * record — unlike a counselling note, there is no senior-pastor override.
+ * Holding `leadership:read`/`leadership:write` is necessary but not
+ * sufficient: only the entry's own author may ever read or write it. Used
+ * both as the collection's `instanceWrite` and, in the journal tab itself,
+ * to filter what is ever queried or displayed — the same shape as
+ * `canReadCounselingNote`, just stricter.
+ *
+ * @param {{id: string}} user
+ * @param {{createdBy?: string}} entry
+ */
+export function canAccessJournalEntry(user, entry) {
+  return !!(user && entry && entry.createdBy && entry.createdBy === user.id);
+}
+
 /* ── knowledge ───────────────────────────────────────────────────────────── */
 
 /**
@@ -110,7 +128,7 @@ export function canReadCounselingNote(user, note) {
  * sensitive records are read in their own module by the people who hold those
  * permissions, and are never summarised into an answer.
  */
-export const KNOWLEDGE_EXCLUDED = ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit', 'enrollments', 'certificates'];
+export const KNOWLEDGE_EXCLUDED = ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit', 'enrollments', 'certificates', 'journal'];
 
 export function knowledgeMayUse(collection) {
   return !KNOWLEDGE_EXCLUDED.includes(collection);

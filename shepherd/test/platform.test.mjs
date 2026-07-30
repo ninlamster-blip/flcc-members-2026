@@ -260,7 +260,7 @@ test('every collection is well formed', () => {
     const result = validate(name, doc);
     assert.ok(Array.isArray(result.errors));
   }
-  assert.deepEqual(ENCRYPTED_COLLECTIONS.sort(), ['budgets', 'counseling', 'documents', 'projects', 'transactions'].sort());
+  assert.deepEqual(ENCRYPTED_COLLECTIONS.sort(), ['budgets', 'counseling', 'documents', 'journal', 'projects', 'transactions'].sort());
 });
 
 test('searchable text is assembled from the right fields', () => {

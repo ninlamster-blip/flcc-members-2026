@@ -12,8 +12,8 @@ import { blank } from '../js/core/schema.js';
 import { isoDate, addDays } from '../js/core/format.js';
 import {
   ministryHealthScore, ministryHealthTrend, churchHealthOverview, successionRisk, volunteerWellBeing,
-  buildBriefing, suggestForRole, serviceAssignees, SERVICE_ROLE_FIELDS, CORE_SERVICE_ROLES,
-  SERVICE_TEMPLATES, serviceReadiness, worshipShortages,
+  pastoralCareOverview, buildBriefing, suggestForRole, serviceAssignees, SERVICE_ROLE_FIELDS,
+  CORE_SERVICE_ROLES, SERVICE_TEMPLATES, serviceReadiness, worshipShortages,
 } from '../js/core/ai.js';
 import { canAccessMinistryWorkspace, ledMinistries, isCommunionScheduled } from '../js/core/policies.js';
 import { can, ROLES } from '../js/core/rbac.js';
@@ -260,6 +260,62 @@ test('volunteerWellBeing only includes members recorded as serving somewhere', a
   db.insert('members', blank('members', { fullName: 'Not Serving', status: 'member' }));
   const wellBeing = volunteerWellBeing(db, { now: new Date() });
   assert.equal(wellBeing.length, 0);
+});
+
+/* ── pastoral care centre ─────────────────────────────────────────────────── */
+
+test('pastoralCareOverview groups open care by assignee and counts overdue', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const member = db.insert('members', blank('members', { fullName: 'Care Recipient', status: 'member' }));
+  db.insert('care', blank('care', {
+    memberId: member.id, summary: 'Follow up', assignedTo: 'u-elder1', dueDate: isoDate(addDays(now, -2)),
+  }));
+  db.insert('care', blank('care', { memberId: member.id, summary: 'Visit', assignedTo: 'u-elder1' }));
+  db.insert('care', blank('care', { memberId: member.id, summary: 'Call', assignedTo: 'u-elder2' }));
+  db.insert('care', blank('care', {
+    memberId: member.id, summary: 'Already handled', assignedTo: 'u-elder2', completedAt: now.toISOString(),
+  }));
+
+  const overview = pastoralCareOverview(db, { now });
+  assert.equal(overview.openCount, 3, 'the completed item is excluded');
+  assert.equal(overview.overdueCount, 1);
+  const elder1 = overview.caseload.find((c) => c.assignedTo === 'u-elder1');
+  const elder2 = overview.caseload.find((c) => c.assignedTo === 'u-elder2');
+  assert.equal(elder1.open, 2);
+  assert.equal(elder1.overdue, 1);
+  assert.equal(elder2.open, 1);
+  assert.equal(elder2.overdue, 0);
+});
+
+test('pastoralCareOverview surfaces priority members by longest since contact, and whether a follow-up is already open', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const longQuiet = db.insert('members', blank('members', { fullName: 'Long Quiet', status: 'member', careLevel: 'priority' }));
+  const recentlySeen = db.insert('members', blank('members', { fullName: 'Recently Seen', status: 'member', careLevel: 'priority' }));
+  db.insert('care', blank('care', {
+    memberId: longQuiet.id, summary: 'Old visit', completedAt: isoDate(addDays(now, -60)), createdAt: isoDate(addDays(now, -60)),
+  }));
+  db.insert('care', blank('care', {
+    memberId: recentlySeen.id, summary: 'Recent visit', completedAt: isoDate(addDays(now, -2)), createdAt: isoDate(addDays(now, -2)),
+  }));
+
+  const overview = pastoralCareOverview(db, { now });
+  assert.equal(overview.priorityMembers[0].memberId, longQuiet.id, 'longest-quiet priority member surfaces first');
+  assert.equal(overview.priorityMembers[0].hasOpenCare, false);
+  assert.equal(overview.priorityMembers[1].memberId, recentlySeen.id);
+});
+
+test('pastoralCareOverview flags a quietly-absent member only when no one has already started a follow-up', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const noFollowUp = db.insert('members', blank('members', { fullName: 'Absent No FollowUp', status: 'member' }));
+  const withFollowUp = db.insert('members', blank('members', { fullName: 'Absent With FollowUp', status: 'member' }));
+  db.insert('care', blank('care', { memberId: withFollowUp.id, summary: 'Reaching out' }));
+
+  const overview = pastoralCareOverview(db, { now });
+  assert.ok(overview.absentWithoutFollowUp.includes(noFollowUp.id));
+  assert.ok(!overview.absentWithoutFollowUp.includes(withFollowUp.id));
 });
 
 /* ── AI executive briefing ───────────────────────────────────────────────── */

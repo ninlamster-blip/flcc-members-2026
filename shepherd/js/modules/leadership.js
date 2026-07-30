@@ -23,14 +23,16 @@ import { formatDate, formatDateTime, formatMoney, formatDateParts, relativeTime,
 import { COLLECTIONS, SERVICE_TYPES } from '../core/schema.js';
 import {
   openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord, healthTone,
-  refOptions, friendly,
+  refOptions, friendly, refLabel,
 } from './_shared.js';
 import {
   ministryHealthScore, ministryHealthTrend, churchHealthOverview, successionRisk, volunteerWellBeing,
-  suggestForRole, SERVICE_ROLE_FIELDS, serviceAssignees, SERVICE_TEMPLATES, EMCEE_RESPONSIBILITIES,
-  serviceReadiness,
+  pastoralCareOverview, suggestForRole, SERVICE_ROLE_FIELDS, serviceAssignees, SERVICE_TEMPLATES,
+  EMCEE_RESPONSIBILITIES, serviceReadiness,
 } from '../core/ai.js';
-import { canAccessMinistryWorkspace, canWriteActionItem, ledMinistries, isCommunionScheduled } from '../core/policies.js';
+import {
+  canAccessMinistryWorkspace, canWriteActionItem, ledMinistries, isCommunionScheduled, canAccessJournalEntry,
+} from '../core/policies.js';
 import { roleLabel } from '../core/rbac.js';
 import { downloadCSV, downloadExcel, printReport } from '../core/exporters.js';
 
@@ -61,6 +63,8 @@ export async function render(ctx, route) {
       : tab === 'churchhealth' ? churchHealthTab(ctx)
       : tab === 'succession' ? successionTab(ctx)
       : tab === 'wellbeing' ? wellBeingTab(ctx)
+      : tab === 'care' ? careCenterTab(ctx)
+      : tab === 'journal' ? journalTab(ctx)
       : tab === 'directory' ? directoryTab(ctx)
       : tab === 'planner' ? plannerTab(ctx)
       : tab === 'timeline' ? timelineTab(ctx)
@@ -77,7 +81,9 @@ export async function render(ctx, route) {
           ? (canPlanAnything(ctx)
             ? h('button.btn.btn--primary', { onClick: () => openRecordModal(ctx, { collection: 'annualPlans', fields: PLAN_FIELDS, defaults: { year: new Date().getFullYear() } }) }, icon('plus', { size: 16 }), 'New plan')
             : null)
-          : newButton(ctx, 'leadership', 'New meeting', () => openRecordModal(ctx, { collection: 'meetings', fields: MEETING_FIELDS })),
+          : ['journal', 'health', 'churchhealth', 'succession', 'wellbeing', 'care', 'directory', 'timeline'].includes(tab)
+            ? null
+            : newButton(ctx, 'leadership', 'New meeting', () => openRecordModal(ctx, { collection: 'meetings', fields: MEETING_FIELDS })),
     ].filter(Boolean),
     children: [
       h('div.grid.grid--4', { style: { marginBottom: '18px' } },
@@ -100,6 +106,8 @@ export async function render(ctx, route) {
             { value: 'churchhealth', label: 'Church Health' },
             { value: 'succession', label: 'Succession' },
             { value: 'wellbeing', label: 'Volunteer Well-Being' },
+            { value: 'care', label: 'Care Center' },
+            { value: 'journal', label: 'Journal' },
             { value: 'directory', label: 'Directory' },
             { value: 'planner', label: 'Annual Planner' },
             { value: 'timeline', label: 'Timeline' },
@@ -1247,6 +1255,98 @@ function wellBeingTab(ctx) {
         onRowClick: (r) => ctx.navigate(`/members/${r.memberId}`),
       })],
     }));
+}
+
+/* ── pastoral care centre ─────────────────────────────────────────────────── */
+
+function careCenterTab(ctx) {
+  if (!ctx.can('care:read')) {
+    return emptyState({ title: 'You do not hold pastoral care permission', iconName: 'heart' });
+  }
+  const { db } = ctx;
+  const overview = pastoralCareOverview(db);
+
+  return h('div.stack',
+    h('p.small.muted', 'A leadership rollup of the same care records kept in Member care — how the caseload is spread, and who has gone longest without contact.'),
+    h('div.grid.grid--2', statCard({ value: overview.openCount, label: 'Open care items' }), statCard({ value: overview.overdueCount, label: 'Overdue' })),
+    card({
+      title: 'Caseload by assignee',
+      children: [overview.caseload.length
+        ? table({
+          columns: [
+            { label: 'Assigned to', value: (r) => (r.assignedTo ? refLabel(db, 'users', r.assignedTo) : 'Unassigned') },
+            { label: 'Open', value: (r) => r.open },
+            { label: 'Overdue', value: (r) => r.overdue },
+          ],
+          rows: overview.caseload,
+        })
+        : emptyState({ title: 'No open care items', iconName: 'heart' })],
+    }),
+    card({
+      title: 'Priority members',
+      subtitle: 'Marked priority on their profile — sorted by longest since last contact.',
+      children: [overview.priorityMembers.length
+        ? table({
+          columns: [
+            { label: 'Member', value: (r) => memberName(db, r.memberId) },
+            { label: 'Last contact', value: (r) => (r.daysSinceContact == null ? 'No record yet' : `${r.daysSinceContact} days ago`) },
+            { label: 'Open follow-up', value: (r) => (r.hasOpenCare ? badge('Yes', 'ok') : badge('None', 'danger')) },
+          ],
+          rows: overview.priorityMembers,
+          onRowClick: (r) => ctx.navigate(`/members/${r.memberId}`),
+        })
+        : emptyState({ title: 'No members marked priority care', iconName: 'heart' })],
+    }),
+    overview.absentWithoutFollowUp.length
+      ? card({
+        title: 'Quietly absent, and no one is on it yet',
+        subtitle: 'Three or more weeks unseen, with no open follow-up recorded.',
+        children: [list(overview.absentWithoutFollowUp.map((memberId) => listItem({
+          title: memberName(db, memberId),
+          trailing: h('button.btn.btn--sm', {
+            onClick: () => openRecordModal(ctx, { collection: 'care', defaults: { memberId }, hidden: ['memberId'] }),
+          }, 'Start a follow-up'),
+        })))],
+      })
+      : null);
+}
+
+/* ── leadership journal ───────────────────────────────────────────────────── */
+
+const JOURNAL_FIELDS = ['title', 'date', 'entry', 'tags', 'linkedDecisionId', 'linkedMeetingId'];
+
+function journalTab(ctx) {
+  if (!ctx.can('journal:read')) {
+    return emptyState({ title: 'You do not hold journal permission', iconName: 'book' });
+  }
+  const { db, user } = ctx;
+  const entries = db.where('journal', (e) => canAccessJournalEntry(user, e))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return h('div.stack',
+    h('p.small.muted', "Private to you — not even church-wide leadership or the senior pastor can read another leader's entry. Reflections, prayers, and the \"why\" behind a decision that never belongs in the official minutes."),
+    h('div.row.row--end', h('button.btn.btn--primary', {
+      onClick: () => openRecordModal(ctx, { collection: 'journal', fields: JOURNAL_FIELDS, defaults: { date: isoDate(new Date()) } }),
+    }, icon('plus', { size: 16 }), 'New entry')),
+    entries.length
+      ? h('div.stack', ...entries.map((entry) => card({
+        title: entry.title,
+        subtitle: formatDate(entry.date),
+        children: [
+          h('p.small', entry.entry),
+          entry.tags && entry.tags.length ? h('div.row', ...entry.tags.map((t) => badge(t))) : null,
+          entry.linkedDecisionId ? h('p.tiny.subtle', `Related decision: ${refLabel(db, 'decisions', entry.linkedDecisionId) || '—'}`) : null,
+          entry.linkedMeetingId ? h('p.tiny.subtle', `Related meeting: ${refLabel(db, 'meetings', entry.linkedMeetingId) || '—'}`) : null,
+          h('div.row', { style: { marginTop: '8px' } },
+            h('button.btn.btn--sm', { onClick: () => openRecordModal(ctx, { collection: 'journal', doc: entry, fields: JOURNAL_FIELDS }) }, 'Edit'),
+            h('button.btn.btn--sm.btn--ghost', { onClick: () => deleteRecord(ctx, 'journal', entry.id, 'this entry') }, 'Delete')),
+        ].filter(Boolean),
+      })))
+      : emptyState({
+        title: 'No journal entries yet',
+        detail: 'A private place to reflect — on a decision, a hard conversation, or where you sense God is leading.',
+        iconName: 'book',
+      }));
 }
 
 /* ── leadership directory ────────────────────────────────────────────────── */

@@ -1466,6 +1466,56 @@ export function volunteerWellBeing(db, { now = new Date() } = {}) {
   }).sort((a, b) => a.score - b.score);
 }
 
+/* ── pastoral care centre ─────────────────────────────────────────────────── */
+
+/**
+ * The leadership-facing rollup of pastoral care Shepherd already tracks in
+ * `care.js` — not a new record type, a different lens on the same records:
+ * how the caseload is spread across whoever is assigned it, which priority
+ * members have gone longest without any contact, and which quietly-absent
+ * members (see `absentMembers`) do not even have an open follow-up yet, so
+ * nobody assumes someone else is already on it.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {{now?: Date}} [opts]
+ */
+export function pastoralCareOverview(db, { now = new Date() } = {}) {
+  const openCare = db.where('care', (c) => !c.completedAt);
+
+  const caseloadMap = new Map();
+  for (const item of openCare) {
+    const assignedTo = item.assignedTo || null;
+    const key = assignedTo || 'unassigned';
+    if (!caseloadMap.has(key)) caseloadMap.set(key, { assignedTo, open: 0, overdue: 0 });
+    const entry = caseloadMap.get(key);
+    entry.open += 1;
+    if (item.dueDate && new Date(item.dueDate) < now) entry.overdue += 1;
+  }
+  const caseload = [...caseloadMap.values()].sort((a, b) => b.open - a.open);
+
+  const priorityMembers = db.where('members', (m) => !m.archived && m.careLevel === 'priority').map((member) => {
+    const records = db.where('care', (c) => c.memberId === member.id).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const latest = records[0];
+    return {
+      memberId: member.id,
+      hasOpenCare: records.some((c) => !c.completedAt),
+      daysSinceContact: latest ? daysBetween(latest.createdAt, now) : null,
+    };
+  }).sort((a, b) => (b.daysSinceContact ?? Infinity) - (a.daysSinceContact ?? Infinity));
+
+  const absentWithoutFollowUp = absentMembers(db, { now, weeks: 3 })
+    .filter((m) => !db.where('care', (c) => c.memberId === m.id && !c.completedAt).length)
+    .map((m) => m.id);
+
+  return {
+    openCount: openCare.length,
+    overdueCount: openCare.filter((c) => c.dueDate && new Date(c.dueDate) < now).length,
+    caseload,
+    priorityMembers,
+    absentWithoutFollowUp,
+  };
+}
+
 /* ── AI executive briefing ───────────────────────────────────────────────── */
 
 /**

@@ -136,6 +136,19 @@ acting user actually leads (`ledMinistries`). Meetings, decisions,
 committees and goals have no ministry dimension in the data model, so
 `ministry_head` reaches those only through `leadership:read`, never write.
 
+`journal` (the leadership journal) takes the same `instanceWrite` fallback
+one step further: it is its own resource, and **no role is ever granted
+`journal:write`** — not `church_admin`, not `senior_pastor`. Reusing
+`leadership`'s resource would have let their blanket
+`leadership:write`/`leadership:*` bypass `instanceWrite` entirely, since
+`_assertWritable` checks the coarse resource grant first and only falls back
+to `instanceWrite` when it is absent. With no role holding `journal:write`,
+every write for every role goes through `instanceWrite` alone, and
+`canAccessJournalEntry` in `policies.js` only ever admits the entry's own
+author — genuinely no exception, where a restricted counselling note still
+allows the senior pastor through. The same function filters what the
+journal tab itself ever queries.
+
 ## Intelligence
 
 `ai.js` has two halves that must not be confused:
@@ -144,8 +157,8 @@ committees and goals have no ministry dimension in the data model, so
   `attendanceTrend`, `volunteerShortages`, `financeSnapshot`,
   `upcomingCelebrations`, `suggestVolunteers`, `ministryHealthScore`,
   `ministryHealthTrend`, `churchHealthOverview`, `successionRisk`,
-  `volunteerWellBeing`, `buildBriefing`, `suggestForRole`, `worshipShortages`,
-  `serviceReadiness` — are pure computation over the church's own records,
+  `volunteerWellBeing`, `pastoralCareOverview`, `buildBriefing`, `suggestForRole`,
+  `worshipShortages`, `serviceReadiness` — are pure computation over the church's own records,
   permission-filtered, no network. Everything on the dashboard's "Shepherd
   noticed", the AI executive briefing, ministry health scores and the
   worship-schedule assignment suggestions comes from here and works offline.
@@ -205,7 +218,15 @@ committees and goals have no ministry dimension in the data model, so
   Members serving nowhere are excluded entirely; this says nothing about
   anyone not on a ministry roster.
 
-  Both feed `computeInsights`: an `'urgent'` succession entry or a
+  `pastoralCareOverview(db, {now})` is not a new record type — it is a
+  leadership-facing lens on the same `care` collection `care.js` already
+  writes to: caseload grouped by assignee (so a load can be rebalanced),
+  priority-care members (`careLevel: 'priority'`) sorted by longest since
+  their last contact, and quietly-absent members (`absentMembers`) who do
+  not yet have an open follow-up at all, cross-referenced so nobody assumes
+  someone else is already on it.
+
+  Both `successionRisk` and `volunteerWellBeing` feed `computeInsights`: an `'urgent'` succession entry or a
   `'critical'` well-being score becomes a `kind: 'risk'`/`kind: 'care'`
   insight on the dashboard, gated on `leadership:read` like the rest of the
   leadership-facing insights — but only when something is genuinely urgent,

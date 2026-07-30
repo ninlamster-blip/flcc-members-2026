@@ -46,7 +46,7 @@ Opening `file://` will not work — ES modules need a real origin.
 | **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
 | **Worship** | Song library searchable by theme, key, mood, season, language and lyrics; setlists; team and rehearsals |
 | **Preaching** | Sermon archive, series planning, illustrations and quotes, and an assistant that drafts the work *around* the sermon |
-| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, succession planning, volunteer well-being, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
+| **Leadership** | The leadership operating system: committees, minutes, a decision log, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, succession planning, volunteer well-being, a pastoral care rollup, a private leadership journal, the leadership directory, annual planning with quarterly review, and a permission-filtered activity timeline |
 | **Finance** | Giving, expenses, budgets, projects, approvals — encrypted, role-restricted, exportable |
 | **Document vault** | Encrypted files with version history, fingerprints and expiry reminders |
 | **Knowledge centre** | Ask the church's own minutes, decisions and policies a question |
@@ -115,6 +115,13 @@ Behind the dashboard, **Leadership** in the sidebar holds the rest of it:
   served, open and overdue tasks, upcoming worship-service roles), sorted so
   the most stretched volunteers surface first — a cue for a check-in, not a
   verdict.
+- **Pastoral care centre** — a leadership rollup of the same care records
+  kept in Member care: caseload spread across assignees, priority members
+  sorted by longest since last contact, and quietly-absent members who do
+  not yet have a follow-up started.
+- **Leadership journal** — a private place to reflect, genuinely for your
+  eyes only: no role, not even the senior pastor or a church administrator,
+  is ever granted write access to another leader's entry.
 - **Leadership directory**, **annual planner** (vision, objectives, KPIs,
   budget, quarterly review per ministry per year), and a **timeline** — a
   day-grouped feed built from the real audit log, so it only ever shows what
@@ -233,29 +240,33 @@ pairs; a user's role can be topped up or trimmed individually. Checks happen in
 the navigation, in the router and — the one that counts — in the database,
 which refuses a write the acting user may not make.
 
-Two rules are worth knowing:
+Three rules are worth knowing:
 
 - A **church administrator does not hold counselling permission.** Running the
   platform and reading a pastor's counselling file are different jobs.
 - **Nobody approves their own spending.** An expense over the church's
   threshold enters as pending and needs someone who did not record it.
+- **No one reads another leader's journal — not even the senior pastor.**
+  Unlike a restricted counselling note, the leadership journal has no
+  override role. No role is ever granted write access to another leader's
+  entry; only its author can.
 
 ## Security, honestly
 
 **What is protected**
 
-- Counselling notes, finance, budgets, projects and the document vault are
-  encrypted with AES-GCM before anything is written. Each church has a random
-  256-bit vault key, wrapped per user with a key derived from their passphrase
-  (PBKDF2-SHA-256, 310 000 iterations).
+- Counselling notes, the leadership journal, finance, budgets, projects and
+  the document vault are encrypted with AES-GCM before anything is written.
+  Each church has a random 256-bit vault key, wrapped per user with a key
+  derived from their passphrase (PBKDF2-SHA-256, 310 000 iterations).
 - Churches are isolated structurally: a database is bound to one tenant and
   handed storage locked to that tenant's key prefix.
 - Optional TOTP two-factor (RFC 6238) with single-use recovery codes.
 - An append-only audit log of every create, update, delete, sign-in and export.
 - Sessions live in `sessionStorage` — a reload keeps you in, closing the tab
   does not — plus a 45-minute idle lock.
-- Counselling, finance and account records are never added to the search index
-  and never reach the knowledge centre, for any role.
+- Counselling, journal, finance and account records are never added to the
+  search index and never reach the knowledge centre, for any role.
 
 **What is not**
 
@@ -312,7 +323,7 @@ No build step, no dependencies. Edit a file, reload the page.
 
 ```bash
 python3 -m http.server 8787          # then open /shepherd/
-node --test shepherd/test/*.test.mjs # 135 tests, no dependencies
+node --test shepherd/test/*.test.mjs # 141 tests, no dependencies
 ```
 
 The test suite covers tenant isolation, permissions, the crypto (including the

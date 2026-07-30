@@ -30,7 +30,7 @@
  * @property {Record<string, FieldDef>} fields
  */
 
-import { canWriteActionItem, canWriteAnnualPlan, canWriteEnrollment } from './policies.js';
+import { canWriteActionItem, canWriteAnnualPlan, canWriteEnrollment, canAccessJournalEntry } from './policies.js';
 
 /**
  * The two recurring worship services every BOTR church runs, plus room for
@@ -233,6 +233,34 @@ export const COLLECTIONS = {
       meetingId: { label: 'Meeting', type: 'ref', ref: 'meetings' },
       area:      { label: 'Area', type: 'string' },
       reviewOn:  { label: 'Review on', type: 'date' },
+    },
+  },
+
+  /**
+   * A personal reflection, not a shared record — see `canAccessJournalEntry`
+   * in policies.js. Its own resource on purpose: no role, including
+   * church_admin and senior_pastor, is ever granted `journal:write` in
+   * rbac.js — reusing `leadership`'s resource would let their blanket
+   * `leadership:write`/`leadership:*` bypass `instanceWrite` entirely, since
+   * a resource-level grant is checked before it. Every write, for every
+   * role, goes through `instanceWrite` alone, which only ever admits the
+   * entry's own author. The same function filters what the journal tab ever
+   * queries, so no one else's entry is even displayed. Deliberately not
+   * `searchable`: see `journal` in `NEVER_INDEXED` below.
+   */
+  journal: {
+    label: 'Leadership journal',
+    resource: 'journal',
+    encrypted: true,
+    instanceWrite: canAccessJournalEntry,
+    titleField: 'title',
+    fields: {
+      title:    { label: 'Title', type: 'string', required: true },
+      date:     { label: 'Date', type: 'date', required: true },
+      entry:    { label: 'Entry', type: 'text', required: true },
+      tags:     { label: 'Tags', type: 'list' },
+      linkedDecisionId: { label: 'Related decision', type: 'ref', ref: 'decisions' },
+      linkedMeetingId:  { label: 'Related meeting', type: 'ref', ref: 'meetings' },
     },
   },
 

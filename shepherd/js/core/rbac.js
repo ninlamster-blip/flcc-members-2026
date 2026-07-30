@@ -24,6 +24,7 @@ export const RESOURCES = {
   care:          'Pastoral care & follow-ups',
   counseling:    'Counselling notes',
   leadership:    'Leadership hub',
+  journal:       'Leadership journal',
   worship:       'Worship & music',
   preaching:     'Preaching & sermons',
   prayer:        'Prayer centre',
@@ -68,7 +69,7 @@ export const ROLES = {
     rank: 80,
     description: 'Runs this church on Shepherd: users, settings, and every module inside it.',
     permissions: [
-      'dashboard:*', 'members:*', 'care:*', 'leadership:*', 'worship:*', 'preaching:*',
+      'dashboard:*', 'members:*', 'care:*', 'leadership:*', 'journal:read', 'worship:*', 'preaching:*',
       'prayer:*', 'events:*', 'finance:*', 'documents:*', 'knowledge:*', 'equip:*',
       'communications:*', 'reports:*', 'assistant:*', 'settings:*', 'users:*', 'audit:read',
     ],
@@ -78,7 +79,7 @@ export const ROLES = {
     rank: 70,
     description: 'Full pastoral oversight, including counselling notes and financial summaries.',
     permissions: [
-      'dashboard:*', 'members:*', 'care:*', 'counseling:*', 'leadership:*', 'worship:read',
+      'dashboard:*', 'members:*', 'care:*', 'counseling:*', 'leadership:*', 'journal:read', 'worship:read',
       'worship:write', 'preaching:*', 'prayer:*', 'events:*', 'finance:read', 'finance:approve',
       'finance:export', 'documents:*', 'knowledge:*', 'equip:*', 'communications:*', 'reports:*',
       'assistant:*', 'settings:read', 'users:read', 'audit:read',
@@ -90,7 +91,7 @@ export const ROLES = {
     description: 'Shepherds people: member care, counselling, prayer, preaching.',
     permissions: [
       'dashboard:read', 'members:read', 'members:write', 'care:*', 'counseling:*',
-      'leadership:read', 'worship:read', 'preaching:*', 'prayer:*', 'events:read',
+      'leadership:read', 'journal:read', 'worship:read', 'preaching:*', 'prayer:*', 'events:read',
       'events:write', 'documents:read', 'knowledge:read', 'knowledge:write', 'equip:read',
       'communications:read', 'communications:write', 'reports:read', 'assistant:*',
     ],
@@ -101,7 +102,7 @@ export const ROLES = {
     description: 'Shares governance and care, without counselling files or finance detail.',
     permissions: [
       'dashboard:read', 'members:read', 'care:read', 'care:write', 'leadership:read',
-      'leadership:write', 'worship:read', 'preaching:read', 'prayer:read', 'prayer:write',
+      'leadership:write', 'journal:read', 'worship:read', 'preaching:read', 'prayer:read', 'prayer:write',
       'events:read', 'events:write', 'documents:read', 'knowledge:read', 'equip:read',
       'communications:read', 'reports:read', 'assistant:read', 'assistant:write',
     ],
@@ -114,7 +115,7 @@ export const ROLES = {
       'dashboard:read', 'members:read', 'care:read', 'worship:read', 'worship:write',
       'prayer:read', 'prayer:write', 'events:read', 'events:write', 'documents:read',
       'knowledge:read', 'equip:read', 'communications:read', 'communications:write', 'reports:read',
-      'assistant:read', 'assistant:write', 'leadership:read',
+      'assistant:read', 'assistant:write', 'leadership:read', 'journal:read',
     ],
   },
   treasurer: {
@@ -133,7 +134,7 @@ export const ROLES = {
     description: 'Keeps the records: minutes, documents, announcements, member details.',
     permissions: [
       'dashboard:read', 'members:read', 'members:write', 'care:read', 'leadership:read',
-      'leadership:write', 'events:*', 'documents:read', 'documents:write', 'knowledge:read',
+      'leadership:write', 'journal:read', 'events:*', 'documents:read', 'documents:write', 'knowledge:read',
       'knowledge:write', 'equip:read', 'communications:*', 'reports:read', 'reports:export',
       'assistant:read', 'assistant:write', 'prayer:read',
     ],

@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  needsApproval, canApproveTransaction, canSeePrayer, canReadCounselingNote,
+  needsApproval, canApproveTransaction, canSeePrayer, canReadCounselingNote, canAccessJournalEntry,
   knowledgeMayUse, KNOWLEDGE_EXCLUDED, NEVER_INDEXED, expiryStatus,
   DEFAULT_APPROVAL_THRESHOLD,
 } from '../js/core/policies.js';
@@ -83,10 +83,20 @@ test('a restricted counselling note is for its author and the senior pastor', ()
   assert.equal(canReadCounselingNote({ id: 'a', role: 'church_admin' }, open), false, 'an administrator holds no counselling permission');
 });
 
+/* ── leadership journal ──────────────────────────────────────────────────── */
+
+test('a journal entry is for its author alone — unlike a counselling note, there is no senior-pastor override', () => {
+  const mine = { createdBy: PASTOR.id };
+  assert.equal(canAccessJournalEntry(PASTOR, mine), true);
+  assert.equal(canAccessJournalEntry(SENIOR, mine), false, 'even a senior pastor cannot read someone else\'s journal entry');
+  assert.equal(canAccessJournalEntry({ id: 'other', role: 'pastor' }, mine), false);
+  assert.equal(canAccessJournalEntry(PASTOR, { createdBy: null }), false, 'no author on record means no access');
+});
+
 /* ── what is never indexed ───────────────────────────────────────────────── */
 
 test('the sensitive collections are excluded by name', () => {
-  for (const collection of ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit']) {
+  for (const collection of ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit', 'journal']) {
     assert.equal(knowledgeMayUse(collection), false, `${collection} is excluded`);
     assert.ok(NEVER_INDEXED.includes(collection));
   }
@@ -105,6 +115,34 @@ test('a counselling subject cannot be found through search, at any role', async 
   const hits = index.search('marriage', { user: SENIOR });
   assert.ok(hits.length > 0, 'the ordinary record is found');
   assert.ok(hits.every((hit) => hit.collection !== 'counseling'), 'the counselling note is not');
+});
+
+test('a journal entry cannot be found through search, at any role', async () => {
+  const storage = memoryStorage();
+  const db = await new Database({ tenantId: 'grace', storage, actor: PASTOR }).open();
+  db.insert('journal', blank('journal', { title: 'Wrestling with the budget decision', date: '2026-01-01', entry: 'Prayed about the roof repair vote.' }));
+  db.insert('members', blank('members', { fullName: 'Roof Repair Test', status: 'member' }));
+
+  const index = new SearchIndex(db);
+  const hits = index.search('roof', { user: PASTOR });
+  assert.ok(hits.length > 0, 'the ordinary record is found');
+  assert.ok(hits.every((hit) => hit.collection !== 'journal'), 'the journal entry is not');
+});
+
+test('the database enforces the journal author-only boundary on insert and update, with no senior-pastor override', async () => {
+  const { generateVaultKey } = await import('../js/core/crypto.js');
+  const storage = memoryStorage();
+  const key = await generateVaultKey();
+  const db = await new Database({ tenantId: 'grace', storage, vaultKey: key, actor: PASTOR }).open();
+  const own = db.insert('journal', blank('journal', { title: 'Reflection', date: '2026-01-01', entry: 'Today was hard.' }));
+  assert.equal(own.createdBy, PASTOR.id);
+
+  db.update('journal', own.id, { entry: 'Updated reflection.' });
+  assert.equal(db.find('journal', own.id).entry, 'Updated reflection.');
+  await db.flush();
+
+  const seniorDb = await new Database({ tenantId: 'grace', storage, vaultKey: key, actor: SENIOR }).open();
+  assert.throws(() => seniorDb.update('journal', own.id, { entry: 'Overwritten' }), /permission/i, 'not even the senior pastor may write another leader\'s entry');
 });
 
 test('a gift amount cannot be found through search either', async () => {
