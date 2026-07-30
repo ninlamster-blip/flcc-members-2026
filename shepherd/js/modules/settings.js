@@ -486,7 +486,7 @@ function aiTab(ctx) {
           h('button.btn', {
             onClick: async () => {
               const result = await ctx.assistant.run('announcement.draft', { subject: 'Test', details: 'Checking the connection.' });
-              toast(result.source === 'model' ? `Connected — answered by ${result.model}.` : 'No model answered; using on-device drafting.', { variant: result.source === 'model' ? 'ok' : '' });
+              toast(result.source === 'model' ? `Connected — answered by ${result.model}.` : `No model answered${result.error ? `: ${result.error}` : ''}.`, { variant: result.source === 'model' ? 'ok' : '' });
             },
           }, 'Test connection')),
       ],
