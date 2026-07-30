@@ -102,6 +102,7 @@ export class Assistant {
     let source = /** @type {'model'|'local'} */ ('local');
     let model = 'shepherd-local';
 
+    let error = null;
     if (this.remoteAvailable) {
       try {
         const response = await this._callModel(local.prompt, local.system);
@@ -113,6 +114,7 @@ export class Assistant {
       } catch (err) {
         // A failed model call must never lose the user's work: the local draft
         // is already in hand, so hand that over and say why.
+        error = err.message;
         text = `${local.text}\n\n— Drafted on this device: the AI service could not be reached (${err.message}).`;
       }
     }
@@ -123,6 +125,7 @@ export class Assistant {
       aiGenerated: true,
       model,
       source,
+      error,
       createdAt: new Date().toISOString(),
       tookMs: Date.now() - started,
       sources: local.sources || [],
@@ -148,7 +151,15 @@ export class Assistant {
       },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      // The proxy (and Anthropic behind it) both send { error: { message } }
+      // on failure — surface that instead of a bare status code, since it is
+      // usually the one piece of information that tells someone what to fix
+      // (a bad key, a missing secret, an unknown model).
+      let detail = '';
+      try { detail = (await res.json())?.error?.message || ''; } catch { /* body wasn't JSON */ }
+      throw new Error(detail || `HTTP ${res.status}`);
+    }
     const data = await res.json();
     // Anthropic Messages shape, or a plain { text }.
     if (Array.isArray(data.content)) {
