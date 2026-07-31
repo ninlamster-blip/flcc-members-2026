@@ -2171,6 +2171,13 @@ function App() {
                 <span style={{ flex:'none', width:8, height:8, borderRadius:'50%', background:CHURCH.accent }} />
                 <span style={{ whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{CHURCH.short} · publishes to <span style={{ fontFamily:'ui-monospace,monospace' }}>{GH_FILE}</span></span>
               </div>
+              {/* A convenience shortcut for leaders who also use Shepherd — a
+                  deliberate, narrow exception to the two apps' usual separation.
+                  See CLAUDE.md. Shepherd has its own sign-in and its own tenant;
+                  this is a plain link, nothing more. */}
+              <a href="./shepherd/" style={{ display:'inline-block', marginTop:4, fontSize:'0.6875rem', color:'var(--ink-subtle)', textDecoration:'underline' }}>
+                Open Shepherd →
+              </a>
             </div>
             <div style={{ textAlign:'right', fontSize:'0.75rem', color:'var(--ink-subtle)', flex:'none', whiteSpace:'nowrap' }}>
               {state.meta.stewardName && <div style={{ fontWeight:500, color:'var(--ink-muted)' }}>{state.meta.stewardName}</div>}

@@ -434,7 +434,7 @@ holds records it cannot read.
 
 ## Testing
 
-`node --test shepherd/test/*.test.mjs` — seven suites, no dependencies:
+`node --test shepherd/test/*.test.mjs` — eight suites, no dependencies:
 
 - `security.test.mjs` — passphrases, vault wrapping, encryption, TOTP against
   the RFC vectors, sign-in, 2FA, recovery codes, passphrase change.
@@ -454,6 +454,10 @@ holds records it cannot read.
   per-church aggregation, that an unvisited church comes back empty rather
   than erroring, that encrypted collections stay locked without a vault key,
   and reuse of an already-unlocked session.
+- `flccSync.test.mjs` — the FLCC attendance sync: matching present members by
+  name, never doubling a session already synced, reporting an unmatched name
+  without failing the whole sync, and leaving the database untouched when
+  there is nothing to sync.
 
 Core modules never touch `window` at import time, which is what lets the same
 files run under Node and in the browser.

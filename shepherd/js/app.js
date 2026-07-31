@@ -25,6 +25,8 @@ import {
 
 const THEME_KEY = 'shepherd/v1/theme';
 const AI_CONFIG_KEY = 'shepherd/v1/ai-config';
+const FLCC_SYNC_CONFIG_KEY = 'shepherd/v1/flcc-sync-config';
+const DEFAULT_FLCC_SYNC_CONFIG = { autoSync: false, lastSyncedAt: null };
 
 /** Navigation — order is the order in the sidebar. */
 export const MODULES = [
@@ -604,6 +606,18 @@ export class App {
   saveAIConfig(config) {
     localStorage.setItem(`${AI_CONFIG_KEY}/${this.tenant.id}`, JSON.stringify(config));
     this.assistant.setConfig(config);
+  }
+
+  loadFLCCSyncConfig() {
+    try {
+      return { ...DEFAULT_FLCC_SYNC_CONFIG, ...JSON.parse(localStorage.getItem(`${FLCC_SYNC_CONFIG_KEY}/${this.tenant.id}`) || '{}') };
+    } catch {
+      return { ...DEFAULT_FLCC_SYNC_CONFIG };
+    }
+  }
+
+  saveFLCCSyncConfig(config) {
+    localStorage.setItem(`${FLCC_SYNC_CONFIG_KEY}/${this.tenant.id}`, JSON.stringify({ ...this.loadFLCCSyncConfig(), ...config }));
   }
 }
 

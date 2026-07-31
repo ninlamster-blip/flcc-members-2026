@@ -17,7 +17,28 @@ import {
 } from '../core/ai.js';
 import { ledMinistries, isCommunionScheduled } from '../core/policies.js';
 import { formatDate, formatDateParts, formatTime, formatDateTime, relativeTime, isoDate, addDays, formatMoney, daysBetween } from '../core/format.js';
+import { can } from '../core/rbac.js';
+import { syncFLCCAttendance } from '../core/flccSync.js';
 import { memberName, statusBadge, healthTone } from './_shared.js';
+
+/**
+ * A church opts into this in Settings → Data; off by default. Fires without
+ * blocking the dashboard's own render — a slow or unreachable FLCC endpoint
+ * must never be why the dashboard takes longer to appear. At most once a day
+ * per tenant, and only for a login that could actually write an attendance
+ * record anyway (attendance's resource is members, per schema.js).
+ */
+function maybeAutoSyncFLCCAttendance(ctx) {
+  const { db, user, app } = ctx;
+  if (!can(user, 'members:write')) return;
+  const config = app.loadFLCCSyncConfig();
+  if (!config.autoSync) return;
+  if (config.lastSyncedAt && daysBetween(config.lastSyncedAt, new Date()) < 1) return;
+
+  syncFLCCAttendance(db)
+    .then(() => app.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString() }))
+    .catch(() => { /* a quiet background check should stay quiet when it fails, too */ });
+}
 
 /**
  * Which of the role-based dashboards this login sees.
@@ -57,6 +78,7 @@ export async function render(ctx) {
   const mode = dashboardMode(ctx);
 
   notifyIfEnabled(ctx, insights);
+  maybeAutoSyncFLCCAttendance(ctx);
 
   const columns = h('div.grid.grid--main-side',
     h('div.stack', briefingCard(briefing), ...mainColumn(ctx, now, insights, mode)),
