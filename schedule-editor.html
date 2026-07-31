@@ -189,6 +189,8 @@ function fmt(iso) {
 }
 function uid()     { return `s${Date.now()}${Math.random().toString(36).slice(2,5)}`; }
 function monthOf(iso){ return iso ? parseInt(iso.split('-')[1],10)-1 : -1; }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function addDaysISO(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
 function initials(name){ return (name||'').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase(); }
 function workerName(id,workers){
   if(!id) return '';
@@ -662,6 +664,33 @@ function App(){
     visibleEntries.length>0&&visibleEntries.every(e=>ROLE_DEFS.every(r=>e.roles?.[r.key]))
   ,[visibleEntries]);
 
+  // Ministry health — unfilled roles and worker load, looked at across every
+  // month at once rather than just whichever one is on screen, since a gap
+  // three months out is just as real as one this week.
+  const ministryHealth = useMemo(()=>{
+    const today = todayISO();
+    const gapHorizon = addDaysISO(today, 42);   // 6 weeks
+    const loadHorizon = addDaysISO(today, 56);  // 8 weeks
+
+    const upcoming = schedule.filter(s=>s.date>=today && s.date<=gapHorizon).sort((a,b)=>a.date.localeCompare(b.date));
+    const unfilled = upcoming
+      .map(e=>({ date:e.date, service:e.service, missing: ROLE_DEFS.filter(r=>!e.roles?.[r.key]).map(r=>r.label) }))
+      .filter(e=>e.missing.length>0);
+
+    const loadWindow = schedule.filter(s=>s.date>=today && s.date<=loadHorizon);
+    const counts = {};
+    loadWindow.forEach(e=>ROLE_DEFS.forEach(r=>{ const wid=e.roles?.[r.key]; if(wid) counts[wid]=(counts[wid]||0)+1; }));
+    const overloaded = loadWindow.length>=4
+      ? Object.entries(counts)
+        .filter(([,count])=>count>=Math.ceil(loadWindow.length*0.5))
+        .map(([id,count])=>({ worker: workers.find(w=>w.id===id), count }))
+        .filter(x=>x.worker)
+        .sort((a,b)=>b.count-a.count)
+      : [];
+
+    return { unfilled, overloaded, loadWindowCount: loadWindow.length };
+  },[schedule,workers]);
+
   const updateEntry = useCallback(updated=>{
     setSchedule(prev=>prev.map(s=>s.id===updated.id?updated:s));
     setDirty(true);
@@ -838,6 +867,36 @@ function App(){
                     ✅ All roles assigned
                   </div>
                 )}
+              </div>
+            )}
+
+            {(ministryHealth.unfilled.length>0||ministryHealth.overloaded.length>0)&&(
+              <div className="fade-in" style={{border:'1px solid var(--border-2)',borderRadius:14,padding:'16px 18px',marginBottom:20,background:'var(--surface)'}}>
+                <div style={{fontWeight:700,fontSize:'.9375rem',marginBottom:10}}>🩺 Ministry health — next 6 weeks</div>
+                <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                  {ministryHealth.unfilled.length>0&&(
+                    <div>
+                      <div style={{fontSize:'.8125rem',fontWeight:600,color:'var(--warning)',marginBottom:4}}>
+                        {ministryHealth.unfilled.length} service{ministryHealth.unfilled.length===1?'':'s'} with an unfilled role
+                      </div>
+                      <div style={{fontSize:'.8125rem',color:'var(--ink-3)',lineHeight:1.6}}>
+                        {ministryHealth.unfilled.slice(0,4).map(e=>`${fmt(e.date)} — ${e.missing.join(', ')}`).join(' · ')}
+                        {ministryHealth.unfilled.length>4&&` · +${ministryHealth.unfilled.length-4} more`}
+                      </div>
+                    </div>
+                  )}
+                  {ministryHealth.overloaded.length>0&&(
+                    <div>
+                      <div style={{fontSize:'.8125rem',fontWeight:600,color:'var(--warning)',marginBottom:4}}>
+                        {ministryHealth.overloaded.length===1?'One worker is':`${ministryHealth.overloaded.length} workers are`} carrying a heavy load
+                      </div>
+                      <div style={{fontSize:'.8125rem',color:'var(--ink-3)',lineHeight:1.6}}>
+                        {ministryHealth.overloaded.slice(0,4).map(o=>`${o.worker.name} (${o.count}/${ministryHealth.loadWindowCount})`).join(' · ')}
+                        {ministryHealth.overloaded.length>4&&` · +${ministryHealth.overloaded.length-4} more`}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
