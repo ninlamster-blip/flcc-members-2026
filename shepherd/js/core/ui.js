@@ -55,8 +55,18 @@ export function stat({ value, label, delta, deltaDirection, onClick }) {
   return node;
 }
 
+/**
+ * When clickable, the hover lift/shadow/border-color belongs on the card
+ * itself, not the inner value — stat() would otherwise add card--link to a
+ * div with no border or shadow of its own, so hovering visibly lifted the
+ * number while the actual card outline stayed put.
+ */
 export function statCard(props) {
-  return h('div.card.card--tight', null, stat(props));
+  const { onClick } = props;
+  return h('div', {
+    class: `card card--tight${onClick ? ' card--link' : ''}`,
+    ...(onClick ? { onClick, role: 'button', tabindex: 0 } : {}),
+  }, stat({ ...props, onClick: undefined }));
 }
 
 export function emptyState({ title, detail, iconName = 'file', action }) {
