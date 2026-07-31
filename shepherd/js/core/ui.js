@@ -16,9 +16,14 @@ import { formatDate, formatDateTime, relativeTime, truncate } from './format.js'
  * @param {{title: string, subtitle?: string, eyebrow?: string, actions?: Node[],
  *          narrow?: boolean, children: any[]}} options
  */
-export function page({ title, subtitle, eyebrow, actions = [], narrow = false, children = [] }) {
+/**
+ * `hero: true` is a scoped opt-in (currently just the dashboard) for a
+ * softer, larger-type header treatment — every other module's page() call
+ * is unaffected, since the modifier only applies inside `.page__head--hero`.
+ */
+export function page({ title, subtitle, eyebrow, actions = [], narrow = false, hero = false, children = [] }) {
   return h('div', { class: `page${narrow ? ' page--narrow' : ''}` },
-    h('header.page__head',
+    h('header', { class: `page__head${hero ? ' page__head--hero' : ''}` },
       eyebrow && h('p.eyebrow', null, eyebrow),
       h('div.row.row--between.row--wrap',
         h('div', null,

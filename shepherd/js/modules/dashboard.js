@@ -85,6 +85,7 @@ export async function render(ctx) {
     h('div.stack', ...sideColumn(ctx, now, mode)));
 
   return page({
+    hero: true,
     eyebrow: `${greeting(now)}${mode.label ? ` · ${mode.label}` : ''}`,
     title: firstName(user.name),
     subtitle: `${ctx.tenant.name} · ${formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}`,
