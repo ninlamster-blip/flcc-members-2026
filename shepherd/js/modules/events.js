@@ -86,19 +86,14 @@ function calendar(ctx, route) {
 /* ── calendar ────────────────────────────────────────────────────────────── */
 
 /**
- * One month at a time, not a year grid — an event calendar has no fixed
- * weekly cadence the way the worship schedule does, so a dense 12-up view
- * (see leadership.js's scheduleCalendar) would mostly be empty. The month
- * lives in the URL (?month=YYYY-MM) the same way the tab does, so Prev/Next/
- * Today are just navigations, not local state.
+ * Year overview by default (?view=year, or nothing) — twelve small months at
+ * once, the same shape as leadership.js's scheduleCalendar, so glancing at
+ * the year takes one screen, not twelve. Selecting a month (its title, or
+ * any day in it) drills into ?view=month for that one month, which is where
+ * a specific day becomes clickable — the year view is for orientation, the
+ * month view is for the day-level detail a plan actually needs.
  */
 function eventsCalendar(ctx, events, route) {
-  const now = new Date();
-  const monthParam = route.query.month;
-  const valid = monthParam && /^\d{4}-\d{2}$/.test(monthParam);
-  const viewYear = valid ? Number(monthParam.slice(0, 4)) : now.getFullYear();
-  const viewMonth = valid ? Number(monthParam.slice(5, 7)) - 1 : now.getMonth();
-
   const byDate = new Map();
   for (const event of events) {
     if (event.status === 'cancelled') continue;
@@ -106,6 +101,63 @@ function eventsCalendar(ctx, events, route) {
     if (!byDate.has(key)) byDate.set(key, []);
     byDate.get(key).push(event);
   }
+
+  return route.query.view === 'month'
+    ? eventsMonthCalendar(ctx, byDate, route)
+    : eventsYearCalendar(ctx, events, byDate, route);
+}
+
+function eventsYearCalendar(ctx, events, byDate, route) {
+  const now = new Date();
+  const viewYear = /^\d{4}$/.test(route.query.year) ? Number(route.query.year) : now.getFullYear();
+
+  const years = new Set(events.map((e) => new Date(e.startsAt).getFullYear()));
+  years.add(now.getFullYear());
+  years.add(viewYear);
+  const yearList = [...years].sort((a, b) => a - b);
+
+  return h('div.stack',
+    h('div.row.row--wrap', { style: { alignItems: 'center' } },
+      h('select.select', {
+        style: { maxWidth: '110px' }, 'aria-label': 'Year',
+        onChange: (e) => ctx.navigate(`/events?tab=calendar&year=${e.target.value}`),
+      }, ...yearList.map((y) => h('option', { value: y, selected: y === viewYear }, String(y)))),
+      h('div.spacer'),
+      h('span.tiny.subtle', 'Select a month to plan it in detail')),
+    h('div.cal-year', ...Array.from({ length: 12 }, (_, month) => yearMonthGrid(ctx, viewYear, month, byDate))));
+}
+
+function yearMonthGrid(ctx, year, month, byDate) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = new Date(year, month, 1).getDay();
+  const today = isoDate(new Date());
+  const cells = [];
+  for (let i = 0; i < startOffset; i += 1) cells.push(h('div.cal-day.cal-day--empty'));
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateKey = isoDate(new Date(year, month, day));
+    const dayEvents = byDate.get(dateKey) || [];
+    cells.push(h('div.cal-day', { class: `${dayEvents.length ? 'cal-day--ok' : ''} ${dateKey === today ? 'cal-day--today' : ''}`.trim() },
+      h('span', String(day)), dayEvents.length ? h('span.cal-day__dot') : null));
+  }
+  const monthParam = `${year}-${String(month + 1).padStart(2, '0')}`;
+  return h('button.cal-month', {
+    type: 'button',
+    style: { textAlign: 'left', cursor: 'pointer', width: '100%' },
+    'aria-label': `Open ${formatDateParts(new Date(year, month, 1), { month: 'long', year: 'numeric' })}`,
+    onClick: () => ctx.navigate(`/events?tab=calendar&view=month&month=${monthParam}`),
+  },
+    h('h3.cal-month__title', formatDateParts(new Date(year, month, 1), { month: 'long' })),
+    h('div.cal-grid.cal-grid--head', ...['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w) => h('span.cal-weekday', w))),
+    h('div.cal-grid', ...cells));
+}
+
+/** One month at a time, day cells clickable to a modal listing that day's events. */
+function eventsMonthCalendar(ctx, byDate, route) {
+  const now = new Date();
+  const monthParam = route.query.month;
+  const valid = monthParam && /^\d{4}-\d{2}$/.test(monthParam);
+  const viewYear = valid ? Number(monthParam.slice(0, 4)) : now.getFullYear();
+  const viewMonth = valid ? Number(monthParam.slice(5, 7)) - 1 : now.getMonth();
 
   const monthParamFor = (y, m) => `${y}-${String(m + 1).padStart(2, '0')}`;
   const prevMonth = viewMonth === 0 ? monthParamFor(viewYear - 1, 11) : monthParamFor(viewYear, viewMonth - 1);
@@ -122,12 +174,15 @@ function eventsCalendar(ctx, events, route) {
   }
 
   return h('div.stack',
+    h('div.row.row--wrap', { style: { alignItems: 'center', gap: '10px' } },
+      h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&year=${viewYear}`) }, '‹ All months'),
+      h('div.spacer')),
     h('div.row.row--between.row--wrap', { style: { alignItems: 'center' } },
       h('h3.font-display', formatDateParts(new Date(viewYear, viewMonth, 1), { month: 'long', year: 'numeric' })),
       h('div.row', { style: { gap: '6px' } },
-        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&month=${prevMonth}`) }, '‹ Prev'),
-        h('button.btn.btn--sm', { onClick: () => ctx.navigate('/events?tab=calendar') }, 'Today'),
-        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&month=${nextMonth}`) }, 'Next ›'))),
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&view=month&month=${prevMonth}`) }, '‹ Prev'),
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate('/events?tab=calendar&view=month') }, 'Today'),
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&view=month&month=${nextMonth}`) }, 'Next ›'))),
     h('div.cal-month', { style: { maxWidth: '680px' } },
       h('div.cal-grid.cal-grid--head', ...['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w) => h('span.cal-weekday', w))),
       h('div.cal-grid', ...cells)));
