@@ -12,7 +12,7 @@
 import { h, icon } from '../core/dom.js';
 import {
   page, card, table, list, listItem, emptyState, badge, segmented, searchField,
-  statCard, toast, aiOutput, modal, progress,
+  statCard, toast, aiOutput, modal, progress, select,
 } from '../core/ui.js';
 import { formatDate, relativeTime, isoDate, daysBetween } from '../core/format.js';
 import { AI_TASKS } from '../core/ai.js';
@@ -40,6 +40,7 @@ export async function render(ctx, route) {
   body.appendChild(
     tab === 'series' ? seriesTab(ctx)
       : tab === 'library' ? libraryTab(ctx)
+      : tab === 'bible' ? bibleTab(ctx, route)
       : sermonsTab(ctx),
   );
 
@@ -55,7 +56,9 @@ export async function render(ctx, route) {
         ? newButton(ctx, 'preaching', 'New series', () => openRecordModal(ctx, { collection: 'series' }))
         : tab === 'library'
           ? newButton(ctx, 'preaching', 'Add illustration', () => openRecordModal(ctx, { collection: 'illustrations' }))
-          : newButton(ctx, 'preaching', 'New sermon', () => openRecordModal(ctx, { collection: 'sermons', fields: SERMON_FIELDS })),
+          : tab === 'bible'
+            ? null
+            : newButton(ctx, 'preaching', 'New sermon', () => openRecordModal(ctx, { collection: 'sermons', fields: SERMON_FIELDS })),
     ].filter(Boolean),
     children: [
       h('div', { style: { marginBottom: '18px' } },
@@ -64,6 +67,7 @@ export async function render(ctx, route) {
             { value: 'sermons', label: 'Sermons' },
             { value: 'series', label: 'Series' },
             { value: 'library', label: 'Illustrations & quotes' },
+            { value: 'bible', label: 'Bible lookup' },
           ],
           value: tab,
           onChange: (value) => ctx.navigate(`/preaching?tab=${value}`),
@@ -393,4 +397,83 @@ function libraryTab(ctx) {
     results);
   draw();
   return wrap;
+}
+
+/* ── Bible lookup ────────────────────────────────────────────────────────── */
+
+// Genuinely free, public-domain translations only. NIV itself is copyrighted
+// (Biblica/Zondervan) and unavailable through open Bible APIs without a paid
+// licensing agreement — labelling either of these "NIV" would misrepresent
+// the text, so both are named for what they actually are.
+const BIBLE_VERSIONS = [
+  { value: 'web', label: 'World English Bible (WEB)' },
+  { value: 'kjv', label: 'King James Version (KJV)' },
+];
+
+function bibleTab(ctx, route) {
+  let version = 'web';
+  const resultHost = h('div', { style: { marginTop: '16px' } });
+
+  const box = h('input.input', {
+    placeholder: 'John 3:16 · Psalm 23:1-6 · Romans 8',
+    'aria-label': 'Bible reference',
+    value: route.query.ref || '',
+    onKeydown: (e) => { if (e.key === 'Enter') lookup(box.value); },
+  });
+
+  const versionSelect = select({
+    options: BIBLE_VERSIONS,
+    value: version,
+    onChange: (e) => { version = e.target.value; if (box.value.trim()) lookup(box.value); },
+  });
+
+  async function lookup(rawRef) {
+    const ref = rawRef.trim();
+    if (!ref) return;
+    resultHost.textContent = '';
+    resultHost.appendChild(card({ tight: true, children: [h('p.small.muted', 'Looking it up…')] }));
+
+    let data;
+    try {
+      const res = await fetch(`https://bible-api.com/${encodeURIComponent(ref)}?translation=${version}`);
+      data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+    } catch (err) {
+      resultHost.textContent = '';
+      resultHost.appendChild(card({
+        tight: true,
+        children: [h('p.small', { style: { color: 'var(--danger)' } },
+          `Could not find that passage (${err.message}). Try "John 3:16" or "Psalm 23:1-6".`)],
+      }));
+      return;
+    }
+
+    resultHost.textContent = '';
+    resultHost.appendChild(card({
+      title: data.reference || ref,
+      subtitle: BIBLE_VERSIONS.find((v) => v.value === version).label,
+      children: [
+        Array.isArray(data.verses) && data.verses.length
+          ? h('div.stack.stack--sm', ...data.verses.map((v) => h('div.row', { style: { gap: '10px', alignItems: 'baseline' } },
+            h('span.tiny.subtle', { style: { flex: 'none', minWidth: '20px', textAlign: 'right' } }, String(v.verse)),
+            h('span.small', (v.text || '').trim()))))
+          : h('p.small', (data.text || '').trim()),
+      ],
+    }));
+  }
+
+  if (route.query.ref) setTimeout(() => lookup(route.query.ref), 0);
+
+  return h('div.stack',
+    card({
+      title: 'Bible lookup',
+      subtitle: 'Free, public-domain translations — real NIV text needs a paid licensing agreement Shepherd does not have.',
+      children: [
+        h('div.row.row--wrap', { style: { gap: '8px' } },
+          h('div', { style: { flex: '1', minWidth: '220px' } }, box),
+          versionSelect,
+          h('button.btn.btn--primary', { onClick: () => lookup(box.value) }, icon('search', { size: 15 }), 'Look up')),
+      ],
+    }),
+    resultHost);
 }
