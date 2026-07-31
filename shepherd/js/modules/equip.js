@@ -25,7 +25,7 @@
 import { h, icon } from '../core/dom.js';
 import {
   page, card, list, listItem, emptyState, badge, segmented, statCard,
-  toast, aiOutput, progress, searchField, modal, field, input,
+  toast, aiOutput, progressRing, searchField, modal, field, input,
 } from '../core/ui.js';
 import { formatDate } from '../core/format.js';
 import { blank } from '../core/schema.js';
@@ -114,11 +114,7 @@ function equipDashboardTab(ctx) {
     }) : null,
     learning.certificates.length ? card({
       title: 'Certificates earned',
-      children: [list(learning.certificates.map((cert) => listItem({
-        title: cert.courseTitle,
-        meta: `${cert.certificateNumber} · ${formatDate(cert.issuedAt)}`,
-        trailing: h('button.btn.btn--sm', { onClick: () => printCertificate(ctx, cert) }, icon('download', { size: 14 }), 'Download'),
-      })))],
+      children: [h('div.grid.grid--3', ...learning.certificates.map((cert) => achievementBadge(ctx, cert)))],
     }) : null,
     bookmarked.length ? card({
       title: 'Bookmarks',
@@ -426,6 +422,14 @@ function issueCertificate(ctx, course) {
   }));
 }
 
+function achievementBadge(ctx, cert) {
+  return h('div.achievement-badge',
+    h('div.achievement-badge__medal', icon('graduation', { size: 26 })),
+    h('strong.small', cert.courseTitle),
+    h('p.tiny.subtle', formatDate(cert.issuedAt)),
+    h('button.btn.btn--sm', { style: { marginTop: '8px' }, onClick: () => printCertificate(ctx, cert) }, icon('download', { size: 13 }), 'Download'));
+}
+
 function certificateCard(ctx, cert) {
   return card({
     title: 'Certificate earned',
@@ -484,9 +488,11 @@ function pathCard(ctx, path) {
       ? [h('button.icon-btn', { 'aria-label': 'Edit path', onClick: () => openPathEditModal(ctx, { doc: path }) }, icon('edit', { size: 15 }))]
       : [],
     children: [
-      path.description ? h('p.small.muted', path.description) : null,
-      progress(done, courses.length || 1, { variant: '' }),
-      h('p.tiny.subtle', { style: { marginTop: '6px' } }, `${done} of ${courses.length} courses complete`),
+      h('div.row', { style: { gap: 'var(--space-4)', alignItems: 'center', marginBottom: path.description ? 'var(--space-3)' : '0' } },
+        progressRing(courses.length ? Math.round((done / courses.length) * 100) : 0, {
+          size: 68, strokeWidth: 6, tone: courses.length && done >= courses.length ? 'ok' : 'accent', label: `${done}/${courses.length || 0}`,
+        }),
+        path.description ? h('p.small.muted', { style: { flex: '1', minWidth: '150px' } }, path.description) : null),
       h('div.stack.stack--sm', { style: { marginTop: '10px' } },
         ...courses.map((c, i) => h('div.row.row--between',
           h('span.small', `${i + 1}. ${c.title}`),
@@ -529,7 +535,9 @@ function myLearningTab(ctx) {
       title: 'Leadership readiness',
       subtitle: 'Computed from leader-restricted courses completed — not an opinion, a count.',
       children: readiness.total
-        ? [progress(readiness.score, 100, { variant: '' }), h('p.small.muted', { style: { marginTop: '8px' } }, `${readiness.completed} of ${readiness.total} leadership courses complete.`)]
+        ? [h('div.row', { style: { gap: 'var(--space-4)', alignItems: 'center' } },
+          progressRing(readiness.score, { size: 76, strokeWidth: 7, tone: readiness.score >= 90 ? 'ok' : readiness.score >= 50 ? 'accent' : 'warn' }),
+          h('p.small.muted', `${readiness.completed} of ${readiness.total} leadership courses complete.`))]
         : [h('p.small.muted', 'No leader-training courses in the catalogue yet.')],
     }),
     card({
@@ -540,7 +548,9 @@ function myLearningTab(ctx) {
       title: 'Annual learning goal',
       children: [
         goal
-          ? h('div.stack.stack--sm', progress(completedThisYear, goal, { variant: '' }), h('p.small.muted', `${completedThisYear} of ${goal} courses this year.`))
+          ? h('div.row', { style: { gap: 'var(--space-4)', alignItems: 'center' } },
+            progressRing(Math.min(100, Math.round((completedThisYear / goal) * 100)), { size: 76, strokeWidth: 7, tone: completedThisYear >= goal ? 'ok' : 'accent' }),
+            h('p.small.muted', `${completedThisYear} of ${goal} courses this year.`))
           : h('p.small.muted', 'No goal set yet.'),
         ctx.can('members:write')
           ? h('button.btn.btn--sm', { style: { marginTop: '8px' }, onClick: () => setLearningGoal(ctx, member) }, goal ? 'Change goal' : 'Set goal')
