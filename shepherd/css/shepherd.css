@@ -235,12 +235,17 @@ h4 { font-size: 0.875rem; }
 .page__head h1 { margin-bottom: 4px; }
 
 /* Dashboard only (page({ hero: true })) — a soft, atmospheric variant of the
-   same header every other module uses unchanged. Pure CSS gradient, no
-   image asset: this repo ships no build step and no image pipeline, and a
-   photo would cost more than it adds next to real numbers a leader has to
-   read at a glance. color-mix() against --accent means it re-tints itself
-   correctly in dark mode with no separate rule needed. */
+   same header every other module uses unchanged. The gradient is the base
+   layer and the fallback if `heroArt` is absent; color-mix() against
+   --accent means it re-tints itself correctly in dark mode with no
+   separate rule needed. `heroArt` (see dashboardHeroArt() in
+   core/illustrations.js) is an optional inline-SVG background layer, kept
+   to low opacity behind a scrim so the greeting/briefing text stays fully
+   readable — never a shipped image asset, this repo still has no build
+   step or image pipeline. */
 .page__head--hero {
+  position: relative;
+  overflow: hidden;
   padding: var(--space-6) var(--space-6);
   border-radius: var(--radius-xl);
   background:
@@ -248,11 +253,24 @@ h4 { font-size: 0.875rem; }
     radial-gradient(110% 160% at 105% 15%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 55%),
     var(--surface-2);
 }
+.page__head--hero .hero-art {
+  position: absolute; inset: 0; z-index: 0; opacity: 0.5;
+  mask-image: linear-gradient(100deg, transparent, black 46%, black 100%);
+  -webkit-mask-image: linear-gradient(100deg, transparent, black 46%, black 100%);
+}
+[data-theme='dark'] .page__head--hero .hero-art { opacity: 0.22; }
+.page__head--hero .hero-art svg { width: 100%; height: 100%; display: block; }
+.page__head-content { position: relative; z-index: 1; }
 .page__head--hero .eyebrow { color: color-mix(in srgb, var(--accent) 65%, var(--ink-2)); }
 .page__head--hero h1 { font-size: 2.125rem; letter-spacing: -0.02em; }
 @media (max-width: 860px) {
   .page__head--hero { padding: var(--space-5) var(--space-4); border-radius: var(--radius-lg); }
   .page__head--hero h1 { font-size: 1.75rem; }
+  .page__head--hero .hero-art {
+    mask-image: linear-gradient(180deg, transparent, black 55%, black 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent, black 55%, black 100%);
+    opacity: 0.35;
+  }
 }
 .page__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4); }
 
@@ -488,15 +506,16 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 
 .empty { text-align: center; padding: var(--space-7) var(--space-4); color: var(--ink-2); }
 .empty h3 { margin-bottom: 4px; }
-.empty__badge {
-  width: 64px; height: 64px; margin: 0 auto var(--space-4);
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; color: var(--accent);
-  background:
-    radial-gradient(120% 120% at 32% 24%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%),
-    color-mix(in srgb, var(--accent) 7%, transparent);
-}
-.empty__badge .icon { color: inherit; }
+
+/* Flat, geometric "nothing here yet" scene — see emptyIllustration() in ui.js. */
+.illustration { display: block; margin: 0 auto var(--space-4); overflow: visible; }
+.illustration__blob { fill: color-mix(in srgb, var(--accent) 9%, var(--surface-2)); }
+.illustration__dot { opacity: 0.9; }
+.illustration__dot--a { fill: color-mix(in srgb, var(--accent) 35%, transparent); }
+.illustration__dot--b { fill: color-mix(in srgb, var(--warn) 40%, transparent); }
+.illustration__dot--c { fill: color-mix(in srgb, var(--ok) 40%, transparent); }
+.illustration__shadow { fill: var(--ink-3); opacity: 0.1; }
+.illustration__icon { color: var(--accent); }
 
 /* ── worship service date tile ──────────────────────────────────────────── */
 .service-date-tile {

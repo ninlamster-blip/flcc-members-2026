@@ -20,16 +20,21 @@ import { formatDate, formatDateTime, relativeTime, truncate } from './format.js'
  * `hero: true` is a scoped opt-in (currently just the dashboard) for a
  * softer, larger-type header treatment — every other module's page() call
  * is unaffected, since the modifier only applies inside `.page__head--hero`.
+ * `heroArt`, if given, renders behind the text as an absolutely-positioned
+ * background layer (see `.hero-art` in shepherd.css) — the text column gets
+ * its own stacking context so it always sits above the art.
  */
-export function page({ title, subtitle, eyebrow, actions = [], narrow = false, hero = false, children = [] }) {
+export function page({ title, subtitle, eyebrow, actions = [], narrow = false, hero = false, heroArt = null, children = [] }) {
   return h('div', { class: `page${narrow ? ' page--narrow' : ''}` },
     h('header', { class: `page__head${hero ? ' page__head--hero' : ''}` },
-      eyebrow && h('p.eyebrow', null, eyebrow),
-      h('div.row.row--between.row--wrap',
-        h('div', null,
-          h('h1', null, title),
-          subtitle && h('p.muted', null, subtitle)),
-        actions.length ? h('div.row.row--wrap', { class: 'no-print' }, ...actions) : null)),
+      heroArt,
+      h('div.page__head-content',
+        eyebrow && h('p.eyebrow', null, eyebrow),
+        h('div.row.row--between.row--wrap',
+          h('div', null,
+            h('h1', null, title),
+            subtitle && h('p.muted', null, subtitle)),
+          actions.length ? h('div.row.row--wrap', { class: 'no-print' }, ...actions) : null))),
     ...children);
 }
 
@@ -69,9 +74,36 @@ export function statCard(props) {
   }, stat({ ...props, onClick: undefined }));
 }
 
+/**
+ * A small flat-design "nothing here yet" scene: a tilted rounded backdrop,
+ * a few scattered accent dots and a grounding shadow, with the module's own
+ * icon as the focal point. Geometric and tinted from the existing palette
+ * on purpose — no clip art, no new colours, no image assets to ship.
+ */
+export function emptyIllustration(iconName, { size = 116 } = {}) {
+  const vb = 160;
+  const iconSize = 46;
+  const svg = h('svg', {
+    width: size, height: size, viewBox: `0 0 ${vb} ${vb}`, class: 'illustration', 'aria-hidden': 'true', focusable: 'false',
+  },
+    h('ellipse', { cx: vb / 2, cy: 146, rx: 36, ry: 6, class: 'illustration__shadow' }),
+    h('rect', {
+      x: 24, y: 22, width: 112, height: 112, rx: 30,
+      transform: `rotate(-6 ${vb / 2} ${vb / 2})`, class: 'illustration__blob',
+    }),
+    h('circle', { cx: 128, cy: 36, r: 12, class: 'illustration__dot illustration__dot--a' }),
+    h('circle', { cx: 28, cy: 116, r: 8, class: 'illustration__dot illustration__dot--b' }),
+    h('circle', { cx: 132, cy: 114, r: 6, class: 'illustration__dot illustration__dot--c' }));
+  const iconNode = icon(iconName, { size: iconSize, class: 'illustration__icon' });
+  iconNode.setAttribute('x', String(Math.round(vb / 2 - iconSize / 2)));
+  iconNode.setAttribute('y', String(Math.round(vb / 2 - iconSize / 2 - 4)));
+  svg.appendChild(iconNode);
+  return svg;
+}
+
 export function emptyState({ title, detail, iconName = 'file', action }) {
   return h('div.empty',
-    h('div.empty__badge', icon(iconName, { size: 30 })),
+    emptyIllustration(iconName),
     h('h3', null, title),
     detail && h('p.small.muted', null, detail),
     action ? h('div', { style: { marginTop: '16px' } }, action) : null);

@@ -19,6 +19,7 @@ import { ledMinistries, isCommunionScheduled } from '../core/policies.js';
 import { formatDate, formatDateParts, formatTime, formatDateTime, relativeTime, isoDate, addDays, formatMoney, daysBetween } from '../core/format.js';
 import { can } from '../core/rbac.js';
 import { syncFLCCAttendance } from '../core/flccSync.js';
+import { dashboardHeroArt } from '../core/illustrations.js';
 import { memberName, statusBadge, healthTone, serviceDateTile } from './_shared.js';
 
 /**
@@ -86,6 +87,7 @@ export async function render(ctx) {
 
   return page({
     hero: true,
+    heroArt: dashboardHeroArt(),
     eyebrow: `${greeting(now)}${mode.label ? ` · ${mode.label}` : ''}`,
     title: firstName(user.name),
     subtitle: `${ctx.tenant.name} · ${formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}`,
