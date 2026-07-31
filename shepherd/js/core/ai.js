@@ -1631,6 +1631,23 @@ export function buildBriefing(db, user, { now = new Date(), settings = {} } = {}
     if (overdue) lines.push(`${overdue} leadership action${overdue === 1 ? '' : 's'} overdue.`);
   }
 
+  // Self-scoped, so it runs regardless of members:read — the same carve-out
+  // as the leadership journal: your own record is yours to see even if the
+  // coarse permission that gates everyone else's isn't held.
+  if (user && user.memberId) {
+    const mine = upcomingCelebrations(db, { now, days: 7 }).find((c) => c.memberId === user.memberId);
+    if (mine) {
+      const when = mine.inDays === 0 ? 'today' : `in ${mine.inDays} day${mine.inDays === 1 ? '' : 's'}`;
+      lines.push(mine.label === 'birthday'
+        ? `Your own birthday is ${when} — a good week to let someone spoil you too.`
+        : `Your own anniversary is ${when} — take the evening off if you can.`);
+    }
+    const myLoad = volunteerWellBeing(db, { now }).find((v) => v.memberId === user.memberId);
+    if (myLoad && (myLoad.status === 'critical' || myLoad.status === 'needs-attention')) {
+      lines.push('You are carrying a heavy load yourself right now — make sure someone is checking in on you too, not only the people you lead.');
+    }
+  }
+
   if (!lines.length) lines.push('Nothing urgent — a clear week is a good week to check in on someone anyway.');
   return lines;
 }

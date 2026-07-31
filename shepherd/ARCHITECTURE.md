@@ -168,6 +168,13 @@ journal tab itself ever queries.
   permission-filtered, no network. Everything on the dashboard's "Shepherd
   noticed", the AI executive briefing, ministry health scores and the
   worship-schedule assignment suggestions comes from here and works offline.
+  `buildBriefing` also gives the signed-in reader a line about *themselves*
+  when `user.memberId` is set — their own upcoming birthday or anniversary,
+  or a caring nudge if `volunteerWellBeing` shows them personally stretched
+  thin — a self-scoped carve-out that runs regardless of `members:read`,
+  the same reasoning as the leadership journal's author-only access: your
+  own record is yours to see even without the coarse permission that gates
+  everyone else's.
   `ministryHealthScore` returns its breakdown alongside the score
   deliberately — the UI shows every factor, not just a number, so the
   heuristic stays inspectable rather than a black box. It weighs seven
