@@ -2134,9 +2134,66 @@ function EncourageModal({ worker, data, onClose }) {
 }
 
 // ── Home Top Card: Verse of the Day + Weather ────────────────────────────────
-function HomeTopCard({ setActiveTab }) {
+/**
+ * A short, personalized encouragement line — reuses whatever Ask FLCC
+ * connection (shared Cloudflare Worker or a personal API key) the member has
+ * already set up, so there is nothing new to configure. Returns null rather
+ * than throwing when no connection exists or the call fails; callers fall
+ * back to the static, weather-keyed message that already covers this case.
+ * ASK_KEY / ASK_PROXY_KEY / ASK_PROXY_SECRET_KEY / ASK_MODEL are declared
+ * later in this file (the Ask FLCC tab) — safe to reference here since this
+ * function only runs long after the whole script has finished evaluating.
+ */
+async function fetchAIEncouragement({ me, weatherText, context }) {
+  let proxyUrl = '', proxySecret = '', apiKey = '';
+  try {
+    proxyUrl = localStorage.getItem(ASK_PROXY_KEY) || '';
+    proxySecret = localStorage.getItem(ASK_PROXY_SECRET_KEY) || '';
+    apiKey = localStorage.getItem(ASK_KEY) || '';
+  } catch { return null; }
+  if (!proxyUrl && !apiKey) return null;
+
+  const endpoint = proxyUrl ? proxyUrl.replace(/\/+$/, '') + '/proxy' : 'https://api.anthropic.com/v1/messages';
+  const headers = { 'Content-Type': 'application/json' };
+  if (!proxyUrl) {
+    headers['x-api-key'] = apiKey;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  } else if (proxySecret) {
+    headers['x-proxy-secret'] = proxySecret;
+  }
+
+  const firstName = me && me.name ? me.name.split(' ')[0] : '';
+  const prompt = [
+    `Write one short, warm, Scripture-rooted encouragement${firstName ? ` for ${firstName}` : ' for a church member'}.`,
+    context ? context : '',
+    weatherText ? `Weather right now: ${weatherText}.` : '',
+    'Exactly 1-2 sentences. No greeting, no sign-off, no quotation marks — just the encouragement itself.',
+  ].filter(Boolean).join(' ');
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model: ASK_MODEL,
+        max_tokens: 200,
+        system: 'You write brief, warm, biblically-grounded encouragement for church members. Keep it to 1-2 sentences, no preamble.',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    return (d.content?.[0]?.text || '').trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+function HomeTopCard({ setActiveTab, me }) {
   const [votd, setVotd] = useState(null);
   const [weather, setWeather] = useState(null);
+  const [aiMessage, setAiMessage] = useState(null);
 
   const dayRef = useMemo(() => {
     const start = new Date(new Date().getFullYear(), 0, 0);
@@ -2237,6 +2294,29 @@ function HomeTopCard({ setActiveTab }) {
     return "Even in the storm, God is your anchor. Be still and know that He is God — you are safe in His hands!";
   }
 
+  // Personalize once per person per day when Ask FLCC is connected; cached so
+  // reopening the app the same day never re-spends the church's AI budget on
+  // the same message.
+  useEffect(() => {
+    if (!weather) return;
+    const today = todayISO();
+    const cacheKey = CHURCH.key(`flcc-ai-encouragement-${today}-${me ? me.id : 'anon'}`);
+    let cached = null;
+    try { cached = localStorage.getItem(cacheKey); } catch {}
+    if (cached) { setAiMessage(cached); return; }
+
+    let cancelled = false;
+    fetchAIEncouragement({
+      me,
+      weatherText: weatherLabel(weather.code, weather.isDay),
+    }).then(msg => {
+      if (cancelled || !msg) return;
+      setAiMessage(msg);
+      try { localStorage.setItem(cacheKey, msg); } catch {}
+    });
+    return () => { cancelled = true; };
+  }, [weather, me]);
+
   const verseText = (votd?.verses?.[0]?.text || votd?.text || '').trim();
 
   return (
@@ -2275,7 +2355,7 @@ function HomeTopCard({ setActiveTab }) {
             </div>
             <div className="flex-1">
               <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#A33B2A' }}>{weather.isDay ? "Today's Encouragement" : "Tonight's Encouragement"}</div>
-              <div className="text-sm" style={{ color: '#18181B', lineHeight: 1.65 }}>{spiritualMessage(weather.code, weather.isDay)}</div>
+              <div className="text-sm" style={{ color: '#18181B', lineHeight: 1.65 }}>{aiMessage || spiritualMessage(weather.code, weather.isDay)}</div>
             </div>
           </div>
         </div>
@@ -2549,7 +2629,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       </SectionHeading>
 
       {/* Verse of the Day + Weather */}
-      <HomeTopCard setActiveTab={setActiveTab} />
+      <HomeTopCard setActiveTab={setActiveTab} me={me} />
 
       {/* Lifting Up Our Brethren */}
       <LiftingUpCard data={data} me={me} attendanceData={attendanceData} />
@@ -8020,7 +8100,11 @@ function AskTab({ data, prayerData, musicData, equipData }) {
     const history = [...messages, userMsg];
     setMessages(history); setInput(''); setLoading(true);
     try {
-      const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+      // A bare worker URL collides with the static asset the same worker
+      // serves at its own root (index.html) — /proxy is the path the worker
+      // reserves so a POST never gets caught by asset routing instead. See
+      // ask.html's identical endpoint construction.
+      const endpoint = proxyUrl ? proxyUrl.replace(/\/+$/, '') + '/proxy' : 'https://api.anthropic.com/v1/messages';
       const headers  = { 'Content-Type': 'application/json' };
       if (!proxyUrl) {
         headers['x-api-key'] = apiKey;
