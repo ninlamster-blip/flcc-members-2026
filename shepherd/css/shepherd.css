@@ -233,6 +233,27 @@ h4 { font-size: 0.875rem; }
 .page--narrow { max-width: 780px; }
 .page__head { margin-bottom: var(--space-5); }
 .page__head h1 { margin-bottom: 4px; }
+
+/* Dashboard only (page({ hero: true })) — a soft, atmospheric variant of the
+   same header every other module uses unchanged. Pure CSS gradient, no
+   image asset: this repo ships no build step and no image pipeline, and a
+   photo would cost more than it adds next to real numbers a leader has to
+   read at a glance. color-mix() against --accent means it re-tints itself
+   correctly in dark mode with no separate rule needed. */
+.page__head--hero {
+  padding: var(--space-6) var(--space-6);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(120% 200% at 10% -20%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+    radial-gradient(110% 160% at 105% 15%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 55%),
+    var(--surface-2);
+}
+.page__head--hero .eyebrow { color: color-mix(in srgb, var(--accent) 65%, var(--ink-2)); }
+.page__head--hero h1 { font-size: 2.125rem; letter-spacing: -0.02em; }
+@media (max-width: 860px) {
+  .page__head--hero { padding: var(--space-5) var(--space-4); border-radius: var(--radius-lg); }
+  .page__head--hero h1 { font-size: 1.75rem; }
+}
 .page__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4); }
 
 .stack { display: flex; flex-direction: column; gap: var(--space-4); }
