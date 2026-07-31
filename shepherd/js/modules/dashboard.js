@@ -96,13 +96,37 @@ export async function render(ctx) {
 
 /* ── the morning briefing ────────────────────────────────────────────────── */
 
+const BRIEFING_ICON_RULES = [
+  [/overdue/i, 'alert', 'danger'],
+  [/short of volunteers/i, 'alert', 'warn'],
+  [/awaiting approval/i, 'wallet', 'warn'],
+  [/heavy load/i, 'heart', 'warn'],
+  [/birthday/i, 'sparkles', 'accent'],
+  [/anniversar/i, 'heart', 'accent'],
+  [/visitor/i, 'users', 'accent'],
+  [/attendance/i, 'chart', ''],
+  [/worship service/i, 'calendar', ''],
+  [/clear week|nothing urgent/i, 'check', 'ok'],
+];
+
+function briefingLineMeta(line) {
+  const rule = BRIEFING_ICON_RULES.find(([re]) => re.test(line));
+  return rule ? { iconName: rule[1], tone: rule[2] } : { iconName: 'sparkles', tone: '' };
+}
+
+function briefingItem(line) {
+  const { iconName, tone } = briefingLineMeta(line);
+  return h('div.briefing-item',
+    h('span', { class: `briefing-item__icon${tone ? ` briefing-item__icon--${tone}` : ''}` }, icon(iconName, { size: 15 })),
+    h('p.small', { style: { margin: 0 } }, line));
+}
+
 function briefingCard(lines) {
   return card({
     title: 'This week',
     actions: [badge('Personalised for you')],
     className: 'card--glass',
-    children: [h('ul', { style: { margin: 0, paddingLeft: '20px', display: 'grid', gap: '6px' } },
-      ...lines.map((line) => h('li.small', line)))],
+    children: [h('div.stack.stack--sm', ...lines.map((line) => briefingItem(line)))],
   });
 }
 
