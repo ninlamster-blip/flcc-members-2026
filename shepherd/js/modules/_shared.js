@@ -272,6 +272,16 @@ export function dateMeta(value, ...rest) {
   return [formatDate(value), ...rest.filter(Boolean)].join(' · ');
 }
 
+/** A small calendar-page tile (month / day / weekday) used to open worship-service cards. */
+export function serviceDateTile(value, { daysAway } = {}) {
+  const d = new Date(value);
+  const tone = daysAway === 0 ? ' service-date-tile--accent' : daysAway > 0 && daysAway <= 7 ? ' service-date-tile--accent' : '';
+  return h('div', { class: `service-date-tile${tone}` },
+    h('span.service-date-tile__month', d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()),
+    h('span.service-date-tile__day', String(d.getDate())),
+    h('span.service-date-tile__weekday', d.toLocaleDateString('en-US', { weekday: 'short' })));
+}
+
 export function money(value) {
   return formatMoney(value);
 }

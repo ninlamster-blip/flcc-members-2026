@@ -19,7 +19,7 @@ import { ledMinistries, isCommunionScheduled } from '../core/policies.js';
 import { formatDate, formatDateParts, formatTime, formatDateTime, relativeTime, isoDate, addDays, formatMoney, daysBetween } from '../core/format.js';
 import { can } from '../core/rbac.js';
 import { syncFLCCAttendance } from '../core/flccSync.js';
-import { memberName, statusBadge, healthTone } from './_shared.js';
+import { memberName, statusBadge, healthTone, serviceDateTile } from './_shared.js';
 
 /**
  * A church opts into this in Settings → Data; off by default. Fires without
@@ -100,6 +100,7 @@ function briefingCard(lines) {
   return card({
     title: 'This week',
     actions: [badge('Personalised for you')],
+    className: 'card--glass',
     children: [h('ul', { style: { margin: 0, paddingLeft: '20px', display: 'grid', gap: '6px' } },
       ...lines.map((line) => h('li.small', line)))],
   });
@@ -270,6 +271,7 @@ function upcomingServiceWidget(ctx, now) {
 
   return card({
     title: 'Upcoming services',
+    className: 'card--glass',
     children: [h('div.grid.grid--2',
       ...[nextFriday, nextSunday].filter(Boolean).map((service) => serviceCountdownCard(ctx, now, service)))],
   });
@@ -286,9 +288,11 @@ function serviceCountdownCard(ctx, now, service) {
 
   return h('div.card.card--tight',
     h('div.row.row--between.row--wrap',
-      h('div', null,
-        h('strong', service.service),
-        h('div.tiny.subtle', formatDate(service.date, { weekday: 'long', day: 'numeric', month: 'long' }))),
+      h('div.row', { style: { gap: 'var(--space-3)' } },
+        serviceDateTile(service.date, { daysAway: days }),
+        h('div', null,
+          h('strong', service.service),
+          h('div.tiny.subtle', formatDate(service.date, { weekday: 'long', day: 'numeric', month: 'long' })))),
       badge(days === 0 ? 'Today' : `${days} day${days === 1 ? '' : 's'}`, days <= 1 ? 'accent' : '')),
     h('div.chip-list', { style: { marginTop: '8px' } },
       communion ? badge('Communion', 'accent') : null,

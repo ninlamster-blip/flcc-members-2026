@@ -23,7 +23,7 @@ import { formatDate, formatDateTime, formatMoney, formatDateParts, relativeTime,
 import { COLLECTIONS, SERVICE_TYPES } from '../core/schema.js';
 import {
   openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord, healthTone,
-  refOptions, friendly, refLabel,
+  refOptions, friendly, refLabel, serviceDateTile,
 } from './_shared.js';
 import {
   ministryHealthScore, ministryHealthTrend, churchHealthOverview, successionRisk, volunteerWellBeing,
@@ -737,6 +737,7 @@ function serviceRow(ctx, record) {
   const attended = db.first('attendance', (a) => a.date === record.date && a.service === record.service);
   const communion = isCommunionScheduled(record);
   const readiness = serviceReadiness(record);
+  const days = Math.round((new Date(record.date) - new Date(new Date().toDateString())) / 864e5);
   // Emcee and communion minister carry auto-shown detail beneath the name; every other role is a plain chip.
   const DEDICATED_ROLES = ['presidingLeaderId', 'emceeId', 'pastoralPrayerId', 'communionMinisterId', 'childrenYouthLeaderId', 'childrenYouthAssistantId'];
   const chipRoles = SERVICE_ROLE_FIELDS.filter(([key]) => !DEDICATED_ROLES.includes(key) && record[key]);
@@ -745,13 +746,15 @@ function serviceRow(ctx, record) {
     tight: true,
     children: [
       h('div.row.row--between.row--wrap',
-        h('div', null,
-          h('div.row',
-            h('strong', record.service),
-            badge(sentence(record.serviceType || 'other'), 'accent'),
-            statusBadge(record.status)),
-          h('div.tiny.subtle', formatDate(record.date, { weekday: 'long', day: 'numeric', month: 'long' })),
-          record.theme ? h('div.small', `${record.theme}${record.scripture ? ` — ${record.scripture}` : ''}`) : null),
+        h('div.row.row--wrap', { style: { gap: 'var(--space-3)', alignItems: 'flex-start' } },
+          serviceDateTile(record.date, { daysAway: days }),
+          h('div', { style: { minWidth: '0' } },
+            h('div.row.row--wrap',
+              h('strong', record.service),
+              badge(sentence(record.serviceType || 'other'), 'accent'),
+              statusBadge(record.status),
+              days >= 0 && days <= 30 ? badge(days === 0 ? 'Today' : `${days}d away`, days <= 1 ? 'accent' : '') : null),
+            record.theme ? h('div.small', `${record.theme}${record.scripture ? ` — ${record.scripture}` : ''}`) : null)),
         h('div.row.row--wrap',
           badge(attended ? 'Attendance recorded' : 'Attendance pending', attended ? 'ok' : 'warn'),
           badge(`${readiness.filled}/${readiness.total} roles filled`, readiness.filled >= readiness.total ? 'ok' : readiness.filled === 0 ? 'danger' : 'warn'),
