@@ -259,7 +259,7 @@ h4 { font-size: 0.875rem; }
 }
 .card--flat { box-shadow: none; }
 .card--tight { padding: var(--space-4); }
-.card__head { display: flex; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-4); }
+.card__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-4); }
 .card__head h2, .card__head h3 { margin: 0; }
 .card__head .spacer { flex: 1; }
 .card--link { cursor: pointer; transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease); }
