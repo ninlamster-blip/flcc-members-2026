@@ -6,9 +6,18 @@
  * user has actually opened, so a pastor on a hospital corridor with one bar of
  * signal still gets to their notes.
  *
- * Strategy: cache-first for our own static files (they are versioned by the
- * cache name), network-only for everything else. Nothing church-related is
- * ever cached here — records never travel through the cache API.
+ * Strategy: network-first for our own static files, falling back to the
+ * cache only when the network fails — never cache-first. This repo has no
+ * build step (see README: "edit a file, reload the page"), so there is no
+ * content hash or version bump to key a cache-first strategy off of; the
+ * one-line VERSION string below does not change on an ordinary deploy.
+ * Cache-first against a cache name that never changes means a browser that
+ * already visited a page keeps serving that exact old code indefinitely —
+ * every visit only refreshes the cache for *next* time, never this one.
+ * Network-first costs a request on a good connection but is never wrong;
+ * the cache exists purely for when there is no connection at all. Nothing
+ * church-related is ever cached here — records never travel through the
+ * cache API.
  */
 
 const VERSION = 'shepherd-v1';
@@ -63,18 +72,14 @@ self.addEventListener('fetch', (event) => {
   if (!url.pathname.includes('/shepherd/')) return;          // never touch the rest of this domain
 
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(VERSION).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached || caches.match('./index.html'));
-      // Cache first for speed; the network copy refreshes it for next time.
-      return cached || network;
-    }),
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(VERSION).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request).then((cached) => cached || caches.match('./index.html'))),
   );
 });
