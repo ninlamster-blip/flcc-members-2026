@@ -72,14 +72,86 @@ function calendar(ctx, route) {
     children: [
       h('div.row.row--wrap', { style: { marginBottom: '16px' } },
         segmented({
-          options: [{ value: 'upcoming', label: 'Upcoming' }, { value: 'past', label: 'Past' }],
+          options: [{ value: 'upcoming', label: 'Upcoming' }, { value: 'past', label: 'Past' }, { value: 'calendar', label: 'Calendar' }],
           value: tab,
           onChange: (value) => ctx.navigate(`/events?tab=${value}`),
         }),
-        h('div', { style: { flex: '1', minWidth: '200px' } },
+        tab === 'calendar' ? null : h('div', { style: { flex: '1', minWidth: '200px' } },
           searchField({ placeholder: 'Search events…', onInput: (value) => { query = value; draw(); } }))),
-      results,
+      tab === 'calendar' ? eventsCalendar(ctx, all, route) : results,
     ],
+  });
+}
+
+/* ── calendar ────────────────────────────────────────────────────────────── */
+
+/**
+ * One month at a time, not a year grid — an event calendar has no fixed
+ * weekly cadence the way the worship schedule does, so a dense 12-up view
+ * (see leadership.js's scheduleCalendar) would mostly be empty. The month
+ * lives in the URL (?month=YYYY-MM) the same way the tab does, so Prev/Next/
+ * Today are just navigations, not local state.
+ */
+function eventsCalendar(ctx, events, route) {
+  const now = new Date();
+  const monthParam = route.query.month;
+  const valid = monthParam && /^\d{4}-\d{2}$/.test(monthParam);
+  const viewYear = valid ? Number(monthParam.slice(0, 4)) : now.getFullYear();
+  const viewMonth = valid ? Number(monthParam.slice(5, 7)) - 1 : now.getMonth();
+
+  const byDate = new Map();
+  for (const event of events) {
+    if (event.status === 'cancelled') continue;
+    const key = isoDate(new Date(event.startsAt));
+    if (!byDate.has(key)) byDate.set(key, []);
+    byDate.get(key).push(event);
+  }
+
+  const monthParamFor = (y, m) => `${y}-${String(m + 1).padStart(2, '0')}`;
+  const prevMonth = viewMonth === 0 ? monthParamFor(viewYear - 1, 11) : monthParamFor(viewYear, viewMonth - 1);
+  const nextMonth = viewMonth === 11 ? monthParamFor(viewYear + 1, 0) : monthParamFor(viewYear, viewMonth + 1);
+  const today = isoDate(now);
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const startOffset = new Date(viewYear, viewMonth, 1).getDay();
+  const cells = [];
+  for (let i = 0; i < startOffset; i += 1) cells.push(h('div.cal-day.cal-day--empty'));
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateKey = isoDate(new Date(viewYear, viewMonth, day));
+    cells.push(calendarDayCell(ctx, day, dateKey, byDate.get(dateKey) || [], dateKey === today));
+  }
+
+  return h('div.stack',
+    h('div.row.row--between.row--wrap', { style: { alignItems: 'center' } },
+      h('h3.font-display', formatDateParts(new Date(viewYear, viewMonth, 1), { month: 'long', year: 'numeric' })),
+      h('div.row', { style: { gap: '6px' } },
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&month=${prevMonth}`) }, '‹ Prev'),
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate('/events?tab=calendar') }, 'Today'),
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&month=${nextMonth}`) }, 'Next ›'))),
+    h('div.cal-month', { style: { maxWidth: '680px' } },
+      h('div.cal-grid.cal-grid--head', ...['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w) => h('span.cal-weekday', w))),
+      h('div.cal-grid', ...cells)));
+}
+
+function calendarDayCell(ctx, day, dateKey, dayEvents, isToday) {
+  const todayClass = isToday ? ' cal-day--today' : '';
+  if (!dayEvents.length) return h('div.cal-day', { class: todayClass.trim() }, h('span', String(day)));
+
+  const summary = dayEvents.map((e) => `${formatTime(e.startsAt)} · ${e.title}`).join('\n');
+  return h('button.cal-day.cal-day--has', {
+    type: 'button',
+    class: `cal-day--ok${todayClass}`,
+    title: summary,
+    'aria-label': `${dayEvents.length > 1 ? `${dayEvents.length} events` : dayEvents[0].title} on ${formatDate(dateKey)}`,
+    onClick: () => openCalendarDayModal(ctx, dateKey, dayEvents),
+  }, h('span', String(day)), h('span.cal-day__dot'));
+}
+
+function openCalendarDayModal(ctx, dateKey, dayEvents) {
+  const ref = modal({
+    title: formatDate(dateKey, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    body: h('div.stack.stack--sm', ...dayEvents.map((event) => eventRow(ctx, event))),
+    actions: [h('button.btn', { onClick: () => ref.close() }, 'Close')],
   });
 }
 

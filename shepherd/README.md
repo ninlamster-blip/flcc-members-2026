@@ -43,9 +43,9 @@ Opening `file://` will not work — ES modules need a real origin.
 | **People** | Directory, families, ministries, attendance recording, and a profile that gathers everything known about one person — including their Equip training, certificates and leadership readiness |
 | **Member care** | Follow-ups and visits, plus who the records say has gone quiet — absences, new believers, the care list, celebrations |
 | **Prayer centre** | Wall, leaders-only and private requests, chains, answered prayer, a generated prayer-meeting sheet |
-| **Events** | Planning, tasks and volunteers, rota suggestions, budget, and a check-in desk with a QR-friendly code |
+| **Events** | Planning, tasks and volunteers, rota suggestions, budget, a check-in desk with a QR-friendly code, and a month calendar to look ahead |
 | **Worship** | Song library searchable by theme, key, mood, season, language and lyrics; setlists; team and rehearsals |
-| **Preaching** | Sermon archive, series planning, illustrations and quotes, and an assistant that drafts the work *around* the sermon |
+| **Preaching** | Sermon archive, series planning, illustrations and quotes, a Bible lookup in free public-domain translations, and an assistant that drafts the work *around* the sermon |
 | **Leadership** | The leadership operating system: committees, minutes, a decision log with review-date insights, ministry workspaces, the annual worship service schedule with smart assignment, a leader's own task centre, computed ministry health with trend and recommendations, a church-wide health overview, succession planning, volunteer well-being, a pastoral care rollup, a private leadership journal, a succession-aware leadership directory, annual planning with quarterly review and inline ministry health, and a permission-filtered activity timeline |
 | **Finance** | Giving, expenses, budgets, projects, approvals — encrypted, role-restricted, exportable |
 | **Document vault** | Encrypted files with version history, fingerprints and expiry reminders |
@@ -362,6 +362,11 @@ A service worker caches the shell and each module the first time it is opened,
 so the app keeps working on a bad connection. The mobile layout is its own
 layout — bottom navigation, full-width sheets, 44px targets — not a squeezed
 desktop. Add it to the home screen and it runs standalone.
+
+Everything works offline except the handful of features that are online by
+nature and say so plainly when they can't reach the network: AI drafting, the
+FLCC attendance sync, and Preaching's Bible lookup (bible-api.com, free
+public-domain translations only).
 
 ## Development
 
