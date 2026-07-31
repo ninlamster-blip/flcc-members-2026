@@ -104,26 +104,22 @@ function eventsCalendar(ctx, events, route) {
 
   return route.query.view === 'month'
     ? eventsMonthCalendar(ctx, byDate, route)
-    : eventsYearCalendar(ctx, events, byDate, route);
+    : eventsYearCalendar(ctx, byDate, route);
 }
 
-function eventsYearCalendar(ctx, events, byDate, route) {
+/** Any real year, not just ones with data in them — a plan looks forward as much as back. */
+function eventsYearCalendar(ctx, byDate, route) {
   const now = new Date();
   const viewYear = /^\d{4}$/.test(route.query.year) ? Number(route.query.year) : now.getFullYear();
 
-  const years = new Set(events.map((e) => new Date(e.startsAt).getFullYear()));
-  years.add(now.getFullYear());
-  years.add(viewYear);
-  const yearList = [...years].sort((a, b) => a - b);
-
   return h('div.stack',
-    h('div.row.row--wrap', { style: { alignItems: 'center' } },
-      h('select.select', {
-        style: { maxWidth: '110px' }, 'aria-label': 'Year',
-        onChange: (e) => ctx.navigate(`/events?tab=calendar&year=${e.target.value}`),
-      }, ...yearList.map((y) => h('option', { value: y, selected: y === viewYear }, String(y)))),
-      h('div.spacer'),
-      h('span.tiny.subtle', 'Select a month to plan it in detail')),
+    h('div.row.row--between.row--wrap', { style: { alignItems: 'center' } },
+      h('h3.font-display', String(viewYear)),
+      h('div.row', { style: { gap: '6px' } },
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&year=${viewYear - 1}`) }, '‹ Prev year'),
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate('/events?tab=calendar') }, 'This year'),
+        h('button.btn.btn--sm', { onClick: () => ctx.navigate(`/events?tab=calendar&year=${viewYear + 1}`) }, 'Next year ›'))),
+    h('p.tiny.subtle', ctx.can('events:write') ? 'Click a month to open it, or a day to plan something new.' : 'Click a month to open it.'),
     h('div.cal-year', ...Array.from({ length: 12 }, (_, month) => yearMonthGrid(ctx, viewYear, month, byDate))));
 }
 
@@ -131,27 +127,30 @@ function yearMonthGrid(ctx, year, month, byDate) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startOffset = new Date(year, month, 1).getDay();
   const today = isoDate(new Date());
+  const monthParam = `${year}-${String(month + 1).padStart(2, '0')}`;
+
   const cells = [];
   for (let i = 0; i < startOffset; i += 1) cells.push(h('div.cal-day.cal-day--empty'));
   for (let day = 1; day <= daysInMonth; day += 1) {
     const dateKey = isoDate(new Date(year, month, day));
-    const dayEvents = byDate.get(dateKey) || [];
-    cells.push(h('div.cal-day', { class: `${dayEvents.length ? 'cal-day--ok' : ''} ${dateKey === today ? 'cal-day--today' : ''}`.trim() },
-      h('span', String(day)), dayEvents.length ? h('span.cal-day__dot') : null));
+    cells.push(calendarDayCell(ctx, day, dateKey, byDate.get(dateKey) || [], dateKey === today));
   }
-  const monthParam = `${year}-${String(month + 1).padStart(2, '0')}`;
-  return h('button.cal-month', {
-    type: 'button',
-    style: { textAlign: 'left', cursor: 'pointer', width: '100%' },
-    'aria-label': `Open ${formatDateParts(new Date(year, month, 1), { month: 'long', year: 'numeric' })}`,
-    onClick: () => ctx.navigate(`/events?tab=calendar&view=month&month=${monthParam}`),
-  },
-    h('h3.cal-month__title', formatDateParts(new Date(year, month, 1), { month: 'long' })),
+
+  return h('div.cal-month',
+    h('button', {
+      type: 'button',
+      style: {
+        border: 'none', background: 'none', padding: '0', textAlign: 'left', width: '100%',
+        marginBottom: '4px', cursor: 'pointer',
+      },
+      'aria-label': `Open ${formatDateParts(new Date(year, month, 1), { month: 'long', year: 'numeric' })}`,
+      onClick: () => ctx.navigate(`/events?tab=calendar&view=month&month=${monthParam}`),
+    }, h('h3.cal-month__title', { style: { margin: 0 } }, formatDateParts(new Date(year, month, 1), { month: 'long' }))),
     h('div.cal-grid.cal-grid--head', ...['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w) => h('span.cal-weekday', w))),
     h('div.cal-grid', ...cells));
 }
 
-/** One month at a time, day cells clickable to a modal listing that day's events. */
+/** One month at a time, every day clickable — an existing event opens to view, an empty one to plan. */
 function eventsMonthCalendar(ctx, byDate, route) {
   const now = new Date();
   const monthParam = route.query.month;
@@ -188,9 +187,20 @@ function eventsMonthCalendar(ctx, byDate, route) {
       h('div.cal-grid', ...cells)));
 }
 
+/** Every day is a button when the reader can create events: with events it opens the day's list, empty it opens straight to "New event" pre-filled with that date. A reader with no write access sees existing days only. */
 function calendarDayCell(ctx, day, dateKey, dayEvents, isToday) {
   const todayClass = isToday ? ' cal-day--today' : '';
-  if (!dayEvents.length) return h('div.cal-day', { class: todayClass.trim() }, h('span', String(day)));
+  const canWrite = ctx.can('events:write');
+
+  if (!dayEvents.length) {
+    if (!canWrite) return h('div.cal-day', { class: todayClass.trim() }, h('span', String(day)));
+    return h('button.cal-day', {
+      type: 'button',
+      class: todayClass.trim(),
+      'aria-label': `Plan a new event on ${formatDate(dateKey)}`,
+      onClick: () => openNewEventForDate(ctx, dateKey),
+    }, h('span', String(day)));
+  }
 
   const summary = dayEvents.map((e) => `${formatTime(e.startsAt)} · ${e.title}`).join('\n');
   return h('button.cal-day.cal-day--has', {
@@ -202,11 +212,24 @@ function calendarDayCell(ctx, day, dateKey, dayEvents, isToday) {
   }, h('span', String(day)), h('span.cal-day__dot'));
 }
 
+function openNewEventForDate(ctx, dateKey) {
+  openRecordModal(ctx, {
+    collection: 'events',
+    fields: EVENT_FIELDS,
+    defaults: { startsAt: `${dateKey}T09:00:00` },
+  });
+}
+
 function openCalendarDayModal(ctx, dateKey, dayEvents) {
   const ref = modal({
     title: formatDate(dateKey, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
     body: h('div.stack.stack--sm', ...dayEvents.map((event) => eventRow(ctx, event))),
-    actions: [h('button.btn', { onClick: () => ref.close() }, 'Close')],
+    actions: [
+      ctx.can('events:write') ? h('button.btn', {
+        onClick: () => { ref.close(); openNewEventForDate(ctx, dateKey); },
+      }, icon('plus', { size: 14 }), 'New event this day') : null,
+      h('button.btn', { onClick: () => ref.close() }, 'Close'),
+    ].filter(Boolean),
   });
 }
 

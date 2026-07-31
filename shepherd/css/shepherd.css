@@ -636,7 +636,9 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
   border: 1px solid transparent; background: none; font-family: inherit; padding: 0;
 }
 .cal-day--empty { visibility: hidden; }
-.cal-day--has { cursor: pointer; font-weight: 600; }
+button.cal-day { cursor: pointer; }
+button.cal-day:hover, button.cal-day:focus-visible { border-color: var(--border-2); }
+.cal-day--has { font-weight: 600; }
 .cal-day--has:hover, .cal-day--has:focus-visible { border-color: var(--border-2); }
 .cal-day--ok { background: var(--ok-soft); color: var(--ok); }
 .cal-day--warn { background: var(--warn-soft); color: var(--warn); }
