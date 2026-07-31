@@ -340,6 +340,33 @@ test('an empty week still gets a friendly line, never a blank briefing', async (
   assert.ok(lines.length >= 1);
 });
 
+test('the briefing gives the reader their own birthday even without members:read, but never someone else\'s', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const me = db.insert('members', blank('members', { fullName: 'Volunteer Self', status: 'member', birthDate: '1995-06-03' }));
+  db.insert('members', blank('members', { fullName: 'Someone Else', status: 'member', birthDate: '1990-06-04' }));
+
+  const lines = buildBriefing(db, { role: 'volunteer', memberId: me.id }, { now, settings: {} });
+  assert.ok(lines.some((l) => /your own birthday/i.test(l)), 'a volunteer holds no members:read, but their own record is a self-scoped carve-out');
+  assert.ok(!lines.some((l) => /someone else/i.test(l)), 'never names another member in the personal line');
+});
+
+test('the briefing warns a reader carrying a heavy load themselves, not only about the people they lead', async () => {
+  const db = await tenantDb();
+  const now = new Date('2026-06-01T09:00:00');
+  const me = db.insert('members', blank('members', {
+    fullName: 'Overloaded Leader', status: 'member', ministries: ['Worship', 'Youth', 'Media'],
+  }));
+  for (let i = 0; i < 4; i += 1) {
+    db.insert('eventTasks', blank('eventTasks', {
+      eventId: 'e1', ownerId: me.id, title: `Overdue task ${i}`, done: false, dueDate: isoDate(addDays(now, -5)),
+    }));
+  }
+
+  const lines = buildBriefing(db, { role: 'church_admin', memberId: me.id }, { now, settings: {} });
+  assert.ok(lines.some((l) => /carrying a heavy load yourself/i.test(l)));
+});
+
 /* ── smart assignment for the worship schedule ──────────────────────────── */
 
 test('suggestions match the ministry, skip who is already on the service, and skip who is away', async () => {
