@@ -446,6 +446,20 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 .progress__bar--warn { background: var(--warn); }
 .progress__bar--danger { background: var(--danger); }
 
+.ring-wrap { position: relative; display: inline-flex; }
+.ring { transform: rotate(-90deg); }
+.ring__track { fill: none; stroke: var(--surface-3); }
+.ring__bar { fill: none; }
+.ring__center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; gap: 1px;
+}
+.ring__value { font-weight: 700; font-size: 1.0625rem; letter-spacing: -0.01em; }
+.ring__label { font-size: 0.625rem; color: var(--ink-3); max-width: 68px; line-height: 1.2; }
+
+.sparkline { display: block; overflow: visible; }
+@media (prefers-reduced-motion: reduce) { .ring__bar { transition: none !important; } }
+
 .bars { display: flex; align-items: flex-end; gap: 4px; height: 84px; }
 .bars__bar { flex: 1; min-width: 6px; background: var(--accent-soft); border-radius: 4px 4px 2px 2px; position: relative;
              transition: height 400ms var(--ease); }

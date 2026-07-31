@@ -17,7 +17,7 @@
 import { h, icon } from '../core/dom.js';
 import {
   page, card, table, list, listItem, emptyState, badge, segmented, statCard, avatar,
-  toast, aiOutput, progress, barChart, searchField, modal, field, textarea, select, input, tagInput, formModal,
+  toast, aiOutput, progress, progressRing, sparkline, searchField, modal, field, textarea, select, input, tagInput, formModal,
 } from '../core/ui.js';
 import { formatDate, formatDateTime, formatMoney, formatDateParts, relativeTime, isoDate, daysBetween } from '../core/format.js';
 import { COLLECTIONS, SERVICE_TYPES } from '../core/schema.js';
@@ -1154,16 +1154,20 @@ function healthTab(ctx) {
     h('p.small.muted', 'A heuristic score from task completion, overdue work, volunteer coverage, recent activity, goal progress, training completion, member engagement, and — where a budget line matches — spending discipline. A place to look first, not a judgement.'),
     h('div.grid.grid--2', ...scored.map(({ ministry, health }) => {
       const trend = ministryHealthTrend(db, ministry, { points: 4, intervalDays: 30 });
+      const tone = healthTone(health.score);
       return card({
         title: ministry.name,
-        actions: [badge(`${health.score}% ${health.rating}`, healthTone(health.score))],
         children: [
+          h('div.row', { style: { gap: 'var(--space-4)', alignItems: 'center', marginBottom: 'var(--space-3)' } },
+            progressRing(health.score, { size: 72, strokeWidth: 7, tone, label: health.rating }),
+            h('div', { style: { flex: '1', minWidth: '150px' } },
+              h('p.tiny.subtle', { style: { marginBottom: '6px' } }, 'Last four checks'),
+              sparkline(trend.map((t) => t.score), { tone, width: 130, height: 30 }))),
           h('div.stack.stack--sm', ...health.breakdown.map((row) => h('div', null,
             h('div.row.row--between', h('span.tiny.muted', row.label), h('span.tiny', `${row.value}%`)),
             progress(row.value, 100, { variant: '' })))),
           h('p.tiny.subtle', { style: { marginTop: '8px' } },
             `${health.serving} serving${health.needed ? ` of ${health.needed} needed` : ''} · ${health.tasksOpen} open tasks · ${health.tasksOverdue} overdue`),
-          barChart(trend.map((t) => ({ label: formatDate(t.date, { year: undefined }), value: t.score })), { format: (v) => `${v}%` }),
           health.strengths.length
             ? h('p.tiny', { style: { color: 'var(--ok, #2a9d5c)' } }, `Strong: ${health.strengths.join(', ')}`)
             : null,
@@ -1183,11 +1187,13 @@ function churchHealthTab(ctx) {
   const overview = churchHealthOverview(db);
 
   return h('div.stack',
-    h('p.small.muted', 'One status per question a leader actually asks — computed from this church\'s own records, not a single number pretending to answer all of them at once.'),
     card({
       title: 'Overall church health',
-      actions: [badge(`${overview.score}% ${overview.statusLabel}`, healthTone(overview.score))],
       children: [
+        h('div.row', { style: { gap: 'var(--space-5)', alignItems: 'center', flexWrap: 'wrap', marginBottom: 'var(--space-4)' } },
+          progressRing(overview.score, { size: 96, strokeWidth: 9, tone: healthTone(overview.score), label: overview.statusLabel }),
+          h('p.small.muted', { style: { flex: '1', minWidth: '200px' } },
+            'One status per question a leader actually asks — computed from this church\'s own records, not a single number pretending to answer all of them at once.')),
         h('div.grid.grid--3', ...overview.dimensions.map((dim) => h('div.stack.stack--sm', { style: { padding: '10px', border: '1px solid var(--border, #e5e5e5)', borderRadius: '8px' } },
           h('div.row.row--between', h('span.small', dim.label), badge(`${dim.score}%`, healthTone(dim.score))),
           progress(dim.score, 100, { variant: '' }),

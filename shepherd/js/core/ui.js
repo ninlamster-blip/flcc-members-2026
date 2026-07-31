@@ -177,6 +177,76 @@ export function progress(value, max, { variant } = {}) {
     h('div', { class: `progress__bar${tone ? ` progress__bar--${tone}` : ''}`, style: { width: `${pct}%` } }));
 }
 
+/**
+ * A circular counterpart to progress() for the handful of places a score is
+ * the headline of a card rather than a row in a table — church/ministry
+ * health overviews. Everywhere a health score already appears inside a list
+ * or table row keeps the plain badge() treatment; a ring per row would be
+ * noise, not clarity.
+ * @param {number} value 0-100
+ * @param {{size?: number, strokeWidth?: number, tone?: 'ok'|'warn'|'danger'|'accent'|'', label?: string}} [opts]
+ */
+export function progressRing(value, { size = 88, strokeWidth = 8, tone = '', label } = {}) {
+  const pct = Math.max(0, Math.min(100, value));
+  const r = (size - strokeWidth) / 2;
+  const c = 2 * Math.PI * r;
+  const color = tone ? `var(--${tone})` : 'var(--accent)';
+
+  const bar = h('circle', {
+    cx: size / 2, cy: size / 2, r, class: 'ring__bar', 'stroke-width': strokeWidth,
+    style: { stroke: color },
+  });
+  bar.setAttribute('stroke-dasharray', String(c));
+  bar.setAttribute('stroke-dashoffset', String(c));
+
+  const svg = h('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}`, class: 'ring' },
+    h('circle', { cx: size / 2, cy: size / 2, r, class: 'ring__track', 'stroke-width': strokeWidth }),
+    bar);
+
+  // Fills in on mount rather than appearing static — respects reduced-motion.
+  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    requestAnimationFrame(() => {
+      bar.style.transition = 'stroke-dashoffset 400ms var(--ease)';
+      bar.setAttribute('stroke-dashoffset', String(c * (1 - pct / 100)));
+    });
+  } else {
+    bar.setAttribute('stroke-dashoffset', String(c * (1 - pct / 100)));
+  }
+
+  return h('div.ring-wrap', { style: { width: `${size}px`, height: `${size}px` } },
+    svg,
+    h('div.ring__center', null,
+      h('div.ring__value', null, `${Math.round(pct)}%`),
+      label ? h('div.ring__label', null, label) : null));
+}
+
+/**
+ * A minimal inline trend line — no axes, no legend, just the shape of
+ * recent change. `values` oldest-first.
+ * @param {number[]} values
+ * @param {{width?: number, height?: number, tone?: string}} [opts]
+ */
+export function sparkline(values, { width = 100, height = 28, tone = 'accent' } = {}) {
+  if (!values.length) return h('div');
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const step = values.length > 1 ? width / (values.length - 1) : 0;
+  const points = values.map((v, i) => {
+    const x = i * step;
+    const y = height - ((v - min) / range) * (height - 4) - 2;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  return h('svg', {
+    width, height, viewBox: `0 0 ${width} ${height}`, class: 'sparkline',
+    style: { overflow: 'visible' },
+  }, h('polyline', {
+    points, fill: 'none', style: { stroke: `var(--${tone})` },
+    'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+  }));
+}
+
 /* ── forms ───────────────────────────────────────────────────────────────── */
 
 /**
