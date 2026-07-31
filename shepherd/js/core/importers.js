@@ -203,6 +203,54 @@ function parseScheduleDate(text, defaultYear) {
   return null;
 }
 
+/* ── FLCC attendance sync ────────────────────────────────────────────────── */
+//
+// A deliberate, narrow exception to Shepherd's usual separation from the
+// FLCC Members app: when both apps are hosted on the same domain (the
+// standard deployment — see CLAUDE.md), FLCC's attendance.json is a public,
+// read-only static file, no different from a CSV a church admin might have
+// exported by hand. Shepherd only ever reads it — never writes back, never
+// touches FLCC's storage keys, and matches people by name exactly the way a
+// manual import already does. See settings.js's "FLCC attendance sync" card.
+
+/**
+ * @param {object} flccData parsed contents of FLCC's attendance.json
+ * @returns {{date: string, service: string, presentNames: string[], total: number}[]}
+ */
+export function parseFLCCAttendance(flccData) {
+  const sessions = (flccData && flccData.sessions) || [];
+  return sessions
+    .filter((s) => s && s.date)
+    .map((s) => {
+      const records = s.records || [];
+      const presentNames = records.filter((r) => r.status === 'present').map((r) => r.memberName).filter(Boolean);
+      return {
+        date: s.date,
+        service: s.serviceLabel || s.service || 'Service',
+        presentNames,
+        total: (s.summary && typeof s.summary.present === 'number') ? s.summary.present : presentNames.length,
+      };
+    });
+}
+
+/**
+ * Fetches FLCC's attendance.json from the site root — only correct when
+ * Shepherd is deployed under the same domain as the FLCC app (e.g.
+ * `/shepherd/` alongside `/attendance.json`), which is this repo's standard
+ * deployment. Returns `[]` rather than throwing when unreachable, so a sync
+ * attempt on a differently-hosted Shepherd instance degrades quietly.
+ * @param {typeof fetch} [fetchImpl]
+ */
+export async function fetchFLCCAttendance(fetchImpl = fetch) {
+  try {
+    const res = await fetchImpl('/attendance.json');
+    if (!res.ok) return [];
+    return parseFLCCAttendance(await res.json());
+  } catch {
+    return [];
+  }
+}
+
 /* ── name matching ───────────────────────────────────────────────────────── */
 
 /** Shared by the schedule name-matcher and the Settings duplicate check — one idea of "same person's name" everywhere. */

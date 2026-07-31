@@ -12,10 +12,26 @@ and where each one's data lives; pages read `FLCC.data('file.json')` and
 
 `shepherd/` is a **separate application**, not part of the FLCC Members app.
 It has its own tenant registry, its own `shepherd/v1/…` storage namespace, its
-own design system and its own tests, and it must never import `church.js`,
-read `FLCC.*`, touch the `churches/` data files, or link to and from the FLCC
-pages. Work on one does not imply work on the other. See
+own design system and its own tests, and it must never import `church.js` or
+read `FLCC.*`. Work on one does not imply work on the other. See
 `shepherd/ARCHITECTURE.md` before adding a module or a collection.
+
+Two narrow, deliberate exceptions exist for churches (like Abundance) running
+both apps side by side, both opt-in and both documented where they live in
+code:
+
+- `attendance.html` links to `./shepherd/` — a plain navigational shortcut,
+  nothing more. Shepherd still has its own sign-in and its own tenant; no
+  session, storage or data crosses this link.
+- Settings → Data's "FLCC attendance sync" (`shepherd/js/core/flccSync.js`)
+  reads FLCC's public, read-only `attendance.json` from the same domain and
+  matches present members by name into Shepherd's own `attendance`
+  collection — off by default, and only works when both apps share a domain
+  (this repo's standard deployment). It never writes back to FLCC's files.
+
+Neither exception reads the `churches/` data files (the sync only ever
+targets the root-level, Abundance-shaped `attendance.json`), imports
+`church.js`, or reads the `FLCC.*` global — those stay off-limits.
 
 ## Pull requests
 

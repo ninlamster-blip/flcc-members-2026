@@ -223,7 +223,17 @@ entirely on the device doing the import:
   headed "AUGUST 2026" listing "07-Aug") uses a year supplied once for the
   whole file.
 
-Both importers only read CSV (`core/csv.js`, no dependency) — a real .xlsx
+**FLCC attendance sync** is a different shape of the same idea, for a church
+running Shepherd alongside the FLCC Members app on the same domain: "Sync
+now" (or an opt-in daily automatic check from the dashboard) reads FLCC's
+public, read-only `attendance.json` directly — no file to export or upload —
+and matches present members by name into Shepherd's own `attendance`
+collection, the same way the schedule importer matches names. Off by
+default; never writes back to FLCC's files. See `core/flccSync.js` and the
+narrow, documented exception to the two apps' usual separation in the root
+`CLAUDE.md`.
+
+Both CSV importers only read CSV (`core/csv.js`, no dependency) — a real .xlsx
 parser means inflating a zip and walking its XML, a meaningful chunk of code
 for a format every spreadsheet tool already exports to CSV in one click, so
 the import screen asks for that instead. `core/importers.js` (`parseMembersCSV`,
@@ -359,7 +369,7 @@ No build step, no dependencies. Edit a file, reload the page.
 
 ```bash
 python3 -m http.server 8787          # then open /shepherd/
-node --test shepherd/test/*.test.mjs # 152 tests, no dependencies
+node --test shepherd/test/*.test.mjs # 163 tests, no dependencies
 ```
 
 The test suite covers tenant isolation, permissions, the crypto (including the

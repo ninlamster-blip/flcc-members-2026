@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import { parseCSV, mapColumns } from '../js/core/csv.js';
 import {
   parseMembersCSV, parseScheduleCSV, parseFlexibleDate, matchMemberByName,
+  parseFLCCAttendance, fetchFLCCAttendance,
 } from '../js/core/importers.js';
 
 /* ── parseCSV ────────────────────────────────────────────────────────────── */
@@ -159,4 +160,54 @@ test('matchMemberByName returns null rather than guessing when nothing or more t
     { id: 'm2', fullName: 'Echo Sample Foxtrot' },
   ];
   assert.equal(matchMemberByName(ambiguous, 'Ptr. Sample Foxtrot'), null);
+});
+
+/* ── FLCC attendance sync ────────────────────────────────────────────────── */
+
+test('parseFLCCAttendance turns FLCC sessions into present-name lists per date/service', () => {
+  const flccData = {
+    sessions: [
+      {
+        date: '2026-07-05', service: 'Sunday', serviceLabel: 'Sunday Service',
+        summary: { present: 2, absent: 1, total: 3 },
+        records: [
+          { memberId: 'bro-05', memberName: 'Bro. Sample Person', status: 'present' },
+          { memberId: 'sis-13', memberName: 'Sis. Other Person', status: 'present' },
+          { memberId: 'sis-14', memberName: 'Sis. Absent Person', status: 'absent' },
+        ],
+      },
+    ],
+  };
+  const sessions = parseFLCCAttendance(flccData);
+  assert.equal(sessions.length, 1);
+  assert.equal(sessions[0].date, '2026-07-05');
+  assert.equal(sessions[0].service, 'Sunday Service');
+  assert.deepEqual(sessions[0].presentNames, ['Bro. Sample Person', 'Sis. Other Person']);
+  assert.equal(sessions[0].total, 2);
+});
+
+test('parseFLCCAttendance skips a session with no date rather than guessing one', () => {
+  const sessions = parseFLCCAttendance({ sessions: [{ service: 'Sunday', records: [] }] });
+  assert.equal(sessions.length, 0);
+});
+
+test('parseFLCCAttendance handles a missing or malformed input without throwing', () => {
+  assert.deepEqual(parseFLCCAttendance(null), []);
+  assert.deepEqual(parseFLCCAttendance({}), []);
+});
+
+test('fetchFLCCAttendance returns an empty list rather than throwing when the fetch fails', async () => {
+  const failing = async () => { throw new Error('network down'); };
+  assert.deepEqual(await fetchFLCCAttendance(failing), []);
+
+  const notOk = async () => ({ ok: false, status: 404 });
+  assert.deepEqual(await fetchFLCCAttendance(notOk), []);
+});
+
+test('fetchFLCCAttendance parses a successful response the same way parseFLCCAttendance does', async () => {
+  const flccData = { sessions: [{ date: '2026-07-05', service: 'Sunday', records: [{ memberName: 'Sample Person', status: 'present' }] }] };
+  const ok = async () => ({ ok: true, json: async () => flccData });
+  const sessions = await fetchFLCCAttendance(ok);
+  assert.equal(sessions.length, 1);
+  assert.deepEqual(sessions[0].presentNames, ['Sample Person']);
 });

@@ -19,6 +19,7 @@ import { downloadJSON } from '../core/exporters.js';
 import { seedTenant, clearSeedData } from '../core/seed.js';
 import { blank } from '../core/schema.js';
 import { parseMembersCSV, parseScheduleCSV, matchMemberByName, normalizeName } from '../core/importers.js';
+import { syncFLCCAttendance } from '../core/flccSync.js';
 import { sentence, deleteRecord, refOptions } from './_shared.js';
 
 export async function render(ctx, route) {
@@ -551,6 +552,26 @@ function dataTab(ctx) {
       ],
     }),
     card({
+      title: 'FLCC attendance sync',
+      subtitle: 'Only works when Shepherd and the FLCC Members app are hosted on the same domain — this repo\'s standard deployment. Reads attendance.json; never writes back to it.',
+      children: [
+        h('p.small.muted',
+          ctx.app.loadFLCCSyncConfig().lastSyncedAt
+            ? `Last synced ${relativeTime(ctx.app.loadFLCCSyncConfig().lastSyncedAt)}.`
+            : 'Never synced yet.'),
+        h('div.row.row--wrap', { style: { marginTop: '12px', alignItems: 'center' } },
+          h('button.btn', { onClick: () => runFLCCSync(ctx) }, icon('church', { size: 15 }), 'Sync now'),
+          h('div.field', checkbox({
+            label: 'Sync automatically when the dashboard loads (at most once a day)',
+            checked: ctx.app.loadFLCCSyncConfig().autoSync,
+            onChange: (value) => {
+              ctx.app.saveFLCCSyncConfig({ autoSync: value });
+              ctx.refresh();
+            },
+          }))),
+      ],
+    }),
+    card({
       title: 'Example data',
       children: [
         h('p.small.muted', 'The demonstration congregation, rota, sermons and budget. Remove it once your own records are in.'),
@@ -752,6 +773,27 @@ function importSchedule(ctx) {
       ctx.refresh();
     },
   });
+}
+
+/** The "Sync now" button's handler — also called automatically from the
+ *  dashboard when the church has opted in (see dashboard.js). */
+export async function runFLCCSync(ctx) {
+  const { db } = ctx;
+  try {
+    const { created, skipped, unmatchedNames } = await syncFLCCAttendance(db);
+    ctx.app.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString() });
+    if (!created && !skipped) {
+      toast('No attendance found — is Shepherd hosted alongside the FLCC app?', { variant: 'err' });
+      return;
+    }
+    const parts = [`${created} session${created === 1 ? '' : 's'} synced from FLCC`];
+    if (skipped) parts.push(`${skipped} already had a record`);
+    if (unmatchedNames.length) parts.push(`${unmatchedNames.length} name${unmatchedNames.length === 1 ? '' : 's'} not matched to a member`);
+    toast(`${parts.join(', ')}.`, { variant: created ? 'ok' : '' });
+    ctx.refresh();
+  } catch (err) {
+    toast(`Sync failed: ${err.message}`, { variant: 'err' });
+  }
 }
 
 /* ── audit ───────────────────────────────────────────────────────────────── */
