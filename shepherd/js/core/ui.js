@@ -71,7 +71,7 @@ export function statCard(props) {
 
 export function emptyState({ title, detail, iconName = 'file', action }) {
   return h('div.empty',
-    icon(iconName, { size: 32 }),
+    h('div.empty__badge', icon(iconName, { size: 30 })),
     h('h3', null, title),
     detail && h('p.small.muted', null, detail),
     action ? h('div', { style: { marginTop: '16px' } }, action) : null);
