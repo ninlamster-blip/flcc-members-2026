@@ -20,16 +20,21 @@ import { formatDate, formatDateTime, relativeTime, truncate } from './format.js'
  * `hero: true` is a scoped opt-in (currently just the dashboard) for a
  * softer, larger-type header treatment — every other module's page() call
  * is unaffected, since the modifier only applies inside `.page__head--hero`.
+ * `heroArt`, if given, renders behind the text as an absolutely-positioned
+ * background layer (see `.hero-art` in shepherd.css) — the text column gets
+ * its own stacking context so it always sits above the art.
  */
-export function page({ title, subtitle, eyebrow, actions = [], narrow = false, hero = false, children = [] }) {
+export function page({ title, subtitle, eyebrow, actions = [], narrow = false, hero = false, heroArt = null, children = [] }) {
   return h('div', { class: `page${narrow ? ' page--narrow' : ''}` },
     h('header', { class: `page__head${hero ? ' page__head--hero' : ''}` },
-      eyebrow && h('p.eyebrow', null, eyebrow),
-      h('div.row.row--between.row--wrap',
-        h('div', null,
-          h('h1', null, title),
-          subtitle && h('p.muted', null, subtitle)),
-        actions.length ? h('div.row.row--wrap', { class: 'no-print' }, ...actions) : null)),
+      heroArt,
+      h('div.page__head-content',
+        eyebrow && h('p.eyebrow', null, eyebrow),
+        h('div.row.row--between.row--wrap',
+          h('div', null,
+            h('h1', null, title),
+            subtitle && h('p.muted', null, subtitle)),
+          actions.length ? h('div.row.row--wrap', { class: 'no-print' }, ...actions) : null))),
     ...children);
 }
 
