@@ -488,15 +488,16 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 
 .empty { text-align: center; padding: var(--space-7) var(--space-4); color: var(--ink-2); }
 .empty h3 { margin-bottom: 4px; }
-.empty__badge {
-  width: 64px; height: 64px; margin: 0 auto var(--space-4);
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; color: var(--accent);
-  background:
-    radial-gradient(120% 120% at 32% 24%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%),
-    color-mix(in srgb, var(--accent) 7%, transparent);
-}
-.empty__badge .icon { color: inherit; }
+
+/* Flat, geometric "nothing here yet" scene — see emptyIllustration() in ui.js. */
+.illustration { display: block; margin: 0 auto var(--space-4); overflow: visible; }
+.illustration__blob { fill: color-mix(in srgb, var(--accent) 9%, var(--surface-2)); }
+.illustration__dot { opacity: 0.9; }
+.illustration__dot--a { fill: color-mix(in srgb, var(--accent) 35%, transparent); }
+.illustration__dot--b { fill: color-mix(in srgb, var(--warn) 40%, transparent); }
+.illustration__dot--c { fill: color-mix(in srgb, var(--ok) 40%, transparent); }
+.illustration__shadow { fill: var(--ink-3); opacity: 0.1; }
+.illustration__icon { color: var(--accent); }
 
 /* ── worship service date tile ──────────────────────────────────────────── */
 .service-date-tile {
