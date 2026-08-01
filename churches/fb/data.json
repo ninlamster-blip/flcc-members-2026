@@ -16,7 +16,208 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "bro-01",
+      "name": "Luther Joel Gurung",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-08",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "James Gurung",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-11",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Ray Nathaniel Quitoriano",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-10",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Ray Rafaiel Quitoriano",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-14",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-01",
+      "name": "Luz Binaobao",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Febie Rose Venusa",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-19",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Myrra Salinas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-28",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Damaris Zoe Alim",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-19",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Gladys Leah Alfaro",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-13",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "John Micah Santos",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-19",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Rossana Lizo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-16",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Dana Tumamao",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-12",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Carmela Naling",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-12",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Marilyn Garrol Santos",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-02",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Froilan Jr. Quitoriano",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-17",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Chubby Santos",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-28",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Emma Ruth Quitoriano",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-30",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-08",
+      "name": "Ermin Halo Piamonte",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-13",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-09",
+      "name": "Joseph Paolo Alim",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-12",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Zenaida Alim",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-06",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

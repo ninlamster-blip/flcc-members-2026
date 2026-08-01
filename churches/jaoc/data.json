@@ -16,7 +16,198 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Joan Marie Amamio",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-10",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Dianavie Delmo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-26",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Joan Gocotano",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-18",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Paul Adrian Nombrado",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-14",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Adrian Pagute",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-07",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Gretchen Tumabat",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Brooke Shields Tagle",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-10",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Remuel Tanquerido",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-21",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Joerome Gannaban",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-25",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Marites Gonzales",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-12",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Zarah Joy Lomedio",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-14",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Romelyn Gannaban",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-03",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Rosie Nozuelo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-22",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Josephine Joseph Concillado",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-20",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Ryan Oliver Nones",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Victoria Nones",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-28",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Claraflor Serafico",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-05",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-13",
+      "name": "Josephine Blancada",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-24",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-14",
+      "name": "Elinor Chee",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-05",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

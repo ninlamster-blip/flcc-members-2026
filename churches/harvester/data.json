@@ -16,7 +16,98 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Mary Ann Yanson",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-18",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Erwin Villanueva",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-15",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Edwin Bautista",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-18",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Tutor Galvez",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-01",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Verna De Jesus",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-03",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Noemi Tabago",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-27",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Anniewilma Imbuedo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-17",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Wilfredo Ambrosio",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-24",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Zaldy Roco",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-24",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

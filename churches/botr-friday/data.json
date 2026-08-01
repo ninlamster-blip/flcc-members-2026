@@ -15,7 +15,58 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Rosalie Manglanlan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Ronalyn Mae Buelo Samson",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-15",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Lorena Joao",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-17",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Sherwin Nones",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-28",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Rolando Salonga",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-24",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

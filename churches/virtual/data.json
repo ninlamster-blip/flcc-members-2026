@@ -16,7 +16,368 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Juvelyn Amores",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-06",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Marivic Delfin",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Leony Diguidig",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Rita Encio",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-06",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Lilian Rose Robles",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-13",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Rosemarie Mayo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-11",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Ternida Ma Ciervo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Luningning Abad",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-05",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Realyn Joy Abe",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-06",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Marivic Baldugo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Maribel Bontoyan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-04",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Femelyn Calonge",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-26",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-13",
+      "name": "Madelyn Dumas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-27",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-14",
+      "name": "Nariza Eamiguel",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-30",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-15",
+      "name": "Ederlyn Frejas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-16",
+      "name": "Sheryl Gervacio",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-06",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-17",
+      "name": "Anabel Oledan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-18",
+      "name": "Mabil Praba",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-10",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-19",
+      "name": "Rosemarie Propia",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-29",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-20",
+      "name": "Franzie Pura",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-14",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-21",
+      "name": "Mel Ann Quemuel",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-29",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-22",
+      "name": "Rochelle Quereza",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-23",
+      "name": "Esmeralda Reyes",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-08",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-24",
+      "name": "Marecris Roquin",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-14",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-25",
+      "name": "Aiza Soriano",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-26",
+      "name": "Marcedita Alcubilla Trinidad",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-03",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-27",
+      "name": "Aileen Penetrante Camo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-28",
+      "name": "Ivonny Mayol",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-19",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-29",
+      "name": "Thelma Teves Tayamora",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-18",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-30",
+      "name": "Marla Gadaingan Baclea-an",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-29",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-31",
+      "name": "Vilma Inocentes",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-07",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-32",
+      "name": "Lea Me Albeo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-27",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-33",
+      "name": "Francia Larida",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-11",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-34",
+      "name": "Asteria H. Magdua",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-10",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-35",
+      "name": "Marion Dionisio",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-10",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Anson Dionisio",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-03",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

@@ -16,7 +16,168 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Ana Carmela Dela Pena",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-11",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Apollo Llorin",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-04",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Arlene Llorin",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-20",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Marleo Llorin",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-18",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Ednalyn Lumocso",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-06",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Klint Bermudez",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-02",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Rondi Nelli Cabiton",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-15",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Elizabeth Bermudez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-25",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Kate Bermudez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-11",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Hencel Apalin",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-30",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Ma. Rebecca Lurica",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-22",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Mikaela Iryle Jacinto",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Irene Jacinto",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-28",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Michaell Jacinto",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-30",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Cristine Bonicarlo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-24",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Elvie Hatod",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-09",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

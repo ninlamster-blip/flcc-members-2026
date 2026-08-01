@@ -16,7 +16,168 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Gretchen Guevarra",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-13",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Jeanna Marie Nadua",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-10",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Jesica Labuanan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-26",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Mary Grace Narvaez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-25",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Allan Jay Villegas",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-13",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Gerald Delos Santos",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Vanessa Ganado",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-01",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Marichu Solis",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-10",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Sheryl Aquino",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-07",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "April Grace Diamante",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-27",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Lovely Hilla",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Ellaine Santiago",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-08",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Louella Calisagan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-07",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Enrico Mangahas",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-29",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Joey Calisagan",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-15",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Raquel Mangahas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-12",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

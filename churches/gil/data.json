@@ -16,7 +16,328 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Michelle Rodriguez Lucero",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Marijhu Baya Dela Rosa",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-25",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Jesusa C. Canani",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-23",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Justine Valery Fernandez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-17",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Raffy Lino Ruiz",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-15",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Francia Larida",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-11",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Michelle Lucero",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Anne Lorraine Ambas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-19",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Roider Paul Ambas",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-01",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Catherine Morente",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Cristal Mae Tero",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-05",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Nenita Marpuri",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-04",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Maylord Toledo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-29",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Anna Fe Alminario",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-28",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-13",
+      "name": "Jennifer Martinez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-27",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Eric Fabro",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-18",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-14",
+      "name": "Marilyn Adriano",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-08",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Jefferson De Grano",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-03",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-15",
+      "name": "Shiela Prudenciado",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-16",
+      "name": "Jonelyn Fabro",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-24",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Michael George Prudenciado",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-17",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Rudhen Alminario",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-17",
+      "name": "Mary Jane Comaya",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-14",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-18",
+      "name": "Maricel De Grano",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-17",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Noel Toledo",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-19",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-08",
+      "name": "Christopher Martinez",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-14",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-19",
+      "name": "Catherine Calzita",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-31",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-20",
+      "name": "Carissa Mae Daya",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-07",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-21",
+      "name": "Melisa Casidsid",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-22",
+      "name": "Cynthia Tacdol",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-06",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-23",
+      "name": "Teresita Florito",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-27",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-24",
+      "name": "Eleanora Bueno",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-22",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

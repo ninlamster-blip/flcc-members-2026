@@ -16,7 +16,288 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Emalyn Baccay",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-30",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Ferlyn Joy Alarcon",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-19",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Shaila Calis",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-04",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Martin Ramirez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-13",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Girly Mesiedrio",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-11",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Vergel Oriño",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-06",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Juliet Cañones",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-26",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Virmar Dugay",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-28",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Reynelda Catulong (Lynde)",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-08",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Dhanleymar Jose",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-27",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Ronald Caballes",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-14",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Luvvy Jane Dollentas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-10",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Ma. Gracia Oja",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-04",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Mark Anthony Dollentas",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Trining Masugod",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-03",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-13",
+      "name": "Julie Ponce",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-01",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Calvin Diguidig",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-14",
+      "name": "Marites Ferrer",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-23",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Michael Mactal",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-16",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Darius Salonga",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-15",
+      "name": "Ronaliza Abrera",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-14",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Jesus Estioco",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-24",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-16",
+      "name": "Virginia Ysmael",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-13",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-17",
+      "name": "Marissa Joy Valencia",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-18",
+      "name": "Marissa Joy Sanuco Valencia",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-21",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-19",
+      "name": "Judy L Tumambing",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-28",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-08",
+      "name": "Oscar Tumambing",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-01",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-09",
+      "name": "Andal Constantino",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-22",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

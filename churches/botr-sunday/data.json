@@ -16,7 +16,188 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Mary Ann Fonacier",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-22",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Raychellyn Sumalinog",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Rona Agupasa",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-15",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Jose Bermudez",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-03",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Analyn Sacueza",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-13",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Raquel Table Tasi",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-11",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Maricel Pateno",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-10",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Renerio Pateno",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-09",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Rolly Agsungot Gambala",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-04",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Jerry Me Agsamusam",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-18",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Bernabe Bautista",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-22",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Charity Bautista",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-21",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Juan Paolo Dicdican",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-15",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Anne Lorielyn Joao",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-22",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Victor Lawrence Monastrial",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-24",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Lorraine Vera Monastrial",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-05",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Loudianne Dungca Monastrial",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-16",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-08",
+      "name": "Virgilio Monastrial",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-24",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

@@ -16,7 +16,308 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "bro-01",
+      "name": "Gerby Fiel",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-19",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-01",
+      "name": "Melanie Alamar",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-04",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Joven Arroyo",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-08",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Candido Cobarde",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-17",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Ronel Compleza",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-28",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Ricca Ann Marion Luna Lopez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-12",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Rusty John Lopez",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-24",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Dennis Ugma",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-28",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Rhea Marie Solis",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-07",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Cherry Lopez",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-10",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Richard Lopez",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-03",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Jojit Dayuday",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-18",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Heidi Joy Decaleng Fonite",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-26",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-08",
+      "name": "Erwen Compleza",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-29",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Jomelie Cabrera",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-18",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-09",
+      "name": "Franklin Jr. Jimenes",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-05",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-10",
+      "name": "Pedro Jr. Cabrera",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-06",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-11",
+      "name": "Rolly Suelo Compleza",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-21",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-12",
+      "name": "Wendell Sandoval",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-13",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Joycelyn Ferre",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-09",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-13",
+      "name": "Fernando Pantonia",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-11",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Robie Lyn Verdadero",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-10",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-14",
+      "name": "Diomedes Cueva",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-05",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Eleanor Gontinas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-30",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-15",
+      "name": "Efren Dimaano",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-18",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Mary Grace Comayingking",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Precy Comayingking",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-20",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-16",
+      "name": "Joselito Lustado",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-24",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-17",
+      "name": "Rodelio Comayingking",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-06",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-13",
+      "name": "Mildred Siblario",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-15",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []

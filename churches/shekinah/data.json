@@ -16,7 +16,328 @@
     "phone": "",
     "email": ""
   },
-  "workers": [],
+  "workers": [
+    {
+      "id": "sis-01",
+      "name": "Katheryn Vitug",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-31",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-02",
+      "name": "Analou Batisla-ong",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-16",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-03",
+      "name": "Mary Grace Cabral",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-09",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-04",
+      "name": "Judith Delmo",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-13",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-05",
+      "name": "Mary Ann Gida",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-02",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-01",
+      "name": "Bammer Mangayao",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-01",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-06",
+      "name": "Mary Jane Robles",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-25",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-07",
+      "name": "Gemelisa Joy Caseñas",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "09-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-08",
+      "name": "Precious Silao",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-05",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-02",
+      "name": "Pordillina Abrea",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "08-24",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-09",
+      "name": "Andrealine Alcaraz",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "04-03",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-03",
+      "name": "Timothy Alcaraz",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-19",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-10",
+      "name": "Roxynn Constantino",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-27",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-04",
+      "name": "Michael Constantino",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-16",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-11",
+      "name": "Gabrielle Naomi Lomboy",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-30",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-05",
+      "name": "Ferdinand Gragasin",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-14",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-06",
+      "name": "Michael Cesar De Grano",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-18",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-12",
+      "name": "Cynthia Plazos",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-26",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-07",
+      "name": "Ramil Plazos",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-18",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-13",
+      "name": "Sherryl Rogel",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "12-22",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-08",
+      "name": "Ronald James Basallaje",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "03-25",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-09",
+      "name": "Reynaldo Vinuya",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-30",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-10",
+      "name": "Rommelito. M. Tan",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-17",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-14",
+      "name": "Michelle Dimapilis",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "05-12",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-15",
+      "name": "Eldea Calisagan",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "06-20",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-16",
+      "name": "Corales Abrea",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-09",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-11",
+      "name": "Dexter Calisagan",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "02-03",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-12",
+      "name": "Rene Cacatian",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "11-02",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-17",
+      "name": "Arlene Joy Dela Cruz",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "07-20",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-13",
+      "name": "Jeffrey Bordeos",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-04",
+      "anniversary": ""
+    },
+    {
+      "id": "sis-18",
+      "name": "Luisa Dorado",
+      "title": "Sis.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "01-30",
+      "anniversary": ""
+    },
+    {
+      "id": "bro-14",
+      "name": "Evaristo Lomboy",
+      "title": "Bro.",
+      "type": "individual",
+      "eligibleRoles": [],
+      "status": "active",
+      "birthday": "10-26",
+      "anniversary": ""
+    }
+  ],
   "themes": {},
   "schedule": [],
   "events": []
