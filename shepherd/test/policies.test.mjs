@@ -8,9 +8,10 @@ import assert from 'node:assert/strict';
 
 import {
   needsApproval, canApproveTransaction, canSeePrayer, canReadCounselingNote, canAccessJournalEntry,
-  knowledgeMayUse, KNOWLEDGE_EXCLUDED, NEVER_INDEXED, expiryStatus,
+  canAccessSermon, knowledgeMayUse, KNOWLEDGE_EXCLUDED, NEVER_INDEXED, expiryStatus,
   DEFAULT_APPROVAL_THRESHOLD,
 } from '../js/core/policies.js';
+import { can, isLeadershipTrack } from '../js/core/rbac.js';
 import { memoryStorage } from '../js/core/storage.js';
 import { Database } from '../js/core/db.js';
 import { SearchIndex } from '../js/core/search.js';
@@ -47,7 +48,10 @@ test('nobody approves their own spending', () => {
 
 test('approving requires the permission, and cannot be done twice', () => {
   const tx = { id: 't2', createdBy: 'someone-else', amount: 500, kind: 'expense' };
-  assert.equal(canApproveTransaction(PASTOR, tx).ok, false, 'a pastor does not hold finance:approve');
+  // Finance (including approval) is shared by CSL/Church Admin, Pastor, Lead
+  // Pastor, Senior Pastor and Ministry Head — see rbac.js.
+  assert.equal(canApproveTransaction(PASTOR, tx).ok, true, 'a pastor holds finance:approve');
+  assert.equal(canApproveTransaction(VOLUNTEER, tx).ok, false, 'a volunteer does not');
   assert.equal(canApproveTransaction(SENIOR, tx).ok, true, 'a senior pastor does');
   assert.equal(canApproveTransaction(SENIOR, { ...tx, status: 'approved' }).ok, false);
 });
@@ -91,6 +95,34 @@ test('a journal entry is for its author alone — unlike a counselling note, the
   assert.equal(canAccessJournalEntry(SENIOR, mine), false, 'even a senior pastor cannot read someone else\'s journal entry');
   assert.equal(canAccessJournalEntry({ id: 'other', role: 'pastor' }, mine), false);
   assert.equal(canAccessJournalEntry(PASTOR, { createdBy: null }), false, 'no author on record means no access');
+});
+
+/* ── preaching: a preacher's own sermons ──────────────────────────────────── */
+
+test('a sermon is for its preacher alone — no exceptions for rank, matching the church\'s own request', () => {
+  const preacher = { id: 'u-preacher', memberId: 'm-preacher', role: 'pastor' };
+  const other = { id: 'u-other', memberId: 'm-other', role: 'pastor' };
+  const admin = { id: 'u-admin', memberId: 'm-admin', role: 'church_admin' };
+  const mine = { preacherId: 'm-preacher' };
+
+  assert.equal(canAccessSermon(preacher, mine), true);
+  assert.equal(canAccessSermon(other, mine), false, 'another preacher, even one holding blanket preaching:*, is refused');
+  assert.equal(canAccessSermon(admin, mine), false, 'CSL/church_admin is not an exception either');
+  assert.equal(canAccessSermon(preacher, { preacherId: null }), true, 'an unclaimed sermon is visible so it can be claimed');
+  assert.equal(canAccessSermon({ id: 'u-no-member' }, mine), false, 'a user with no memberId can never match a preacherId');
+});
+
+/* ── leadership-track roles (independent of the leadership:read permission) ── */
+
+test('isLeadershipTrack identifies genuine leadership roles, not everyone who can read the leadership hub', () => {
+  for (const role of ['church_admin', 'lead_pastor', 'senior_pastor', 'pastor', 'elder', 'ministry_head', 'secretary']) {
+    assert.equal(isLeadershipTrack({ role }), true, `${role} should be leadership-track`);
+  }
+  for (const role of ['treasurer', 'volunteer', 'member']) {
+    assert.equal(isLeadershipTrack({ role }), false, `${role} reads the leadership hub but is not leadership-track`);
+    assert.equal(can({ role }, 'leadership:read'), true, `${role} should still hold leadership:read itself`);
+  }
+  assert.equal(isLeadershipTrack(null), false);
 });
 
 /* ── what is never indexed ───────────────────────────────────────────────── */
