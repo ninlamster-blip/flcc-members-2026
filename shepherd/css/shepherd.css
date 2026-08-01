@@ -58,6 +58,7 @@
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
 
   --sidebar-w: 264px;
+  --sidebar-w-collapsed: 76px;
   --header-h: 60px;
   --ease: cubic-bezier(.22, .61, .36, 1);
   --dur: 180ms;
@@ -184,13 +185,18 @@ h4 { font-size: 0.875rem; }
 .skip-link:focus { top: var(--space-3); }
 
 /* ── layout ──────────────────────────────────────────────────────────────── */
-.app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100dvh; }
+.app {
+  display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100dvh;
+  transition: grid-template-columns var(--dur) var(--ease);
+}
+html.sidebar-collapsed .app { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
 
 .sidebar {
   position: sticky; top: 0; height: 100dvh;
   display: flex; flex-direction: column; gap: var(--space-2);
   padding: var(--space-4) var(--space-3);
   background: var(--surface); border-right: 1px solid var(--border);
+  transition: padding var(--dur) var(--ease);
 }
 .sidebar__brand {
   display: flex; align-items: center; gap: 10px;
@@ -198,6 +204,21 @@ h4 { font-size: 0.875rem; }
 }
 .sidebar__nav { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; flex: 1; }
 .sidebar__foot { border-top: 1px solid var(--border); padding-top: var(--space-3); }
+
+/* A small pill straddling the sidebar's right edge — always in the same
+   spot in both states, so it's easy to find again once collapsed. Requires
+   no rebuild of the router or the nav's active-item tracking: toggleSidebar()
+   flips one class on <html> and swaps only this aside back in. */
+.sidebar__toggle {
+  position: absolute; top: 64px; right: -12px; z-index: 5;
+  width: 24px; height: 24px; padding: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-1);
+  color: var(--ink-2); cursor: pointer;
+}
+.sidebar__toggle:hover { background: var(--surface-2); color: var(--ink); }
+.sidebar__toggle .icon { transition: transform var(--dur) var(--ease); transform: rotate(180deg); }
+html.sidebar-collapsed .sidebar__toggle .icon { transform: rotate(0deg); }
 
 .nav-item {
   display: flex; align-items: center; gap: 10px;
@@ -214,6 +235,14 @@ h4 { font-size: 0.875rem; }
   font-weight: 600; border-radius: 99px; padding: 1px 7px; min-width: 20px; text-align: center;
 }
 .nav-section { padding: var(--space-4) 12px var(--space-1); }
+
+/* Icon-only mode — collapsed on desktop only; the mobile sidebar is already
+   hidden entirely in favour of the tab bar + "More" sheet, untouched here. */
+html.sidebar-collapsed .sidebar__brand .truncate { display: none !important; }
+html.sidebar-collapsed .nav-item__label,
+html.sidebar-collapsed .nav-section { display: none; }
+html.sidebar-collapsed .sidebar__brand { justify-content: center; padding-left: 0; padding-right: 0; }
+html.sidebar-collapsed .nav-item { justify-content: center; padding-left: 0; padding-right: 0; }
 
 .main { min-width: 0; display: flex; flex-direction: column; }
 

@@ -25,6 +25,7 @@ import {
 } from './core/ui.js';
 
 const THEME_KEY = 'shepherd/v1/theme';
+const SIDEBAR_COLLAPSED_KEY = 'shepherd/v1/sidebar-collapsed';
 const AI_CONFIG_KEY = 'shepherd/v1/ai-config';
 const FLCC_SYNC_CONFIG_KEY = 'shepherd/v1/flcc-sync-config';
 const DEFAULT_FLCC_SYNC_CONFIG = { autoSync: false, lastSyncedAt: null };
@@ -73,6 +74,7 @@ export class App {
 
   async start() {
     this.applyTheme(localStorage.getItem(THEME_KEY) || 'auto');
+    document.documentElement.classList.toggle('sidebar-collapsed', localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1');
     await this.registry.load();
 
     const restored = await this.session.restore(async (tenantId, vaultKey) => {
@@ -407,12 +409,15 @@ export class App {
       group.items.push(module);
     }
 
+    const collapsed = document.documentElement.classList.contains('sidebar-collapsed');
+
     this._navItems = new Map();
     const nav = h('nav.sidebar__nav', { 'aria-label': 'Sections' });
     for (const group of groups) {
       nav.appendChild(h('p.eyebrow.nav-section', null, group.name));
       for (const module of group.items) {
-        const link = h('a.nav-item', { href: `#/${module.id}` }, icon(module.icon, { size: 18 }), module.title);
+        const link = h('a.nav-item', { href: `#/${module.id}`, title: module.title },
+          icon(module.icon, { size: 18 }), h('span.nav-item__label', null, module.title));
         this._navItems.set(module.id, link);
         nav.appendChild(link);
       }
@@ -431,9 +436,23 @@ export class App {
           h('span.tiny.subtle.truncate', { style: { display: 'block' } }, 'Shepherd'))),
       nav,
       h('div.sidebar__foot',
-        h('button.nav-item', { onClick: () => this.openAccountMenu() },
+        h('button.nav-item', { title: this.session.user.name, onClick: () => this.openAccountMenu() },
           avatar(this.session.user.name, { size: 'sm' }),
-          h('span.truncate', { style: { minWidth: 0 } }, this.session.user.name))));
+          h('span.nav-item__label.truncate', { style: { minWidth: 0 } }, this.session.user.name))),
+      h('button.sidebar__toggle', {
+        'aria-label': collapsed ? 'Expand sidebar' : 'Collapse sidebar',
+        title: collapsed ? 'Expand sidebar' : 'Collapse sidebar',
+        onClick: () => this.toggleSidebar(),
+      }, icon('chevronRight', { size: 14 })));
+  }
+
+  toggleSidebar() {
+    const collapsed = !document.documentElement.classList.contains('sidebar-collapsed');
+    document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0');
+    const aside = document.querySelector('.sidebar');
+    if (aside) aside.replaceWith(this.renderSidebar());
+    if (this.router && this.router.current) this.syncNav(this.router.current.id);
   }
 
   renderTopbar() {
