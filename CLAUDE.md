@@ -28,6 +28,9 @@ code:
   matches present members by name into Shepherd's own `attendance`
   collection — off by default, and only works when both apps share a domain
   (this repo's standard deployment). It never writes back to FLCC's files.
+  Once opted in, `App#startFLCCAutoSync` (`shepherd/js/app.js`) repeats the
+  check every five minutes for as long as the church stays signed in — the
+  closest a static, serverless pair of apps can get to real-time syncing.
 
 Neither exception reads the `churches/` data files (the sync only ever
 targets the root-level, Abundance-shaped `attendance.json`), imports

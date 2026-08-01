@@ -562,10 +562,11 @@ function dataTab(ctx) {
         h('div.row.row--wrap', { style: { marginTop: '12px', alignItems: 'center' } },
           h('button.btn', { onClick: () => runFLCCSync(ctx) }, icon('church', { size: 15 }), 'Sync now'),
           h('div.field', checkbox({
-            label: 'Sync automatically when the dashboard loads (at most once a day)',
+            label: 'Sync automatically in the background (checks every 5 minutes while Shepherd is open)',
             checked: ctx.app.loadFLCCSyncConfig().autoSync,
             onChange: (value) => {
               ctx.app.saveFLCCSyncConfig({ autoSync: value });
+              if (value) ctx.app.startFLCCAutoSync(); else ctx.app.stopFLCCAutoSync();
               ctx.refresh();
             },
           }))),
@@ -775,8 +776,9 @@ function importSchedule(ctx) {
   });
 }
 
-/** The "Sync now" button's handler — also called automatically from the
- *  dashboard when the church has opted in (see dashboard.js). */
+/** The "Sync now" button's handler — the same sync also runs automatically
+ *  in the background, every five minutes, once a church opts in (see
+ *  App#startFLCCAutoSync in app.js). */
 export async function runFLCCSync(ctx) {
   const { db } = ctx;
   try {
