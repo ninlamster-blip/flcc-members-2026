@@ -1,10 +1,128 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church ",
-    "publishedAt": "2026-07-05T16:26:36.459Z",
-    "totalSessions": 10
+    "publishedAt": "2026-08-01T13:32:01.645Z",
+    "totalSessions": 17
   },
   "sessions": [
+    {
+      "id": "a-1785506028718-ewux",
+      "date": "2026-07-31",
+      "service": "Friday",
+      "serviceLabel": "Friday Service",
+      "summary": {
+        "present": 21,
+        "absent": 7,
+        "total": 28
+      },
+      "records": [
+        {
+          "memberId": "bro-05",
+          "memberName": "Bro. Allen Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-13",
+          "memberName": "Sis. Alma Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "w-1782986400001",
+          "memberName": "Sis. Amazelle De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-10",
+          "memberName": "Bro. Benedict Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-01",
+          "memberName": "Sis. Bless De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-02",
+          "memberName": "Bro. Bong Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-01",
+          "memberName": "Bro. Dandreb Serna",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-05",
+          "memberName": "Sis. Fretz Guerzon",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-02",
+          "memberName": "Sis. Hasmin Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-18",
+          "memberName": "Sis. Laidz Pascual",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-04",
+          "memberName": "Sis. Lizel Ocenar",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-03",
+          "memberName": "Sis. Mae De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-08",
+          "memberName": "Sis. Sandra Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-20",
+          "memberName": "Sis. Thara Embo",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-04",
+          "memberName": "Bro. Wilson Guerzon",
+          "status": "present"
+        }
+      ]
+    },
     {
       "id": "a-1783268717748-67v2",
       "date": "2026-07-05",
@@ -1324,6 +1442,391 @@
           "status": "present"
         }
       ]
+    },
+    {
+      "id": "a-1780236604892-ca7z",
+      "date": "2026-05-31",
+      "service": "Sunday",
+      "serviceLabel": "Sunday Service",
+      "summary": {
+        "present": 0,
+        "absent": 35,
+        "total": 35
+      },
+      "records": []
+    },
+    {
+      "id": "a-1780064675091-lyqj",
+      "date": "2026-05-29",
+      "service": "Friday",
+      "serviceLabel": "Friday Service",
+      "summary": {
+        "present": 23,
+        "absent": 12,
+        "total": 35
+      },
+      "records": [
+        {
+          "memberId": "bro-05",
+          "memberName": "Bro. Allen Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-13",
+          "memberName": "Sis. Alma Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-01",
+          "memberName": "Sis. Bless De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1779887018746",
+          "memberName": "Bro. Ben Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-10",
+          "memberName": "Sis. Celsa Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-01",
+          "memberName": "Bro. Dandreb Serna",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-08",
+          "memberName": "Bro. Edward Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-03",
+          "memberName": "Bro. Elbert Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-05",
+          "memberName": "Sis. Fretz Guerzon",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-17",
+          "memberName": "Sis. Jenarlyn Culao",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-18",
+          "memberName": "Sis. Laidz Pascual",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-04",
+          "memberName": "Sis. Lizel Ocenar",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-03",
+          "memberName": "Sis. Mae De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-07",
+          "memberName": "Sis. Rona Vergara",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-08",
+          "memberName": "Sis. Sandra Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-20",
+          "memberName": "Sis. Thara Embo",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-04",
+          "memberName": "Bro. Wilson Guerzon",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "id": "a-1779963804414-rmpb",
+      "date": "2026-05-28",
+      "service": "Fellowship",
+      "serviceLabel": "Fellowship",
+      "summary": {
+        "present": 0,
+        "absent": 35,
+        "total": 35
+      },
+      "records": []
+    },
+    {
+      "id": "a-1779982981898-88sb",
+      "date": "2026-05-28",
+      "service": "Special",
+      "serviceLabel": "Special Service",
+      "summary": {
+        "present": 15,
+        "absent": 20,
+        "total": 35
+      },
+      "records": [
+        {
+          "memberId": "bro-05",
+          "memberName": "Bro. Allen Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-13",
+          "memberName": "Sis. Alma Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-10",
+          "memberName": "Sis. Celsa Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-08",
+          "memberName": "Bro. Edward Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-05",
+          "memberName": "Sis. Fretz Guerzon",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-17",
+          "memberName": "Sis. Jenarlyn Culao",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-07",
+          "memberName": "Sis. Rona Vergara",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-08",
+          "memberName": "Sis. Sandra Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-11",
+          "memberName": "Sis. Jhem Tulagan",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "id": "a-1779886932648-l5ym",
+      "date": "2026-05-27",
+      "service": "Training",
+      "serviceLabel": "Training",
+      "summary": {
+        "present": 24,
+        "absent": 10,
+        "total": 34
+      },
+      "records": [
+        {
+          "memberId": "bro-05",
+          "memberName": "Bro. Allen Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-13",
+          "memberName": "Sis. Alma Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-01",
+          "memberName": "Sis. Bless De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-02",
+          "memberName": "Bro. Bong Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-10",
+          "memberName": "Sis. Celsa Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-08",
+          "memberName": "Bro. Edward Sario",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-05",
+          "memberName": "Sis. Fretz Guerzon",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-15",
+          "memberName": "Sis. Grace Siangco",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-02",
+          "memberName": "Sis. Hasmin Treseni",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-17",
+          "memberName": "Sis. Jenarlyn Culao",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-01",
+          "memberName": "Ptr. Justin Flores",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-18",
+          "memberName": "Sis. Laidz Pascual",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-04",
+          "memberName": "Sis. Lizel Ocenar",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-03",
+          "memberName": "Sis. Mae De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-07",
+          "memberName": "Sis. Rona Vergara",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-08",
+          "memberName": "Sis. Sandra Gabriel",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-20",
+          "memberName": "Sis. Thara Embo",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-04",
+          "memberName": "Bro. Wilson Guerzon",
+          "status": "present"
+        },
+        {
+          "memberId": "vis-1779887018746",
+          "memberName": "Bro. Ben Treseni",
+          "status": "present"
+        }
+      ]
+    },
+    {
+      "id": "a-1779132984054-xyja",
+      "date": "2026-05-18",
+      "service": "PrayerMeeting",
+      "serviceLabel": "Prayer Meeting",
+      "summary": {
+        "present": 0,
+        "absent": 34,
+        "total": 34
+      },
+      "records": []
     }
   ]
 }
