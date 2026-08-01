@@ -12,7 +12,7 @@
 import { h, icon } from '../core/dom.js';
 import {
   page, card, table, list, listItem, emptyState, badge, segmented, searchField,
-  statCard, toast, aiOutput, modal, progress, select,
+  statCard, toast, aiOutput, modal, progress, select, field, textarea,
 } from '../core/ui.js';
 import { formatDate, relativeTime, isoDate, daysBetween } from '../core/format.js';
 import { AI_TASKS } from '../core/ai.js';
@@ -41,6 +41,7 @@ export async function render(ctx, route) {
     tab === 'series' ? seriesTab(ctx)
       : tab === 'library' ? libraryTab(ctx)
       : tab === 'bible' ? bibleTab(ctx, route)
+      : tab === 'ask' ? askShepherdTab(ctx)
       : sermonsTab(ctx),
   );
 
@@ -56,7 +57,7 @@ export async function render(ctx, route) {
         ? newButton(ctx, 'preaching', 'New series', () => openRecordModal(ctx, { collection: 'series' }))
         : tab === 'library'
           ? newButton(ctx, 'preaching', 'Add illustration', () => openRecordModal(ctx, { collection: 'illustrations' }))
-          : tab === 'bible'
+          : (tab === 'bible' || tab === 'ask')
             ? null
             : newButton(ctx, 'preaching', 'New sermon', () => openRecordModal(ctx, { collection: 'sermons', fields: SERMON_FIELDS })),
     ].filter(Boolean),
@@ -68,6 +69,7 @@ export async function render(ctx, route) {
             { value: 'series', label: 'Series' },
             { value: 'library', label: 'Illustrations & quotes' },
             { value: 'bible', label: 'Bible lookup' },
+            { value: 'ask', label: 'Ask Shepherd' },
           ],
           value: tab,
           onChange: (value) => ctx.navigate(`/preaching?tab=${value}`),
@@ -476,4 +478,60 @@ function bibleTab(ctx, route) {
       ],
     }),
     resultHost);
+}
+
+/* ── Ask Shepherd ────────────────────────────────────────────────────────── */
+
+const ASK_SUGGESTIONS = [
+  'Give me three illustration ideas for a sermon on grace.',
+  'What have I preached on forgiveness recently?',
+  'Explain the historical background of Romans 8.',
+  'Suggest a big idea for a sermon on Psalm 23.',
+];
+
+/**
+ * Same general-purpose `ctx.assistant.ask()` as the Assistant screen's "Ask
+ * Shepherd" tab — scripture, theology, sermon ideas, and this church's own
+ * archive are all fair game — just placed where sermon prep actually
+ * happens, beside the Bible lookup and the illustration library.
+ */
+function askShepherdTab(ctx) {
+  const output = h('div');
+  const questionBox = textarea({
+    placeholder: 'Give me three illustration ideas for grace. What have I preached on suffering? Explain the context of Romans 8. Ask anything.',
+  });
+
+  const ask = async () => {
+    const question = questionBox.value.trim();
+    if (!question) return;
+    output.textContent = '';
+    output.appendChild(card({ children: [h('p.small.muted', 'Thinking…')] }));
+    const result = await ctx.assistant.ask(question, ctx.user);
+    output.textContent = '';
+    output.appendChild(card({
+      title: question,
+      children: [
+        aiOutput({ result }),
+        result.sources && result.sources.length
+          ? h('div.chip-list', { style: { marginTop: '10px' } }, ...result.sources.map((s) => h('span.chip', s.title)))
+          : null,
+      ],
+    }));
+  };
+
+  return h('div.stack',
+    card({
+      title: 'Ask Shepherd',
+      subtitle: 'Not just what this church has recorded — scripture, theology, and sermon-prep help too.',
+      children: [
+        h('div.stack.stack--sm',
+          field({ label: 'Your question', control: questionBox, full: true }),
+          h('div.chip-list',
+            ...ASK_SUGGESTIONS.map((suggestion) => h('button.chip', {
+              onClick: () => { questionBox.value = suggestion; ask(); },
+            }, suggestion))),
+          h('button.btn.btn--primary', { onClick: ask }, icon('sparkles', { size: 15 }), 'Ask')),
+      ],
+    }),
+    output);
 }
