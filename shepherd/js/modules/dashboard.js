@@ -18,6 +18,7 @@ import {
 import { ledMinistries, isCommunionScheduled } from '../core/policies.js';
 import { formatDate, formatDateParts, formatTime, formatDateTime, relativeTime, isoDate, addDays, formatMoney, daysBetween } from '../core/format.js';
 import { dashboardHeroArt } from '../core/illustrations.js';
+import { currentWeather, weatherIconName, weatherLabel } from '../core/weather.js';
 import { memberName, statusBadge, healthTone, serviceDateTile } from './_shared.js';
 
 /**
@@ -49,6 +50,23 @@ function dashboardMode(ctx) {
   return { key: 'generic', label: '' };
 }
 
+/**
+ * A small pill among the hero's action buttons — appears once the browser's
+ * own geolocation resolves and Open-Meteo answers, and simply never appears
+ * otherwise (permission declined, no network, unsupported browser). Never
+ * blocks the dashboard's own render: the chip starts empty and fills itself
+ * in whenever the async lookup settles.
+ */
+function weatherChip() {
+  const chip = h('span.weather-chip');
+  currentWeather().then((w) => {
+    if (!w) { chip.remove(); return; }
+    chip.appendChild(icon(weatherIconName(w.code, w.isDay), { size: 14 }));
+    chip.appendChild(h('span', null, `${Math.round(w.tempC)}°C · ${weatherLabel(w.code)}`));
+  });
+  return chip;
+}
+
 export async function render(ctx) {
   const { db, user } = ctx;
   const now = new Date();
@@ -69,7 +87,7 @@ export async function render(ctx) {
     eyebrow: `${greeting(now)}${mode.label ? ` · ${mode.label}` : ''}`,
     title: firstName(user.name),
     subtitle: `${ctx.tenant.name} · ${formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}`,
-    actions: quickActions(ctx, mode),
+    actions: [weatherChip(), ...quickActions(ctx, mode)],
     children: [columns],
   });
 }
