@@ -15,21 +15,24 @@
  *     fabricated; the AI coach only adds encouragement around what is
  *     already true, and everything it drafts carries the usual label.
  *
- * Course authoring reuses the generic schema-driven editor (`openRecordModal`)
- * rather than a bespoke lesson builder — a full rich-media lesson authoring
- * UI (video upload, drag-drop quiz builder) is a separate feature this pass
- * does not attempt. Lessons are structured data (seeded, or edited as JSON
- * through the `lessons` field), consumed richly by every learner.
+ * Course-level fields (title, category, description…) reuse the generic
+ * schema-driven editor (`openRecordModal`). Lessons get their own small
+ * form (`openLessonFormModal`) for the fields a facilitator actually fills
+ * in — title, facilitator, date, duration, takeaway — added/edited/removed
+ * right from the course detail view. A full rich-media lesson authoring UI
+ * (video upload, drag-drop quiz builder) is a separate feature this pass
+ * does not attempt; a lesson's `type`/`summary`/`quiz` stay seeded or
+ * hand-edited as JSON for now.
  */
 
 import { h, icon } from '../core/dom.js';
 import {
   page, card, list, listItem, emptyState, badge, segmented, statCard,
-  toast, aiOutput, progressRing, searchField, modal, field, input,
+  toast, aiOutput, progressRing, searchField, modal, field, input, select, textarea, formModal,
 } from '../core/ui.js';
 import { formatDate } from '../core/format.js';
 import { blank } from '../core/schema.js';
-import { memberName, sentence, matches, newButton, openRecordModal, friendly } from './_shared.js';
+import { memberName, sentence, matches, newButton, openRecordModal, friendly, refOptions } from './_shared.js';
 import { learningProgress, recommendNextCourse, leadershipReadiness } from '../core/ai.js';
 import { canEnrollInCourse } from '../core/policies.js';
 import { uid } from '../core/id.js';
@@ -37,6 +40,14 @@ import { printReport } from '../core/exporters.js';
 
 const COURSE_FIELDS = ['title', 'category', 'description', 'instructor', 'duration', 'level', 'prerequisites', 'objectives', 'lessons', 'discussionQuestions', 'leaderOnly', 'archived'];
 const PATH_FIELDS = ['title', 'description', 'audience', 'courseIds'];
+
+const LESSON_DURATION_UNITS = [{ value: 'minutes', label: 'Minutes' }, { value: 'hours', label: 'Hours' }];
+
+function lessonDurationLabel(lesson) {
+  if (!lesson.durationValue) return '';
+  const unit = lesson.durationUnit === 'hours' ? 'hour' : 'minute';
+  return `${lesson.durationValue} ${unit}${lesson.durationValue === 1 ? '' : 's'}`;
+}
 
 const DAILY_VERSES = [
   { text: 'The Lord is my shepherd; I shall not want.', ref: 'Psalm 23:1' },
@@ -283,6 +294,9 @@ function courseDetailBody(ctx, course, redraw) {
     }) : null,
     card({
       title: 'Lessons', tight: true,
+      actions: ctx.can('equip:write')
+        ? [h('button.btn.btn--sm', { onClick: () => openLessonFormModal(ctx, course, null, null, redraw) }, icon('plus', { size: 14 }), 'Add lesson')]
+        : [],
       children: [lessons.length
         ? h('div.stack.stack--sm', ...lessons.map((lesson, i) => lessonRow(ctx, course, lesson, i, completedSet.has(String(i)), redraw)))
         : h('p.small.muted', 'No lessons added yet.')],
@@ -298,7 +312,16 @@ function courseDetailBody(ctx, course, redraw) {
 }
 
 function lessonRow(ctx, course, lesson, index, done, redraw) {
+  const { db } = ctx;
   const canTrack = !!ctx.user.memberId;
+  const meta = [
+    sentence(lesson.type || 'reading'),
+    lesson.summary || null,
+    lesson.facilitatorId ? `Facilitator: ${memberName(db, lesson.facilitatorId)}` : null,
+    lesson.date ? formatDate(lesson.date) : null,
+    lessonDurationLabel(lesson) || null,
+  ].filter(Boolean).join(' · ');
+
   return h('div.stack.stack--sm', { style: { borderBottom: '1px solid var(--border)', paddingBottom: '10px' } },
     h('div.row.row--between.row--wrap',
       h('div.row',
@@ -308,9 +331,72 @@ function lessonRow(ctx, course, lesson, index, done, redraw) {
         }),
         h('div', null,
           h('div.small', { style: { fontWeight: '600' } }, `${index + 1}. ${lesson.title}`),
-          h('div.tiny.subtle', `${sentence(lesson.type || 'reading')}${lesson.summary ? ` · ${lesson.summary}` : ''}`))),
-      h('button.btn.btn--sm', { onClick: () => openLessonCoachModal(ctx, course, lesson) }, icon('sparkles', { size: 14 }), 'Ask the coach')),
+          h('div.tiny.subtle', meta))),
+      h('div.row',
+        h('button.btn.btn--sm', { onClick: () => openLessonCoachModal(ctx, course, lesson) }, icon('sparkles', { size: 14 }), 'Ask the coach'),
+        ctx.can('equip:write')
+          ? h('button.icon-btn', { 'aria-label': 'Edit lesson', onClick: () => openLessonFormModal(ctx, course, lesson, index, redraw) }, icon('edit', { size: 15 }))
+          : null,
+        ctx.can('equip:write')
+          ? h('button.icon-btn', { 'aria-label': 'Remove lesson', onClick: () => removeLesson(ctx, course, index, redraw) }, icon('trash', { size: 15 }))
+          : null)),
+    lesson.takeaway ? h('p.small', { style: { marginTop: '2px' } }, h('strong', 'Takeaway: '), lesson.takeaway) : null,
     (lesson.quiz || []).length ? quizBlock(ctx, course, lesson, index) : null);
+}
+
+async function removeLesson(ctx, course, index, redraw) {
+  const next = (course.lessons || []).filter((_, i) => i !== index);
+  ctx.db.update('courses', course.id, { lessons: next });
+  await ctx.db.flush();
+  course.lessons = next;
+  toast('Lesson removed.');
+  redraw();
+}
+
+function openLessonFormModal(ctx, course, lesson, index, redraw) {
+  const isNew = lesson == null;
+  const titleInput = input({ value: lesson ? lesson.title : '' });
+  const facilitatorSelect = select({
+    options: refOptions(ctx.db, 'members', { emptyLabel: 'No facilitator yet' }),
+    value: lesson ? lesson.facilitatorId || '' : '',
+  });
+  const dateInput = input({ type: 'date', value: lesson && lesson.date ? lesson.date : '' });
+  const durationValueInput = input({ type: 'number', min: '0', value: lesson && lesson.durationValue ? String(lesson.durationValue) : '' });
+  const durationUnitSelect = select({ options: LESSON_DURATION_UNITS, value: lesson ? lesson.durationUnit || 'minutes' : 'minutes' });
+  const takeawayInput = textarea({ value: lesson ? lesson.takeaway || '' : '' });
+
+  formModal({
+    title: isNew ? 'Add lesson' : 'Edit lesson',
+    submitLabel: 'Save',
+    fields: [
+      field({ label: 'Lesson / chapter title', control: titleInput, full: true }),
+      field({ label: 'Facilitator', control: facilitatorSelect, full: true }),
+      h('div.row.row--wrap', { style: { gap: '12px' } },
+        field({ label: 'Date', control: dateInput }),
+        field({ label: 'Duration', control: durationValueInput }),
+        field({ label: 'Unit', control: durationUnitSelect })),
+      field({ label: 'Takeaway', control: takeawayInput, full: true, help: 'The one thing a learner should walk away with.' }),
+    ],
+    onSubmit: async () => {
+      if (!titleInput.value.trim()) throw new Error('Give the lesson a title.');
+      const patch = {
+        ...(lesson || {}),
+        title: titleInput.value.trim(),
+        facilitatorId: facilitatorSelect.value || null,
+        date: dateInput.value || null,
+        durationValue: durationValueInput.value ? Number(durationValueInput.value) : null,
+        durationUnit: durationUnitSelect.value,
+        takeaway: takeawayInput.value.trim(),
+      };
+      const current = course.lessons || [];
+      const next = isNew ? [...current, patch] : current.map((l, i) => (i === index ? patch : l));
+      ctx.db.update('courses', course.id, { lessons: next });
+      await ctx.db.flush();
+      course.lessons = next;
+      toast(isNew ? 'Lesson added.' : 'Lesson updated.', { variant: 'ok' });
+      redraw();
+    },
+  });
 }
 
 /** A single-question check — not a scored multi-question engine, just enough to make "Quizzes" real rather than a label. */

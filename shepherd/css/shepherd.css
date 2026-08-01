@@ -408,10 +408,12 @@ h4 { font-size: 0.875rem; }
 .search-input .input { padding-left: 36px; }
 
 .segmented {
-  display: inline-flex; padding: 3px; gap: 2px;
+  display: inline-flex; padding: 3px; gap: 2px; max-width: 100%;
   background: var(--surface-2); border-radius: var(--radius-sm); border: 1px solid var(--border);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
 }
 .segmented button {
+  flex: none;
   border: none; background: none; padding: 6px 13px; border-radius: 6px;
   font-size: 0.8125rem; font-weight: 500; color: var(--ink-2); cursor: pointer;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);

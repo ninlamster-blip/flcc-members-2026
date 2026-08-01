@@ -683,9 +683,13 @@ export const COLLECTIONS = {
       prerequisites: { label: 'Prerequisites', type: 'list', ref: 'courses' },
       objectives:   { label: 'Objectives', type: 'list' },
       // Each lesson: { title, type: 'video'|'audio'|'reading'|'pdf', summary,
-      // quiz: [{ question, options, answer }] }. Authored as structured data —
-      // seeded, or edited as JSON — rather than through a WYSIWYG lesson
-      // builder, which is a separate feature this pass does not attempt.
+      // facilitatorId, date, durationValue, durationUnit: 'minutes'|'hours',
+      // takeaway, quiz: [{ question, options, answer }] }. title/facilitator/
+      // date/duration/takeaway have a friendly per-lesson form (see
+      // openLessonFormModal in equip.js); type/summary/quiz are still seeded
+      // or hand-edited as JSON — a full WYSIWYG lesson builder (video upload,
+      // drag-drop quiz authoring) is a separate feature this pass does not
+      // attempt.
       lessons:      { label: 'Lessons', type: 'object' },
       discussionQuestions: { label: 'Discussion questions', type: 'list' },
       leaderOnly:   { label: 'Leader training', type: 'bool', default: false, help: 'Restricted to ministry leadership roles — see policies.canEnrollInCourse.' },
