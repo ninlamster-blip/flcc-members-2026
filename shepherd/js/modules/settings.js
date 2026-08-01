@@ -570,6 +570,7 @@ function dataTab(ctx) {
               ctx.refresh();
             },
           }))),
+        unmatchedNamesNotice(ctx.app.loadFLCCSyncConfig().lastUnmatchedNames),
       ],
     }),
     card({
@@ -783,7 +784,7 @@ export async function runFLCCSync(ctx) {
   const { db } = ctx;
   try {
     const { created, skipped, unmatchedNames } = await syncFLCCAttendance(db);
-    ctx.app.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString() });
+    ctx.app.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString(), lastUnmatchedNames: unmatchedNames });
     if (!created && !skipped) {
       toast('No attendance found — is Shepherd hosted alongside the FLCC app?', { variant: 'err' });
       return;
@@ -796,6 +797,20 @@ export async function runFLCCSync(ctx) {
   } catch (err) {
     toast(`Sync failed: ${err.message}`, { variant: 'err' });
   }
+}
+
+/**
+ * The names behind the "not matched to a member" count in the toast — that
+ * count alone leaves a steward with no way to act on it, so the last sync's
+ * list is kept (see `DEFAULT_FLCC_SYNC_CONFIG` in app.js) and spelled out
+ * here: fix the spelling in FLCC's attendance app, or add the person to
+ * People, and the name will match next time.
+ */
+function unmatchedNamesNotice(names) {
+  if (!names || !names.length) return null;
+  return h('p.small.muted', { style: { marginTop: '12px' } },
+    `Not matched to a member in People: ${names.join(', ')}. `
+    + 'Check the spelling in the FLCC attendance app, or add them as a member here.');
 }
 
 /* ── audit ───────────────────────────────────────────────────────────────── */
