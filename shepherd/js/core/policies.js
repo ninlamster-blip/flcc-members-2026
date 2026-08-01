@@ -7,7 +7,7 @@
  * a detail of how a profile screen happens to be drawn.
  */
 
-import { can } from './rbac.js';
+import { can, isLeadershipTrack } from './rbac.js';
 
 /** Default: an expense over this needs a second person. Overridden per church. */
 export const DEFAULT_APPROVAL_THRESHOLD = 100;
@@ -80,7 +80,10 @@ export function canSeePrayer(user, request) {
     return !!(user && request.createdBy && request.createdBy === user.id);
   }
   if (request.visibility === 'leaders') {
-    return can(user, 'leadership:read') || can(user, 'care:read');
+    // Not `leadership:read` — every role holds that now (see rbac.js).
+    // "Leaders" visibility means genuine leadership-track roles, the same
+    // check canEnrollInCourse uses for leader-only Equip courses.
+    return isLeadershipTrack(user) || can(user, 'care:read');
   }
   return true;
 }
@@ -120,6 +123,34 @@ export function canAccessJournalEntry(user, entry) {
   return !!(user && entry && entry.createdBy && entry.createdBy === user.id);
 }
 
+/* ── preaching: a preacher's own sermons ──────────────────────────────────── */
+
+/**
+ * Each preacher's sermon archive is their own working space, not a shared
+ * one — at the church's own request: a sermon record, including one still
+ * in draft, should never surface for anyone but the preacher who owns it,
+ * no exceptions for rank. A sermon with no preacher assigned yet stays
+ * visible to anyone who can browse Preaching, so it can be claimed; once
+ * `preacherId` is set, only that preacher (matched by `memberId`, the same
+ * way `canWriteEnrollment` matches) may read or write it. Filters what
+ * `sermonsTab`/`sermonDetail`/`seriesTab` ever query or display, and also
+ * serves as the collection's `instanceWrite` fallback — the same shape as
+ * `canWriteActionItem`/`canWriteEnrollment`, so whoever holds blanket
+ * `preaching:write` (church_admin, lead_pastor, senior_pastor, pastor)
+ * still bypasses it there, same as those other instance checks do; the
+ * enforcement that actually delivers "no exceptions" here is the query
+ * filter every sermon list and the direct-link route both go through —
+ * nothing in this client-side app is proof against a determined user with
+ * their own devtools open on their own device, for this or anything else.
+ *
+ * @param {{memberId?: string}} user
+ * @param {{preacherId?: string}} sermon
+ */
+export function canAccessSermon(user, sermon) {
+  if (!sermon || !sermon.preacherId) return true;
+  return !!(user && user.memberId && sermon.preacherId === user.memberId);
+}
+
 /* ── per-user preferences (dismissed insights, notification settings) ────── */
 
 /**
@@ -142,7 +173,7 @@ export function canAccessOwnPreferences(user, record) {
  * sensitive records are read in their own module by the people who hold those
  * permissions, and are never summarised into an answer.
  */
-export const KNOWLEDGE_EXCLUDED = ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit', 'enrollments', 'certificates', 'journal'];
+export const KNOWLEDGE_EXCLUDED = ['counseling', 'transactions', 'budgets', 'projects', 'users', 'audit', 'enrollments', 'certificates', 'journal', 'sermons'];
 
 export function knowledgeMayUse(collection) {
   return !KNOWLEDGE_EXCLUDED.includes(collection);
@@ -200,14 +231,15 @@ export function canWriteEnrollment(user, record) {
 /**
  * Certain courses — church governance, child protection, counselling basics
  * — are restricted to those who actually carry leadership responsibility,
- * not opened to every member. `leaderOnly` courses require a role that
- * holds `leadership:read` (every leadership-track role, from ministry head
- * up) or explicit `equip:write` (whoever manages the catalogue can always
- * preview what they publish).
+ * not opened to every member. `leaderOnly` courses require a genuinely
+ * leadership-track role (see `isLeadershipTrack` in rbac.js — deliberately
+ * not the `leadership:read` permission, which every role now holds) or
+ * explicit `equip:write` (whoever manages the catalogue can always preview
+ * what they publish).
  */
 export function canEnrollInCourse(user, course) {
   if (!course || !course.leaderOnly) return true;
-  return can(user, 'leadership:read') || can(user, 'equip:write');
+  return isLeadershipTrack(user) || can(user, 'equip:write');
 }
 
 /* ── ministry workspaces ─────────────────────────────────────────────────── */

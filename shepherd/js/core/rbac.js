@@ -68,6 +68,7 @@ export const ROLES = {
   church_admin: {
     label: 'Church Administrator',
     rank: 80,
+    leadershipTrack: true,
     description: 'Runs this church on Shepherd: users, settings, and every module inside it.',
     permissions: [
       'dashboard:*', 'members:*', 'care:*', 'leadership:*', 'journal:read', 'worship:*', 'preaching:*',
@@ -78,6 +79,7 @@ export const ROLES = {
   lead_pastor: {
     label: 'Lead Pastor (network)',
     rank: 75,
+    leadershipTrack: true,
     description: 'Oversees every church in the network, not just one — the same full pastoral standing as a Senior Pastor within whichever church they are signed into, plus the cross-church Network Overview. Added per church, the same as any other role; sees the network summary only for churches already present on this device.',
     permissions: [
       'dashboard:*', 'members:*', 'care:*', 'counseling:*', 'leadership:*', 'journal:read', 'worship:read',
@@ -89,6 +91,7 @@ export const ROLES = {
   senior_pastor: {
     label: 'Senior Pastor',
     rank: 70,
+    leadershipTrack: true,
     description: 'Full pastoral oversight, including counselling notes and financial summaries.',
     permissions: [
       'dashboard:*', 'members:*', 'care:*', 'counseling:*', 'leadership:*', 'journal:read', 'worship:read',
@@ -100,32 +103,37 @@ export const ROLES = {
   pastor: {
     label: 'Pastor',
     rank: 60,
-    description: 'Shepherds people: member care, counselling, prayer, preaching.',
+    leadershipTrack: true,
+    description: 'Shepherds people: member care, counselling, prayer, preaching, and — alongside CSL, Lead Pastor, Senior Pastor and Ministry Head — the church\'s finances and documents.',
     permissions: [
       'dashboard:read', 'members:read', 'members:write', 'care:*', 'counseling:*',
       'leadership:read', 'journal:read', 'worship:read', 'preaching:*', 'prayer:*', 'events:read',
-      'events:write', 'documents:read', 'knowledge:read', 'knowledge:write', 'equip:read',
+      'events:write', 'finance:read', 'finance:approve', 'finance:export', 'documents:*',
+      'knowledge:read', 'knowledge:write', 'equip:read',
       'communications:read', 'communications:write', 'reports:read', 'assistant:*',
     ],
   },
   elder: {
     label: 'Elder',
     rank: 50,
-    description: 'Shares governance and care, without counselling files or finance detail.',
+    leadershipTrack: true,
+    description: 'Shares governance and care, without counselling files, finance, or the document vault — those are reserved for CSL, Pastor, Lead Pastor, Senior Pastor and Ministry Head.',
     permissions: [
       'dashboard:read', 'members:read', 'care:read', 'care:write', 'leadership:read',
       'leadership:write', 'journal:read', 'worship:read', 'preaching:read', 'prayer:read', 'prayer:write',
-      'events:read', 'events:write', 'documents:read', 'knowledge:read', 'equip:read',
-      'communications:read', 'reports:read', 'assistant:read', 'assistant:write',
+      'events:read', 'events:write', 'knowledge:read', 'equip:read',
+      'communications:read', 'communications:write', 'reports:read', 'assistant:read', 'assistant:write',
     ],
   },
   ministry_head: {
     label: 'Ministry Head',
     rank: 40,
-    description: 'Runs one ministry: its people, rota, events and requests, and its own workspace in the leadership hub. Reads the whole leadership hub, but can only write its own ministry\'s tasks and annual plan — not another ministry\'s, nor church-wide meetings and decisions.',
+    leadershipTrack: true,
+    description: 'Runs one ministry: its people, rota, events and requests, and its own workspace in the leadership hub. Reads the whole leadership hub, but can only write its own ministry\'s tasks and annual plan — not another ministry\'s, nor church-wide meetings and decisions. Also holds finance and document access, alongside CSL, Pastor, Lead Pastor and Senior Pastor.',
     permissions: [
       'dashboard:read', 'members:read', 'care:read', 'worship:read', 'worship:write',
-      'prayer:read', 'prayer:write', 'events:read', 'events:write', 'documents:read',
+      'prayer:read', 'prayer:write', 'events:read', 'events:write', 'finance:read', 'finance:approve',
+      'finance:export', 'documents:*',
       'knowledge:read', 'equip:read', 'communications:read', 'communications:write', 'reports:read',
       'assistant:read', 'assistant:write', 'leadership:read', 'journal:read',
     ],
@@ -136,6 +144,7 @@ export const ROLES = {
     description: 'Owns the books. Finance in full; people only as far as giving requires.',
     permissions: [
       'dashboard:read', 'members:read', 'finance:*', 'documents:read', 'documents:write',
+      'knowledge:read', 'leadership:read', 'communications:read', 'communications:write',
       'reports:read', 'reports:export', 'events:read', 'equip:read', 'assistant:read', 'assistant:write',
       'audit:read',
     ],
@@ -143,6 +152,7 @@ export const ROLES = {
   secretary: {
     label: 'Secretary',
     rank: 40,
+    leadershipTrack: true,
     description: 'Keeps the records: minutes, documents, announcements, member details.',
     permissions: [
       'dashboard:read', 'members:read', 'members:write', 'care:read', 'leadership:read',
@@ -154,17 +164,21 @@ export const ROLES = {
   volunteer: {
     label: 'Volunteer',
     rank: 20,
-    description: 'Serves on a team: their rota, their events, the prayer wall.',
+    description: 'Serves on a team: their rota, their events, the prayer wall — with read access across the rest of the church\'s shared spaces (leadership hub except the journal, knowledge centre, reports, communications, assistant).',
     permissions: [
       'dashboard:read', 'worship:read', 'events:read', 'prayer:read', 'prayer:write',
-      'knowledge:read', 'equip:read', 'assistant:read',
+      'knowledge:read', 'equip:read', 'assistant:read', 'leadership:read',
+      'communications:read', 'communications:write', 'reports:read',
     ],
   },
   member: {
     label: 'Member',
     rank: 10,
-    description: 'Optional congregation access: prayer wall, events, announcements.',
-    permissions: ['dashboard:read', 'events:read', 'prayer:read', 'prayer:write', 'knowledge:read', 'equip:read'],
+    description: 'Optional congregation access: prayer wall, events, announcements — with read access across the rest of the church\'s shared spaces (leadership hub except the journal, knowledge centre, reports, communications, assistant).',
+    permissions: [
+      'dashboard:read', 'events:read', 'prayer:read', 'prayer:write', 'knowledge:read', 'equip:read',
+      'assistant:read', 'leadership:read', 'communications:read', 'communications:write', 'reports:read',
+    ],
   },
 };
 
@@ -218,6 +232,20 @@ export function effectivePermissions(user) {
     }
   }
   return out;
+}
+
+/**
+ * True for a role that carries actual leadership responsibility — church
+ * governance, pastoral oversight, or a named ministry/records portfolio.
+ * Deliberately independent of the `leadership:read` permission: that grant
+ * is now held broadly (every role reads the leadership hub except its
+ * journal), so a leader-only Equip course or anything else that needs to
+ * ask "is this genuinely a leader" checks this flag instead of a
+ * permission whose meaning changed underneath it.
+ */
+export function isLeadershipTrack(user) {
+  const role = user && ROLES[user.role];
+  return !!(role && role.leadershipTrack);
 }
 
 /** Roles `user` is allowed to assign — never above their own rank. */

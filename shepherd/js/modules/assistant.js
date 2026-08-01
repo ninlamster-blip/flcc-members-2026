@@ -44,7 +44,7 @@ export async function render(ctx, route) {
   return page({
     title: 'Assistant',
     subtitle: ctx.assistant.remoteAvailable
-      ? `Insights on this device · thinking with ${ctx.assistant.config.model}`
+      ? 'Insights on this device · connected to an AI service'
       : 'Insights and drafts, computed on this device',
     children: [
       h('div', { style: { marginBottom: '18px' } },

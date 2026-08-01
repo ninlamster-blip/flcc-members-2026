@@ -204,7 +204,9 @@ test('roles grant what they should and nothing more', () => {
 
   const pastor = { role: 'pastor' };
   assert.equal(can(pastor, 'counseling:read'), true);
-  assert.equal(can(pastor, 'finance:read'), false);
+  // Finance and Documents are shared by CSL/Church Admin, Pastor, Lead
+  // Pastor, Senior Pastor and Ministry Head — see rbac.js.
+  assert.equal(can(pastor, 'finance:read'), true);
 
   assert.equal(can({ role: 'super_admin' }, 'tenants:manage'), true);
   assert.equal(can(null, 'dashboard:read'), false);
@@ -510,9 +512,13 @@ test('a failed model call falls back to the local draft rather than losing the w
 
 test('the knowledge assistant answers only from records the reader may see', async () => {
   const db = await tenantDb();
-  db.insert('meetings', blank('meetings', {
-    title: 'Council — April', date: new Date().toISOString(),
-    minutes: 'Decided the youth ministry will meet on Friday evenings from now on.',
+  // Documents, not meetings: the leadership hub is now readable by every
+  // role (see rbac.js), so a record gated by `documents:read` — still
+  // restricted to CSL, Pastor, Lead Pastor, Senior Pastor, Ministry Head,
+  // Treasurer and Secretary — is what actually demonstrates the filter.
+  db.insert('documents', blank('documents', {
+    title: 'Facility use policy', category: 'policy',
+    description: 'Decided the youth ministry will meet on Friday evenings from now on.',
   }));
   const index = new SearchIndex(db);
   const assistant = new Assistant({ db, search: index });
@@ -521,7 +527,7 @@ test('the knowledge assistant answers only from records the reader may see', asy
   assert.equal(answered.sources.length, 1);
   assert.match(answered.text, /youth ministry/i);
 
-  const denied = await assistant.answer('what did we decide about youth ministry', { role: 'volunteer' });
+  const denied = await assistant.answer('what did we decide about youth ministry', { role: 'member' });
   assert.equal(denied.sources.length, 0);
   assert.match(denied.text, /Nothing in this church/);
 });
@@ -536,9 +542,9 @@ test('unlike the knowledge assistant, "ask Shepherd" is not confined to church r
 
 test('"ask Shepherd" still surfaces this church\'s own records when they are relevant', async () => {
   const db = await tenantDb();
-  db.insert('meetings', blank('meetings', {
-    title: 'Council — April', date: new Date().toISOString(),
-    minutes: 'Decided the youth ministry will meet on Friday evenings from now on.',
+  db.insert('documents', blank('documents', {
+    title: 'Facility use policy', category: 'policy',
+    description: 'Decided the youth ministry will meet on Friday evenings from now on.',
   }));
   const assistant = new Assistant({ db, search: new SearchIndex(db) });
 
@@ -546,8 +552,8 @@ test('"ask Shepherd" still surfaces this church\'s own records when they are rel
   assert.equal(found.sources.length, 1);
   assert.match(found.text, /youth ministry/i);
 
-  const denied = await assistant.ask('what did we decide about youth ministry', { role: 'volunteer' });
-  assert.equal(denied.sources.length, 0, 'a role without leadership:read must not see the meeting minutes either');
+  const denied = await assistant.ask('what did we decide about youth ministry', { role: 'member' });
+  assert.equal(denied.sources.length, 0, 'a role without documents:read must not see the document either');
 });
 
 test('a configured model is told to draw on general knowledge, not just church records', async () => {

@@ -110,7 +110,7 @@ function askTab(ctx, route) {
           }, suggestion))),
         h('p.tiny.subtle', { style: { marginTop: '12px' } },
           ctx.assistant.remoteAvailable
-            ? `Answers are written by ${ctx.assistant.config.model} using only the records you are allowed to read, and are labelled as AI.`
+            ? 'Answers are written by an AI service using only the records you are allowed to read, and are labelled as AI.'
             : 'No AI service configured, so Shepherd shows the matching records instead of writing an answer. Connect one in Settings → AI.'),
       ],
     }),
@@ -206,7 +206,6 @@ function sourcesTab(ctx) {
     ['meetings', 'Minutes and agendas'],
     ['decisions', 'The decision log'],
     ['documents', 'The document vault'],
-    ['sermons', 'Sermon outlines and notes'],
     ['knowledge', 'Saved answers'],
     ['members', 'People (names, ministries, notes)'],
     ['events', 'Events'],

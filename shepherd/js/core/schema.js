@@ -32,6 +32,7 @@
 
 import {
   canWriteActionItem, canWriteAnnualPlan, canWriteEnrollment, canAccessJournalEntry, canAccessOwnPreferences,
+  canAccessSermon,
 } from './policies.js';
 
 /**
@@ -460,8 +461,11 @@ export const COLLECTIONS = {
   sermons: {
     label: 'Sermons',
     resource: 'preaching',
+    // Each preacher's own working space, not a shared archive — see
+    // canAccessSermon in policies.js. Not `searchable`: see `sermons` in
+    // NEVER_INDEXED below, the same treatment as `journal`.
+    instanceWrite: canAccessSermon,
     titleField: 'title',
-    searchable: ['title', 'passage', 'bigIdea', 'outline', 'notes', 'tags'],
     fields: {
       title:    { label: 'Title', type: 'string', required: true },
       date:     { label: 'Preached on', type: 'date' },

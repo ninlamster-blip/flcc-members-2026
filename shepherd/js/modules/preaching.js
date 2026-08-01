@@ -16,9 +16,19 @@ import {
 } from '../core/ui.js';
 import { formatDate, relativeTime, isoDate, daysBetween } from '../core/format.js';
 import { AI_TASKS } from '../core/ai.js';
+import { canAccessSermon } from '../core/policies.js';
 import { openRecordModal, newButton, statusBadge, memberName, matches, sentence, deleteRecord } from './_shared.js';
 
 const SERMON_FIELDS = ['title', 'date', 'seriesId', 'preacherId', 'passage', 'bigIdea', 'outline', 'notes', 'tags', 'status'];
+
+/** New sermons default to the signed-in preacher — otherwise they'd vanish from their own archive the moment they saved, until someone set the field. */
+function openNewSermonModal(ctx, extraDefaults) {
+  openRecordModal(ctx, {
+    collection: 'sermons',
+    fields: SERMON_FIELDS,
+    defaults: { ...(ctx.user.memberId ? { preacherId: ctx.user.memberId } : {}), ...extraDefaults },
+  });
+}
 const ASSET_TASKS = [
   ['sermon.outline', 'Outline'],
   ['sermon.applications', 'Applications & questions'],
@@ -31,7 +41,7 @@ const ASSET_TASKS = [
 export async function render(ctx, route) {
   if (route.params[0]) {
     const sermon = ctx.db.find('sermons', route.params[0]);
-    if (sermon) return sermonDetail(ctx, sermon);
+    if (sermon && canAccessSermon(ctx.user, sermon)) return sermonDetail(ctx, sermon);
   }
   const tab = route.query.tab || 'sermons';
   const { db } = ctx;
@@ -45,8 +55,12 @@ export async function render(ctx, route) {
       : sermonsTab(ctx),
   );
 
-  const preached = db.where('sermons', (s) => s.status === 'preached');
-  const next = db.where('sermons', (s) => s.date && new Date(s.date) >= new Date())
+  // Each preacher's own archive — see canAccessSermon. The header stats
+  // below are scoped the same way everything else in this module is, or
+  // "Next: <title>" would name another preacher's sermon in plain text.
+  const mine = db.all('sermons').filter((s) => canAccessSermon(ctx.user, s));
+  const preached = mine.filter((s) => s.status === 'preached');
+  const next = mine.filter((s) => s.date && new Date(s.date) >= new Date())
     .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
 
   return page({
@@ -59,7 +73,7 @@ export async function render(ctx, route) {
           ? newButton(ctx, 'preaching', 'Add illustration', () => openRecordModal(ctx, { collection: 'illustrations' }))
           : (tab === 'bible' || tab === 'ask')
             ? null
-            : newButton(ctx, 'preaching', 'New sermon', () => openRecordModal(ctx, { collection: 'sermons', fields: SERMON_FIELDS })),
+            : newButton(ctx, 'preaching', 'New sermon', () => openNewSermonModal(ctx)),
     ].filter(Boolean),
     children: [
       h('div', { style: { marginBottom: '18px' } },
@@ -88,7 +102,8 @@ function sermonsTab(ctx) {
   const results = h('div');
 
   const draw = () => {
-    let sermons = db.all('sermons');
+    // Your own archive, not the church's — see canAccessSermon in policies.js.
+    let sermons = db.all('sermons').filter((s) => canAccessSermon(ctx.user, s));
     if (status !== 'all') sermons = sermons.filter((s) => s.status === status);
     sermons = sermons.filter((s) => matches(s, query, ['title', 'passage', 'bigIdea', 'outline', 'notes'])
       || (query && (s.tags || []).some((t) => t.toLowerCase().includes(query.toLowerCase()))));
@@ -106,7 +121,6 @@ function sermonsTab(ctx) {
           },
           { label: 'Date', value: (sermon) => (sermon.date ? formatDate(sermon.date) : '—') },
           { label: 'Series', value: (sermon) => (sermon.seriesId ? (db.find('series', sermon.seriesId) || {}).title : '—') },
-          { label: 'Preacher', value: (sermon) => (sermon.preacherId ? memberName(db, sermon.preacherId) : '—') },
           { label: 'Status', render: (sermon) => statusBadge(sermon.status) },
           {
             label: 'Assets',
@@ -121,9 +135,9 @@ function sermonsTab(ctx) {
       })
       : emptyState({
         title: query ? `Nothing matches “${query}”` : 'No sermons yet',
-        detail: 'The archive searches titles, passages, outlines and notes — it is how you find what you said about Job three years ago.',
+        detail: 'Your own archive — searches titles, passages, outlines and notes, and never shows another preacher\'s sermons.',
         iconName: 'book',
-        action: newButton(ctx, 'preaching', 'New sermon', () => openRecordModal(ctx, { collection: 'sermons', fields: SERMON_FIELDS })),
+        action: newButton(ctx, 'preaching', 'New sermon', () => openNewSermonModal(ctx)),
       }));
   };
 
@@ -188,7 +202,7 @@ function sermonDetail(ctx, sermon) {
     children: [
       h('p.small.muted', { style: { marginBottom: '12px' } },
         ctx.assistant.remoteAvailable
-          ? `Connected to ${ctx.assistant.config.model}.`
+          ? 'Connected to an AI service.'
           : 'No AI service configured — drafts are built on this device from the sermon\'s own details. Connect one in Settings → AI.'),
       h('div.quick-actions', ...ASSET_TASKS.map(([task, label]) => h('button.quick-action', {
         onClick: () => generateAsset(ctx, sermon, task, label),
@@ -229,6 +243,7 @@ function sermonDetail(ctx, sermon) {
       series.bigIdea ? h('p.small.muted', series.bigIdea) : null,
       h('div.stack.stack--sm', { style: { marginTop: '10px' } },
         ...db.where('sermons', (s) => s.seriesId === series.id)
+          .filter((s) => canAccessSermon(ctx.user, s))
           .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
           .map((s) => h('button.list__item', { onClick: () => ctx.navigate(`/preaching/${s.id}`) },
             h('div.list__body',
@@ -308,7 +323,9 @@ function seriesTab(ctx) {
   }
   const now = new Date();
   return h('div.grid.grid--2', ...allSeries.map((series) => {
-    const sermons = db.where('sermons', (s) => s.seriesId === series.id);
+    // Only the sermons in this series the viewer may see — see canAccessSermon.
+    // The progress bar below is a count of those, not the whole series.
+    const sermons = db.where('sermons', (s) => s.seriesId === series.id).filter((s) => canAccessSermon(ctx.user, s));
     const preached = sermons.filter((s) => s.status === 'preached').length;
     const running = series.startDate && series.endDate
       && new Date(series.startDate) <= now && new Date(series.endDate) >= now;
@@ -318,6 +335,7 @@ function seriesTab(ctx) {
       actions: [running ? badge('Running', 'accent') : null].filter(Boolean),
       children: [
         series.bigIdea ? h('p.small.muted', series.bigIdea) : null,
+        h('p.tiny.subtle', { style: { marginTop: '8px' } }, 'Showing only your own sermons in this series.'),
         sermons.length ? h('div', { style: { marginTop: '12px' } },
           h('div.row.row--between.small', h('span.muted', 'Progress'), h('span', `${preached} of ${sermons.length}`)),
           progress(preached, sermons.length)) : null,
@@ -332,7 +350,7 @@ function seriesTab(ctx) {
           ? h('div.row', { style: { marginTop: '12px' } },
             h('button.btn.btn--sm', { onClick: () => openRecordModal(ctx, { collection: 'series', doc: series }) }, 'Edit'),
             h('button.btn.btn--sm', {
-              onClick: () => openRecordModal(ctx, { collection: 'sermons', fields: SERMON_FIELDS, defaults: { seriesId: series.id } }),
+              onClick: () => openNewSermonModal(ctx, { seriesId: series.id }),
             }, icon('plus', { size: 14 }), 'Add sermon'))
           : null,
       ],

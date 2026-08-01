@@ -22,7 +22,7 @@
  */
 
 import { daysUntilAnnual, daysBetween, isoDate, formatMoney, formatDate } from './format.js';
-import { can } from './rbac.js';
+import { can, isLeadershipTrack } from './rbac.js';
 import { isCommunionScheduled, canEnrollInCourse } from './policies.js';
 
 /* ── configuration ───────────────────────────────────────────────────────── */
@@ -827,8 +827,11 @@ export function computeInsights(db, user, opts = {}) {
     }
   }
 
-  /* Ministries and committees that depend on exactly one person continuing. */
-  if (can(user, 'leadership:read')) {
+  /* Ministries and committees that depend on exactly one person continuing.
+     Not `leadership:read` — every role holds that now (see rbac.js); a
+     governance-risk insight naming specific ministries stays for genuine
+     leadership-track roles only. */
+  if (isLeadershipTrack(user)) {
     const urgentSuccession = successionRisk(db).filter((r) => r.risk === 'urgent');
     if (urgentSuccession.length) {
       push({
@@ -1625,7 +1628,7 @@ export function buildBriefing(db, user, { now = new Date(), settings = {} } = {}
     if (pending) lines.push(`${pending} finance ${pending === 1 ? 'entry is' : 'entries are'} awaiting approval.`);
   }
 
-  if (can(user, 'leadership:read')) {
+  if (isLeadershipTrack(user)) {
     const overdue = db.where('actionItems', (a) => a.status !== 'done' && a.status !== 'dropped'
       && a.dueDate && new Date(a.dueDate) < now).length;
     if (overdue) lines.push(`${overdue} leadership action${overdue === 1 ? '' : 's'} overdue.`);
