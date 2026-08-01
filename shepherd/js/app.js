@@ -19,6 +19,7 @@ import { can, ROLES, roleLabel } from './core/rbac.js';
 import { configureFormat } from './core/format.js';
 import { COLLECTIONS } from './core/schema.js';
 import { seedTenant } from './core/seed.js';
+import { syncFLCCAttendance } from './core/flccSync.js';
 import {
   card, field, input, select, toast, modal, formModal, avatar, badge, emptyState,
 } from './core/ui.js';
@@ -27,6 +28,7 @@ const THEME_KEY = 'shepherd/v1/theme';
 const AI_CONFIG_KEY = 'shepherd/v1/ai-config';
 const FLCC_SYNC_CONFIG_KEY = 'shepherd/v1/flcc-sync-config';
 const DEFAULT_FLCC_SYNC_CONFIG = { autoSync: false, lastSyncedAt: null };
+const FLCC_AUTOSYNC_INTERVAL_MS = 5 * 60 * 1000;
 
 /** Navigation — order is the order in the sidebar. */
 export const MODULES = [
@@ -64,6 +66,7 @@ export class App {
     this.tenant = null;
     this.router = null;
     this._unsubscribeDb = null;
+    this._flccSyncTimer = null;
   }
 
   /* ── boot ──────────────────────────────────────────────────────────────── */
@@ -325,7 +328,33 @@ export class App {
       if (e.key && e.key.startsWith(`shepherd/v1/t/${this.tenant.id}/`)) this.reloadFromStorage();
     });
 
+    this.startFLCCAutoSync();
+
     await this.router.start();
+  }
+
+  /**
+   * Runs the FLCC attendance sync once right away, then every five minutes
+   * for as long as this church stays open — the closest a static, serverless
+   * app can get to "real time" without a push channel. Opt-in via Settings ->
+   * Data; a slow or unreachable FLCC endpoint fails quietly and just tries
+   * again on the next tick, never blocking anything else in the app.
+   */
+  startFLCCAutoSync() {
+    this.stopFLCCAutoSync();
+    if (!can(this.session.user, 'members:write')) return;
+    if (!this.loadFLCCSyncConfig().autoSync) return;
+    const run = () => {
+      syncFLCCAttendance(this.db)
+        .then(() => this.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString() }))
+        .catch(() => { /* a quiet background check should stay quiet when it fails, too */ });
+    };
+    run();
+    this._flccSyncTimer = setInterval(run, FLCC_AUTOSYNC_INTERVAL_MS);
+  }
+
+  stopFLCCAutoSync() {
+    if (this._flccSyncTimer) { clearInterval(this._flccSyncTimer); this._flccSyncTimer = null; }
   }
 
   visibleModules() {
@@ -490,6 +519,7 @@ export class App {
    *   Overview's "Open this church" action (see `tenantFromLocation`).
    */
   async handleSignOut(reason, targetTenantId) {
+    this.stopFLCCAutoSync();
     if (this._unsubscribeDb) this._unsubscribeDb();
     if (this.db) await this.db.flush();
     await this.session.signOut(reason, this.db);
