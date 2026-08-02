@@ -1,8 +1,27 @@
 {
   "meta": {
     "churchName": "FLCC - Shekinah",
-    "publishedAt": "",
-    "totalSessions": 0
+    "publishedAt": "2026-08-02T18:06:17.544Z",
+    "totalSessions": 1
   },
-  "sessions": []
+  "sessions": [
+    {
+      "id": "a-1785691801504-vxne",
+      "date": "2026-08-02",
+      "service": "Sunday",
+      "serviceLabel": "Sunday Service",
+      "summary": {
+        "present": 1,
+        "absent": 31,
+        "total": 32
+      },
+      "records": [
+        {
+          "memberId": "sis-02",
+          "memberName": "Sis. Analou Batisla-ong",
+          "status": "present"
+        }
+      ]
+    }
+  ]
 }
