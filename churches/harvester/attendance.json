@@ -1,8 +1,27 @@
 {
   "meta": {
     "churchName": "FLCC - Harvester",
-    "publishedAt": "",
-    "totalSessions": 0
+    "publishedAt": "2026-08-02T18:26:01.456Z",
+    "totalSessions": 1
   },
-  "sessions": []
+  "sessions": [
+    {
+      "id": "a-1785695137263-5p79",
+      "date": "2026-08-02",
+      "service": "Sunday",
+      "serviceLabel": "Sunday Service",
+      "summary": {
+        "present": 1,
+        "absent": 8,
+        "total": 9
+      },
+      "records": [
+        {
+          "memberId": "sis-04",
+          "memberName": "Sis. Anniewilma Imbuedo",
+          "status": "present"
+        }
+      ]
+    }
+  ]
 }
