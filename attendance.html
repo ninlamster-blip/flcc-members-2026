@@ -1375,6 +1375,24 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
 
   const [ghTokenInput, setGhTokenInput] = useState('');
 
+  // Only matters for the passcode path — the GitHub-token path posts straight
+  // to GitHub's own API and works from any address this page is opened from.
+  // The passcode path posts to this Worker's own /api/publish/attendance, so
+  // a device that opened the GitHub Pages copy instead of the Worker's own
+  // URL needs to be told where the Worker actually lives.
+  const [workerBase, setWorkerBase] = useState(() => { try { return localStorage.getItem(PUBLISH_BASE_KEY)||''; } catch { return ''; } });
+  const [workerBaseInput, setWorkerBaseInput] = useState('');
+  const saveWorkerBase = () => {
+    const v = workerBaseInput.trim().replace(/\/+$/, '');
+    if (!v) return;
+    if (!/^https?:\/\//i.test(v)) { alert('Should start with https:// — e.g. https://flcc-members-2026.your-subdomain.workers.dev'); return; }
+    setWorkerBase(v); try { localStorage.setItem(PUBLISH_BASE_KEY, v); } catch {}
+    setWorkerBaseInput('');
+  };
+  const clearWorkerBase = () => {
+    setWorkerBase(''); try { localStorage.removeItem(PUBLISH_BASE_KEY); } catch {}
+  };
+
   const [passcodeInput, setPasscodeInput] = useState('');
   const savePasscode = () => {
     const v = passcodeInput.trim();
@@ -1611,6 +1629,29 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:12, lineHeight:1.5 }}>
           Attendance uploads to GitHub automatically a few seconds after each tap — no button needed.
         </p>
+        {!ghToken && (
+          <div style={{ marginBottom:12, padding:'10px 12px', borderRadius:10, background:'#F9FAFB', border:'1px solid var(--border)' }}>
+            <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginBottom:8, lineHeight:1.5 }}>
+              <strong>Opened this from the github.io link?</strong> The passcode publishes through your admin's Worker, not GitHub Pages — paste the Worker's address below once. Skip this if your admin's link already opens the Worker directly.
+            </div>
+            {workerBase ? (
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:'0.75rem', color:'var(--ink-muted)', flex:1, wordBreak:'break-all' }}>{workerBase}</span>
+                <button onClick={clearWorkerBase} style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>Remove</button>
+              </div>
+            ) : (
+              <div style={{ display:'flex', gap:6 }}>
+                <input
+                  className="input" style={{ flex:1 }} type="text"
+                  placeholder="https://flcc-members-2026.your-subdomain.workers.dev"
+                  value={workerBaseInput} onChange={e=>setWorkerBaseInput(e.target.value)}
+                  onKeyDown={e=>e.key==='Enter'&&saveWorkerBase()}
+                />
+                <button className="btn" style={{ flexShrink:0 }} onClick={saveWorkerBase} disabled={!workerBaseInput.trim()}>Save</button>
+              </div>
+            )}
+          </div>
+        )}
         {(passcode || ghToken) ? (
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:10,

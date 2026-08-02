@@ -28,7 +28,7 @@ const THEME_KEY = 'shepherd/v1/theme';
 const SIDEBAR_COLLAPSED_KEY = 'shepherd/v1/sidebar-collapsed';
 const AI_CONFIG_KEY = 'shepherd/v1/ai-config';
 const FLCC_SYNC_CONFIG_KEY = 'shepherd/v1/flcc-sync-config';
-const DEFAULT_FLCC_SYNC_CONFIG = { autoSync: false, lastSyncedAt: null };
+const DEFAULT_FLCC_SYNC_CONFIG = { autoSync: false, lastSyncedAt: null, lastUnmatchedNames: [] };
 const FLCC_AUTOSYNC_INTERVAL_MS = 5 * 60 * 1000;
 
 /** Navigation — order is the order in the sidebar. */
@@ -348,7 +348,7 @@ export class App {
     if (!this.loadFLCCSyncConfig().autoSync) return;
     const run = () => {
       syncFLCCAttendance(this.db)
-        .then(() => this.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString() }))
+        .then(({ unmatchedNames }) => this.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString(), lastUnmatchedNames: unmatchedNames }))
         .catch(() => { /* a quiet background check should stay quiet when it fails, too */ });
     };
     run();
