@@ -575,7 +575,9 @@ function dataTab(ctx) {
         h('p.small.muted', { style: { marginBottom: '10px' } },
           'A synced session only counts someone as present if their name here matches the FLCC app exactly (allowing for '
           + 'punctuation, word order, and a missing middle name). A name that never matches is a person the church\'s own '
-          + 'health figures quietly miss — check this any time, not just right after a sync.'),
+          + 'health figures quietly miss — check this any time, not just right after a sync. When "Sync automatically" '
+          + 'above is on, this also runs in the background every five minutes; a number next to Settings in the sidebar '
+          + 'means there are unmatched names waiting here, and a new mismatch pops up as a notification the moment it\'s found.'),
         nameAccuracyPanel(ctx),
       ],
     }),
@@ -851,6 +853,7 @@ function nameAccuracyPanel(ctx) {
     resultHost.appendChild(h('p.small.muted', 'Checking…'));
     try {
       lastNameCheck = await checkFLCCNameMatches(ctx.db);
+      ctx.app.recordNameCheck(lastNameCheck);
       draw(lastNameCheck);
     } catch (err) {
       resultHost.textContent = '';
