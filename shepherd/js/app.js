@@ -20,6 +20,7 @@ import { configureFormat } from './core/format.js';
 import { COLLECTIONS } from './core/schema.js';
 import { seedTenant } from './core/seed.js';
 import { syncFLCCAttendance } from './core/flccSync.js';
+import { checkFLCCNameMatches } from './core/importers.js';
 import {
   card, field, input, select, toast, modal, formModal, avatar, badge, emptyState,
 } from './core/ui.js';
@@ -28,7 +29,7 @@ const THEME_KEY = 'shepherd/v1/theme';
 const SIDEBAR_COLLAPSED_KEY = 'shepherd/v1/sidebar-collapsed';
 const AI_CONFIG_KEY = 'shepherd/v1/ai-config';
 const FLCC_SYNC_CONFIG_KEY = 'shepherd/v1/flcc-sync-config';
-const DEFAULT_FLCC_SYNC_CONFIG = { autoSync: false, lastSyncedAt: null, lastUnmatchedNames: [] };
+const DEFAULT_FLCC_SYNC_CONFIG = { autoSync: false, lastSyncedAt: null, lastUnmatchedNames: [], lastNameCheck: null };
 const FLCC_AUTOSYNC_INTERVAL_MS = 5 * 60 * 1000;
 
 /** Navigation — order is the order in the sidebar. */
@@ -350,6 +351,13 @@ export class App {
       syncFLCCAttendance(this.db)
         .then(({ unmatchedNames }) => this.saveFLCCSyncConfig({ lastSyncedAt: new Date().toISOString(), lastUnmatchedNames: unmatchedNames }))
         .catch(() => { /* a quiet background check should stay quiet when it fails, too */ });
+      // Independent of the sync above — checkFLCCNameMatches re-scans every
+      // session FLCC currently publishes, so it catches a name that failed to
+      // match on the very first day it appeared and that the sync above would
+      // therefore never mention again.
+      checkFLCCNameMatches(this.db)
+        .then((result) => this.recordNameCheck(result))
+        .catch(() => {});
     };
     run();
     this._flccSyncTimer = setInterval(run, FLCC_AUTOSYNC_INTERVAL_MS);
@@ -357,6 +365,42 @@ export class App {
 
   stopFLCCAutoSync() {
     if (this._flccSyncTimer) { clearInterval(this._flccSyncTimer); this._flccSyncTimer = null; }
+  }
+
+  /**
+   * Only toast for names that are newly unmatched since the last check — a
+   * name that's still unresolved shouldn't nag every five minutes, but one
+   * that just started failing to match (a new attendee, or a name changed
+   * elsewhere) is worth surfacing right away rather than waiting for someone
+   * to open Settings and click "Check name accuracy" themselves.
+   */
+  recordNameCheck(result) {
+    const previouslyUnmatched = new Set((this.loadFLCCSyncConfig().lastNameCheck || {}).unmatched || []);
+    const newlyUnmatched = result.unmatched.filter((name) => !previouslyUnmatched.has(name));
+    this.saveFLCCSyncConfig({ lastNameCheck: { checkedAt: new Date().toISOString(), unmatched: result.unmatched } });
+    this.updateSettingsBadge();
+    if (newlyUnmatched.length) {
+      toast(
+        `${newlyUnmatched.length} name${newlyUnmatched.length === 1 ? '' : 's'} in the FLCC attendance app `
+        + `${newlyUnmatched.length === 1 ? "doesn't" : "don't"} match anyone in Shepherd — `
+        + 'see Settings → Data → Name accuracy.',
+      );
+    }
+  }
+
+  /** The sidebar itself isn't rebuilt on a normal refresh, so a background
+   * name check updates the existing Settings nav item in place. */
+  updateSettingsBadge() {
+    const link = this._navItems && this._navItems.get('settings');
+    if (!link) return;
+    const count = ((this.loadFLCCSyncConfig().lastNameCheck || {}).unmatched || []).length;
+    let el = link.querySelector('.nav-item__badge');
+    if (count > 0) {
+      if (!el) { el = h('span.nav-item__badge'); link.appendChild(el); }
+      el.textContent = String(count);
+    } else if (el) {
+      el.remove();
+    }
   }
 
   visibleModules() {
@@ -418,6 +462,10 @@ export class App {
       for (const module of group.items) {
         const link = h('a.nav-item', { href: `#/${module.id}`, title: module.title },
           icon(module.icon, { size: 18 }), h('span.nav-item__label', null, module.title));
+        if (module.id === 'settings') {
+          const count = ((this.loadFLCCSyncConfig().lastNameCheck || {}).unmatched || []).length;
+          if (count > 0) link.appendChild(h('span.nav-item__badge', null, String(count)));
+        }
         this._navItems.set(module.id, link);
         nav.appendChild(link);
       }

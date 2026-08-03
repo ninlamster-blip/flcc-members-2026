@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { parseCSV, mapColumns } from '../js/core/csv.js';
 import {
   parseMembersCSV, parseScheduleCSV, parseFlexibleDate, matchMemberByName,
-  parseFLCCAttendance, fetchFLCCAttendance,
+  parseFLCCAttendance, fetchFLCCAttendance, checkFLCCNameMatches,
 } from '../js/core/importers.js';
 
 /* ── parseCSV ────────────────────────────────────────────────────────────── */
@@ -210,4 +210,31 @@ test('fetchFLCCAttendance parses a successful response the same way parseFLCCAtt
   const sessions = await fetchFLCCAttendance(ok);
   assert.equal(sessions.length, 1);
   assert.deepEqual(sessions[0].presentNames, ['Sample Person']);
+});
+
+/* ── checkFLCCNameMatches ────────────────────────────────────────────────── */
+
+test('checkFLCCNameMatches reports every distinct unmatched name across every session, not just new ones', async () => {
+  const flccData = {
+    sessions: [
+      { date: '2026-07-05', service: 'Sunday', records: [{ memberName: 'Delta Sample', status: 'present' }, { memberName: 'Nobody Here', status: 'present' }] },
+      { date: '2026-07-12', service: 'Sunday', records: [{ memberName: 'Nobody Here', status: 'present' }, { memberName: 'Echo Foxtrot', status: 'present' }] },
+    ],
+  };
+  const fetchImpl = async () => ({ ok: true, json: async () => flccData });
+  const db = { all: (collection) => (collection === 'members' ? [{ id: 'm1', fullName: 'Delta Sample' }] : []) };
+
+  const result = await checkFLCCNameMatches(db, fetchImpl);
+  assert.equal(result.checkedSessions, 2);
+  assert.equal(result.checkedNames, 3, 'Delta Sample, Nobody Here and Echo Foxtrot — three distinct names across both sessions');
+  assert.deepEqual(result.unmatched, ['Echo Foxtrot', 'Nobody Here'], 'unmatched, alphabetised, and Delta Sample excluded');
+});
+
+test('checkFLCCNameMatches reports nothing to fix when every name matches', async () => {
+  const flccData = { sessions: [{ date: '2026-07-05', service: 'Sunday', records: [{ memberName: 'Delta Sample', status: 'present' }] }] };
+  const fetchImpl = async () => ({ ok: true, json: async () => flccData });
+  const db = { all: () => [{ id: 'm1', fullName: 'Delta Sample' }] };
+
+  const result = await checkFLCCNameMatches(db, fetchImpl);
+  assert.deepEqual(result.unmatched, []);
 });
