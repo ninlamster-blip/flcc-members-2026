@@ -289,3 +289,26 @@ export function matchMemberByName(members, rawName) {
   });
   return candidates.length === 1 ? candidates[0] : null;
 }
+
+/**
+ * A name-accuracy report, independent of `syncFLCCAttendance`'s insert-once-
+ * per-session logic — that function only ever reports the names it happens
+ * to encounter in sessions it has not already synced, so a name that failed
+ * to match on the very first day it appeared is never surfaced again. This
+ * re-scans every session FLCC currently publishes and reports every
+ * distinct name that does not match a member right now, so a church admin
+ * can compare the two apps' rosters and fix them at any time, not just
+ * catch a one-off toast right after a sync.
+ *
+ * @param {import('./db.js').Database} db
+ * @param {typeof fetch} [fetchImpl]
+ * @returns {Promise<{checkedSessions: number, checkedNames: number, unmatched: string[]}>}
+ */
+export async function checkFLCCNameMatches(db, fetchImpl = fetch) {
+  const sessions = await fetchFLCCAttendance(fetchImpl);
+  const members = db.all('members');
+  const allNames = new Set();
+  for (const session of sessions) for (const name of session.presentNames) allNames.add(name);
+  const unmatched = [...allNames].filter((name) => !matchMemberByName(members, name)).sort((a, b) => a.localeCompare(b));
+  return { checkedSessions: sessions.length, checkedNames: allNames.size, unmatched };
+}

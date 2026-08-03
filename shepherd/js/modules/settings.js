@@ -18,9 +18,9 @@ import { generateTotpSecret, totpUri, verifyTotp } from '../core/crypto.js';
 import { downloadJSON } from '../core/exporters.js';
 import { seedTenant, clearSeedData } from '../core/seed.js';
 import { blank } from '../core/schema.js';
-import { parseMembersCSV, parseScheduleCSV, matchMemberByName, normalizeName } from '../core/importers.js';
+import { parseMembersCSV, parseScheduleCSV, matchMemberByName, normalizeName, checkFLCCNameMatches } from '../core/importers.js';
 import { syncFLCCAttendance } from '../core/flccSync.js';
-import { sentence, deleteRecord, refOptions } from './_shared.js';
+import { sentence, deleteRecord, refOptions, openRecordModal } from './_shared.js';
 
 export async function render(ctx, route) {
   const tab = route.query.tab || 'church';
@@ -570,7 +570,13 @@ function dataTab(ctx) {
               ctx.refresh();
             },
           }))),
-        unmatchedNamesNotice(ctx.app.loadFLCCSyncConfig().lastUnmatchedNames),
+        h('hr.divider', { style: { margin: '16px 0' } }),
+        h('p.small', { style: { fontWeight: '600' } }, 'Name accuracy'),
+        h('p.small.muted', { style: { marginBottom: '10px' } },
+          'A synced session only counts someone as present if their name here matches the FLCC app exactly (allowing for '
+          + 'punctuation, word order, and a missing middle name). A name that never matches is a person the church\'s own '
+          + 'health figures quietly miss — check this any time, not just right after a sync.'),
+        nameAccuracyPanel(ctx),
       ],
     }),
     card({
@@ -799,18 +805,87 @@ export async function runFLCCSync(ctx) {
   }
 }
 
+// Module-level, not component state on purpose: any db write (the rename/
+// add-member actions below included) triggers App's global debounced
+// refresh, which rebuilds this whole tab — and with it, a brand new
+// nameAccuracyPanel() with a brand new (empty) resultHost. A closure
+// captured before that rebuild ends up updating a detached node nobody
+// can see. Recording "a result exists" / "a recheck is owed" here instead
+// means whichever panel instance actually gets rendered next picks up
+// where the last one left off.
+let lastNameCheck = null;
+let nameRecheckPending = false;
+
 /**
- * The names behind the "not matched to a member" count in the toast — that
- * count alone leaves a steward with no way to act on it, so the last sync's
- * list is kept (see `DEFAULT_FLCC_SYNC_CONFIG` in app.js) and spelled out
- * here: fix the spelling in FLCC's attendance app, or add the person to
- * People, and the name will match next time.
+ * A re-runnable comparison, independent of sync history — see
+ * checkFLCCNameMatches in core/importers.js for why this has to scan every
+ * session FLCC currently publishes rather than reuse syncFLCCAttendance's
+ * own (intentionally partial) unmatchedNames.
  */
-function unmatchedNamesNotice(names) {
-  if (!names || !names.length) return null;
-  return h('p.small.muted', { style: { marginTop: '12px' } },
-    `Not matched to a member in People: ${names.join(', ')}. `
-    + 'Check the spelling in the FLCC attendance app, or add them as a member here.');
+function nameAccuracyPanel(ctx) {
+  const resultHost = h('div');
+
+  const draw = (result) => {
+    resultHost.textContent = '';
+    if (!result) return;
+    if (!result.checkedSessions) {
+      resultHost.appendChild(h('p.small.muted', 'No attendance found — is Shepherd hosted alongside the FLCC app?'));
+      return;
+    }
+    resultHost.appendChild(h('p.tiny.subtle', { style: { marginBottom: '10px' } },
+      `Checked ${result.checkedSessions} session${result.checkedSessions === 1 ? '' : 's'}, `
+      + `${result.checkedNames} distinct name${result.checkedNames === 1 ? '' : 's'} in the FLCC attendance app.`));
+    if (!result.unmatched.length) {
+      resultHost.appendChild(h('p.small', { style: { color: 'var(--ok)' } },
+        'Every name matches a member here.'));
+      return;
+    }
+    resultHost.appendChild(h('div.stack.stack--sm',
+      h('p.small', { style: { fontWeight: '600' } },
+        `${result.unmatched.length} name${result.unmatched.length === 1 ? '' : 's'} in the FLCC app do not match anyone here:`),
+      ...result.unmatched.map((name) => unmatchedNameRow(ctx, name))));
+  };
+
+  const runCheck = async () => {
+    resultHost.textContent = '';
+    resultHost.appendChild(h('p.small.muted', 'Checking…'));
+    try {
+      lastNameCheck = await checkFLCCNameMatches(ctx.db);
+      draw(lastNameCheck);
+    } catch (err) {
+      resultHost.textContent = '';
+      resultHost.appendChild(h('p.small', { style: { color: 'var(--danger)' } }, `Could not check: ${err.message}`));
+    }
+  };
+
+  if (nameRecheckPending) { nameRecheckPending = false; runCheck(); } else if (lastNameCheck) { draw(lastNameCheck); }
+
+  return h('div',
+    h('button.btn.btn--sm', { style: { marginBottom: '10px' }, onClick: runCheck }, icon('search', { size: 14 }), 'Check name accuracy'),
+    resultHost);
+}
+
+function unmatchedNameRow(ctx, name) {
+  const memberSelect = select({ options: refOptions(ctx.db, 'members', { emptyLabel: 'Who is this?' }) });
+  return h('div.row.row--wrap', {
+    style: { gap: '8px', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' },
+  },
+    h('span.small', { style: { flex: '1', minWidth: '160px', fontWeight: '500' } }, name),
+    memberSelect,
+    h('button.btn.btn--sm', {
+      onClick: async () => {
+        if (!memberSelect.value) { toast('Pick who this name belongs to first.'); return; }
+        ctx.db.update('members', memberSelect.value, { fullName: name });
+        await ctx.db.flush();
+        nameRecheckPending = true;
+        toast(`Renamed to match: "${name}".`, { variant: 'ok' });
+      },
+    }, 'Rename member to match'),
+    h('button.btn.btn--sm', {
+      onClick: () => openRecordModal(ctx, {
+        collection: 'members', defaults: { fullName: name, status: 'member' }, onSaved: () => { nameRecheckPending = true; },
+      }),
+    }, icon('plus', { size: 14 }), 'Add as new member'));
 }
 
 /* ── audit ───────────────────────────────────────────────────────────────── */
