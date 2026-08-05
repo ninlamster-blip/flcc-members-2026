@@ -797,9 +797,11 @@ const EQUIP_DATA_URL     = CHURCH.data('equip.json');
 const ATTENDANCE_DATA_URL = CHURCH.data('attendance.json');
 const GIVING_DATA_URL    = CHURCH.data('finance-members.json');
 const WORSHIP_DATA_URL   = CHURCH.data('worship.json');
-// BOTR Friday's own Friday-morning service. Only that church ships the file,
-// so the card on Home simply doesn't appear for anyone else.
-const BOTR_SCHEDULE_URL  = CHURCH.data('botr-schedule.json');
+// BOTR Friday's Friday-morning worship service, 10:00 AM. The whole network is
+// invited to this one, so unlike every other schedule it is NOT per church:
+// a single shared file at the root that all 14 churches read. Deliberately not
+// CHURCH.data() — that would make each church look for its own copy.
+const BOTR_SCHEDULE_URL  = './botr-schedule.json';
 const ASK_PASTOR_KEY     = CHURCH.key('flcc-ask-pastor-v1');
 const SELF_BIRTHDAY_KEY  = CHURCH.key('flcc-self-birthday-v1');
 const PRAYER_LOG_KEY     = CHURCH.key('flcc-prayer-log-v1');
@@ -2497,7 +2499,9 @@ function BOTRScheduleCard({ botrData }) {
 
   return (
     <div className="mb-5">
-      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">⛪ {botrData.meta?.churchName || CHURCH.name} · {botrData.meta?.service || 'Friday Morning'}</div>
+      {/* Whose service this is comes from the file, never from the church
+          being viewed — every church sees this same card. */}
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">⛪ {[botrData.meta?.churchName, botrData.meta?.service || 'Friday Morning Service'].filter(Boolean).join(' · ')}</div>
       <div className="home-card">
         <div className="home-card-eyebrow">{when} · Friday · {serviceTime}</div>
         <div className="home-card-title">{formatDateLong(next.date)}</div>
@@ -15248,7 +15252,7 @@ function App() {
       })
       .catch(() => setWorshipData(false))
       .finally(checkDone);
-    // Optional: botr-schedule.json — present only for BOTR Friday
+    // Shared across the network: BOTR Friday's Friday-morning service
     fetch(`${BOTR_SCHEDULE_URL}?t=${Date.now()}`)
       .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then(b => {

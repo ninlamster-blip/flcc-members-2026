@@ -33,18 +33,26 @@ churches/_template/…                         ← skeletons to copy from
 each one's data sits. Every page loads it before the app and then reads
 `FLCC.data('data.json')` — no page hardcodes a path.
 
-**Shared by the whole network** (not per church): `botr.json`, the Bible
-tools, World Watch, Faith Map, Equip content, the games, `ofw-companion/` and
-`daily-blessing/`.
+**Shared by the whole network** (not per church): `botr.json`,
+`botr-schedule.json`, the Bible tools, World Watch, Faith Map, Equip content,
+the games, `ofw-companion/` and `daily-blessing/`.
 
 **Per church**: members and workers, the service schedule, attendance, prayer
 ministry, music ministry, worship songs, giving.
 
-One church has an extra file: `churches/botr-friday/botr-schedule.json` is
-BOTR Friday's Friday-morning service, shown as a card on its Home tab. It used
-to sit at the root and appear for every church. It has its own shape — plain
-names rather than roster IDs — so it is still hand-edited rather than managed
-in the schedule editor.
+`botr-schedule.json` is the exception that proves the rule. It is BOTR
+Friday's Friday-morning worship service at 10:00 AM, but the whole network is
+invited, so every church sees the next one as a card on its Home tab — one
+shared file at the root, read by all 14. It is therefore the one schedule that
+is **not** loaded through `FLCC.data()`; `index.html` reads the fixed path
+`./botr-schedule.json` on purpose, because `FLCC.data()` would send each
+church looking for its own copy.
+
+It has its own shape — plain names rather than roster IDs, and a row already
+scaffolded for every Friday of the year — so it is hand-edited rather than
+managed in the schedule editor. Fill in `preacher`, `pastoralPrayer`, `emcee`
+and the optional `event` on the dates as they are assigned; a row left blank
+simply doesn't show.
 
 A church only needs `data.json` and `attendance.json` to go live. Every other
 ministry file is optional — until it exists, the app simply hides that tab. To
