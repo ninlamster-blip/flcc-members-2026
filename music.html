@@ -17,6 +17,17 @@
 
 <!-- Which church's music ministry this dashboard is for. -->
 <script src="./church.js"></script>
+<script>
+  // Text size, shared with the members app: one preference per church key, so
+  // whichever screen a member sets it on, every screen honours it. Applied
+  // here, before anything renders, so the page never visibly resizes.
+  (function () {
+    try {
+      var v = parseFloat(localStorage.getItem(window.FLCC.key('flcc-text-size-v1')));
+      if (v >= 15 && v <= 26) document.documentElement.style.fontSize = v + 'px';
+    } catch (e) {}
+  })();
+</script>
 
 <style>
   :root {
@@ -42,6 +53,9 @@
   }
 
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  /* Base for the whole interface — sizes below are in rem, so this one value
+     scales everything. Shared with the members app's text-size setting. */
+  html { font-size: 19px; }
   html, body { background: var(--bg); color: var(--ink); }
   body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
 
@@ -1174,8 +1188,8 @@ function PrintTab({ state }) {
   );
 }
 
-const th = { padding: '6px 8px', fontSize: '11px', fontWeight: 600, border: '1px solid #999', textAlign: 'left' };
-const td = { padding: '6px 8px', fontSize: '11px', border: '1px solid #999' };
+const th = { padding: '6px 8px', fontSize: '0.6875rem', fontWeight: 600, border: '1px solid #999', textAlign: 'left' };
+const td = { padding: '6px 8px', fontSize: '0.6875rem', border: '1px solid #999' };
 
 // =============================================================================
 // DATA TAB — publish to members + ministry contact

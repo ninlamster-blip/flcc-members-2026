@@ -22,6 +22,17 @@
      ?church=<slug>, and decides both which roster loads and which file the
      Publish button writes to. -->
 <script src="./church.js"></script>
+<script>
+  // Text size, shared with the members app: one preference per church key, so
+  // whichever screen a member sets it on, every screen honours it. Applied
+  // here, before anything renders, so the page never visibly resizes.
+  (function () {
+    try {
+      var v = parseFloat(localStorage.getItem(window.FLCC.key('flcc-text-size-v1')));
+      if (v >= 15 && v <= 26) document.documentElement.style.fontSize = v + 'px';
+    } catch (e) {}
+  })();
+</script>
 
 <style>
   :root {
@@ -37,6 +48,9 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  /* Base for the whole interface — sizes below are in rem, so this one value
+     scales everything. Shared with the members app's text-size setting. */
+  html { font-size: 19px; }
   html, body { background: var(--bg); color: var(--ink); margin: 0; overscroll-behavior: none; }
   body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
   .font-display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.01em; }
@@ -140,6 +154,7 @@ const GH_FILE     = CHURCH.publishPath('attendance.json');
 // Worker holds the only token and derives the church from the passcode, so a
 // steward can never write anything but their own church's attendance.
 // (See ask-proxy/worker.js → /api/publish/attendance.)
+const TEXT_SIZE_KEY = CHURCH.key('flcc-text-size-v1');
 const PASSCODE_KEY = CHURCH.key('flcc-attendance-passcode-v1');
 const PUBLISH_BASE_KEY = CHURCH.key('flcc-attendance-publish-base-v1');
 const DATA_URL    = CHURCH.data('data.json');
@@ -1459,6 +1474,63 @@ function MembersTab({ members, state, dispatch }) {
   );
 }
 
+
+// ─── TEXT SIZE ────────────────────────────────────────────────────────────────
+// The same preference the members app writes: one setting per church key, so
+// setting it on either screen changes both. Sizes here are in rem, so the root
+// value scales the dashboard whole.
+const TEXT_SIZES = [
+  { label:'Small',  px:17 },
+  { label:'Normal', px:19 },
+  { label:'Large',  px:21 },
+  { label:'Larger', px:23 },
+];
+const DEFAULT_TEXT_SIZE = 19;
+
+function readTextSize() {
+  try {
+    const v = parseFloat(localStorage.getItem(TEXT_SIZE_KEY));
+    if (v >= 15 && v <= 26) return v;
+  } catch (e) {}
+  return DEFAULT_TEXT_SIZE;
+}
+
+function applyTextSize(px) {
+  document.documentElement.style.fontSize = px + 'px';
+  try { localStorage.setItem(TEXT_SIZE_KEY, String(px)); } catch (e) {}
+}
+
+function TextSizeCard() {
+  const [size, setSize] = useState(readTextSize);
+  return (
+    <div className="card" style={{ padding:16, marginBottom:14 }}>
+      <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:4 }}>Text size</div>
+      <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:12 }}>
+        Makes this dashboard and the members app bigger or smaller. Saved on this device.
+      </p>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+        {TEXT_SIZES.map(o => {
+          const active = size === o.px;
+          return (
+            <button key={o.px} onClick={() => { applyTextSize(o.px); setSize(o.px); }} aria-pressed={active}
+              style={{
+                flex:'1 1 0', minWidth:76, padding:'0.6rem 0.5rem', borderRadius:10, cursor:'pointer',
+                border:`1px solid ${active ? ATT_ACCENT : 'var(--border-strong)'}`,
+                background: active ? ATT_ACCENT+'12' : 'var(--surface)',
+                color: active ? ATT_ACCENT : 'var(--ink)',
+                fontWeight: active ? 700 : 400,
+                fontSize:`${o.px / DEFAULT_TEXT_SIZE}rem`, lineHeight:1.2,
+              }}>
+              A
+              <div style={{ fontSize:'0.6875rem', marginTop:2, fontWeight:500 }}>{o.label}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
 function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken, passcode, setPasscode, syncStatus, syncErrMsg, onSyncNow }) {
   const m = state.meta;
@@ -1668,6 +1740,8 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
       <div className="font-display" style={{ fontSize:'1.5rem', fontWeight:600, marginBottom:20 }}>Settings</div>
 
       {/* Steward & church */}
+      <TextSizeCard />
+
       <div className="card" style={{ padding:16, marginBottom:14 }}>
         <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-subtle)', marginBottom:12 }}>Steward Info</div>
         <div style={{ display:'grid', gap:10 }}>
