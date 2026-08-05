@@ -251,3 +251,53 @@ test('roster.html offers every church in the registry', () => {
     );
   }
 });
+
+// ── The one shared schedule ──────────────────────────────────────────────────
+
+test("BOTR Friday's morning service is one shared file, not a per-church one", () => {
+  // The whole network is invited to this service, so all 14 churches read the
+  // same file. Loading it through FLCC.data() would send each church looking
+  // for its own copy and the card would appear for BOTR Friday alone.
+  assert.ok(exists('botr-schedule.json'), 'the shared schedule lives at the repo root');
+
+  for (const c of CHURCHES) {
+    assert.ok(
+      !exists(`churches/${c.slug}/botr-schedule.json`),
+      `${c.slug}: a per-church copy would shadow the shared one`,
+    );
+  }
+
+  const src = readRepoFile('index.html');
+  assert.match(src, /const BOTR_SCHEDULE_URL\s*=\s*'\.\/botr-schedule\.json'/,
+    'index.html must read the shared path, not CHURCH.data()');
+  assert.equal(/BOTR_SCHEDULE_URL\s*=\s*CHURCH\.data\(/.exec(src), null,
+    'CHURCH.data() would scope the shared service to one church');
+});
+
+test('the shared schedule is every Friday, in order, with no duplicates', () => {
+  const botr = readRepoJSON('botr-schedule.json');
+  assert.ok(Array.isArray(botr.schedule) && botr.schedule.length > 0);
+  assert.equal(botr.meta.serviceTime, '10:00 AM');
+
+  const seen = new Set();
+  for (const e of botr.schedule) {
+    assert.match(e.date, /^\d{4}-\d{2}-\d{2}$/, `bad date "${e.date}"`);
+    assert.ok(!seen.has(e.date), `${e.date} appears twice`);
+    seen.add(e.date);
+
+    const [y, m, d] = e.date.split('-').map(Number);
+    assert.equal(new Date(y, m - 1, d).getDay(), 5, `${e.date} is not a Friday`);
+  }
+});
+
+test('a service is either fully assigned or left blank, never half-entered', () => {
+  // A row with a preacher but no emcee usually means a transcription stopped
+  // halfway rather than a service genuinely missing its emcee.
+  for (const e of readRepoJSON('botr-schedule.json').schedule) {
+    const filled = ['preacher', 'pastoralPrayer', 'emcee'].filter(k => (e[k] || '').trim());
+    assert.ok(
+      filled.length === 0 || filled.length === 3,
+      `${e.date}: ${filled.length} of 3 roles filled (${filled.join(', ')})`,
+    );
+  }
+});
