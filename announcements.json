@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "network": "FLCC - BOTR Church Network",
+    "note": "Network-wide announcements. Every one of the 14 churches reads this same file, so anything here is seen by every member. Per-church events belong in that church's own data.json events[] instead."
+  },
+  "announcements": [
+    {
+      "id": "ann-2026-08-07-leaders-meeting",
+      "title": "Leaders' Meeting",
+      "date": "2026-08-07",
+      "startTime": "13:00",
+      "endTime": "",
+      "location": "FLCC - Shekinah Church Hall",
+      "host": "FLCC - Shekinah",
+      "notes": "",
+      "notify": true
+    }
+  ]
+}

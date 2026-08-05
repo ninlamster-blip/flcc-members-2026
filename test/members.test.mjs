@@ -173,3 +173,132 @@ test('an empty roster is handled', () => {
   assert.deepEqual(upcomingOccasions([], '2026-08-05', 'birthday'), []);
   assert.deepEqual(upcomingOccasions(undefined, '2026-08-05', 'birthday'), []);
 });
+
+// ── Network announcements ────────────────────────────────────────────────────
+
+const { upcomingAnnouncements } = load(
+  'index.html',
+  ['parseISODate', 'formatISODate', 'addDays', 'upcomingAnnouncements'],
+);
+
+const notice = (id, date, extra = {}) => ({ id, title: `Notice ${id}`, date, ...extra });
+
+test('an announcement in the window is shown', () => {
+  const found = upcomingAnnouncements([notice('a', '2026-08-07')], '2026-08-05', 14);
+  assert.deepEqual(found.map(n => n.id), ['a']);
+});
+
+test('an announcement today still counts as upcoming', () => {
+  assert.equal(upcomingAnnouncements([notice('a', '2026-08-05')], '2026-08-05', 14).length, 1);
+});
+
+test('a past announcement is dropped', () => {
+  assert.deepEqual(upcomingAnnouncements([notice('a', '2026-08-04')], '2026-08-05', 14), []);
+});
+
+test('the window is respected', () => {
+  const list = [notice('in', '2026-08-19'), notice('out', '2026-08-20')];
+  assert.deepEqual(upcomingAnnouncements(list, '2026-08-05', 14).map(n => n.id), ['in']);
+});
+
+test('announcements are ordered by date, then by start time', () => {
+  const list = [
+    notice('c', '2026-08-09'),
+    notice('b', '2026-08-07', { startTime: '18:00' }),
+    notice('a', '2026-08-07', { startTime: '13:00' }),
+  ];
+  assert.deepEqual(upcomingAnnouncements(list, '2026-08-05', 30).map(n => n.id), ['a', 'b', 'c']);
+});
+
+test('an entry with no date or no title is skipped rather than rendered blank', () => {
+  const list = [{ id: 'x', title: 'No date' }, { id: 'y', date: '2026-08-07' }, notice('ok', '2026-08-07')];
+  assert.deepEqual(upcomingAnnouncements(list, '2026-08-05', 30).map(n => n.id), ['ok']);
+});
+
+test('no announcements file is handled', () => {
+  assert.deepEqual(upcomingAnnouncements(null, '2026-08-05', 14), []);
+  assert.deepEqual(upcomingAnnouncements([], '2026-08-05', 14), []);
+});
+
+// ── BOTR Friday duties ───────────────────────────────────────────────────────
+
+const { myBotrDuties, botrRef } = load(
+  'index.html',
+  ['parseISODate', 'formatISODate', 'addDays', 'BOTR_ROLES', 'botrRef', 'myBotrDuties'],
+);
+
+/** The shared schedule spans all 14 churches, so a reference names both. */
+const BOTR = {
+  meta: { churchName: 'FLCC - BOTR Friday', service: 'Friday Morning Service', serviceTime: '10:00 AM' },
+  schedule: [
+    { date: '2026-08-07', preacher: 'Ptr. Rodel', preacherId: 'ft:bro-17',
+      pastoralPrayer: 'Ptr. Mike', pastoralPrayerId: 'agape:bro-06',
+      emcee: 'Sis. Precy', emceeId: 'ft:sis-12', event: '' },
+    { date: '2026-08-14', preacher: 'Ptra. Weng',
+      pastoralPrayer: 'Ptra. Mitch', pastoralPrayerId: 'shekinah:sis-14',
+      emcee: 'Bro. Rey', event: '' },
+    { date: '2026-07-31', preacher: 'Ptr. Froi', pastoralPrayer: '', emcee: '', event: '' },
+  ],
+};
+
+const roleNames = list => list.flatMap(d => d.roles);
+
+test('a member serving on the shared schedule sees their duty', () => {
+  const duties = myBotrDuties(BOTR, 'ft', { id: 'bro-17' }, '2026-08-05', 60);
+  assert.equal(duties.length, 1);
+  assert.equal(duties[0].entry.date, '2026-08-07');
+  assert.deepEqual(duties[0].roles, ['Preacher']);
+});
+
+test('a reference is church-qualified — the same worker id in another church is not a match', () => {
+  // Worker ids are only unique inside a church, so "bro-17" at Agape must not
+  // pick up F&T's assignment.
+  assert.deepEqual(myBotrDuties(BOTR, 'agape', { id: 'bro-17' }, '2026-08-05', 60), []);
+  assert.equal(botrRef('ft', 'bro-17'), 'ft:bro-17');
+});
+
+test('each role resolves to its own person', () => {
+  assert.deepEqual(roleNames(myBotrDuties(BOTR, 'agape', { id: 'bro-06' }, '2026-08-05', 60)), ['Pastoral Prayer']);
+  assert.deepEqual(roleNames(myBotrDuties(BOTR, 'ft', { id: 'sis-12' }, '2026-08-05', 60)), ['EMCEE']);
+  assert.deepEqual(roleNames(myBotrDuties(BOTR, 'shekinah', { id: 'sis-14' }, '2026-08-05', 60)), ['Pastoral Prayer']);
+});
+
+test('someone serving two roles on one day gets both', () => {
+  const doubled = { ...BOTR, schedule: [{ date: '2026-08-07', preacherId: 'ft:bro-17', emceeId: 'ft:bro-17' }] };
+  assert.deepEqual(roleNames(myBotrDuties(doubled, 'ft', { id: 'bro-17' }, '2026-08-05', 60)), ['Preacher', 'EMCEE']);
+});
+
+test('a member not named on the schedule has no duties', () => {
+  assert.deepEqual(myBotrDuties(BOTR, 'mtcc', { id: 'bro-01' }, '2026-08-05', 60), []);
+});
+
+test('entries with no reference stay display-only', () => {
+  // 31 July names "Ptr. Froi" but links nobody — it still shows on the shared
+  // card, it just isn't anyone's personal assignment.
+  const all = ['ft', 'agape', 'shekinah', 'mtcc'].flatMap(slug =>
+    myBotrDuties(BOTR, slug, { id: 'bro-17' }, '2026-07-01', 365));
+  assert.equal(all.some(d => d.entry.date === '2026-07-31'), false);
+});
+
+test('past duties are not shown, and the window is respected', () => {
+  assert.deepEqual(myBotrDuties(BOTR, 'ft', { id: 'bro-17' }, '2026-08-08', 60), [], 'past');
+  assert.deepEqual(myBotrDuties(BOTR, 'shekinah', { id: 'sis-14' }, '2026-08-05', 5), [], '14 Aug is outside a 5-day window');
+});
+
+test('duties come back soonest first', () => {
+  const many = { ...BOTR, schedule: [
+    { date: '2026-09-04', preacherId: 'ft:bro-17' },
+    { date: '2026-08-07', preacherId: 'ft:bro-17' },
+    { date: '2026-08-21', preacherId: 'ft:bro-17' },
+  ] };
+  assert.deepEqual(
+    myBotrDuties(many, 'ft', { id: 'bro-17' }, '2026-08-05', 60).map(d => d.entry.date),
+    ['2026-08-07', '2026-08-21', '2026-09-04'],
+  );
+});
+
+test('no schedule, no member or no church means no duties rather than a crash', () => {
+  assert.deepEqual(myBotrDuties(null, 'ft', { id: 'bro-17' }, '2026-08-05'), []);
+  assert.deepEqual(myBotrDuties(BOTR, 'ft', null, '2026-08-05'), []);
+  assert.deepEqual(myBotrDuties(BOTR, null, { id: 'bro-17' }, '2026-08-05'), []);
+});

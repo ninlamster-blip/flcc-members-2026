@@ -34,8 +34,8 @@ each one's data sits. Every page loads it before the app and then reads
 `FLCC.data('data.json')` — no page hardcodes a path.
 
 **Shared by the whole network** (not per church): `botr.json`,
-`botr-schedule.json`, the Bible tools, World Watch, Faith Map, Equip content,
-the games, `ofw-companion/` and `daily-blessing/`.
+`botr-schedule.json`, `announcements.json`, the Bible tools, World Watch,
+Faith Map, Equip content, the games, `ofw-companion/` and `daily-blessing/`.
 
 **Per church**: members and workers, the service schedule, attendance, prayer
 ministry, music ministry, worship songs, giving.
@@ -48,11 +48,65 @@ is **not** loaded through `FLCC.data()`; `index.html` reads the fixed path
 `./botr-schedule.json` on purpose, because `FLCC.data()` would send each
 church looking for its own copy.
 
-It has its own shape — plain names rather than roster IDs, and a row already
-scaffolded for every Friday of the year — so it is hand-edited rather than
-managed in the schedule editor. Fill in `preacher`, `pastoralPrayer`, `emcee`
-and the optional `event` on the dates as they are assigned; a row left blank
-simply doesn't show.
+It has a row already scaffolded for every Friday of the year, so it is
+hand-edited rather than managed in the schedule editor. Fill in `preacher`,
+`pastoralPrayer`, `emcee` and the optional `event` on the dates as they are
+assigned; a row left blank simply doesn't show.
+
+### Making a Friday duty land in someone's own app
+
+Those three fields are plain display names — "Ptr. Rodel" — which is all the
+shared card needs. Add a matching `preacherId` / `pastoralPrayerId` /
+`emceeId` and that person also gets it as a **real assignment**: on their My
+Schedule tab, in their notification bell, and as a clash when they add a
+personal event on the same day.
+
+```json
+{
+  "date": "2026-08-07",
+  "preacher": "Ptr. Rodel",
+  "preacherId": "ft:bro-17",
+  "pastoralPrayer": "Ptr. Mike",
+  "pastoralPrayerId": "agape:bro-06"
+}
+```
+
+A reference is **church-qualified** — `<slug>:<worker-id>` — because this one
+service draws from all 14 churches and a worker id is only unique inside its
+own church. `bro-17` alone would match a different person at every church.
+
+The ids are optional and additive: an entry without one still appears on the
+shared card exactly as before, it just isn't tied to anybody's app. A test
+checks that every reference points at a real member of a real church, so a
+typo fails the suite rather than quietly leaving someone untold.
+
+## Telling the whole network something
+
+`announcements.json` at the root is how one notice reaches every member of all
+14 churches — a meeting, a network gathering, anything that isn't one church's
+own business. Add an entry and it appears on every member's Home tab and in
+their notification bell, including members who skipped the name picker:
+
+```json
+{
+  "id": "ann-2026-08-07-leaders-meeting",
+  "title": "Leaders' Meeting",
+  "date": "2026-08-07",
+  "startTime": "13:00",
+  "location": "FLCC - Shekinah Church Hall",
+  "host": "FLCC - Shekinah",
+  "notes": ""
+}
+```
+
+`title` and `date` are what a member reads, so both are required; `startTime`
+is `HH:MM` in 24-hour form and is shown as "1:00 PM". Entries show from 60 days
+out on Home and 14 days out in the bell, and drop off by themselves the day
+after they happen — nothing needs deleting. Members who have allowed browser
+notifications are alerted within three days of the date.
+
+Anything only one church should see is **not** an announcement — that belongs
+in that church's own `data.json` `events[]`.
 
 A church only needs `data.json` and `attendance.json` to go live. Every other
 ministry file is optional — until it exists, the app simply hides that tab. To
