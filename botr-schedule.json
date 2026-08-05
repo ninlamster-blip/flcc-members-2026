@@ -221,7 +221,9 @@
       "preacher": "Ptr. Froi",
       "pastoralPrayer": "Ptra. Weng",
       "emcee": "Sis. Lala",
-      "event": ""
+      "event": "",
+      "preacherId": "fb:bro-06",
+      "pastoralPrayerId": "cornerstone:sis-11"
     },
     {
       "date": "2026-08-07",
@@ -239,7 +241,9 @@
       "pastoralPrayer": "Ptra. Mitch",
       "emcee": "Bro. Rey",
       "event": "",
-      "pastoralPrayerId": "shekinah:sis-14"
+      "pastoralPrayerId": "shekinah:sis-14",
+      "preacherId": "cornerstone:sis-11",
+      "emceeId": "shekinah:bro-09"
     },
     {
       "date": "2026-08-21",
