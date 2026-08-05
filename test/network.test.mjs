@@ -411,3 +411,38 @@ test("a church's data files all call it by the same name", () => {
     }
   }
 });
+
+// ── Text size ────────────────────────────────────────────────────────────────
+
+/** Every screen a member or a ministry lead reads. roster.html is excluded on
+ *  purpose: it is deliberately self-contained so it can be emailed as a file,
+ *  with no church.js to read the preference from. */
+const SIZED_PAGES = ['index.html', 'attendance.html', 'prayer.html', 'music.html'];
+
+test('every app screen starts at the same text size', () => {
+  // The dashboards used to set no root size at all, so they sat at the browser
+  // default of 16px — smaller than the members app — and a member moving
+  // between them saw the type change under them.
+  for (const page of SIZED_PAGES) {
+    const m = /html\s*\{\s*font-size:\s*(\d+(?:\.\d+)?)px/.exec(readRepoFile(page));
+    assert.ok(m, `${page}: must set a root font-size`);
+    assert.equal(Number(m[1]), 19, `${page}: starts at ${m && m[1]}px, not 19`);
+  }
+});
+
+test('every app screen restores the shared size before it renders', () => {
+  // One preference per church key, honoured everywhere — set it on any screen
+  // and the rest follow. Applying it after render would let the page paint at
+  // the wrong size and jump.
+  for (const page of SIZED_PAGES) {
+    const src = readRepoFile(page);
+    const key = src.indexOf('flcc-text-size-v1');
+    assert.ok(key > -1, `${page}: never reads the shared text-size preference`);
+
+    const church = src.indexOf('church.js');
+    assert.ok(church > -1 && church < key, `${page}: must read the preference through church.js, after loading it`);
+
+    const app = src.indexOf('<script type="text/babel"');
+    if (app > -1) assert.ok(key < app, `${page}: restore the size before the app renders, not inside it`);
+  }
+});
