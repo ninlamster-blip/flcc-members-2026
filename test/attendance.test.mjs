@@ -133,7 +133,20 @@ test('the published summary uses the session roster with no caller total', () =>
 test('an empty session reports the roster as absent, not as zero total', () => {
   const s = session('2026-08-02', 'Sunday', []);
   const sum = getSessionSummary(s, s.totalMembers);
-  assert.deepEqual(sum, { present: 0, absent: 9, total: 9 });
+  assert.deepEqual(sum, { present: 0, absent: 9, excused: 0, total: 9 });
+});
+
+test('a session distinguishes on-vacation from absent, not just present vs. everyone else', () => {
+  const s = {
+    id: 'x', date: '2026-08-02', service: 'Sunday', totalMembers: 5,
+    records: [
+      { memberId: 'a', memberName: 'a', status: 'present' },
+      { memberId: 'b', memberName: 'b', status: 'excused' },
+      { memberId: 'c', memberName: 'c', status: 'excused' },
+    ],
+  };
+  const sum = getSessionSummary(s, s.totalMembers);
+  assert.deepEqual(sum, { present: 1, absent: 2, excused: 2, total: 5 });
 });
 
 test('summaries never report negative absences', () => {
@@ -240,6 +253,35 @@ test('flags are ordered by how long someone has been away', () => {
   const flags = computeCareFlags(history(['both-1']), MEMBERS);
   const streaks = flags.map(f => f.streak);
   assert.deepEqual(streaks, [...streaks].sort((a, b) => b - a));
+});
+
+test('a member on vacation for every recent service is not flagged', () => {
+  // Four Sundays, all "excused" — a communicated absence must not read as
+  // neglect, however long it runs.
+  const sundays = ['2026-07-05', '2026-07-12', '2026-07-19', '2026-07-26'];
+  const sessions = sundays.map(date => ({
+    id: `s-${date}`, date, service: 'Sunday', totalMembers: MEMBERS.length,
+    records: [{ memberId: 'both-1', memberName: 'both-1', status: 'excused' }],
+  }));
+  const flagged = computeCareFlags(sessions, MEMBERS).map(f => f.member.id);
+  assert.ok(!flagged.includes('both-1'));
+});
+
+test('real absences on either side of a vacation still add up to a flag', () => {
+  // Most recent first: absent, absent, on vacation, absent — a naive
+  // implementation that treats "excused" like "present" (resetting the
+  // streak) would only ever see a run of two and never flag this member;
+  // skipping the vacation session instead lets the three real absences combine.
+  const sundays = ['2026-07-26', '2026-07-19', '2026-07-12', '2026-07-05'];
+  const statuses = [null, null, 'excused', null];
+  const sessions = sundays.map((date, i) => ({
+    id: `s-${date}`, date, service: 'Sunday', totalMembers: MEMBERS.length,
+    records: statuses[i] ? [{ memberId: 'both-1', memberName: 'both-1', status: statuses[i] }] : [],
+  }));
+  const flags = computeCareFlags(sessions, MEMBERS);
+  const one = flags.find(f => f.member.id === 'both-1');
+  assert.ok(one, 'absences spanning a vacation must still combine into a flag');
+  assert.equal(one.streak, 3);
 });
 
 // ── Publishing ───────────────────────────────────────────────────────────────

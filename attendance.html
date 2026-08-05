@@ -147,8 +147,9 @@ const VERSION     = '1.0';
 const ATT_ACCENT  = '#0284C7';
 
 const STATUS_CFG = {
-  present: { label: 'Present', emoji: '✓', color: '#16A34A', soft: '#F0FDF4', ring: '#BBF7D0' },
-  absent:  { label: 'Absent',  emoji: '✗', color: '#DC2626', soft: '#FFF1F2', ring: '#FECDD3' },
+  present: { label: 'Present',     emoji: '✓', color: '#16A34A', soft: '#F0FDF4', ring: '#BBF7D0' },
+  absent:  { label: 'Absent',      emoji: '✗', color: '#DC2626', soft: '#FFF1F2', ring: '#FECDD3' },
+  excused: { label: 'On vacation', emoji: '🧳', color: '#D97706', soft: '#FFFBEB', ring: '#FDE68A' },
 };
 
 const ROLE_MINISTRY = {
@@ -295,9 +296,10 @@ function rosterForService(members, service) {
 function getSessionSummary(session, totalMembers) {
   const recs    = session?.records || [];
   const present = recs.filter(r => r.status === 'present').length;
+  const excused = recs.filter(r => r.status === 'excused').length;
   const total   = totalMembers || session?.totalMembers || 0;
-  const absent  = Math.max(0, total - present);
-  return { present, absent, total };
+  const absent  = Math.max(0, total - present - excused);
+  return { present, absent, excused, total };
 }
 
 function computeCareFlags(sessions, members) {
@@ -313,6 +315,10 @@ function computeCareFlags(sessions, members) {
     let streak = 0, max = 0;
     for (const s of sessionList) {
       const st = (s.records||[]).find(r=>r.memberId===memberId)?.status || null;
+      // On vacation counts toward neither a miss nor a reset — it's as if
+      // that session didn't happen for this member, so real absences on
+      // either side of a vacation still add up to a care flag.
+      if (st === 'excused') continue;
       if (st !== 'present') { streak++; max = Math.max(max, streak); } else streak = 0;
     }
     return max;
@@ -345,7 +351,10 @@ function computeCareFlags(sessions, members) {
 
     const scopedSessions = worshipSessions.filter(s=>s.service===missedService);
     const lastPresent = scopedSessions.find(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present');
-    const recorded = worshipSessions.filter(s=>(s.records||[]).find(r=>r.memberId===m.id));
+    const recorded = worshipSessions.filter(s=>{
+      const st = (s.records||[]).find(r=>r.memberId===m.id)?.status;
+      return st && st !== 'excused';
+    });
     const pct = recorded.length
       ? Math.round(recorded.filter(s=>(s.records||[]).find(r=>r.memberId===m.id)?.status==='present').length / recorded.length * 100)
       : 0;
@@ -365,7 +374,12 @@ function computeCareFlags(sessions, members) {
 }
 
 function getMemberAttendancePct(memberId, sessions) {
-  const relevant = sessions.filter(s=>(s.records||[]).find(r=>r.memberId===memberId));
+  // A session on vacation counts toward neither side — it's excluded from
+  // the denominator entirely, same as it is from the "missing brethren" streak.
+  const relevant = sessions.filter(s=>{
+    const r = (s.records||[]).find(x=>x.memberId===memberId);
+    return r && r.status !== 'excused';
+  });
   if (!relevant.length) return null;
   const present = relevant.filter(s=>{const r=(s.records||[]).find(x=>x.memberId===memberId);return r&&r.status!=='absent';}).length;
   return Math.round((present/relevant.length)*100);
@@ -569,8 +583,8 @@ function Avatar({ name, size=40 }) {
 }
 
 function SummaryBar({ summary }) {
-  const { present, absent, total } = summary;
-  const unrecorded = Math.max(0, total - present);
+  const { present, absent, excused, total } = summary;
+  const unrecorded = Math.max(0, total - present - excused);
   return (
     <div style={{ display:'flex', gap:12, flexWrap:'wrap', fontSize:'0.8125rem', alignItems:'center' }}>
       <div style={{ display:'flex', alignItems:'center', gap:5 }}>
@@ -583,6 +597,13 @@ function SummaryBar({ summary }) {
         <span style={{ fontWeight:700, color:'#DC2626', fontSize:'1rem' }}>{absent}</span>
         <span style={{ color:'var(--ink-muted)' }}>Absent</span>
       </div>
+      {excused > 0 && (
+        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <div style={{ width:8, height:8, borderRadius:2, background:'#D97706', flexShrink:0 }}/>
+          <span style={{ fontWeight:700, color:'#D97706', fontSize:'1rem' }}>{excused}</span>
+          <span style={{ color:'var(--ink-muted)' }}>On vacation</span>
+        </div>
+      )}
       {unrecorded > 0 && (
         <div style={{ display:'flex', alignItems:'center', gap:5 }}>
           <div style={{ width:8, height:8, borderRadius:2, background:'var(--ink-subtle)', flexShrink:0 }}/>
@@ -611,20 +632,37 @@ function BarChart({ bars, color='#0284C7' }) {
 
 // ─── Member Card ──────────────────────────────────────────────────────────────
 function MemberCard({ member, record, onStatus, isLastAction, onUndo }) {
-  const isPresent = record?.status === 'present';
+  const status    = record?.status || null;
+  const isPresent = status === 'present';
+  const isExcused = status === 'excused';
 
   const tap = () => {
     if (navigator.vibrate) navigator.vibrate(10);
     onStatus(member.id, isPresent ? null : 'present');
   };
 
+  // On vacation: excluded from "missing brethren" streaks and from personal
+  // attendance percentages (see computeCareFlags / getMemberAttendancePct)
+  // rather than counted as an absence.
+  const toggleVacation = e => {
+    e.stopPropagation();
+    if (navigator.vibrate) navigator.vibrate(10);
+    onStatus(member.id, isExcused ? null : 'excused');
+  };
+
   return (
-    <div className="member-row" style={{ background: isPresent ? '#F0FDF4' : 'white' }}>
+    <div className="member-row" style={{ background: isPresent ? '#F0FDF4' : isExcused ? '#FFFBEB' : 'white' }}>
       <Avatar name={member.name} />
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.fullName || member.name}</div>
-        <div style={{ fontSize:'0.75rem', color: isPresent ? '#15803D' : 'var(--ink-subtle)', marginTop:1 }}>
-          {isPresent ? '✓ Present' : 'Not yet recorded'}
+        <div style={{ fontSize:'0.75rem', color: isPresent ? '#15803D' : isExcused ? '#B45309' : 'var(--ink-subtle)', marginTop:1, display:'flex', alignItems:'center', gap:6 }}>
+          <span>{isPresent ? '✓ Present' : isExcused ? '🧳 On vacation' : 'Not yet recorded'}</span>
+          {isExcused && (
+            <button onClick={toggleVacation} style={{ fontSize:'0.6875rem', color:'#B45309', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', padding:0, flexShrink:0 }}>Remove</button>
+          )}
+          {!isPresent && !isExcused && (
+            <button onClick={toggleVacation} style={{ fontSize:'0.6875rem', color:ATT_ACCENT, background:'none', border:'none', cursor:'pointer', textDecoration:'underline', padding:0, flexShrink:0 }}>On vacation?</button>
+          )}
         </div>
       </div>
       {isLastAction && (
@@ -716,9 +754,10 @@ function TodayTab({ members, state, dispatch, schedule }) {
     setSession(updated);
     dispatch({ type:'UPSERT_SESSION', session: updated });
 
-    // Show "all done" toast when last unrecorded member is now marked
-    const newCount = updatedRecs.filter(r=>r.status==='present').length;
-    if (newStatus === 'present' && newCount === allMembers.length) {
+    // Show "all done" toast when the last unrecorded member is now marked —
+    // present or on vacation both count as "accounted for."
+    const newCount = updatedRecs.filter(r=>r.status==='present'||r.status==='excused').length;
+    if ((newStatus === 'present' || newStatus === 'excused') && newCount === allMembers.length) {
       if (doneTimer.current) clearTimeout(doneTimer.current);
       setDoneToast(true);
       doneTimer.current = setTimeout(() => setDoneToast(false), 6000);
@@ -746,7 +785,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
   };
 
   const summary = useMemo(()=>getSessionSummary(session, allMembers.length),[session,allMembers]);
-  const allRecorded = session && summary.present === allMembers.length && allMembers.length > 0;
+  const allRecorded = session && (summary.present + summary.excused) === allMembers.length && allMembers.length > 0;
   const hasRecords  = session && (session.records||[]).length > 0;
 
   const visibleMembers = useMemo(()=>{
@@ -757,7 +796,8 @@ function TodayTab({ members, state, dispatch, schedule }) {
     }
     if (filter !== 'all') {
       if (filter === 'present')    list = list.filter(m => (session?.records||[]).find(r => r.memberId === m.id)?.status === 'present');
-      if (filter === 'unrecorded') list = list.filter(m => !(session?.records||[]).find(r => r.memberId === m.id && r.status === 'present'));
+      if (filter === 'excused')    list = list.filter(m => (session?.records||[]).find(r => r.memberId === m.id)?.status === 'excused');
+      if (filter === 'unrecorded') list = list.filter(m => !(session?.records||[]).find(r => r.memberId === m.id));
     }
     // Sort: unrecorded first, then by name
     return list.slice().sort((a,b)=>{
@@ -862,6 +902,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
           {[
             { k:'all',       l:'All' },
             { k:'present',   l:'✓ Present' },
+            { k:'excused',   l:'🧳 On vacation' },
             { k:'unrecorded',l:'Not yet tapped' },
           ].map(f=>(
             <button key={f.k} onClick={()=>setFilter(f.k)} style={{ padding:'4px 12px', borderRadius:999, border:'none', cursor:'pointer', fontSize:'0.75rem', fontWeight:filter===f.k?600:400, whiteSpace:'nowrap', background:filter===f.k?ATT_ACCENT:'#F4F4F0', color:filter===f.k?'white':'var(--ink-muted)', transition:'all .15s', flexShrink:0 }}>{f.l}</button>
@@ -892,7 +933,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
         <div className="undo-toast">
           <div style={{ fontSize:'0.8125rem' }}>
             <strong>{lastAction.memberName}</strong>
-            {lastAction.newStatus === 'present' ? ' marked Present ✓' : ' removed'}
+            {lastAction.newStatus === 'present' ? ' marked Present ✓' : lastAction.newStatus === 'excused' ? ' marked On vacation 🧳' : ' removed'}
           </div>
           <button onClick={handleUndo} style={{ background:'rgba(255,255,255,.18)', border:'none', borderRadius:6, padding:'4px 10px', color:'white', cursor:'pointer', fontSize:'0.8125rem', fontWeight:600 }}>Undo</button>
         </div>
@@ -999,6 +1040,7 @@ function HistoryTab({ state, dispatch, members }) {
                 <div style={{ display:'flex', gap:14, marginTop:10, fontSize:'0.8125rem' }}>
                   <span style={{ color:'#16A34A', fontWeight:600 }}>✓ {sum.present} Present</span>
                   <span style={{ color:'#DC2626', fontWeight:600 }}>✗ {sum.absent} Absent</span>
+                  {sum.excused > 0 && <span style={{ color:'#D97706', fontWeight:600 }}>🧳 {sum.excused} On vacation</span>}
                   {sess.synced && <span style={{ marginLeft:'auto', color:'#16A34A', fontSize:'0.6875rem' }}>✓ synced</span>}
                 </div>
               </div>
@@ -1227,6 +1269,7 @@ function AnalyticsTab({ state, members }) {
                   <div style={{display:'flex',gap:8,fontSize:'0.75rem',flexShrink:0}}>
                     <span style={{color:'#16A34A',fontWeight:600}}>✓ {sum.present} Present</span>
                     <span style={{color:'#DC2626',fontWeight:600}}>✗ {sum.absent} Absent</span>
+                    {sum.excused > 0 && <span style={{color:'#D97706',fontWeight:600}}>🧳 {sum.excused}</span>}
                   </div>
                   <div style={{fontWeight:700,color:pct>=80?'#16A34A':pct>=60?'#D97706':'#DC2626',fontFamily:'Fraunces,Georgia,serif',fontSize:'1rem',flexShrink:0,minWidth:38,textAlign:'right'}}>{pct}%</div>
                 </div>
