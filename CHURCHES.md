@@ -34,8 +34,8 @@ each one's data sits. Every page loads it before the app and then reads
 `FLCC.data('data.json')` — no page hardcodes a path.
 
 **Shared by the whole network** (not per church): `botr.json`,
-`botr-schedule.json`, the Bible tools, World Watch, Faith Map, Equip content,
-the games, `ofw-companion/` and `daily-blessing/`.
+`botr-schedule.json`, `announcements.json`, the Bible tools, World Watch,
+Faith Map, Equip content, the games, `ofw-companion/` and `daily-blessing/`.
 
 **Per church**: members and workers, the service schedule, attendance, prayer
 ministry, music ministry, worship songs, giving.
@@ -53,6 +53,34 @@ scaffolded for every Friday of the year — so it is hand-edited rather than
 managed in the schedule editor. Fill in `preacher`, `pastoralPrayer`, `emcee`
 and the optional `event` on the dates as they are assigned; a row left blank
 simply doesn't show.
+
+## Telling the whole network something
+
+`announcements.json` at the root is how one notice reaches every member of all
+14 churches — a meeting, a network gathering, anything that isn't one church's
+own business. Add an entry and it appears on every member's Home tab and in
+their notification bell, including members who skipped the name picker:
+
+```json
+{
+  "id": "ann-2026-08-07-leaders-meeting",
+  "title": "Leaders' Meeting",
+  "date": "2026-08-07",
+  "startTime": "13:00",
+  "location": "FLCC - Shekinah Church Hall",
+  "host": "FLCC - Shekinah",
+  "notes": ""
+}
+```
+
+`title` and `date` are what a member reads, so both are required; `startTime`
+is `HH:MM` in 24-hour form and is shown as "1:00 PM". Entries show from 60 days
+out on Home and 14 days out in the bell, and drop off by themselves the day
+after they happen — nothing needs deleting. Members who have allowed browser
+notifications are alerted within three days of the date.
+
+Anything only one church should see is **not** an announcement — that belongs
+in that church's own `data.json` `events[]`.
 
 A church only needs `data.json` and `attendance.json` to go live. Every other
 ministry file is optional — until it exists, the app simply hides that tab. To

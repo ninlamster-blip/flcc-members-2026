@@ -797,6 +797,11 @@ const EQUIP_DATA_URL     = CHURCH.data('equip.json');
 const ATTENDANCE_DATA_URL = CHURCH.data('attendance.json');
 const GIVING_DATA_URL    = CHURCH.data('finance-members.json');
 const WORSHIP_DATA_URL   = CHURCH.data('worship.json');
+// Announcements for the whole network — a meeting every church is told about.
+// Shared like botr-schedule.json: one file at the root that all 14 churches
+// read, deliberately NOT CHURCH.data(), which would scope it to one church.
+// Anything only one church should see belongs in its own data.json events[].
+const ANNOUNCEMENTS_URL  = './announcements.json';
 // BOTR Friday's Friday-morning worship service, 10:00 AM. The whole network is
 // invited to this one, so unlike every other schedule it is NOT per church:
 // a single shared file at the root that all 14 churches read. Deliberately not
@@ -829,6 +834,16 @@ function upcomingOccasions(workers, today, field, days = 30) {
     if (daysAway <= days) list.push({ worker: w, date: next, daysAway });
   }
   return list.sort((a, b) => a.daysAway - b.daysAway);
+}
+
+/** Network announcements still ahead, soonest first.
+ *  `days` bounds how far out to look; everything is dated YYYY-MM-DD, so a
+ *  plain string compare is enough and stays free of timezone drift. */
+function upcomingAnnouncements(announcements, today, days = 60) {
+  const until = addDays(today, days);
+  return (announcements || [])
+    .filter(a => a && a.date && a.title && a.date >= today && a.date <= until)
+    .sort((a, b) => a.date.localeCompare(b.date) || String(a.startTime || '').localeCompare(String(b.startTime || '')));
 }
 
 // ── Messenger notification message generator ──────────────────────────────────
@@ -1933,7 +1948,7 @@ function ServiceDetails({ entry, workers, highlightId }) {
 // =============================================================================
 // NOTIFICATION BELL
 // =============================================================================
-function NotificationBell({ me, data, notifSeen, onMarkSeen }) {
+function NotificationBell({ me, data, announcements, notifSeen, onMarkSeen }) {
   const [open, setOpen] = useState(false);
   const today = todayISO();
   const horizon = addDays(today, 14);
@@ -1946,11 +1961,19 @@ function NotificationBell({ me, data, notifSeen, onMarkSeen }) {
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [me, data, today, horizon]);
 
-  const unread = upcoming.filter(s => !notifSeen.includes(s.id)).length;
+  // Network announcements reach everyone, including someone who skipped the
+  // name picker — they are not tied to a member's own assignments.
+  const notices = useMemo(
+    () => upcomingAnnouncements(announcements, today, 14),
+    [announcements, today]
+  );
+
+  const seenIds = [...upcoming.map(s => s.id), ...notices.map(n => n.id)];
+  const unread = seenIds.filter(id => !notifSeen.includes(id)).length;
 
   const handleOpen = () => {
     setOpen(true);
-    if (upcoming.length) onMarkSeen(upcoming.map(s => s.id));
+    if (seenIds.length) onMarkSeen(seenIds);
   };
 
   const requestBrowserNotifs = () => {
@@ -1958,6 +1981,12 @@ function NotificationBell({ me, data, notifSeen, onMarkSeen }) {
     Notification.requestPermission().then(perm => {
       if (perm !== 'granted') return;
       const soonHorizon = addDays(today, 3);
+      notices.filter(n => n.date <= soonHorizon).forEach(n => {
+        new Notification(`FLCC · ${n.title}`, {
+          body: [formatDateLong(n.date), n.startTime ? formatTime12(n.startTime) : '', n.location].filter(Boolean).join(' · '),
+          tag: n.id,
+        });
+      });
       upcoming.filter(s => s.date <= soonHorizon).forEach(s => {
         const roles = Object.entries(s.roles || {})
           .filter(([, v]) => v === me.id)
@@ -1988,10 +2017,10 @@ function NotificationBell({ me, data, notifSeen, onMarkSeen }) {
             {/* Header */}
             <div style={{ padding: '20px 20px 14px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
               <div className="flex items-center justify-between mb-1">
-                <div className="font-display text-xl font-semibold">🔔 My Assignments</div>
+                <div className="font-display text-xl font-semibold">🔔 {me ? 'My Assignments' : 'Announcements'}</div>
                 <button className="btn btn-soft text-xs" onClick={() => setOpen(false)}>✕ Close</button>
               </div>
-              <div className="text-xs ink-muted">Next 14 days — {upcoming.length} upcoming</div>
+              <div className="text-xs ink-muted">Next 14 days — {upcoming.length + notices.length} upcoming</div>
             </div>
 
             {/* Browser notification prompt */}
@@ -2003,12 +2032,34 @@ function NotificationBell({ me, data, notifSeen, onMarkSeen }) {
               </div>
             )}
 
+            {/* Network announcements — the same for every church */}
+            {notices.length > 0 && (
+              <div style={{ padding: '12px 16px 0' }}>
+                <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📣 For the whole network</div>
+                {notices.map(n => {
+                  const away = Math.round((parseISODate(n.date) - parseISODate(today)) / 86400000);
+                  return (
+                    <div key={n.id} style={{ padding: '12px 14px', borderRadius: 10, background: 'var(--info-soft)', marginBottom: 10 }}>
+                      <div className="text-xs" style={{ color: 'var(--info)', fontWeight: 600 }}>
+                        {away === 0 ? 'Today' : away === 1 ? 'Tomorrow' : `In ${away} days`}
+                        {n.startTime ? ` · ${formatTime12(n.startTime)}` : ''}
+                      </div>
+                      <div className="font-semibold text-sm mt-0.5">{n.title}</div>
+                      <div className="text-xs ink-muted mt-0.5">{formatDateLong(n.date)}</div>
+                      {n.location && <div className="text-xs ink-muted">📍 {n.location}</div>}
+                      {n.notes && <div className="text-xs ink-muted mt-1">{n.notes}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Assignment list */}
             <div style={{ padding: '12px 16px', flex: 1 }}>
               {upcoming.length === 0 ? (
-                <div className="text-sm ink-muted text-center" style={{ paddingTop: 48 }}>
+                <div className="text-sm ink-muted text-center" style={{ paddingTop: notices.length ? 16 : 48 }}>
                   <div style={{ fontSize: 32 }}>✅</div>
-                  <div className="mt-2">No assignments in the next 14 days.</div>
+                  <div className="mt-2">{me ? 'No assignments in the next 14 days.' : 'Tap your name on the Home tab to see your own assignments here.'}</div>
                 </div>
               ) : upcoming.map(s => {
                 const roles = Object.entries(s.roles || {})
@@ -2518,7 +2569,7 @@ function BOTRScheduleCard({ botrData }) {
   );
 }
 
-function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData }) {
+function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData, announcements }) {
   const today = todayISO();
   const [encourageTarget, setEncourageTarget] = useState(null);
   const nextWeekStart = today;
@@ -2585,6 +2636,11 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
   const myAssignmentDates = useMemo(() =>
     buildMyAssignmentDates(me, data, prayerData, musicData, myPrayerWorker, myMusicWorker),
     [me, data, prayerData, musicData, myPrayerWorker, myMusicWorker]
+  );
+
+  const networkNotices = useMemo(
+    () => upcomingAnnouncements(announcements, today, 60),
+    [announcements, today]
   );
 
   // Upcoming birthdays and anniversaries (next 30 days)
@@ -2759,6 +2815,28 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Network announcements — the same card for all 14 churches */}
+      {networkNotices.length > 0 && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📣 For the whole network</div>
+          <div className="home-grid">
+            {networkNotices.map(n => (
+              <div key={n.id} className="home-card" style={{ borderLeftColor: 'var(--info)', borderLeftWidth: '3px' }}>
+                <div className="home-card-eyebrow">
+                  {daysAway(n.date)}{n.startTime ? ` · ${formatTime12(n.startTime)}` : ''}
+                </div>
+                <div className="home-card-title">{n.title}</div>
+                <div className="home-card-body text-xs ink-muted">
+                  <div>{formatDateLong(n.date)}</div>
+                  {n.location && <div>📍 {n.location}</div>}
+                  {n.notes && <div className="mt-1">{n.notes}</div>}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -15137,6 +15215,7 @@ function App() {
   const [givingData, setGivingData] = useState(null);
   const [worshipData, setWorshipData] = useState(null);
   const [botrScheduleData, setBotrScheduleData] = useState(null);
+  const [announcements, setAnnouncements] = useState(null);
   const [error, setError] = useState(null);
   const [me, setMe] = useState(null);
   const [meId, setMeId] = useState(() => {
@@ -15181,7 +15260,7 @@ function App() {
     let pendingDone = 0;
     const checkDone = () => {
       pendingDone += 1;
-      if (pendingDone >= 8) setRefreshing(false);
+      if (pendingDone >= 9) setRefreshing(false);
     };
     // Required: data.json
     fetch(`${DATA_URL}?t=${Date.now()}`)
@@ -15260,6 +15339,15 @@ function App() {
         else setBotrScheduleData(false);
       })
       .catch(() => setBotrScheduleData(false))
+      .finally(checkDone);
+    // Shared across the network: announcements every church is told about
+    fetch(`${ANNOUNCEMENTS_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(a => {
+        if (a && Array.isArray(a.announcements)) setAnnouncements(a.announcements);
+        else setAnnouncements([]);
+      })
+      .catch(() => setAnnouncements([]))
       .finally(checkDone);
   };
 
@@ -15407,7 +15495,7 @@ function App() {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <a href={CHURCH.url('ask.html')} className="ask-pill">💬 Ask FLCC</a>
-              {me && <NotificationBell me={me} data={data} notifSeen={notifSeen} onMarkSeen={handleMarkNotifSeen} />}
+              <NotificationBell me={me} data={data} announcements={announcements} notifSeen={notifSeen} onMarkSeen={handleMarkNotifSeen} />
             </div>
           </div>
           <div className="flex items-center gap-3 mt-1" style={{ color: 'var(--ink-muted)', fontSize: '0.75rem' }}>
@@ -15434,7 +15522,7 @@ function App() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div key={currentTab} className="tab-content-area">
-          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} />}
+          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} announcements={announcements} />}
           {currentTab === 'bible' && <BibleTab />}
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}

@@ -301,3 +301,44 @@ test('a service is either fully assigned or left blank, never half-entered', () 
     );
   }
 });
+
+// ── Network announcements ────────────────────────────────────────────────────
+
+test('announcements are one shared file every church reads', () => {
+  assert.ok(exists('announcements.json'), 'the shared file lives at the repo root');
+
+  for (const c of CHURCHES) {
+    assert.ok(!exists(`churches/${c.slug}/announcements.json`),
+      `${c.slug}: a per-church copy would shadow the shared one`);
+  }
+
+  const src = readRepoFile('index.html');
+  assert.match(src, /const ANNOUNCEMENTS_URL\s*=\s*'\.\/announcements\.json'/,
+    'index.html must read the shared path');
+  assert.equal(/ANNOUNCEMENTS_URL\s*=\s*CHURCH\.data\(/.exec(src), null,
+    'CHURCH.data() would scope a network announcement to one church');
+});
+
+test('every announcement has what the card needs to render', () => {
+  const { announcements } = readRepoJSON('announcements.json');
+  assert.ok(Array.isArray(announcements));
+  const seen = new Set();
+  for (const a of announcements) {
+    assert.ok(a.id && !seen.has(a.id), `duplicate or missing id: ${a.id}`);
+    seen.add(a.id);
+    assert.ok(a.title, `${a.id}: needs a title — it is the line members read`);
+    assert.match(a.date, /^\d{4}-\d{2}-\d{2}$/, `${a.id}: date must be YYYY-MM-DD`);
+    if (a.startTime) assert.match(a.startTime, /^\d{2}:\d{2}$/, `${a.id}: startTime must be HH:MM`);
+    if (a.endTime) assert.match(a.endTime, /^\d{2}:\d{2}$/, `${a.id}: endTime must be HH:MM`);
+  }
+});
+
+test('the notification bell reaches members who have not picked a name', () => {
+  // A network announcement is not tied to a member's own assignments, so the
+  // bell must render even when `me` is null.
+  const src = readRepoFile('index.html');
+  assert.equal(/\{me && <NotificationBell/.exec(src), null,
+    'gating the bell on `me` hides network announcements from anyone who skipped sign-in');
+  assert.match(src, /<NotificationBell[^>]*announcements=\{announcements\}/,
+    'the bell must receive the announcements');
+});

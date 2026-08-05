@@ -173,3 +173,49 @@ test('an empty roster is handled', () => {
   assert.deepEqual(upcomingOccasions([], '2026-08-05', 'birthday'), []);
   assert.deepEqual(upcomingOccasions(undefined, '2026-08-05', 'birthday'), []);
 });
+
+// ── Network announcements ────────────────────────────────────────────────────
+
+const { upcomingAnnouncements } = load(
+  'index.html',
+  ['parseISODate', 'formatISODate', 'addDays', 'upcomingAnnouncements'],
+);
+
+const notice = (id, date, extra = {}) => ({ id, title: `Notice ${id}`, date, ...extra });
+
+test('an announcement in the window is shown', () => {
+  const found = upcomingAnnouncements([notice('a', '2026-08-07')], '2026-08-05', 14);
+  assert.deepEqual(found.map(n => n.id), ['a']);
+});
+
+test('an announcement today still counts as upcoming', () => {
+  assert.equal(upcomingAnnouncements([notice('a', '2026-08-05')], '2026-08-05', 14).length, 1);
+});
+
+test('a past announcement is dropped', () => {
+  assert.deepEqual(upcomingAnnouncements([notice('a', '2026-08-04')], '2026-08-05', 14), []);
+});
+
+test('the window is respected', () => {
+  const list = [notice('in', '2026-08-19'), notice('out', '2026-08-20')];
+  assert.deepEqual(upcomingAnnouncements(list, '2026-08-05', 14).map(n => n.id), ['in']);
+});
+
+test('announcements are ordered by date, then by start time', () => {
+  const list = [
+    notice('c', '2026-08-09'),
+    notice('b', '2026-08-07', { startTime: '18:00' }),
+    notice('a', '2026-08-07', { startTime: '13:00' }),
+  ];
+  assert.deepEqual(upcomingAnnouncements(list, '2026-08-05', 30).map(n => n.id), ['a', 'b', 'c']);
+});
+
+test('an entry with no date or no title is skipped rather than rendered blank', () => {
+  const list = [{ id: 'x', title: 'No date' }, { id: 'y', date: '2026-08-07' }, notice('ok', '2026-08-07')];
+  assert.deepEqual(upcomingAnnouncements(list, '2026-08-05', 30).map(n => n.id), ['ok']);
+});
+
+test('no announcements file is handled', () => {
+  assert.deepEqual(upcomingAnnouncements(null, '2026-08-05', 14), []);
+  assert.deepEqual(upcomingAnnouncements([], '2026-08-05', 14), []);
+});
