@@ -165,7 +165,8 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "09-17",
-      "anniversary": ""
+      "anniversary": "",
+      "designation": "Pastor"
     },
     {
       "id": "bro-07",
@@ -205,7 +206,8 @@
       "eligibleRoles": [],
       "status": "active",
       "birthday": "04-12",
-      "anniversary": ""
+      "anniversary": "",
+      "designation": "Lead Pastor"
     },
     {
       "id": "sis-11",

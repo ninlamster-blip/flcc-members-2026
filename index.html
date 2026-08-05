@@ -861,13 +861,18 @@ function botrRef(slug, memberId) { return `${slug}:${memberId}`; }
 /** The BOTR Friday duties this member is assigned, soonest first.
  *  Entries with no *Id are display-only — they still show on the shared card,
  *  they just aren't tied to anybody's app. */
-function myBotrDuties(botrData, slug, me, today, days = 60) {
+function myBotrDuties(botrData, slug, me, today, days = null) {
   if (!botrData || !me || !slug) return [];
   const ref = botrRef(slug, me.id);
-  const until = addDays(today, days);
+  // No window means everything still ahead, which is how a member's own church
+  // assignments already behave — a duty in December is still theirs to know
+  // about in August. The bell passes a window because it is about what is
+  // imminent, not about the whole year.
+  const until = days == null ? null : addDays(today, days);
   const out = [];
   for (const entry of (botrData.schedule || [])) {
-    if (!entry.date || entry.date < today || entry.date > until) continue;
+    if (!entry.date || entry.date < today) continue;
+    if (until && entry.date > until) continue;
     const roles = BOTR_ROLES.filter(r => entry[`${r.key}Id`] === ref).map(r => r.label);
     if (roles.length) out.push({ entry, roles });
   }
@@ -1052,7 +1057,7 @@ function buildMyAssignmentDates(me, data, prayerData, musicData, myPrayerWorker,
   }
   // A BOTR Friday duty is a real commitment too, so a personal event that
   // lands on one should warn about the clash.
-  for (const d of myBotrDuties(botrData, CHURCH.slug, me, todayISO(), 365)) {
+  for (const d of myBotrDuties(botrData, CHURCH.slug, me, todayISO())) {
     dates.add(d.entry.date);
   }
   if (myPrayerWorker && prayerData) {
@@ -1713,7 +1718,7 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
   // BOTR Friday morning duties — the shared network service, for the members
   // that schedule actually names.
   const botrDuties = useMemo(
-    () => myBotrDuties(botrScheduleData, CHURCH.slug, me, today, 60),
+    () => myBotrDuties(botrScheduleData, CHURCH.slug, me, today),
     [botrScheduleData, me, today]
   );
 

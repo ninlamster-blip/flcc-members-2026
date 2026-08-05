@@ -11,7 +11,8 @@
       "preacher": "Ptr. Jopet",
       "pastoralPrayer": "Ptra. Ellen",
       "emcee": "Bro. Allen",
-      "event": "LS"
+      "event": "LS",
+      "preacherId": "fb:bro-09"
     },
     {
       "date": "2026-01-09",
@@ -19,7 +20,8 @@
       "pastoralPrayer": "Rev. Oscar",
       "emcee": "Sis. Zeny",
       "event": "",
-      "preacherId": "cornerstone:sis-11"
+      "preacherId": "cornerstone:sis-11",
+      "pastoralPrayerId": "mtcc:bro-08"
     },
     {
       "date": "2026-01-16",
@@ -35,7 +37,8 @@
       "preacher": "Ptra. Verna",
       "pastoralPrayer": "Ptr. Mike J.",
       "emcee": "Sis. Emma",
-      "event": ""
+      "event": "",
+      "preacherId": "harvester:sis-02"
     },
     {
       "date": "2026-01-30",
@@ -58,21 +61,25 @@
       "preacher": "Ptr. Justin",
       "pastoralPrayer": "Ptra. Verna",
       "emcee": "Sis. AJ",
-      "event": ""
+      "event": "",
+      "preacherId": "abundance:ptr-01",
+      "pastoralPrayerId": "harvester:sis-02"
     },
     {
       "date": "2026-02-20",
       "preacher": "Ptr. Doddie",
       "pastoralPrayer": "Rev. Ver",
       "emcee": "Sis. Ying",
-      "event": ""
+      "event": "",
+      "preacherId": "abundance:ptr-02"
     },
     {
       "date": "2026-02-27",
       "preacher": "Ptr. Anson",
       "pastoralPrayer": "Ptra. Cathy",
       "emcee": "Sis. Laidz",
-      "event": ""
+      "event": "",
+      "preacherId": "virtual:bro-01"
     },
     {
       "date": "2026-03-06",
@@ -80,7 +87,8 @@
       "pastoralPrayer": "Ptr. Justin",
       "emcee": "Sis. Alma",
       "event": "LS",
-      "preacherId": "ft:bro-17"
+      "preacherId": "ft:bro-17",
+      "pastoralPrayerId": "abundance:ptr-01"
     },
     {
       "date": "2026-03-13",
@@ -88,14 +96,16 @@
       "pastoralPrayer": "Rev. Rodel",
       "emcee": "Sis. Maricel",
       "event": "",
-      "preacherId": "agape:bro-06"
+      "preacherId": "agape:bro-06",
+      "pastoralPrayerId": "ft:bro-17"
     },
     {
       "date": "2026-03-20",
       "preacher": "AJ",
       "pastoralPrayer": "Ptr. Doddie",
       "emcee": "Bro. Edmund",
-      "event": ""
+      "event": "",
+      "pastoralPrayerId": "abundance:ptr-02"
     },
     {
       "date": "2026-03-27",
@@ -103,21 +113,24 @@
       "pastoralPrayer": "Rev. Jopet",
       "emcee": "Bro. Rey",
       "event": "",
-      "emceeId": "shekinah:bro-09"
+      "emceeId": "shekinah:bro-09",
+      "pastoralPrayerId": "fb:bro-09"
     },
     {
       "date": "2026-04-03",
       "preacher": "7 Last Words",
       "pastoralPrayer": "Ptr. Anson",
       "emcee": "Sis. Lala",
-      "event": "LS"
+      "event": "LS",
+      "pastoralPrayerId": "virtual:bro-01"
     },
     {
       "date": "2026-04-10",
       "preacher": "Ptr. Jopet",
       "pastoralPrayer": "Ptra. Ellen",
       "emcee": "Sis. Annabelle",
-      "event": "34th Anniv"
+      "event": "34th Anniv",
+      "preacherId": "fb:bro-09"
     },
     {
       "date": "2026-04-17",
@@ -125,7 +138,8 @@
       "pastoralPrayer": "Rev. Oscar",
       "emcee": "Bro. Rolly",
       "event": "",
-      "preacherId": "fb:bro-06"
+      "preacherId": "fb:bro-06",
+      "pastoralPrayerId": "mtcc:bro-08"
     },
     {
       "date": "2026-04-24",
@@ -171,28 +185,32 @@
       "pastoralPrayer": "Ptra. Verna",
       "emcee": "Bro. Wilson",
       "event": "",
-      "preacherId": "cornerstone:sis-11"
+      "preacherId": "cornerstone:sis-11",
+      "pastoralPrayerId": "harvester:sis-02"
     },
     {
       "date": "2026-06-05",
       "preacher": "Ptr. Ver",
       "pastoralPrayer": "Ptra. Verna",
       "emcee": "Sis. Emma",
-      "event": "LS"
+      "event": "LS",
+      "pastoralPrayerId": "harvester:sis-02"
     },
     {
       "date": "2026-06-12",
       "preacher": "Ptra. Verna",
       "pastoralPrayer": "Ptra. Cathy",
       "emcee": "Bro. Ryan",
-      "event": ""
+      "event": "",
+      "preacherId": "harvester:sis-02"
     },
     {
       "date": "2026-06-19",
       "preacher": "Maricel",
       "pastoralPrayer": "Ptr. Justin",
       "emcee": "Sis. Lovely",
-      "event": "Father's Day"
+      "event": "Father's Day",
+      "pastoralPrayerId": "abundance:ptr-01"
     },
     {
       "date": "2026-06-26",
@@ -208,14 +226,18 @@
       "pastoralPrayer": "Ptr. Doddie",
       "emcee": "Sis. Precy",
       "event": "LS",
-      "emceeId": "ft:sis-12"
+      "emceeId": "ft:sis-12",
+      "preacherId": "fb:bro-09",
+      "pastoralPrayerId": "abundance:ptr-02"
     },
     {
       "date": "2026-07-10",
       "preacher": "Ptr. Doddie",
       "pastoralPrayer": "Rev. Jopet",
       "emcee": "Sis. Alma",
-      "event": ""
+      "event": "",
+      "preacherId": "abundance:ptr-02",
+      "pastoralPrayerId": "fb:bro-09"
     },
     {
       "date": "2026-07-17",
@@ -223,14 +245,16 @@
       "pastoralPrayer": "Ptr. Anson",
       "emcee": "Sis. Maricel",
       "event": "",
-      "preacherId": "agape:bro-06"
+      "preacherId": "agape:bro-06",
+      "pastoralPrayerId": "virtual:bro-01"
     },
     {
       "date": "2026-07-24",
       "preacher": "Ptra. Cathy",
       "pastoralPrayer": "Rev. Oscar",
       "emcee": "Bro. Edmund",
-      "event": ""
+      "event": "",
+      "pastoralPrayerId": "mtcc:bro-08"
     },
     {
       "date": "2026-07-31",
@@ -266,7 +290,8 @@
       "preacher": "Ptr. Anson",
       "pastoralPrayer": "",
       "emcee": "Bro. Rolly",
-      "event": ""
+      "event": "",
+      "preacherId": "virtual:bro-01"
     },
     {
       "date": "2026-08-28",
@@ -287,7 +312,8 @@
       "preacher": "Ptra. Verna",
       "pastoralPrayer": "",
       "emcee": "Sis. Ying",
-      "event": ""
+      "event": "",
+      "preacherId": "harvester:sis-02"
     },
     {
       "date": "2026-09-18",
@@ -302,7 +328,8 @@
       "preacher": "Ptr. Justin",
       "pastoralPrayer": "",
       "emcee": "",
-      "event": ""
+      "event": "",
+      "preacherId": "abundance:ptr-01"
     },
     {
       "date": "2026-10-02",
@@ -362,7 +389,8 @@
       "preacher": "Ptr. Anson",
       "pastoralPrayer": "",
       "emcee": "",
-      "event": ""
+      "event": "",
+      "preacherId": "virtual:bro-01"
     },
     {
       "date": "2026-11-27",
@@ -384,7 +412,8 @@
       "preacher": "Ptr. Justin",
       "pastoralPrayer": "",
       "emcee": "",
-      "event": ""
+      "event": "",
+      "preacherId": "abundance:ptr-01"
     },
     {
       "date": "2026-12-18",
@@ -398,7 +427,8 @@
       "preacher": "Ptr. Jopet",
       "pastoralPrayer": "",
       "emcee": "",
-      "event": "Christmas"
+      "event": "Christmas",
+      "preacherId": "fb:bro-09"
     }
   ],
   "themes": {

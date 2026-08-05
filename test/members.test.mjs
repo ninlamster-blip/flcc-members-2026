@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { load } from './lib/extract.mjs';
+import { load, appSource } from './lib/extract.mjs';
 
 const {
   matchAttendanceRecord,
@@ -278,6 +278,33 @@ test('entries with no reference stay display-only', () => {
   const all = ['ft', 'agape', 'shekinah', 'mtcc'].flatMap(slug =>
     myBotrDuties(BOTR, slug, { id: 'bro-17' }, '2026-07-01', 365));
   assert.equal(all.some(d => d.entry.date === '2026-07-31'), false);
+});
+
+test('with no window, a member sees every duty still ahead of them', () => {
+  // My Schedule is a member's own commitment list, so it shows everything
+  // ahead the way their church assignments already do — a duty in December is
+  // still theirs to know about in August. The 60-day cap this replaced hid
+  // exactly that case.
+  const decemberToo = { ...BOTR, schedule: [
+    { date: '2026-08-07', preacherId: 'ft:bro-17' },
+    { date: '2026-12-25', preacherId: 'ft:bro-17' },
+  ] };
+  assert.deepEqual(
+    myBotrDuties(decemberToo, 'ft', { id: 'bro-17' }, '2026-08-05').map(d => d.entry.date),
+    ['2026-08-07', '2026-12-25'],
+  );
+});
+
+test('My Schedule asks for every duty, the bell only for imminent ones', () => {
+  // The test above proves the function is right when called correctly; this
+  // guards the call sites, which is where the 60-day cap actually lived.
+  const calls = [...appSource('index.html').matchAll(/myBotrDuties\(botrScheduleData[^)]*\)/g)].map(m => m[0]);
+  assert.equal(calls.length, 2, 'expected one call on My Schedule and one in the bell');
+
+  const [mySchedule, bell] = calls;
+  assert.equal(/,\s*\d+\s*\)$/.test(mySchedule), false,
+    `My Schedule must not cap the window — a December duty is still theirs to see: ${mySchedule}`);
+  assert.match(bell, /,\s*14\s*\)$/, 'the bell stays at 14 days');
 });
 
 test('past duties are not shown, and the window is respected', () => {
