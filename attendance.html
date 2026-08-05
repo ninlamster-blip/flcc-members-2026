@@ -232,6 +232,10 @@ function defaultState() {
     meta: { churchName: CHURCH.name, stewardName: '', gasUrl: '', lastSync: null },
     sessions: [],
     customMembers: [],
+    // Ids of sessions the steward deleted on purpose. Publishing merges with
+    // what is already up there, so without this a delete would simply come
+    // back on the next publish.
+    deletedSessions: [],
   };
 }
 function migrate(s) {
@@ -239,6 +243,7 @@ function migrate(s) {
   if (!s.meta) s.meta = defaultState().meta;
   if (!s.sessions) s.sessions = [];
   if (!s.customMembers) s.customMembers = [];
+  if (!Array.isArray(s.deletedSessions)) s.deletedSessions = [];
   return s;
 }
 
@@ -273,6 +278,18 @@ function getInitials(name) {
   const clean = (name||'').replace(/^(Bro\.|Sis\.|Ptr\.)\s*/i,'');
   const parts = clean.split(' ').filter(Boolean);
   return parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : (parts[0]||'?')[0].toUpperCase();
+}
+
+/** The roster a service is actually taken against.
+ *  A Sunday service excludes fridayOnly members and every other service
+ *  excludes sundayOnly ones — so the two can never share a denominator, and a
+ *  session must always be measured against the roster it was recorded from.
+ *  No service (nothing started yet) means everyone. */
+function rosterForService(members, service) {
+  if (!service) return members;
+  return service === 'Sunday'
+    ? members.filter(m => !m.fridayOnly)
+    : members.filter(m => !m.sundayOnly);
 }
 
 function getSessionSummary(session, totalMembers) {
@@ -355,23 +372,91 @@ function getMemberAttendancePct(memberId, sessions) {
 }
 
 // ─── GitHub publish helpers (shared by SettingsTab and App auto-sync) ──────────
-function buildAttendanceJSON(state) {
-  const sorted = [...state.sessions].sort((a,b) => b.date.localeCompare(a.date));
+
+/** One session in the shape the members app reads back. */
+function toPublishedSession(s) {
+  return {
+    id:           s.id,
+    date:         s.date,
+    service:      s.service,
+    serviceLabel: s.serviceLabel || s.service,
+    summary:      getSessionSummary(s),
+    records:      (s.records || []).map(r => ({ memberId: r.memberId, memberName: r.memberName, status: r.status })),
+  };
+}
+
+/**
+ * What should be published: everything already up there, plus everything this
+ * device holds.
+ *
+ * A device only knows about the sessions recorded on it. Publishing its state
+ * wholesale therefore *deletes* every session recorded anywhere else — which
+ * is how Abundance lost sixteen sessions and 321 attendance marks, twice, to a
+ * browser holding one stale session.
+ *
+ * This device wins for sessions both sides know about, since it is the one
+ * doing the recording. Anything only the server has is kept. Anything the
+ * steward deliberately deleted stays deleted.
+ */
+function mergeAttendanceSessions(publishedSessions, localSessions, deletedIds) {
+  const gone = new Set(deletedIds || []);
+  const byId = new Map();
+  for (const s of (publishedSessions || [])) {
+    if (s && s.id && !gone.has(s.id)) byId.set(s.id, s);
+  }
+  for (const s of (localSessions || [])) {
+    if (s && s.id && !gone.has(s.id)) byId.set(s.id, toPublishedSession(s));
+  }
+  return [...byId.values()].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+}
+
+function buildAttendanceJSON(state, publishedSessions) {
+  const sessions = mergeAttendanceSessions(publishedSessions, state.sessions, state.deletedSessions);
   return {
     meta: {
       churchName:    state.meta.churchName || CHURCH.name,
       publishedAt:   new Date().toISOString(),
-      totalSessions: sorted.length,
+      totalSessions: sessions.length,
     },
-    sessions: sorted.map(s => ({
-      id:           s.id,
-      date:         s.date,
-      service:      s.service,
-      serviceLabel: s.serviceLabel || s.service,
-      summary:      getSessionSummary(s),
-      records:      (s.records || []).map(r => ({ memberId: r.memberId, memberName: r.memberName, status: r.status })),
-    })),
+    sessions,
   };
+}
+
+/** What is published for this church right now, so a publish can add to it
+ *  rather than replace it. A read failure returns null, which callers treat as
+ *  "unknown" and refuse to publish over — losing history is far worse than a
+ *  publish that asks to be retried. */
+async function fetchPublishedAttendance() {
+  const res = await fetch(`${CHURCH.data('attendance.json')}?t=${Date.now()}`, { cache: 'no-store' });
+  if (res.status === 404) return { sessions: [] };   // nothing published yet
+  if (!res.ok) return null;
+  const json = await res.json().catch(() => null);
+  if (!json || !Array.isArray(json.sessions)) return null;
+  return json;
+}
+
+/** Assemble the payload, refusing to publish if we could not read what is
+ *  already there. */
+async function buildMergedAttendance(state) {
+  const published = await fetchPublishedAttendance();
+  if (published === null) {
+    throw new Error('Could not read the published attendance file, so publishing was stopped rather than risk overwriting it. Check your connection and try again.');
+  }
+  const out = buildAttendanceJSON(state, published.sessions);
+
+  // Belt and braces: after a correct merge the only way to shed sessions is a
+  // deliberate delete. Anything larger means something is wrong upstream.
+  const before = published.sessions.length;
+  const after  = out.sessions.length;
+  if (before > 0 && after < before) {
+    const removed = before - after;
+    const deleted = new Set(state.deletedSessions || []);
+    const accounted = published.sessions.filter(s => deleted.has(s.id)).length;
+    if (removed > accounted) {
+      throw new Error(`Publishing was stopped: this would remove ${removed} session${removed > 1 ? 's' : ''} from the published file that you did not delete.`);
+    }
+  }
+  return out;
 }
 
 // Where the Worker lives. Empty means "this same site", which is correct when
@@ -382,13 +467,14 @@ function publishBase() {
 }
 
 async function publishAttendanceWithPasscode(passcode, state) {
+  const content = await buildMergedAttendance(state);
   const res = await fetch(`${publishBase()}/api/publish/attendance`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       passcode,
       steward: state.meta?.stewardName || '',
-      content: buildAttendanceJSON(state),
+      content,
     }),
   });
   const data = await res.json().catch(() => null);
@@ -403,7 +489,7 @@ async function publishAttendanceWithPasscode(passcode, state) {
 
 async function ghPublishAttendance(token, state) {
   if (!token || !state.sessions.length) return;
-  const content = JSON.stringify(buildAttendanceJSON(state), null, 2);
+  const content = JSON.stringify(await buildMergedAttendance(state), null, 2);
   const encoded = btoa(unescape(encodeURIComponent(content)));
   const hdrs = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
   const getResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, { headers: hdrs });
@@ -449,7 +535,11 @@ function reducer(state, action) {
       break;
     }
     case 'DELETE_SESSION':
-      next = { ...state, sessions: state.sessions.filter(s=>s.id!==action.id) };
+      next = {
+        ...state,
+        sessions: state.sessions.filter(s=>s.id!==action.id),
+        deletedSessions: [...new Set([...(state.deletedSessions||[]), action.id])],
+      };
       break;
     case 'ADD_CUSTOM_MEMBER':
       next = { ...state, customMembers: [...state.customMembers, action.member] };
@@ -582,23 +672,16 @@ function TodayTab({ members, state, dispatch, schedule }) {
 
   const todayVisitors = state.customMembers.filter(m=>m.sessionDate===today||m.permanent);
   const currentService = session?.service;
-  const allMembers = useMemo(()=>{
-    let base = members;
-    if (currentService === 'Sunday') {
-      base = members.filter(m => !m.fridayOnly);
-    } else if (currentService) {
-      base = members.filter(m => !m.sundayOnly);
-    }
-    return [...base, ...todayVisitors];
-  },[members, todayVisitors, currentService]);
+  const allMembers = useMemo(
+    ()=>[...rosterForService(members, currentService), ...todayVisitors],
+    [members, todayVisitors, currentService]
+  );
 
   // Auto-detect service
   const detectedService = useMemo(()=>detectTodayService(schedule),[schedule]);
 
   const startSession = serviceKey => {
-    const sessionList = serviceKey === 'Sunday'
-      ? [...members.filter(m => !m.fridayOnly), ...todayVisitors]
-      : [...members.filter(m => !m.sundayOnly), ...todayVisitors];
+    const sessionList = [...rosterForService(members, serviceKey), ...todayVisitors];
     const dup = state.sessions.find(s=>s.date===today && s.service===serviceKey && (s.records||[]).length>0);
     if (dup) {
       const sum = getSessionSummary(dup, sessionList.length);
@@ -894,7 +977,7 @@ function HistoryTab({ state, dispatch, members }) {
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
         {sorted.map(sess=>{
-          const sum = getSessionSummary(sess, members.length);
+          const sum = getSessionSummary(sess, sess.totalMembers || members.length);
           const isOpen = expanded===sess.id;
           const attendedPct = sum.total>0 ? Math.round((sum.present/sum.total)*100) : 0;
           return (
@@ -1008,7 +1091,7 @@ function AnalyticsTab({ state, members }) {
   // Bar charts
   const sessionBars = useMemo(()=>
     sessions.slice(-8).map(s=>{
-      const sum = getSessionSummary(s, members.length);
+      const sum = getSessionSummary(s, s.totalMembers || members.length);
       return { label:formatDateShort(s.date), value:sum.total>0?Math.round((sum.present/sum.total)*100):0 };
     }),[sessions, members]);
 
@@ -1022,7 +1105,7 @@ function AnalyticsTab({ state, members }) {
     }
     return Array.from(map.entries()).sort().slice(-6).map(([mk,ss])=>{
       const avg = ss.length ? Math.round(ss.reduce((acc,s)=>{
-        const sum=getSessionSummary(s,members.length);
+        const sum=getSessionSummary(s,s.totalMembers || members.length);
         return acc+(sum.total?(sum.present/sum.total)*100:0);
       },0)/ss.length) : 0;
       const [y,m] = mk.split('-');
@@ -1040,7 +1123,7 @@ function AnalyticsTab({ state, members }) {
     const others  = mSessions.filter(s=>s.service!=='Friday'&&s.service!=='Sunday');
     const total   = mSessions.length;
     const avgPct  = total ? Math.round(mSessions.reduce((acc,s)=>{
-      const sum=getSessionSummary(s,members.length);
+      const sum=getSessionSummary(s,s.totalMembers || members.length);
       return acc+(sum.total?(sum.present/sum.total)*100:0);
     },0)/total) : 0;
     return { mSessions, fridays, sundays, others, total, avgPct };
@@ -1102,7 +1185,7 @@ function AnalyticsTab({ state, members }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
         {[
           {label:'Sessions',  value:sessions.length,  color:ATT_ACCENT},
-          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
+          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,s.totalMembers || members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
           {label:'Best',      value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#7C3AED'},
         ].map(s=>(
           <div key={s.label} className="card" style={{padding:'14px 10px',textAlign:'center'}}>
@@ -1133,7 +1216,7 @@ function AnalyticsTab({ state, members }) {
           <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginBottom:10}}>Session breakdown:</div>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
-              const sum=getSessionSummary(s,members.length);
+              const sum=getSessionSummary(s,s.totalMembers || members.length);
               const pct=sum.total>0?Math.round((sum.present/sum.total)*100):0;
               return (
                 <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:8,background:'#FAFAFA',border:'1px solid var(--border)'}}>
@@ -1153,10 +1236,10 @@ function AnalyticsTab({ state, members }) {
           <button onClick={()=>{
             const [y,m]=selectedMonth.split('-');
             const mLabel=new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-            const lines=[`${CHURCH.name} · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`,``];
+            const lines=[`${CHURCH.name} · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,s.totalMembers || members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`,``];
             lines.push('Sessions:');
             for (const s of monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date))) {
-              const sum=getSessionSummary(s,members.length);
+              const sum=getSessionSummary(s,s.totalMembers || members.length);
               const pct=sum.total>0?Math.round((sum.present/sum.total)*100):0;
               lines.push(`  ${s.serviceLabel||s.service} ${s.date}: Present ${sum.present}, Absent ${sum.absent} (${pct}%)`);
             }
@@ -1334,7 +1417,7 @@ function MembersTab({ members, state, dispatch }) {
 }
 
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
-function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcode, setPasscode, syncStatus, syncErrMsg, onSyncNow }) {
+function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken, passcode, setPasscode, syncStatus, syncErrMsg, onSyncNow }) {
   const m = state.meta;
   const set = payload => dispatch({ type:'UPDATE_META', payload });
   const [gasGuide, setGasGuide] = useState(false);
@@ -1415,8 +1498,16 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
     setGhToken(''); try { localStorage.removeItem(GH_TOKEN_KEY); } catch {}
   };
 
-  const publishAttendanceJSON = () => {
-    const out  = buildAttendanceJSON(state);
+  const publishAttendanceJSON = async () => {
+    // Merged like the other two paths: this file is meant to be uploaded over
+    // the published one, so it has to carry everything already there.
+    let out;
+    try {
+      out = await buildMergedAttendance(state);
+    } catch (e) {
+      alert(e.message || 'Could not build the attendance file.');
+      return;
+    }
     const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -1442,9 +1533,8 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
       return;
     }
 
-    const allMembers = state.customMembers || [];
     const lines = [];
-    lines.push(`📋 FLCC - FARWANIYA 1`);
+    lines.push(`📋 ${m.churchName || CHURCH.name}`);
     lines.push(`Attendance Summary`);
     lines.push(`Week of ${weekAgo} – ${today}`);
     lines.push(`Generated: ${new Date().toLocaleString()}`);
@@ -1503,29 +1593,17 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
       lines.push(``);
     }
 
-    // Care flags — Friday and Sunday worship services only
-    const careMembers = [];
-    const recent6 = [...state.sessions]
-      .filter(s => PASTORAL_CARE_SERVICES.has(s.service))
-      .sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 6);
-    const memberIds = new Set();
-    for (const s of recent6) for (const r of (s.records||[])) memberIds.add(r.memberId);
-    for (const id of memberIds) {
-      const statuses = recent6.map(s => (s.records||[]).find(r=>r.memberId===id)?.status || null);
-      let streak = 0;
-      for (const st of statuses) {
-        if (st !== 'present') streak++; else break;
-      }
-      if (streak >= 3) {
-        const nameRec = recent6.flatMap(s=>s.records||[]).find(r=>r.memberId===id);
-        if (nameRec) careMembers.push({ name: nameRec.memberName, streak });
-      }
-    }
+    // Care flags — the same calculation the Care tab shows, so the two never
+    // disagree. Absence is the *lack* of a record, so this has to walk the
+    // roster: anyone missing from every recent session has no record at all
+    // and would be invisible if we only read what's in session.records.
+    const careMembers = computeCareFlags(state.sessions, members);
 
     if (careMembers.length) {
       lines.push(`🙏 NEEDS PASTORAL FOLLOW-UP:`);
       for (const c of careMembers) {
-        lines.push(`  • ${c.name} — absent ${c.streak} consecutive session${c.streak>1?'s':''}`);
+        const who = (c.member.title ? c.member.title + ' ' : '') + c.member.name;
+        lines.push(`  • ${who} — absent ${c.streak} consecutive ${c.missedService} service${c.streak>1?'s':''}`);
       }
       lines.push(``);
     } else {
@@ -2142,8 +2220,14 @@ function App() {
   }, [ghToken, passcode]);
 
   // Auto-publish to GitHub 5 s after the last attendance change
+  const skippedMountSync = useRef(false);
   useEffect(() => {
     if (!ghToken || !state.sessions.length) return;
+    // Opening the app is not a change. This effect also runs on mount, which
+    // published a fresh commit every time the dashboard was opened — and, back
+    // when publishing overwrote instead of merging, was how a browser holding
+    // stale sessions wiped the file without anyone touching a button.
+    if (!skippedMountSync.current) { skippedMountSync.current = true; return; }
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(runSync, 5000);
     return () => clearTimeout(syncTimer.current);
@@ -2258,7 +2342,7 @@ function App() {
           {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
           {tab==='care'      && <CareTab      state={state} members={members} pastorName={pastorName} />}
           {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
-          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} pastorName={pastorName} ghToken={ghToken} setGhToken={setGhToken} passcode={passcode} setPasscode={setPasscode} syncStatus={syncStatus} syncErrMsg={syncErrMsg} onSyncNow={syncNow} />}
+          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} members={members} pastorName={pastorName} ghToken={ghToken} setGhToken={setGhToken} passcode={passcode} setPasscode={setPasscode} syncStatus={syncStatus} syncErrMsg={syncErrMsg} onSyncNow={syncNow} />}
         </div>
       </main>
 

@@ -432,7 +432,9 @@ function defaultState() {
     themes: SEED_THEMES,
     intercessory: SEED_INTERCESSORY,
     meetings: SEED_MEETINGS,
-    currentMonth: '2026-06',
+    // Open on the month the ministry head is actually in. A hardcoded month
+    // silently goes stale and greets them with an empty schedule.
+    currentMonth: todayISO().slice(0, 7),
     settings: {},
   };
 }
@@ -1762,7 +1764,10 @@ function DataTab({ state, dispatch }) {
         <div className="grid sm:grid-cols-2 gap-3 mb-4">
           <button className="btn btn-accent" onClick={publishForMembers} disabled={!ministryComplete}>↓ Generate prayer.json</button>
           <button className="btn btn-soft" onClick={() => {
-            const text = `🙏 The prayer schedule has been updated.\n\nView it at:\nhttps://ninlamster-blip.github.io/flcc-schedule-os/members.html\n\nIf you have a conflict on any of your prayer assignments, you can report it directly from the app.\n\n— ${m.headName || 'Prayer Ministry'}`;
+            // Built from the live location so the link survives a repo rename,
+            // and points at this church rather than whichever one is sticky on
+            // the reader's device.
+            const text = `🙏 The prayer schedule has been updated.\n\nView it at:\n${CHURCH.prettyUrl()}\n\nIf you have a conflict on any of your prayer assignments, you can report it directly from the app.\n\n— ${m.headName || 'Prayer Ministry'}`;
             navigator.clipboard.writeText(text).then(() => alert('Announcement copied!')).catch(() => alert('Copy failed.'));
           }}>📋 Copy member announcement</button>
         </div>
