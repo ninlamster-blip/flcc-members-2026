@@ -19,6 +19,16 @@
 <!-- Resolves which church this visitor is on, and where its data lives. Must
      load before the app: the data URLs and storage keys below are built from it. -->
 <script src="./church.js"></script>
+<script>
+  // Text size, applied before anything renders so the page never visibly
+  // resizes. Kept per church key like every other preference.
+  (function () {
+    try {
+      var v = parseFloat(localStorage.getItem(window.FLCC.key('flcc-text-size-v1')));
+      if (v >= 15 && v <= 26) document.documentElement.style.fontSize = v + 'px';
+    } catch (e) {}
+  })();
+</script>
 <script>document.title = window.FLCC.name + ' · Schedule for Members';</script>
 
 <style>
@@ -44,7 +54,10 @@
   }
 
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-  html { font-size: 17px; }
+  /* Base for the whole interface — almost every size below is in rem, so
+     this one value scales everything. Members can change it on the About
+     tab; the choice is remembered on their device. */
+  html { font-size: 19px; }
   html, body { background: var(--bg); color: var(--ink); }
   body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-feature-settings: "ss01", "ss03"; }
 
@@ -329,6 +342,7 @@
   }
   .home-card-actions {
     display: flex;
+    flex-wrap: wrap;          /* three buttons will not fit one line at the larger text sizes */
     gap: 0.375rem;
     margin-top: 0.5rem;
   }
@@ -807,6 +821,7 @@ const ANNOUNCEMENTS_URL  = './announcements.json';
 // a single shared file at the root that all 14 churches read. Deliberately not
 // CHURCH.data() — that would make each church look for its own copy.
 const BOTR_SCHEDULE_URL  = './botr-schedule.json';
+const TEXT_SIZE_KEY      = CHURCH.key('flcc-text-size-v1');
 const ASK_PASTOR_KEY     = CHURCH.key('flcc-ask-pastor-v1');
 const SELF_BIRTHDAY_KEY  = CHURCH.key('flcc-self-birthday-v1');
 const PRAYER_LOG_KEY     = CHURCH.key('flcc-prayer-log-v1');
@@ -4367,6 +4382,67 @@ function ChurchSwitcher() {
   );
 }
 
+// ── Text size ────────────────────────────────────────────────────────────────
+// Everything in the app is sized in rem, so changing the root size scales the
+// whole interface at once — nothing has to be restyled per screen.
+const TEXT_SIZES = [
+  { label: 'Small',  px: 17 },
+  { label: 'Normal', px: 19 },
+  { label: 'Large',  px: 21 },
+  { label: 'Larger', px: 23 },
+];
+const DEFAULT_TEXT_SIZE = 19;
+
+function readTextSize() {
+  try {
+    const v = parseFloat(localStorage.getItem(TEXT_SIZE_KEY));
+    if (v >= 15 && v <= 26) return v;
+  } catch (e) {}
+  return DEFAULT_TEXT_SIZE;
+}
+
+function applyTextSize(px) {
+  document.documentElement.style.fontSize = px + 'px';
+  try { localStorage.setItem(TEXT_SIZE_KEY, String(px)); } catch (e) {}
+}
+
+function TextSizeCard() {
+  const [size, setSize] = useState(readTextSize);
+
+  const pick = px => { applyTextSize(px); setSize(px); };
+
+  return (
+    <div className="card p-6 mb-4">
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">Text size</div>
+      <p className="text-sm ink-muted mb-3">Make everything in the app bigger or smaller. Saved on this device.</p>
+      <div className="flex flex-wrap gap-2">
+        {TEXT_SIZES.map(o => {
+          const active = size === o.px;
+          return (
+            <button
+              key={o.px}
+              onClick={() => pick(o.px)}
+              aria-pressed={active}
+              style={{
+                flex: '1 1 0', minWidth: 76, padding: '0.6rem 0.5rem', borderRadius: 10, cursor: 'pointer',
+                border: `1px solid ${active ? 'var(--accent)' : 'var(--border-strong)'}`,
+                background: active ? 'var(--accent-soft)' : 'var(--surface)',
+                color: active ? 'var(--accent)' : 'var(--ink)',
+                fontWeight: active ? 600 : 400,
+                fontSize: `${o.px / DEFAULT_TEXT_SIZE}rem`,
+                lineHeight: 1.2,
+              }}
+            >
+              A
+              <div style={{ fontSize: '0.6875rem', marginTop: 2, fontWeight: 500 }}>{o.label}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, botrLive, botrLiveStatus, onRefreshBotr }) {
   const m  = data.ministry || {};
   const pm = prayerData?.ministry || null;
@@ -4385,6 +4461,8 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
       </SectionHeading>
 
       <ChurchSwitcher />
+
+      <TextSizeCard />
 
       {/* Ask the Pastor */}
       <div className="mb-6">
@@ -15769,10 +15847,13 @@ function App() {
       <header style={{ backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 20, borderBottom: '1px solid var(--border)' }}>
         <div className="hdr-strip" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-0">
-          <div className="flex items-center justify-between gap-3">
-            <div>
+          {/* Wraps rather than squeezing: at the larger text sizes the greeting
+              and the buttons cannot share a line on a narrow phone, and a
+              cramped name is worse than a second row. */}
+          <div className="flex items-center justify-between gap-3" style={{ flexWrap: 'wrap' }}>
+            <div style={{ minWidth: 0, flex: '1 1 auto' }}>
               <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{data.meta.churchName}</div>
-              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1 greeting-h1">
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1 greeting-h1" style={{ overflowWrap: 'break-word' }}>
                 {me ? `Hello, ${me.name}` : 'Schedule'}
               </h1>
             </div>
