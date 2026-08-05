@@ -48,11 +48,37 @@ is **not** loaded through `FLCC.data()`; `index.html` reads the fixed path
 `./botr-schedule.json` on purpose, because `FLCC.data()` would send each
 church looking for its own copy.
 
-It has its own shape — plain names rather than roster IDs, and a row already
-scaffolded for every Friday of the year — so it is hand-edited rather than
-managed in the schedule editor. Fill in `preacher`, `pastoralPrayer`, `emcee`
-and the optional `event` on the dates as they are assigned; a row left blank
-simply doesn't show.
+It has a row already scaffolded for every Friday of the year, so it is
+hand-edited rather than managed in the schedule editor. Fill in `preacher`,
+`pastoralPrayer`, `emcee` and the optional `event` on the dates as they are
+assigned; a row left blank simply doesn't show.
+
+### Making a Friday duty land in someone's own app
+
+Those three fields are plain display names — "Ptr. Rodel" — which is all the
+shared card needs. Add a matching `preacherId` / `pastoralPrayerId` /
+`emceeId` and that person also gets it as a **real assignment**: on their My
+Schedule tab, in their notification bell, and as a clash when they add a
+personal event on the same day.
+
+```json
+{
+  "date": "2026-08-07",
+  "preacher": "Ptr. Rodel",
+  "preacherId": "ft:bro-17",
+  "pastoralPrayer": "Ptr. Mike",
+  "pastoralPrayerId": "agape:bro-06"
+}
+```
+
+A reference is **church-qualified** — `<slug>:<worker-id>` — because this one
+service draws from all 14 churches and a worker id is only unique inside its
+own church. `bro-17` alone would match a different person at every church.
+
+The ids are optional and additive: an entry without one still appears on the
+shared card exactly as before, it just isn't tied to anybody's app. A test
+checks that every reference points at a real member of a real church, so a
+typo fails the suite rather than quietly leaving someone untold.
 
 ## Telling the whole network something
 

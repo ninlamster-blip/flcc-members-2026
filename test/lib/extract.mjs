@@ -95,11 +95,29 @@ function sliceFunction(src, name) {
   return null;
 }
 
-/** Slice a top-level `const NAME = <single line>;` out of `src`. */
+/** Slice a top-level `const NAME = …;` out of `src`, single line or not.
+ *  Multi-line array and object literals are matched by counting brackets, so
+ *  a lookup table can be tested without being flattened onto one line. */
 function sliceConst(src, name) {
-  const re = new RegExp(`^const\\s+${name}\\s*=.*?;\\s*$`, 'm');
-  const m = re.exec(src);
-  return m ? m[0] : null;
+  const start = new RegExp(`^const\\s+${name}\\s*=`, 'm').exec(src);
+  if (!start) return null;
+
+  let depth = 0;
+  let quote = null;
+  for (let i = start.index; i < src.length; i++) {
+    const c = src[i];
+    if (quote) {
+      if (c === '\\') { i++; continue; }
+      if (c === quote) quote = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') depth--;
+    else if (c === ';' && depth === 0) return src.slice(start.index, i + 1);
+    else if (c === '\n' && depth === 0 && /=\s*$/.test(src.slice(start.index, i))) continue;
+  }
+  return null;
 }
 
 /**

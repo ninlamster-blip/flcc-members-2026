@@ -342,3 +342,26 @@ test('the notification bell reaches members who have not picked a name', () => {
   assert.match(src, /<NotificationBell[^>]*announcements=\{announcements\}/,
     'the bell must receive the announcements');
 });
+
+test('every BOTR duty reference points at a real member of a real church', () => {
+  // References are church-qualified ("ft:bro-17") because a worker id is only
+  // unique inside its own church. A typo here means someone quietly never
+  // gets told they are serving.
+  const known = new Set(CHURCHES.map(c => c.slug));
+  const rosters = new Map(CHURCHES.map(c => [c.slug, new Set(readRepoJSON(`${dir(c.slug)}data.json`).workers.map(w => w.id))]));
+
+  for (const entry of readRepoJSON('botr-schedule.json').schedule) {
+    for (const role of ['preacher', 'pastoralPrayer', 'emcee']) {
+      const ref = entry[`${role}Id`];
+      if (!ref) continue;   // display-only entries are fine
+
+      assert.match(ref, /^[a-z0-9-]+:[A-Za-z0-9-]+$/, `${entry.date} ${role}: "${ref}" must be "<church>:<worker-id>"`);
+      const [slug, workerId] = ref.split(':');
+      assert.ok(known.has(slug), `${entry.date} ${role}: unknown church "${slug}"`);
+      assert.ok(rosters.get(slug).has(workerId), `${entry.date} ${role}: "${workerId}" is not on ${slug}'s roster`);
+
+      // A linked role must still carry the display name the shared card shows.
+      assert.ok((entry[role] || '').trim(), `${entry.date} ${role}: linked but has no name to display`);
+    }
+  }
+});
