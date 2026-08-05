@@ -110,10 +110,20 @@ function sliceConst(src, name) {
  * Names may be functions or single-line consts. Throws with a clear message
  * when a name isn't found or isn't extractable, so a rename in the app file
  * fails the suite loudly instead of silently testing nothing.
+ *
+ * `globals` supplies anything the extracted code closes over that the app
+ * would otherwise provide — `CHURCH`, for instance, which is `window.FLCC` in
+ * the running page:
+ *
+ *   load('attendance.html', ['buildAttendanceJSON'], { CHURCH: { name: 'FLCC - Test' } })
  */
-export function load(file, names) {
+export function load(file, names, globals = {}) {
   const src = appSource(file);
   const parts = [];
+
+  for (const key of Object.keys(globals)) {
+    parts.push(`const ${key} = __globals__[${JSON.stringify(key)}];`);
+  }
 
   for (const name of names) {
     const code = sliceFunction(src, name) ?? sliceConst(src, name);
@@ -131,7 +141,7 @@ export function load(file, names) {
   parts.push(`return { ${names.join(', ')} };`);
 
   try {
-    return new Function(parts.join('\n\n'))();
+    return new Function('__globals__', parts.join('\n\n'))(globals);
   } catch (err) {
     throw new Error(`${file}: extracted source failed to evaluate — ${err.message}`);
   }

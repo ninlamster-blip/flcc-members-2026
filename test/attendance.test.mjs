@@ -241,3 +241,130 @@ test('flags are ordered by how long someone has been away', () => {
   const streaks = flags.map(f => f.streak);
   assert.deepEqual(streaks, [...streaks].sort((a, b) => b - a));
 });
+
+// ── Publishing ───────────────────────────────────────────────────────────────
+
+const { mergeAttendanceSessions } = load('attendance.html', [
+  'getSessionSummary',
+  'toPublishedSession',
+  'mergeAttendanceSessions',
+]);
+
+/** A session in the shape the published file stores. */
+const pub = (id, date, service, present = 0) => ({
+  id, date, service, serviceLabel: `${service} Service`,
+  summary: { present, absent: 0, total: present },
+  records: Array.from({ length: present }, (_, i) => ({ memberId: `m${i}`, memberName: `m${i}`, status: 'present' })),
+});
+
+test('publishing from a device with stale data cannot delete what is already up', () => {
+  // Abundance, twice: a browser holding one empty session republished over 17
+  // real ones and took 321 attendance marks with it.
+  const alreadyPublished = [
+    pub('a', '2026-07-05', 'Sunday', 30), pub('b', '2026-07-03', 'Friday', 28),
+    pub('c', '2026-06-28', 'Sunday', 31), pub('d', '2026-06-26', 'Friday', 27),
+  ];
+  const staleDevice = [{ id: 'z', date: '2026-06-08', service: 'Friday', totalMembers: 30, records: [] }];
+
+  const merged = mergeAttendanceSessions(alreadyPublished, staleDevice, []);
+
+  assert.equal(merged.length, 5, 'the four published sessions survive, plus the local one');
+  const present = merged.reduce((n, s) => n + s.records.length, 0);
+  assert.equal(present, 116, 'no attendance marks are lost');
+});
+
+test('a session recorded on this device is added to what is published', () => {
+  const merged = mergeAttendanceSessions(
+    [pub('a', '2026-07-05', 'Sunday', 30)],
+    [{ id: 'new', date: '2026-08-02', service: 'Sunday', totalMembers: 38, records: [{ memberId: 'm1', memberName: 'm1', status: 'present' }] }],
+    [],
+  );
+  assert.deepEqual(merged.map(s => s.id), ['new', 'a'], 'newest first');
+  assert.equal(merged[0].summary.total, 38, 'and it carries its own roster size');
+});
+
+test('this device wins for a session both sides know about', () => {
+  // The steward corrected a session locally; the published copy is stale.
+  const merged = mergeAttendanceSessions(
+    [pub('a', '2026-07-05', 'Sunday', 10)],
+    [{ id: 'a', date: '2026-07-05', service: 'Sunday', totalMembers: 38, records: [
+      { memberId: 'm1', memberName: 'm1', status: 'present' }, { memberId: 'm2', memberName: 'm2', status: 'present' },
+    ] }],
+    [],
+  );
+  assert.equal(merged.length, 1);
+  assert.equal(merged[0].summary.present, 2, 'the local correction is what gets published');
+});
+
+test('a deliberately deleted session stays deleted', () => {
+  const merged = mergeAttendanceSessions(
+    [pub('a', '2026-07-05', 'Sunday', 30), pub('b', '2026-07-03', 'Friday', 28)],
+    [],
+    ['a'],
+  );
+  assert.deepEqual(merged.map(s => s.id), ['b']);
+});
+
+test('two stewards on two devices both keep their sessions', () => {
+  const deviceA = [{ id: 'a1', date: '2026-08-02', service: 'Sunday', totalMembers: 38, records: [] }];
+  const first = mergeAttendanceSessions([], deviceA, []);
+
+  const deviceB = [{ id: 'b1', date: '2026-08-07', service: 'Friday', totalMembers: 27, records: [] }];
+  const second = mergeAttendanceSessions(first, deviceB, []);
+
+  assert.deepEqual(second.map(s => s.id).sort(), ['a1', 'b1']);
+});
+
+test('nothing published yet is not treated as a loss', () => {
+  const merged = mergeAttendanceSessions([], [{ id: 'a', date: '2026-08-02', service: 'Sunday', totalMembers: 38, records: [] }], []);
+  assert.equal(merged.length, 1);
+});
+
+test('merging is stable — publishing twice changes nothing', () => {
+  const local = [{ id: 'a', date: '2026-08-02', service: 'Sunday', totalMembers: 38, records: [{ memberId: 'm1', memberName: 'm1', status: 'present' }] }];
+  const once = mergeAttendanceSessions([], local, []);
+  const twice = mergeAttendanceSessions(once, local, []);
+  assert.deepEqual(twice, once);
+});
+
+test('a malformed published file cannot inject junk sessions', () => {
+  const merged = mergeAttendanceSessions([null, {}, pub('a', '2026-07-05', 'Sunday', 3)], [], []);
+  assert.deepEqual(merged.map(s => s.id), ['a']);
+});
+
+test('every publish path merges rather than overwrites', () => {
+  // The regression guard: buildAttendanceJSON(state) with no published
+  // sessions passed in is exactly what wiped the file.
+  const src = appSource('attendance.html');
+  const bare = [...src.matchAll(/buildAttendanceJSON\(\s*state\s*\)/g)];
+  assert.deepEqual(bare.map(m => m[0]), [], 'publish through buildMergedAttendance(state)');
+});
+
+const { buildAttendanceJSON } = load(
+  'attendance.html',
+  ['getSessionSummary', 'toPublishedSession', 'mergeAttendanceSessions', 'buildAttendanceJSON'],
+  { CHURCH: { name: 'FLCC - Test Church' } },
+);
+
+test('the published payload carries the merge, not just this device', () => {
+  // End-to-end over the function the publish paths actually call.
+  const state = {
+    meta: { churchName: '' },
+    sessions: [{ id: 'local', date: '2026-08-02', service: 'Sunday', totalMembers: 38, records: [] }],
+    deletedSessions: [],
+  };
+  const alreadyPublished = [pub('a', '2026-07-05', 'Sunday', 30), pub('b', '2026-07-03', 'Friday', 28)];
+
+  const out = buildAttendanceJSON(state, alreadyPublished);
+
+  assert.deepEqual(out.sessions.map(s => s.id), ['local', 'a', 'b']);
+  assert.equal(out.meta.totalSessions, 3, 'the count reflects everything published, not just local');
+  assert.equal(out.meta.churchName, 'FLCC - Test Church', 'falls back to the active church');
+  assert.equal(out.sessions.reduce((n, s) => n + s.records.length, 0), 58, 'no marks dropped');
+});
+
+test('the payload honours deletions end-to-end', () => {
+  const state = { meta: {}, sessions: [], deletedSessions: ['a'] };
+  const out = buildAttendanceJSON(state, [pub('a', '2026-07-05', 'Sunday', 30), pub('b', '2026-07-03', 'Friday', 28)]);
+  assert.deepEqual(out.sessions.map(s => s.id), ['b']);
+});
