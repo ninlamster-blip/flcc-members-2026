@@ -393,3 +393,21 @@ test('the shared themes, holidays and leave are shaped the way the app reads the
     assert.equal(typeof l.when, 'string', `${l.person}: leave dates are free text, shown as written`);
   }
 });
+
+test("a church's data files all call it by the same name", () => {
+  // "FLCC - Farwaniya 1" survived in equip.json long after the church was
+  // renamed, and worship.json had drifted to a third spelling. The registry in
+  // church.js is the source of truth, and every file a church publishes should
+  // agree with it.
+  const FILES = ['data.json', 'attendance.json', 'prayer.json', 'music.json', 'equip.json', 'worship.json'];
+
+  for (const c of CHURCHES) {
+    for (const file of FILES) {
+      const path = `${dir(c.slug)}${file}`;
+      if (!exists(path)) continue;
+      const name = (readRepoJSON(path).meta || {}).churchName;
+      if (!name) continue;   // a file may simply not carry one
+      assert.equal(name, c.name, `${path}: says "${name}" but the registry says "${c.name}"`);
+    }
+  }
+});
