@@ -302,3 +302,73 @@ test('no schedule, no member or no church means no duties rather than a crash', 
   assert.deepEqual(myBotrDuties(BOTR, 'ft', null, '2026-08-05'), []);
   assert.deepEqual(myBotrDuties(BOTR, null, { id: 'bro-17' }, '2026-08-05'), []);
 });
+
+// ── Saving to a phone calendar ───────────────────────────────────────────────
+
+const { parseTime12, icsDateTimePlus, buildICSEvent } = load(
+  'index.html',
+  ['parseISODate', 'formatISODate', 'addDays', 'formatICSDateTime', 'formatICSDate',
+   'formatICSStamp', 'escapeICS', 'parseTime12', 'icsDateTimePlus', 'buildICSEvent'],
+);
+
+const line = (lines, key) => (lines.find(l => l.startsWith(key)) || '').slice(key.length);
+
+test('a displayed service time is read back for the calendar', () => {
+  // botr-schedule.json stores "10:00 AM" because that is what the card shows.
+  assert.equal(parseTime12('10:00 AM'), '10:00');
+  assert.equal(parseTime12('1:00 PM'), '13:00');
+  assert.equal(parseTime12('12:00 AM'), '00:00', 'midnight is 00, not 12');
+  assert.equal(parseTime12('12:30 PM'), '12:30', 'noon stays 12');
+  assert.equal(parseTime12('9 am'), '09:00');
+});
+
+test('anything that is not a time gives null, so the event falls back to all-day', () => {
+  for (const bad of ['', null, undefined, 'TBD', 'morning', '10:00', '25:00 AM']) {
+    assert.equal(parseTime12(bad), null, `"${bad}"`);
+  }
+});
+
+test('an end time rolls the hour and the day over properly', () => {
+  // formatICSDateTime only pads, so 23:30 + 90 minutes has to normalise into
+  // the next day rather than producing hour 25.
+  assert.equal(icsDateTimePlus('2026-08-07', '13:00', 90), '20260807T143000');
+  assert.equal(icsDateTimePlus('2026-08-07', '23:30', 90), '20260808T010000');
+  assert.equal(icsDateTimePlus('2026-08-31', '23:00', 120), '20260901T010000', 'and over a month end');
+});
+
+test('a timed event carries a start and an end', () => {
+  const lines = buildICSEvent({
+    uid: 'x@test', date: '2026-08-07', startTime: '13:00',
+    summary: "Leaders' Meeting", location: 'FLCC - Shekinah Church Hall',
+  });
+  assert.equal(line(lines, 'DTSTART:'), '20260807T130000');
+  assert.equal(line(lines, 'DTEND:'), '20260807T143000', '90 minutes by default');
+  assert.equal(line(lines, 'LOCATION:'), 'FLCC - Shekinah Church Hall');
+  assert.ok(lines[0] === 'BEGIN:VEVENT' && lines[lines.length - 1] === 'END:VEVENT');
+});
+
+test('an explicit end time wins over the default duration', () => {
+  const lines = buildICSEvent({ uid: 'x@test', date: '2026-08-07', startTime: '13:00', endTime: '16:00', summary: 'x' });
+  assert.equal(line(lines, 'DTEND:'), '20260807T160000');
+});
+
+test('an event with no time becomes an all-day entry', () => {
+  const lines = buildICSEvent({ uid: 'x@test', date: '2026-08-07', summary: 'x' });
+  assert.equal(line(lines, 'DTSTART;VALUE=DATE:'), '20260807');
+  assert.equal(line(lines, 'DTEND;VALUE=DATE:'), '20260808', 'all-day events end the next day');
+  assert.equal(lines.some(l => l.startsWith('DTSTART:')), false, 'no timed start');
+});
+
+test('commas and newlines in a title cannot break the file', () => {
+  const lines = buildICSEvent({ uid: 'x@test', date: '2026-08-07', summary: 'Meeting, part 2; see notes', description: 'a\nb' });
+  const summary = line(lines, 'SUMMARY:');
+  assert.ok(summary.includes('\\,'), 'commas are escaped');
+  assert.ok(summary.includes('\;'), 'semicolons are escaped');
+  assert.ok(!line(lines, 'DESCRIPTION:').includes('\n'), 'raw newlines would truncate the event');
+});
+
+test('an empty location or description is left out rather than written blank', () => {
+  const lines = buildICSEvent({ uid: 'x@test', date: '2026-08-07', summary: 'x', location: '', description: '' });
+  assert.equal(lines.some(l => l.startsWith('LOCATION:')), false);
+  assert.equal(lines.some(l => l.startsWith('DESCRIPTION:')), false);
+});

@@ -59,14 +59,23 @@ function sliceFunction(src, name) {
   const m = decl.exec(src);
   if (!m) return null;
 
-  const bodyStart = src.indexOf('{', m.index + m[0].length - 1);
+  // Skip the parameter list before looking for the body. A destructured
+  // parameter — function f({ a, b }) — opens a brace of its own, and taking
+  // that one as the body silently truncates the function.
+  let parens = 1;
+  let i = m.index + m[0].length;   // just past the opening "("
+  for (; i < src.length && parens > 0; i++) {
+    if (src[i] === '(') parens++;
+    else if (src[i] === ')') parens--;
+  }
+  const bodyStart = src.indexOf('{', i);
   if (bodyStart === -1) return null;
 
   // Brace matching that skips over strings, template literals, regex-ish
   // slashes and comments — enough for the helpers we extract.
   let depth = 0;
-  let i = bodyStart;
   let quote = null;
+  i = bodyStart;
   let inLine = false;
   let inBlock = false;
 
