@@ -2104,9 +2104,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       {/* Upcoming birthdays */}
       {upcomingBirthdays.length > 0 && (
         <div className="mb-5">
-          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">🎂 Birthdays this month</div>
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">🎂 Birthdays coming up</div>
           <div className="home-grid">
-            {upcomingBirthdays.slice(0, 4).map(b => (
+            {upcomingBirthdays.slice(0, 6).map(b => (
               <div key={b.worker.id} className="home-card" style={{ background: '#FDF2F8' }}>
                 <div className="home-card-eyebrow" style={{ color: '#BE185D' }}>
                   {b.daysAway === 0 ? '🎉 Today!' : b.daysAway === 1 ? 'Tomorrow' : `In ${b.daysAway} days`}
@@ -3550,7 +3550,7 @@ const EQUIP_RESOURCES = [
   { id: 'r6',  title: 'The Bible Project (YouTube)',  type: 'video',          url: 'https://www.youtube.com/@thebibleproject', description: 'Animated Bible overviews and theological education. Free on YouTube.', category: 'bible-study', courseId: 'bible-study', featured: true },
   { id: 'r7',  title: 'Worship Playlist',             type: 'playlist',       url: '#', description: 'Curated worship songs for personal devotion and quiet time.', category: 'worship', courseId: null, featured: false },
   { id: 'r8',  title: 'Sermon Notes: Philippians 4:8', type: 'sermon-notes', url: '#', description: 'Notes from our media consumption series. On renewing your mind.', category: 'sermons', courseId: null, featured: false },
-  { id: 'r9',  title: 'New Believer Starter Pack',    type: 'pdf',            url: '#', description: 'Compilation of essential materials for newly saved members at FLCC - Farwaniya 1.', category: 'new-believers', courseId: 'new-believer', featured: false },
+  { id: 'r9',  title: 'New Believer Starter Pack',    type: 'pdf',            url: '#', description: `Compilation of essential materials for newly saved members at ${CHURCH.name}.`, category: 'new-believers', courseId: 'new-believer', featured: false },
   { id: 'r10', title: 'Through the Bible — J. Vernon McGee', type: 'audio',  url: '#', description: 'Classic through-the-Bible audio teaching. The full Bible in 5 years.', category: 'bible-study', courseId: null, featured: false },
   { id: 'r11', title: 'Church Manual 2026',           type: 'guide',          url: '#', description: 'FLCC official church operations, ministry guidelines, and governance document.', category: 'church', courseId: null, featured: false },
   { id: 'r12', title: 'Discipleship Journal',         type: 'devotional',     url: '#', description: 'Weekly reflection guide for discipleship groups. Includes questions and memory verses.', category: 'discipleship', courseId: 'discipleship', featured: false },
@@ -4382,7 +4382,7 @@ function exportNoteToPDF(note, meta) {
     ${note.updatedAt ? `<span>Last edited: ${new Date(note.updatedAt).toLocaleString()}</span>` : ''}
   </div>
   ${note.body ? `<div class="body-text">${note.body}</div>` : ''}
-  <div class="ftr">FLCC - Farwaniya 1 · Personal Sermon Journal</div>
+  <div class="ftr">${CHURCH.name} · Personal Sermon Journal</div>
   </body></html>`;
   const win = window.open('', '_blank');
   if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 350); }
@@ -5690,9 +5690,14 @@ function matchAttendanceRecord(me, attendanceData) {
   const myName = norm(me.name);
   const myFull = norm((me.title ? me.title + ' ' : '') + me.name);
 
-  // Look through all sessions to find records for this member
+  // Look through all sessions to find records for this member.
+  // Skip services this member is not on the roster for — a Sunday-only member
+  // is never taken at a Friday service, so counting those as absences would
+  // report someone with perfect attendance at ~50%.
   const myRecords = [];
   for (const sess of attendanceData.sessions) {
+    if (me.sundayOnly && sess.service === 'Friday') continue;
+    if (me.fridayOnly && sess.service === 'Sunday') continue;
     const rec = (sess.records || []).find(r =>
       norm(r.memberName) === myName ||
       norm(r.memberName) === myFull ||

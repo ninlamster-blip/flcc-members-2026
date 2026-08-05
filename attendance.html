@@ -894,7 +894,7 @@ function HistoryTab({ state, dispatch, members }) {
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
         {sorted.map(sess=>{
-          const sum = getSessionSummary(sess, members.length);
+          const sum = getSessionSummary(sess, sess.totalMembers || members.length);
           const isOpen = expanded===sess.id;
           const attendedPct = sum.total>0 ? Math.round((sum.present/sum.total)*100) : 0;
           return (
@@ -1008,7 +1008,7 @@ function AnalyticsTab({ state, members }) {
   // Bar charts
   const sessionBars = useMemo(()=>
     sessions.slice(-8).map(s=>{
-      const sum = getSessionSummary(s, members.length);
+      const sum = getSessionSummary(s, s.totalMembers || members.length);
       return { label:formatDateShort(s.date), value:sum.total>0?Math.round((sum.present/sum.total)*100):0 };
     }),[sessions, members]);
 
@@ -1022,7 +1022,7 @@ function AnalyticsTab({ state, members }) {
     }
     return Array.from(map.entries()).sort().slice(-6).map(([mk,ss])=>{
       const avg = ss.length ? Math.round(ss.reduce((acc,s)=>{
-        const sum=getSessionSummary(s,members.length);
+        const sum=getSessionSummary(s,s.totalMembers || members.length);
         return acc+(sum.total?(sum.present/sum.total)*100:0);
       },0)/ss.length) : 0;
       const [y,m] = mk.split('-');
@@ -1040,7 +1040,7 @@ function AnalyticsTab({ state, members }) {
     const others  = mSessions.filter(s=>s.service!=='Friday'&&s.service!=='Sunday');
     const total   = mSessions.length;
     const avgPct  = total ? Math.round(mSessions.reduce((acc,s)=>{
-      const sum=getSessionSummary(s,members.length);
+      const sum=getSessionSummary(s,s.totalMembers || members.length);
       return acc+(sum.total?(sum.present/sum.total)*100:0);
     },0)/total) : 0;
     return { mSessions, fridays, sundays, others, total, avgPct };
@@ -1102,7 +1102,7 @@ function AnalyticsTab({ state, members }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
         {[
           {label:'Sessions',  value:sessions.length,  color:ATT_ACCENT},
-          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
+          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,s.totalMembers || members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
           {label:'Best',      value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#7C3AED'},
         ].map(s=>(
           <div key={s.label} className="card" style={{padding:'14px 10px',textAlign:'center'}}>
@@ -1133,7 +1133,7 @@ function AnalyticsTab({ state, members }) {
           <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginBottom:10}}>Session breakdown:</div>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
-              const sum=getSessionSummary(s,members.length);
+              const sum=getSessionSummary(s,s.totalMembers || members.length);
               const pct=sum.total>0?Math.round((sum.present/sum.total)*100):0;
               return (
                 <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:8,background:'#FAFAFA',border:'1px solid var(--border)'}}>
@@ -1153,10 +1153,10 @@ function AnalyticsTab({ state, members }) {
           <button onClick={()=>{
             const [y,m]=selectedMonth.split('-');
             const mLabel=new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-            const lines=[`${CHURCH.name} · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`,``];
+            const lines=[`${CHURCH.name} · Attendance Report`,`${mLabel}`,``,`Summary:`,`  Sessions: ${monthReport.total}`,`  Friday: ${monthReport.fridays.length} · Sunday: ${monthReport.sundays.length}`,`  Average: ${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,s.totalMembers || members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`,``];
             lines.push('Sessions:');
             for (const s of monthReport.mSessions.sort((a,b)=>a.date.localeCompare(b.date))) {
-              const sum=getSessionSummary(s,members.length);
+              const sum=getSessionSummary(s,s.totalMembers || members.length);
               const pct=sum.total>0?Math.round((sum.present/sum.total)*100):0;
               lines.push(`  ${s.serviceLabel||s.service} ${s.date}: Present ${sum.present}, Absent ${sum.absent} (${pct}%)`);
             }
@@ -1334,7 +1334,7 @@ function MembersTab({ members, state, dispatch }) {
 }
 
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
-function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcode, setPasscode, syncStatus, syncErrMsg, onSyncNow }) {
+function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken, passcode, setPasscode, syncStatus, syncErrMsg, onSyncNow }) {
   const m = state.meta;
   const set = payload => dispatch({ type:'UPDATE_META', payload });
   const [gasGuide, setGasGuide] = useState(false);
@@ -1442,9 +1442,8 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
       return;
     }
 
-    const allMembers = state.customMembers || [];
     const lines = [];
-    lines.push(`📋 FLCC - FARWANIYA 1`);
+    lines.push(`📋 ${m.churchName || CHURCH.name}`);
     lines.push(`Attendance Summary`);
     lines.push(`Week of ${weekAgo} – ${today}`);
     lines.push(`Generated: ${new Date().toLocaleString()}`);
@@ -1503,29 +1502,17 @@ function SettingsTab({ state, dispatch, pastorName, ghToken, setGhToken, passcod
       lines.push(``);
     }
 
-    // Care flags — Friday and Sunday worship services only
-    const careMembers = [];
-    const recent6 = [...state.sessions]
-      .filter(s => PASTORAL_CARE_SERVICES.has(s.service))
-      .sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 6);
-    const memberIds = new Set();
-    for (const s of recent6) for (const r of (s.records||[])) memberIds.add(r.memberId);
-    for (const id of memberIds) {
-      const statuses = recent6.map(s => (s.records||[]).find(r=>r.memberId===id)?.status || null);
-      let streak = 0;
-      for (const st of statuses) {
-        if (st !== 'present') streak++; else break;
-      }
-      if (streak >= 3) {
-        const nameRec = recent6.flatMap(s=>s.records||[]).find(r=>r.memberId===id);
-        if (nameRec) careMembers.push({ name: nameRec.memberName, streak });
-      }
-    }
+    // Care flags — the same calculation the Care tab shows, so the two never
+    // disagree. Absence is the *lack* of a record, so this has to walk the
+    // roster: anyone missing from every recent session has no record at all
+    // and would be invisible if we only read what's in session.records.
+    const careMembers = computeCareFlags(state.sessions, members);
 
     if (careMembers.length) {
       lines.push(`🙏 NEEDS PASTORAL FOLLOW-UP:`);
       for (const c of careMembers) {
-        lines.push(`  • ${c.name} — absent ${c.streak} consecutive session${c.streak>1?'s':''}`);
+        const who = (c.member.title ? c.member.title + ' ' : '') + c.member.name;
+        lines.push(`  • ${who} — absent ${c.streak} consecutive ${c.missedService} service${c.streak>1?'s':''}`);
       }
       lines.push(``);
     } else {
@@ -2258,7 +2245,7 @@ function App() {
           {tab==='analytics' && <AnalyticsTab state={state} members={members} />}
           {tab==='care'      && <CareTab      state={state} members={members} pastorName={pastorName} />}
           {tab==='members'   && <MembersTab   members={members} state={state} dispatch={dispatch} />}
-          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} pastorName={pastorName} ghToken={ghToken} setGhToken={setGhToken} passcode={passcode} setPasscode={setPasscode} syncStatus={syncStatus} syncErrMsg={syncErrMsg} onSyncNow={syncNow} />}
+          {tab==='settings'  && <SettingsTab  state={state} dispatch={dispatch} members={members} pastorName={pastorName} ghToken={ghToken} setGhToken={setGhToken} passcode={passcode} setPasscode={setPasscode} syncStatus={syncStatus} syncErrMsg={syncErrMsg} onSyncNow={syncNow} />}
         </div>
       </main>
 

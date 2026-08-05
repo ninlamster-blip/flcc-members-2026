@@ -368,7 +368,9 @@ function defaultState() {
     serviceTypes: DEFAULT_SERVICE_TYPES,
     workers: SEED_WORKERS,
     entries: SEED_ENTRIES,
-    currentMonth: '2026-04',
+    // Open on the month the ministry head is actually in. A hardcoded month
+    // silently goes stale and greets them with an empty schedule.
+    currentMonth: todayISO().slice(0, 7),
     settings: { primaryRole: DEFAULT_PRIMARY_ROLE },
   };
 }
