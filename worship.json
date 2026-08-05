@@ -1,6 +1,6 @@
 {
   "meta": {
-    "churchName": "Abundance Church FLCC",
+    "churchName": "FLCC - Abundance Church",
     "publishedAt": "2026-06-09",
     "version": 1
   },
@@ -12,7 +12,10 @@
       "key": "D",
       "capo": 0,
       "tempo": "Slow",
-      "tags": ["worship", "offering"],
+      "tags": [
+        "worship",
+        "offering"
+      ],
       "chords": "Verse:\nD  A  Bm  G  (x2)\n\nPre-Chorus:\nA  G  A  G\n\nChorus:\nD  A  Bm  G  (x2)\nD  A  G",
       "link": ""
     },
@@ -23,7 +26,10 @@
       "key": "G",
       "capo": 0,
       "tempo": "Moderate",
-      "tags": ["worship", "opening"],
+      "tags": [
+        "worship",
+        "opening"
+      ],
       "chords": "Verse:\nG  D  Em  C  (x2)\n\nChorus:\nG  D  Em  C\nG  D  C",
       "link": ""
     },
@@ -34,7 +40,10 @@
       "key": "A",
       "capo": 0,
       "tempo": "Upbeat",
-      "tags": ["praise", "opening"],
+      "tags": [
+        "praise",
+        "opening"
+      ],
       "chords": "Verse:\nA  E  F#m  D  (x2)\n\nChorus:\nA  E  D  A\nF#m  E  D  E",
       "link": ""
     }
