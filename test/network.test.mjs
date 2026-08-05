@@ -290,14 +290,18 @@ test('the shared schedule is every Friday, in order, with no duplicates', () => 
   }
 });
 
-test('a service is either fully assigned or left blank, never half-entered', () => {
-  // A row with a preacher but no emcee usually means a transcription stopped
-  // halfway rather than a service genuinely missing its emcee.
+test('a service that has anybody assigned has a preacher', () => {
+  // This started life as "all three roles or none", which the ministry's own
+  // 2026 sheet disproved: pastoral prayer is assigned only a few months ahead
+  // and the emcee column thins out after September, so partly-filled rows are
+  // normal. What stays true is the ordering — a service cannot have an emcee
+  // or a pastoral prayer without someone preaching.
   for (const e of readRepoJSON('botr-schedule.json').schedule) {
-    const filled = ['preacher', 'pastoralPrayer', 'emcee'].filter(k => (e[k] || '').trim());
+    const others = ['pastoralPrayer', 'emcee'].filter(k => (e[k] || '').trim());
+    if (!others.length) continue;
     assert.ok(
-      filled.length === 0 || filled.length === 3,
-      `${e.date}: ${filled.length} of 3 roles filled (${filled.join(', ')})`,
+      (e.preacher || '').trim(),
+      `${e.date}: has ${others.join(' and ')} but no preacher`,
     );
   }
 });
