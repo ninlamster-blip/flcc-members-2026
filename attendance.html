@@ -275,6 +275,18 @@ function getInitials(name) {
   return parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : (parts[0]||'?')[0].toUpperCase();
 }
 
+/** The roster a service is actually taken against.
+ *  A Sunday service excludes fridayOnly members and every other service
+ *  excludes sundayOnly ones — so the two can never share a denominator, and a
+ *  session must always be measured against the roster it was recorded from.
+ *  No service (nothing started yet) means everyone. */
+function rosterForService(members, service) {
+  if (!service) return members;
+  return service === 'Sunday'
+    ? members.filter(m => !m.fridayOnly)
+    : members.filter(m => !m.sundayOnly);
+}
+
 function getSessionSummary(session, totalMembers) {
   const recs    = session?.records || [];
   const present = recs.filter(r => r.status === 'present').length;
@@ -582,23 +594,16 @@ function TodayTab({ members, state, dispatch, schedule }) {
 
   const todayVisitors = state.customMembers.filter(m=>m.sessionDate===today||m.permanent);
   const currentService = session?.service;
-  const allMembers = useMemo(()=>{
-    let base = members;
-    if (currentService === 'Sunday') {
-      base = members.filter(m => !m.fridayOnly);
-    } else if (currentService) {
-      base = members.filter(m => !m.sundayOnly);
-    }
-    return [...base, ...todayVisitors];
-  },[members, todayVisitors, currentService]);
+  const allMembers = useMemo(
+    ()=>[...rosterForService(members, currentService), ...todayVisitors],
+    [members, todayVisitors, currentService]
+  );
 
   // Auto-detect service
   const detectedService = useMemo(()=>detectTodayService(schedule),[schedule]);
 
   const startSession = serviceKey => {
-    const sessionList = serviceKey === 'Sunday'
-      ? [...members.filter(m => !m.fridayOnly), ...todayVisitors]
-      : [...members.filter(m => !m.sundayOnly), ...todayVisitors];
+    const sessionList = [...rosterForService(members, serviceKey), ...todayVisitors];
     const dup = state.sessions.find(s=>s.date===today && s.service===serviceKey && (s.records||[]).length>0);
     if (dup) {
       const sum = getSessionSummary(dup, sessionList.length);

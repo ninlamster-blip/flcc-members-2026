@@ -9,3 +9,13 @@ shared by the 14 churches of the BOTR network. Starts at `index.html`; see
 **Shepherd** — a separate platform for church leaders in Kuwait and the wider
 Gulf, under [`shepherd/`](shepherd/). It shares no code, data or storage with
 the FLCC app; see [shepherd/README.md](shepherd/README.md).
+
+## Tests
+
+```bash
+node --test 'test/*.test.mjs'          # FLCC Members — see test/README.md
+node --test 'shepherd/test/*.test.mjs' # Shepherd
+node ask-proxy/worker.test.mjs         # the Cloudflare Worker
+```
+
+No dependencies and no build step anywhere — plain `node:test`.

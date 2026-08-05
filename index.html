@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FLCC - Abundance Church · Schedule for Members</title>
+<title>FLCC Members · Schedule</title>
 <meta name="description" content="View your service schedule, save events to your phone calendar, and report conflicts." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -807,6 +807,27 @@ const GOSPEL_KEY         = CHURCH.key('flcc-gospel-count-v1');
 const BOTR_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
 const BOTR_2026_TARGET   = 54000;
 const MUSIC_ACCENT = '#EA580C';
+
+/** Birthdays or anniversaries falling within the next `days` days.
+ *  Stored as "MM-DD", so the year is whichever one puts the next occurrence on
+ *  or after today — that is what makes the window work across December.
+ *  Anything not in MM-DD form is skipped rather than silently misread. */
+function upcomingOccasions(workers, today, field, days = 30) {
+  const thisYear = Number(today.slice(0, 4));
+  const [todayMonth, todayDay] = today.slice(5).split('-').map(Number);
+  const from = new Date(thisYear, todayMonth - 1, todayDay);
+  const list = [];
+  for (const w of (workers || [])) {
+    const value = w[field];
+    if (!value || !/^\d{2}-\d{2}$/.test(value)) continue;
+    const [month, day] = value.split('-').map(Number);
+    let next = new Date(thisYear, month - 1, day);
+    if (next < from) next = new Date(thisYear + 1, month - 1, day);
+    const daysAway = Math.round((next - from) / 86400000);
+    if (daysAway <= days) list.push({ worker: w, date: next, daysAway });
+  }
+  return list.sort((a, b) => a.daysAway - b.daysAway);
+}
 
 // ── Messenger notification message generator ──────────────────────────────────
 function generateAssignmentMessage(entry, worker, roleLabel, churchName, serviceTimes) {
@@ -2562,42 +2583,16 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
     [me, data, prayerData, musicData, myPrayerWorker, myMusicWorker]
   );
 
-  // Upcoming birthdays (next 30 days)
-  const upcomingBirthdays = useMemo(() => {
-    const list = [];
-    const [todayMonth, todayDay] = today.slice(5).split('-').map(Number);
-    for (const w of (data.workers || [])) {
-      if (!w.birthday) continue;
-      const [bMonth, bDay] = w.birthday.split('-').map(Number);
-      // Compute next birthday year
-      const thisYear = new Date().getFullYear();
-      let nextBday = new Date(thisYear, bMonth - 1, bDay);
-      if (nextBday < new Date(thisYear, todayMonth - 1, todayDay)) {
-        nextBday = new Date(thisYear + 1, bMonth - 1, bDay);
-      }
-      const daysAway = Math.floor((nextBday - new Date(thisYear, todayMonth - 1, todayDay)) / 86400000);
-      if (daysAway <= 30) list.push({ worker: w, date: nextBday, daysAway });
-    }
-    return list.sort((a, b) => a.daysAway - b.daysAway);
-  }, [data.workers, today]);
+  // Upcoming birthdays and anniversaries (next 30 days)
+  const upcomingBirthdays = useMemo(
+    () => upcomingOccasions(data.workers, today, 'birthday'),
+    [data.workers, today]
+  );
 
-  // Upcoming anniversaries (next 30 days)
-  const upcomingAnniversaries = useMemo(() => {
-    const list = [];
-    const [todayMonth, todayDay] = today.slice(5).split('-').map(Number);
-    for (const w of (data.workers || [])) {
-      if (!w.anniversary || !/^\d{2}-\d{2}$/.test(w.anniversary)) continue;
-      const [aMonth, aDay] = w.anniversary.split('-').map(Number);
-      const thisYear = new Date().getFullYear();
-      let nextAnniv = new Date(thisYear, aMonth - 1, aDay);
-      if (nextAnniv < new Date(thisYear, todayMonth - 1, todayDay)) {
-        nextAnniv = new Date(thisYear + 1, aMonth - 1, aDay);
-      }
-      const daysAway = Math.floor((nextAnniv - new Date(thisYear, todayMonth - 1, todayDay)) / 86400000);
-      if (daysAway <= 30) list.push({ worker: w, date: nextAnniv, daysAway });
-    }
-    return list.sort((a, b) => a.daysAway - b.daysAway);
-  }, [data.workers, today]);
+  const upcomingAnniversaries = useMemo(
+    () => upcomingOccasions(data.workers, today, 'anniversary'),
+    [data.workers, today]
+  );
 
   // Upcoming events (next 60 days)
   const upcomingEvents = useMemo(() => {
@@ -8025,7 +8020,7 @@ ${botrSectors||'  (data not yet loaded from BOTR app)'}
 Satellite Churches:
 ${botrChurches||'  (data not yet loaded from BOTR app)'}
 
-=== FLCC ABUNDANCE — FELLOWSHIP MINISTRY ===
+=== ${CHURCH.plainName.toUpperCase()} — FELLOWSHIP MINISTRY ===
 Head: ${data.ministry?.headName||'N/A'} (${data.ministry?.headTitle||''}) · WhatsApp: ${data.ministry?.whatsapp||'N/A'}
 
 === PRAYER MINISTRY ===

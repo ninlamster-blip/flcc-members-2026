@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FLCC - Abundance Church · Schedule for Members</title>
+<title>FLCC Members · Schedule</title>
 <meta name="description" content="View your service schedule, save events to your phone calendar, and report conflicts." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -922,6 +922,27 @@ function PersonalEventCard({ ev, onEdit, hasConflict, onConflictReport }) {
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/** Birthdays or anniversaries falling within the next `days` days.
+ *  Stored as "MM-DD", so the year is whichever one puts the next occurrence on
+ *  or after today — that is what makes the window work across December.
+ *  Anything not in MM-DD form is skipped rather than silently misread. */
+function upcomingOccasions(workers, today, field, days = 30) {
+  const thisYear = Number(today.slice(0, 4));
+  const [todayMonth, todayDay] = today.slice(5).split('-').map(Number);
+  const from = new Date(thisYear, todayMonth - 1, todayDay);
+  const list = [];
+  for (const w of (workers || [])) {
+    const value = w[field];
+    if (!value || !/^\d{2}-\d{2}$/.test(value)) continue;
+    const [month, day] = value.split('-').map(Number);
+    let next = new Date(thisYear, month - 1, day);
+    if (next < from) next = new Date(thisYear + 1, month - 1, day);
+    const daysAway = Math.round((next - from) / 86400000);
+    if (daysAway <= days) list.push({ worker: w, date: next, daysAway });
+  }
+  return list.sort((a, b) => a.daysAway - b.daysAway);
+}
 
 function parseISODate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
 function formatISODate(date) {
@@ -1894,23 +1915,10 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
   );
 
   // Upcoming birthdays (next 30 days)
-  const upcomingBirthdays = useMemo(() => {
-    const list = [];
-    const [todayMonth, todayDay] = today.slice(5).split('-').map(Number);
-    for (const w of (data.workers || [])) {
-      if (!w.birthday) continue;
-      const [bMonth, bDay] = w.birthday.split('-').map(Number);
-      // Compute next birthday year
-      const thisYear = new Date().getFullYear();
-      let nextBday = new Date(thisYear, bMonth - 1, bDay);
-      if (nextBday < new Date(thisYear, todayMonth - 1, todayDay)) {
-        nextBday = new Date(thisYear + 1, bMonth - 1, bDay);
-      }
-      const daysAway = Math.floor((nextBday - new Date(thisYear, todayMonth - 1, todayDay)) / 86400000);
-      if (daysAway <= 30) list.push({ worker: w, date: nextBday, daysAway });
-    }
-    return list.sort((a, b) => a.daysAway - b.daysAway);
-  }, [data.workers, today]);
+  const upcomingBirthdays = useMemo(
+    () => upcomingOccasions(data.workers, today, 'birthday'),
+    [data.workers, today]
+  );
 
   // Upcoming events (next 60 days)
   const upcomingEvents = useMemo(() => {

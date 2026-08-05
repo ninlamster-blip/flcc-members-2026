@@ -1,0 +1,160 @@
+/**
+ * Reaching into a single-file app.
+ *
+ * The FLCC apps are one HTML file each: markup, styles and a single
+ * <script type="text/babel"> block holding the whole React app. That is
+ * deliberate — they are served as static files with no build step — but it
+ * means the logic inside them can't be `import`ed the way shepherd/js/core/*
+ * can.
+ *
+ * So we lift named top-level declarations out of the script block by source
+ * slicing and evaluate them on their own. Only pure helpers are extractable
+ * this way: anything containing JSX, hooks or DOM access will not survive,
+ * which is a useful constraint — it keeps the tested logic honest and pushes
+ * the interesting rules out of the components.
+ *
+ * If a function you want isn't extractable, that's the signal to lift it to
+ * the top level of the app file first, the way rosterForService and
+ * upcomingOccasions were.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+/** The contents of the app's <script type="text/babel"> block. */
+export function appSource(file) {
+  const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const open = html.indexOf('<script type="text/babel"');
+  if (open === -1) throw new Error(`${file}: no babel script block`);
+  const start = html.indexOf('>', open) + 1;
+  const end = html.indexOf('</script>', start);
+  if (end === -1) throw new Error(`${file}: unterminated script block`);
+  return html.slice(start, end);
+}
+
+/** Read a whole file from the repo root. */
+export function readRepoFile(file) {
+  return fs.readFileSync(path.join(ROOT, file), 'utf8');
+}
+
+export function readRepoJSON(file) {
+  return JSON.parse(readRepoFile(file));
+}
+
+export function repoPath(file) {
+  return path.join(ROOT, file);
+}
+
+export function exists(file) {
+  return fs.existsSync(path.join(ROOT, file));
+}
+
+/** Slice `function NAME(...) { ... }` out of `src` by matching braces.
+ *  Only matches declarations at column 0, which is where the app files put
+ *  their top-level helpers. */
+function sliceFunction(src, name) {
+  const decl = new RegExp(`^function\\s+${name}\\s*\\(`, 'm');
+  const m = decl.exec(src);
+  if (!m) return null;
+
+  const bodyStart = src.indexOf('{', m.index + m[0].length - 1);
+  if (bodyStart === -1) return null;
+
+  // Brace matching that skips over strings, template literals, regex-ish
+  // slashes and comments — enough for the helpers we extract.
+  let depth = 0;
+  let i = bodyStart;
+  let quote = null;
+  let inLine = false;
+  let inBlock = false;
+
+  for (; i < src.length; i++) {
+    const c = src[i];
+    const next = src[i + 1];
+    const prev = src[i - 1];
+
+    if (inLine) { if (c === '\n') inLine = false; continue; }
+    if (inBlock) { if (c === '*' && next === '/') { inBlock = false; i++; } continue; }
+    if (quote) {
+      if (c === '\\') { i++; continue; }
+      if (c === quote) quote = null;
+      continue;
+    }
+    if (c === '/' && next === '/') { inLine = true; i++; continue; }
+    if (c === '/' && next === '*') { inBlock = true; i++; continue; }
+    if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return src.slice(m.index, i + 1);
+    }
+    void prev;
+  }
+  return null;
+}
+
+/** Slice a top-level `const NAME = <single line>;` out of `src`. */
+function sliceConst(src, name) {
+  const re = new RegExp(`^const\\s+${name}\\s*=.*?;\\s*$`, 'm');
+  const m = re.exec(src);
+  return m ? m[0] : null;
+}
+
+/**
+ * Extract named top-level declarations from an app file and evaluate them.
+ *
+ *   const { getSessionSummary } = load('attendance.html', ['getSessionSummary']);
+ *
+ * Names may be functions or single-line consts. Throws with a clear message
+ * when a name isn't found or isn't extractable, so a rename in the app file
+ * fails the suite loudly instead of silently testing nothing.
+ */
+export function load(file, names) {
+  const src = appSource(file);
+  const parts = [];
+
+  for (const name of names) {
+    const code = sliceFunction(src, name) ?? sliceConst(src, name);
+    if (!code) {
+      throw new Error(
+        `${file}: could not extract "${name}". It must be a top-level ` +
+        `function declaration or single-line const in the babel block. ` +
+        `If it moved or was renamed, update the test; if it's now inside a ` +
+        `component, lift it back to the top level.`
+      );
+    }
+    parts.push(code);
+  }
+
+  parts.push(`return { ${names.join(', ')} };`);
+
+  try {
+    return new Function(parts.join('\n\n'))();
+  } catch (err) {
+    throw new Error(`${file}: extracted source failed to evaluate — ${err.message}`);
+  }
+}
+
+/**
+ * Evaluate church.js against a fake browser at `href`, returning its FLCC
+ * global. church.js is a plain IIFE that only touches window.location and
+ * localStorage, so a couple of stubs are enough — and testing the real file
+ * beats re-describing the registry in the tests.
+ */
+export function loadChurch(href = 'https://example.org/index.html') {
+  const url = new URL(href);
+  const store = new Map();
+  const win = {
+    location: { pathname: url.pathname, search: url.search, origin: url.origin, href },
+    localStorage: {
+      getItem: k => (store.has(k) ? store.get(k) : null),
+      setItem: (k, v) => store.set(k, String(v)),
+    },
+  };
+  const src = readRepoFile('church.js');
+  new Function('window', 'URLSearchParams', 'localStorage', src)(win, URLSearchParams, win.localStorage);
+  if (!win.FLCC) throw new Error('church.js did not define window.FLCC');
+  return win.FLCC;
+}
