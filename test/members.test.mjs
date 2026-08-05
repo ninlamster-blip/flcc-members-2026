@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { load, appSource } from './lib/extract.mjs';
+import { load, appSource, readRepoFile } from './lib/extract.mjs';
 
 const {
   matchAttendanceRecord,
@@ -449,4 +449,64 @@ test('holiday entries missing a date or a name are skipped', () => {
 test('no holiday list is handled', () => {
   assert.deepEqual(upcomingHolidays(null, '2026-08-05'), []);
   assert.deepEqual(upcomingHolidays([], '2026-08-05'), []);
+});
+
+// ── Text size ────────────────────────────────────────────────────────────────
+
+const { TEXT_SIZES, DEFAULT_TEXT_SIZE } = load('index.html', ['TEXT_SIZES', 'DEFAULT_TEXT_SIZE']);
+
+test('the offered text sizes are sane and ordered', () => {
+  assert.ok(TEXT_SIZES.length >= 3, 'a size control needs real choice');
+  const px = TEXT_SIZES.map(o => o.px);
+  assert.deepEqual(px, [...px].sort((a, b) => a - b), 'sizes must ascend');
+  assert.equal(new Set(px).size, px.length, 'no duplicates');
+  for (const o of TEXT_SIZES) {
+    assert.ok(o.label && o.label.trim(), `${o.px}px needs a label`);
+    // The pre-paint script only honours 15–26px, so anything outside that
+    // would be stored and then silently ignored on the next load.
+    assert.ok(o.px >= 15 && o.px <= 26, `${o.px}px is outside the range the app will restore`);
+  }
+});
+
+test('the default size is one of the choices, and matches the stylesheet', () => {
+  assert.ok(TEXT_SIZES.some(o => o.px === DEFAULT_TEXT_SIZE), 'the default must be selectable');
+
+  // Everything is sized in rem, so this one rule is what the whole interface
+  // scales from. If the two drift apart, the control shows the wrong option
+  // as active for anyone who has never changed it.
+  const css = /html\s*\{\s*font-size:\s*(\d+(?:\.\d+)?)px/.exec(readRepoFile('index.html'));
+  assert.ok(css, 'index.html must set a root font-size');
+  assert.equal(Number(css[1]), DEFAULT_TEXT_SIZE, 'the CSS default and DEFAULT_TEXT_SIZE must agree');
+});
+
+/** The inline script that restores the saved text size, run against stubs.
+ *  Testing it for real beats grepping for the key: a disabled assignment still
+ *  mentions it. */
+function runTextSizePreload(stored) {
+  const src = readRepoFile('index.html');
+  const appStart = src.indexOf('<script type="text/babel"');
+  const start = src.lastIndexOf('<script>', src.indexOf('flcc-text-size-v1'));
+  assert.ok(start > -1 && start < appStart, 'the size must be restored before the babel app block');
+  const body = src.slice(src.indexOf('>', start) + 1, src.indexOf('</script>', start));
+
+  const root = { style: {} };
+  const win = { FLCC: { key: k => k } };
+  const storage = { getItem: () => stored };
+  new Function('window', 'localStorage', 'document', body)(win, storage, { documentElement: root });
+  return root.style.fontSize;
+}
+
+test('a saved size is applied before the app renders', () => {
+  // Applying it in React would let the page paint at the old size first and
+  // visibly jump — exactly what someone using a larger size notices.
+  assert.equal(runTextSizePreload('23'), '23px');
+  assert.equal(runTextSizePreload(String(DEFAULT_TEXT_SIZE)), `${DEFAULT_TEXT_SIZE}px`);
+});
+
+test('a stored size that is missing or out of range is ignored', () => {
+  // Falling through leaves the stylesheet default in place, which is correct;
+  // honouring it would let a bad value make the app unreadable.
+  for (const bad of [null, '', 'huge', '4', '400', '-19']) {
+    assert.equal(runTextSizePreload(bad), undefined, `"${bad}" should not be applied`);
+  }
 });
