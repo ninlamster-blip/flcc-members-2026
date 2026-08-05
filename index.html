@@ -1460,6 +1460,91 @@ function downloadServiceICS(entry, workers, churchName) {
   downloadICS(`flcc-${entry.service.toLowerCase()}-${entry.date}.ics`, lines.join('\r\n'));
 }
 
+/** "10:00 AM" -> "10:00". The BOTR file stores its service time the way it is
+ *  displayed, so an export has to read it back. Returns null if it isn't a
+ *  time, and the caller falls back to an all-day entry. */
+function parseTime12(text) {
+  const m = /^\s*(\d{1,2})(?::(\d{2}))?\s*([AaPp])\.?[Mm]\.?\s*$/.exec(String(text || ''));
+  if (!m) return null;
+  const clock = Number(m[1]);
+  const mins  = m[2] ? Number(m[2]) : 0;
+  // Out of range is a typo, not a time — "25:00 AM" must not quietly become 01:00.
+  if (clock < 1 || clock > 12 || mins > 59) return null;
+  let hour = clock % 12;
+  if (/[Pp]/.test(m[3])) hour += 12;
+  return `${String(hour).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+}
+
+/** The ICS local datetime `minutes` after date+time, rolling the hour and the
+ *  day over properly — formatICSDateTime only pads, so "13:00 + 90" has to be
+ *  normalised here rather than by arithmetic on the parts. */
+function icsDateTimePlus(date, time, minutes) {
+  const [y, mo, d] = date.split('-').map(Number);
+  const [h, mi] = String(time || '00:00').split(':').map(Number);
+  const t = new Date(y, mo - 1, d, h, mi + minutes);
+  return formatICSDateTime(t.getFullYear(), t.getMonth() + 1, t.getDate(), t.getHours(), t.getMinutes());
+}
+
+/** One VEVENT, timed when a start time is known and all-day when it isn't. */
+function buildICSEvent({ uid, date, startTime, endTime, durationMinutes = 90, summary, location, description }) {
+  const lines = ['BEGIN:VEVENT', `UID:${uid}`, `DTSTAMP:${formatICSStamp()}`];
+  if (startTime) {
+    lines.push(`DTSTART:${icsDateTimePlus(date, startTime, 0)}`);
+    lines.push(`DTEND:${endTime ? icsDateTimePlus(date, endTime, 0) : icsDateTimePlus(date, startTime, durationMinutes)}`);
+  } else {
+    lines.push(`DTSTART;VALUE=DATE:${formatICSDate(date)}`);
+    lines.push(`DTEND;VALUE=DATE:${formatICSDate(addDays(date, 1))}`);
+  }
+  lines.push(`SUMMARY:${escapeICS(summary)}`);
+  if (location) lines.push(`LOCATION:${escapeICS(location)}`);
+  if (description) lines.push(`DESCRIPTION:${escapeICS(description)}`);
+  lines.push('END:VEVENT');
+  return lines;
+}
+
+function wrapICS(eventLines, prodId = '-//FLCC Members//EN') {
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:${prodId}`, 'CALSCALE:GREGORIAN', ...eventLines, 'END:VCALENDAR'].join('\r\n');
+}
+
+/** The BOTR Friday morning service — the whole network is invited, so this is
+ *  saveable whether or not the member is the one serving. `roles` is their own
+ *  duty when they have one. */
+function downloadBotrServiceICS(entry, meta, roles) {
+  const service = meta?.service || 'Friday Morning Service';
+  const detail  = [
+    roles && roles.length ? `Your role: ${roles.join(', ')}` : '',
+    entry.preacher       ? `Preacher: ${entry.preacher}` : '',
+    entry.pastoralPrayer ? `Pastoral Prayer: ${entry.pastoralPrayer}` : '',
+    entry.emcee          ? `EMCEE: ${entry.emcee}` : '',
+    entry.event || '',
+  ].filter(Boolean).join('\n');
+
+  const lines = buildICSEvent({
+    uid: `botr-${entry.date}@flcc-members`,
+    date: entry.date,
+    startTime: parseTime12(meta?.serviceTime),
+    durationMinutes: 120,
+    summary: [meta?.churchName, service].filter(Boolean).join(' · '),
+    location: meta?.location || '',
+    description: detail,
+  });
+  downloadICS(`flcc-botr-friday-${entry.date}.ics`, wrapICS(lines, '-//FLCC BOTR//EN'));
+}
+
+/** A network-wide announcement. */
+function downloadAnnouncementICS(a) {
+  const lines = buildICSEvent({
+    uid: `${a.id}@flcc-members`,
+    date: a.date,
+    startTime: a.startTime,
+    endTime: a.endTime,
+    summary: a.title,
+    location: a.location || '',
+    description: [a.host ? `Host: ${a.host}` : '', a.notes || ''].filter(Boolean).join('\n'),
+  });
+  downloadICS(`flcc-${String(a.title).replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${a.date}.ics`, wrapICS(lines));
+}
+
 // =============================================================================
 // CONFLICT MESSAGE BUILDER
 // =============================================================================
@@ -1715,6 +1800,9 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
                 </div>
                 {entry.event && <div className="text-xs mt-2" style={{ color: 'var(--accent)', fontWeight: 500 }}>{entry.event}</div>}
                 <div className="text-xs ink-muted mt-2">Serving with the wider BOTR network.</div>
+                <div className="mt-3">
+                  <button className="btn btn-soft text-xs" onClick={() => downloadBotrServiceICS(entry, botrScheduleData?.meta, roles)}>📅 Save to my calendar</button>
+                </div>
               </div>
             );
           })}
@@ -2130,6 +2218,9 @@ function NotificationBell({ me, data, announcements, botrScheduleData, notifSeen
                       <div className="text-xs ink-muted mt-0.5">{formatDateLong(n.date)}</div>
                       {n.location && <div className="text-xs ink-muted">📍 {n.location}</div>}
                       {n.notes && <div className="text-xs ink-muted mt-1">{n.notes}</div>}
+                      <div className="mt-2">
+                        <button className="btn btn-soft text-xs" onClick={() => downloadAnnouncementICS(n)}>📅 Save</button>
+                      </div>
                     </div>
                   );
                 })}
@@ -2150,6 +2241,9 @@ function NotificationBell({ me, data, announcements, botrScheduleData, notifSeen
                       <div className="font-semibold text-sm mt-0.5">{formatDateLong(entry.date)}</div>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {roles.map(r => <span key={r} className="pill pill-accent text-xs">{r}</span>)}
+                      </div>
+                      <div className="mt-2">
+                        <button className="btn btn-soft text-xs" onClick={() => downloadBotrServiceICS(entry, botrScheduleData?.meta, roles)}>📅 Save</button>
                       </div>
                     </div>
                   );
@@ -2667,6 +2761,9 @@ function BOTRScheduleCard({ botrData }) {
             {next.event && <div style={{ color: 'var(--accent)', fontWeight: 500 }}>{next.event}</div>}
           </div>
         )}
+        <div className="mt-2">
+          <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); downloadBotrServiceICS(next, botrData.meta); }}>📅 Save</button>
+        </div>
       </div>
     </div>
   );
@@ -2938,6 +3035,9 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                   {n.location && <div>📍 {n.location}</div>}
                   {n.notes && <div className="mt-1">{n.notes}</div>}
                 </div>
+                <div className="mt-2">
+                  <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); downloadAnnouncementICS(n); }}>📅 Save</button>
+                </div>
               </div>
             ))}
           </div>
@@ -3089,6 +3189,12 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                   <div className="home-card-body text-xs ink-muted">
                     {ev.startTime ? `${formatTime12(ev.startTime)}${ev.endTime ? '–' + formatTime12(ev.endTime) : ''}` : 'All day'}
                     {ev.location ? ` · ${ev.location}` : ''}
+                  </div>
+                  <div className="mt-2">
+                    <button className="btn btn-soft text-xs" onClick={(e) => {
+                      e.stopPropagation();
+                      downloadICS(`${ev.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`, eventsToICSFile([ev], ev.title));
+                    }}>📅 Save</button>
                   </div>
                 </div>
               );
