@@ -15,10 +15,11 @@
     },
     {
       "date": "2026-01-09",
-      "preacher": "Ptr. Wing",
+      "preacher": "Ptra. Weng",
       "pastoralPrayer": "Rev. Oscar",
       "emcee": "Sis. Zeny",
-      "event": ""
+      "event": "",
+      "preacherId": "cornerstone:sis-11"
     },
     {
       "date": "2026-01-16",
@@ -166,10 +167,11 @@
     },
     {
       "date": "2026-05-29",
-      "preacher": "Ptra. Wing",
+      "preacher": "Ptra. Weng",
       "pastoralPrayer": "Ptra. Verna",
       "emcee": "Bro. Wilson",
-      "event": ""
+      "event": "",
+      "preacherId": "cornerstone:sis-11"
     },
     {
       "date": "2026-06-05",
@@ -234,26 +236,30 @@
       "date": "2026-07-31",
       "preacher": "Ptr. Froi",
       "pastoralPrayer": "Ptra. Weng",
-      "emcee": "Bro. Rey",
+      "emcee": "Sis. Lala",
       "event": "",
       "preacherId": "fb:bro-06",
-      "pastoralPrayerId": "cornerstone:sis-11",
-      "emceeId": "shekinah:bro-09"
+      "pastoralPrayerId": "cornerstone:sis-11"
     },
     {
       "date": "2026-08-07",
       "preacher": "Ptr. Rodel",
-      "pastoralPrayer": "",
-      "emcee": "Sis. Lala",
+      "pastoralPrayer": "Ptr. Mike",
+      "emcee": "Sis. Precy",
       "event": "",
-      "preacherId": "ft:bro-17"
+      "preacherId": "ft:bro-17",
+      "pastoralPrayerId": "agape:bro-06",
+      "emceeId": "ft:sis-12"
     },
     {
       "date": "2026-08-14",
-      "preacher": "Ptra. Wing",
-      "pastoralPrayer": "",
-      "emcee": "Sis. Belle",
-      "event": ""
+      "preacher": "Ptra. Weng",
+      "pastoralPrayer": "Ptra. Mitch",
+      "emcee": "Bro. Rey",
+      "event": "",
+      "preacherId": "cornerstone:sis-11",
+      "pastoralPrayerId": "shekinah:sis-14",
+      "emceeId": "shekinah:bro-09"
     },
     {
       "date": "2026-08-21",
@@ -393,6 +399,135 @@
       "pastoralPrayer": "",
       "emcee": "",
       "event": "Christmas"
+    }
+  ],
+  "themes": {
+    "2026-01": "Recommitment/New Beginning",
+    "2026-02": "Love (Sacrificial Love, Unconditional Love)",
+    "2026-03": "Prayer & Fasting",
+    "2026-04": "Works of the Holy Spirit/Church Growth",
+    "2026-05": "You are What You Eat Physically & Spiritually",
+    "2026-06": "Worship/Evangelism/Discipleship/Fellowship",
+    "2026-07": "Book of 1 Thessalonians",
+    "2026-09": "Financial Stewardship",
+    "2026-10": "Missions",
+    "2026-11": "Thanksgiving",
+    "2026-12": "Birth of Christ/God Incarnate"
+  },
+  "holidays": [
+    {
+      "date": "2026-01-01",
+      "name": "New Year"
+    },
+    {
+      "date": "2026-01-16",
+      "name": "Isra & Miraj"
+    },
+    {
+      "date": "2026-02-25",
+      "name": "National Day"
+    },
+    {
+      "date": "2026-02-26",
+      "name": "Liberation Day"
+    },
+    {
+      "date": "2026-03-20",
+      "name": "Eid Al Fitr"
+    },
+    {
+      "date": "2026-03-21",
+      "name": "Eid Al Fitr"
+    },
+    {
+      "date": "2026-03-22",
+      "name": "Eid Al Fitr"
+    },
+    {
+      "date": "2026-04-03",
+      "name": "Good Friday"
+    },
+    {
+      "date": "2026-04-05",
+      "name": "Easter Sunday"
+    },
+    {
+      "date": "2026-05-26",
+      "name": "Arafat"
+    },
+    {
+      "date": "2026-05-27",
+      "name": "Eid Al Adha"
+    },
+    {
+      "date": "2026-05-28",
+      "name": "Eid Al Adha"
+    },
+    {
+      "date": "2026-05-29",
+      "name": "Eid Al Adha"
+    },
+    {
+      "date": "2026-08-27",
+      "name": "PBUH Birthday"
+    }
+  ],
+  "leave": [
+    {
+      "person": "LPJ",
+      "when": "Feb 2-9 / Apr 26-Jun 11 / Oct T"
+    },
+    {
+      "person": "Ver",
+      "when": "Aug 21-Oct 10"
+    },
+    {
+      "person": "Rodel",
+      "when": "Jan 24-31 / May 31-Jul 7"
+    },
+    {
+      "person": "Oca",
+      "when": ""
+    },
+    {
+      "person": "Ellen",
+      "when": "Retiring mid Aug"
+    },
+    {
+      "person": "Cathy",
+      "when": "Oct 27-Nov 30"
+    },
+    {
+      "person": "Anson",
+      "when": "May 8-Jun 7 / Dec 19-Jan 16"
+    },
+    {
+      "person": "Verna",
+      "when": "Jun 16-Aug 30"
+    },
+    {
+      "person": "Doddie",
+      "when": "Dec 1-31"
+    },
+    {
+      "person": "Mike",
+      "when": "Not travelling"
+    },
+    {
+      "person": "Froi",
+      "when": "Sep 16-Oct 31"
+    },
+    {
+      "person": "Mitch",
+      "when": "Oct 30-Dec 3"
+    },
+    {
+      "person": "Justin",
+      "when": "Jun 25-Aug 7"
+    },
+    {
+      "person": "Wing",
+      "when": "Dec 1-31"
     }
   ]
 }

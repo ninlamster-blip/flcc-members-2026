@@ -369,3 +369,27 @@ test('every BOTR duty reference points at a real member of a real church', () =>
     }
   }
 });
+
+test('the shared themes, holidays and leave are shaped the way the app reads them', () => {
+  const botr = readRepoJSON('botr-schedule.json');
+
+  for (const [month, theme] of Object.entries(botr.themes || {})) {
+    assert.match(month, /^\d{4}-\d{2}$/, `theme key "${month}" must be YYYY-MM`);
+    assert.ok(theme.trim(), `${month}: an empty theme should be left out, not blank`);
+    assert.ok(!theme.includes('___'), `${month}: "${theme}" still has a blank to fill in`);
+  }
+
+  const seen = new Set();
+  for (const h of (botr.holidays || [])) {
+    assert.match(h.date, /^\d{4}-\d{2}-\d{2}$/, `holiday "${h.name}" needs a YYYY-MM-DD date`);
+    assert.ok(h.name && h.name.trim(), `holiday on ${h.date} needs a name`);
+    const key = `${h.date}|${h.name}`;
+    assert.ok(!seen.has(key), `duplicate holiday ${key}`);
+    seen.add(key);
+  }
+
+  for (const l of (botr.leave || [])) {
+    assert.ok(l.person && l.person.trim(), 'a leave entry needs a person');
+    assert.equal(typeof l.when, 'string', `${l.person}: leave dates are free text, shown as written`);
+  }
+});
