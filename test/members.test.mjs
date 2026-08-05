@@ -372,3 +372,54 @@ test('an empty location or description is left out rather than written blank', (
   assert.equal(lines.some(l => l.startsWith('LOCATION:')), false);
   assert.equal(lines.some(l => l.startsWith('DESCRIPTION:')), false);
 });
+
+// ── Themes, holidays and leave ───────────────────────────────────────────────
+
+const { upcomingHolidays, themeForDate } = load(
+  'index.html',
+  ['parseISODate', 'formatISODate', 'addDays', 'upcomingHolidays', 'themeForDate'],
+);
+
+const THEMES = { '2026-07': 'Book of 1 Thessalonians', '2026-09': 'Financial Stewardship' };
+
+test('a service shows the theme of the month it falls in', () => {
+  assert.equal(themeForDate(THEMES, '2026-07-31'), 'Book of 1 Thessalonians');
+  assert.equal(themeForDate(THEMES, '2026-09-18'), 'Financial Stewardship');
+});
+
+test('a month with no theme yet shows nothing rather than a placeholder', () => {
+  // August still reads "Book of ________" on the sheet, so it is left unset.
+  assert.equal(themeForDate(THEMES, '2026-08-07'), '');
+  assert.equal(themeForDate(undefined, '2026-08-07'), '');
+  assert.equal(themeForDate(THEMES, undefined), '');
+});
+
+const HOLIDAYS = [
+  { date: '2026-08-27', name: 'PBUH Birthday' },
+  { date: '2026-05-27', name: 'Eid Al Adha' },
+  { date: '2026-09-30', name: 'Later' },
+];
+
+test('only holidays still ahead and inside the window are shown', () => {
+  const found = upcomingHolidays(HOLIDAYS, '2026-08-05', 45);
+  assert.deepEqual(found.map(h => h.name), ['PBUH Birthday'], 'May has passed, September is beyond 45 days');
+});
+
+test('holidays come back soonest first', () => {
+  const list = [{ date: '2026-08-27', name: 'b' }, { date: '2026-08-10', name: 'a' }];
+  assert.deepEqual(upcomingHolidays(list, '2026-08-05', 45).map(h => h.name), ['a', 'b']);
+});
+
+test('a holiday today still counts as upcoming', () => {
+  assert.equal(upcomingHolidays([{ date: '2026-08-05', name: 'Today' }], '2026-08-05', 45).length, 1);
+});
+
+test('holiday entries missing a date or a name are skipped', () => {
+  const list = [{ date: '2026-08-10' }, { name: 'No date' }, { date: '2026-08-11', name: 'ok' }];
+  assert.deepEqual(upcomingHolidays(list, '2026-08-05', 45).map(h => h.name), ['ok']);
+});
+
+test('no holiday list is handled', () => {
+  assert.deepEqual(upcomingHolidays(null, '2026-08-05'), []);
+  assert.deepEqual(upcomingHolidays([], '2026-08-05'), []);
+});

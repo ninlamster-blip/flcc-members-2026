@@ -80,6 +80,20 @@ shared card exactly as before, it just isn't tied to anybody's app. A test
 checks that every reference points at a real member of a real church, so a
 typo fails the suite rather than quietly leaving someone untold.
 
+### What else the file carries
+
+Alongside `schedule[]` it holds three lists the whole network sees:
+
+- `themes` — `"2026-09": "Financial Stewardship"`, keyed by month. The theme
+  shows on the service card for any date in that month. Leave a month out
+  until its theme is decided; a blank one is worse than none.
+- `holidays` — `{ "date": "2026-08-27", "name": "PBUH Birthday" }`. The next
+  45 days appear on Home, each saveable to a phone calendar.
+- `leave` — `{ "person": "Froi", "when": "Sep 16-Oct 31" }`, folded away on
+  Home behind "Ministry leave". `when` is shown **exactly as written**: the
+  ministry's own shorthand ("Oct T", "Dec 19-Jan 16") doesn't parse cleanly
+  into dates, and showing it verbatim beats guessing wrong.
+
 ## Telling the whole network something
 
 `announcements.json` at the root is how one notice reaches every member of all

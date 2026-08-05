@@ -290,14 +290,18 @@ test('the shared schedule is every Friday, in order, with no duplicates', () => 
   }
 });
 
-test('a service is either fully assigned or left blank, never half-entered', () => {
-  // A row with a preacher but no emcee usually means a transcription stopped
-  // halfway rather than a service genuinely missing its emcee.
+test('a service that has anybody assigned has a preacher', () => {
+  // This started life as "all three roles or none", which the ministry's own
+  // 2026 sheet disproved: pastoral prayer is assigned only a few months ahead
+  // and the emcee column thins out after September, so partly-filled rows are
+  // normal. What stays true is the ordering — a service cannot have an emcee
+  // or a pastoral prayer without someone preaching.
   for (const e of readRepoJSON('botr-schedule.json').schedule) {
-    const filled = ['preacher', 'pastoralPrayer', 'emcee'].filter(k => (e[k] || '').trim());
+    const others = ['pastoralPrayer', 'emcee'].filter(k => (e[k] || '').trim());
+    if (!others.length) continue;
     assert.ok(
-      filled.length === 0 || filled.length === 3,
-      `${e.date}: ${filled.length} of 3 roles filled (${filled.join(', ')})`,
+      (e.preacher || '').trim(),
+      `${e.date}: has ${others.join(' and ')} but no preacher`,
     );
   }
 });
@@ -363,5 +367,29 @@ test('every BOTR duty reference points at a real member of a real church', () =>
       // A linked role must still carry the display name the shared card shows.
       assert.ok((entry[role] || '').trim(), `${entry.date} ${role}: linked but has no name to display`);
     }
+  }
+});
+
+test('the shared themes, holidays and leave are shaped the way the app reads them', () => {
+  const botr = readRepoJSON('botr-schedule.json');
+
+  for (const [month, theme] of Object.entries(botr.themes || {})) {
+    assert.match(month, /^\d{4}-\d{2}$/, `theme key "${month}" must be YYYY-MM`);
+    assert.ok(theme.trim(), `${month}: an empty theme should be left out, not blank`);
+    assert.ok(!theme.includes('___'), `${month}: "${theme}" still has a blank to fill in`);
+  }
+
+  const seen = new Set();
+  for (const h of (botr.holidays || [])) {
+    assert.match(h.date, /^\d{4}-\d{2}-\d{2}$/, `holiday "${h.name}" needs a YYYY-MM-DD date`);
+    assert.ok(h.name && h.name.trim(), `holiday on ${h.date} needs a name`);
+    const key = `${h.date}|${h.name}`;
+    assert.ok(!seen.has(key), `duplicate holiday ${key}`);
+    seen.add(key);
+  }
+
+  for (const l of (botr.leave || [])) {
+    assert.ok(l.person && l.person.trim(), 'a leave entry needs a person');
+    assert.equal(typeof l.when, 'string', `${l.person}: leave dates are free text, shown as written`);
   }
 });

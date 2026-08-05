@@ -874,6 +874,20 @@ function myBotrDuties(botrData, slug, me, today, days = 60) {
   return out.sort((a, b) => a.entry.date.localeCompare(b.entry.date));
 }
 
+/** Public holidays still ahead, soonest first. Shared like the rest of the
+ *  BOTR file — the whole network is in Kuwait, so one list serves everyone. */
+function upcomingHolidays(holidays, today, days = 45) {
+  const until = addDays(today, days);
+  return (holidays || [])
+    .filter(h => h && h.date && h.name && h.date >= today && h.date <= until)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** The preaching theme for the month a date falls in, if one is set. */
+function themeForDate(themes, date) {
+  return (themes && date) ? (themes[String(date).slice(0, 7)] || '') : '';
+}
+
 // ── Messenger notification message generator ──────────────────────────────────
 function generateAssignmentMessage(entry, worker, roleLabel, churchName, serviceTimes) {
   const svcTime = (serviceTimes && serviceTimes[entry.service]) || '';
@@ -1795,6 +1809,9 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
                   {away === 0 ? 'Today' : away === 1 ? 'Tomorrow' : `In ${away} days`} · Friday{time ? ` · ${time}` : ''}
                 </div>
                 <div className="font-semibold text-sm mt-0.5">{formatDateLong(entry.date)}</div>
+                {themeForDate(botrScheduleData?.themes, entry.date) && (
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--info)', fontWeight: 500 }}>📖 {themeForDate(botrScheduleData.themes, entry.date)}</div>
+                )}
                 <div className="flex flex-wrap gap-1 mt-2">
                   {roles.map(r => <span key={r} className="pill pill-accent text-xs">{r}</span>)}
                 </div>
@@ -2753,6 +2770,9 @@ function BOTRScheduleCard({ botrData }) {
       <div className="home-card">
         <div className="home-card-eyebrow">{when} · Friday · {serviceTime}</div>
         <div className="home-card-title">{formatDateLong(next.date)}</div>
+        {themeForDate(botrData.themes, next.date) && (
+          <div className="text-xs mt-0.5" style={{ color: 'var(--info)', fontWeight: 500 }}>📖 {themeForDate(botrData.themes, next.date)}</div>
+        )}
         {hasRoles && (
           <div className="home-card-body text-xs ink-muted">
             {next.preacher && <div>Preacher · {next.preacher}</div>}
@@ -2842,6 +2862,12 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
     () => upcomingAnnouncements(announcements, today, 60),
     [announcements, today]
   );
+
+  const holidays = useMemo(
+    () => upcomingHolidays(botrScheduleData?.holidays, today, 45),
+    [botrScheduleData, today]
+  );
+  const ministryLeave = (botrScheduleData?.leave || []).filter(l => l && l.person && l.when);
 
   // Upcoming birthdays and anniversaries (next 30 days)
   const upcomingBirthdays = useMemo(
@@ -3046,6 +3072,49 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
 
       {/* FLCC BOTR Friday Morning Service */}
       {botrScheduleData && <BOTRScheduleCard botrData={botrScheduleData} />}
+
+      {/* Public holidays — shared across the network, everyone is in Kuwait */}
+      {holidays.length > 0 && (
+        <div className="mb-5">
+          <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">🗓 Upcoming holidays</div>
+          <div className="home-grid">
+            {holidays.map(h => (
+              <div key={`${h.date}-${h.name}`} className="home-card">
+                <div className="home-card-eyebrow">{daysAway(h.date)}</div>
+                <div className="home-card-title" style={{ fontSize: '1rem' }}>{h.name}</div>
+                <div className="home-card-body text-xs ink-muted">{formatDateLong(h.date)}</div>
+                <div className="mt-2">
+                  <button className="btn btn-soft text-xs" onClick={(e) => {
+                    e.stopPropagation();
+                    downloadICS(`${h.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${h.date}.ics`,
+                      wrapICS(buildICSEvent({ uid: `holiday-${h.date}-${h.name.replace(/\W+/g, '')}@flcc-members`, date: h.date, summary: h.name })));
+                  }}>📅 Save</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Ministry leave — folded away, since it is reference rather than news */}
+      {ministryLeave.length > 0 && (
+        <div className="mb-5">
+          <details>
+            <summary className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2" style={{ cursor: 'pointer' }}>
+              ✈️ Ministry leave {new Date().getFullYear()}
+            </summary>
+            <div className="card p-4 mt-2">
+              {ministryLeave.map(l => (
+                <div key={l.person} className="flex justify-between gap-3 text-xs" style={{ padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                  <span className="font-semibold" style={{ flexShrink: 0 }}>{l.person}</span>
+                  <span className="ink-muted" style={{ textAlign: 'right' }}>{l.when}</span>
+                </div>
+              ))}
+              <div className="text-xs ink-subtle mt-2">As published by the ministry.</div>
+            </div>
+          </details>
+        </div>
+      )}
 
       {/* Next prayer meeting */}
       {nextPrayerMeeting && (
