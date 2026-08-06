@@ -923,13 +923,20 @@ function botrWhoIsWho(botrSchedule, index = {}) {
   return [...seen.values()].sort();
 }
 
-/** One block per church in the network — who they are and who is on their
- *  roster. Read from each church's own published data.json, never hardcoded:
- *  every church has different leaders and a different roster. */
-function networkDirectory(churches, network) {
+/** One block per church in the network — who they are, who is on their roster,
+ *  and what they have and have not published. Read from each church's own
+ *  data.json, never hardcoded: every church has different leaders.
+ *
+ *  Being explicit about the gaps matters as much as listing the data. Most
+ *  churches have published a roster and nothing else; without saying so, an
+ *  assistant asked "who preaches at Shekinah on Sunday?" has a full roster in
+ *  front of it and every temptation to pick a plausible name. The `Not
+ *  published` line is what turns that into an honest "they haven't published a
+ *  schedule — ask their ministry head". */
+function networkDirectory(churches, network, today = null) {
   return (churches || []).map(c => {
     const d = (network || {})[c.slug];
-    if (!d) return `### ${c.name} · ${c.sector} Sector · slug: ${c.slug}\n  (has not published its data yet)`;
+    if (!d) return `### ${c.name} · ${c.sector} Sector · slug: ${c.slug}\n  Not published: nothing at all yet. You know this church exists and nothing more.`;
     const workers = d.workers || [];
     const roster = workers
       .filter(w => w.status !== 'inactive')
@@ -943,12 +950,37 @@ function networkDirectory(churches, network) {
       .filter(w => w.designation)
       .map(w => `${[w.title, w.name].filter(Boolean).join(' ')} — ${w.designation}`)
       .join('; ');
+
+    const byId = Object.fromEntries(workers.map(w => [w.id, w]));
+    const name = id => { const w = byId[id]; return w ? [w.title, w.name].filter(Boolean).join(' ') : null; };
+    const upcoming = (d.schedule || [])
+      .filter(s => s && s.date && (!today || s.date >= today))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 3)
+      .map(s => {
+        const r = s.roles || {};
+        const parts = [
+          r.preacher ? `Preacher: ${name(r.preacher) || '?'}` : null,
+          r.presider ? `Presider: ${name(r.presider) || '?'}` : null,
+        ].filter(Boolean).join(' | ');
+        return `    ${s.date} [${s.service}]${s.isSpecial ? ` ★ ${s.specialNote}` : ''}${parts ? ': ' + parts : ''}`;
+      });
+
+    const missing = [
+      workers.length ? null : 'its roster',
+      (d.schedule || []).length ? null : 'a service schedule',
+      times ? null : 'its service times',
+      d.ministry?.headName ? null : 'a fellowship ministry head',
+    ].filter(Boolean);
+
     return [
       `### ${d.meta?.churchName || c.name} · ${c.sector} Sector · slug: ${c.slug}`,
       times ? `  Services: ${times}` : null,
       d.ministry?.headName ? `  Fellowship Ministry Head: ${ministryLine(d.ministry)}` : null,
       leaders ? `  Pastors & leaders: ${leaders}` : null,
       `  Members (${workers.length}): ${roster || '(none listed)'}`,
+      upcoming.length ? `  Next services:\n${upcoming.join('\n')}` : null,
+      missing.length ? `  Not published: ${missing.join(', ')}. Say so plainly if asked — do not infer it from the roster.` : null,
     ].filter(Boolean).join('\n');
   }).join('\n\n');
 }
@@ -1156,7 +1188,7 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
     .map(l => `  • ${l.person}: ${l.when}`)
     .join('\n');
 
-  const directory   = networkDirectory(CHURCH.churches, network);
+  const directory   = networkDirectory(CHURCH.churches, network, today);
   const totalMembers = Object.values(network || {})
     .reduce((n, d) => n + ((d && d.workers) ? d.workers.length : 0), 0);
 
@@ -1229,6 +1261,15 @@ Every church below runs this same app on its own data. You know all of them.
 When a member asks about a person, a pastor or a service at another church,
 answer from here rather than saying you only know one congregation. Names are
 listed with the titles their own church published.
+
+**How complete each church is varies, and the difference matters.** Most have
+published a roster and not yet a service schedule, service times or a ministry
+head. Each block ends with a "Not published:" line naming exactly what is
+missing. Treat that as a fact you know, not a blank to fill: if someone asks who
+preaches at a church that has published no schedule, say that church hasn't
+published one yet and point them at their ministry head. Never pick a plausible
+name off that church's roster — a roster says who is *there*, never who is
+*serving on a given day*.
 
 ${directory || '(directory not loaded)'}
 

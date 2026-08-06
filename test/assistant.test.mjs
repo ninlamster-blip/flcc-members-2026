@@ -242,7 +242,16 @@ test('the directory covers every church in the registry', () => {
 
 test('a church that has not published yet says so instead of looking empty', () => {
   const dir = networkDirectory([{ slug: 'hotk', name: 'FLCC - HOTK', sector: 'Faith' }], {});
-  assert.match(dir, /has not published its data yet/);
+  assert.match(dir, /Not published: nothing at all yet/);
+});
+
+test('a church with an empty roster is named as empty, not merely quiet', () => {
+  const dir = networkDirectory(
+    [{ slug: 'hotk', name: 'FLCC - HOTK', sector: 'Faith' }],
+    { hotk: { meta: { churchName: 'FLCC - HOTK' }, workers: [] } },
+  );
+  assert.match(dir, /Members \(0\)/);
+  assert.match(dir, /Not published:.*its roster/);
 });
 
 test('a church is named by its own published name, not the registry fallback', () => {
@@ -394,12 +403,74 @@ test('the prompt carries the network announcements', () => {
 });
 
 test('every church gets the same network sections, whichever one they are in', () => {
-  const abundance = realPrompt('abundance');
-  const jaoc      = realPrompt('jaoc');
-  for (const section of ['The 14 Churches of the Network', 'BOTR Friday Morning Service', 'Network Announcements', 'Who these names are:']) {
-    assert.ok(abundance.includes(section), `Abundance is missing "${section}"`);
-    assert.ok(jaoc.includes(section), `JAOC is missing "${section}"`);
+  // All 14, not a sample: the point of the directory is that a member of the
+  // smallest church knows as much about the network as a member of the largest.
+  for (const c of FLCC.churches) {
+    const p = realPrompt(c.slug);
+    for (const section of ['The 14 Churches of the Network', 'BOTR Friday Morning Service', 'Network Announcements', 'Who these names are:']) {
+      assert.ok(p.includes(section), `${c.slug} is missing "${section}"`);
+    }
   }
+});
+
+test('every church sees every other church, from every church', () => {
+  for (const viewer of FLCC.churches) {
+    const p = realPrompt(viewer.slug);
+    for (const subject of FLCC.churches) {
+      assert.ok(p.includes(`slug: ${subject.slug}`),
+        `standing in ${viewer.slug}, ${subject.slug} is missing from the directory`);
+    }
+  }
+});
+
+test('every member in the network reaches the prompt, from any church', () => {
+  for (const viewer of ['abundance', 'harvester', 'virtual']) {
+    const p = realPrompt(viewer);
+    for (const c of FLCC.churches) {
+      for (const w of (REAL_NETWORK[c.slug].workers || []).filter(w => w.status !== 'inactive')) {
+        assert.ok(p.includes(w.name), `standing in ${viewer}, ${c.slug}'s ${w.name} is missing`);
+      }
+    }
+  }
+});
+
+test('a church that has published only a roster says so, rather than looking complete', () => {
+  const p = realPrompt('abundance');
+  // Whatever the churches have published today, any church without a schedule
+  // must carry the note that keeps the assistant from inventing one.
+  for (const c of FLCC.churches) {
+    const d = REAL_NETWORK[c.slug];
+    if ((d.schedule || []).length) continue;
+    const block = p.slice(p.indexOf(`slug: ${c.slug}`));
+    const line = block.slice(0, block.indexOf('###') === -1 ? block.length : block.indexOf('###'));
+    assert.match(line, /Not published:.*a service schedule/,
+      `${c.slug} has no schedule and must say so`);
+  }
+});
+
+test('the assistant is told a roster is not a schedule', () => {
+  const p = realPrompt('abundance');
+  assert.match(p, /Not published:/);
+  assert.match(p, /never who is\s+\*serving on a given day\*/);
+  assert.match(p, /Never pick a plausible\s+name off that church's roster/);
+});
+
+test("a church's own upcoming services reach the directory once it has them", () => {
+  const withSchedule = {
+    ...REAL_NETWORK,
+    harvester: {
+      meta: { churchName: 'FLCC - Harvester', serviceTimes: { Sunday: '5:00 PM' } },
+      workers: [{ id: 'bro-01', name: 'Test Preacher', title: 'Bro.', status: 'active' }],
+      schedule: [
+        { date: '2099-01-01', service: 'Sunday', roles: { preacher: 'bro-01' } },
+        { date: '1999-01-01', service: 'Sunday', roles: { preacher: 'bro-01' } },
+      ],
+    },
+  };
+  const dir = networkDirectory(FLCC.churches, withSchedule, '2026-08-06');
+  assert.match(dir, /Next services:/);
+  assert.match(dir, /2099-01-01 \[Sunday\]: Preacher: Bro\. Test Preacher/);
+  assert.ok(!dir.includes('1999-01-01'), 'a service already past is not upcoming');
 });
 
 // ── What the assistant is actually told ──────────────────────────────────────
@@ -435,6 +506,8 @@ test('the prompt resolves the sheet nicknames against the real rosters', () => {
   assert.match(SRC, /botrFridayLines\(botrSchedule, null, memberIndex\)/);
   assert.match(SRC, /botrWhoIsWho\(botrSchedule, memberIndex\)/);
   assert.match(SRC, /\$\{whoIsWho\.join\('\\n'\)/, 'the lookup must reach the prompt');
+  // Without today, "Next services" lists services from January.
+  assert.match(SRC, /networkDirectory\(CHURCH\.churches, network, today\)/);
 });
 
 // ── Where the data comes from ────────────────────────────────────────────────
