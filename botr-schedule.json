@@ -47,7 +47,8 @@
       "pastoralPrayer": "Ptra. Mitch",
       "emcee": "Bro. Ryan",
       "event": "",
-      "pastoralPrayerId": "shekinah:sis-14"
+      "pastoralPrayerId": "shekinah:sis-14",
+      "preacherId": "jaoc:sis-12"
     },
     {
       "date": "2026-02-06",
@@ -124,7 +125,8 @@
       "pastoralPrayer": "Ptr. Anson",
       "emcee": "Sis. Lala",
       "event": "LS",
-      "pastoralPrayerId": "virtual:bro-01"
+      "pastoralPrayerId": "virtual:bro-01",
+      "emceeId": "jaoc:sis-12"
     },
     {
       "date": "2026-04-10",
@@ -266,7 +268,8 @@
       "emcee": "Sis. Lala",
       "event": "",
       "preacherId": "fb:bro-06",
-      "pastoralPrayerId": "cornerstone:sis-11"
+      "pastoralPrayerId": "cornerstone:sis-11",
+      "emceeId": "jaoc:sis-12"
     },
     {
       "date": "2026-08-07",
