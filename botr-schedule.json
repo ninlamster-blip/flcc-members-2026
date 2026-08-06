@@ -12,7 +12,8 @@
       "pastoralPrayer": "Ptra. Ellen",
       "emcee": "Bro. Allen",
       "event": "LS",
-      "preacherId": "fb:bro-09"
+      "preacherId": "fb:bro-09",
+      "pastoralPrayerId": "jaoc:sis-14"
     },
     {
       "date": "2026-01-09",
@@ -114,7 +115,8 @@
       "emcee": "Bro. Rey",
       "event": "",
       "emceeId": "shekinah:bro-09",
-      "pastoralPrayerId": "fb:bro-09"
+      "pastoralPrayerId": "fb:bro-09",
+      "preacherId": "jaoc:sis-14"
     },
     {
       "date": "2026-04-03",
@@ -130,7 +132,8 @@
       "pastoralPrayer": "Ptra. Ellen",
       "emcee": "Sis. Annabelle",
       "event": "34th Anniv",
-      "preacherId": "fb:bro-09"
+      "preacherId": "fb:bro-09",
+      "pastoralPrayerId": "jaoc:sis-14"
     },
     {
       "date": "2026-04-17",
@@ -298,7 +301,8 @@
       "preacher": "Ptra. Ellen",
       "pastoralPrayer": "",
       "emcee": "Bro. Ferdie",
-      "event": ""
+      "event": "",
+      "preacherId": "jaoc:sis-14"
     },
     {
       "date": "2026-09-04",
