@@ -17,7 +17,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { load, appSource, loadChurch, readRepoJSON } from './lib/extract.mjs';
+import { load, appSource, loadChurch, readRepoJSON, readRepoFile, exists } from './lib/extract.mjs';
 
 const FLCC = loadChurch();
 const SRC = appSource('ask.html');
@@ -358,6 +358,7 @@ function realPrompt(slug = 'abundance') {
     readRepoJSON('announcements.json'),
     readRepoJSON('botr-schedule.json'),
     REAL_NETWORK,
+    exists('worship.json') ? readRepoJSON('worship.json') : {},
   );
 }
 
@@ -392,6 +393,78 @@ test('the prompt tells the assistant who the sheet nicknames are', () => {
   assert.match(p, /Who these names are:/);
   assert.match(p, /Ptra\. Ellen — Ptra\. Elinor Chee · FLCC - JAOC/);
   assert.match(p, /Sis\. Lala — Ptra\. Claraflor Serafico · FLCC - JAOC/);
+});
+
+test('everything a member sees on Home is in the section the assistant reads first', () => {
+  // The complaint this guards against: "the AI doesn't know what's on
+  // tomorrow." Home shows the BOTR Friday service, network announcements,
+  // holidays, ministry leave and this church's own next services. All of it
+  // belongs above the fold of the prompt, not scattered through it.
+  const p = realPrompt();
+  const now = p.slice(p.indexOf('What Is Happening Right Now'), p.indexOf('## Church Overview'));
+  for (const cue of [
+    /Network announcements ahead/,
+    /Next BOTR Friday morning services/,
+    /This church's next services/,
+    /Holidays in the next 45 days/,
+    /Who is away/,
+    /This month's BOTR theme/,
+  ]) {
+    assert.match(now, cue, 'missing from the "what is happening" section');
+  }
+});
+
+/** The "What Is Happening Right Now" block on its own. */
+function happeningNow(slug = 'abundance') {
+  const p = realPrompt(slug);
+  return p.slice(p.indexOf('What Is Happening Right Now'), p.indexOf('## Church Overview'));
+}
+
+test('the ministry leave list reaches the assistant as published, up top', () => {
+  const now = happeningNow();
+  const leave = readRepoJSON('botr-schedule.json').leave || [];
+  assert.ok(leave.length, 'fixture check: the file has leave entries');
+  for (const l of leave) {
+    assert.ok(now.includes(l.person), `${l.person} is missing from "what is happening"`);
+    assert.ok(now.includes(l.when), `${l.person}'s dates are missing — "when" is shown verbatim`);
+  }
+});
+
+test('every holiday of the year reaches the assistant somewhere', () => {
+  const p = realPrompt();
+  for (const h of readRepoJSON('botr-schedule.json').holidays || []) {
+    assert.ok(p.includes(h.name), `holiday "${h.name}" is missing from the prompt`);
+  }
+});
+
+test('"what is happening" carries only the holidays that are actually near', () => {
+  const now = happeningNow();
+  const soon = now.slice(now.indexOf('Holidays in the next 45 days'), now.indexOf('Who is away'));
+  const today = new Date().toISOString().slice(0, 10);
+  for (const h of readRepoJSON('botr-schedule.json').holidays || []) {
+    const near = withinDays(today, h.date, 45);
+    assert.equal(soon.includes(h.date), near,
+      `${h.name} on ${h.date} is ${near ? 'within' : 'outside'} 45 days and should ${near ? '' : 'not '}be listed`);
+  }
+});
+
+test('the worship songbook reaches the assistant', () => {
+  const p = realPrompt();
+  const songs = readRepoJSON('worship.json').songs || [];
+  assert.ok(songs.length, 'fixture check: Abundance has published songs');
+  for (const s of songs.slice(0, 5)) {
+    assert.ok(p.includes(s.title), `song "${s.title}" is missing from the prompt`);
+  }
+});
+
+test('the assistant is handed every file the members app reads for a church', () => {
+  // buildSystemPrompt can render a section perfectly and still be passed an
+  // empty object, so the section quietly disappears. This is the call site.
+  for (const file of ['data.json', 'music.json', 'prayer.json', 'equip.json', 'attendance.json', 'worship.json']) {
+    assert.ok(SRC.includes(`fetch(fresh(CHURCH.data('${file}')))`),
+      `${file} is on a members-app tab and must reach the assistant too`);
+  }
+  assert.match(SRC, /appData\.network, appData\.worship,/, 'worship must be passed through to the prompt');
 });
 
 test('the prompt carries the network announcements', () => {

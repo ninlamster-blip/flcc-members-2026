@@ -985,7 +985,7 @@ function networkDirectory(churches, network, today = null) {
   }).join('\n\n');
 }
 
-function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, flccNews = [], externalNews = [], announcements = {}, botrSchedule = {}, network = {}) {
+function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance = {}, liveStats = null, flccNews = [], externalNews = [], announcements = {}, botrSchedule = {}, network = {}, worship = {}) {
   const today = new Date().toISOString().split('T')[0];
 
   const workersById       = Object.fromEntries(data.workers.map(w => [w.id, w]));
@@ -1178,14 +1178,43 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([m, t]) => `  • ${m}: ${t || '(not yet set)'}`)
     .join('\n');
-  const botrHolidays = (botrSchedule?.holidays || [])
+  const botrHolidaysAll = (botrSchedule?.holidays || [])
     .filter(h => h && h.date && h.name)
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map(h => `  • ${h.date}: ${h.name}`)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const botrHolidays = botrHolidaysAll.map(h => `  • ${h.date}: ${h.name}`).join('\n');
+  // Home shows the next 45 days of holidays; the assistant should be able to
+  // answer "what's coming up?" with the same horizon rather than making the
+  // member hunt through the whole year.
+  const holidaysSoon = botrHolidaysAll
+    .filter(h => withinDays(today, h.date, 45))
+    .map(h => `  • ${h.date} (${daysAwayLabel(today, h.date)}): ${h.name}`)
     .join('\n');
   const botrLeave = (botrSchedule?.leave || [])
     .filter(l => l && l.person && l.when)
     .map(l => `  • ${l.person}: ${l.when}`)
+    .join('\n');
+
+  // The Songs tab. Titles, keys and tempo are what members ask about; the
+  // chord charts themselves are long and are better read on the tab.
+  const worshipSongs = (worship?.songs || [])
+    .map(s => `  • ${s.title}${s.artist ? ` — ${s.artist}` : ''}${s.key ? ` · Key ${s.key}` : ''}${s.tempo ? ` · ${s.tempo}` : ''}${(s.tags || []).length ? ` · ${s.tags.join(', ')}` : ''}`)
+    .join('\n');
+
+  // This church's own next services, resolved — the top half of Home.
+  const ownNext = (data.schedule || [])
+    .filter(s => s && s.date && s.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 4)
+    .map(s => {
+      const r = s.roles || {};
+      const parts = [
+        r.preacher ? `Preacher: ${wn(r.preacher, workersById)}` : null,
+        r.presider ? `Presider: ${wn(r.presider, workersById)}` : null,
+        r.songLeader ? `Song Leader: ${wn(r.songLeader, workersById)}` : null,
+      ].filter(Boolean).join(' | ');
+      const svcTime = (data.meta?.serviceTimes?.[s.service]) || '';
+      return `  ${s.date} (${daysAwayLabel(today, s.date)}) [${s.service}${svcTime ? ' · ' + svcTime : ''}]${s.isSpecial ? ` ★ ${s.specialNote}` : ''}: ${parts || '(roles not yet assigned)'}`;
+    })
     .join('\n');
 
   const directory   = networkDirectory(CHURCH.churches, network, today);
@@ -1209,7 +1238,21 @@ ${annLines || '  (nothing scheduled)'}
 **Next BOTR Friday morning services** (${botrMeta.churchName || 'FLCC - BOTR Friday'} · ${botrMeta.service || 'Friday Morning Service'} · ${botrMeta.serviceTime || '10:00 AM'}):
 ${botrAhead.slice(0, 6).join('\n') || '  (none ahead)'}
 
+**This church's next services** (${data.meta?.churchName || CHURCH.name}):
+${ownNext || '  (none scheduled — this church has not published a service schedule)'}
+
+**Holidays in the next 45 days:**
+${holidaysSoon || '  (none)'}
+
+**Who is away** (ministry leave, as published — shown exactly as written):
+${botrLeave || '  (nobody listed)'}
+
 **This month's BOTR theme**: ${(botrSchedule?.themes || {})[today.slice(0, 7)] || '(not set)'}
+**This church's theme this month**: ${(data.themes || {})[today.slice(0, 7)] || '(not set)'}
+
+Everything in this section is what a member sees on their Home tab. If someone
+asks what is happening, what is on, or what is coming up — this is the answer,
+and you should reach for it before anything else in this prompt.
 
 ---
 
@@ -1324,6 +1367,9 @@ ${themes}
 ${fullScheduleLines || '  (no schedule data loaded)'}
 
 ---
+
+## Worship Songbook (the Songs tab)
+${worshipSongs || '  (none published)'}
 
 ## Equip Ministry Courses
 ${equipCourses || '  (none listed)'}
@@ -1545,7 +1591,7 @@ function App() {
     return buildSystemPrompt(
       appData.data, appData.music, appData.prayer, appData.equip,
       appData.botrData, appData.attendance, liveStats, flccNews, externalNews,
-      appData.announcements, appData.botrSchedule, appData.network,
+      appData.announcements, appData.botrSchedule, appData.network, appData.worship,
     );
   }, [appData, liveStats, flccNews, externalNews]);
 
@@ -1592,11 +1638,12 @@ function App() {
       fetch(fresh(CHURCH.data('equip.json'))).then(r => r.json()).catch(() => ({})),
       fetch(fresh('botr.json')).then(r => r.json()).catch(() => ({})),   // network-wide
       fetch(fresh(CHURCH.data('attendance.json'))).then(r => r.json()).catch(() => ({})),
+      fetch(fresh(CHURCH.data('worship.json'))).then(r => r.json()).catch(() => ({})),
       fetch(fresh('announcements.json')).then(r => r.json()).catch(() => ({})),   // network-wide
       fetch(fresh('botr-schedule.json')).then(r => r.json()).catch(() => ({})),   // network-wide
       Promise.all(rosterFetches).then(Object.fromEntries),
-    ]).then(([data, music, prayer, equip, botrData, attendance, announcements, botrSchedule, network]) => {
-      setAppData({ data, music, prayer, equip, botrData, attendance, announcements, botrSchedule, network });
+    ]).then(([data, music, prayer, equip, botrData, attendance, worship, announcements, botrSchedule, network]) => {
+      setAppData({ data, music, prayer, equip, botrData, attendance, worship, announcements, botrSchedule, network });
       // Non-blocking: live BOTR standings from Google Sheets
       fetchBotrLiveStats().then(stats => { if (stats) setLiveStats(stats); }).catch(() => {});
       // Non-blocking: live world news from BBC / Reuters / The Guardian via RSS

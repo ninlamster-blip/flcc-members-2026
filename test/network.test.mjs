@@ -57,6 +57,22 @@ test('every other church is namespaced in both storage and paths', () => {
   }
 });
 
+test('the deployment is told not to serve a stale app or stale data', () => {
+  // Every file here is published by editing it in place, so the URL never
+  // changes when the contents do. Without this, a member who has opened the app
+  // once keeps running the copy their browser and Cloudflare's edge already
+  // hold — leaders publish a new schedule and the phones carry on showing last
+  // week's. The apps cache-bust their own data reads; this covers the pages.
+  assert.ok(exists('_headers'), '_headers is what makes a publish reach members');
+  const h = readRepoFile('_headers');
+  for (const pattern of ['/*.html', '/*.json', '/c/*']) {
+    const block = h.slice(h.indexOf(`\n${pattern}\n`));
+    assert.ok(h.includes(`\n${pattern}\n`), `${pattern} needs a cache rule`);
+    assert.match(block.split('\n').slice(0, 3).join('\n'), /Cache-Control:\s*no-cache/,
+      `${pattern} must revalidate before use`);
+  }
+});
+
 test('dataFor reaches any church, from whichever church you are standing in', () => {
   // Network-wide features — the assistant's directory — need every church's
   // paths, not just this visitor's. Standing in one church must not colour

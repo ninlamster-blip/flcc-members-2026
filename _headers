@@ -1,0 +1,35 @@
+# Cache rules for the Cloudflare Workers deployment.
+#
+# Everything here is a static file published by editing it in place — the URL
+# never changes when the contents do. Left to the defaults, a member who has
+# opened the app once keeps running the copy their browser and Cloudflare's
+# edge already hold: a new schedule is published, the leaders see it, and the
+# members' phones carry on showing last week's until something evicts it.
+#
+# `no-cache` does NOT mean "don't cache". It means "cache it, but revalidate
+# before using it". The browser still keeps the file and still sends
+# If-None-Match; when nothing has changed the answer is a 304 with no body, so
+# this costs a round trip rather than a re-download. That is the right trade
+# for files that are the whole point of the app being up to date.
+#
+# The apps also cache-bust their own data reads with ?t=, which handles a page
+# left open. This handles the other half: the page itself.
+
+/*.html
+  Cache-Control: no-cache
+
+/*.json
+  Cache-Control: no-cache
+
+# The pretty per-church links (/c/shekinah/) and the site root both serve
+# index.html without naming it, so the glob above doesn't reach them.
+/
+  Cache-Control: no-cache
+
+/c/*
+  Cache-Control: no-cache
+
+# Fonts, icons and images are content-addressed by name and rarely change;
+# letting them cache normally keeps the app fast on a phone.
+/icons/*
+  Cache-Control: public, max-age=86400
