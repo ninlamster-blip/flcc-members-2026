@@ -57,6 +57,33 @@ test('every other church is namespaced in both storage and paths', () => {
   }
 });
 
+test('dataFor reaches any church, from whichever church you are standing in', () => {
+  // Network-wide features — the assistant's directory — need every church's
+  // paths, not just this visitor's. Standing in one church must not colour
+  // where another church's data is found.
+  for (const standing of ['abundance', 'jaoc', 'virtual']) {
+    const church = loadChurch(`https://example.org/index.html?church=${standing}`);
+    assert.equal(church.dataFor('abundance', 'data.json'), './data.json');
+    for (const c of CHURCHES.filter(c => c.slug !== 'abundance')) {
+      assert.equal(church.dataFor(c.slug, 'data.json'), `./churches/${c.slug}/data.json`,
+        `standing in ${standing}, ${c.slug} must still resolve to its own folder`);
+    }
+  }
+});
+
+test('dataFor returns null for a church that does not exist', () => {
+  // A caller can skip it rather than fetch a 404.
+  assert.equal(FLCC.dataFor('nosuchchurch', 'data.json'), null);
+  assert.equal(FLCC.dataFor('', 'data.json'), null);
+});
+
+test('dataFor and data agree about the church you are already in', () => {
+  for (const c of CHURCHES) {
+    const church = loadChurch(`https://example.org/index.html?church=${c.slug}`);
+    assert.equal(church.dataFor(c.slug, 'music.json'), church.data('music.json'), c.slug);
+  }
+});
+
 test('a church is resolved from the pretty path, then the query, then storage', () => {
   assert.equal(loadChurch('https://example.org/c/shekinah/').slug, 'shekinah');
   assert.equal(loadChurch('https://example.org/index.html?church=mtcc').slug, 'mtcc');
