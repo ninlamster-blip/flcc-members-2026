@@ -150,12 +150,32 @@ rosters are in front of it — listed with the titles and designations each chur
 published for itself. A church that hasn't published yet is named as such rather
 than left out.
 
-Every read is cache-busted (`?t=`), the same way `index.html` has always read
-its own. The published URL doesn't change when the JSON behind it does, so
-without that the browser and Cloudflare's edge both keep serving yesterday's
-copy — which shows up as the members app having a new schedule while the
-assistant still answers from the old one. It also reloads when the tab is
-brought back to the foreground, since a phone can hold this page open for days.
+Its first section is **What Is Happening Right Now**, and it holds exactly what
+a member sees on their Home tab: the next network announcements, the next BOTR
+Friday services, this church's own next services, holidays inside 45 days,
+who is on ministry leave, and both themes for the month. The assistant is told
+to read that before anything else, so "what's on tomorrow?" is answered from
+the same facts the Home tab shows.
+
+## Making a publish actually reach members
+
+Nothing here is versioned: every file is published by editing it in place, so
+its URL never changes when its contents do. Left alone, that means a member who
+has opened the app once keeps running the copy their browser and Cloudflare's
+edge already hold — leaders publish a new schedule, and the phones carry on
+showing last week's.
+
+Two things prevent it, and both are needed:
+
+- **`_headers`** sets `Cache-Control: no-cache` on every `.html` and `.json`,
+  and on the pretty `/c/<slug>/` links. That is not "don't cache" — the browser
+  still stores the file and still revalidates, so an unchanged file costs a 304
+  and no download. It covers **the app itself**, which `?t=` cannot.
+- **`?t=` on every data read**, which covers a page left open. `index.html` has
+  always done this; `ask.html` now does too, and also reloads when the tab
+  returns to the foreground, since a phone holds a page open for days.
+
+If a change ever seems not to have landed, this pair is the first place to look.
 
 ### How it knows who "Ptra. Weng" is
 
