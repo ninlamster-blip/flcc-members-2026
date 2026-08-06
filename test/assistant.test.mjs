@@ -34,10 +34,12 @@ const {
   addDaysISO, withinDays, daysAwayLabel,
   networkAnnouncements, announcementLine, botrFridayLines, networkDirectory,
   buildSuggestions, buildBriefing, ministryLine,
+  networkIndex, botrWhoIsWho, fresh, buildSystemPrompt,
 } = load('ask.html', [
   'addDaysISO', 'withinDays', 'daysAwayLabel',
   'networkAnnouncements', 'announcementLine', 'botrFridayLines', 'networkDirectory',
   'buildSuggestions', 'buildBriefing', 'ministryLine',
+  'networkIndex', 'botrWhoIsWho', 'fresh', 'buildSystemPrompt',
 ], { CHURCH: CHURCH_STUB });
 
 // ── Dates ────────────────────────────────────────────────────────────────────
@@ -142,6 +144,76 @@ test('every filled role reaches the line, and a blank one is named as unassigned
 test('a special event is flagged on its Friday', () => {
   const ls = botrFridayLines(BOTR, '2026-09-04')[0];
   assert.match(ls, /★ LS/);
+});
+
+// ── Knowing who a nickname on the sheet actually is ──────────────────────────
+
+const LINKED = {
+  meta: BOTR.meta,
+  schedule: [
+    { date: '2026-08-14', preacher: 'Ptra. Weng', preacherId: 'cornerstone:sis-11',
+      pastoralPrayer: 'Ptra. Mitch', emcee: 'Bro. Rey' },
+    { date: '2026-08-28', preacher: 'Ptra. Ellen', preacherId: 'jaoc:sis-14' },
+    { date: '2026-09-04', preacher: 'Ptra. Ellen', preacherId: 'jaoc:sis-14' },
+    { date: '2026-09-11', preacher: 'Elinor Chee', preacherId: 'jaoc:sis-14' },
+    { date: '2026-09-18', preacher: 'Ptr. Ghost', preacherId: 'jaoc:sis-99' },
+  ],
+};
+const INDEX_NET = {
+  cornerstone: { meta: { churchName: 'FLCC - Cornerstone' }, workers: [{ id: 'sis-11', name: 'Louella Calisagan', title: 'Ptra.' }] },
+  jaoc:        { meta: { churchName: 'FLCC - JAOC' },        workers: [{ id: 'sis-14', name: 'Elinor Chee',      title: 'Ptra.' }] },
+};
+const IDX = networkIndex(FLCC.churches, INDEX_NET);
+
+test('the member index is keyed by the church-qualified reference', () => {
+  assert.equal(IDX['cornerstone:sis-11'].name, 'Ptra. Louella Calisagan');
+  assert.equal(IDX['cornerstone:sis-11'].church, 'FLCC - Cornerstone');
+  assert.equal(IDX['jaoc:sis-14'].name, 'Ptra. Elinor Chee');
+  assert.equal(IDX['jaoc:sis-11'], undefined, 'a worker id must not match across churches');
+});
+
+test("a nickname on the sheet carries the member's real name and church", () => {
+  const [aug14] = botrFridayLines(LINKED, null, IDX);
+  assert.match(aug14, /Ptra\. Weng = Ptra\. Louella Calisagan, FLCC - Cornerstone/);
+});
+
+test('an unlinked name is left exactly as the sheet writes it', () => {
+  const [aug14] = botrFridayLines(LINKED, null, IDX);
+  assert.match(aug14, /Pastoral Prayer: Ptra\. Mitch \|/, 'no invented church for an unlinked name');
+  const ghost = botrFridayLines(LINKED, '2026-09-18', IDX)[0];
+  assert.match(ghost, /Preacher: Ptr\. Ghost$/, 'a reference to nobody adds nothing');
+});
+
+test('a name already written in full is not repeated back at itself', () => {
+  const sept11 = botrFridayLines(LINKED, '2026-09-11', IDX)[0];
+  assert.match(sept11, /Elinor Chee \(FLCC - JAOC\)/);
+  assert.ok(!/Elinor Chee = /.test(sept11), 'no "Elinor Chee = Ptra. Elinor Chee"');
+});
+
+test('who-is-who lists each sheet name once, however often they serve', () => {
+  const lines = botrWhoIsWho(LINKED, IDX);
+  const ellen = lines.filter(l => l.includes('Ptra. Ellen'));
+  assert.equal(ellen.length, 1, 'Ptra. Ellen preaches twice but is one person');
+  assert.match(ellen[0], /Ptra\. Ellen — Ptra\. Elinor Chee · FLCC - JAOC/);
+});
+
+test('who-is-who leaves out anyone not linked to a real record', () => {
+  const lines = botrWhoIsWho(LINKED, IDX).join('\n');
+  assert.ok(!lines.includes('Ptra. Mitch'), 'unlinked names have no identity to give');
+  assert.ok(!lines.includes('Ptr. Ghost'), 'a dangling reference is not an identity');
+});
+
+test('the real schedule resolves its linked names against the real rosters', () => {
+  // The end-to-end version of all of the above, against what actually ships.
+  const network = Object.fromEntries(
+    FLCC.churches.map(c => [c.slug, readRepoJSON(c.dataBase.replace(/^\.\//, '').replace(/^\.$/, '') ? `${c.dataBase.replace(/^\.\//, '')}/data.json` : 'data.json')])
+  );
+  const idx = networkIndex(FLCC.churches, network);
+  const lines = botrWhoIsWho(readRepoJSON('botr-schedule.json'), idx);
+  assert.ok(lines.length > 0, 'the year has linked duties, so it must resolve some names');
+  const joined = lines.join('\n');
+  assert.match(joined, /Ptra\. Ellen — Ptra\. Elinor Chee · FLCC - JAOC/);
+  assert.match(joined, /Sis\. Lala — Ptra\. Claraflor Serafico · FLCC - JAOC/);
 });
 
 // ── The church directory ─────────────────────────────────────────────────────
@@ -255,6 +327,81 @@ test('the briefing is empty rather than broken before data loads', () => {
   assert.deepEqual(buildBriefing(null, '2026-08-06'), []);
 });
 
+// ── The prompt, actually built ───────────────────────────────────────────────
+//
+// Extracting buildSystemPrompt and running it is worth more than grepping the
+// template: a stray backtick in the prose ends the literal early, takes the
+// whole script block with it, and leaves a blank page. Source greps sail
+// straight past that — evaluating the function does not.
+
+const REAL_NETWORK = Object.fromEntries(
+  FLCC.churches.map(c => {
+    const base = c.dataBase.replace(/^\.\/?/, '');
+    return [c.slug, readRepoJSON(base ? `${base}/data.json` : 'data.json')];
+  })
+);
+
+function realPrompt(slug = 'abundance') {
+  const data = REAL_NETWORK[slug];
+  return buildSystemPrompt(
+    data, {}, {}, {},
+    readRepoJSON('botr.json'), {}, null, [], [],
+    readRepoJSON('announcements.json'),
+    readRepoJSON('botr-schedule.json'),
+    REAL_NETWORK,
+  );
+}
+
+test('the prompt builds against the real published data', () => {
+  const p = realPrompt();
+  assert.ok(p.length > 5000, 'a prompt this short means a section silently rendered empty');
+  assert.ok(!p.includes('undefined'), 'an undefined leaked into the prompt');
+  assert.ok(!p.includes('[object Object]'), 'an object was stringified into the prompt');
+});
+
+test('the prompt carries every church in the network', () => {
+  const p = realPrompt();
+  for (const c of FLCC.churches) {
+    assert.ok(p.includes(`slug: ${c.slug}`), `${c.slug} is missing from the built prompt`);
+  }
+  assert.match(p, /329 members in total|\d+ members in total/);
+});
+
+test('the prompt names the whole 2026 Friday schedule', () => {
+  const p = realPrompt();
+  const botr = readRepoJSON('botr-schedule.json');
+  for (const e of botr.schedule.slice(0, 5)) {
+    assert.ok(p.includes(e.date), `${e.date} is missing from the built prompt`);
+  }
+  assert.match(p, /Monthly themes:/);
+  assert.match(p, /Holidays observed:/);
+  assert.match(p, /Ministry leave/);
+});
+
+test('the prompt tells the assistant who the sheet nicknames are', () => {
+  const p = realPrompt();
+  assert.match(p, /Who these names are:/);
+  assert.match(p, /Ptra\. Ellen — Ptra\. Elinor Chee · FLCC - JAOC/);
+  assert.match(p, /Sis\. Lala — Ptra\. Claraflor Serafico · FLCC - JAOC/);
+});
+
+test('the prompt carries the network announcements', () => {
+  const p = realPrompt();
+  for (const a of readRepoJSON('announcements.json').announcements) {
+    if (a.date < new Date().toISOString().slice(0, 10)) continue;
+    assert.ok(p.includes(a.title), `${a.title} is missing from the built prompt`);
+  }
+});
+
+test('every church gets the same network sections, whichever one they are in', () => {
+  const abundance = realPrompt('abundance');
+  const jaoc      = realPrompt('jaoc');
+  for (const section of ['The 14 Churches of the Network', 'BOTR Friday Morning Service', 'Network Announcements', 'Who these names are:']) {
+    assert.ok(abundance.includes(section), `Abundance is missing "${section}"`);
+    assert.ok(jaoc.includes(section), `JAOC is missing "${section}"`);
+  }
+});
+
 // ── What the assistant is actually told ──────────────────────────────────────
 
 test('the assistant is told it serves the whole network, not one church', () => {
@@ -279,6 +426,17 @@ test('the assistant is told not to invent a name, date or venue', () => {
   assert.match(SRC, /Never invent a name, a date or a venue/);
 });
 
+test('the prompt resolves the sheet nicknames against the real rosters', () => {
+  // botrFridayLines and botrWhoIsWho can both be correct and still be handed
+  // an empty index at the call site, in which case every duty in the prompt
+  // reads "Ptra. Weng" and nothing more. Only a call-site check catches that.
+  assert.match(SRC, /const memberIndex\s*=\s*networkIndex\(CHURCH\.churches, network\)/);
+  assert.match(SRC, /botrFridayLines\(botrSchedule, today, memberIndex\)/);
+  assert.match(SRC, /botrFridayLines\(botrSchedule, null, memberIndex\)/);
+  assert.match(SRC, /botrWhoIsWho\(botrSchedule, memberIndex\)/);
+  assert.match(SRC, /\$\{whoIsWho\.join\('\\n'\)/, 'the lookup must reach the prompt');
+});
+
 // ── Where the data comes from ────────────────────────────────────────────────
 //
 // These are the checks that stop the multi-church rule being broken by a
@@ -288,7 +446,7 @@ test('the assistant is told not to invent a name, date or venue', () => {
 
 test('the network-wide feeds are read from the root, not per-church', () => {
   for (const file of ['announcements.json', 'botr-schedule.json', 'botr.json']) {
-    assert.match(SRC, new RegExp(`fetch\\('${file.replace('.', '\\.')}'\\)`),
+    assert.match(SRC, new RegExp(`fetch\\(fresh\\('${file.replace('.', '\\.')}'\\)\\)`),
       `${file} is shared by all 14 churches and must not be fetched through CHURCH.data()`);
     assert.ok(!SRC.includes(`CHURCH.data('${file}')`), `${file} must not be per-church`);
   }
@@ -298,6 +456,31 @@ test("each church's own files are still read through the resolver", () => {
   for (const file of ['data.json', 'music.json', 'prayer.json', 'equip.json', 'attendance.json']) {
     assert.ok(SRC.includes(`CHURCH.data('${file}')`), `${file} differs per church`);
   }
+});
+
+test('fresh() actually changes the URL, on a path with or without a query', () => {
+  const a = fresh('./data.json');
+  assert.match(a, /^\.\/data\.json\?t=\d+$/);
+  assert.match(fresh('./x.json?church=jaoc'), /^\.\/x\.json\?church=jaoc&t=\d+$/,
+    'an existing query must be kept, not clobbered');
+  assert.notEqual(fresh('./data.json'), '/data.json');
+  assert.equal(fresh(null), null, 'an unknown church resolves to null and must pass through');
+});
+
+test('every data read is cache-busted', () => {
+  // The published URL never changes when the JSON behind it does, so a plain
+  // fetch is served yesterday's copy by the browser and by Cloudflare's edge.
+  // This is the whole reason a schedule update could show in the members app
+  // and not in the assistant.
+  const bare = [...SRC.matchAll(/fetch\((?!fresh\()([^)]*\.json[^)]*)\)/g)].map(m => m[1]);
+  assert.deepEqual(bare, [], `these data reads are not wrapped in fresh(): ${bare.join(', ')}`);
+});
+
+test('the assistant reloads when the member comes back to the tab', () => {
+  // A phone keeps the tab alive for days; without this the roster is frozen
+  // at whenever it was first opened.
+  assert.match(SRC, /addEventListener\('visibilitychange'/);
+  assert.match(SRC, /document\.visibilityState === 'visible'/);
 });
 
 test('every church roster is loaded, through the registry rather than a hardcoded path', () => {

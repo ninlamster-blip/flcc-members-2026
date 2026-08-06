@@ -145,10 +145,42 @@ It reads, in one pass:
   `FLCC.data()` for a church you are not currently in
 
 That last one is what makes it a network assistant rather than a church one. A
-member of JAOC can ask who leads Cornerstone, or who "Ptra. Weng" is on the
-Friday sheet, and get an answer, because all 14 rosters are in front of it —
-listed with the titles and designations each church published for itself. A
-church that hasn't published yet is named as such rather than left out.
+member of JAOC can ask who leads Cornerstone and get an answer, because all 14
+rosters are in front of it — listed with the titles and designations each church
+published for itself. A church that hasn't published yet is named as such rather
+than left out.
+
+Every read is cache-busted (`?t=`), the same way `index.html` has always read
+its own. The published URL doesn't change when the JSON behind it does, so
+without that the browser and Cloudflare's edge both keep serving yesterday's
+copy — which shows up as the members app having a new schedule while the
+assistant still answers from the old one. It also reloads when the tab is
+brought back to the foreground, since a phone can hold this page open for days.
+
+### How it knows who "Ptra. Weng" is
+
+The Friday sheet writes people the way the ministry says them out loud. Those
+short names are what members recognise, so they stay — but on their own they
+are unanswerable: nothing connects "Ptra. Weng" to a roster.
+
+The `preacherId` / `pastoralPrayerId` / `emceeId` references described above do
+connect them, so the assistant resolves each one against the network rosters and
+is given both forms:
+
+```
+2026-08-14: Preacher: Ptra. Weng = Ptra. Louella Calisagan, FLCC - Cornerstone
+```
+
+plus a deduplicated **Who these names are** lookup, since "who is Ptra. Weng?"
+is the single most common question this data answers. Seventeen names resolve
+today. An entry nobody has linked keeps the sheet's wording and nothing more —
+the assistant is told to say it doesn't have that person's church rather than
+guess at a match from the directory, which is exactly the mistake a plausible
+name collision would produce.
+
+**Linking a name is therefore what teaches the assistant who someone is.** Add
+the id and both the person's own app and every member's assistant learn it at
+once.
 
 Nothing here is hardcoded. Add a church to the registry and the assistant picks
 it up on the next load; no path, name or roster is typed into `ask.html`, and a

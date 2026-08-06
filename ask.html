@@ -822,6 +822,17 @@ function ministryLine(m) {
   return contacts ? `${m.headName} | ${contacts}` : m.headName;
 }
 
+/** Data files are published by editing JSON in the repo, so the URL never
+ *  changes when the contents do — and both the browser and Cloudflare's edge
+ *  will happily serve yesterday's copy. Every data read goes through here, the
+ *  same way index.html has always cache-busted its own. Without it the members
+ *  app shows a new schedule while the assistant is still answering from the
+ *  old one. */
+function fresh(url) {
+  if (!url) return url;
+  return url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now();
+}
+
 /** ISO date `days` after `iso`, without dragging a date library in. */
 function addDaysISO(iso, days) {
   const [y, m, d] = String(iso).split('-').map(Number);
@@ -846,22 +857,70 @@ function announcementLine(a) {
     + (a.notes ? ` — ${a.notes}` : '');
 }
 
-/** BOTR Friday morning service: one line per Friday, names as the sheet writes
- *  them. `linked` marks the ones tied to a real member record, which is what
- *  makes a duty show up in that person's own app. */
-function botrFridayLines(botrSchedule, fromDate = null) {
+/** Every member in the network, keyed by the church-qualified reference the
+ *  BOTR sheet uses — `cornerstone:sis-11`. A worker id is only unique inside
+ *  its own church, which is why the slug is part of the key. */
+function networkIndex(churches, network) {
+  const out = {};
+  for (const c of churches || []) {
+    const d = (network || {})[c.slug];
+    if (!d) continue;
+    for (const w of d.workers || []) {
+      out[`${c.slug}:${w.id}`] = {
+        name: [w.title, w.name].filter(Boolean).join(' '),
+        church: d.meta?.churchName || c.name,
+      };
+    }
+  }
+  return out;
+}
+
+/** BOTR Friday morning service: one line per Friday.
+ *
+ *  The sheet writes people the way the ministry says them out loud — "Ptra.
+ *  Weng", "Sis. Lala", "Ptr. Jopet". Those are the names members recognise, so
+ *  they stay. But where the entry is linked to a real member record, the full
+ *  name and church are appended, otherwise the assistant has no way to know
+ *  that Ptra. Weng is Ptra. Louella Calisagan of Cornerstone and simply cannot
+ *  answer half the questions it will be asked. */
+function botrFridayLines(botrSchedule, fromDate = null, index = {}) {
+  const who = (display, id) => {
+    const m = id ? index[id] : null;
+    if (!m) return display;
+    if (m.name.replace(/^(Bro|Sis|Ptr|Ptra|Rev)\.\s*/, '') === display.replace(/^(Bro|Sis|Ptr|Ptra|Rev)\.\s*/, '')) {
+      return `${display} (${m.church})`;
+    }
+    return `${display} = ${m.name}, ${m.church}`;
+  };
   return (botrSchedule?.schedule || [])
     .filter(e => e && e.date && (!fromDate || e.date >= fromDate))
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(e => {
       const roles = [
-        e.preacher       ? `Preacher: ${e.preacher}` : null,
-        e.pastoralPrayer ? `Pastoral Prayer: ${e.pastoralPrayer}` : null,
-        e.emcee          ? `Emcee: ${e.emcee}` : null,
+        e.preacher       ? `Preacher: ${who(e.preacher, e.preacherId)}` : null,
+        e.pastoralPrayer ? `Pastoral Prayer: ${who(e.pastoralPrayer, e.pastoralPrayerId)}` : null,
+        e.emcee          ? `Emcee: ${who(e.emcee, e.emceeId)}` : null,
       ].filter(Boolean).join(' | ');
       const event = e.event ? ` ★ ${e.event}` : '';
       return `  ${e.date}${event}: ${roles || '(not yet assigned)'}`;
     });
+}
+
+/** "Ptra. Weng" → "Ptra. Louella Calisagan · FLCC - Cornerstone", once each.
+ *  A member asking "who is Ptra. Weng?" is asking the single most common
+ *  question this data can answer, so it gets its own short lookup rather than
+ *  being buried in 52 schedule rows. */
+function botrWhoIsWho(botrSchedule, index = {}) {
+  const seen = new Map();
+  for (const e of botrSchedule?.schedule || []) {
+    for (const [nameKey, idKey] of [['preacher', 'preacherId'], ['pastoralPrayer', 'pastoralPrayerId'], ['emcee', 'emceeId']]) {
+      const display = e[nameKey];
+      const m = e[idKey] ? index[e[idKey]] : null;
+      if (!display || !m || seen.has(display)) continue;
+      seen.set(display, `  • ${display} — ${m.name} · ${m.church}`);
+    }
+  }
+  return [...seen.values()].sort();
 }
 
 /** One block per church in the network — who they are and who is on their
@@ -1078,9 +1137,11 @@ function buildSystemPrompt(data, music, prayer, equip, botrData = {}, attendance
   const annUpcoming = networkAnnouncements(announcements, today);
   const annLines    = annUpcoming.map(announcementLine).join('\n');
 
+  const memberIndex    = networkIndex(CHURCH.churches, network);
   const botrMeta       = botrSchedule?.meta || {};
-  const botrAhead      = botrFridayLines(botrSchedule, today);
-  const botrFullYear   = botrFridayLines(botrSchedule);
+  const botrAhead      = botrFridayLines(botrSchedule, today, memberIndex);
+  const botrFullYear   = botrFridayLines(botrSchedule, null, memberIndex);
+  const whoIsWho       = botrWhoIsWho(botrSchedule, memberIndex);
   const botrThemeLines = Object.entries(botrSchedule?.themes || {})
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([m, t]) => `  • ${m}: ${t || '(not yet set)'}`)
@@ -1177,9 +1238,17 @@ ${directory || '(directory not loaded)'}
 ${botrMeta.fullName || 'FLCC - Back on the Rock'} · ${botrMeta.service || 'Friday Morning Service'} · ${botrMeta.serviceTime || '10:00 AM'}
 
 This is the network-wide Friday morning service. **Every member of every church
-sees this schedule** — it is not the property of one congregation. The sheet
-writes people by first name or nickname (e.g. "Ptra. Ellen", "Sis. Lala",
-"Ptr. Jopet"); use the directory above to say who that is in full when it helps.
+sees this schedule** — it is not the property of one congregation.
+
+The sheet writes people the way the ministry says them out loud — "Ptra. Weng",
+"Sis. Lala", "Ptr. Jopet". Where an entry is tied to a member record, the full
+name and church follow after an equals sign. Use whichever the member used, and give
+the full name when it helps them place the person. A name with nothing after it
+is one nobody has linked yet: say who the sheet lists and that you don't have
+their church, rather than guessing at a match from the directory.
+
+**Who these names are:**
+${whoIsWho.join('\n') || '  (none linked yet)'}
 
 **Monthly themes:**
 ${botrThemeLines || '  (none set)'}
@@ -1464,26 +1533,26 @@ function App() {
   const [proxySecret, setProxySecret] = useState(() => localStorage.getItem(ASK_PROXY_SECRET_KEY) || '');
 
   // Load static JSON data, then fetch live BOTR stats in the background
-  useEffect(() => {
+  const loadAppData = useCallback(() => {
     // Every church's roster, so the assistant can answer about the whole
     // network and not just the church this visitor happens to be in. One small
     // static file each, all on the same domain; a church that has not published
     // yet resolves to null and is simply left out of the directory.
     const rosterFetches = CHURCH.churches.map(c =>
-      fetch(CHURCH.dataFor(c.slug, 'data.json'))
+      fetch(fresh(CHURCH.dataFor(c.slug, 'data.json')))
         .then(r => r.ok ? r.json() : null)
         .then(d => [c.slug, d])
         .catch(() => [c.slug, null])
     );
     Promise.all([
-      fetch(CHURCH.data('data.json')).then(r => r.json()),
-      fetch(CHURCH.data('music.json')).then(r => r.json()).catch(() => ({})),
-      fetch(CHURCH.data('prayer.json')).then(r => r.json()).catch(() => ({})),
-      fetch(CHURCH.data('equip.json')).then(r => r.json()).catch(() => ({})),
-      fetch('botr.json').then(r => r.json()).catch(() => ({})),   // network-wide
-      fetch(CHURCH.data('attendance.json')).then(r => r.json()).catch(() => ({})),
-      fetch('announcements.json').then(r => r.json()).catch(() => ({})),   // network-wide
-      fetch('botr-schedule.json').then(r => r.json()).catch(() => ({})),   // network-wide
+      fetch(fresh(CHURCH.data('data.json'))).then(r => r.json()),
+      fetch(fresh(CHURCH.data('music.json'))).then(r => r.json()).catch(() => ({})),
+      fetch(fresh(CHURCH.data('prayer.json'))).then(r => r.json()).catch(() => ({})),
+      fetch(fresh(CHURCH.data('equip.json'))).then(r => r.json()).catch(() => ({})),
+      fetch(fresh('botr.json')).then(r => r.json()).catch(() => ({})),   // network-wide
+      fetch(fresh(CHURCH.data('attendance.json'))).then(r => r.json()).catch(() => ({})),
+      fetch(fresh('announcements.json')).then(r => r.json()).catch(() => ({})),   // network-wide
+      fetch(fresh('botr-schedule.json')).then(r => r.json()).catch(() => ({})),   // network-wide
       Promise.all(rosterFetches).then(Object.fromEntries),
     ]).then(([data, music, prayer, equip, botrData, attendance, announcements, botrSchedule, network]) => {
       setAppData({ data, music, prayer, equip, botrData, attendance, announcements, botrSchedule, network });
@@ -1494,6 +1563,15 @@ function App() {
     }).catch(() => {
       setDataError('Could not load church data. Please open this file from a web server.');
     });
+  }, []);
+
+  useEffect(() => {
+    loadAppData();
+    // A phone keeps this tab alive for days. Without this, a member who opened
+    // Ask FLCC last week is still being answered from last week's roster.
+    const onVisible = () => { if (document.visibilityState === 'visible') loadAppData(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
   // Auto-scroll
