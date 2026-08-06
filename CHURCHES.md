@@ -31,7 +31,10 @@ churches/_template/…                         ← skeletons to copy from
 
 `church.js` is the single source of truth for which churches exist and where
 each one's data sits. Every page loads it before the app and then reads
-`FLCC.data('data.json')` — no page hardcodes a path.
+`FLCC.data('data.json')` — no page hardcodes a path. A page that needs to read
+*another* church's file uses `FLCC.dataFor(slug, 'data.json')`, which answers
+the same question for any church in the registry and returns `null` for a slug
+that isn't one.
 
 **Shared by the whole network** (not per church): `botr.json`,
 `botr-schedule.json`, `announcements.json`, the Bible tools, World Watch,
@@ -107,8 +110,9 @@ their notification bell, including members who skipped the name picker:
   "title": "Leaders' Meeting",
   "date": "2026-08-07",
   "startTime": "13:00",
-  "location": "FLCC - Shekinah Church Hall",
-  "host": "FLCC - Shekinah",
+  "endTime": "15:30",
+  "location": "FLCC - Faithful & True Church Hall",
+  "host": "FLCC - F&T",
   "notes": ""
 }
 ```
@@ -121,6 +125,41 @@ notifications are alerted within three days of the date.
 
 Anything only one church should see is **not** an announcement — that belongs
 in that church's own `data.json` `events[]`.
+
+## What Ask FLCC knows
+
+`ask.html` is the assistant, and it is the **only** one — the members app links
+to it rather than embedding a second copy, so there is one knowledge base to
+keep current. It builds its system prompt fresh on every load from the files
+already described here, which is why nothing about it needs updating when a
+schedule changes: publish the data and the assistant knows it.
+
+It reads, in one pass:
+
+- this visitor's church — `data.json`, `music.json`, `prayer.json`,
+  `equip.json`, `attendance.json`, through `FLCC.data()` as every page does
+- the network-wide files — `botr.json`, `botr-schedule.json` and
+  `announcements.json` — from the root, on the same fixed paths and for the
+  same reason `index.html` uses them
+- **every church's `data.json`**, through `FLCC.dataFor(slug, file)`, which is
+  `FLCC.data()` for a church you are not currently in
+
+That last one is what makes it a network assistant rather than a church one. A
+member of JAOC can ask who leads Cornerstone, or who "Ptra. Weng" is on the
+Friday sheet, and get an answer, because all 14 rosters are in front of it —
+listed with the titles and designations each church published for itself. A
+church that hasn't published yet is named as such rather than left out.
+
+Nothing here is hardcoded. Add a church to the registry and the assistant picks
+it up on the next load; no path, name or roster is typed into `ask.html`, and a
+test fails if one ever is.
+
+The prompt also tells the assistant to **lead with what is imminent**, close
+with a useful next step, and flag things worth noticing — a role still
+unassigned near its date, someone scheduled during their own leave. The
+"Coming up" cards and the "Try asking…" chips on its opening screen are built
+from the same data locally, so they are on screen before any API call and are
+never stale.
 
 A church only needs `data.json` and `attendance.json` to go live. Every other
 ministry file is optional — until it exists, the app simply hides that tab. To

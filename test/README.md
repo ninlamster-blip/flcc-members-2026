@@ -13,6 +13,7 @@ here; the two applications share no code.
 | `attendance.test.mjs` | Service rosters, session summaries, pastoral care flags |
 | `members.test.mjs` | A member's own attendance record, the birthday/anniversary window |
 | `network.test.mjs` | The 14-church registry, every church's data files, the one-app rule |
+| `assistant.test.mjs` | Ask FLCC: what it is told, and which files it is told it from |
 
 ## How these reach into a single-file app
 

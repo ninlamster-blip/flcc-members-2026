@@ -129,6 +129,18 @@
     /** Where to READ a data file from: FLCC.data('data.json'). */
     data: function (file) { return base + '/' + String(file).replace(/^\.?\//, ''); },
 
+    /** Same, for a church that is NOT the current one:
+     *    FLCC.dataFor('jaoc', 'data.json')  →  './churches/jaoc/data.json'
+     *  Network-wide features — the assistant's church directory, anything that
+     *  reads across the whole BOTR network — need every church's paths, not
+     *  just this visitor's. Returns null for an unknown slug so a caller can
+     *  skip it rather than fetch a 404. */
+    dataFor: function (slug, file) {
+      var c = find(slug);
+      if (!c) return null;
+      return c.dataBase.replace(/\/+$/, '') + '/' + String(file).replace(/^\.?\//, '');
+    },
+
     /** Where to WRITE it in the repo, for the GitHub-publishing editors. */
     publishPath: function (file) {
       file = String(file).replace(/^\.?\//, '');
