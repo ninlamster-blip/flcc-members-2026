@@ -2459,6 +2459,12 @@ async function fetchAIEncouragement({ me, weatherText, context }) {
     proxySecret = localStorage.getItem(ASK_PROXY_SECRET_KEY) || '';
     apiKey = localStorage.getItem(ASK_KEY) || '';
   } catch { return null; }
+  // The Worker serving this app also answers on /proxy, with the Anthropic key
+  // held server-side, so a member who has never opened Ask FLCC still gets the
+  // encouragement line. Ask FLCC persists the same value once it has confirmed
+  // it works; here a wrong guess costs nothing, because every failure below
+  // already falls back to the static, weather-keyed message.
+  if (!proxyUrl && !apiKey && /^https?:$/.test(location.protocol)) proxyUrl = location.origin;
   if (!proxyUrl && !apiKey) return null;
 
   const endpoint = proxyUrl ? proxyUrl.replace(/\/+$/, '') + '/proxy' : 'https://api.anthropic.com/v1/messages';

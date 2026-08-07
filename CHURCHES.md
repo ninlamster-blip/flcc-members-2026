@@ -126,6 +126,34 @@ notifications are alerted within three days of the date.
 Anything only one church should see is **not** an announcement — that belongs
 in that church's own `data.json` `events[]`.
 
+## Who Ask FLCC is switched on for
+
+Everyone, on first open, with nothing to set up.
+
+The Worker that serves the app also answers on `/proxy`, holding the Anthropic
+key as a server-side secret, so the app points at its own origin. Members never
+see an API key and never paste a URL. Every question is billed to the church's
+own `ANTHROPIC_API_KEY` — there is no per-member cap, so that key's spend limit
+is the ceiling worth setting.
+
+It asks the Worker before connecting itself, and stays on "Connect to get
+started" unless `/ping` reports that the call would actually succeed:
+
+| `/ping` says | What a member sees |
+| --- | --- |
+| `keySet: true`, no secret | Connected, nothing to do |
+| `keySet: false` | Connect — the Worker has no Anthropic key |
+| `secretRequired: true` | Connect — they need the secret first |
+| no Worker at all | Connect — a personal key is the only route |
+
+That last column matters: promising an assistant that 401s on the first message
+is worse than asking for setup. `/ping` reports only *whether* a secret exists,
+never its value.
+
+Setting `PROXY_SECRET` on the Worker therefore turns off the zero-setup path by
+design — it is the switch for "leaders only". Leave it unset for a church-wide
+assistant.
+
 ## What Ask FLCC knows
 
 `ask.html` is the assistant, and it is the **only** one — the members app links

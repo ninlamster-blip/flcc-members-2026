@@ -822,6 +822,34 @@ function ministryLine(m) {
   return contacts ? `${m.headName} | ${contacts}` : m.headName;
 }
 
+/** The Worker that answers for this church serves the app as well — the same
+ *  deployment holds the static files and the /proxy route, with the Anthropic
+ *  key as a server-side secret. So there is nothing for a member to configure:
+ *  the app can point at its own origin.
+ *
+ *  It asks first rather than assuming. A copy served from anywhere without
+ *  that Worker behind it (a plain file host, someone's laptop) has no /proxy,
+ *  and a Worker with PROXY_SECRET set would refuse a member who has not been
+ *  given the secret. In either case this returns null and the member sees
+ *  "Connect to get started", exactly as before — the promise of a working
+ *  assistant is only made where it can be kept. */
+function autoProxyOrigin() {
+  try {
+    if (!/^https?:$/.test(window.location.protocol)) return null;
+    return window.location.origin;
+  } catch { return null; }
+}
+
+async function discoverProxy(origin, fetchImpl = fetch) {
+  if (!origin) return null;
+  try {
+    const res = await fetchImpl(`${origin}/ping`, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return null;
+    const d = await res.json();
+    return (d && d.ok && d.keySet && !d.secretRequired) ? origin : null;
+  } catch { return null; }
+}
+
 /** Data files are published by editing JSON in the repo, so the URL never
  *  changes when the contents do — and both the browser and Cloudflare's edge
  *  will happily serve yesterday's copy. Every data read goes through here, the
@@ -1618,6 +1646,21 @@ function App() {
 
   const [proxyUrl,    setProxyUrl]    = useState(() => localStorage.getItem(ASK_PROXY_KEY)        || '');
   const [proxySecret, setProxySecret] = useState(() => localStorage.getItem(ASK_PROXY_SECRET_KEY) || '');
+
+  // Connect this device to the Worker serving the app, once, without asking
+  // the member to paste anything. Only when nothing is configured already —
+  // a member who set up their own key or another Worker keeps it. Persisted,
+  // so the members app's daily encouragement line finds it too.
+  useEffect(() => {
+    if (proxyUrl || apiKey) return;
+    let cancelled = false;
+    discoverProxy(autoProxyOrigin()).then(found => {
+      if (cancelled || !found) return;
+      try { localStorage.setItem(ASK_PROXY_KEY, found); } catch {}
+      setProxyUrl(found);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // Load static JSON data, then fetch live BOTR stats in the background
   const loadAppData = useCallback(() => {
