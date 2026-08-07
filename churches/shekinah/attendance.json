@@ -1,10 +1,29 @@
 {
   "meta": {
     "churchName": "FLCC - Shekinah",
-    "publishedAt": "2026-08-02T18:06:44.097Z",
-    "totalSessions": 1
+    "publishedAt": "2026-08-07T14:35:18.346Z",
+    "totalSessions": 2
   },
   "sessions": [
+    {
+      "id": "a-1786113296018-e945",
+      "date": "2026-08-07",
+      "service": "Friday",
+      "serviceLabel": "Friday Service",
+      "summary": {
+        "present": 1,
+        "absent": 31,
+        "excused": 0,
+        "total": 32
+      },
+      "records": [
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Andrealine Alcaraz",
+          "status": "present"
+        }
+      ]
+    },
     {
       "id": "a-1785691801504-vxne",
       "date": "2026-08-02",
@@ -13,6 +32,7 @@
       "summary": {
         "present": 1,
         "absent": 31,
+        "excused": 0,
         "total": 32
       },
       "records": [
