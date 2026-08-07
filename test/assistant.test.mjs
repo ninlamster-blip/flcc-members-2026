@@ -34,12 +34,12 @@ const {
   addDaysISO, withinDays, daysAwayLabel,
   networkAnnouncements, announcementLine, botrFridayLines, networkDirectory,
   buildSuggestions, buildBriefing, ministryLine,
-  networkIndex, botrWhoIsWho, fresh, buildSystemPrompt,
+  networkIndex, botrWhoIsWho, fresh, buildSystemPrompt, discoverProxy,
 } = load('ask.html', [
   'addDaysISO', 'withinDays', 'daysAwayLabel',
   'networkAnnouncements', 'announcementLine', 'botrFridayLines', 'networkDirectory',
   'buildSuggestions', 'buildBriefing', 'ministryLine',
-  'networkIndex', 'botrWhoIsWho', 'fresh', 'buildSystemPrompt',
+  'networkIndex', 'botrWhoIsWho', 'fresh', 'buildSystemPrompt', 'discoverProxy',
 ], { CHURCH: CHURCH_STUB });
 
 // ── Dates ────────────────────────────────────────────────────────────────────
@@ -334,6 +334,65 @@ test('the briefing stays quiet about things far away', () => {
 
 test('the briefing is empty rather than broken before data loads', () => {
   assert.deepEqual(buildBriefing(null, '2026-08-06'), []);
+});
+
+// ── Who the assistant is switched on for ─────────────────────────────────────
+//
+// The Worker that serves the app also answers on /proxy, holding the Anthropic
+// key server-side, so no member should have to paste anything. But the app must
+// only connect itself where that is actually true — the failure to avoid is
+// telling a member the assistant is ready and having their first message 401.
+
+const okPing = (over = {}) => async () => ({
+  ok: true,
+  json: async () => ({ ok: true, keySet: true, secretRequired: false, ...over }),
+});
+
+test('a Worker that can answer is discovered and used', async () => {
+  assert.equal(await discoverProxy('https://church.example', okPing()), 'https://church.example');
+});
+
+test('a Worker with no Anthropic key is not offered to members', async () => {
+  assert.equal(await discoverProxy('https://church.example', okPing({ keySet: false })), null);
+});
+
+test('a Worker behind a shared secret is not auto-connected', async () => {
+  // The member has not been given the secret, so /proxy would 401 on their
+  // first question. Better to show Connect than to promise and fail.
+  assert.equal(await discoverProxy('https://church.example', okPing({ secretRequired: true })), null);
+});
+
+test('a host with no Worker behind it falls back to manual setup', async () => {
+  assert.equal(await discoverProxy('https://pages.example', async () => ({ ok: false })), null);
+  assert.equal(await discoverProxy('https://pages.example', async () => { throw new Error('offline'); }), null);
+  assert.equal(await discoverProxy('https://pages.example', async () => ({ ok: true, json: async () => { throw new Error('html'); } })), null);
+});
+
+test('discovery is skipped when there is no origin to try', async () => {
+  assert.equal(await discoverProxy(null), null);
+  assert.equal(await discoverProxy(''), null);
+});
+
+test('the app only auto-connects when nothing is configured already', () => {
+  // A member who set up their own key, or a different Worker, keeps it.
+  assert.match(SRC, /if \(proxyUrl \|\| apiKey\) return;/);
+  assert.match(SRC, /discoverProxy\(autoProxyOrigin\(\)\)/);
+  assert.match(SRC, /localStorage\.setItem\(ASK_PROXY_KEY, found\)/,
+    'persisting it is what lets the members app find it too');
+});
+
+test('the members app reaches the same Worker for its encouragement line', () => {
+  const members = appSource('index.html');
+  assert.match(members, /if \(!proxyUrl && !apiKey && \/\^https\?:\$\/\.test\(location\.protocol\)\) proxyUrl = location\.origin;/);
+});
+
+test('the Worker reports whether a secret would block a member', () => {
+  const worker = readRepoFile('ask-proxy/worker.js');
+  assert.match(worker, /secretRequired: !!env\.PROXY_SECRET/);
+  // The secret itself must never leave the Worker.
+  const ping = worker.slice(worker.indexOf("url.pathname === '/ping'"), worker.indexOf("url.pathname === '/news'"));
+  assert.ok(!/PROXY_SECRET\s*[,)]/.test(ping.replace(/!!env\.PROXY_SECRET/g, '')),
+    '/ping must report only whether a secret exists, never its value');
 });
 
 // ── The prompt, actually built ───────────────────────────────────────────────

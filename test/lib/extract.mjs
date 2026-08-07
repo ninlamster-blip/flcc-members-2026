@@ -55,7 +55,7 @@ export function exists(file) {
  *  Only matches declarations at column 0, which is where the app files put
  *  their top-level helpers. */
 function sliceFunction(src, name) {
-  const decl = new RegExp(`^function\\s+${name}\\s*\\(`, 'm');
+  const decl = new RegExp(`^(?:async\\s+)?function\\s+${name}\\s*\\(`, 'm');
   const m = decl.exec(src);
   if (!m) return null;
 

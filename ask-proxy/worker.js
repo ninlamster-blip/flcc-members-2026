@@ -611,6 +611,12 @@ async function handleRequest(request, env, ctx) {
       ok: true,
       keySet: !!env.ANTHROPIC_API_KEY,
       assetsBinding: !!env.ASSETS,
+      // Whether /proxy will refuse a call that carries no x-proxy-secret.
+      // The apps ask before connecting themselves to this Worker: with a
+      // secret set, a member still has to be given it, so they must not be
+      // told the assistant is ready when it would 401 on their first message.
+      // The secret itself is never exposed here — only whether one exists.
+      secretRequired: !!env.PROXY_SECRET,
     }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
