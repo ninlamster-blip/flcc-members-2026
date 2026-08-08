@@ -6,6 +6,11 @@
 <title>FLCC Members · Schedule</title>
 <meta name="description" content="View your service schedule, save events to your phone calendar, and report conflicts." />
 
+<!-- The FLCC seal. One mark for the whole network — every church here is an
+     FLCC congregation, so it is not swapped per church. -->
+<link rel="icon" type="image/png" href="./logo.png" />
+<link rel="apple-touch-icon" href="./logo.png" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -630,6 +635,23 @@
   .greeting-h1 {
     animation: greetingPop 0.55s var(--spring) both;
     animation-delay: 0.08s;
+  }
+
+  /* Header seal. Sized in rem so it grows with the member's text-size
+     setting and stays optically level with the two-line greeting block —
+     the mark already carries its own dark outer ring, so it needs no
+     border or plate of its own. */
+  .hdr-logo {
+    width: 2.9rem;
+    height: 2.9rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    display: block;
+    filter: drop-shadow(0 1px 2px rgba(24, 24, 27, 0.14));
+    animation: greetingPop 0.55s var(--spring) both;
+  }
+  @media (max-width: 640px) {
+    .hdr-logo { width: 2.4rem; height: 2.4rem; }
   }
 
   /* Tab active: animated underline */
@@ -1652,6 +1674,7 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="text-center">
+        <img src="./logo.png" alt="" aria-hidden="true" style={{ width: '4.5rem', height: '4.5rem', margin: '0 auto 1rem', display: 'block' }} />
         <div className="font-display text-2xl mb-2 ink">Loading schedule…</div>
         <div className="ink-subtle text-sm">Fetching the latest from FLCC.</div>
       </div>
@@ -1685,6 +1708,7 @@ function NamePicker({ workers, onPick, onSkip, churchName }) {
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="card p-6 sm:p-8 max-w-lg w-full">
+        <img src="./logo.png" alt="" aria-hidden="true" style={{ width: '3.6rem', height: '3.6rem', display: 'block', marginBottom: '1rem' }} />
         <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>{churchName}</div>
         <h1 className="font-display text-3xl sm:text-4xl font-semibold mb-3">Welcome.</h1>
         <p className="ink-muted text-sm mb-5">
@@ -15589,11 +15613,14 @@ function App() {
               and the buttons cannot share a line on a narrow phone, and a
               cramped name is worse than a second row. */}
           <div className="flex items-center justify-between gap-3" style={{ flexWrap: 'wrap' }}>
-            <div style={{ minWidth: 0, flex: '1 1 auto' }}>
-              <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{data.meta.churchName}</div>
-              <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1 greeting-h1" style={{ overflowWrap: 'break-word' }}>
-                {me ? `Hello, ${me.name}` : 'Schedule'}
-              </h1>
+            <div className="flex items-center gap-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
+              <img src="./logo.png" alt="" aria-hidden="true" className="hdr-logo" />
+              <div style={{ minWidth: 0 }}>
+                <div className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--accent)' }}>{data.meta.churchName}</div>
+                <h1 className="font-display text-2xl sm:text-3xl font-semibold mt-1 greeting-h1" style={{ overflowWrap: 'break-word' }}>
+                  {me ? `Hello, ${me.name}` : 'Schedule'}
+                </h1>
+              </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <a href={CHURCH.url('ask.html')} className="ask-pill">💬 Ask FLCC</a>
