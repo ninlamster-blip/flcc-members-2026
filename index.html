@@ -5220,6 +5220,66 @@ function WWLTab() {
   );
 }
 
+function ParkingTab() {
+  const [height, setHeight] = useState(760);
+
+  useEffect(() => {
+    const fit = () => setHeight(Math.max(620, Math.round(window.innerHeight * 0.82)));
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+
+  return (
+    <div className="fade-in">
+      {/* FLCC ARRIVE is a separate app on its own domain, embedded the way the
+          World Watch map is. Nothing crosses the frame: it has its own
+          sign-in, its own database and its own marshals. This is a shortcut,
+          not an integration.
+
+          `allow="geolocation"` is required for a cross-origin frame — without
+          it "show my location" fails silently inside here while working fine
+          in the standalone app, which looks like a bug in the parking app and
+          isn't. */}
+      <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
+        <iframe
+          src="https://project-iq05i.vercel.app/"
+          title="FLCC Arrive — live traffic and parking at the NECK compound"
+          allow="geolocation"
+          referrerPolicy="no-referrer-when-downgrade"
+          style={{ width: '100%', height, border: 'none', display: 'block' }}
+          loading="lazy"
+        />
+      </div>
+
+      <div className="card p-5 mt-4">
+        <div className="home-card-eyebrow">About this</div>
+        <div className="home-card-body text-xs ink-muted" style={{ marginTop: 6 }}>
+          Live traffic and parking for the Friday main service at the National
+          Evangelical Church compound, published by FLCC marshals standing on
+          site. Parking status comes from people, not sensors — it is a
+          well-informed guess, and it clears itself when nobody has confirmed
+          it recently.
+        </div>
+        <div className="home-card-actions" style={{ marginTop: 12 }}>
+          <a
+            href="https://project-iq05i.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary"
+          >
+            Open full screen
+          </a>
+        </div>
+        <div className="home-card-body text-xs ink-muted" style={{ marginTop: 10 }}>
+          Open it full screen to install it on your home screen, or if you are
+          marshalling — the marshal and survey screens want the whole display.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BibleExplorerTab() {
   return (
     <div className="fade-in" style={{ margin: '0 -1rem', height: 'calc(100vh - 112px)' }}>
@@ -15113,6 +15173,7 @@ function ArenaTab({ me }) {
 
 const TABS = [
   { key: 'home',     label: 'Home' },
+  { key: 'parking',  label: '🅿️ Parking' },
   { key: 'mine',     label: 'My Schedule', requiresMe: true },
   { key: 'bible',    label: 'Bible' },
   { key: 'month',    label: 'This Month' },
@@ -15652,6 +15713,7 @@ function App() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div key={currentTab} className="tab-content-area">
           {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} announcements={announcements} />}
+          {currentTab === 'parking' && <ParkingTab />}
           {currentTab === 'bible' && <BibleTab />}
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} botrScheduleData={botrScheduleData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
