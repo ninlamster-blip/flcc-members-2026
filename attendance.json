@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church",
-    "publishedAt": "2026-08-05T08:19:54.594Z",
+    "publishedAt": "2026-08-11T16:38:28.044Z",
     "totalSessions": 18
   },
   "sessions": [
@@ -1190,6 +1190,7 @@
       "summary": {
         "present": 0,
         "absent": 30,
+        "excused": 0,
         "total": 30
       },
       "records": []
