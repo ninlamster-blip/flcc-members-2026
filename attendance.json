@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church",
-    "publishedAt": "2026-08-13T17:13:26.750Z",
+    "publishedAt": "2026-08-13T17:13:40.991Z",
     "totalSessions": 20
   },
   "sessions": [
@@ -11,9 +11,9 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 3,
-        "absent": 21,
-        "excused": 3,
+        "present": 8,
+        "absent": 15,
+        "excused": 4,
         "total": 27
       },
       "records": [
@@ -46,6 +46,36 @@
           "memberId": "sis-01",
           "memberName": "Sis. Bless De Jesus",
           "status": "excused"
+        },
+        {
+          "memberId": "sis-10",
+          "memberName": "Sis. Celsa Sario",
+          "status": "excused"
+        },
+        {
+          "memberId": "sis-09",
+          "memberName": "Sis. Christine Santos",
+          "status": "present"
+        },
+        {
+          "memberId": "ptr-02",
+          "memberName": "Ptr. Doddie Arciaga",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-01",
+          "memberName": "Bro. Dandreb Serna",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-06",
+          "memberName": "Sis. Dolly Cas",
+          "status": "present"
+        },
+        {
+          "memberId": "bro-07",
+          "memberName": "Bro. Edmund Gabriel",
+          "status": "present"
         }
       ]
     },
