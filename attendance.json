@@ -1,7 +1,7 @@
 {
   "meta": {
     "churchName": "FLCC - Abundance Church",
-    "publishedAt": "2026-08-13T17:13:08.403Z",
+    "publishedAt": "2026-08-13T17:13:26.750Z",
     "totalSessions": 20
   },
   "sessions": [
@@ -11,9 +11,9 @@
       "service": "Friday",
       "serviceLabel": "Friday Service",
       "summary": {
-        "present": 2,
-        "absent": 25,
-        "excused": 0,
+        "present": 3,
+        "absent": 21,
+        "excused": 3,
         "total": 27
       },
       "records": [
@@ -26,6 +26,26 @@
           "memberId": "sis-13",
           "memberName": "Sis. Alma Flores",
           "status": "present"
+        },
+        {
+          "memberId": "w-1782986400001",
+          "memberName": "Sis. Amazelle De Jesus",
+          "status": "present"
+        },
+        {
+          "memberId": "sis-16",
+          "memberName": "Sis. Annabelle Arciaga",
+          "status": "excused"
+        },
+        {
+          "memberId": "bro-10",
+          "memberName": "Bro. Benedict Treseni",
+          "status": "excused"
+        },
+        {
+          "memberId": "sis-01",
+          "memberName": "Sis. Bless De Jesus",
+          "status": "excused"
         }
       ]
     },
