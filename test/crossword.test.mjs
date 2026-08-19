@@ -140,7 +140,10 @@ test('clue numbers run 1, 2, 3 in reading order with no gaps', () => {
   }
 });
 
-test('no answer is reused across puzzles, beyond the short connecting words', () => {
+test('short answers may repeat, long ones may not, and none repeats within a grid', () => {
+  // Three- and four-letter answers are the connecting tissue a 6x6 grid cannot
+  // do without. Everything longer carries a clue somebody wrote for it once.
+  const CAP = { 3: 3, 4: 2, 5: 1, 6: 1 };
   const counts = new Map();
   for (const model of models) {
     const seen = new Set();
@@ -151,15 +154,49 @@ test('no answer is reused across puzzles, beyond the short connecting words', ()
     }
   }
   for (const [word, n] of counts) {
-    const allowed = word.length === 3 ? 2 : 1;
-    assert.ok(n <= allowed, `${word} appears in ${n} puzzles (at most ${allowed} allowed)`);
+    assert.ok(n <= CAP[word.length], `${word} appears in ${n} puzzles (at most ${CAP[word.length]} allowed)`);
   }
 });
 
-test('there are ten puzzles and each has a distinct id', () => {
-  assert.equal(PUZZLES.length, 10);
-  assert.equal(new Set(PUZZLES.map(p => p.id)).size, 10);
+test('a repeated answer never comes back within a week of play', () => {
+  // Yesterday's answer turning up again today reads as carelessness. Six
+  // puzzles apart is far enough that it reads as ordinary crossword fill.
+  const lastSeen = new Map();
+  models.forEach((model, day) => {
+    for (const e of model.entries) {
+      if (lastSeen.has(e.answer)) {
+        const gap = day - lastSeen.get(e.answer);
+        assert.ok(gap >= 6, `${e.answer} repeats after only ${gap} puzzle(s), in ${model.id}`);
+      }
+      lastSeen.set(e.answer, day);
+    }
+  });
+});
+
+test('there is a month of puzzles, each with a distinct id', () => {
+  // A daily puzzle that repeats inside a fortnight is not really daily.
+  assert.ok(PUZZLES.length >= 28, `only ${PUZZLES.length} puzzles — the rotation repeats too soon`);
+  assert.equal(new Set(PUZZLES.map(p => p.id)).size, PUZZLES.length);
   PUZZLES.forEach((p, i) => assert.equal(puzzleNumber(p), i + 1));
+});
+
+test('every category in the rotation is genuinely represented', () => {
+  // A puzzle labelled "Prophets" whose answers are all geography would be a
+  // lie on the hero. Each one has to carry at least three of its own theme.
+  for (const model of models) {
+    const onTheme = model.entries.filter(e => e.tags.includes(model.category)).length;
+    assert.ok(onTheme >= 3, `${model.id} is labelled ${model.category} but only ${onTheme} answers carry that tag`);
+  }
+  // And the month is genuinely varied: plenty of distinct themes, none of them
+  // taking over. The bank is deeper in some themes than others, so an exactly
+  // even split is not the bar — one theme owning the month is what would be.
+  const perCategory = new Map();
+  for (const p of PUZZLES) perCategory.set(p.category, (perCategory.get(p.category) || 0) + 1);
+  assert.ok(perCategory.size >= 12, `only ${perCategory.size} distinct categories across the month`);
+  const ceiling = Math.ceil(PUZZLES.length / 5);
+  for (const [cat, n] of perCategory) {
+    assert.ok(n <= ceiling, `${cat} has ${n} of the ${PUZZLES.length} puzzles (at most ${ceiling})`);
+  }
 });
 
 // ── The daily puzzle ─────────────────────────────────────────────────────────
@@ -175,6 +212,11 @@ test('everyone gets the same puzzle on the same day, and a new one tomorrow', ()
   // And it comes back round rather than running out.
   const cycle = new Date(2026, 7, 19 + PUZZLES.length, 6, 0, 0);
   assert.equal(puzzleForDate(cycle).id, puzzleForDate(day).id);
+
+  // Every day of a month is a different puzzle — that is what makes it daily.
+  const month = new Set();
+  for (let i = 0; i < 28; i++) month.add(puzzleForDate(new Date(2026, 7, 19 + i, 6, 0, 0)).id);
+  assert.equal(month.size, 28, 'a puzzle repeats inside four weeks');
 });
 
 test('the day is the member\'s own calendar day, not UTC', () => {

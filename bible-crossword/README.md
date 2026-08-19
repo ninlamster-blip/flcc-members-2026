@@ -1,7 +1,8 @@
 # Bible Crossword
 
-A hard 6×6 crossword for FLCC members, with a new puzzle every day. Standalone,
-like the other games: open `bible-crossword/index.html`, reached from the games
+A hard 6×6 crossword for FLCC members: **31 puzzles, one for each day of the
+month**, so the rotation does not repeat inside four weeks. Standalone, like the
+other games: open `bible-crossword/index.html`, reached from the games
 button on the app's Home tab and from the "Today's challenge" card.
 
 Plain ES modules, no dependencies and no build step, the same as everything else
@@ -13,7 +14,7 @@ no AI connection at all.
 | File | What it holds |
 | --- | --- |
 | `js/answers.js` | **The answer bank.** Every answer, clue, hint, Scripture reference and explanation, written and checked by hand. |
-| `js/puzzles.js` | **Generated.** Ten solved 6×6 grids. Rebuild with `node scripts/build-crossword-puzzles.mjs`. |
+| `js/puzzles.js` | **Generated.** 31 solved 6×6 grids. Rebuild with `node scripts/build-crossword-puzzles.mjs`. |
 | `js/engine.js` | Pure functions: numbering, entries, navigation, the daily puzzle, whether a word is right. No DOM, no storage. |
 | `js/storage.js` | The one localStorage key: streak, results, work in progress, the sound setting. |
 | `js/ai.js` | Optional. Lazy-loaded the first time somebody asks for help. |
@@ -43,14 +44,29 @@ bank has never heard of.
 
 The grids are not drawn by hand. `scripts/build-crossword-puzzles.mjs`
 enumerates every 180°-symmetric 6×6 pattern whose white runs are all either a
-real entry or a single square checked by the crossing word, then fills the most
-open of them by backtracking out of the bank. It is deterministic — the same
-bank produces the same ten puzzles — so re-running it after adding answers is
-safe to commit.
+real entry or a single square checked by the crossing word, then fills them by
+backtracking out of the bank. It is deterministic — the same bank produces the
+same 31 puzzles — so re-running it after adding answers is safe to commit.
 
-Answers of four letters and up appear in exactly one puzzle. Three-letter
-answers may serve twice: they are the connecting tissue a grid this small needs,
-and there are only so many defensible ones in Scripture.
+Two things in it are worth knowing before changing it:
+
+**Patterns are ranked by where the bank is deep.** Sorting purely on how open a
+grid looks picks shapes full of three- and four-letter slots, which burns the
+two scarcest banks while the five- and six-letter ones sit idle — measured at
+64% and 73% consumed against 11% and 17%, and it capped the whole build at
+eleven puzzles. Weighting by supply is what lets one bank carry a month.
+
+**The theme is a constraint on the search, not a filter after it.** Half of
+every grid's answers must carry the puzzle's category, and the slots that have
+to are nominated before the fill starts. Checking afterwards does not work: the
+solver happily satisfies a grid from the general bank, and a thin category like
+Holy Spirit then never reaches its quota however many patterns are tried.
+
+Answers of five letters and up appear in exactly one puzzle. Four-letter answers
+may serve twice and three-letter answers three times — they are the connecting
+tissue a grid this small needs, and Scripture offers only so many defensible
+short ones. Whatever repeats is kept at least six puzzles apart, so no answer
+comes back inside a week of daily play.
 
 ## The AI layer
 

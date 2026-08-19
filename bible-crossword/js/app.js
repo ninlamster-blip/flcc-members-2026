@@ -746,15 +746,16 @@ function openArchive() {
     n.className = 'archive-n';
     n.textContent = String(i + 1).padStart(2, '0');
 
+    const result = store.resultFor(p.id);
     const body = document.createElement('div');
     body.className = 'archive-body';
     const b = document.createElement('b');
     b.textContent = p.category;
     const s = document.createElement('span');
-    s.textContent = p.id === today.id ? 'Today’s challenge · Hard' : 'Hard';
+    if (p.id === today.id) { s.className = 'today'; s.textContent = 'Today’s challenge'; }
+    else s.textContent = result ? `Solved · ${result.hintsUsed} hint${result.hintsUsed === 1 ? '' : 's'}` : 'Hard';
     body.append(b, s);
 
-    const result = store.resultFor(p.id);
     const score = document.createElement('span');
     score.className = 'archive-score';
     score.textContent = result ? `${result.score.toLocaleString()} pts` : '';
@@ -766,6 +767,8 @@ function openArchive() {
   });
 
   openOverlay('archive-overlay');
+  // A month of rows opens on row one, which is rarely the row anyone wants.
+  list.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'center' });
 }
 
 /* ── Timer ────────────────────────────────────────────────────────────────── */

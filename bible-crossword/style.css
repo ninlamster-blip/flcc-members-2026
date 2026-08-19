@@ -491,19 +491,21 @@ body {
 
 /* ── Archive ──────────────────────────────────────────────────────────────── */
 
-.archive-list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+/* A month of rows, so they are kept compact enough to scan rather than read. */
+.archive-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 5px; }
 .archive-item {
   width: 100%; appearance: none; cursor: pointer; font: inherit; text-align: left;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-  padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 9px 12px; display: flex; align-items: center; gap: 11px;
   transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
 }
 .archive-item:hover { border-color: var(--border-strong); background: var(--bg); }
 .archive-item[aria-current="true"] { border-color: var(--accent); background: var(--accent-tint); }
 .archive-n { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.8125rem; color: var(--ink-subtle); }
 .archive-body { flex: 1 1 auto; min-width: 0; }
-.archive-body b { display: block; font-size: 0.875rem; font-weight: 500; }
-.archive-body span { display: block; font-size: 0.6875rem; color: var(--ink-subtle); margin-top: 1px; }
+.archive-body b { display: block; font-size: 0.8125rem; font-weight: 500; }
+.archive-body span { display: block; font-size: 0.625rem; color: var(--ink-subtle); margin-top: 1px; }
+.archive-item .today { color: var(--accent); font-weight: 600; }
 .archive-score { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.75rem; color: var(--success); }
 
 /* ── Loading ──────────────────────────────────────────────────────────────── */

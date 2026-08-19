@@ -123,9 +123,15 @@ for (const p0 of PROFILES) for (const p1 of PROFILES) for (const p2 of PROFILES)
   if (blacks < 4 || blacks > 14) continue;
   PATTERNS.push({ g, slots, blacks });
 }
-// Open grids first: the fewer blocked cells a pattern has the better it looks,
-// and the more of the 36 squares a solver actually gets to fill in.
-PATTERNS.sort((a, b) => (a.blacks - b.blacks) || (b.slots.length - a.slots.length));
+// Rank patterns by where the bank is actually deep. Sorting purely on how open
+// a grid looks picks shapes stuffed with three- and four-letter slots, which
+// burns the two scarcest banks while the five- and six-letter ones sit unused —
+// measured at 64% and 73% consumed against 11% and 17%. Weighting by supply
+// first, then by openness, is what lets one bank carry a month of puzzles.
+const DEPTH = {};
+for (const w of Object.keys(ANSWERS)) DEPTH[w.length] = (DEPTH[w.length] || 0) + 1;
+const supply = (p) => p.slots.reduce((n, s) => n + DEPTH[s.len], 0) / p.slots.length;
+PATTERNS.sort((a, b) => (supply(b) - supply(a)) || (a.blacks - b.blacks) || (b.slots.length - a.slots.length));
 console.log(`patterns: ${PATTERNS.length}`);
 
 /* ── Word index ───────────────────────────────────────────────────────────── */
@@ -139,7 +145,7 @@ const INDEX = {};
 for (const w of WORDS) for (let i = 0; i < w.length; i++) (INDEX[`${w.length}:${i}:${w[i]}`] ||= new Set()).add(w);
 
 /* ── Fill one pattern ─────────────────────────────────────────────────────── */
-function fill(pattern, { available, prefer }) {
+function fill(pattern, { available, prefer, minTheme = 0 }) {
   const { g, slots } = pattern;
   const grid = Array.from({ length: N }, (_, r) => Array.from({ length: N }, (_, c) => (g[r][c] ? '#' : null)));
   const cellsOf = (s) => Array.from({ length: s.len }, (_, i) => (s.dir === 'across' ? [s.row, s.col + i] : [s.row + i, s.col]));
@@ -157,6 +163,25 @@ function fill(pattern, { available, prefer }) {
     [...hot, ...cold].forEach((w, i) => rank.set(w, i));
   }
 
+  // Filtering for theme *after* a fill succeeds does not work: the solver is
+  // free to satisfy the grid entirely from the general bank, and a thin
+  // category then never reaches its quota however many patterns are tried.
+  // Instead a set of slots is nominated up front and may only take answers
+  // carrying the tag, so the theme is a constraint the search has to satisfy
+  // rather than a property it might happen to have.
+  const hot = new Set(WORDS.filter((w) => available(w) && ANSWERS[w].tags.includes(prefer)));
+  const hotByLen = {};
+  for (const w of hot) hotByLen[w.length] = (hotByLen[w.length] || 0) + 1;
+  const forced = new Set(
+    [...slots]
+      .map((s, i) => ({ i, supply: hotByLen[s.len] || 0 }))
+      .sort((a, b) => b.supply - a.supply)
+      .slice(0, minTheme)
+      .filter((s) => s.supply > 0)
+      .map((s) => s.i),
+  );
+  if (forced.size < minTheme) return null;   // this category cannot carry this shape
+
   const placed = new Set();
   const candidates = (s) => {
     const known = [];
@@ -169,7 +194,10 @@ function fill(pattern, { available, prefer }) {
       if (!out.length) return [];
     }
     if (out === null) out = [...pool[s.len]];
-    return out.filter((w) => pool[s.len].has(w) && !placed.has(w)).sort((a, b) => rank.get(a) - rank.get(b));
+    const onlyHot = forced.has(slots.indexOf(s));
+    return out
+      .filter((w) => pool[s.len].has(w) && !placed.has(w) && (!onlyHot || hot.has(w)))
+      .sort((a, b) => rank.get(a) - rank.get(b));
   };
 
   let steps = 0;
@@ -199,47 +227,93 @@ function fill(pattern, { available, prefer }) {
   return { grid: grid.map((row) => row.join('')), words: [...placed] };
 }
 
-/* ── Build the ten puzzles ────────────────────────────────────────────────── */
-const TARGETS = [
-  { id: 'flcc-hard-001', category: 'Lesser-Known People' },
-  { id: 'flcc-hard-002', category: 'Kings & Kingdoms' },
-  { id: 'flcc-hard-003', category: 'Bible Geography' },
-  { id: 'flcc-hard-004', category: 'Prophets' },
-  { id: 'flcc-hard-005', category: 'Women of the Bible' },
-  { id: 'flcc-hard-006', category: 'Objects & Symbols' },
-  { id: 'flcc-hard-007', category: 'Places & Cities' },
-  { id: 'flcc-hard-008', category: 'New Testament' },
-  { id: 'flcc-hard-009', category: 'Old Testament' },
-  { id: 'flcc-hard-010', category: 'Bible History' },
-];
+/* ── Build the puzzles ───────────────────────────────────────────────────── */
 
-// Answers four letters and longer appear in exactly one puzzle. Three-letter
-// answers are the connective tissue every small crossword needs and there are
-// only so many defensible ones, so they may serve twice — never in the same
-// puzzle, and never more than that.
+// A month of daily puzzles. The rotation is ordered so no two consecutive days
+// share a theme; it cycles back to the top once every category has had one.
+const ROTATION = [
+  'Lesser-Known People', 'Kings & Kingdoms', 'Bible Geography', 'Prophets',
+  'Women of the Bible', 'Objects & Symbols', 'Places & Cities', 'New Testament',
+  'Words of Jesus', 'Old Testament', 'Bible History', 'Holy Spirit',
+  'Men of the Bible', 'Theology', 'Bible Numbers', 'Scripture Detective', 'Who Am I?',
+];
+const TARGET = 31;
+
+// Short answers are the connecting tissue a 6x6 grid cannot do without, and
+// Scripture only offers so many defensible ones, so they may serve more than
+// once. Longer answers appear exactly once. Whatever repeats has to be far
+// apart in the rotation — a word coming back the very next day would read as
+// carelessness rather than as fill.
+const CAP = { 3: 3, 4: 2, 5: 1, 6: 1 };
+const APART = 6;
+
 const uses = new Map();
-const available = (w) => (uses.get(w) || 0) < (w.length === 3 ? 2 : 1);
+const lastSeen = new Map();
+let day = 0;
+const available = (w) =>
+  (uses.get(w) || 0) < CAP[w.length] &&
+  (!lastSeen.has(w) || day - lastSeen.get(w) >= APART);
+
 const built = [];
 let patternCursor = 0;
 
-for (const target of TARGETS) {
-  let done = null;
-  let filled = 0, offTheme = 0;
-  for (let attempt = 0; attempt < PATTERNS.length && !done; attempt++) {
-    const pattern = PATTERNS[(patternCursor + attempt) % PATTERNS.length];
-    const res = fill(pattern, { available, prefer: target.category });
+function attempt(category) {
+  for (let a = 0; a < PATTERNS.length; a++) {
+    const pattern = PATTERNS[(patternCursor + a) % PATTERNS.length];
+    // Half the grid, not a token three. A puzzle whose hero says "Words of
+    // Jesus" over five Old Testament place names is a label, not a theme.
+    const minTheme = Math.ceil(pattern.slots.length / 2);
+    const res = fill(pattern, { available, prefer: category, minTheme });
     if (!res) continue;
-    filled++;
-    const onTheme = res.words.filter((w) => ANSWERS[w].tags.includes(target.category)).length;
-    if (onTheme < Math.min(3, res.words.length)) { offTheme++; continue; }   // must really be about its category
-    done = { ...target, ...res, onTheme, slots: pattern.slots.length };
-    patternCursor = (patternCursor + attempt + 1) % PATTERNS.length;
+    const onTheme = res.words.filter((w) => ANSWERS[w].tags.includes(category)).length;
+    if (onTheme < minTheme) continue;
+    patternCursor = (patternCursor + a + 1) % PATTERNS.length;
+    return { ...res, onTheme };
   }
-  if (!done) throw new Error(`could not build a puzzle for ${target.category} (fills=${filled}, offTheme=${offTheme})`);
-  done.words.forEach((w) => uses.set(w, (uses.get(w) || 0) + 1));
-  built.push(done);
-  console.log(`${done.id}  ${done.category.padEnd(22)} ${done.words.length} answers (${done.onTheme} on theme)`);
+  return null;
 }
+
+function record(category, res) {
+  day = built.length + 1;
+  const id = `flcc-hard-${String(day).padStart(3, '0')}`;
+  res.words.forEach((w) => {
+    uses.set(w, (uses.get(w) || 0) + 1);
+    lastSeen.set(w, day);
+  });
+  built.push({ id, category, difficulty: 'Hard', ...res });
+  console.log(`${id}  ${category.padEnd(22)} ${res.words.length} answers (${res.onTheme} on theme)`);
+}
+
+// One pass through the rotation in order, so every category gets a day before
+// any gets a second. After that, always take whichever category has had the
+// fewest — left to run round the rotation again it silently drifts toward the
+// three or four richest themes and the month stops feeling varied.
+const skipped = [];
+const tally = new Map(ROTATION.map((c) => [c, 0]));
+const exhausted = new Set();
+
+for (const category of ROTATION) {
+  if (built.length >= TARGET) break;
+  const res = attempt(category);
+  if (res) { record(category, res); tally.set(category, 1); }
+  else { skipped.push(category); exhausted.add(category); }
+}
+
+while (built.length < TARGET) {
+  const next = ROTATION
+    .filter((c) => !exhausted.has(c))
+    .sort((a, b) => tally.get(a) - tally.get(b))[0];
+  if (!next) break;
+  const res = attempt(next);
+  if (res) { record(next, res); tally.set(next, tally.get(next) + 1); }
+  else exhausted.add(next);   // this category has given all it can for now
+}
+
+if (skipped.length) console.log(`\nno grid available for: ${skipped.join(', ')}`);
+if (built.length < TARGET) {
+  console.log(`built ${built.length} of ${TARGET} — the bank is the limit, not the code`);
+}
+if (!built.length) throw new Error('could not build a single puzzle');
 
 /* ── Emit ─────────────────────────────────────────────────────────────────── */
 const body = built.map((p) => `  {
@@ -252,7 +326,7 @@ ${p.grid.map((row) => `      '${row}',`).join('\n')}
   },`).join('\n');
 
 const out = `/* =============================================================================
-   THE PUZZLE BANK — ten hard 6x6 Bible crosswords.
+   THE PUZZLE BANK — a month of hard 6x6 Bible crosswords, one for each day.
    -----------------------------------------------------------------------------
    GENERATED FILE. Do not hand-edit: run
 
@@ -275,4 +349,4 @@ ${body}
 ];
 `;
 writeFileSync(new URL('../bible-crossword/js/puzzles.js', import.meta.url), out);
-console.log(`\nwrote bible-crossword/js/puzzles.js — ${built.length} puzzles, ${uses.size} distinct answers`);
+console.log(`\nwrote bible-crossword/js/puzzles.js — ${built.length} puzzles, ${uses.size} distinct answers of ${WORDS.length} in the bank`);
