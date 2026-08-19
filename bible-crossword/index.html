@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FAFAF5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="A hard 6x6 Bible crossword for FLCC members. A new puzzle every day, with progressive hints, Scripture references and AI-assisted explanations.">
+<title>Bible Crossword · FLCC Members</title>
+
+<link rel="icon" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="../" aria-label="Back to the FLCC Members app">&larr; FLCC Members</a>
+    <div class="topbar-actions">
+      <button type="button" class="icon-btn" id="btn-archive" aria-label="Choose a puzzle">Puzzles</button>
+      <button type="button" class="icon-btn" id="btn-sound" aria-pressed="false" aria-label="Sound effects, currently off">&#128263;</button>
+      <button type="button" class="icon-btn" id="btn-how" aria-label="How to play">?</button>
+    </div>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">Daily Bible Challenge</p>
+    <h1 class="font-display">Bible Crossword</h1>
+    <p class="sub">A harder way to know the Word.</p>
+    <div class="hero-meta">
+      <span class="tag tag-hard" id="tag-difficulty">Hard</span>
+      <span class="tag tag-category" id="tag-category">&nbsp;</span>
+      <span class="spacer"></span>
+      <span class="tag tag-puzzle" id="tag-puzzle">&nbsp;</span>
+      <span class="tag tag-streak" id="tag-streak" hidden></span>
+      <span class="tag tag-done" id="tag-solved" hidden>Solved</span>
+    </div>
+  </header>
+
+  <div class="loading" id="loading">Preparing today&rsquo;s challenge&hellip;</div>
+
+  <main id="game" hidden>
+
+    <div class="scoreboard">
+      <div class="score-cell">
+        <span class="score-value" id="score">0</span>
+        <span class="score-label">Points</span>
+      </div>
+      <div class="score-cell">
+        <span class="score-value mono" id="timer">00:00</span>
+        <span class="score-label">Time</span>
+      </div>
+      <div class="score-cell">
+        <span class="score-value" id="progress">0/0</span>
+        <span class="score-label">Answers</span>
+      </div>
+    </div>
+
+    <div class="board">
+
+      <!-- LEFT on desktop, first on mobile: the grid itself -->
+      <section class="col-grid" aria-label="Crossword grid">
+        <div class="grid-shell">
+          <div class="grid" id="grid" role="grid" aria-label="Six by six crossword grid"></div>
+          <label class="sr-only" for="ghost">Type a letter for the selected square</label>
+          <input class="ghost-input" id="ghost" type="text" inputmode="text"
+                 autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+                 aria-describedby="live">
+        </div>
+      </section>
+
+      <!-- The clue you are on, and the help for it -->
+      <section class="col-current" aria-label="Selected clue">
+        <div class="current" id="current">
+          <div class="current-head">
+            <span class="current-dir" id="current-dir">Across</span>
+            <span class="current-num mono" id="current-num">1</span>
+            <div class="current-nav">
+              <button type="button" class="nav-btn" id="btn-prev" aria-label="Previous clue">&#8249;</button>
+              <button type="button" class="nav-btn" id="btn-next" aria-label="Next clue">&#8250;</button>
+            </div>
+          </div>
+          <p class="current-clue" id="current-clue"></p>
+          <p class="current-meta" id="current-meta"></p>
+
+          <div class="ai-row">
+            <button type="button" class="btn" id="btn-hint">
+              <span class="sparkle" aria-hidden="true">&#10022;</span> AI Hint <span class="btn-cost">&minus;50</span>
+            </button>
+            <button type="button" class="btn" id="btn-scripture">
+              Scripture <span class="btn-cost">&minus;100</span>
+            </button>
+            <button type="button" class="btn" id="btn-reveal">
+              Reveal a letter <span class="btn-cost">&minus;150</span>
+            </button>
+            <button type="button" class="btn" id="btn-ask" hidden>
+              <span class="sparkle" aria-hidden="true">&#10022;</span> Ask AI <span class="btn-cost">&minus;100</span>
+            </button>
+          </div>
+
+          <div class="insights" id="insights"></div>
+        </div>
+      </section>
+
+      <!-- Every clue, and the controls -->
+      <section class="col-clues" aria-label="Clues">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Clues</h2>
+            <div class="dir-switch" role="group" aria-label="Show across or down clues">
+              <button type="button" id="sw-across" aria-pressed="true">Across</button>
+              <button type="button" id="sw-down" aria-pressed="false">Down</button>
+            </div>
+          </div>
+          <ul class="clue-list" id="clue-list"></ul>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2 class="panel-title">Controls</h2></div>
+          <div class="tools">
+            <button type="button" class="btn" id="btn-check">Check answers</button>
+            <button type="button" class="btn" id="btn-reset">Reset puzzle</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <p id="live" class="sr-only" role="status" aria-live="polite"></p>
+</div>
+
+<!-- ── Ask AI ─────────────────────────────────────────────────────────────── -->
+<div class="overlay" id="ask-overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ask-title">
+    <div class="sheet-pad">
+      <div class="sheet-head">
+        <div>
+          <p class="eyebrow"><span class="sparkle" aria-hidden="true">&#10022;</span> AI Assistance</p>
+          <h2 class="font-display" id="ask-title">Ask about this clue</h2>
+        </div>
+        <button type="button" class="sheet-close" data-close="ask-overlay" aria-label="Close">&#10005;</button>
+      </div>
+      <p class="ask-note" id="ask-clue"></p>
+      <div class="ask-actions" id="ask-actions"></div>
+      <div id="ask-answer"></div>
+      <p class="ask-note">Only this one clue is sent. Nothing you type, no score and no history leaves your device.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Completion ─────────────────────────────────────────────────────────── -->
+<div class="overlay" id="done-overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="done-title">
+    <div class="sheet-pad">
+      <div class="sheet-head">
+        <div>
+          <p class="eyebrow done-eyebrow">Puzzle Complete</p>
+          <h2 class="font-display done-title" id="done-title">Well done.</h2>
+        </div>
+        <button type="button" class="sheet-close" data-close="done-overlay" aria-label="Close">&#10005;</button>
+      </div>
+      <p class="done-sub" id="done-sub"></p>
+
+      <div class="done-stats">
+        <div class="done-stat"><b id="done-score">0</b><span>Points</span></div>
+        <div class="done-stat"><b id="done-time">00:00</b><span>Time</span></div>
+        <div class="done-stat"><b id="done-answers">0/0</b><span>Answers</span></div>
+        <div class="done-stat"><b id="done-hints">0</b><span>Hints</span></div>
+      </div>
+
+      <div class="done-section">
+        <h3>Today&rsquo;s Scripture</h3>
+        <p class="done-scripture" id="done-scripture"></p>
+      </div>
+      <div class="done-section">
+        <h3><span class="sparkle" aria-hidden="true">&#10022;</span> What did you learn?</h3>
+        <p id="done-learn"></p>
+      </div>
+
+      <div class="done-actions">
+        <button type="button" class="btn btn-ink" id="btn-next-challenge">Next challenge</button>
+        <button type="button" class="btn" id="btn-review">Review answers</button>
+        <button type="button" class="btn" id="btn-share">Share result</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Archive ────────────────────────────────────────────────────────────── -->
+<div class="overlay" id="archive-overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="archive-title">
+    <div class="sheet-pad">
+      <div class="sheet-head">
+        <div>
+          <p class="eyebrow">The Bank</p>
+          <h2 class="font-display" id="archive-title">Every puzzle</h2>
+        </div>
+        <button type="button" class="sheet-close" data-close="archive-overlay" aria-label="Close">&#10005;</button>
+      </div>
+      <ul class="archive-list" id="archive-list"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- ── How to play ────────────────────────────────────────────────────────── -->
+<div class="overlay" id="how-overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="how-title">
+    <div class="sheet-pad">
+      <div class="sheet-head">
+        <div>
+          <p class="eyebrow">Daily Bible Challenge</p>
+          <h2 class="font-display" id="how-title">How this works</h2>
+        </div>
+        <button type="button" class="sheet-close" data-close="how-overlay" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="done-section">
+        <h3>The grid</h3>
+        <p>Tap a square to select it. Tap it again to switch between Across and Down. Type to fill it in, backspace to go back, arrow keys to move. A word turns green once every letter of it is right.</p>
+      </div>
+      <div class="done-section">
+        <h3>The clues</h3>
+        <p>They are deliberately hard, and aimed at people who already know the famous stories. When one defeats you, work down the help: a hint, then the Scripture reference, then a single letter. Each costs points; none of them ends the puzzle.</p>
+      </div>
+      <div class="done-section">
+        <h3>Scoring</h3>
+        <p>Correct answer +100. Finishing +500. Finishing with no hints at all +500 more, and a further +1,000 if you also never filled a word in wrongly. Hint &minus;50, Scripture &minus;100, revealed letter &minus;150, Ask AI &minus;100.</p>
+      </div>
+      <div class="done-section">
+        <h3>Your streak</h3>
+        <p>One puzzle finished on a day keeps the streak alive. Everything is kept on this device only &mdash; no account, nothing uploaded.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

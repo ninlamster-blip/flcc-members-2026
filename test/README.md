@@ -14,6 +14,7 @@ here; the two applications share no code.
 | `members.test.mjs` | A member's own attendance record, the birthday/anniversary window |
 | `network.test.mjs` | The 14-church registry, every church's data files, the one-app rule |
 | `assistant.test.mjs` | Ask FLCC: what it is told, and which files it is told it from |
+| `crossword.test.mjs` | Bible Crossword: the answer bank, the grids, the daily puzzle, the streak |
 
 ## How these reach into a single-file app
 
@@ -29,6 +30,13 @@ loudly rather than silently testing nothing.
 
 `loadChurch()` evaluates the real `church.js` against a stubbed browser, so the
 registry tests exercise the shipped resolver rather than a copy of it.
+
+`bible-crossword/` is the exception to all of the above: it is a standalone game
+built from plain ES modules, so `crossword.test.mjs` imports its bank, engine
+and storage directly. It only reaches for `extract.mjs` for the one piece that
+lives inside `index.html` — the Home tab's crossword card, which reads the same
+localStorage key the game writes and is checked against it so the two cannot
+drift.
 
 ## What these are defending
 

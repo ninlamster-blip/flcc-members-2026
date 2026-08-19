@@ -2839,6 +2839,55 @@ function BOTRScheduleCard({ botrData }) {
   );
 }
 
+// ── Today's Bible Crossword ──────────────────────────────────────────────────
+/**
+ * A link, a streak and nothing else. The crossword itself is a standalone page
+ * under bible-crossword/ — the same arrangement as the other games — so this
+ * card only reads the streak the game already wrote. The storage key is not
+ * namespaced by church on purpose: game scores are a device-wide preference
+ * here, like the Bible translation (see CHURCHES.md).
+ */
+const CROSSWORD_KEY = 'flcc-crossword-v1';
+
+/** The streak as it should be shown: a count last touched before yesterday is
+ *  history, not a live streak. Mirrors bible-crossword/js/storage.js. */
+function crosswordStreak(now = new Date()) {
+  try {
+    const raw = localStorage.getItem(CROSSWORD_KEY);
+    if (!raw) return 0;
+    const streak = (JSON.parse(raw) || {}).streak || {};
+    if (!streak.lastDay || !streak.count) return 0;
+    const key = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const today = key(now);
+    const yesterday = key(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+    return streak.lastDay === today || streak.lastDay === yesterday ? streak.count : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function BibleCrosswordCard() {
+  const streak = useMemo(() => crosswordStreak(), []);
+  const open = () => {
+    const base = window.location.href.split('?')[0].split('#')[0];
+    window.location.href = (base.endsWith('/') ? base : base.replace(/\/[^/]*$/, '/')) + 'bible-crossword/index.html';
+  };
+  return (
+    <div className="home-card" onClick={open} style={{ borderLeft: '3px solid var(--accent)' }}>
+      <div className="home-card-eyebrow">Hard · 6×6 · a new puzzle every day</div>
+      <div className="home-card-title">Bible Crossword</div>
+      <div className="home-card-body text-xs ink-muted">
+        A harder way to know the Word. Lesser-known people, obscure places, and the
+        verses nobody quotes.
+        {streak > 0 && <div className="mt-1 accent">🔥 {streak} day streak</div>}
+      </div>
+      <div className="home-card-actions">
+        <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); open(); }}>Play crossword →</button>
+      </div>
+    </div>
+  );
+}
+
 function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData, announcements }) {
   const today = todayISO();
   const [encourageTarget, setEncourageTarget] = useState(null);
@@ -3366,6 +3415,15 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">📖 Bible Reading Plan</div>
         <div className="home-grid">
           <BibleReadingCard setActiveTab={setActiveTab} />
+        </div>
+      </div>
+
+      {/* Today's Bible Crossword — one small card, deliberately below the
+          things a member actually came here for. */}
+      <div className="mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">▦ Today's challenge</div>
+        <div className="home-grid">
+          <BibleCrosswordCard />
         </div>
       </div>
 
@@ -15798,6 +15856,7 @@ function App() {
         { key: 'maze', href: 'spiritual-maze/index.html', bottom: 284, bg: '#0F2A4A', border: '2px solid rgba(252,211,77,0.45)', shadow: 'rgba(252,211,77,0.25)', icon: '✦', title: 'Walk in the Light: Spiritual Maze' },
         { key: 'faithmatch', href: 'faith-match/index.html', bottom: 348, bg: '#1e3a5f', border: '2px solid rgba(37,99,235,0.5)', shadow: 'rgba(37,99,235,0.35)', icon: '🧩', title: 'Faith Match: Scripture Match-3' },
         { key: 'scripturetetris', href: 'scripture-tetris/index.html', bottom: 412, bg: '#1A2440', border: '2px solid rgba(124,92,255,0.5)', shadow: 'rgba(124,92,255,0.35)', icon: '✝', title: 'Scripture Tetris' },
+        { key: 'crossword', href: 'bible-crossword/index.html', bottom: 476, bg: 'var(--accent)', border: '2px solid rgba(163,59,42,0.35)', shadow: 'rgba(163,59,42,0.35)', icon: '▦', title: 'Bible Crossword: a harder way to know the Word' },
       ].map((g) => (
         <button
           key={g.key}
