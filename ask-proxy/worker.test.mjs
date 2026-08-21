@@ -316,5 +316,63 @@ const db = fakeD1();
   }
 }
 
+// ── POST /stt — voice input, and the opt-in transcript shape ───────────────
+// The plain call is what FLCC Kasama has always made and must not change.
+// ?diarize=1&timestamps=1 is what a meeting transcript needs: word timings
+// and a speaker id per word, so a line can be clicked back into the audio.
+{
+  console.log('\n— speech to text —');
+  const originalFetch = globalThis.fetch;
+  let sent = null;
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes('elevenlabs.io/v1/speech-to-text')) {
+      sent = { url: String(url), form: init.body };
+      return new Response(JSON.stringify({
+        text: 'We need to review the supplier proposal.',
+        language_code: 'eng',
+        words: [
+          { text: 'We', start: 0.1, end: 0.3, type: 'word', speaker_id: 'speaker_0' },
+          { text: ' ', start: 0.3, end: 0.3, type: 'spacing' },
+          { text: 'need', start: 0.3, end: 0.6, type: 'word', speaker_id: 'speaker_0' },
+          { text: 'Right', start: 1.0, end: 1.4, type: 'word', speaker_id: 'speaker_1' },
+        ],
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    return originalFetch(url, init);
+  };
+
+  const env = { ELEVENLABS_API_KEY: 'test-key' };
+  const stt = async (query) => {
+    const req = new Request(`https://kasama.test/stt${query}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'audio/webm' },
+      body: new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'audio/webm' }),
+    });
+    const res = await worker.fetch(req, env, makeCtx());
+    return { status: res.status, data: await res.json() };
+  };
+
+  try {
+    const plain = await stt('');
+    assert(plain.status === 200 && plain.data.text.startsWith('We need'), 'a plain /stt call still returns the text');
+    assert(!('words' in plain.data), 'a plain /stt call is not burdened with word timings it never asked for');
+    assert(sent && !sent.form.has('diarize'), 'speakers are not separated unless asked for');
+
+    const rich = await stt('?diarize=1&timestamps=1');
+    assert(sent.form.get('diarize') === 'true', '?diarize=1 asks the service to separate speakers');
+    assert(Array.isArray(rich.data.words) && rich.data.words.length === 4, 'every word comes back, spacing included');
+    assert(rich.data.words[0].speaker_id === 'speaker_0' && rich.data.words[3].speaker_id === 'speaker_1',
+      'each word carries the speaker it belongs to');
+    assert(rich.data.words[0].start === 0.1 && rich.data.words[0].end === 0.3, 'and its timing');
+    assert(rich.data.language === 'eng', 'the detected language is passed through');
+
+    const off = await worker.fetch(
+      new Request('https://kasama.test/stt', { method: 'POST', body: new Blob(['x']) }), {}, makeCtx());
+    assert(off.status === 501, 'without the key the endpoint says so rather than failing obscurely');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
 console.log(failures ? `\n${failures} FAILURE(S)` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

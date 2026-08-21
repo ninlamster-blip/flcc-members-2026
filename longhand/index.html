@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Longhand — meeting recording, transcription and memory</title>
+<meta name="description" content="Record a conversation, get an accurate transcript with speakers, and ask your own past meetings what was decided, who owes what, and when something was first discussed." />
+<meta name="theme-color" content="#FAFAF8" />
+<meta name="color-scheme" content="light" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Longhand" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icons/icon.svg" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/longhand.css" />
+</head>
+<body>
+
+<div id="root">
+  <!-- The first paint: the shape of the shell, so the page does not jump
+       when the modules arrive. -->
+  <div class="app">
+    <aside class="rail">
+      <div class="rail__mark"><div class="skeleton" style="height:20px;width:20px;border-radius:6px"></div>
+      <div class="skeleton" style="height:14px;width:80px"></div></div>
+      <div class="rail__nav">
+        <div class="skeleton" style="height:30px;margin-bottom:2px"></div>
+        <div class="skeleton" style="height:30px;margin-bottom:2px"></div>
+        <div class="skeleton" style="height:30px"></div>
+      </div>
+    </aside>
+    <main class="main"><div class="view">
+      <div class="skeleton" style="height:34px;width:220px;margin-bottom:12px"></div>
+      <div class="skeleton" style="height:16px;width:340px"></div>
+    </div></main>
+  </div>
+</div>
+
+<noscript>
+  <div class="view view--reading">
+    <h1 class="page-title">Longhand needs JavaScript</h1>
+    <p class="lede">Recording, transcription and search all happen in your browser — there is no server holding your meetings. Please enable JavaScript to continue.</p>
+  </div>
+</noscript>
+
+<script type="module">
+  import { App } from './js/app.js';
+
+  const root = document.getElementById('root');
+  const app = new App({ root });
+  window.longhand = app;   // convenient in the console; nothing depends on it
+
+  app.start().catch((err) => {
+    console.error(err);
+    root.innerHTML = '';
+    const view = document.createElement('div');
+    view.className = 'view view--reading';
+    view.innerHTML = '<h1 class="page-title">Longhand could not start</h1>'
+      + '<p class="lede">Your recordings are still on this device. This usually means the browser is blocking storage for this site.</p>';
+    const detail = document.createElement('p');
+    detail.className = 'meta';
+    detail.textContent = err && err.message ? err.message : String(err);
+    view.appendChild(detail);
+    root.appendChild(view);
+  });
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>

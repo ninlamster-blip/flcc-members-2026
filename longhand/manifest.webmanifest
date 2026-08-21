@@ -1,0 +1,15 @@
+{
+  "name": "Longhand — meeting recording and memory",
+  "short_name": "Longhand",
+  "description": "Record conversations, transcribe them with speakers, and ask your own past meetings what was decided.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FAFAF8",
+  "theme_color": "#FAFAF8",
+  "icons": [
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

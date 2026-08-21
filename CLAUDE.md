@@ -36,6 +36,17 @@ Neither exception reads the `churches/` data files (the sync only ever
 targets the root-level, Abundance-shaped `attendance.json`), imports
 `church.js`, or reads the `FLCC.*` global — those stay off-limits.
 
+## Longhand
+
+`longhand/` is a **third, separate application** — meeting recording,
+transcription and conversation memory. Same rule as Shepherd: it has its own
+`longhand/v1/…` storage namespace, its own design system and its own tests, and
+it must never import `church.js` or read `FLCC.*`. It shares nothing with
+Shepherd either. It does use the repository's Cloudflare Worker
+(`ask-proxy/worker.js`) for `POST /proxy` and `POST /stt`, because that is where
+the API keys live — the app itself holds none. See `longhand/ARCHITECTURE.md`
+before adding a collection, a screen or a transcription provider.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection

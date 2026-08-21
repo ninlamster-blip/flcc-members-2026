@@ -879,6 +879,11 @@ async function handleRequest(request, env, ctx) {
     const sttForm = new FormData();
     sttForm.append('model_id', 'scribe_v1');
     sttForm.append('file', audioBlob, 'audio.webm');
+    // Optional, opt-in via query string so every existing caller is
+    // unaffected: ?diarize=1 asks Scribe to separate speakers, which is what
+    // a meeting transcript needs to be readable ("Allen:" / "John:" rather
+    // than one undivided wall of text). Costs nothing when not requested.
+    if (url.searchParams.get('diarize') === '1') sttForm.append('diarize', 'true');
     const sttResp = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
       headers: { 'xi-api-key': env.ELEVENLABS_API_KEY },
@@ -892,7 +897,25 @@ async function handleRequest(request, env, ctx) {
       );
     }
     const sttData = await sttResp.json();
-    return new Response(JSON.stringify({ text: sttData.text || '' }), {
+    // `words` (each with start/end and, when diarizing, a speaker id) is what
+    // lets a caller build a timestamped transcript you can click back into.
+    // It is only included when asked for: the reply to a plain voice-input
+    // caller stays the small { text } it has always been.
+    const wantsWords = url.searchParams.get('timestamps') === '1' || url.searchParams.get('diarize') === '1';
+    const words = wantsWords && Array.isArray(sttData.words)
+      ? sttData.words.map((w) => ({
+          text: typeof w.text === 'string' ? w.text : '',
+          start: typeof w.start === 'number' ? w.start : null,
+          end: typeof w.end === 'number' ? w.end : null,
+          type: w.type || 'word',
+          ...(w.speaker_id ? { speaker_id: String(w.speaker_id) } : {}),
+        }))
+      : null;
+    return new Response(JSON.stringify({
+      text: sttData.text || '',
+      ...(words ? { words } : {}),
+      ...(sttData.language_code ? { language: sttData.language_code } : {}),
+    }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }
