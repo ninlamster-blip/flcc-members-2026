@@ -10,6 +10,11 @@ shared by the 14 churches of the BOTR network. Starts at `index.html`; see
 Gulf, under [`shepherd/`](shepherd/). It shares no code, data or storage with
 the FLCC app; see [shepherd/README.md](shepherd/README.md).
 
+**LAMP** — a Bible & faith companion for ages 7–18, specified but not yet
+built: [lamp/SPEC.md](lamp/SPEC.md). When it exists it will be a third
+separate application under [`lamp/`](lamp/), with its own storage namespace
+and no link to either app above.
+
 ## Tests
 
 ```bash
