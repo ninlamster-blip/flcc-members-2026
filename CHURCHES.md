@@ -38,7 +38,8 @@ that isn't one.
 
 **Shared by the whole network** (not per church): `botr.json`,
 `botr-schedule.json`, `announcements.json`, the Bible tools, World Watch,
-Faith Map, Equip content, the games, `ofw-companion/` and `daily-blessing/`.
+Faith Map, Equip content, the games, `big-story/` (the children's and youth
+app), `ofw-companion/` and `daily-blessing/`.
 
 **Per church**: members and workers, the service schedule, attendance, prayer
 ministry, music ministry, worship songs, giving, and the sermon notes a member

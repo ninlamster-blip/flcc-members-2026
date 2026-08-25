@@ -16,6 +16,7 @@ here; the two applications share no code.
 | `assistant.test.mjs` | Ask FLCC: what it is told, and which files it is told it from |
 | `crossword.test.mjs` | Bible Crossword: the answer bank, the grids, the daily puzzle, the streak |
 | `sermon-notes.test.mjs` | Sermon Notes: the reference parser, which service a note belongs to, and the notes it shares with `index.html` |
+| `big-story.test.mjs` | The Big Story: the story and question banks, the age tiers, the quiz and the memory verses |
 
 ## How these reach into a single-file app
 

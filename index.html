@@ -2929,6 +2929,60 @@ function SermonNotesCard({ sermonNotes }) {
   );
 }
 
+// ── The Big Story ────────────────────────────────────────────────────────────
+/**
+ * The children's and youth app, under big-story/. It reads no church data and
+ * keeps its own progress per child on the device, so this card is a link and a
+ * count of how many of the twenty-three stories that phone has finished —
+ * across whichever children use it.
+ */
+const BIG_STORY_KEY = 'flcc-big-story-v1';
+
+/** Finished means read, quiz passed and verse learned — the same three marks
+ *  the app itself counts. Mirrors isComplete() in big-story/js/engine.js. */
+function bigStoryFinished() {
+  try {
+    const state = JSON.parse(localStorage.getItem(BIG_STORY_KEY) || '{}');
+    const everyone = Object.values(state.progress || {});
+    const done = new Set();
+    for (const p of everyone) {
+      for (const id of (p.read || [])) {
+        const quiz = (p.quizzes || {})[id];
+        if (quiz && quiz.total && quiz.right / quiz.total >= 0.6 && (p.verses || []).includes(id)) done.add(id);
+      }
+    }
+    return { stories: done.size, children: everyone.length };
+  } catch {
+    return { stories: 0, children: 0 };
+  }
+}
+
+function BigStoryCard() {
+  const { stories, children } = useMemo(() => bigStoryFinished(), []);
+  const open = () => { window.location.href = 'big-story/index.html'; };
+
+  return (
+    <div className="home-card" onClick={open} style={{ borderLeft: '3px solid #0E7490' }}>
+      <div className="home-card-eyebrow">Ages 7 to 18 · 23 stories</div>
+      <div className="home-card-title">The Big Story</div>
+      <div className="home-card-body text-xs ink-muted">
+        The Bible as one story, from Genesis to the church — told at whichever age you are,
+        with questions and a verse for each one. Works with no signal.
+        {stories > 0 && (
+          <div className="mt-1" style={{ color: '#0E7490' }}>
+            {stories} of 23 finished{children > 1 ? ` · ${children} readers on this phone` : ''}
+          </div>
+        )}
+      </div>
+      <div className="home-card-actions">
+        <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); open(); }}>
+          {stories ? 'Carry on →' : 'Open for the kids →'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData, announcements, sermonNotes }) {
   const today = todayISO();
   const [encourageTarget, setEncourageTarget] = useState(null);
@@ -3450,6 +3504,14 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           </div>
         </div>
       )}
+
+      {/* The Big Story — the children's and youth app. */}
+      <div className="mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">✦ For the kids</div>
+        <div className="home-grid">
+          <BigStoryCard />
+        </div>
+      </div>
 
       {/* Sermon Notes — the standalone app, and how many services are in it. */}
       <div className="mb-5">
