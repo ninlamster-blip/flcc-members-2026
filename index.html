@@ -2888,7 +2888,48 @@ function BibleCrosswordCard() {
   );
 }
 
-function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData, announcements }) {
+// ── Sermon Notes ─────────────────────────────────────────────────────────────
+/**
+ * A link and a count. The notes live in the standalone app under
+ * sermon-notes/, which reads and writes this app's own key
+ * (SERMON_NOTES_STORE_KEY) with the same `date|Service` ids — one set of notes
+ * with two doors onto it, not two sets.
+ */
+function SermonNotesCard({ sermonNotes }) {
+  const dates = useMemo(() => Object.entries(sermonNotes || {})
+    // The journal browser opens on an id that is not a real service; it is not
+    // a note somebody wrote, so it is not counted as one.
+    .filter(([id]) => !id.endsWith('|journal-browse'))
+    .filter(([, n]) => ((n?.title || '').trim() || (n?.body || '').trim() || (n?.takeaway || '').trim() || (n?.verses || []).length))
+    .map(([id]) => id.split('|')[0])
+    .sort(), [sermonNotes]);
+  const latest = dates[dates.length - 1] || null;
+  const open = () => { window.location.href = CHURCH.url('sermon-notes/index.html'); };
+
+  return (
+    <div className="home-card" onClick={open} style={{ borderLeft: '3px solid var(--accent)' }}>
+      <div className="home-card-eyebrow">Yours · saves as you write</div>
+      <div className="home-card-title">Sermon Notes</div>
+      <div className="home-card-body text-xs ink-muted">
+        Opens on the service you are in, with the date and the preacher already on it.
+        Works with no signal.
+        {dates.length > 0 && (
+          <div className="mt-1 accent">
+            {dates.length} {dates.length === 1 ? 'service noted' : 'services noted'}
+            {latest && ` · last on ${new Date(latest + 'T12:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`}
+          </div>
+        )}
+      </div>
+      <div className="home-card-actions">
+        <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); open(); }}>
+          {dates.length ? 'Open notes →' : 'Start taking notes →'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData, announcements, sermonNotes }) {
   const today = todayISO();
   const [encourageTarget, setEncourageTarget] = useState(null);
   const nextWeekStart = today;
@@ -3409,6 +3450,14 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           </div>
         </div>
       )}
+
+      {/* Sermon Notes — the standalone app, and how many services are in it. */}
+      <div className="mb-5">
+        <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">✎ Sermon notes</div>
+        <div className="home-grid">
+          <SermonNotesCard sermonNotes={sermonNotes} />
+        </div>
+      </div>
 
       {/* Bible Reading Plan daily card */}
       <div className="mb-5">
@@ -15770,7 +15819,7 @@ function App() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div key={currentTab} className="tab-content-area">
-          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} announcements={announcements} />}
+          {currentTab === 'home' && <HomeTab data={data} prayerData={prayerData} musicData={musicData} me={me} setActiveTab={setActiveTab} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} attendanceData={attendanceData} botrScheduleData={botrScheduleData} announcements={announcements} sermonNotes={sermonNotes} />}
           {currentTab === 'parking' && <ParkingTab />}
           {currentTab === 'bible' && <BibleTab />}
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} botrScheduleData={botrScheduleData} />}
