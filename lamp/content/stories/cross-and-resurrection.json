@@ -1,0 +1,68 @@
+{
+  "slug": "cross-and-resurrection",
+  "title": "The Cross and the Empty Tomb",
+  "reference": "LUK.23-24",
+  "testament": "NT",
+  "summary": {
+    "7-10": "Jesus dies, and then he is alive again.",
+    "11-14": "The worst Friday, and the morning that changed everything.",
+    "15-18": "The centre of the Christian claim."
+  },
+  "story": {
+    "7-10": [
+      "Jesus had done nothing wrong, but he was arrested and put on a cross. His friends were heartbroken.",
+      "They put his body in a tomb behind a big stone. Everything seemed finished.",
+      "On Sunday morning some women went to the tomb and found it open and empty. Jesus was alive! He came and talked with his friends, and ate with them."
+    ],
+    "11-14": [
+      "Jesus was arrested at night, tried in a rush, and executed by a governor who said three times that he found no guilt in him. Crucifixion was designed to be public, slow and humiliating.",
+      "He was buried in a borrowed tomb on Friday evening. His followers scattered. As far as anyone was concerned, it was over — executed teachers did not have movements afterwards.",
+      "On Sunday morning the women who went to anoint the body found the stone rolled away and the tomb empty. Over the following weeks Jesus appeared to them, ate with them, and let Thomas touch his hands. The disciples who had run away went on to say so publicly, for the rest of their lives, at enormous cost."
+    ],
+    "15-18": [
+      "All four gospels slow down for this week, and give it a disproportionate share of their length. Whatever else they are doing, they are not treating it as one episode among many.",
+      "The resurrection accounts have the marks of early, awkward testimony rather than of legend smoothed over time. The first witnesses are women, whose testimony carried little legal weight; the disciples are consistently portrayed as slow, frightened and disbelieving; and the accounts differ in detail while agreeing on the core — the tomb was empty and he was seen.",
+      "Paul's summary in 1 Corinthians 15 is earlier still, a creed he says he received, listing named witnesses and adding that most were still alive and could be asked. He also states the stakes without hedging: if Christ has not been raised, the faith is worthless. Christianity has always rested its case on a claim about an event, which is what makes it falsifiable and what makes the question worth taking seriously."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "Jesus died on the cross, and on Sunday he came alive again.",
+    "11-14": "Jesus was executed, buried, and on the third day the tomb was empty and he was seen alive.",
+    "15-18": "Jesus was crucified under Pilate, buried, and — according to the earliest testimony — raised on the third day and seen by named witnesses."
+  },
+  "whatItTeaches": {
+    "7-10": "Jesus loves you so much that he gave everything — and death did not win.",
+    "11-14": "The cross is not the end of the story, and the resurrection is why Christians believe death is not the end of theirs either.",
+    "15-18": "Everything in Christian belief hangs on a historical claim about one weekend; the New Testament writers say so themselves and invite the scrutiny."
+  },
+  "thinkAboutIt": {
+    "7-10": "How does it feel to know Jesus did that for you?",
+    "11-14": "If the resurrection actually happened, what difference should it make to this week?",
+    "15-18": "Paul says that without the resurrection the faith is worthless. Is that how you weigh it — as a claim that could be false?"
+  },
+  "pray": {
+    "7-10": "Thank you Jesus for loving me that much. Thank you that you are alive.",
+    "11-14": "Jesus, you went through the worst of it and came out the other side. Help me live as though that is true.",
+    "15-18": "Jesus, if this is true then nothing else is unaffected by it. Give me the honesty to follow that through."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did the women find at the tomb on Sunday?",
+      "11-14": "What did the women find on Sunday morning?",
+      "15-18": "Who are the first witnesses to the empty tomb, and why is that notable?"
+    },
+    "options": [
+      "It was empty",
+      "It was locked",
+      "It was gone"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "The stone was rolled away and the tomb was empty — Jesus was alive.",
+      "11-14": "The stone rolled away and the tomb empty, with the news that he had risen.",
+      "15-18": "Women — whose testimony carried little legal weight, which is an unlikely detail for an invented account."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

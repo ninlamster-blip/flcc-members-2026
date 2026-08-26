@@ -1,0 +1,68 @@
+{
+  "slug": "daniel-lions",
+  "title": "Daniel and the Lions",
+  "reference": "DAN.6",
+  "testament": "OT",
+  "summary": {
+    "7-10": "Daniel keeps praying, even when it is against the law.",
+    "11-14": "A law designed to trap one honest man.",
+    "15-18": "Faithfulness under a law that cannot be repealed."
+  },
+  "story": {
+    "7-10": [
+      "Daniel loved God and prayed three times every day at his open window.",
+      "Some jealous men tricked the king into making a law: nobody could pray to anyone except the king. Daniel went home and prayed anyway.",
+      "They threw him into a den of lions. But God kept the lions from hurting him, and in the morning Daniel was completely safe."
+    ],
+    "11-14": [
+      "Daniel was a foreigner who had risen to the top of the Persian civil service, and he was good at his job. His rivals could not find a single thing to accuse him of — so they decided to use his faith against him.",
+      "They flattered the king into signing an irreversible decree: for thirty days, prayer to anyone but the king was punishable by death. Daniel heard about the law, went home, opened his windows towards Jerusalem, and prayed as he always had.",
+      "The king liked Daniel and spent the night trying to find a loophole he had already signed away. There was none. Daniel went into the den — and God shut the lions' mouths."
+    ],
+    "15-18": [
+      "Daniel 6 turns on the Persian legal convention that a royal decree, once sealed, could not be revoked — a detail the story uses to trap the king inside his own vanity.",
+      "Daniel's response is notable for what it is not. He does not protest, organise, or hide. He continues what he was already doing, with the windows open, which is neither defiance staged for an audience nor concealment.",
+      "The chapter belongs to a book about how to live faithfully as a minority under a power that is not hostile in principle but is easily manipulated. Its answer is unglamorous: keep your practice, do your work well, and accept the cost when the two collide."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "Daniel kept praying even though it was against the law, and God kept him safe.",
+    "11-14": "Daniel refused to stop praying, was thrown to lions for it, and God protected him.",
+    "15-18": "Daniel continues his ordinary practice under a law designed to criminalise it, and is delivered."
+  },
+  "whatItTeaches": {
+    "7-10": "Do the right thing, even when other people say not to.",
+    "11-14": "Daniel did not make a scene. He just carried on doing what he had always done — which turned out to be the bravest thing available.",
+    "15-18": "Faithfulness here is continuity rather than heroics: the ordinary practice, maintained when it becomes costly, is the whole witness."
+  },
+  "thinkAboutIt": {
+    "7-10": "Is there something right that is hard to do when other people are watching?",
+    "11-14": "Daniel's enemies could find nothing to accuse him of except his faith. What would people find if they looked at your week?",
+    "15-18": "Daniel neither hid nor performed. Where is the line between courage and display in your own practice?"
+  },
+  "pray": {
+    "7-10": "God, help me do what is right even when it is hard.",
+    "11-14": "God, make me consistent — the same person when it is easy and when it costs something.",
+    "15-18": "God, give me an ordinary faithfulness that does not need an audience and does not fold under pressure."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did Daniel do when praying became against the law?",
+      "11-14": "How did Daniel respond to the new law?",
+      "15-18": "What is significant about how Daniel responded?"
+    },
+    "options": [
+      "He prayed anyway",
+      "He stopped praying",
+      "He ran away"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "He went home and prayed, just like he always did.",
+      "11-14": "He carried on praying three times a day with his windows open, exactly as before.",
+      "15-18": "He changed nothing — the witness is continuity, neither concealment nor staged defiance."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

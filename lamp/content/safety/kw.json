@@ -1,0 +1,19 @@
+{
+  "region": "kw",
+  "label": "Kuwait",
+  "verifyBeforeLaunch": true,
+  "lines": [
+    {
+      "name": "A trusted adult",
+      "detail": "A parent, guardian, pastor, teacher or school counsellor — today, not later."
+    },
+    {
+      "name": "Emergency services (Kuwait)",
+      "number": "112"
+    },
+    {
+      "name": "Find a helpline where you live",
+      "detail": "findahelpline.com lists checked helplines by country."
+    }
+  ]
+}

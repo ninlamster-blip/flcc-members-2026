@@ -1,0 +1,68 @@
+{
+  "slug": "joseph",
+  "title": "Joseph and His Brothers",
+  "reference": "GEN.37,39-45",
+  "testament": "OT",
+  "summary": {
+    "7-10": "Joseph's brothers hurt him, but God brought good out of it.",
+    "11-14": "Betrayed, enslaved, imprisoned — and then prime minister.",
+    "15-18": "Providence running underneath a family disaster."
+  },
+  "story": {
+    "7-10": [
+      "Joseph had eleven brothers, and a special coat from his father. His brothers were jealous of him.",
+      "One day they sold him to some traders, and Joseph ended up far away in Egypt as a slave. Even in prison, God was with him.",
+      "Years later Joseph became a very important man in Egypt, and he saved his whole family from starving. He forgave his brothers and hugged them."
+    ],
+    "11-14": [
+      "Joseph was his father's favourite, and he was not subtle about it. He had dreams of his brothers bowing to him, and he told them so. They hated him for it.",
+      "They threw him into a pit and sold him to slave traders. In Egypt he was falsely accused and put in prison, where he was forgotten for two more years.",
+      "Then Pharaoh had a dream nobody could explain, Joseph was brought from the cell, and within a day he was running the country. When his brothers arrived begging for food, he had every power to destroy them — and instead he wept and fed them."
+    ],
+    "15-18": [
+      "The Joseph narrative is the longest sustained story in Genesis, and unusually for the Bible it has almost no miracles. God does not speak in it directly after chapter 37. Things simply happen, and the reader is left to notice a pattern.",
+      "The pattern is that Joseph is repeatedly given responsibility and repeatedly loses it through someone else's sin — his brothers' envy, Potiphar's wife's accusation, the cupbearer's forgetfulness — and each fall lands him closer to where he needs to be.",
+      "The theological summary comes from Joseph himself: 'you meant it for evil, but God meant it for good'. It is a carefully balanced sentence. It does not say the brothers' act was secretly fine, and it does not say God was absent. Both intentions are real, and one of them governs the outcome."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "Joseph's brothers were cruel to him, but God used it to save many people.",
+    "11-14": "Joseph was betrayed, enslaved and imprisoned — and ended up in the one position that could save his family.",
+    "15-18": "A family crime sets in motion a chain of events that preserves the covenant family, without the crime ever being excused."
+  },
+  "whatItTeaches": {
+    "7-10": "God can bring good things out of bad situations.",
+    "11-14": "God is at work even when nothing miraculous is happening and nobody can see the point yet.",
+    "15-18": "Providence in Genesis does not cancel human responsibility. Joseph names both — their evil and God's good purpose — without collapsing one into the other."
+  },
+  "thinkAboutIt": {
+    "7-10": "Joseph forgave his brothers. Is there someone you find hard to forgive?",
+    "11-14": "Joseph waited years with no sign that God was doing anything. How do you keep trusting in a long, quiet stretch?",
+    "15-18": "'You meant it for evil, but God meant it for good.' How would you say that to someone who has been badly wronged — and how would you not say it?"
+  },
+  "pray": {
+    "7-10": "God, help me forgive people who hurt me, like Joseph did.",
+    "11-14": "God, you were with Joseph in the pit and the prison. Be with me in the parts of my life that feel stuck.",
+    "15-18": "God, you work in silence as well as in signs. Give me patience where I cannot yet see what you are doing."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did Joseph do when he saw his brothers again?",
+      "11-14": "How did Joseph treat his brothers when they came for food?",
+      "15-18": "How does Joseph resolve the story, and how does he describe it?"
+    },
+    "options": [
+      "He forgave them",
+      "He put them in prison",
+      "He sent them away"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "He cried, forgave them and gave them food.",
+      "11-14": "He wept, forgave them, and fed his whole family through the famine.",
+      "15-18": "He forgives, provides, and interprets: 'you meant it for evil, but God meant it for good.'"
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

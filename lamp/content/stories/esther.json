@@ -1,0 +1,68 @@
+{
+  "slug": "esther",
+  "title": "Esther Speaks Up",
+  "reference": "EST.4",
+  "testament": "OT",
+  "summary": {
+    "7-10": "A queen is brave to save her people.",
+    "11-14": "One woman risks everything at the right moment.",
+    "15-18": "Providence in a book that never mentions God."
+  },
+  "story": {
+    "7-10": [
+      "Esther was a Jewish girl who became queen of a huge empire. Nobody at the palace knew she was Jewish.",
+      "A wicked man made a plan to hurt all her people. Esther's cousin Mordecai asked her to speak to the king — but going to the king without being invited could get her killed.",
+      "Esther was frightened. She prayed and fasted for three days, then went anyway. The king listened, and her people were saved."
+    ],
+    "11-14": [
+      "Esther was an orphan, raised by her cousin Mordecai, who ended up queen of Persia without anyone at court knowing she was Jewish.",
+      "Haman, the king's most powerful official, obtained a decree to destroy every Jew in the empire. Mordecai sent word to Esther, and she pointed out the obvious problem: approaching the king uninvited carried a death sentence.",
+      "Mordecai's reply is one of the sharpest lines in the Bible — deliverance will come from somewhere, so the question is whether she will be part of it, and who knows whether she came to her position for exactly this moment. Esther fasted three days and went in. 'If I perish, I perish.'"
+    ],
+    "15-18": [
+      "Esther is the only book in the Hebrew canon that never names God. That absence is deliberate and is part of its argument: providence is visible in the shape of events rather than in explicit intervention.",
+      "The plot runs on reversals — a sleepless night, a forgotten record of loyalty, a gallows built for one man and used on the one who built it. Nothing supernatural occurs; everything lands.",
+      "Mordecai's challenge to Esther refuses two temptations at once: it does not flatter her into thinking she is indispensable, and it does not let her off. Relief will arise from another place. The question is only whether she will step into the moment she is standing in."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "Esther was brave and asked the king to save her people, and he did.",
+    "11-14": "Esther risked her life to speak to the king, and her people were rescued.",
+    "15-18": "Esther uses her position, at real risk, to intervene for her people — and the empire's own machinery turns against the man who threatened them."
+  },
+  "whatItTeaches": {
+    "7-10": "Being brave means doing the right thing even when you are scared.",
+    "11-14": "Courage is not the absence of fear. Esther was afraid, fasted about it, and went anyway.",
+    "15-18": "The book locates courage in the willingness to act inside the position you happen to occupy, rather than in feeling ready."
+  },
+  "thinkAboutIt": {
+    "7-10": "Is there someone who needs you to speak up for them?",
+    "11-14": "Esther had access that other Jews did not. What can you do that the people around you cannot?",
+    "15-18": "'Who knows whether you have come to the kingdom for such a time as this.' What is the equivalent question for where you currently stand?"
+  },
+  "pray": {
+    "7-10": "God, help me be brave and stand up for people who need it.",
+    "11-14": "God, when speaking up costs something, give me Esther's nerve.",
+    "15-18": "God, show me what my position is actually for, and give me the courage not to waste it."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did Esther do even though she was scared?",
+      "11-14": "What risk did Esther take?",
+      "15-18": "What is Mordecai's argument to Esther?"
+    },
+    "options": [
+      "She went to the king",
+      "She ran away",
+      "She said nothing"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "She went to see the king, even though it was dangerous.",
+      "11-14": "She approached the king uninvited, which could have cost her her life.",
+      "15-18": "That rescue will come regardless, and the only question is whether she will act in the moment she has been placed in."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

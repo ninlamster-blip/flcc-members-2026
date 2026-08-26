@@ -1,0 +1,23 @@
+{
+  "region": "uk",
+  "label": "United Kingdom",
+  "verifyBeforeLaunch": true,
+  "lines": [
+    {
+      "name": "A trusted adult",
+      "detail": "A parent, guardian, pastor, teacher or school counsellor — today, not later."
+    },
+    {
+      "name": "Childline",
+      "number": "0800 1111"
+    },
+    {
+      "name": "Samaritans",
+      "number": "116 123"
+    },
+    {
+      "name": "Emergency services",
+      "number": "999"
+    }
+  ]
+}

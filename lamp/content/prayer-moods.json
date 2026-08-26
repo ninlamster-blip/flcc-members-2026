@@ -1,0 +1,142 @@
+[
+  {
+    "id": "happy",
+    "emoji": "😊",
+    "name": "Happy",
+    "verses": [
+      "PSA.100.1-5",
+      "PHP.4.4",
+      "PSA.126.2-3"
+    ],
+    "starter": {
+      "7-10": "God, thank you for today. I am happy because…",
+      "11-14": "God, today has been good. Thank you for…",
+      "15-18": "God, I want to name what is good today rather than take it for granted…"
+    },
+    "reflection": {
+      "7-10": "Happy days are good days to say thank you.",
+      "11-14": "Gratitude is easiest today — which is exactly why today is worth using for it.",
+      "15-18": "Thanksgiving in good times is practice for trusting the same God in worse ones."
+    }
+  },
+  {
+    "id": "sad",
+    "emoji": "😔",
+    "name": "Sad",
+    "verses": [
+      "PSA.34.18",
+      "PSA.42.11",
+      "JHN.11.35"
+    ],
+    "starter": {
+      "7-10": "God, I feel sad because…",
+      "11-14": "God, I don't really want to talk about it, but…",
+      "15-18": "God, I am not going to pretend I am fine…"
+    },
+    "reflection": {
+      "7-10": "God does not mind you being sad. He comes close when you are.",
+      "11-14": "Half the psalms are complaints. Sadness is not something to hide from God — it is something to bring.",
+      "15-18": "Lament is a biblical genre, not a failure of faith. Jesus wept at a grave he was about to open."
+    }
+  },
+  {
+    "id": "worried",
+    "emoji": "😰",
+    "name": "Worried",
+    "verses": [
+      "PHP.4.6-7",
+      "MAT.6.25-27",
+      "1PE.5.7"
+    ],
+    "starter": {
+      "7-10": "God, I am worried about…",
+      "11-14": "God, this is the thing going round and round in my head…",
+      "15-18": "God, here is what I keep rehearsing instead of sleeping…"
+    },
+    "reflection": {
+      "7-10": "You can tell God the thing you are scared about. He is listening.",
+      "11-14": "Paul does not say stop feeling anxious. He says do something specific with it — name it to God.",
+      "15-18": "Naming an anxiety in prayer is not the same as solving it. The promise attached is peace that guards, not an explanation."
+    }
+  },
+  {
+    "id": "angry",
+    "emoji": "😡",
+    "name": "Angry",
+    "verses": [
+      "EPH.4.26",
+      "PSA.4.4",
+      "JAS.1.19-20"
+    ],
+    "starter": {
+      "7-10": "God, I am cross about…",
+      "11-14": "God, this made me angry, and I think it was unfair because…",
+      "15-18": "God, I am angry, and I would rather bring it to you than take it out on someone…"
+    },
+    "reflection": {
+      "7-10": "Being angry is not naughty. What you do next matters.",
+      "11-14": "'Be angry and do not sin' assumes anger is coming. It is about what happens in the next ten minutes.",
+      "15-18": "Scripture treats anger as morally serious in both directions — as a signal about injustice and as a danger to the one carrying it."
+    }
+  },
+  {
+    "id": "tired",
+    "emoji": "😴",
+    "name": "Tired",
+    "verses": [
+      "MAT.11.28-30",
+      "PSA.127.2",
+      "ISA.40.30-31"
+    ],
+    "starter": {
+      "7-10": "God, I am tired. Please help me…",
+      "11-14": "God, I am running out of energy for…",
+      "15-18": "God, I am tired in a way sleep has not fixed…"
+    },
+    "reflection": {
+      "7-10": "Jesus says: come to me and I will give you rest.",
+      "11-14": "Jesus offers rest to people who are already carrying something, not to people with nothing to do.",
+      "15-18": "The sabbath logic is that rest is a creational good and a trust exercise, not a reward for finishing."
+    }
+  },
+  {
+    "id": "thankful",
+    "emoji": "🙏",
+    "name": "Thankful",
+    "verses": [
+      "1TH.5.16-18",
+      "PSA.103.1-5",
+      "COL.3.15-17"
+    ],
+    "starter": {
+      "7-10": "God, thank you for…",
+      "11-14": "God, three things I am grateful for today…",
+      "15-18": "God, I want to be specific rather than general about this…"
+    },
+    "reflection": {
+      "7-10": "Saying thank you helps you notice good things.",
+      "11-14": "Gratitude is a skill. Being specific is what turns it from a habit into attention.",
+      "15-18": "Psalm 103 addresses the self — 'bless the Lord, O my soul' — because thanksgiving often has to be commanded before it is felt."
+    }
+  },
+  {
+    "id": "confused",
+    "emoji": "😶",
+    "name": "Confused",
+    "verses": [
+      "PRO.3.5-6",
+      "JAS.1.5",
+      "MRK.9.24"
+    ],
+    "starter": {
+      "7-10": "God, I do not understand…",
+      "11-14": "God, I am not sure what I think about…",
+      "15-18": "God, I have a question I am not sure I am allowed to ask…"
+    },
+    "reflection": {
+      "7-10": "It is alright not to understand. You can ask God about it.",
+      "11-14": "'I believe; help my unbelief' is in the Bible because someone actually said it — and Jesus answered him.",
+      "15-18": "Doubt handled honestly tends to produce sturdier faith than doubt suppressed. James's promise of wisdom is offered without reproach."
+    }
+  }
+]

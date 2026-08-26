@@ -1,0 +1,156 @@
+[
+  {
+    "slug": "creation",
+    "title": "In the Beginning",
+    "reference": "GEN.1",
+    "testament": "OT",
+    "summary": {
+      "7-10": "God makes everything, and it is good.",
+      "11-14": "God speaks, and a world appears.",
+      "15-18": "The Bible's opening claim about where everything comes from."
+    }
+  },
+  {
+    "slug": "noah",
+    "title": "Noah and the Flood",
+    "reference": "GEN.6-9",
+    "testament": "OT",
+    "summary": {
+      "7-10": "God saves Noah's family and the animals.",
+      "11-14": "A flood, a boat, and a promise in the sky.",
+      "15-18": "Judgement, rescue, and the first covenant."
+    }
+  },
+  {
+    "slug": "abraham",
+    "title": "Abraham's Promise",
+    "reference": "GEN.12,15,22",
+    "testament": "OT",
+    "summary": {
+      "7-10": "God asks Abraham to go, and promises him a family.",
+      "11-14": "A promise so big it took a lifetime.",
+      "15-18": "The call, the covenant, and the test."
+    }
+  },
+  {
+    "slug": "joseph",
+    "title": "Joseph and His Brothers",
+    "reference": "GEN.37,39-45",
+    "testament": "OT",
+    "summary": {
+      "7-10": "Joseph's brothers hurt him, but God brought good out of it.",
+      "11-14": "Betrayed, enslaved, imprisoned — and then prime minister.",
+      "15-18": "Providence running underneath a family disaster."
+    }
+  },
+  {
+    "slug": "moses-red-sea",
+    "title": "Moses and the Red Sea",
+    "reference": "EXO.14",
+    "testament": "OT",
+    "summary": {
+      "7-10": "God makes a path through the sea.",
+      "11-14": "Trapped between an army and the water.",
+      "15-18": "The founding rescue of Israel."
+    }
+  },
+  {
+    "slug": "david-goliath",
+    "title": "David and Goliath",
+    "reference": "1SA.17",
+    "testament": "OT",
+    "summary": {
+      "7-10": "A shepherd boy beats a giant.",
+      "11-14": "The smallest person in the army wins the fight.",
+      "15-18": "A theological argument disguised as a duel."
+    }
+  },
+  {
+    "slug": "daniel-lions",
+    "title": "Daniel and the Lions",
+    "reference": "DAN.6",
+    "testament": "OT",
+    "summary": {
+      "7-10": "Daniel keeps praying, even when it is against the law.",
+      "11-14": "A law designed to trap one honest man.",
+      "15-18": "Faithfulness under a law that cannot be repealed."
+    }
+  },
+  {
+    "slug": "esther",
+    "title": "Esther Speaks Up",
+    "reference": "EST.4",
+    "testament": "OT",
+    "summary": {
+      "7-10": "A queen is brave to save her people.",
+      "11-14": "One woman risks everything at the right moment.",
+      "15-18": "Providence in a book that never mentions God."
+    }
+  },
+  {
+    "slug": "jonah",
+    "title": "Jonah Runs Away",
+    "reference": "JON.1-4",
+    "testament": "OT",
+    "summary": {
+      "7-10": "Jonah runs from God, and God brings him back.",
+      "11-14": "A prophet who did not want his enemies forgiven.",
+      "15-18": "A satire about mercy, aimed at the reader."
+    }
+  },
+  {
+    "slug": "birth-of-jesus",
+    "title": "The Birth of Jesus",
+    "reference": "LUK.2.1-20",
+    "testament": "NT",
+    "summary": {
+      "7-10": "God's Son is born in a stable.",
+      "11-14": "The most important birth, in the least important place.",
+      "15-18": "The incarnation, told through a census and some shepherds."
+    }
+  },
+  {
+    "slug": "jesus-calms-the-storm",
+    "title": "Jesus Calms the Storm",
+    "reference": "MRK.4.35-41",
+    "testament": "NT",
+    "summary": {
+      "7-10": "Jesus tells a storm to be quiet.",
+      "11-14": "The disciples are terrified, and Jesus is asleep.",
+      "15-18": "A nature miracle that is really a question about identity."
+    }
+  },
+  {
+    "slug": "good-samaritan",
+    "title": "The Good Samaritan",
+    "reference": "LUK.10.25-37",
+    "testament": "NT",
+    "summary": {
+      "7-10": "A stranger helps a man everyone else walked past.",
+      "11-14": "Jesus answers 'who is my neighbour?' with a story.",
+      "15-18": "A parable that dismantles the question it was asked."
+    }
+  },
+  {
+    "slug": "cross-and-resurrection",
+    "title": "The Cross and the Empty Tomb",
+    "reference": "LUK.23-24",
+    "testament": "NT",
+    "summary": {
+      "7-10": "Jesus dies, and then he is alive again.",
+      "11-14": "The worst Friday, and the morning that changed everything.",
+      "15-18": "The centre of the Christian claim."
+    }
+  },
+  {
+    "slug": "pentecost",
+    "title": "The Day of Pentecost",
+    "reference": "ACT.2",
+    "testament": "NT",
+    "summary": {
+      "7-10": "God's Spirit comes, and the church begins.",
+      "11-14": "A frightened group becomes a movement in one morning.",
+      "15-18": "The Spirit, the languages, and the birth of the church."
+    }
+  }
+]

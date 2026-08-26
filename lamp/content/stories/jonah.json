@@ -1,0 +1,68 @@
+{
+  "slug": "jonah",
+  "title": "Jonah Runs Away",
+  "reference": "JON.1-4",
+  "testament": "OT",
+  "summary": {
+    "7-10": "Jonah runs from God, and God brings him back.",
+    "11-14": "A prophet who did not want his enemies forgiven.",
+    "15-18": "A satire about mercy, aimed at the reader."
+  },
+  "story": {
+    "7-10": [
+      "God told Jonah to go to a big city called Nineveh. Jonah did not want to, so he got on a boat going the other way.",
+      "A huge storm came. Jonah ended up in the sea, and a great fish swallowed him. Inside the fish, Jonah prayed.",
+      "The fish put him on the beach. This time Jonah went to Nineveh, and the whole city said sorry to God. God forgave them."
+    ],
+    "11-14": [
+      "God told Jonah to preach to Nineveh, the capital of Assyria — the empire that had terrorised Israel for generations. Jonah went to the docks and bought a ticket in the opposite direction.",
+      "A storm nearly sank the ship. The pagan sailors prayed harder than the prophet did, and when Jonah told them to throw him overboard, they tried to row to shore first. A great fish swallowed him, and he prayed.",
+      "Jonah finally preached — eight words of it — and the entire city repented. And Jonah was furious. The book ends with God asking him a question about a plant, and about whether he should not care for a city full of people who do not know their right hand from their left."
+    ],
+    "15-18": [
+      "Jonah is a short book that reads like satire, and the target is the prophet. Everyone in it behaves better than he does: the sailors, the fish, the Ninevites, even the livestock.",
+      "Jonah's anger in chapter 4 gives the game away. He did not run because he feared failure; he ran because he suspected success — 'I knew that you are a gracious God, slow to anger and abounding in steadfast love'. He is quoting Israel's own creed against God.",
+      "The book ends on a question, unanswered. That is the point: the reader is left holding Jonah's objection and asked whether God's mercy towards enemies is something to be resented. Nineveh was not a hypothetical enemy — Assyria would later destroy the northern kingdom."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "Jonah ran away from God, but God brought him back and forgave a whole city.",
+    "11-14": "Jonah ran from a mission to his enemies, was brought back, preached, and then resented God for forgiving them.",
+    "15-18": "Jonah flees a commission to Israel's enemies, succeeds despite himself, and is left arguing with God about mercy."
+  },
+  "whatItTeaches": {
+    "7-10": "You cannot run away from God — and he forgives people, even people we do not like.",
+    "11-14": "It is possible to obey God and still have a heart that is in the wrong place entirely.",
+    "15-18": "The book indicts a piety that affirms God's mercy in the creed and resents it in practice, and it leaves the indictment aimed at the reader."
+  },
+  "thinkAboutIt": {
+    "7-10": "Is there someone you find it hard to be kind to?",
+    "11-14": "Jonah was angry that his enemies were forgiven. Is there anyone whose good news would annoy you?",
+    "15-18": "Jonah quotes the creed about God's mercy as a complaint. Where do you affirm something about God that you would rather he did not act on?"
+  },
+  "pray": {
+    "7-10": "God, help me be kind, even to people I do not like very much.",
+    "11-14": "God, change what I want, not just what I do.",
+    "15-18": "God, your mercy reaches people I would not choose. Do not let me hold a creed I resent in practice."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "Why was Jonah angry at the end?",
+      "11-14": "Why was Jonah angry after Nineveh repented?",
+      "15-18": "What does Jonah's anger in chapter 4 reveal?"
+    },
+    "options": [
+      "God forgave the city",
+      "The fish let him go",
+      "The sailors left"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "Because God forgave the people Jonah did not want forgiven.",
+      "11-14": "Because he wanted Nineveh judged, and God showed mercy instead.",
+      "15-18": "That he fled fearing success, not failure — he knew God was merciful and objected to it."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

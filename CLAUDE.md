@@ -36,6 +36,20 @@ Neither exception reads the `churches/` data files (the sync only ever
 targets the root-level, Abundance-shaped `attendance.json`), imports
 `church.js`, or reads the `FLCC.*` global — those stay off-limits.
 
+## LAMP
+
+`lamp/` is a **third, separate application** — a Bible and faith companion for
+ages 7–18. Like Shepherd it has its own storage namespace (`lamp/v1/…`), its
+own design system and its own tests, and it must never import `church.js`, read
+`FLCC.*`, or touch anything under `shepherd/`. `lamp/js/core/storage.js` throws
+on any key outside the namespace, so the boundary holds mechanically rather
+than by convention.
+
+Read `lamp/SPEC.md` before adding a screen, a content type or a storage key,
+and `lamp/README.md` for what Phase 1 actually built. Authored content lives in
+`lamp/content/` as JSON, keyed by age band — `lamp/test/content.test.mjs`
+fails the suite if a band is missing, so add all three.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection

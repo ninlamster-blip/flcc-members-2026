@@ -1,0 +1,68 @@
+{
+  "slug": "birth-of-jesus",
+  "title": "The Birth of Jesus",
+  "reference": "LUK.2.1-20",
+  "testament": "NT",
+  "summary": {
+    "7-10": "God's Son is born in a stable.",
+    "11-14": "The most important birth, in the least important place.",
+    "15-18": "The incarnation, told through a census and some shepherds."
+  },
+  "story": {
+    "7-10": [
+      "Mary and Joseph had to travel a long way to Bethlehem. When they got there, every room was full.",
+      "So Jesus was born where the animals were kept, and Mary wrapped him up and laid him in a manger — the box the animals ate from.",
+      "Out in the fields, angels told some shepherds the news. They ran to see the baby, and then told everybody they met."
+    ],
+    "11-14": [
+      "An emperor ordered a census, which is why a pregnant teenager from Nazareth was walking eighty miles to a town she did not live in.",
+      "There was no room. Jesus was born in the part of a house or a shelter where animals were kept, and his first bed was a feeding trough.",
+      "The announcement did not go to the palace. It went to shepherds on a night shift — men whose work made them ritually unclean and whose testimony was not accepted in court. They were the first people told, and the first to tell anyone else."
+    ],
+    "15-18": [
+      "Luke dates the birth by imperial decree, which is a deliberate move: the gospel is set inside verifiable history, and the emperor who orders the world's population counted is unknowingly moving a pregnant woman to the town the prophets named.",
+      "The details are consistently downward. No room, a manger, shepherds. Luke's gospel will keep this shape throughout — the Magnificat has already announced that the powerful are brought down and the humble lifted up, and the nativity is that programme in miniature.",
+      "The angelic announcement uses the vocabulary of imperial propaganda — good news, saviour, lord, peace — words carved on inscriptions about Augustus. Luke applies every one of them to an infant in a feeding trough, and the political claim is not accidental."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "Jesus, God's Son, was born as a tiny baby in a stable.",
+    "11-14": "Jesus was born in poverty in Bethlehem, and the news was given first to shepherds.",
+    "15-18": "God enters history at a datable moment, in poverty, and the announcement is made to people at the bottom of the social order."
+  },
+  "whatItTeaches": {
+    "7-10": "God came close to us — as close as a baby you could hold.",
+    "11-14": "God did not arrive in the way anyone expected. He came small, poor, and to people nobody was watching.",
+    "15-18": "The incarnation is not only that God became human but how: the choice of place, poverty and audience is itself the message."
+  },
+  "thinkAboutIt": {
+    "7-10": "Why do you think God chose a stable and not a palace?",
+    "11-14": "The shepherds were the least likely people to be told first. Who do you overlook?",
+    "15-18": "Luke uses imperial language for a baby in a manger. What does that suggest about where God's kind of power actually shows up?"
+  },
+  "pray": {
+    "7-10": "Thank you God for coming close to us at Christmas.",
+    "11-14": "God, you came into the world at the bottom, not the top. Thank you that you are not far away.",
+    "15-18": "God, you entered history in poverty and told the news to people nobody listened to. Correct my sense of where you are likely to be found."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "Who was told about Jesus' birth first?",
+      "11-14": "Who received the announcement of Jesus' birth?",
+      "15-18": "Who is told first, and why does Luke emphasise it?"
+    },
+    "options": [
+      "Shepherds",
+      "Kings",
+      "Soldiers"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "Shepherds working out in the fields at night.",
+      "11-14": "Shepherds — ordinary night-shift workers, not anyone important.",
+      "15-18": "Shepherds, whose ritual status and low credibility make them the perfect first witnesses for Luke's reversal theme."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}
