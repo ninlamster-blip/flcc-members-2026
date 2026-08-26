@@ -1,6 +1,6 @@
 // Today's challenge — one of five kinds. "Live it" is never auto-verified.
 
-import { h, card, eyebrow, button, notice, spinner, toast } from '../core/ui.js';
+import { h, card, eyebrow, button, notice, spinner, toast, celebrate, nudge } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as challenges from '../core/challenges.js';
 import { pick } from '../core/age.js';
@@ -25,10 +25,12 @@ export default async function challengeScreen(ctx) {
   const body = h('div');
   const feedback = h('p', { class: 'small', style: 'margin-top:.8rem' });
 
-  const finish = (result, message) => {
+  const finish = (result, message, source) => {
     challenges.record(day, challenge.type, result, now);
     feedback.textContent = message;
-    feedback.className = `small ${result === 'right' || result === 'done' ? 'state-good' : 'state-warn'}`;
+    const good = result === 'right' || result === 'done';
+    feedback.className = `small ${good ? 'state-good' : 'state-warn'}`;
+    if (source) (good ? celebrate : nudge)(source);
     toast('Recorded in your journey.');
   };
 
@@ -39,21 +41,24 @@ export default async function challengeScreen(ctx) {
       h('p', { text: prompt }),
       h('div', { class: 'field', style: 'margin-top:1rem' }, input),
       h('div', { class: 'btn-row' },
-        button('Check', { variant: 'btn-primary', onclick: () => {
+        button('Check', { variant: 'btn-primary', onclick: (event) => {
           const guess = parseRef(input.value);
           const right = guess && ref && guess.book.id === ref.book.id && guess.chapter === ref.chapter
             && (!ref.verseStart || guess.verseStart === ref.verseStart);
-          finish(right ? 'right' : 'wrong', right ? `Found it — ${formatRef(ref)}.` : 'Not that one. Keep looking, or open the Bible and search.');
+          finish(right ? 'right' : 'wrong',
+            right ? `Found it — ${formatRef(ref)}.` : 'Not that one. Keep looking, or open the Bible and search.',
+            event.currentTarget);
         } }),
         button('Open the Bible', { onclick: () => ctx.go('bible') })));
   } else if (challenge.type === 'know') {
     const options = pick(challenge.options, ctx.band) || challenge.options || [];
     body.append(h('p', { text: prompt }), h('div', { class: 'btn-row', style: 'margin-top:1rem' },
-      ...options.map((option, index) => button(option, { onclick: () => {
+      ...options.map((option, index) => button(option, { onclick: (event) => {
         const right = index === challenge.answer;
         finish(right ? 'right' : 'wrong', right
           ? `Yes. ${pick(challenge.explain, ctx.band) || ''}`
-          : `Not quite. ${pick(challenge.explain, ctx.band) || ''}`);
+          : `Not quite. ${pick(challenge.explain, ctx.band) || ''}`,
+          event.currentTarget);
       } }))));
   } else if (challenge.type === 'remember') {
     const answer = h('textarea', { placeholder: 'Write what you remember…', 'aria-label': 'The verse from memory' });
@@ -82,11 +87,11 @@ export default async function challengeScreen(ctx) {
       challenge.ref ? h('p', { class: 'scripture-ref', text: `Inspired by ${formatRef(parseRef(challenge.ref)) || challenge.ref}` }) : null,
       h('p', { class: 'small muted', style: 'margin-top:1rem', text: 'Nobody checks this one. Mark it done when you have actually done it.' }),
       h('div', { class: 'btn-row' },
-        button('I did it', { variant: 'btn-primary', onclick: () => finish('done', 'Good. That is the whole point — Bible to life.') }),
+        button('I did it', { variant: 'btn-primary', onclick: (event) => finish('done', 'Good. That is the whole point — Bible to life.', event.currentTarget) }),
         button('Not today', { variant: 'btn-quiet', onclick: () => finish('skipped', 'That is alright. It will come round again.') })));
   }
 
-  el.replaceChildren(card({},
+  el.replaceChildren(card({ dataset: { rail: '' }, style: '--rail-colour: var(--warn)' },
     eyebrow(`Today’s challenge · ${challenges.TYPE_LABEL[challenge.type]}`),
     body,
     feedback,

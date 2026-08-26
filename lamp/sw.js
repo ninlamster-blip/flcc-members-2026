@@ -13,6 +13,7 @@ const SHELL = [
   './icons/icon.svg',
   './js/app.js',
   './js/core/dom.js',
+  './js/core/art.js',
   './js/core/ui.js',
   './js/core/storage.js',
   './js/core/age.js',

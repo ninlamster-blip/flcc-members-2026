@@ -538,3 +538,177 @@ textarea { min-height: 7rem; resize: vertical; line-height: 1.6; }
     transition-duration: .001ms !important;
   }
 }
+
+/* =============================================================================
+   THE DESIGN GROWS WITH THE USER (SPEC.md §19)
+   Same brand, three registers. Not three themes — one system whose weight,
+   roundness, illustration and pace change with the reader's age.
+   ========================================================================== */
+
+:root {
+  --tab-icon: 21px;
+  --tab-pad: .5rem;
+  --btn-min: 44px;
+  --card-rail: 0px;      /* a coloured edge on cards, for the youngest band */
+  --display-weight: 500;
+  --hero: none;          /* whether Today opens with a picture */
+  --pop: 1;
+}
+
+:root[data-band="7-10"] {
+  --tab-icon: 26px;
+  --tab-pad: .6rem;
+  --btn-min: 52px;
+  --card-rail: 5px;
+  --display-weight: 600;
+  --hero: block;
+  --pop: 1.06;
+}
+
+:root[data-band="11-14"] {
+  --tab-icon: 23px;
+  --btn-min: 48px;
+  --card-rail: 3px;
+  --hero: block;
+}
+
+/* 15–18 keeps the defaults above: no rail, no hero, quiet chrome. */
+
+.tab svg { width: var(--tab-icon); height: var(--tab-icon); }
+.tab { padding-top: var(--tab-pad); padding-bottom: calc(var(--tab-pad) + .05rem); }
+.btn { min-height: var(--btn-min); }
+:root[data-band="7-10"] .btn { font-size: .98rem; font-weight: 500; padding: .7rem 1.25rem; }
+:root[data-band="7-10"] .card-title { font-weight: var(--display-weight); }
+:root[data-band="7-10"] .greeting { font-size: 2rem; }
+:root[data-band="15-18"] .greeting { font-size: 1.6rem; }
+
+/* A card's coloured rail names its section without shouting. */
+.card[data-rail] { position: relative; overflow: hidden; }
+.card[data-rail]::before {
+  content: "";
+  position: absolute; inset: 0 0 auto 0;
+  height: var(--card-rail);
+  background: var(--rail-colour, var(--accent));
+}
+:root[data-band="15-18"] .card[data-rail]::before { display: none; }
+
+/* ── Illustration ─────────────────────────────────────────────────────────── */
+
+.scene {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper-sunken);
+  border: 1px solid var(--rule);
+  line-height: 0;
+}
+.scene svg { width: 100%; height: 100%; display: block; }
+.scene[data-ratio="wide"] { aspect-ratio: 3 / 1; }
+.scene[data-ratio="story"] { aspect-ratio: 3 / 2; }
+.scene[data-ratio="thumb"] { aspect-ratio: 1 / 1; width: 68px; flex: 0 0 68px; border-radius: var(--radius-sm); }
+
+/* The illustrations carry their own palette; in the dark theme they are
+   dimmed rather than recoloured, so the artwork stays the artwork. */
+:root[data-theme="dark"] .scene svg { filter: brightness(.86) saturate(.94); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .scene svg { filter: brightness(.86) saturate(.94); }
+}
+
+.hero {
+  display: var(--hero);
+  margin: -.4rem 0 1.4rem;
+}
+
+/* Onboarding happens before LAMP knows anyone's age, so its picture is not
+   band-conditional. */
+.onboard-art .hero { display: block; margin: 0 0 1.75rem; }
+.onboard-art .scene { aspect-ratio: 5 / 2; border: 0; }
+.hero .scene { border: 0; border-radius: var(--radius); }
+:root[data-band="7-10"] .hero .scene { aspect-ratio: 5 / 2; }
+:root[data-band="11-14"] .hero .scene { aspect-ratio: 4 / 1; }
+
+/* Story cards — the youngest band gets pictures, not rows. */
+.story-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .85rem; }
+.story-card {
+  display: block; width: 100%; text-align: left;
+  padding: 0; overflow: hidden; cursor: pointer;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform var(--speed) var(--ease);
+}
+.story-card:hover { transform: translateY(-2px); }
+.story-card:active { transform: translateY(0) scale(.99); }
+.story-card .scene { border: 0; border-radius: 0; aspect-ratio: 4 / 3; }
+.story-card .label { display: block; padding: .7rem .8rem .85rem; }
+.story-card .name { display: block; font-weight: 600; font-size: .95rem; line-height: 1.25; }
+.story-card .ref { display: block; font-size: .76rem; color: var(--muted); margin-top: .15rem; }
+.story-card .done { color: var(--accent-ink); font-size: .74rem; font-weight: 600; }
+
+.story-row { display: flex; align-items: center; gap: .85rem; }
+
+.story-hero { margin: -.5rem -.15rem 1.5rem; }
+.story-hero .scene { border: 0; aspect-ratio: 16 / 9; border-radius: var(--radius); }
+
+/* ── Progress ring ────────────────────────────────────────────────────────── */
+
+.ring { display: grid; place-items: center; width: 58px; height: 58px; flex: 0 0 58px; position: relative; }
+.ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.ring circle { fill: none; stroke-width: 5; stroke-linecap: round; }
+.ring .track { stroke: var(--paper-sunken); }
+.ring .value { stroke: var(--accent); transition: stroke-dashoffset 600ms var(--ease); }
+.ring .pct {
+  position: absolute; font-size: .72rem; font-weight: 600; color: var(--ink-soft);
+}
+
+/* ── Memory stage pips ────────────────────────────────────────────────────── */
+
+.pips { display: inline-flex; gap: .28rem; align-items: center; }
+.pips i {
+  width: .48rem; height: .48rem; border-radius: 50%;
+  background: var(--paper-sunken); border: 1px solid var(--rule);
+}
+.pips i[data-on] { background: var(--accent); border-color: var(--accent); }
+
+/* ── Motion: purposeful, short, and off when asked ────────────────────────── */
+
+.reveal { opacity: 0; transform: translateY(10px); }
+.reveal[data-shown] {
+  opacity: 1; transform: none;
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(var(--pop)); }
+  100% { transform: scale(1); }
+}
+.popped { animation: pop 320ms var(--ease); }
+
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.nudged { animation: nudge 260ms var(--ease); }
+
+/* A small burst of sparks when a child gets something right. Drawn, brief,
+   and never confetti raining down the screen. */
+.sparks { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.sparks i {
+  position: absolute; left: 50%; top: 50%;
+  width: 6px; height: 6px; border-radius: 2px;
+  background: var(--accent);
+  animation: spark 620ms var(--ease) forwards;
+}
+@keyframes spark {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(.6); }
+  to   { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.9) rotate(90deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; }
+  .sparks { display: none; }
+}

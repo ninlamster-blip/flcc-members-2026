@@ -80,3 +80,47 @@ export function stepChapter(bookId, chapter, delta) {
   }
   return { book: BOOKS[bookIndex], chapter: ch };
 }
+
+/**
+ * A reference for a whole passage rather than a single verse: chapter ranges
+ * and lists, as authored content uses them.
+ *   "GEN.6-9"       → "Genesis 6–9"
+ *   "GEN.12,15,22"  → "Genesis 12, 15, 22"
+ *   "GEN.37,39-45"  → "Genesis 37, 39–45"
+ * Falls back to the input untouched rather than showing an id to a child.
+ */
+export function displayRef(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return '';
+
+  const segments = raw.split(',').map((part) => part.trim()).filter(Boolean);
+  if (!segments.length) return raw;
+
+  const first = segments[0].match(/^(.+?)[.\s](\d+)(?:\s*[-–]\s*(\d+))?$/);
+  if (!first) return prettyRef(raw);
+
+  const book = bookById(first[1]) || findBook(first[1]);
+  if (!book) return prettyRef(raw);
+
+  const span = (from, to) => (to && to !== from ? `${from}–${to}` : String(from));
+  const parts = [span(first[2], first[3])];
+
+  for (const segment of segments.slice(1)) {
+    const more = segment.match(/^(\d+)(?:\s*[-–]\s*(\d+))?$/);
+    if (!more) return prettyRef(raw);
+    parts.push(span(more[1], more[2]));
+  }
+
+  return `${book.name} ${parts.join(', ')}`;
+}
+
+/**
+ * Where to open the Bible for a passage reference — the first chapter it names.
+ * "GEN.37,39-45" starts at Genesis 37; "MRK.4.35-41" at Mark 4. Every story
+ * can link into the reader, however its reference is written.
+ */
+export function firstChapter(input) {
+  const head = String(input || '').split(',')[0].trim().replace(/\s*[-–]\s*\d+\s*$/, '');
+  const ref = parseRef(head);
+  return ref ? { book: ref.book, chapter: ref.chapter } : null;
+}

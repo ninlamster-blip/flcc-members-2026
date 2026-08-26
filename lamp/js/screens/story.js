@@ -1,12 +1,12 @@
 // One story: Story → What happened → What it teaches → Think about it → Pray →
 // Challenge. Every part is written for the reader's age band.
 
-import { h, section, eyebrow, button, notice, spinner, toast, card } from '../core/ui.js';
+import { h, section, eyebrow, button, notice, spinner, toast, card, sceneEl, reveal, celebrate, nudge } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { pick } from '../core/age.js';
-import { parseRef, formatRef } from '../core/refs.js';
+import { displayRef, firstChapter } from '../core/refs.js';
 import { markStoryRead } from '../core/progress.js';
-import { icon } from '../core/dom.js';
+import { hasScene } from '../core/art.js';
 
 function part(label, bodyText, extraClass = '') {
   return h('div', { class: 'story-part' },
@@ -25,7 +25,7 @@ export default async function storyScreen(ctx) {
     return { title: 'Story', el: notice(`That story could not be loaded. ${error.message}`), tab: 'stories' };
   }
 
-  const ref = parseRef(story.reference);
+  const opensAt = firstChapter(story.reference);
   const band = ctx.band;
 
   const challenge = story.challenge;
@@ -35,7 +35,7 @@ export default async function storyScreen(ctx) {
     const options = pick(challenge.options, band) || challenge.options;
     const answerIndex = challenge.answer;
     const feedback = h('p', { class: 'small', style: 'margin-top:.8rem' });
-    challengeBox.appendChild(card({},
+    const box = card({ dataset: { rail: '' }, style: '--rail-colour: var(--warn)' },
       eyebrow('Challenge'),
       h('p', { text: prompt }),
       h('div', { class: 'btn-row', style: 'margin-top:.9rem' },
@@ -46,35 +46,46 @@ export default async function storyScreen(ctx) {
               ? `Yes. ${pick(challenge.explain, band) || ''}`
               : `Not quite. ${pick(challenge.explain, band) || ''}`;
             feedback.className = `small ${right ? 'state-good' : 'state-warn'}`;
+            if (right) celebrate(event.currentTarget);
+            else nudge(event.currentTarget);
             event.currentTarget.blur();
           },
         }))),
-      feedback));
+      feedback);
+    challengeBox.appendChild(box);
   }
 
-  el.replaceChildren(
-    h('div', { class: 'story-art', role: 'img', 'aria-label': `Illustration placeholder for ${story.title}` }, icon('lamp', 72)),
-    h('h1', { class: 'card-title', style: 'font-size:1.8rem', text: story.title }),
-    h('p', { class: 'card-meta', style: 'margin-bottom:1.75rem' },
-      ref ? formatRef(ref) : story.reference,
-      ref ? ' · ' : '',
-      ref ? h('button', { class: 'btn btn-quiet', style: 'min-height:0;padding:.1rem .5rem;font-size:.8rem',
-        onclick: () => ctx.go(`read/${ref.book.id}/${ref.chapter}`) }, 'Read the passage') : null),
-
+  const parts = [
     part('Story', pick(story.story, band)),
     part('What happened?', pick(story.whatHappened, band)),
     part('What does it teach me?', pick(story.whatItTeaches, band)),
     section(null, h('div', { class: 'pull', text: pick(story.thinkAboutIt, band) })),
     part('Pray', pick(story.pray, band)),
     challengeBox,
+  ];
+
+  el.replaceChildren(
+    hasScene(slug)
+      ? h('div', { class: 'story-hero' }, sceneEl(slug, { ratio: 'story', title: story.title }))
+      : null,
+    h('h1', { class: 'card-title', style: 'font-size:1.8rem', text: story.title }),
+    h('p', { class: 'card-meta', style: 'margin-bottom:1.75rem' },
+      displayRef(story.reference),
+      opensAt ? ' · ' : '',
+      opensAt ? h('button', { class: 'btn btn-quiet', style: 'min-height:0;padding:.1rem .5rem;font-size:.8rem',
+        onclick: () => ctx.go(`read/${opensAt.book.id}/${opensAt.chapter}`) }, 'Read the passage') : null),
+
+    ...parts,
 
     h('div', { class: 'btn-row', style: 'margin-top:2rem' },
-      button('I have read this', { variant: 'btn-primary', onclick: () => {
+      button('I have read this', { variant: 'btn-primary', onclick: (event) => {
         markStoryRead(slug);
+        celebrate(event.currentTarget);
         toast('Saved to your journey.');
       } }),
       button('Write about it', { onclick: () => ctx.go(`journal?story=${encodeURIComponent(slug)}`) })),
   );
 
+  reveal(parts);
   return { title: story.title, el, tab: 'stories' };
 }

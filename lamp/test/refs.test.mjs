@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseRef, refId, formatRef, stepChapter, prettyRef } from '../js/core/refs.js';
+import { parseRef, refId, formatRef, stepChapter, prettyRef, displayRef, firstChapter } from '../js/core/refs.js';
 import { BOOKS } from '../js/core/books.js';
 
 test('the canon is 66 books in order, numbered for the text API', () => {
@@ -56,4 +56,41 @@ test('chapters step across book boundaries and stop at the ends', () => {
   assert.equal(back.chapter, 4);
   assert.equal(stepChapter('GEN', 1, -1), null);
   assert.equal(stepChapter('REV', 22, 1), null);
+});
+
+test('passage references — ranges and lists — read as words, never as ids', () => {
+  const cases = [
+    ['GEN.1', 'Genesis 1'],
+    ['GEN.6-9', 'Genesis 6–9'],
+    ['GEN.12,15,22', 'Genesis 12, 15, 22'],
+    ['GEN.37,39-45', 'Genesis 37, 39–45'],
+    ['LUK.23-24', 'Luke 23–24'],
+    ['MRK.4.35-41', 'Mark 4:35–41'],
+    ['1SA.17', '1 Samuel 17'],
+  ];
+  for (const [input, expected] of cases) assert.equal(displayRef(input), expected, input);
+  assert.equal(displayRef(''), '');
+  assert.equal(displayRef('Not a reference'), 'Not a reference');
+});
+
+test('no story in the library displays as a raw id', async () => {
+  const { readFileSync } = await import('node:fs');
+  const stories = JSON.parse(readFileSync(new URL('../content/stories/index.json', import.meta.url), 'utf8'));
+  for (const story of stories) {
+    const shown = displayRef(story.reference);
+    assert.ok(!/[A-Z]{2,3}\./.test(shown), `${story.slug} shows "${shown}"`);
+  }
+});
+
+test('every story can open the Bible at its first chapter', async () => {
+  const { readFileSync } = await import('node:fs');
+  const stories = JSON.parse(readFileSync(new URL('../content/stories/index.json', import.meta.url), 'utf8'));
+  for (const story of stories) {
+    const opensAt = firstChapter(story.reference);
+    assert.ok(opensAt, `${story.slug}: "${story.reference}" opens nowhere`);
+    assert.ok(opensAt.chapter >= 1 && opensAt.chapter <= opensAt.book.chapters, `${story.slug}: chapter out of range`);
+  }
+  assert.equal(firstChapter('GEN.37,39-45').chapter, 37);
+  assert.equal(firstChapter('LUK.23-24').book.id, 'LUK');
+  assert.equal(firstChapter('nonsense'), null);
 });

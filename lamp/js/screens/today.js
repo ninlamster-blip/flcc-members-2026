@@ -1,6 +1,6 @@
 // TODAY — the daily spiritual experience. One screen, no clutter.
 
-import { h, section, eyebrow, card, button, bar, spinner, notice, toast } from '../core/ui.js';
+import { h, section, eyebrow, card, button, bar, spinner, notice, toast, heroEl, ring, reveal } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { pickFor } from '../core/daily.js';
 import { getProgress, continueReading, chapterPercent } from '../core/progress.js';
@@ -17,6 +17,10 @@ export default async function todayScreen(ctx) {
   const now = new Date();
   const trans = translationId(ctx.settings);
 
+  // The youngest bands open with a picture of the time of day; the oldest
+  // opens straight into words. Same screen, three registers.
+  el.appendChild(heroEl());
+
   el.appendChild(h('h1', { class: 'greeting' },
     ctx.greeting().replace(/,.*$/, '') + (ctx.profile && ctx.profile.name ? ', ' : ''),
     ctx.profile && ctx.profile.name ? h('span', { class: 'greeting-name', text: ctx.profile.name }) : null,
@@ -30,11 +34,14 @@ export default async function todayScreen(ctx) {
     const book = bookById(bookId);
     if (book) {
       el.appendChild(section(null,
-        card({ as: 'button', onclick: () => ctx.go(`read/${book.id}/${chapter}`) },
-          eyebrow('Continue reading'),
-          h('div', { class: 'card-title', text: `${book.name} ${chapter}` }),
-          h('div', { class: 'card-meta', text: `${resume.percent}% complete` }),
-          h('div', { style: 'margin-top:.8rem' }, bar(resume.percent)))));
+        card({ as: 'button', dataset: { rail: '' }, style: '--rail-colour: var(--accent)',
+               onclick: () => ctx.go(`read/${book.id}/${chapter}`) },
+          h('div', { style: 'display:flex;align-items:center;gap:1rem' },
+            h('div', { style: 'flex:1;min-width:0' },
+              eyebrow('Continue reading'),
+              h('div', { class: 'card-title', text: `${book.name} ${chapter}` }),
+              h('div', { class: 'card-meta', text: 'Pick up where you stopped' })),
+            ring(resume.percent, { label: `${resume.percent}% through ${book.name} ${chapter}` })))));
     }
   }
 
@@ -67,7 +74,7 @@ export default async function todayScreen(ctx) {
 
     const ref = parseRef(daily.ref);
     const body = h('div');
-    const holder = card({},
+    const holder = card({ dataset: { rail: '' }, style: '--rail-colour: var(--good)' },
       eyebrow('Today’s Word'),
       h('div', { class: 'card-title', text: daily.title }),
       h('div', { class: 'card-meta', text: `${formatRef(ref)} · ${daily.minutes || 3} min · ${translation(trans).id}` }),
@@ -100,7 +107,7 @@ export default async function todayScreen(ctx) {
     const challenge = challenges.challengeFor(pools, ctx.band, now);
     if (!challenge) return;
     const done = challenges.resultFor(today(now));
-    challengeSection.replaceChildren(card({},
+    challengeSection.replaceChildren(card({ dataset: { rail: '' }, style: '--rail-colour: var(--warn)' },
       eyebrow('Today’s challenge'),
       h('div', { class: 'card-title', text: challenges.TYPE_LABEL[challenge.type] }),
       h('p', { style: 'margin-top:.4rem', text: pick(challenge.prompt, ctx.band) }),
@@ -110,5 +117,6 @@ export default async function todayScreen(ctx) {
           : button('Start challenge', { variant: 'btn-primary', onclick: () => ctx.go('challenge') }))));
   })();
 
+  reveal([...el.children].filter((child) => child.tagName === 'SECTION'));
   return { title: 'Today', el };
 }

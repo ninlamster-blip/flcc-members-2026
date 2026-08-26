@@ -27,7 +27,7 @@ python3 -m http.server 8000    # from the repository root
 |--------|--------------|
 | **Today** | Greeting, continue reading, today's Word, today's challenge, quick actions |
 | **Bible** | 66 books, chapter navigation, reference jumping (`1 sam 17`, `psalm 23`), search over downloaded chapters, six actions on every verse |
-| **Stories** | 14 Bible stories, each in six parts and written three times — once for each age band |
+| **Stories** | 14 Bible stories, each illustrated, in six parts, written three times — once for each age band |
 | **Journey** | Streak, chapters, stories, memory verses, challenges, and the five stages |
 | **Me** | Prayer, journal, settings, a plain account of what is stored and sent, download-everything and delete-everything |
 | **Ask** | The AI companion — off until configured, tiered answers, verse-checking, on-device safety routing |
@@ -54,6 +54,18 @@ lamp/
   content/              all authored content as JSON (SPEC.md §14)
   test/                 node:test suites, no dependencies
 ```
+
+**Illustration.** Every story has a scene, drawn in code from one kit of paper-cut
+shapes and one twelve-colour palette (`js/core/art.js`). No image files, no
+network, a few kilobytes for the set — and testable: the suite fails if a scene
+strays from the palette or references anything outside itself. Commissioned
+artwork can replace the kit later without touching a screen.
+
+**The design grows with the reader.** One band token drives the whole system,
+so at 7–10 Stories is a shelf of pictures, cards carry a colour rail, taps are
+52px and Today opens with the sky; at 15–18 the pictures step back, the rails
+disappear and the type tightens. Same screens, same content, three registers —
+see SPEC.md §13.
 
 **Storage.** Everything lives under `lamp/v1/…`, and `storage.js` throws on any
 key that does not. That guard is what makes the boundary in SPEC.md §3
@@ -82,13 +94,15 @@ call is made at all. `test/safety.test.mjs` holds the fixtures.
 node --test 'lamp/test/*.test.mjs'
 ```
 
-43 tests, no dependencies. They cover age-band resolution and fallback,
+52 tests, no dependencies. They cover age-band resolution and fallback,
 reference parsing across the whole canon, both response shapes `bolls.life` has
 served, the storage namespace guard (including explicit FLCC and Shepherd
 keys), memory-verse scheduling and grading, daily and challenge determinism,
 the AI request contract (asserting the child's name, journal and prayers are
-never in the payload), the safety fixtures, and a full schema validation of
-every content file — a story missing an age band fails the suite.
+never in the payload), the safety fixtures, the illustration system (every story has a scene, every
+scene is self-contained and drawn only from the palette), reference display for
+chapter ranges and lists, and a full schema validation of every content file —
+a story missing an age band fails the suite.
 
 ## Before a church launches this
 

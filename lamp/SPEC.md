@@ -564,12 +564,20 @@ in both themes; nothing is defined only inside a media query.
 
 **Layout.** Generous whitespace. One idea per screen.
 
-**Illustration.** Commissioned editorial artwork, one visual language across
-all stories, exported as AVIF with WebP fallback. Placeholder art in
-development is clearly marked as placeholder so it never ships by accident.
+**Illustration.** One visual language across all stories: flat paper-cut
+shapes, a fixed twelve-colour palette, and a single grain texture over the
+top — printed picture-book, not gradient mesh. The scenes are drawn in code
+(`js/core/art.js`) from a shared kit of shapes, which is why fourteen pictures
+look like fourteen pictures by the same hand, weigh a few kilobytes in total,
+need no network, and can be tested: `test/art.test.mjs` fails if a scene uses
+a colour outside the palette or reaches outside itself. Commissioned artwork
+can replace the kit later without touching a screen.
 
-**Animation.** Subtle and purposeful, ≤200ms, ease-out, and fully disabled
-under `prefers-reduced-motion`.
+**Animation.** Subtle and purposeful, ≤200ms for chrome, ease-out, and fully
+disabled under `prefers-reduced-motion`. Motion is used in exactly three
+places: sections fade up as they arrive, a right answer pops with a short
+burst of sparks, and a wrong one nudges. There is no confetti, no falling
+stars, and nothing loops.
 
 **Interaction.** Haptics, transitions and micro-interactions polished to the
 point of being almost invisible.
@@ -577,8 +585,20 @@ point of being almost invisible.
 **The design grows with the user.** At 7 LAMP feels playful; at 12
 exploratory; at 16 sophisticated; at 18 a premium Bible app. The brand does
 not change — the type scale, illustration density, copy register, chrome and
-default screen do. One module (`age.js`) decides all of it, so the maturing
-is a property of the system rather than three apps in a trench coat.
+default screen do. One band token on `<html>` drives all of it through CSS
+custom properties, so the maturing is a property of the system rather than
+three apps in a trench coat:
+
+| | 7–10 | 11–14 | 15–18 |
+|---|---|---|---|
+| Today opens with | a picture of the time of day | a slimmer band of it | the greeting |
+| Stories are | a shelf of illustrated cards | a list with thumbnails | a plain index |
+| Cards carry | a 5px colour rail | a 3px rail | no rail |
+| Tap targets | 52px | 48px | 44px |
+| Type / measure | 19px / 30rem | 17.5px / 33rem | 16.5px / 36rem |
+
+Nothing is hidden from the youngest band and nothing is withheld from the
+oldest: the same screens, the same content, a different register.
 
 **Accessibility.** WCAG 2.2 AA: 4.5:1 text contrast in both themes, 44px
 targets, full keyboard operation, visible focus, labelled controls, correct

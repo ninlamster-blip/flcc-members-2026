@@ -4,7 +4,7 @@
 import { h, clear, icon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getProfile, getSettings, saveProfile, currentBand, greeting } from './core/profile.js';
-import { toast } from './core/ui.js';
+import { toast, heroEl } from './core/ui.js';
 
 const TABS = [
   { name: 'today',      label: 'Today',   icon: 'today' },
@@ -77,6 +77,7 @@ function onboarding() {
     router.go('today', { replace: true });
     boot();
   } },
+    h('div', { class: 'onboard-art' }, heroEl()),
     h('div', { class: 'wordmark', text: 'Lamp' }),
     h('p', { class: 'tagline', text: 'Discover God. Know His Word. Live It.' }),
     h('div', { class: 'field' },

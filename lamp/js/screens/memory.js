@@ -1,7 +1,7 @@
 // Memory verses — Learn, Listen, Practice, Challenge, Master (SPEC.md §15).
 // "Master" is self-attested: the app never listens to a child's microphone.
 
-import { h, section, card, eyebrow, button, list, row, notice, spinner, toast, empty } from '../core/ui.js';
+import { h, section, card, eyebrow, button, list, row, notice, spinner, toast, empty, pips, celebrate } from '../core/ui.js';
 import * as memory from '../core/memory.js';
 import { parseRef, formatRef } from '../core/refs.js';
 import { getPassage, joinText } from '../core/bible.js';
@@ -64,14 +64,18 @@ export default async function memoryScreen(ctx) {
     }
 
     const stage = verse.stage;
-    const holder = card({}, eyebrow(memory.STAGE_LABEL[stage]),
+    const holder = card({ dataset: { rail: '' }, style: '--rail-colour: var(--accent)' },
+      h('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:1rem' },
+        eyebrow(memory.STAGE_LABEL[stage]),
+        pips(memory.STAGES.indexOf(stage) + 1)),
       h('div', { class: 'card-title', text: formatRef(ref) }));
 
     if (stage === 'learn' || stage === 'listen') {
       holder.appendChild(h('p', { class: 'scripture', style: 'margin-top:.8rem', text }));
       holder.appendChild(h('div', { class: 'card-foot' },
         button('Listen', { onclick: () => speak(text) }),
-        button('I have read it', { variant: 'btn-primary', onclick: () => {
+        button('I have read it', { variant: 'btn-primary', onclick: (event) => {
+          celebrate(event.currentTarget);
           memory.review(verse.ref, true);
           toast('Good. It will come back soon.');
           ctx.refresh();
@@ -91,8 +95,9 @@ export default async function memoryScreen(ctx) {
       });
       const feedback = h('p', { class: 'small', style: 'margin-top:.7rem' });
       holder.append(line, feedback, h('div', { class: 'card-foot' },
-        button('Check', { variant: 'btn-primary', onclick: () => {
+        button('Check', { variant: 'btn-primary', onclick: (event) => {
           const wrong = [...inputs.entries()].filter(([index, input]) => !memory.grade(input.value, words[index]).pass);
+          if (!wrong.length) celebrate(event.currentTarget);
           if (wrong.length) {
             feedback.textContent = `${wrong.length} word${wrong.length === 1 ? '' : 's'} to try again. You can peek with Listen.`;
             feedback.className = 'small state-warn';
