@@ -2,14 +2,14 @@
 
 import { h, poster, label, display, headline, art, pill, go, note, toast } from '../core/ui.js';
 import * as content from '../core/content.js';
-import { pickFor } from '../core/daily.js';
+import { pick as pickForDay } from '../core/rotation.js';
 import { forMode } from '../core/profile.js';
 import * as progress from '../core/progress.js';
 
 export default async function devotionScreen(ctx) {
   const now = new Date();
   let entry = null;
-  try { entry = pickFor(await content.daily(), now); } catch { /* handled below */ }
+  try { entry = pickForDay(await content.daily(), { date: now }); } catch { /* handled below */ }
   if (!entry) return { title: 'Today', el: poster({ tone: 'paper', className: 'full' }, note('Today’s devotional could not be loaded.')) };
 
   const day = progress.today(now);

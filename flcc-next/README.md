@@ -25,7 +25,7 @@ Five destinations along the bottom, and none of them is named after a feature.
 |---|---|
 | **Today** | One thing for today: a verse, what it means, a prayer, a challenge, and the devotional behind it |
 | **Explore** | Bible journeys with lessons, and real-life topics — pressure, doubt, friendship, phones |
-| **Play** | Five games: Bible quiz, speed quiz, Who am I?, verse builder and a crossword |
+| **Play** | Five games: Bible quiz, speed quiz, Who am I?, verse builder and a crossword — a fresh set each day |
 | **Connect** | What is on, sharing a prayer, and Ask NEXT |
 | **Me** | Streak, level, XP and achievements as collectible stamps, plus name and delete-everything |
 
@@ -95,13 +95,48 @@ exists.
 
 | File | What it holds |
 |---|---|
-| `daily.json` | The daily word: verse, reflection, prayer, challenge, devotional |
+| `daily.json` | 35 daily words: verse, reflection, prayer, challenge, devotional |
 | `journeys.json` + `journeys/*.json` | Three journeys, fourteen lessons |
-| `real-life.json` | Eight real-life topics |
-| `games.json` + `games/*.json` | The five games and their question banks |
+| `real-life.json` | 14 real-life topics |
+| `games.json` + `games/*.json` | The five games and their banks — 111 quiz questions, 40 Who am I? rounds, 54 verses, 16 crosswords |
 | `events.json` | What is on |
 | `achievements.json` | The collectible stamps and how each is earned |
 | `help-lines.json` | Who to contact when something is serious |
+
+### Staying fresh
+
+A child who opens FLCC NEXT every morning should meet something they have not
+met before, for as long as the authored content can hold out. A shuffle cannot
+do that — it re-rolls every time, so day two repeats day one and nothing
+guarantees the whole bank is ever seen.
+
+So the app **deals** rather than shuffles (`js/core/rotation.js`). A bank is
+permuted once per cycle and handed out one slice per day: inside a cycle nothing
+repeats and everything is eventually dealt, and when the bank runs out the
+permutation changes and the order is different next time round. It is a pure
+function of the date, which buys two more things — everyone in the ministry
+gets the same puzzle on the same morning, and a child cannot re-roll a hard
+question by closing the app and opening it again.
+
+How long that lasts, on the content shipped today:
+
+| | Kids | Teens |
+|---|---|---|
+| Daily word | 35 days | 35 days |
+| Bible quiz | 9 days | 11 days |
+| Who am I? | 8 days | 8 days |
+| Verse builder | 8 days | 10 days |
+| Crossword | 8 days | 8 days |
+| Speed quiz | 4 days | 5 days |
+
+The speed quiz is the outlier by design: it is a recall drill against a clock,
+where meeting a question you have seen before is the exercise rather than a
+failure. Everything else is held to a week minimum by `test/audit.test.mjs`,
+and each game shows its own position — "Day 3 of 8" — while you play it.
+
+**Adding more is authoring, not engineering.** Add entries to the JSON and the
+run lengths grow automatically; the dashboard's *Before it repeats* panel
+names the shortest run so the next piece of writing goes where it is needed.
 
 `help-lines.json` is still marked `verifyBeforeLaunch: true`. **Every number in
 it must be checked by a person before this app reaches a child.** The dashboard

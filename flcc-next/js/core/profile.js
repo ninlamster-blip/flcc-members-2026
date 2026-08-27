@@ -34,8 +34,19 @@ export function saveUser(patch) {
   return next;
 }
 
+/**
+ * Which experience this reader gets.
+ *
+ * `ageGroup` is derived once, on save. But a record can reach here without it —
+ * written by an older version, restored from a partial backup, edited by hand —
+ * and defaulting straight to `teens` would quietly hand a nine-year-old the
+ * teen content. So age is consulted before falling back.
+ */
 export function mode(user = getUser()) {
-  return user && MODES.includes(user.ageGroup) ? user.ageGroup : 'teens';
+  if (!user) return 'teens';
+  if (MODES.includes(user.ageGroup)) return user.ageGroup;
+  if (Number.isFinite(Number(user.age))) return modeForAge(user.age);
+  return 'teens';
 }
 
 export function isKids(user = getUser()) { return mode(user) === 'kids'; }

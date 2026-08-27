@@ -4,14 +4,38 @@
     "title": "IN THE BEGINNING",
     "ageGroup": "kids",
     "words": [
-      { "answer": "ADAM", "clue": "The first man God made" },
-      { "answer": "EVE", "clue": "The first woman" },
-      { "answer": "EDEN", "clue": "The garden they lived in" },
-      { "answer": "NOAH", "clue": "He built a boat because God told him to" },
-      { "answer": "ARK", "clue": "The boat that carried the animals" },
-      { "answer": "DOVE", "clue": "The bird that came back holding a leaf" },
-      { "answer": "RAINBOW", "clue": "God's promise, painted in the sky" },
-      { "answer": "LIGHT", "clue": "The very first thing God made" }
+      {
+        "answer": "ADAM",
+        "clue": "The first man God made"
+      },
+      {
+        "answer": "EVE",
+        "clue": "The first woman"
+      },
+      {
+        "answer": "EDEN",
+        "clue": "The garden they lived in"
+      },
+      {
+        "answer": "NOAH",
+        "clue": "He built a boat because God told him to"
+      },
+      {
+        "answer": "ARK",
+        "clue": "The boat that carried the animals"
+      },
+      {
+        "answer": "DOVE",
+        "clue": "The bird that came back holding a leaf"
+      },
+      {
+        "answer": "RAINBOW",
+        "clue": "God's promise, painted in the sky"
+      },
+      {
+        "answer": "LIGHT",
+        "clue": "The very first thing God made"
+      }
     ]
   },
   {
@@ -19,14 +43,38 @@
     "title": "THE JESUS ONE",
     "ageGroup": "kids",
     "words": [
-      { "answer": "BREAD", "clue": "Five loaves of it fed five thousand people" },
-      { "answer": "FISH", "clue": "Two of these were in the boy's lunch" },
-      { "answer": "STORM", "clue": "Jesus told it to be still, and it was" },
-      { "answer": "DONKEY", "clue": "What Jesus rode into Jerusalem" },
-      { "answer": "SHEPHERD", "clue": "“I am the good ___”" },
-      { "answer": "MARY", "clue": "Jesus' mother" },
-      { "answer": "CROSS", "clue": "Where Jesus died" },
-      { "answer": "EMPTY", "clue": "What the tomb was on Sunday morning" }
+      {
+        "answer": "BREAD",
+        "clue": "Five loaves of it fed five thousand people"
+      },
+      {
+        "answer": "FISH",
+        "clue": "Two of these were in the boy's lunch"
+      },
+      {
+        "answer": "STORM",
+        "clue": "Jesus told it to be still, and it was"
+      },
+      {
+        "answer": "DONKEY",
+        "clue": "What Jesus rode into Jerusalem"
+      },
+      {
+        "answer": "SHEPHERD",
+        "clue": "“I am the good ___”"
+      },
+      {
+        "answer": "MARY",
+        "clue": "Jesus' mother"
+      },
+      {
+        "answer": "CROSS",
+        "clue": "Where Jesus died"
+      },
+      {
+        "answer": "EMPTY",
+        "clue": "What the tomb was on Sunday morning"
+      }
     ]
   },
   {
@@ -34,14 +82,38 @@
     "title": "OUT OF EGYPT",
     "ageGroup": "teens",
     "words": [
-      { "answer": "MOSES", "clue": "Grew up in Pharaoh's house, then led Israel out of it" },
-      { "answer": "AARON", "clue": "His brother, and Israel's first high priest" },
-      { "answer": "PHARAOH", "clue": "The ruler who kept changing his mind" },
-      { "answer": "MANNA", "clue": "Bread that turned up with the morning dew" },
-      { "answer": "SINAI", "clue": "The mountain where the law was given" },
-      { "answer": "PASSOVER", "clue": "The meal eaten on the night they left" },
-      { "answer": "QUAIL", "clue": "The birds sent when the people complained about meat" },
-      { "answer": "SEA", "clue": "It opened, and they walked through on dry ground" }
+      {
+        "answer": "MOSES",
+        "clue": "Grew up in Pharaoh's house, then led Israel out of it"
+      },
+      {
+        "answer": "AARON",
+        "clue": "His brother, and Israel's first high priest"
+      },
+      {
+        "answer": "PHARAOH",
+        "clue": "The ruler who kept changing his mind"
+      },
+      {
+        "answer": "MANNA",
+        "clue": "Bread that turned up with the morning dew"
+      },
+      {
+        "answer": "SINAI",
+        "clue": "The mountain where the law was given"
+      },
+      {
+        "answer": "PASSOVER",
+        "clue": "The meal eaten on the night they left"
+      },
+      {
+        "answer": "QUAIL",
+        "clue": "The birds sent when the people complained about meat"
+      },
+      {
+        "answer": "SEA",
+        "clue": "It opened, and they walked through on dry ground"
+      }
     ]
   },
   {
@@ -49,14 +121,506 @@
     "title": "PAUL'S ROAD",
     "ageGroup": "teens",
     "words": [
-      { "answer": "PAUL", "clue": "Wrote more New Testament letters than anyone else" },
-      { "answer": "DAMASCUS", "clue": "The road where a light stopped him" },
-      { "answer": "SILAS", "clue": "Sang hymns with him in a Philippian jail" },
-      { "answer": "TIMOTHY", "clue": "The young leader he wrote two letters to" },
-      { "answer": "GRACE", "clue": "His word for a gift nobody earns" },
-      { "answer": "ATHENS", "clue": "Where he preached about an altar to an unknown god" },
-      { "answer": "ROMANS", "clue": "His longest letter, to a church he had never visited" },
-      { "answer": "TENTS", "clue": "He made these for a living while he preached" }
+      {
+        "answer": "PAUL",
+        "clue": "Wrote more New Testament letters than anyone else"
+      },
+      {
+        "answer": "DAMASCUS",
+        "clue": "The road where a light stopped him"
+      },
+      {
+        "answer": "SILAS",
+        "clue": "Sang hymns with him in a Philippian jail"
+      },
+      {
+        "answer": "TIMOTHY",
+        "clue": "The young leader he wrote two letters to"
+      },
+      {
+        "answer": "GRACE",
+        "clue": "His word for a gift nobody earns"
+      },
+      {
+        "answer": "ATHENS",
+        "clue": "Where he preached about an altar to an unknown god"
+      },
+      {
+        "answer": "ROMANS",
+        "clue": "His longest letter, to a church he had never visited"
+      },
+      {
+        "answer": "TENTS",
+        "clue": "He made these for a living while he preached"
+      }
+    ]
+  },
+  {
+    "id": "shepherd",
+    "title": "PSALM 23",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "SHEPHERD",
+        "clue": "“Yahweh is my ___” — the first line"
+      },
+      {
+        "answer": "GREEN",
+        "clue": "The colour of the pastures he lies down in"
+      },
+      {
+        "answer": "VALLEY",
+        "clue": "The dark place he walks through, not around"
+      },
+      {
+        "answer": "TABLE",
+        "clue": "God sets one, right in front of his enemies"
+      },
+      {
+        "answer": "OIL",
+        "clue": "What his head is anointed with"
+      },
+      {
+        "answer": "HOUSE",
+        "clue": "Where he will dwell forever"
+      },
+      {
+        "answer": "STILL",
+        "clue": "The kind of waters God leads him beside"
+      },
+      {
+        "answer": "GOODNESS",
+        "clue": "This and mercy follow him all his days"
+      }
+    ]
+  },
+  {
+    "id": "christmas",
+    "title": "THE FIRST CHRISTMAS",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "MARY",
+        "clue": "The mother who said yes to an angel"
+      },
+      {
+        "answer": "JOSEPH",
+        "clue": "The carpenter who stayed"
+      },
+      {
+        "answer": "ANGEL",
+        "clue": "The messenger who said “do not be afraid”"
+      },
+      {
+        "answer": "MANGER",
+        "clue": "The feeding trough that became a cot"
+      },
+      {
+        "answer": "STAR",
+        "clue": "What the wise men followed"
+      },
+      {
+        "answer": "GIFTS",
+        "clue": "Gold, frankincense and myrrh"
+      },
+      {
+        "answer": "INN",
+        "clue": "The place with no room"
+      },
+      {
+        "answer": "SHEPHERDS",
+        "clue": "The first people told the news, out in the fields"
+      }
+    ]
+  },
+  {
+    "id": "miracles",
+    "title": "MIRACLES",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "WINE",
+        "clue": "What the water became at the wedding"
+      },
+      {
+        "answer": "BREAD",
+        "clue": "Five loaves of it fed thousands"
+      },
+      {
+        "answer": "STORM",
+        "clue": "It went quiet when he spoke to it"
+      },
+      {
+        "answer": "BLIND",
+        "clue": "What Bartimaeus was, until he was not"
+      },
+      {
+        "answer": "LAZARUS",
+        "clue": "He walked out of a tomb after four days"
+      },
+      {
+        "answer": "WATER",
+        "clue": "Jesus walked on it"
+      },
+      {
+        "answer": "FISH",
+        "clue": "Two of these were in the boy’s lunch"
+      },
+      {
+        "answer": "HAND",
+        "clue": "The withered one he restored on a Sabbath"
+      }
+    ]
+  },
+  {
+    "id": "noah",
+    "title": "NOAH’S ARK",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "FLOOD",
+        "clue": "Water covered everything"
+      },
+      {
+        "answer": "DOVE",
+        "clue": "The bird sent out to look for land"
+      },
+      {
+        "answer": "OLIVE",
+        "clue": "The kind of leaf it brought back"
+      },
+      {
+        "answer": "RAIN",
+        "clue": "Forty days and forty nights of it"
+      },
+      {
+        "answer": "ANIMALS",
+        "clue": "They came in two by two"
+      },
+      {
+        "answer": "RAINBOW",
+        "clue": "God’s promise, hung in the sky"
+      },
+      {
+        "answer": "MOUNTAIN",
+        "clue": "Where the boat came to rest"
+      },
+      {
+        "answer": "WOOD",
+        "clue": "What the boat was built from"
+      }
+    ]
+  },
+  {
+    "id": "moses-kids",
+    "title": "MOSES",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "BASKET",
+        "clue": "Where his mother hid him"
+      },
+      {
+        "answer": "BUSH",
+        "clue": "It burned but was not burned up"
+      },
+      {
+        "answer": "EGYPT",
+        "clue": "The country he led the people out of"
+      },
+      {
+        "answer": "STAFF",
+        "clue": "The stick that became a snake"
+      },
+      {
+        "answer": "MANNA",
+        "clue": "Bread that came with the morning dew"
+      },
+      {
+        "answer": "STONE",
+        "clue": "The commandments were written on two of these"
+      },
+      {
+        "answer": "DESERT",
+        "clue": "Forty years of walking in it"
+      },
+      {
+        "answer": "AARON",
+        "clue": "His brother, who did the talking"
+      }
+    ]
+  },
+  {
+    "id": "friends",
+    "title": "JESUS’ FRIENDS",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "PETER",
+        "clue": "He sank when he looked at the waves"
+      },
+      {
+        "answer": "MARTHA",
+        "clue": "She was busy in the kitchen while her sister listened"
+      },
+      {
+        "answer": "ANDREW",
+        "clue": "The brother who brought Peter to Jesus"
+      },
+      {
+        "answer": "MATTHEW",
+        "clue": "The tax collector who left his table"
+      },
+      {
+        "answer": "THOMAS",
+        "clue": "He wanted to see the wounds first"
+      },
+      {
+        "answer": "JAMES",
+        "clue": "One of the sons of Zebedee"
+      },
+      {
+        "answer": "JOHN",
+        "clue": "The disciple who wrote a Gospel and Revelation"
+      },
+      {
+        "answer": "MARY",
+        "clue": "She sat and listened while her sister worked"
+      }
+    ]
+  },
+  {
+    "id": "sermon",
+    "title": "THE SERMON ON THE MOUNT",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "SALT",
+        "clue": "What Jesus called his followers, before he called them light"
+      },
+      {
+        "answer": "MERCY",
+        "clue": "The merciful get this back"
+      },
+      {
+        "answer": "PEACE",
+        "clue": "Its makers are called children of God"
+      },
+      {
+        "answer": "MEEK",
+        "clue": "They inherit the earth"
+      },
+      {
+        "answer": "ROCK",
+        "clue": "The wise builder’s foundation"
+      },
+      {
+        "answer": "NARROW",
+        "clue": "The kind of gate Jesus said to enter by"
+      },
+      {
+        "answer": "TREASURE",
+        "clue": "Store it in heaven, not in a barn"
+      },
+      {
+        "answer": "ENEMIES",
+        "clue": "Jesus said to love them and pray for them"
+      }
+    ]
+  },
+  {
+    "id": "psalms",
+    "title": "THE PSALMS",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "REFUGE",
+        "clue": "God is this, and strength, a very present help"
+      },
+      {
+        "answer": "PRAISE",
+        "clue": "What everything that has breath is told to do"
+      },
+      {
+        "answer": "ZION",
+        "clue": "The mountain the songs of ascent climb towards"
+      },
+      {
+        "answer": "HARP",
+        "clue": "The instrument hung on the willows in exile"
+      },
+      {
+        "answer": "VALLEY",
+        "clue": "Walked through in Psalm 23, not avoided"
+      },
+      {
+        "answer": "LAMENT",
+        "clue": "The kind of psalm that complains to God and is still worship"
+      },
+      {
+        "answer": "MERCY",
+        "clue": "It endures forever, says Psalm 136, twenty-six times"
+      },
+      {
+        "answer": "DAVID",
+        "clue": "The shepherd king whose name heads many of them"
+      }
+    ]
+  },
+  {
+    "id": "early-church",
+    "title": "THE EARLY CHURCH",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "PENTECOST",
+        "clue": "Wind, fire, and a sermon that started everything"
+      },
+      {
+        "answer": "STEPHEN",
+        "clue": "The first to die for it, forgiving as he went"
+      },
+      {
+        "answer": "LYDIA",
+        "clue": "The seller of purple who opened her house"
+      },
+      {
+        "answer": "ANTIOCH",
+        "clue": "Where believers were first called Christians"
+      },
+      {
+        "answer": "BARNABAS",
+        "clue": "The son of encouragement, who vouched for Paul"
+      },
+      {
+        "answer": "SILAS",
+        "clue": "He sang hymns in a Philippian jail"
+      },
+      {
+        "answer": "EPHESUS",
+        "clue": "The city with the riot of the silversmiths"
+      },
+      {
+        "answer": "ELDERS",
+        "clue": "The leaders appointed in every church"
+      }
+    ]
+  },
+  {
+    "id": "prophets",
+    "title": "THE PROPHETS",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "ISAIAH",
+        "clue": "He saw the Lord high and lifted up"
+      },
+      {
+        "answer": "JEREMIAH",
+        "clue": "He said he was only a child, and was sent anyway"
+      },
+      {
+        "answer": "EZEKIEL",
+        "clue": "He was asked whether dry bones could live"
+      },
+      {
+        "answer": "DANIEL",
+        "clue": "He kept his windows open when praying was banned"
+      },
+      {
+        "answer": "AMOS",
+        "clue": "A shepherd who said let justice roll down like waters"
+      },
+      {
+        "answer": "HOSEA",
+        "clue": "His marriage was the message"
+      },
+      {
+        "answer": "JONAH",
+        "clue": "He sailed in the wrong direction"
+      },
+      {
+        "answer": "MICAH",
+        "clue": "Act justly, love mercy, walk humbly"
+      }
+    ]
+  },
+  {
+    "id": "cross",
+    "title": "THE CROSS",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "CALVARY",
+        "clue": "The place of the skull, by its Latin name"
+      },
+      {
+        "answer": "THIEF",
+        "clue": "One beside him asked to be remembered"
+      },
+      {
+        "answer": "CURTAIN",
+        "clue": "It tore from top to bottom"
+      },
+      {
+        "answer": "TOMB",
+        "clue": "Borrowed, sealed, and empty by Sunday"
+      },
+      {
+        "answer": "SPICES",
+        "clue": "What the women carried at dawn"
+      },
+      {
+        "answer": "THORNS",
+        "clue": "Twisted into a crown"
+      },
+      {
+        "answer": "PILATE",
+        "clue": "He washed his hands"
+      },
+      {
+        "answer": "SIMON",
+        "clue": "The man from Cyrene, pulled out of the crowd"
+      }
+    ]
+  },
+  {
+    "id": "fruit",
+    "title": "FRUIT OF THE SPIRIT",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "LOVE",
+        "clue": "The first one Paul lists"
+      },
+      {
+        "answer": "JOY",
+        "clue": "Not the same thing as being cheerful"
+      },
+      {
+        "answer": "PEACE",
+        "clue": "The second in the list, and the hardest to manufacture"
+      },
+      {
+        "answer": "PATIENCE",
+        "clue": "Older translations call it longsuffering"
+      },
+      {
+        "answer": "KINDNESS",
+        "clue": "Goodness with its sleeves rolled up"
+      },
+      {
+        "answer": "GOODNESS",
+        "clue": "It follows kindness in the list"
+      },
+      {
+        "answer": "GENTLENESS",
+        "clue": "Strength under control, not weakness"
+      },
+      {
+        "answer": "CONTROL",
+        "clue": "Self-___, the last one Paul names"
+      }
     ]
   }
 ]

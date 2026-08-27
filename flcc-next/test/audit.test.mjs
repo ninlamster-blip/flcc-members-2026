@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { audit, FILES } from '../js/admin/audit.js';
+import { audit, FILES, PER_DAY, THIN, DRILLS } from '../js/admin/audit.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
 
@@ -78,4 +78,51 @@ test('the unverified help lines are flagged until someone checks them', () => {
     .filter((problem) => problem.level === 'warning' && problem.where === 'help-lines.json');
   assert.equal(warned.length, 1);
   assert.match(warned[0].text, /unverified/);
+});
+
+// ── Rotation ───────────────────────────────────────────────────────────────
+
+test('no bank in the shipped content runs dry inside a week', () => {
+  const { rotation } = audit(bundle());
+  assert.ok(rotation.length, 'the audit should report rotation at all');
+  for (const run of rotation) {
+    if (DRILLS.has(run.what)) continue;          // a speed drill is meant to repeat
+    assert.ok(run.days >= THIN,
+      `${run.what} (${run.band}) lasts ${run.days} days on ${run.total} items — add more`);
+  }
+});
+
+test('both age groups get their own material, not the teens bank filtered down', () => {
+  const { rotation } = audit(bundle());
+  for (const band of ['kids', 'teens']) {
+    const runs = rotation.filter((run) => run.band === band);
+    assert.equal(runs.length, Object.keys(PER_DAY).length, `${band} is missing a bank`);
+    for (const run of runs) assert.ok(run.total > 0, `${band} has nothing in ${run.what}`);
+  }
+});
+
+test('the audit deals the same amounts the games actually deal', () => {
+  // If a game changes how much it hands out per round and this table is not
+  // updated with it, every run length on the dashboard becomes a lie.
+  const source = readFileSync(new URL('../js/screens/game.js', import.meta.url), 'utf8');
+  const sizes = {
+    'Bible quiz': /const size = timed \? \d+ : (\d+)/,
+    'Speed quiz': /const size = timed \? (\d+) : \d+/,
+    'Who am I?': /deal\(all, \{ count: (\d+), offset: OFFSET\['who-am-i'\] \}\)/,
+    'Verse builder': /deal\(all, \{ count: (\d+), offset: OFFSET\['verse-builder'\] \}\)/,
+  };
+  for (const [what, pattern] of Object.entries(sizes)) {
+    const found = source.match(pattern);
+    assert.ok(found, `could not find how much ${what} deals`);
+    assert.equal(Number(found[1]), PER_DAY[what], `${what}: the screen deals ${found[1]}, the audit assumes ${PER_DAY[what]}`);
+  }
+  assert.equal(PER_DAY.Crossword, 1, 'the crossword is one puzzle a day');
+  assert.equal(PER_DAY['Daily word'], 1, 'the daily word is one a day');
+});
+
+test('a bank that shrinks is reported as repetitive', () => {
+  const thin = read('games/who-am-i.json').slice(0, 6);      // 6 items, 5 a day = 1 day
+  const { problems } = audit(bundle({ 'games/who-am-i.json': thin }));
+  assert.ok(problems.some((problem) => /comes round again/.test(problem.text)),
+    'a one-day bank should be flagged');
 });

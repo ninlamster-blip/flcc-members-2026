@@ -41,9 +41,13 @@ Rules that keep it honest:
 - **`js/core/storage.js` is the only module that touches browser storage.**
   Everything else goes through `KEYS`.
 - **Pure logic lives where it can be tested.** The crossword layout
-  (`js/games/crossword.js`) and the content audit (`js/admin/audit.js`) have no
-  DOM in them at all, which is why both are unit-tested rather than
-  screenshotted.
+  (`js/games/crossword.js`), the daily rotation (`js/core/rotation.js`) and the
+  content audit (`js/admin/audit.js`) have no DOM in them at all, which is why
+  all three are unit-tested rather than screenshotted.
+- **What today's content is, is a pure function of the date.** No screen picks
+  its own material with `Math.random()` or `Date.now()`. They call
+  `rotation.deal()`, which means the choice is reproducible, identical across
+  the ministry, and testable a year ahead.
 - **Content is data, never instructions.** Nothing under `content/` is
   executed, and nothing from it is passed to a model as part of a prompt.
 
@@ -141,9 +145,14 @@ node --test 'flcc-next/test/*.test.mjs'
 | `modules` | every browser module parses, screens included |
 | `storage` | the `next/v1/` namespace, and that the other apps' keys throw |
 | `profile` | age → mode, and that content falls back rather than blanking |
+| `rotation` | a full cycle deals the whole bank, nothing repeats inside it, and the same day always deals the same thing |
 | `progress` | XP, levels, streak arithmetic, idempotent completion |
 | `safety` | concerning questions never reach the network |
 | `ai` | the five parts, the rules, and what may be sent |
 | `content` | the authored JSON's schema, including both age variants |
 | `audit` | the dashboard's audit agrees with the suite, and catches what it claims to |
 | `crossword` | every puzzle interlocks, numbering is right, scoring is right |
+
+`audit` also holds the line on repetition: no bank may run dry inside a week,
+and the amounts it assumes each game deals are checked against what the screens
+actually deal, so the dashboard's run lengths cannot quietly become fiction.

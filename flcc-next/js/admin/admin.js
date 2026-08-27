@@ -20,7 +20,7 @@ import { poster, label, display, headline, pill, art, toast, note } from '../cor
 import * as store from '../core/storage.js';
 import * as progress from '../core/progress.js';
 import { getUser, getSettings, saveSettings, MODE, mode } from '../core/profile.js';
-import { audit, FILES } from './audit.js';
+import { audit, FILES, THIN, DRILLS } from './audit.js';
 import * as ai from '../core/ai.js';
 
 const headEl = document.getElementById('app-head');
@@ -98,7 +98,7 @@ const when = (iso) => {
 // ── Overview ───────────────────────────────────────────────────────────────
 
 async function overview() {
-  const { problems, counts } = audit(await loadBundle());
+  const { problems, counts, rotation } = audit(await loadBundle());
   const bad = problems.filter((problem) => problem.level === 'error');
   const warn = problems.filter((problem) => problem.level === 'warning');
 
@@ -141,6 +141,31 @@ async function overview() {
     h('p', { class: 'row-note', style: 'margin-top:1.2rem',
       text: 'These numbers are this device only. FLCC NEXT has no accounts and no server, so there is nothing church-wide to add them up.' }));
 
+  const runs = poster({ tone: 'paper', className: 'full' },
+    label('Before it repeats'),
+    h('p', { class: 'row-note', text: 'The app deals a fresh slice each day and works through a whole bank before anything comes round again. These are the run lengths that gives, per age group.' }),
+    h('div', { class: 'rows', style: 'margin-top:.8rem' },
+      ...['kids', 'teens'].map((band) => row({
+        title: band === 'kids' ? 'Kids · 7–12' : 'Teens · 13–18',
+        note: rotation.filter((one) => one.band === band)
+          .map((one) => `${one.what} ${one.days}d`).join('   ·   '),
+      })),
+      row({
+        title: 'The shortest run',
+        note: (() => {
+          const real = rotation.filter((one) => !DRILLS.has(one.what));
+          const worst = real.reduce((low, one) => (one.days < low.days ? one : low), real[0]);
+          return worst
+            ? `${worst.what} for ${worst.band}: ${worst.days} days on ${worst.total} items. Adding to that file is the highest-value content work.`
+            : 'Nothing to report.';
+        })(),
+        right: (() => {
+          const real = rotation.filter((one) => !DRILLS.has(one.what));
+          const worst = real.reduce((low, one) => (one.days < low.days ? one : low), real[0]);
+          return worst ? flag(worst.days < THIN ? 'warning' : 'ok', `${worst.days} days`) : null;
+        })(),
+      })));
+
   const attention = poster({ tone: 'cream', className: 'full' },
     label('Waiting on you'),
     h('div', { class: 'rows', style: 'margin-top:.6rem' },
@@ -162,7 +187,7 @@ async function overview() {
         actions: warn.length ? [pill('See all', () => go('content'), { quiet: true })] : [],
       })));
 
-  return h('div', { style: 'display:contents' }, health, library, device, attention);
+  return h('div', { style: 'display:contents' }, health, library, runs, device, attention);
 }
 
 // ── Content ────────────────────────────────────────────────────────────────

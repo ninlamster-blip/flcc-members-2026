@@ -10,6 +10,7 @@
 import { hasSymbol, TONES } from '../core/art.js';
 import { MODES } from '../core/profile.js';
 import { build } from '../games/crossword.js';
+import { cycleOf } from '../core/rotation.js';
 
 const ERROR = 'error';
 const WARN = 'warning';
@@ -34,8 +35,29 @@ function look(problems, row, where) {
 }
 
 /**
+ * How much a child gets through in a day, per feature. These match what the
+ * screens actually deal, so the run lengths below are real rather than
+ * aspirational.
+ */
+export const PER_DAY = { 'Daily word': 1, 'Bible quiz': 10, 'Speed quiz': 20, 'Who am I?': 5, 'Verse builder': 5, Crossword: 1 };
+
+/** A bank shorter than this many days of use gets flagged as repetitive. */
+export const THIN = 7;
+
+/**
+ * The speed quiz is a recall drill against a clock. Meeting a question you
+ * have seen before is the exercise, not a failure of the content, so it is
+ * reported but never warned about — otherwise the dashboard would carry a
+ * warning nobody should act on.
+ */
+export const DRILLS = new Set(['Speed quiz']);
+
+const eligible = (rows, band) => (rows || []).filter((row) =>
+  !row.ageGroup || row.ageGroup === 'both' || row.ageGroup === band);
+
+/**
  * @param {object} bundle every content file, already parsed, keyed by filename.
- * @returns {{problems: Array<{level: string, where: string, text: string}>, counts: object}}
+ * @returns {{problems: Array<{level: string, where: string, text: string}>, counts: object, rotation: Array}}
  */
 export function audit(bundle) {
   const problems = [];
@@ -200,7 +222,32 @@ export function audit(bundle) {
     else if (!line.number && !line.detail) problems.push({ level: ERROR, where: `help-lines.json · ${line.name}`, text: 'has neither a number nor a description' });
   }
 
-  return { problems, counts };
+  // ── How long before a child sees the same thing twice ────────────────────
+  //
+  // The app deals rather than shuffles, so a bank lasts exactly as long as its
+  // size divided by what a day consumes. That is the number worth watching:
+  // "it is getting repetitive" should be visible here before a child says it.
+  const rotation = [];
+  const run = (what, rows, band) => {
+    const bank = eligible(rows, band);
+    const perDay = PER_DAY[what];
+    const { days } = cycleOf(bank, { count: perDay });
+    rotation.push({ what, band, total: bank.length, perDay, days });
+    if (days < THIN && !DRILLS.has(what)) {
+      problems.push({ level: WARN, where: `${what} · ${band}`,
+        text: `only ${days} day${days === 1 ? '' : 's'} of material before it comes round again (${bank.length} items, ${perDay} a day)` });
+    }
+  };
+  for (const band of ['kids', 'teens']) {
+    run('Daily word', daily, band);
+    run('Bible quiz', quiz, band);
+    run('Speed quiz', quiz, band);
+    run('Who am I?', who, band);
+    run('Verse builder', verses, band);
+    run('Crossword', crosswords, band);
+  }
+
+  return { problems, counts, rotation };
 }
 
 /** Every authored file, in the order the dashboard lists them. */

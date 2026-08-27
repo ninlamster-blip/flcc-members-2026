@@ -5,7 +5,7 @@
 
 import { h, poster, label, display, headline, art, go, pill, track, waiting, note, rise, toast } from '../core/ui.js';
 import * as content from '../core/content.js';
-import { pickFor } from '../core/daily.js';
+import { pick as pickForDay } from '../core/rotation.js';
 import { forMode } from '../core/profile.js';
 import * as progress from '../core/progress.js';
 
@@ -32,7 +32,7 @@ export default async function todayScreen(ctx) {
 
   (async () => {
     let entry = null;
-    try { entry = pickFor(await content.daily(), now); }
+    try { entry = pickForDay(await content.daily(), { date: now }); }
     catch { wordBlock.replaceChildren(label('Today’s word'), note('Today’s word could not be loaded.')); return; }
     if (!entry) return;
 
@@ -95,7 +95,7 @@ export default async function todayScreen(ctx) {
   (async () => {
     let games = [];
     try { games = await content.games(); } catch { return; }
-    const pick = pickFor(games, now, 2);
+    const pick = pickForDay(games, { date: now, offset: 2 });
     if (!pick) return;
     gameBlock.replaceChildren(poster({ tone: pick.tone, as: 'button', className: 'full',
       onclick: () => ctx.go(`game/${pick.id}`) },

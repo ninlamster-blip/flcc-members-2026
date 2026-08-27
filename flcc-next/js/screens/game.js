@@ -8,11 +8,22 @@ import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import { mode } from '../core/profile.js';
 import * as crossword from '../games/crossword.js';
+import { deal, pick as pickForDay, cycleOf } from '../core/rotation.js';
 
 const forAge = (rows, band) => rows.filter((row) => !row.ageGroup || row.ageGroup === 'both' || row.ageGroup === band);
 
-/** Deterministic shuffle, so a round is fair but not the same every time. */
-function shuffle(list, seed = Date.now()) {
+// Each game deals from its own bank on its own offset, so the quiz and the
+// verse game do not march through their cycles in step.
+const OFFSET = { quiz: 0, speed: 6, 'who-am-i': 2, 'verse-builder': 4, crossword: 1 };
+
+/** "Day 3 of 12" — how far into this bank's run today is. */
+const runLine = (bank, count, game) => {
+  const run = cycleOf(bank, { count, offset: OFFSET[game] || 0 });
+  return run.days > 1 ? `Day ${run.day} of ${run.days}` : '';
+};
+
+/** Deterministic shuffle, used to scramble the words of a verse. */
+function shuffle(list, seed) {
   const out = [...list];
   let value = seed;
   const next = () => (value = (value * 1103515245 + 12345) % 2147483648) / 2147483648;
@@ -39,7 +50,10 @@ function finish({ ctx, game, score, total, tone }) {
 // ── Bible quiz, and its fast cousin ────────────────────────────────────────
 async function quizGame(ctx, { timed = false } = {}) {
   const all = forAge(await content.quiz(), mode());
-  const rounds = shuffle(all).slice(0, timed ? all.length : 10);
+  const game = timed ? 'speed' : 'quiz';
+  const size = timed ? 20 : 10;   // nobody answers 20 inside sixty seconds
+  const rounds = deal(all, { count: size, offset: OFFSET[game] });
+  const run = runLine(all, size, game);
   const tone = timed ? 'blue' : 'pink';
   let index = 0;
   let score = 0;
@@ -55,7 +69,7 @@ async function quizGame(ctx, { timed = false } = {}) {
   const draw = () => {
     if (index >= rounds.length || (timed && remaining <= 0)) {
       stop();
-      finish({ ctx, game: timed ? 'speed' : 'quiz', score, total: timed ? index : rounds.length, tone });
+      finish({ ctx, game, score, total: timed ? index : rounds.length, tone });
       return;
     }
     const round = rounds[index];
@@ -74,7 +88,7 @@ async function quizGame(ctx, { timed = false } = {}) {
     block.replaceChildren(
       h('div', { class: 'poster-head' },
         label(timed ? `${remaining}s` : `Question ${index + 1} of ${rounds.length}`),
-        label(`Score ${score}`)),
+        label(run ? `${run} · Score ${score}` : `Score ${score}`)),
       h('div', {}, headline(round.q), options, feedback),
       h('div', {}, track(timed ? (remaining / 60) * 100 : (index / rounds.length) * 100)));
   };
@@ -94,7 +108,9 @@ async function quizGame(ctx, { timed = false } = {}) {
 
 // ── Who am I? ──────────────────────────────────────────────────────────────
 async function whoAmIGame(ctx) {
-  const rounds = shuffle(await content.whoAmI()).slice(0, 5);
+  const all = forAge(await content.whoAmI(), mode());
+  const rounds = deal(all, { count: 5, offset: OFFSET['who-am-i'] });
+  const run = runLine(all, 5, 'who-am-i');
   const tone = 'sage';
   let index = 0;
   let score = 0;
@@ -132,7 +148,8 @@ async function whoAmIGame(ctx) {
 
     paintClues();
     block.replaceChildren(
-      h('div', { class: 'poster-head' }, label(`Round ${index + 1} of ${rounds.length}`), label(`Score ${score}`)),
+      h('div', { class: 'poster-head' }, label(`Round ${index + 1} of ${rounds.length}`),
+        label(run ? `${run} · Score ${score}` : `Score ${score}`)),
       h('div', {}, display('WHO AM I?'), clues, options, feedback),
       h('div', { class: 'poster-foot' }, another, art('mask', { tone, size: 'sm' })));
   };
@@ -143,7 +160,9 @@ async function whoAmIGame(ctx) {
 
 // ── Verse builder ──────────────────────────────────────────────────────────
 async function verseGame(ctx) {
-  const rounds = shuffle(forAge(await content.verses(), mode())).slice(0, 5);
+  const all = forAge(await content.verses(), mode());
+  const rounds = deal(all, { count: 5, offset: OFFSET['verse-builder'] });
+  const run = runLine(all, 5, 'verse-builder');
   const tone = 'cream';
   let index = 0;
   let score = 0;
@@ -185,7 +204,8 @@ async function verseGame(ctx) {
 
     paint();
     block.replaceChildren(
-      h('div', { class: 'poster-head' }, label(`Verse ${index + 1} of ${rounds.length}`), label(`Score ${score}`)),
+      h('div', { class: 'poster-head' }, label(`Verse ${index + 1} of ${rounds.length}`),
+        label(run ? `${run} · Score ${score}` : `Score ${score}`)),
       h('div', {}, display('BUILD THE VERSE'), line, bank, feedback),
       h('div', { class: 'poster-foot' },
         pill('Start again', () => { picked.length = 0; paint(); }, { quiet: true }),
@@ -206,8 +226,7 @@ async function crosswordGame(ctx) {
   const band = mode();
   const all = await content.crosswords();
   const pool = forAge(all, band).length ? forAge(all, band) : all;
-  const day = progress.today();
-  const pick = pool[[...day].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % pool.length];
+  const pick = pickForDay(pool, { offset: OFFSET.crossword });
   const puzzle = crossword.build(pick.words);
   const tone = 'ink';
   const helpful = band === 'kids';        // kids get an answer confirmed as they finish it
@@ -356,7 +375,8 @@ async function crosswordGame(ctx) {
   };
 
   const block = poster({ tone, tall: true, className: 'full' },
-    h('div', { class: 'poster-head' }, label(pick.title), label(`${puzzle.entries.length} answers`)),
+    h('div', { class: 'poster-head' }, label(pick.title),
+      label(runLine(pool, 1, 'crossword') || `${puzzle.entries.length} answers`)),
     h('div', {},
       grid,
       h('div', { class: 'xw-clue' },
