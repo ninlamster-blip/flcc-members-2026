@@ -68,11 +68,11 @@ export default async function memoryScreen(ctx) {
       h('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:1rem' },
         eyebrow(memory.STAGE_LABEL[stage]),
         pips(memory.STAGES.indexOf(stage) + 1)),
-      h('div', { class: 'card-title', text: formatRef(ref) }));
+      h('div', { class: 'title', text: formatRef(ref) }));
 
     if (stage === 'learn' || stage === 'listen') {
       holder.appendChild(h('p', { class: 'scripture', style: 'margin-top:.8rem', text }));
-      holder.appendChild(h('div', { class: 'card-foot' },
+      holder.appendChild(h('div', { class: 'btn-row', style: 'margin-top:1.1rem' },
         button('Listen', { onclick: () => speak(text) }),
         button('I have read it', { variant: 'btn-primary', onclick: (event) => {
           celebrate(event.currentTarget);
@@ -94,7 +94,7 @@ export default async function memoryScreen(ctx) {
         }
       });
       const feedback = h('p', { class: 'small', style: 'margin-top:.7rem' });
-      holder.append(line, feedback, h('div', { class: 'card-foot' },
+      holder.append(line, feedback, h('div', { class: 'btn-row', style: 'margin-top:1.1rem' },
         button('Check', { variant: 'btn-primary', onclick: (event) => {
           const wrong = [...inputs.entries()].filter(([index, input]) => !memory.grade(input.value, words[index]).pass);
           if (!wrong.length) celebrate(event.currentTarget);
@@ -113,7 +113,7 @@ export default async function memoryScreen(ctx) {
       const answer = h('textarea', { placeholder: 'Write the verse from memory…', 'aria-label': 'Type the verse from memory' });
       const feedback = h('p', { class: 'small', style: 'margin-top:.7rem' });
       holder.append(h('p', { class: 'small muted', style: 'margin-top:.8rem', text: 'Write it out. Spelling and punctuation do not have to be perfect.' }),
-        answer, feedback, h('div', { class: 'card-foot' },
+        answer, feedback, h('div', { class: 'btn-row', style: 'margin-top:1.1rem' },
           button('Check', { variant: 'btn-primary', onclick: () => {
             const result = memory.grade(answer.value, text);
             if (result.pass) {

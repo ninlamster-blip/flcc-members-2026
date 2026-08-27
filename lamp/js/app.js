@@ -4,14 +4,15 @@
 import { h, clear, icon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getProfile, getSettings, saveProfile, currentBand, greeting, readerScale } from './core/profile.js';
-import { toast, heroEl } from './core/ui.js';
+import { toast } from './core/ui.js';
 
+// Four destinations. Everything else is reached from inside one of them, and
+// nothing in the bar is named after a technology.
 const TABS = [
-  { name: 'today',      label: 'Today',   icon: 'today' },
-  { name: 'bible',      label: 'Bible',   icon: 'bible' },
-  { name: 'stories',    label: 'Stories', icon: 'discover' },
-  { name: 'journey',    label: 'Journey', icon: 'journey' },
-  { name: 'me',         label: 'Me',      icon: 'me' },
+  { name: 'today',   label: 'Today',   icon: 'lamp' },
+  { name: 'bible',   label: 'Read',    icon: 'read' },
+  { name: 'reflect', label: 'Reflect', icon: 'reflect' },
+  { name: 'me',      label: 'Me',      icon: 'me' },
 ];
 
 const SCREENS = {
@@ -21,6 +22,7 @@ const SCREENS = {
   stories:    () => import('./screens/stories.js'),
   story:      () => import('./screens/story.js'),
   journey:    () => import('./screens/journey.js'),
+  reflect:    () => import('./screens/reflect.js'),
   memory:     () => import('./screens/memory.js'),
   challenge:  () => import('./screens/challenge.js'),
   prayer:     () => import('./screens/prayer.js'),
@@ -77,7 +79,6 @@ function onboarding() {
     router.go('today', { replace: true });
     boot();
   } },
-    h('div', { class: 'onboard-art' }, heroEl()),
     h('div', { class: 'wordmark', text: 'Lamp' }),
     h('p', { class: 'tagline', text: 'Discover God. Know His Word. Live It.' }),
     h('div', { class: 'field' },
@@ -118,6 +119,13 @@ function renderTabs(activeName) {
 
 const ROOT_SCREENS = new Set(TABS.map((tab) => tab.name));
 
+// Which destination a screen belongs to, for the tab bar's sake.
+const UNDER = {
+  read: 'bible', stories: 'today', story: 'today',
+  prayer: 'reflect', journal: 'reflect', memory: 'reflect', challenge: 'today',
+  ask: 'today', journey: 'me',
+};
+
 async function show(route, module) {
   const context = {
     route,
@@ -155,7 +163,7 @@ async function show(route, module) {
   screenEl.appendChild(view.el);
   screenEl.scrollTop = 0;
   window.scrollTo(0, 0);
-  renderTabs(ROOT_SCREENS.has(route.name) ? route.name : view.tab || null);
+  renderTabs(ROOT_SCREENS.has(route.name) ? route.name : view.tab || UNDER[route.name] || null);
 }
 
 // ── Boot ────────────────────────────────────────────────────────────────────

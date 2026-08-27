@@ -34,7 +34,7 @@ export default async function journalScreen(ctx) {
     h('div', { style: 'margin-top:1.25rem' }, h('label', { text: prompts.teaching }), teaching),
     h('div', { style: 'margin-top:1rem' }, h('label', { text: prompts.thankful }), thankful),
     h('div', { style: 'margin-top:1rem' }, h('label', { text: prompts.help }), help),
-    h('div', { class: 'card-foot' },
+    h('div', { class: 'btn-row', style: 'margin-top:1.1rem' },
       button('Save', { variant: 'btn-primary', onclick: () => {
         const text = [body.value, teaching.value, thankful.value, help.value].join('').trim();
         if (!text) { toast('Nothing to save yet.'); return; }
@@ -62,7 +62,7 @@ export default async function journalScreen(ctx) {
           const parts = [entry.body, entry.prompts && entry.prompts.teaching, entry.prompts && entry.prompts.thankful, entry.prompts && entry.prompts.help].filter(Boolean);
           const view = card({}, eyebrow(new Date(entry.date).toLocaleDateString()),
             ...parts.map((part) => h('p', { text: part })),
-            h('div', { class: 'card-foot' }, button('Delete this entry', { variant: 'btn-quiet', onclick: () => {
+            h('div', { class: 'btn-row', style: 'margin-top:1.1rem' }, button('Delete this entry', { variant: 'btn-quiet', onclick: () => {
               const state = getJournal();
               state.entries = state.entries.filter((e) => e.id !== entry.id);
               store.write(store.KEYS.journal, state);

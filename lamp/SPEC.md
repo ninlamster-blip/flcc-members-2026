@@ -137,19 +137,23 @@ lamp/
 
 ## 4. Information architecture
 
-Five destinations. Everything else is reached from inside one of them.
+Four destinations. Everything else is reached from inside one of them, and
+nothing in the tab bar is named after a technology.
 
 | Tab | Contains |
 |-----|----------|
-| **TODAY** | The daily spiritual experience — greeting, continue reading, today's word, today's challenge |
-| **BIBLE** | The complete Scripture experience — reader, plans, search, audio |
-| **DISCOVER** | Stories, people, places, timeline, topics, Big Questions |
-| **JOURNEY** | Reading progress, memory verses, challenges, spiritual habits |
-| **ME** | Prayer, journal, notes, bookmarks, settings, parent mode |
+| **TODAY** | The day's page — greeting, the day's Scripture, what you were reading, one invitation to reflect, and a story or two |
+| **READ** | Scripture: the reader, ways in, chapter navigation, search, audio |
+| **REFLECT** | The private half — journal, prayer, and the verses being learned by heart |
+| **ME** | Who you are, your reading history and the path you are on, settings, and a plain account of what is stored and sent |
 
-**Ask** (§9) is not a tab. It is reachable from Today's quick actions, from
-any verse, and from any story or question — because it is an assistant, not
-the product.
+Five destinations were one too many: Journey was a scoreboard that belonged
+inside Me, and Discover held only stories, which belong on Today and under
+Read.
+
+**Understanding a passage** (§9) is not a tab and is not called AI. It is
+reached from a verse, from the reader's controls, and from a story — a
+capability the reader picks up, the way they would pick up a footnote.
 
 ---
 
@@ -544,25 +548,38 @@ intended.
 
 ## 13. Design system
 
-**Philosophy: quiet, editorial, premium, human.**
+**The identity is light on paper.** The name comes from Psalm 119:105 — *your
+word is a lamp to my feet and a light to my path* — and the whole design is
+built from that one image. Warm ivory ground, near-black ink, one soft amber
+for light and links, and a serif that means "this is Scripture". The Word is
+the visual hero; the interface stays out of its way.
 
-Explicitly avoid: excessive gradients, rainbow colour, oversized emoji,
-floating blobs, generic AI-looking illustration, heavy glassmorphism,
-card-everything layouts, unnecessary animation, fake gamification, badge
-spam.
+The reference points are Apple Books, a well-made devotional journal and a
+modern editorial publication — not a dashboard, and not another app of
+colourful tiles.
 
-**Typography.** A clean sans for interface, a beautiful serif for Scripture —
-the serif is how the app says "this part is the Bible" without a label. Base
-size and line height come from the age band: 19px/1.7 (7–10), 17.5px/1.65
-(11–14), 16.5px/1.6 (15–18). Measure 60–72 characters.
+**Palette.** Light: canvas `#FBF8F2`, a deeper well `#F4EEE1`, ink `#17150F`,
+warm grey `#46413A`, muted `#857E72`, stone rule `#E7E0D0`, amber ink
+`#8A5A12`, lamplight `rgb(232 180 92)`. Dark: canvas `#14120E`, ink `#F1EBE0`,
+rule `#2C2620`, amber `#E0A94E`. No blue, no purple, no gradient used as
+decoration.
 
-**Colour.** A warm neutral foundation with one recognisable accent — lamp
-amber. Light: paper `#FCFAF7`, ink `#16130F`, muted `#6B635A`, rule
-`#E8E1D7`, accent `#B45B22`. Dark: paper `#141210`, ink `#F2EDE6`, muted
-`#A29A90`, rule `#2A251F`, accent `#E08A45`. Every colour is a token defined
-in both themes; nothing is defined only inside a media query.
+**Typography.** A clean sans for the interface (Inter), a serif for Scripture
+(Literata). The contrast is the point: ancient Word, modern interface. Scripture
+is always larger than the interface around it, and the day's verse is set as a
+hero at up to 1.95rem with tight tracking and loose leading.
 
-**Layout.** Generous whitespace. One idea per screen.
+**Boxes are the exception.** The page is divided by hairline rules and space,
+not by cards. A card appears only where something genuinely needs holding
+together — a safety card, a checked citation. The home screen has none, and a
+test asserts it stays that way.
+
+**Buttons are mostly text.** The primary action on a screen is a line of words
+with an arrow. One filled button exists, in ink rather than in colour.
+
+**Physicality, not glass.** A barely-visible paper tooth over the whole canvas,
+solid chrome, one hairline under the header and above the tabs. No blur, no
+translucency, nothing floating except the reading controls.
 
 **Illustration.** One visual language across all stories: flat paper-cut
 shapes, a fixed twelve-colour palette, and a single grain texture over the
@@ -570,36 +587,31 @@ top — printed picture-book, not gradient mesh. The scenes are drawn in code
 (`js/core/art.js`) from a shared kit of shapes, which is why fourteen pictures
 look like fourteen pictures by the same hand, weigh a few kilobytes in total,
 need no network, and can be tested: `test/art.test.mjs` fails if a scene uses
-a colour outside the palette or reaches outside itself. Commissioned artwork
-can replace the kit later without touching a screen.
+a colour outside the palette or reaches outside itself.
 
-**Animation.** Subtle and purposeful, ≤200ms for chrome, ease-out, and fully
-disabled under `prefers-reduced-motion`. Motion is used in exactly three
-places: sections fade up as they arrive, a right answer pops with a short
-burst of sparks, and a wrong one nudges. There is no confetti, no falling
-stars, and nothing loops.
+**The lamp moment.** Once a day — the first time the app is opened — the day's
+Scripture does not simply appear. The words come up out of the page as a soft
+light rises behind them and fades, in about a second and a half. It happens
+once, it is never repeated that day, and it does not happen at all when the
+reader has asked for reduced motion. It is the one piece of theatre in the
+app, and it says what the app is for.
 
-**Interaction.** Haptics, transitions and micro-interactions polished to the
-point of being almost invisible.
+**Other motion** is used in three places only: sections fade up as they
+arrive, a right answer pops, a wrong one nudges. Nothing loops and there is no
+confetti.
 
-**The design grows with the user.** At 7 LAMP feels playful; at 12
-exploratory; at 16 sophisticated; at 18 a premium Bible app. The brand does
-not change — the type scale, illustration density, copy register, chrome and
-default screen do. One band token on `<html>` drives all of it through CSS
-custom properties, so the maturing is a property of the system rather than
-three apps in a trench coat:
+**The design grows with the reader.** Not by becoming a different app — by
+changing register. One band token on the root element drives it:
 
 | | 7–10 | 11–14 | 15–18 |
 |---|---|---|---|
-| Today opens with | a picture of the time of day | a slimmer band of it | the greeting |
-| Stories are | a shelf of illustrated cards | a list with thumbnails | a plain index |
+| Interface / Scripture size | 19px / 1.5rem | 17.5px / 1.38rem | 16.5px / 1.3rem |
+| Column | 30rem | 32rem | 35rem |
+| Stories on Today | two illustrated | two illustrated | none — the index |
 | The Bible opens on | eight ways in, then the books | the same, worded up | the 66 books |
-| Translation picker | in Settings only | on the Bible screen | on the Bible screen |
+| Translation picker | in Settings only | on the Read screen | on the Read screen |
 | The reader starts at | 115% | 105% | 100% |
-| Journey leads with | a ring towards the next stage | the same | the numbers |
-| Cards carry | a 5px colour rail | a 3px rail | no rail |
-| Tap targets | 52px | 48px | 44px |
-| Type / measure | 19px / 30rem | 17.5px / 33rem | 16.5px / 36rem |
+| Illustration | present | present | absent |
 
 Nothing is hidden from the youngest band and nothing is withheld from the
 oldest: the same screens, the same content, a different register.
@@ -607,8 +619,6 @@ oldest: the same screens, the same content, a different register.
 **Accessibility.** WCAG 2.2 AA: 4.5:1 text contrast in both themes, 44px
 targets, full keyboard operation, visible focus, labelled controls, correct
 heading order, and screen-reader text for every illustration.
-
----
 
 ## 14. Content pipeline
 

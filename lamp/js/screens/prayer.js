@@ -44,7 +44,7 @@ export default async function prayerScreen(ctx) {
       h('div', { style: 'margin-top:1.5rem' }, eyebrow('Reflection'),
         h('p', { text: pick(mood.reflection, ctx.band) })),
       h('div', { style: 'margin-top:1.5rem' }, eyebrow('Your prayer'), prayerText),
-      h('div', { class: 'card-foot' },
+      h('div', { class: 'btn-row', style: 'margin-top:1.1rem' },
         button('Save this prayer', { variant: 'btn-primary', onclick: () => {
           const state = getPrayers();
           state.items.unshift({
@@ -64,7 +64,7 @@ export default async function prayerScreen(ctx) {
       const passage = await getPassage(verseRef, trans);
       scriptureBox.replaceChildren(
         h('p', { class: 'scripture', text: joinText(passage.verses) }),
-        h('div', { class: 'scripture-ref', text: `${formatRef(verseRef)} · ${trans}` }));
+        h('div', { class: 'ref', text: `${formatRef(verseRef)} · ${trans}` }));
     } catch (error) {
       scriptureBox.replaceChildren(notice(error.message));
     }

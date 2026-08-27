@@ -121,5 +121,5 @@ export default async function bibleScreen(ctx) {
   el.appendChild(testament('Old Testament', OLD_TESTAMENT));
   el.appendChild(testament('New Testament', NEW_TESTAMENT));
 
-  return { title: 'Bible', el };
+  return { title: 'Read', el };
 }

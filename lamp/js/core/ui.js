@@ -2,10 +2,21 @@
 // mostly a list of these, and re-rendering a whole screen is cheap.
 
 import { h, icon, clear } from './dom.js';
-import { scene as sceneSvg, daypart } from './art.js';
+import { scene as sceneSvg } from './art.js';
 
+/** A strip: a band of the page, divided from its neighbours by one hairline. */
+export function strip(label, ...children) {
+  return h('section', { class: 'strip' }, label ? h('div', { class: 'eyebrow', text: label }) : null, children);
+}
+
+/** Kept for screens that still group content under a heading. */
 export function section(title, ...children) {
-  return h('section', { class: 'section' }, title ? h('h2', { text: title }) : null, children);
+  return h('section', { class: 'strip' }, title ? h('div', { class: 'eyebrow', text: title }) : null, children);
+}
+
+/** The app's main call to action: a line of text with an arrow. */
+export function go(label, onclick, { plain = false } = {}) {
+  return h('button', { class: `go ${plain ? 'go-plain' : ''}`.trim(), type: 'button', onclick }, label);
 }
 
 export function eyebrow(text) {
@@ -15,6 +26,11 @@ export function eyebrow(text) {
 export function card(props, ...children) {
   const { as = 'div', ...rest } = props || {};
   return h(as, { class: 'card', ...rest }, children);
+}
+
+/** A horizontal rule used inside a strip, where a full strip is too much. */
+export function rule() {
+  return h('div', { style: 'height:1px;background:var(--rule);margin:1.25rem 0' });
 }
 
 export function button(label, props = {}) {
@@ -37,7 +53,7 @@ export function list(...items) {
 }
 
 export function bar(percent) {
-  return h('div', { class: 'bar', role: 'progressbar', 'aria-valuenow': Math.round(percent), 'aria-valuemin': '0', 'aria-valuemax': '100' },
+  return h('div', { class: 'progress-line', role: 'progressbar', 'aria-valuenow': Math.round(percent), 'aria-valuemin': '0', 'aria-valuemax': '100' },
     h('i', { style: `width:${Math.max(0, Math.min(100, percent))}%` }));
 }
 
@@ -70,10 +86,7 @@ export function scripture(verses, { onVerse, highlights = {} } = {}) {
 
 /** A small modal sheet — used for verse actions and confirmations. */
 export function sheet(title, ...children) {
-  const dialog = h('dialog', { class: 'card', style: 'border:0;max-width:24rem;width:calc(100% - 2rem);' },
-    h('h2', { text: title, style: 'font-size:1.05rem;margin-bottom:.9rem' }),
-    children,
-  );
+  const dialog = h('dialog', { class: 'sheet' }, h('h2', { text: title }), children);
   dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
   dialog.addEventListener('close', () => dialog.remove());
   document.body.appendChild(dialog);
@@ -100,30 +113,6 @@ export { h, icon, clear };
 export function sceneEl(id, { ratio = 'story', title = '', className = '' } = {}) {
   const wrap = h('div', { class: `scene ${className}`.trim(), dataset: { ratio } });
   wrap.innerHTML = sceneSvg(id, { title });
-  return wrap;
-}
-
-/** The time-of-day picture at the top of Today. */
-export function heroEl() {
-  const wrap = h('div', { class: 'hero' });
-  const frame = h('div', { class: 'scene' });
-  frame.innerHTML = daypart();
-  wrap.appendChild(frame);
-  return wrap;
-}
-
-/** A progress ring — the same number as the bar, but a shape a child reads faster. */
-export function ring(percent, { size = 58, label = '' } = {}) {
-  const value = Math.max(0, Math.min(100, Math.round(percent)));
-  const r = (size - 6) / 2;
-  const circumference = 2 * Math.PI * r;
-  const wrap = h('div', { class: 'ring', role: 'img', 'aria-label': label || `${value}% complete` });
-  wrap.innerHTML = `<svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
-    <circle class="track" cx="${size / 2}" cy="${size / 2}" r="${r}"></circle>
-    <circle class="value" cx="${size / 2}" cy="${size / 2}" r="${r}"
-      stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - value / 100)}"></circle>
-  </svg>`;
-  wrap.appendChild(h('span', { class: 'pct', text: `${value}%` }));
   return wrap;
 }
 

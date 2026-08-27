@@ -68,8 +68,8 @@ export default async function storyScreen(ctx) {
     hasScene(slug)
       ? h('div', { class: 'story-hero' }, sceneEl(slug, { ratio: 'story', title: story.title }))
       : null,
-    h('h1', { class: 'card-title', style: 'font-size:1.8rem', text: story.title }),
-    h('p', { class: 'card-meta', style: 'margin-bottom:1.75rem' },
+    h('h1', { class: 'title', style: 'font-size:1.8rem', text: story.title }),
+    h('p', { class: 'sub', style: 'margin-bottom:1.75rem' },
       displayRef(story.reference),
       opensAt ? ' · ' : '',
       opensAt ? h('button', { class: 'btn btn-quiet', style: 'min-height:0;padding:.1rem .5rem;font-size:.8rem',

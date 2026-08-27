@@ -38,3 +38,19 @@ test('read, write, wipe round-trip inside the namespace', () => {
   assert.equal(store.read(store.KEYS.profile), null);
   assert.equal(store.keys().length, 0);
 });
+
+test('the shapes screens read back are the shapes they were written as', async () => {
+  // Reflect once counted `prayers.length` on `{ items: [...] }`, so saved
+  // prayers never appeared. These are the record shapes each screen expects.
+  store.wipe();
+  store.write(store.KEYS.prayers, { items: [{ id: 'p1' }] });
+  store.write(store.KEYS.journal, { entries: [{ id: 'j1' }] });
+  store.write(store.KEYS.memory, { verses: [{ ref: 'JHN.3.16' }] });
+  store.write(store.KEYS.challenges, { log: { '2026-08-27': { type: 'live', result: 'done' } } });
+
+  assert.equal(store.read(store.KEYS.prayers).items.length, 1);
+  assert.equal(store.read(store.KEYS.journal).entries.length, 1);
+  assert.equal(store.read(store.KEYS.memory).verses.length, 1);
+  assert.equal(Object.keys(store.read(store.KEYS.challenges).log).length, 1);
+  store.wipe();
+});

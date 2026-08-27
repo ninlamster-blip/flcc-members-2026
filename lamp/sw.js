@@ -35,6 +35,7 @@ const SHELL = [
   './js/screens/stories.js',
   './js/screens/story.js',
   './js/screens/journey.js',
+  './js/screens/reflect.js',
   './js/screens/memory.js',
   './js/screens/challenge.js',
   './js/screens/prayer.js',

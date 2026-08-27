@@ -91,5 +91,6 @@ export const KEYS = {
   highlights: NS + 'highlights',
   notes:      NS + 'notes',
   ask:        NS + 'ask',
+  lamplight:  NS + 'lamplight',
   bible:      NS + 'bible/',
 };

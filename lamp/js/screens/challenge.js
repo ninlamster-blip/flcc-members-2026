@@ -84,7 +84,7 @@ export default async function challengeScreen(ctx) {
   } else {
     body.append(
       h('p', { text: prompt }),
-      challenge.ref ? h('p', { class: 'scripture-ref', text: `Inspired by ${formatRef(parseRef(challenge.ref)) || challenge.ref}` }) : null,
+      challenge.ref ? h('p', { class: 'ref', text: `Inspired by ${formatRef(parseRef(challenge.ref)) || challenge.ref}` }) : null,
       h('p', { class: 'small muted', style: 'margin-top:1rem', text: 'Nobody checks this one. Mark it done when you have actually done it.' }),
       h('div', { class: 'btn-row' },
         button('I did it', { variant: 'btn-primary', onclick: (event) => finish('done', 'Good. That is the whole point — Bible to life.', event.currentTarget) }),

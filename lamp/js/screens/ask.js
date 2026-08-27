@@ -1,10 +1,12 @@
-// ASK — the AI companion. An assistant, not the product.
+// UNDERSTAND — help with a passage.
 //
-// Three things this screen is strict about: the safety path runs before
-// anything is sent, every answer is split into its three tiers, and every
-// verse an answer cites is checked against the real text before it is shown.
+// Deliberately not branded as an assistant, a companion or a chatbot: it is a
+// capability the reader reaches for, the way they reach for a footnote. Three
+// things it is strict about: the safety path runs before anything is sent,
+// every answer is split into its three tiers, and every verse an answer cites
+// is checked against the real text before it is shown.
 
-import { h, section, card, eyebrow, button, notice, spinner, toast } from '../core/ui.js';
+import { h, section, strip, go, card, eyebrow, button, notice, spinner, toast } from '../core/ui.js';
 import * as ai from '../core/ai.js';
 import * as content from '../core/content.js';
 import { safetyCard, isConcerning } from '../core/safety.js';
@@ -20,9 +22,9 @@ const TIER_LABEL = {
 };
 
 const EXAMPLES = {
-  '7-10': ['Who was Moses?', 'Why do we pray?', 'What does forgive mean?'],
-  '11-14': ['Why did Jesus wash the disciples’ feet?', 'What does forgiveness mean?', 'I’m scared. What does the Bible say?'],
-  '15-18': ['Why does God allow suffering?', 'How do we know the Bible is true?', 'Can Christians have doubts?'],
+  '7-10': ['What does this mean?', 'Who is in this story?', 'What does forgive mean?'],
+  '11-14': ['What does this mean?', 'What was happening at the time?', 'How do I live this out?'],
+  '15-18': ['What does this mean?', 'Explain the historical context', 'How has this been read differently?'],
 };
 
 function renderSafety(region, regionData) {
@@ -54,7 +56,7 @@ export default async function askScreen(ctx) {
   const history = ai.getThread();
   for (const turn of history.slice(-6)) {
     thread.appendChild(turn.role === 'user'
-      ? h('div', { class: 'bubble-you', text: turn.text })
+      ? h('div', { class: 'asked', text: turn.text })
       : h('div', { class: 'answer small muted', text: turn.text.slice(0, 240) + (turn.text.length > 240 ? '…' : '') }));
   }
 
@@ -62,7 +64,7 @@ export default async function askScreen(ctx) {
     const question = input.value.trim();
     if (!question) return;
 
-    thread.appendChild(h('div', { class: 'bubble-you', text: question }));
+    thread.appendChild(h('div', { class: 'asked', text: question }));
     output.replaceChildren(spinner());
 
     if (isConcerning(question)) {
@@ -81,10 +83,9 @@ export default async function askScreen(ctx) {
     });
 
     if (result.kind === 'unconfigured') {
-      output.replaceChildren(card({},
-        eyebrow('Ask is switched off'),
-        h('p', { text: 'Ask needs a helper address before it can answer. A parent or church admin adds it in Me → Settings — until then, everything else in LAMP works as normal.' }),
-        h('div', { class: 'card-foot' }, button('Open settings', { variant: 'btn-primary', onclick: () => ctx.go('me') }))));
+      output.replaceChildren(h('div', {},
+        h('p', { class: 'lede', text: 'Explanations need a helper address before they can be given. A parent or church admin adds one in Me — until then, everything else in LAMP works as normal.' }),
+        go('Open settings', () => ctx.go('me'))));
       return;
     }
     if (result.kind === 'offline' || result.kind === 'error') {
@@ -121,9 +122,9 @@ export default async function askScreen(ctx) {
         try {
           const passage = await getPassage(cited.ref, trans);
           const text = joinText(passage.verses);
-          rows.push(h('button', { class: 'card', style: 'margin-bottom:.5rem', type: 'button',
+          rows.push(h('button', { class: 'card', style: 'margin-bottom:.6rem', type: 'button',
             onclick: () => ctx.go(`read/${cited.ref.book.id}/${cited.ref.chapter}`) },
-            h('div', { class: 'card-meta', text: cited.pretty }),
+            h('div', { class: 'sub', text: cited.pretty }),
             h('p', { class: 'scripture small', style: 'margin-top:.3rem', text: text.length > 220 ? `${text.slice(0, 220)}…` : text })));
         } catch {
           rows.push(notice(`${cited.pretty} — LAMP could not check this one, so read it yourself before trusting it.`));
@@ -136,19 +137,22 @@ export default async function askScreen(ctx) {
     output.replaceChildren(answer);
   };
 
+  el.appendChild(h('section', { class: 'strip strip-tight' },
+    h('h1', { class: 'title-lg', text: contextLabel ? `Understanding ${contextLabel}` : 'Understanding' }),
+    contextLabel ? null : h('p', { class: 'sub', style: 'margin-top:.4rem', text: 'Ask about a passage you are reading.' })));
+
   el.appendChild(section(null,
-    contextLabel ? h('p', { class: 'chip chip-accent', style: 'margin-bottom:1rem', text: `About ${contextLabel}` }) : null,
     thread,
     output,
     h('div', { class: 'field', style: 'margin-top:1.25rem' }, input),
     h('div', { class: 'btn-row' },
-      button('Ask', { variant: 'btn-primary', onclick: submit }),
-      history.length ? button('Clear', { variant: 'btn-quiet', onclick: () => { ai.clearThread(); toast('Conversation cleared.'); ctx.refresh(); } }) : null),
+      button('Explain this', { variant: 'btn-primary', onclick: submit }),
+      history.length ? button('Clear', { variant: 'btn-quiet', onclick: () => { ai.clearThread(); toast('Cleared.'); ctx.refresh(); } }) : null),
     h('p', { class: 'disclosure', text: `${ai.DISCLOSURE} LAMP never sends your journal or your prayers.` })));
 
   el.appendChild(section('You could ask',
     h('div', { class: 'btn-row' }, ...(EXAMPLES[ctx.band] || EXAMPLES['11-14']).map((example) =>
       button(example, { onclick: () => { input.value = example; input.focus(); } })))));
 
-  return { title: 'Ask', el, tab: 'today' };
+  return { title: 'Understand', el, tab: 'bible' };
 }

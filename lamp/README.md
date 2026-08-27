@@ -23,14 +23,19 @@ python3 -m http.server 8000    # from the repository root
 
 ## What is here
 
-| Screen | What it does |
+Four destinations, and none of them is named after a technology.
+
+| Tab | What it does |
 |--------|--------------|
-| **Today** | Greeting, continue reading, today's Word, today's challenge, quick actions |
-| **Bible** | 66 books, chapter navigation, reference jumping (`1 sam 17`, `psalm 23`), search over downloaded chapters, six actions on every verse |
-| **Stories** | 14 Bible stories, each illustrated, in six parts, written three times — once for each age band |
-| **Journey** | Streak, chapters, stories, memory verses, challenges, and the five stages |
-| **Me** | Prayer, journal, settings, a plain account of what is stored and sent, download-everything and delete-everything |
-| **Ask** | The AI companion — off until configured, tiered answers, verse-checking, on-device safety routing |
+| **Today** | The day's page: greeting, the day's Scripture set as the hero, what you were reading, one invitation to reflect, and a story or two |
+| **Read** | 66 books, ways in for younger readers, reference jumping (`1 sam 17`, `psalm 23`), search over downloaded chapters, and the reader itself |
+| **Reflect** | Journal, prayer, and the verses being learned by heart |
+| **Me** | Who you are, reading history and the path you are on, settings, a plain account of what is stored and sent, download-everything and delete-everything |
+
+Inside them: 14 illustrated stories in six parts written three times over,
+memory verses with real spaced repetition, five kinds of daily challenge, and
+**understanding a passage** — help with what a text means, reached from a verse
+or the reader's controls, never branded as an assistant.
 
 ## How it is put together
 
@@ -61,12 +66,17 @@ network, a few kilobytes for the set — and testable: the suite fails if a scen
 strays from the palette or references anything outside itself. Commissioned
 artwork can replace the kit later without touching a screen.
 
-**The design grows with the reader.** One band token drives the whole system,
-so at 7–10 Stories is a shelf of pictures, the Bible opens on eight ways in
-rather than 66 book names, the reader starts at 115%, cards carry a colour
-rail, taps are 52px and Today opens with the sky; at 15–18 the pictures step
-back, the rails disappear, the canon is the index and the type tightens. Same
-screens, same content, three registers — see SPEC.md §13.
+**Light on paper.** The identity comes from Psalm 119:105: warm ivory ground,
+near-black ink, one soft amber, a serif for Scripture and a sans for the
+interface. Hairlines and space divide the page rather than cards — the home
+screen has none, and a test keeps it that way. Once a day, the first time the
+app opens, the day's Scripture rises out of the page as light passes behind
+it; never twice, and never under reduced motion.
+
+**The design grows with the reader** by changing register, not by becoming a
+different app: type size, column width, whether stories and illustration are
+present, where the Bible opens, and what the reader starts at — see
+SPEC.md §13.
 
 **Storage.** Everything lives under `lamp/v1/…`, and `storage.js` throws on any
 key that does not. That guard is what makes the boundary in SPEC.md §3
@@ -95,7 +105,7 @@ call is made at all. `test/safety.test.mjs` holds the fixtures.
 node --test 'lamp/test/*.test.mjs'
 ```
 
-55 tests, no dependencies. They cover age-band resolution and fallback,
+56 tests, no dependencies. They cover age-band resolution and fallback,
 reference parsing across the whole canon, both response shapes `bolls.life` has
 served, the storage namespace guard (including explicit FLCC and Shepherd
 keys), memory-verse scheduling and grading, daily and challenge determinism,

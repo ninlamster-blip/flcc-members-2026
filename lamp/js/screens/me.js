@@ -1,7 +1,10 @@
 // ME — the private things, the settings, and a plain account of what LAMP
 // stores and sends.
 
-import { h, section, card, eyebrow, button, list, row, sheet, toast, notice } from '../core/ui.js';
+import { h, section, strip, go, card, eyebrow, button, list, row, sheet, toast, notice } from '../core/ui.js';
+import { getProgress, chaptersRead, storiesRead } from '../core/progress.js';
+import * as memory from '../core/memory.js';
+import * as challenges from '../core/challenges.js';
 import * as store from '../core/storage.js';
 import { getProfile, getSettings, saveSettings, saveProfile, currentBand, currentAge } from '../core/profile.js';
 import { BAND_LABEL } from '../core/age.js';
@@ -15,11 +18,11 @@ export default async function meScreen(ctx) {
   const settings = getSettings();
   const el = h('div');
 
-  el.appendChild(section(null, card({},
-    eyebrow(BAND_LABEL[currentBand()]),
-    h('div', { class: 'card-title', text: profile.name || 'You' }),
-    h('div', { class: 'card-meta', text: `${currentAge() ?? '—'} years old · LAMP writes for ages ${currentBand()}` }),
-    h('div', { class: 'card-foot' },
+  el.appendChild(h('section', { class: 'strip strip-tight' },
+    h('h1', { class: 'title-lg', text: profile.name || 'You' }),
+    h('p', { class: 'sub', style: 'margin-top:.4rem',
+      text: `${currentAge() ?? '—'} years old · LAMP writes for ages ${currentBand()} · ${BAND_LABEL[currentBand()]}` }),
+    h('div', { class: 'btn-row', style: 'margin-top:1rem' },
       button('Change name', { onclick: () => {
         const input = h('input', { type: 'text', value: profile.name || '', maxlength: '24', 'aria-label': 'Your name' });
         const dialog = sheet('What should LAMP call you?', input, h('div', { class: 'btn-row', style: 'margin-top:1rem' },
@@ -28,13 +31,30 @@ export default async function meScreen(ctx) {
             dialog.close();
             ctx.refresh();
           } })));
-      } })))));
+      } }))));
 
-  el.appendChild(section('Private', list(
-    row({ title: 'Prayers', sub: 'Kept on this device', onclick: () => ctx.go('prayer') }),
-    row({ title: 'Journal', sub: 'Never uploaded, never shown to a parent', onclick: () => ctx.go('journal') }),
-    row({ title: 'Memory verses', onclick: () => ctx.go('memory') }),
-  )));
+  // Reading history, in words rather than in tiles.
+  const progress = getProgress();
+  const mastered = memory.getMemory().verses.filter((v) => v.stage === 'mastered').length;
+  const lines = [
+    [chaptersRead(progress), 'chapter', 'read all the way through'],
+    [storiesRead(progress), 'story', 'read', 'stories'],
+    [mastered, 'verse', 'known by heart'],
+    [challenges.completedCount(), 'challenge', 'taken'],
+  ];
+  el.appendChild(strip('Your reading',
+    h('p', { class: 'lede', style: 'margin-bottom:1rem',
+      text: progress.streak.count
+        ? `${progress.streak.count} day${progress.streak.count === 1 ? '' : 's'} in a row, and ${progress.streak.best} at your best.`
+        : 'Nothing yet — the first chapter starts it.' }),
+    h('ul', { class: 'list' }, ...lines.map(([count, noun, tail, plural]) => h('li', {},
+      h('div', { class: 'row', style: 'cursor:default' },
+        h('span', { class: 'row-main' },
+          h('span', { class: 'row-title', text: `${count} ${count === 1 ? noun : (plural || noun + 's')}` }),
+          h('span', { class: 'row-sub', text: tail })))))),
+    go('See the path you are on', () => ctx.go('journey'))));
+
+
 
   // ── Settings ──────────────────────────────────────────────────────────────
   const setting = (label, controls, hint) => h('div', { style: 'margin-bottom:1.5rem' },
@@ -61,23 +81,23 @@ export default async function meScreen(ctx) {
   const worker = h('input', { type: 'text', value: settings.aiWorker || '', placeholder: 'https://your-worker.workers.dev', 'aria-label': 'Helper address' });
   const secret = h('input', { type: 'password', value: settings.aiSecret || '', placeholder: 'Optional password', 'aria-label': 'Helper password' });
 
-  el.appendChild(section('Ask', card({},
-    h('p', { class: 'small', text: 'Ask is off until a parent or church admin adds the helper address. Everything else in LAMP works without it.' }),
+  el.appendChild(section('Understanding passages', card({},
+    h('p', { class: 'small', text: 'LAMP can explain a passage when a parent or church admin adds a helper address. Everything else works without it.' }),
     h('div', { class: 'field', style: 'margin-top:1rem' }, h('label', { text: 'Helper address' }), worker),
     h('div', { class: 'field' }, h('label', { text: 'Password (if your church set one)' }), secret),
     h('div', { class: 'btn-row' },
-      button(settings.aiEnabled ? 'Save and keep Ask on' : 'Save and turn Ask on', { variant: 'btn-primary', onclick: () => {
+      button(settings.aiEnabled ? 'Save' : 'Save and turn it on', { variant: 'btn-primary', onclick: () => {
         saveSettings({ aiWorker: worker.value.trim(), aiSecret: secret.value, aiEnabled: Boolean(worker.value.trim()) });
-        toast(worker.value.trim() ? 'Ask is on.' : 'Ask stays off until an address is added.');
+        toast(worker.value.trim() ? 'Explanations are on.' : 'It stays off until an address is added.');
         ctx.refresh();
       } }),
-      settings.aiEnabled ? button('Turn Ask off', { onclick: () => { saveSettings({ aiEnabled: false }); toast('Ask is off.'); ctx.refresh(); } }) : null),
+      settings.aiEnabled ? button('Turn it off', { onclick: () => { saveSettings({ aiEnabled: false }); toast('Explanations are off.'); ctx.refresh(); } }) : null),
     h('p', { class: 'field-hint', text: 'Your question and your age band are sent. Your name, your journal and your prayers are not.' }))));
 
   // ── Privacy and data ──────────────────────────────────────────────────────
   el.appendChild(section('What LAMP stores', card({},
     h('p', { class: 'small', text: 'On this device: your name, the year you were born, what you have read, your highlights, memory verses, prayers, journal entries and challenge results.' }),
-    h('p', { class: 'small', text: 'Sent over the internet: the Bible chapters you open (to download them), and — only if Ask is on — your question and age band.' }),
+    h('p', { class: 'small', text: 'Sent over the internet: the Bible chapters you open (to download them), and — only if explanations are on — your question and age band.' }),
     h('p', { class: 'small', text: 'Never: your location, your name, your journal, your prayers, or anything at all to an advertiser. There is no account and no messaging.' }))));
 
   el.appendChild(section('Data', h('div', { class: 'btn-row' },
