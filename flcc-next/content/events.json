@@ -1,0 +1,54 @@
+[
+  {
+    "id": "youth-night",
+    "title": {
+      "kids": "YOUTH NIGHT",
+      "teens": "YOUTH NIGHT"
+    },
+    "tone": "ink",
+    "symbol": "star",
+    "when": "Friday · 5:00 PM",
+    "where": "NECK Compound",
+    "for": "teens",
+    "blurb": "Worship, a word, and food afterwards. Bring a friend."
+  },
+  {
+    "id": "kids-club",
+    "title": {
+      "kids": "KIDS CLUB",
+      "teens": "KIDS CLUB"
+    },
+    "tone": "cream",
+    "symbol": "grid",
+    "when": "Saturday · 10:00 AM",
+    "where": "FLCC Hall",
+    "for": "kids",
+    "blurb": "Games, a Bible story, and craft. Ages 7–12."
+  },
+  {
+    "id": "camp",
+    "title": {
+      "kids": "SUMMER CAMP",
+      "teens": "SUMMER CAMP"
+    },
+    "tone": "sage",
+    "symbol": "mountain",
+    "when": "August 14–16",
+    "where": "Kuwait Coast",
+    "for": "both",
+    "blurb": "Three days away — worship, teaching, sea, and far too little sleep."
+  },
+  {
+    "id": "serve",
+    "title": {
+      "kids": "SERVE DAY",
+      "teens": "SERVE DAY"
+    },
+    "tone": "pink",
+    "symbol": "hands",
+    "when": "Last Sunday · 2:00 PM",
+    "where": "Meet at FLCC",
+    "for": "both",
+    "blurb": "We go out and help. Everyone has a job."
+  }
+]

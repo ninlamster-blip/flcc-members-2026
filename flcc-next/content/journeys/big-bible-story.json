@@ -1,0 +1,132 @@
+[
+  {
+    "id": "b1",
+    "title": "CREATION",
+    "ref": "Genesis 1:1",
+    "text": "In the beginning, God created the heavens and the earth.",
+    "body": {
+      "kids": "Everything that exists was made on purpose. Including you.",
+      "teens": "The opening line argues for nothing and assumes everything: no rival gods, no conflict, no accident."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What is the first thing the Bible says?",
+        "teens": "What does Genesis 1:1 assume rather than argue?"
+      },
+      "options": [
+        "God created everything",
+        "People built the world",
+        "Nothing existed"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "God made it all.",
+        "teens": "That God is there and creating — the text never argues the point."
+      }
+    }
+  },
+  {
+    "id": "b2",
+    "title": "THINGS GO WRONG",
+    "ref": "Genesis 3:9",
+    "text": "Yahweh God called to the man, and said to him, “Where are you?”",
+    "body": {
+      "kids": "People chose their own way instead of God's. But God came looking.",
+      "teens": "The first question after the fall is not an accusation. It is a search."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did God do after people disobeyed?",
+        "teens": "What is God's first move after the fall?"
+      },
+      "options": [
+        "He came looking for them",
+        "He left",
+        "He said nothing"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "He came looking and called out.",
+        "teens": "He seeks, and the question is pastoral before it is judicial."
+      }
+    }
+  },
+  {
+    "id": "b3",
+    "title": "A PEOPLE AND A PROMISE",
+    "ref": "Genesis 12:3",
+    "text": "In you all the families of the earth will be blessed.",
+    "body": {
+      "kids": "God promised Abraham a family, a land, and a blessing for everyone on earth.",
+      "teens": "The promise is universal from the start — one family chosen for the sake of all the others."
+    },
+    "quiz": {
+      "q": {
+        "kids": "Who was the promise for?",
+        "teens": "How wide is the Abrahamic promise?"
+      },
+      "options": [
+        "Everyone on earth",
+        "Only Abraham",
+        "Only kings"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "All the families of the earth.",
+        "teens": "Universal in scope, though particular in method."
+      }
+    }
+  },
+  {
+    "id": "b4",
+    "title": "JESUS",
+    "ref": "John 1:14",
+    "text": "The Word became flesh and lived among us.",
+    "body": {
+      "kids": "God did not stay far away. He came and lived with us.",
+      "teens": "‘Lived among us’ is literally ‘pitched his tent’ — the tabernacle word. John locates the incarnation in Israel's story."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What does John 1:14 say happened?",
+        "teens": "What does John's tabernacle language do?"
+      },
+      "options": [
+        "God came and lived with us",
+        "God sent a letter",
+        "Nothing changed"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "God came to live with people.",
+        "teens": "It places the incarnation inside Israel's worship history rather than Greek metaphysics."
+      }
+    }
+  },
+  {
+    "id": "b5",
+    "title": "THE CHURCH",
+    "ref": "Acts 2:4",
+    "text": "They were all filled with the Holy Spirit, and began to speak with other languages.",
+    "body": {
+      "kids": "God's Spirit came, and ordinary people started telling everyone about Jesus — in every language in the city.",
+      "teens": "Acts 2 reverses Babel: there language scattered people, here languages gather them."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What happened at Pentecost?",
+        "teens": "How does Acts 2 relate to Babel?"
+      },
+      "options": [
+        "People heard in their own languages",
+        "Everyone left",
+        "Nothing"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "Everyone heard about Jesus in their own language.",
+        "teens": "It reverses it — scattering becomes gathering."
+      }
+    }
+  }
+]

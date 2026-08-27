@@ -1,0 +1,186 @@
+[
+  {
+    "id": "pressure",
+    "title": "SCHOOL PRESSURE",
+    "tone": "cream",
+    "symbol": "bulb",
+    "hook": {
+      "kids": "When school feels like too much.",
+      "teens": "When the workload stops being work and starts being your worth."
+    },
+    "body": {
+      "kids": "Doing your best matters. Being the best is not what God asks of you.",
+      "teens": "Grades measure work. They are not a measure of you, and the moment the two get welded together every result becomes a verdict on your worth. Work hard — then let the result be a result, not a sentence."
+    },
+    "verse": "Come to me, all you who labor and are heavily burdened, and I will give you rest.",
+    "ref": "Matthew 11:28",
+    "step": {
+      "kids": "Tell a grown-up how much work you have.",
+      "teens": "Name to one person the thing you are most behind on. Secrecy is what gives it weight."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "anxiety",
+    "title": "ANXIETY",
+    "tone": "blue",
+    "symbol": "hands",
+    "hook": {
+      "kids": "When your tummy feels worried.",
+      "teens": "When your body is at rest and your head is not."
+    },
+    "body": {
+      "kids": "Worry is not naughty. It is a feeling — and it is something you can hand to God, out loud.",
+      "teens": "Anxiety is not a failure of faith; half the psalms are complaints. What Scripture asks is not that you stop feeling it but that you take it somewhere — specifically, to God and to people who can help carry it."
+    },
+    "verse": "Cast all your worries on him, because he cares for you.",
+    "ref": "1 Peter 5:7",
+    "step": {
+      "kids": "Say the worry out loud to someone today.",
+      "teens": "Write the anxiety down, then mark the one part of it you can actually act on this week."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "friendship",
+    "title": "FRIENDSHIP",
+    "tone": "pink",
+    "symbol": "people",
+    "hook": {
+      "kids": "Being a good friend, and finding good friends.",
+      "teens": "Who you spend time with is who you are becoming."
+    },
+    "body": {
+      "kids": "Good friends are kind when nobody is watching. Be that kind of friend.",
+      "teens": "Friendship in Proverbs is measured by what survives trouble. Ask honestly whether your friendships make you braver and kinder, or just louder."
+    },
+    "verse": "A friend loves at all times.",
+    "ref": "Proverbs 17:17",
+    "step": {
+      "kids": "Include someone who is on their own today.",
+      "teens": "Have one conversation this week that goes past the surface."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "family",
+    "title": "FAMILY",
+    "tone": "sage",
+    "symbol": "heart",
+    "hook": {
+      "kids": "Families are great and hard, sometimes on the same day.",
+      "teens": "Loving people you did not choose and cannot leave."
+    },
+    "body": {
+      "kids": "You will not always agree with your family. You can still be kind to them today.",
+      "teens": "Family is the hardest place to practise what you believe, because nobody there is impressed by you. It is also where it counts most."
+    },
+    "verse": "Be kind to one another, tender hearted, forgiving each other.",
+    "ref": "Ephesians 4:32",
+    "step": {
+      "kids": "Do a job at home before you are asked.",
+      "teens": "Say the apology you have been avoiding at home."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "social",
+    "title": "SOCIAL MEDIA",
+    "tone": "cream",
+    "symbol": "grid",
+    "hook": {
+      "kids": "Screens are fun. They are not your whole life.",
+      "teens": "Comparison, performance, and the version of you that lives online."
+    },
+    "body": {
+      "kids": "What you see on a screen is only the good bits people chose to show.",
+      "teens": "You are comparing your inside to everyone else's edit. That is not a fair fight, and no amount of scrolling will make it one."
+    },
+    "verse": "Don’t be conformed to this world, but be transformed by the renewing of your mind.",
+    "ref": "Romans 12:2",
+    "step": {
+      "kids": "Have one hour today with no screen.",
+      "teens": "Unfollow three accounts that consistently make you feel worse."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "identity",
+    "title": "IDENTITY",
+    "tone": "blue",
+    "symbol": "star",
+    "hook": {
+      "kids": "God made you on purpose.",
+      "teens": "Who you are when nobody is watching, and who tells you what you are worth."
+    },
+    "body": {
+      "kids": "You are not a mistake. God knew you before anyone else did.",
+      "teens": "Everyone is being handed an identity by something — a school, a feed, a friendship group. Scripture's claim is that yours was given before any of them had an opinion."
+    },
+    "verse": "I will give thanks to you, for I am fearfully and wonderfully made.",
+    "ref": "Psalm 139:14",
+    "step": {
+      "kids": "Tell someone one thing you like about them.",
+      "teens": "Name the voice you have been letting define you, and hold it up against what God says."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "purpose",
+    "title": "PURPOSE",
+    "tone": "sage",
+    "symbol": "rocket",
+    "hook": {
+      "kids": "God has good things for you to do.",
+      "teens": "What your life is actually for, when nobody has told you yet."
+    },
+    "body": {
+      "kids": "You do not have to wait until you are grown up to do good things.",
+      "teens": "Purpose in the Bible is rarely a career. It is a direction: love God, love people, and do the next right thing in front of you."
+    },
+    "verse": "For we are his workmanship, created in Christ Jesus for good works.",
+    "ref": "Ephesians 2:10",
+    "step": {
+      "kids": "Do one good thing for someone today.",
+      "teens": "Do the next right thing in front of you this week, and stop waiting for a calling."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "relationships",
+    "title": "RELATIONSHIPS",
+    "tone": "pink",
+    "symbol": "heart",
+    "hook": {
+      "kids": "Being kind to everyone, including people you do not like.",
+      "teens": "Liking someone, being liked, and not losing yourself in it."
+    },
+    "body": {
+      "kids": "Treat everyone the way you would want to be treated.",
+      "teens": "Someone who is good for you makes you more like the person you want to be, not less. Anyone who needs you smaller is not offering love."
+    },
+    "verse": "Love is patient and is kind.",
+    "ref": "1 Corinthians 13:4",
+    "step": {
+      "kids": "Be kind to someone who is often left out.",
+      "teens": "Ask yourself honestly whether the people closest to you make you kinder."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  }
+]

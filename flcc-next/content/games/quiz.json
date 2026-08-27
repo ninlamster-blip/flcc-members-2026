@@ -1,0 +1,178 @@
+[
+  {
+    "q": "How many books are in the Bible?",
+    "options": [
+      "66",
+      "39",
+      "27"
+    ],
+    "answer": 0,
+    "why": "39 in the Old Testament, 27 in the New.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was thrown into the lions’ den?",
+    "options": [
+      "Daniel",
+      "David",
+      "Jonah"
+    ],
+    "answer": 0,
+    "why": "Daniel, for praying when a new law forbade it.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did God create on the first day?",
+    "options": [
+      "Light",
+      "Animals",
+      "People"
+    ],
+    "answer": 0,
+    "why": "Light — the sun does not appear until day four.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who baptised Jesus?",
+    "options": [
+      "John the Baptist",
+      "Peter",
+      "Paul"
+    ],
+    "answer": 0,
+    "why": "John, in the River Jordan.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many disciples did Jesus choose?",
+    "options": [
+      "12",
+      "7",
+      "40"
+    ],
+    "answer": 0,
+    "why": "Twelve — one for each tribe of Israel.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did David use against Goliath?",
+    "options": [
+      "A sling and stones",
+      "A sword",
+      "A spear"
+    ],
+    "answer": 0,
+    "why": "A sling and five smooth stones, having refused Saul’s armour.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was swallowed by a great fish?",
+    "options": [
+      "Jonah",
+      "Joshua",
+      "Job"
+    ],
+    "answer": 0,
+    "why": "Jonah, running from God’s call to Nineveh.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which book opens the New Testament?",
+    "options": [
+      "Matthew",
+      "Mark",
+      "John"
+    ],
+    "answer": 0,
+    "why": "Matthew — though Mark was probably written first.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who denied Jesus three times?",
+    "options": [
+      "Peter",
+      "Thomas",
+      "Judas"
+    ],
+    "answer": 0,
+    "why": "Peter, before the rooster crowed — and Jesus restored him afterwards.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which queen risked her life for her people?",
+    "options": [
+      "Esther",
+      "Ruth",
+      "Deborah"
+    ],
+    "answer": 0,
+    "why": "Esther — ‘if I perish, I perish’.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What is the first commandment Jesus called greatest?",
+    "options": [
+      "Love God with everything",
+      "Do not steal",
+      "Keep the Sabbath"
+    ],
+    "answer": 0,
+    "why": "Love God with all your heart, soul, mind and strength.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How long was Jesus in the tomb?",
+    "options": [
+      "Three days",
+      "Seven days",
+      "Forty days"
+    ],
+    "answer": 0,
+    "why": "Three days, counted inclusively — part of Friday, Saturday, part of Sunday.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who wrote most of the New Testament letters?",
+    "options": [
+      "Paul",
+      "Peter",
+      "Luke"
+    ],
+    "answer": 0,
+    "why": "Paul — thirteen letters carry his name.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What does ‘gospel’ mean?",
+    "options": [
+      "Good news",
+      "Old story",
+      "Law"
+    ],
+    "answer": 0,
+    "why": "It translates a word for good news, used in the Roman world for imperial announcements.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Which city did Jonah refuse to go to?",
+    "options": [
+      "Nineveh",
+      "Jerusalem",
+      "Rome"
+    ],
+    "answer": 0,
+    "why": "Nineveh, the capital of the empire that terrorised Israel.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What happened at Pentecost?",
+    "options": [
+      "The Holy Spirit came",
+      "Jesus was born",
+      "The temple was built"
+    ],
+    "answer": 0,
+    "why": "The Spirit came and the gospel was heard in every language present.",
+    "ageGroup": "teens"
+  }
+]

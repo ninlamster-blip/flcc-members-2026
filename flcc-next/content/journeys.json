@@ -1,0 +1,38 @@
+[
+  {
+    "id": "life-of-jesus",
+    "title": "THE LIFE OF JESUS",
+    "tone": "blue",
+    "symbol": "cross",
+    "blurb": {
+      "kids": "Follow the story of Jesus, from the stable to the empty tomb.",
+      "teens": "The life of Jesus, read in order — what he did, what he claimed, and why it ended the way it did."
+    },
+    "ageGroup": "both",
+    "lessons": 5
+  },
+  {
+    "id": "heroes-of-faith",
+    "title": "HEROES OF FAITH",
+    "tone": "cream",
+    "symbol": "shield",
+    "blurb": {
+      "kids": "David, Esther, Daniel and Moses — ordinary people God used.",
+      "teens": "Four people who acted under real pressure, with real fear, and changed what happened next."
+    },
+    "ageGroup": "both",
+    "lessons": 4
+  },
+  {
+    "id": "big-bible-story",
+    "title": "THE BIG BIBLE STORY",
+    "tone": "sage",
+    "symbol": "book",
+    "blurb": {
+      "kids": "Creation, Jesus, and the Church — the whole story in five steps.",
+      "teens": "Creation to Church: the shape of the whole Bible, and where you are standing in it."
+    },
+    "ageGroup": "both",
+    "lessons": 5
+  }
+]

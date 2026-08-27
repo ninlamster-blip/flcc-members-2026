@@ -1,0 +1,114 @@
+[
+  {
+    "clues": [
+      "I built something enormous when it had never rained.",
+      "My family and a lot of animals came with me.",
+      "God set a bow in the sky for me."
+    ],
+    "answer": "Noah",
+    "options": [
+      "Noah",
+      "Abraham",
+      "Moses"
+    ],
+    "fact": "God’s promise never to flood the earth again was one-sided — Noah promised nothing."
+  },
+  {
+    "clues": [
+      "I was the youngest in my family.",
+      "I looked after sheep before I looked after a kingdom.",
+      "I beat a giant with a sling."
+    ],
+    "answer": "David",
+    "options": [
+      "David",
+      "Samuel",
+      "Saul"
+    ],
+    "fact": "David refused the king’s armour because he could not move in it."
+  },
+  {
+    "clues": [
+      "I was queen, but I was not born royal.",
+      "I hid who my people were.",
+      "I said: if I perish, I perish."
+    ],
+    "answer": "Esther",
+    "options": [
+      "Esther",
+      "Ruth",
+      "Miriam"
+    ],
+    "fact": "The book of Esther never once mentions God by name."
+  },
+  {
+    "clues": [
+      "I was thrown into a pit by my own brothers.",
+      "I ended up running a country.",
+      "I told them: you meant it for evil, God meant it for good."
+    ],
+    "answer": "Joseph",
+    "options": [
+      "Joseph",
+      "Daniel",
+      "Jeremiah"
+    ],
+    "fact": "Almost nothing miraculous happens in Joseph’s story — the pattern is the point."
+  },
+  {
+    "clues": [
+      "I was afraid to speak in public.",
+      "I met God in a bush that would not burn up.",
+      "I led a nation through a sea."
+    ],
+    "answer": "Moses",
+    "options": [
+      "Moses",
+      "Aaron",
+      "Joshua"
+    ],
+    "fact": "Moses argued with God about the job five separate times."
+  },
+  {
+    "clues": [
+      "I kept praying with my windows open.",
+      "It had just been made illegal.",
+      "I spent a night with lions."
+    ],
+    "answer": "Daniel",
+    "options": [
+      "Daniel",
+      "Elijah",
+      "Nehemiah"
+    ],
+    "fact": "Daniel did not protest or hide — he simply carried on as before."
+  },
+  {
+    "clues": [
+      "I said I would never leave.",
+      "I was not born one of God’s people.",
+      "I became the great-grandmother of a king."
+    ],
+    "answer": "Ruth",
+    "options": [
+      "Ruth",
+      "Naomi",
+      "Hannah"
+    ],
+    "fact": "Ruth was a Moabite — an outsider in the line that leads to David and to Jesus."
+  },
+  {
+    "clues": [
+      "I ran the wrong way.",
+      "A storm found me anyway.",
+      "I was angry when God forgave my enemies."
+    ],
+    "answer": "Jonah",
+    "options": [
+      "Jonah",
+      "Amos",
+      "Hosea"
+    ],
+    "fact": "Jonah ran because he suspected success, not failure."
+  }
+]

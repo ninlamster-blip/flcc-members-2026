@@ -50,6 +50,26 @@ and `lamp/README.md` for what Phase 1 actually built. Authored content lives in
 `lamp/content/` as JSON, keyed by age band — `lamp/test/content.test.mjs`
 fails the suite if a band is missing, so add all three.
 
+## FLCC NEXT
+
+`flcc-next/` is a **fourth, separate application** — the kids (7–12) and teens
+(13–18) app for FLCC Church. It has its own `next/v1/…` storage namespace, its
+own design system and its own tests, and it must never import `church.js`, read
+`FLCC.*`, or touch anything under `shepherd/` or `lamp/`.
+`flcc-next/js/core/storage.js` throws on any key outside the namespace.
+
+Read `flcc-next/ARCHITECTURE.md` before adding a module, a storage key or a
+screen, and `flcc-next/README.md` for what is built and what needs a server.
+Authored content lives in `flcc-next/content/` as JSON and every item is
+written twice, once for `kids` and once for `teens` —
+`flcc-next/test/content.test.mjs` fails the suite if a variant is missing, and
+`flcc-next/test/audit.test.mjs` holds the ministry dashboard's own audit to the
+same rules.
+
+The one thing it shares with the FLCC Members app is the deployed
+`ask-proxy/worker.js`: the proxy holds the API key so no device does. It reads
+none of the FLCC data files and none of the `FLCC.*` global.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection

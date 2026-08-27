@@ -1,0 +1,63 @@
+// Who is using the app, and which of the two experiences they get.
+//
+// The age group is the single switch: it changes content, tone, length and
+// register everywhere. There are exactly two, because "kids" and "teens" are
+// genuinely different audiences and a slider between them would serve neither.
+
+import * as store from './storage.js';
+
+export const MODES = ['kids', 'teens'];
+
+export const MODE = {
+  kids:  { label: 'Kids',  range: '7–12',  minutes: '3–7 minutes',  min: 7,  max: 12 },
+  teens: { label: 'Teens', range: '13–18', minutes: '5–10 minutes', min: 13, max: 18 },
+};
+
+/** Ages outside 7–18 still get a sensible experience rather than a broken one. */
+export function modeForAge(age) {
+  const years = Number(age);
+  if (!Number.isFinite(years)) return 'teens';
+  return years <= 12 ? 'kids' : 'teens';
+}
+
+export function getUser() {
+  return store.read(store.KEYS.user, null);
+}
+
+export function saveUser(patch) {
+  const next = { ...(getUser() || {}), ...patch };
+  if (next.age !== undefined) next.ageGroup = modeForAge(next.age);
+  if (!next.id) next.id = `u${Date.now().toString(36)}`;
+  if (!next.createdAt) next.createdAt = new Date().toISOString();
+  if (!next.role) next.role = 'member';
+  store.write(store.KEYS.user, next);
+  return next;
+}
+
+export function mode(user = getUser()) {
+  return user && MODES.includes(user.ageGroup) ? user.ageGroup : 'teens';
+}
+
+export function isKids(user = getUser()) { return mode(user) === 'kids'; }
+
+/** Pick the variant written for this reader. Falls back rather than blanking. */
+export function forMode(value, current = mode()) {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'object' || Array.isArray(value)) return value;
+  return value[current] ?? value[current === 'kids' ? 'teens' : 'kids'] ?? null;
+}
+
+export function getSettings() {
+  return { theme: 'system', motion: 'full', aiWorker: '', aiSecret: '', aiEnabled: false, ...(store.read(store.KEYS.settings, {}) || {}) };
+}
+
+export function saveSettings(patch) {
+  const next = { ...getSettings(), ...patch };
+  store.write(store.KEYS.settings, next);
+  return next;
+}
+
+export function greeting(now = new Date()) {
+  const hour = now.getHours();
+  return hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+}

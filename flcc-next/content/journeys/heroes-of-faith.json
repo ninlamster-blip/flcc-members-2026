@@ -1,0 +1,106 @@
+[
+  {
+    "id": "h1",
+    "title": "DAVID",
+    "ref": "1 Samuel 17:45",
+    "text": "Then David said to the Philistine, “You come to me with a sword, with a spear, and with a javelin; but I come to you in the name of Yahweh of Armies.”",
+    "body": {
+      "kids": "Everyone else measured Goliath against themselves. David measured him against God — and refused the king's armour because he could not move in it.",
+      "teens": "The narrator counts everything: Goliath's height, the weight of his armour, the weight of his spearhead. David's refusal of Saul's armour rejects the terms of the contest entirely."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did David take to fight Goliath?",
+        "teens": "What did David refuse before the fight?"
+      },
+      "options": [
+        "A sling and five stones",
+        "The king's armour",
+        "A chariot"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "A sling and five smooth stones.",
+        "teens": "He took a sling — and turned down Saul's armour, which is the theological point."
+      }
+    }
+  },
+  {
+    "id": "h2",
+    "title": "ESTHER",
+    "ref": "Esther 4:14",
+    "text": "Who knows if you haven’t come to the kingdom for such a time as this?",
+    "body": {
+      "kids": "Esther was queen, but speaking to the king uninvited could get her killed. She was frightened. She went anyway.",
+      "teens": "The book never names God. Providence shows in the shape of events — a sleepless night, a forgotten record — rather than in miracles."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Esther risk?",
+        "teens": "What is unusual about the book of Esther?"
+      },
+      "options": [
+        "Her life",
+        "Her crown only",
+        "Nothing"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "Going to the king uninvited could mean death.",
+        "teens": "It never mentions God — the providence is structural, not stated."
+      }
+    }
+  },
+  {
+    "id": "h3",
+    "title": "DANIEL",
+    "ref": "Daniel 6:10",
+    "text": "He went into his house — now his windows were open toward Jerusalem — and he kneeled on his knees three times a day and prayed and gave thanks before his God, as he did before.",
+    "body": {
+      "kids": "A new law said you could only pray to the king. Daniel went home and prayed like he always did.",
+      "teens": "He does not protest, organise or hide. The witness is continuity: the ordinary practice, kept when it became costly."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Daniel do when praying became illegal?",
+        "teens": "How did Daniel respond to the decree?"
+      },
+      "options": [
+        "He prayed as usual",
+        "He stopped",
+        "He fled"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "Exactly as before, windows open.",
+        "teens": "He changed nothing — neither concealment nor staged defiance."
+      }
+    }
+  },
+  {
+    "id": "h4",
+    "title": "MOSES",
+    "ref": "Exodus 14:14",
+    "text": "Yahweh will fight for you, and you shall be still.",
+    "body": {
+      "kids": "Moses led people who complained the whole way. At the sea, with an army behind them, God told them to stand still and watch.",
+      "teens": "Israel does nothing at the sea. The nation begins with a rescue it could not perform, which is why grace, not achievement, is the grammar of everything after."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What were the people told to do at the sea?",
+        "teens": "What is the theological centre of Exodus 14?"
+      },
+      "options": [
+        "Stand still",
+        "Swim",
+        "Build boats"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "Stand still and watch God rescue them.",
+        "teens": "That the deliverance is entirely God's work — Israel contributes nothing."
+      }
+    }
+  }
+]

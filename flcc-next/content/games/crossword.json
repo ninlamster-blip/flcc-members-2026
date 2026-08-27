@@ -1,0 +1,62 @@
+[
+  {
+    "id": "beginning",
+    "title": "IN THE BEGINNING",
+    "ageGroup": "kids",
+    "words": [
+      { "answer": "ADAM", "clue": "The first man God made" },
+      { "answer": "EVE", "clue": "The first woman" },
+      { "answer": "EDEN", "clue": "The garden they lived in" },
+      { "answer": "NOAH", "clue": "He built a boat because God told him to" },
+      { "answer": "ARK", "clue": "The boat that carried the animals" },
+      { "answer": "DOVE", "clue": "The bird that came back holding a leaf" },
+      { "answer": "RAINBOW", "clue": "God's promise, painted in the sky" },
+      { "answer": "LIGHT", "clue": "The very first thing God made" }
+    ]
+  },
+  {
+    "id": "jesus",
+    "title": "THE JESUS ONE",
+    "ageGroup": "kids",
+    "words": [
+      { "answer": "BREAD", "clue": "Five loaves of it fed five thousand people" },
+      { "answer": "FISH", "clue": "Two of these were in the boy's lunch" },
+      { "answer": "STORM", "clue": "Jesus told it to be still, and it was" },
+      { "answer": "DONKEY", "clue": "What Jesus rode into Jerusalem" },
+      { "answer": "SHEPHERD", "clue": "“I am the good ___”" },
+      { "answer": "MARY", "clue": "Jesus' mother" },
+      { "answer": "CROSS", "clue": "Where Jesus died" },
+      { "answer": "EMPTY", "clue": "What the tomb was on Sunday morning" }
+    ]
+  },
+  {
+    "id": "exodus",
+    "title": "OUT OF EGYPT",
+    "ageGroup": "teens",
+    "words": [
+      { "answer": "MOSES", "clue": "Grew up in Pharaoh's house, then led Israel out of it" },
+      { "answer": "AARON", "clue": "His brother, and Israel's first high priest" },
+      { "answer": "PHARAOH", "clue": "The ruler who kept changing his mind" },
+      { "answer": "MANNA", "clue": "Bread that turned up with the morning dew" },
+      { "answer": "SINAI", "clue": "The mountain where the law was given" },
+      { "answer": "PASSOVER", "clue": "The meal eaten on the night they left" },
+      { "answer": "QUAIL", "clue": "The birds sent when the people complained about meat" },
+      { "answer": "SEA", "clue": "It opened, and they walked through on dry ground" }
+    ]
+  },
+  {
+    "id": "paul",
+    "title": "PAUL'S ROAD",
+    "ageGroup": "teens",
+    "words": [
+      { "answer": "PAUL", "clue": "Wrote more New Testament letters than anyone else" },
+      { "answer": "DAMASCUS", "clue": "The road where a light stopped him" },
+      { "answer": "SILAS", "clue": "Sang hymns with him in a Philippian jail" },
+      { "answer": "TIMOTHY", "clue": "The young leader he wrote two letters to" },
+      { "answer": "GRACE", "clue": "His word for a gift nobody earns" },
+      { "answer": "ATHENS", "clue": "Where he preached about an altar to an unknown god" },
+      { "answer": "ROMANS", "clue": "His longest letter, to a church he had never visited" },
+      { "answer": "TENTS", "clue": "He made these for a living while he preached" }
+    ]
+  }
+]
