@@ -6,13 +6,14 @@ import * as router from './core/router.js';
 import { getProfile, getSettings, saveProfile, currentBand, greeting, readerScale } from './core/profile.js';
 import { toast } from './core/ui.js';
 
-// Four destinations. Everything else is reached from inside one of them, and
-// nothing in the bar is named after a technology.
+// Three destinations, and none of them is named after a technology. Read is
+// where the day begins and where Scripture is; Study is search and the things
+// that help you understand it; Notes is everything the reader wrote.
+// Settings live behind the header control, not in the bar.
 const TABS = [
-  { name: 'today',   label: 'Today',   icon: 'lamp' },
-  { name: 'bible',   label: 'Read',    icon: 'read' },
-  { name: 'reflect', label: 'Reflect', icon: 'reflect' },
-  { name: 'me',      label: 'Me',      icon: 'me' },
+  { name: 'today', label: 'Read',  icon: 'read' },
+  { name: 'study', label: 'Study', icon: 'study' },
+  { name: 'notes', label: 'Notes', icon: 'notes' },
 ];
 
 const SCREENS = {
@@ -23,6 +24,8 @@ const SCREENS = {
   story:      () => import('./screens/story.js'),
   journey:    () => import('./screens/journey.js'),
   reflect:    () => import('./screens/reflect.js'),
+  notes:      () => import('./screens/reflect.js'),
+  study:      () => import('./screens/study.js'),
   memory:     () => import('./screens/memory.js'),
   challenge:  () => import('./screens/challenge.js'),
   prayer:     () => import('./screens/prayer.js'),
@@ -77,7 +80,12 @@ function onboarding() {
     saveProfile({ name, birthYear: year });
     applyChrome();
     router.go('today', { replace: true });
-    boot();
+    window.addEventListener('scroll', () => {
+  if (window.scrollY > 4) headerEl.dataset.scrolled = '';
+  else delete headerEl.dataset.scrolled;
+}, { passive: true });
+
+boot();
   } },
     h('div', { class: 'wordmark', text: 'Lamp' }),
     h('p', { class: 'tagline', text: 'Discover God. Know His Word. Live It.' }),
@@ -121,9 +129,9 @@ const ROOT_SCREENS = new Set(TABS.map((tab) => tab.name));
 
 // Which destination a screen belongs to, for the tab bar's sake.
 const UNDER = {
-  read: 'bible', stories: 'today', story: 'today',
-  prayer: 'reflect', journal: 'reflect', memory: 'reflect', challenge: 'today',
-  ask: 'today', journey: 'me',
+  read: 'today', bible: 'today', stories: 'study', story: 'study',
+  prayer: 'notes', journal: 'notes', memory: 'study', challenge: 'today',
+  ask: 'study', journey: 'me', reflect: 'notes',
 };
 
 async function show(route, module) {
@@ -156,9 +164,17 @@ async function show(route, module) {
     actionEl.hidden = false;
     actionEl.textContent = view.action.label;
     actionEl.onclick = view.action.onclick;
+  } else if (ROOT_SCREENS.has(route.name)) {
+    // Settings are not a destination, but they are never more than one tap away.
+    actionEl.hidden = false;
+    actionEl.textContent = '';
+    actionEl.setAttribute('aria-label', 'You and your settings');
+    actionEl.replaceChildren(icon('me', 20));
+    actionEl.onclick = () => router.go('me');
   } else {
     actionEl.hidden = true;
     actionEl.onclick = null;
+    actionEl.removeAttribute('aria-label');
   }
   screenEl.appendChild(view.el);
   screenEl.scrollTop = 0;
@@ -173,6 +189,11 @@ function boot() {
   if (!getProfile()) { onboarding(); return; }
   router.start(show);
 }
+
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 4) headerEl.dataset.scrolled = '';
+  else delete headerEl.dataset.scrolled;
+}, { passive: true });
 
 boot();
 

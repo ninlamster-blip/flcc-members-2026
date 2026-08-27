@@ -1,5 +1,6 @@
-// REFLECT — the private half of the app in one place: prayer, journal, and the
-// verses being learned by heart. A quiet index, not a hub.
+// NOTES — everything the reader wrote or marked: journal, prayers, and the
+// verses they highlighted. A quiet index, not a hub. Nothing here leaves the
+// device.
 
 import { h, strip, go, list, row, notice } from '../core/ui.js';
 import * as store from '../core/storage.js';
@@ -10,14 +11,21 @@ import { pips } from '../core/ui.js';
 export default async function reflectScreen(ctx) {
   const journal = store.read(store.KEYS.journal, { entries: [] }) || { entries: [] };
   const prayers = (store.read(store.KEYS.prayers, { items: [] }) || {}).items || [];
-  const verses = memory.getMemory().verses;
-  const due = memory.dueVerses();
+  // Highlights, newest chapter first.
+  const marks = (store.read(store.KEYS.highlights, { items: {} }) || {}).items || {};
+  const highlights = Object.entries(marks).flatMap(([chapterKey, verses]) => {
+    const [bookId, chapter] = chapterKey.split('.');
+    return Object.keys(verses).map((verse) => {
+      const ref = parseRef(`${bookId}.${chapter}.${verse}`);
+      return { bookId, chapter, verse, label: ref ? formatRef(ref) : `${chapterKey}:${verse}` };
+    });
+  });
 
   const when = (iso) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
 
   const el = h('div', {},
     h('section', { class: 'strip strip-tight' },
-      h('h1', { class: 'title-lg', text: 'Reflect' }),
+      h('h1', { class: 'title-lg', text: 'Notes' }),
       h('p', { class: 'sub', style: 'margin-top:.4rem',
         text: 'What you write here stays on this device. It is never uploaded, and never shown to a parent.' })),
 
@@ -36,17 +44,16 @@ export default async function reflectScreen(ctx) {
         : h('p', { class: 'lede', text: 'Tell God how you are, and let Scripture answer first.' }),
       go('Pray', () => ctx.go('prayer'))),
 
-    strip('By heart',
-      verses.length
-        ? h('ul', { class: 'list' }, ...verses.slice(0, 5).map((verse) => h('li', {},
-            h('button', { class: 'row', type: 'button', onclick: () => ctx.go('memory') },
+    strip('Highlights',
+      highlights.length
+        ? h('ul', { class: 'list' }, ...highlights.slice(0, 8).map((mark) => h('li', {},
+            h('button', { class: 'row', type: 'button', onclick: () => ctx.go(`read/${mark.bookId}/${mark.chapter}?v=${mark.verse}`) },
               h('span', { class: 'row-main' },
-                h('span', { class: 'row-title', text: formatRef(parseRef(verse.ref)) || verse.ref }),
-                h('span', { class: 'row-sub', text: memory.STAGE_LABEL[verse.stage] })),
-              pips(memory.STAGES.indexOf(verse.stage) + 1)))))
-        : h('p', { class: 'lede', text: 'Tap a verse while reading and choose Remember. It comes back a day later, then three days, then a week.' }),
-      go(due.length ? `Practise ${due.length} due` : 'Memory verses', () => ctx.go('memory'))),
+                h('span', { class: 'row-title', text: mark.label }),
+                h('span', { class: 'row-sub', text: 'Marked while reading' }))))))
+        : h('p', { class: 'lede', text: 'Tap a verse while reading and choose a colour. Every verse you mark is listed here.' }),
+      highlights.length > 8 ? h('p', { class: 'sub', style: 'margin-top:.9rem', text: `and ${highlights.length - 8} more` }) : null),
   );
 
-  return { title: 'Reflect', el };
+  return { title: 'Notes', el };
 }

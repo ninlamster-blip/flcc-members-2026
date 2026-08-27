@@ -43,6 +43,8 @@ const ICONS = {
   chevron:'M9 6l6 6-6 6',
   check:  'M20 6L9 17l-5-5',
   discover:'M12 3a9 9 0 100 18 9 9 0 000-18zM15.5 8.5l-2 5-5 2 2-5z',
+  study:  'M11 4a7 7 0 100 14 7 7 0 000-14zM16.2 16.2L21 21',
+  notes:  'M6 3.5h9l4 4V20a.5.5 0 01-.5.5h-12A.5.5 0 016 20zM15 3.5v4h4M9.5 12h6M9.5 15.5h6',
 };
 
 export function icon(name, size = 21) {

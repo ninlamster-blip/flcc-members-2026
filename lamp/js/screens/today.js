@@ -1,17 +1,16 @@
-// TODAY — the day's page.
+// READ — where the day begins and where Scripture is.
 //
 // Not a dashboard. A greeting, the day's Scripture set as the hero, what you
-// were reading, and one invitation to reflect. Everything else waits.
+// were reading, the way into the Bible, and one invitation to reflect.
 
-import { h, strip, go, spinner, notice, toast, sceneEl, reveal } from '../core/ui.js';
+import { h, strip, go, spinner, notice, reveal } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { pickFor } from '../core/daily.js';
 import { getProgress, continueReading, today as todayKey } from '../core/progress.js';
 import { pick } from '../core/age.js';
-import { parseRef, formatRef, displayRef } from '../core/refs.js';
+import { parseRef, formatRef } from '../core/refs.js';
 import { getPassage, joinText } from '../core/bible.js';
 import { translationId } from '../core/profile.js';
-import { hasScene } from '../core/art.js';
 import * as challenges from '../core/challenges.js';
 import * as store from '../core/storage.js';
 import { bookById } from '../core/books.js';
@@ -65,9 +64,12 @@ export default async function todayScreen(ctx) {
   const reflect = h('section', { class: 'strip' });
   el.appendChild(reflect);
 
-  // ── A few stories, for the readers who want pictures ──────────────────────
-  const discover = h('div');
-  el.appendChild(discover);
+  // ── Into the Bible itself ─────────────────────────────────────────────────
+  el.appendChild(strip('The Bible',
+    h('p', { class: 'lede', text: ctx.band === '15-18'
+      ? 'Sixty-six books, and a field that takes a reference or a word.'
+      : 'Somewhere to start, or all sixty-six books.' }),
+    go('Browse the Bible', () => ctx.go('bible'))));
 
   (async () => {
     let daily = null;
@@ -112,24 +114,6 @@ export default async function todayScreen(ctx) {
         challenge && !done ? go('Take today’s challenge', () => ctx.go('challenge'), { plain: true }) : null));
   })();
 
-  (async () => {
-    if (ctx.band === '15-18') return;      // the oldest band gets the index, not a shelf
-    let index = [];
-    try { index = await content.stories(); } catch { return; }
-    const picks = [0, 1, 2, 3].map((offset) => pickFor(index, now, offset * 7)).filter(Boolean);
-    const seen = new Set();
-    const unique = picks.filter((story) => !seen.has(story.slug) && seen.add(story.slug)).slice(0, 2);
-    if (!unique.length) return;
-
-    discover.replaceChildren(strip('Stories',
-      h('div', { class: 'story-grid' }, ...unique.map((story) =>
-        h('button', { class: 'story-card', type: 'button', onclick: () => ctx.go(`story/${story.slug}`) },
-          hasScene(story.slug) ? sceneEl(story.slug, { ratio: 'story', title: story.title }) : null,
-          h('span', { class: 'name', text: story.title }),
-          h('span', { class: 'ref', text: displayRef(story.reference) })))),
-      go('All stories', () => ctx.go('stories'), { plain: true })));
-  })();
-
   reveal([...el.children].filter((child) => child.tagName === 'SECTION'));
-  return { title: 'Today', el };
+  return { title: 'Read', el };
 }

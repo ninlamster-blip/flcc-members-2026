@@ -127,5 +127,20 @@ export default async function readerScreen(ctx) {
   // Room for the toolbar, so the last verses are never read through it.
   el.appendChild(h('div', { style: 'height:4rem', 'aria-hidden': 'true' }));
 
+  // Reading downwards hides the controls; a pause or a scroll back brings
+  // them out. The words are what the screen is for.
+  let lastY = window.scrollY;
+  let idle = null;
+  const onScroll = () => {
+    const y = window.scrollY;
+    if (y > lastY + 6 && y > 80) toolbar.dataset.away = '';
+    else if (y < lastY - 6) delete toolbar.dataset.away;
+    lastY = y;
+    clearTimeout(idle);
+    idle = setTimeout(() => delete toolbar.dataset.away, 900);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  toolbar.addEventListener('remove', () => window.removeEventListener('scroll', onScroll));
+
   return { title: `${book.name} ${chapter}`, el, tab: 'bible' };
 }

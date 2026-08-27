@@ -23,14 +23,17 @@ python3 -m http.server 8000    # from the repository root
 
 ## What is here
 
-Four destinations, and none of them is named after a technology.
+Three destinations, and none of them is named after a technology.
 
 | Tab | What it does |
 |--------|--------------|
-| **Today** | The day's page: greeting, the day's Scripture set as the hero, what you were reading, one invitation to reflect, and a story or two |
-| **Read** | 66 books, ways in for younger readers, reference jumping (`1 sam 17`, `psalm 23`), search over downloaded chapters, and the reader itself |
-| **Reflect** | Journal, prayer, and the verses being learned by heart |
-| **Me** | Who you are, reading history and the path you are on, settings, a plain account of what is stored and sent, download-everything and delete-everything |
+| **Read** | The day's Scripture, what you were reading, the way into the 66 books, and the reader itself |
+| **Study** | Search over what you have downloaded, understanding a passage, the stories, and the verses being learned by heart |
+| **Notes** | Journal, prayers, and highlights — everything the reader wrote or marked |
+
+Settings are not a tab: who you are, reading history, translation, privacy and
+the delete-everything control sit behind one header control, one tap from every
+destination.
 
 Inside them: 14 illustrated stories in six parts written three times over,
 memory verses with real spaced repetition, five kinds of daily challenge, and
@@ -66,9 +69,9 @@ network, a few kilobytes for the set — and testable: the suite fails if a scen
 strays from the palette or references anything outside itself. Commissioned
 artwork can replace the kit later without touching a screen.
 
-**Light on paper.** The identity comes from Psalm 119:105: warm ivory ground,
-near-black ink, one soft amber, a serif for Scripture and a sans for the
-interface. Hairlines and space divide the page rather than cards — the home
+**Light on paper.** The identity comes from Psalm 119:105: canvas `#FBF9F5`,
+text `#2C2A29`, accent `#C07D2B`, dark canvas `#141413` — Source Serif 4 for
+Scripture at 18px/1.75/68ch, Inter for chrome and never for the text. Hairlines and space divide the page rather than cards — the home
 screen has none, and a test keeps it that way. Once a day, the first time the
 app opens, the day's Scripture rises out of the page as light passes behind
 it; never twice, and never under reduced motion.

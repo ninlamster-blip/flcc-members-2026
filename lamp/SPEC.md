@@ -137,25 +137,24 @@ lamp/
 
 ## 4. Information architecture
 
-Four destinations. Everything else is reached from inside one of them, and
+Three destinations. Everything else is reached from inside one of them, and
 nothing in the tab bar is named after a technology.
 
 | Tab | Contains |
 |-----|----------|
-| **TODAY** | The day's page — greeting, the day's Scripture, what you were reading, one invitation to reflect, and a story or two |
-| **READ** | Scripture: the reader, ways in, chapter navigation, search, audio |
-| **REFLECT** | The private half — journal, prayer, and the verses being learned by heart |
-| **ME** | Who you are, your reading history and the path you are on, settings, and a plain account of what is stored and sent |
+| **READ** | Where the day begins and where Scripture is: the greeting, the day's Scripture, what you were reading, the way into the 66 books, and the reader itself |
+| **STUDY** | Search, understanding a passage, the stories, and the verses being learned by heart |
+| **NOTES** | Everything the reader wrote or marked: journal, prayers, highlights |
 
-Five destinations were one too many: Journey was a scoreboard that belonged
-inside Me, and Discover held only stories, which belong on Today and under
-Read.
+**Settings are not a destination.** Who you are, your reading history, the
+path, the translation, the region, and the plain account of what is stored and
+sent all live behind a single control in the header, reachable from every
+destination. They are not in the bar because they are not where anyone is
+going.
 
 **Understanding a passage** (§9) is not a tab and is not called AI. It is
-reached from a verse, from the reader's controls, and from a story — a
+reached from a verse, from the reader's controls, and from Study — a
 capability the reader picks up, the way they would pick up a footnote.
-
----
 
 ## 5. TODAY
 
@@ -558,16 +557,27 @@ The reference points are Apple Books, a well-made devotional journal and a
 modern editorial publication — not a dashboard, and not another app of
 colourful tiles.
 
-**Palette.** Light: canvas `#FBF8F2`, a deeper well `#F4EEE1`, ink `#17150F`,
-warm grey `#46413A`, muted `#857E72`, stone rule `#E7E0D0`, amber ink
-`#8A5A12`, lamplight `rgb(232 180 92)`. Dark: canvas `#14120E`, ink `#F1EBE0`,
-rule `#2C2620`, amber `#E0A94E`. No blue, no purple, no gradient used as
-decoration.
+**Palette.** Light: canvas `#FBF9F5`, surface `#F3EFEA`, primary text
+`#2C2A29`, secondary `#55514E`, muted `#767069`, rule `#E7E1D8`, accent
+`#C07D2B` — darkened to `#9E6119` wherever the accent carries text, because
+`#C07D2B` on this canvas is 3.2:1 and fails AA at body size. Dark: canvas
+`#141413`, surface `#1E1E1C`, primary text `#E3E2DE`, accent `#D9954A`.
 
-**Typography.** A clean sans for the interface (Inter), a serif for Scripture
-(Literata). The contrast is the point: ancient Word, modern interface. Scripture
-is always larger than the interface around it, and the day's verse is set as a
-hero at up to 1.95rem with tight tracking and loose leading.
+No blue, no purple, no gradient used as decoration, no heavy shadow, and no
+thick border: depth comes from a single step of background colour and from
+space.
+
+**Typography.** A clean sans for the interface (Inter) — chrome, navigation,
+metadata, buttons — and a serif for Scripture (Source Serif 4, falling back to
+Lora and then the system serif). The contrast is the point: ancient Word,
+modern interface. The sans is never used for the text itself.
+
+**The reading metrics are fixed, and they are not a matter of taste.**
+Scripture is 18px (1.125rem), line height 1.75, measure 68ch — for every
+reader, at every age. Verse numbers are superscript, 0.75rem, and muted, so
+they mark the text without breaking the line. What age changes is the
+interface around the words, whether illustration is present, and the reader's
+starting zoom (115% / 105% / 100%), which anyone can change from Aa.
 
 **Boxes are the exception.** The page is divided by hairline rules and space,
 not by cards. A card appears only where something genuinely needs holding
@@ -605,12 +615,12 @@ changing register. One band token on the root element drives it:
 
 | | 7–10 | 11–14 | 15–18 |
 |---|---|---|---|
-| Interface / Scripture size | 19px / 1.5rem | 17.5px / 1.38rem | 16.5px / 1.3rem |
-| Column | 30rem | 32rem | 35rem |
-| Stories on Today | two illustrated | two illustrated | none — the index |
-| The Bible opens on | eight ways in, then the books | the same, worded up | the 66 books |
-| Translation picker | in Settings only | on the Read screen | on the Read screen |
+| Scripture | 18px / 1.75 / 68ch | 18px / 1.75 / 68ch | 18px / 1.75 / 68ch |
+| Interface size | 17.5px | 16.5px | 16px |
 | The reader starts at | 115% | 105% | 100% |
+| Stories in Study | four illustrated | four illustrated | a plain index |
+| The Bible opens on | eight ways in, then the books | the same, worded up | the 66 books |
+| Translation picker | in Settings only | on the Bible screen | on the Bible screen |
 | Illustration | present | present | absent |
 
 Nothing is hidden from the youngest band and nothing is withheld from the
