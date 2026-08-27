@@ -114,6 +114,16 @@ test('memory verses, prayer moods and journal prompts are complete', () => {
   for (const key of ['teaching', 'thankful', 'help']) allBands(prompts[key], `journal ${key}`);
 });
 
+test('the Bible opens somewhere for a reader who does not know where to start', () => {
+  const entries = read('start-here.json');
+  assert.ok(entries.length >= 5, 'a handful of ways in, not a wall of 66 books');
+  for (const entry of entries) {
+    validRef(entry.ref, 'start-here');
+    assert.ok(entry.label['7-10'] && entry.label['11-14'], `${entry.ref}: needs a label for both younger bands`);
+    assert.ok(entry.label['7-10'].length < 40, `${entry.ref}: the youngest label is too long to scan`);
+  }
+});
+
 test('every region has help lines, and no line is a bare unlabelled number', () => {
   const regions = readdirSync(new URL('../content/safety/', import.meta.url)).filter((n) => n.endsWith('.json'));
   assert.ok(regions.length >= 3);

@@ -8,7 +8,8 @@ import { DEFAULT_TRANSLATION } from './bible.js';
 const DEFAULT_SETTINGS = {
   theme: 'system',          // system | light | dark
   readerTheme: 'day',       // day | sepia | night
-  readerScale: 1,
+  readerScale: null,     // null means "follow the age band"
+
   audio: true,
   aiEnabled: false,         // opt-in: Ask needs a Worker URL before it does anything
   aiWorker: '',
@@ -46,6 +47,13 @@ export function currentBand(profile = getProfile()) {
 
 export function currentAge(profile = getProfile()) {
   return profile ? ageFromBirthYear(profile.birthYear) : null;
+}
+
+/** The reader's starting text size, when nobody has chosen one. */
+export const BAND_READER_SCALE = { '7-10': 1.15, '11-14': 1.05, '15-18': 1 };
+
+export function readerScale(settings = getSettings(), band = currentBand()) {
+  return settings.readerScale || BAND_READER_SCALE[band] || 1;
 }
 
 export function translationId(settings = getSettings()) {

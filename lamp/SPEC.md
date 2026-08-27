@@ -593,6 +593,10 @@ three apps in a trench coat:
 |---|---|---|---|
 | Today opens with | a picture of the time of day | a slimmer band of it | the greeting |
 | Stories are | a shelf of illustrated cards | a list with thumbnails | a plain index |
+| The Bible opens on | eight ways in, then the books | the same, worded up | the 66 books |
+| Translation picker | in Settings only | on the Bible screen | on the Bible screen |
+| The reader starts at | 115% | 105% | 100% |
+| Journey leads with | a ring towards the next stage | the same | the numbers |
 | Cards carry | a 5px colour rail | a 3px rail | no rail |
 | Tap targets | 52px | 48px | 44px |
 | Type / measure | 19px / 30rem | 17.5px / 33rem | 16.5px / 36rem |

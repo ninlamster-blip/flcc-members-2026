@@ -5,7 +5,7 @@ import { h, section, button, spinner, notice, sheet, scripture, toast } from '..
 import { bookById } from '../core/books.js';
 import { stepChapter, chapterId, refId } from '../core/refs.js';
 import { getChapter } from '../core/bible.js';
-import { translationId, getSettings, saveSettings } from '../core/profile.js';
+import { translationId, getSettings, saveSettings, readerScale } from '../core/profile.js';
 import { recordReading } from '../core/progress.js';
 import * as store from '../core/storage.js';
 import * as memory from '../core/memory.js';
@@ -102,7 +102,7 @@ export default async function readerScreen(ctx) {
       const dialog = sheet('Reading',
         h('p', { class: 'eyebrow', text: 'Size' }),
         h('div', { class: 'btn-row' }, ...[0.9, 1, 1.15, 1.35].map((scale) => button(`${Math.round(scale * 100)}%`, {
-          variant: (settings.readerScale || 1) === scale ? 'btn-primary' : '',
+          variant: readerScale(settings, ctx.band) === scale ? 'btn-primary' : '',
           onclick: () => { saveSettings({ readerScale: scale }); document.documentElement.style.setProperty('--reader-scale', String(scale)); dialog.close(); },
         }))),
         h('p', { class: 'eyebrow', style: 'margin-top:1rem', text: 'Theme' }),

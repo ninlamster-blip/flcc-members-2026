@@ -1,9 +1,12 @@
 // BIBLE — book and chapter navigation, a jump-to field, and search over the
 // chapters this device has already downloaded.
 
-import { h, section, list, row, button, notice, spinner, toast } from '../core/ui.js';
+import { h, section, list, row, button, notice, spinner, toast, sceneEl } from '../core/ui.js';
 import { OLD_TESTAMENT, NEW_TESTAMENT } from '../core/books.js';
-import { parseRef, formatRef } from '../core/refs.js';
+import { parseRef, formatRef, displayRef } from '../core/refs.js';
+import * as content from '../core/content.js';
+import { pick } from '../core/age.js';
+import { hasScene } from '../core/art.js';
 import { searchCached, TRANSLATIONS } from '../core/bible.js';
 import { translationId, saveSettings } from '../core/profile.js';
 
@@ -78,7 +81,9 @@ export default async function bibleScreen(ctx) {
     return section(title, wrap);
   };
 
-  el.appendChild(h('div', { class: 'btn-row', style: 'margin-bottom:1.5rem' },
+  // "WEB / KJV / ASV" means nothing to a seven-year-old, and it is the first
+  // thing they would see. It stays in Me → Settings for that band.
+  if (ctx.band !== '7-10') el.appendChild(h('div', { class: 'btn-row', style: 'margin-bottom:1.5rem' },
     ...TRANSLATIONS.map((option) => {
       const active = option.id === trans;
       return button(option.id, {
@@ -91,6 +96,27 @@ export default async function bibleScreen(ctx) {
         },
       });
     })));
+
+  // The youngest bands get somewhere to start before the full canon.
+  const startHere = h('div');
+  if (ctx.band !== '15-18') {
+    el.appendChild(startHere);
+    (async () => {
+      let entries = [];
+      try { entries = await content.load('start-here.json'); } catch { return; }
+      const rows = entries.map((entry) => {
+        const ref = parseRef(entry.ref);
+        if (!ref) return null;
+        return h('li', {},
+          h('button', { class: 'row', type: 'button', onclick: () => ctx.go(`read/${ref.book.id}/${ref.chapter}`) },
+            entry.scene && hasScene(entry.scene) ? sceneEl(entry.scene, { ratio: 'thumb' }) : null,
+            h('span', { class: 'row-main' },
+              h('span', { class: 'row-title', text: pick(entry.label, ctx.band) }),
+              h('span', { class: 'row-sub', text: displayRef(entry.ref) }))));
+      }).filter(Boolean);
+      startHere.replaceChildren(section('Start here', h('ul', { class: 'list' }, ...rows)));
+    })();
+  }
 
   el.appendChild(testament('Old Testament', OLD_TESTAMENT));
   el.appendChild(testament('New Testament', NEW_TESTAMENT));

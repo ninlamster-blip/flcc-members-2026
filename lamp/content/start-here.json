@@ -1,0 +1,66 @@
+[
+  {
+    "ref": "GEN.1",
+    "scene": "creation",
+    "label": {
+      "7-10": "How everything began",
+      "11-14": "The creation account"
+    }
+  },
+  {
+    "ref": "LUK.2",
+    "scene": "birth-of-jesus",
+    "label": {
+      "7-10": "When Jesus was born",
+      "11-14": "The nativity, in Luke's telling"
+    }
+  },
+  {
+    "ref": "PSA.23",
+    "scene": null,
+    "label": {
+      "7-10": "The Lord is my shepherd",
+      "11-14": "The shepherd psalm"
+    }
+  },
+  {
+    "ref": "JHN.1",
+    "scene": null,
+    "label": {
+      "7-10": "Who Jesus really is",
+      "11-14": "John's prologue"
+    }
+  },
+  {
+    "ref": "MRK.10",
+    "scene": null,
+    "label": {
+      "7-10": "Jesus and the children",
+      "11-14": "Jesus, children, wealth and blindness"
+    }
+  },
+  {
+    "ref": "1SA.17",
+    "scene": "david-goliath",
+    "label": {
+      "7-10": "David and the giant",
+      "11-14": "David and Goliath"
+    }
+  },
+  {
+    "ref": "JON.1",
+    "scene": "jonah",
+    "label": {
+      "7-10": "The man and the big fish",
+      "11-14": "Jonah runs"
+    }
+  },
+  {
+    "ref": "PHP.4",
+    "scene": null,
+    "label": {
+      "7-10": "Do not worry",
+      "11-14": "Paul on contentment and anxiety"
+    }
+  }
+]

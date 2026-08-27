@@ -3,7 +3,7 @@
 
 import { h, clear, icon } from './core/dom.js';
 import * as router from './core/router.js';
-import { getProfile, getSettings, saveProfile, currentBand, greeting } from './core/profile.js';
+import { getProfile, getSettings, saveProfile, currentBand, greeting, readerScale } from './core/profile.js';
 import { toast, heroEl } from './core/ui.js';
 
 const TABS = [
@@ -48,7 +48,7 @@ export function applyChrome() {
   if (settings.theme === 'light' || settings.theme === 'dark') root.dataset.theme = settings.theme;
   else delete root.dataset.theme;
   root.dataset.band = currentBand();
-  root.style.setProperty('--reader-scale', String(settings.readerScale || 1));
+  root.style.setProperty('--reader-scale', String(readerScale(settings, root.dataset.band)));
 }
 
 // ── Onboarding ──────────────────────────────────────────────────────────────

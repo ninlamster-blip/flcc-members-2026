@@ -62,10 +62,11 @@ strays from the palette or references anything outside itself. Commissioned
 artwork can replace the kit later without touching a screen.
 
 **The design grows with the reader.** One band token drives the whole system,
-so at 7–10 Stories is a shelf of pictures, cards carry a colour rail, taps are
-52px and Today opens with the sky; at 15–18 the pictures step back, the rails
-disappear and the type tightens. Same screens, same content, three registers —
-see SPEC.md §13.
+so at 7–10 Stories is a shelf of pictures, the Bible opens on eight ways in
+rather than 66 book names, the reader starts at 115%, cards carry a colour
+rail, taps are 52px and Today opens with the sky; at 15–18 the pictures step
+back, the rails disappear, the canon is the index and the type tightens. Same
+screens, same content, three registers — see SPEC.md §13.
 
 **Storage.** Everything lives under `lamp/v1/…`, and `storage.js` throws on any
 key that does not. That guard is what makes the boundary in SPEC.md §3
@@ -94,14 +95,14 @@ call is made at all. `test/safety.test.mjs` holds the fixtures.
 node --test 'lamp/test/*.test.mjs'
 ```
 
-52 tests, no dependencies. They cover age-band resolution and fallback,
+55 tests, no dependencies. They cover age-band resolution and fallback,
 reference parsing across the whole canon, both response shapes `bolls.life` has
 served, the storage namespace guard (including explicit FLCC and Shepherd
 keys), memory-verse scheduling and grading, daily and challenge determinism,
 the AI request contract (asserting the child's name, journal and prayers are
 never in the payload), the safety fixtures, the illustration system (every story has a scene, every
 scene is self-contained and drawn only from the palette), reference display for
-chapter ranges and lists, and a full schema validation of every content file —
+chapter ranges and lists, a parse check over every module the browser loads, and a full schema validation of every content file —
 a story missing an age band fails the suite.
 
 ## Before a church launches this

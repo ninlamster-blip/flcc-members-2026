@@ -46,6 +46,7 @@ const SHELL = [
   './content/memory-verses.json',
   './content/prayer-moods.json',
   './content/journal-prompts.json',
+  './content/start-here.json',
   './content/stories/index.json',
 ];
 

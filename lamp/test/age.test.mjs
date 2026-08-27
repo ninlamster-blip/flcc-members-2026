@@ -35,3 +35,10 @@ test('pick falls back downward, never to nothing', () => {
   assert.equal(pick('plain string', '7-10'), 'plain string');
   assert.equal(pick(null, '7-10'), null);
 });
+
+test('the reader opens at a size that suits the reader', async () => {
+  const { BAND_READER_SCALE } = await import('../js/core/profile.js');
+  assert.ok(BAND_READER_SCALE['7-10'] > BAND_READER_SCALE['11-14']);
+  assert.ok(BAND_READER_SCALE['11-14'] > BAND_READER_SCALE['15-18']);
+  for (const band of BANDS) assert.ok(BAND_READER_SCALE[band] >= 1, band);
+});
