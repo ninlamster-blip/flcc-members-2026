@@ -3,7 +3,7 @@
     "id": "l1",
     "title": "BORN IN A STABLE",
     "ref": "Luke 2:7",
-    "text": "She gave birth to her firstborn son. She wrapped him in bands of cloth and laid him in a feeding trough, because there was no room for them in the inn.",
+    "text": "She gave birth to her firstborn son. She wrapped him in bands of cloth, and laid him in a feeding trough, because there was no room for them in the inn.",
     "body": {
       "kids": "Jesus was born where the animals were kept. His first bed was the box the animals ate from. God did not arrive at the top — he arrived at the bottom.",
       "teens": "Luke dates the birth by imperial decree, then puts the Son of God in a feeding trough. The contrast is the argument: the announcement goes to shepherds, not to the palace."
@@ -22,6 +22,84 @@
       "why": {
         "kids": "A manger — the box animals eat from.",
         "teens": "A manger. Luke's whole gospel keeps this downward shape."
+      }
+    }
+  },
+  {
+    "id": "l6",
+    "title": "THE BOY IN THE TEMPLE",
+    "ref": "Luke 2:49",
+    "text": "He said to them, “Why were you looking for me? Didn’t you know that I must be in my Father’s house?”",
+    "body": {
+      "kids": "Jesus was twelve. His family lost him for three days and found him in the temple, asking the teachers questions — and answering theirs.",
+      "teens": "Luke gives us one scene between the birth and the baptism, and it is Jesus at twelve holding his own with the teachers of the law, then saying something no twelve-year-old says: he calls the temple his Father's house."
+    },
+    "quiz": {
+      "q": {
+        "kids": "Where did Mary and Joseph find Jesus?",
+        "teens": "Where did Luke say Jesus was found after three days?"
+      },
+      "options": [
+        "In the temple, with the teachers",
+        "At the market",
+        "On the road home"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "In God's house, asking questions. He was twelve.",
+        "teens": "In the temple — and his first recorded words are about whose son he is."
+      }
+    }
+  },
+  {
+    "id": "l7",
+    "title": "BAPTISED IN THE JORDAN",
+    "ref": "Matthew 3:17",
+    "text": "Behold, a voice out of the heavens said, “This is my beloved Son, with whom I am well pleased.”",
+    "body": {
+      "kids": "John baptised Jesus in the river. Heaven opened, the Spirit came down like a dove, and God said out loud that this was his Son, and that he was pleased with him.",
+      "teens": "Jesus is baptised before he has preached a sermon, healed anyone or called a disciple. The Father's approval lands on him before he has done a thing to earn it. Everything he does afterwards runs out of that, not towards it."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did God say when Jesus was baptised?",
+        "teens": "What does the Father say at the baptism?"
+      },
+      "options": [
+        "This is my beloved Son",
+        "Try harder",
+        "Nothing at all"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "God said he loved him and was pleased with him — before Jesus had done anything yet.",
+        "teens": "Approval first, ministry second. That order is the whole point."
+      }
+    }
+  },
+  {
+    "id": "l8",
+    "title": "FORTY DAYS ALONE",
+    "ref": "Matthew 4:4",
+    "text": "But he answered, “It is written, ‘Man shall not live by bread alone, but by every word that proceeds out of the mouth of God.’”",
+    "body": {
+      "kids": "Jesus went into the desert for forty days with no food. The devil came and tried three times to get him to take a shortcut. Every time, Jesus answered with words from the Bible.",
+      "teens": "Three temptations — bread, spectacle, power — and every one of them offers Jesus something he will genuinely receive later, without the cross. He answers each with Deuteronomy. He is not winning by being God; he is winning the way you would have to."
+    },
+    "quiz": {
+      "q": {
+        "kids": "How did Jesus answer the devil?",
+        "teens": "What does Jesus answer every temptation with?"
+      },
+      "options": [
+        "With words from the Bible",
+        "By running away",
+        "By arguing louder"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "“It is written…” — every single time.",
+        "teens": "Scripture, three times, from Deuteronomy. Nothing else."
       }
     }
   },
@@ -52,10 +130,36 @@
     }
   },
   {
+    "id": "l9",
+    "title": "SALT AND LIGHT",
+    "ref": "Matthew 5:14",
+    "text": "You are the light of the world. A city located on a hill can’t be hidden.",
+    "body": {
+      "kids": "Jesus sat down on a hillside and taught the biggest crowd he ever taught. He said his friends were like salt that gives food its taste, and light that nobody can hide.",
+      "teens": "The Sermon on the Mount opens by blessing the wrong people — the poor, the mourning, the meek — and then tells them they are the point of the world. Not that they should become salt and light. That they already are, and hiding it is the only real failure."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Jesus call his followers?",
+        "teens": "What does Jesus call his hearers, before they have done anything?"
+      },
+      "options": [
+        "Salt and light",
+        "Soldiers and kings",
+        "Students and servants"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "A city on a hill cannot be hidden — and he meant you.",
+        "teens": "Salt and light. It is a description, not a target."
+      }
+    }
+  },
+  {
     "id": "l3",
     "title": "HE CALMED THE STORM",
     "ref": "Mark 4:39",
-    "text": "He awoke and rebuked the wind, and said to the sea, “Peace! Be still!” The wind ceased and there was a great calm.",
+    "text": "He awoke, and rebuked the wind, and said to the sea, “Peace! Be still!” The wind ceased, and there was a great calm.",
     "body": {
       "kids": "The disciples were terrified. Jesus was asleep. He stood up, told the storm to stop — and it stopped.",
       "teens": "Mark ends the scene on a question, not a rescue: who is this? Authority over the sea belongs to God alone in the Hebrew Bible, and Mark's readers would have heard it."
@@ -78,10 +182,140 @@
     }
   },
   {
+    "id": "l10",
+    "title": "ENOUGH FOR EVERYONE",
+    "ref": "Matthew 14:20",
+    "text": "They all ate, and were filled. They took up twelve baskets full of that which remained left over from the broken pieces.",
+    "body": {
+      "kids": "A boy had five loaves and two fish. Jesus thanked God for them, and everyone — more than five thousand people — ate until they were full. There were twelve baskets left over.",
+      "teens": "The one miracle in all four gospels. Jesus does not produce food out of nothing; he takes what somebody actually had, blesses it, and hands it back through the disciples. The twelve baskets left over are one each, for the men who had just said it could not be done."
+    },
+    "quiz": {
+      "q": {
+        "kids": "How much food was left over?",
+        "teens": "What does Matthew record was left after everyone ate?"
+      },
+      "options": [
+        "Twelve baskets",
+        "Nothing at all",
+        "One loaf"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "More at the end than at the start. That is how God works.",
+        "teens": "Twelve baskets — one for each disciple who had said to send the crowd away."
+      }
+    }
+  },
+  {
+    "id": "l11",
+    "title": "WHO DO YOU SAY I AM?",
+    "ref": "Matthew 16:16",
+    "text": "Simon Peter answered, “You are the Christ, the Son of the living God.”",
+    "body": {
+      "kids": "Jesus asked his friends who people said he was. Then he asked the question that mattered: “But who do you say I am?” Peter answered, “You are the Christ, the Son of the living God.”",
+      "teens": "Jesus lets the crowd's opinions be reported, then cuts across them. Every other question in the gospels is somebody asking Jesus something. This one runs the other way, it is asked of his closest friends, and there is no version of following him that gets to leave it unanswered."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Peter answer?",
+        "teens": "What is Peter's answer at Caesarea Philippi?"
+      },
+      "options": [
+        "You are the Christ, the Son of the living God",
+        "You are a good teacher",
+        "You are Elijah"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "Peter got it right. Jesus is not just a good man.",
+        "teens": "The confession the church has stood on ever since — and Peter still gets it wrong six verses later."
+      }
+    }
+  },
+  {
+    "id": "l12",
+    "title": "HE WEPT, THEN HE CALLED",
+    "ref": "John 11:25",
+    "text": "Jesus said to her, “I am the resurrection and the life. He who believes in me will still live, even if he dies.",
+    "body": {
+      "kids": "Jesus' friend Lazarus died. When Jesus got there, everyone was crying — and Jesus cried too. Then he called Lazarus out of the tomb, and Lazarus walked out alive.",
+      "teens": "Jesus knows what he is about to do, and he still weeps. The shortest verse in the Bible sits two verses before the greatest sign in John's gospel. Grief is not treated as a lack of faith, even by the one person present who has every reason not to grieve."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Jesus do before raising Lazarus?",
+        "teens": "What does John record Jesus doing before the tomb?"
+      },
+      "options": [
+        "He wept",
+        "He laughed",
+        "He said nothing"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "He cried with them, even though he knew what would happen next.",
+        "teens": "He wept — knowing full well he was about to undo it."
+      }
+    }
+  },
+  {
+    "id": "l13",
+    "title": "THE KING ON A DONKEY",
+    "ref": "Matthew 21:9",
+    "text": "The multitudes who went in front of him, and those who followed, kept shouting, “Hosanna to the son of David! Blessed is he who comes in the name of the Lord! Hosanna in the highest!”",
+    "body": {
+      "kids": "Jesus rode into Jerusalem and the crowds waved palm branches and shouted. But he did not come on a war horse. He came on a borrowed donkey, the way a king comes in peace.",
+      "teens": "Every detail is chosen: the donkey is from Zechariah 9, the shout is Psalm 118, and the week ends with the same crowd shouting something else. Jesus stages a deliberate, unmistakable claim to be king, and then refuses every kind of kingship the crowd wants."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Jesus ride into Jerusalem on?",
+        "teens": "What is Jesus deliberately quoting by riding a donkey?"
+      },
+      "options": [
+        "A donkey",
+        "A war horse",
+        "A chariot"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "A donkey means peace. A horse means war. He chose the donkey.",
+        "teens": "Zechariah 9:9 — the king comes humble, and riding on a donkey."
+      }
+    }
+  },
+  {
+    "id": "l14",
+    "title": "THE NIGHT BEFORE",
+    "ref": "Luke 22:42",
+    "text": "saying, “Father, if you are willing, remove this cup from me. Nevertheless, not my will, but yours, be done.”",
+    "body": {
+      "kids": "On his last night, Jesus washed his friends' feet and shared bread and wine with them. Then he went to a garden to pray, and told God he was willing to do the hard thing.",
+      "teens": "Between the upper room and the arrest, Jesus asks to be let off. Out loud, three times, sweating. The prayer is not resignation and it is not calm — it is somebody who does not want to do this saying yes anyway. Whatever else obedience is, it is not the absence of dread."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Jesus pray in the garden?",
+        "teens": "How does Jesus' prayer in Gethsemane end?"
+      },
+      "options": [
+        "Not my will, but yours be done",
+        "Let me go home",
+        "Nothing at all"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "He asked God if there was another way — and then said yes anyway.",
+        "teens": "He asks for the cup to pass, and then hands the decision back. Both halves are real."
+      }
+    }
+  },
+  {
     "id": "l4",
     "title": "THE CROSS",
     "ref": "Luke 23:34",
-    "text": "Jesus said, “Father, forgive them, for they don’t know what they are doing.”",
+    "text": "Jesus said, “Father, forgive them, for they don’t know what they are doing.” Dividing his garments among them, they cast lots.",
     "body": {
       "kids": "Jesus had done nothing wrong. He was killed anyway — and while it happened, he asked God to forgive the people doing it.",
       "teens": "Crucifixion was designed to be public and humiliating. Luke records Pilate finding no guilt three times. The forgiveness is spoken from inside the execution, not afterwards."
@@ -107,7 +341,7 @@
     "id": "l5",
     "title": "THE EMPTY TOMB",
     "ref": "Luke 24:5–6",
-    "text": "“Why do you seek the living among the dead? He isn’t here, but is risen!”",
+    "text": "Becoming terrified, they bowed their faces down to the earth. They said to them, “Why do you seek the living among the dead? He isn’t here, but is risen. Remember what he told you when he was still in Galilee,",
     "body": {
       "kids": "On Sunday morning the stone was rolled away and the tomb was empty. Jesus was alive, and he ate breakfast with his friends.",
       "teens": "The first witnesses are women, whose testimony carried little legal weight — an unlikely detail to invent. Paul's summary in 1 Corinthians 15 lists named witnesses and says most were still alive to ask."
@@ -126,6 +360,32 @@
       "why": {
         "kids": "Empty — because Jesus was alive.",
         "teens": "Women, which is precisely what makes the detail hard to explain as invention."
+      }
+    }
+  },
+  {
+    "id": "l15",
+    "title": "GO AND TELL",
+    "ref": "Matthew 28:19",
+    "text": "Go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit,",
+    "body": {
+      "kids": "Before Jesus went back to heaven, he gave his friends a job: go to every country, tell people about him, and teach them to follow him. And he promised he would be with them always.",
+      "teens": "Eleven men, one of whom is still doubting — Matthew says so in the previous verse — are handed every nation on earth. The commission is not given to the qualified. It ends with the only thing that makes it survivable: “I am with you always, to the end of the age.”"
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Jesus tell his friends to do?",
+        "teens": "What does Matthew's gospel end by commissioning?"
+      },
+      "options": [
+        "Go and make disciples of all nations",
+        "Stay in Jerusalem and wait",
+        "Write a book"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "Go and tell. That is why FLCC exists — and why you were told.",
+        "teens": "Making disciples of all nations, by eleven people, one of whom was doubting."
       }
     }
   }

@@ -78,6 +78,8 @@ export const KEYS = {
   rsvps:    `${NS}rsvps`,     // event_rsvps
   ask:      `${NS}ask`,       // ask_sessions (the current thread only)
   settings: `${NS}settings`,  // this device's own configuration
+  bible:    `${NS}bible`,     // which translation, where it stopped, verses kept
+  library:  `${NS}library`,   // the ministry's edits to the authored content
 };
 
 // Achievements are deliberately absent: they are derived from progress every

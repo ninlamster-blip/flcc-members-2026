@@ -23,3 +23,38 @@ test('every browser module parses', async () => {
     }
   }
 });
+
+/**
+ * Every screen that shows a reference should let a reader open it.
+ *
+ * The app ships all 66 books, so a reference rendered as dead text is a young
+ * person retyping "Luke 2:49" into the Bible tab. This reads the screens rather
+ * than restating a list, so a new screen that quotes Scripture and forgets to
+ * link it fails here.
+ *
+ * Two deliberate exceptions:
+ *
+ *   game.js     the verse builder's round advances after 1.8 seconds, so a
+ *               link there would disappear before it could be tapped.
+ *   journey.js  its references sit inside a poster that is itself a button
+ *               opening the lesson. A button inside a button is invalid, and
+ *               the tap belongs to the lesson.
+ */
+test('a screen that shows a Scripture reference links it to the Bible', async () => {
+  const { readFileSync: read } = await import('node:fs');
+  const exempt = new Set(['game.js', 'journey.js', 'bible.js']);   // see above; bible.js IS the Bible
+  const offenders = [];
+
+  for (const file of readdirSync(new URL('../js/screens/', import.meta.url))) {
+    if (!file.endsWith('.js') || exempt.has(file)) continue;
+    const source = read(new URL(`../js/screens/${file}`, import.meta.url), 'utf8');
+    // Does this screen render something's `.ref` at all?
+    if (!/\.ref\b/.test(source)) continue;
+    for (const [line] of source.matchAll(/^.*\.ref\b.*$/gm)) {
+      const shows = /text:\s*[a-z]+\.ref|label\([a-z]+\.ref\)/i.test(line);
+      if (shows) offenders.push(`${file}: ${line.trim()}`);
+    }
+  }
+  assert.deepEqual(offenders, [],
+    `these render a reference as dead text — use reference() from core/ui.js:\n${offenders.join('\n')}`);
+});

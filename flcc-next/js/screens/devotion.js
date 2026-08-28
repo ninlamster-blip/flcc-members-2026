@@ -1,6 +1,6 @@
 // The day's devotional, opened from Today's word.
 
-import { h, poster, label, display, headline, art, pill, go, note, toast } from '../core/ui.js';
+import { h, poster, label, display, headline, art, pill, go, note, toast, reference } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { pick as pickForDay } from '../core/rotation.js';
 import { forMode } from '../core/profile.js';
@@ -15,7 +15,7 @@ export default async function devotionScreen(ctx) {
   const day = progress.today(now);
   const el = h('div', { style: 'display:contents' },
     poster({ tone: entry.tone, tall: true, className: 'full' },
-      label(entry.ref),
+      reference(entry.ref, ctx.go, { className: 'label' }),
       h('div', {},
         display(entry.title),
         h('p', { class: 'verse', style: 'margin-top:1.4rem', text: `“${entry.text}”` }),

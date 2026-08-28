@@ -5,11 +5,11 @@
     "tone": "blue",
     "symbol": "cross",
     "blurb": {
-      "kids": "Follow the story of Jesus, from the stable to the empty tomb.",
-      "teens": "The life of Jesus, read in order — what he did, what he claimed, and why it ended the way it did."
+      "kids": "Fifteen steps through the story of Jesus, from the stable to the empty tomb.",
+      "teens": "The life of Jesus in order, in fifteen lessons — what he did, what he claimed, and why it ended the way it did."
     },
     "ageGroup": "both",
-    "lessons": 5
+    "lessons": 15
   },
   {
     "id": "heroes-of-faith",

@@ -1,0 +1,235 @@
+[
+  {
+    "id": "afraid",
+    "tone": "sage",
+    "symbol": "shield",
+    "title": {
+      "kids": "WHEN YOU ARE SCARED",
+      "teens": "WHEN YOU ARE AFRAID"
+    },
+    "need": {
+      "kids": "The dark, a test, being alone, something you cannot tell anyone.",
+      "teens": "Exams, the future, a family that is not okay, the thing you have not said out loud."
+    },
+    "refs": [
+      "Joshua 1:9",
+      "Psalm 56:3",
+      "Psalm 34:4",
+      "Isaiah 41:10",
+      "2 Timothy 1:7"
+    ]
+  },
+  {
+    "id": "sad",
+    "tone": "pink",
+    "symbol": "heart",
+    "title": {
+      "kids": "WHEN YOU ARE SAD",
+      "teens": "WHEN IT ALL FEELS HEAVY"
+    },
+    "need": {
+      "kids": "You can tell God you are sad. Lots of the Bible does exactly that.",
+      "teens": "The Bible does not tell you to cheer up. A third of the Psalms are complaints."
+    },
+    "refs": [
+      "Psalm 34:18",
+      "Psalm 42:11",
+      "Psalm 147:3",
+      "Matthew 11:28",
+      "Revelation 21:4"
+    ]
+  },
+  {
+    "id": "alone",
+    "tone": "sage",
+    "symbol": "people",
+    "title": {
+      "kids": "WHEN YOU FEEL LEFT OUT",
+      "teens": "WHEN YOU FEEL ALONE"
+    },
+    "need": {
+      "kids": "Nobody picked you. Nobody saved you a seat.",
+      "teens": "New country, new school, a group chat you are not in."
+    },
+    "refs": [
+      "Deuteronomy 31:6",
+      "Psalm 27:10",
+      "Psalm 139:7-10",
+      "Hebrews 13:5"
+    ]
+  },
+  {
+    "id": "sorry",
+    "tone": "cream",
+    "symbol": "sunrise",
+    "title": {
+      "kids": "WHEN YOU DID SOMETHING WRONG",
+      "teens": "WHEN YOU HAVE BLOWN IT"
+    },
+    "need": {
+      "kids": "You can say sorry to God and he will forgive you. Every time.",
+      "teens": "Not a technicality you exploit — a door that is genuinely still open."
+    },
+    "refs": [
+      "Psalm 51:1-2",
+      "Psalm 103:12",
+      "Isaiah 1:18",
+      "1 John 1:9"
+    ]
+  },
+  {
+    "id": "angry",
+    "tone": "pink",
+    "symbol": "bolt",
+    "title": {
+      "kids": "WHEN YOU ARE ANGRY",
+      "teens": "WHEN YOU ARE FURIOUS"
+    },
+    "need": {
+      "kids": "Being angry is not a sin. What you do next might be.",
+      "teens": "The Bible is not squeamish about anger. It is careful about what anger is allowed to become."
+    },
+    "refs": [
+      "Psalm 4:4",
+      "Proverbs 15:1",
+      "Ephesians 4:26",
+      "James 1:19"
+    ]
+  },
+  {
+    "id": "worried",
+    "tone": "blue",
+    "symbol": "plant",
+    "title": {
+      "kids": "WHEN YOU WORRY A LOT",
+      "teens": "WHEN YOU CANNOT STOP WORRYING"
+    },
+    "need": {
+      "kids": "God knows what you need before you ask.",
+      "teens": "Anxiety is not unbelief. These are verses to pray, not verses to be told."
+    },
+    "refs": [
+      "Matthew 6:25-27",
+      "Matthew 6:34",
+      "Philippians 4:6-7",
+      "1 Peter 5:7"
+    ]
+  },
+  {
+    "id": "loved",
+    "tone": "cream",
+    "symbol": "heart",
+    "title": {
+      "kids": "WHEN YOU WONDER IF GOD LOVES YOU",
+      "teens": "WHEN YOU DOUBT YOU MATTER"
+    },
+    "need": {
+      "kids": "He made you on purpose and he likes you.",
+      "teens": "Not because you performed. Before you performed."
+    },
+    "refs": [
+      "Psalm 139:13-14",
+      "Jeremiah 31:3",
+      "John 3:16",
+      "Romans 5:8",
+      "1 John 3:1"
+    ]
+  },
+  {
+    "id": "start",
+    "tone": "sage",
+    "symbol": "cross",
+    "title": {
+      "kids": "WHO IS JESUS?",
+      "teens": "WHO JESUS SAID HE WAS"
+    },
+    "need": {
+      "kids": "The verses that say it most simply.",
+      "teens": "His own claims, in his own words, before anyone else explained them."
+    },
+    "refs": [
+      "John 1:1-14",
+      "John 8:58",
+      "John 14:6",
+      "Colossians 1:15-20",
+      "Philippians 2:5-11"
+    ]
+  },
+  {
+    "id": "belong",
+    "tone": "blue",
+    "symbol": "hands",
+    "title": {
+      "kids": "HOW TO PRAY",
+      "teens": "WHEN YOU DO NOT KNOW HOW TO PRAY"
+    },
+    "need": {
+      "kids": "Jesus taught his friends the words. You can use them too.",
+      "teens": "Including what to do when you have no words at all."
+    },
+    "refs": [
+      "Matthew 6:9-13",
+      "Luke 11:9-10",
+      "Romans 8:26",
+      "1 Thessalonians 5:16-18"
+    ]
+  },
+  {
+    "id": "friends",
+    "tone": "sage",
+    "symbol": "people",
+    "title": {
+      "kids": "ABOUT FRIENDS",
+      "teens": "ABOUT WHO YOU SPEND TIME WITH"
+    },
+    "need": {
+      "kids": "How to be a good friend, and how to spot one.",
+      "teens": "Loyalty, influence, and the cost of the wrong room."
+    },
+    "refs": [
+      "Proverbs 17:17",
+      "Proverbs 13:20",
+      "Proverbs 27:17",
+      "John 15:13"
+    ]
+  },
+  {
+    "id": "family",
+    "tone": "cream",
+    "symbol": "people",
+    "title": {
+      "kids": "ABOUT YOUR FAMILY",
+      "teens": "WHEN HOME IS HARD"
+    },
+    "need": {
+      "kids": "Parents, brothers, sisters — and what God asks of everyone in a house.",
+      "teens": "Including families split across countries, which is most of ours."
+    },
+    "refs": [
+      "Exodus 20:12",
+      "Psalm 68:5-6",
+      "Proverbs 22:6",
+      "Ephesians 6:1-4"
+    ]
+  },
+  {
+    "id": "purpose",
+    "tone": "pink",
+    "symbol": "rocket",
+    "title": {
+      "kids": "WHAT GOD MADE YOU FOR",
+      "teens": "WHAT YOU ARE ACTUALLY FOR"
+    },
+    "need": {
+      "kids": "You are not too young for God to use you.",
+      "teens": "Not a career. A commission."
+    },
+    "refs": [
+      "Jeremiah 29:11",
+      "Micah 6:8",
+      "Matthew 28:19-20",
+      "Ephesians 2:10",
+      "1 Timothy 4:12"
+    ]
+  }
+]

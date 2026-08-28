@@ -24,14 +24,60 @@ Five destinations along the bottom, and none of them is named after a feature.
 | Tab | What it does |
 |---|---|
 | **Today** | One thing for today: a verse, what it means, a prayer, a challenge, and the devotional behind it |
-| **Explore** | Bible journeys with lessons, and real-life topics — pressure, doubt, friendship, phones |
-| **Play** | Five games: Bible quiz, speed quiz, Who am I?, verse builder and a crossword — a fresh set each day |
+| **Explore** | The Bible itself, Bible journeys with lessons, and real-life topics — pressure, doubt, friendship, phones |
+| **Play** | Six games: Bible quiz, speed quiz, Our church, Who am I?, verse builder and a crossword — a fresh set each day |
 | **Connect** | What is on, sharing a prayer, and Ask NEXT |
 | **Me** | Streak, level, XP and achievements as collectible stamps, plus name and delete-everything |
 
-Behind them: **Ask NEXT**, a study helper that answers in five fixed parts and
-is off until a ministry leader configures it, and a **ministry dashboard** at
-[`/flcc-next/admin.html`](admin.html).
+Behind them: **the Bible**, all 66 books in three translations on the device;
+**Ask NEXT**, a study helper that answers in five fixed parts and is off until
+a ministry leader configures it; and a **ministry dashboard** at
+[`/flcc-next/admin.html`](admin.html) where every piece of authored content can
+be rewritten without a developer.
+
+## The Bible
+
+Kids and teens asking to look something up now have somewhere to look. The
+whole Bible ships with the app — committed, not fetched from an API — in three
+public-domain translations:
+
+| | | |
+|---|---|---|
+| **World English Bible** | modern English, the default | public domain |
+| **Bible in Basic English** | about a thousand words, for a younger reader | public domain |
+| **Ang Dating Biblia (1905)** | Tagalog, the language most FLCC families pray in | public domain |
+
+Committing the text rather than calling a service is the point. A child reading
+Scripture should not depend on a third party staying up, staying free, or
+staying quiet about what was read, and a church hall with no signal should not
+be a reason the Bible will not open. One file per book means opening John
+downloads John (~180 KB), not a Bible, and the service worker keeps whatever
+has been read.
+
+Four ways in, because a young person arrives with four different questions:
+
+- **A reference** — "John 3:16", "1 Jn 2:1-5", "Mga Awit 23". English and
+  Tagalog names, and the abbreviations study Bibles actually print.
+- **A word they half-remember** — search runs a book at a time, showing results
+  as they arrive, starting with books already on the device.
+- **A feeling with no reference attached** — *Where do I look?* answers twelve
+  of them: scared, sad, left out, furious, sorry, unsure anyone loves you.
+- **No question at all** — the shelf, with one line saying what each of the 66
+  books actually is.
+
+Verses can be kept, a bookmark is remembered, and none of it leaves the device.
+
+**Every reference in the app opens it.** The daily word, the devotional, each
+lesson and each real-life topic render their reference as a link: tapping
+"Luke 2:49" opens Luke 2 with verse 49 already highlighted and scrolled to,
+and the Keep and Copy actions right there. A reference that will not parse
+falls through to a search for the same words rather than being a dead button.
+`test/modules.test.mjs` reads the screens and fails if a new one quotes
+Scripture without linking it.
+
+```bash
+node scripts/build-next-bible.mjs    # rebuild bible/ from the public-domain sources
+```
 
 ## The two modes
 
@@ -75,11 +121,13 @@ flcc-next/
 ├── css/next.css        every token and every component
 ├── js/
 │   ├── app.js          boot, onboarding, routing, the frame
-│   ├── core/           storage, profile, progress, content, ai, safety, art, ui, dom, router
+│   ├── core/           storage, profile, progress, content, library, scripture,
+│   │                   rotation, ai, safety, art, ui, dom, router
 │   ├── screens/        one module per screen, loaded on demand
 │   ├── games/          crossword layout (pure, no DOM)
-│   └── admin/          the dashboard and the content audit
-├── content/            authored JSON — the whole library
+│   └── admin/          the dashboard, the editor and the content audit
+├── content/            authored JSON — the ministry's, and editable
+├── bible/              the text of Scripture — not the ministry's, and not editable
 └── test/               node:test, zero dependencies
 ```
 
@@ -96,12 +144,21 @@ exists.
 | File | What it holds |
 |---|---|
 | `daily.json` | 35 daily words: verse, reflection, prayer, challenge, devotional |
-| `journeys.json` + `journeys/*.json` | Three journeys, fourteen lessons |
+| `journeys.json` + `journeys/*.json` | Three journeys, 24 lessons — fifteen of them the life of Jesus |
 | `real-life.json` | 14 real-life topics |
-| `games.json` + `games/*.json` | The five games and their banks — 111 quiz questions, 40 Who am I? rounds, 54 verses, 16 crosswords |
+| `games.json` + `games/*.json` | The six games and their banks — 189 quiz questions, 40 Who am I? rounds, 54 verses, 16 crosswords |
 | `events.json` | What is on |
 | `achievements.json` | The collectible stamps and how each is earned |
+| `bible-books.json` | One line saying what each of the 66 books is |
+| `bible-find.json` | *Where do I look?* — a feeling, and the places to read |
 | `help-lines.json` | Who to contact when something is serious |
+
+Quiz questions carry a **topic** — `bible`, `jesus` or `flcc` — and each round
+says which topics it deals. That is what puts our own church into the quiz, and
+what gives Play a round of its own (**Our church**: the fourteen churches, the
+three sectors and the verse they are named after, N.E.C.K. in Kuwait, the 2030
+target, and what our statement of faith actually says) without a second
+question file to keep in step with the first.
 
 ### Staying fresh
 
@@ -123,20 +180,53 @@ How long that lasts, on the content shipped today:
 | | Kids | Teens |
 |---|---|---|
 | Daily word | 35 days | 35 days |
-| Bible quiz | 9 days | 11 days |
+| Bible quiz | 14 days | 18 days |
+| Our church | 7 days | 10 days |
 | Who am I? | 8 days | 8 days |
 | Verse builder | 8 days | 10 days |
 | Crossword | 8 days | 8 days |
-| Speed quiz | 4 days | 5 days |
+| Speed quiz | 7 days | 9 days |
 
-The speed quiz is the outlier by design: it is a recall drill against a clock,
-where meeting a question you have seen before is the exercise rather than a
-failure. Everything else is held to a week minimum by `test/audit.test.mjs`,
-and each game shows its own position — "Day 3 of 8" — while you play it.
+The speed quiz is a recall drill against a clock, where meeting a question you
+have seen before is the exercise rather than a failure. Everything is held to a
+week minimum by `test/audit.test.mjs`, and each game shows its own position —
+"Day 3 of 8" — while you play it.
 
-**Adding more is authoring, not engineering.** Add entries to the JSON and the
-run lengths grow automatically; the dashboard's *Before it repeats* panel
-names the shortest run so the next piece of writing goes where it is needed.
+Every question is authored with the right answer written first, because that is
+the only way to check a bank of two hundred in a diff. The screens permute the
+options before showing them (`rotation.askOrder`), on the same terms as
+everything else here: a pure function of the day and the question, so the
+ministry sees one arrangement and closing the app cannot re-roll it.
+
+**Adding more is authoring, not engineering** — and now it is not even a
+commit. See below.
+
+## Editing content, without a developer
+
+Kids and teens keep asking for more, and "more" used to mean a developer, a
+commit and a deploy. The dashboard's **Library** tab now edits every authored
+file: quiz questions, lessons in any journey, daily words, verses, crosswords,
+events, achievements, the *Where do I look?* lists and the help lines. One
+editor, driven by the field list each kind declares in `js/core/library.js`.
+
+How it works, and what it honestly is:
+
+- The committed JSON stays the base and is never rewritten — there is no server
+  here to rewrite it with.
+- A **pack** of changes lives in `next/v1/library` on the device that made
+  them. `content.js` lays it over the base on every read, so a question added
+  in the dashboard is in the next round of the quiz.
+- The audit — on Overview and Content — runs against the **merged** content, so
+  a question with no right answer is caught there rather than by a child.
+
+Which means two limits, stated on the page wherever they matter:
+
+1. **A pack lives on one device.** Export it and import it on another, or
+2. **copy the finished file and commit it**, which is how a change reaches the
+   whole ministry. Both buttons are in Library.
+
+*Undo everything* always gets back to the committed content. Nothing in Library
+can touch `bible/`: Scripture is not the ministry's to edit.
 
 `help-lines.json` is still marked `verifyBeforeLaunch: true`. **Every number in
 it must be checked by a person before this app reaches a child.** The dashboard
@@ -168,13 +258,16 @@ What it will not do, enforced in `js/core/ai.js` and tested in
 
 ## The ministry dashboard
 
-[`admin.html`](admin.html) — overview, content, prayers, events and Ask NEXT.
+[`admin.html`](admin.html) — overview, library, content, prayers, events and
+Ask NEXT.
 
-It is honest about what it can see. Authored content is public and read-only,
-so the dashboard audits it (the same rules as the test suite, running in the
-browser) and hands back JSON to commit. Everything else it shows belongs to
-**this device**, because FLCC NEXT has no accounts and no server. A prayer a
-young person marked *only me and God* is counted there and never displayed.
+It is honest about what it can see. Authored content is public and served
+read-only, so edits are kept as a pack on this device and laid over it; the
+dashboard audits the result (the same rules as the test suite, running in the
+browser) and hands back the finished JSON to commit. Everything else it shows
+belongs to **this device**, because FLCC NEXT has no accounts and no server. A
+prayer a young person marked *only me and God* is counted there and never
+displayed.
 
 There is no password on it, deliberately: a client-side PIN on a static page
 protects nothing, and the page shows nothing a child could not already reach on
@@ -211,7 +304,11 @@ of the brief need a server and are specified, not implemented — see
 - **Accounts, roles and church-wide data.** No sign-in, so no cross-device
   progress, no real prayer moderation queue, no attendance or RSVP counts, and
   no church-wide numbers on the dashboard.
-- **Writing content from the dashboard.** It produces JSON to commit.
+- **Sharing edits without a file.** Library writes content, but the pack lives
+  on the device that made it until somebody exports it or commits the finished
+  file. A server would make that a review queue — who wrote it, who approved
+  it, when it reached the children — which is the shape content for minors
+  should have.
 - **Community moments.** The photo wall is a placeholder; a shared, moderated
   photo feed for minors needs storage, moderation and consent that a static
   site cannot provide.

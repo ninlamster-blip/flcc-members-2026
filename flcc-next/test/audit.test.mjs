@@ -106,8 +106,9 @@ test('the audit deals the same amounts the games actually deal', () => {
   // updated with it, every run length on the dashboard becomes a lie.
   const source = readFileSync(new URL('../js/screens/game.js', import.meta.url), 'utf8');
   const sizes = {
-    'Bible quiz': /const size = timed \? \d+ : (\d+)/,
-    'Speed quiz': /const size = timed \? (\d+) : \d+/,
+    'Bible quiz': /title = 'Bible quiz', size = (\d+) \} = \{\}/,
+    'Speed quiz': /if \(timed\) size = (\d+);/,
+    'Our church': /title: 'Our church', size: (\d+) \}/,
     'Who am I?': /deal\(all, \{ count: (\d+), offset: OFFSET\['who-am-i'\] \}\)/,
     'Verse builder': /deal\(all, \{ count: (\d+), offset: OFFSET\['verse-builder'\] \}\)/,
   };
