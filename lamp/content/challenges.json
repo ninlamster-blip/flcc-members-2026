@@ -1,0 +1,486 @@
+{
+  "find": [
+    {
+      "ref": "PHP.4.13",
+      "prompt": {
+        "7-10": "Find the verse that says you can do all things through Christ.",
+        "11-14": "Find the verse where Paul says he can do all things through Christ who strengthens him.",
+        "15-18": "Find Paul's statement about strength for all things — and read the two verses before it."
+      }
+    },
+    {
+      "ref": "JHN.3.16",
+      "prompt": {
+        "7-10": "Find the verse about God loving the world so much.",
+        "11-14": "Find the verse that begins 'For God so loved the world'.",
+        "15-18": "Find the verse most often quoted about God's love — then read verse 17 with it."
+      }
+    },
+    {
+      "ref": "PSA.23.1",
+      "prompt": {
+        "7-10": "Find the psalm that starts 'The Lord is my shepherd'.",
+        "11-14": "Find the psalm that begins with a shepherd. Which number is it?",
+        "15-18": "Find the shepherd psalm and note where the pronouns change from 'he' to 'you'."
+      }
+    },
+    {
+      "ref": "GEN.1.1",
+      "prompt": {
+        "7-10": "Find the very first verse in the Bible.",
+        "11-14": "Find the first verse of the Bible — book, chapter and verse.",
+        "15-18": "Find the Bible's opening line and notice what it does not argue for."
+      }
+    },
+    {
+      "ref": "MAT.5.14",
+      "prompt": {
+        "7-10": "Find where Jesus says 'You are the light of the world'.",
+        "11-14": "Find where Jesus calls his followers the light of the world.",
+        "15-18": "Find the light-of-the-world saying inside the Sermon on the Mount."
+      }
+    },
+    {
+      "ref": "PRO.3.5",
+      "prompt": {
+        "7-10": "Find the verse about trusting God with all your heart.",
+        "11-14": "Find the proverb about trusting the Lord with all your heart.",
+        "15-18": "Find the proverb that tells you not to lean on your own understanding."
+      }
+    },
+    {
+      "ref": "ROM.8.28",
+      "prompt": {
+        "7-10": "Find the verse that says God works things together for good.",
+        "11-14": "Find where Paul says God works all things together for good.",
+        "15-18": "Find Romans' 'all things work together' verse and note who it is addressed to."
+      }
+    },
+    {
+      "ref": "JOS.1.9",
+      "prompt": {
+        "7-10": "Find where God tells Joshua to be strong and brave.",
+        "11-14": "Find God's command to Joshua to be strong and courageous.",
+        "15-18": "Find Joshua's commissioning command and count how often it is repeated in that chapter."
+      }
+    },
+    {
+      "ref": "ISA.41.10",
+      "prompt": {
+        "7-10": "Find the verse where God says 'do not fear, I am with you'.",
+        "11-14": "Find Isaiah's 'do not fear, for I am with you'.",
+        "15-18": "Find Isaiah 41's fear-not oracle and note the grounds it gives."
+      }
+    },
+    {
+      "ref": "1JN.4.19",
+      "prompt": {
+        "7-10": "Find the verse that says we love because God loved us first.",
+        "11-14": "Find where John says we love because he first loved us.",
+        "15-18": "Find John's statement on the priority of divine love."
+      }
+    }
+  ],
+  "remember": [
+    {
+      "prompt": {
+        "7-10": "Can you say your memory verse without looking?",
+        "11-14": "Write out your memory verse from memory, then check it.",
+        "15-18": "Write out your current memory verse from memory, then check it word by word."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Say your memory verse out loud to someone in your family.",
+        "11-14": "Say your memory verse out loud to someone — out loud is harder than in your head.",
+        "15-18": "Recite your memory verse aloud to someone. Speaking it tests it differently from writing it."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Can you remember which book your memory verse comes from?",
+        "11-14": "Can you say your memory verse and its reference?",
+        "15-18": "Recite your verse with its reference, and say in one sentence what the passage around it is doing."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Practise your memory verse three times today.",
+        "11-14": "Review your memory verse three times today — morning, afternoon and evening.",
+        "15-18": "Space three reviews of your verse across today rather than doing them together."
+      }
+    }
+  ],
+  "know": [
+    {
+      "prompt": {
+        "7-10": "How many books are in the whole Bible?",
+        "11-14": "How many books are in the Bible?",
+        "15-18": "How many books are in the Protestant canon?"
+      },
+      "options": [
+        "27",
+        "39",
+        "66"
+      ],
+      "answer": 2,
+      "explain": {
+        "7-10": "39 in the Old Testament and 27 in the New Testament — 66 altogether.",
+        "11-14": "39 in the Old Testament plus 27 in the New makes 66.",
+        "15-18": "66 in the Protestant canon; Catholic and Orthodox canons include additional books."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Who was thrown into the lions' den?",
+        "11-14": "Who was thrown into the lions' den?",
+        "15-18": "Who was thrown into the lions' den, and under which king?"
+      },
+      "options": [
+        "Daniel",
+        "David",
+        "Jonah"
+      ],
+      "answer": 0,
+      "explain": {
+        "7-10": "Daniel — and God kept the lions' mouths shut.",
+        "11-14": "Daniel, for praying when a new law forbade it.",
+        "15-18": "Daniel, under Darius — the point of the story is the immovability of the law, not the king's malice."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What did God make on the first day?",
+        "11-14": "What did God create on the first day?",
+        "15-18": "What is created on day one of Genesis 1?"
+      },
+      "options": [
+        "Light",
+        "Animals",
+        "People"
+      ],
+      "answer": 0,
+      "explain": {
+        "7-10": "Light. 'Let there be light.'",
+        "11-14": "Light — before the sun, which comes on day four.",
+        "15-18": "Light on day one, luminaries on day four — a structure that demotes the sun and moon from deities to lamps."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Who baptised Jesus?",
+        "11-14": "Who baptised Jesus in the Jordan?",
+        "15-18": "Who baptised Jesus, and what did he say about it?"
+      },
+      "options": [
+        "Peter",
+        "John the Baptist",
+        "Paul"
+      ],
+      "answer": 1,
+      "explain": {
+        "7-10": "John the Baptist, in the River Jordan.",
+        "11-14": "John the Baptist, who said he was not worthy to untie Jesus' sandals.",
+        "15-18": "John, who protested that the order should be reversed — Matthew alone records the exchange."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "How many disciples did Jesus choose?",
+        "11-14": "How many disciples did Jesus choose?",
+        "15-18": "How many were in the inner circle Jesus appointed?"
+      },
+      "options": [
+        "7",
+        "12",
+        "40"
+      ],
+      "answer": 1,
+      "explain": {
+        "7-10": "Twelve.",
+        "11-14": "Twelve — one for each tribe of Israel.",
+        "15-18": "Twelve, a deliberate echo of the tribes and a claim about the renewal of Israel."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What did David use to fight Goliath?",
+        "11-14": "What did David take into the fight with Goliath?",
+        "15-18": "What did David take against Goliath, and what did he refuse?"
+      },
+      "options": [
+        "A sword",
+        "A sling and stones",
+        "A spear"
+      ],
+      "answer": 1,
+      "explain": {
+        "7-10": "A sling and five smooth stones.",
+        "11-14": "A sling and five smooth stones from the stream — he turned down Saul's armour.",
+        "15-18": "A sling and five stones, having refused Saul's armour — the refusal is the theological point."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Who was swallowed by a big fish?",
+        "11-14": "Who was swallowed by a great fish?",
+        "15-18": "Who was swallowed by a great fish, and where was he running to?"
+      },
+      "options": [
+        "Jonah",
+        "Joshua",
+        "Job"
+      ],
+      "answer": 0,
+      "explain": {
+        "7-10": "Jonah, when he ran away from God.",
+        "11-14": "Jonah, running from God's call to Nineveh.",
+        "15-18": "Jonah, sailing for Tarshish — the opposite direction from Nineveh."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Which book comes first in the New Testament?",
+        "11-14": "Which book opens the New Testament?",
+        "15-18": "Which gospel stands first in the canonical order?"
+      },
+      "options": [
+        "Mark",
+        "Matthew",
+        "John"
+      ],
+      "answer": 1,
+      "explain": {
+        "7-10": "Matthew.",
+        "11-14": "Matthew — though Mark was probably written first.",
+        "15-18": "Matthew stands first canonically; most scholars hold Mark to be the earliest written."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Who said he did not know Jesus three times?",
+        "11-14": "Who denied Jesus three times?",
+        "15-18": "Who denied Jesus three times, and how was he restored?"
+      },
+      "options": [
+        "Peter",
+        "Thomas",
+        "Judas"
+      ],
+      "answer": 0,
+      "explain": {
+        "7-10": "Peter — and Jesus forgave him afterwards.",
+        "11-14": "Peter, before the rooster crowed.",
+        "15-18": "Peter, restored by a threefold question on the shore in John 21."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Which queen was brave for her people?",
+        "11-14": "Which queen risked her life to save her people?",
+        "15-18": "Which queen intervened for her people at personal risk?"
+      },
+      "options": [
+        "Esther",
+        "Ruth",
+        "Deborah"
+      ],
+      "answer": 0,
+      "explain": {
+        "7-10": "Esther, who went to see the king without being invited.",
+        "11-14": "Esther — 'if I perish, I perish'.",
+        "15-18": "Esther, in a book that never once names God — the providence is structural rather than stated."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What is the first commandment Jesus said is the biggest?",
+        "11-14": "What did Jesus say the greatest commandment is?",
+        "15-18": "What did Jesus name as the greatest commandment?"
+      },
+      "options": [
+        "Do not steal",
+        "Love God with all your heart",
+        "Keep the Sabbath"
+      ],
+      "answer": 1,
+      "explain": {
+        "7-10": "Love God with everything you are — and love other people too.",
+        "11-14": "Love God with all your heart, soul, mind and strength; and love your neighbour as yourself.",
+        "15-18": "Deuteronomy 6:5 joined to Leviticus 19:18 — the joining is what makes the answer distinctive."
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "How many days was Jesus in the tomb?",
+        "11-14": "How long was Jesus in the tomb?",
+        "15-18": "How is the length of Jesus' burial described?"
+      },
+      "options": [
+        "Three days",
+        "Seven days",
+        "Forty days"
+      ],
+      "answer": 0,
+      "explain": {
+        "7-10": "Three days — he rose on Sunday.",
+        "11-14": "Three days: Friday evening to Sunday morning.",
+        "15-18": "Reckoned inclusively in Jewish counting — part of Friday, Saturday, and part of Sunday."
+      }
+    }
+  ],
+  "think": [
+    {
+      "prompt": {
+        "7-10": "Who is someone you find it hard to be kind to? Why?",
+        "11-14": "Who do you find it hardest to be kind to, and what makes it hard?",
+        "15-18": "Who do you find it hardest to be generous towards, and what does that reveal?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What is the biggest thing you have to be thankful for today?",
+        "11-14": "What are you grateful for that you usually do not notice?",
+        "15-18": "What good thing in your life have you started treating as ordinary?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "When was the last time you were brave?",
+        "11-14": "When did you last do the right thing when it was not easy?",
+        "15-18": "When did you last act on a conviction that cost you something?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What do you want to ask God about?",
+        "11-14": "What question about God have you not asked out loud?",
+        "15-18": "What question about faith are you carrying that you have not said aloud to anyone?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "Who could you say sorry to?",
+        "11-14": "Is there someone you owe an apology to?",
+        "15-18": "Where do you owe an apology that pride has been postponing?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What is your 'Goliath' at the moment?",
+        "11-14": "What feels too big for you right now?",
+        "15-18": "What are you facing that you would rather not name?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What makes you feel close to God?",
+        "11-14": "When do you feel closest to God, and when furthest?",
+        "15-18": "What practices actually change you, and which are habit without effect?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "If Jesus came to your school, who do you think he would sit with?",
+        "11-14": "Who at your school gets overlooked? What would Jesus do about it?",
+        "15-18": "Who is on the edge of your circles, and what would including them actually cost you?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What is one thing you could do for someone in your family today?",
+        "11-14": "What does your family need from you this week that nobody has asked for?",
+        "15-18": "What responsibility have you been leaving to someone else at home?"
+      }
+    },
+    {
+      "prompt": {
+        "7-10": "What are you scared of? Have you told God?",
+        "11-14": "What are you afraid of at the moment? Have you prayed about it honestly?",
+        "15-18": "What fear are you managing rather than facing?"
+      }
+    }
+  ],
+  "live": [
+    {
+      "ref": "PHP.2.3-4",
+      "prompt": {
+        "7-10": "Say something kind to someone today and do not wait for a thank you.",
+        "11-14": "Encourage someone today without expecting anything back.",
+        "15-18": "Encourage someone today with no expectation of return — and do not mention it afterwards."
+      }
+    },
+    {
+      "ref": "MAT.6.3-4",
+      "prompt": {
+        "7-10": "Do a job at home without being asked.",
+        "11-14": "Do something helpful at home today without being asked or mentioning it.",
+        "15-18": "Do something useful today that nobody will know you did."
+      }
+    },
+    {
+      "ref": "PRO.17.17",
+      "prompt": {
+        "7-10": "Ask a friend how they really are.",
+        "11-14": "Ask someone how they actually are — and stay for the answer.",
+        "15-18": "Ask someone how they are and stay past the first, polite answer."
+      }
+    },
+    {
+      "ref": "EPH.4.32",
+      "prompt": {
+        "7-10": "Forgive someone in your head today.",
+        "11-14": "Let go of one thing you have been holding against someone.",
+        "15-18": "Take a step towards forgiving something you have been rehearsing."
+      }
+    },
+    {
+      "ref": "JAS.1.19",
+      "prompt": {
+        "7-10": "Listen to someone all the way to the end without interrupting.",
+        "11-14": "Listen to someone today without interrupting or planning your reply.",
+        "15-18": "Have one conversation today where you listen without preparing a response."
+      }
+    },
+    {
+      "ref": "MAT.5.16",
+      "prompt": {
+        "7-10": "Do one thing today that would make God smile.",
+        "11-14": "Do one thing today that someone would notice and would point them to God.",
+        "15-18": "Do one thing today whose only explanation is what you believe."
+      }
+    },
+    {
+      "ref": "LUK.10.33-34",
+      "prompt": {
+        "7-10": "Look for someone who is on their own and go and talk to them.",
+        "11-14": "Sit with someone who is on their own today.",
+        "15-18": "Notice who is on the edge of a room today and cross to them."
+      }
+    },
+    {
+      "ref": "COL.3.23",
+      "prompt": {
+        "7-10": "Do your school work today as carefully as you can.",
+        "11-14": "Do one piece of work today properly, as though for God rather than for a mark.",
+        "15-18": "Do one piece of work today to a standard nobody is checking for."
+      }
+    },
+    {
+      "ref": "1TH.5.18",
+      "prompt": {
+        "7-10": "Say thank you to someone who helps you every day.",
+        "11-14": "Thank someone who does something for you that you normally take for granted.",
+        "15-18": "Thank someone specifically — name the thing — who is used to being unthanked."
+      }
+    },
+    {
+      "ref": "MRK.9.36-37",
+      "prompt": {
+        "7-10": "Be kind to someone younger than you today.",
+        "11-14": "Include someone younger or newer than you today.",
+        "15-18": "Give your attention today to someone who cannot do anything for you."
+      }
+    }
+  ]
+}

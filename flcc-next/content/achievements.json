@@ -1,0 +1,90 @@
+[
+  {
+    "id": "first-steps",
+    "title": "FIRST STEPS",
+    "symbol": "plant",
+    "tone": "sage",
+    "need": {
+      "kind": "devotional",
+      "count": 1
+    },
+    "how": "Finish your first devotional."
+  },
+  {
+    "id": "seven-days",
+    "title": "SEVEN DAYS",
+    "symbol": "flag",
+    "tone": "cream",
+    "need": {
+      "kind": "streak",
+      "count": 7
+    },
+    "how": "Come back seven days in a row."
+  },
+  {
+    "id": "bible-explorer",
+    "title": "BIBLE EXPLORER",
+    "symbol": "book",
+    "tone": "blue",
+    "need": {
+      "kind": "lesson",
+      "count": 5
+    },
+    "how": "Finish five journey lessons."
+  },
+  {
+    "id": "prayer-warrior",
+    "title": "PRAYER WARRIOR",
+    "symbol": "hands",
+    "tone": "pink",
+    "need": {
+      "kind": "prayer",
+      "count": 5
+    },
+    "how": "Pray five times in the app."
+  },
+  {
+    "id": "courage",
+    "title": "COURAGE CHAMPION",
+    "symbol": "shield",
+    "tone": "cream",
+    "need": {
+      "kind": "challenge",
+      "count": 10
+    },
+    "how": "Complete ten daily challenges."
+  },
+  {
+    "id": "quick-mind",
+    "title": "QUICK MIND",
+    "symbol": "bolt",
+    "tone": "blue",
+    "need": {
+      "kind": "game",
+      "count": 10
+    },
+    "how": "Play ten games."
+  },
+  {
+    "id": "faithful",
+    "title": "FAITHFUL",
+    "symbol": "star",
+    "tone": "sage",
+    "need": {
+      "kind": "streak",
+      "count": 30
+    },
+    "how": "Thirty days in a row."
+  },
+  {
+    "id": "servant-heart",
+    "title": "SERVANT HEART",
+    "symbol": "heart",
+    "tone": "pink",
+    "need": {
+      "kind": "challenge",
+      "count": 25
+    },
+    "how": "Twenty-five challenges done and dusted."
+  }
+]

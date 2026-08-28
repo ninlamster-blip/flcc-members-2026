@@ -1,0 +1,19 @@
+{
+  "region": "intl",
+  "label": "Somewhere else",
+  "verifyBeforeLaunch": true,
+  "lines": [
+    {
+      "name": "A trusted adult",
+      "detail": "A parent, guardian, pastor, teacher or school counsellor — today, not later."
+    },
+    {
+      "name": "Find a helpline where you live",
+      "detail": "findahelpline.com lists checked helplines by country."
+    },
+    {
+      "name": "Emergency services",
+      "detail": "Use your country's emergency number."
+    }
+  ]
+}

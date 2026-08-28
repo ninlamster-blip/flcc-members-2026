@@ -1,0 +1,1223 @@
+[
+  {
+    "q": "How many books are in the Bible?",
+    "options": [
+      "66",
+      "39",
+      "27"
+    ],
+    "answer": 0,
+    "why": "39 in the Old Testament, 27 in the New.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was thrown into the lions’ den?",
+    "options": [
+      "Daniel",
+      "David",
+      "Jonah"
+    ],
+    "answer": 0,
+    "why": "Daniel, for praying when a new law forbade it.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did God create on the first day?",
+    "options": [
+      "Light",
+      "Animals",
+      "People"
+    ],
+    "answer": 0,
+    "why": "Light — the sun does not appear until day four.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who baptised Jesus?",
+    "options": [
+      "John the Baptist",
+      "Peter",
+      "Paul"
+    ],
+    "answer": 0,
+    "why": "John, in the River Jordan.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many disciples did Jesus choose?",
+    "options": [
+      "12",
+      "7",
+      "40"
+    ],
+    "answer": 0,
+    "why": "Twelve — one for each tribe of Israel.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did David use against Goliath?",
+    "options": [
+      "A sling and stones",
+      "A sword",
+      "A spear"
+    ],
+    "answer": 0,
+    "why": "A sling and five smooth stones, having refused Saul’s armour.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was swallowed by a great fish?",
+    "options": [
+      "Jonah",
+      "Joshua",
+      "Job"
+    ],
+    "answer": 0,
+    "why": "Jonah, running from God’s call to Nineveh.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which book opens the New Testament?",
+    "options": [
+      "Matthew",
+      "Mark",
+      "John"
+    ],
+    "answer": 0,
+    "why": "Matthew — though Mark was probably written first.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who denied Jesus three times?",
+    "options": [
+      "Peter",
+      "Thomas",
+      "Judas"
+    ],
+    "answer": 0,
+    "why": "Peter, before the rooster crowed — and Jesus restored him afterwards.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which queen risked her life for her people?",
+    "options": [
+      "Esther",
+      "Ruth",
+      "Deborah"
+    ],
+    "answer": 0,
+    "why": "Esther — ‘if I perish, I perish’.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What is the first commandment Jesus called greatest?",
+    "options": [
+      "Love God with everything",
+      "Do not steal",
+      "Keep the Sabbath"
+    ],
+    "answer": 0,
+    "why": "Love God with all your heart, soul, mind and strength.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How long was Jesus in the tomb?",
+    "options": [
+      "Three days",
+      "Seven days",
+      "Forty days"
+    ],
+    "answer": 0,
+    "why": "Three days, counted inclusively — part of Friday, Saturday, part of Sunday.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who wrote most of the New Testament letters?",
+    "options": [
+      "Paul",
+      "Peter",
+      "Luke"
+    ],
+    "answer": 0,
+    "why": "Paul — thirteen letters carry his name.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What does ‘gospel’ mean?",
+    "options": [
+      "Good news",
+      "Old story",
+      "Law"
+    ],
+    "answer": 0,
+    "why": "It translates a word for good news, used in the Roman world for imperial announcements.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Which city did Jonah refuse to go to?",
+    "options": [
+      "Nineveh",
+      "Jerusalem",
+      "Rome"
+    ],
+    "answer": 0,
+    "why": "Nineveh, the capital of the empire that terrorised Israel.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What happened at Pentecost?",
+    "options": [
+      "The Holy Spirit came",
+      "Jesus was born",
+      "The temple was built"
+    ],
+    "answer": 0,
+    "why": "The Spirit came and the gospel was heard in every language present.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Who was thrown into a den of lions?",
+    "options": [
+      "Daniel",
+      "David",
+      "Jonah"
+    ],
+    "answer": 0,
+    "why": "He kept praying at his window when a law forbade it.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did God make on the first day?",
+    "options": [
+      "Light",
+      "Animals",
+      "The sea"
+    ],
+    "answer": 0,
+    "why": "“Let there be light” — Genesis 1:3.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was swallowed by a great fish?",
+    "options": [
+      "Jonah",
+      "Peter",
+      "Noah"
+    ],
+    "answer": 0,
+    "why": "He was running from Nineveh when it happened.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did Moses stretch his hand over so it parted?",
+    "options": [
+      "The Red Sea",
+      "The Jordan",
+      "The Nile"
+    ],
+    "answer": 0,
+    "why": "Israel walked through on dry ground — Exodus 14.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who killed Goliath?",
+    "options": [
+      "David",
+      "Saul",
+      "Samson"
+    ],
+    "answer": 0,
+    "why": "With a sling and a stone, before he was king.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did God send to feed Israel in the desert?",
+    "options": [
+      "Manna",
+      "Bread from Egypt",
+      "Fish"
+    ],
+    "answer": 0,
+    "why": "It appeared with the morning dew — Exodus 16.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many plagues struck Egypt?",
+    "options": [
+      "Ten",
+      "Seven",
+      "Three"
+    ],
+    "answer": 0,
+    "why": "The last one was the reason for the Passover.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was sold by his brothers and ended up in Egypt?",
+    "options": [
+      "Joseph",
+      "Benjamin",
+      "Isaac"
+    ],
+    "answer": 0,
+    "why": "Years later he fed the same brothers in a famine.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Whose walls fell down after Israel marched around them?",
+    "options": [
+      "Jericho",
+      "Jerusalem",
+      "Nineveh"
+    ],
+    "answer": 0,
+    "why": "Seven days of marching, then a shout — Joshua 6.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which strong man lost his strength when his hair was cut?",
+    "options": [
+      "Samson",
+      "Saul",
+      "Gideon"
+    ],
+    "answer": 0,
+    "why": "His strength was never really in the hair — it was in the vow it stood for.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who said “Where you go, I will go”?",
+    "options": [
+      "Ruth",
+      "Esther",
+      "Mary"
+    ],
+    "answer": 0,
+    "why": "Ruth said it to Naomi, her mother-in-law, not to a husband.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was the first king of Israel?",
+    "options": [
+      "Saul",
+      "David",
+      "Solomon"
+    ],
+    "answer": 0,
+    "why": "The people asked for a king so they could be like the nations around them.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which king asked God for wisdom instead of riches?",
+    "options": [
+      "Solomon",
+      "David",
+      "Hezekiah"
+    ],
+    "answer": 0,
+    "why": "He got the wisdom, and the riches as well — 1 Kings 3.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was taken up to heaven in a whirlwind?",
+    "options": [
+      "Elijah",
+      "Enoch",
+      "Moses"
+    ],
+    "answer": 0,
+    "why": "Elisha watched it happen and picked up his cloak.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who were the three men thrown into the fiery furnace?",
+    "options": [
+      "Shadrach, Meshach and Abednego",
+      "Peter, James and John",
+      "Daniel, Ezra and Nehemiah"
+    ],
+    "answer": 0,
+    "why": "They said God could rescue them — “but if not”, they still would not bow.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who became queen and risked her life to save her people?",
+    "options": [
+      "Esther",
+      "Deborah",
+      "Miriam"
+    ],
+    "answer": 0,
+    "why": "“For such a time as this” — Esther 4:14.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What was Jacob’s name changed to?",
+    "options": [
+      "Israel",
+      "Abraham",
+      "Peter"
+    ],
+    "answer": 0,
+    "why": "It happened the night he wrestled until daybreak.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many sons did Jacob have?",
+    "options": [
+      "Twelve",
+      "Ten",
+      "Seven"
+    ],
+    "answer": 0,
+    "why": "The twelve tribes of Israel are named after them.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did God give Moses on Mount Sinai?",
+    "options": [
+      "The Ten Commandments",
+      "The ark",
+      "A crown"
+    ],
+    "answer": 0,
+    "why": "Written on two tablets of stone.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who led Israel into the promised land after Moses died?",
+    "options": [
+      "Joshua",
+      "Aaron",
+      "Caleb"
+    ],
+    "answer": 0,
+    "why": "“Be strong and courageous” was said to him.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which boy heard God calling him at night in the temple?",
+    "options": [
+      "Samuel",
+      "David",
+      "Josiah"
+    ],
+    "answer": 0,
+    "why": "He kept thinking it was Eli — 1 Samuel 3.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did the Israelites make while Moses was up the mountain?",
+    "options": [
+      "A golden calf",
+      "A ladder",
+      "A tower"
+    ],
+    "answer": 0,
+    "why": "Aaron made it out of their own jewellery.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who rebuilt the wall of Jerusalem?",
+    "options": [
+      "Nehemiah",
+      "Ezra",
+      "Zerubbabel"
+    ],
+    "answer": 0,
+    "why": "It took fifty-two days, with opposition the whole way.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who lost everything and still would not curse God?",
+    "options": [
+      "Job",
+      "Jeremiah",
+      "Hosea"
+    ],
+    "answer": 0,
+    "why": "His friends had a lot of explanations, and God said they were wrong.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did Abraham almost sacrifice on the mountain?",
+    "options": [
+      "His son Isaac",
+      "His flock",
+      "His house"
+    ],
+    "answer": 0,
+    "why": "God stopped him and provided a ram instead.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Where was Jesus born?",
+    "options": [
+      "Bethlehem",
+      "Nazareth",
+      "Jerusalem"
+    ],
+    "answer": 0,
+    "why": "In Bethlehem, though he grew up in Nazareth.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who baptised Jesus?",
+    "options": [
+      "John the Baptist",
+      "Peter",
+      "Andrew"
+    ],
+    "answer": 0,
+    "why": "In the Jordan river, and John said he was not worthy to.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many disciples did Jesus choose?",
+    "options": [
+      "Twelve",
+      "Ten",
+      "Seven"
+    ],
+    "answer": 0,
+    "why": "Ordinary people — fishermen, a tax collector, a zealot.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What was Jesus’ first recorded miracle?",
+    "options": [
+      "Turning water into wine",
+      "Healing a blind man",
+      "Walking on water"
+    ],
+    "answer": 0,
+    "why": "At a wedding in Cana, because they had run out — John 2.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many loaves fed the five thousand?",
+    "options": [
+      "Five",
+      "Twelve",
+      "Two"
+    ],
+    "answer": 0,
+    "why": "Five loaves and two fish, and twelve baskets left over.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which disciple walked on the water towards Jesus?",
+    "options": [
+      "Peter",
+      "John",
+      "Thomas"
+    ],
+    "answer": 0,
+    "why": "He started to sink when he looked at the wind instead.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many times did Peter deny knowing Jesus?",
+    "options": [
+      "Three",
+      "Once",
+      "Seven"
+    ],
+    "answer": 0,
+    "why": "Then the rooster crowed, exactly as Jesus had said.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was made to carry Jesus’ cross?",
+    "options": [
+      "Simon of Cyrene",
+      "Peter",
+      "Joseph of Arimathea"
+    ],
+    "answer": 0,
+    "why": "A stranger pulled out of the crowd — Mark 15:21.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was the first to see Jesus alive again?",
+    "options": [
+      "Mary Magdalene",
+      "Peter",
+      "John"
+    ],
+    "answer": 0,
+    "why": "She thought he was the gardener at first.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What came on the disciples at Pentecost?",
+    "options": [
+      "The Holy Spirit",
+      "An angel",
+      "A storm"
+    ],
+    "answer": 0,
+    "why": "Like wind and fire, and they spoke in other languages — Acts 2.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was blinded by a light on the road to Damascus?",
+    "options": [
+      "Saul, who became Paul",
+      "Stephen",
+      "Silas"
+    ],
+    "answer": 0,
+    "why": "He was on his way to arrest Christians when it happened.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What was Matthew’s job before he followed Jesus?",
+    "options": [
+      "Tax collector",
+      "Fisherman",
+      "Soldier"
+    ],
+    "answer": 0,
+    "why": "A job that made him a traitor to most of his neighbours.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who climbed a tree to see Jesus?",
+    "options": [
+      "Zacchaeus",
+      "Nicodemus",
+      "Bartimaeus"
+    ],
+    "answer": 0,
+    "why": "He was short, rich, and hated — and Jesus went to his house.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "In the parable, what did the father do when his lost son came home?",
+    "options": [
+      "Ran to meet him",
+      "Turned him away",
+      "Made him a servant"
+    ],
+    "answer": 0,
+    "why": "He ran — which grown men of that time did not do.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who stopped to help the wounded man on the road?",
+    "options": [
+      "A Samaritan",
+      "A priest",
+      "A Levite"
+    ],
+    "answer": 0,
+    "why": "The one the listeners would have least expected.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Where did Jesus pray the night he was arrested?",
+    "options": [
+      "Gethsemane",
+      "The temple",
+      "Bethany"
+    ],
+    "answer": 0,
+    "why": "“Not my will, but yours be done.”",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which disciple said he would not believe until he saw the wounds?",
+    "options": [
+      "Thomas",
+      "Philip",
+      "James"
+    ],
+    "answer": 0,
+    "why": "Jesus showed him, and he said “My Lord and my God.”",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Whom did Jesus raise after four days in the tomb?",
+    "options": [
+      "Lazarus",
+      "Jairus’ daughter",
+      "The widow’s son"
+    ],
+    "answer": 0,
+    "why": "Jesus wept before he did it — John 11.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did Jesus say to the storm on the lake?",
+    "options": [
+      "“Peace, be still”",
+      "“Go away”",
+      "“Follow me”"
+    ],
+    "answer": 0,
+    "why": "And it went completely calm, which frightened them more than the storm.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was the Roman governor who handed Jesus over?",
+    "options": [
+      "Pilate",
+      "Herod",
+      "Caesar"
+    ],
+    "answer": 0,
+    "why": "He washed his hands, which changed nothing.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What is the first book of the Bible?",
+    "options": [
+      "Genesis",
+      "Exodus",
+      "Matthew"
+    ],
+    "answer": 0,
+    "why": "Genesis means “beginning”.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What is the last book of the Bible?",
+    "options": [
+      "Revelation",
+      "Jude",
+      "Malachi"
+    ],
+    "answer": 0,
+    "why": "Written by John while he was exiled.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which book comes straight after Genesis?",
+    "options": [
+      "Exodus",
+      "Leviticus",
+      "Joshua"
+    ],
+    "answer": 0,
+    "why": "Exodus — the way out of Egypt.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many books are in the Old Testament?",
+    "options": [
+      "39",
+      "27",
+      "66"
+    ],
+    "answer": 0,
+    "why": "39 in the Old, 27 in the New, 66 altogether.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many books are in the New Testament?",
+    "options": [
+      "27",
+      "39",
+      "12"
+    ],
+    "answer": 0,
+    "why": "Four Gospels, Acts, the letters, and Revelation.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which book of the Bible has the most chapters?",
+    "options": [
+      "Psalms",
+      "Genesis",
+      "Isaiah"
+    ],
+    "answer": 0,
+    "why": "150 of them, written by several people over centuries.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What are the first four books of the New Testament called?",
+    "options": [
+      "The Gospels",
+      "The Letters",
+      "The Law"
+    ],
+    "answer": 0,
+    "why": "Matthew, Mark, Luke and John — four accounts of one life.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which psalm begins “Yahweh is my shepherd”?",
+    "options": [
+      "Psalm 23",
+      "Psalm 1",
+      "Psalm 100"
+    ],
+    "answer": 0,
+    "why": "Written by David, who had actually been a shepherd.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which book tells the story of the first church?",
+    "options": [
+      "Acts",
+      "Romans",
+      "Hebrews"
+    ],
+    "answer": 0,
+    "why": "It starts at Pentecost and never really ends.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What does the word “gospel” mean?",
+    "options": [
+      "Good news",
+      "Holy book",
+      "Old story"
+    ],
+    "answer": 0,
+    "why": "News, not advice — something that happened, being reported.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which Gospel begins “In the beginning was the Word”?",
+    "options": [
+      "John",
+      "Matthew",
+      "Mark"
+    ],
+    "answer": 0,
+    "why": "John starts before the manger, at creation.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who wrote more New Testament letters than anyone else?",
+    "options": [
+      "Paul",
+      "Peter",
+      "John"
+    ],
+    "answer": 0,
+    "why": "Thirteen letters carry his name.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did Jesus say to do to your enemies?",
+    "options": [
+      "Love them",
+      "Avoid them",
+      "Beat them"
+    ],
+    "answer": 0,
+    "why": "“Love your enemies and pray for those who persecute you.”",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How does the Lord’s Prayer begin?",
+    "options": [
+      "“Our Father in heaven”",
+      "“Dear God”",
+      "“Almighty King”"
+    ],
+    "answer": 0,
+    "why": "Jesus taught his disciples to start with “Father”.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Jesus said “I am the good ___”.",
+    "options": [
+      "Shepherd",
+      "Teacher",
+      "King"
+    ],
+    "answer": 0,
+    "why": "The shepherd who does not run when the wolf comes — John 10.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Jesus said “I am the way, the truth and the ___”.",
+    "options": [
+      "Life",
+      "Light",
+      "Door"
+    ],
+    "answer": 0,
+    "why": "John 14:6, said to disciples who were frightened about the future.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who did Jesus say is greatest in the kingdom of heaven?",
+    "options": [
+      "Whoever becomes like a child",
+      "The strongest",
+      "The cleverest"
+    ],
+    "answer": 0,
+    "why": "He put a child in front of them to make the point.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many times did Jesus say to forgive?",
+    "options": [
+      "Seventy-seven times",
+      "Three times",
+      "Ten times"
+    ],
+    "answer": 0,
+    "why": "Peter offered seven and thought he was being generous.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What does grace mean?",
+    "options": [
+      "A gift nobody earns",
+      "A reward for being good",
+      "A rule to keep"
+    ],
+    "answer": 0,
+    "why": "If it could be earned it would be wages, not a gift.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did Jesus tell the disciples to do at the end of Matthew?",
+    "options": [
+      "Go and make disciples",
+      "Wait in Galilee",
+      "Rebuild the temple"
+    ],
+    "answer": 0,
+    "why": "The Great Commission — Matthew 28:19.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "How many fruits of the Spirit does Paul list?",
+    "options": [
+      "Nine",
+      "Seven",
+      "Twelve"
+    ],
+    "answer": 0,
+    "why": "Love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, self-control.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Which letter contains the chapter about love read at weddings?",
+    "options": [
+      "1 Corinthians",
+      "Romans",
+      "James"
+    ],
+    "answer": 0,
+    "why": "Chapter 13 — written to a church that was arguing badly.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What was Paul’s trade?",
+    "options": [
+      "Tentmaker",
+      "Fisherman",
+      "Carpenter"
+    ],
+    "answer": 0,
+    "why": "He worked while he preached, so as not to be a burden — Acts 18:3.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Who travelled with Paul on his first journey?",
+    "options": [
+      "Barnabas",
+      "Timothy",
+      "Luke"
+    ],
+    "answer": 0,
+    "why": "Barnabas, whose name means “son of encouragement”.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Which prophet saw a valley full of dry bones?",
+    "options": [
+      "Ezekiel",
+      "Isaiah",
+      "Daniel"
+    ],
+    "answer": 0,
+    "why": "God asked him whether the bones could live, and he said “you know”.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Which prophet said “I am only a child” when God called him?",
+    "options": [
+      "Jeremiah",
+      "Samuel",
+      "Amos"
+    ],
+    "answer": 0,
+    "why": "God told him to go anyway — Jeremiah 1:6.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Which prophet saw the Lord high and lifted up in the temple?",
+    "options": [
+      "Isaiah",
+      "Ezekiel",
+      "Hosea"
+    ],
+    "answer": 0,
+    "why": "“Here I am. Send me!” — Isaiah 6.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What did Daniel refuse to stop doing, even when it was illegal?",
+    "options": [
+      "Praying",
+      "Eating",
+      "Working"
+    ],
+    "answer": 0,
+    "why": "Three times a day, with his windows open.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What does the name “Immanuel” mean?",
+    "options": [
+      "God with us",
+      "Saviour",
+      "King forever"
+    ],
+    "answer": 0,
+    "why": "Isaiah said it first; Matthew applied it to Jesus.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which prophet married Gomer, as a picture of God and Israel?",
+    "options": [
+      "Hosea",
+      "Joel",
+      "Micah"
+    ],
+    "answer": 0,
+    "why": "The marriage itself was the message.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Who was the high priest at Jesus’ trial?",
+    "options": [
+      "Caiaphas",
+      "Annas",
+      "Gamaliel"
+    ],
+    "answer": 0,
+    "why": "Caiaphas presided; Annas, his father-in-law, questioned Jesus first.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Which island was John on when he saw the revelation?",
+    "options": [
+      "Patmos",
+      "Cyprus",
+      "Malta"
+    ],
+    "answer": 0,
+    "why": "He had been exiled there — Revelation 1:9.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Who was chosen to replace Judas among the twelve?",
+    "options": [
+      "Matthias",
+      "Barnabas",
+      "Stephen"
+    ],
+    "answer": 0,
+    "why": "Chosen by lot, then never mentioned again — Acts 1:26.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Who does Paul name as raising Timothy in the faith?",
+    "options": [
+      "His grandmother Lois and mother Eunice",
+      "His father and uncle",
+      "Peter and John"
+    ],
+    "answer": 0,
+    "why": "2 Timothy 1:5 — a faith handed down through two women.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What happened to the temple curtain when Jesus died?",
+    "options": [
+      "It tore in two",
+      "It caught fire",
+      "It was taken down"
+    ],
+    "answer": 0,
+    "why": "From top to bottom — the way in was open.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which mountain did Elijah run to, where he heard a still small voice?",
+    "options": [
+      "Horeb",
+      "Carmel",
+      "Zion"
+    ],
+    "answer": 0,
+    "why": "Not in the wind, the earthquake or the fire — 1 Kings 19.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What did Elijah call down on Mount Carmel?",
+    "options": [
+      "Fire",
+      "Rain",
+      "Hail"
+    ],
+    "answer": 0,
+    "why": "After soaking the altar in water first.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was king of Judah when Jerusalem fell to Babylon?",
+    "options": [
+      "Zedekiah",
+      "Hezekiah",
+      "Josiah"
+    ],
+    "answer": 0,
+    "why": "The last king before the exile — 2 Kings 25.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What did Jesus do with bread and wine at the Last Supper?",
+    "options": [
+      "Called them his body and blood",
+      "Refused them",
+      "Gave them away"
+    ],
+    "answer": 0,
+    "why": "“Do this in memory of me.”",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which two brothers left their nets to follow Jesus first?",
+    "options": [
+      "Peter and Andrew",
+      "James and John",
+      "Philip and Nathanael"
+    ],
+    "answer": 0,
+    "why": "“Come after me, and I will make you fishers for men.”",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What did Jesus say the greatest commandment is?",
+    "options": [
+      "Love God with all your heart",
+      "Keep the Sabbath",
+      "Give to the poor"
+    ],
+    "answer": 0,
+    "why": "And the second is like it: love your neighbour as yourself.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Which shortest verse in most English Bibles is two words long?",
+    "options": [
+      "“Jesus wept”",
+      "“God is love”",
+      "“Rejoice always”"
+    ],
+    "answer": 0,
+    "why": "John 11:35, at the tomb of his friend.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What language was most of the Old Testament written in?",
+    "options": [
+      "Hebrew",
+      "Greek",
+      "Latin"
+    ],
+    "answer": 0,
+    "why": "With a few passages in Aramaic.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What language was the New Testament written in?",
+    "options": [
+      "Greek",
+      "Hebrew",
+      "Latin"
+    ],
+    "answer": 0,
+    "why": "Common Greek — the everyday language of the eastern empire.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "Who was the tax collector Jesus stayed with, who gave back four times what he took?",
+    "options": [
+      "Zacchaeus",
+      "Matthew",
+      "Simon"
+    ],
+    "answer": 0,
+    "why": "Repentance with a receipt — Luke 19:8.",
+    "ageGroup": "teens"
+  },
+  {
+    "q": "What did the wise men bring Jesus?",
+    "options": [
+      "Gold, frankincense and myrrh",
+      "Bread and wine",
+      "Silver and cloth"
+    ],
+    "answer": 0,
+    "why": "Three gifts, though the Bible never says how many wise men.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who hid the baby Moses in a basket?",
+    "options": [
+      "His mother",
+      "Pharaoh’s daughter",
+      "Miriam"
+    ],
+    "answer": 0,
+    "why": "His sister Miriam watched from the reeds, and Pharaoh’s daughter found him.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who was Moses’ brother and spokesman?",
+    "options": [
+      "Aaron",
+      "Caleb",
+      "Jethro"
+    ],
+    "answer": 0,
+    "why": "Moses said he could not speak well, so Aaron spoke for him.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "What sign did God give Noah after the flood?",
+    "options": [
+      "A rainbow",
+      "A star",
+      "A dove"
+    ],
+    "answer": 0,
+    "why": "A promise attached to something everybody can see.",
+    "ageGroup": "both"
+  },
+  {
+    "q": "Who denied Jesus, then was told three times to feed his sheep?",
+    "options": [
+      "Peter",
+      "Thomas",
+      "Judas"
+    ],
+    "answer": 0,
+    "why": "Three denials, three questions, three commissions — John 21.",
+    "ageGroup": "both"
+  }
+]

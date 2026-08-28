@@ -1,0 +1,68 @@
+{
+  "slug": "good-samaritan",
+  "title": "The Good Samaritan",
+  "reference": "LUK.10.25-37",
+  "testament": "NT",
+  "summary": {
+    "7-10": "A stranger helps a man everyone else walked past.",
+    "11-14": "Jesus answers 'who is my neighbour?' with a story.",
+    "15-18": "A parable that dismantles the question it was asked."
+  },
+  "story": {
+    "7-10": [
+      "A man was walking along a lonely road when robbers attacked him and left him hurt.",
+      "Two religious men walked past on the other side. Then a man from Samaria came along — someone people said was an enemy.",
+      "He stopped. He cleaned the man's cuts, put him on his own donkey, took him to an inn and paid for him to be looked after. Jesus said: be like him."
+    ],
+    "11-14": [
+      "A lawyer asked Jesus how to inherit eternal life, then — 'wanting to justify himself' — asked who counted as his neighbour. Jesus told a story instead of giving a definition.",
+      "A man is robbed and left half dead on the road down to Jericho. A priest sees him and crosses over. A Levite does the same. Both were religious professionals.",
+      "Then a Samaritan — from a people Jews despised and avoided — stops, treats the wounds, puts the man on his own animal, pays for his care and promises to cover any extra. Jesus turns the lawyer's question round: not 'who is my neighbour?' but 'which of these was a neighbour?'"
+    ],
+    "15-18": [
+      "The lawyer's question is a boundary question: he wants to know where the obligation stops. Jesus refuses to answer it and replaces it with a different one.",
+      "The parable's shock is not that the priest and Levite were villains — a corpse would have made them ritually unclean, and their caution was defensible. The shock is that the person who acts is a Samaritan, from a group with whom Jews shared a bitter, centuries-old religious quarrel.",
+      "The closing exchange is precise. Jesus asks which man 'became a neighbour', and the lawyer cannot even say the word Samaritan; he says 'the one who showed mercy'. The question of who deserves my love has been replaced with the question of what kind of person I am becoming."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "A man from Samaria helped a hurt stranger when nobody else would.",
+    "11-14": "Two religious men walked past a wounded man; a despised foreigner stopped and paid for his care.",
+    "15-18": "Jesus answers a boundary question with a story that makes the hated outsider the moral example."
+  },
+  "whatItTeaches": {
+    "7-10": "Being a good neighbour means helping whoever needs you.",
+    "11-14": "Jesus refuses to let 'neighbour' be a category you can narrow. He turns it into something you become.",
+    "15-18": "The parable converts an ethical question about obligation into a question about identity and mercy."
+  },
+  "thinkAboutIt": {
+    "7-10": "Who could you help this week?",
+    "11-14": "Have you ever walked past someone because helping was inconvenient?",
+    "15-18": "The lawyer wanted a boundary. Where are you quietly maintaining one?"
+  },
+  "pray": {
+    "7-10": "Jesus, help me notice people who need help, and actually help them.",
+    "11-14": "Jesus, make me the kind of person who stops, even when stopping costs something.",
+    "15-18": "Jesus, take away my instinct to define the limits of who I owe love to."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "Who stopped to help the hurt man?",
+      "11-14": "Who helped the injured man?",
+      "15-18": "Why is the helper's identity the point of the parable?"
+    },
+    "options": [
+      "A Samaritan",
+      "A priest",
+      "A soldier"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "A man from Samaria — someone people thought of as an enemy.",
+      "11-14": "A Samaritan, from a group Jews despised and avoided.",
+      "15-18": "Because the moral exemplar is drawn from the group the audience most despised, which is what breaks the boundary question."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

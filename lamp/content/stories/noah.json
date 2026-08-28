@@ -1,0 +1,68 @@
+{
+  "slug": "noah",
+  "title": "Noah and the Flood",
+  "reference": "GEN.6-9",
+  "testament": "OT",
+  "summary": {
+    "7-10": "God saves Noah's family and the animals.",
+    "11-14": "A flood, a boat, and a promise in the sky.",
+    "15-18": "Judgement, rescue, and the first covenant."
+  },
+  "story": {
+    "7-10": [
+      "People had become very cruel, and it made God sad. But there was one man, Noah, who still listened to God.",
+      "God told Noah to build an enormous boat. Noah built it, even though everybody laughed. Then the animals came, two by two, and the rain began.",
+      "It rained and rained until water covered everything. When at last the water went down, Noah opened the door. God put a rainbow in the sky and promised he would never flood the whole earth again."
+    ],
+    "11-14": [
+      "The world had gone badly wrong. Genesis says every thought people had was turned towards harm, and that this grieved God — the Bible's word is the same one used for a broken heart.",
+      "God tells Noah to build an ark, gives him the measurements, and Noah does it. The rain comes, the water rises, and everything outside the ark is lost. It is not a cheerful story.",
+      "When the water finally goes down, Noah steps out onto a washed world. God makes a promise — a covenant — never to destroy the earth this way again, and hangs a bow in the sky as the sign of it."
+    ],
+    "15-18": [
+      "The flood narrative is told with unusual grief. God's response to human violence is not annoyance but sorrow: the text says he was grieved to his heart, which is not the language of a distant judge.",
+      "Ancient flood stories were common in the region, and the differences are instructive. In the Mesopotamian versions the gods send the flood because humanity is noisy and they cannot sleep; here it comes because the earth is filled with violence, and one family is preserved by grace rather than by cunning.",
+      "The covenant that follows is unilateral. Noah promises nothing. God binds himself, and the sign he chooses is a war-bow hung in the clouds — pointed away from the earth. The story ends not with a hero but with Noah drunk in a tent, which tells you the flood did not solve the problem inside people."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "God sent a flood, but he kept Noah, his family and the animals safe in a big boat.",
+    "11-14": "God judged a violent world with a flood, rescued Noah's family in the ark, and promised never to do it again.",
+    "15-18": "God judges human violence, preserves a remnant by grace, and binds himself in a one-sided covenant never to repeat it."
+  },
+  "whatItTeaches": {
+    "7-10": "God notices when people are cruel, and God keeps his promises.",
+    "11-14": "God takes evil seriously — and he also makes promises he never breaks. Both things are true at once.",
+    "15-18": "The narrative holds judgement and mercy together without softening either, and locates the hope not in humanity's improvement but in God's self-binding promise."
+  },
+  "thinkAboutIt": {
+    "7-10": "Noah kept building even when people laughed at him. When is it hard to do the right thing?",
+    "11-14": "Noah obeyed for years before anything happened. What would you do if obeying God meant looking foolish for a long time?",
+    "15-18": "The story ends with Noah's failure. Why might the writer include that, rather than end on the rainbow?"
+  },
+  "pray": {
+    "7-10": "Thank you God for keeping your promises. Help me listen to you even when it is hard.",
+    "11-14": "God, you keep your promises even when people do not keep theirs. Help me be someone who does what you say.",
+    "15-18": "God, you grieved over a broken world and still bound yourself to it. Teach me to take both your judgement and your mercy seriously."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did God put in the sky as a promise?",
+      "11-14": "What is the sign of God's covenant after the flood?",
+      "15-18": "What sign does God attach to the Noahic covenant?"
+    },
+    "options": [
+      "A star",
+      "A rainbow",
+      "A cloud"
+    ],
+    "answer": 1,
+    "explain": {
+      "7-10": "A rainbow — God's promise never to flood the whole earth again.",
+      "11-14": "A rainbow, as the sign that God would never destroy the earth by flood again.",
+      "15-18": "A bow in the clouds — the word is the war-bow, hung up and pointed away from the earth."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

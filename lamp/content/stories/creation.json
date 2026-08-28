@@ -1,0 +1,68 @@
+{
+  "slug": "creation",
+  "title": "In the Beginning",
+  "reference": "GEN.1",
+  "testament": "OT",
+  "summary": {
+    "7-10": "God makes everything, and it is good.",
+    "11-14": "God speaks, and a world appears.",
+    "15-18": "The Bible's opening claim about where everything comes from."
+  },
+  "story": {
+    "7-10": [
+      "At the very beginning there was no sky, no sea, no trees and no people. There was only God.",
+      "God spoke. He said, “Let there be light” — and there was light. Day after day he made more: sky and sea, land and plants, the sun and the moon, fish and birds and animals.",
+      "Last of all he made people. He looked at everything he had made and said it was very good. Then he rested."
+    ],
+    "11-14": [
+      "Genesis opens with nothing that anyone could photograph: darkness, water, and God. Then God speaks, and things begin to exist that did not exist before.",
+      "The making has a shape. First God makes spaces — light and dark, sky and sea, dry land. Then he fills them — sun and moon, birds and fish, animals and people. Nothing is an accident and nothing is left over.",
+      "People come last, made in God's image, given the job of looking after the rest. And then God stops, and calls the whole thing good."
+    ],
+    "15-18": [
+      "Genesis 1 is written as ordered poetry rather than as a laboratory report, and its shape is deliberate: days one to three form the realms, days four to six fill them, and the seventh day crowns the sequence with rest.",
+      "Read next to the creation stories of Israel's neighbours, the differences are pointed. There is no battle between gods, no accidental universe, and no monstrous sea to be defeated — the sea is simply made. The sun and moon, worshipped everywhere around Israel, are not even named; they are called lamps.",
+      "Humanity is made in God's image — a phrase used elsewhere in the ancient world for kings and for statues of gods — and given to every person, male and female alike. Then comes the seventh day, when God rests, not from exhaustion but as a declaration that the work is finished and good."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "God made the whole world by speaking, and he made people last of all.",
+    "11-14": "God created the world in an ordered way, made people in his own image, and called it all good.",
+    "15-18": "God creates by word, in ordered sequence, and pronounces the result good — a claim about the origin, the goodness and the purpose of everything that exists."
+  },
+  "whatItTeaches": {
+    "7-10": "Everything around you was made on purpose — including you.",
+    "11-14": "The world is not an accident, and neither are you. If God made it good, then looking after it matters.",
+    "15-18": "If creation is by intention and declared good, then material things matter, work matters, rest matters, and every human being carries a dignity nobody granted and nobody can revoke."
+  },
+  "thinkAboutIt": {
+    "7-10": "What is your favourite thing that God made? Why do you think he made it?",
+    "11-14": "If God called the world good, what does that mean for how you treat it — and how you treat yourself?",
+    "15-18": "If every person carries God's image, who does that make it impossible for you to look down on?"
+  },
+  "pray": {
+    "7-10": "Thank you God for making the world, and for making me. Help me look after what you made.",
+    "11-14": "God, you made everything on purpose, including me. Help me treat your world, and the people in it, as good.",
+    "15-18": "God, you spoke and there was light. Teach me to treat what you called good as good — the world, other people, and myself."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did God make first?",
+      "11-14": "What is created on the first day?",
+      "15-18": "What is created on day one, and why is that ordering significant?"
+    },
+    "options": [
+      "Light",
+      "Animals",
+      "People"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "Light, before anything else.",
+      "11-14": "Light — the sun does not appear until day four.",
+      "15-18": "Light precedes the luminaries, which demotes the sun and moon from deities to created lamps."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

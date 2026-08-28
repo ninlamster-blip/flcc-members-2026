@@ -1,0 +1,17 @@
+{
+  "teaching": {
+    "7-10": "What did I learn about God today?",
+    "11-14": "What is God teaching me at the moment?",
+    "15-18": "What is God teaching me — including the parts I am resisting?"
+  },
+  "thankful": {
+    "7-10": "What am I thankful for?",
+    "11-14": "What am I thankful for today?",
+    "15-18": "What am I thankful for that I would normally overlook?"
+  },
+  "help": {
+    "7-10": "What do I need God's help with?",
+    "11-14": "What do I need God's help with this week?",
+    "15-18": "Where do I need help I have not asked for yet?"
+  }
+}

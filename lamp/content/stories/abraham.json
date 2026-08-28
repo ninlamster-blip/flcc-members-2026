@@ -1,0 +1,68 @@
+{
+  "slug": "abraham",
+  "title": "Abraham's Promise",
+  "reference": "GEN.12,15,22",
+  "testament": "OT",
+  "summary": {
+    "7-10": "God asks Abraham to go, and promises him a family.",
+    "11-14": "A promise so big it took a lifetime.",
+    "15-18": "The call, the covenant, and the test."
+  },
+  "story": {
+    "7-10": [
+      "God spoke to a man called Abraham. “Leave your home,” he said, “and go to a land I will show you.”",
+      "Abraham did not know where he was going, but he went. God promised him something amazing: one day his family would be as many as the stars.",
+      "Abraham and Sarah were very old and had no children at all. But God kept his promise, and a baby boy called Isaac was born."
+    ],
+    "11-14": [
+      "Abraham was seventy-five when God told him to leave his country, his relatives and his father's house for a land God would only show him later. He went.",
+      "The promise was enormous and, on the face of it, impossible: a great nation, a land, and a blessing that would reach every family on earth. Abraham and Sarah were old and childless.",
+      "Years passed. Abraham believed God, doubted, tried to arrange it himself, and believed again. Eventually Isaac was born — and later God asked Abraham for him, in the hardest test in the book, before stopping his hand and providing a ram instead."
+    ],
+    "15-18": [
+      "The call of Abraham is the hinge of Genesis. After eleven chapters of humanity scattering, God narrows to one man and one promise: land, descendants, and blessing for all nations through him.",
+      "Genesis 15 records the covenant ceremony, and it is strange on purpose. Animals are cut in two and, in the custom of the time, both parties should walk between the pieces, invoking the same fate on themselves if they break the terms. Abraham sleeps. Only God passes through.",
+      "Genesis 22 is the passage readers argue about most, and it should be read as the text presents it: a test, narrated so that God stops it, in a world where child sacrifice was practised by Israel's neighbours and is condemned repeatedly in the Law. Abraham's answer to Isaac — 'God will provide' — turns out to be the sentence the story is built around."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "God asked Abraham to trust him, and gave him a family as big as the stars.",
+    "11-14": "God called Abraham to leave everything on a promise, and kept the promise long after it looked impossible.",
+    "15-18": "God calls one man, makes a one-sided covenant with him, and works out a blessing for all nations through a family that keeps nearly losing it."
+  },
+  "whatItTeaches": {
+    "7-10": "Trusting God sometimes means going before you know how it will work out.",
+    "11-14": "God's promises are often slower than we would like — and slowness is not the same as failure.",
+    "15-18": "Faith in Genesis is not certainty; it is a long obedience through doubt, self-help and delay, held up by a covenant that God alone guarantees."
+  },
+  "thinkAboutIt": {
+    "7-10": "Abraham left home without knowing where he was going. What would you find hardest to leave behind?",
+    "11-14": "God's promise took most of Abraham's life to arrive. Where are you waiting for something, and how are you handling the wait?",
+    "15-18": "In Genesis 15 only God walks between the pieces. What difference does it make that the covenant does not depend on Abraham keeping his side?"
+  },
+  "pray": {
+    "7-10": "God, help me trust you even when I do not know what happens next.",
+    "11-14": "God, you keep promises across whole lifetimes. Help me wait without giving up on you.",
+    "15-18": "God, you bound yourself to Abraham while he slept. Teach me to rest in a covenant I did not make and cannot break."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did God promise Abraham?",
+      "11-14": "What did God promise Abraham?",
+      "15-18": "What three things does the Abrahamic promise contain?"
+    },
+    "options": [
+      "A big family, a land, and blessing",
+      "Gold and armies",
+      "A long life alone"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "A family as many as the stars, a land, and a blessing for everyone.",
+      "11-14": "Descendants, a land, and a blessing that would reach every family on earth.",
+      "15-18": "Land, seed and blessing — with the blessing explicitly extended to all the families of the earth."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

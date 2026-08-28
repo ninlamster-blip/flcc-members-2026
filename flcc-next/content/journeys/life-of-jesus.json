@@ -1,0 +1,132 @@
+[
+  {
+    "id": "l1",
+    "title": "BORN IN A STABLE",
+    "ref": "Luke 2:7",
+    "text": "She gave birth to her firstborn son. She wrapped him in bands of cloth and laid him in a feeding trough, because there was no room for them in the inn.",
+    "body": {
+      "kids": "Jesus was born where the animals were kept. His first bed was the box the animals ate from. God did not arrive at the top — he arrived at the bottom.",
+      "teens": "Luke dates the birth by imperial decree, then puts the Son of God in a feeding trough. The contrast is the argument: the announcement goes to shepherds, not to the palace."
+    },
+    "quiz": {
+      "q": {
+        "kids": "Where was Jesus laid after he was born?",
+        "teens": "Where does Luke say Jesus was laid?"
+      },
+      "options": [
+        "In a feeding trough",
+        "In a palace bed",
+        "In a boat"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "A manger — the box animals eat from.",
+        "teens": "A manger. Luke's whole gospel keeps this downward shape."
+      }
+    }
+  },
+  {
+    "id": "l2",
+    "title": "TWELVE ORDINARY MEN",
+    "ref": "Mark 1:17",
+    "text": "Jesus said to them, “Come after me, and I will make you into fishers for men.”",
+    "body": {
+      "kids": "Jesus picked fishermen, a tax collector, and ordinary people — not the ones everyone expected.",
+      "teens": "He chose twelve, deliberately echoing the twelve tribes. The claim underneath the choice is about the renewal of Israel, not just about staffing."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What job did some of the first disciples have?",
+        "teens": "What was the trade of the first disciples Jesus called?"
+      },
+      "options": [
+        "Fishermen",
+        "Soldiers",
+        "Farmers"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "They caught fish for a living.",
+        "teens": "Fishermen from around Galilee — working men, not scholars."
+      }
+    }
+  },
+  {
+    "id": "l3",
+    "title": "HE CALMED THE STORM",
+    "ref": "Mark 4:39",
+    "text": "He awoke and rebuked the wind, and said to the sea, “Peace! Be still!” The wind ceased and there was a great calm.",
+    "body": {
+      "kids": "The disciples were terrified. Jesus was asleep. He stood up, told the storm to stop — and it stopped.",
+      "teens": "Mark ends the scene on a question, not a rescue: who is this? Authority over the sea belongs to God alone in the Hebrew Bible, and Mark's readers would have heard it."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Jesus say to the storm?",
+        "teens": "How does Mark end the storm episode?"
+      },
+      "options": [
+        "“Peace! Be still!”",
+        "Nothing at all",
+        "He rowed harder"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "He spoke to the storm like a person, and it obeyed.",
+        "teens": "With the disciples more frightened after the calm than during the storm."
+      }
+    }
+  },
+  {
+    "id": "l4",
+    "title": "THE CROSS",
+    "ref": "Luke 23:34",
+    "text": "Jesus said, “Father, forgive them, for they don’t know what they are doing.”",
+    "body": {
+      "kids": "Jesus had done nothing wrong. He was killed anyway — and while it happened, he asked God to forgive the people doing it.",
+      "teens": "Crucifixion was designed to be public and humiliating. Luke records Pilate finding no guilt three times. The forgiveness is spoken from inside the execution, not afterwards."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did Jesus say about the people who hurt him?",
+        "teens": "What does Luke record Jesus saying from the cross?"
+      },
+      "options": [
+        "“Father, forgive them”",
+        "Nothing",
+        "He called for help"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "He asked his Father to forgive them.",
+        "teens": "A prayer for his executioners — Luke's distinctive record of the crucifixion."
+      }
+    }
+  },
+  {
+    "id": "l5",
+    "title": "THE EMPTY TOMB",
+    "ref": "Luke 24:5–6",
+    "text": "“Why do you seek the living among the dead? He isn’t here, but is risen!”",
+    "body": {
+      "kids": "On Sunday morning the stone was rolled away and the tomb was empty. Jesus was alive, and he ate breakfast with his friends.",
+      "teens": "The first witnesses are women, whose testimony carried little legal weight — an unlikely detail to invent. Paul's summary in 1 Corinthians 15 lists named witnesses and says most were still alive to ask."
+    },
+    "quiz": {
+      "q": {
+        "kids": "What did the women find at the tomb?",
+        "teens": "Who are the first witnesses to the empty tomb?"
+      },
+      "options": [
+        "It was empty",
+        "It was locked",
+        "It had moved"
+      ],
+      "answer": 0,
+      "why": {
+        "kids": "Empty — because Jesus was alive.",
+        "teens": "Women, which is precisely what makes the detail hard to explain as invention."
+      }
+    }
+  }
+]

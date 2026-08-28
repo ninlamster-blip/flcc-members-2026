@@ -1,0 +1,68 @@
+{
+  "slug": "jesus-calms-the-storm",
+  "title": "Jesus Calms the Storm",
+  "reference": "MRK.4.35-41",
+  "testament": "NT",
+  "summary": {
+    "7-10": "Jesus tells a storm to be quiet.",
+    "11-14": "The disciples are terrified, and Jesus is asleep.",
+    "15-18": "A nature miracle that is really a question about identity."
+  },
+  "story": {
+    "7-10": [
+      "Jesus and his friends got into a boat to cross the lake. Jesus was so tired he fell asleep.",
+      "A big storm came. Water started filling the boat and his friends were frightened. They woke him up.",
+      "Jesus stood up and said to the wind and the waves, “Quiet! Be still!” And everything went calm."
+    ],
+    "11-14": [
+      "It was evening, and Jesus asked to cross to the other side. He had been teaching all day and fell asleep on a cushion in the back of the boat.",
+      "A squall came down — the lake is famous for them — and the boat began to swamp. Several of these men were professional fishermen, and they were frightened, which tells you how bad it was. They woke him with a question that is really an accusation: don't you care?",
+      "Jesus spoke to the storm as if it were a person: 'Quiet! Be still!' It stopped. Then he asked them why they were afraid, and they became more frightened than they had been in the storm, asking each other who this actually was."
+    ],
+    "15-18": [
+      "Mark stages the scene to end on a question, not on a rescue: 'Who then is this, that even the wind and the sea obey him?' The miracle serves the christology.",
+      "In the Hebrew Bible, authority over the sea belongs to God alone — Psalm 107 has sailors crying out in a storm and the Lord stilling it to a whisper, in almost the same sequence. Mark's readers would have heard the echo.",
+      "The disciples' fear increases after the storm stops, which is exactly right. A storm is dangerous; a man who speaks to storms and is obeyed is a category problem. Mark's whole gospel presses that problem until someone answers it correctly at the cross."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "Jesus told the storm to stop, and it stopped.",
+    "11-14": "Jesus calmed a storm with a word, and his friends were left asking who he really was.",
+    "15-18": "Jesus stills the sea with a command, and Mark uses the moment to raise the question of his identity."
+  },
+  "whatItTeaches": {
+    "7-10": "Jesus is stronger than the things that frighten us.",
+    "11-14": "Jesus being asleep did not mean he did not care. It meant he was not panicking about what was panicking them.",
+    "15-18": "Mark's point is not primarily comfort but identity: the one who commands the sea is doing something Scripture reserves for God."
+  },
+  "thinkAboutIt": {
+    "7-10": "What makes you frightened? What would you like to say to Jesus about it?",
+    "11-14": "The disciples asked 'don't you care?'. Have you ever wanted to ask God that?",
+    "15-18": "Why might Mark end the episode with a bigger fear than the one it began with?"
+  },
+  "pray": {
+    "7-10": "Jesus, when I am scared, help me remember you are with me.",
+    "11-14": "Jesus, you were not panicking when they were. Help me trust you when things feel out of control.",
+    "15-18": "Jesus, you commanded the sea and left them asking who you were. Give me an answer I actually live by."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did Jesus say to the storm?",
+      "11-14": "What did Jesus do about the storm?",
+      "15-18": "How does Mark end the episode?"
+    },
+    "options": [
+      "“Quiet! Be still!”",
+      "Nothing at all",
+      "He rowed harder"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "He told the wind and waves to be quiet, and they were.",
+      "11-14": "He rebuked the wind and told the sea to be still — and it obeyed him.",
+      "15-18": "With the disciples' question: 'Who then is this, that even the wind and the sea obey him?'"
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

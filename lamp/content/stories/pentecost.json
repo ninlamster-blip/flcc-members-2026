@@ -1,0 +1,68 @@
+{
+  "slug": "pentecost",
+  "title": "The Day of Pentecost",
+  "reference": "ACT.2",
+  "testament": "NT",
+  "summary": {
+    "7-10": "God's Spirit comes, and the church begins.",
+    "11-14": "A frightened group becomes a movement in one morning.",
+    "15-18": "The Spirit, the languages, and the birth of the church."
+  },
+  "story": {
+    "7-10": [
+      "After Jesus went back to heaven, his friends waited together and prayed, just as he had told them to.",
+      "One morning there was a sound like a rushing wind, and something like little flames rested on each of them. God's Holy Spirit had come.",
+      "They went outside and started telling everyone about Jesus — and people from lots of different countries each heard it in their own language. Three thousand people believed that day."
+    ],
+    "11-14": [
+      "Jesus told his followers to wait in Jerusalem. About a hundred and twenty of them did, praying together, for ten days.",
+      "On the morning of Pentecost — a harvest festival that had filled the city with pilgrims from all over the empire — there was a sound like a violent wind, and what looked like tongues of fire came to rest on each person.",
+      "They spilled out into the street speaking, and the pilgrims each heard their own language. Peter, who six weeks earlier had denied he even knew Jesus, stood up and preached. Three thousand people were baptised that day."
+    ],
+    "15-18": [
+      "Acts 2 is deliberately constructed against Babel. There, one language became many and humanity scattered; here, many languages are given and the scattered are gathered. The reversal is the point.",
+      "It matters that the miracle is not that everyone spoke one holy language, but that the gospel arrived in each hearer's own. The Christian faith has been translatable from its first morning, and has never had a sacred tongue in the way its neighbours did.",
+      "Peter's sermon is the template for the preaching that follows: this is what the prophet Joel spoke of, this Jesus was crucified and God raised him, we are witnesses. The church begins not with an institution but with a claim, made publicly, by people who had recently been hiding."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "God's Spirit came, and Jesus' friends started telling everyone about him.",
+    "11-14": "The Holy Spirit came at Pentecost, and the disciples preached publicly for the first time.",
+    "15-18": "The Spirit is given, the gospel is heard in every language present, and the church begins with public testimony."
+  },
+  "whatItTeaches": {
+    "7-10": "God gives his Spirit to help us and to make us brave.",
+    "11-14": "The same people who ran away at the cross were preaching in public six weeks later. Something happened to them.",
+    "15-18": "Pentecost reverses Babel and establishes translation, not a sacred language, as the mode of Christian mission."
+  },
+  "thinkAboutIt": {
+    "7-10": "What would you like to tell someone about Jesus?",
+    "11-14": "Peter had failed badly and was still the one who preached. What does that say about second chances?",
+    "15-18": "If the faith was translatable from day one, what does that imply about how it should sit in any one culture — including yours?"
+  },
+  "pray": {
+    "7-10": "God, please give me your Spirit to help me and make me brave.",
+    "11-14": "God, do in me what you did in them — turn fear into something worth saying out loud.",
+    "15-18": "God, you gave your Spirit to people who had failed and hidden. Make me useful anyway."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What happened when the Holy Spirit came?",
+      "11-14": "What happened at Pentecost?",
+      "15-18": "How does Acts 2 relate to Babel?"
+    },
+    "options": [
+      "People heard in their own languages",
+      "Everyone went home",
+      "Nothing changed"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "People from many countries each heard about Jesus in their own language.",
+      "11-14": "The disciples spoke and pilgrims from across the empire each heard their own language.",
+      "15-18": "It reverses it: at Babel language divided and scattered; at Pentecost languages are given and the scattered are gathered."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

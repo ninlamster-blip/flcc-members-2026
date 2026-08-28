@@ -1,0 +1,562 @@
+[
+  {
+    "clues": [
+      "I built something enormous when it had never rained.",
+      "My family and a lot of animals came with me.",
+      "God set a bow in the sky for me."
+    ],
+    "answer": "Noah",
+    "options": [
+      "Noah",
+      "Abraham",
+      "Moses"
+    ],
+    "fact": "God’s promise never to flood the earth again was one-sided — Noah promised nothing."
+  },
+  {
+    "clues": [
+      "I was the youngest in my family.",
+      "I looked after sheep before I looked after a kingdom.",
+      "I beat a giant with a sling."
+    ],
+    "answer": "David",
+    "options": [
+      "David",
+      "Samuel",
+      "Saul"
+    ],
+    "fact": "David refused the king’s armour because he could not move in it."
+  },
+  {
+    "clues": [
+      "I was queen, but I was not born royal.",
+      "I hid who my people were.",
+      "I said: if I perish, I perish."
+    ],
+    "answer": "Esther",
+    "options": [
+      "Esther",
+      "Ruth",
+      "Miriam"
+    ],
+    "fact": "The book of Esther never once mentions God by name."
+  },
+  {
+    "clues": [
+      "I was thrown into a pit by my own brothers.",
+      "I ended up running a country.",
+      "I told them: you meant it for evil, God meant it for good."
+    ],
+    "answer": "Joseph",
+    "options": [
+      "Joseph",
+      "Daniel",
+      "Jeremiah"
+    ],
+    "fact": "Almost nothing miraculous happens in Joseph’s story — the pattern is the point."
+  },
+  {
+    "clues": [
+      "I was afraid to speak in public.",
+      "I met God in a bush that would not burn up.",
+      "I led a nation through a sea."
+    ],
+    "answer": "Moses",
+    "options": [
+      "Moses",
+      "Aaron",
+      "Joshua"
+    ],
+    "fact": "Moses argued with God about the job five separate times."
+  },
+  {
+    "clues": [
+      "I kept praying with my windows open.",
+      "It had just been made illegal.",
+      "I spent a night with lions."
+    ],
+    "answer": "Daniel",
+    "options": [
+      "Daniel",
+      "Elijah",
+      "Nehemiah"
+    ],
+    "fact": "Daniel did not protest or hide — he simply carried on as before."
+  },
+  {
+    "clues": [
+      "I said I would never leave.",
+      "I was not born one of God’s people.",
+      "I became the great-grandmother of a king."
+    ],
+    "answer": "Ruth",
+    "options": [
+      "Ruth",
+      "Naomi",
+      "Hannah"
+    ],
+    "fact": "Ruth was a Moabite — an outsider in the line that leads to David and to Jesus."
+  },
+  {
+    "clues": [
+      "I ran the wrong way.",
+      "A storm found me anyway.",
+      "I was angry when God forgave my enemies."
+    ],
+    "answer": "Jonah",
+    "options": [
+      "Jonah",
+      "Amos",
+      "Hosea"
+    ],
+    "fact": "Jonah ran because he suspected success, not failure."
+  },
+  {
+    "clues": [
+      "I was found in a basket by a princess.",
+      "I argued with God about whether I could speak well enough.",
+      "I led a nation out of slavery and never entered the land myself."
+    ],
+    "answer": "Moses",
+    "options": [
+      "Moses",
+      "Joshua",
+      "Aaron"
+    ],
+    "fact": "He saw the promised land from a mountain but died before crossing into it."
+  },
+  {
+    "clues": [
+      "I looked after sheep before anyone thought I was important.",
+      "I wrote songs that people still sing.",
+      "I killed a giant with a stone, and later did something terrible that I could not undo."
+    ],
+    "answer": "David",
+    "options": [
+      "David",
+      "Saul",
+      "Solomon"
+    ],
+    "fact": "The Bible tells his worst story as plainly as his best one."
+  },
+  {
+    "clues": [
+      "I was an orphan raised by my cousin.",
+      "I became a queen without telling anyone who my people were.",
+      "I walked into a throne room uninvited, knowing it could kill me."
+    ],
+    "answer": "Esther",
+    "options": [
+      "Esther",
+      "Ruth",
+      "Deborah"
+    ],
+    "fact": "God is never once mentioned by name in her book."
+  },
+  {
+    "clues": [
+      "I was a foreigner, not an Israelite.",
+      "I refused to leave my mother-in-law when I had every reason to.",
+      "I gathered leftover grain in a field that belonged to a relative."
+    ],
+    "answer": "Ruth",
+    "options": [
+      "Ruth",
+      "Naomi",
+      "Rachel"
+    ],
+    "fact": "She became the great-grandmother of King David."
+  },
+  {
+    "clues": [
+      "I once hunted Christians for a living.",
+      "A light on a road knocked me down and blinded me.",
+      "I wrote letters from prison that people still read every Sunday."
+    ],
+    "answer": "Paul",
+    "options": [
+      "Paul",
+      "Peter",
+      "Stephen"
+    ],
+    "fact": "He kept calling himself the least of the apostles."
+  },
+  {
+    "clues": [
+      "I fished for a living until someone told me to follow him.",
+      "I sank when I looked at the waves instead of him.",
+      "I said I did not know him, three times, and then wept."
+    ],
+    "answer": "Peter",
+    "options": [
+      "Peter",
+      "Andrew",
+      "James"
+    ],
+    "fact": "He preached the sermon that started the church, weeks after failing badly."
+  },
+  {
+    "clues": [
+      "An angel told me something impossible about my future.",
+      "I gave birth far from home.",
+      "I watched my son die and stayed to the end."
+    ],
+    "answer": "Mary",
+    "options": [
+      "Mary",
+      "Martha",
+      "Elizabeth"
+    ],
+    "fact": "Her song, the Magnificat, is about God pulling rulers off their thrones."
+  },
+  {
+    "clues": [
+      "I lived in the desert and ate locusts and wild honey.",
+      "I told people to get ready, and I baptised them in a river.",
+      "I said I was not worthy to untie his sandals."
+    ],
+    "answer": "John the Baptist",
+    "options": [
+      "John the Baptist",
+      "Elijah",
+      "Isaiah"
+    ],
+    "fact": "He was Jesus’ cousin, and he was executed for telling a king the truth."
+  },
+  {
+    "clues": [
+      "My father gave me a coat and my brothers hated me for it.",
+      "I read the meaning of dreams for a king.",
+      "I fed the same brothers who sold me."
+    ],
+    "answer": "Joseph",
+    "options": [
+      "Joseph",
+      "Benjamin",
+      "Judah"
+    ],
+    "fact": "“You meant evil against me, but God meant it for good.”"
+  },
+  {
+    "clues": [
+      "I left my country without being told where I was going.",
+      "I laughed when God promised me a son in old age.",
+      "I climbed a mountain with my boy and a knife."
+    ],
+    "answer": "Abraham",
+    "options": [
+      "Abraham",
+      "Isaac",
+      "Jacob"
+    ],
+    "fact": "He is called the father of everyone who believes."
+  },
+  {
+    "clues": [
+      "I tricked my brother out of what was his.",
+      "I worked fourteen years for the woman I loved.",
+      "I wrestled until daybreak and walked with a limp afterwards."
+    ],
+    "answer": "Jacob",
+    "options": [
+      "Jacob",
+      "Esau",
+      "Laban"
+    ],
+    "fact": "His new name became the name of a whole nation."
+  },
+  {
+    "clues": [
+      "I was taken from my home as a teenager to serve a foreign king.",
+      "I would not stop praying, even when it was made a crime.",
+      "I spent a night with lions and walked out."
+    ],
+    "answer": "Daniel",
+    "options": [
+      "Daniel",
+      "Ezekiel",
+      "Nehemiah"
+    ],
+    "fact": "He served four kings across two empires without changing what he believed."
+  },
+  {
+    "clues": [
+      "I called down fire on a soaked altar in front of hundreds.",
+      "I ran away afterwards and asked to die.",
+      "I heard God not in the earthquake but in a whisper."
+    ],
+    "answer": "Elijah",
+    "options": [
+      "Elijah",
+      "Elisha",
+      "Samuel"
+    ],
+    "fact": "He was one of two people in the Bible taken up without dying."
+  },
+  {
+    "clues": [
+      "I was set apart before I was born, and my hair was the sign of it.",
+      "I told a riddle at my own wedding.",
+      "My strength left me when a secret did."
+    ],
+    "answer": "Samson",
+    "options": [
+      "Samson",
+      "Gideon",
+      "Saul"
+    ],
+    "fact": "His last act was his most effective, and it cost him his life."
+  },
+  {
+    "clues": [
+      "I ran in the exact opposite direction from where God sent me.",
+      "I spent three days somewhere very dark and very wet.",
+      "I was angry when the city I preached to actually repented."
+    ],
+    "answer": "Jonah",
+    "options": [
+      "Jonah",
+      "Amos",
+      "Nahum"
+    ],
+    "fact": "His book ends on a question God asks him, and we never hear his answer."
+  },
+  {
+    "clues": [
+      "I was told to build something enormous for a reason nobody believed.",
+      "I spent months with a lot of animals and no dry land.",
+      "A bird came back with a leaf and I knew it was nearly over."
+    ],
+    "answer": "Noah",
+    "options": [
+      "Noah",
+      "Enoch",
+      "Methuselah"
+    ],
+    "fact": "He is described as walking with God in a generation that was not."
+  },
+  {
+    "clues": [
+      "I could have asked for money or long life and asked for something else.",
+      "I built a temple my father was not allowed to build.",
+      "I wrote about how meaningless everything is under the sun."
+    ],
+    "answer": "Solomon",
+    "options": [
+      "Solomon",
+      "David",
+      "Rehoboam"
+    ],
+    "fact": "The wisest man in the world made some catastrophically unwise decisions late on."
+  },
+  {
+    "clues": [
+      "I was one of only two spies who came back saying it could be done.",
+      "I took over from a leader nobody could replace.",
+      "I marched around a city for seven days instead of attacking it."
+    ],
+    "answer": "Joshua",
+    "options": [
+      "Joshua",
+      "Caleb",
+      "Gideon"
+    ],
+    "fact": "“Be strong and courageous” was said to him four times before he started."
+  },
+  {
+    "clues": [
+      "I was hiding in a winepress when I was called a mighty warrior.",
+      "I asked for a sign twice, using wool and dew.",
+      "I went into battle with three hundred men instead of thirty-two thousand."
+    ],
+    "answer": "Gideon",
+    "options": [
+      "Gideon",
+      "Samson",
+      "Barak"
+    ],
+    "fact": "God kept shrinking his army so nobody could credit the victory to numbers."
+  },
+  {
+    "clues": [
+      "I watched a basket float down a river.",
+      "I led the women with a tambourine after the sea opened.",
+      "I spoke against my brother and paid for it."
+    ],
+    "answer": "Miriam",
+    "options": [
+      "Miriam",
+      "Deborah",
+      "Hannah"
+    ],
+    "fact": "She is one of the first women in the Bible called a prophet."
+  },
+  {
+    "clues": [
+      "I judged Israel while sitting under a palm tree.",
+      "A general refused to go to war unless I came too.",
+      "I sang a song about the victory afterwards."
+    ],
+    "answer": "Deborah",
+    "options": [
+      "Deborah",
+      "Jael",
+      "Huldah"
+    ],
+    "fact": "She led a nation at a time when almost nobody expected a woman to."
+  },
+  {
+    "clues": [
+      "I prayed so hard in the temple that a priest thought I was drunk.",
+      "I promised God the child I was begging for.",
+      "I gave my son back and visited him with a coat each year."
+    ],
+    "answer": "Hannah",
+    "options": [
+      "Hannah",
+      "Sarah",
+      "Rachel"
+    ],
+    "fact": "Her son grew up to anoint Israel’s first two kings."
+  },
+  {
+    "clues": [
+      "I said I would follow him even if it killed us.",
+      "I asked where he was going, because I genuinely did not know the way.",
+      "I said I would not believe it until I touched the wounds."
+    ],
+    "answer": "Thomas",
+    "options": [
+      "Thomas",
+      "Philip",
+      "Nathanael"
+    ],
+    "fact": "The doubt is remembered; the fact that he then said “My Lord and my God” often is not."
+  },
+  {
+    "clues": [
+      "I was rich because I collected money for people everyone hated.",
+      "I was too short to see over the crowd, so I climbed.",
+      "I gave half of everything away the same day."
+    ],
+    "answer": "Zacchaeus",
+    "options": [
+      "Zacchaeus",
+      "Matthew",
+      "Nicodemus"
+    ],
+    "fact": "Jesus invited himself to dinner, which was the whole scandal."
+  },
+  {
+    "clues": [
+      "I came to see him at night, when nobody would notice.",
+      "I was told I had to be born a second time and did not understand.",
+      "I helped bury him, in daylight, at the end."
+    ],
+    "answer": "Nicodemus",
+    "options": [
+      "Nicodemus",
+      "Joseph of Arimathea",
+      "Gamaliel"
+    ],
+    "fact": "He appears three times in John, and each time he is a little braver."
+  },
+  {
+    "clues": [
+      "I was chosen to help make sure widows got fed.",
+      "I gave a very long speech that did not calm anyone down.",
+      "I asked God to forgive the people who were killing me."
+    ],
+    "answer": "Stephen",
+    "options": [
+      "Stephen",
+      "Philip",
+      "Barnabas"
+    ],
+    "fact": "A young man named Saul stood watching the coats — the same Saul who became Paul."
+  },
+  {
+    "clues": [
+      "My mother and grandmother taught me the Scriptures.",
+      "A much older man called me his son in the faith.",
+      "I was told not to let anyone look down on me for being young."
+    ],
+    "answer": "Timothy",
+    "options": [
+      "Timothy",
+      "Titus",
+      "Silas"
+    ],
+    "fact": "Two of Paul’s letters are written to him, mostly about how to lead when you are nervous."
+  },
+  {
+    "clues": [
+      "I sold purple cloth, which was expensive.",
+      "I met a group of travellers at a riverside prayer meeting.",
+      "I opened my house to them, and it became a church."
+    ],
+    "answer": "Lydia",
+    "options": [
+      "Lydia",
+      "Priscilla",
+      "Dorcas"
+    ],
+    "fact": "She is the first named European convert in Acts."
+  },
+  {
+    "clues": [
+      "I was a soldier in a foreign army and I had a skin disease.",
+      "I was told to wash seven times in a river and thought it was beneath me.",
+      "A servant girl was the reason I went at all."
+    ],
+    "answer": "Naaman",
+    "options": [
+      "Naaman",
+      "Cornelius",
+      "Jairus"
+    ],
+    "fact": "He was healed only after he did the small, undignified thing he had argued against."
+  },
+  {
+    "clues": [
+      "I was a tentmaker who taught alongside my husband.",
+      "We explained the way of God more accurately to a gifted preacher.",
+      "Paul greeted us in several of his letters."
+    ],
+    "answer": "Priscilla",
+    "options": [
+      "Priscilla",
+      "Lydia",
+      "Phoebe"
+    ],
+    "fact": "She is usually named before her husband Aquila, which was unusual for the time."
+  },
+  {
+    "clues": [
+      "I was a shepherd and looked after sycamore figs.",
+      "I was not a prophet or a prophet's son, and I said so.",
+      "I said let justice roll on like a river."
+    ],
+    "answer": "Amos",
+    "options": [
+      "Amos",
+      "Micah",
+      "Joel"
+    ],
+    "fact": "He was an outsider with no religious credentials, which is part of why his message landed so hard."
+  },
+  {
+    "clues": [
+      "I was a Roman officer and not a Jew.",
+      "I saw a vision telling me to send for a man I had never met.",
+      "The Holy Spirit fell on my household while the sermon was still going."
+    ],
+    "answer": "Cornelius",
+    "options": [
+      "Cornelius",
+      "Naaman",
+      "Pilate"
+    ],
+    "fact": "His conversion is the moment the early church had to accept that the gospel was not theirs alone."
+  }
+]

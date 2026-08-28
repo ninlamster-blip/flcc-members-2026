@@ -1,0 +1,68 @@
+{
+  "slug": "moses-red-sea",
+  "title": "Moses and the Red Sea",
+  "reference": "EXO.14",
+  "testament": "OT",
+  "summary": {
+    "7-10": "God makes a path through the sea.",
+    "11-14": "Trapped between an army and the water.",
+    "15-18": "The founding rescue of Israel."
+  },
+  "story": {
+    "7-10": [
+      "God's people had been slaves in Egypt for a very long time. God sent Moses to bring them out.",
+      "But the king changed his mind and sent his army after them. The people came to the edge of a huge sea. Behind them: chariots. In front: water.",
+      "Moses held out his hand, and God pushed the sea back so his people could walk through on dry ground. They were free."
+    ],
+    "11-14": [
+      "Israel had been slaves in Egypt for four hundred years. After ten plagues Pharaoh finally let them go — and then changed his mind and came after them with six hundred chariots.",
+      "The people were trapped, with the sea in front and an army behind, and they turned on Moses: better slaves in Egypt than dead in the desert. Moses told them to stand still and watch.",
+      "A wind blew all night. The water divided, Israel walked through on dry ground, and when the army followed the sea returned. On the far shore Miriam picked up a tambourine and the people sang. They have sung about it ever since."
+    ],
+    "15-18": [
+      "The exodus is the event Israel's whole identity is built on. The law, the prophets and the psalms all refer back to it, and every Passover retells it in the present tense: 'we were slaves in Egypt'.",
+      "The crossing itself is narrated as a reversal of creation and a new one — waters divided, dry land appearing, a people brought into being. It is not simply an escape; it is a birth.",
+      "It matters that Israel does nothing. 'The Lord will fight for you; you need only be still' is the theological centre of the chapter. The nation begins with a rescue it could not perform, which is why grace, not achievement, is the grammar of everything that follows."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "God opened the sea so his people could escape and be free.",
+    "11-14": "God rescued Israel from slavery by dividing the sea, and defeated the army that came after them.",
+    "15-18": "God delivers Israel from Egypt at the sea, creating a people who owe their existence entirely to a rescue."
+  },
+  "whatItTeaches": {
+    "7-10": "God can make a way where there does not seem to be one.",
+    "11-14": "God's people were terrified and complaining, and he rescued them anyway. Rescue is not a reward for a good attitude.",
+    "15-18": "Israel's foundation story is one of unearned deliverance, which sets the pattern for how the rest of Scripture speaks about salvation."
+  },
+  "thinkAboutIt": {
+    "7-10": "When have you been really scared? What helped?",
+    "11-14": "The people were told to stand still. When is doing nothing the hardest thing to do?",
+    "15-18": "Israel's identity was formed by remembering a rescue. What would it change if you told your own story starting from what God has done rather than what you have?"
+  },
+  "pray": {
+    "7-10": "Thank you God for being stronger than anything that scares me.",
+    "11-14": "God, you rescued people who were panicking and complaining. Thank you that you do not wait for me to be brave.",
+    "15-18": "God, you fought for a people who could do nothing. Teach me to build my life on your rescue rather than my performance."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "How did God's people get across the sea?",
+      "11-14": "How did Israel cross the sea?",
+      "15-18": "What does Moses tell the people to do at the sea?"
+    },
+    "options": [
+      "God divided the water",
+      "They built boats",
+      "They swam"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "God pushed the water back and they walked on dry ground.",
+      "11-14": "God divided the water with a strong wind and they crossed on dry ground.",
+      "15-18": "'Stand still and see the salvation of the Lord' — the deliverance is entirely God's work."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

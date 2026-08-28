@@ -1,0 +1,324 @@
+[
+  {
+    "id": "pressure",
+    "title": "SCHOOL PRESSURE",
+    "tone": "cream",
+    "symbol": "bulb",
+    "hook": {
+      "kids": "When school feels like too much.",
+      "teens": "When the workload stops being work and starts being your worth."
+    },
+    "body": {
+      "kids": "Doing your best matters. Being the best is not what God asks of you.",
+      "teens": "Grades measure work. They are not a measure of you, and the moment the two get welded together every result becomes a verdict on your worth. Work hard — then let the result be a result, not a sentence."
+    },
+    "verse": "Come to me, all you who labor and are heavily burdened, and I will give you rest.",
+    "ref": "Matthew 11:28",
+    "step": {
+      "kids": "Tell a grown-up how much work you have.",
+      "teens": "Name to one person the thing you are most behind on. Secrecy is what gives it weight."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "anxiety",
+    "title": "ANXIETY",
+    "tone": "blue",
+    "symbol": "hands",
+    "hook": {
+      "kids": "When your tummy feels worried.",
+      "teens": "When your body is at rest and your head is not."
+    },
+    "body": {
+      "kids": "Worry is not naughty. It is a feeling — and it is something you can hand to God, out loud.",
+      "teens": "Anxiety is not a failure of faith; half the psalms are complaints. What Scripture asks is not that you stop feeling it but that you take it somewhere — specifically, to God and to people who can help carry it."
+    },
+    "verse": "Cast all your worries on him, because he cares for you.",
+    "ref": "1 Peter 5:7",
+    "step": {
+      "kids": "Say the worry out loud to someone today.",
+      "teens": "Write the anxiety down, then mark the one part of it you can actually act on this week."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "friendship",
+    "title": "FRIENDSHIP",
+    "tone": "pink",
+    "symbol": "people",
+    "hook": {
+      "kids": "Being a good friend, and finding good friends.",
+      "teens": "Who you spend time with is who you are becoming."
+    },
+    "body": {
+      "kids": "Good friends are kind when nobody is watching. Be that kind of friend.",
+      "teens": "Friendship in Proverbs is measured by what survives trouble. Ask honestly whether your friendships make you braver and kinder, or just louder."
+    },
+    "verse": "A friend loves at all times.",
+    "ref": "Proverbs 17:17",
+    "step": {
+      "kids": "Include someone who is on their own today.",
+      "teens": "Have one conversation this week that goes past the surface."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "family",
+    "title": "FAMILY",
+    "tone": "sage",
+    "symbol": "heart",
+    "hook": {
+      "kids": "Families are great and hard, sometimes on the same day.",
+      "teens": "Loving people you did not choose and cannot leave."
+    },
+    "body": {
+      "kids": "You will not always agree with your family. You can still be kind to them today.",
+      "teens": "Family is the hardest place to practise what you believe, because nobody there is impressed by you. It is also where it counts most."
+    },
+    "verse": "Be kind to one another, tender hearted, forgiving each other.",
+    "ref": "Ephesians 4:32",
+    "step": {
+      "kids": "Do a job at home before you are asked.",
+      "teens": "Say the apology you have been avoiding at home."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "social",
+    "title": "SOCIAL MEDIA",
+    "tone": "cream",
+    "symbol": "grid",
+    "hook": {
+      "kids": "Screens are fun. They are not your whole life.",
+      "teens": "Comparison, performance, and the version of you that lives online."
+    },
+    "body": {
+      "kids": "What you see on a screen is only the good bits people chose to show.",
+      "teens": "You are comparing your inside to everyone else's edit. That is not a fair fight, and no amount of scrolling will make it one."
+    },
+    "verse": "Don’t be conformed to this world, but be transformed by the renewing of your mind.",
+    "ref": "Romans 12:2",
+    "step": {
+      "kids": "Have one hour today with no screen.",
+      "teens": "Unfollow three accounts that consistently make you feel worse."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "identity",
+    "title": "IDENTITY",
+    "tone": "blue",
+    "symbol": "star",
+    "hook": {
+      "kids": "God made you on purpose.",
+      "teens": "Who you are when nobody is watching, and who tells you what you are worth."
+    },
+    "body": {
+      "kids": "You are not a mistake. God knew you before anyone else did.",
+      "teens": "Everyone is being handed an identity by something — a school, a feed, a friendship group. Scripture's claim is that yours was given before any of them had an opinion."
+    },
+    "verse": "I will give thanks to you, for I am fearfully and wonderfully made.",
+    "ref": "Psalm 139:14",
+    "step": {
+      "kids": "Tell someone one thing you like about them.",
+      "teens": "Name the voice you have been letting define you, and hold it up against what God says."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "purpose",
+    "title": "PURPOSE",
+    "tone": "sage",
+    "symbol": "rocket",
+    "hook": {
+      "kids": "God has good things for you to do.",
+      "teens": "What your life is actually for, when nobody has told you yet."
+    },
+    "body": {
+      "kids": "You do not have to wait until you are grown up to do good things.",
+      "teens": "Purpose in the Bible is rarely a career. It is a direction: love God, love people, and do the next right thing in front of you."
+    },
+    "verse": "For we are his workmanship, created in Christ Jesus for good works.",
+    "ref": "Ephesians 2:10",
+    "step": {
+      "kids": "Do one good thing for someone today.",
+      "teens": "Do the next right thing in front of you this week, and stop waiting for a calling."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "relationships",
+    "title": "RELATIONSHIPS",
+    "tone": "pink",
+    "symbol": "heart",
+    "hook": {
+      "kids": "Being kind to everyone, including people you do not like.",
+      "teens": "Liking someone, being liked, and not losing yourself in it."
+    },
+    "body": {
+      "kids": "Treat everyone the way you would want to be treated.",
+      "teens": "Someone who is good for you makes you more like the person you want to be, not less. Anyone who needs you smaller is not offering love."
+    },
+    "verse": "Love is patient and is kind.",
+    "ref": "1 Corinthians 13:4",
+    "step": {
+      "kids": "Be kind to someone who is often left out.",
+      "teens": "Ask yourself honestly whether the people closest to you make you kinder."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "left-out",
+    "title": "BEING LEFT OUT",
+    "tone": "blue",
+    "symbol": "people",
+    "hook": {
+      "kids": "When everyone else got invited and you did not.",
+      "teens": "The group chat you are not in, and the effort of pretending you had not noticed."
+    },
+    "body": {
+      "kids": "Being left out hurts, and it is not a sign that something is wrong with you. Sometimes people are careless rather than cruel — but it still stings, and you are allowed to say so. God is not far off when you feel like this; the Bible is full of people who were on the outside.",
+      "teens": "Exclusion does two things at once: it hurts, and it starts an argument in your head about why. The second part is usually the more damaging, because you are both the prosecution and the judge — and you have very little evidence. Most exclusion is thoughtlessness rather than a verdict on you, and where it genuinely is rejection, that is information about them as much as about you. Either way, the answer is not to become smaller and easier to include."
+    },
+    "verse": "God sets the lonely in families.",
+    "ref": "Psalm 68:6",
+    "step": {
+      "kids": "Tell a grown-up you trust that you felt left out. Then look for someone else who is on their own.",
+      "teens": "Do not audition for a group that has already decided. Put the effort into one friendship that reciprocates."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "anger",
+    "title": "ANGER",
+    "tone": "sage",
+    "symbol": "bolt",
+    "hook": {
+      "kids": "When you are so cross you want to shout.",
+      "teens": "The reaction that arrives before you have chosen it."
+    },
+    "body": {
+      "kids": "Being angry is not a sin. Jesus got angry. What matters is what you do next — whether you hurt someone with it, or do something good with it. Anger is often a sign that something is wrong. Sometimes the wrong thing is the situation, and sometimes it is you.",
+      "teens": "Ephesians assumes you will be angry and tells you not to sin in it, which means anger is a feeling you steer rather than a verdict on your character. Two questions usually help: what is this anger protecting, and is what I am about to do going to fix the problem or just discharge the feeling? Most of the damage gets done in the gap between those two questions being asked."
+    },
+    "verse": "Be angry, and don’t sin. Don’t let the sun go down on your wrath.",
+    "ref": "Ephesians 4:26",
+    "step": {
+      "kids": "Next time you feel it rising, walk out of the room before you say anything.",
+      "teens": "Deal with one thing you have been angry about for more than a week. Silence is not the same as forgiveness."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "grief",
+    "title": "WHEN SOMEONE DIES",
+    "tone": "ink",
+    "symbol": "heart",
+    "hook": {
+      "kids": "When someone you love is gone, and nothing feels normal.",
+      "teens": "Grief does not follow the stages anyone described to you."
+    },
+    "body": {
+      "kids": "There is no right way to feel when someone dies. You might be sad, or angry, or numb, or fine for a while and then not fine at all. All of that is normal. Jesus cried at his friend’s grave even though he knew what he was about to do — so nobody can tell you that being sad means you are not trusting God. Please talk to a parent, a guardian or a ministry leader about this. Some things are too heavy to carry on your own, and you were never meant to.",
+      "teens": "Grief is not a problem to be solved and it does not move in a straight line. You will have a good week and then be flattened by a song. That is not backsliding. Be careful of two things people will offer you: an explanation of why it happened, and a timetable for getting over it. Neither is yours to accept. What is true is that God is near the broken-hearted — and that this is one of the things you should not be handling alone. Tell a parent, a guardian, a ministry leader or a counsellor how you actually are."
+    },
+    "verse": "Blessed are those who mourn, for they shall be comforted.",
+    "ref": "Matthew 5:4",
+    "step": {
+      "kids": "Tell a grown-up you trust how you are really feeling — today, not later.",
+      "teens": "Say the honest sentence to one adult who can carry it. If it has gone on and you are struggling to function, that is a reason to talk to a counsellor, not a failure."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "bullying",
+    "title": "BULLYING",
+    "tone": "pink",
+    "symbol": "shield",
+    "hook": {
+      "kids": "When someone keeps being unkind on purpose.",
+      "teens": "The thing that is easier to absorb than to report."
+    },
+    "body": {
+      "kids": "Bullying is not something you have to sort out on your own, and it is not something you deserved. Tell an adult — a parent, a teacher, a ministry leader — even if you have been told not to tell, and even if you feel embarrassed. That is not telling tales. That is getting help, which is what the situation needs. And if you have been the unkind one, you can stop today and say sorry properly.",
+      "teens": "Two things are worth separating: what was done to you, and the story you have started telling yourself about why you were the target. The first needs reporting to an adult with the power to stop it — repeatedly, if the first one does not act. The second needs someone you trust to argue with. And one honest question: where am I in someone else’s version of this? Standing by is a position, not a neutral space."
+    },
+    "verse": "Open your mouth for the mute, in the cause of all who are left desolate.",
+    "ref": "Proverbs 31:8",
+    "step": {
+      "kids": "Tell an adult today. If the first one does not help, tell another one.",
+      "teens": "Say something the next time you watch it happen to someone else."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "doubt",
+    "title": "DOUBT",
+    "tone": "ink",
+    "symbol": "question",
+    "hook": {
+      "kids": "When you wonder whether any of it is really true.",
+      "teens": "The questions you do not ask at youth group."
+    },
+    "body": {
+      "kids": "Wondering is not the same as walking away. A man in Mark said “I believe — help my unbelief” in one breath, and Jesus did not tell him off for it. If something about God does not make sense to you, say it out loud to a grown-up you trust. Questions are allowed here.",
+      "teens": "Doubt is not the opposite of faith — indifference is. Some doubts are intellectual and want an answer. Some are emotional and want a person. Some are moral, and are really about something you watched a Christian do. It is worth knowing which kind you have, because the wrong response to all three is to bury it and hope it goes quiet. It does not go quiet; it goes underground and resurfaces at a worse moment. Find one adult who will not panic when you say it."
+    },
+    "verse": "I believe. Help my unbelief!",
+    "ref": "Mark 9:24",
+    "step": {
+      "kids": "Ask your question out loud to someone you trust, instead of keeping it in your head.",
+      "teens": "Say the doubt to one person who will not flinch. Then go looking for a real answer rather than a reassurance."
+    },
+    "ageGroup": "teens",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  },
+  {
+    "id": "forgiveness",
+    "title": "FORGIVENESS",
+    "tone": "pink",
+    "symbol": "hands",
+    "hook": {
+      "kids": "When someone hurt you and “sorry” did not fix it.",
+      "teens": "The thing you have decided to be fine about and are demonstrably not fine about."
+    },
+    "body": {
+      "kids": "Forgiving someone does not mean what they did was okay, and it does not mean you have to be close to them again. It means you stop carrying it around. That is hard, and you might have to do it more than once for the same thing. Ask God to help — this is not something you have to manage on willpower.",
+      "teens": "Forgiveness gets confused with three things it is not: forgetting, excusing, and restoring access. You can forgive someone and still not let them near you — especially where what they did was serious, and especially where nothing has changed. What forgiveness does is close the ledger. And it is rarely one decision; it is a decision you make again each time the memory turns up, until it stops turning up with a bill attached."
+    },
+    "verse": "Forgiving each other, even as Christ forgave you, so you also do.",
+    "ref": "Colossians 3:13",
+    "step": {
+      "kids": "Ask God to help you forgive one person. You do not have to feel it yet.",
+      "teens": "Separate the two questions: have I forgiven this, and should this person have access to me? They have different answers."
+    },
+    "ageGroup": "both",
+    "reviewedBy": "",
+    "reviewedAt": ""
+  }
+]

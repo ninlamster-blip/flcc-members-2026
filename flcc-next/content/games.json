@@ -1,0 +1,57 @@
+[
+  {
+    "id": "quiz",
+    "title": "BIBLE QUIZ",
+    "tone": "pink",
+    "symbol": "question",
+    "difficulty": 2,
+    "blurb": {
+      "kids": "Ten questions. How many can you get?",
+      "teens": "Ten questions, no clues, no second guesses."
+    }
+  },
+  {
+    "id": "who-am-i",
+    "title": "WHO AM I?",
+    "tone": "sage",
+    "symbol": "mask",
+    "difficulty": 3,
+    "blurb": {
+      "kids": "Three clues. One person from the Bible.",
+      "teens": "Three clues, hardest first. Guess early for more points."
+    }
+  },
+  {
+    "id": "crossword",
+    "title": "BIBLE CROSSWORD",
+    "tone": "ink",
+    "symbol": "grid",
+    "difficulty": 3,
+    "blurb": {
+      "kids": "Fill the squares. Every word is a Bible word.",
+      "teens": "Eight answers, one grid, no letters given away."
+    }
+  },
+  {
+    "id": "verse-builder",
+    "title": "VERSE BUILDER",
+    "tone": "cream",
+    "symbol": "words",
+    "difficulty": 2,
+    "blurb": {
+      "kids": "Put the words back in the right order.",
+      "teens": "Rebuild the verse from its pieces, against the clock if you want."
+    }
+  },
+  {
+    "id": "speed",
+    "title": "SPEED QUIZ",
+    "tone": "blue",
+    "symbol": "bolt",
+    "difficulty": 4,
+    "blurb": {
+      "kids": "Quick questions. Quick answers!",
+      "teens": "Sixty seconds. As many as you can."
+    }
+  }
+]

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FLCC NEXT">
+  <rect width="512" height="512" rx="112" fill="#F4D89A"/>
+  <path d="M256 96c46 56 70 96 70 140a70 70 0 0 1-140 0c0-44 24-84 70-140Z" fill="#F7F5F0" stroke="#161616" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M256 306v56M186 362h140M212 424h88" fill="none" stroke="#161616" stroke-width="26" stroke-linecap="round"/>
+</svg>

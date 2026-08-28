@@ -1,0 +1,471 @@
+/* =============================================================================
+   FLCC NEXT — the design system
+   Grow. Play. Discover. Follow Jesus.
+
+   The interface is a stack of editorial posters. Each poster takes ONE colour
+   from the palette, sets its headline enormous, carries one flat illustration
+   drawn in black outline, and offers one action. Nothing is a rounded card in
+   a grid of rounded cards.
+
+   The rules this file enforces:
+   · One dominant colour per poster. Never the whole palette on one screen.
+   · Type carries the hierarchy. Labels are tiny; headlines are huge; there is
+     nothing in between pretending to be both.
+   · Black ink, black outlines, flat colour. No gradients, no glass, no glow,
+     no drop shadows.
+   · Space is the other half of the design. Posters breathe or they are wrong.
+   ========================================================================== */
+
+:root {
+  /* ── The palette. Six colours, and no seventh. ─────────────────────────── */
+  --cream:  #F4D89A;
+  --pink:   #E9A6A3;
+  --blue:   #8FC3CF;
+  --sage:   #A9C5A2;
+  --paper:  #F7F5F0;
+  --ink:    #161616;
+
+  /* Ink at reduced weight — for supporting text ON a colour block. Never a
+     grey: it is always the same black, held back. */
+  --ink-70: rgba(22, 22, 22, .70);
+  --ink-55: rgba(22, 22, 22, .55);
+  --ink-12: rgba(22, 22, 22, .12);
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* ── Type. The jumps are deliberate and large. ─────────────────────────── */
+  --label:    .68rem;   /* uppercase, tracked, 700 */
+  --body:     1rem;
+  --lead:     1.15rem;
+  --headline: clamp(1.9rem, 8vw, 2.6rem);
+  --display:  clamp(2.6rem, 13.5vw, 4rem);
+  --numeral:  clamp(3.5rem, 20vw, 6rem);
+
+  --pad: 1.6rem;        /* the inside edge of every poster */
+  --stack: 1rem;        /* the gap between posters */
+  --rhythm: 2.2rem;     /* the vertical beat inside a poster */
+
+  --edge: 3px;          /* the one outline weight, used everywhere */
+  --speed: 220ms;
+  --ease: cubic-bezier(.2, .7, .3, 1);
+}
+
+/* Teens get a tighter, cooler register: less rounding, smaller labels, more
+   ink and paper, less sweetness. Kids get scale and colour. */
+:root[data-mode="kids"]  { --headline: clamp(2.1rem, 9vw, 2.9rem); --body: 1.05rem; --radius: 22px; }
+:root[data-mode="teens"] { --headline: clamp(1.8rem, 7.6vw, 2.5rem); --body: 1rem;  --radius: 6px; }
+:root { --radius: 14px; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; background: var(--paper); }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--body);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis-weight: none;
+}
+
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; border: 0; background: none; }
+:focus-visible { outline: var(--edge) solid var(--ink); outline-offset: 3px; }
+
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus { left: .75rem; top: .75rem; z-index: 90; background: var(--ink); color: var(--paper); padding: .6rem 1rem; }
+
+/* ── Type classes ────────────────────────────────────────────────────────── */
+
+.label {
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.display {
+  font-size: var(--display);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: .94;
+  text-wrap: balance;
+}
+
+.headline {
+  font-size: var(--headline);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.numeral {
+  font-size: var(--numeral);
+  font-weight: 800;
+  letter-spacing: -.05em;
+  line-height: .82;
+  font-variant-numeric: tabular-nums;
+}
+
+.lead { font-size: var(--lead); line-height: 1.4; font-weight: 500; }
+.body { font-size: var(--body); line-height: 1.55; }
+.dim  { color: var(--ink-70); }
+.dimmer { color: var(--ink-55); }
+
+/* ── The poster: the app's one layout primitive ──────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack);
+  padding: 0 var(--stack) calc(6.5rem + env(safe-area-inset-bottom));
+  max-width: 34rem;
+  margin: 0 auto;
+}
+
+.poster {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rhythm);
+  padding: var(--pad);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 12rem;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+}
+.poster[data-tone="cream"] { background: var(--cream); }
+.poster[data-tone="pink"]  { background: var(--pink); }
+.poster[data-tone="blue"]  { background: var(--blue); }
+.poster[data-tone="sage"]  { background: var(--sage); }
+.poster[data-tone="ink"]   { background: var(--ink); color: var(--paper); }
+.poster[data-tone="ink"] .dim { color: rgba(247, 245, 240, .72); }
+.poster[data-tone="ink"] .dimmer { color: rgba(247, 245, 240, .55); }
+/* On black, the outline drawings invert: the line goes to paper, the fill
+   stays black, so a symbol reads as a white line drawing rather than as
+   nothing at all. */
+.poster[data-tone="ink"] .art svg [stroke] { stroke: var(--paper); }
+.poster[data-tone="ink"] .pill { background: var(--paper); color: var(--ink); }
+.poster[data-tone="ink"] .pill[data-quiet] { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 var(--edge) var(--paper); }
+.poster[data-tone="paper"] { background: var(--paper); box-shadow: inset 0 0 0 1px var(--ink-12); }
+
+/* Tall posters — the Today word, an Explore cover, a game. */
+.poster[data-tall] { min-height: 22rem; justify-content: space-between; }
+
+button.poster, a.poster { cursor: pointer; transition: transform var(--speed) var(--ease); }
+button.poster:active, a.poster:active { transform: scale(.988); }
+
+.poster-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.poster-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-top: auto; }
+
+/* The illustration sits in the poster's own space, never as a background. */
+.art { display: block; width: 100%; max-width: 8.5rem; margin-left: auto; }
+.art svg { display: block; width: 100%; height: auto; }
+.art[data-size="lg"] { max-width: 13rem; }
+.art[data-size="sm"] { max-width: 5rem; }
+
+/* ── Actions: an arrow word, or an ink pill ──────────────────────────────── */
+
+.go {
+  display: inline-flex; align-items: center; gap: .5rem;
+  color: inherit; text-decoration: none;
+  font-size: .95rem; font-weight: 700; letter-spacing: -.01em;
+  min-height: 44px; cursor: pointer;
+}
+.go::after { content: "→"; transition: transform var(--speed) var(--ease); }
+.go:hover::after { transform: translateX(4px); }
+
+.pill {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 48px; padding: .7rem 1.4rem;
+  background: var(--ink); color: var(--paper);
+  border-radius: 99px;
+  font-weight: 700; font-size: .95rem; letter-spacing: -.01em;
+  cursor: pointer;
+  transition: transform var(--speed) var(--ease);
+}
+.pill:active { transform: scale(.97); }
+.pill[data-quiet] { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 var(--edge) var(--ink); }
+.pill[disabled] { opacity: .4; cursor: default; }
+.pill-row { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+/* ── Progress: a thick black bar, never a thin grey one ──────────────────── */
+
+.track { height: 14px; border-radius: 99px; box-shadow: inset 0 0 0 var(--edge) var(--ink); overflow: hidden; }
+.track > i { display: block; height: 100%; background: var(--ink); border-radius: 99px; transition: width 700ms var(--ease); }
+
+/* Small figures pair up rather than each taking a whole screen. */
+.figures { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--stack); }
+.figures .poster { min-height: 9rem; gap: 1rem; }
+.figures .numeral { font-size: clamp(2.4rem, 12vw, 3.2rem); }
+
+/* ── Streak, stamps and other collectible objects ────────────────────────── */
+
+.stamp {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: space-between;
+  aspect-ratio: 3 / 4;
+  padding: .9rem;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 var(--edge) var(--ink);
+  background: var(--paper);
+}
+.stamp[data-locked] { opacity: .35; }
+.stamp[data-tone="cream"] { background: var(--cream); }
+.stamp[data-tone="pink"]  { background: var(--pink); }
+.stamp[data-tone="blue"]  { background: var(--blue); }
+.stamp[data-tone="sage"]  { background: var(--sage); }
+.stamp .art { max-width: 3.2rem; margin: 0 auto; }
+.stamp-name { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; line-height: 1.15; text-align: center; }
+.stamp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+
+/* ── Crossword ───────────────────────────────────────────────────────────
+   A newspaper grid, not a game board: white squares, black rules, numbers
+   set small in the corner. It sizes itself to the puzzle and to the screen,
+   so a 9-column grid never scrolls sideways on a phone. */
+
+.xw {
+  display: grid;
+  gap: 2px;
+  justify-content: center;
+  margin: 1.4rem auto 0;
+  --xw-cell: clamp(1.5rem, calc((100vw - 4.5rem) / var(--xw-cols)), 2.9rem);
+}
+.xw-holder { position: relative; display: block; }
+/* Wins over the general text-input rule below, which would otherwise make
+   every square transparent and 48px tall. */
+.xw input.xw-cell {
+  display: block;
+  width: var(--xw-cell); height: var(--xw-cell); min-height: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  border: 0;
+  border-radius: 0;
+  font: 700 calc(var(--xw-cell) * .56) / 1 var(--font);
+  text-align: center; text-transform: uppercase;
+  caret-color: transparent;
+}
+.xw input.xw-cell:focus { outline: none; }
+.xw input.xw-cell[data-locked] { background: var(--sage); }
+.xw input.xw-cell[data-active] { background: var(--cream); }
+.xw input.xw-cell[data-cursor] { background: var(--blue); }
+.xw input.xw-cell[data-wrong] { color: #B3261E; text-decoration: line-through; }
+.xw-num {
+  position: absolute; top: 1px; left: 2px;
+  color: var(--ink);                     /* the square is paper, whatever the poster is */
+  font-size: calc(var(--xw-cell) * .32); font-weight: 700; line-height: 1;
+  pointer-events: none;
+}
+.xw-clue { display: flex; align-items: center; gap: .8rem; margin-top: 1.3rem; }
+.xw-clue p { flex: 1; }
+.xw-step {
+  width: 44px; height: 44px; flex: none;
+  border-radius: 99px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+  background: transparent; color: inherit;
+  box-shadow: inset 0 0 0 var(--edge) currentColor;
+}
+.xw-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; margin-top: 1.6rem; }
+.xw-list ol { list-style: none; display: flex; flex-direction: column; gap: .5rem; margin-top: .6rem; }
+.xw-list button {
+  display: block; width: 100%; text-align: left;
+  font-size: .82rem; line-height: 1.35; font-weight: 500; color: inherit;
+  background: transparent; cursor: pointer; padding: .15rem 0;
+}
+.xw-list button[aria-current="true"] { font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.xw-list button[data-solved] { opacity: .45; }
+
+/* ── Header and navigation ───────────────────────────────────────────────── */
+
+.app-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem;
+  padding: calc(1.4rem + env(safe-area-inset-top)) var(--pad) 1.1rem;
+  max-width: 34rem; margin: 0 auto; width: 100%;
+}
+.streak {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  padding: .45rem .7rem;
+  border-radius: 99px;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  background: var(--paper);
+  border-top: 1px solid var(--ink-12);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: .3rem;
+  padding: .65rem .2rem .7rem;
+  min-height: 56px;
+  cursor: pointer;
+  font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-55);
+}
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] { color: var(--ink); }
+
+/* ── Ministry dashboard ──────────────────────────────────────────────────
+   Same poster language, different job: this is a working surface, so it runs
+   denser than the app a child sees and gives up the bottom tab bar for a row
+   of words along the top. */
+
+body[data-admin] .screen { padding-bottom: 4rem; }
+
+.admin-tabs {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; gap: .35rem; overflow-x: auto;
+  padding: .5rem var(--pad) .8rem;
+  background: var(--paper);
+  border-bottom: 1px solid var(--ink-12);
+  -webkit-overflow-scrolling: touch;
+}
+.admin-tabs button {
+  flex: none;
+  padding: .55rem .95rem; min-height: 44px;
+  border-radius: 99px;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-55); background: transparent; cursor: pointer;
+}
+.admin-tabs button[aria-current="page"] { background: var(--ink); color: var(--paper); }
+
+.rows { display: flex; flex-direction: column; }
+.rows > * { padding: .85rem 0; border-top: 1px solid var(--ink-12); }
+.rows > *:first-child { border-top: 0; }
+.row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.row-title { font-size: .95rem; font-weight: 700; letter-spacing: -.01em; }
+.row-note { font-size: .8rem; line-height: 1.45; color: var(--ink-70); margin-top: .3rem; }
+.row-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .7rem; }
+.row-actions .pill { min-height: 40px; padding: .45rem 1rem; font-size: .8rem; }
+
+.flag { display: inline-flex; align-items: center; gap: .4rem; font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.flag::before { content: ""; width: .55rem; height: .55rem; border-radius: 99px; background: currentColor; }
+.flag[data-level="error"] { color: #B3261E; }
+.flag[data-level="warning"] { color: #8A5B00; }
+.flag[data-level="ok"] { color: #2C6B3F; }
+
+.tally { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .9rem; }
+.tally > div { padding: .9rem; background: var(--paper); box-shadow: inset 0 0 0 1px var(--ink-12); border-radius: var(--radius); }
+.tally .numeral { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+.poster[data-tone="ink"] .tally > div { background: rgba(247, 245, 240, .08); box-shadow: inset 0 0 0 1px rgba(247, 245, 240, .22); }
+
+.field { display: block; margin-top: 1rem; }
+.field > span { display: block; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .3rem; }
+.code {
+  display: block; white-space: pre; overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .74rem; line-height: 1.5;
+  padding: .9rem; margin-top: 1rem;
+  background: var(--ink); color: var(--paper); border-radius: var(--radius);
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+
+input[type="text"], input[type="search"], textarea, select {
+  width: 100%;
+  font: inherit; font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  border: 0; border-bottom: var(--edge) solid var(--ink);
+  border-radius: 0;
+  padding: .7rem .1rem;
+  min-height: 48px;
+}
+textarea { border: var(--edge) solid var(--ink); border-radius: var(--radius); padding: .9rem; min-height: 7rem; font-weight: 500; }
+input::placeholder, textarea::placeholder { color: var(--ink-55); font-weight: 500; }
+
+.choice {
+  display: flex; align-items: center; gap: .9rem;
+  width: 100%; text-align: left;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 var(--edge) var(--ink);
+  font-weight: 700; font-size: 1.05rem;
+  cursor: pointer;
+  transition: background var(--speed) var(--ease), color var(--speed) var(--ease);
+}
+.choice:hover { background: rgba(22, 22, 22, .06); }
+.choice[aria-pressed="true"], .choice[data-chosen] { background: var(--ink); color: var(--paper); }
+.choice[data-right] { background: var(--sage); color: var(--ink); box-shadow: inset 0 0 0 var(--edge) var(--ink); }
+.choice[data-wrong] { background: var(--pink); color: var(--ink); box-shadow: inset 0 0 0 var(--edge) var(--ink); }
+.choice-list { display: flex; flex-direction: column; gap: .7rem; }
+
+/* ── Scripture inside a poster ───────────────────────────────────────────── */
+
+.verse { font-size: 1.05rem; line-height: 1.6; font-weight: 500; }
+.ref { font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+
+/* ── Full-screen moments (streaks, results) ──────────────────────────────── */
+
+.moment {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; justify-content: center; gap: var(--rhythm);
+  padding: 2rem var(--pad) calc(2rem + env(safe-area-inset-bottom));
+  background: var(--cream);
+  animation: moment-in 420ms var(--ease) both;
+}
+@keyframes moment-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ── Loading and empty ───────────────────────────────────────────────────── */
+
+.wait { height: 14px; width: 14px; border-radius: 99px; background: var(--ink); animation: pulse 900ms var(--ease) infinite alternate; }
+@keyframes pulse { to { opacity: .25; transform: scale(.7); } }
+
+.note { font-size: .9rem; line-height: 1.5; padding-left: 1rem; border-left: var(--edge) solid var(--ink); }
+
+/* ── Reveal: posters arrive, they do not bounce ──────────────────────────── */
+
+.rise { opacity: 0; transform: translateY(14px); }
+.rise[data-in] { opacity: 1; transform: none; transition: opacity 460ms var(--ease), transform 460ms var(--ease); }
+
+/* ── Wider screens: an editorial platform, not a stretched phone ─────────── */
+
+@media (min-width: 800px) {
+  .screen {
+    max-width: 60rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.1rem;
+    padding-bottom: 5rem;
+  }
+  .screen > .full { grid-column: 1 / -1; }
+  .figures { grid-column: 1 / -1; grid-template-columns: repeat(4, 1fr); }
+  .app-head { max-width: 60rem; padding-inline: 0; }
+  .poster { min-height: 15rem; }
+  .poster[data-tall] { min-height: 26rem; }
+  :root { --pad: 2rem; --display: clamp(3rem, 5vw, 4.4rem); }
+
+  .tabs {
+    left: 50%; transform: translateX(-50%);
+    bottom: 1.25rem;
+    width: auto; max-width: 34rem;
+    grid-auto-columns: minmax(5.5rem, 1fr);
+    border: var(--edge) solid var(--ink);
+    border-radius: 99px;
+    padding: .2rem .4rem;
+  }
+  .stamp-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+@media (min-width: 1200px) {
+  .screen { max-width: 72rem; grid-template-columns: repeat(3, 1fr); }
+  .screen > .wide { grid-column: span 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  .rise { opacity: 1; transform: none; }
+}

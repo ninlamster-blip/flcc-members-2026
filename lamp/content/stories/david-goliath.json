@@ -1,0 +1,68 @@
+{
+  "slug": "david-goliath",
+  "title": "David and Goliath",
+  "reference": "1SA.17",
+  "testament": "OT",
+  "summary": {
+    "7-10": "A shepherd boy beats a giant.",
+    "11-14": "The smallest person in the army wins the fight.",
+    "15-18": "A theological argument disguised as a duel."
+  },
+  "story": {
+    "7-10": [
+      "A giant called Goliath came out every day and shouted at God's people. Everybody was too scared to fight him.",
+      "David was just a boy looking after sheep. He said, “I will go.” The king gave him armour, but it was far too big, so David took it off.",
+      "He picked up five smooth stones from a stream, put one in his sling, and knocked the giant down. God had helped him."
+    ],
+    "11-14": [
+      "For forty days a Philistine champion, over nine feet tall in armour nobody else could carry, came out and dared Israel to send someone against him. Nobody moved.",
+      "David arrived with food for his brothers, heard Goliath, and asked the question nobody else was asking: who is this man that he can insult the living God? His oldest brother told him to go home.",
+      "Saul offered him armour. David tried it, found he could not walk, and took it off. He went out with a stick, a sling and five stones from the stream, and said out loud that the battle belonged to God. Then he ran towards the giant."
+    ],
+    "15-18": [
+      "The story is told as a contest of size and equipment, and everything in it is measured — Goliath's height, the weight of his coat of mail, the weight of his spearhead. The narrator wants you counting.",
+      "Against all that, David's refusal of Saul's armour is the decisive act. He rejects the terms of the contest as everyone else has defined them, and states the alternative plainly: 'the battle is the Lord's'.",
+      "It is also worth noticing what a sling was. In ancient armies slingers were a genuine unit, capable of lethal accuracy at a distance. The story is not that a helpless child got lucky; it is that Israel's fear had made them measure the wrong things, and one shepherd measured them against God instead."
+    ]
+  },
+  "whatHappened": {
+    "7-10": "David trusted God and beat a giant that everyone else was afraid of.",
+    "11-14": "David faced the champion nobody else would face, refused the king's armour, and won with a sling and God's help.",
+    "15-18": "David reframes an impossible military problem as a theological one, and acts on that reframing."
+  },
+  "whatItTeaches": {
+    "7-10": "You do not have to be big for God to use you.",
+    "11-14": "The problem was never Goliath's size. It was that Israel was measuring the giant against themselves instead of against God.",
+    "15-18": "The narrative's argument is about the frame, not the odds: what looks impossible depends entirely on what you measure it against."
+  },
+  "thinkAboutIt": {
+    "7-10": "What is your Goliath at the moment — the thing that feels too big?",
+    "11-14": "David refused armour that did not fit him. Where are you trying to fight with someone else's equipment?",
+    "15-18": "Everyone in that valley had the same facts and drew a different conclusion. What are you currently measuring against the wrong thing?"
+  },
+  "pray": {
+    "7-10": "God, when things feel too big for me, help me remember you are bigger.",
+    "11-14": "God, help me face the thing I am avoiding, and to measure it against you rather than against myself.",
+    "15-18": "God, give me David's question rather than the army's fear — and the nerve to act on the answer."
+  },
+  "challenge": {
+    "prompt": {
+      "7-10": "What did David take with him to fight Goliath?",
+      "11-14": "What did David take, and what did he leave behind?",
+      "15-18": "What is the significance of David refusing Saul's armour?"
+    },
+    "options": [
+      "A sling and five stones",
+      "A sword and shield",
+      "A bow"
+    ],
+    "answer": 0,
+    "explain": {
+      "7-10": "A sling and five smooth stones from the stream.",
+      "11-14": "A sling and five stones — and he left the king's armour behind because he could not move in it.",
+      "15-18": "Refusing the armour rejects the contest's assumed terms; David states the alternative outright: 'the battle is the Lord's'."
+    }
+  },
+  "reviewedBy": "",
+  "reviewedAt": ""
+}
