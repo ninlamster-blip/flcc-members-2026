@@ -248,6 +248,35 @@ deleting it silently is the failure that looks like having done the work.
 These lines were checked by **Allen on 28 August 2026**. Re-check them whenever
 a number could have changed, and put your own name to it.
 
+## Prayers do not send themselves
+
+Worth stating plainly, because the app used to imply otherwise. There is no
+server, so a prayer written in FLCC NEXT is saved on that phone and goes
+nowhere on its own. It cannot appear on a leader's device, because there is no
+transport between the two.
+
+The screen said "Sent to a ministry leader" anyway. That was false, and false
+in the way that matters most: a young person could write something serious
+believing an adult would read it, and no adult ever would. A prayer written on
+a teenager's phone was found sitting there unread for exactly this reason.
+
+What it says and does now:
+
+- The choice is **"I want to show a leader"**, not "just a ministry leader" —
+  it is about who you intend to show, not about delivery.
+- Saving says it is saved *on this phone* and that nothing is sent on its own.
+- Saving a leader-marked prayer then offers **Send it to a leader**, which uses
+  the phone's own share sheet (falling back to the clipboard) so the young
+  person sends it themselves, to someone they choose.
+- **Connect** lists leader-marked prayers still sitting on the phone, each with
+  its own send action, so one saved earlier is not stranded.
+
+The words leave the device only because a young person chose to send them.
+Real delivery — a leader seeing requests from the whole group without being
+handed a phone — needs the server in [ARCHITECTURE.md](ARCHITECTURE.md), and
+storing minors' prayer requests server-side is a decision a church should make
+deliberately rather than inherit from a default.
+
 ## Ask NEXT
 
 Off by default, and turned on in the dashboard under **Ask NEXT**.

@@ -4,6 +4,7 @@ import { h, poster, label, display, headline, art, go, pill, rise, note } from '
 import * as content from '../core/content.js';
 import * as store from '../core/storage.js';
 import { forMode } from '../core/profile.js';
+import { sendToLeader } from './prayer.js';
 
 export default async function connectScreen(ctx) {
   const prayers = (store.read(store.KEYS.prayers, { items: [] }) || {}).items || [];
@@ -15,15 +16,38 @@ export default async function connectScreen(ctx) {
       display('YOU DON’T HAVE TO CARRY IT ALONE.'),
       h('p', { class: 'body dim', style: 'margin-top:1.1rem',
         text: prayers.length
-          ? `You have shared ${prayers.length} prayer${prayers.length === 1 ? '' : 's'}. Every one goes to a ministry leader, not to a public feed.`
-          : 'Tell God, and tell someone. Anything you share goes to a ministry leader — never to a public feed.' })),
+          ? `You have written ${prayers.length} prayer${prayers.length === 1 ? '' : 's'}, kept on this phone. Nothing is sent on its own — send one to a leader when you want them to see it.`
+          : 'Tell God, and tell someone. What you write stays on this phone until you send it to a leader yourself — it is never put on a public feed.' })),
     h('div', { class: 'poster-foot' },
       pill('Share a prayer', () => ctx.go('prayer')),
       art('hands', { tone: 'pink', size: 'sm' })));
 
+  // Prayers already written and marked for a leader. Without this a young
+  // person who saved one has no way to get it to anybody — which is exactly
+  // how a prayer goes unread.
+  const waiting = prayers.filter((prayer) => prayer.visibility === 'leader');
+  const sendRow = (prayer) => {
+    const button = pill('Send it', async () => {
+      const how = await sendToLeader(prayer);
+      if (how === 'shared') ctx.toast('Sent from your phone.');
+      else if (how === 'copied') ctx.toast('Copied — paste it to your leader.');
+      else if (how === 'manual') ctx.toast('Show them your phone.');
+    }, { quiet: true });
+    return h('div', { style: 'padding:.8rem 0;border-top:1px solid var(--ink-12)' },
+      h('p', { class: 'body', text: prayer.content }),
+      h('div', { style: 'margin-top:.6rem' }, button));
+  };
+
+  const waitingBlock = waiting.length
+    ? poster({ tone: 'paper', className: 'full' },
+      label(`On this phone · ${waiting.length}`),
+      h('p', { class: 'body dim', text: 'You marked these for a leader. They are still here — nothing sends itself.' }),
+      h('div', { style: 'margin-top:.4rem' }, ...waiting.slice(0, 5).map(sendRow)))
+    : null;
+
   const events = h('div', { style: 'display:contents' });
 
-  const el = h('div', { style: 'display:contents' }, prayerBlock, events);
+  const el = h('div', { style: 'display:contents' }, prayerBlock, waitingBlock, events);
 
   (async () => {
     let list = [];
