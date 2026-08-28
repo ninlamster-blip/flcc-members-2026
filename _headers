@@ -33,3 +33,21 @@
 # letting them cache normally keeps the app fast on a phone.
 /icons/*
   Cache-Control: public, max-age=86400
+
+# The text of Scripture is the one exception to the JSON rule above. A book
+# file only changes if somebody re-runs scripts/build-next-bible.mjs and
+# commits the result, and there are 198 of them totalling 14 MB — revalidating
+# each one on every read costs a phone in Kuwait a round trip for an answer
+# that is always "unchanged".
+#
+# This rule sits last on purpose. Cloudflare applies the rules that match, and
+# where two set the same header the later one wins; if that ever changed, the
+# fallback is the /*.json rule above, which is what happens today. So this can
+# only help.
+#
+# Note this is the browser's cache, not the app's: flcc-next/sw.js already
+# keeps Scripture cache-first and never refetches it, so a corrected Bible
+# reaches a device when the service worker's VERSION is bumped, whatever any
+# header here says. The build script prints that reminder.
+/flcc-next/bible/*
+  Cache-Control: public, max-age=604800

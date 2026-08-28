@@ -299,6 +299,9 @@ async function build() {
   await writeFile(join(OUT, 'books.json'), `${JSON.stringify(manifest, null, 2)}\n`);
 
   console.log(`\n${BOOKS.length} books × ${TRANSLATIONS.length} translations · ${(bytes / 1e6).toFixed(1)} MB written to flcc-next/bible/`);
+  console.log('\nIf this changed any text already published, bump VERSION in flcc-next/sw.js.');
+  console.log('The service worker keeps Scripture cache-first and never refetches it, so a');
+  console.log('device that has read a book will keep the old wording until that version changes.');
 }
 
 build().catch((error) => { console.error(error); process.exit(1); });
