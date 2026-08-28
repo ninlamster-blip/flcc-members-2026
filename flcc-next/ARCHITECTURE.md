@@ -28,7 +28,8 @@ of the other's.
 index.html / admin.html          shell: header, screen, tabs. Owns nothing else.
   └── js/app.js                  boot, onboarding, routing
         └── js/screens/*.js      one module per screen, dynamic import()
-              └── js/core/*.js   storage, profile, progress, content, ai, safety
+              └── js/core/*.js   storage, profile, progress, content, library,
+                                 scripture, ai, safety
                     └── js/games/, js/admin/   pure logic, no DOM
 ```
 
@@ -50,6 +51,12 @@ Rules that keep it honest:
   the ministry, and testable a year ahead.
 - **Content is data, never instructions.** Nothing under `content/` is
   executed, and nothing from it is passed to a model as part of a prompt.
+- **`content/` is the ministry's; `bible/` is not.** Everything under
+  `content/` can be rewritten from the dashboard (`js/core/library.js`).
+  Everything under `bible/` is the text of Scripture, is built once by
+  `scripts/build-next-bible.mjs`, and no screen in the app can change a word
+  of it. `js/core/scripture.js` is a separate module from `content.js` for
+  exactly that reason.
 
 ## Storage today
 
@@ -65,6 +72,8 @@ browser), so the app runs rather than crashing.
 | `next/v1/rsvps` | `{ going: [eventId] }` | Connect |
 | `next/v1/ask` | the current Ask NEXT thread | Ask |
 | `next/v1/settings` | `{ theme, motion, aiWorker, aiSecret, aiEnabled, aiModel }` | the dashboard |
+| `next/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
+| `next/v1/library` | `{ version, updated, files: { <file>: { added[], edited{}, removed[] } } }` | the dashboard's Library |
 
 Two consequences worth stating plainly, because the dashboard states them too:
 
@@ -91,6 +100,19 @@ onto, in the order they would need to exist. Nothing in this section is built.
 | 8 | `events` | `id, title_kids, title_teens, when_text, where_text, audience, blurb, tone, symbol` | `content/events.json` |
 | 9 | `event_rsvps` | `event_id, user_id, created_at` | `next/v1/rsvps` |
 | 10 | `ask_sessions` | `id, user_id, age_group, question, answered_at, flagged` | `next/v1/ask` |
+
+Two more that the Bible and the editor imply, and that a server would need:
+
+| # | Table | Columns (essential) | Local record today |
+|---|---|---|---|
+| 11 | `saved_verses` | `user_id, ref, translation, saved_at` | `next/v1/bible.saved` |
+| 12 | `content_revisions` | `id, file, row_key, action, body, author_id, created_at` | `next/v1/library` |
+
+`content_revisions` is the one that would change the most. Today a leader's
+edits live on the phone that made them, which is why the dashboard says so on
+every screen that offers one. A server turns that pack into a review queue —
+who wrote it, who approved it, and when it reached the children — and that is
+the shape a ministry editing content for minors should have.
 
 Three notes on that table, because a schema for minors is not a neutral
 document:
@@ -152,6 +174,14 @@ node --test 'flcc-next/test/*.test.mjs'
 | `content` | the authored JSON's schema, including both age variants |
 | `audit` | the dashboard's audit agrees with the suite, and catches what it claims to |
 | `crossword` | every puzzle interlocks, numbering is right, scoring is right |
+| `library` | an edit survives, a removal stays removed, an import does not overwrite |
+| `scripture` | the 66 books are all there, references resolve, and every reference the content quotes points at a verse that exists |
+
+`library` is the one worth explaining. It is the module that lets a ministry
+leader add content without a developer, which makes it also the module that can
+quietly lose their work — so `merge()` is pure and every case a leader could hit
+is pinned down: an edit that must survive a reload, a removal that must not come
+back, a row added twice by importing the same pack twice.
 
 `audit` also holds the line on repetition: no bank may run dry inside a week,
 and the amounts it assumes each game deals are checked against what the screens

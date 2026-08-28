@@ -39,7 +39,17 @@ function look(problems, row, where) {
  * screens actually deal, so the run lengths below are real rather than
  * aspirational.
  */
-export const PER_DAY = { 'Daily word': 1, 'Bible quiz': 10, 'Speed quiz': 20, 'Who am I?': 5, 'Verse builder': 5, Crossword: 1 };
+export const PER_DAY = { 'Daily word': 1, 'Bible quiz': 10, 'Speed quiz': 20, 'Our church': 5, 'Who am I?': 5, 'Verse builder': 5, Crossword: 1 };
+
+/**
+ * Which game each quiz round is, so its topics can be read from games.json
+ * rather than restated here. A round whose topics are edited in the dashboard
+ * is then measured against the questions it will actually deal.
+ */
+const ROUNDS = { 'Bible quiz': 'quiz', 'Speed quiz': 'speed', 'Our church': 'church' };
+
+/** The topics a question may carry. A round deals some subset of these. */
+const TOPIC_NAMES = new Set(['bible', 'jesus', 'flcc']);
 
 /** A bank shorter than this many days of use gets flagged as repetitive. */
 export const THIN = 7;
@@ -54,6 +64,9 @@ export const DRILLS = new Set(['Speed quiz']);
 
 const eligible = (rows, band) => (rows || []).filter((row) =>
   !row.ageGroup || row.ageGroup === 'both' || row.ageGroup === band);
+
+const onTopic = (rows, topics) =>
+  (Array.isArray(topics) && topics.length ? (rows || []).filter((row) => topics.includes(row.topic || 'bible')) : rows);
 
 /**
  * @param {object} bundle every content file, already parsed, keyed by filename.
@@ -136,12 +149,29 @@ export function audit(bundle) {
 
   const quiz = file('games/quiz.json', []);
   counts['Quiz questions'] = quiz.length;
+  const asked = new Set();
   for (const row of quiz) {
     const where = `quiz · ${row.q}`;
     if (!row.options || row.options[row.answer] === undefined) {
       problems.push({ level: ERROR, where, text: 'points at an answer that is not in its options' });
     }
     if (!row.why) problems.push({ level: WARN, where, text: 'gives no explanation after the answer' });
+    if (row.topic && !TOPIC_NAMES.has(row.topic)) {
+      problems.push({ level: ERROR, where, text: `has a topic "${row.topic}" that no round deals` });
+    }
+    // Dealing promises nothing repeats inside a cycle, which two identical
+    // questions quietly break.
+    const same = String(row.q || '').trim().toLowerCase();
+    if (asked.has(same)) problems.push({ level: ERROR, where, text: 'is asked twice in this file' });
+    asked.add(same);
+  }
+  for (const game of games) {
+    if (!Array.isArray(game.topics) || !game.topics.length) continue;
+    for (const band of ['kids', 'teens']) {
+      if (onTopic(eligible(quiz, band), game.topics).length) continue;
+      problems.push({ level: ERROR, where: `games.json · ${game.title || game.id}`,
+        text: `deals ${game.topics.join(', ')} questions, and there are none for ${band}` });
+    }
   }
 
   const who = file('games/who-am-i.json', []);
@@ -210,6 +240,45 @@ export function audit(bundle) {
     }
   }
 
+  // ── The Bible's own guide ────────────────────────────────────────────────
+  //
+  // Not Scripture — Scripture lives under bible/ and is not audited, because
+  // it is not ours to get wrong. These are the ministry's own notes about it:
+  // the line above each book's chapters, and the "where do I look?" lists.
+
+  const bookLines = file('bible-books.json', []);
+  counts['Bible book lines'] = bookLines.length;
+  const numbered = new Set();
+  for (const row of bookLines) {
+    const where = `bible-books.json · book ${row.n}`;
+    if (!(row.n >= 1 && row.n <= 66)) problems.push({ level: ERROR, where, text: 'is not one of the 66 books' });
+    else if (numbered.has(row.n)) problems.push({ level: ERROR, where, text: 'is described twice' });
+    numbered.add(row.n);
+    if (!String(row.about || '').trim()) problems.push({ level: WARN, where, text: 'has no line saying what the book is' });
+  }
+  if (bookLines.length && numbered.size < 66) {
+    problems.push({ level: WARN, where: 'bible-books.json',
+      text: `${66 - numbered.size} of the 66 books have no line saying what they are` });
+  }
+
+  const finders = file('bible-find.json', []);
+  counts['Where do I look? lists'] = finders.length;
+  for (const topic of finders) {
+    const where = `bible-find.json · ${topic.id}`;
+    look(problems, topic, where);
+    bothModes(problems, topic.title, `${where} · title`);
+    bothModes(problems, topic.need, `${where} · when you would open this`);
+    const refs = Array.isArray(topic.refs) ? topic.refs : [];
+    if (!refs.length) problems.push({ level: ERROR, where, text: 'has no places to read' });
+    for (const ref of refs) {
+      // The reader resolves a reference itself; what the audit can catch is a
+      // line that is plainly not one, which is the mistake people actually make.
+      if (!/^(\d\s*)?[^\d]+\s+\d+(:\d+([-–]\d+)?)?$/.test(String(ref).trim())) {
+        problems.push({ level: ERROR, where, text: `"${ref}" is not a reference the reader can open` });
+      }
+    }
+  }
+
   // ── Help lines ───────────────────────────────────────────────────────────
   const help = file('help-lines.json', { lines: [] });
   counts['Help lines'] = (help.lines || []).length;
@@ -229,7 +298,8 @@ export function audit(bundle) {
   // "it is getting repetitive" should be visible here before a child says it.
   const rotation = [];
   const run = (what, rows, band) => {
-    const bank = eligible(rows, band);
+    const round = games.find((one) => one.id === ROUNDS[what]);
+    const bank = onTopic(eligible(rows, band), round && round.topics);
     const perDay = PER_DAY[what];
     const { days } = cycleOf(bank, { count: perDay });
     rotation.push({ what, band, total: bank.length, perDay, days });
@@ -242,6 +312,7 @@ export function audit(bundle) {
     run('Daily word', daily, band);
     run('Bible quiz', quiz, band);
     run('Speed quiz', quiz, band);
+    run('Our church', quiz, band);
     run('Who am I?', who, band);
     run('Verse builder', verses, band);
     run('Crossword', crosswords, band);
@@ -255,4 +326,5 @@ export const FILES = [
   'daily.json', 'journeys.json', 'real-life.json', 'games.json',
   'games/quiz.json', 'games/who-am-i.json', 'games/verse-builder.json', 'games/crossword.json',
   'events.json', 'achievements.json', 'help-lines.json',
+  'bible-books.json', 'bible-find.json',
 ];

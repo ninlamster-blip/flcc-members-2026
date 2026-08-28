@@ -284,6 +284,20 @@ button.poster:active, a.poster:active { transform: scale(.988); }
 .xw-list button[aria-current="true"] { font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 .xw-list button[data-solved] { opacity: .45; }
 
+/* ── The library editor ──────────────────────────────────────────────────
+   Dashboard-only. Nothing here is seen by a young person, so it is plain
+   and dense on purpose: a leader adding twenty questions wants rows, not
+   posters. */
+
+.answers { display: flex; flex-direction: column; gap: .5rem; margin-top: .4rem; }
+.answer-row { display: flex; align-items: center; gap: .7rem; }
+.answer-row input[type="radio"] {
+  width: 22px; height: 22px; flex: none; min-height: 0;
+  accent-color: var(--ink); cursor: pointer;
+}
+.answer-row input[type="text"] { flex: 1; min-width: 0; }
+.answer-row .pill { flex: none; min-height: 38px; padding: .35rem .9rem; font-size: .76rem; }
+
 /* ── The Bible ─────────────────────────────────────────────────────────────
    Scripture is set as a page, not as a feed: one measure, generous leading,
    the verse number small and out of the way. A verse is tappable because a

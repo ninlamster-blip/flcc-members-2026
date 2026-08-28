@@ -6,6 +6,11 @@
 //     this domain. The dashboard reads it, audits it against the same rules as
 //     the test suite, and hands back JSON to commit. It cannot write to it —
 //     there is no server here to write to.
+//   · What it CAN do is keep a pack of changes on this device and lay it over
+//     that content, so a leader can add a question the day a child asks it
+//     without waiting for a developer. See Library, and js/core/library.js.
+//     The pack lives on one device until somebody exports it or commits the
+//     finished file; the page says so wherever it matters.
 //   · Everything else it shows — progress, prayers, RSVPs — belongs to THIS
 //     DEVICE. There is no account system, so there is no church-wide view to
 //     show. Every figure on this page is labelled accordingly.
@@ -22,6 +27,7 @@ import * as progress from '../core/progress.js';
 import { getUser, getSettings, saveSettings, MODE, mode } from '../core/profile.js';
 import { audit, FILES, THIN, DRILLS } from './audit.js';
 import * as ai from '../core/ai.js';
+import * as library from '../core/library.js';
 
 const headEl = document.getElementById('app-head');
 const tabsEl = document.getElementById('admin-tabs');
@@ -29,6 +35,7 @@ const screenEl = document.getElementById('screen');
 
 const SECTIONS = [
   { name: 'overview', label: 'Overview' },
+  { name: 'library', label: 'Library' },
   { name: 'content', label: 'Content' },
   { name: 'prayers', label: 'Prayers' },
   { name: 'events', label: 'Events' },
@@ -37,27 +44,43 @@ const SECTIONS = [
 
 // ── Loading the authored content ───────────────────────────────────────────
 
-let bundle = null;
+let committed = null;
 
-async function loadBundle() {
-  if (bundle) return bundle;
+/** Every authored file exactly as it was committed, with nothing laid over it. */
+async function loadCommitted() {
+  if (committed) return committed;
   const loaded = {};
-  await Promise.all(FILES.map(async (name) => {
+  const fetchOne = async (name) => {
     try {
       const response = await fetch(new URL(`../../content/${name}`, import.meta.url));
       loaded[name] = response.ok ? await response.json() : undefined;
     } catch { loaded[name] = undefined; }
-  }));
-  await Promise.all((loaded['journeys.json'] || []).map(async (journey) => {
-    const path = `journeys/${journey.id}.json`;
-    try {
-      const response = await fetch(new URL(`../../content/${path}`, import.meta.url));
-      loaded[path] = response.ok ? await response.json() : undefined;
-    } catch { loaded[path] = undefined; }
-  }));
-  bundle = loaded;
-  return bundle;
+  };
+  await Promise.all(FILES.map(fetchOne));
+  // Journeys name their own lesson files, so those can only be found once
+  // journeys.json has landed.
+  const journeys = library.apply('journeys.json', loaded['journeys.json'] || []);
+  await Promise.all(journeys.map((journey) => fetchOne(`journeys/${journey.id}.json`)));
+  committed = loaded;
+  return committed;
 }
+
+/**
+ * The same files with this device's pack laid over them — which is what the
+ * app renders, so it is what the audit has to check. Auditing the committed
+ * files instead would report a clean bill of health on content nobody sees.
+ */
+async function loadBundle() {
+  const base = await loadCommitted();
+  const merged = {};
+  for (const [name, value] of Object.entries(base)) {
+    merged[name] = value === undefined ? undefined : library.apply(name, value);
+  }
+  return merged;
+}
+
+/** Forget the fetched files, so a reset or an import is reflected at once. */
+function reload() { committed = null; }
 
 // ── Small pieces ───────────────────────────────────────────────────────────
 
@@ -120,7 +143,7 @@ async function overview() {
       pill('Open content', () => go('content'), { quiet: !bad.length }),
       art(bad.length ? 'shield' : 'light', { tone: bad.length ? 'pink' : 'sage', size: 'sm' })));
 
-  const library = poster({ tone: 'paper', className: 'full' },
+  const shelf = poster({ tone: 'paper', className: 'full' },
     label('The library'),
     h('div', { style: 'margin-top:1rem' }, tally(Object.entries(counts).map(([name, value]) => [value, name]))));
 
@@ -187,7 +210,7 @@ async function overview() {
         actions: warn.length ? [pill('See all', () => go('content'), { quiet: true })] : [],
       })));
 
-  return h('div', { style: 'display:contents' }, health, library, runs, device, attention);
+  return h('div', { style: 'display:contents' }, health, shelf, runs, device, attention);
 }
 
 // ── Content ────────────────────────────────────────────────────────────────
@@ -210,7 +233,7 @@ async function contentSection() {
 
   const files = poster({ tone: 'paper', className: 'full' },
     label('Files'),
-    h('p', { class: 'row-note', text: 'Authored content is committed to the repository and served read-only. Edit it there, or download a copy, change it and commit that.' }),
+    h('p', { class: 'row-note', text: 'What each file holds after this device’s own changes are laid over it. To change one, open Library. To make a change permanent for the whole ministry, copy the finished file from there and commit it.' }),
     h('div', { class: 'rows', style: 'margin-top:.8rem' },
       ...FILES.concat(Object.keys(loaded).filter((name) => name.startsWith('journeys/')).sort()).map((name) => row({
         title: name,
@@ -225,13 +248,339 @@ async function contentSection() {
   const howTo = poster({ tone: 'ink', className: 'full' },
     label('Adding something'),
     h('p', { class: 'body dim', style: 'margin-top:.6rem',
-      text: 'Every item needs a kids version and a teens version, one of the five colours, and an illustration that already exists in the kit. This page runs exactly the checks the test suite runs, so if it is clean here it will be clean in the build.' }));
+      text: 'Every item needs a kids version and a teens version, one of the five colours, and an illustration that already exists in the kit. This page runs exactly the checks the test suite runs, on the content the app actually shows — your own additions included — so if it is clean here it will be clean in the build.' }),
+    h('div', { class: 'row-actions' }, pill('Open Library', () => go('library'), { quiet: true })));
 
   return h('div', { style: 'display:contents' },
     problemBlock('Problems', bad, bad.length ? 'pink' : 'sage'),
     warn.length ? problemBlock('Worth a look', warn, 'cream') : null,
     files, howTo);
 }
+
+// ── Library: editing the authored content ──────────────────────────────────
+//
+// One editor for every kind of content, driven by the field list each kind
+// declares in js/core/library.js. Adding a content type later means adding a
+// kind there, not another form here.
+//
+// What a leader does here changes THIS DEVICE. Export the pack to carry it to
+// another one, or copy the finished file and commit it to change it for the
+// whole ministry. Both buttons are on this page, and so is that sentence.
+
+let openKind = null;      // which kind's list is showing
+let editing = null;       // { key, draft } — the row being written
+
+function fieldEditor(field, draft) {
+  const value = library.get(draft, field.path);
+  const wrap = (...children) => h('label', { class: 'field' },
+    h('span', { text: field.label }), ...children,
+    field.help ? h('p', { class: 'row-note', text: field.help }) : null);
+
+  if (field.type === 'dual') {
+    // Two registers, always both. The app falls back when one is missing, and
+    // a nine-year-old getting the teen wording is exactly what that hides.
+    const box = (band) => h('label', { class: 'field' },
+      h('span', { text: `${field.label} · ${band}` }),
+      h('textarea', { rows: '3', text: (value && value[band]) || '',
+        oninput: (event) => library.set(draft, field.path, { ...(library.get(draft, field.path) || {}), [band]: event.target.value }) }));
+    return h('div', {}, box('kids'), box('teens'),
+      field.help ? h('p', { class: 'row-note', text: field.help }) : null);
+  }
+
+  if (field.type === 'answers') {
+    // The right answer is chosen with a radio button rather than typed as an
+    // index, because an index is exactly the sort of thing that ends up
+    // pointing at an option that no longer exists.
+    const options = Array.isArray(value) ? [...value] : ['', '', ''];
+    const answer = Number(library.get(draft, field.answerPath) || 0);
+    const name = `answer-${Math.random().toString(36).slice(2)}`;
+    const draw = (holder) => holder.replaceChildren(...options.map((text, index) => h('div', { class: 'answer-row' },
+      h('input', { type: 'radio', name, checked: index === answer,
+        'aria-label': `Answer ${index + 1} is the right one`,
+        onchange: () => library.set(draft, field.answerPath, index) }),
+      h('input', { type: 'text', value: text, placeholder: `Answer ${index + 1}`,
+        oninput: (event) => { options[index] = event.target.value; library.set(draft, field.path, [...options]); } }))));
+    const holder = h('div', { class: 'answers' });
+    draw(holder);
+    return wrap(holder);
+  }
+
+  if (field.type === 'list') {
+    const items = Array.isArray(value) ? [...value] : [''];
+    const holder = h('div', { class: 'rows' });
+    const draw = () => {
+      library.set(draft, field.path, items.filter((one) => String(one).trim()));
+      holder.replaceChildren(...items.map((text, index) => h('div', { class: 'answer-row' },
+        h('input', { type: 'text', value: text, placeholder: `${field.label} ${index + 1}`,
+          oninput: (event) => { items[index] = event.target.value; library.set(draft, field.path, items.filter((one) => String(one).trim())); } }),
+        field.size ? null : pill('Remove', () => { items.splice(index, 1); draw(); }, { quiet: true }))
+        ).concat(field.size ? [] : [pill('Add another', () => { items.push(''); draw(); }, { quiet: true })]));
+    };
+    draw();
+    return wrap(holder);
+  }
+
+  if (field.type === 'pairs') {
+    const items = Array.isArray(value) && value.length ? value.map((one) => ({ ...one })) : [{}];
+    const holder = h('div', { class: 'rows' });
+    const draw = () => {
+      library.set(draft, field.path, items.filter((one) => Object.values(one).some((v) => String(v || '').trim())));
+      holder.replaceChildren(...items.map((item, index) => h('div', {},
+        ...field.of.map(([key, caption]) => h('input', { type: 'text', value: item[key] || '', placeholder: caption,
+          oninput: (event) => { item[key] = event.target.value; library.set(draft, field.path, items); } })),
+        pill('Remove', () => { items.splice(index, 1); draw(); }, { quiet: true }))),
+      pill('Add another', () => { items.push({}); draw(); }, { quiet: true }));
+    };
+    draw();
+    return wrap(holder);
+  }
+
+  if (field.type === 'choice') {
+    return wrap(h('select', { onchange: (event) => library.set(draft, field.path, event.target.value) },
+      ...field.options.map((option) => h('option', { value: option, text: option, ...(option === value ? { selected: '' } : {}) }))));
+  }
+
+  if (field.type === 'number') {
+    return wrap(h('input', { type: 'number', value: value ?? '', min: String(field.min ?? 0), max: String(field.max ?? 9999),
+      oninput: (event) => library.set(draft, field.path, Number(event.target.value)) }));
+  }
+
+  if (field.type === 'long') {
+    return wrap(h('textarea', { rows: '3', text: value || '',
+      oninput: (event) => library.set(draft, field.path, event.target.value) }));
+  }
+
+  return wrap(h('input', { type: 'text', value: value ?? '',
+    oninput: (event) => library.set(draft, field.path, event.target.value) }));
+}
+
+/** Every kind there is, including one per journey for its lessons. */
+async function kindsNow() {
+  const base = await loadCommitted();
+  const journeys = library.apply('journeys.json', base['journeys.json'] || []);
+  return [
+    ...library.KINDS.filter((kind) => kind.id === 'daily' || kind.id === 'quiz'),
+    ...journeys.map((journey) => library.lessonKind(journey.id, journey.title)),
+    ...library.KINDS.filter((kind) => kind.id !== 'daily' && kind.id !== 'quiz'),
+  ];
+}
+
+async function librarySection(refresh) {
+  const base = await loadCommitted();
+  const kinds = await kindsNow();
+  const kind = kinds.find((one) => one.id === openKind) || null;
+  const state = library.summary();
+
+  // ── What has changed, and how to move it ────────────────────────────────
+  const header = poster({ tone: state.total ? 'cream' : 'paper', className: 'full' },
+    label('The library'),
+    h('div', {},
+      display(state.total ? `${state.total} CHANGE${state.total === 1 ? '' : 'S'}` : 'NOTHING CHANGED YET'),
+      h('p', { class: 'body', style: 'margin-top:.9rem',
+        text: state.total
+          ? `${state.added} added, ${state.edited} rewritten, ${state.removed} taken out — on this device, since ${when(state.updated)}.`
+          : 'Every file is as it was committed. Open one below and add to it — a question, a lesson, a daily word, anything a young person has asked for.' })),
+    h('p', { class: 'row-note', style: 'margin-top:1rem',
+      text: 'FLCC NEXT has no server, so what you write here is saved on this device. Export the pack to carry it to another phone, or copy the finished file and commit it to change it for everybody.' }),
+    state.total ? h('div', { class: 'row-actions' },
+      pill('Export the pack', () => download('flcc-next-content-pack.json', library.getPack())),
+      pill('Import a pack', () => importDialog(refresh), { quiet: true }),
+      pill('Undo everything', () => {
+        if (!confirm('Undo every change on this device and go back to the committed content?')) return;
+        library.resetAll();
+        reload();
+        toast('Back to the committed content.');
+        refresh();
+      }, { quiet: true }),
+    ) : h('div', { class: 'row-actions' },
+      pill('Import a pack', () => importDialog(refresh), { quiet: true })));
+
+  // ── Pick a kind ────────────────────────────────────────────────────────
+  const shelf = poster({ tone: 'paper', className: 'full' },
+    label('What would you like to change?'),
+    h('div', { class: 'rows', style: 'margin-top:.6rem' },
+      ...kinds.map((one) => {
+        const rows = library.rowsOf(one, one.path ? base[one.file] : (base[one.file] || []));
+        const changed = state.files.find((file) => file.file === one.file);
+        return row({
+          title: one.label,
+          note: `${rows.length} ${rows.length === 1 ? one.one : `${one.one}s`}${changed ? ` · ${changed.added} added, ${changed.edited} rewritten, ${changed.removed} out` : ''}`,
+          right: changed ? flag('warning', 'edited') : null,
+          actions: [pill(one.id === openKind ? 'Close' : 'Open', () => {
+            openKind = one.id === openKind ? null : one.id;
+            editing = null;
+            refresh();
+          }, { quiet: one.id !== openKind })],
+        });
+      })));
+
+  if (!kind) return h('div', { style: 'display:contents' }, header, shelf, howItWorks());
+
+  // ── One kind: its rows, and the editor ─────────────────────────────────
+  const baseRows = kind.path ? base[kind.file] : (base[kind.file] || []);
+  const rows = library.rowsOf(kind, baseRows);
+  const gone = library.removedOf(kind, baseRows);
+
+  const startEditing = (key, draft) => { editing = { key, draft }; refresh(); };
+
+  const editor = editing ? (() => {
+    const problems = h('div', { class: 'rows' });
+    return poster({ tone: 'blue', className: 'full' },
+      label(editing.key === null ? `New ${kind.one}` : `Editing · ${kind.title(editing.draft) || kind.one}`),
+      ...kind.fields.map((field) => fieldEditor(field, editing.draft)),
+      problems,
+      h('div', { class: 'row-actions', style: 'margin-top:1.4rem' },
+        pill('Save on this device', () => {
+          const trouble = check(kind, editing.draft, rows, editing.key);
+          if (trouble.length) {
+            problems.replaceChildren(...trouble.map((text) => row({ title: text, right: flag('error', 'fix this') })));
+            return;
+          }
+          if (editing.key === null) library.addRow(kind, editing.draft);
+          else library.editRow(kind, editing.key, editing.draft);
+          editing = null;
+          toast('Saved on this device.');
+          refresh();
+        }),
+        pill('Cancel', () => { editing = null; refresh(); }, { quiet: true })));
+  })() : null;
+
+  const list = poster({ tone: 'paper', className: 'full' },
+    h('div', { class: 'poster-head' },
+      label(`${kind.label} · ${rows.length}`),
+      pill(`Add a ${kind.one}`, () => startEditing(null, kind.blank()), { quiet: true })),
+    h('p', { class: 'row-note', text: kind.note }),
+    h('div', { class: 'rows', style: 'margin-top:.8rem' },
+      ...rows.map(({ row: item, key, state: how }) => row({
+        title: kind.title(item) || key,
+        note: how === 'added' ? 'Added on this device.' : how === 'edited' ? 'Rewritten on this device.' : '',
+        right: how === 'shipped' ? null : flag(how === 'added' ? 'ok' : 'warning', how),
+        actions: [
+          pill('Edit', () => startEditing(key, structuredClone(item)), { quiet: true }),
+          pill('Take out', () => {
+            if (!confirm(`Take "${kind.title(item) || key}" out of the app on this device?`)) return;
+            library.removeRow(kind, key);
+            toast('Taken out on this device.');
+            refresh();
+          }, { quiet: true }),
+          how === 'edited' ? pill('Undo my changes', () => {
+            library.resetRow(kind, key);
+            toast('Back to the committed wording.');
+            refresh();
+          }, { quiet: true }) : null,
+        ].filter(Boolean),
+      }))));
+
+  const restore = gone.length ? poster({ tone: 'ink', className: 'full' },
+    label(`Taken out · ${gone.length}`),
+    h('p', { class: 'row-note', text: 'Still in the committed file, hidden on this device. Nothing has been deleted.' }),
+    h('div', { class: 'rows', style: 'margin-top:.6rem' },
+      ...gone.map((item) => row({
+        title: kind.title(item) || kind.key(item),
+        actions: [pill('Put it back', () => { library.restoreRow(kind, kind.key(item)); refresh(); }, { quiet: true })],
+      })))) : null;
+
+  const finished = poster({ tone: 'sage', className: 'full' },
+    label('Make it permanent'),
+    h('p', { class: 'row-note',
+      text: `Everything above is on this device only. To give it to the whole ministry, copy the finished ${kind.file} and commit it to the repository — then undo the changes here, because the committed file will carry them.` }),
+    h('div', { class: 'row-actions' },
+      pill('Copy the finished file', () => copy(JSON.stringify(library.apply(kind.file, baseRows), null, 2))),
+      pill('Download it', () => download(kind.file, library.apply(kind.file, baseRows)), { quiet: true }),
+      pill('Undo changes to this file', () => {
+        if (!confirm(`Undo every change to ${kind.file} on this device?`)) return;
+        library.resetFile(kind.file);
+        toast('Back to the committed file.');
+        refresh();
+      }, { quiet: true })));
+
+  // The editor renders after the shelf, which on a phone puts it off the
+  // bottom of the screen — so opening a row would look like nothing happened.
+  if (editor) requestAnimationFrame(() => editor.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+
+  return h('div', { style: 'display:contents' }, header, shelf, editor, list, restore, finished);
+}
+
+/**
+ * The checks that would otherwise be found by the audit after the fact, run
+ * while the row is still on screen and can still be fixed.
+ */
+function check(kind, draft, rows, key) {
+  const trouble = [];
+  for (const field of kind.fields) {
+    const value = library.get(draft, field.path);
+    if (field.type === 'dual') {
+      for (const band of ['kids', 'teens']) {
+        if (!String((value || {})[band] || '').trim()) trouble.push(`${field.label} needs the ${band} version.`);
+      }
+    } else if (field.type === 'answers') {
+      const options = Array.isArray(value) ? value : [];
+      if (options.filter((one) => String(one).trim()).length < 2) trouble.push(`${field.label}: at least two of them.`);
+      if (!String(options[Number(library.get(draft, field.answerPath) || 0)] || '').trim()) {
+        trouble.push(`${field.label}: mark which one is right.`);
+      }
+    } else if (field.type === 'list') {
+      const items = (Array.isArray(value) ? value : []).filter((one) => String(one).trim());
+      if (field.size && items.length !== field.size) trouble.push(`${field.label}: exactly ${field.size}.`);
+      if (!items.length) trouble.push(`${field.label} cannot be empty.`);
+    } else if (field.type === 'pairs') {
+      if (!(Array.isArray(value) && value.length)) trouble.push(`${field.label} cannot be empty.`);
+    } else if (field.type === 'number') {
+      if (!Number.isFinite(Number(value))) trouble.push(`${field.label} needs a number.`);
+    } else if (field.path !== 'number' && field.path !== 'reviewedBy' && !String(value ?? '').trim()) {
+      trouble.push(`${field.label} cannot be empty.`);
+    }
+  }
+  const now = kind.key(draft);
+  if (!String(now ?? '').trim()) trouble.push('This needs something that identifies it.');
+  else if (now !== key && rows.some((one) => one.key === now)) trouble.push('Something with that name is already here.');
+  return trouble;
+}
+
+function importDialog(refresh) {
+  const area = h('textarea', { rows: '6', placeholder: 'Paste an exported pack here' });
+  const file = h('input', { type: 'file', accept: 'application/json',
+    onchange: async (event) => {
+      const chosen = event.target.files && event.target.files[0];
+      if (chosen) area.value = await chosen.text();
+    } });
+  const problem = h('p', { class: 'row-note' });
+
+  const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: 'background:var(--paper);overflow-y:auto' },
+    label('Import a pack'),
+    h('p', { class: 'body', style: 'margin-top:.6rem',
+      text: 'A pack exported from another dashboard. It is laid on top of what is already on this device — nothing here is thrown away.' }),
+    h('label', { class: 'field' }, h('span', { text: 'Choose a file' }), file),
+    h('label', { class: 'field' }, h('span', { text: 'Or paste it' }), area),
+    problem,
+    h('div', { class: 'row-actions', style: 'margin-top:auto' },
+      pill('Import', () => {
+        try {
+          library.importPack(area.value);
+          reload();
+          screen.remove();
+          toast('Imported.');
+          refresh();
+        } catch (error) { problem.textContent = error.message; }
+      }),
+      pill('Cancel', () => screen.remove(), { quiet: true })));
+  document.body.appendChild(screen);
+  return screen;
+}
+
+const howItWorks = () => poster({ tone: 'ink', className: 'full' },
+  label('How this works'),
+  h('div', { class: 'rows', style: 'margin-top:.6rem' },
+    row({ title: 'Changes live on this device',
+      note: 'There is no account and no server. What you write here is in this browser, and clearing the browser clears it.' }),
+    row({ title: 'The committed files are never overwritten',
+      note: 'Your changes are kept separately and laid over the committed content when the app reads it. "Undo everything" always gets you back.' }),
+    row({ title: 'To change it for everybody, commit it',
+      note: 'Open a kind, copy the finished file, and put it in the repository. Then undo your changes here, so the same edit is not applied twice.' }),
+    row({ title: 'The audit checks what you wrote',
+      note: 'Overview and Content audit the content the app actually shows, edits included — so a question with no right answer is caught here, not by a child.' }),
+    row({ title: 'Scripture is not in here',
+      note: 'The 66 books under bible/ are the text of the Bible. Nothing on this page can change a word of them, which is deliberate.' })));
 
 // ── Prayers ────────────────────────────────────────────────────────────────
 
@@ -438,6 +787,7 @@ function askSection(refresh) {
 
 const RENDER = {
   overview: () => overview(),
+  library: () => librarySection(() => go(current, { keep: true })),
   content: () => contentSection(),
   prayers: () => prayersSection(() => go(current, { keep: true })),
   events: () => eventsSection(),

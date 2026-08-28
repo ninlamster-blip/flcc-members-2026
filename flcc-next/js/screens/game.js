@@ -410,9 +410,9 @@ async function crosswordGame(ctx) {
 const GAMES = {
   quiz: (ctx) => quizGame(ctx),
   speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'blue', title: 'Speed quiz' }),
-  // A shorter round than the Bible quiz: the FLCC bank is the smallest one in
-  // the app, and six a day makes it last five days rather than three.
-  church: (ctx) => quizGame(ctx, { game: 'church', tone: 'sage', title: 'Our church', size: 6 }),
+  // A shorter round than the Bible quiz: the FLCC bank is the smallest in the
+  // app, and five a day is what makes it last a week for kids as well as teens.
+  church: (ctx) => quizGame(ctx, { game: 'church', tone: 'sage', title: 'Our church', size: 5 }),
   'who-am-i': whoAmIGame,
   'verse-builder': verseGame,
   crossword: crosswordGame,

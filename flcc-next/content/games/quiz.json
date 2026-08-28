@@ -2014,5 +2014,257 @@
     "why": "Tell somebody. That is how the church has always worked.",
     "ageGroup": "both",
     "topic": "flcc"
+  },
+  {
+    "q": "What does our church believe about Jesus' birth?",
+    "options": [
+      "He was born of a virgin",
+      "He was born like anyone else",
+      "He was never really born"
+    ],
+    "answer": 0,
+    "why": "The virgin birth is in our statement of faith.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does FLCC believe Jesus' life on earth was like?",
+    "options": [
+      "Ordinary",
+      "Sinless",
+      "Mostly good"
+    ],
+    "answer": 1,
+    "why": "Sinless — which is why his death could stand in for ours.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "Where does our statement of faith say Jesus is now?",
+    "options": [
+      "Still in the tomb",
+      "Nobody knows",
+      "At the right hand of the Father"
+    ],
+    "answer": 2,
+    "why": "He rose bodily, ascended, and is at the Father's right hand.",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "Why did Christ die, according to what we believe?",
+    "options": [
+      "To set a good example",
+      "By accident",
+      "To redeem us after we fell through disobedience"
+    ],
+    "answer": 2,
+    "why": "Man fell through disobedience; Christ died to buy us back.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does our statement of faith call the new birth?",
+    "options": [
+      "An old-fashioned idea",
+      "Only for pastors",
+      "Something you must experience to become a child of God"
+    ],
+    "answer": 2,
+    "why": "Being born again is not optional in what this church believes.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does FLCC believe about the Holy Spirit's gifts?",
+    "options": [
+      "They stopped long ago",
+      "They are for the church today",
+      "They are only for angels"
+    ],
+    "answer": 1,
+    "why": "We believe in the Spirit-filled life, and in the gifts and fruits of the Spirit.",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does our statement of faith say about healing?",
+    "options": [
+      "We believe in divine healing",
+      "God never heals now",
+      "Only doctors can help"
+    ],
+    "answer": 0,
+    "why": "We believe in divine healing — which is why we pray for the sick.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "Who will be raised when Jesus returns?",
+    "options": [
+      "Nobody",
+      "Only the saved",
+      "Both the saved and the lost"
+    ],
+    "answer": 2,
+    "why": "A resurrection unto life, and a resurrection unto judgement.",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "How many people does FLCC hope to reach by 2028?",
+    "options": [
+      "16,200",
+      "162,000",
+      "1,620"
+    ],
+    "answer": 1,
+    "why": "The targets climb each year: 54,000 in 2026, 108,000 in 2027, 162,000 in 2028.",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "How many people is FLCC aiming for in 2027?",
+    "options": [
+      "10,800",
+      "1,080",
+      "108,000"
+    ],
+    "answer": 2,
+    "why": "Double the 2026 target, on the way to 270,000 by 2030.",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "How many sectors is the FLCC network organised into?",
+    "options": [
+      "Fourteen",
+      "One",
+      "Three"
+    ],
+    "answer": 2,
+    "why": "Hope, Faith and Love — with churches in each.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "Where do the FLCC churches meet?",
+    "options": [
+      "Only in one building",
+      "All over Kuwait",
+      "Only online"
+    ],
+    "answer": 1,
+    "why": "Fourteen churches, so people can meet near where they live.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What is the Bible, according to what our church believes?",
+    "options": [
+      "Inspired, infallible and authoritative",
+      "One opinion among many",
+      "Helpful but not always right"
+    ],
+    "answer": 0,
+    "why": "That is the first sentence of our statement of faith.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "Who is the Holy Spirit, in what FLCC believes?",
+    "options": [
+      "God — the third person of the Trinity",
+      "An angel",
+      "A feeling"
+    ],
+    "answer": 0,
+    "why": "Father, Son and Holy Spirit: one God, three persons.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What is the church, in the simplest terms?",
+    "options": [
+      "The Friday service",
+      "The building",
+      "The people, not the building"
+    ],
+    "answer": 2,
+    "why": "FLCC has fourteen churches and one of them has no building at all.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does FLCC ask every member to do about the good news?",
+    "options": [
+      "Wait to be asked",
+      "Keep it to themselves",
+      "Tell somebody"
+    ],
+    "answer": 2,
+    "why": "270,000 people by 2030 is not a number a few staff can reach.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "If a friend at school asked you what your church believes about Jesus, what is the shortest true answer?",
+    "options": [
+      "He is God, he died for us, and he rose",
+      "It is complicated",
+      "He was a kind teacher"
+    ],
+    "answer": 0,
+    "why": "Deity, atoning death, bodily resurrection — the heart of the statement of faith.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What is worship, in the way our vision uses the word?",
+    "options": [
+      "Only the singing part",
+      "Something the band does",
+      "Giving God what he is worth, with your whole life"
+    ],
+    "answer": 2,
+    "why": "Our vision calls FLCC a family of prayer and worshippers, not of singers.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "Our vision says believers should be discipled and trained to what?",
+    "options": [
+      "Silence",
+      "Maturity",
+      "Perfection"
+    ],
+    "answer": 1,
+    "why": "Grown up, then sent to grow others.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does our vision say a mature believer does next?",
+    "options": [
+      "Rests",
+      "Multiplies themselves into the lives of others",
+      "Starts their own church"
+    ],
+    "answer": 1,
+    "why": "Discipled, trained, and then multiplying — that is the whole shape.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "Where did the first FLCC members mostly come from?",
+    "options": [
+      "The Philippines",
+      "Kuwait",
+      "Egypt"
+    ],
+    "answer": 0,
+    "why": "FLCC was founded to reach Filipinos working in Kuwait.",
+    "ageGroup": "both",
+    "topic": "flcc"
   }
 ]
