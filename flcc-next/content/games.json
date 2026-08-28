@@ -6,9 +6,14 @@
     "symbol": "question",
     "difficulty": 2,
     "blurb": {
-      "kids": "Ten questions. How many can you get?",
-      "teens": "Ten questions, no clues, no second guesses."
-    }
+      "kids": "Ten questions — the Bible, Jesus, and our own church.",
+      "teens": "Ten questions on the Bible, Jesus and FLCC. No clues, no second guesses."
+    },
+    "topics": [
+      "bible",
+      "jesus",
+      "flcc"
+    ]
   },
   {
     "id": "who-am-i",
@@ -52,6 +57,25 @@
     "blurb": {
       "kids": "Quick questions. Quick answers!",
       "teens": "Sixty seconds. As many as you can."
+    },
+    "topics": [
+      "bible",
+      "jesus",
+      "flcc"
+    ]
+  },
+  {
+    "id": "church",
+    "title": "OUR CHURCH",
+    "tone": "sage",
+    "symbol": "people",
+    "difficulty": 2,
+    "topics": [
+      "flcc"
+    ],
+    "blurb": {
+      "kids": "Ten questions about FLCC — who we are and what we believe.",
+      "teens": "FLCC, the BOTR network, and what this church actually holds to."
     }
   }
 ]

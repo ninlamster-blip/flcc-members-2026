@@ -1,4 +1,4 @@
-// The games. Five of them, each a small self-contained round.
+// The games. Six of them, each a small self-contained round.
 //
 // Scores are never compared between children, and a game can always be left
 // without losing anything.
@@ -8,13 +8,23 @@ import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import { mode } from '../core/profile.js';
 import * as crossword from '../games/crossword.js';
-import { deal, pick as pickForDay, cycleOf } from '../core/rotation.js';
+import { deal, pick as pickForDay, cycleOf, askOrder } from '../core/rotation.js';
 
 const forAge = (rows, band) => rows.filter((row) => !row.ageGroup || row.ageGroup === 'both' || row.ageGroup === band);
 
+/**
+ * Questions carry a topic — `bible`, `jesus` or `flcc` — and a game says which
+ * of them it deals. That is what lets Our Church be its own round without
+ * a second file to keep in step with the first, and what keeps a question
+ * about the BOTR network out of a round that calls itself a Bible quiz only
+ * if the game asks for it.
+ */
+const forTopic = (rows, topics) =>
+  (Array.isArray(topics) && topics.length ? rows.filter((row) => topics.includes(row.topic || 'bible')) : rows);
+
 // Each game deals from its own bank on its own offset, so the quiz and the
 // verse game do not march through their cycles in step.
-const OFFSET = { quiz: 0, speed: 6, 'who-am-i': 2, 'verse-builder': 4, crossword: 1 };
+const OFFSET = { quiz: 0, speed: 6, 'who-am-i': 2, 'verse-builder': 4, crossword: 1, church: 3 };
 
 /** "Day 3 of 12" — how far into this bank's run today is. */
 const runLine = (bank, count, game) => {
@@ -48,13 +58,12 @@ function finish({ ctx, game, score, total, tone }) {
 }
 
 // ── Bible quiz, and its fast cousin ────────────────────────────────────────
-async function quizGame(ctx, { timed = false } = {}) {
-  const all = forAge(await content.quiz(), mode());
-  const game = timed ? 'speed' : 'quiz';
-  const size = timed ? 20 : 10;   // nobody answers 20 inside sixty seconds
+async function quizGame(ctx, { timed = false, game = 'quiz', tone = 'pink', title = 'Bible quiz', size = 10 } = {}) {
+  const definition = (await content.games()).find((one) => one.id === game);
+  const all = forTopic(forAge(await content.quiz(), mode()), definition && definition.topics);
+  if (timed) size = 20;           // nobody answers 20 inside sixty seconds
   const rounds = deal(all, { count: size, offset: OFFSET[game] });
   const run = runLine(all, size, game);
-  const tone = timed ? 'blue' : 'pink';
   let index = 0;
   let score = 0;
   let remaining = 60;
@@ -73,14 +82,17 @@ async function quizGame(ctx, { timed = false } = {}) {
       return;
     }
     const round = rounds[index];
+    // The right answer is written first in the file. Shown first, it would be
+    // the answer to every question in the game.
+    const asked = askOrder(round.options, round.answer, round.q);
     const feedback = h('p', { class: 'body', style: 'margin-top:1rem' });
     const options = h('div', { class: 'choice-list', style: 'margin-top:1.4rem' },
-      ...round.options.map((text, option) => choice(text, () => {
+      ...asked.options.map((text, option) => choice(text, () => {
         if (feedback.textContent) return;
-        const right = option === round.answer;
+        const right = option === asked.answer;
         if (right) score += 1;
         options.children[option].dataset[right ? 'right' : 'wrong'] = '';
-        if (!right) options.children[round.answer].dataset.right = '';
+        if (!right) options.children[asked.answer].dataset.right = '';
         feedback.textContent = round.why;
         setTimeout(() => { index += 1; draw(); }, timed ? 550 : 1100);
       })));
@@ -103,7 +115,7 @@ async function quizGame(ctx, { timed = false } = {}) {
   }
 
   draw();
-  return { title: timed ? 'Speed quiz' : 'Bible quiz', el };
+  return { title, el };
 }
 
 // ── Who am I? ──────────────────────────────────────────────────────────────
@@ -129,12 +141,14 @@ async function whoAmIGame(ctx) {
     const paintClues = () => clues.replaceChildren(
       ...round.clues.slice(0, shown).map((clue) => h('p', { class: 'lead', text: `“${clue}”` })));
 
+    const asked = askOrder(round.options, round.options.indexOf(round.answer), round.answer);
     const options = h('div', { class: 'choice-list', style: 'margin-top:1.4rem' },
-      ...round.options.map((name, option) => choice(name, () => {
+      ...asked.options.map((name, option) => choice(name, () => {
         if (feedback.textContent) return;
-        const right = round.options[option] === round.answer;
+        const right = option === asked.answer;
         if (right) score += Math.max(1, 4 - shown);
         options.children[option].dataset[right ? 'right' : 'wrong'] = '';
+        if (!right) options.children[asked.answer].dataset.right = '';
         feedback.textContent = round.fact;
         setTimeout(() => { index += 1; draw(); }, 1400);
       })));
@@ -395,7 +409,10 @@ async function crosswordGame(ctx) {
 
 const GAMES = {
   quiz: (ctx) => quizGame(ctx),
-  speed: (ctx) => quizGame(ctx, { timed: true }),
+  speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'blue', title: 'Speed quiz' }),
+  // A shorter round than the Bible quiz: the FLCC bank is the smallest one in
+  // the app, and six a day makes it last five days rather than three.
+  church: (ctx) => quizGame(ctx, { game: 'church', tone: 'sage', title: 'Our church', size: 6 }),
   'who-am-i': whoAmIGame,
   'verse-builder': verseGame,
   crossword: crosswordGame,

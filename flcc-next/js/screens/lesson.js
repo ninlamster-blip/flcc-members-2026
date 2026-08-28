@@ -4,6 +4,7 @@ import { h, poster, label, display, headline, art, pill, choice, note, toast, mo
 import * as content from '../core/content.js';
 import { forMode } from '../core/profile.js';
 import * as progress from '../core/progress.js';
+import { askOrder } from '../core/rotation.js';
 
 export default async function lessonScreen(ctx) {
   const [journeyId, lessonId] = ctx.route.args;
@@ -21,14 +22,18 @@ export default async function lessonScreen(ctx) {
   let answered = progress.isDone('lesson', key);
 
   const quiz = lesson.quiz;
+  // Lessons are authored with the right answer written first, like the quiz
+  // banks. Shown in that order, every lesson in every journey would have the
+  // same answer, and the question would stop being a question.
+  const asked = askOrder(quiz.options, quiz.answer, key);
   const options = h('div', { class: 'choice-list', style: 'margin-top:1.4rem' },
-    ...quiz.options.map((text, index) => {
+    ...asked.options.map((text, index) => {
       const button = choice(text, () => {
         if (answered) return;
         answered = true;
-        const right = index === quiz.answer;
+        const right = index === asked.answer;
         button.dataset[right ? 'right' : 'wrong'] = '';
-        if (!right) options.children[quiz.answer].dataset.right = '';
+        if (!right) options.children[asked.answer].dataset.right = '';
         feedback.textContent = forMode(quiz.why, ctx.mode);
         const result = progress.complete('lesson', key);
         if (result.first) {
