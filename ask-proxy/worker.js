@@ -594,6 +594,7 @@ export default {
   // send" case.
   async scheduled(event, env, ctx) {
     ctx.waitUntil(sendEveningSanctuaryReminder(env).catch(() => {}));
+    ctx.waitUntil(sweepNextPrayers(env).catch(() => {}));
   },
 };
 
@@ -617,6 +618,10 @@ async function handleRequest(request, env, ctx) {
       // told the assistant is ready when it would 401 on their first message.
       // The secret itself is never exposed here — only whether one exists.
       secretRequired: !!env.PROXY_SECRET,
+      // Whether FLCC NEXT can actually deliver a young person's prayer to a
+      // leader. The app asks before it offers to send, so that it never says
+      // "sent" on a Worker that has nowhere to put it.
+      nextPrayers: !!(env.KASAMA_DB && env.NEXT_LEADER_KEY),
     }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
@@ -764,6 +769,11 @@ async function handleRequest(request, env, ctx) {
   // ── /api/prayers — FLCC Kasama anonymous Kadena ng Panalangin (D1) ────────
   if (url.pathname === '/api/prayers' || url.pathname === '/api/prayers/pray') {
     return handlePrayerChain(request, env, url, ctx);
+  }
+
+  // ── /api/next/prayers — FLCC NEXT: a young person's prayer, to leaders ───
+  if (url.pathname === '/api/next/prayers' || url.pathname === '/api/next/prayers/status') {
+    return handleNextPrayers(request, env, url);
   }
 
   // ── /api/push — "new prayer" browser push notifications (opt-in) ─────────
@@ -1053,9 +1063,164 @@ async function ensurePrayerSchema(db) {
 
 // Trim, strip control characters, and cap length — same treatment as the
 // prayer content itself. Both fields are optional and member-supplied.
+// A prayer keeps its shape: control characters go, but the line breaks a
+// young person put there are theirs, and flattening them would turn what they
+// wrote into a paragraph they did not write.
+function cleanLongField(value, maxLen) {
+  const out = String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) => line.replace(/[\u0000-\u001F]/g, ' ').replace(/[ \t]+/g, ' ').trim())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+    .slice(0, maxLen);
+  return out || null;
+}
+
 function cleanShortField(value, maxLen) {
   const s = String(value || '').replace(/[\u0000-\u001F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLen);
   return s || null;
+}
+
+// =============================================================================
+// FLCC NEXT — a young person's prayer request, delivered to ministry leaders
+// =============================================================================
+//
+// SETUP: bind KASAMA_DB (already in wrangler.toml) and add ONE secret:
+//   Settings -> Variables and Secrets -> Add -> Secret
+//   Name:  NEXT_LEADER_KEY
+//   Value: a long random string, given only to ministry leaders
+//
+// Two rules shape everything below, and both come from a real failure: a
+// teenager shared a prayer, the app said "Sent to a ministry leader", and
+// nothing had been sent anywhere.
+//
+//  1. NO KEY, NO FEATURE. Without NEXT_LEADER_KEY set, nobody can read these,
+//     so accepting a child's prayer would mean swallowing it in silence. The
+//     POST therefore reports `configured: false` and stores nothing, and the
+//     app falls back to letting the young person send it themselves. Delivery
+//     is only "on" when a leader can actually read it.
+//  2. READS ARE ALWAYS GATED. An unset secret means closed, never open. This
+//     is the opposite of PROXY_SECRET, where unset means "no gate" — for a
+//     minor's disclosure, defaulting to readable would be indefensible.
+//
+// What is stored: the words, the mood, the first name the young person chose
+// at onboarding, and which age group they are. No surname, no device id, no
+// location, no link to anything else they have done in the app. A prayer
+// marked "only me and God" is never sent here at all — it has no route off
+// the device by design.
+const NEXT_PRAYER_RETENTION_DAYS = 90;
+
+async function ensureNextPrayerSchema(db) {
+  await db.batch([
+    db.prepare(`CREATE TABLE IF NOT EXISTS next_prayers (
+      id          TEXT PRIMARY KEY,
+      content     TEXT NOT NULL,
+      mood        TEXT,
+      first_name  TEXT,
+      age_group   TEXT,
+      urgent      INTEGER DEFAULT 0,
+      status      TEXT DEFAULT 'pending',
+      created_at  TEXT DEFAULT (datetime('now'))
+    )`),
+    db.prepare(`CREATE INDEX IF NOT EXISTS idx_next_prayers_created
+      ON next_prayers (created_at DESC)`),
+  ]);
+}
+
+/**
+ * Compare in constant time. A leader key guards children's disclosures, so it
+ * should not leak its own length or prefix to something timing a few thousand
+ * requests.
+ */
+function secretMatches(given, expected) {
+  const a = String(given || '');
+  const b = String(expected || '');
+  if (!b || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < b.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function handleNextPrayers(request, env, url) {
+  // "Not configured" is a first-class answer, not an error: the app needs to
+  // know that before it promises a young person anything.
+  if (!env.KASAMA_DB || !env.NEXT_LEADER_KEY) {
+    return jsonResponse({ configured: false });
+  }
+  const db = env.KASAMA_DB;
+  await ensureNextPrayerSchema(db);
+
+  const isLeader = () => secretMatches(request.headers.get('x-leader-key'), env.NEXT_LEADER_KEY);
+
+  // GET /api/next/prayers — the queue, for a leader holding the key
+  if (request.method === 'GET' && url.pathname === '/api/next/prayers') {
+    if (!isLeader()) return jsonResponse({ error: { message: 'A ministry leader key is required.' } }, 401);
+    const { results } = await db.prepare(
+      `SELECT id, content, mood, first_name, age_group, urgent, status, created_at
+       FROM next_prayers WHERE status != 'hidden'
+       ORDER BY urgent DESC, created_at DESC LIMIT 200`
+    ).all();
+    return jsonResponse({ configured: true, prayers: results || [] });
+  }
+
+  if (request.method !== 'POST') {
+    return jsonResponse({ error: { message: 'Method not allowed' } }, 405);
+  }
+
+  let body;
+  try { body = await request.json(); }
+  catch { return jsonResponse({ error: { message: 'Invalid JSON body' } }, 400); }
+
+  // POST /api/next/prayers/status — a leader marks one read or hidden
+  if (url.pathname === '/api/next/prayers/status') {
+    if (!isLeader()) return jsonResponse({ error: { message: 'A ministry leader key is required.' } }, 401);
+    const status = ['pending', 'read', 'hidden'].includes(body.status) ? body.status : null;
+    const id = cleanShortField(body.id, 64);
+    if (!id || !status) return jsonResponse({ error: { message: 'Need an id and a status.' } }, 400);
+    await db.prepare(`UPDATE next_prayers SET status = ? WHERE id = ?`).bind(status, id).run();
+    return jsonResponse({ configured: true, id, status });
+  }
+
+  // POST /api/next/prayers — a young person sends one. Deliberately open: a
+  // child cannot be asked to hold a shared secret, and one shipped to a phone
+  // would not be a secret. The gate is on reading, where it counts.
+  const content = cleanLongField(body.content, 2000);
+  if (!content || content.length < 2) {
+    return jsonResponse({ error: { message: 'There is nothing written here yet.' } }, 400);
+  }
+  const prayer = {
+    id: crypto.randomUUID(),
+    content,
+    mood: cleanShortField(body.mood, 30),
+    first_name: cleanShortField(body.firstName, 40),
+    age_group: ['kids', 'teens'].includes(body.ageGroup) ? body.ageGroup : null,
+    // A hint from the device's own safety check, so a leader sees the ones
+    // that cannot wait first. It is a sort order, never a gate: a prayer is
+    // delivered whether or not it trips the check.
+    urgent: body.urgent ? 1 : 0,
+  };
+  await db.prepare(
+    `INSERT INTO next_prayers (id, content, mood, first_name, age_group, urgent) VALUES (?, ?, ?, ?, ?, ?)`
+  ).bind(prayer.id, prayer.content, prayer.mood, prayer.first_name, prayer.age_group, prayer.urgent).run();
+
+  // The app tells the young person it was delivered only on the strength of
+  // this response. Nothing optimistic, nothing assumed.
+  return jsonResponse({ configured: true, delivered: true, id: prayer.id });
+}
+
+/**
+ * Keeping every prayer a child has ever written, forever, is a liability
+ * rather than a ministry. They are removed after NEXT_PRAYER_RETENTION_DAYS.
+ */
+async function sweepNextPrayers(env) {
+  if (!env.KASAMA_DB || !env.NEXT_LEADER_KEY) return;
+  const db = env.KASAMA_DB;
+  await ensureNextPrayerSchema(db);
+  await db.prepare(
+    `DELETE FROM next_prayers WHERE created_at < datetime('now', ?)`
+  ).bind(`-${NEXT_PRAYER_RETENTION_DAYS} days`).run();
 }
 
 async function handlePrayerChain(request, env, url, ctx) {

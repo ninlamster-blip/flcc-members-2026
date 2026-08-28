@@ -316,5 +316,97 @@ const db = fakeD1();
   }
 }
 
+
+// ── FLCC NEXT prayer delivery ─────────────────────────────────────────────
+// The gate here guards children's disclosures, so it gets tested from the
+// outside: what an unconfigured Worker does, what a stranger sees, and what
+// the young person is told.
+async function nextCall(env, method, path, body, headers) {
+  const req = new Request(`https://kasama.test${path}`, {
+    method,
+    headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(headers || {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  req.cf = { country: 'KW' };
+  const res = await worker.fetch(req, env, makeCtx());
+  return { status: res.status, data: await res.json().catch(() => null) };
+}
+
+{
+  const KEY = 'a-long-random-leader-key';
+  const withKey = { 'x-leader-key': KEY };
+
+  // Unconfigured: no database, or no key. Either way the app must be told the
+  // feature is off rather than have a prayer vanish into it.
+  for (const env of [{}, { KASAMA_DB: fakeD1() }, { NEXT_LEADER_KEY: KEY }]) {
+    const res = await nextCall(env, 'POST', '/api/next/prayers', { content: 'help' });
+    assert(res.status === 200 && res.data.configured === false,
+      'an unconfigured Worker reports the feature off rather than swallowing a prayer');
+    assert(res.data.delivered !== true, 'and never claims delivery');
+  }
+  const blindRead = await nextCall({ KASAMA_DB: fakeD1() }, 'GET', '/api/next/prayers', null, withKey);
+  assert(blindRead.data.configured === false, 'with no key set, reading is off — unset means closed, never open');
+
+  const env = { KASAMA_DB: fakeD1(), NEXT_LEADER_KEY: KEY };
+
+  const sent = await nextCall(env, 'POST', '/api/next/prayers', {
+    content: 'My grandad is in hospital\n\nand nobody will tell me how bad it is.',
+    mood: 'worried', firstName: 'Sam', ageGroup: 'teens',
+  });
+  assert(sent.status === 200 && sent.data.delivered === true, 'a configured Worker confirms delivery explicitly');
+  assert(typeof sent.data.id === 'string' && sent.data.id.length > 10, 'and returns the id it stored');
+
+  // The whole point of the gate.
+  const anon = await nextCall(env, 'GET', '/api/next/prayers');
+  assert(anon.status === 401, 'without the key, the queue is refused');
+  assert(!anon.data.prayers, 'and no prayer is returned in the error body');
+  const wrongKey = await nextCall(env, 'GET', '/api/next/prayers', null, { 'x-leader-key': 'a-long-random-leader-keZ' });
+  assert(wrongKey.status === 401, 'a key that is wrong in one character is refused');
+  const shortKey = await nextCall(env, 'GET', '/api/next/prayers', null, { 'x-leader-key': 'a' });
+  assert(shortKey.status === 401, 'a prefix of the key is refused');
+
+  const queue = await nextCall(env, 'GET', '/api/next/prayers', null, withKey);
+  assert(queue.status === 200 && queue.data.prayers.length === 1, 'a leader with the key sees the queue');
+  const row = queue.data.prayers[0];
+  assert(row.content.includes('\n'), 'the line breaks the young person wrote are kept');
+  assert(row.first_name === 'Sam' && row.age_group === 'teens', 'the first name and age group travel with it');
+  assert(row.status === 'pending', 'and it arrives unread');
+  assert(!('user_id' in row) && !('device' in row), 'nothing identifies the device it came from');
+
+  // Urgency is a sort order, never a gate.
+  await nextCall(env, 'POST', '/api/next/prayers', { content: 'I cannot keep doing this', urgent: true, firstName: 'Alex' });
+  const sorted = await nextCall(env, 'GET', '/api/next/prayers', null, withKey);
+  assert(sorted.data.prayers[0].urgent === 1, 'an urgent prayer is shown first');
+  assert(sorted.data.prayers.length === 2, 'and the ordinary one is still there');
+
+  // Moderation, gated the same way.
+  const unauthorised = await nextCall(env, 'POST', '/api/next/prayers/status', { id: row.id, status: 'hidden' });
+  assert(unauthorised.status === 401, 'marking a prayer read needs the key too');
+  const marked = await nextCall(env, 'POST', '/api/next/prayers/status', { id: row.id, status: 'read' }, withKey);
+  assert(marked.data.status === 'read', 'a leader can mark one read');
+  const hidden = await nextCall(env, 'POST', '/api/next/prayers/status', { id: row.id, status: 'hidden' }, withKey);
+  assert(hidden.data.status === 'hidden', 'and hide one');
+  const afterHide = await nextCall(env, 'GET', '/api/next/prayers', null, withKey);
+  assert(afterHide.data.prayers.every((p) => p.id !== row.id), 'a hidden prayer drops out of the queue');
+  const badStatus = await nextCall(env, 'POST', '/api/next/prayers/status', { id: row.id, status: 'deleted' }, withKey);
+  assert(badStatus.status === 400, 'an unknown status is refused rather than written');
+
+  const empty = await nextCall(env, 'POST', '/api/next/prayers', { content: '   ' });
+  assert(empty.status === 400, 'an empty prayer is not stored');
+
+  // Retention: old prayers are swept, recent ones are not.
+  const db = env.KASAMA_DB;
+  await db.prepare(`UPDATE next_prayers SET created_at = datetime('now', '-120 days')`).bind().run();
+  await db.prepare(
+    `INSERT INTO next_prayers (id, content, status) VALUES ('fresh', 'today', 'pending')`
+  ).bind().run();
+  const cronCtx = makeCtx();
+  await worker.scheduled({}, env, cronCtx);
+  await cronCtx.flush();
+  const left = await nextCall(env, 'GET', '/api/next/prayers', null, withKey);
+  assert(left.data.prayers.length === 1 && left.data.prayers[0].id === 'fresh',
+    'prayers older than the retention window are swept, recent ones kept');
+}
+
 console.log(failures ? `\n${failures} FAILURE(S)` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

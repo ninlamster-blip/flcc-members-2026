@@ -27,6 +27,7 @@ import * as progress from '../core/progress.js';
 import { getUser, getSettings, saveSettings, MODE, mode } from '../core/profile.js';
 import { audit, FILES, THIN, DRILLS } from './audit.js';
 import * as ai from '../core/ai.js';
+import * as delivery from '../core/delivery.js';
 import * as library from '../core/library.js';
 
 const headEl = document.getElementById('app-head');
@@ -634,13 +635,101 @@ function prayersSection(refresh) {
 
   const exportBlock = poster({ tone: 'cream', className: 'full' },
     label('Taking these with you'),
-    h('p', { class: 'row-note', text: 'Prayers live on the device they were written on. To pray through them elsewhere, export the shared ones — private prayers are never included.' }),
+    h('p', { class: 'row-note', text: 'This exports the prayers written on this device. Prayers sent from young people’s phones live on the Worker and are read in the queue above. Private prayers are never included in either.' }),
     h('div', { class: 'row-actions' },
       pill('Download shared prayers', () => download('prayers.json', shared), { quiet: true }),
       pill('Copy as text', () => copy(shared.map((prayer) =>
         `${when(prayer.date)}${prayer.mood ? ` (${prayer.mood})` : ''}\n${prayer.content}`).join('\n\n')), { quiet: true })));
 
-  return h('div', { style: 'display:contents' }, list, privacy, exportBlock);
+  // ── The church-wide queue ───────────────────────────────────────────────
+  //
+  // The block above is this device only, which is all there was before
+  // delivery existed. This one is what a young person's phone actually sent,
+  // and it needs the leader key: without it the Worker refuses, which is the
+  // whole point of the gate.
+  const settings = getSettings();
+  const churchWide = h('div', { style: 'display:contents' });
+
+  const paintQueue = async (key) => {
+    churchWide.replaceChildren(poster({ tone: 'paper', className: 'full' }, note('Loading the queue…')));
+    const result = await delivery.queue(key);
+
+    if (!result.ok) {
+      const said = {
+        'no-key': 'Enter the ministry leader key to see prayers sent from young people’s phones.',
+        'bad-key': 'That key was refused. Check it against the NEXT_LEADER_KEY secret on the Worker.',
+        off: 'Delivery is not switched on. The Worker needs its KASAMA_DB binding and a NEXT_LEADER_KEY secret — until both exist, the app tells young people to send prayers themselves rather than pretending they arrived.',
+        offline: 'Could not reach the Worker. The queue is unchanged; nothing has been lost.',
+        error: 'The Worker answered, but not with a queue.',
+      }[result.reason] || 'The queue could not be loaded.';
+      churchWide.replaceChildren(poster({ tone: result.reason === 'off' ? 'cream' : 'paper', className: 'full' },
+        label('Sent from phones'),
+        h('p', { class: 'body dim', style: 'margin-top:.6rem', text: said })));
+      return;
+    }
+
+    const rows = result.prayers.map((prayer) => {
+      const status = prayer.status || 'pending';
+      const act = async (next) => {
+        const done = await delivery.mark(key, prayer.id, next);
+        toast(done ? (next === 'hidden' ? 'Hidden.' : 'Marked read.') : 'That did not save.');
+        if (done) paintQueue(key);
+      };
+      return row({
+        title: prayer.content,
+        note: [
+          prayer.first_name || 'Someone',
+          prayer.age_group === 'kids' ? '7–12' : prayer.age_group === 'teens' ? '13–18' : null,
+          prayer.mood ? `feeling ${prayer.mood}` : null,
+          when(prayer.created_at),
+        ].filter(Boolean).join(' · '),
+        // An urgent prayer still has to show whether anyone has dealt with it.
+        // Showing only "urgent" hid exactly the thing a leader needs to know.
+        right: h('span', { style: 'display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:flex-end' },
+          prayer.urgent ? flag('error', 'urgent') : null,
+          flag(status === 'pending' ? 'warning' : 'ok', status)),
+        actions: [
+          status !== 'read' ? pill('Mark read', () => act('read'), { quiet: true }) : null,
+          pill('Hide', () => act('hidden'), { quiet: true }),
+        ].filter(Boolean),
+      });
+    });
+
+    const urgent = result.prayers.filter((prayer) => prayer.urgent).length;
+    churchWide.replaceChildren(poster({ tone: urgent ? 'pink' : 'paper', className: 'full' },
+      label(`Sent from phones · ${result.prayers.length}`),
+      urgent
+        ? h('p', { class: 'body', style: 'margin-top:.5rem',
+          text: `${urgent} of these tripped the safety check on the young person’s own device. They are listed first. Read them today.` })
+        : null,
+      rows.length
+        ? h('div', { class: 'rows', style: 'margin-top:.6rem' }, ...rows)
+        : note('Nothing has been sent yet.')));
+  };
+
+  const keyInput = h('input', { type: 'password', value: settings.leaderKey || '', autocomplete: 'off',
+    placeholder: 'the NEXT_LEADER_KEY from your Worker' });
+  const keyBlock = poster({ tone: 'ink', className: 'full' },
+    label('Ministry leader key'),
+    h('p', { class: 'body dim', style: 'margin-top:.5rem',
+      text: 'Prayers sent from young people’s phones are readable only with this key. It is stored on this device and never given to a young person’s app.' }),
+    h('label', { class: 'field' }, h('span', { text: 'Key' }), keyInput),
+    h('div', { class: 'row-actions' },
+      pill('Save and load', () => {
+        const key = keyInput.value.trim();
+        saveSettings({ leaderKey: key });
+        paintQueue(key);
+      }),
+      pill('Forget it on this device', () => {
+        saveSettings({ leaderKey: '' });
+        keyInput.value = '';
+        paintQueue('');
+        toast('Removed from this device.');
+      }, { quiet: true })));
+
+  paintQueue(settings.leaderKey);
+
+  return h('div', { style: 'display:contents' }, churchWide, keyBlock, list, privacy, exportBlock);
 }
 
 // ── Events ─────────────────────────────────────────────────────────────────

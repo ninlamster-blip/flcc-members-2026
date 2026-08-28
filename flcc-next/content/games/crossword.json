@@ -622,5 +622,785 @@
         "clue": "Self-___, the last one Paul names"
       }
     ]
+  },
+  {
+    "id": "creation",
+    "title": "GOD MADE IT",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "LIGHT",
+        "clue": "The first thing God spoke into being"
+      },
+      {
+        "answer": "SKY",
+        "clue": "Made on the second day, between the waters"
+      },
+      {
+        "answer": "LAND",
+        "clue": "It appeared when the waters were gathered"
+      },
+      {
+        "answer": "STARS",
+        "clue": "Set in the sky to mark seasons and years"
+      },
+      {
+        "answer": "BIRDS",
+        "clue": "They were told to fill the sky"
+      },
+      {
+        "answer": "FISH",
+        "clue": "They filled the waters"
+      },
+      {
+        "answer": "REST",
+        "clue": "What God did on the seventh day"
+      },
+      {
+        "answer": "GOOD",
+        "clue": "What God called everything he had made"
+      }
+    ]
+  },
+  {
+    "id": "david-kids",
+    "title": "DAVID",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "SHEEP",
+        "clue": "What he looked after before he was famous"
+      },
+      {
+        "answer": "SLING",
+        "clue": "The weapon he chose over armour"
+      },
+      {
+        "answer": "STONE",
+        "clue": "He picked five smooth ones from a brook"
+      },
+      {
+        "answer": "GIANT",
+        "clue": "Nine feet of trouble from Gath"
+      },
+      {
+        "answer": "HARP",
+        "clue": "He played it to calm a troubled king"
+      },
+      {
+        "answer": "PSALM",
+        "clue": "A song he wrote, and there are many"
+      },
+      {
+        "answer": "CROWN",
+        "clue": "He wore one eventually, after years of waiting"
+      },
+      {
+        "answer": "FRIEND",
+        "clue": "Jonathan was his, at great cost"
+      }
+    ]
+  },
+  {
+    "id": "lords-prayer",
+    "title": "THE PRAYER JESUS TAUGHT",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "FATHER",
+        "clue": "The first word: “Our ___”"
+      },
+      {
+        "answer": "HEAVEN",
+        "clue": "Where that Father is"
+      },
+      {
+        "answer": "BREAD",
+        "clue": "Give us today our daily ___"
+      },
+      {
+        "answer": "FORGIVE",
+        "clue": "What we ask for, and must also do"
+      },
+      {
+        "answer": "KINGDOM",
+        "clue": "May yours come, may your will be done"
+      },
+      {
+        "answer": "EVIL",
+        "clue": "Deliver us from it"
+      },
+      {
+        "answer": "NAME",
+        "clue": "Hallowed be your ___"
+      },
+      {
+        "answer": "EARTH",
+        "clue": "On it as it is in heaven"
+      }
+    ]
+  },
+  {
+    "id": "animals",
+    "title": "ANIMALS IN THE BIBLE",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "LION",
+        "clue": "Daniel spent a night with several"
+      },
+      {
+        "answer": "DONKEY",
+        "clue": "One carried Jesus into Jerusalem, and one once talked"
+      },
+      {
+        "answer": "DOVE",
+        "clue": "It came back to the ark with a leaf"
+      },
+      {
+        "answer": "SHEEP",
+        "clue": "The good shepherd's flock"
+      },
+      {
+        "answer": "RAVEN",
+        "clue": "It brought food to Elijah"
+      },
+      {
+        "answer": "CAMEL",
+        "clue": "Harder through a needle's eye than a rich man into the kingdom"
+      },
+      {
+        "answer": "FISH",
+        "clue": "A big one swallowed a runaway prophet"
+      },
+      {
+        "answer": "LAMB",
+        "clue": "What John the Baptist called Jesus"
+      }
+    ]
+  },
+  {
+    "id": "places",
+    "title": "PLACES",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "EDEN",
+        "clue": "The first garden"
+      },
+      {
+        "answer": "EGYPT",
+        "clue": "The country Israel walked out of"
+      },
+      {
+        "answer": "JORDAN",
+        "clue": "The river where Jesus was baptised"
+      },
+      {
+        "answer": "SINAI",
+        "clue": "The mountain of the commandments"
+      },
+      {
+        "answer": "JERICHO",
+        "clue": "Its walls came down after a shout"
+      },
+      {
+        "answer": "BETHLEHEM",
+        "clue": "Where Jesus was born"
+      },
+      {
+        "answer": "GALILEE",
+        "clue": "The lake Jesus walked on"
+      },
+      {
+        "answer": "NAZARETH",
+        "clue": "The town Jesus grew up in"
+      }
+    ]
+  },
+  {
+    "id": "daniel",
+    "title": "DANIEL",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "LIONS",
+        "clue": "He spent a night in their den"
+      },
+      {
+        "answer": "KING",
+        "clue": "Several of them, across two empires"
+      },
+      {
+        "answer": "PRAYER",
+        "clue": "He would not stop, three times a day"
+      },
+      {
+        "answer": "DREAM",
+        "clue": "He explained one nobody else could"
+      },
+      {
+        "answer": "FIRE",
+        "clue": "His three friends walked into it and out again"
+      },
+      {
+        "answer": "BABYLON",
+        "clue": "The city he was taken to as a teenager"
+      },
+      {
+        "answer": "ANGEL",
+        "clue": "One shut the lions' mouths"
+      },
+      {
+        "answer": "WINDOW",
+        "clue": "He prayed at his, openly, when it was illegal"
+      }
+    ]
+  },
+  {
+    "id": "easter",
+    "title": "THE FIRST EASTER",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "CROSS",
+        "clue": "Where Jesus died"
+      },
+      {
+        "answer": "TOMB",
+        "clue": "Borrowed, and empty by Sunday"
+      },
+      {
+        "answer": "STONE",
+        "clue": "It had been rolled away"
+      },
+      {
+        "answer": "ANGEL",
+        "clue": "He said: he is not here"
+      },
+      {
+        "answer": "GARDEN",
+        "clue": "Mary mistook Jesus for the man who tended this place"
+      },
+      {
+        "answer": "ALIVE",
+        "clue": "What he was on the third day"
+      },
+      {
+        "answer": "SPICES",
+        "clue": "What the women were carrying at dawn"
+      },
+      {
+        "answer": "PETER",
+        "clue": "He ran to the tomb and went straight in"
+      }
+    ]
+  },
+  {
+    "id": "i-am",
+    "title": "JESUS SAID “I AM”",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "BREAD",
+        "clue": "“I am the ___ of life”"
+      },
+      {
+        "answer": "LIGHT",
+        "clue": "“I am the ___ of the world”"
+      },
+      {
+        "answer": "DOOR",
+        "clue": "“I am the ___ of the sheep”"
+      },
+      {
+        "answer": "VINE",
+        "clue": "“I am the true ___”"
+      },
+      {
+        "answer": "TRUTH",
+        "clue": "“I am the way, the ___ and the life”"
+      },
+      {
+        "answer": "LIFE",
+        "clue": "The third one in that same sentence"
+      },
+      {
+        "answer": "SHEPHERD",
+        "clue": "“I am the good ___”"
+      },
+      {
+        "answer": "WAY",
+        "clue": "The first of the three"
+      }
+    ]
+  },
+  {
+    "id": "things-to-do",
+    "title": "THINGS TO DO",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "PRAY",
+        "clue": "Talk to God about it"
+      },
+      {
+        "answer": "SING",
+        "clue": "What the psalms keep telling you to do"
+      },
+      {
+        "answer": "GIVE",
+        "clue": "Cheerfully, says Paul"
+      },
+      {
+        "answer": "SHARE",
+        "clue": "What the early church did with everything"
+      },
+      {
+        "answer": "LISTEN",
+        "clue": "Be quick to do this, slow to speak"
+      },
+      {
+        "answer": "OBEY",
+        "clue": "What Samuel said matters more than sacrifice"
+      },
+      {
+        "answer": "THANK",
+        "clue": "In everything, says Paul"
+      },
+      {
+        "answer": "FORGIVE",
+        "clue": "Seventy-seven times, said Jesus"
+      }
+    ]
+  },
+  {
+    "id": "church-kids",
+    "title": "AT CHURCH",
+    "ageGroup": "kids",
+    "words": [
+      {
+        "answer": "PRAISE",
+        "clue": "What everything that has breath is told to do"
+      },
+      {
+        "answer": "BIBLE",
+        "clue": "The book we read together"
+      },
+      {
+        "answer": "PRAYER",
+        "clue": "Talking and listening to God"
+      },
+      {
+        "answer": "FRIENDS",
+        "clue": "The people you find there"
+      },
+      {
+        "answer": "SINGING",
+        "clue": "Praise, out loud, together"
+      },
+      {
+        "answer": "GIVING",
+        "clue": "Putting something in rather than only taking out"
+      },
+      {
+        "answer": "WELCOME",
+        "clue": "What a stranger should feel walking in"
+      },
+      {
+        "answer": "SERVE",
+        "clue": "What Jesus did with a towel and a basin"
+      }
+    ]
+  },
+  {
+    "id": "exile",
+    "title": "THE EXILE",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "BABYLON",
+        "clue": "The empire that carried Judah away"
+      },
+      {
+        "answer": "EZEKIEL",
+        "clue": "He prophesied to the exiles and saw dry bones"
+      },
+      {
+        "answer": "TEMPLE",
+        "clue": "Destroyed in 586 BC, rebuilt seventy years later"
+      },
+      {
+        "answer": "CYRUS",
+        "clue": "The Persian king who let them go home"
+      },
+      {
+        "answer": "EZRA",
+        "clue": "He brought the law back with the returning exiles"
+      },
+      {
+        "answer": "SEVENTY",
+        "clue": "The number of years Jeremiah said it would last"
+      },
+      {
+        "answer": "REMNANT",
+        "clue": "The word the prophets use for who is left"
+      },
+      {
+        "answer": "PSALM",
+        "clue": "By the rivers of Babylon they sat and wept in one"
+      }
+    ]
+  },
+  {
+    "id": "parables",
+    "title": "PARABLES",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "SOWER",
+        "clue": "He scattered seed on four kinds of ground"
+      },
+      {
+        "answer": "TALENTS",
+        "clue": "Three servants, three amounts, two commendations"
+      },
+      {
+        "answer": "MUSTARD",
+        "clue": "The smallest seed that becomes the largest plant"
+      },
+      {
+        "answer": "LEAVEN",
+        "clue": "A little of it works through the whole batch"
+      },
+      {
+        "answer": "PEARL",
+        "clue": "A merchant sold everything for one"
+      },
+      {
+        "answer": "VINEYARD",
+        "clue": "Workers hired at different hours, paid the same"
+      },
+      {
+        "answer": "PRODIGAL",
+        "clue": "The son who came home to a running father"
+      },
+      {
+        "answer": "SAMARITAN",
+        "clue": "The one who stopped on the Jericho road"
+      }
+    ]
+  },
+  {
+    "id": "romans",
+    "title": "PAUL TO ROME",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "GRACE",
+        "clue": "A gift nobody earns"
+      },
+      {
+        "answer": "FAITH",
+        "clue": "The righteous shall live by it"
+      },
+      {
+        "answer": "SPIRIT",
+        "clue": "He intercedes with groanings too deep for words"
+      },
+      {
+        "answer": "ADOPTION",
+        "clue": "How Paul describes being brought into God's family"
+      },
+      {
+        "answer": "GENTILE",
+        "clue": "The non-Jewish half of the argument in this letter"
+      },
+      {
+        "answer": "HOPE",
+        "clue": "It does not disappoint"
+      },
+      {
+        "answer": "WAGES",
+        "clue": "The ___ of sin is death"
+      },
+      {
+        "answer": "BRANCH",
+        "clue": "Paul's picture of being grafted into the olive tree"
+      }
+    ]
+  },
+  {
+    "id": "kings",
+    "title": "THE KINGS",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "SOLOMON",
+        "clue": "He asked for wisdom and built the temple"
+      },
+      {
+        "answer": "REHOBOAM",
+        "clue": "His answer to the elders split the kingdom"
+      },
+      {
+        "answer": "AHAB",
+        "clue": "He married Jezebel and met Elijah on Carmel"
+      },
+      {
+        "answer": "HEZEKIAH",
+        "clue": "He spread the letter before God and got fifteen more years"
+      },
+      {
+        "answer": "JOSIAH",
+        "clue": "He was eight when he was crowned and tore his clothes when the book was found"
+      },
+      {
+        "answer": "JEHU",
+        "clue": "He drove his chariot furiously"
+      },
+      {
+        "answer": "SAUL",
+        "clue": "The first, and the tallest"
+      },
+      {
+        "answer": "DIVIDED",
+        "clue": "What the kingdom became after Solomon"
+      }
+    ]
+  },
+  {
+    "id": "wisdom",
+    "title": "WISDOM",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "PROVERBS",
+        "clue": "The book most of this comes from"
+      },
+      {
+        "answer": "TONGUE",
+        "clue": "Small, and it sets a forest on fire"
+      },
+      {
+        "answer": "SLUGGARD",
+        "clue": "Go to the ant, you ___"
+      },
+      {
+        "answer": "HUMILITY",
+        "clue": "It comes before honour"
+      },
+      {
+        "answer": "DILIGENT",
+        "clue": "The opposite of the sluggard, and it prospers"
+      },
+      {
+        "answer": "RICHES",
+        "clue": "Better a little with righteousness than great ___ with injustice"
+      },
+      {
+        "answer": "FOLLY",
+        "clue": "Wisdom's opposite, and it is loud"
+      },
+      {
+        "answer": "FEAR",
+        "clue": "The ___ of Yahweh is the beginning of knowledge"
+      }
+    ]
+  },
+  {
+    "id": "acts",
+    "title": "ACTS",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "PENTECOST",
+        "clue": "Wind, fire, and three thousand baptised"
+      },
+      {
+        "answer": "STEPHEN",
+        "clue": "The first to die for it, forgiving as he went"
+      },
+      {
+        "answer": "PHILIP",
+        "clue": "He explained Isaiah to an Ethiopian in a chariot"
+      },
+      {
+        "answer": "DORCAS",
+        "clue": "The widows showed Peter the coats she had made"
+      },
+      {
+        "answer": "JAILER",
+        "clue": "He washed their wounds and was baptised the same night"
+      },
+      {
+        "answer": "ROME",
+        "clue": "Where the book ends, with Paul under house arrest"
+      },
+      {
+        "answer": "ANTIOCH",
+        "clue": "Where believers were first called Christians"
+      },
+      {
+        "answer": "MALTA",
+        "clue": "The island of the shipwreck and the viper"
+      }
+    ]
+  },
+  {
+    "id": "gospels",
+    "title": "THE GOSPELS",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "MATTHEW",
+        "clue": "He quotes the Old Testament more than the others"
+      },
+      {
+        "answer": "MARK",
+        "clue": "The shortest and probably the earliest"
+      },
+      {
+        "answer": "LUKE",
+        "clue": "The doctor, and the careful historian"
+      },
+      {
+        "answer": "JOHN",
+        "clue": "He starts before the manger, at creation"
+      },
+      {
+        "answer": "PARABLE",
+        "clue": "A story with a hook in it"
+      },
+      {
+        "answer": "MIRACLE",
+        "clue": "John prefers to call these signs"
+      },
+      {
+        "answer": "SERMON",
+        "clue": "The one on the mount runs three chapters"
+      },
+      {
+        "answer": "DISCIPLE",
+        "clue": "A learner, which is what the word means"
+      }
+    ]
+  },
+  {
+    "id": "covenant",
+    "title": "COVENANT",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "ABRAHAM",
+        "clue": "God promised him a land, a nation and a blessing"
+      },
+      {
+        "answer": "RAINBOW",
+        "clue": "The sign given to Noah"
+      },
+      {
+        "answer": "PROMISE",
+        "clue": "What a covenant fundamentally is"
+      },
+      {
+        "answer": "BLOOD",
+        "clue": "The new one was sealed with it"
+      },
+      {
+        "answer": "SINAI",
+        "clue": "Where the law was given"
+      },
+      {
+        "answer": "SABBATH",
+        "clue": "A weekly sign of the covenant with Israel"
+      },
+      {
+        "answer": "HEART",
+        "clue": "Jeremiah says the new law will be written on it"
+      },
+      {
+        "answer": "DAVID",
+        "clue": "God promised his throne would last forever"
+      }
+    ]
+  },
+  {
+    "id": "tabernacle",
+    "title": "THE TABERNACLE",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "ALTAR",
+        "clue": "Where the sacrifice was made"
+      },
+      {
+        "answer": "LAVER",
+        "clue": "The basin the priests washed in"
+      },
+      {
+        "answer": "INCENSE",
+        "clue": "Burned before the curtain, a picture of prayer"
+      },
+      {
+        "answer": "VEIL",
+        "clue": "It tore in two when Jesus died"
+      },
+      {
+        "answer": "PRIEST",
+        "clue": "Only he could go behind it, once a year"
+      },
+      {
+        "answer": "OFFERING",
+        "clue": "What was brought, at cost, on behalf of the people"
+      },
+      {
+        "answer": "MANNA",
+        "clue": "A jar of it was kept inside the ark"
+      },
+      {
+        "answer": "CLOUD",
+        "clue": "It covered the tent when God's glory filled it"
+      }
+    ]
+  },
+  {
+    "id": "revelation",
+    "title": "REVELATION",
+    "ageGroup": "teens",
+    "words": [
+      {
+        "answer": "PATMOS",
+        "clue": "The island John was exiled to"
+      },
+      {
+        "answer": "LAMB",
+        "clue": "The one worthy to open the scroll, looking as if slain"
+      },
+      {
+        "answer": "THRONE",
+        "clue": "The centre of every vision in the book"
+      },
+      {
+        "answer": "SCROLL",
+        "clue": "Sealed seven times"
+      },
+      {
+        "answer": "CHURCHES",
+        "clue": "Seven of them get letters in chapters two and three"
+      },
+      {
+        "answer": "RIVER",
+        "clue": "It flows from the throne, clear as crystal"
+      },
+      {
+        "answer": "TREE",
+        "clue": "Its leaves are for the healing of the nations"
+      },
+      {
+        "answer": "TEARS",
+        "clue": "God wipes away every one of them"
+      }
+    ]
   }
 ]

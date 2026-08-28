@@ -1,18 +1,51 @@
 // Sharing a prayer.
 //
-// Nothing here is public. A request is kept on this device and marked for a
-// ministry leader to see — there is no feed, no comments, and no way for one
-// young person's words to reach another's screen.
+// FLCC NEXT has no server, so a prayer written here goes nowhere by itself:
+// it is saved on this phone and nothing is transmitted. This screen used to
+// say "Sent to a ministry leader", which was false and is the worst kind of
+// false — a young person could write something serious believing an adult
+// would read it, and no adult ever would.
+//
+// So the screen now says what actually happens, and gives the one route that
+// really works without a server: the child sends it themselves, through the
+// phone's own share sheet, to a leader they choose.
 
-import { h, poster, label, display, art, pill, choice, note, toast } from '../core/ui.js';
+import { h, poster, label, display, art, pill, choice, note, toast, moment } from '../core/ui.js';
 import * as store from '../core/storage.js';
 import * as progress from '../core/progress.js';
-import { isKids } from '../core/profile.js';
+import { isKids, getUser, mode } from '../core/profile.js';
+import * as delivery from '../core/delivery.js';
+import { isConcerning } from '../core/safety.js';
 
 const MOODS = [
   ['thankful', 'THANKFUL'], ['worried', 'WORRIED'], ['sad', 'SAD'],
   ['scared', 'SCARED'], ['angry', 'ANGRY'], ['stuck', 'STUCK'],
 ];
+
+/**
+ * The only delivery this app can honestly offer: the young person sends it
+ * themselves. The share sheet hands it to whatever they already use to talk to
+ * a leader; where that is unavailable the text goes to the clipboard so they
+ * can paste it. Either way the words leave the phone only because they chose
+ * to send them.
+ */
+export async function sendToLeader(prayer) {
+  const body = `${prayer.content}\n\n— shared from FLCC NEXT`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'A prayer request', text: body });
+      return 'shared';
+    }
+  } catch {
+    return 'cancelled';               // the child backed out; that is their call
+  }
+  try {
+    await navigator.clipboard.writeText(body);
+    return 'copied';
+  } catch {
+    return 'manual';
+  }
+}
 
 export default async function prayerScreen(ctx) {
   let mood = null;
@@ -29,7 +62,7 @@ export default async function prayerScreen(ctx) {
   }));
 
   const choices = h('div', { class: 'choice-list', style: 'margin-top:1rem' },
-    ...[['leader', 'JUST A MINISTRY LEADER'], ['private', 'ONLY ME AND GOD']].map(([id, text_]) => {
+    ...[['leader', 'I WANT TO SHOW A LEADER'], ['private', 'ONLY ME AND GOD']].map(([id, text_]) => {
       const button = choice(text_, () => {
         visibility.value = id;
         [...choices.children].forEach((child) => child.removeAttribute('data-chosen'));
@@ -38,6 +71,18 @@ export default async function prayerScreen(ctx) {
       if (id === 'leader') button.dataset.chosen = '';
       return button;
     }));
+
+  // What this screen promises depends on whether the church has delivery
+  // switched on, so it asks first and says the weaker thing until it knows.
+  let canDeliver = false;
+  const note_ = h('p', { class: 'body dim', style: 'margin-top:1rem',
+    text: 'This is saved on your phone. Nothing is sent anywhere on its own. There is no public prayer feed, and nothing you write is shown to other young people.' });
+  delivery.available().then((yes) => {
+    canDeliver = yes;
+    note_.textContent = yes
+      ? 'Choosing a leader sends this to your ministry leaders, and only to them. There is no public prayer feed — nothing you write is shown to other young people. “Only me and God” never leaves this phone.'
+      : 'This is saved on your phone. Nothing is sent anywhere on its own. There is no public prayer feed, and nothing you write is shown to other young people. If you want a leader to see it, send it to them yourself after you save, or show them your phone.';
+  });
 
   const el = h('div', { style: 'display:contents' },
     poster({ tone: 'pink', tall: true, className: 'full' },
@@ -51,25 +96,79 @@ export default async function prayerScreen(ctx) {
     poster({ tone: 'paper', className: 'full' },
       label('Who sees this'),
       choices,
-      h('p', { class: 'body dim', style: 'margin-top:1rem',
-        text: 'There is no public prayer feed in FLCC NEXT. Nothing you write is shown to other young people.' }),
+      note_,
       h('div', { class: 'poster-foot' },
-        pill('Send it', () => {
+        pill('Save it', async (event) => {
           const body = text.value.trim();
           if (!body) { toast('Write something first.'); return; }
+
           const state = store.read(store.KEYS.prayers, { items: [] }) || { items: [] };
-          state.items.unshift({
+          const record = {
             id: `p${Date.now().toString(36)}`,
             date: new Date().toISOString(),
             mood,
             content: body,
             visibility: visibility.value,
             moderation_status: visibility.value === 'leader' ? 'pending' : 'private',
-          });
+            delivered: false,
+          };
+          state.items.unshift(record);
           store.write(store.KEYS.prayers, state);
           progress.complete('prayer', `${Date.now()}`);
-          toast(visibility.value === 'leader' ? 'Sent to a ministry leader.' : 'Kept between you and God.');
-          ctx.go('connect');
+
+          if (visibility.value !== 'leader') {
+            toast('Kept between you and God, on this phone.');
+            ctx.go('connect');
+            return;
+          }
+
+          // Saved first, sent second. If the send fails the words are already
+          // safe on the phone, and the young person is told plainly that it
+          // did not go — never the reverse.
+          const button = event && event.currentTarget;
+          if (button) { button.disabled = true; button.textContent = 'Sending…'; }
+          const sent = canDeliver
+            ? await delivery.send({
+              content: body,
+              mood,
+              firstName: (getUser() || {}).name,
+              ageGroup: mode(),
+              urgent: isConcerning(body),
+            })
+            : { delivered: false, reason: 'off' };
+          if (button) { button.disabled = false; button.textContent = 'Save it'; }
+
+          if (sent.delivered) {
+            record.delivered = true;
+            record.remoteId = sent.id;
+            record.deliveredAt = new Date().toISOString();
+            store.write(store.KEYS.prayers, state);
+            moment({
+              tone: 'sage',
+              eyebrow: 'Sent',
+              big: 'YOUR LEADERS HAVE IT.',
+              line: 'A ministry leader will read this. If it is urgent, please also tell an adult you trust today — an app is not a person.',
+              action: 'Done',
+              onclose: () => ctx.go('connect'),
+            });
+            return;
+          }
+
+          moment({
+            tone: 'pink',
+            eyebrow: 'Saved on this phone',
+            big: sent.reason === 'off' ? 'WANT A LEADER TO SEE IT?' : 'IT DID NOT SEND.',
+            line: sent.reason === 'off'
+              ? 'Nothing is sent on its own. Send it yourself, or show them your phone when you next see them.'
+              : 'Your words are safe on this phone, but they have not reached anyone. Send it yourself, or try again from Connect.',
+            action: 'Send it to a leader',
+            onclose: async () => {
+              const how = await sendToLeader(record);
+              if (how === 'copied') toast('Copied — paste it to your leader.');
+              else if (how === 'manual') toast('Show them your phone, or copy it from Connect.');
+              ctx.go('connect');
+            },
+          });
         }))),
 
     poster({ tone: 'paper', className: 'full' },

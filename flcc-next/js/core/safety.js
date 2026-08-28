@@ -10,9 +10,13 @@ const PATTERNS = [
   /\bi (?:want|wanna|need) to die\b/i,
   /\bsuicid(?:e|al)\b/i,
   /\b(?:cut|cutting|hurt|hurting|harm|harming) (?:myself|my ?self)\b/i,
-  /\bi (?:don'?t|dont) want to (?:live|be alive|exist)\b/i,
+  // "I don't want to be here any more" is one of the commonest ways a young
+  // person says this, and it was missing.
+  /\bi (?:don'?t|dont|do not) want to (?:live|be alive|exist|be here|wake up)\b/i,
+  /\bno (?:reason|point) (?:to|in) (?:living|being here|carrying on)\b/i,
+  /\bend it all\b/i,
   /\bbetter off (?:dead|without me)\b/i,
-  /\b(?:someone|somebody|he|she|they|my \w+) (?:is )?(?:hurt|hurting|hit|hitting|beat|beating) (?:me|us)\b/i,
+  /\b(?:someone|somebody|he|she|they|my \w+) (?:is )?(?:hurts?|hurting|hits?|hitting|beats?|beating) (?:me|us)\b/i,
   /\b(?:touch(?:ed|ing)?|touches) me\b[^.?!]*\b(?:private|secret|down there|inappropriate)\b/i,
   /\b(?:private parts|inappropriately touched)\b/i,
   /\bmade me (?:keep|promise)\b[^.?!]*\bsecret\b/i,

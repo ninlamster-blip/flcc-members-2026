@@ -59,7 +59,10 @@ export function forMode(value, current = mode()) {
 }
 
 export function getSettings() {
-  return { theme: 'system', motion: 'full', aiWorker: '', aiSecret: '', aiEnabled: false, ...(store.read(store.KEYS.settings, {}) || {}) };
+  // leaderKey is a ministry leader's own credential for reading the prayer
+  // queue. It lives only on a leader's device and is never shipped to a young
+  // person's phone — a secret on a child's phone is not a secret.
+  return { theme: 'system', motion: 'full', aiWorker: '', aiSecret: '', aiEnabled: false, leaderKey: '', ...(store.read(store.KEYS.settings, {}) || {}) };
 }
 
 export function saveSettings(patch) {

@@ -51,8 +51,14 @@ const ROUNDS = { 'Bible quiz': 'quiz', 'Speed quiz': 'speed', 'Our church': 'chu
 /** The topics a question may carry. A round deals some subset of these. */
 const TOPIC_NAMES = new Set(['bible', 'jesus', 'flcc']);
 
-/** A bank shorter than this many days of use gets flagged as repetitive. */
-export const THIN = 7;
+/**
+ * A bank shorter than this many days of use gets flagged as repetitive.
+ *
+ * Two weeks is the floor because that is roughly how long a child keeps
+ * opening something before recognising it. Raising this number is how you
+ * commission more writing: the dashboard immediately names what falls short.
+ */
+export const THIN = 14;
 
 /**
  * The speed quiz is a recall drill against a clock. Meeting a question you
@@ -61,6 +67,15 @@ export const THIN = 7;
  * warning nobody should act on.
  */
 export const DRILLS = new Set(['Speed quiz']);
+
+/**
+ * Rounds whose material only the church itself can write — the questions are
+ * facts about this church, its network and its vision, and nobody outside it
+ * can invent more without making things up. They are still measured and still
+ * warned about, because a thin bank is still thin; what they are exempt from
+ * is the test suite, which cannot fix them by being red.
+ */
+export const LOCAL = new Set(['Our church']);
 
 const eligible = (rows, band) => (rows || []).filter((row) =>
   !row.ageGroup || row.ageGroup === 'both' || row.ageGroup === band);
@@ -282,9 +297,15 @@ export function audit(bundle) {
   // ── Help lines ───────────────────────────────────────────────────────────
   const help = file('help-lines.json', { lines: [] });
   counts['Help lines'] = (help.lines || []).length;
+  // Unverified is the warning, and so is verified-by-nobody: deleting the flag
+  // without naming who checked the numbers is the failure mode worth catching,
+  // because it looks exactly like having done the work.
   if (help.verifyBeforeLaunch) {
     problems.push({ level: WARN, where: 'help-lines.json',
       text: 'is still marked unverified — check every number before this app reaches a child' });
+  } else if (!help.verifiedBy) {
+    problems.push({ level: WARN, where: 'help-lines.json',
+      text: 'is marked verified but nobody is named — record who checked the numbers, and when' });
   }
   for (const line of help.lines || []) {
     if (!line.name) problems.push({ level: ERROR, where: 'help-lines.json', text: 'a line has no name' });

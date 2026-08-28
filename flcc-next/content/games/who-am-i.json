@@ -113,62 +113,6 @@
   },
   {
     "clues": [
-      "I was found in a basket by a princess.",
-      "I argued with God about whether I could speak well enough.",
-      "I led a nation out of slavery and never entered the land myself."
-    ],
-    "answer": "Moses",
-    "options": [
-      "Moses",
-      "Joshua",
-      "Aaron"
-    ],
-    "fact": "He saw the promised land from a mountain but died before crossing into it."
-  },
-  {
-    "clues": [
-      "I looked after sheep before anyone thought I was important.",
-      "I wrote songs that people still sing.",
-      "I killed a giant with a stone, and later did something terrible that I could not undo."
-    ],
-    "answer": "David",
-    "options": [
-      "David",
-      "Saul",
-      "Solomon"
-    ],
-    "fact": "The Bible tells his worst story as plainly as his best one."
-  },
-  {
-    "clues": [
-      "I was an orphan raised by my cousin.",
-      "I became a queen without telling anyone who my people were.",
-      "I walked into a throne room uninvited, knowing it could kill me."
-    ],
-    "answer": "Esther",
-    "options": [
-      "Esther",
-      "Ruth",
-      "Deborah"
-    ],
-    "fact": "God is never once mentioned by name in her book."
-  },
-  {
-    "clues": [
-      "I was a foreigner, not an Israelite.",
-      "I refused to leave my mother-in-law when I had every reason to.",
-      "I gathered leftover grain in a field that belonged to a relative."
-    ],
-    "answer": "Ruth",
-    "options": [
-      "Ruth",
-      "Naomi",
-      "Rachel"
-    ],
-    "fact": "She became the great-grandmother of King David."
-  },
-  {
-    "clues": [
       "I once hunted Christians for a living.",
       "A light on a road knocked me down and blinded me.",
       "I wrote letters from prison that people still read every Sunday."
@@ -225,20 +169,6 @@
   },
   {
     "clues": [
-      "My father gave me a coat and my brothers hated me for it.",
-      "I read the meaning of dreams for a king.",
-      "I fed the same brothers who sold me."
-    ],
-    "answer": "Joseph",
-    "options": [
-      "Joseph",
-      "Benjamin",
-      "Judah"
-    ],
-    "fact": "“You meant evil against me, but God meant it for good.”"
-  },
-  {
-    "clues": [
       "I left my country without being told where I was going.",
       "I laughed when God promised me a son in old age.",
       "I climbed a mountain with my boy and a knife."
@@ -267,20 +197,6 @@
   },
   {
     "clues": [
-      "I was taken from my home as a teenager to serve a foreign king.",
-      "I would not stop praying, even when it was made a crime.",
-      "I spent a night with lions and walked out."
-    ],
-    "answer": "Daniel",
-    "options": [
-      "Daniel",
-      "Ezekiel",
-      "Nehemiah"
-    ],
-    "fact": "He served four kings across two empires without changing what he believed."
-  },
-  {
-    "clues": [
       "I called down fire on a soaked altar in front of hundreds.",
       "I ran away afterwards and asked to die.",
       "I heard God not in the earthquake but in a whisper."
@@ -306,34 +222,6 @@
       "Saul"
     ],
     "fact": "His last act was his most effective, and it cost him his life."
-  },
-  {
-    "clues": [
-      "I ran in the exact opposite direction from where God sent me.",
-      "I spent three days somewhere very dark and very wet.",
-      "I was angry when the city I preached to actually repented."
-    ],
-    "answer": "Jonah",
-    "options": [
-      "Jonah",
-      "Amos",
-      "Nahum"
-    ],
-    "fact": "His book ends on a question God asks him, and we never hear his answer."
-  },
-  {
-    "clues": [
-      "I was told to build something enormous for a reason nobody believed.",
-      "I spent months with a lot of animals and no dry land.",
-      "A bird came back with a leaf and I knew it was nearly over."
-    ],
-    "answer": "Noah",
-    "options": [
-      "Noah",
-      "Enoch",
-      "Methuselah"
-    ],
-    "fact": "He is described as walking with God in a generation that was not."
   },
   {
     "clues": [
@@ -558,5 +446,691 @@
       "Pilate"
     ],
     "fact": "His conversion is the moment the early church had to accept that the gospel was not theirs alone."
+  },
+  {
+    "clues": [
+      "I was the first, and I was made out of dust.",
+      "I gave every animal its name.",
+      "I hid among the trees when God came looking for me."
+    ],
+    "answer": "Adam",
+    "options": [
+      "Adam",
+      "Cain",
+      "Abel"
+    ],
+    "fact": "His name sounds like the Hebrew word for ground — the stuff he was made from."
+  },
+  {
+    "clues": [
+      "I was made from a rib while a man was asleep.",
+      "A serpent asked me a question I should have walked away from.",
+      "I am called the mother of all the living."
+    ],
+    "answer": "Eve",
+    "options": [
+      "Eve",
+      "Sarah",
+      "Hagar"
+    ],
+    "fact": "God's first promise about a rescuer was made to her, in the middle of the curse."
+  },
+  {
+    "clues": [
+      "I laughed when I overheard what God had promised.",
+      "I was ninety years old when my son was born.",
+      "I told my husband to have a child with my servant, and spent years regretting it."
+    ],
+    "answer": "Sarah",
+    "options": [
+      "Sarah",
+      "Rebekah",
+      "Rachel"
+    ],
+    "fact": "She laughed — and her son's name means “he laughs”."
+  },
+  {
+    "clues": [
+      "My father took me up a mountain with wood and a knife and no animal.",
+      "A ram caught in a thicket took my place.",
+      "My wife was found for me at a well by my father's servant."
+    ],
+    "answer": "Isaac",
+    "options": [
+      "Isaac",
+      "Jacob",
+      "Esau"
+    ],
+    "fact": "He was old enough to carry the wood, which means he was old enough to run."
+  },
+  {
+    "clues": [
+      "I watered ten camels for a stranger who was watching me.",
+      "My twins fought each other before they were born.",
+      "I helped my younger son trick his blind father."
+    ],
+    "answer": "Rebekah",
+    "options": [
+      "Rebekah",
+      "Rachel",
+      "Leah"
+    ],
+    "fact": "She said yes to leaving home for a marriage arranged with a man she had never met."
+  },
+  {
+    "clues": [
+      "A man worked seven years for me and was handed my sister instead.",
+      "So he worked another seven.",
+      "I died giving birth to my second son."
+    ],
+    "answer": "Rachel",
+    "options": [
+      "Rachel",
+      "Leah",
+      "Rebekah"
+    ],
+    "fact": "Her husband named that son Benjamin — “son of my right hand”."
+  },
+  {
+    "clues": [
+      "I did the talking because my brother said he could not.",
+      "I made a calf out of gold and then blamed the fire.",
+      "I became the first high priest."
+    ],
+    "answer": "Aaron",
+    "options": [
+      "Aaron",
+      "Moses",
+      "Hur"
+    ],
+    "fact": "The same man who made the golden calf was later trusted to carry the nation's sin before God."
+  },
+  {
+    "clues": [
+      "I was one of twelve men sent to look at the land.",
+      "Ten came back frightened. Two of us did not.",
+      "At eighty-five I asked for the hill country, not the easy part."
+    ],
+    "answer": "Caleb",
+    "options": [
+      "Caleb",
+      "Joshua",
+      "Othniel"
+    ],
+    "fact": "He waited forty years in the desert for a report he had got right the first time."
+  },
+  {
+    "clues": [
+      "I lived in the wall of a city that was about to fall.",
+      "I hid two spies under the flax on my roof.",
+      "A scarlet cord in my window saved my whole family."
+    ],
+    "answer": "Rahab",
+    "options": [
+      "Rahab",
+      "Deborah",
+      "Jael"
+    ],
+    "fact": "She appears in Matthew's family tree of Jesus — one of only a handful of women named there."
+  },
+  {
+    "clues": [
+      "A voice woke me three times before an old priest worked out who was calling.",
+      "I anointed the first king, and then the second.",
+      "I told a king that obeying God matters more than sacrificing to him."
+    ],
+    "answer": "Samuel",
+    "options": [
+      "Samuel",
+      "Eli",
+      "Nathan"
+    ],
+    "fact": "His mother had promised him to God before he existed, and kept the promise."
+  },
+  {
+    "clues": [
+      "I was the tallest man in Israel and they found me hiding among the luggage.",
+      "I threw a spear at the boy who played music to calm me down.",
+      "I visited a medium the night before my last battle."
+    ],
+    "answer": "Saul",
+    "options": [
+      "Saul",
+      "David",
+      "Solomon"
+    ],
+    "fact": "The people asked for a king so they could be like everyone else, and got exactly that."
+  },
+  {
+    "clues": [
+      "My father was the king and my closest friend was the man who would take his throne.",
+      "I gave him my robe, my sword and my bow.",
+      "I told him to run, knowing what it cost me."
+    ],
+    "answer": "Jonathan",
+    "options": [
+      "Jonathan",
+      "Absalom",
+      "Joab"
+    ],
+    "fact": "He chose his friend over his own inheritance, which almost nobody in that story does."
+  },
+  {
+    "clues": [
+      "I told a king a story about a poor man and one little lamb.",
+      "He was furious about the injustice in it.",
+      "Then I told him the man in the story was him."
+    ],
+    "answer": "Nathan",
+    "options": [
+      "Nathan",
+      "Samuel",
+      "Gad"
+    ],
+    "fact": "It is the moment a prophet risked his life to tell the truth to power, and it worked."
+  },
+  {
+    "clues": [
+      "I was ploughing a field when a cloak landed on my shoulders.",
+      "I asked for a double portion of my teacher's spirit.",
+      "I told a foreign general to go and wash seven times in a river."
+    ],
+    "answer": "Elisha",
+    "options": [
+      "Elisha",
+      "Elijah",
+      "Gehazi"
+    ],
+    "fact": "He burned his own ploughing equipment so he could not go back to the old job."
+  },
+  {
+    "clues": [
+      "I lost my husband and both my sons in a country that was not mine.",
+      "I told the neighbours to stop using my name and call me Bitter.",
+      "My son's widow refused to leave me."
+    ],
+    "answer": "Naomi",
+    "options": [
+      "Naomi",
+      "Ruth",
+      "Orpah"
+    ],
+    "fact": "The book that carries her daughter-in-law's name is really about her grief being answered."
+  },
+  {
+    "clues": [
+      "I spread a threatening letter out on the temple floor in front of God.",
+      "I was told to put my house in order, and I turned to the wall and wept.",
+      "I was given fifteen more years."
+    ],
+    "answer": "Hezekiah",
+    "options": [
+      "Hezekiah",
+      "Josiah",
+      "Uzziah"
+    ],
+    "fact": "He dug a tunnel through solid rock to bring water inside the city walls — you can still walk it."
+  },
+  {
+    "clues": [
+      "I became king when I was eight years old.",
+      "A lost book turned up while the temple was being repaired.",
+      "When they read it to me, I tore my clothes."
+    ],
+    "answer": "Josiah",
+    "options": [
+      "Josiah",
+      "Hezekiah",
+      "Joash"
+    ],
+    "fact": "A generation had lost the Scriptures inside their own temple and not noticed."
+  },
+  {
+    "clues": [
+      "I tasted a foreign king's wine before he drank it.",
+      "I asked for leave to go and rebuild a wall that was rubble.",
+      "We built with a tool in one hand and a weapon in the other."
+    ],
+    "answer": "Nehemiah",
+    "options": [
+      "Nehemiah",
+      "Ezra",
+      "Zerubbabel"
+    ],
+    "fact": "The wall took fifty-two days, with opposition every one of them."
+  },
+  {
+    "clues": [
+      "I was a scribe, and I brought the law back with me from exile.",
+      "I read it aloud from early morning until midday and the people wept.",
+      "I tore my clothes over what I found when I arrived."
+    ],
+    "answer": "Ezra",
+    "options": [
+      "Ezra",
+      "Nehemiah",
+      "Malachi"
+    ],
+    "fact": "He is the reason the returned exiles knew what they had come back to."
+  },
+  {
+    "clues": [
+      "I lost my children, my health and everything I owned inside a single day.",
+      "Three friends sat with me in silence for a week, which was the best thing they did.",
+      "God finally answered me with questions rather than explanations."
+    ],
+    "answer": "Job",
+    "options": [
+      "Job",
+      "Jeremiah",
+      "Habakkuk"
+    ],
+    "fact": "God never tells him why. He gets God instead of an answer, and it is enough."
+  },
+  {
+    "clues": [
+      "I saw the Lord high and lifted up, and I said I was finished.",
+      "A live coal from the altar was pressed to my lips.",
+      "Then I said: here I am, send me."
+    ],
+    "answer": "Isaiah",
+    "options": [
+      "Isaiah",
+      "Ezekiel",
+      "Jeremiah"
+    ],
+    "fact": "He volunteered before he was told where he was going."
+  },
+  {
+    "clues": [
+      "I told God I was too young, and was sent anyway.",
+      "I was lowered into a muddy cistern for saying what nobody wanted to hear.",
+      "I am the one remembered for weeping."
+    ],
+    "answer": "Jeremiah",
+    "options": [
+      "Jeremiah",
+      "Isaiah",
+      "Amos"
+    ],
+    "fact": "He preached for forty years and almost nobody listened. He kept going."
+  },
+  {
+    "clues": [
+      "I saw wheels within wheels.",
+      "God asked me whether a valley of dry bones could live, and I said: you know.",
+      "I acted my messages out instead of only saying them."
+    ],
+    "answer": "Ezekiel",
+    "options": [
+      "Ezekiel",
+      "Daniel",
+      "Zechariah"
+    ],
+    "fact": "He was a priest with no temple, sent to people who had lost everything."
+  },
+  {
+    "clues": [
+      "I noticed a foreign woman picking up leftover grain in my field.",
+      "I told my workers to drop extra for her on purpose.",
+      "I bought back her family's land so she would not be alone."
+    ],
+    "answer": "Boaz",
+    "options": [
+      "Boaz",
+      "Jesse",
+      "Obed"
+    ],
+    "fact": "His kindness cost him money and gained him a place in the family line of Jesus."
+  },
+  {
+    "clues": [
+      "I was a king and a priest at the same time, which was not allowed later.",
+      "I brought out bread and wine for a warrior coming home.",
+      "Hebrews compares Jesus to me."
+    ],
+    "answer": "Melchizedek",
+    "options": [
+      "Melchizedek",
+      "Aaron",
+      "Eli"
+    ],
+    "fact": "He appears in three verses of Genesis and is still being argued about."
+  },
+  {
+    "clues": [
+      "An angel found me at work in the temple and told me my wife would have a son.",
+      "I asked how I could be sure, and I could not speak for nine months.",
+      "I wrote his name on a tablet: John."
+    ],
+    "answer": "Zechariah",
+    "options": [
+      "Zechariah",
+      "Simeon",
+      "Eli"
+    ],
+    "fact": "The first word he spoke after nine months of silence was a song."
+  },
+  {
+    "clues": [
+      "I was old and had no children, and people had their theories about why.",
+      "My cousin came to visit and my baby jumped inside me.",
+      "The neighbours argued about my son's name and I overruled them."
+    ],
+    "answer": "Elizabeth",
+    "options": [
+      "Elizabeth",
+      "Anna",
+      "Hannah"
+    ],
+    "fact": "She was the first person to call Mary the mother of her Lord."
+  },
+  {
+    "clues": [
+      "I had been told I would not die before I saw the promised one.",
+      "I waited years in the temple courts.",
+      "I took a baby in my arms and said I could go in peace now."
+    ],
+    "answer": "Simeon",
+    "options": [
+      "Simeon",
+      "Zechariah",
+      "Nicodemus"
+    ],
+    "fact": "He warned Mary that a sword would pierce her own soul too."
+  },
+  {
+    "clues": [
+      "I was widowed after seven years of marriage and never left the temple again.",
+      "I was eighty-four when it happened.",
+      "I saw the baby and started telling everyone who was waiting."
+    ],
+    "answer": "Anna",
+    "options": [
+      "Anna",
+      "Elizabeth",
+      "Martha"
+    ],
+    "fact": "She is called a prophet, and her whole recorded ministry is one moment of recognition."
+  },
+  {
+    "clues": [
+      "I brought my more famous brother to Jesus first.",
+      "I found a boy with five loaves and two fish and thought it was worth mentioning.",
+      "I fished for a living before any of it."
+    ],
+    "answer": "Andrew",
+    "options": [
+      "Andrew",
+      "Philip",
+      "Thomas"
+    ],
+    "fact": "Every time he appears, he is bringing somebody to Jesus."
+  },
+  {
+    "clues": [
+      "Jesus asked me where we could buy bread, and I did the maths instead of trusting him.",
+      "I told a friend to come and see.",
+      "Some Greeks came to me when they wanted an introduction."
+    ],
+    "answer": "Philip",
+    "options": [
+      "Philip",
+      "Andrew",
+      "Nathanael"
+    ],
+    "fact": "He said eight months' wages would not buy enough bread. He was right, and it did not matter."
+  },
+  {
+    "clues": [
+      "I asked whether anything good could come out of Nazareth.",
+      "Jesus said he saw me under the fig tree before we ever met.",
+      "I went from sarcastic to worshipping in about a minute."
+    ],
+    "answer": "Nathanael",
+    "options": [
+      "Nathanael",
+      "Thomas",
+      "Matthew"
+    ],
+    "fact": "Jesus called him a man without deceit — after he had just been openly rude."
+  },
+  {
+    "clues": [
+      "I did the cooking while my sister sat and listened.",
+      "I complained about it to the guest.",
+      "When my brother died I told Jesus he was late, and then said I believed anyway."
+    ],
+    "answer": "Martha",
+    "options": [
+      "Martha",
+      "Mary",
+      "Salome"
+    ],
+    "fact": "Her confession — that Jesus is the Messiah — is as full as Peter's, and far less quoted."
+  },
+  {
+    "clues": [
+      "My sisters sent word that I was ill, and Jesus waited two days.",
+      "I had been in the tomb four days.",
+      "I came out still wrapped in the cloths."
+    ],
+    "answer": "Lazarus",
+    "options": [
+      "Lazarus",
+      "Jairus",
+      "Eutychus"
+    ],
+    "fact": "The crowd who saw it was the reason the authorities decided Jesus had to die."
+  },
+  {
+    "clues": [
+      "Seven demons came out of me.",
+      "I stood at the cross when most had gone.",
+      "I mistook the risen Jesus for the gardener."
+    ],
+    "answer": "Mary Magdalene",
+    "options": [
+      "Mary Magdalene",
+      "Martha",
+      "Joanna"
+    ],
+    "fact": "The first person to see the risen Jesus, and the first to be sent to tell others."
+  },
+  {
+    "clues": [
+      "I was a rich member of the council that condemned him.",
+      "I asked a Roman governor for the body.",
+      "I gave up the tomb I had bought for myself."
+    ],
+    "answer": "Joseph of Arimathea",
+    "options": [
+      "Joseph of Arimathea",
+      "Nicodemus",
+      "Gamaliel"
+    ],
+    "fact": "He was a secret disciple until the most dangerous possible moment to stop being one."
+  },
+  {
+    "clues": [
+      "My name was changed to mean son of encouragement.",
+      "I vouched for a former persecutor nobody else would go near.",
+      "I sold a field and laid the money at the apostles' feet."
+    ],
+    "answer": "Barnabas",
+    "options": [
+      "Barnabas",
+      "Silas",
+      "Stephen"
+    ],
+    "fact": "Without him there is no Paul in the church — nobody else would take the risk."
+  },
+  {
+    "clues": [
+      "I was flogged and locked in the inner cell with my friend.",
+      "We sang hymns at midnight and the other prisoners listened.",
+      "An earthquake opened the doors and we stayed put."
+    ],
+    "answer": "Silas",
+    "options": [
+      "Silas",
+      "Timothy",
+      "Titus"
+    ],
+    "fact": "They stayed because leaving would have cost the jailer his life."
+  },
+  {
+    "clues": [
+      "Paul left me on an island to put things in order.",
+      "I was a Greek, and my case settled an argument about whether Gentiles had to become Jews first.",
+      "A letter in the New Testament carries my name."
+    ],
+    "answer": "Titus",
+    "options": [
+      "Titus",
+      "Timothy",
+      "Philemon"
+    ],
+    "fact": "Paul refused to have him circumcised, and the gospel stayed a gift rather than a membership fee."
+  },
+  {
+    "clues": [
+      "I ran away from my master and met Paul in prison.",
+      "Paul sent me back with a letter asking for me to be received as a brother.",
+      "My name means useful."
+    ],
+    "answer": "Onesimus",
+    "options": [
+      "Onesimus",
+      "Tychicus",
+      "Epaphras"
+    ],
+    "fact": "The shortest letter Paul wrote is about one runaway slave, and it undermines the whole institution."
+  },
+  {
+    "clues": [
+      "I could preach, and I knew the Scriptures well.",
+      "A couple took me aside privately and filled in what I was missing.",
+      "Some people in Corinth started a fan club for me, which Paul shut down."
+    ],
+    "answer": "Apollos",
+    "options": [
+      "Apollos",
+      "Barnabas",
+      "Stephen"
+    ],
+    "fact": "He was corrected by a tentmaking couple and got better rather than defensive."
+  },
+  {
+    "clues": [
+      "I made clothes for widows who had nobody else to make them.",
+      "When I died they laid me upstairs and sent for Peter.",
+      "The widows showed him the coats I had made."
+    ],
+    "answer": "Dorcas",
+    "options": [
+      "Dorcas",
+      "Lydia",
+      "Priscilla"
+    ],
+    "fact": "Her ministry was sewing, and the church sent for an apostle when it stopped."
+  },
+  {
+    "clues": [
+      "I answered the door during a prayer meeting.",
+      "I was so glad I forgot to open it and ran back to tell everyone.",
+      "They told me I was out of my mind."
+    ],
+    "answer": "Rhoda",
+    "options": [
+      "Rhoda",
+      "Mary",
+      "Martha"
+    ],
+    "fact": "They were praying for Peter's release and refused to believe it when he knocked."
+  },
+  {
+    "clues": [
+      "God told me to go and lay hands on a man who had come to arrest people like me.",
+      "I said out loud that I had heard about him.",
+      "I went anyway, and called him brother."
+    ],
+    "answer": "Ananias",
+    "options": [
+      "Ananias",
+      "Barnabas",
+      "Stephen"
+    ],
+    "fact": "One obedient visit from a frightened man is where Paul's ministry actually begins."
+  },
+  {
+    "clues": [
+      "I was a doctor.",
+      "I wrote two books of the New Testament and named neither after myself.",
+      "In parts of my second book the story switches to “we”."
+    ],
+    "answer": "Luke",
+    "options": [
+      "Luke",
+      "Mark",
+      "Matthew"
+    ],
+    "fact": "He is the only Gentile writer in the New Testament, and the most careful historian in it."
+  },
+  {
+    "clues": [
+      "I left a missionary journey early and caused an argument about it.",
+      "Barnabas took a chance on me anyway.",
+      "Years later Paul asked for me by name because I was useful to him."
+    ],
+    "answer": "Mark",
+    "options": [
+      "Mark",
+      "Luke",
+      "Timothy"
+    ],
+    "fact": "The one who quit wrote the earliest Gospel."
+  },
+  {
+    "clues": [
+      "I collected taxes for the occupying power.",
+      "Jesus said two words to me and I left the money on the table.",
+      "I threw a party and invited everyone respectable people avoided."
+    ],
+    "answer": "Matthew",
+    "options": [
+      "Matthew",
+      "Zacchaeus",
+      "Levi"
+    ],
+    "fact": "His Gospel quotes the Old Testament more than any other — the traitor knew his Scriptures."
+  },
+  {
+    "clues": [
+      "I was a synagogue ruler and I begged in public, which cost me everything socially.",
+      "On the way to my house we were delayed by a woman in the crowd.",
+      "Word came that it was too late, and Jesus kept walking."
+    ],
+    "answer": "Jairus",
+    "options": [
+      "Jairus",
+      "Nicodemus",
+      "Cornelius"
+    ],
+    "fact": "Jesus told the mourners she was only sleeping and they laughed at him."
+  },
+  {
+    "clues": [
+      "I sat by the road and begged.",
+      "People told me to be quiet and I shouted louder.",
+      "Jesus asked what I wanted, which is a strange question to ask a blind man."
+    ],
+    "answer": "Bartimaeus",
+    "options": [
+      "Bartimaeus",
+      "Lazarus",
+      "Malchus"
+    ],
+    "fact": "He threw off his cloak to get up — for a beggar, that cloak was everything he owned."
   }
 ]

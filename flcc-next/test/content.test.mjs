@@ -88,6 +88,9 @@ test('every game exists in code, and every question can be answered', () => {
     assert.ok(row.options[row.answer] !== undefined, `quiz: "${row.q}" has no valid answer`);
     assert.ok(row.why, `quiz: "${row.q}" needs an explanation`);
   }
+  const whoAnswers = read('games/who-am-i.json').map((row) => row.answer);
+  assert.equal(new Set(whoAnswers).size, whoAnswers.length,
+    'two Who am I? rounds share an answer — a day could deal both, and the options would give it away');
   for (const row of read('games/who-am-i.json')) {
     assert.equal(row.clues.length, 3, `who-am-i: ${row.answer} needs three clues`);
     assert.ok(row.options.includes(row.answer), `who-am-i: ${row.answer} is not among its own options`);
@@ -125,9 +128,15 @@ test('achievements can actually be earned, and events can be attended', () => {
   }
 });
 
-test('help lines are named, and flagged for verification', () => {
+test('help lines are named, and either flagged or signed off by a person', () => {
   const help = read('help-lines.json');
-  assert.equal(help.verifyBeforeLaunch, true, 'a church must check these before launch');
+  // These are the numbers a frightened child is sent to. A church may clear the
+  // flag once it has actually checked them — but only by naming who did, and
+  // when. Silently deleting the flag is the thing this must not allow.
+  if (help.verifyBeforeLaunch !== true) {
+    assert.ok(help.verifiedBy, 'the flag is cleared but nobody is named as having checked the numbers');
+    assert.match(String(help.verifiedAt || ''), /^\d{4}-\d{2}-\d{2}$/, 'a verification needs a date');
+  }
   assert.ok(help.lines.length >= 3);
   for (const line of help.lines) {
     assert.ok(line.name, 'every line is named');

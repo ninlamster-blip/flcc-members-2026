@@ -13,6 +13,14 @@ const MUST_STOP = [
   'everyone would be better off dead without me',
   "I don't want to live any more",
   'my dad is hitting me',
+  // Present tense, which the patterns missed until a real prayer went through
+  // the urgency check and came back clean.
+  'my dad hits me',
+  'my mum hurts me',
+  "I don't want to be here any more",
+  // Written out in full, which is how it was actually typed.
+  'I do not want to be here any more and I cannot tell anyone',
+  'there is no point in carrying on',
   'someone is hurting me at home',
   'he touched me in my private parts',
   'he made me promise to keep it a secret',

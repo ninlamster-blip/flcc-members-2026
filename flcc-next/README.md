@@ -143,10 +143,10 @@ exists.
 
 | File | What it holds |
 |---|---|
-| `daily.json` | 35 daily words: verse, reflection, prayer, challenge, devotional |
+| `daily.json` | 49 daily words: verse, reflection, prayer, challenge, devotional |
 | `journeys.json` + `journeys/*.json` | Three journeys, 24 lessons — fifteen of them the life of Jesus |
 | `real-life.json` | 14 real-life topics |
-| `games.json` + `games/*.json` | The six games and their banks — 189 quiz questions, 40 Who am I? rounds, 54 verses, 16 crosswords |
+| `games.json` + `games/*.json` | The six games and their banks — 189 quiz questions, 81 Who am I? rounds, 104 verses, 36 crosswords |
 | `events.json` | What is on |
 | `achievements.json` | The collectible stamps and how each is earned |
 | `bible-books.json` | One line saying what each of the 66 books is |
@@ -179,18 +179,29 @@ How long that lasts, on the content shipped today:
 
 | | Kids | Teens |
 |---|---|---|
-| Daily word | 35 days | 35 days |
+| Daily word | 49 days | 49 days |
+| Verse builder | 18 days | 20 days |
+| Crossword | 18 days | 18 days |
 | Bible quiz | 14 days | 18 days |
-| Our church | 7 days | 10 days |
-| Who am I? | 8 days | 8 days |
-| Verse builder | 8 days | 10 days |
-| Crossword | 8 days | 8 days |
+| Who am I? | 16 days | 16 days |
 | Speed quiz | 7 days | 9 days |
+| Our church | 7 days | 10 days |
 
-The speed quiz is a recall drill against a clock, where meeting a question you
-have seen before is the exercise rather than a failure. Everything is held to a
-week minimum by `test/audit.test.mjs`, and each game shows its own position —
-"Day 3 of 8" — while you play it.
+Two of those are short on purpose, and for different reasons.
+
+The **speed quiz** is a recall drill against a clock: meeting a question you
+have seen before is the exercise, not a failure of the content. It is measured
+but never warned about.
+
+**Our church** is the one bank nobody outside FLCC can write. Its questions are
+facts about this church, its place in the N.E.C.K. network and its vision
+statement — inventing more would mean inventing facts about a real church. So
+it is exempt from the test suite, which cannot fix it by being red, but it is
+*not* exempt from the dashboard: it is measured and warned about like anything
+else, because a thin bank is thin whoever has to fill it.
+
+Everything else is held to a **fortnight minimum** by `test/audit.test.mjs`,
+and each game shows its own position — "Day 3 of 18" — while you play it.
 
 Every question is authored with the right answer written first, because that is
 the only way to check a bank of two hundred in a diff. The screens permute the
@@ -228,16 +239,98 @@ Which means two limits, stated on the page wherever they matter:
 *Undo everything* always gets back to the committed content. Nothing in Library
 can touch `bible/`: Scripture is not the ministry's to edit.
 
-`help-lines.json` is still marked `verifyBeforeLaunch: true`. **Every number in
-it must be checked by a person before this app reaches a child.** The dashboard
-warns about it on every load until that flag is removed.
+`help-lines.json` carries the numbers a frightened child is sent to, so it is
+signed rather than merely edited: `verifyBeforeLaunch` starts `true`, and a
+church clears it only by recording `verifiedBy` and `verifiedAt`. The audit
+warns while the flag is set **and** if the flag is cleared with nobody named —
+deleting it silently is the failure that looks like having done the work.
+
+These lines were checked by **Allen on 28 August 2026**. Re-check them whenever
+a number could have changed, and put your own name to it.
+
+## Prayers, and how they reach a leader
+
+This began as a failure. A teenager shared a prayer, the app said *"Sent to a
+ministry leader"*, and nothing had been sent anywhere — there was no server, so
+there was no delivery, only a promise. A prayer sat unread on a phone.
+
+There is now real delivery, and one rule governs all of it: **the app never
+reports a delivery that has not happened.** The confirmation a young person
+sees is the Worker's own, not an assumption.
+
+### Turning it on
+
+Delivery rides on the same Worker that serves the app. One secret switches it
+on:
+
+> Cloudflare → Workers → your Worker → Settings → Variables and Secrets → Add →
+> **Secret**, name `NEXT_LEADER_KEY`, value a long random string.
+
+`KASAMA_DB` is already bound in [`wrangler.toml`](../wrangler.toml); the table
+creates itself on first use. Give the key to ministry leaders only, and enter
+it in the dashboard under **Prayers → Ministry leader key**.
+
+Until both the database and the key exist, `/ping` reports `nextPrayers: false`
+and the app says prayers stay on the phone. **No key, no feature** — because
+without a key nobody could ever read what was sent, and accepting a child's
+prayer into a place no one can read is worse than not accepting it.
+
+### What happens when a young person sends one
+
+1. It is saved on their phone **first**, so nothing is lost if the send fails.
+2. It is posted to `/api/next/prayers`.
+3. Only if the Worker confirms it does the app say **"Your leaders have it"** —
+   and even then it adds that an app is not a person and to tell a trusted
+   adult today if it is urgent.
+4. If it does not send — switched off, offline, refused — the app says so
+   plainly and offers the phone's own share sheet instead. **Connect** lists
+   anything not yet sent, with a retry and a send-it-yourself.
+
+A prayer marked *"only me and God"* is never sent. It has no route off the
+device, by design.
+
+### What a leader sees, and what is stored
+
+The words, the mood, the first name chosen at onboarding, and the age group.
+No surname, no device id, no location, nothing linked to the rest of the app.
+Reads require the key, always: an unset secret means **closed**, never open —
+the opposite of `PROXY_SECRET`, because defaulting a minor's disclosure to
+readable would be indefensible.
+
+Prayers that trip the device's own safety check are marked **urgent** and
+sorted first, with the count called out at the top of the queue. That flag is
+a sort order, never a gate — a prayer is delivered whether or not it trips.
+
+Prayers are deleted after **90 days** (`NEXT_PRAYER_RETENTION_DAYS`), swept by
+the Worker's hourly cron. Keeping every prayer a child has ever written,
+forever, is a liability rather than a ministry.
+
+### What this still is not
+
+There are no accounts, so a young person cannot see their own sent prayers from
+a second device, and a leader cannot reply inside the app. Replies happen in
+person, which for a group this size is the right shape anyway.
 
 ## Ask NEXT
 
-Off by default. A ministry leader turns it on in the dashboard by pointing it
-at a proxy they deploy, so no API key ever reaches a phone —
-[`ask-proxy/worker.js`](../ask-proxy/worker.js) in this repository is the same
-proxy the FLCC Members app uses, and `POST /proxy` is the endpoint.
+Off by default, and turned on in the dashboard under **Ask NEXT**.
+
+There is no separate proxy to deploy. [`wrangler.toml`](../wrangler.toml)
+publishes this repository as a single Cloudflare Worker —
+[`ask-proxy/worker.js`](../ask-proxy/worker.js) is its entry point and the site
+is its assets — so the proxy answers on `POST /proxy` at **the same origin the
+app is served from**. Paste that origin into the Worker address field; the app
+appends `/proxy` itself. It is the same proxy the FLCC Members app uses, which
+means the API key lives on the Worker and never on a phone.
+
+Before switching it on, open `<origin>/ping`. It reports `keySet` — whether
+`ANTHROPIC_API_KEY` is set as a Worker Secret — and `secretRequired`, whether
+`PROXY_SECRET` is set and must also be entered. Then use **Send a test
+question** in the dashboard, which does a real round trip and shows the five
+parts back, so a misconfiguration surfaces to a leader rather than to a child.
+
+Settings are stored per origin, so turning it on at a preview URL does not
+carry to production.
 
 What it will not do, enforced in `js/core/ai.js` and tested in
 `test/ai.test.mjs`:

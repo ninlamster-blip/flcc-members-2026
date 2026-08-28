@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { audit, FILES, PER_DAY, THIN, DRILLS } from '../js/admin/audit.js';
+import { audit, FILES, PER_DAY, THIN, DRILLS, LOCAL } from '../js/admin/audit.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
 
@@ -73,22 +73,52 @@ test('a file that fails to load is reported rather than crashing the page', () =
   assert.ok(errors(result).every((problem) => problem.where && problem.text));
 });
 
-test('the unverified help lines are flagged until someone checks them', () => {
+test('help lines signed off by a named person raise nothing', () => {
   const warned = audit(bundle()).problems
     .filter((problem) => problem.level === 'warning' && problem.where === 'help-lines.json');
-  assert.equal(warned.length, 1);
-  assert.match(warned[0].text, /unverified/);
+  assert.deepEqual(warned, [], 'a verified, signed file should be quiet');
+});
+
+test('an unverified or unsigned help-line file is flagged', () => {
+  const base = read('help-lines.json');
+
+  const unverified = audit(bundle({ 'help-lines.json': { ...base, verifyBeforeLaunch: true } })).problems
+    .filter((problem) => problem.where === 'help-lines.json');
+  assert.equal(unverified.length, 1);
+  assert.match(unverified[0].text, /unverified/);
+
+  // The failure mode that looks like success: the flag deleted, nobody named.
+  const unsigned = { ...base, verifyBeforeLaunch: false };
+  delete unsigned.verifiedBy;
+  const flagged = audit(bundle({ 'help-lines.json': unsigned })).problems
+    .filter((problem) => problem.where === 'help-lines.json');
+  assert.equal(flagged.length, 1);
+  assert.match(flagged[0].text, /nobody is named/);
 });
 
 // ── Rotation ───────────────────────────────────────────────────────────────
 
-test('no bank in the shipped content runs dry inside a week', () => {
+test('no bank we can write ourselves runs dry inside a fortnight', () => {
   const { rotation } = audit(bundle());
   assert.ok(rotation.length, 'the audit should report rotation at all');
   for (const run of rotation) {
     if (DRILLS.has(run.what)) continue;          // a speed drill is meant to repeat
+    if (LOCAL.has(run.what)) continue;           // only the church can write these
     assert.ok(run.days >= THIN,
       `${run.what} (${run.band}) lasts ${run.days} days on ${run.total} items — add more`);
+  }
+});
+
+test('the church-authored bank is still measured and still warned about', () => {
+  // Exempt from the suite, not from the dashboard: a thin bank is thin whether
+  // or not this repository is the thing that can fix it.
+  const { rotation, problems } = audit(bundle());
+  const local = rotation.filter((run) => LOCAL.has(run.what));
+  assert.ok(local.length, 'the church bank should still be measured');
+  for (const run of local) {
+    if (run.days >= THIN) continue;
+    assert.ok(problems.some((problem) => problem.where === `${run.what} · ${run.band}` && /comes round again/.test(problem.text)),
+      `${run.what} (${run.band}) is thin but the dashboard says nothing`);
   }
 });
 

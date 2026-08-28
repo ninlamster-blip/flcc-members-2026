@@ -79,6 +79,13 @@ Two consequences worth stating plainly, because the dashboard states them too:
 
 1. **Nothing crosses devices.** A young person who opens FLCC NEXT on a second
    phone starts again. There is no account to restore from.
+1a. **One exception, added deliberately.** Prayers marked for a leader are
+   posted to `/api/next/prayers` on the same Worker that serves the app, and
+   read back by a leader holding `NEXT_LEADER_KEY`. It is the only thing in
+   FLCC NEXT that leaves the device, it is opt-in per prayer, and it exists
+   because the alternative — telling a child their prayer was sent when it was
+   not — is worse than the privacy cost. Retention is 90 days.
+
 2. **There are no church-wide numbers.** Progress, prayers and RSVPs exist only
    where they were typed, so the dashboard's figures are always this-device
    figures and are labelled as such.
@@ -151,10 +158,13 @@ by a network failure:
    and the age group. `test/ai.test.mjs` seeds the device with a name, a
    birthday, a saved prayer and an Ask thread, then asserts none of it can
    appear in the request payload.
-3. **`content/help-lines.json`** carries `verifyBeforeLaunch: true` until a
-   person has checked every number in it. The audit warns on every dashboard
-   load while that flag is set, and `test/audit.test.mjs` asserts the warning
-   exists.
+3. **`content/help-lines.json`** is signed, not merely edited.
+   `verifyBeforeLaunch` starts `true`; clearing it requires recording
+   `verifiedBy` and `verifiedAt`. The audit warns while the flag is set and
+   also when it has been cleared with nobody named, because a silently deleted
+   flag is indistinguishable from a checked one. `test/audit.test.mjs` asserts
+   both warnings fire, and `test/content.test.mjs` refuses a cleared flag
+   without a name and a dated sign-off.
 
 ## Tests
 
