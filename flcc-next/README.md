@@ -248,34 +248,68 @@ deleting it silently is the failure that looks like having done the work.
 These lines were checked by **Allen on 28 August 2026**. Re-check them whenever
 a number could have changed, and put your own name to it.
 
-## Prayers do not send themselves
+## Prayers, and how they reach a leader
 
-Worth stating plainly, because the app used to imply otherwise. There is no
-server, so a prayer written in FLCC NEXT is saved on that phone and goes
-nowhere on its own. It cannot appear on a leader's device, because there is no
-transport between the two.
+This began as a failure. A teenager shared a prayer, the app said *"Sent to a
+ministry leader"*, and nothing had been sent anywhere — there was no server, so
+there was no delivery, only a promise. A prayer sat unread on a phone.
 
-The screen said "Sent to a ministry leader" anyway. That was false, and false
-in the way that matters most: a young person could write something serious
-believing an adult would read it, and no adult ever would. A prayer written on
-a teenager's phone was found sitting there unread for exactly this reason.
+There is now real delivery, and one rule governs all of it: **the app never
+reports a delivery that has not happened.** The confirmation a young person
+sees is the Worker's own, not an assumption.
 
-What it says and does now:
+### Turning it on
 
-- The choice is **"I want to show a leader"**, not "just a ministry leader" —
-  it is about who you intend to show, not about delivery.
-- Saving says it is saved *on this phone* and that nothing is sent on its own.
-- Saving a leader-marked prayer then offers **Send it to a leader**, which uses
-  the phone's own share sheet (falling back to the clipboard) so the young
-  person sends it themselves, to someone they choose.
-- **Connect** lists leader-marked prayers still sitting on the phone, each with
-  its own send action, so one saved earlier is not stranded.
+Delivery rides on the same Worker that serves the app. One secret switches it
+on:
 
-The words leave the device only because a young person chose to send them.
-Real delivery — a leader seeing requests from the whole group without being
-handed a phone — needs the server in [ARCHITECTURE.md](ARCHITECTURE.md), and
-storing minors' prayer requests server-side is a decision a church should make
-deliberately rather than inherit from a default.
+> Cloudflare → Workers → your Worker → Settings → Variables and Secrets → Add →
+> **Secret**, name `NEXT_LEADER_KEY`, value a long random string.
+
+`KASAMA_DB` is already bound in [`wrangler.toml`](../wrangler.toml); the table
+creates itself on first use. Give the key to ministry leaders only, and enter
+it in the dashboard under **Prayers → Ministry leader key**.
+
+Until both the database and the key exist, `/ping` reports `nextPrayers: false`
+and the app says prayers stay on the phone. **No key, no feature** — because
+without a key nobody could ever read what was sent, and accepting a child's
+prayer into a place no one can read is worse than not accepting it.
+
+### What happens when a young person sends one
+
+1. It is saved on their phone **first**, so nothing is lost if the send fails.
+2. It is posted to `/api/next/prayers`.
+3. Only if the Worker confirms it does the app say **"Your leaders have it"** —
+   and even then it adds that an app is not a person and to tell a trusted
+   adult today if it is urgent.
+4. If it does not send — switched off, offline, refused — the app says so
+   plainly and offers the phone's own share sheet instead. **Connect** lists
+   anything not yet sent, with a retry and a send-it-yourself.
+
+A prayer marked *"only me and God"* is never sent. It has no route off the
+device, by design.
+
+### What a leader sees, and what is stored
+
+The words, the mood, the first name chosen at onboarding, and the age group.
+No surname, no device id, no location, nothing linked to the rest of the app.
+Reads require the key, always: an unset secret means **closed**, never open —
+the opposite of `PROXY_SECRET`, because defaulting a minor's disclosure to
+readable would be indefensible.
+
+Prayers that trip the device's own safety check are marked **urgent** and
+sorted first, with the count called out at the top of the queue. That flag is
+a sort order, never a gate — a prayer is delivered whether or not it trips.
+
+Prayers are deleted after **90 days** (`NEXT_PRAYER_RETENTION_DAYS`), swept by
+the Worker's hourly cron. Keeping every prayer a child has ever written,
+forever, is a liability rather than a ministry.
+
+### What this still is not
+
+There are no accounts, so a young person cannot see their own sent prayers from
+a second device, and a leader cannot reply inside the app. Replies happen in
+person, which for a group this size is the right shape anyway.
 
 ## Ask NEXT
 

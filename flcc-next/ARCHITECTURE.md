@@ -79,6 +79,13 @@ Two consequences worth stating plainly, because the dashboard states them too:
 
 1. **Nothing crosses devices.** A young person who opens FLCC NEXT on a second
    phone starts again. There is no account to restore from.
+1a. **One exception, added deliberately.** Prayers marked for a leader are
+   posted to `/api/next/prayers` on the same Worker that serves the app, and
+   read back by a leader holding `NEXT_LEADER_KEY`. It is the only thing in
+   FLCC NEXT that leaves the device, it is opt-in per prayer, and it exists
+   because the alternative — telling a child their prayer was sent when it was
+   not — is worse than the privacy cost. Retention is 90 days.
+
 2. **There are no church-wide numbers.** Progress, prayers and RSVPs exist only
    where they were typed, so the dashboard's figures are always this-device
    figures and are labelled as such.

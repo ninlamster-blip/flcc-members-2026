@@ -5,6 +5,9 @@ import * as content from '../core/content.js';
 import * as store from '../core/storage.js';
 import { forMode } from '../core/profile.js';
 import { sendToLeader } from './prayer.js';
+import * as delivery from '../core/delivery.js';
+import { getUser, mode } from '../core/profile.js';
+import { isConcerning } from '../core/safety.js';
 
 export default async function connectScreen(ctx) {
   const prayers = (store.read(store.KEYS.prayers, { items: [] }) || {}).items || [];
@@ -25,23 +28,53 @@ export default async function connectScreen(ctx) {
   // Prayers already written and marked for a leader. Without this a young
   // person who saved one has no way to get it to anybody — which is exactly
   // how a prayer goes unread.
-  const waiting = prayers.filter((prayer) => prayer.visibility === 'leader');
+  const waiting = prayers.filter((prayer) => prayer.visibility === 'leader' && !prayer.delivered);
   const sendRow = (prayer) => {
-    const button = pill('Send it', async () => {
+    const state = h('p', { class: 'label dim', style: 'margin-top:.5rem', text: 'Not sent yet' });
+    const row = h('div', { style: 'padding:.8rem 0;border-top:1px solid var(--ink-12)' },
+      h('p', { class: 'body', text: prayer.content }), state);
+
+    // Try the church's own delivery first; the share sheet is the fallback,
+    // and either way the label only changes on a real result.
+    const retry = pill('Send it', async () => {
+      state.textContent = 'Sending…';
+      const sent = await delivery.send({
+        content: prayer.content,
+        mood: prayer.mood,
+        firstName: (getUser() || {}).name,
+        ageGroup: mode(),
+        urgent: isConcerning(prayer.content),
+      });
+      if (sent.delivered) {
+        const saved = store.read(store.KEYS.prayers, { items: [] }) || { items: [] };
+        const mine = (saved.items || []).find((one) => one.id === prayer.id);
+        if (mine) { mine.delivered = true; mine.remoteId = sent.id; mine.deliveredAt = new Date().toISOString(); }
+        store.write(store.KEYS.prayers, saved);
+        state.textContent = 'Sent to your leaders';
+        retry.remove();
+        byHand.remove();
+        return;
+      }
+      state.textContent = sent.reason === 'off'
+        ? 'Sending is not switched on — send it yourself below'
+        : 'That did not send. Try again, or send it yourself below';
+    }, { quiet: true });
+
+    const byHand = pill('Send it myself', async () => {
       const how = await sendToLeader(prayer);
       if (how === 'shared') ctx.toast('Sent from your phone.');
       else if (how === 'copied') ctx.toast('Copied — paste it to your leader.');
       else if (how === 'manual') ctx.toast('Show them your phone.');
     }, { quiet: true });
-    return h('div', { style: 'padding:.8rem 0;border-top:1px solid var(--ink-12)' },
-      h('p', { class: 'body', text: prayer.content }),
-      h('div', { style: 'margin-top:.6rem' }, button));
+
+    row.appendChild(h('div', { class: 'pill-row', style: 'margin-top:.6rem' }, retry, byHand));
+    return row;
   };
 
   const waitingBlock = waiting.length
     ? poster({ tone: 'paper', className: 'full' },
-      label(`On this phone · ${waiting.length}`),
-      h('p', { class: 'body dim', text: 'You marked these for a leader. They are still here — nothing sends itself.' }),
+      label(`Not sent yet · ${waiting.length}`),
+      h('p', { class: 'body dim', text: 'You marked these for a leader, and they have not reached anyone yet.' }),
       h('div', { style: 'margin-top:.4rem' }, ...waiting.slice(0, 5).map(sendRow)))
     : null;
 
