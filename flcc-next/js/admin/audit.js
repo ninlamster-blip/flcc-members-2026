@@ -297,9 +297,15 @@ export function audit(bundle) {
   // ── Help lines ───────────────────────────────────────────────────────────
   const help = file('help-lines.json', { lines: [] });
   counts['Help lines'] = (help.lines || []).length;
+  // Unverified is the warning, and so is verified-by-nobody: deleting the flag
+  // without naming who checked the numbers is the failure mode worth catching,
+  // because it looks exactly like having done the work.
   if (help.verifyBeforeLaunch) {
     problems.push({ level: WARN, where: 'help-lines.json',
       text: 'is still marked unverified — check every number before this app reaches a child' });
+  } else if (!help.verifiedBy) {
+    problems.push({ level: WARN, where: 'help-lines.json',
+      text: 'is marked verified but nobody is named — record who checked the numbers, and when' });
   }
   for (const line of help.lines || []) {
     if (!line.name) problems.push({ level: ERROR, where: 'help-lines.json', text: 'a line has no name' });

@@ -239,16 +239,35 @@ Which means two limits, stated on the page wherever they matter:
 *Undo everything* always gets back to the committed content. Nothing in Library
 can touch `bible/`: Scripture is not the ministry's to edit.
 
-`help-lines.json` is still marked `verifyBeforeLaunch: true`. **Every number in
-it must be checked by a person before this app reaches a child.** The dashboard
-warns about it on every load until that flag is removed.
+`help-lines.json` carries the numbers a frightened child is sent to, so it is
+signed rather than merely edited: `verifyBeforeLaunch` starts `true`, and a
+church clears it only by recording `verifiedBy` and `verifiedAt`. The audit
+warns while the flag is set **and** if the flag is cleared with nobody named —
+deleting it silently is the failure that looks like having done the work.
+
+These lines were checked by **Allen on 28 August 2026**. Re-check them whenever
+a number could have changed, and put your own name to it.
 
 ## Ask NEXT
 
-Off by default. A ministry leader turns it on in the dashboard by pointing it
-at a proxy they deploy, so no API key ever reaches a phone —
-[`ask-proxy/worker.js`](../ask-proxy/worker.js) in this repository is the same
-proxy the FLCC Members app uses, and `POST /proxy` is the endpoint.
+Off by default, and turned on in the dashboard under **Ask NEXT**.
+
+There is no separate proxy to deploy. [`wrangler.toml`](../wrangler.toml)
+publishes this repository as a single Cloudflare Worker —
+[`ask-proxy/worker.js`](../ask-proxy/worker.js) is its entry point and the site
+is its assets — so the proxy answers on `POST /proxy` at **the same origin the
+app is served from**. Paste that origin into the Worker address field; the app
+appends `/proxy` itself. It is the same proxy the FLCC Members app uses, which
+means the API key lives on the Worker and never on a phone.
+
+Before switching it on, open `<origin>/ping`. It reports `keySet` — whether
+`ANTHROPIC_API_KEY` is set as a Worker Secret — and `secretRequired`, whether
+`PROXY_SECRET` is set and must also be entered. Then use **Send a test
+question** in the dashboard, which does a real round trip and shows the five
+parts back, so a misconfiguration surfaces to a leader rather than to a child.
+
+Settings are stored per origin, so turning it on at a preview URL does not
+carry to production.
 
 What it will not do, enforced in `js/core/ai.js` and tested in
 `test/ai.test.mjs`:

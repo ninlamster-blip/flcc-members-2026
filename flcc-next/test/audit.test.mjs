@@ -73,11 +73,27 @@ test('a file that fails to load is reported rather than crashing the page', () =
   assert.ok(errors(result).every((problem) => problem.where && problem.text));
 });
 
-test('the unverified help lines are flagged until someone checks them', () => {
+test('help lines signed off by a named person raise nothing', () => {
   const warned = audit(bundle()).problems
     .filter((problem) => problem.level === 'warning' && problem.where === 'help-lines.json');
-  assert.equal(warned.length, 1);
-  assert.match(warned[0].text, /unverified/);
+  assert.deepEqual(warned, [], 'a verified, signed file should be quiet');
+});
+
+test('an unverified or unsigned help-line file is flagged', () => {
+  const base = read('help-lines.json');
+
+  const unverified = audit(bundle({ 'help-lines.json': { ...base, verifyBeforeLaunch: true } })).problems
+    .filter((problem) => problem.where === 'help-lines.json');
+  assert.equal(unverified.length, 1);
+  assert.match(unverified[0].text, /unverified/);
+
+  // The failure mode that looks like success: the flag deleted, nobody named.
+  const unsigned = { ...base, verifyBeforeLaunch: false };
+  delete unsigned.verifiedBy;
+  const flagged = audit(bundle({ 'help-lines.json': unsigned })).problems
+    .filter((problem) => problem.where === 'help-lines.json');
+  assert.equal(flagged.length, 1);
+  assert.match(flagged[0].text, /nobody is named/);
 });
 
 // ── Rotation ───────────────────────────────────────────────────────────────

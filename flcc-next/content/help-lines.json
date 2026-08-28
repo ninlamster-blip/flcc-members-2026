@@ -1,5 +1,7 @@
 {
-  "verifyBeforeLaunch": true,
+  "verifyBeforeLaunch": false,
+  "verifiedBy": "Allen",
+  "verifiedAt": "2026-08-28",
   "lines": [
     {
       "name": "A trusted adult",

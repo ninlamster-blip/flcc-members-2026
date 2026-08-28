@@ -151,10 +151,13 @@ by a network failure:
    and the age group. `test/ai.test.mjs` seeds the device with a name, a
    birthday, a saved prayer and an Ask thread, then asserts none of it can
    appear in the request payload.
-3. **`content/help-lines.json`** carries `verifyBeforeLaunch: true` until a
-   person has checked every number in it. The audit warns on every dashboard
-   load while that flag is set, and `test/audit.test.mjs` asserts the warning
-   exists.
+3. **`content/help-lines.json`** is signed, not merely edited.
+   `verifyBeforeLaunch` starts `true`; clearing it requires recording
+   `verifiedBy` and `verifiedAt`. The audit warns while the flag is set and
+   also when it has been cleared with nobody named, because a silently deleted
+   flag is indistinguishable from a checked one. `test/audit.test.mjs` asserts
+   both warnings fire, and `test/content.test.mjs` refuses a cleared flag
+   without a name and a dated sign-off.
 
 ## Tests
 

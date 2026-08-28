@@ -128,9 +128,15 @@ test('achievements can actually be earned, and events can be attended', () => {
   }
 });
 
-test('help lines are named, and flagged for verification', () => {
+test('help lines are named, and either flagged or signed off by a person', () => {
   const help = read('help-lines.json');
-  assert.equal(help.verifyBeforeLaunch, true, 'a church must check these before launch');
+  // These are the numbers a frightened child is sent to. A church may clear the
+  // flag once it has actually checked them — but only by naming who did, and
+  // when. Silently deleting the flag is the thing this must not allow.
+  if (help.verifyBeforeLaunch !== true) {
+    assert.ok(help.verifiedBy, 'the flag is cleared but nobody is named as having checked the numbers');
+    assert.match(String(help.verifiedAt || ''), /^\d{4}-\d{2}-\d{2}$/, 'a verification needs a date');
+  }
   assert.ok(help.lines.length >= 3);
   for (const line of help.lines) {
     assert.ok(line.name, 'every line is named');
