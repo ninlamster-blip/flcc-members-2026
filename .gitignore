@@ -17,3 +17,7 @@ run-the-race/node_modules/
 
 # Local screenshot output (not part of the site)
 .screenshots/
+
+# Bible source XML downloaded by scripts/build-next-bible.mjs (the parsed
+# output under flcc-next/bible/ is committed; these 17MB of source are not)
+.bible-sources/

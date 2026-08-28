@@ -1,0 +1,823 @@
+{
+  "built": "2026-08-28",
+  "translations": [
+    {
+      "code": "web",
+      "name": "World English Bible",
+      "short": "WEB",
+      "language": "English",
+      "note": "Modern English, and the one the app quotes by default.",
+      "licence": "Public domain"
+    },
+    {
+      "code": "bbe",
+      "name": "Bible in Basic English",
+      "short": "BBE",
+      "language": "Easy English",
+      "note": "Written with about a thousand words, so a younger reader can follow it alone.",
+      "licence": "Public domain"
+    },
+    {
+      "code": "tgl",
+      "name": "Ang Dating Biblia (1905)",
+      "short": "ADB",
+      "language": "Tagalog",
+      "note": "Ang Biblia sa Tagalog — the wording most FLCC parents grew up hearing.",
+      "licence": "Public domain"
+    }
+  ],
+  "books": [
+    {
+      "n": 1,
+      "name": "Genesis",
+      "tagalog": "Genesis",
+      "testament": "old",
+      "chapters": 50,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 2,
+      "name": "Exodus",
+      "tagalog": "Exodo",
+      "testament": "old",
+      "chapters": 40,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 3,
+      "name": "Leviticus",
+      "tagalog": "Levitico",
+      "testament": "old",
+      "chapters": 27,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 4,
+      "name": "Numbers",
+      "tagalog": "Mga Bilang",
+      "testament": "old",
+      "chapters": 36,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 5,
+      "name": "Deuteronomy",
+      "tagalog": "Deuteronomio",
+      "testament": "old",
+      "chapters": 34,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 6,
+      "name": "Joshua",
+      "tagalog": "Josue",
+      "testament": "old",
+      "chapters": 24,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 7,
+      "name": "Judges",
+      "tagalog": "Mga Hukom",
+      "testament": "old",
+      "chapters": 21,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 8,
+      "name": "Ruth",
+      "tagalog": "Ruth",
+      "testament": "old",
+      "chapters": 4,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 9,
+      "name": "1 Samuel",
+      "tagalog": "1 Samuel",
+      "testament": "old",
+      "chapters": 31,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 10,
+      "name": "2 Samuel",
+      "tagalog": "2 Samuel",
+      "testament": "old",
+      "chapters": 24,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 11,
+      "name": "1 Kings",
+      "tagalog": "1 Mga Hari",
+      "testament": "old",
+      "chapters": 22,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 12,
+      "name": "2 Kings",
+      "tagalog": "2 Mga Hari",
+      "testament": "old",
+      "chapters": 25,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 13,
+      "name": "1 Chronicles",
+      "tagalog": "1 Mga Cronica",
+      "testament": "old",
+      "chapters": 29,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 14,
+      "name": "2 Chronicles",
+      "tagalog": "2 Mga Cronica",
+      "testament": "old",
+      "chapters": 36,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 15,
+      "name": "Ezra",
+      "tagalog": "Ezra",
+      "testament": "old",
+      "chapters": 10,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 16,
+      "name": "Nehemiah",
+      "tagalog": "Nehemias",
+      "testament": "old",
+      "chapters": 13,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 17,
+      "name": "Esther",
+      "tagalog": "Ester",
+      "testament": "old",
+      "chapters": 10,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 18,
+      "name": "Job",
+      "tagalog": "Job",
+      "testament": "old",
+      "chapters": 42,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 19,
+      "name": "Psalms",
+      "tagalog": "Mga Awit",
+      "testament": "old",
+      "chapters": 150,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 20,
+      "name": "Proverbs",
+      "tagalog": "Mga Kawikaan",
+      "testament": "old",
+      "chapters": 31,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 21,
+      "name": "Ecclesiastes",
+      "tagalog": "Eclesiastes",
+      "testament": "old",
+      "chapters": 12,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 22,
+      "name": "Song of Solomon",
+      "tagalog": "Awit ng mga Awit",
+      "testament": "old",
+      "chapters": 8,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 23,
+      "name": "Isaiah",
+      "tagalog": "Isaias",
+      "testament": "old",
+      "chapters": 66,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 24,
+      "name": "Jeremiah",
+      "tagalog": "Jeremias",
+      "testament": "old",
+      "chapters": 52,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 25,
+      "name": "Lamentations",
+      "tagalog": "Mga Panaghoy",
+      "testament": "old",
+      "chapters": 5,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 26,
+      "name": "Ezekiel",
+      "tagalog": "Ezekiel",
+      "testament": "old",
+      "chapters": 48,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 27,
+      "name": "Daniel",
+      "tagalog": "Daniel",
+      "testament": "old",
+      "chapters": 12,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 28,
+      "name": "Hosea",
+      "tagalog": "Oseas",
+      "testament": "old",
+      "chapters": 14,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 29,
+      "name": "Joel",
+      "tagalog": "Joel",
+      "testament": "old",
+      "chapters": 3,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 30,
+      "name": "Amos",
+      "tagalog": "Amos",
+      "testament": "old",
+      "chapters": 9,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 31,
+      "name": "Obadiah",
+      "tagalog": "Abdias",
+      "testament": "old",
+      "chapters": 1,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 32,
+      "name": "Jonah",
+      "tagalog": "Jonas",
+      "testament": "old",
+      "chapters": 4,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 33,
+      "name": "Micah",
+      "tagalog": "Mikas",
+      "testament": "old",
+      "chapters": 7,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 34,
+      "name": "Nahum",
+      "tagalog": "Nahum",
+      "testament": "old",
+      "chapters": 3,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 35,
+      "name": "Habakkuk",
+      "tagalog": "Habacuc",
+      "testament": "old",
+      "chapters": 3,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 36,
+      "name": "Zephaniah",
+      "tagalog": "Zefanias",
+      "testament": "old",
+      "chapters": 3,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 37,
+      "name": "Haggai",
+      "tagalog": "Hagai",
+      "testament": "old",
+      "chapters": 2,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 38,
+      "name": "Zechariah",
+      "tagalog": "Zacarias",
+      "testament": "old",
+      "chapters": 14,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 39,
+      "name": "Malachi",
+      "tagalog": "Malakias",
+      "testament": "old",
+      "chapters": 4,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 40,
+      "name": "Matthew",
+      "tagalog": "Mateo",
+      "testament": "new",
+      "chapters": 28,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 41,
+      "name": "Mark",
+      "tagalog": "Marcos",
+      "testament": "new",
+      "chapters": 16,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 42,
+      "name": "Luke",
+      "tagalog": "Lucas",
+      "testament": "new",
+      "chapters": 24,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 43,
+      "name": "John",
+      "tagalog": "Juan",
+      "testament": "new",
+      "chapters": 21,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 44,
+      "name": "Acts",
+      "tagalog": "Mga Gawa",
+      "testament": "new",
+      "chapters": 28,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 45,
+      "name": "Romans",
+      "tagalog": "Mga Taga-Roma",
+      "testament": "new",
+      "chapters": 16,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 46,
+      "name": "1 Corinthians",
+      "tagalog": "1 Mga Taga-Corinto",
+      "testament": "new",
+      "chapters": 16,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 47,
+      "name": "2 Corinthians",
+      "tagalog": "2 Mga Taga-Corinto",
+      "testament": "new",
+      "chapters": 13,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 48,
+      "name": "Galatians",
+      "tagalog": "Mga Taga-Galacia",
+      "testament": "new",
+      "chapters": 6,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 49,
+      "name": "Ephesians",
+      "tagalog": "Mga Taga-Efeso",
+      "testament": "new",
+      "chapters": 6,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 50,
+      "name": "Philippians",
+      "tagalog": "Mga Taga-Filipos",
+      "testament": "new",
+      "chapters": 4,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 51,
+      "name": "Colossians",
+      "tagalog": "Mga Taga-Colosas",
+      "testament": "new",
+      "chapters": 4,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 52,
+      "name": "1 Thessalonians",
+      "tagalog": "1 Mga Taga-Tesalonica",
+      "testament": "new",
+      "chapters": 5,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 53,
+      "name": "2 Thessalonians",
+      "tagalog": "2 Mga Taga-Tesalonica",
+      "testament": "new",
+      "chapters": 3,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 54,
+      "name": "1 Timothy",
+      "tagalog": "1 Kay Timoteo",
+      "testament": "new",
+      "chapters": 6,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 55,
+      "name": "2 Timothy",
+      "tagalog": "2 Kay Timoteo",
+      "testament": "new",
+      "chapters": 4,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 56,
+      "name": "Titus",
+      "tagalog": "Kay Tito",
+      "testament": "new",
+      "chapters": 3,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 57,
+      "name": "Philemon",
+      "tagalog": "Kay Filemon",
+      "testament": "new",
+      "chapters": 1,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 58,
+      "name": "Hebrews",
+      "tagalog": "Mga Hebreo",
+      "testament": "new",
+      "chapters": 13,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 59,
+      "name": "James",
+      "tagalog": "Santiago",
+      "testament": "new",
+      "chapters": 5,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 60,
+      "name": "1 Peter",
+      "tagalog": "1 Pedro",
+      "testament": "new",
+      "chapters": 5,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 61,
+      "name": "2 Peter",
+      "tagalog": "2 Pedro",
+      "testament": "new",
+      "chapters": 3,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 62,
+      "name": "1 John",
+      "tagalog": "1 Juan",
+      "testament": "new",
+      "chapters": 5,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 63,
+      "name": "2 John",
+      "tagalog": "2 Juan",
+      "testament": "new",
+      "chapters": 1,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 64,
+      "name": "3 John",
+      "tagalog": "3 Juan",
+      "testament": "new",
+      "chapters": 1,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 65,
+      "name": "Jude",
+      "tagalog": "Judas",
+      "testament": "new",
+      "chapters": 1,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    },
+    {
+      "n": 66,
+      "name": "Revelation",
+      "tagalog": "Apocalipsis",
+      "testament": "new",
+      "chapters": 22,
+      "in": [
+        "web",
+        "bbe",
+        "tgl"
+      ]
+    }
+  ]
+}

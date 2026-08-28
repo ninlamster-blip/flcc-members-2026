@@ -20,6 +20,18 @@ export default async function exploreScreen(ctx) {
   const doneIn = (id) => Object.keys(state.done).filter((k) => k.startsWith(`lesson:${id}/`)).length;
 
   const blocks = [
+    // The Bible comes before anything written about the Bible. It is the whole
+    // text, on the device, and it is the first thing Explore offers.
+    poster({ tone: 'blue', tall: true, as: 'button', className: 'full', onclick: () => ctx.go('bible') },
+      label('The Bible'),
+      h('div', {},
+        display(isKids() ? 'LOOK IT UP.' : 'READ IT YOURSELF.'),
+        h('p', { class: 'body dim', style: 'margin-top:.9rem',
+          text: isKids()
+            ? 'All 66 books, on your phone. Type a verse, a word, or how you feel.'
+            : '66 books in three translations, searchable, and readable with no signal.' })),
+      h('div', { class: 'poster-foot' }, go('Open the Bible', () => ctx.go('bible')), art('book', { tone: 'blue' }))),
+
     ...journeys.map((journey, index) => {
       const done = doneIn(journey.id);
       const percent = Math.round((done / journey.lessons) * 100);

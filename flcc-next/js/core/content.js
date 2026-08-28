@@ -28,3 +28,5 @@ export const crosswords = () => load('games/crossword.json');
 export const events = () => load('events.json');
 export const achievements = () => load('achievements.json');
 export const help = () => load('help-lines.json');
+export const bibleBooks = () => load('bible-books.json');
+export const bibleFind = () => load('bible-find.json');
