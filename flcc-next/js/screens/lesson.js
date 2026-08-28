@@ -1,6 +1,6 @@
 // One lesson: Scripture, what it means, and one question to answer.
 
-import { h, poster, label, display, headline, art, pill, choice, note, toast, moment } from '../core/ui.js';
+import { h, poster, label, display, headline, art, pill, choice, note, toast, moment, reference } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { forMode } from '../core/profile.js';
 import * as progress from '../core/progress.js';
@@ -57,7 +57,7 @@ export default async function lessonScreen(ctx) {
 
   const el = h('div', { style: 'display:contents' },
     poster({ tone, tall: true, className: 'full' },
-      label(lesson.ref),
+      reference(lesson.ref, ctx.go, { className: 'label' }),
       h('div', {}, display(lesson.title),
         h('p', { class: 'verse', style: 'margin-top:1.3rem', text: `“${lesson.text}”` })),
       h('div', { class: 'poster-foot' }, h('span'), art((journey && journey.symbol) || 'book', { tone, size: 'sm' }))),

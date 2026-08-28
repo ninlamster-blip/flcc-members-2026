@@ -45,6 +45,42 @@ export function choice(text, onclick, props = {}) {
   return h('button', { class: 'choice', type: 'button', onclick, ...props }, text);
 }
 
+/**
+ * A Scripture reference that opens the Bible.
+ *
+ * The app quotes Scripture in six places and used to render every reference as
+ * dead text, so a young person who wanted the rest of the chapter had to retype
+ * it. Now that all 66 books ship with the app, a reference is the shortest path
+ * to reading one.
+ *
+ * `scripture.js` is imported on the click rather than at the top of this file:
+ * the component kit is loaded by every screen, and the Bible's parser is only
+ * needed by someone who actually taps a reference.
+ *
+ * A reference that will not parse is not left as a dead button — it falls
+ * through to a search for the same words, which is what a reader wanted anyway.
+ */
+export function reference(text, go, { className = 'ref', style = '' } = {}) {
+  if (!text) return h('span');
+  if (typeof go !== 'function') return h('p', { class: className, style, text });
+  return h('button', {
+    class: `${className} ref-link`, type: 'button', style,
+    'aria-label': `Open ${text} in the Bible`,
+    onclick: async () => {
+      try {
+        const scripture = await import('./scripture.js');
+        const { books } = await scripture.manifest();
+        const found = scripture.parseRef(text, books);
+        if (!found) { go(`bible/search?q=${encodeURIComponent(text)}`); return; }
+        const verse = found.verse ? `?v=${found.verse}` : '';
+        go(`bible/${found.book.n}/${found.chapter}${verse}`);
+      } catch {
+        toast('The Bible could not be opened just now.');
+      }
+    },
+  }, text);
+}
+
 export function note(text) { return h('p', { class: 'note', text }); }
 export function waiting() { return h('div', { class: 'wait', role: 'status', 'aria-label': 'Loading' }); }
 

@@ -67,6 +67,14 @@ Four ways in, because a young person arrives with four different questions:
 
 Verses can be kept, a bookmark is remembered, and none of it leaves the device.
 
+**Every reference in the app opens it.** The daily word, the devotional, each
+lesson and each real-life topic render their reference as a link: tapping
+"Luke 2:49" opens Luke 2 with verse 49 already highlighted and scrolled to,
+and the Keep and Copy actions right there. A reference that will not parse
+falls through to a search for the same words rather than being a dead button.
+`test/modules.test.mjs` reads the screens and fails if a new one quotes
+Scripture without linking it.
+
 ```bash
 node scripts/build-next-bible.mjs    # rebuild bible/ from the public-domain sources
 ```

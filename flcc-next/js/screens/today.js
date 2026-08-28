@@ -3,7 +3,7 @@
 // The day's word, the day's challenge, where the reader is up to, and today's
 // game. Each one takes a whole block of colour and says one thing.
 
-import { h, poster, label, display, headline, art, go, pill, track, waiting, note, rise, toast } from '../core/ui.js';
+import { h, poster, label, display, headline, art, go, pill, track, waiting, note, rise, toast, reference } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { pick as pickForDay } from '../core/rotation.js';
 import { forMode } from '../core/profile.js';
@@ -42,7 +42,7 @@ export default async function todayScreen(ctx) {
       h('div', {},
         display(entry.title),
         h('p', { class: 'verse', style: 'margin-top:1.4rem', text: `“${entry.text}”` }),
-        h('p', { class: 'ref', style: 'margin-top:.9rem', text: entry.ref })),
+        reference(entry.ref, ctx.go, { style: 'margin-top:.9rem' })),
       h('div', { class: 'poster-foot' },
         go('Read the devotional', () => ctx.go('devotion')),
         art(entry.symbol || 'light', { tone: entry.tone || 'blue', size: 'sm' })));

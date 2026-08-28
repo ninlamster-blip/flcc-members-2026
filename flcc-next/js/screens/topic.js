@@ -1,6 +1,6 @@
 // One Real Life topic — an editorial cover, then something honest.
 
-import { h, poster, label, display, art, pill, go, note } from '../core/ui.js';
+import { h, poster, label, display, art, pill, go, note, reference } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { forMode } from '../core/profile.js';
 
@@ -24,7 +24,7 @@ export default async function topicScreen(ctx) {
     poster({ tone: 'ink', className: 'full' },
       label('What the Bible says'),
       h('p', { class: 'verse', text: `“${topic.verse}”` }),
-      h('p', { class: 'ref dim', text: topic.ref })),
+      reference(topic.ref, ctx.go, { className: 'ref dim' })),
 
     poster({ tone: 'paper', className: 'full' },
       label('One next step'),

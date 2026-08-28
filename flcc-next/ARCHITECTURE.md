@@ -176,6 +176,7 @@ node --test 'flcc-next/test/*.test.mjs'
 | `crossword` | every puzzle interlocks, numbering is right, scoring is right |
 | `library` | an edit survives, a removal stays removed, an import does not overwrite |
 | `scripture` | the 66 books are all there, references resolve, and every reference the content quotes points at a verse that exists |
+| `modules` also | every screen that quotes Scripture links the reference, so the Bible stays one tap away as screens are added |
 
 `library` is the one worth explaining. It is the module that lets a ministry
 leader add content without a developer, which makes it also the module that can

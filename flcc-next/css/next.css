@@ -322,6 +322,25 @@ button.poster:active, a.poster:active { transform: scale(.988); }
 }
 .passage-verse .row-actions { padding-left: .4rem; margin-bottom: .5rem; }
 
+/* A Scripture reference that opens the Bible. It keeps the type it already
+   had — a tiny tracked label — and only adds what says "this goes somewhere":
+   an underline, and a touch target big enough to hit with a thumb. It inherits
+   its colour, so it works on a black poster as well as a coloured one. */
+.ref-link {
+  display: inline-flex; align-items: center;
+  color: inherit; cursor: pointer;
+  text-align: left;
+  padding: .35rem 0; min-height: 34px;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  text-decoration-color: currentColor;
+  opacity: 1;
+  transition: opacity var(--speed) var(--ease);
+}
+.ref-link:hover { opacity: .62; }
+.ref-link:active { opacity: .45; }
+
 /* Chapter numbers: a dense, quiet grid. A book with 150 chapters must still
    fit on one phone screen without scrolling forever. */
 .chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.6rem, 1fr)); gap: .4rem; }

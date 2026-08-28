@@ -12,7 +12,7 @@
 // Nothing here can edit Scripture. The reader keeps a bookmark, a translation
 // and any verses they choose to save, and all three stay on this device.
 
-import { h, poster, label, display, headline, art, pill, go, note, waiting, rise, toast } from '../core/ui.js';
+import { h, poster, label, display, headline, art, pill, go, note, waiting, rise, toast, reference } from '../core/ui.js';
 import * as scripture from '../core/scripture.js';
 import * as content from '../core/content.js';
 import { forMode, isKids } from '../core/profile.js';
@@ -59,7 +59,12 @@ async function reader(ctx, entry, chapter) {
 
   // A verse opens its own small action row rather than a menu: keep it, or
   // copy it. Only one verse is ever open at a time.
-  let open = null;
+  //
+  // `?v=` is how a reference elsewhere in the app arrives here: a lesson quotes
+  // Luke 2:49 and the reader lands on Luke 2 with verse 49 already open and
+  // scrolled to, rather than at the top of the chapter hunting for it.
+  const landing = Number(ctx.route.params.v) || null;
+  let open = landing;
   const lines = h('div', { class: 'passage' });
 
   const paint = () => {
@@ -109,6 +114,16 @@ async function reader(ctx, entry, chapter) {
     h('p', { class: 'row-note', style: 'margin-top:.9rem', text: `${translation.name} · ${translation.licence}. ${translation.note}` }));
 
   el.replaceChildren(block, switcher);
+
+  // The shell scrolls to the top after a screen is appended, so the landing
+  // verse has to be brought back into view after that has happened.
+  if (landing) {
+    requestAnimationFrame(() => {
+      const row = lines.children[read.verses.findIndex((verse) => verse.n === landing)];
+      if (row) row.scrollIntoView({ block: 'center' });
+    });
+  }
+
   return { title: `${entry.name} ${at}`, el };
 }
 
@@ -271,7 +286,9 @@ export default async function bibleScreen(ctx) {
     h('div', { class: 'rows', style: 'margin-top:.6rem' },
       ...state.saved.slice(0, 8).map((one) => h('div', {},
         h('p', { class: 'verse', text: `“${one.text}”` }),
-        h('p', { class: 'ref', style: 'margin-top:.4rem', text: `${one.ref} · ${one.code.toUpperCase()}` })))),
+        h('div', { style: 'display:flex;align-items:baseline;gap:.5rem;margin-top:.4rem' },
+          reference(one.ref, ctx.go),
+          h('span', { class: 'ref dim', text: one.code.toUpperCase() }))))),
     state.saved.length > 8
       ? h('p', { class: 'row-note', style: 'margin-top:.8rem', text: `and ${state.saved.length - 8} more on this device.` })
       : null) : null;
