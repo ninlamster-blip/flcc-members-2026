@@ -88,6 +88,9 @@ test('every game exists in code, and every question can be answered', () => {
     assert.ok(row.options[row.answer] !== undefined, `quiz: "${row.q}" has no valid answer`);
     assert.ok(row.why, `quiz: "${row.q}" needs an explanation`);
   }
+  const whoAnswers = read('games/who-am-i.json').map((row) => row.answer);
+  assert.equal(new Set(whoAnswers).size, whoAnswers.length,
+    'two Who am I? rounds share an answer — a day could deal both, and the options would give it away');
   for (const row of read('games/who-am-i.json')) {
     assert.equal(row.clues.length, 3, `who-am-i: ${row.answer} needs three clues`);
     assert.ok(row.options.includes(row.answer), `who-am-i: ${row.answer} is not among its own options`);

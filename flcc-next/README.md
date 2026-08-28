@@ -143,10 +143,10 @@ exists.
 
 | File | What it holds |
 |---|---|
-| `daily.json` | 35 daily words: verse, reflection, prayer, challenge, devotional |
+| `daily.json` | 49 daily words: verse, reflection, prayer, challenge, devotional |
 | `journeys.json` + `journeys/*.json` | Three journeys, 24 lessons — fifteen of them the life of Jesus |
 | `real-life.json` | 14 real-life topics |
-| `games.json` + `games/*.json` | The six games and their banks — 189 quiz questions, 40 Who am I? rounds, 54 verses, 16 crosswords |
+| `games.json` + `games/*.json` | The six games and their banks — 189 quiz questions, 81 Who am I? rounds, 104 verses, 36 crosswords |
 | `events.json` | What is on |
 | `achievements.json` | The collectible stamps and how each is earned |
 | `bible-books.json` | One line saying what each of the 66 books is |
@@ -179,18 +179,29 @@ How long that lasts, on the content shipped today:
 
 | | Kids | Teens |
 |---|---|---|
-| Daily word | 35 days | 35 days |
+| Daily word | 49 days | 49 days |
+| Verse builder | 18 days | 20 days |
+| Crossword | 18 days | 18 days |
 | Bible quiz | 14 days | 18 days |
-| Our church | 7 days | 10 days |
-| Who am I? | 8 days | 8 days |
-| Verse builder | 8 days | 10 days |
-| Crossword | 8 days | 8 days |
+| Who am I? | 16 days | 16 days |
 | Speed quiz | 7 days | 9 days |
+| Our church | 7 days | 10 days |
 
-The speed quiz is a recall drill against a clock, where meeting a question you
-have seen before is the exercise rather than a failure. Everything is held to a
-week minimum by `test/audit.test.mjs`, and each game shows its own position —
-"Day 3 of 8" — while you play it.
+Two of those are short on purpose, and for different reasons.
+
+The **speed quiz** is a recall drill against a clock: meeting a question you
+have seen before is the exercise, not a failure of the content. It is measured
+but never warned about.
+
+**Our church** is the one bank nobody outside FLCC can write. Its questions are
+facts about this church, its place in the N.E.C.K. network and its vision
+statement — inventing more would mean inventing facts about a real church. So
+it is exempt from the test suite, which cannot fix it by being red, but it is
+*not* exempt from the dashboard: it is measured and warned about like anything
+else, because a thin bank is thin whoever has to fill it.
+
+Everything else is held to a **fortnight minimum** by `test/audit.test.mjs`,
+and each game shows its own position — "Day 3 of 18" — while you play it.
 
 Every question is authored with the right answer written first, because that is
 the only way to check a bank of two hundred in a diff. The screens permute the
