@@ -117,7 +117,7 @@ test('a refused or unconfigured queue returns no prayers and says why', async ()
   assert.deepEqual(await delivery.queue('wrong'), { ok: false, reason: 'bad-key', prayers: [] });
 
   serve(() => ({ status: 200, data: { configured: false } }));
-  assert.deepEqual(await delivery.queue('any'), { ok: false, reason: 'off', prayers: [] });
+  assert.deepEqual(await delivery.queue('any'), { ok: false, reason: 'off', missing: [], prayers: [] });
 
   serve(() => new Error('down'));
   assert.deepEqual(await delivery.queue('any'), { ok: false, reason: 'offline', prayers: [] });
@@ -135,4 +135,45 @@ test('marking a prayer is confirmed by the server, not assumed', async () => {
 
   serve(() => new Error('down'));
   assert.equal(await delivery.mark('key', '1', 'read'), false);
+});
+
+// ── Diagnosability ─────────────────────────────────────────────────────────
+// "Delivery is off" left whoever was setting it up hunting through two
+// unrelated settings pages. The Worker now says which half is missing.
+
+test('readiness names the missing half, not just "off"', async () => {
+  serve(() => ({ status: 200, data: { ok: true, nextPrayers: false, nextDatabase: false, nextLeaderKey: true } }));
+  assert.deepEqual(await delivery.readiness(), { reachable: true, ready: false, missing: ['database'] });
+
+  serve(() => ({ status: 200, data: { ok: true, nextPrayers: false, nextDatabase: true, nextLeaderKey: false } }));
+  assert.deepEqual(await delivery.readiness(), { reachable: true, ready: false, missing: ['leaderKey'] });
+
+  serve(() => ({ status: 200, data: { ok: true, nextPrayers: false, nextDatabase: false, nextLeaderKey: false } }));
+  assert.deepEqual(await delivery.readiness(), { reachable: true, ready: false, missing: ['database', 'leaderKey'] });
+
+  serve(() => ({ status: 200, data: { ok: true, nextPrayers: true, nextDatabase: true, nextLeaderKey: true } }));
+  assert.deepEqual(await delivery.readiness(), { reachable: true, ready: true, missing: [] });
+});
+
+test('an unreachable Worker is distinguished from a misconfigured one', async () => {
+  serve(() => new Error('offline'));
+  assert.deepEqual(await delivery.readiness(), { reachable: false, ready: false, missing: [] });
+});
+
+test('an older deployment that does not report the halves still reads as off', async () => {
+  // A Worker predating this change answers /ping without the new fields.
+  serve(() => ({ status: 200, data: { ok: true, keySet: true } }));
+  const state = await delivery.readiness();
+  assert.equal(state.ready, false);
+  assert.deepEqual(state.missing, ['database', 'leaderKey'], 'absent fields read as absent, never as ready');
+});
+
+test('the queue carries the missing pieces through to the dashboard', async () => {
+  serve(() => ({ status: 200, data: { configured: false, missing: ['leaderKey'] } }));
+  const result = await delivery.queue('any');
+  assert.equal(result.reason, 'off');
+  assert.deepEqual(result.missing, ['leaderKey']);
+
+  serve(() => ({ status: 200, data: { configured: false } }));
+  assert.deepEqual((await delivery.queue('any')).missing, [], 'an older Worker simply says nothing');
 });
