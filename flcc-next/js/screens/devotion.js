@@ -30,7 +30,7 @@ export default async function devotionScreen(ctx) {
       label('A prayer'),
       h('p', { class: 'lead', text: forMode(entry.prayer, ctx.mode) })),
 
-    poster({ tone: 'sage', className: 'full' },
+    poster({ tone: 'captain', className: 'full' },
       label('One next step'),
       headline(forMode(entry.challenge, ctx.mode).toUpperCase().replace(/\.$/, '')),
       h('div', { class: 'poster-foot' },

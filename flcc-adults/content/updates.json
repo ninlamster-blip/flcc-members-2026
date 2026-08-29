@@ -5,7 +5,7 @@
     "date": "2026-09-04",
     "from": "Pastoral team",
     "body": "Four Fridays after the main service, for anyone who has been attending and wants to belong properly. Covers what FLCC believes, how the BOTR network is structured, and what membership actually commits you to. Speak to any leader to put your name down.",
-    "tone": "orange"
+    "tone": "sky"
   },
   {
     "id": "u-small-groups",
@@ -13,7 +13,7 @@
     "date": "2026-08-25",
     "from": "Discipleship",
     "body": "Groups are being rearranged so that nobody travels more than half an hour on a work night. If you have moved accommodation this year, tell your group leader so you are placed near where you now live rather than where you used to.",
-    "tone": "lilac"
+    "tone": "rose"
   },
   {
     "id": "u-benevolence",
@@ -21,7 +21,7 @@
     "date": "2026-08-18",
     "from": "Deacons",
     "body": "The benevolence fund exists for members who have lost work, are waiting on a transfer, or have an emergency at home. Requests are handled by two deacons and are not discussed anywhere else. Asking is not a failure, and it is not a debt.",
-    "tone": "coral"
+    "tone": "sunshine"
   },
   {
     "id": "u-prayer-meeting",
@@ -29,7 +29,7 @@
     "date": "2026-08-11",
     "from": "Prayer ministry",
     "body": "Through the hottest months the Tuesday meeting runs online at 9:00 PM so that people finishing late shifts can still join. It returns to the hall in October. The link is the same every week — ask your group leader if you do not have it.",
-    "tone": "sky"
+    "tone": "poppy"
   },
   {
     "id": "u-sunday-team",
@@ -37,7 +37,7 @@
     "date": "2026-08-06",
     "from": "Serving",
     "body": "One Friday a month, arriving forty minutes early. It is the least visible job in the church and the first thing a newcomer experiences. Training is one conversation, not a course.",
-    "tone": "yellow"
+    "tone": "captain"
   },
   {
     "id": "u-giving",
@@ -45,6 +45,6 @@
     "date": "2026-07-30",
     "from": "Pastoral team",
     "body": "Several members have asked whether they should give when money is already going home every month. The short answer: give something, plan it rather than deciding at the door, and never borrow to give. Anyone who wants to talk it through can ask for an appointment.",
-    "tone": "yellow"
+    "tone": "navy"
   }
 ]

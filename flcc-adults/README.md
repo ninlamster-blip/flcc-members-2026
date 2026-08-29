@@ -62,14 +62,23 @@ and no red number telling an adult they have failed at reading the Bible.
 ## The design
 
 `css/sticker.css` — the *Sticker* system: printed thank-you cards, made into an
-app. Warm paper stock (`#FBF3E3`), navy ink (`#1B2A5C`), and flat saturated
-colour — yellow, cream, blush, sky, lilac, coral and orange.
+app. Warm paper stock (`#FBF8F0`), navy ink (`#2B4C6D`), and six named
+colours: sky `#C3D7EA`, captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`,
+poppy `#EB8861` and sunshine `#EDCE7A`. The kids and teens edition
+(`flcc-next/`) wears the same six, so the two apps read as one family.
+
+Poppy never carries a card. Navy on poppy is about 3.5:1 — fine behind a
+headline, not fine behind a paragraph, and every card here has paragraphs on
+it — so poppy is an accent: stems, tags, stars and characters. A test enforces
+that.
 
 Every surface is a card, drawn the same way every time: a 3px navy outline, a
 hard offset shadow with no blur, one colour, and a band along the bottom in
-that colour's darker cousin. Nothing in the app has a soft shadow, a gradient
-or a glow. Navy is the only ink there is — colour goes behind the type, never
-into it.
+one of the two blues, carrying paper-coloured type. Nothing in the app has a
+soft shadow, a gradient or a glow. Navy is the only ink there is — colour goes
+behind the type, never into it. Headings are set at the heaviest weight the
+family has, because on these cards a heading is a block of colour in its own
+right.
 
 Every card can carry one of twelve little characters (`js/core/art.js`): a
 flat shape, a thick navy outline, and a face. They are drawn on one grid at

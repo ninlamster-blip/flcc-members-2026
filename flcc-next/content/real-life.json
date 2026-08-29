@@ -2,7 +2,7 @@
   {
     "id": "pressure",
     "title": "SCHOOL PRESSURE",
-    "tone": "cream",
+    "tone": "sunshine",
     "symbol": "bulb",
     "hook": {
       "kids": "When school feels like too much.",
@@ -25,7 +25,7 @@
   {
     "id": "anxiety",
     "title": "ANXIETY",
-    "tone": "blue",
+    "tone": "sky",
     "symbol": "hands",
     "hook": {
       "kids": "When your tummy feels worried.",
@@ -48,7 +48,7 @@
   {
     "id": "friendship",
     "title": "FRIENDSHIP",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "people",
     "hook": {
       "kids": "Being a good friend, and finding good friends.",
@@ -71,7 +71,7 @@
   {
     "id": "family",
     "title": "FAMILY",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "heart",
     "hook": {
       "kids": "Families are great and hard, sometimes on the same day.",
@@ -94,7 +94,7 @@
   {
     "id": "social",
     "title": "SOCIAL MEDIA",
-    "tone": "cream",
+    "tone": "sunshine",
     "symbol": "grid",
     "hook": {
       "kids": "Screens are fun. They are not your whole life.",
@@ -117,7 +117,7 @@
   {
     "id": "identity",
     "title": "IDENTITY",
-    "tone": "blue",
+    "tone": "sky",
     "symbol": "star",
     "hook": {
       "kids": "God made you on purpose.",
@@ -140,7 +140,7 @@
   {
     "id": "purpose",
     "title": "PURPOSE",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "rocket",
     "hook": {
       "kids": "God has good things for you to do.",
@@ -163,7 +163,7 @@
   {
     "id": "relationships",
     "title": "RELATIONSHIPS",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "heart",
     "hook": {
       "kids": "Being kind to everyone, including people you do not like.",
@@ -186,7 +186,7 @@
   {
     "id": "left-out",
     "title": "BEING LEFT OUT",
-    "tone": "blue",
+    "tone": "sky",
     "symbol": "people",
     "hook": {
       "kids": "When everyone else got invited and you did not.",
@@ -209,7 +209,7 @@
   {
     "id": "anger",
     "title": "ANGER",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "bolt",
     "hook": {
       "kids": "When you are so cross you want to shout.",
@@ -255,7 +255,7 @@
   {
     "id": "bullying",
     "title": "BULLYING",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "shield",
     "hook": {
       "kids": "When someone keeps being unkind on purpose.",
@@ -301,7 +301,7 @@
   {
     "id": "forgiveness",
     "title": "FORGIVENESS",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "hands",
     "hook": {
       "kids": "When someone hurt you and “sorry” did not fix it.",

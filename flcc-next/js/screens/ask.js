@@ -11,7 +11,7 @@ const STARTERS = {
   teens: ['Why does God allow suffering?', 'How do I deal with stress?', 'Is it okay to doubt?', 'How do I know God’s will?', 'Why do I feel far from God?'],
 };
 
-const PART_TONE = { talk: 'paper', bible: 'blue', think: 'cream', pray: 'pink', step: 'sage' };
+const PART_TONE = { talk: 'paper', bible: 'sky', think: 'sunshine', pray: 'rose', step: 'captain' };
 const PART_ART = { talk: 'people', bible: 'book', think: 'bulb', pray: 'hands', step: 'flag' };
 
 export default async function askScreen(ctx) {
@@ -91,13 +91,13 @@ export default async function askScreen(ctx) {
   };
 
   const el = h('div', { style: 'display:contents' },
-    poster({ tone: 'sage', tall: true, className: 'full' },
+    poster({ tone: 'captain', tall: true, className: 'full' },
       label('Ask NEXT'),
       h('div', {},
         display('QUESTIONS ARE WELCOME HERE.'),
         h('p', { class: 'body dim', style: 'margin-top:1rem', text: 'Nothing is too big or too awkward. Your question and your age group are all that get sent — never your name, and never your prayers.' }),
         h('div', { style: 'margin-top:1.4rem' }, input)),
-      h('div', { class: 'poster-foot' }, pill('Ask', submit), art('bulb', { tone: 'sage', size: 'sm' }))),
+      h('div', { class: 'poster-foot' }, pill('Ask', submit), art('bulb', { tone: 'captain', size: 'sm' }))),
 
     answer,
 

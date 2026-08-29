@@ -1,7 +1,7 @@
 [
   {
     "id": "afraid",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "shield",
     "title": {
       "kids": "WHEN YOU ARE SCARED",
@@ -21,7 +21,7 @@
   },
   {
     "id": "sad",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "heart",
     "title": {
       "kids": "WHEN YOU ARE SAD",
@@ -41,7 +41,7 @@
   },
   {
     "id": "alone",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "people",
     "title": {
       "kids": "WHEN YOU FEEL LEFT OUT",
@@ -60,7 +60,7 @@
   },
   {
     "id": "sorry",
-    "tone": "cream",
+    "tone": "sunshine",
     "symbol": "sunrise",
     "title": {
       "kids": "WHEN YOU DID SOMETHING WRONG",
@@ -79,7 +79,7 @@
   },
   {
     "id": "angry",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "bolt",
     "title": {
       "kids": "WHEN YOU ARE ANGRY",
@@ -98,7 +98,7 @@
   },
   {
     "id": "worried",
-    "tone": "blue",
+    "tone": "sky",
     "symbol": "plant",
     "title": {
       "kids": "WHEN YOU WORRY A LOT",
@@ -117,7 +117,7 @@
   },
   {
     "id": "loved",
-    "tone": "cream",
+    "tone": "sunshine",
     "symbol": "heart",
     "title": {
       "kids": "WHEN YOU WONDER IF GOD LOVES YOU",
@@ -137,7 +137,7 @@
   },
   {
     "id": "start",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "cross",
     "title": {
       "kids": "WHO IS JESUS?",
@@ -157,7 +157,7 @@
   },
   {
     "id": "belong",
-    "tone": "blue",
+    "tone": "sky",
     "symbol": "hands",
     "title": {
       "kids": "HOW TO PRAY",
@@ -176,7 +176,7 @@
   },
   {
     "id": "friends",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "people",
     "title": {
       "kids": "ABOUT FRIENDS",
@@ -195,7 +195,7 @@
   },
   {
     "id": "family",
-    "tone": "cream",
+    "tone": "sunshine",
     "symbol": "people",
     "title": {
       "kids": "ABOUT YOUR FAMILY",
@@ -214,7 +214,7 @@
   },
   {
     "id": "purpose",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "rocket",
     "title": {
       "kids": "WHAT GOD MADE YOU FOR",

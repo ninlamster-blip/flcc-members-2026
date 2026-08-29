@@ -13,7 +13,7 @@ export default async function planScreen(ctx) {
   const [id] = ctx.route.args;
   const plans = await content.plans();
   const current = plans.find((one) => one.id === id);
-  if (!current) return { title: 'Reading plan', el: card({ tone: 'cream', className: 'full' }, note('That plan has moved.')) };
+  if (!current) return { title: 'Reading plan', el: card({ tone: 'paper', className: 'full' }, note('That plan has moved.')) };
 
   const active = plan.state().id === current.id;
   const at = plan.positionIn(current);
@@ -33,7 +33,7 @@ export default async function planScreen(ctx) {
     h('div', {},
       display(current.title),
       h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:30ch', text: current.blurb })),
-    active ? thread(at.percent, 'yellow') : null,
+    active ? thread(at.percent, 'sunshine') : null,
     active ? null : actions(act('Start this plan', () => {
       plan.start(current.id); toast('Started. It is on your Home screen.'); ctx.refresh();
     }))));
@@ -54,7 +54,7 @@ export default async function planScreen(ctx) {
   }
 
   if (active && at.done) {
-    cards.push(card({ tone: 'yellow', className: 'full', symbol: 'star', figureSize: 'sm',
+    cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'star', figureSize: 'sm',
         foot: ['The whole plan', starRow(5)] },
       badge('Finished'),
       title('You read the whole thing.'),

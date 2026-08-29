@@ -127,7 +127,7 @@ const BODIES = {
  *                       picture and never a hole in the layout.
  * @param {string} tone  a palette token — the flat fill colour
  */
-export function mascot(name, tone = 'yellow') {
+export function mascot(name, tone = 'sunshine') {
   const body = BODIES[name] || BODIES.blob;
   return `<svg class="mascot" viewBox="0 0 100 100" aria-hidden="true" focusable="false">`
     + body(`var(--${tone})`) + `</svg>`;

@@ -22,18 +22,65 @@ const isText = (value, min = 1) => typeof value === 'string' && value.trim().len
 
 /** A card colour, and a character that somebody actually drew. */
 function looksRight(item, where) {
-  assert.ok(TONES.includes(item.tone), `${where}: unknown tone "${item.tone}"`);
-  assert.equal(item.tone === 'ink' || item.tone === 'white', false, `${where}: ink is for type, not for cards`);
+  assert.ok(ACCENTS.includes(item.tone), `${where}: unknown tone "${item.tone}"`);
   if ('symbol' in item) {
     assert.ok(isMascot(item.symbol),
       `${where}: no character called "${item.symbol}" — the set is ${MASCOTS.join(', ')}`);
   }
 }
 
-test('the palette is the one the stylesheet defines', () => {
-  for (const tone of ['paper', 'ink', 'yellow', 'cream', 'blush', 'sky', 'lilac', 'coral', 'orange']) {
-    assert.ok(TONES.includes(tone), `--${tone} is missing from sticker.css`);
+/** The colours a card may wear. Poppy is not one of them — see below. */
+const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'paper'];
+/** Everything a stem, a tag or a character may be. Poppy lives here. */
+const ACCENTS = [...CARD_TONES, 'poppy'];
+/** Which files' tone ends up as a card's own background. */
+const ON_CARDS = ['moments.json', 'paths.json', 'prayer-guides.json', 'reading-plans.json', 'events.json'];
+
+/**
+ * The six colours, pinned.
+ *
+ * `flcc-next/` wears this same palette so the two editions read as one family,
+ * and the two apps share no code — which means nothing but a test stops one of
+ * them drifting a shade at a time. The kids edition has the identical block in
+ * its own suite; changing a colour means changing it in both, and both tests
+ * fail until you do.
+ */
+test('the shared palette is exactly these six colours on this paper', () => {
+  const expected = {
+    sky: '#C3D7EA', captain: '#4173B0', navy: '#2B4C6D',
+    rose: '#EABCB5', poppy: '#EB8861', sunshine: '#EDCE7A',
+    paper: '#FBF8F0',
+  };
+  for (const [name, hex] of Object.entries(expected)) {
+    assert.match(css, new RegExp(`--${name}:\\s*${hex};`, 'i'),
+      `--${name} should be ${hex} — and flcc-next/css/next.css must match`);
   }
+  assert.match(css, /--ink:\s*var\(--navy\)/, 'navy is the only ink');
+});
+
+test('the palette is the one the stylesheet defines', () => {
+  for (const tone of ['paper', 'white', 'sky', 'captain', 'navy', 'rose', 'poppy', 'sunshine']) {
+    assert.ok(TONES.includes(tone) || css.includes(`--${tone}:`), `--${tone} is missing from sticker.css`);
+  }
+});
+
+/**
+ * Poppy may not carry body copy.
+ *
+ * Navy on poppy is about 3.5:1 — enough behind a headline, not enough behind a
+ * paragraph, and every card in this app has paragraphs on it. So poppy is an
+ * accent: stems, tags, stars and characters. A content file that hands poppy
+ * to something rendered as a card would look fine to a reviewer and fail a
+ * contrast check, which is exactly the kind of thing worth a test.
+ */
+test('poppy is an accent, never a surface with text on it', () => {
+  for (const name of ON_CARDS) {
+    for (const item of read(name)) {
+      assert.ok(CARD_TONES.includes(item.tone),
+        `${name}/${item.id}: "${item.tone}" cannot carry a card — pick one of ${CARD_TONES.join(', ')}`);
+    }
+  }
+  assert.equal(/\.card\[data-tone="poppy"\]/.test(css), false, 'poppy became a card colour in the stylesheet');
 });
 
 /**
@@ -44,7 +91,7 @@ test('the palette is the one the stylesheet defines', () => {
  * finished card. It is exactly the kind of thing that ships.
  */
 test('every card colour has a band underneath it', () => {
-  for (const tone of ['yellow', 'cream', 'blush', 'sky', 'lilac', 'coral', 'orange']) {
+  for (const tone of CARD_TONES) {
     assert.ok(css.includes(`--${tone}-band:`), `--${tone}-band is missing`);
     assert.match(css, new RegExp(`\\.card\\[data-tone="${tone}"\\]`), `.card[data-tone="${tone}"] is not styled`);
   }
@@ -175,10 +222,10 @@ test('what comes from church is dated, attributed and readable', () => {
 });
 
 test('nothing in the content still names a colour from the old palette', () => {
-  // The app was redrawn from a calm editorial system to this one, and the
-  // palette changed completely. A file left carrying "sage" or "forest" would
-  // render as an unstyled card rather than fail, so it is checked here.
-  const gone = /"(forest|sage|mist|olive|gold|peach)"/;
+  // This app has been repainted twice. A file left carrying a colour from
+  // either of the earlier palettes renders as an unstyled card rather than
+  // failing, so every retired name is checked here by hand.
+  const gone = /"(forest|sage|mist|olive|gold|peach|yellow|cream|blush|lilac|coral|orange)"/;
   for (const file of readdirSync(new URL('../content/', import.meta.url), { withFileTypes: true })) {
     if (!file.isFile() || !file.name.endsWith('.json')) continue;
     const raw = readFileSync(new URL(`../content/${file.name}`, import.meta.url), 'utf8');

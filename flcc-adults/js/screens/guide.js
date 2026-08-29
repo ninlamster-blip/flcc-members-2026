@@ -15,7 +15,7 @@ export default async function guideScreen(ctx) {
   const [id] = ctx.route.args;
   const guides = await content.guides();
   const guide = guides.find((one) => one.id === id);
-  if (!guide) return { title: 'Pray', el: card({ tone: 'cream', className: 'full' }, note('That guide has moved.')) };
+  if (!guide) return { title: 'Pray', el: card({ tone: 'paper', className: 'full' }, note('That guide has moved.')) };
 
   const el = h('div', { style: 'display:contents' });
   let step = 0;
@@ -30,7 +30,7 @@ export default async function guideScreen(ctx) {
     elapsed = 0;
     const current = guide.steps[step];
     const seconds = current.seconds || 60;
-    const bar = thread(0, 'yellow');
+    const bar = thread(0, 'sunshine');
     const clock = h('span', { text: `${seconds}s` });
 
     timer = setInterval(() => {

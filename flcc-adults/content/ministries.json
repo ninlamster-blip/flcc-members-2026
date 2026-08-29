@@ -5,7 +5,7 @@
     "commitment": "One Friday a month · 40 minutes early",
     "blurb": "The first face a visitor sees. Learn names, notice who came alone, and follow up on Monday.",
     "needs": true,
-    "tone": "yellow"
+    "tone": "sky"
   },
   {
     "id": "worship",
@@ -13,7 +13,7 @@
     "commitment": "Weekly rehearsal · Wednesday evening",
     "blurb": "Musicians and singers. An audition is a conversation and a run-through, not a performance.",
     "needs": false,
-    "tone": "blush"
+    "tone": "rose"
   },
   {
     "id": "kids",
@@ -21,7 +21,7 @@
     "commitment": "Two Fridays a month",
     "blurb": "Teaching the 7–12s during the main service. All volunteers are checked and no adult is ever alone with a child.",
     "needs": true,
-    "tone": "lilac"
+    "tone": "sunshine"
   },
   {
     "id": "prayer",
@@ -29,7 +29,7 @@
     "commitment": "Tuesdays · one hour",
     "blurb": "Praying for the church week by week, and available after the service for anyone who asks.",
     "needs": false,
-    "tone": "sky"
+    "tone": "poppy"
   },
   {
     "id": "care",
@@ -37,7 +37,7 @@
     "commitment": "As needed · a few hours a month",
     "blurb": "Hospital visits, help for members between contracts, and a phone call to whoever has stopped coming.",
     "needs": true,
-    "tone": "coral"
+    "tone": "captain"
   },
   {
     "id": "media",
@@ -45,6 +45,6 @@
     "commitment": "One Friday a month",
     "blurb": "Sound desk, slides and the recording. Training given; being good with a laptop is enough to start.",
     "needs": true,
-    "tone": "orange"
+    "tone": "navy"
   }
 ]

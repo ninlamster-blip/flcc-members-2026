@@ -11,7 +11,10 @@
 const W = 100;
 
 const S = {
-  stroke: 'stroke="#161616" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"',
+  // The outline is navy, not black — the same #2B4C6D every letter in the app
+  // is set in. It is written out rather than read from TONE_HEX because this
+  // string is assembled once, at module load, before any tone is known.
+  stroke: 'stroke="#2B4C6D" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"',
 };
 
 const shape = (d, fill = 'none') => `<path d="${d}" fill="${fill}" ${S.stroke}/>`;
@@ -169,16 +172,28 @@ export function symbol(name, { fill = 'none', title = '' } = {}) {
   return `<svg viewBox="0 0 ${W} ${W}"${label}>${draw(fill).join('')}</svg>`;
 }
 
-/** The palette, so screens choose tones by name rather than by hex. */
-export const TONES = ['cream', 'pink', 'blue', 'sage'];
-export const TONE_HEX = { cream: '#F4D89A', pink: '#E9A6A3', blue: '#8FC3CF', sage: '#A9C5A2', paper: '#F7F5F0', ink: '#161616' };
+/** The palette, so screens choose tones by name rather than by hex.
+ *
+ *  The same six colours the adult edition uses, so the two apps read as one
+ *  family. `captain` is the dark one of the four poster tones — with only
+ *  three light colours in the palette, one poster tone has to carry paper
+ *  type, and the stylesheet inverts it the way it already inverts `ink`.
+ *  `poppy` is not a poster tone: navy on poppy is about 3.5:1, which is fine
+ *  behind a headline and not fine behind a paragraph. */
+export const TONES = ['sunshine', 'rose', 'sky', 'captain'];
+export const TONE_HEX = {
+  sunshine: '#EDCE7A', rose: '#EABCB5', sky: '#C3D7EA', captain: '#4173B0',
+  poppy: '#EB8861', paper: '#FBF8F0', ink: '#2B4C6D',
+};
 
 /**
  * A poster's fill is the paper colour, so the drawing reads as an object
  * sitting ON the block rather than a hole cut through it.
  */
 export function fillFor(tone) {
-  return tone === 'ink' ? TONE_HEX.ink : TONE_HEX.paper;
+  // On a dark poster the stylesheet flips the outline to paper, so the fill
+  // stays dark and the drawing reads as a white line drawing.
+  return (tone === 'ink' || tone === 'captain') ? TONE_HEX.ink : TONE_HEX.paper;
 }
 
 /** Rotate tones deterministically, so a list looks composed rather than random. */

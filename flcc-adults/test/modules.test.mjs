@@ -101,6 +101,36 @@ test('the characters can be turned off everywhere at once', () => {
   }
 });
 
+/**
+ * Every colour named in code has to exist in the stylesheet.
+ *
+ * This is not hypothetical. When the palette was replaced, the content files
+ * were remapped and a dozen `tone: 'blush'` literals in the screens were not.
+ * Nothing failed: `data-tone="blush"` simply matched no rule, so those cards
+ * fell back to the default colour, and a character whose fill resolved to an
+ * undefined variable painted itself black. It looked like a design choice.
+ */
+test('every colour named in the code exists in the stylesheet', () => {
+  const css = readFileSync(new URL('../css/sticker.css', import.meta.url), 'utf8');
+  const defined = new Set([...css.matchAll(/^\s{2}--([a-z-]+):/gm)].map(([, name]) => name));
+  const patterns = [
+    /\btone:\s*'([a-z-]+)'/g,           // card({ tone: 'sky' })
+    /\baccent:\s*'([a-z-]+)'/g,         // row({ accent: 'rose' })
+    /\bthread\([^,)]+,\s*'([a-z-]+)'/g, // thread(50, 'sunshine')
+    /\bfigure\([^,)]+,\s*'([a-z-]+)'/g, // figure('book', 'navy')
+  ];
+  const offenders = [];
+  for (const file of modules) {
+    const body = code(file);
+    for (const pattern of patterns) {
+      for (const [, name] of body.matchAll(pattern)) {
+        if (!defined.has(name)) offenders.push(`${file}: "${name}"`);
+      }
+    }
+  }
+  assert.deepEqual(offenders, [], `these name a colour the stylesheet does not define:\n${offenders.join('\n')}`);
+});
+
 test('a screen builds its surfaces from the kit, not out of bare divs', () => {
   for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
     const body = code(file);

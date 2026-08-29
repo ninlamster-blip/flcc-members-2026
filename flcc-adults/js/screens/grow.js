@@ -37,7 +37,7 @@ export default async function growScreen(ctx) {
         h('div', { style: 'margin-top:1rem' }, display(featured.path.title)),
         h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:28ch', text: featured.path.blurb })),
       h('div', {},
-        featured.where.finished ? h('div', { style: 'margin-bottom:.9rem' }, thread(featured.where.percent, 'yellow')) : null,
+        featured.where.finished ? h('div', { style: 'margin-bottom:.9rem' }, thread(featured.where.percent, 'sunshine')) : null,
         actions(
           act(featured.where.finished ? 'Continue' : 'Start', () =>
             ctx.go(next ? `session/${featured.path.id}/${next.id}` : `path/${featured.path.id}`)),
@@ -63,7 +63,7 @@ export default async function growScreen(ctx) {
       || states.find((one) => (one.path.forFocus || []).some((f) => wants(f)))
       || states[0];
     if (suggested) {
-      cards.push(card({ tone: 'cream', className: 'full', symbol: suggested.path.symbol, figureSize: 'sm',
+      cards.push(card({ tone: 'paper', className: 'full', symbol: suggested.path.symbol, figureSize: 'sm',
           foot: `Because you said: ${season.label.toLowerCase()}` },
         badge('Where to start'),
         title(`Start with ${suggested.path.title}`),

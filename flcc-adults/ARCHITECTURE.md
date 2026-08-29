@@ -140,6 +140,13 @@ It is a set of printed thank-you cards made into an app: warm paper stock,
 navy ink, flat colour, thick outlines, hard shadows with no blur, and a small
 cast of characters with faces.
 
+The palette is six colours — sky, captain, navy, rose, poppy, sunshine — on
+warm paper, and it is shared with `flcc-next/` so the two editions read as one
+family. Five of the six may carry a card; poppy may not, because navy on
+poppy is about 3.5:1, which is fine behind a headline and not fine behind the
+paragraphs every card here has. `test/content.test.mjs` fails a content file
+that hands poppy to anything rendered as a card.
+
 Three of its rules are held by `test/modules.test.mjs` and `test/art.test.mjs`
 rather than by review, because they are the ones that erode first:
 
@@ -151,6 +158,8 @@ rather than by review, because they are the ones that erode first:
 3. **One character set, one weight, one face.** Every mascot is outlined at
    5px on the same 100 × 100 grid and gets its face from the same `face()`
    helper, so a thirteenth character cannot arrive in a different style.
+4. **Poppy stays off the cards**, and no content file may carry a colour from
+   either of the app's two retired palettes.
 
 The fourth rule has no test and is the most important: **the chrome stops at
 Scripture.** The reader, the book list and the chapter grid are white paper

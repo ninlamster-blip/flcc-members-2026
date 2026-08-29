@@ -64,7 +64,7 @@ function onboarding() {
     boot();
   };
 
-  const intro = () => card({ tone: 'yellow', tall: true, className: 'full', symbol: 'sun',
+  const intro = () => card({ tone: 'sunshine', tall: true, className: 'full', symbol: 'sun',
       foot: [h('span', { text: 'FLCC Church · Kuwait' }), starRow(5)] },
     badge('FLCC NEXT'),
     h('div', {},
@@ -92,7 +92,7 @@ function onboarding() {
     return el;
   };
 
-  const askSeason = () => card({ tone: 'lilac', className: 'full', foot: 'Two of three' },
+  const askSeason = () => card({ tone: 'sky', className: 'full', foot: 'Two of three' },
     badge('Where you are'),
     h('div', {},
       display('Where are you, honestly?'),
@@ -111,7 +111,7 @@ function onboarding() {
         return button;
       }));
 
-    return card({ tone: 'blush', className: 'full', foot: 'Three of three' },
+    return card({ tone: 'rose', className: 'full', foot: 'Three of three' },
       badge('What you came for'),
       h('div', {}, display('What did you come for?'), list),
       h('div', {}, act('Finish', () => { draft.focus = [...chosen]; next(); })));
@@ -166,7 +166,7 @@ async function show(route, module) {
   try {
     view = await module.default(context);
   } catch (error) {
-    view = { title: 'Something broke', el: card({ tone: 'blush', className: 'full', symbol: 'cloud', figureSize: 'sm' },
+    view = { title: 'Something broke', el: card({ tone: 'rose', className: 'full', symbol: 'cloud', figureSize: 'sm' },
       badge('Sorry'), title('That screen did not open'),
       h('p', { class: 'note', 'data-level': 'warn', text: String((error && error.message) || error) })) };
   }

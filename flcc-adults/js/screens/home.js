@@ -70,7 +70,7 @@ export default async function home(ctx) {
           ctx.go(found ? `bible/${found.book.n}/${found.chapter}` : 'bible');
         }))));
   } else {
-    cards.push(card({ tone: 'blush', className: 'full', symbol: 'cloud', figureSize: 'sm' },
+    cards.push(card({ tone: 'rose', className: 'full', symbol: 'cloud', figureSize: 'sm' },
       badge('Today'), title('Today’s Scripture did not load'),
       small('It needs a connection the first time. Everything else here still works.')));
   }
@@ -122,14 +122,14 @@ export default async function home(ctx) {
     const state = plan.state();
     const current = plans.find((one) => one.id === state.id);
     if (!current) {
-      reading.dataset.tone = 'cream';
+      reading.dataset.tone = 'paper';
       swap(reading,
         h('div', { class: 'card-body' },
           h('div', { class: 'card-head' },
             h('div', {}, badge('Reading plan'),
               h('div', { style: 'margin-top:.8rem' }, title('Nothing on the go')),
               h('p', { class: 'lead', style: 'margin-top:.3rem', text: 'A chapter a day, and a gospel is read inside three weeks.' })),
-            figure('book', 'cream', { size: 'sm' })),
+            figure('book', 'paper', { size: 'sm' })),
           actions(act('Choose a plan', () => ctx.go('bible'), { quiet: true }))),
         h('div', { class: 'card-foot' }, h('span', { text: 'Three to choose from' })));
       return;
@@ -143,7 +143,7 @@ export default async function home(ctx) {
             h('div', { style: 'margin-top:.8rem' }, title(at.done ? 'Finished' : at.at.ref)),
             at.at && !at.done ? h('p', { class: 'lead', style: 'margin-top:.3rem', text: at.at.note }) : null),
           figure(current.symbol, current.tone, { size: 'sm' })),
-        thread(at.percent, 'yellow'),
+        thread(at.percent, 'sunshine'),
         actions(act(at.done ? 'See the plan' : 'Read today', () => ctx.go(`plan/${current.id}`)))),
       h('div', { class: 'card-foot' },
         h('span', { text: current.title }),

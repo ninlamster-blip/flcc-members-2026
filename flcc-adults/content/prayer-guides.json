@@ -30,7 +30,7 @@
         "seconds": 60
       }
     ],
-    "tone": "blush",
+    "tone": "rose",
     "symbol": "mug"
   },
   {
@@ -95,7 +95,7 @@
         "seconds": 45
       }
     ],
-    "tone": "yellow",
+    "tone": "sunshine",
     "symbol": "sun"
   },
   {
@@ -130,7 +130,7 @@
         "seconds": 60
       }
     ],
-    "tone": "lilac",
+    "tone": "rose",
     "symbol": "heart"
   },
   {
@@ -159,7 +159,7 @@
         "seconds": 75
       }
     ],
-    "tone": "sky",
+    "tone": "navy",
     "symbol": "star"
   },
   {
@@ -189,7 +189,7 @@
         "seconds": 60
       }
     ],
-    "tone": "cream",
+    "tone": "captain",
     "symbol": "blob"
   }
 ]

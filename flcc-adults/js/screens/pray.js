@@ -16,11 +16,11 @@ import * as prayers from '../core/prayers.js';
 export default async function prayScreen(ctx) {
   const cards = [];
   const [guides, categories] = await Promise.all([content.guides(), content.categories()]);
-  const toneOf = (id) => (categories.find((one) => one.id === id) || {}).tone || 'cream';
+  const toneOf = (id) => (categories.find((one) => one.id === id) || {}).tone || 'paper';
   const today = rotation.pick(guides, { offset: 3 });
 
   // ── Take a moment ───────────────────────────────────────────────────────
-  cards.push(card({ tone: 'blush', tall: true, className: 'full', symbol: today.symbol,
+  cards.push(card({ tone: 'rose', tall: true, className: 'full', symbol: today.symbol,
       foot: [`Today · ${today.title}`, starRow(5)] },
     h('div', {},
       badge('Pray'),
@@ -63,7 +63,7 @@ export default async function prayScreen(ctx) {
       .map((one) => ({ ...one, items: open.filter((item) => item.category === one.id) }))
       .filter((one) => one.items.length);
     const orphans = open.filter((item) => !categories.some((one) => one.id === item.category));
-    if (orphans.length) grouped.push({ id: 'other', label: 'Other', tone: 'cream', items: orphans });
+    if (orphans.length) grouped.push({ id: 'other', label: 'Other', tone: 'paper', items: orphans });
 
     cards.push(section({ className: 'full' },
       badge(`My prayer list · ${open.length} open`),
@@ -73,7 +73,7 @@ export default async function prayScreen(ctx) {
           h('span', { class: 'row-meta', text: String(group.items.length) })),
         rows({}, ...group.items.map((item) => prayerRow(ctx, item, group.tone)))))));
   } else {
-    cards.push(card({ tone: 'cream', className: 'full', symbol: 'heart', figureSize: 'sm' },
+    cards.push(card({ tone: 'paper', className: 'full', symbol: 'heart', figureSize: 'sm' },
       badge('My prayer list'),
       body('Nothing on the list yet. Most people start with one name and one worry.')));
   }
@@ -81,7 +81,7 @@ export default async function prayScreen(ctx) {
   // ── Answered ────────────────────────────────────────────────────────────
   const answered = prayers.answered();
   if (answered.length) {
-    cards.push(card({ tone: 'yellow', className: 'full',
+    cards.push(card({ tone: 'sunshine', className: 'full',
         foot: [`${answered.length} answered`, starRow(5)] },
       badge('Answered'),
       rows({}, ...answered.slice(0, 8).map((item) => h('div', { class: 'row' },
@@ -110,7 +110,7 @@ export default async function prayScreen(ctx) {
   // ── Reflections ─────────────────────────────────────────────────────────
   const written = prayers.reflections();
   if (written.length) {
-    cards.push(card({ tone: 'lilac', className: 'full', foot: `${written.length} kept` },
+    cards.push(card({ tone: 'sky', className: 'full', foot: `${written.length} kept` },
       badge('Reflections'),
       rows({}, ...written.slice(0, 6).map((entry) => h('div', { class: 'row' },
         h('span'),

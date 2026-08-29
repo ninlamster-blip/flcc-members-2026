@@ -85,13 +85,13 @@ export default async function prayerScreen(ctx) {
   });
 
   const el = h('div', { style: 'display:contents' },
-    poster({ tone: 'pink', tall: true, className: 'full' },
+    poster({ tone: 'rose', tall: true, className: 'full' },
       label('Share a prayer'),
       h('div', {},
         display('WHAT’S GOING ON?'),
         h('div', { style: 'margin-top:1.3rem' }, moodRow),
         h('div', { style: 'margin-top:1.3rem' }, text)),
-      h('div', { class: 'poster-foot' }, h('span'), art('hands', { tone: 'pink', size: 'sm' }))),
+      h('div', { class: 'poster-foot' }, h('span'), art('hands', { tone: 'rose', size: 'sm' }))),
 
     poster({ tone: 'paper', className: 'full' },
       label('Who sees this'),
@@ -144,7 +144,7 @@ export default async function prayerScreen(ctx) {
             record.deliveredAt = new Date().toISOString();
             store.write(store.KEYS.prayers, state);
             moment({
-              tone: 'sage',
+              tone: 'captain',
               eyebrow: 'Sent',
               big: 'YOUR LEADERS HAVE IT.',
               line: 'A ministry leader will read this. If it is urgent, please also tell an adult you trust today — an app is not a person.',
@@ -155,7 +155,7 @@ export default async function prayerScreen(ctx) {
           }
 
           moment({
-            tone: 'pink',
+            tone: 'rose',
             eyebrow: 'Saved on this phone',
             big: sent.reason === 'off' ? 'WANT A LEADER TO SEE IT?' : 'IT DID NOT SEND.',
             line: sent.reason === 'off'

@@ -3,30 +3,30 @@
     "id": "family",
     "label": "Family",
     "line": "The people at home, and the people here.",
-    "tone": "lilac"
+    "tone": "sky"
   },
   {
     "id": "work",
     "label": "Work",
     "line": "The job, the people in it, and the papers.",
-    "tone": "sky"
+    "tone": "captain"
   },
   {
     "id": "personal",
     "label": "Personal",
     "line": "What you would not say out loud yet.",
-    "tone": "blush"
+    "tone": "rose"
   },
   {
     "id": "finances",
     "label": "Finances",
     "line": "Provision, debt, and what you send home.",
-    "tone": "yellow"
+    "tone": "sunshine"
   },
   {
     "id": "ministry",
     "label": "Ministry",
     "line": "The church, those you serve, those you lead.",
-    "tone": "orange"
+    "tone": "poppy"
   }
 ]

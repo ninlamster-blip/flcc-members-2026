@@ -45,7 +45,7 @@ async function reader(ctx, entry, chapter) {
   try {
     read = await scriptureCore.passage(code, entry, at);
   } catch {
-    return { title: entry.name, el: card({ tone: 'blush', className: 'full', symbol: 'cloud', figureSize: 'sm' },
+    return { title: entry.name, el: card({ tone: 'rose', className: 'full', symbol: 'cloud', figureSize: 'sm' },
       badge(entry.name),
       note('This book is not on the device yet, and there is no connection. Open it once online and it stays.', 'warn')) };
   }
@@ -185,7 +185,7 @@ export default async function bibleScreen(ctx) {
   let bible;
   try { bible = await scriptureCore.manifest(); }
   catch (error) {
-    return { title: 'Bible', el: card({ tone: 'blush', className: 'full' },
+    return { title: 'Bible', el: card({ tone: 'rose', className: 'full' },
       badge('The Bible'), note(`The Bible did not load. ${error.message}`, 'warn')) };
   }
 
@@ -223,7 +223,7 @@ export default async function bibleScreen(ctx) {
   // ── Carry on ────────────────────────────────────────────────────────────
   const last = state.last && byNumber(state.last.n);
   if (last) {
-    cards.push(card({ tone: 'cream', symbol: 'blob', figureSize: 'sm', foot: 'Carry on' },
+    cards.push(card({ tone: 'paper', symbol: 'blob', figureSize: 'sm', foot: 'Carry on' },
       badge('Where you stopped'),
       title(`${last.name} ${state.last.chapter}`),
       actions(act('Open it', () => ctx.go(`bible/${last.n}/${state.last.chapter}`), { small: true }))));

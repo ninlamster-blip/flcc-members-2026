@@ -26,26 +26,38 @@
 :root {
   color-scheme: light;
 
-  /* ── The palette, taken from the printed cards ─────────────────────────── */
-  --paper:  #FBF3E3;   /* the page: warm cream stock */
-  --ink:    #1B2A5C;   /* navy: every letter, every outline */
-  --white:  #FFFDF7;   /* the badge pill, and the calm of the Bible reader */
+  /* ── The palette ───────────────────────────────────────────────────────
+     Six named colours, and the two neutrals they sit on. Nothing else. */
+  --sky:      #C3D7EA;
+  --captain:  #4173B0;
+  --navy:     #2B4C6D;
+  --rose:     #EABCB5;
+  --poppy:    #EB8861;
+  --sunshine: #EDCE7A;
 
-  --yellow: #F5C518;   --yellow-band: #EFA02A;
-  --cream:  #F7E6BE;   --cream-band:  #F0A88F;
-  --blush:  #F0A88F;   --blush-band:  #DE6B58;
-  --sky:    #86CEDE;   --sky-band:    #3FAFC2;
-  --lilac:  #CEBFE2;   --lilac-band:  #B49CC8;
-  --coral:  #E4553C;   --coral-band:  #C2402A;
-  --orange: #F0843C;   --orange-band: #D2662A;
-  --grape:  #6E44A0;
-  --star:   #FFC93C;
+  --paper:  #FBF8F0;      /* the page: warm off-white stock */
+  --white:  #FFFFFF;      /* the badge pill, and the calm of the Bible reader */
+  --ink:    var(--navy);  /* navy is the only ink: every letter, every outline */
+  --star:   var(--sunshine);
+
+  /* Which band goes under which card.
+     Poppy is deliberately absent from both lists. Navy on poppy is 3.5:1 —
+     fine behind a headline, not fine behind a paragraph — so poppy is an
+     accent (stems, tags, stars, characters) and never a surface with body
+     copy on it. The bands are always the darker of the two blues, so their
+     small uppercase type stays readable whatever sits above. */
+  --sky-band:      var(--captain);
+  --rose-band:     var(--navy);
+  --sunshine-band: var(--navy);
+  --captain-band:  var(--navy);
+  --navy-band:     var(--captain);
+  --paper-band:    var(--navy);
 
   /* Navy at reduced weight, for supporting text. Never a grey. */
-  --ink-70: rgba(27, 42, 92, .70);
-  --ink-55: rgba(27, 42, 92, .55);
-  --ink-15: rgba(27, 42, 92, .15);
-  --ink-08: rgba(27, 42, 92, .08);
+  --ink-70: rgba(43, 76, 109, .74);
+  --ink-55: rgba(43, 76, 109, .58);
+  --ink-15: rgba(43, 76, 109, .18);
+  --ink-08: rgba(43, 76, 109, .09);
 
   /* ── Type ──────────────────────────────────────────────────────────────── */
   --sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -97,19 +109,21 @@ button { font: inherit; color: inherit; border: 0; background: none; }
 
 .label {
   font-size: var(--label);
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: .14em;
   text-transform: uppercase;
   line-height: 1.2;
   color: var(--ink-70);
 }
 
-.display { font-size: var(--display); font-weight: 800; letter-spacing: -.025em; line-height: 1.02; text-wrap: balance; }
-.title   { font-size: var(--title);   font-weight: 800; letter-spacing: -.02em;  line-height: 1.12; text-wrap: balance; }
+/* Headings are the heaviest weight the family has. On these cards a heading
+   is a block of colour in its own right, so 800 read as a compromise. */
+.display { font-size: var(--display); font-weight: 900; letter-spacing: -.03em; line-height: 1; text-wrap: balance; }
+.title   { font-size: var(--title);   font-weight: 900; letter-spacing: -.025em; line-height: 1.1; text-wrap: balance; }
 .lead    { font-size: var(--lead); line-height: 1.45; font-weight: 500; color: var(--ink-70); }
 .body    { font-size: var(--body); line-height: 1.6; }
 .dim     { color: var(--ink-70); }
-.numeral { font-size: var(--numeral); font-weight: 800; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.numeral { font-size: var(--numeral); font-weight: 900; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
 .small   { font-size: .8rem; line-height: 1.5; color: var(--ink-70); font-weight: 500; }
 
 /* Scripture is the one serif, and the one thing not shouted. */
@@ -150,7 +164,7 @@ button { font: inherit; color: inherit; border: 0; background: none; }
   border: var(--line) solid var(--ink);
   border-radius: var(--radius);
   box-shadow: var(--drop);
-  background: var(--cream);
+  background: var(--sky);
   overflow: hidden;
   width: 100%;
   text-align: left;
@@ -175,14 +189,35 @@ button { font: inherit; color: inherit; border: 0; background: none; }
   font-size: var(--label); font-weight: 800; letter-spacing: .13em; text-transform: uppercase;
 }
 
-.card[data-tone="cream"]  { background: var(--cream);  } .card[data-tone="cream"]  .card-foot { background: var(--cream-band); }
-.card[data-tone="yellow"] { background: var(--yellow); } .card[data-tone="yellow"] .card-foot { background: var(--yellow-band); }
-.card[data-tone="blush"]  { background: var(--blush);  } .card[data-tone="blush"]  .card-foot { background: var(--blush-band); }
-.card[data-tone="sky"]    { background: var(--sky);    } .card[data-tone="sky"]    .card-foot { background: var(--sky-band); }
-.card[data-tone="lilac"]  { background: var(--lilac);  } .card[data-tone="lilac"]  .card-foot { background: var(--lilac-band); }
-.card[data-tone="coral"]  { background: var(--coral);  } .card[data-tone="coral"]  .card-foot { background: var(--coral-band); }
-.card[data-tone="orange"] { background: var(--orange); } .card[data-tone="orange"] .card-foot { background: var(--orange-band); }
-.card[data-tone="paper"]  { background: var(--white);  } .card[data-tone="paper"]  .card-foot { background: var(--cream); }
+/* A card is one colour with a band under it, and the band is always the
+   darker of the two blues so its small type stays readable. Dark-bodied cards
+   swap to paper-coloured text throughout. */
+.card[data-tone="sky"]      { background: var(--sky);      } .card[data-tone="sky"]      .card-foot { background: var(--sky-band); }
+.card[data-tone="rose"]     { background: var(--rose);     } .card[data-tone="rose"]     .card-foot { background: var(--rose-band); }
+.card[data-tone="sunshine"] { background: var(--sunshine); } .card[data-tone="sunshine"] .card-foot { background: var(--sunshine-band); }
+.card[data-tone="paper"]    { background: var(--white);    } .card[data-tone="paper"]    .card-foot { background: var(--paper-band); }
+.card[data-tone="captain"]  { background: var(--captain);  } .card[data-tone="captain"]  .card-foot { background: var(--captain-band); }
+.card[data-tone="navy"]     { background: var(--navy);     } .card[data-tone="navy"]     .card-foot { background: var(--navy-band); }
+
+/* Every band carries paper-coloured type, whatever the card above it. */
+.card-foot { color: var(--paper); }
+.card-foot .stars .star path { stroke: var(--paper); }
+
+/* Dark cards: the type, the badge and the buttons all invert together. */
+.card[data-tone="captain"], .card[data-tone="navy"] { color: var(--paper); }
+.card[data-tone="captain"] .lead, .card[data-tone="navy"] .lead,
+.card[data-tone="captain"] .small, .card[data-tone="navy"] .small,
+.card[data-tone="captain"] .dim, .card[data-tone="navy"] .dim { color: rgba(251, 248, 240, .82); }
+.card[data-tone="captain"] .act, .card[data-tone="navy"] .act {
+  background: var(--paper); color: var(--navy); border-color: var(--paper); box-shadow: 3px 4px 0 rgba(251, 248, 240, .45);
+}
+.card[data-tone="captain"] .act[data-quiet], .card[data-tone="navy"] .act[data-quiet] {
+  background: transparent; color: var(--paper);
+}
+.card[data-tone="captain"] .thread, .card[data-tone="navy"] .thread { border-color: var(--paper); background: rgba(251, 248, 240, .2); }
+.card[data-tone="captain"] .thread > i, .card[data-tone="navy"] .thread > i { background: var(--sunshine); }
+.card[data-tone="captain"] textarea, .card[data-tone="navy"] textarea,
+.card[data-tone="captain"] input, .card[data-tone="navy"] input { border-color: var(--paper); }
 
 button.card, a.card { cursor: pointer; transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease); }
 button.card:active, a.card:active { transform: translate(3px, 4px); box-shadow: 2px 2px 0 var(--ink); }
@@ -203,7 +238,7 @@ button.card:active, a.card:active { transform: translate(3px, 4px); box-shadow: 
   background: var(--white); color: var(--ink);
   border: 2px solid var(--ink);
   border-radius: 99px;
-  font-size: var(--label); font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  font-size: var(--label); font-weight: 900; letter-spacing: .12em; text-transform: uppercase;
   line-height: 1.2;
   align-self: flex-start;
 }
@@ -234,10 +269,9 @@ button.card:active, a.card:active { transform: translate(3px, 4px); box-shadow: 
 .stars .star { width: 15px; height: 15px; display: block; }
 .stars .star path { fill: none; }
 .stars .star[data-on] path { fill: var(--star); }
-/* On a warm band a yellow star disappears into it, so there it goes navy. */
-.card[data-tone="yellow"] .stars .star[data-on] path,
-.card[data-tone="orange"] .stars .star[data-on] path,
-.card[data-tone="cream"] .stars .star[data-on] path { fill: var(--ink); }
+/* On a sunshine card the sunshine star would vanish, so there it goes navy. */
+.card[data-tone="sunshine"] .stars .star[data-on] path { fill: var(--ink); }
+.card[data-tone="sunshine"] .card-foot .stars .star[data-on] path { fill: var(--sunshine); }
 .sparkle { width: 20px; height: 20px; display: block; }
 
 /* ── Actions ─────────────────────────────────────────────────────────────── */
@@ -249,7 +283,7 @@ button.card:active, a.card:active { transform: translate(3px, 4px); box-shadow: 
   border: 2px solid var(--ink);
   border-radius: 99px;
   box-shadow: var(--drop-sm);
-  font-weight: 700; font-size: .95rem; letter-spacing: -.01em;
+  font-weight: 800; font-size: .95rem; letter-spacing: -.01em;
   cursor: pointer;
   transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
 }
@@ -293,7 +327,7 @@ button.card:active, a.card:active { transform: translate(3px, 4px); box-shadow: 
 }
 .row:active, button.row:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 div.row { cursor: default; }
-.row-title { font-size: 1rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.25; }
+.row-title { font-size: 1rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; }
 .row-note { font-size: .84rem; line-height: 1.45; color: var(--ink-70); margin-top: .2rem; }
 .row-meta { font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-55); white-space: nowrap; }
 .row-num {
@@ -308,16 +342,15 @@ div.row { cursor: default; }
 .stem {
   width: 1.1rem; height: 1.1rem; flex: none;
   border: 2px solid var(--ink); border-radius: 5px;
-  background: var(--cream);
+  background: var(--sky);
   align-self: start; margin-top: .15rem;
 }
-.stem[data-accent="yellow"] { background: var(--yellow); }
-.stem[data-accent="blush"]  { background: var(--blush); }
-.stem[data-accent="sky"]    { background: var(--sky); }
-.stem[data-accent="lilac"]  { background: var(--lilac); }
-.stem[data-accent="coral"]  { background: var(--coral); }
-.stem[data-accent="orange"] { background: var(--orange); }
-.stem[data-accent="cream"]  { background: var(--cream); }
+.stem[data-accent="sky"]      { background: var(--sky); }
+.stem[data-accent="rose"]     { background: var(--rose); }
+.stem[data-accent="sunshine"] { background: var(--sunshine); }
+.stem[data-accent="poppy"]    { background: var(--poppy); }
+.stem[data-accent="captain"]  { background: var(--captain); }
+.stem[data-accent="navy"]     { background: var(--navy); }
 
 .tag {
   display: inline-flex; align-items: center; gap: .4rem;
@@ -325,14 +358,14 @@ div.row { cursor: default; }
 }
 .tag::before {
   content: ""; width: .7rem; height: .7rem; flex: none;
-  border: 2px solid var(--ink); border-radius: 4px; background: var(--cream);
+  border: 2px solid var(--ink); border-radius: 4px; background: var(--sky);
 }
-.tag[data-accent="yellow"]::before { background: var(--yellow); }
-.tag[data-accent="blush"]::before  { background: var(--blush); }
-.tag[data-accent="sky"]::before    { background: var(--sky); }
-.tag[data-accent="lilac"]::before  { background: var(--lilac); }
-.tag[data-accent="coral"]::before  { background: var(--coral); }
-.tag[data-accent="orange"]::before { background: var(--orange); }
+.tag[data-accent="sky"]::before      { background: var(--sky); }
+.tag[data-accent="rose"]::before     { background: var(--rose); }
+.tag[data-accent="sunshine"]::before { background: var(--sunshine); }
+.tag[data-accent="poppy"]::before    { background: var(--poppy); }
+.tag[data-accent="captain"]::before  { background: var(--captain); }
+.tag[data-accent="navy"]::before     { background: var(--navy); }
 
 /* ── Progress: a chunky outlined bar ─────────────────────────────────────── */
 
@@ -344,10 +377,10 @@ div.row { cursor: default; }
   overflow: hidden;
 }
 .thread > i { display: block; height: 100%; background: var(--ink); transition: width 700ms var(--ease); }
-.thread[data-accent="yellow"] > i { background: var(--yellow); }
-.thread[data-accent="sky"] > i    { background: var(--sky); }
-.thread[data-accent="blush"] > i  { background: var(--blush); }
-.thread[data-accent="lilac"] > i  { background: var(--lilac); }
+.thread[data-accent="sunshine"] > i { background: var(--sunshine); }
+.thread[data-accent="poppy"] > i    { background: var(--poppy); }
+.thread[data-accent="sky"] > i      { background: var(--sky); }
+.thread[data-accent="captain"] > i  { background: var(--captain); }
 
 .figures { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
 .figures > div {
@@ -427,7 +460,7 @@ div.row { cursor: default; }
   max-width: 32rem; margin: 0 auto; width: 100%;
 }
 .app-head .greet { font-size: 1rem; font-weight: 600; letter-spacing: -.02em; }
-.app-head .greet b { font-weight: 800; }
+.app-head .greet b { font-weight: 900; }
 
 .back {
   display: inline-flex; align-items: center; justify-content: center;
@@ -440,7 +473,7 @@ div.row { cursor: default; }
 }
 .back:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 
-/* The bottom bar is itself a card: cream stock, navy rule along the top, and
+/* The bottom bar is itself a card: paper stock, navy rule along the top, and
    the active tab wearing the same white badge as everything else. */
 .tabs {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
@@ -491,12 +524,12 @@ input::placeholder, textarea::placeholder { color: var(--ink-55); font-weight: 5
   background: var(--white);
   border: 2px solid var(--ink); border-radius: 14px;
   box-shadow: var(--drop-sm);
-  font-size: 1rem; font-weight: 700; letter-spacing: -.015em;
+  font-size: 1rem; font-weight: 800; letter-spacing: -.02em;
   transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease), background var(--speed) var(--ease);
 }
 .choice:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 .choice::after { content: ""; width: 1.05rem; height: 1.05rem; flex: none; border: 2px solid var(--ink); border-radius: 99px; }
-.choice[aria-pressed="true"], .choice[data-chosen] { background: var(--yellow); }
+.choice[aria-pressed="true"], .choice[data-chosen] { background: var(--sunshine); }
 .choice[aria-pressed="true"]::after, .choice[data-chosen]::after { background: var(--ink); }
 .choice-list { display: flex; flex-direction: column; gap: .55rem; }
 
@@ -508,10 +541,10 @@ input::placeholder, textarea::placeholder { color: var(--ink-55); font-weight: 5
 .note {
   font-size: .88rem; line-height: 1.55;
   padding: .85rem 1rem;
-  background: var(--cream);
+  background: var(--sky);
   border: 2px solid var(--ink); border-radius: 14px;
 }
-.note[data-level="warn"] { background: var(--blush); }
+.note[data-level="warn"] { background: var(--poppy); }
 
 .rule { height: 2px; background: var(--ink-15); border: 0; margin: .2rem 0; }
 
@@ -521,7 +554,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-55); font-weight: 5
   position: fixed; inset: 0; z-index: 60;
   display: flex; flex-direction: column; justify-content: center; gap: 1.3rem;
   padding: 2rem var(--gutter) calc(2.4rem + env(safe-area-inset-bottom));
-  background: var(--yellow);
+  background: var(--sunshine);
   animation: moment-in 320ms var(--ease) both;
 }
 .moment .figure { margin: 0 auto 0 0; width: 8rem; }

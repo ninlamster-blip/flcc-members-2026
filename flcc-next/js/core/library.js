@@ -65,7 +65,7 @@ export const KINDS = [
     note: 'One a day, in order, for as many days as there are entries.',
     key: (row) => row.id || row.title,
     title: (row) => row.title,
-    blank: () => ({ title: '', ref: '', text: '', translation: 'WEB', tone: 'blue', symbol: 'light',
+    blank: () => ({ title: '', ref: '', text: '', translation: 'WEB', tone: 'sky', symbol: 'light',
       reflection: { kids: '', teens: '' }, prayer: { kids: '', teens: '' },
       challenge: { kids: '', teens: '' }, devotion: { kids: '', teens: '' }, reviewedBy: '' }),
     fields: [
@@ -158,7 +158,7 @@ export const KINDS = [
     note: 'A game listed here must have an implementation in js/screens/game.js, so this is for renaming and retuning rather than inventing.',
     key: (row) => row.id,
     title: (row) => row.title,
-    blank: () => ({ id: '', title: '', tone: 'pink', symbol: 'question', difficulty: 2,
+    blank: () => ({ id: '', title: '', tone: 'rose', symbol: 'question', difficulty: 2,
       blurb: { kids: '', teens: '' } }),
     fields: [
       { path: 'id', label: 'Id', type: 'text', help: 'Must match a game the app knows how to play.' },
@@ -177,7 +177,7 @@ export const KINDS = [
     note: 'The lesson count here must match the number of lessons in the journey’s own file.',
     key: (row) => row.id,
     title: (row) => row.title,
-    blank: () => ({ id: '', title: '', tone: 'sage', symbol: 'book', ageGroup: 'both', lessons: 0,
+    blank: () => ({ id: '', title: '', tone: 'captain', symbol: 'book', ageGroup: 'both', lessons: 0,
       blurb: { kids: '', teens: '' } }),
     fields: [
       { path: 'id', label: 'Id', type: 'text' },
@@ -197,7 +197,7 @@ export const KINDS = [
     note: 'The things young people ask about that are not, on the face of it, Bible questions.',
     key: (row) => row.id || row.title,
     title: (row) => row.title,
-    blank: () => ({ id: '', title: '', tone: 'pink', symbol: 'bulb', ageGroup: 'both',
+    blank: () => ({ id: '', title: '', tone: 'rose', symbol: 'bulb', ageGroup: 'both',
       verse: '', ref: '', hook: { kids: '', teens: '' }, body: { kids: '', teens: '' },
       step: { kids: '', teens: '' } }),
     fields: [
@@ -221,7 +221,7 @@ export const KINDS = [
     note: 'What is on. An RSVP is remembered on the young person’s own device and sent nowhere.',
     key: (row) => row.id,
     title: (row) => (row.title && (row.title.teens || row.title.kids)) || row.id,
-    blank: () => ({ id: '', title: { kids: '', teens: '' }, tone: 'cream', symbol: 'calendar',
+    blank: () => ({ id: '', title: { kids: '', teens: '' }, tone: 'sunshine', symbol: 'calendar',
       when: '', where: '', for: 'both', blurb: '' }),
     fields: [
       { path: 'id', label: 'Id', type: 'text' },
@@ -242,7 +242,7 @@ export const KINDS = [
     note: 'Earned from what the app already records. Nothing else can be counted.',
     key: (row) => row.id || row.title,
     title: (row) => row.title,
-    blank: () => ({ id: '', title: '', tone: 'cream', symbol: 'star', how: '',
+    blank: () => ({ id: '', title: '', tone: 'sunshine', symbol: 'star', how: '',
       need: { kind: 'lesson', count: 1 } }),
     fields: [
       { path: 'id', label: 'Id', type: 'text' },
@@ -263,7 +263,7 @@ export const KINDS = [
     note: 'A feeling, and the places in the Bible to read about it. Every reference is opened in the reader, so it has to be one the app can resolve.',
     key: (row) => row.id,
     title: (row) => (row.title && (row.title.teens || row.title.kids)) || row.id,
-    blank: () => ({ id: '', tone: 'blue', symbol: 'light', title: { kids: '', teens: '' },
+    blank: () => ({ id: '', tone: 'sky', symbol: 'light', title: { kids: '', teens: '' },
       need: { kids: '', teens: '' }, refs: [''] }),
     fields: [
       { path: 'id', label: 'Id', type: 'text' },

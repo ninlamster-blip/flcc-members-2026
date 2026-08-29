@@ -16,7 +16,7 @@ export default async function sessionScreen(ctx) {
   const path = paths.find((one) => one.id === pathId);
   const index = sessions.findIndex((one) => one.id === sessionId);
   const session = sessions[index];
-  if (!path || !session) return { title: 'Grow', el: card({ tone: 'cream', className: 'full' }, note('That session has moved.')) };
+  if (!path || !session) return { title: 'Grow', el: card({ tone: 'paper', className: 'full' }, note('That session has moved.')) };
 
   const key = `${pathId}:${session.id}`;
   const done = progress.isDone('session', key);
@@ -33,7 +33,7 @@ export default async function sessionScreen(ctx) {
   cards.push(card({ tone: 'paper', className: 'full' },
     ...session.body.map((paragraph) => body(paragraph))));
 
-  cards.push(card({ tone: 'cream', symbol: 'blob', figureSize: 'sm' },
+  cards.push(card({ tone: 'paper', symbol: 'blob', figureSize: 'sm' },
     badge('Sit with this'),
     h('p', { class: 'scripture scripture--flow', text: session.question })));
 

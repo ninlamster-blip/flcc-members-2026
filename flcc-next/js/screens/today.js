@@ -15,11 +15,11 @@ export default async function todayScreen(ctx) {
   const day = progress.today(now);
 
   // ── The day's word ────────────────────────────────────────────────────────
-  const wordBlock = poster({ tone: 'blue', tall: true, className: 'full' }, waiting());
+  const wordBlock = poster({ tone: 'sky', tall: true, className: 'full' }, waiting());
   el.appendChild(wordBlock);
 
   // ── The day's challenge ───────────────────────────────────────────────────
-  const challengeBlock = poster({ tone: 'cream', tall: true, className: 'full' });
+  const challengeBlock = poster({ tone: 'sunshine', tall: true, className: 'full' });
   el.appendChild(challengeBlock);
 
   // ── Where you are up to ───────────────────────────────────────────────────
@@ -36,7 +36,7 @@ export default async function todayScreen(ctx) {
     catch { wordBlock.replaceChildren(label('Today’s word'), note('Today’s word could not be loaded.')); return; }
     if (!entry) return;
 
-    wordBlock.dataset.tone = entry.tone || 'blue';
+    wordBlock.dataset.tone = entry.tone || 'sky';
     wordBlock.replaceChildren(
       label('Today’s word'),
       h('div', {},
@@ -45,7 +45,7 @@ export default async function todayScreen(ctx) {
         reference(entry.ref, ctx.go, { style: 'margin-top:.9rem' })),
       h('div', { class: 'poster-foot' },
         go('Read the devotional', () => ctx.go('devotion')),
-        art(entry.symbol || 'light', { tone: entry.tone || 'blue', size: 'sm' })));
+        art(entry.symbol || 'light', { tone: entry.tone || 'sky', size: 'sm' })));
 
     const challengeText = forMode(entry.challenge, ctx.mode);
     const doneAlready = progress.isDone('challenge', day);
@@ -56,7 +56,7 @@ export default async function todayScreen(ctx) {
       if (result.first) toast(`+${progress.XP.challenge} XP`);
       if (result.streakGrew && [3, 7, 30, 100].includes(result.streak.count)) {
         import('../core/ui.js').then(({ moment }) => moment({
-          tone: 'cream', eyebrow: 'Streak', big: `${result.streak.count} DAYS.`,
+          tone: 'sunshine', eyebrow: 'Streak', big: `${result.streak.count} DAYS.`,
           line: 'Keep going.', action: 'Thanks',
         }));
       }
@@ -67,7 +67,7 @@ export default async function todayScreen(ctx) {
       h('div', {},
         display(challengeText.toUpperCase().replace(/\.$/, '')),
         entry.reflection ? h('p', { class: 'body dim', style: 'margin-top:1.2rem', text: forMode(entry.reflection, ctx.mode) }) : null),
-      h('div', { class: 'poster-foot' }, doneButton, art('flag', { tone: 'cream', size: 'sm' })));
+      h('div', { class: 'poster-foot' }, doneButton, art('flag', { tone: 'sunshine', size: 'sm' })));
   })();
 
   (async () => {

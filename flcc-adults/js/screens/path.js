@@ -9,7 +9,7 @@ export default async function pathScreen(ctx) {
   const [id] = ctx.route.args;
   const [paths, sessions] = await Promise.all([content.paths(), content.sessions(id).catch(() => [])]);
   const path = paths.find((one) => one.id === id);
-  if (!path) return { title: 'Grow', el: card({ tone: 'cream', className: 'full' }, note('That path has moved.')) };
+  if (!path) return { title: 'Grow', el: card({ tone: 'paper', className: 'full' }, note('That path has moved.')) };
 
   const where = progress.through('session', sessions.map((one) => `${id}:${one.id}`));
   const next = sessions.find((one) => !progress.isDone('session', `${id}:${one.id}`)) || sessions[0];
@@ -22,7 +22,7 @@ export default async function pathScreen(ctx) {
     h('div', {},
       display(path.title),
       h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:30ch', text: path.blurb })),
-    where.finished ? thread(where.percent, 'yellow') : null,
+    where.finished ? thread(where.percent, 'sunshine') : null,
     next ? actions(act(where.finished ? 'Continue' : 'Start the first session',
       () => ctx.go(`session/${path.id}/${next.id}`))) : null));
 
@@ -37,7 +37,7 @@ export default async function pathScreen(ctx) {
     })))));
 
   if (where.done) {
-    cards.push(card({ tone: 'yellow', className: 'full', symbol: 'star', figureSize: 'sm',
+    cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'star', figureSize: 'sm',
         foot: ['All done', starRow(5)] },
       badge('Finished'),
       title('That is the whole path.'),

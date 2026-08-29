@@ -15,7 +15,7 @@ export default async function momentScreen(ctx) {
   const [id] = ctx.route.args;
   const all = await content.moments();
   const moment = all.find((one) => one.id === id) || rotation.pick(all);
-  if (!moment) return { title: 'Today', el: card({ tone: 'cream', className: 'full' }, note('Nothing to read today.')) };
+  if (!moment) return { title: 'Today', el: card({ tone: 'paper', className: 'full' }, note('Nothing to read today.')) };
 
   const cards = [];
 
@@ -26,7 +26,7 @@ export default async function momentScreen(ctx) {
 
   cards.push(card({ tone: 'paper' }, badge('Reflection'), body(moment.reflection)));
 
-  cards.push(card({ tone: 'cream', symbol: 'blob', figureSize: 'sm' },
+  cards.push(card({ tone: 'paper', symbol: 'blob', figureSize: 'sm' },
     badge('Sit with this'),
     h('p', { class: 'scripture scripture--flow', text: moment.question })));
 

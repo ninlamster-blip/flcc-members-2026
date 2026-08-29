@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { MODES } from '../js/core/profile.js';
-import { hasSymbol, TONES } from '../js/core/art.js';
+import { hasSymbol, TONES, TONE_HEX } from '../js/core/art.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
 
@@ -152,4 +152,27 @@ test('the illustration set covers everything the content asks for', () => {
   }
   for (const name of used) assert.ok(hasSymbol(name), `content asks for a "${name}" symbol that does not exist`);
   assert.ok(used.size >= 8, 'the content should use a range of the illustration set');
+});
+
+/**
+ * The six colours, pinned.
+ *
+ * The adult edition (`flcc-adults/`) wears this same palette so the two apps
+ * read as one family, and they share no code — which means nothing but a test
+ * stops one of them drifting a shade at a time. The adult suite has the
+ * identical block; changing a colour means changing it in both.
+ */
+test('the shared palette is exactly these six colours on this paper', () => {
+  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
+  const expected = {
+    sunshine: '#EDCE7A', rose: '#EABCB5', sky: '#C3D7EA',
+    captain: '#4173B0', poppy: '#EB8861', paper: '#FBF8F0', ink: '#2B4C6D',
+  };
+  for (const [name, hex] of Object.entries(expected)) {
+    assert.match(css, new RegExp(`--${name}:\\s*${hex};`, 'i'),
+      `--${name} should be ${hex} — and flcc-adults/css/sticker.css must match`);
+  }
+  for (const [name, hex] of Object.entries(TONE_HEX)) {
+    if (expected[name]) assert.equal(hex.toUpperCase(), expected[name], `art.js has ${name} as ${hex}`);
+  }
 });

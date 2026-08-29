@@ -20,7 +20,7 @@ export default async function connectScreen(ctx) {
   const cards = [];
 
   // ── The family ──────────────────────────────────────────────────────────
-  cards.push(card({ tone: 'orange', tall: true, className: 'full', symbol: 'church',
+  cards.push(card({ tone: 'captain', tall: true, className: 'full', symbol: 'church',
       foot: ['Friday · 10:00 AM · Kuwait City', starRow(5)] },
     h('div', {},
       badge('FLCC'),
@@ -87,7 +87,7 @@ export default async function connectScreen(ctx) {
     small('To join one of these, speak to a leader after the Friday service. There is nobody at the other end of this app to receive a form.')));
 
   // ── Community prayer ────────────────────────────────────────────────────
-  cards.push(card({ tone: 'lilac', className: 'full', symbol: 'heart', figureSize: 'sm',
+  cards.push(card({ tone: 'sky', className: 'full', symbol: 'heart', figureSize: 'sm',
       foot: 'Tuesdays · 9:00 PM' },
     badge('Praying together'),
     title('The Tuesday meeting'),

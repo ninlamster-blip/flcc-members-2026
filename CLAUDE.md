@@ -102,12 +102,20 @@ storage. `flcc-adults/test/modules.test.mjs` fails any file that reaches past
 the Bible into the kids app, and `test/scripture.test.mjs` fails if the shared
 text moves.
 
-Four rules are enforced by tests rather than by review, because they are the
+Five rules are enforced by tests rather than by review, because they are the
 ones that erode first: every `box-shadow` is a hard offset with no blur; a
 surface is built by `card()` in `js/core/ui.js` and never by hand; a character
 is drawn through `figure()` and never straight from `js/core/art.js` (that is
-where "turn the characters off" is honoured); and every verse the authored
-writing quotes must match the shipped World English Bible word for word.
+where "turn the characters off" is honoured); poppy never carries a card
+(navy on poppy is ~3.5:1 — fine behind a headline, not behind a paragraph);
+and every verse the authored writing quotes must match the shipped World
+English Bible word for word.
+
+**The palette is shared with `flcc-next/`** — sky `#C3D7EA`, captain
+`#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`, sunshine
+`#EDCE7A`, on paper `#FBF8F0`. The two editions look like one family on
+purpose; they still share no code. Changing a colour means changing it in
+both `flcc-adults/css/sticker.css` and `flcc-next/css/next.css`.
 
 The design system's one untested rule is the one to hold onto in review: **the
 chrome stops at Scripture.** The Bible reader is plain white paper and serif

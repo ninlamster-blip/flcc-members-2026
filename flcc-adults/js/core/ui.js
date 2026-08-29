@@ -23,7 +23,7 @@ import { showFigures } from './profile.js';
  *                                 element, or [left, right]
  * @param {boolean} options.tall   a hero card: taller, and its content spreads
  */
-export function card({ tone = 'cream', symbol = '', figureSize = '', foot = null, tall = false,
+export function card({ tone = 'sky', symbol = '', figureSize = '', foot = null, tall = false,
                        as = 'div', onclick, className = '', ...rest } = {}, ...children) {
   const el = h(as, {
     class: `card ${className}`.trim(),
@@ -53,17 +53,17 @@ export function band(content) {
  * and leaving that to each call site is how a set stops looking like a set.
  */
 const ON = {
-  cream: 'coral', yellow: 'blush', blush: 'sky', sky: 'lilac',
-  lilac: 'yellow', coral: 'cream', orange: 'cream', paper: 'yellow',
+  sky: 'poppy', rose: 'captain', sunshine: 'poppy',
+  captain: 'sunshine', navy: 'rose', paper: 'captain',
 };
 
-export function figure(name, on = 'cream', { size = '' } = {}) {
+export function figure(name, on = 'paper', { size = '' } = {}) {
   // The reader's choice is honoured HERE rather than at each call site: a
   // screen that reaches for a character directly must go dark too, or turning
   // them off in You clears some screens and not others.
   if (!showFigures()) return h('span', { hidden: true });
   const el = h('div', { class: 'figure', ...(size ? { dataset: { size } } : {}) });
-  el.innerHTML = art.mascot(art.isMascot(name) ? name : art.pick(name), ON[on] || 'coral');
+  el.innerHTML = art.mascot(art.isMascot(name) ? name : art.pick(name), ON[on] || 'poppy');
   return el;
 }
 
@@ -233,7 +233,7 @@ export function rise(elements) {
  * A full-screen moment. The app has exactly one interruption, and this is it:
  * the end of a guided prayer, the end of a path. One line, one way out.
  */
-export function moment({ eyebrow = '', big, line = '', action = 'Amen', symbol = 'star', tone = 'yellow', onclose }) {
+export function moment({ eyebrow = '', big, line = '', action = 'Amen', symbol = 'star', tone = 'sunshine', onclose }) {
   const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: `background:var(--${tone})` });
   screen.append(
     figure(symbol, tone),

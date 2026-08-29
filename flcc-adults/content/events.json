@@ -6,7 +6,7 @@
     "where": "National Evangelical Church in Kuwait, Kuwait City",
     "blurb": "The whole church together. Communion on the first Friday of the month.",
     "recurring": true,
-    "tone": "orange"
+    "tone": "navy"
   },
   {
     "id": "prayer-tuesday",
@@ -15,7 +15,7 @@
     "where": "Online through the summer",
     "blurb": "An hour of prayer for the church, the network and the nation. Come late if your shift ends late.",
     "recurring": true,
-    "tone": "sky"
+    "tone": "captain"
   },
   {
     "id": "membership-class",
@@ -23,7 +23,7 @@
     "when": "Fridays in September · after the service",
     "where": "Church hall, room 2",
     "blurb": "Four sessions on what FLCC believes and what belonging here means.",
-    "tone": "orange"
+    "tone": "sky"
   },
   {
     "id": "couples-evening",
@@ -31,7 +31,7 @@
     "when": "Friday 18 September · 6:30 PM",
     "where": "FLCC hall",
     "blurb": "One evening on relationships across a distance — for married couples apart from their spouse, and for anyone single and tired of being asked about it.",
-    "tone": "blush"
+    "tone": "rose"
   },
   {
     "id": "mens-breakfast",
@@ -39,7 +39,7 @@
     "when": "Saturday 26 September · 7:30 AM",
     "where": "Salmiya, host's flat",
     "blurb": "Food, one short talk, and honest conversation. Numbers are capped at twenty so it stays a conversation.",
-    "tone": "yellow"
+    "tone": "sunshine"
   },
   {
     "id": "network-conference",
@@ -47,6 +47,6 @@
     "when": "12–14 November",
     "where": "N.E.C.K. compound",
     "blurb": "All fourteen FLCC churches together for three days of teaching and worship. Registration opens in October.",
-    "tone": "coral"
+    "tone": "captain"
   }
 ]

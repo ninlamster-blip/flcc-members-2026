@@ -18,7 +18,7 @@ export default async function meScreen(ctx) {
   const stamps = h('div', { style: 'display:contents' });
 
   const el = h('div', { style: 'display:contents' },
-    poster({ tone: 'cream', tall: true, className: 'full' },
+    poster({ tone: 'sunshine', tall: true, className: 'full' },
       label('Your journey'),
       h('div', {},
         h('p', { class: 'numeral', text: String(state.streak.count) }),
@@ -30,12 +30,12 @@ export default async function meScreen(ctx) {
           h('div', {},
             h('p', { class: 'label', text: `Level ${progress.level(xp)}` }),
             h('p', { class: 'headline', style: 'margin-top:.3rem', text: progress.levelTitle(xp).toUpperCase() })),
-          art('rocket', { tone: 'cream', size: 'sm' })))),
+          art('rocket', { tone: 'sunshine', size: 'sm' })))),
 
     h('div', { class: 'figures full' },
-      figure(progress.count('lesson'), 'lessons', 'blue'),
-      figure(progress.count('game'), 'games', 'sage'),
-      figure(progress.count('devotional'), 'devotionals', 'pink'),
+      figure(progress.count('lesson'), 'lessons', 'sky'),
+      figure(progress.count('game'), 'games', 'captain'),
+      figure(progress.count('devotional'), 'devotionals', 'rose'),
       figure(xp, 'total XP')),
 
     stamps,
@@ -49,7 +49,7 @@ export default async function meScreen(ctx) {
         h('div', { class: 'pill-row' },
           pill('Change my name', () => {
             const input = h('input', { type: 'text', value: user.name || '', maxlength: '24', 'aria-label': 'Your name' });
-            const block = poster({ tone: 'blue', tall: true, className: 'full' },
+            const block = poster({ tone: 'sky', tall: true, className: 'full' },
               label('You'), h('div', {}, display('WHAT SHOULD WE CALL YOU?'), h('div', { style: 'margin-top:1.4rem' }, input)),
               h('div', { class: 'poster-foot' }, pill('Save', () => {
                 saveUser({ name: input.value.trim() || user.name });

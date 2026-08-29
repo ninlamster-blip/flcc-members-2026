@@ -25,11 +25,11 @@ export const SEASONS = [
 ];
 
 export const FOCUS = [
-  { id: 'bible',    label: 'Knowing the Bible',        accent: 'mist' },
-  { id: 'prayer',   label: 'A real prayer life',       accent: 'peach' },
-  { id: 'family',   label: 'Marriage and family',      accent: 'olive' },
-  { id: 'work',     label: 'Faith at work',            accent: 'gold' },
-  { id: 'ministry', label: 'Serving the church',       accent: 'forest' },
+  { id: 'bible',    label: 'Knowing the Bible',  accent: 'sky' },
+  { id: 'prayer',   label: 'A real prayer life', accent: 'rose' },
+  { id: 'family',   label: 'Marriage and family', accent: 'sunshine' },
+  { id: 'work',     label: 'Faith at work',      accent: 'captain' },
+  { id: 'ministry', label: 'Serving the church', accent: 'poppy' },
 ];
 
 export function getUser() { return store.read(store.KEYS.user, null); }

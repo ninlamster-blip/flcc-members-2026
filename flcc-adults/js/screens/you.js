@@ -21,7 +21,7 @@ export default async function youScreen(ctx) {
   const state = progress.getProgress();
   const cards = [];
 
-  cards.push(card({ tone: 'yellow', className: 'full', symbol: 'blob',
+  cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'blob',
       foot: [seasonOf().label, starRow(5)] },
     badge('You'),
     h('div', {},
@@ -51,7 +51,7 @@ export default async function youScreen(ctx) {
       }))));
 
   // ── Appearance ──────────────────────────────────────────────────────────
-  cards.push(card({ tone: 'cream', className: 'full', symbol: 'sun', figureSize: 'sm' },
+  cards.push(card({ tone: 'paper', className: 'full', symbol: 'sun', figureSize: 'sm' },
     badge('Appearance'),
     body('Every card in this app carries one of twelve little characters. If you would rather read without them, turn them off — the cards, the colours and the layout all stay exactly as they are.'),
     actions(act(settings.figures === 'off' ? 'Turn the characters on' : 'Turn the characters off', () => {
@@ -91,7 +91,7 @@ export default async function youScreen(ctx) {
   })();
 
   // ── Start again ─────────────────────────────────────────────────────────
-  const erase = card({ tone: 'blush', className: 'full', foot: 'This cannot be undone' });
+  const erase = card({ tone: 'rose', className: 'full', foot: 'This cannot be undone' });
   swap(erase, h('div', { class: 'card-body' },
     badge('Start again'),
     body('This erases everything above — your prayers, your reflections, your reading, your verses. There is no copy anywhere else.'),

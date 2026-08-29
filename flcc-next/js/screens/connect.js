@@ -13,7 +13,7 @@ export default async function connectScreen(ctx) {
   const prayers = (store.read(store.KEYS.prayers, { items: [] }) || {}).items || [];
   const rsvps = (store.read(store.KEYS.rsvps, { going: [] }) || {}).going || [];
 
-  const prayerBlock = poster({ tone: 'pink', tall: true, className: 'full' },
+  const prayerBlock = poster({ tone: 'rose', tall: true, className: 'full' },
     label('Prayer'),
     h('div', {},
       display('YOU DON’T HAVE TO CARRY IT ALONE.'),
@@ -23,7 +23,7 @@ export default async function connectScreen(ctx) {
           : 'Tell God, and tell someone. What you write stays on this phone until you send it to a leader yourself — it is never put on a public feed.' })),
     h('div', { class: 'poster-foot' },
       pill('Share a prayer', () => ctx.go('prayer')),
-      art('hands', { tone: 'pink', size: 'sm' })));
+      art('hands', { tone: 'rose', size: 'sm' })));
 
   // Prayers already written and marked for a leader. Without this a young
   // person who saved one has no way to get it to anybody — which is exactly
@@ -108,13 +108,13 @@ export default async function connectScreen(ctx) {
         h('div', { class: 'poster-foot' }, button, art(event.symbol, { tone: event.tone, size: 'sm' })));
     });
 
-    const ask = poster({ tone: 'blue', className: 'full' },
+    const ask = poster({ tone: 'sky', className: 'full' },
       label('Ask NEXT'),
       headline('GOT A QUESTION ABOUT GOD?'),
       h('p', { class: 'body dim', text: 'Ask it here. You will get the Bible on it, something to think about, a prayer and one thing to do — not a lecture, and not a person pretending to be one.' }),
       h('div', { class: 'poster-foot' },
         pill('Ask a question', () => ctx.go('ask')),
-        art('question', { tone: 'blue', size: 'sm' })));
+        art('question', { tone: 'sky', size: 'sm' })));
 
     const moments = poster({ tone: 'paper', className: 'full' },
       label('Community moments'),
