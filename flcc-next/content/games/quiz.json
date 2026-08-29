@@ -2266,5 +2266,29 @@
     "why": "FLCC was founded to reach Filipinos working in Kuwait.",
     "ageGroup": "both",
     "topic": "flcc"
+  },
+  {
+    "q": "What does FLCC stand for?",
+    "options": [
+      "Filipino Language Christian Congregation",
+      "First Living Christian Congregation",
+      "Faithful Light Church of Christ"
+    ],
+    "answer": 0,
+    "why": "Filipino Language Christian Congregation — a church for Filipinos in Kuwait, worshipping in our own language.",
+    "ageGroup": "both",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does BOTR stand for in our church's name?",
+    "options": [
+      "Beacon Of The Redeemer",
+      "Body Of The Redeemed",
+      "Built On The Rock"
+    ],
+    "answer": 2,
+    "why": "Built On The Rock — Jesus said the wise man built his house on a rock (Matthew 7:24).",
+    "ageGroup": "both",
+    "topic": "flcc"
   }
 ]
