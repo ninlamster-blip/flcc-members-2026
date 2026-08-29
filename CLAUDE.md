@@ -70,6 +70,41 @@ The one thing it shares with the FLCC Members app is the deployed
 `ask-proxy/worker.js`: the proxy holds the API key so no device does. It reads
 none of the FLCC data files and none of the `FLCC.*` global.
 
+## FLCC NEXT — Adults
+
+`flcc-adults/` is a **fifth, separate application** — the adult edition of
+FLCC NEXT, for the members of FLCC Church. It has its own `adults/v1/…`
+storage namespace, its own design system (*Organic Faith*), its own content
+and its own tests, and it must never import `church.js`, read `FLCC.*`, or
+touch anything under `shepherd/` or `lamp/`.
+`flcc-adults/js/core/storage.js` throws on any key outside the namespace.
+
+Read `flcc-adults/ARCHITECTURE.md` before adding a module, a storage key or a
+screen, and `flcc-adults/README.md` for what it does and the three decisions
+behind it (nothing leaves the device; there is no score; a reading plan is a
+sequence, not a calendar).
+
+It is a separate application from `flcc-next/` on purpose — the kids and teens
+app and the adult app share an identity and no code, because a single codebase
+with an `isAdult` flag through it would serve neither audience. Content is
+written once, in one adult register: there are no age variants here, and
+`flcc-adults/test/content.test.mjs` fails a file that grows a `kids` or `teens`
+key.
+
+One narrow, deliberate exception to the boundary, documented at length in the
+header of `flcc-adults/js/core/scripture.js`: the adult app reads the committed
+text of Scripture from `flcc-next/bible/` rather than committing a second
+14 MB copy of it. That is a one-way read of static, public-domain, same-origin
+text at a fixed path — never `flcc-next/content/`, never a module, never
+storage. `flcc-adults/test/modules.test.mjs` fails any file that reaches past
+the Bible into the kids app, and `test/scripture.test.mjs` fails if the shared
+text moves.
+
+Two rules of the design system are enforced by tests rather than by review,
+because they are the ones that erode first: there is no `.card` class anywhere
+in that app, and every verse the authored writing quotes must match the shipped
+World English Bible word for word.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection

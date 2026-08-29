@@ -1,0 +1,504 @@
+/* =============================================================================
+   FLCC NEXT — ADULTS
+   The Organic Faith design system
+
+   Warm. Human. Thoughtful. Modern. Timeless.
+
+   This is deliberately not the kids and teens app's design system, and it is
+   deliberately not a dashboard. The rules it enforces:
+
+   · Hierarchy comes from TYPE, SPACE, COLOUR BLOCKS and RULES — not from a
+     stack of rounded rectangles. There is no `.card` class in this file, and
+     that absence is the design.
+   · The interface is a sans-serif. Scripture is a serif. The distinction is
+     the point: the app feels modern, God's Word feels timeless.
+   · One organic colour moment per screenful, at most. The flowing shapes are
+     a signature, not a texture — behind a Scripture moment, a section opening,
+     an empty state, a cover. Never behind body copy.
+   · Warm paper, never white. Deep forest, never black.
+   · Accents belong to sections: Bible is blue, Pray is peach, Grow is sage
+     and gold, Connect is forest and burnt orange. A screen wears its own
+     colour and does not borrow the others'.
+
+   The app commits to one light, warm appearance rather than following the
+   system into a dark theme it was not drawn for.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ── The palette ───────────────────────────────────────────────────────── */
+  --paper:   #F9F9F3;   /* warm paper — the ground of everything */
+  --paper-2: #F1F1E7;   /* a shade deeper, for a block that must separate */
+  --forest:  #253624;   /* primary text, navigation, primary action */
+  --sage:    #667F71;   /* secondary elements, rules, quiet icons */
+  --mist:    #9BAEBB;   /* the Bible */
+  --olive:   #ACB883;   /* growth */
+  --gold:    #ECBA52;   /* highlight, today, milestones */
+  --peach:   #E8A681;   /* prayer, reflection, the journal */
+  --coral:   #D1643D;   /* used sparingly: emphasis, urgency, alerts */
+
+  /* Forest at reduced weight. Never a grey — always the same green, held
+     back, so the whole interface stays in one temperature. */
+  --ink-70: rgba(37, 54, 36, .70);
+  --ink-55: rgba(37, 54, 36, .55);
+  --ink-16: rgba(37, 54, 36, .16);
+  --ink-08: rgba(37, 54, 36, .08);
+
+  /* ── Type ──────────────────────────────────────────────────────────────── */
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+
+  --label:    .68rem;                          /* uppercase, tracked, 700 */
+  --body:     1.0rem;
+  --lead:     1.12rem;
+  --title:    clamp(1.5rem, 5.2vw, 1.9rem);
+  --display:  clamp(2.1rem, 8.4vw, 3rem);
+  --scripture: clamp(1.45rem, 6.2vw, 2.05rem);
+  --numeral:  clamp(2.2rem, 10vw, 3rem);
+
+  --gutter: 1.5rem;      /* the page's side margin */
+  --beat:   2.6rem;      /* the vertical rhythm between sections */
+  --speed:  260ms;
+  --ease:   cubic-bezier(.22, .68, .28, 1);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; background: var(--paper); }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--forest);
+  font-family: var(--sans);
+  font-size: var(--body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis-weight: none;
+}
+
+h1, h2, h3, p, figure, blockquote { margin: 0; }
+button { font: inherit; color: inherit; border: 0; background: none; }
+:focus-visible { outline: 2px solid var(--forest); outline-offset: 3px; border-radius: 2px; }
+
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus { left: .75rem; top: .75rem; z-index: 90; background: var(--forest); color: var(--paper); padding: .6rem 1rem; }
+
+/* ── Type classes ────────────────────────────────────────────────────────── */
+
+.label {
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--ink-70);
+}
+.label[data-accent] { color: var(--forest); }
+
+.display { font-size: var(--display); font-weight: 600; letter-spacing: -.035em; line-height: 1.02; text-wrap: balance; }
+.title   { font-size: var(--title);   font-weight: 600; letter-spacing: -.025em; line-height: 1.12; text-wrap: balance; }
+.lead    { font-size: var(--lead); line-height: 1.5; color: var(--ink-70); }
+.body    { font-size: var(--body); line-height: 1.62; }
+.dim     { color: var(--ink-70); }
+.dimmer  { color: var(--ink-55); }
+.numeral { font-size: var(--numeral); font-weight: 600; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+
+/* Scripture. The one place a serif is used, and it is used at size, in a
+   narrow measure, with the leading opened up. Quotation marks hang. */
+.scripture {
+  font-family: var(--serif);
+  font-size: var(--scripture);
+  font-weight: 400;
+  line-height: 1.42;
+  letter-spacing: -.012em;
+  text-wrap: pretty;
+  max-width: 22ch;
+  hanging-punctuation: first;
+}
+.scripture--flow { max-width: 34ch; font-size: 1.2rem; line-height: 1.62; }
+
+/* Long passages step down. See scripture() in js/core/ui.js: the length of the
+   text decides the size, so four verses never fill a phone on their own. */
+.scripture[data-length="l"]  { font-size: clamp(1.25rem, 4.8vw, 1.6rem); max-width: 28ch; line-height: 1.48; }
+.scripture[data-length="xl"] { font-size: clamp(1.1rem, 4.1vw, 1.3rem); max-width: 34ch; line-height: 1.58; }
+.scripture--flow[data-length="l"],
+.scripture--flow[data-length="xl"] { font-size: 1.14rem; max-width: 36ch; line-height: 1.66; }
+
+.cite {
+  font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink-70);
+}
+
+/* ── The page ────────────────────────────────────────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--beat);
+  padding: .4rem var(--gutter) calc(7rem + env(safe-area-inset-bottom));
+  max-width: 34rem;
+  margin: 0 auto;
+}
+
+/* A section is the app's unit of layout. It has no border, no radius and no
+   shadow — it is a piece of type with air around it. */
+.section { display: flex; flex-direction: column; gap: 1rem; }
+.section > .label + * { margin-top: -.25rem; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+
+/* The hairline rule that separates one editorial section from the next. It is
+   sage, not grey, and it is the only divider in the system. */
+.rule { height: 1px; background: var(--ink-16); border: 0; margin: 0; }
+
+/* ── Colour blocks and organic fields ────────────────────────────────────── */
+
+/* A block of colour that runs to the edge of the page's measure. The shapes
+   live inside it, clipped by it. */
+.block {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 26px;
+  padding: 1.9rem var(--gutter) 1.75rem;
+  background: var(--paper-2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.block[data-tone="forest"] { background: var(--forest); color: var(--paper); }
+.block[data-tone="mist"]   { background: var(--mist); }
+.block[data-tone="peach"]  { background: var(--peach); }
+.block[data-tone="gold"]   { background: var(--gold); }
+.block[data-tone="olive"]  { background: var(--olive); }
+.block[data-tone="sage"]   { background: var(--sage); color: var(--paper); }
+.block[data-tone="coral"]  { background: var(--coral); color: var(--paper); }
+.block[data-tone="paper"]  { background: var(--paper); box-shadow: inset 0 0 0 1px var(--ink-16); }
+.block[data-tone="forest"] .label,
+.block[data-tone="sage"] .label,
+.block[data-tone="coral"] .label { color: rgba(249, 249, 243, .72); }
+.block[data-tone="forest"] .lead, .block[data-tone="forest"] .dim,
+.block[data-tone="sage"] .lead, .block[data-tone="sage"] .dim,
+.block[data-tone="coral"] .lead, .block[data-tone="coral"] .dim { color: rgba(249, 249, 243, .78); }
+.block[data-tone="forest"] .cite,
+.block[data-tone="sage"] .cite,
+.block[data-tone="coral"] .cite { color: rgba(249, 249, 243, .72); }
+.block[data-tall] { min-height: 24rem; justify-content: space-between; }
+button.block { text-align: left; width: 100%; cursor: pointer; transition: transform var(--speed) var(--ease); }
+button.block:active { transform: scale(.992); }
+
+/* The shapes themselves. Absolutely placed, blurred a touch so they read as
+   washes rather than stickers, and always behind the type. */
+.shapes { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.shapes .shape { position: absolute; display: block; }
+/* Soft fields sit behind body copy, so they are blurred until they are a wash
+   of colour rather than a shape with an edge. The per-layer opacity comes from
+   shapes.js, which knows which of the two colours is the darker. */
+.shapes[data-soft] .shape--wash { filter: blur(16px); }
+.block > *:not(.shapes) { position: relative; }
+
+/* A single mark: the small organic stone beside a heading, or a path cover. */
+.mark { display: block; width: 100%; height: auto; }
+.mark-sm { width: 2.4rem; flex: none; }
+.mark-lg { width: 6.5rem; }
+
+/* ── Actions ─────────────────────────────────────────────────────────────── */
+
+/* The dominant action in an editorial layout is a word with an arrow. */
+.go {
+  display: inline-flex; align-items: center; gap: .45rem;
+  color: inherit; cursor: pointer;
+  font-size: .92rem; font-weight: 600; letter-spacing: -.01em;
+  min-height: 44px;
+  text-align: left;
+}
+.go::after { content: "→"; transition: transform var(--speed) var(--ease); }
+.go:hover::after { transform: translateX(4px); }
+
+.act {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 50px; padding: .8rem 1.5rem;
+  background: var(--forest); color: var(--paper);
+  border-radius: 99px;
+  font-weight: 600; font-size: .95rem; letter-spacing: -.01em;
+  cursor: pointer;
+  transition: transform var(--speed) var(--ease), opacity var(--speed) var(--ease);
+}
+.act:active { transform: scale(.975); }
+.act[data-quiet] { background: transparent; color: inherit; box-shadow: inset 0 0 0 1.5px currentColor; }
+.act[disabled] { opacity: .4; cursor: default; }
+.act[data-small] { min-height: 40px; padding: .45rem 1rem; font-size: .82rem; }
+.block[data-tone="forest"] .act { background: var(--paper); color: var(--forest); }
+.act-row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+
+/* ── Editorial rows: the alternative to a stack of cards ─────────────────── */
+
+.rows { display: flex; flex-direction: column; }
+.rows > * { padding: 1.15rem 0; border-top: 1px solid var(--ink-16); }
+.rows > *:first-child { border-top: 0; padding-top: .2rem; }
+.rows[data-tight] > * { padding: .8rem 0; }
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: .5rem .9rem;
+  width: 100%; text-align: left; cursor: pointer;
+  color: inherit;
+}
+.row-lede { grid-column: 2 / -1; }
+.row-title { font-size: 1.06rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.25; }
+.row-note { font-size: .9rem; line-height: 1.5; color: var(--ink-70); margin-top: .3rem; }
+.row-meta { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-55); white-space: nowrap; }
+.row-num {
+  font-family: var(--serif); font-size: 1.05rem; font-weight: 400;
+  color: var(--ink-55); font-variant-numeric: tabular-nums;
+  align-self: start; padding-top: .1rem;
+}
+.row:hover .row-title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+
+/* The accent that tells one row from another — a category, a ministry, a
+   path. A 3px stem of colour, never an icon in a coloured circle. */
+.stem { grid-row: 1 / -1; width: 3px; border-radius: 99px; background: var(--sage); align-self: stretch; min-height: 2.2rem; }
+.stem[data-accent="forest"] { background: var(--forest); }
+.stem[data-accent="sage"]   { background: var(--sage); }
+.stem[data-accent="mist"]   { background: var(--mist); }
+.stem[data-accent="olive"]  { background: var(--olive); }
+.stem[data-accent="gold"]   { background: var(--gold); }
+.stem[data-accent="peach"]  { background: var(--peach); }
+.stem[data-accent="coral"]  { background: var(--coral); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .66rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--ink-70);
+}
+.tag::before { content: ""; width: .45rem; height: .45rem; border-radius: 99px; background: var(--sage); flex: none; }
+.tag[data-accent="forest"]::before { background: var(--forest); }
+.tag[data-accent="mist"]::before   { background: var(--mist); }
+.tag[data-accent="olive"]::before  { background: var(--olive); }
+.tag[data-accent="gold"]::before   { background: var(--gold); }
+.tag[data-accent="peach"]::before  { background: var(--peach); }
+.tag[data-accent="coral"]::before  { background: var(--coral); }
+
+/* ── Progress: a thread, not a bar ───────────────────────────────────────── */
+
+.thread { height: 2px; background: var(--ink-16); border-radius: 99px; overflow: hidden; }
+.thread > i { display: block; height: 100%; background: var(--forest); transition: width 800ms var(--ease); }
+.thread[data-accent="gold"] > i  { background: var(--gold); }
+.thread[data-accent="olive"] > i { background: var(--olive); }
+.thread[data-accent="peach"] > i { background: var(--peach); }
+.block[data-tone="forest"] .thread { background: rgba(249, 249, 243, .28); }
+.block[data-tone="forest"] .thread > i { background: var(--gold); }
+
+/* Small counts sit in a line of their own, separated by rules — not in tiles. */
+.figures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.figures > div { display: flex; flex-direction: column; gap: .35rem; }
+.figures .numeral { font-size: clamp(1.6rem, 8vw, 2.1rem); }
+
+/* ── Scripture, set as a page ────────────────────────────────────────────── */
+
+.passage { margin-top: .4rem; }
+.passage-verse { padding: 0; }
+.passage-line {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  font-family: var(--serif);
+  font-size: 1.12rem; line-height: 1.72; font-weight: 400;
+  padding: .28rem .45rem; margin-left: -.45rem;
+  border-radius: 8px;
+  transition: background var(--speed) var(--ease);
+}
+.passage-line:hover { background: var(--ink-08); }
+.passage-verse[data-open] .passage-line { background: rgba(155, 174, 187, .38); }
+.passage-num {
+  font-family: var(--sans);
+  font-size: .6rem; font-weight: 700; letter-spacing: .04em;
+  vertical-align: .6em; margin-right: .45rem;
+  color: var(--ink-55);
+}
+.passage-verse .act-row { padding-left: .45rem; margin: .3rem 0 .6rem; }
+
+/* A reference that opens the Bible. It keeps the type it had and only adds
+   what says "this goes somewhere". */
+.ref-link {
+  display: inline-flex; align-items: center;
+  color: inherit; cursor: pointer; text-align: left;
+  padding: .3rem 0; min-height: 32px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: opacity var(--speed) var(--ease);
+}
+.ref-link:hover { opacity: .62; }
+
+.chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.7rem, 1fr)); gap: .35rem; }
+.chapter {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 1; cursor: pointer;
+  font-size: .85rem; font-weight: 500;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px var(--ink-16);
+  transition: background var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+}
+.chapter:hover { background: rgba(155, 174, 187, .34); box-shadow: inset 0 0 0 1px transparent; }
+.chapter[data-read] { background: var(--ink-08); }
+
+.book-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0 1rem; }
+.book {
+  display: flex; align-items: baseline; justify-content: space-between; gap: .6rem;
+  width: 100%; text-align: left; cursor: pointer;
+  padding: .55rem .4rem; margin-left: -.4rem;
+  border-radius: 8px;
+  transition: background var(--speed) var(--ease);
+}
+.book:hover { background: var(--ink-08); }
+.book-name { font-size: .96rem; font-weight: 500; letter-spacing: -.015em; }
+.book-count { font-size: .66rem; font-weight: 700; color: var(--ink-55); font-variant-numeric: tabular-nums; }
+
+/* ── Header and navigation ───────────────────────────────────────────────── */
+
+.app-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: calc(1.5rem + env(safe-area-inset-top)) var(--gutter) 1.4rem;
+  max-width: 34rem; margin: 0 auto; width: 100%;
+}
+.app-head .greet { font-size: 1.02rem; font-weight: 500; letter-spacing: -.02em; }
+.app-head .greet b { font-weight: 600; }
+
+/* The back arrow. It is not a `.go` — that class appends its own arrow, and a
+   back button pointing both ways is a bug people notice before anything else
+   on the screen. */
+.back {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin-left: -.6rem;
+  border-radius: 99px; cursor: pointer;
+  font-size: 1.1rem; color: var(--forest);
+  transition: background var(--speed) var(--ease);
+}
+.back:hover { background: var(--ink-08); }
+
+/* The bottom bar: cream, a hairline above it, and an active tab marked by
+   colour and a small dot. No capsule, no floating island. */
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  background: var(--paper);
+  border-top: 1px solid var(--ink-16);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: .34rem;
+  padding: .7rem .2rem .85rem;
+  min-height: 58px; cursor: pointer;
+  font-size: .6rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-55);
+  transition: color var(--speed) var(--ease);
+}
+.tab svg { width: 23px; height: 23px; }
+.tab[aria-current="page"] { color: var(--forest); }
+.tab[aria-current="page"]::after {
+  content: ""; position: absolute; bottom: .34rem;
+  width: 4px; height: 4px; border-radius: 99px; background: var(--forest);
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+
+input[type="text"], input[type="search"], input[type="number"], textarea, select {
+  width: 100%;
+  font: inherit; font-weight: 500;
+  color: var(--forest);
+  background: transparent;
+  border: 0; border-bottom: 1.5px solid var(--ink-16);
+  border-radius: 0;
+  padding: .7rem .1rem;
+  min-height: 48px;
+  transition: border-color var(--speed) var(--ease);
+}
+input:focus, textarea:focus, select:focus { border-bottom-color: var(--forest); outline: none; }
+textarea {
+  border: 1.5px solid var(--ink-16); border-radius: 14px; padding: .9rem 1rem;
+  min-height: 7rem; line-height: 1.6;
+}
+input::placeholder, textarea::placeholder { color: var(--ink-55); font-weight: 400; }
+
+.field-set { display: block; }
+.field-set > span { display: block; font-size: var(--label); font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-70); margin-bottom: .2rem; }
+
+/* A choice is a row with a rule under it, not a bordered box. */
+.choice {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  width: 100%; text-align: left; cursor: pointer;
+  padding: 1rem .2rem;
+  border-bottom: 1px solid var(--ink-16);
+  font-size: 1.05rem; font-weight: 500; letter-spacing: -.015em;
+  transition: padding-left var(--speed) var(--ease), color var(--speed) var(--ease);
+}
+.choice:hover { padding-left: .55rem; }
+.choice::after { content: ""; width: 1rem; height: 1rem; border-radius: 99px; box-shadow: inset 0 0 0 1.5px var(--ink-16); flex: none; }
+.choice[aria-pressed="true"], .choice[data-chosen] { color: var(--forest); font-weight: 600; }
+.choice[aria-pressed="true"]::after, .choice[data-chosen]::after { background: var(--forest); box-shadow: inset 0 0 0 1.5px var(--forest); }
+.choice-list { display: flex; flex-direction: column; }
+
+/* ── Loading, empty, small print ─────────────────────────────────────────── */
+
+.wait { height: 10px; width: 10px; border-radius: 99px; background: var(--sage); animation: pulse 1000ms var(--ease) infinite alternate; }
+@keyframes pulse { to { opacity: .25; transform: scale(.72); } }
+
+.note {
+  font-size: .9rem; line-height: 1.55; color: var(--ink-70);
+  padding-left: 1rem; border-left: 2px solid var(--olive);
+}
+.note[data-level="warn"] { border-left-color: var(--coral); }
+
+.small { font-size: .8rem; line-height: 1.5; color: var(--ink-55); }
+
+/* ── A full-screen moment: a guided prayer, a finished path ──────────────── */
+
+.moment {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; justify-content: center; gap: 1.6rem;
+  padding: 2rem var(--gutter) calc(2.4rem + env(safe-area-inset-bottom));
+  background: var(--paper);
+  overflow: hidden; isolation: isolate;
+  animation: moment-in 460ms var(--ease) both;
+}
+@keyframes moment-in { from { opacity: 0; transform: scale(.99); } to { opacity: 1; transform: none; } }
+
+/* ── Arrival: sections fade up as you scroll. They do not bounce. ────────── */
+
+.rise { opacity: 0; transform: translateY(12px); }
+.rise[data-in] { opacity: 1; transform: none; transition: opacity 520ms var(--ease), transform 520ms var(--ease); }
+
+/* ── Wider screens: an editorial platform, not a stretched phone ─────────── */
+
+@media (min-width: 900px) {
+  :root { --gutter: 2rem; --display: clamp(2.6rem, 4.4vw, 3.6rem); --scripture: clamp(1.8rem, 2.6vw, 2.35rem); }
+  .screen {
+    max-width: 62rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.2rem;
+    align-items: start;
+  }
+  .screen > .full { grid-column: 1 / -1; }
+  .app-head { max-width: 62rem; padding-inline: 0; }
+  .screen { padding-inline: 0; }
+  .tabs {
+    left: 50%; transform: translateX(-50%);
+    bottom: 1.4rem; width: auto; max-width: 32rem;
+    grid-auto-columns: minmax(5.5rem, 1fr);
+    border: 1px solid var(--ink-16);
+    border-radius: 22px;
+    background: rgba(249, 249, 243, .94);
+    backdrop-filter: blur(10px);
+    padding-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  .rise { opacity: 1; transform: none; }
+}

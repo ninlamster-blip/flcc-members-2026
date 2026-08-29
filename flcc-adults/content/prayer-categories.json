@@ -1,0 +1,7 @@
+[
+  { "id": "family",   "label": "Family",   "accent": "olive",  "line": "The people at home, and the people here." },
+  { "id": "work",     "label": "Work",     "accent": "mist",   "line": "The job, the people in it, and the papers." },
+  { "id": "personal", "label": "Personal", "accent": "peach",  "line": "What you would not say out loud yet." },
+  { "id": "finances", "label": "Finances", "accent": "gold",   "line": "Provision, debt, and what you send home." },
+  { "id": "ministry", "label": "Ministry", "accent": "forest", "line": "The church, those you serve, those you lead." }
+]
