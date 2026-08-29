@@ -347,6 +347,24 @@ async function nextCall(env, method, path, body, headers) {
   const blindRead = await nextCall({ KASAMA_DB: fakeD1() }, 'GET', '/api/next/prayers', null, withKey);
   assert(blindRead.data.configured === false, 'with no key set, reading is off — unset means closed, never open');
 
+  // Which half is missing, so setting this up is not a guessing game.
+  const noKey = await nextCall({ KASAMA_DB: fakeD1() }, 'POST', '/api/next/prayers', { content: 'x' });
+  assert(JSON.stringify(noKey.data.missing) === '["leaderKey"]', 'a missing key is named');
+  const noDb = await nextCall({ NEXT_LEADER_KEY: KEY }, 'POST', '/api/next/prayers', { content: 'x' });
+  assert(JSON.stringify(noDb.data.missing) === '["database"]', 'a missing database is named');
+  const neither = await nextCall({}, 'POST', '/api/next/prayers', { content: 'x' });
+  assert(JSON.stringify(neither.data.missing) === '["database","leaderKey"]', 'both are named when both are absent');
+
+  const pingOff = await nextCall({}, 'GET', '/ping');
+  assert(pingOff.data.nextPrayers === false && pingOff.data.nextDatabase === false && pingOff.data.nextLeaderKey === false,
+    '/ping reports each half separately when nothing is configured');
+  const pingHalf = await nextCall({ KASAMA_DB: fakeD1() }, 'GET', '/ping');
+  assert(pingHalf.data.nextDatabase === true && pingHalf.data.nextLeaderKey === false,
+    '/ping distinguishes a bound database from a set key');
+  const pingOn = await nextCall({ KASAMA_DB: fakeD1(), NEXT_LEADER_KEY: KEY }, 'GET', '/ping');
+  assert(pingOn.data.nextPrayers === true, '/ping says delivery is live once both exist');
+  assert(!JSON.stringify(pingOn.data).includes(KEY), '/ping never reveals the key itself');
+
   const env = { KASAMA_DB: fakeD1(), NEXT_LEADER_KEY: KEY };
 
   const sent = await nextCall(env, 'POST', '/api/next/prayers', {

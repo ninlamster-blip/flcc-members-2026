@@ -655,16 +655,32 @@ function prayersSection(refresh) {
     const result = await delivery.queue(key);
 
     if (!result.ok) {
-      const said = {
-        'no-key': 'Enter the ministry leader key to see prayers sent from young people’s phones.',
-        'bad-key': 'That key was refused. Check it against the NEXT_LEADER_KEY secret on the Worker.',
-        off: 'Delivery is not switched on. The Worker needs its KASAMA_DB binding and a NEXT_LEADER_KEY secret — until both exist, the app tells young people to send prayers themselves rather than pretending they arrived.',
-        offline: 'Could not reach the Worker. The queue is unchanged; nothing has been lost.',
-        error: 'The Worker answered, but not with a queue.',
-      }[result.reason] || 'The queue could not be loaded.';
+      // "It is off" is not a useful answer to someone halfway through setting
+      // it up, so the Worker names which half is missing and this says what to
+      // do about that half specifically.
+      const steps = {
+        database: 'The D1 database is not bound. In the Worker: Settings → Bindings → add a D1 binding named KASAMA_DB pointing at the flcc-kasama database. It is already declared in wrangler.toml, so a redeploy from git should also do it.',
+        leaderKey: 'The leader key is not set. In the Worker: Settings → Variables and Secrets → Add → type Secret, name NEXT_LEADER_KEY, value a long random string. It must be a Secret, not a Text variable, and the name is case-sensitive.',
+      };
+      const missing = result.missing || [];
+      const said = result.reason === 'off'
+        ? (missing.length
+          ? `Delivery is off. ${missing.map((one) => steps[one]).filter(Boolean).join(' ')}`
+          : 'Delivery is off, and the Worker did not say why — it may be running an older deployment than this page.')
+        : {
+          'no-key': 'Enter the ministry leader key to see prayers sent from young people’s phones.',
+          'bad-key': 'That key was refused. Check it character for character against the NEXT_LEADER_KEY secret on the Worker.',
+          offline: 'Could not reach the Worker. The queue is unchanged; nothing has been lost.',
+          error: 'The Worker answered, but not with a queue.',
+        }[result.reason] || 'The queue could not be loaded.';
+
       churchWide.replaceChildren(poster({ tone: result.reason === 'off' ? 'cream' : 'paper', className: 'full' },
         label('Sent from phones'),
-        h('p', { class: 'body dim', style: 'margin-top:.6rem', text: said })));
+        h('p', { class: 'body dim', style: 'margin-top:.6rem', text: said }),
+        result.reason === 'off'
+          ? h('p', { class: 'row-note', style: 'margin-top:.8rem',
+            text: 'Until it is on, the app tells young people their prayers stay on the phone and offers to send them themselves — it does not pretend they arrived.' })
+          : null));
       return;
     }
 

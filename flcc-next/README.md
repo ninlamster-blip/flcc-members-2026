@@ -270,7 +270,26 @@ on:
 creates itself on first use. Give the key to ministry leaders only, and enter
 it in the dashboard under **Prayers → Ministry leader key**.
 
-Until both the database and the key exist, `/ping` reports `nextPrayers: false`
+### If it is still off
+
+`/ping` reports each half separately, so you never have to guess which one is
+missing:
+
+```json
+{ "nextPrayers": false, "nextDatabase": true, "nextLeaderKey": false }
+```
+
+- `nextDatabase: false` — the D1 binding is missing. In the Worker: Settings →
+  Bindings → add a D1 binding named `KASAMA_DB` pointing at `flcc-kasama`. It
+  is declared in `wrangler.toml`, so a redeploy from git should also do it.
+- `nextLeaderKey: false` — the secret is missing. Settings → Variables and
+  Secrets → Add → **type Secret**, name `NEXT_LEADER_KEY`. It must be a Secret
+  rather than a Text variable, and the name is case-sensitive.
+
+The dashboard says the same thing in words, naming the missing half and the
+fix, rather than reporting only that delivery is off.
+
+Until both exist, `/ping` reports `nextPrayers: false`
 and the app says prayers stay on the phone. **No key, no feature** — because
 without a key nobody could ever read what was sent, and accepting a child's
 prayer into a place no one can read is worse than not accepting it.

@@ -621,7 +621,14 @@ async function handleRequest(request, env, ctx) {
       // Whether FLCC NEXT can actually deliver a young person's prayer to a
       // leader. The app asks before it offers to send, so that it never says
       // "sent" on a Worker that has nowhere to put it.
+      //
+      // Reported as three fields rather than one, because "delivery is off"
+      // sends whoever is setting this up hunting through two unrelated
+      // settings pages. Neither value reveals a secret — only whether one
+      // exists, exactly as keySet and secretRequired above already do.
       nextPrayers: !!(env.KASAMA_DB && env.NEXT_LEADER_KEY),
+      nextDatabase: !!env.KASAMA_DB,
+      nextLeaderKey: !!env.NEXT_LEADER_KEY,
     }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
@@ -1147,7 +1154,13 @@ async function handleNextPrayers(request, env, url) {
   // "Not configured" is a first-class answer, not an error: the app needs to
   // know that before it promises a young person anything.
   if (!env.KASAMA_DB || !env.NEXT_LEADER_KEY) {
-    return jsonResponse({ configured: false });
+    return jsonResponse({
+      configured: false,
+      missing: [
+        env.KASAMA_DB ? null : 'database',
+        env.NEXT_LEADER_KEY ? null : 'leaderKey',
+      ].filter(Boolean),
+    });
   }
   const db = env.KASAMA_DB;
   await ensureNextPrayerSchema(db);

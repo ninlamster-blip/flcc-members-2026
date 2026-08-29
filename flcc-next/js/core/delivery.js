@@ -54,6 +54,23 @@ export async function available() {
 }
 
 /**
+ * Why delivery is off, for whoever is setting it up.
+ *
+ * Returns `{ reachable, ready, missing[] }` where `missing` names the pieces
+ * the Worker says it lacks — 'database', 'leaderKey', or both. Telling someone
+ * only that it is off leaves them hunting through two unrelated settings
+ * pages, which is what happened the first time.
+ */
+export async function readiness() {
+  const { ok, data } = await ask('/ping');
+  if (!ok || !data) return { reachable: false, ready: false, missing: [] };
+  const missing = [];
+  if (!data.nextDatabase) missing.push('database');
+  if (!data.nextLeaderKey) missing.push('leaderKey');
+  return { reachable: true, ready: Boolean(data.nextPrayers), missing };
+}
+
+/**
  * Send one prayer. Resolves `{ delivered, id, reason }`.
  *
  * `delivered` is true only on the Worker's own confirmation. `reason` is for
@@ -85,7 +102,9 @@ export async function send({ content, mood, firstName, ageGroup, urgent }) {
 export async function queue(key) {
   if (!key) return { ok: false, reason: 'no-key', prayers: [] };
   const { ok, status, data } = await ask('/api/next/prayers', { key });
-  if (data && data.configured === false) return { ok: false, reason: 'off', prayers: [] };
+  if (data && data.configured === false) {
+    return { ok: false, reason: 'off', missing: data.missing || [], prayers: [] };
+  }
   if (status === 401) return { ok: false, reason: 'bad-key', prayers: [] };
   if (!ok || !data) return { ok: false, reason: status ? 'error' : 'offline', prayers: [] };
   return { ok: true, prayers: data.prayers || [] };
