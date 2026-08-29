@@ -1,12 +1,11 @@
 // A Scripture moment, at length.
 //
-// Home shows the verse. This shows what to do with it: a short reflection, one
-// question, one prayer, one practice — and a box to write in, because the
-// difference between reading a verse and being changed by one is usually a
-// sentence written down.
+// Home shows the verse on a card. This unpacks it: a short reflection, one
+// question, one prayer, one practice — each on its own card, because that is
+// how this app separates one thought from the next.
 
-import { h, block, section, label, title, lead, body, small, scripture, cite, reference,
-         act, actions, go, rows, rise, note, toast } from '../core/ui.js';
+import { h, card, badge, title, body, small, scripture, reference, starRow,
+         act, actions, rows, rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as progress from '../core/progress.js';
@@ -16,39 +15,32 @@ export default async function momentScreen(ctx) {
   const [id] = ctx.route.args;
   const all = await content.moments();
   const moment = all.find((one) => one.id === id) || rotation.pick(all);
-  if (!moment) return { title: 'Today', el: block({ tone: 'paper', className: 'full' }, note('Nothing to read today.')) };
+  if (!moment) return { title: 'Today', el: card({ tone: 'cream', className: 'full' }, note('Nothing to read today.')) };
 
-  const blocks = [];
+  const cards = [];
 
-  blocks.push(block({ tone: 'paper', className: 'full',
-      shape: { seed: moment.id, tones: moment.tones }, corner: 'tr', soft: true },
-    label(moment.theme),
-    scripture(moment.text, { flow: true }),
-    reference(`${moment.ref} · ${moment.translation}`, ctx.go)));
+  cards.push(card({ tone: moment.tone, className: 'full', symbol: moment.symbol,
+      foot: [reference(`${moment.ref} · ${moment.translation}`, ctx.go), starRow(5)] },
+    badge(moment.theme),
+    scripture(moment.text, { flow: true })));
 
-  blocks.push(section({},
-    label('Reflection'),
-    body(moment.reflection)));
+  cards.push(card({ tone: 'paper' }, badge('Reflection'), body(moment.reflection)));
 
-  blocks.push(section({},
-    label('Sit with this'),
+  cards.push(card({ tone: 'cream', symbol: 'blob', figureSize: 'sm' },
+    badge('Sit with this'),
     h('p', { class: 'scripture scripture--flow', text: moment.question })));
 
-  blocks.push(section({},
-    label('Pray'),
-    body(moment.prayer)));
+  cards.push(card({ tone: 'paper' }, badge('Pray'), body(moment.prayer)));
 
-  blocks.push(section({},
-    label('Today'),
-    body(moment.practice)));
+  cards.push(card({ tone: 'paper' }, badge('Today'), body(moment.practice)));
 
   // ── Write something ─────────────────────────────────────────────────────
   const input = h('textarea', { placeholder: 'What is this saying to you? One sentence is enough.',
     'aria-label': 'Your reflection' });
   const done = progress.isDone('reflection', moment.id);
 
-  const keep = section({ className: 'full' },
-    label('Your own words'),
+  cards.push(card({ tone: 'sky', className: 'full', foot: 'Stays on this device' },
+    badge('Your own words'),
     input,
     actions(
       act('Keep this', () => {
@@ -64,11 +56,9 @@ export default async function momentScreen(ctx) {
         progress.complete('reflection', moment.id);
         toast('Marked.');
         ctx.refresh();
-      }, { quiet: true })),
-    small('Reflections stay on this device. Nothing is sent to the church.'));
-  blocks.push(keep);
+      }, { quiet: true }))));
 
-  const el = h('div', { style: 'display:contents' }, ...blocks);
-  rise(blocks);
+  const el = h('div', { style: 'display:contents' }, ...cards);
+  rise(cards);
   return { title: moment.theme, el };
 }

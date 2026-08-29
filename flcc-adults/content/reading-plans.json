@@ -3,11 +3,6 @@
     "id": "john-21",
     "title": "John, in 21 days",
     "kicker": "Start here",
-    "accent": "mist",
-    "tones": [
-      "mist",
-      "forest"
-    ],
     "blurb": "One chapter a day through the gospel written so that you would believe. The best first plan for anyone who has never read a book of the Bible through.",
     "days": [
       {
@@ -94,17 +89,14 @@
         "ref": "John 21",
         "note": "Breakfast on a beach. Peter is restored three times, once for each denial."
       }
-    ]
+    ],
+    "tone": "sky",
+    "symbol": "book"
   },
   {
     "id": "psalms-hard-season",
     "title": "Psalms for a hard season",
     "kicker": "When it is heavy",
-    "accent": "peach",
-    "tones": [
-      "peach",
-      "sage"
-    ],
     "blurb": "Fourteen psalms for grief, fear, exhaustion and doubt — including the one that does not resolve. Nothing here asks you to feel better than you do.",
     "days": [
       {
@@ -163,17 +155,14 @@
         "ref": "Psalm 139",
         "note": "Known completely, and still held."
       }
-    ]
+    ],
+    "tone": "blush",
+    "symbol": "cloud"
   },
   {
     "id": "mark-16",
     "title": "Mark, in 16 days",
     "kicker": "The short gospel",
-    "accent": "gold",
-    "tones": [
-      "gold",
-      "forest"
-    ],
     "blurb": "The fastest of the four gospels, written for people with no religious background and no patience. A fortnight, and you have read a life of Jesus.",
     "days": [
       {
@@ -240,6 +229,8 @@
         "ref": "Mark 16",
         "note": "The tomb is empty, and the oldest ending stops mid-sentence."
       }
-    ]
+    ],
+    "tone": "yellow",
+    "symbol": "flame"
   }
 ]

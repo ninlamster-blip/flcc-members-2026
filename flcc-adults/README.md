@@ -10,9 +10,9 @@ build.
 ```
 flcc-adults/
   index.html            the shell
-  css/organic.css       the Organic Faith design system
+  css/sticker.css       the Sticker design system
   js/core/              storage, profile, progress, content, rotation,
-                        scripture, prayers, plan, shapes, ui
+                        scripture, prayers, plan, art, ui
   js/screens/           one module per screen
   content/              everything the teaching team writes, as JSON
   test/                 node --test 'flcc-adults/test/*.test.mjs'
@@ -61,22 +61,26 @@ and no red number telling an adult they have failed at reading the Bible.
 
 ## The design
 
-`css/organic.css` — the *Organic Faith* system. Warm paper (`#F9F9F3`), deep
-forest (`#253624`), and a palette of sage, muted blue, olive, gold, peach and
-coral, each one belonging to a part of the app. Hierarchy comes from type,
-space, colour blocks and rules, not from a stack of rounded rectangles: there
-is no card class in this application and a test fails if one appears.
+`css/sticker.css` — the *Sticker* system: printed thank-you cards, made into an
+app. Warm paper stock (`#FBF3E3`), navy ink (`#1B2A5C`), and flat saturated
+colour — yellow, cream, blush, sky, lilac, coral and orange.
+
+Every surface is a card, drawn the same way every time: a 3px navy outline, a
+hard offset shadow with no blur, one colour, and a band along the bottom in
+that colour's darker cousin. Nothing in the app has a soft shadow, a gradient
+or a glow. Navy is the only ink there is — colour goes behind the type, never
+into it.
+
+Every card can carry one of twelve little characters (`js/core/art.js`): a
+flat shape, a thick navy outline, and a face. They are drawn on one grid at
+one stroke weight with one face, which is what makes twelve separate drawings
+read as a set. A reader who would rather do without them turns them off in
+**You**, and the cards, colours and layout are unaffected.
 
 Two typefaces, doing two jobs. The interface is a sans-serif; **Scripture is
-set in a serif**, at size, in a narrow measure. The app feels modern; God's
-Word feels timeless.
-
-The flowing shapes are drawn by `js/core/shapes.js` — one colour moment per
-screenful, the lighter colour as a large soft wash, the darker one as a small
-crisp stone pinned to a corner. Each is a pure function of a seed, so the same
-verse draws the same curve on every phone in the church, every time. A reader
-who finds them busy can turn them off in **You**, and every screen keeps its
-layout.
+set in a serif**. And the chrome stops at Scripture: the Bible reader is plain
+white paper with no band, no outline inside it and no character. The rest of
+the app is loud so that the text does not have to be.
 
 ## Content
 

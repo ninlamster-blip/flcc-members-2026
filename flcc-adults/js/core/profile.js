@@ -56,7 +56,7 @@ export function firstName(user = getUser()) {
 }
 
 export function getSettings() {
-  return { shapes: 'on', ...(store.read(store.KEYS.settings, {}) || {}) };
+  return { figures: 'on', ...(store.read(store.KEYS.settings, {}) || {}) };
 }
 
 export function saveSettings(patch) {
@@ -65,10 +65,10 @@ export function saveSettings(patch) {
   return next;
 }
 
-/** The organic shapes are the app's signature — and they are also decoration.
- *  A reader who finds them busy can turn them off in You, and every block
- *  falls back to flat colour without a screen changing shape. */
-export const showShapes = () => getSettings().shapes !== 'off';
+/** The little characters are the app's signature — and they are also
+ *  decoration. A reader who would rather do without them can turn them off in
+ *  You; the cards, the colours and the layout are unaffected. */
+export const showFigures = () => getSettings().figures !== 'off';
 
 export function greeting(now = new Date()) {
   const hour = now.getHours();

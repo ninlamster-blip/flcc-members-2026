@@ -4,48 +4,69 @@
     "title": "Foundations",
     "kicker": "Start here",
     "blurb": "What Christians actually believe, in six sittings — written for someone who would rather ask the question than nod along.",
-    "accent": "forest",
-    "tones": ["forest", "olive"],
     "minutes": "10 minutes each",
     "sessions": 6,
-    "forSeason": ["beginning", "returning"],
-    "forFocus": ["bible"]
+    "forSeason": [
+      "beginning",
+      "returning"
+    ],
+    "forFocus": [
+      "bible"
+    ],
+    "tone": "orange",
+    "symbol": "church"
   },
   {
     "id": "bible-deep-dive",
     "title": "Bible Deep Dive",
     "kicker": "How to read it",
     "blurb": "Not more verses — a way of reading. What the Bible is, how its two halves hold together, and how to get at a passage without a commentary.",
-    "accent": "mist",
-    "tones": ["mist", "forest"],
     "minutes": "12 minutes each",
     "sessions": 5,
-    "forSeason": ["growing", "serving"],
-    "forFocus": ["bible"]
+    "forSeason": [
+      "growing",
+      "serving"
+    ],
+    "forFocus": [
+      "bible"
+    ],
+    "tone": "sky",
+    "symbol": "book"
   },
   {
     "id": "faith-at-work",
     "title": "Faith at Work",
     "kicker": "Featured",
     "blurb": "Most of your waking life is spent at a job, often far from home, often for someone who does not thank you. Five sessions on what God says about that.",
-    "accent": "gold",
-    "tones": ["gold", "forest"],
     "minutes": "10 minutes each",
     "sessions": 5,
     "featured": true,
-    "forSeason": ["growing", "returning", "serving"],
-    "forFocus": ["work"]
+    "forSeason": [
+      "growing",
+      "returning",
+      "serving"
+    ],
+    "forFocus": [
+      "work"
+    ],
+    "tone": "yellow",
+    "symbol": "parcel"
   },
   {
     "id": "marriage-and-relationships",
     "title": "Marriage & Relationships",
     "kicker": "For two, and for one",
     "blurb": "Love described rather than felt, words that build, conflict closed the same day, and what to do when the people you love are eight hours away.",
-    "accent": "peach",
-    "tones": ["peach", "coral"],
     "minutes": "10 minutes each",
     "sessions": 5,
-    "forSeason": ["growing", "serving"],
-    "forFocus": ["family"]
+    "forSeason": [
+      "growing",
+      "serving"
+    ],
+    "forFocus": [
+      "family"
+    ],
+    "tone": "blush",
+    "symbol": "heart"
   }
 ]

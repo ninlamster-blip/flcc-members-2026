@@ -32,7 +32,7 @@ index.html                       shell: header, screen, tabs. Owns nothing else.
   └── js/app.js                  boot, onboarding, routing
         └── js/screens/*.js      one module per screen, dynamic import()
               └── js/core/*.js   storage, profile, progress, content, rotation,
-                                 scripture, prayers, plan, shapes, ui
+                                 scripture, prayers, plan, art, ui
 ```
 
 Rules that keep it honest:
@@ -50,8 +50,10 @@ Rules that keep it honest:
   screen picks its own material with `Math.random()`. They call
   `rotation.deal()`, which means the whole church meets the same verse on the
   same morning and nobody can re-roll a passage they would rather not sit with.
-- **The organic shapes are a pure function of a seed** (`js/core/shapes.js`).
-  A hero that re-rolls its curve on every reload is noise.
+- **Illustration goes through `figure()` in `js/core/ui.js`**, never straight
+  from `js/core/art.js`. `figure()` is where a reader's choice to switch the
+  characters off is honoured; a screen that reaches past it would keep drawing
+  them on some screens and not others.
 - **Content is data, never instructions.** Nothing under `content/` is
   executed, and there is no model in this app to hand it to.
 
@@ -92,7 +94,7 @@ locked browser), so the app runs rather than crashing.
 | `adults/v1/prayers` | `{ items: [{ id, text, category, created, answered }] }` | Pray |
 | `adults/v1/journal` | `{ entries: [{ id, at, guide, ref, text }] }` | guided prayer, sessions |
 | `adults/v1/rsvps` | `{ going: [eventId] }` | Connect |
-| `adults/v1/settings` | `{ shapes }` | You |
+| `adults/v1/settings` | `{ figures }` | You |
 | `adults/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
 | `adults/v1/plan` | `{ id, started }` | a reading plan |
 
@@ -133,17 +135,28 @@ Two notes, because a schema is not a neutral document:
 
 ## Design system
 
-`css/organic.css` is the whole of it, and its opening comment states the rules.
-The one worth repeating here is the one that erodes first:
+`css/sticker.css` is the whole of it, and its opening comment states the rules.
+It is a set of printed thank-you cards made into an app: warm paper stock,
+navy ink, flat colour, thick outlines, hard shadows with no blur, and a small
+cast of characters with faces.
 
-> Hierarchy comes from type, space, colour blocks and rules — not from a stack
-> of rounded rectangles.
+Three of its rules are held by `test/modules.test.mjs` and `test/art.test.mjs`
+rather than by review, because they are the ones that erode first:
 
-There is no `.card` class in this application, and `test/modules.test.mjs`
-fails the build if one appears in the stylesheet or in a screen. The organic
-shapes are the other half of the identity: `js/core/shapes.js` draws them, one
-colour moment per screenful, the lighter colour as the wash and the darker one
-as a small accent pinned to a corner where a phone layout puts nothing.
+1. **No soft shadows.** Every `box-shadow` in the stylesheet is a hard offset
+   (`Xpx Ypx 0 colour`). A blur radius creeping in from muscle memory turns
+   the whole system into a generic app, one component at a time.
+2. **Surfaces come from `card()`.** A screen that hand-writes `class: 'card'`
+   builds something that will not follow the system when the system changes.
+3. **One character set, one weight, one face.** Every mascot is outlined at
+   5px on the same 100 × 100 grid and gets its face from the same `face()`
+   helper, so a thirteenth character cannot arrive in a different style.
+
+The fourth rule has no test and is the most important: **the chrome stops at
+Scripture.** The reader, the book list and the chapter grid are white paper
+with serif type — no colour band, no character, nothing competing with the
+text. Everything else in the app is loud so that Scripture does not have to
+be.
 
 ## Tests
 
@@ -154,14 +167,14 @@ node --test 'flcc-adults/test/*.test.mjs'
 | Suite | What it holds the line on |
 |---|---|
 | `storage` | the `adults/v1/` namespace, and that the other four apps' keys throw |
-| `shapes` | the same seed always draws the same shape, and a field is well-formed |
+| `art` | every character draws, is outlined at one weight, has a face, and takes the fill it is given |
 | `rotation` | a full cycle deals the whole bank, nothing repeats inside it, and the same day always deals the same thing |
 | `progress` | day arithmetic, idempotent completion — and that no XP, level or badge has crept in |
 | `prayers` | an answered prayer is kept rather than deleted, and removal is the only thing that destroys anything |
 | `plan` | a plan is a sequence, not a calendar: a month away does not move it |
-| `content` | every authored file's shape, every accent that must exist in the stylesheet, and that the writing never promises something no server exists to do |
+| `content` | every authored file's shape, every colour and character it names, that no file still carries a colour from the app's previous palette, and that the writing never promises something no server exists to do |
 | `scripture` | the shared Bible is where the app says it is, every reference resolves, and **every verse the writing prints is word for word the shipped text** |
-| `modules` | every module parses, every screen exports a screen, the app boundary, no `.card`, no direct `replaceChildren`, and that `sw.js` precaches everything |
+| `modules` | every module parses, every screen exports a screen, the app boundary, no soft shadows, no hand-built cards, no screen importing `art.js` behind `figure()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
 
 The scripture suite is the one worth explaining. Forty passages are quoted
 across the devotionals, the sessions and the guides, and no reviewer catches a

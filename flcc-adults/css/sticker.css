@@ -1,0 +1,563 @@
+/* =============================================================================
+   FLCC NEXT — ADULTS
+   The Sticker design system
+
+   Printed thank-you cards, made into an app. Warm paper, navy ink, flat
+   saturated colour, thick outlines, and a small cast of characters with faces.
+
+   The rules this file enforces:
+
+   · EVERY surface is a card, and every card is drawn the same way: a 3px navy
+     outline, a hard offset shadow with no blur, a colour body and a band along
+     the bottom. Nothing here has a soft shadow, a gradient or a glow — this is
+     ink on paper, not glass.
+   · One colour per card, and its band is the darker cousin of that colour.
+     Never two unrelated colours on one card.
+   · Navy is the only ink. Text, outlines, faces and icons are all #1B2A5C —
+     colour is for the surfaces behind them, never for the type.
+   · A card carries at most one character. Twelve exist (js/core/art.js) and
+     they are all drawn on the same grid with the same stroke and the same
+     face, so a screen of them reads as one set.
+   · The sticker chrome stops at Scripture. The Bible reader is quiet paper
+     and serif type: no borders, no bands, no characters. Everything else in
+     the app is loud so that the text of Scripture does not have to be.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ── The palette, taken from the printed cards ─────────────────────────── */
+  --paper:  #FBF3E3;   /* the page: warm cream stock */
+  --ink:    #1B2A5C;   /* navy: every letter, every outline */
+  --white:  #FFFDF7;   /* the badge pill, and the calm of the Bible reader */
+
+  --yellow: #F5C518;   --yellow-band: #EFA02A;
+  --cream:  #F7E6BE;   --cream-band:  #F0A88F;
+  --blush:  #F0A88F;   --blush-band:  #DE6B58;
+  --sky:    #86CEDE;   --sky-band:    #3FAFC2;
+  --lilac:  #CEBFE2;   --lilac-band:  #B49CC8;
+  --coral:  #E4553C;   --coral-band:  #C2402A;
+  --orange: #F0843C;   --orange-band: #D2662A;
+  --grape:  #6E44A0;
+  --star:   #FFC93C;
+
+  /* Navy at reduced weight, for supporting text. Never a grey. */
+  --ink-70: rgba(27, 42, 92, .70);
+  --ink-55: rgba(27, 42, 92, .55);
+  --ink-15: rgba(27, 42, 92, .15);
+  --ink-08: rgba(27, 42, 92, .08);
+
+  /* ── Type ──────────────────────────────────────────────────────────────── */
+  --sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+
+  --label:    .66rem;
+  --body:     1rem;
+  --lead:     1.08rem;
+  --title:    clamp(1.35rem, 5vw, 1.7rem);
+  --display:  clamp(2rem, 8.4vw, 2.7rem);
+  --scripture: clamp(1.4rem, 6vw, 1.9rem);
+  --numeral:  clamp(2.2rem, 10vw, 3rem);
+
+  --line:   3px;                  /* the one outline weight */
+  --radius: 20px;
+  --drop:   5px 6px 0 var(--ink); /* the hard sticker shadow. No blur, ever. */
+  --drop-sm: 3px 4px 0 var(--ink);
+
+  --gutter: 1.15rem;
+  --beat:   1.15rem;
+  --speed:  180ms;
+  --ease:   cubic-bezier(.3, .9, .4, 1);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; background: var(--paper); }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--body);
+  font-weight: 500;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p, figure { margin: 0; }
+button { font: inherit; color: inherit; border: 0; background: none; }
+:focus-visible { outline: var(--line) solid var(--ink); outline-offset: 3px; border-radius: 4px; }
+
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus { left: .75rem; top: .75rem; z-index: 90; background: var(--ink); color: var(--paper); padding: .6rem 1rem; }
+
+/* ── Type ────────────────────────────────────────────────────────────────── */
+
+.label {
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--ink-70);
+}
+
+.display { font-size: var(--display); font-weight: 800; letter-spacing: -.025em; line-height: 1.02; text-wrap: balance; }
+.title   { font-size: var(--title);   font-weight: 800; letter-spacing: -.02em;  line-height: 1.12; text-wrap: balance; }
+.lead    { font-size: var(--lead); line-height: 1.45; font-weight: 500; color: var(--ink-70); }
+.body    { font-size: var(--body); line-height: 1.6; }
+.dim     { color: var(--ink-70); }
+.numeral { font-size: var(--numeral); font-weight: 800; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.small   { font-size: .8rem; line-height: 1.5; color: var(--ink-70); font-weight: 500; }
+
+/* Scripture is the one serif, and the one thing not shouted. */
+.scripture {
+  font-family: var(--serif);
+  font-size: var(--scripture);
+  font-weight: 400;
+  line-height: 1.34;
+  letter-spacing: -.01em;
+  text-wrap: pretty;
+  max-width: 20ch;
+}
+.scripture--flow { max-width: 34ch; font-size: 1.16rem; line-height: 1.62; }
+.scripture[data-length="l"]  { font-size: clamp(1.2rem, 5vw, 1.5rem); max-width: 26ch; line-height: 1.42; }
+.scripture[data-length="xl"] { font-size: clamp(1.05rem, 4.2vw, 1.24rem); max-width: 32ch; line-height: 1.56; }
+.scripture--flow[data-length="l"],
+.scripture--flow[data-length="xl"] { font-size: 1.1rem; max-width: 36ch; line-height: 1.64; }
+
+.cite { font-size: .7rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-70); }
+
+/* ── The page ────────────────────────────────────────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--beat);
+  padding: .2rem var(--gutter) calc(7.5rem + env(safe-area-inset-bottom));
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+/* ── The card: the one primitive ─────────────────────────────────────────── */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--drop);
+  background: var(--cream);
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+}
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.2rem 1.35rem;
+  flex: 1;
+}
+.card[data-tall] .card-body { min-height: 15rem; justify-content: space-between; }
+/* On a hero the character hugs the bottom-right corner, the way it does on the
+   printed card — but it never stretches the card to get there. */
+.card[data-tall] .card-body > .figure { margin-top: -.5rem; }
+
+/* The band along the bottom: the darker cousin of the card's own colour. */
+.card-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: .8rem;
+  padding: .7rem 1.2rem;
+  border-top: var(--line) solid var(--ink);
+  font-size: var(--label); font-weight: 800; letter-spacing: .13em; text-transform: uppercase;
+}
+
+.card[data-tone="cream"]  { background: var(--cream);  } .card[data-tone="cream"]  .card-foot { background: var(--cream-band); }
+.card[data-tone="yellow"] { background: var(--yellow); } .card[data-tone="yellow"] .card-foot { background: var(--yellow-band); }
+.card[data-tone="blush"]  { background: var(--blush);  } .card[data-tone="blush"]  .card-foot { background: var(--blush-band); }
+.card[data-tone="sky"]    { background: var(--sky);    } .card[data-tone="sky"]    .card-foot { background: var(--sky-band); }
+.card[data-tone="lilac"]  { background: var(--lilac);  } .card[data-tone="lilac"]  .card-foot { background: var(--lilac-band); }
+.card[data-tone="coral"]  { background: var(--coral);  } .card[data-tone="coral"]  .card-foot { background: var(--coral-band); }
+.card[data-tone="orange"] { background: var(--orange); } .card[data-tone="orange"] .card-foot { background: var(--orange-band); }
+.card[data-tone="paper"]  { background: var(--white);  } .card[data-tone="paper"]  .card-foot { background: var(--cream); }
+
+button.card, a.card { cursor: pointer; transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease); }
+button.card:active, a.card:active { transform: translate(3px, 4px); box-shadow: 2px 2px 0 var(--ink); }
+
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+
+/* The character. It sits in the card's own space, never as a background. */
+.mascot { display: block; width: 100%; height: auto; }
+.figure { width: 6.5rem; flex: none; margin-left: auto; }
+.figure[data-size="lg"] { width: 9.5rem; }
+.figure[data-size="sm"] { width: 3.4rem; }
+
+/* ── The badge: a white pill with a navy outline ─────────────────────────── */
+
+.badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .34rem .8rem;
+  background: var(--white); color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 99px;
+  font-size: var(--label); font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  line-height: 1.2;
+  align-self: flex-start;
+}
+.badge[data-tone="ink"] { background: var(--ink); color: var(--paper); }
+
+/* A little aside, with a tail — the "GOOD THINGS INSIDE" note on the card. */
+.bubble {
+  position: relative;
+  display: inline-block;
+  max-width: 11rem;
+  padding: .5rem .7rem;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  line-height: 1.35;
+}
+.bubble::after {
+  content: ""; position: absolute; left: 1.1rem; bottom: -9px;
+  width: 12px; height: 12px;
+  background: var(--white);
+  border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
+  transform: rotate(45deg);
+  border-bottom-right-radius: 3px;
+}
+
+.stars { display: inline-flex; gap: 2px; }
+.stars .star { width: 15px; height: 15px; display: block; }
+.stars .star path { fill: none; }
+.stars .star[data-on] path { fill: var(--star); }
+/* On a warm band a yellow star disappears into it, so there it goes navy. */
+.card[data-tone="yellow"] .stars .star[data-on] path,
+.card[data-tone="orange"] .stars .star[data-on] path,
+.card[data-tone="cream"] .stars .star[data-on] path { fill: var(--ink); }
+.sparkle { width: 20px; height: 20px; display: block; }
+
+/* ── Actions ─────────────────────────────────────────────────────────────── */
+
+.act {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 48px; padding: .7rem 1.35rem;
+  background: var(--ink); color: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 99px;
+  box-shadow: var(--drop-sm);
+  font-weight: 700; font-size: .95rem; letter-spacing: -.01em;
+  cursor: pointer;
+  transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+}
+.act:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+.act[data-quiet] { background: var(--white); color: var(--ink); }
+.act[disabled] { opacity: .45; cursor: default; box-shadow: none; }
+.act[data-small] { min-height: 38px; padding: .35rem .9rem; font-size: .8rem; box-shadow: 2px 3px 0 var(--ink); }
+.act-row { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; }
+
+.go {
+  display: inline-flex; align-items: center; gap: .4rem;
+  color: inherit; cursor: pointer;
+  font-size: .9rem; font-weight: 800; letter-spacing: -.01em;
+  min-height: 44px; text-align: left;
+  text-transform: uppercase; letter-spacing: .08em; font-size: .74rem;
+}
+.go::after { content: "→"; transition: transform var(--speed) var(--ease); }
+.go:hover::after { transform: translateX(4px); }
+
+/* ── Lists ───────────────────────────────────────────────────────────────
+   Two kinds, and the difference is deliberate. A list of THINGS TO CHOOSE
+   is a stack of small cards, because that is what this design system is. A
+   list of SCRIPTURE — books, chapters, verses — is plain type on paper, so
+   the loudest thing on the Bible screen is never the furniture. */
+
+.rows { display: flex; flex-direction: column; gap: .6rem; }
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .3rem .85rem;
+  width: 100%; text-align: left; cursor: pointer;
+  color: inherit;
+  padding: .85rem .95rem;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: var(--drop-sm);
+  transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+}
+.row:active, button.row:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+div.row { cursor: default; }
+.row-title { font-size: 1rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.25; }
+.row-note { font-size: .84rem; line-height: 1.45; color: var(--ink-70); margin-top: .2rem; }
+.row-meta { font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-55); white-space: nowrap; }
+.row-num {
+  display: grid; place-items: center;
+  width: 1.9rem; height: 1.9rem; flex: none;
+  border: 2px solid var(--ink); border-radius: 99px;
+  font-size: .8rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  align-self: start;
+}
+
+/* The colour tag on a row: a filled square with an outline, not a stem. */
+.stem {
+  width: 1.1rem; height: 1.1rem; flex: none;
+  border: 2px solid var(--ink); border-radius: 5px;
+  background: var(--cream);
+  align-self: start; margin-top: .15rem;
+}
+.stem[data-accent="yellow"] { background: var(--yellow); }
+.stem[data-accent="blush"]  { background: var(--blush); }
+.stem[data-accent="sky"]    { background: var(--sky); }
+.stem[data-accent="lilac"]  { background: var(--lilac); }
+.stem[data-accent="coral"]  { background: var(--coral); }
+.stem[data-accent="orange"] { background: var(--orange); }
+.stem[data-accent="cream"]  { background: var(--cream); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+}
+.tag::before {
+  content: ""; width: .7rem; height: .7rem; flex: none;
+  border: 2px solid var(--ink); border-radius: 4px; background: var(--cream);
+}
+.tag[data-accent="yellow"]::before { background: var(--yellow); }
+.tag[data-accent="blush"]::before  { background: var(--blush); }
+.tag[data-accent="sky"]::before    { background: var(--sky); }
+.tag[data-accent="lilac"]::before  { background: var(--lilac); }
+.tag[data-accent="coral"]::before  { background: var(--coral); }
+.tag[data-accent="orange"]::before { background: var(--orange); }
+
+/* ── Progress: a chunky outlined bar ─────────────────────────────────────── */
+
+.thread {
+  height: 16px;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.thread > i { display: block; height: 100%; background: var(--ink); transition: width 700ms var(--ease); }
+.thread[data-accent="yellow"] > i { background: var(--yellow); }
+.thread[data-accent="sky"] > i    { background: var(--sky); }
+.thread[data-accent="blush"] > i  { background: var(--blush); }
+.thread[data-accent="lilac"] > i  { background: var(--lilac); }
+
+.figures { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+.figures > div {
+  padding: .8rem .7rem;
+  background: var(--white); border: 2px solid var(--ink); border-radius: 14px;
+  box-shadow: var(--drop-sm);
+}
+.figures .numeral { font-size: clamp(1.5rem, 8vw, 2rem); }
+.figures .label { font-size: .58rem; }
+
+/* ── Scripture, set as a page ────────────────────────────────────────────
+   Everything below here is deliberately quiet. See the header. */
+
+.reader {
+  background: var(--white);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--drop);
+  padding: 1.3rem 1.2rem;
+}
+.passage { margin-top: .3rem; }
+.passage-line {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  font-family: var(--serif);
+  font-size: 1.1rem; line-height: 1.72; font-weight: 400;
+  padding: .25rem .4rem; margin-left: -.4rem;
+  border-radius: 8px;
+  transition: background var(--speed) var(--ease);
+}
+.passage-line:hover { background: var(--ink-08); }
+.passage-verse[data-open] .passage-line { background: var(--sky); }
+.passage-num {
+  font-family: var(--sans);
+  font-size: .58rem; font-weight: 800;
+  vertical-align: .6em; margin-right: .4rem;
+  color: var(--ink-55);
+}
+.passage-verse .act-row { padding-left: .4rem; margin: .3rem 0 .6rem; }
+
+.ref-link {
+  display: inline-flex; align-items: center;
+  color: inherit; cursor: pointer; text-align: left;
+  padding: .28rem 0; min-height: 32px;
+  text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;
+  transition: opacity var(--speed) var(--ease);
+}
+.ref-link:hover { opacity: .6; }
+
+.chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.7rem, 1fr)); gap: .4rem; }
+.chapter {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 1; cursor: pointer;
+  font-size: .84rem; font-weight: 700;
+  background: var(--white);
+  border: 2px solid var(--ink); border-radius: 10px;
+  transition: background var(--speed) var(--ease);
+}
+.chapter:hover { background: var(--sky); }
+
+.book-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .1rem; }
+.book {
+  display: flex; align-items: baseline; justify-content: space-between; gap: .6rem;
+  width: 100%; text-align: left; cursor: pointer;
+  padding: .5rem .45rem; margin-left: -.45rem;
+  border-radius: 8px;
+  transition: background var(--speed) var(--ease);
+}
+.book:hover { background: var(--ink-08); }
+.book-name { font-size: .94rem; font-weight: 600; letter-spacing: -.015em; }
+.book-count { font-size: .64rem; font-weight: 800; color: var(--ink-55); font-variant-numeric: tabular-nums; }
+
+/* ── Header and navigation ───────────────────────────────────────────────── */
+
+.app-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: calc(1.2rem + env(safe-area-inset-top)) var(--gutter) 1rem;
+  max-width: 32rem; margin: 0 auto; width: 100%;
+}
+.app-head .greet { font-size: 1rem; font-weight: 600; letter-spacing: -.02em; }
+.app-head .greet b { font-weight: 800; }
+
+.back {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; flex: none;
+  background: var(--white); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: 99px;
+  box-shadow: var(--drop-sm);
+  font-size: 1rem; cursor: pointer;
+  transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+}
+.back:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+
+/* The bottom bar is itself a card: cream stock, navy rule along the top, and
+   the active tab wearing the same white badge as everything else. */
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  background: var(--paper);
+  border-top: var(--line) solid var(--ink);
+  padding: .5rem .4rem calc(.5rem + env(safe-area-inset-bottom));
+  gap: .25rem;
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: .25rem;
+  padding: .4rem .2rem .35rem;
+  min-height: 52px; cursor: pointer;
+  border: 2px solid transparent; border-radius: 14px;
+  font-size: .56rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-55);
+  transition: color var(--speed) var(--ease), background var(--speed) var(--ease);
+}
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] {
+  color: var(--ink);
+  background: var(--white);
+  border-color: var(--ink);
+  box-shadow: 2px 3px 0 var(--ink);
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+
+input[type="text"], input[type="search"], input[type="number"], textarea, select {
+  width: 100%;
+  font: inherit; font-weight: 600;
+  color: var(--ink);
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: .7rem .8rem;
+  min-height: 48px;
+  box-shadow: inset 2px 2px 0 rgba(27, 42, 92, .06);
+}
+input:focus, textarea:focus, select:focus { outline: none; box-shadow: var(--drop-sm); }
+textarea { min-height: 6.5rem; line-height: 1.55; }
+input::placeholder, textarea::placeholder { color: var(--ink-55); font-weight: 500; }
+
+.choice {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  width: 100%; text-align: left; cursor: pointer;
+  padding: .9rem 1rem;
+  background: var(--white);
+  border: 2px solid var(--ink); border-radius: 14px;
+  box-shadow: var(--drop-sm);
+  font-size: 1rem; font-weight: 700; letter-spacing: -.015em;
+  transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease), background var(--speed) var(--ease);
+}
+.choice:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+.choice::after { content: ""; width: 1.05rem; height: 1.05rem; flex: none; border: 2px solid var(--ink); border-radius: 99px; }
+.choice[aria-pressed="true"], .choice[data-chosen] { background: var(--yellow); }
+.choice[aria-pressed="true"]::after, .choice[data-chosen]::after { background: var(--ink); }
+.choice-list { display: flex; flex-direction: column; gap: .55rem; }
+
+/* ── Loading, empty, small print ─────────────────────────────────────────── */
+
+.wait { height: 12px; width: 12px; border-radius: 99px; background: var(--ink); animation: pulse 900ms var(--ease) infinite alternate; }
+@keyframes pulse { to { opacity: .2; transform: scale(.7); } }
+
+.note {
+  font-size: .88rem; line-height: 1.55;
+  padding: .85rem 1rem;
+  background: var(--cream);
+  border: 2px solid var(--ink); border-radius: 14px;
+}
+.note[data-level="warn"] { background: var(--blush); }
+
+.rule { height: 2px; background: var(--ink-15); border: 0; margin: .2rem 0; }
+
+/* ── A full-screen moment ────────────────────────────────────────────────── */
+
+.moment {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; justify-content: center; gap: 1.3rem;
+  padding: 2rem var(--gutter) calc(2.4rem + env(safe-area-inset-bottom));
+  background: var(--yellow);
+  animation: moment-in 320ms var(--ease) both;
+}
+.moment .figure { margin: 0 auto 0 0; width: 8rem; }
+@keyframes moment-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ── Arrival ─────────────────────────────────────────────────────────────── */
+
+.rise { opacity: 0; transform: translateY(10px); }
+.rise[data-in] { opacity: 1; transform: none; transition: opacity 380ms var(--ease), transform 380ms var(--ease); }
+
+/* ── Wider screens ───────────────────────────────────────────────────────── */
+
+@media (min-width: 900px) {
+  :root { --gutter: 1.6rem; --display: clamp(2.4rem, 4vw, 3.2rem); }
+  .screen {
+    max-width: 58rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.3rem;
+    align-items: start;
+    padding-inline: 0;
+  }
+  .screen > .full { grid-column: 1 / -1; }
+  .app-head { max-width: 58rem; padding-inline: 0; }
+  .tabs {
+    left: 50%; transform: translateX(-50%);
+    bottom: 1.2rem; width: auto; max-width: 30rem;
+    grid-auto-columns: minmax(5.2rem, 1fr);
+    border: var(--line) solid var(--ink);
+    border-radius: 22px;
+    box-shadow: var(--drop);
+    padding-bottom: .5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  .rise { opacity: 1; transform: none; }
+}

@@ -21,13 +21,13 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v1';
+const VERSION = 'adults-v2';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [
-  './', './index.html', './manifest.webmanifest', './css/organic.css', './icons/icon.svg',
+  './', './index.html', './manifest.webmanifest', './css/sticker.css', './icons/icon.svg',
   './js/app.js',
-  './js/core/dom.js', './js/core/ui.js', './js/core/shapes.js', './js/core/storage.js',
+  './js/core/dom.js', './js/core/ui.js', './js/core/art.js', './js/core/storage.js',
   './js/core/profile.js', './js/core/progress.js', './js/core/router.js',
   './js/core/content.js', './js/core/rotation.js', './js/core/scripture.js',
   './js/core/prayers.js', './js/core/plan.js',

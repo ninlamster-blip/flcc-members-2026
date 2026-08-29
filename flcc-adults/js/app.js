@@ -7,7 +7,7 @@
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, greeting, firstName, SEASONS, FOCUS } from './core/profile.js';
-import { block, label, display, lead, title, act, choice, toast, mark } from './core/ui.js';
+import { card, badge, display, lead, title, act, choice, toast, starRow } from './core/ui.js';
 
 const TABS = [
   { name: 'home',    label: 'Home',    icon: 'home' },
@@ -64,12 +64,12 @@ function onboarding() {
     boot();
   };
 
-  const intro = () => block({ tone: 'paper', tall: true, className: 'full',
-      shape: { seed: 'welcome', tones: ['forest', 'gold'] }, corner: 'br' },
-    label('FLCC NEXT'),
+  const intro = () => card({ tone: 'yellow', tall: true, className: 'full', symbol: 'sun',
+      foot: [h('span', { text: 'FLCC Church · Kuwait' }), starRow(5)] },
+    badge('FLCC NEXT'),
     h('div', {},
       display('A place to keep going.'),
-      h('p', { class: 'lead', style: 'margin-top:1.2rem;max-width:26ch',
+      h('p', { class: 'lead', style: 'margin-top:1rem;max-width:26ch',
         text: 'Scripture, prayer and teaching for the adults of FLCC — built for a life that is already full.' })),
     h('div', {}, act('Begin', next)));
 
@@ -84,26 +84,25 @@ function onboarding() {
       next();
     } }, input, h('div', { style: 'margin-top:1.6rem' }, act('Next', null, { type: 'submit' })));
 
-    const el = block({ tone: 'paper', tall: true, className: 'full',
-        shape: { seed: 'name', tones: ['mist', 'sage'] }, corner: 'tr' },
-      label('One of three'),
-      h('div', {}, display('What should we call you?'), h('div', { style: 'margin-top:1.8rem' }, form), warn));
+    const el = card({ tone: 'sky', tall: true, className: 'full', symbol: 'blob', figureSize: 'sm',
+        foot: 'One of three' },
+      badge('Your name'),
+      h('div', {}, display('What should we call you?'), h('div', { style: 'margin-top:1.4rem' }, form), warn));
     setTimeout(() => input.focus(), 60);
     return el;
   };
 
-  const askSeason = () => block({ tone: 'paper', tall: true, className: 'full',
-      shape: { seed: 'season', tones: ['olive', 'gold'] }, corner: 'tl' },
-    label('Two of three'),
+  const askSeason = () => card({ tone: 'lilac', className: 'full', foot: 'Two of three' },
+    badge('Where you are'),
     h('div', {},
       display('Where are you, honestly?'),
-      h('p', { class: 'lead', style: 'margin-top:.9rem', text: 'This only changes what we put in front of you first. You can change it whenever you like.' }),
-      h('div', { class: 'choice-list', style: 'margin-top:1.6rem' },
+      h('p', { class: 'lead', style: 'margin-top:.7rem', text: 'This only changes what we put in front of you first. You can change it whenever you like.' }),
+      h('div', { class: 'choice-list', style: 'margin-top:1.2rem' },
         ...SEASONS.map((season) => choice(season.label, () => { draft.season = season.id; next(); })))));
 
   const askFocus = () => {
     const chosen = new Set();
-    const list = h('div', { class: 'choice-list', style: 'margin-top:1.6rem' },
+    const list = h('div', { class: 'choice-list', style: 'margin-top:1.2rem' },
       ...FOCUS.map((one) => {
         const button = choice(one.label, () => {
           if (chosen.has(one.id)) chosen.delete(one.id); else chosen.add(one.id);
@@ -112,9 +111,8 @@ function onboarding() {
         return button;
       }));
 
-    return block({ tone: 'paper', tall: true, className: 'full',
-        shape: { seed: 'focus', tones: ['peach', 'coral'] }, corner: 'br' },
-      label('Three of three'),
+    return card({ tone: 'blush', className: 'full', foot: 'Three of three' },
+      badge('What you came for'),
       h('div', {}, display('What did you come for?'), list),
       h('div', {}, act('Finish', () => { draft.focus = [...chosen]; next(); })));
   };
@@ -140,7 +138,7 @@ function renderHead(view, route) {
   if (route.name === 'home') {
     headEl.append(
       h('p', { class: 'greet' }, `${greeting()}, `, h('b', { text: firstName() })),
-      h('button', { class: 'label', type: 'button', style: 'cursor:pointer',
+      h('button', { class: 'badge', type: 'button', style: 'cursor:pointer',
         onclick: () => router.go('you'), text: 'You' }));
   } else if (ROOTS.has(route.name)) {
     headEl.append(h('p', { class: 'greet' }, h('b', { text: view.title || '' })), h('span'));
@@ -168,8 +166,8 @@ async function show(route, module) {
   try {
     view = await module.default(context);
   } catch (error) {
-    view = { title: 'Something broke', el: block({ tone: 'paper', className: 'full' },
-      label('Sorry'), title('That screen did not open'),
+    view = { title: 'Something broke', el: card({ tone: 'blush', className: 'full', symbol: 'cloud', figureSize: 'sm' },
+      badge('Sorry'), title('That screen did not open'),
       h('p', { class: 'note', 'data-level': 'warn', text: String((error && error.message) || error) })) };
   }
 

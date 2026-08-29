@@ -1,11 +1,11 @@
-// HOME — one screen, one centre of gravity.
+// HOME — today's card, then where you left off.
 //
-// The old dashboard instinct is to show everything the app can do. This screen
-// shows today's Scripture at the size it deserves, and then four quiet lines
-// saying where you were when you left. Everything else is a tab away.
+// One card per thing, in the order a person actually wants them: the verse
+// first and at size, then the three places they were part-way through, then
+// what is happening at church. Nothing on this screen is a dashboard tile.
 
-import { h, block, section, label, display, title, lead, small, scripture, cite, reference,
-         act, go, thread, rows, row, rule, rise, waiting, swap} from '../core/ui.js';
+import { h, card, badge, display, title, lead, body, small, scripture, reference, starRow,
+         act, actions, go, thread, rows, row, section, swap, rise, waiting, figure } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as progress from '../core/progress.js';
@@ -14,13 +14,11 @@ import * as prayers from '../core/prayers.js';
 import { seasonOf, wants } from '../core/profile.js';
 
 /**
- * Fill a section from the network, and say so if it does not arrive.
+ * Fill a card from the network, and say so if it does not arrive.
  *
- * These sections load after the screen is already on the page, which means a
- * failed fetch used to remove them — a reader on a bad connection simply lost
- * "Continue your journey", with nothing left to say it had ever been there. A
- * silently missing section is indistinguishable from having finished the path,
- * so the two that carry real state say what happened and offer the retry.
+ * These load after the screen is already on the page, so a failed fetch used
+ * to remove them — a reader on a bad connection simply lost "Continue your
+ * journey", with nothing left to say it had ever been there.
  */
 function fill(el, work, { quiet = false, retry } = {}) {
   work().catch(() => {
@@ -29,19 +27,17 @@ function fill(el, work, { quiet = false, retry } = {}) {
   });
 }
 
-/** The fourteen-day rhythm: a row of marks, and never a broken chain. */
-function rhythmLine() {
+/** The fortnight: fourteen marks, and never a broken chain. */
+function fortnight() {
   const days = progress.rhythm(14);
   const on = days.filter((day) => day.on).length;
-  const strip = h('div', { style: 'display:flex;gap:.3rem;align-items:center', 'aria-hidden': 'true' },
-    ...days.map((day) => h('i', {
-      style: `width:6px;height:6px;border-radius:99px;background:${day.on ? 'var(--forest)' : 'var(--ink-16)'}`,
-    })));
-  return section({},
-    h('div', { class: 'section-head' },
-      label('The last fortnight'),
-      h('span', { class: 'row-meta', text: `${on} of 14 days` })),
-    strip,
+  return card({ tone: 'paper', foot: [`${on} of 14 days`, starRow(Math.round((on / 14) * 5))] },
+    badge('The last fortnight'),
+    h('div', { style: 'display:flex;gap:.35rem;align-items:center;flex-wrap:wrap', 'aria-hidden': 'true' },
+      ...days.map((day) => h('i', {
+        style: 'width:14px;height:14px;border-radius:5px;border:2px solid var(--ink);'
+          + `background:${day.on ? 'var(--yellow)' : 'var(--white)'}`,
+      }))),
     small(on === 0
       ? 'Nothing recorded yet. One day counts.'
       : 'Days you opened something. There is no streak to break here.'));
@@ -49,22 +45,23 @@ function rhythmLine() {
 
 export default async function home(ctx) {
   const el = h('div', { style: 'display:contents' });
-  const blocks = [];
+  const cards = [];
 
-  // ── Today's Scripture moment ────────────────────────────────────────────
+  // ── Today ───────────────────────────────────────────────────────────────
   let moment = null;
-  try {
-    moment = rotation.pick(await content.moments());
-  } catch { /* the rest of the screen still stands */ }
+  try { moment = rotation.pick(await content.moments()); } catch { /* the rest still stands */ }
 
   if (moment) {
-    blocks.push(block({ tone: 'paper', tall: true, className: 'full',
-        shape: { seed: moment.id, tones: moment.tones }, corner: 'br', soft: true },
-      h('div', {},
-        label(`Today · ${moment.theme}`),
-        h('div', { style: 'margin-top:1.4rem' }, scripture(moment.text)),
-        h('div', { style: 'margin-top:1.1rem' }, reference(moment.ref, ctx.go))),
-      h('div', { class: 'act-row' },
+    // The character goes in the header rather than under the verse. Below it,
+    // a long psalm pushes the card past a phone screen and leaves the mascot
+    // sitting in a field of empty colour.
+    cards.push(card({ tone: moment.tone, className: 'full',
+        foot: [reference(moment.ref, ctx.go), starRow(5)] },
+      h('div', { class: 'card-head' },
+        badge(`Today · ${moment.theme}`),
+        figure(moment.symbol, moment.tone, { size: 'sm' })),
+      scripture(moment.text),
+      actions(
         act('Sit with this', () => ctx.go(`moment/${moment.id}`)),
         go('Read the chapter', async () => {
           const module = await import('../core/scripture.js');
@@ -73,18 +70,18 @@ export default async function home(ctx) {
           ctx.go(found ? `bible/${found.book.n}/${found.chapter}` : 'bible');
         }))));
   } else {
-    blocks.push(block({ tone: 'paper', className: 'full' },
-      label('Today'), title('Today’s Scripture did not load'),
+    cards.push(card({ tone: 'blush', className: 'full', symbol: 'cloud', figureSize: 'sm' },
+      badge('Today'), title('Today’s Scripture did not load'),
       small('It needs a connection the first time. Everything else here still works.')));
   }
 
   // ── Continue your journey ───────────────────────────────────────────────
-  const journey = section({ className: 'full' }, waiting());
-  blocks.push(journey);
+  const journey = card({ tone: 'paper', className: 'full' }, waiting());
+  cards.push(journey);
   fill(journey, async () => {
     const paths = await content.paths();
     // In parallel: four paths fetched one after another is four round trips
-    // a reader waits through before the section they came back for appears.
+    // a reader waits through before the card they came back for appears.
     const started = await Promise.all(paths.map(async (one) => {
       const sessions = await content.sessions(one.id);
       return { path: one, sessions, where: progress.through('session', sessions.map((s) => `${one.id}:${s.id}`)) };
@@ -98,80 +95,101 @@ export default async function home(ctx) {
     if (!pick) { journey.remove(); return; }
 
     const next = pick.sessions.find((s) => !progress.isDone('session', `${pick.path.id}:${s.id}`)) || pick.sessions[0];
+    journey.dataset.tone = pick.path.tone;
     swap(journey,
-      label(going ? 'Continue your journey' : 'Suggested for you'),
-      h('div', {},
-        title(pick.path.title),
-        h('p', { class: 'lead', style: 'margin-top:.5rem', text: next.title }),
-        h('div', { style: 'margin-top:1.1rem' }, thread(pick.where.percent)),
-        h('p', { class: 'small', style: 'margin-top:.5rem',
-          text: pick.where.finished
-            ? `${pick.where.finished} of ${pick.where.total} sessions`
-            : `${pick.where.total} sessions · ${pick.path.minutes}` })),
-      go(going ? 'Continue reading' : 'Start the first session',
-        () => ctx.go(`session/${pick.path.id}/${next.id}`)));
+      h('div', { class: 'card-body' },
+        h('div', { class: 'card-head' },
+          h('div', {},
+            badge(going ? 'Continue' : 'Suggested for you'),
+            h('div', { style: 'margin-top:.8rem' }, title(pick.path.title)),
+            h('p', { class: 'lead', style: 'margin-top:.3rem', text: next.title })),
+          figure(pick.path.symbol, pick.path.tone, { size: 'sm' })),
+        thread(pick.where.percent),
+        actions(act(going ? 'Continue reading' : 'Start the first session',
+          () => ctx.go(`session/${pick.path.id}/${next.id}`)))),
+      h('div', { class: 'card-foot' },
+        h('span', { text: pick.where.finished
+          ? `${pick.where.finished} of ${pick.where.total} sessions`
+          : `${pick.where.total} sessions · ${pick.path.minutes}` }),
+        starRow(Math.max(1, Math.round((pick.where.percent / 100) * 5)))));
   }, { retry: ctx.refresh });
 
   // ── Today's reading ─────────────────────────────────────────────────────
-  const reading = section({}, waiting());
-  blocks.push(reading);
+  const reading = card({ tone: 'paper' }, waiting());
+  cards.push(reading);
   fill(reading, async () => {
     const plans = await content.plans();
     const state = plan.state();
     const current = plans.find((one) => one.id === state.id);
     if (!current) {
+      reading.dataset.tone = 'cream';
       swap(reading,
-        label('Reading plan'),
-        h('div', {}, title('Nothing on the go'),
-          h('p', { class: 'lead', style: 'margin-top:.5rem', text: 'A chapter a day, and a gospel is read inside three weeks.' })),
-        go('Choose a plan', () => ctx.go('bible')));
+        h('div', { class: 'card-body' },
+          h('div', { class: 'card-head' },
+            h('div', {}, badge('Reading plan'),
+              h('div', { style: 'margin-top:.8rem' }, title('Nothing on the go')),
+              h('p', { class: 'lead', style: 'margin-top:.3rem', text: 'A chapter a day, and a gospel is read inside three weeks.' })),
+            figure('book', 'cream', { size: 'sm' })),
+          actions(act('Choose a plan', () => ctx.go('bible'), { quiet: true }))),
+        h('div', { class: 'card-foot' }, h('span', { text: 'Three to choose from' })));
       return;
     }
     const at = plan.positionIn(current);
+    reading.dataset.tone = current.tone;
     swap(reading,
-      label(`${current.title} · day ${at.day} of ${at.total}`),
-      h('div', {},
-        title(at.done ? 'Finished' : at.at.ref),
-        at.at && !at.done ? h('p', { class: 'lead', style: 'margin-top:.5rem', text: at.at.note }) : null,
-        h('div', { style: 'margin-top:1.1rem' }, thread(at.percent, 'gold'))),
-      go(at.done ? 'See the plan' : 'Read today', () => ctx.go(`plan/${current.id}`)));
+      h('div', { class: 'card-body' },
+        h('div', { class: 'card-head' },
+          h('div', {}, badge(`Day ${at.day} of ${at.total}`),
+            h('div', { style: 'margin-top:.8rem' }, title(at.done ? 'Finished' : at.at.ref)),
+            at.at && !at.done ? h('p', { class: 'lead', style: 'margin-top:.3rem', text: at.at.note }) : null),
+          figure(current.symbol, current.tone, { size: 'sm' })),
+        thread(at.percent, 'yellow'),
+        actions(act(at.done ? 'See the plan' : 'Read today', () => ctx.go(`plan/${current.id}`)))),
+      h('div', { class: 'card-foot' },
+        h('span', { text: current.title }),
+        starRow(Math.max(1, Math.round((at.percent / 100) * 5)))));
   }, { retry: ctx.refresh });
 
   // ── Take a moment ───────────────────────────────────────────────────────
-  const pray = section({}, waiting());
-  blocks.push(pray);
+  const pray = card({ tone: 'paper' }, waiting());
+  cards.push(pray);
   fill(pray, async () => {
     const guides = await content.guides();
     const guide = rotation.pick(guides, { offset: 3 });
     const open = prayers.open().length;
+    pray.dataset.tone = guide.tone;
     swap(pray,
-      label('Take a moment'),
-      h('div', {}, title(guide.title),
-        h('p', { class: 'lead', style: 'margin-top:.5rem', text: guide.line })),
-      go('Pray now', () => ctx.go(`guide/${guide.id}`)),
-      open ? small(`${open} prayer${open === 1 ? '' : 's'} on your list.`) : null);
+      h('div', { class: 'card-body' },
+        h('div', { class: 'card-head' },
+          h('div', {}, badge('Take a moment'),
+            h('div', { style: 'margin-top:.8rem' }, title(guide.title)),
+            h('p', { class: 'lead', style: 'margin-top:.3rem', text: guide.line })),
+          figure(guide.symbol, guide.tone, { size: 'sm' })),
+        actions(act('Pray now', () => ctx.go(`guide/${guide.id}`)))),
+      h('div', { class: 'card-foot' },
+        h('span', { text: open ? `${open} on your prayer list` : 'Your prayer list is empty' })));
   }, { quiet: true });
 
-  blocks.push(rhythmLine());
+  cards.push(fortnight());
 
-  // ── One line from church ────────────────────────────────────────────────
-  const church = section({}, waiting());
-  blocks.push(church);
+  // ── From church ─────────────────────────────────────────────────────────
+  const church = section({ className: 'full' }, waiting());
+  cards.push(church);
   fill(church, async () => {
     const [events, updates] = await Promise.all([content.events(), content.updates()]);
     const next = events.find((one) => !one.recurring) || events[0];
     const latest = updates[0];
     swap(church,
-      label('From FLCC'),
-      rows({ tight: true },
-        latest ? row({ title: latest.title, note: latest.from, accent: latest.accent,
+      badge('From FLCC'),
+      rows({},
+        latest ? row({ title: latest.title, note: latest.from, accent: latest.tone,
           onclick: () => ctx.go('connect') }) : null,
-        next ? row({ title: next.title, note: next.when, accent: next.accent,
+        next ? row({ title: next.title, note: next.when, accent: next.tone,
           onclick: () => ctx.go('connect') }) : null),
       go('Everything from church', () => ctx.go('connect')));
   }, { quiet: true });
 
-  el.append(...blocks);
-  rise(blocks);
+  el.append(...cards);
+  rise(cards);
   return { title: 'Home', el };
 }

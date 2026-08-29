@@ -2,49 +2,49 @@
   {
     "id": "welcome",
     "title": "Welcome team",
-    "accent": "gold",
     "commitment": "One Friday a month · 40 minutes early",
     "blurb": "The first face a visitor sees. Learn names, notice who came alone, and follow up on Monday.",
-    "needs": true
+    "needs": true,
+    "tone": "yellow"
   },
   {
     "id": "worship",
     "title": "Worship team",
-    "accent": "peach",
     "commitment": "Weekly rehearsal · Wednesday evening",
     "blurb": "Musicians and singers. An audition is a conversation and a run-through, not a performance.",
-    "needs": false
+    "needs": false,
+    "tone": "blush"
   },
   {
     "id": "kids",
     "title": "Children's ministry",
-    "accent": "olive",
     "commitment": "Two Fridays a month",
     "blurb": "Teaching the 7–12s during the main service. All volunteers are checked and no adult is ever alone with a child.",
-    "needs": true
+    "needs": true,
+    "tone": "lilac"
   },
   {
     "id": "prayer",
     "title": "Prayer ministry",
-    "accent": "mist",
     "commitment": "Tuesdays · one hour",
     "blurb": "Praying for the church week by week, and available after the service for anyone who asks.",
-    "needs": false
+    "needs": false,
+    "tone": "sky"
   },
   {
     "id": "care",
     "title": "Care and visitation",
-    "accent": "coral",
     "commitment": "As needed · a few hours a month",
     "blurb": "Hospital visits, help for members between contracts, and a phone call to whoever has stopped coming.",
-    "needs": true
+    "needs": true,
+    "tone": "coral"
   },
   {
     "id": "media",
     "title": "Media and sound",
-    "accent": "forest",
     "commitment": "One Friday a month",
     "blurb": "Sound desk, slides and the recording. Training given; being good with a laptop is enough to start.",
-    "needs": true
+    "needs": true,
+    "tone": "orange"
   }
 ]

@@ -1,57 +1,99 @@
 // The component kit.
 //
-// There is no card here. Everything is a section of type, a block of colour,
-// a row in a list, or an action — and the hierarchy between them is carried by
-// size and space rather than by borders. If a new component needs a rounded
-// rectangle with a shadow to be legible, it is the wrong component.
+// Everything the reader touches is a card: a navy outline, a hard shadow, a
+// flat colour, and a band along the bottom. The kit exists so that is true by
+// default rather than by discipline — there is no way to build a surface in
+// this app that quietly loses its outline.
+//
+// The one deliberate exception is Scripture. `reader()` and the passage type
+// below are plain paper: the Bible screen is where the chrome stops.
 
 import { h, clear, navIcon } from './dom.js';
-import * as shapes from './shapes.js';
-import { showShapes } from './profile.js';
+import * as art from './art.js';
+import { showFigures } from './profile.js';
 
 /**
- * An editorial section: an eyebrow, then whatever it holds.
+ * A card.
  *
- * This is the app's default container. It draws nothing at all.
+ * @param {object} options
+ * @param {string} options.tone    the card's colour; its band is derived in CSS
+ * @param {string} options.symbol  a character from js/core/art.js, drawn at the
+ *                                 end of the body. One per card, at most.
+ * @param {*}      options.foot    what goes in the bottom band — a string, an
+ *                                 element, or [left, right]
+ * @param {boolean} options.tall   a hero card: taller, and its content spreads
  */
-export function section({ className = '', ...rest } = {}, ...children) {
-  return h('div', { class: `section ${className}`.trim(), ...rest }, children);
-}
-
-/**
- * A block of colour, optionally with an organic field behind the type.
- *
- * `seed` decides the shapes. Pass something stable and meaningful — a verse
- * reference, a path id, the date — and the same block draws the same curve
- * every time it is opened.
- */
-export function block({ tone = 'paper', shape = null, corner = 'br', soft = false, tall = false,
-                        as = 'div', onclick, className = '', ...rest } = {}, ...children) {
+export function card({ tone = 'cream', symbol = '', figureSize = '', foot = null, tall = false,
+                       as = 'div', onclick, className = '', ...rest } = {}, ...children) {
   const el = h(as, {
-    class: `block ${className}`.trim(),
+    class: `card ${className}`.trim(),
     dataset: { tone, ...(tall ? { tall: '' } : {}) },
     ...(onclick ? { onclick, type: as === 'button' ? 'button' : null } : {}),
     ...rest,
   });
-  if (shape && showShapes()) {
-    const field = h('div', { class: 'shapes', 'aria-hidden': 'true', ...(soft ? { dataset: { soft: '' } } : {}) });
-    field.innerHTML = shapes.field(shape.seed, shape.tones, { corner });
-    el.appendChild(field);
-  }
-  for (const child of children.flat(Infinity)) if (child) el.appendChild(child);
+  const body = h('div', { class: 'card-body' }, children.flat(Infinity).filter(Boolean));
+  if (symbol) body.appendChild(figure(symbol, tone, { size: figureSize }));
+  el.appendChild(body);
+  if (foot !== null && foot !== undefined && foot !== false) el.appendChild(band(foot));
   return el;
 }
 
-/** The small organic stone that marks a heading or covers a path. */
-export function mark(seed, tone = 'sage', { size = 'sm' } = {}) {
-  const el = h('span', { class: `mark-holder mark-${size}`, 'aria-hidden': 'true',
-    style: 'display:inline-flex;flex:none' });
-  el.innerHTML = shapes.mark(seed, tone);
-  el.firstChild?.setAttribute('class', `mark mark-${size}`);
+/** The band along the bottom of a card. */
+export function band(content) {
+  const parts = (Array.isArray(content) ? content : [content]).filter((one) => one !== null && one !== undefined && one !== false);
+  return h('div', { class: 'card-foot' },
+    ...parts.map((one) => (one instanceof Node ? one : h('span', { text: String(one) }))));
+}
+
+/**
+ * One of the characters.
+ *
+ * The fill is chosen against the surface it sits on rather than passed in:
+ * a character has to be a different colour from its own card or it disappears,
+ * and leaving that to each call site is how a set stops looking like a set.
+ */
+const ON = {
+  cream: 'coral', yellow: 'blush', blush: 'sky', sky: 'lilac',
+  lilac: 'yellow', coral: 'cream', orange: 'cream', paper: 'yellow',
+};
+
+export function figure(name, on = 'cream', { size = '' } = {}) {
+  // The reader's choice is honoured HERE rather than at each call site: a
+  // screen that reaches for a character directly must go dark too, or turning
+  // them off in You clears some screens and not others.
+  if (!showFigures()) return h('span', { hidden: true });
+  const el = h('div', { class: 'figure', ...(size ? { dataset: { size } } : {}) });
+  el.innerHTML = art.mascot(art.isMascot(name) ? name : art.pick(name), ON[on] || 'coral');
   return el;
 }
 
-export function label(text, accent = false) { return h('p', { class: 'label', ...(accent ? { dataset: { accent: '' } } : {}), text }); }
+/** A white pill with a navy outline — the app's eyebrow. */
+export function badge(text, { tone = '' } = {}) {
+  return h('span', { class: 'badge', ...(tone ? { dataset: { tone } } : {}), text });
+}
+
+/** A small aside with a tail, for the thing worth saying in four words. */
+export function bubble(text) { return h('span', { class: 'bubble', text }); }
+
+/** Five stars, `lit` of them filled. Ornament, and the odd small count. */
+export function starRow(lit = 5, total = 5) {
+  const el = h('span', { style: 'display:inline-flex' });
+  el.innerHTML = art.stars(lit, total);
+  return el;
+}
+
+/** A group with no chrome at all: used to hold cards, and on the Bible screen. */
+export function section({ className = '', ...rest } = {}, ...children) {
+  return h('div', { class: `section ${className}`.trim(), style: 'display:flex;flex-direction:column;gap:.85rem', ...rest },
+    children.flat(Infinity).filter(Boolean));
+}
+
+/** Plain paper. Scripture is read on this, and nothing else uses it. */
+export function reader({ className = '', ...rest } = {}, ...children) {
+  return h('div', { class: `reader ${className}`.trim(), ...rest }, children.flat(Infinity).filter(Boolean));
+}
+
+export function label(text) { return h('p', { class: 'label', text }); }
 export function display(text) { return h('h1', { class: 'display', text }); }
 export function title(text, tag = 'h2') { return h(tag, { class: 'title', text }); }
 export function lead(text) { return h('p', { class: 'lead', text }); }
@@ -64,27 +106,20 @@ export function waiting() { return h('div', { class: 'wait', role: 'status', 'ar
 /**
  * Scripture, set as Scripture.
  *
- * The serif is not decoration: it is the one typographic signal in the app
- * that says this text is not ours. `flow` is the long-form setting used when a
- * passage is being read rather than displayed.
- *
- * The size steps down as the passage gets longer. A display setting that is
- * right for one line of Micah turns four verses of Psalm 139 into a wall that
- * fills a phone screen and pushes everything else below the fold, so the
- * length of the text decides the size rather than the screen it sits on.
+ * The serif is the one typographic signal in the app that says this text is
+ * not ours. The size steps down as the passage gets longer, because a setting
+ * that is right for one line of Micah turns four verses of Psalm 139 into a
+ * wall that fills a phone.
  */
 export function scripture(text, { flow = false, tag = 'p' } = {}) {
-  const body = String(text || '');
-  const length = body.length > 300 ? 'xl' : body.length > 150 ? 'l' : 'm';
-  return h(tag, { class: `scripture${flow ? ' scripture--flow' : ''}`,
-    dataset: { length }, text: `“${body}”` });
+  const source = String(text || '');
+  const length = source.length > 300 ? 'xl' : source.length > 150 ? 'l' : 'm';
+  return h(tag, { class: `scripture${flow ? ' scripture--flow' : ''}`, dataset: { length }, text: `“${source}”` });
 }
 
 export function cite(text) { return h('p', { class: 'cite', text }); }
 
-export function go(text, onclick) {
-  return h('button', { class: 'go', type: 'button', onclick }, text);
-}
+export function go(text, onclick) { return h('button', { class: 'go', type: 'button', onclick }, text); }
 
 export function act(text, onclick, { quiet = false, small: compact = false, ...rest } = {}) {
   return h('button', {
@@ -97,7 +132,6 @@ export function act(text, onclick, { quiet = false, small: compact = false, ...r
 
 export function actions(...children) { return h('div', { class: 'act-row' }, children.flat(Infinity).filter(Boolean)); }
 
-/** A progress thread. Two pixels of colour, and never a percentage shouted. */
 export function thread(percent, accent = '') {
   const value = Math.max(0, Math.min(100, Math.round(percent)));
   return h('div', { class: 'thread', ...(accent ? { dataset: { accent } } : {}),
@@ -109,13 +143,7 @@ export function tag(text, accent = '') {
   return h('span', { class: 'tag', ...(accent ? { dataset: { accent } } : {}), text });
 }
 
-/**
- * One row of an editorial list.
- *
- * `accent` draws a three-pixel stem of colour on the left — enough to tell a
- * ministry from a prayer category at a glance, and far short of giving every
- * item its own coloured icon in its own coloured circle.
- */
+/** One row of a list — itself a small card. */
 export function row({ eyebrow = '', title: heading, note: lede = '', meta = '', accent = '', number = '', onclick, ...rest } = {}) {
   const el = h(onclick ? 'button' : 'div', {
     class: 'row', ...(onclick ? { onclick, type: 'button' } : {}), ...rest,
@@ -125,7 +153,7 @@ export function row({ eyebrow = '', title: heading, note: lede = '', meta = '', 
   else el.appendChild(h('span'));
 
   el.appendChild(h('div', {},
-    eyebrow ? h('p', { class: 'label', style: 'margin-bottom:.35rem', text: eyebrow }) : null,
+    eyebrow ? h('p', { class: 'label', style: 'margin-bottom:.3rem', text: eyebrow }) : null,
     h('p', { class: 'row-title', text: heading }),
     lede ? h('p', { class: 'row-note', text: lede }) : null));
   el.appendChild(meta ? h('span', { class: 'row-meta', text: meta }) : h('span'));
@@ -145,9 +173,9 @@ export function choice(text, onclick, props = {}) {
  * A Scripture reference that opens the Bible.
  *
  * The whole Bible ships with this app, so a reference rendered as dead text is
- * a reader retyping "Lamentations 3:22" into the Bible tab. `scripture.js` is
+ * an adult retyping "Lamentations 3:22" into the Bible tab. `scripture.js` is
  * imported on the click rather than at the top of the file: every screen loads
- * this kit, and only a reader who actually taps a reference needs the parser.
+ * this kit, and only a reader who taps a reference needs the parser.
  */
 export function reference(text, navigate, { className = 'cite', style = '' } = {}) {
   if (!text) return h('span');
@@ -181,7 +209,7 @@ export function swap(el, ...children) {
   return el;
 }
 
-/** Sections arrive as you scroll. They fade up once, and never again. */
+/** Cards arrive as you scroll. They land once, and never again. */
 export function rise(elements) {
   const nodes = [].concat(elements).filter(Boolean);
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -195,7 +223,7 @@ export function rise(elements) {
   }, { rootMargin: '0px 0px -5% 0px' });
   nodes.forEach((node, i) => {
     node.classList.add('rise');
-    node.style.transitionDelay = `${Math.min(i, 5) * 60}ms`;
+    node.style.transitionDelay = `${Math.min(i, 5) * 50}ms`;
     observer.observe(node);
   });
   return nodes;
@@ -205,15 +233,14 @@ export function rise(elements) {
  * A full-screen moment. The app has exactly one interruption, and this is it:
  * the end of a guided prayer, the end of a path. One line, one way out.
  */
-export function moment({ eyebrow = '', big, line = '', action = 'Amen', seed = 'moment', tones = ['peach', 'gold'], onclose }) {
-  const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true' });
-  const field = h('div', { class: 'shapes', 'aria-hidden': 'true', dataset: { soft: '' } });
-  field.innerHTML = shapes.field(seed, tones, { corner: 'tr' });
-  screen.append(field,
-    eyebrow ? label(eyebrow) : null,
+export function moment({ eyebrow = '', big, line = '', action = 'Amen', symbol = 'star', tone = 'yellow', onclose }) {
+  const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: `background:var(--${tone})` });
+  screen.append(
+    figure(symbol, tone),
+    eyebrow ? badge(eyebrow) : null,
     h('p', { class: 'display', text: big }),
     line ? lead(line) : null,
-    h('div', { style: 'margin-top:1rem' }, act(action, () => { screen.remove(); if (onclose) onclose(); })));
+    h('div', { style: 'margin-top:.4rem' }, act(action, () => { screen.remove(); if (onclose) onclose(); })));
   document.body.appendChild(screen);
   screen.querySelector('.act').focus();
   return screen;
@@ -224,8 +251,9 @@ export function toast(message) {
   let el = document.getElementById('toast');
   if (!el) {
     el = h('div', { id: 'toast', role: 'status', 'aria-live': 'polite',
-      style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(6rem + env(safe-area-inset-bottom));z-index:70;'
-        + 'background:#253624;color:#F9F9F3;padding:.75rem 1.25rem;border-radius:99px;font-size:.85rem;font-weight:500;max-width:90vw;text-align:center' });
+      style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(6.5rem + env(safe-area-inset-bottom));z-index:70;'
+        + 'background:#FFFDF7;color:#1B2A5C;padding:.7rem 1.1rem;border:2px solid #1B2A5C;border-radius:99px;'
+        + 'box-shadow:3px 4px 0 #1B2A5C;font-size:.84rem;font-weight:700;max-width:90vw;text-align:center' });
     document.body.appendChild(el);
   }
   el.textContent = message;

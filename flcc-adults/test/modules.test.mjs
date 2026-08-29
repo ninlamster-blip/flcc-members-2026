@@ -74,18 +74,40 @@ test('every key written anywhere in the app is namespaced', () => {
 });
 
 /**
- * The design system's one rule, enforced.
+ * The design system's rules, enforced.
  *
- * The brief this app was built to is explicit: hierarchy comes from type,
- * space, colour blocks and rules — not from a stack of rounded rectangles. It
- * is exactly the rule that erodes first, one "just this once" card at a time,
- * so the absence of the class is a test rather than a comment.
+ * Every surface in this app is a card with a navy outline and a hard shadow.
+ * The two ways that decays are a surface built by hand out of a bare div, and
+ * a soft shadow creeping in from muscle memory — so both are checked.
  */
-test('there is no card in the design system', () => {
-  const css = readFileSync(new URL('../css/organic.css', import.meta.url), 'utf8');
-  assert.equal(/^\.card\b|[\s,]\.card\b/m.test(css), false, 'a .card class appeared in organic.css');
-  for (const file of modules) {
-    assert.equal(/class:\s*['"`][^'"`]*\bcard\b/.test(source(file)), false, `${file} renders a card`);
+test('nothing is drawn with a soft shadow or a colour outside the palette', () => {
+  const css = readFileSync(new URL('../css/sticker.css', import.meta.url), 'utf8');
+  const shadows = [...css.matchAll(/box-shadow:\s*([^;]+);/g)].map(([, value]) => value.trim());
+  for (const shadow of shadows) {
+    if (shadow.startsWith('inset') || shadow === 'none' || shadow.includes('var(--drop')) continue;
+    // A hard sticker shadow is "<x> <y> 0 <colour>" — a third length is a blur.
+    assert.match(shadow, /^-?[\d.]+px -?[\d.]+px 0 /, `soft shadow in the stylesheet: ${shadow}`);
+  }
+  assert.match(css, /--drop:\s*[\d]+px [\d]+px 0 var\(--ink\)/, 'the hard shadow token is gone');
+});
+
+test('the characters can be turned off everywhere at once', () => {
+  // figure() checks the setting itself. A screen that builds a mascot straight
+  // from art.js would ignore that, and turning the characters off in You would
+  // clear some screens and not others.
+  for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
+    assert.equal(/from '\.\.\/core\/art\.js'/.test(code(file)), false,
+      `${file} imports art.js directly — go through figure() in core/ui.js`);
+  }
+});
+
+test('a screen builds its surfaces from the kit, not out of bare divs', () => {
+  for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
+    const body = code(file);
+    // `class: 'card'` written by hand means a surface that will not follow the
+    // system when the system changes. The kit's card() is the only way in.
+    assert.equal(/class:\s*['"`]card['"`]/.test(body), false,
+      `${file} hand-builds a card — use card() from core/ui.js`);
   }
 });
 

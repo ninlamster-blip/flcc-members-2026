@@ -4,8 +4,8 @@
 // question to sit with, one thing to do, and a prayer. An adult with forty
 // spare minutes a week will finish this. An adult with ten will finish it too.
 
-import { h, block, section, label, display, title, body, small, scripture, reference,
-         act, actions, go, rule, rise, note, toast } from '../core/ui.js';
+import { h, card, badge, display, title, body, small, scripture, reference, starRow,
+         act, actions, go, rise, note, toast } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import * as prayers from '../core/prayers.js';
@@ -16,40 +16,34 @@ export default async function sessionScreen(ctx) {
   const path = paths.find((one) => one.id === pathId);
   const index = sessions.findIndex((one) => one.id === sessionId);
   const session = sessions[index];
-  if (!path || !session) return { title: 'Grow', el: section({ className: 'full' }, note('That session has moved.')) };
+  if (!path || !session) return { title: 'Grow', el: card({ tone: 'cream', className: 'full' }, note('That session has moved.')) };
 
   const key = `${pathId}:${session.id}`;
   const done = progress.isDone('session', key);
   const next = sessions[index + 1] || null;
-  const blocks = [];
+  const cards = [];
 
-  blocks.push(block({ tone: 'paper', className: 'full',
-      shape: { seed: `${pathId}-${session.id}`, tones: path.tones }, corner: index % 2 ? 'tl' : 'br', soft: true },
-    label(`${path.title} · ${index + 1} of ${sessions.length}`),
+  cards.push(card({ tone: path.tone, className: 'full', symbol: path.symbol,
+      foot: [reference(session.ref, ctx.go), starRow(5)] },
+    badge(`${path.title} · ${index + 1} of ${sessions.length}`),
     h('div', {},
       display(session.title),
-      h('div', { style: 'margin-top:1.6rem' }, scripture(session.text, { flow: true })),
-      h('div', { style: 'margin-top:1rem' }, reference(session.ref, ctx.go)))));
+      h('div', { style: 'margin-top:1.1rem' }, scripture(session.text, { flow: true })))));
 
-  blocks.push(section({ className: 'full' },
+  cards.push(card({ tone: 'paper', className: 'full' },
     ...session.body.map((paragraph) => body(paragraph))));
 
-  blocks.push(section({},
-    label('Sit with this'),
+  cards.push(card({ tone: 'cream', symbol: 'blob', figureSize: 'sm' },
+    badge('Sit with this'),
     h('p', { class: 'scripture scripture--flow', text: session.question })));
 
-  blocks.push(section({},
-    label('This week'),
-    body(session.practice)));
-
-  blocks.push(section({},
-    label('Pray'),
-    body(session.prayer)));
+  cards.push(card({ tone: 'paper' }, badge('This week'), body(session.practice)));
+  cards.push(card({ tone: 'paper' }, badge('Pray'), body(session.prayer)));
 
   const input = h('textarea', { placeholder: 'Anything you want to keep? (optional)', 'aria-label': 'Your notes' });
-  blocks.push(section({ className: 'full' },
-    rule(),
-    label('Your own words'),
+  cards.push(card({ tone: 'sky', className: 'full',
+      foot: done ? 'You have read this one before' : 'Notes stay on this device' },
+    badge('Your own words'),
     input,
     actions(
       act(done ? 'Read again' : 'Mark as read', () => {
@@ -60,10 +54,9 @@ export default async function sessionScreen(ctx) {
         if (next) ctx.go(`session/${pathId}/${next.id}`); else ctx.go(`path/${pathId}`);
       }),
       next ? act('Next session', () => ctx.go(`session/${pathId}/${next.id}`), { quiet: true })
-           : act('Back to the path', () => ctx.go(`path/${pathId}`), { quiet: true })),
-    small(done ? 'You have read this one before. Reading it again does not change anything.' : 'Notes stay on this device.')));
+           : act('Back to the path', () => ctx.go(`path/${pathId}`), { quiet: true }))));
 
-  const el = h('div', { style: 'display:contents' }, ...blocks);
-  rise(blocks);
+  const el = h('div', { style: 'display:contents' }, ...cards);
+  rise(cards);
   return { title: session.title, el };
 }

@@ -1,15 +1,16 @@
 // THE BIBLE — the whole thing, on the device, in three translations.
 //
-// The calmest screen in the app on purpose. Cream, a muted blue for anything
-// selected, forest for navigation, and no other colour at all: nothing should
-// compete with the text.
+// The calmest screen in the app on purpose, and the one place the sticker
+// chrome stops. The reader is white paper and serif type: no colour band, no
+// character, nothing to compete with the text. The rest of the app is loud so
+// that Scripture does not have to be.
 //
 // Nothing here can edit Scripture. The reader keeps a bookmark, a translation,
 // a reading plan and any verses they choose to save, and all of it stays on
 // this device.
 
-import { h, block, section, label, display, title, lead, body, small, scripture, cite,
-         reference, act, actions, go, rows, row, thread, rule, rise, note, waiting, toast, swap} from '../core/ui.js';
+import { h, card, reader as paper, section, badge, display, title, body, small, scripture, starRow,
+         reference, act, actions, go, rows, row, thread, rise, note, waiting, toast, swap } from '../core/ui.js';
 import * as scriptureCore from '../core/scripture.js';
 import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
@@ -44,8 +45,8 @@ async function reader(ctx, entry, chapter) {
   try {
     read = await scriptureCore.passage(code, entry, at);
   } catch {
-    return { title: entry.name, el: section({ className: 'full' },
-      label(entry.name),
+    return { title: entry.name, el: card({ tone: 'blush', className: 'full', symbol: 'cloud', figureSize: 'sm' },
+      badge(entry.name),
       note('This book is not on the device yet, and there is no connection. Open it once online and it stays.', 'warn')) };
   }
 
@@ -84,19 +85,18 @@ async function reader(ctx, entry, chapter) {
   const jump = (to) => ctx.go(`bible/${entry.n}/${to}`);
 
   const el = h('div', { style: 'display:contents' },
-    section({ className: 'full' },
-      h('div', { class: 'section-head' },
-        label(`${entry.name} ${at}`),
+    paper({ className: 'full' },
+      h('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:1rem' },
+        badge(`${entry.name} ${at}`),
         h('span', { class: 'row-meta', text: `${translation.short} · ${at} of ${entry.chapters}` })),
       lines,
-      rule(),
-      h('div', { class: 'section-head' },
+      h('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:1rem' },
         actions(
           at > 1 ? act('‹ Before', () => jump(at - 1), { quiet: true, small: true }) : null,
           at < entry.chapters ? act('Next ›', () => jump(at + 1), { quiet: true, small: true }) : null),
         go('All chapters', () => ctx.go(`bible/${entry.n}`)))),
-    section({ className: 'full' },
-      label('Read it in'),
+    card({ tone: 'paper', className: 'full', foot: translation.short },
+      badge('Read it in'),
       translationRow(bible, code, () => ctx.refresh()),
       small(`${translation.name} · ${translation.licence}. ${translation.note}`)));
 
@@ -122,16 +122,17 @@ async function bookScreen(ctx, entry) {
     })));
 
   const el = h('div', { style: 'display:contents' },
-    block({ tone: 'paper', className: 'full', shape: { seed: entry.name, tones: ['mist', 'sage'] }, corner: 'tr', soft: true },
-      label(entry.testament === 'old' ? 'Old Testament' : 'New Testament'),
+    card({ tone: 'sky', className: 'full', symbol: 'book',
+        foot: `${entry.chapters} chapter${entry.chapters === 1 ? '' : 's'}` },
+      badge(entry.testament === 'old' ? 'Old Testament' : 'New Testament'),
       h('div', {},
         display(entry.name),
         entry.tagalog && entry.tagalog !== entry.name
-          ? h('p', { class: 'cite', style: 'margin-top:.9rem', text: `Sa Tagalog: ${entry.tagalog}` }) : null),
+          ? h('p', { class: 'cite', style: 'margin-top:.8rem', text: `Sa Tagalog: ${entry.tagalog}` }) : null),
       h('div', {}, act('Start at chapter 1', () => ctx.go(`bible/${entry.n}/1`)))),
-    section({ className: 'full' },
-      label(`${entry.chapters} chapter${entry.chapters === 1 ? '' : 's'}`),
-      grid));
+    paper({ className: 'full' },
+      badge('Every chapter'),
+      h('div', { style: 'margin-top:.9rem' }, grid)));
 
   return { title: entry.name, el };
 }
@@ -146,13 +147,13 @@ async function searchScreen(ctx, term) {
   const list = rows({ tight: true });
   const controller = new AbortController();
   const el = h('div', { style: 'display:contents' },
-    section({ className: 'full' }, label(`Searching for “${term}”`), status, list));
+    paper({ className: 'full' }, badge(`Searching for “${term}”`), status, list));
 
   const found = [];
   const draw = () => {
     swap(list, ...found.map((hit) => {
       const ref = scriptureCore.refText(hit.book, hit.chapter, hit.verse);
-      return h('div', {},
+      return h('div', { style: 'padding:.5rem 0' },
         h('button', { class: 'passage-line', type: 'button', style: 'font-size:1rem',
           onclick: () => ctx.go(`bible/${hit.book.n}/${hit.chapter}?v=${hit.verse}`) },
           h('span', { text: hit.text })),
@@ -184,8 +185,8 @@ export default async function bibleScreen(ctx) {
   let bible;
   try { bible = await scriptureCore.manifest(); }
   catch (error) {
-    return { title: 'Bible', el: section({ className: 'full' },
-      label('The Bible'), note(`The Bible did not load. ${error.message}`, 'warn')) };
+    return { title: 'Bible', el: card({ tone: 'blush', className: 'full' },
+      badge('The Bible'), note(`The Bible did not load. ${error.message}`, 'warn')) };
   }
 
   const byNumber = (n) => bible.books.find((one) => one.n === Number(n));
@@ -196,7 +197,7 @@ export default async function bibleScreen(ctx) {
 
   const code = chosen(bible);
   const state = scriptureCore.getState();
-  const blocks = [];
+  const cards = [];
 
   // ── Look something up ───────────────────────────────────────────────────
   const input = h('input', { type: 'search', id: 'bible-look', autocomplete: 'off',
@@ -210,48 +211,48 @@ export default async function bibleScreen(ctx) {
     ctx.go(`bible/search?q=${encodeURIComponent(raw)}`);
   } }, input, h('div', { style: 'margin-top:1.2rem' }, act('Look it up', null, { type: 'submit' })));
 
-  blocks.push(block({ tone: 'paper', className: 'full',
-      shape: { seed: 'the-bible', tones: ['mist', 'forest'] }, corner: 'br', soft: true },
-    label('The Bible'),
+  cards.push(card({ tone: 'sky', className: 'full', symbol: 'book',
+      foot: ['66 books · 3 translations', starRow(5)] },
+    badge('The Bible'),
     h('div', {},
       display('The whole thing.'),
-      h('p', { class: 'lead', style: 'margin-top:.8rem;max-width:28ch',
-        text: '66 books in three translations, already on this device. No signal needed once a book has been opened.' }),
-      h('div', { style: 'margin-top:1.5rem' }, form))));
+      h('p', { class: 'lead', style: 'margin-top:.6rem;max-width:28ch',
+        text: 'Already on this device. No signal needed once a book has been opened.' }),
+      h('div', { style: 'margin-top:1.2rem' }, form))));
 
   // ── Carry on ────────────────────────────────────────────────────────────
   const last = state.last && byNumber(state.last.n);
   if (last) {
-    blocks.push(section({},
-      label('Where you stopped'),
+    cards.push(card({ tone: 'cream', symbol: 'blob', figureSize: 'sm', foot: 'Carry on' },
+      badge('Where you stopped'),
       title(`${last.name} ${state.last.chapter}`),
-      go('Carry on', () => ctx.go(`bible/${last.n}/${state.last.chapter}`))));
+      actions(act('Open it', () => ctx.go(`bible/${last.n}/${state.last.chapter}`), { small: true }))));
   }
 
   // ── Reading plans ───────────────────────────────────────────────────────
   const plansSection = section({ className: 'full' }, waiting());
-  blocks.push(plansSection);
+  cards.push(plansSection);
   (async () => {
     try {
       const plans = await content.plans();
       const active = plan.state().id;
-      swap(plansSection, 
-        h('div', { class: 'section-head' },
-          label('Reading plans'),
-          h('span', { class: 'row-meta', text: active ? 'One on the go' : `${plans.length} to choose` })),
+      swap(plansSection,
+        badge(active ? 'Reading plans · one on the go' : `Reading plans · ${plans.length} to choose`),
         rows({},
           ...plans.map((one) => {
             const at = plan.positionIn(one);
+            // The row says "Day 3 of 21" already; a loose progress bar
+            // hanging under a card it does not belong to said it twice and
+            // looked like a fault in the layout.
             const holder = h('div', {});
             holder.appendChild(row({
               eyebrow: one.id === active ? 'Reading now' : one.kicker,
               title: one.title,
               note: one.id === active ? `Day ${at.day} of ${at.total}${at.at ? ` · ${at.at.ref}` : ''}` : one.blurb,
               meta: `${one.days.length} days`,
-              accent: one.accent,
+              accent: one.tone,
               onclick: () => ctx.go(`plan/${one.id}`),
             }));
-            if (one.id === active) holder.appendChild(h('div', { style: 'margin-top:.9rem' }, thread(at.percent, 'gold')));
             return holder;
           })));
     } catch { plansSection.remove(); }
@@ -259,25 +260,22 @@ export default async function bibleScreen(ctx) {
 
   // ── Verses you kept ─────────────────────────────────────────────────────
   if (state.saved.length) {
-    blocks.push(section({ className: 'full' },
-      h('div', { class: 'section-head' },
-        label('Verses you kept'),
-        h('span', { class: 'row-meta', text: String(state.saved.length) })),
-      rows({},
-        ...state.saved.slice(0, 6).map((one) => h('div', {},
-          scripture(one.text, { flow: true }),
-          h('div', { style: 'margin-top:.5rem' }, reference(`${one.ref} · ${one.code.toUpperCase()}`, ctx.go))))),
+    cards.push(paper({ className: 'full' },
+      badge(`Verses you kept · ${state.saved.length}`),
+      ...state.saved.slice(0, 6).map((one) => h('div', { style: 'padding:.7rem 0' },
+        scripture(one.text, { flow: true }),
+        h('div', { style: 'margin-top:.4rem' }, reference(`${one.ref} · ${one.code.toUpperCase()}`, ctx.go)))),
       state.saved.length > 6 ? small(`and ${state.saved.length - 6} more on this device.`) : null));
   }
 
   // ── The shelves ─────────────────────────────────────────────────────────
   for (const testament of TESTAMENTS) {
     const books = bible.books.filter((one) => one.testament === testament.id);
-    blocks.push(section({ className: 'full' },
-      h('div', { class: 'section-head' },
-        label(testament.label),
+    cards.push(paper({ className: 'full' },
+      h('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:1rem' },
+        badge(testament.label),
         h('span', { class: 'row-meta', text: `${books.length} books` })),
-      small(testament.line),
+      h('div', { style: 'margin-top:.7rem' }, small(testament.line)),
       h('div', { class: 'book-list' },
         ...books.map((one) => h('button', { class: 'book', type: 'button', onclick: () => ctx.go(`bible/${one.n}`) },
           h('span', { class: 'book-name', text: one.name }),
@@ -285,8 +283,8 @@ export default async function bibleScreen(ctx) {
   }
 
   // ── Translations ────────────────────────────────────────────────────────
-  blocks.push(section({ className: 'full' },
-    label('Translations'),
+  cards.push(card({ tone: 'paper', className: 'full', foot: 'All three are public domain' },
+    badge('Translations'),
     rows({ tight: true },
       ...bible.translations.map((one) => row({
         title: `${one.language} — ${one.name}`,
@@ -295,7 +293,7 @@ export default async function bibleScreen(ctx) {
       }))),
     translationRow(bible, code, () => ctx.refresh())));
 
-  const el = h('div', { style: 'display:contents' }, ...blocks);
-  rise(blocks);
+  const el = h('div', { style: 'display:contents' }, ...cards);
+  rise(cards);
   return { title: 'Bible', el };
 }

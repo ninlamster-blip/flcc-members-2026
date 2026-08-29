@@ -1,26 +1,23 @@
 // GROW.
 //
-// Four learning paths, one of them given the whole width because a featured
-// thing that looks like everything else is not featured. The rest are rows —
-// a title, a line, and how far in you are — which is what a person choosing
-// between four courses actually needs to see.
+// Four learning paths. The featured one gets a full card with its character at
+// size; the rest are rows. What you have finished sits at the bottom as three
+// counts — counts, not scores.
 
-import { h, block, section, label, display, title, lead, body, small,
-         act, actions, go, rows, row, thread, rule, rise, note, waiting } from '../core/ui.js';
+import { h, card, badge, display, title, body, small, starRow, figure,
+         act, actions, go, rows, row, section, thread, rise, note } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import { seasonOf, wants } from '../core/profile.js';
 
 export default async function growScreen(ctx) {
   const paths = await content.paths();
-  const blocks = [];
+  const cards = [];
 
-  // Where each path stands. One fetch per path, in parallel.
   const states = await Promise.all(paths.map(async (one) => {
     try {
       const sessions = await content.sessions(one.id);
-      const where = progress.through('session', sessions.map((s) => `${one.id}:${s.id}`));
-      return { path: one, sessions, where };
+      return { path: one, sessions, where: progress.through('session', sessions.map((s) => `${one.id}:${s.id}`)) };
     } catch {
       return { path: one, sessions: [], where: { finished: 0, total: one.sessions || 0, percent: 0, next: null } };
     }
@@ -32,16 +29,15 @@ export default async function growScreen(ctx) {
   // ── The featured path ───────────────────────────────────────────────────
   if (featured) {
     const next = featured.sessions.find((s) => !progress.isDone('session', `${featured.path.id}:${s.id}`)) || featured.sessions[0];
-    blocks.push(block({ tone: 'paper', tall: true, className: 'full',
-        shape: { seed: featured.path.id, tones: featured.path.tones }, corner: 'br', soft: true },
+    cards.push(card({ tone: featured.path.tone, tall: true, className: 'full', symbol: featured.path.symbol,
+        foot: [`${featured.where.total} sessions · ${featured.path.minutes}`,
+               starRow(Math.max(1, Math.round((featured.where.percent / 100) * 5)))] },
       h('div', {},
-        label(featured.path.kicker),
-        h('div', { style: 'margin-top:1.2rem' }, display(featured.path.title)),
-        h('p', { class: 'lead', style: 'margin-top:1rem;max-width:30ch', text: featured.path.blurb })),
+        badge(featured.path.kicker),
+        h('div', { style: 'margin-top:1rem' }, display(featured.path.title)),
+        h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:28ch', text: featured.path.blurb })),
       h('div', {},
-        featured.where.finished ? h('div', { style: 'margin-bottom:1rem' }, thread(featured.where.percent)) : null,
-        h('p', { class: 'row-meta', style: 'margin-bottom:.8rem',
-          text: `${featured.where.total} sessions · ${featured.path.minutes}` }),
+        featured.where.finished ? h('div', { style: 'margin-bottom:.9rem' }, thread(featured.where.percent, 'yellow')) : null,
         actions(
           act(featured.where.finished ? 'Continue' : 'Start', () =>
             ctx.go(next ? `session/${featured.path.id}/${next.id}` : `path/${featured.path.id}`)),
@@ -49,35 +45,27 @@ export default async function growScreen(ctx) {
   }
 
   // ── The rest ────────────────────────────────────────────────────────────
-  blocks.push(section({ className: 'full' },
-    h('div', { class: 'section-head' },
-      label('Learning paths'),
-      h('span', { class: 'row-meta', text: `${states.length} in all` })),
-    rows({},
-      ...rest.map((one) => {
-        const holder = h('div', {});
-        holder.appendChild(row({
-          eyebrow: one.path.kicker,
-          title: one.path.title,
-          note: one.path.blurb,
-          meta: one.where.finished ? `${one.where.finished}/${one.where.total}` : `${one.where.total} parts`,
-          accent: one.path.accent,
-          onclick: () => ctx.go(`path/${one.path.id}`),
-        }));
-        if (one.where.finished) holder.appendChild(h('div', { style: 'margin-top:.9rem' }, thread(one.where.percent, one.path.accent === 'mist' ? '' : one.path.accent)));
-        return holder;
-      }))));
+  cards.push(section({ className: 'full' },
+    badge(`Learning paths · ${states.length} in all`),
+    rows({}, ...rest.map((one) => row({
+      eyebrow: one.path.kicker,
+      title: one.path.title,
+      note: one.path.blurb,
+      meta: one.where.finished ? `${one.where.finished}/${one.where.total}` : `${one.where.total} parts`,
+      accent: one.path.tone,
+      onclick: () => ctx.go(`path/${one.path.id}`),
+    })))));
 
   // ── Suggested, if nothing is started ────────────────────────────────────
-  const anyStarted = states.some((one) => one.where.finished > 0);
-  if (!anyStarted) {
+  if (!states.some((one) => one.where.finished > 0)) {
     const season = seasonOf();
     const suggested = states.find((one) => (one.path.forSeason || []).includes(season.id))
       || states.find((one) => (one.path.forFocus || []).some((f) => wants(f)))
       || states[0];
     if (suggested) {
-      blocks.push(section({ className: 'full' },
-        label(`Because you said: ${season.label.toLowerCase()}`),
+      cards.push(card({ tone: 'cream', className: 'full', symbol: suggested.path.symbol, figureSize: 'sm',
+          foot: `Because you said: ${season.label.toLowerCase()}` },
+        badge('Where to start'),
         title(`Start with ${suggested.path.title}`),
         body(suggested.path.blurb),
         go('Open it', () => ctx.go(`path/${suggested.path.id}`))));
@@ -86,23 +74,20 @@ export default async function growScreen(ctx) {
 
   // ── What you have done ──────────────────────────────────────────────────
   const state = progress.getProgress();
-  blocks.push(section({ className: 'full' },
-    rule(),
-    label('So far'),
+  cards.push(card({ tone: 'paper', className: 'full', foot: `${state.days.best} days at your best` },
+    badge('So far'),
     h('div', { class: 'figures' },
-      figure(progress.count('session'), 'sessions'),
-      figure(progress.count('reading'), 'readings'),
-      figure(progress.count('prayer'), 'prayers')),
-    small(state.days.count > 1
-      ? `${state.days.count} days running, and ${state.days.best} at your best. Nothing is lost when a run ends.`
-      : 'These are counts, not scores. Nobody else can see them, and they are not a measure of anything.')));
+      figureCount(progress.count('session'), 'sessions'),
+      figureCount(progress.count('reading'), 'readings'),
+      figureCount(progress.count('prayer'), 'prayers')),
+    small('These are counts, not scores. Nobody else can see them, and they are not a measure of anything.')));
 
-  const el = h('div', { style: 'display:contents' }, ...blocks);
-  rise(blocks);
+  const el = h('div', { style: 'display:contents' }, ...cards);
+  rise(cards);
   return { title: 'Grow', el };
 }
 
-function figure(value, name) {
+function figureCount(value, name) {
   return h('div', {},
     h('p', { class: 'numeral', text: String(value) }),
     h('p', { class: 'label', text: name }));

@@ -10,18 +10,43 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { SEASONS, FOCUS } from '../js/core/profile.js';
+import { isMascot, MASCOTS } from '../js/core/art.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
-const css = readFileSync(new URL('../css/organic.css', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../css/sticker.css', import.meta.url), 'utf8');
 
 /** The palette, taken from the stylesheet rather than restated here. */
 const TONES = [...css.matchAll(/^\s{2}--([a-z-]+):\s+#[0-9A-F]{6};/gmi)].map((one) => one[1]);
 
 const isText = (value, min = 1) => typeof value === 'string' && value.trim().length >= min;
 
+/** A card colour, and a character that somebody actually drew. */
+function looksRight(item, where) {
+  assert.ok(TONES.includes(item.tone), `${where}: unknown tone "${item.tone}"`);
+  assert.equal(item.tone === 'ink' || item.tone === 'white', false, `${where}: ink is for type, not for cards`);
+  if ('symbol' in item) {
+    assert.ok(isMascot(item.symbol),
+      `${where}: no character called "${item.symbol}" — the set is ${MASCOTS.join(', ')}`);
+  }
+}
+
 test('the palette is the one the stylesheet defines', () => {
-  for (const tone of ['paper', 'forest', 'sage', 'mist', 'olive', 'gold', 'peach', 'coral']) {
-    assert.ok(TONES.includes(tone), `--${tone} is missing from organic.css`);
+  for (const tone of ['paper', 'ink', 'yellow', 'cream', 'blush', 'sky', 'lilac', 'coral', 'orange']) {
+    assert.ok(TONES.includes(tone), `--${tone} is missing from sticker.css`);
+  }
+});
+
+/**
+ * Every colour a card can wear needs a band to go under it.
+ *
+ * A card's bottom band is `--<tone>-band`, and a tone without one renders a
+ * band with no colour — a white strip along the bottom of an otherwise
+ * finished card. It is exactly the kind of thing that ships.
+ */
+test('every card colour has a band underneath it', () => {
+  for (const tone of ['yellow', 'cream', 'blush', 'sky', 'lilac', 'coral', 'orange']) {
+    assert.ok(css.includes(`--${tone}-band:`), `--${tone}-band is missing`);
+    assert.match(css, new RegExp(`\\.card\\[data-tone="${tone}"\\]`), `.card[data-tone="${tone}"] is not styled`);
   }
 });
 
@@ -36,9 +61,8 @@ test('every Scripture moment is complete, and in an adult voice', () => {
     for (const field of ['ref', 'text', 'translation', 'theme', 'reflection', 'question', 'prayer', 'practice']) {
       assert.ok(isText(one[field], 3), `${one.id}: ${field} is missing`);
     }
-    assert.ok(Array.isArray(one.tones) && one.tones.length === 2, `${one.id}: needs exactly two tones`);
-    for (const tone of one.tones) assert.ok(TONES.includes(tone), `${one.id}: unknown tone ${tone}`);
-    assert.ok(TONES.includes(one.accent), `${one.id}: unknown accent ${one.accent}`);
+    looksRight(one, `moments/${one.id}`);
+    assert.ok(isText(one.symbol), `${one.id}: every moment names its character`);
     assert.match(one.question, /\?$/, `${one.id}: the question should be a question`);
     assert.ok(one.reflection.length >= 120, `${one.id}: the reflection is too thin to be worth reading`);
     assert.equal('kids' in one || 'teens' in one, false, `${one.id}: this app has one audience`);
@@ -53,8 +77,7 @@ test('every path is complete, and says truthfully how long it is', () => {
     for (const field of ['id', 'title', 'kicker', 'blurb', 'minutes']) {
       assert.ok(isText(path[field]), `${path.id}: ${field} is missing`);
     }
-    assert.ok(TONES.includes(path.accent), `${path.id}: unknown accent ${path.accent}`);
-    for (const tone of path.tones) assert.ok(TONES.includes(tone), `${path.id}: unknown tone ${tone}`);
+    looksRight(path, `paths/${path.id}`);
     for (const season of path.forSeason || []) {
       assert.ok(SEASONS.some((one) => one.id === season), `${path.id}: unknown season ${season}`);
     }
@@ -95,8 +118,7 @@ test('every prayer guide is a sequence of timed steps', () => {
   assert.ok(guides.length >= 4);
   for (const guide of guides) {
     for (const field of ['id', 'title', 'line']) assert.ok(isText(guide[field]), `${guide.id}: ${field} is missing`);
-    assert.ok(TONES.includes(guide.accent), `${guide.id}: unknown accent`);
-    for (const tone of guide.tones) assert.ok(TONES.includes(tone), `${guide.id}: unknown tone ${tone}`);
+    looksRight(guide, `guides/${guide.id}`);
     assert.ok(guide.steps.length >= 3, `${guide.id}: a guide with two steps is a sentence`);
     for (const step of guide.steps) {
       assert.ok(isText(step.label), `${guide.id}: a step without a label`);
@@ -114,7 +136,7 @@ test('the prayer categories cover the default the code writes', () => {
   assert.ok(ids.includes('personal'), 'prayers.js files an uncategorised prayer under "personal"');
   for (const one of categories) {
     assert.ok(isText(one.label) && isText(one.line), `${one.id}: incomplete`);
-    assert.ok(TONES.includes(one.accent), `${one.id}: unknown accent ${one.accent}`);
+    looksRight(one, `categories/${one.id}`);
   }
   assert.equal(new Set(ids).size, ids.length, 'duplicate category');
 });
@@ -124,7 +146,7 @@ test('a reading plan is long enough to be a habit and short enough to finish', (
   assert.ok(plans.length >= 2);
   for (const plan of plans) {
     for (const field of ['id', 'title', 'kicker', 'blurb']) assert.ok(isText(plan[field]), `${plan.id}: ${field}`);
-    assert.ok(TONES.includes(plan.accent), `${plan.id}: unknown accent`);
+    looksRight(plan, `plans/${plan.id}`);
     assert.ok(plan.days.length >= 7, `${plan.id}: a plan shorter than a week is a suggestion`);
     assert.ok(plan.days.length <= 60, `${plan.id}: ${plan.days.length} days is a plan most people abandon`);
     for (const [i, day] of plan.days.entries()) {
@@ -139,16 +161,30 @@ test('what comes from church is dated, attributed and readable', () => {
     for (const field of ['id', 'title', 'from', 'body']) assert.ok(isText(one[field]), `${one.id}: ${field}`);
     assert.match(one.date, /^\d{4}-\d{2}-\d{2}$/, `${one.id}: ${one.date} is not a date`);
     assert.ok(!Number.isNaN(Date.parse(one.date)), `${one.id}: ${one.date} is not a real date`);
-    assert.ok(TONES.includes(one.accent), `${one.id}: unknown accent`);
+    looksRight(one, `updates/${one.id}`);
   }
   for (const one of read('events.json')) {
     for (const field of ['id', 'title', 'when', 'where', 'blurb']) assert.ok(isText(one[field]), `${one.id}: ${field}`);
-    assert.ok(TONES.includes(one.accent), `${one.id}: unknown accent`);
+    looksRight(one, `events/${one.id}`);
   }
   for (const one of read('ministries.json')) {
     for (const field of ['id', 'title', 'commitment', 'blurb']) assert.ok(isText(one[field]), `${one.id}: ${field}`);
-    assert.ok(TONES.includes(one.accent), `${one.id}: unknown accent`);
+    looksRight(one, `ministries/${one.id}`);
     assert.equal(typeof one.needs, 'boolean', `${one.id}: needs must be true or false`);
+  }
+});
+
+test('nothing in the content still names a colour from the old palette', () => {
+  // The app was redrawn from a calm editorial system to this one, and the
+  // palette changed completely. A file left carrying "sage" or "forest" would
+  // render as an unstyled card rather than fail, so it is checked here.
+  const gone = /"(forest|sage|mist|olive|gold|peach)"/;
+  for (const file of readdirSync(new URL('../content/', import.meta.url), { withFileTypes: true })) {
+    if (!file.isFile() || !file.name.endsWith('.json')) continue;
+    const raw = readFileSync(new URL(`../content/${file.name}`, import.meta.url), 'utf8');
+    const hit = raw.match(gone);
+    assert.equal(hit, null, `${file.name} still uses the old palette: ${hit && hit[0]}`);
+    assert.equal(/"(tones|accent)"\s*:/.test(raw), false, `${file.name} still has tones/accent — it is one "tone" now`);
   }
 });
 

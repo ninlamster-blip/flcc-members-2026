@@ -7,37 +7,33 @@
 // Nothing here leaves the device, and the screen says so where it matters
 // rather than in a policy nobody opens.
 
-import { h, block, section, label, display, title, lead, body, small, scripture, cite, reference,
-         act, actions, go, rows, row, rule, tag, rise, note, toast, waiting, swap} from '../core/ui.js';
+import { h, card, badge, display, title, body, small, starRow, tag, figure,
+         act, actions, go, rows, row, section, rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as prayers from '../core/prayers.js';
 
 export default async function prayScreen(ctx) {
-  const blocks = [];
+  const cards = [];
   const [guides, categories] = await Promise.all([content.guides(), content.categories()]);
-  const accentOf = (id) => (categories.find((one) => one.id === id) || {}).accent || 'sage';
-  const labelOf = (id) => (categories.find((one) => one.id === id) || {}).label || 'Personal';
+  const toneOf = (id) => (categories.find((one) => one.id === id) || {}).tone || 'cream';
+  const today = rotation.pick(guides, { offset: 3 });
 
   // ── Take a moment ───────────────────────────────────────────────────────
-  const today = rotation.pick(guides, { offset: 3 });
-  blocks.push(block({ tone: 'paper', tall: true, className: 'full',
-      shape: { seed: 'pray-today', tones: ['peach', 'gold'] }, corner: 'tr', soft: true },
+  cards.push(card({ tone: 'blush', tall: true, className: 'full', symbol: today.symbol,
+      foot: [`Today · ${today.title}`, starRow(5)] },
     h('div', {},
-      label('Pray'),
-      h('div', { style: 'margin-top:1.2rem' }, display('Take a moment.')),
-      h('p', { class: 'lead', style: 'margin-top:.9rem;max-width:26ch', text: 'What is on your heart today?' })),
-    h('div', {},
-      h('p', { class: 'row-meta', style: 'margin-bottom:.7rem', text: `Today · ${today.title}` }),
-      actions(
-        act('Pray now', () => ctx.go(`guide/${today.id}`)),
-        go('Other guides', () => document.getElementById('guides')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))))));
+      badge('Pray'),
+      h('div', { style: 'margin-top:1rem' }, display('Take a moment.')),
+      h('p', { class: 'lead', style: 'margin-top:.6rem;max-width:24ch', text: 'What is on your heart today?' })),
+    actions(
+      act('Pray now', () => ctx.go(`guide/${today.id}`)),
+      go('Other guides', () => document.getElementById('guides')?.scrollIntoView({ behavior: 'smooth', block: 'start' })))));
 
-  // ── The list ────────────────────────────────────────────────────────────
-  const input = h('textarea', { placeholder: 'What do you want to pray about?', 'aria-label': 'A prayer to add',
-    style: 'min-height:5.5rem' });
+  // ── Add to the list ─────────────────────────────────────────────────────
+  const input = h('textarea', { placeholder: 'What do you want to pray about?', 'aria-label': 'A prayer to add' });
   let category = 'personal';
-  const chips = h('div', { class: 'act-row', style: 'margin-top:.9rem' },
+  const chips = h('div', { class: 'act-row', style: 'margin-top:.8rem' },
     ...categories.map((one) => {
       const button = act(one.label, () => {
         category = one.id;
@@ -47,8 +43,8 @@ export default async function prayScreen(ctx) {
       return button;
     }));
 
-  const add = section({ className: 'full' },
-    label('Add to your list'),
+  cards.push(card({ tone: 'paper', className: 'full', foot: 'Stored on this phone only' },
+    badge('Add to your list'),
     input, chips,
     actions(act('Keep it', () => {
       const text = input.value.trim();
@@ -58,102 +54,96 @@ export default async function prayScreen(ctx) {
       toast('On your list.');
       ctx.refresh();
     })),
-    small('Your prayer list is stored on this phone only. It is not sent to the church, to a leader, or to us.'));
-  blocks.push(add);
+    small('Your prayer list is not sent to the church, to a leader, or to us.')));
 
+  // ── The list ────────────────────────────────────────────────────────────
   const open = prayers.open();
   if (open.length) {
     const grouped = categories
       .map((one) => ({ ...one, items: open.filter((item) => item.category === one.id) }))
       .filter((one) => one.items.length);
-    // Anything whose category was removed from the content file still shows.
     const orphans = open.filter((item) => !categories.some((one) => one.id === item.category));
-    if (orphans.length) grouped.push({ id: 'other', label: 'Other', accent: 'sage', items: orphans });
+    if (orphans.length) grouped.push({ id: 'other', label: 'Other', tone: 'cream', items: orphans });
 
-    blocks.push(section({ className: 'full' },
-      h('div', { class: 'section-head' },
-        label('My prayer list'),
-        h('span', { class: 'row-meta', text: `${open.length} open` })),
+    cards.push(section({ className: 'full' },
+      badge(`My prayer list · ${open.length} open`),
       ...grouped.map((group) => section({},
-        h('div', { class: 'section-head' },
-          tag(group.label, group.accent),
+        h('div', { style: 'display:flex;justify-content:space-between;align-items:center' },
+          tag(group.label, group.tone),
           h('span', { class: 'row-meta', text: String(group.items.length) })),
-        rows({ tight: true }, ...group.items.map((item) => prayerRow(ctx, item, group.accent)))))));
+        rows({}, ...group.items.map((item) => prayerRow(ctx, item, group.tone)))))));
   } else {
-    blocks.push(section({ className: 'full' },
-      label('My prayer list'),
-      note('Nothing on the list yet. Most people start with one name and one worry.')));
+    cards.push(card({ tone: 'cream', className: 'full', symbol: 'heart', figureSize: 'sm' },
+      badge('My prayer list'),
+      body('Nothing on the list yet. Most people start with one name and one worry.')));
   }
 
   // ── Answered ────────────────────────────────────────────────────────────
   const answered = prayers.answered();
   if (answered.length) {
-    blocks.push(section({ className: 'full' },
-      h('div', { class: 'section-head' },
-        label('Answered'),
-        h('span', { class: 'row-meta', text: String(answered.length) })),
-      rows({ tight: true },
-        ...answered.slice(0, 8).map((item) => h('div', {},
+    cards.push(card({ tone: 'yellow', className: 'full',
+        foot: [`${answered.length} answered`, starRow(5)] },
+      badge('Answered'),
+      rows({}, ...answered.slice(0, 8).map((item) => h('div', { class: 'row' },
+        h('i', { class: 'stem', dataset: { accent: toneOf(item.category) } }),
+        h('div', {},
           h('p', { class: 'row-title', text: item.text }),
           item.answered.note ? h('p', { class: 'row-note', text: item.answered.note }) : null,
           h('div', { class: 'act-row', style: 'margin-top:.5rem' },
             h('span', { class: 'row-meta', text: new Date(item.answered.at).toLocaleDateString() }),
-            act('Reopen', () => { prayers.reopen(item.id); ctx.refresh(); }, { quiet: true, small: true })))))));
+            act('Reopen', () => { prayers.reopen(item.id); ctx.refresh(); }, { quiet: true, small: true }))),
+        h('span'))))));
   }
 
   // ── The guides ──────────────────────────────────────────────────────────
-  blocks.push(section({ className: 'full', id: 'guides' },
-    label('Guided prayer'),
+  cards.push(section({ className: 'full', id: 'guides' },
+    badge('Guided prayer'),
     small('Each one is a few minutes, with a timer you can ignore.'),
-    rows({},
-      ...guides.map((one) => row({
-        title: one.title,
-        note: one.line,
-        meta: `${Math.round(one.steps.reduce((sum, step) => sum + (step.seconds || 60), 0) / 60)} min`,
-        accent: one.accent,
-        onclick: () => ctx.go(`guide/${one.id}`),
-      })))));
+    rows({}, ...guides.map((one) => row({
+      title: one.title,
+      note: one.line,
+      meta: `${Math.round(one.steps.reduce((sum, step) => sum + (step.seconds || 60), 0) / 60)} min`,
+      accent: one.tone,
+      onclick: () => ctx.go(`guide/${one.id}`),
+    })))));
 
   // ── Reflections ─────────────────────────────────────────────────────────
   const written = prayers.reflections();
   if (written.length) {
-    blocks.push(section({ className: 'full' },
-      h('div', { class: 'section-head' },
-        label('Reflections'),
-        h('span', { class: 'row-meta', text: String(written.length) })),
-      rows({ tight: true },
-        ...written.slice(0, 6).map((entry) => h('div', {},
-          h('p', { class: 'body', text: entry.text }),
+    cards.push(card({ tone: 'lilac', className: 'full', foot: `${written.length} kept` },
+      badge('Reflections'),
+      rows({}, ...written.slice(0, 6).map((entry) => h('div', { class: 'row' },
+        h('span'),
+        h('div', {},
+          h('p', { class: 'row-title', style: 'font-weight:500', text: entry.text }),
           h('div', { class: 'act-row', style: 'margin-top:.5rem' },
-            entry.ref ? reference(entry.ref, ctx.go) : h('span', { class: 'row-meta', text: entry.guide || '' }),
-            h('span', { class: 'row-meta', text: new Date(entry.at).toLocaleDateString() }),
-            act('Remove', () => { prayers.unreflect(entry.id); ctx.refresh(); }, { quiet: true, small: true })))))));
+            h('span', { class: 'row-meta', text: `${entry.guide || ''} · ${new Date(entry.at).toLocaleDateString()}` }),
+            act('Remove', () => { prayers.unreflect(entry.id); ctx.refresh(); }, { quiet: true, small: true }))),
+        h('span'))))));
   }
 
   // ── The church ──────────────────────────────────────────────────────────
-  blocks.push(section({ className: 'full' },
-    rule(),
-    label('Praying with other people'),
+  cards.push(card({ tone: 'paper', className: 'full', symbol: 'church', figureSize: 'sm' },
+    badge('Praying with other people'),
     body('This app cannot pass a prayer request to anyone — there is no server behind it and nothing typed here is sent. For prayer with the church, come to the Tuesday meeting, or speak to a leader after the service.'),
     go('Church prayer meeting', () => ctx.go('connect'))));
 
-  const el = h('div', { style: 'display:contents' }, ...blocks);
-  rise(blocks);
+  const el = h('div', { style: 'display:contents' }, ...cards);
+  rise(cards);
   return { title: 'Pray', el };
 }
 
 /** One prayer, with its actions revealed on tap rather than always shown. */
-function prayerRow(ctx, item, accent) {
+function prayerRow(ctx, item, tone) {
   const holder = h('div', {});
   let open = false;
 
   const paint = () => {
-    swap(holder, 
+    swap(holder,
       h('button', { class: 'row', type: 'button', 'aria-expanded': String(open),
         onclick: () => { open = !open; paint(); } },
-        h('i', { class: 'stem', dataset: { accent } }),
-        h('div', {},
-          h('p', { class: 'row-title', text: item.text })),
+        h('i', { class: 'stem', dataset: { accent: tone } }),
+        h('div', {}, h('p', { class: 'row-title', text: item.text })),
         h('span', { class: 'row-meta', text: prayers.carriedFor(item) })),
       open ? answerBox(ctx, item) : null);
   };
@@ -164,7 +154,7 @@ function prayerRow(ctx, item, accent) {
 
 function answerBox(ctx, item) {
   const noteInput = h('input', { type: 'text', placeholder: 'What happened? (optional)', 'aria-label': 'How it was answered' });
-  return h('div', { style: 'margin-top:.7rem' },
+  return h('div', { style: 'margin-top:.5rem;padding:0 .2rem' },
     noteInput,
     actions(
       act('Answered', () => {
