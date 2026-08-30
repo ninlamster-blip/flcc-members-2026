@@ -4,7 +4,7 @@
 // size; the rest are rows. What you have finished sits at the bottom as three
 // counts — counts, not scores.
 
-import { h, card, badge, display, title, body, small, figure,
+import { h, card, badge, display, title, body, small, figure, stack, band, bandName, bandNote,
          act, actions, go, rows, row, section, thread, rise, note } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -43,17 +43,14 @@ export default async function growScreen(ctx) {
           go('All sessions', () => ctx.go(`path/${featured.path.id}`))))));
   }
 
-  // ── The rest ────────────────────────────────────────────────────────────
+  // ── The rest, as a stack ────────────────────────────────────────────────
   cards.push(section({ className: 'full' },
     badge(`Learning paths · ${states.length} in all`),
-    rows({}, ...rest.map((one) => row({
-      eyebrow: one.path.kicker,
-      title: one.path.title,
-      note: one.path.blurb,
-      meta: one.where.finished ? `${one.where.finished}/${one.where.total}` : `${one.where.total} parts`,
-      accent: one.path.tone,
+    stack({}, ...rest.map((one) => band({
+      tone: one.path.tone, seed: one.path.id, as: 'button',
+      count: one.where.finished ? `${one.where.finished}/${one.where.total}` : one.where.total,
       onclick: () => ctx.go(`path/${one.path.id}`),
-    })))));
+    }, bandName(one.path.title), bandNote(one.path.kicker))))));
 
   // ── Suggested, if nothing is started ────────────────────────────────────
   if (!states.some((one) => one.where.finished > 0)) {

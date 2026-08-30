@@ -83,7 +83,7 @@ test('every key written anywhere in the app is namespaced', () => {
  * so both are now failures rather than requirements.
  */
 test('nothing is drawn with a hard offset shadow', () => {
-  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
   const shadows = [...css.matchAll(/box-shadow:\s*([^;]+);/g)].map(([, value]) => value.trim());
   for (const shadow of shadows) {
     if (shadow.startsWith('inset') || shadow === 'none' || shadow.includes('var(--lift')) continue;
@@ -95,7 +95,7 @@ test('nothing is drawn with a hard offset shadow', () => {
 });
 
 test('nothing is drawn with a thick outline', () => {
-  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
   const widths = [
     // Only real borders — `border-radius` is a length too, and a 20px radius
     // is the point of this design rather than a violation of it.
@@ -108,7 +108,7 @@ test('nothing is drawn with a thick outline', () => {
 });
 
 test('headings are set, not shouted', () => {
-  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
   const weights = [...css.matchAll(/font-weight:\s*(\d{3})/g)].map(([, w]) => Number(w));
   assert.ok(weights.length > 0);
   assert.ok(Math.max(...weights) <= 600, `weight ${Math.max(...weights)} — nothing here is heavier than 600`);
@@ -135,7 +135,7 @@ test('the icons can be turned off everywhere at once', () => {
  * undefined variable painted itself black. It looked like a design choice.
  */
 test('every colour named in the code exists in the stylesheet', () => {
-  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
   const defined = new Set([...css.matchAll(/^\s{2}--([a-z-]+):/gm)].map(([, name]) => name));
   const patterns = [
     /\btone:\s*'([a-z-]+)'/g,           // card({ tone: 'sky' })

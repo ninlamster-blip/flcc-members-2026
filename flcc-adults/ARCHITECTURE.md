@@ -135,35 +135,38 @@ Two notes, because a schema is not a neutral document:
 
 ## Design system
 
-`css/quiet.css` is the whole of it, and its opening comment states the rules.
-It is the app's third design and the first one an adult would not find
-patronising: white paper, colour as a wash, hairlines instead of outlines,
-soft shadows instead of hard ones, and monoline icons with no faces.
+`css/layers.css` is the whole of it, and its opening comment states the rules.
+It is the app's fourth design. The one that failed hardest — 3px outlines,
+hard offset shadows, rating stars, cartoon faces — read as an app for
+children, and the four rules that came out of it are still enforced here:
 
-Four of its rules are held by `test/modules.test.mjs` and `test/art.test.mjs`
-rather than by review, and three of them are the exact reverse of what the
-previous system enforced — which is the point of writing them down:
-
-1. **No hard offset shadows.** Every `box-shadow` is blurred. The zero-blur
-   sticker shadow is the single most childish device in UI and the test now
-   fails on it rather than requiring it.
+1. **No hard offset shadows.** Every `box-shadow` is blurred.
 2. **No thick outlines.** No border anywhere is over 1px.
-3. **Nothing heavier than 600.** A 900-weight heading shouts; this app does
-   not need to.
-4. **No icon has a face.** `test/art.test.mjs` fails a circle, an ellipse or a
-   smile-shaped arc anywhere in the set, because two dots and a curve is all
-   it takes for the whole app to read as a toy again.
+3. **Nothing heavier than 600.**
+4. **No drawing has a face.** `test/art.test.mjs` fails a circle, an ellipse
+   or a smile-shaped arc anywhere in the icon set.
+
+What this system adds is the layered band. A list of things with a count is a
+`stack()` of `band()`s: full-bleed colour, torn apart by a curve that is a
+pure function of a seed, each carrying one of four hand-drawn textures. Two
+details are worth knowing before touching it:
+
+- **A band paints its colour in `::before`, from 18px down.** If it simply had
+  a `background`, that background would cover the wave and every divider in
+  the app would be a straight line — which is exactly what the first attempt
+  looked like.
+- **A band clips its own texture** (`overflow: hidden`). Without that, a mark
+  anchored past the corner bleeds into the band below and the stack looks like
+  one continuous smear.
 
 The fifth rule has no test and is still the most important: **the chrome stops
 at Scripture.** The reader, the book list and the chapter grid are white paper
-and serif type. Everything else is quiet so that the text can be the only
-thing on the page.
+and serif type — no band, no texture, no wave.
 
-Two notes on colour. The six named colours are shared with `flcc-next/` and
-pinned by a test in each app; the paper underneath them is not, because this
-app is white-card-on-cool-grey and the kids app is full-bleed-on-warm-cream.
-And poppy still never carries body copy — it is a wash, a dot on a row, and
-the tint behind a warning, nothing more.
+On colour: the six named colours are shared with `flcc-next/` and pinned by a
+test in each app. Ember is this app's own, and so is the paper. Poppy still
+never carries body copy — it is a wash, a dot on a row, and a band with
+nothing but a name and a number on it.
 
 ## Tests
 
@@ -175,6 +178,7 @@ node --test 'flcc-adults/test/*.test.mjs'
 |---|---|
 | `storage` | the `adults/v1/` namespace, and that the other four apps' keys throw |
 | `art` | every icon draws, is one thin stroke with no fill, takes the colour of the text beside it — and has no face |
+| `art` also | a wave and a texture are pure functions of their seed, so a list draws the same edges every time |
 | `rotation` | a full cycle deals the whole bank, nothing repeats inside it, and the same day always deals the same thing |
 | `progress` | day arithmetic, idempotent completion — and that no XP, level or badge has crept in |
 | `prayers` | an answered prayer is kept rather than deleted, and removal is the only thing that destroys anything |

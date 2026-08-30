@@ -74,11 +74,12 @@ none of the FLCC data files and none of the `FLCC.*` global.
 
 `flcc-adults/` is a **fifth, separate application** — the adult edition of
 FLCC NEXT, for the members of FLCC Church. It has its own `adults/v1/…`
-storage namespace, its own design system (*Quiet* — white cards on a cool
-near-white page, colour as a tenth-strength wash, hairlines instead of
-outlines, soft shadows, and monoline icons with no faces), its own content and
-its own tests, and it must never import `church.js`, read `FLCC.*`, or touch
-anything under `shepherd/` or `lamp/`.
+storage namespace, its own design system (*Layers* — a list is a stack of
+full-bleed colour bands torn apart by seeded waves, each carrying a hand-drawn
+texture; everything else is warm paper, colour as a tenth-strength wash,
+hairlines instead of outlines, soft shadows, and monoline icons with no
+faces), its own content and its own tests, and it must never import
+`church.js`, read `FLCC.*`, or touch anything under `shepherd/` or `lamp/`.
 `flcc-adults/js/core/storage.js` throws on any key outside the namespace.
 
 Read `flcc-adults/ARCHITECTURE.md` before adding a module, a storage key or a
@@ -102,8 +103,8 @@ storage. `flcc-adults/test/modules.test.mjs` fails any file that reaches past
 the Bible into the kids app, and `test/scripture.test.mjs` fails if the shared
 text moves.
 
-**The adult app must not look like the kids app.** It was drawn twice in a
-playful sticker style and read, both times, as an app for children. Five rules
+**The adult app must not look like the kids app.** It was drawn in a playful
+sticker style and read, unmistakably, as an app for children. Five rules
 are enforced by tests rather than by review, because they are the ones that
 erode first: no `box-shadow` may have a zero blur radius (the hard offset
 sticker shadow); no border may exceed 1px; no `font-weight` may exceed 600; no
@@ -115,11 +116,12 @@ Scripture** — the Bible reader is plain white paper and serif type.
 **The six named colours are shared with `flcc-next/`** — sky `#C3D7EA`,
 captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`, sunshine
 `#EDCE7A` — and a test in each app pins them, so changing one means changing
-both. The paper under them is each app's own: the adult app sits on a cool
-`#F6F7F5` because its surfaces are white cards; the kids app sits on warm
-`#FBF8F0` because its posters are full-bleed colour. In the adult app a colour
-appears as a wash at about a tenth strength, and exactly one card per screen
-— always navy — is allowed to be a full colour.
+both. Two things are each app's own: the paper (the adult app sits on a warm
+`#FAF6F2`, the kids app on `#FBF8F0`), and the adult app's one derived shade,
+**ember `#C24A38`** — poppy deepened until white type sits on it at 4.8:1.
+In the adult app a colour appears either as a wash at about a tenth strength
+or as a full-bleed band in a stack; exactly one card per screen is allowed to
+be a solid colour.
 
 ## Pull requests
 

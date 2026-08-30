@@ -10,7 +10,8 @@
 // this device.
 
 import { h, card, reader as paper, section, badge, display, title, body, small, scripture,
-         reference, act, actions, go, rows, row, thread, rise, note, waiting, toast, swap } from '../core/ui.js';
+         stack, band, bandName, bandNote, reference, act, actions, go, rows, row, thread,
+         rise, note, waiting, toast, swap } from '../core/ui.js';
 import * as scriptureCore from '../core/scripture.js';
 import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
@@ -238,23 +239,15 @@ export default async function bibleScreen(ctx) {
       const active = plan.state().id;
       swap(plansSection,
         badge(active ? 'Reading plans · one on the go' : `Reading plans · ${plans.length} to choose`),
-        rows({},
-          ...plans.map((one) => {
-            const at = plan.positionIn(one);
-            // The row says "Day 3 of 21" already; a loose progress bar
-            // hanging under a card it does not belong to said it twice and
-            // looked like a fault in the layout.
-            const holder = h('div', {});
-            holder.appendChild(row({
-              eyebrow: one.id === active ? 'Reading now' : one.kicker,
-              title: one.title,
-              note: one.id === active ? `Day ${at.day} of ${at.total}${at.at ? ` · ${at.at.ref}` : ''}` : one.blurb,
-              meta: `${one.days.length} days`,
-              accent: one.tone,
-              onclick: () => ctx.go(`plan/${one.id}`),
-            }));
-            return holder;
-          })));
+        stack({}, ...plans.map((one) => {
+          const at = plan.positionIn(one);
+          return band({
+            tone: one.tone, seed: one.id, as: 'button',
+            count: one.id === active ? `${at.day}/${at.total}` : one.days.length,
+            onclick: () => ctx.go(`plan/${one.id}`),
+          }, bandName(one.title),
+             bandNote(one.id === active ? `Reading now · ${at.at ? at.at.ref : 'finished'}` : one.kicker));
+        })));
     } catch { plansSection.remove(); }
   })();
 

@@ -1,36 +1,38 @@
 /* =============================================================================
    FLCC NEXT — ADULTS
-   The Quiet design system
+   The Layers design system
 
-   This app was drawn twice before this. The second attempt — thick outlines,
-   hard offset shadows, star ratings, and twelve cartoon characters with faces
-   — was charming and unmistakably an app for children. This one is built the
-   way the interface of a well-run clinic is built: white paper, one accent at
-   a time, hairlines instead of outlines, and nothing shouted.
+   A list here is a stack of colour, and what separates one layer from the next
+   is a torn curve rather than a rule. Each band carries a hand-drawn texture in
+   the corner where no type goes. Everything that is not a list is warm paper.
 
-   The rules this file enforces:
+   This app has been drawn four times. The version that read as an app for
+   children had 3px outlines, hard offset shadows, rating stars and cartoon
+   faces; the four rules that came out of that are still in force here and are
+   still enforced by tests:
 
-   · WHITE IS THE GROUND. Colour arrives in one block per screen and then gets
-     out of the way. A screen where every surface is coloured is a screen with
-     no hierarchy.
-   · NO OUTLINES. Separation comes from a hairline, a shadow so soft it reads
-     as paper lifting, or plain space. There is no 3px border anywhere.
-   · NO HARD SHADOWS. Every shadow is blurred and nearly transparent. The
-     offset sticker shadow is the single most childish device in UI and it is
-     gone.
-   · TYPE IS SET, NOT SHOUTED. Headings are 600, sentence case, tight. Nothing
-     is 900, nothing is uppercase except a small tracked label.
-   · PICTURES ARE MONOLINE AND HAVE NO FACES. See js/core/art.js.
-   · The chrome stops at Scripture, as it always has: the Bible reader is
-     paper and serif type, with nothing on it.
+   · No border over 1px.        · No shadow with a zero blur radius.
+   · No font-weight over 600.   · No face on any drawing.
+
+   What this system adds on top of them:
+
+   · A LIST IS A STACK. Anything that is a set of things with a count — prayer
+     categories, learning paths, reading plans — is a stack of full-bleed
+     colour bands, not a column of tiles.
+   · EVERY BAND HAS A TEXTURE. One of four hand-drawn marks, in a corner, at
+     low opacity. It is what stops a flat colour reading as a swatch.
+   · WAVES ARE SEEDED, NEVER RANDOM. The same list draws the same edges on
+     every phone. See js/core/art.js.
+   · The chrome stops at Scripture. The Bible reader is paper and serif type,
+     with nothing on it at all.
    ========================================================================== */
 
 :root {
   color-scheme: light;
 
   /* ── The palette ───────────────────────────────────────────────────────
-     The same six colours the kids and teens edition uses. What changed here
-     is not which colours exist but how much of them is used at once. */
+     The six colours shared with the kids and teens edition, plus one shade
+     derived from them. */
   --sky:      #C3D7EA;
   --captain:  #4173B0;
   --navy:     #2B4C6D;
@@ -38,19 +40,25 @@
   --poppy:    #EB8861;
   --sunshine: #EDCE7A;
 
-  --paper:  #F6F7F5;   /* the page */
-  --white:  #FFFFFF;   /* every surface on it */
+  /* Poppy, deepened until white type sits on it at 4.8:1. The reference this
+     app is drawn from opens on a deep coral, and none of the six is dark
+     enough to carry white text — so this is the one derived colour, and it is
+     local to this app rather than shared. */
+  --ember: #C24A38;
+
+  --paper:  #FAF6F2;   /* the page: warm near-white */
+  --white:  #FFFFFF;
   --ink:    var(--navy);
 
-  /* Tints. A colour at full strength is a moment; a colour at a tenth of its
-     strength is a surface you can put a paragraph on. Most of this app is
-     built from these rather than from the six above. */
+  /* Tints — a colour at about a tenth of its strength, light enough to set a
+     paragraph on. Most surfaces in this app are one of these. */
   --sky-wash:      #EDF3F8;
   --captain-wash:  #ECF1F7;
   --navy-wash:     #EDF0F3;
-  --rose-wash:     #FBF1EF;
-  --poppy-wash:    #FDF0E9;
-  --sunshine-wash: #FBF5E6;
+  --rose-wash:     #FBF2F0;
+  --poppy-wash:    #FDF1EA;
+  --sunshine-wash: #FCF6E8;
+  --ember-wash:    #FAEDEA;
 
   --ink-70: rgba(43, 76, 109, .72);
   --ink-50: rgba(43, 76, 109, .54);
@@ -59,23 +67,22 @@
   --hair:   rgba(43, 76, 109, .10);
 
   /* ── Type ────────────────────────────────────────────────────────────── */
-  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
 
   --label:     .68rem;
-  --body:      .97rem;
-  --lead:      1.02rem;
+  --body:      .95rem;
+  --lead:      1rem;
   --title:     clamp(1.15rem, 4.4vw, 1.35rem);
-  --display:   clamp(1.5rem, 6vw, 1.9rem);
+  --display:   clamp(1.7rem, 7vw, 2.2rem);
   --scripture: clamp(1.2rem, 5vw, 1.5rem);
   --numeral:   clamp(1.6rem, 7vw, 2rem);
 
-  --radius:    18px;
-  --radius-sm: 12px;
+  --radius:    22px;
+  --radius-sm: 14px;
   --gutter:    1.15rem;
   --beat:      .8rem;
 
-  /* Soft, layered, and nearly invisible. Paper lifting, not a sticker. */
   --lift:    0 1px 2px rgba(43, 76, 109, .05), 0 6px 18px rgba(43, 76, 109, .05);
   --lift-sm: 0 1px 2px rgba(43, 76, 109, .05);
 
@@ -118,7 +125,20 @@ button { font: inherit; color: inherit; border: 0; background: none; }
   color: var(--ink-50);
 }
 
-.display { font-size: var(--display); font-weight: 600; letter-spacing: -.022em; line-height: 1.22; text-wrap: balance; }
+.display { font-size: var(--display); font-weight: 600; letter-spacing: -.024em; line-height: 1.18; text-wrap: balance; }
+
+/* One word of a heading may be marked, the way a highlighter marks it: a
+   colour behind the baseline, not a change of weight. */
+.display .mark {
+  position: relative; display: inline-block;
+  color: var(--ember);
+}
+.display .mark::after {
+  content: ""; position: absolute; left: -.04em; right: -.04em; bottom: .04em;
+  height: .22em; border-radius: 2px;
+  background: var(--sunshine); opacity: .75; z-index: -1;
+}
+.display .mark { z-index: 0; isolation: isolate; }
 .title   { font-size: var(--title);   font-weight: 600; letter-spacing: -.018em; line-height: 1.3;  text-wrap: balance; }
 .lead    { font-size: var(--lead); line-height: 1.55; color: var(--ink-70); }
 .body    { font-size: var(--body); line-height: 1.65; color: var(--ink-70); }
@@ -187,10 +207,16 @@ button { font: inherit; color: inherit; border: 0; background: none; }
 .card[data-tone="captain"]  { background: var(--captain-wash); }
 .card[data-tone="navy"]     { background: var(--navy-wash); }
 .card[data-tone="poppy"]    { background: var(--poppy-wash); }
+.card[data-tone="ember"]    { background: var(--ember-wash); }
 .card[data-tone="paper"]    { background: var(--white); }
 
-/* The one loud block a screen is allowed. Navy, full strength, white type. */
-.card[data-solid] { background: var(--navy); color: #fff; box-shadow: 0 8px 24px rgba(43, 76, 109, .18); }
+/* The one loud block a screen is allowed: full strength, white type, and a
+   texture in the corner. Ember by default — the deep coral the reference
+   opens on — or navy where the screen is about Scripture rather than about
+   the church. */
+.card[data-solid] { background: var(--ember); color: #fff; box-shadow: 0 10px 26px rgba(194, 74, 56, .22); }
+.card[data-solid][data-tone="navy"] { background: var(--navy); box-shadow: 0 10px 26px rgba(43, 76, 109, .2); }
+.card[data-solid][data-tone="captain"] { background: var(--captain); box-shadow: 0 10px 26px rgba(65, 115, 176, .2); }
 .card[data-solid] .lead, .card[data-solid] .body, .card[data-solid] .dim { color: rgba(255, 255, 255, .78); }
 .card[data-solid] .label, .card[data-solid] .cite, .card[data-solid] .small { color: rgba(255, 255, 255, .62); }
 .card[data-solid] .scripture { color: #fff; }
@@ -200,6 +226,7 @@ button { font: inherit; color: inherit; border: 0; background: none; }
 .card[data-solid] .go { color: #fff; }
 .card[data-solid] .thread { background: rgba(255, 255, 255, .22); }
 .card[data-solid] .thread > i { background: var(--sunshine); }
+.card[data-solid] .texture-holder { opacity: .22; }
 .card[data-solid] .card-foot { border-top-color: rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .62); }
 
 button.card, a.card { cursor: pointer; transition: box-shadow var(--speed) var(--ease), transform var(--speed) var(--ease); }
@@ -216,6 +243,90 @@ button.card:active, a.card:active { transform: translateY(1px); }
 }
 
 .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+
+/* ── The stack ───────────────────────────────────────────────────────────
+   Full-bleed bands, each one torn from the one above it by a seeded curve,
+   each carrying a texture in a corner. This is the app's signature and it is
+   used for exactly one thing: a list of things with a count. */
+
+.stack {
+  position: relative;
+  display: flex; flex-direction: column;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--lift);
+  isolation: isolate;
+}
+
+.band {
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.15rem var(--gutter);
+  width: 100%; text-align: left;
+  color: var(--ink);
+  background: none;                 /* see below — the colour is painted in ::before */
+  overflow: hidden;                 /* a band's texture belongs to that band */
+  transition: filter var(--speed) var(--ease);
+}
+button.band { cursor: pointer; }
+button.band:hover { filter: brightness(.97); }
+button.band:active { filter: brightness(.94); }
+
+/* A band paints its own colour from 18px down, and the top 18px is left to
+   the wave. If the band simply had a `background`, that background would
+   cover the wave and every divider in the app would be a straight line —
+   which is exactly what the first attempt at this looked like. */
+.band::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 18px; bottom: 0;
+  background: var(--band); z-index: 0;
+}
+.band:first-child::before { top: 0; }
+.band > .wave {
+  position: absolute; left: 0; right: 0; top: 0;
+  width: 100%; height: 19px;
+  color: var(--band);
+  z-index: 0; display: block;
+}
+.band:first-child > .wave { display: none; }
+.band + .band { margin-top: -16px; padding-top: 1.75rem; }
+
+/* Content sits above both the wave and the texture. */
+.band > *:not(.wave):not(.texture-holder) { position: relative; z-index: 1; }
+.card-body, .card-foot { position: relative; z-index: 1; }
+
+.band[data-tone="ember"]    { --band: var(--ember);    color: #fff; }
+.band[data-tone="navy"]     { --band: var(--navy);     color: #fff; }
+.band[data-tone="captain"]  { --band: var(--captain);  color: #fff; }
+.band[data-tone="rose"]     { --band: var(--rose); }
+.band[data-tone="sunshine"] { --band: var(--sunshine); }
+.band[data-tone="sky"]      { --band: var(--sky); }
+.band[data-tone="poppy"]    { --band: var(--poppy); }
+.band[data-tone="paper"]    { --band: var(--white); }
+
+.band-name { font-size: 1.05rem; font-weight: 500; letter-spacing: -.015em; }
+.band-note { font-size: .8rem; margin-top: .1rem; opacity: .72; }
+.band-count { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+
+/* A tall band: the hero at the top of a stack, with room for a heading. */
+.band[data-tall] {
+  flex-direction: column; align-items: flex-start; justify-content: flex-end;
+  gap: .6rem; min-height: 11rem;
+  padding-top: 1.5rem; padding-bottom: 1.4rem;
+}
+
+/* The texture. Always in a corner, always low, never behind type.
+   It sits ABOVE the surface's background and BELOW its content — z-index:-1
+   would put it behind the background it is meant to mark. */
+.texture-holder {
+  position: absolute; z-index: 0; pointer-events: none;
+  width: 6.5rem; height: 6rem;
+  opacity: .2;
+  overflow: hidden;
+}
+.texture-holder[data-at="tr"] { top: -.6rem; right: -1rem; }
+.texture-holder[data-at="bl"] { bottom: -1rem; left: -1rem; }
+.texture-holder[data-at="br"] { bottom: -1rem; right: -1rem; }
+.texture { display: block; width: 100%; height: 100%; }
 
 /* ── Icons ───────────────────────────────────────────────────────────────
    Monoline, currentColor, and small. An icon is a signpost, not a mascot. */
@@ -482,6 +593,52 @@ input::placeholder, textarea::placeholder { color: var(--ink-50); }
   background: var(--white); border-radius: var(--radius); box-shadow: var(--lift); overflow: hidden;
 }
 .choice-list > * + * { border-top: 1px solid var(--hair); }
+
+/* ── The sheet ───────────────────────────────────────────────────────────
+   The reference's second screen: a white page, a large two-tone heading, a
+   short column of choices, and one full-width action along the bottom. Used
+   wherever this app asks the reader to make something. */
+
+.sheet {
+  position: relative;
+  display: flex; flex-direction: column; gap: 1rem;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--lift);
+  padding: 1.3rem var(--gutter) 0;
+  overflow: hidden;
+}
+.sheet-foot {
+  position: relative;
+  margin: .6rem calc(var(--gutter) * -1) 0;
+  padding: 1.05rem var(--gutter);
+  background: var(--ember); color: #fff;
+  font-size: .74rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  text-align: center; cursor: pointer; width: calc(100% + var(--gutter) * 2);
+  transition: filter var(--speed) var(--ease);
+}
+.sheet-foot:hover { filter: brightness(.96); }
+.sheet-foot[disabled] { opacity: .5; cursor: default; }
+
+/* A choice on a sheet: a soft filled block with a name and what it is. */
+.pick {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: .85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--sky-wash);
+  transition: transform var(--speed) var(--ease), filter var(--speed) var(--ease);
+}
+.pick:hover { filter: brightness(.98); }
+.pick:active { transform: translateY(1px); }
+.pick-name { font-size: .98rem; font-weight: 600; letter-spacing: -.01em; }
+.pick-what { font-size: .78rem; opacity: .7; margin-top: .05rem; }
+.pick[data-tone="ember"]    { background: var(--ember); color: #fff; }
+.pick[data-tone="poppy"]    { background: var(--poppy); color: #fff; }
+.pick[data-tone="rose"]     { background: var(--rose-wash); }
+.pick[data-tone="sunshine"] { background: var(--sunshine-wash); }
+.pick[data-tone="sky"]      { background: var(--sky-wash); }
+.pick[data-tone="captain"]  { background: var(--captain); color: #fff; }
+.pick[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
 
 /* ── Loading, empty, small print ─────────────────────────────────────────── */
 

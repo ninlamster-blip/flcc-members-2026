@@ -7,8 +7,8 @@
 // Nothing here leaves the device, and the screen says so where it matters
 // rather than in a policy nobody opens.
 
-import { h, card, badge, display, title, body, small, tag, figure,
-         act, actions, go, rows, row, section, rise, note, toast, swap } from '../core/ui.js';
+import { h, card, badge, display, title, body, small, tag, figure, stack, band, bandName, bandNote,
+         sheet, pick as pickChip, act, actions, go, rows, row, section, rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as prayers from '../core/prayers.js';
@@ -31,30 +31,34 @@ export default async function prayScreen(ctx) {
       go('Other guides', () => document.getElementById('guides')?.scrollIntoView({ behavior: 'smooth', block: 'start' })))));
 
   // ── Add to the list ─────────────────────────────────────────────────────
+  //
+  // The reference's second screen, more or less exactly: a white page, a
+  // two-tone heading, the choices as soft filled blocks, and one full-width
+  // action along the bottom.
   const input = h('textarea', { placeholder: 'What do you want to pray about?', 'aria-label': 'A prayer to add' });
   let category = 'personal';
-  const chips = h('div', { class: 'act-row', style: 'margin-top:.8rem' },
-    ...categories.map((one) => {
-      const button = act(one.label, () => {
-        category = one.id;
-        [...chips.children].forEach((child) => child.setAttribute('data-quiet', ''));
-        button.removeAttribute('data-quiet');
-      }, { small: true, quiet: one.id !== category });
-      return button;
-    }));
+  const chips = h('div', { style: 'display:flex;flex-direction:column;gap:.5rem' });
+  const paintChips = () => swap(chips, ...categories.map((one) => pickChip(one.label, one.line, {
+    tone: one.tone, chosen: one.id === category,
+    onclick: () => { category = one.id; paintChips(); },
+  })));
+  paintChips();
 
-  cards.push(card({ tone: 'paper', className: 'full', foot: 'Stored on this phone only' },
-    badge('Add to your list'),
-    input, chips,
-    actions(act('Keep it', () => {
-      const text = input.value.trim();
-      if (!text) { toast('Write it first.'); input.focus(); return; }
-      prayers.add({ text, category });
-      input.value = '';
-      toast('On your list.');
-      ctx.refresh();
-    })),
-    small('Your prayer list is not sent to the church, to a leader, or to us.')));
+  const keep = () => {
+    const text = input.value.trim();
+    if (!text) { toast('Write it first.'); input.focus(); return; }
+    prayers.add({ text, category });
+    input.value = '';
+    toast('On your list.');
+    ctx.refresh();
+  };
+
+  cards.push(sheet({ className: 'full', action: 'Add to my list', onaction: keep },
+    display('New prayer', { mark: 'prayer' }),
+    input,
+    badge('Where it belongs'),
+    chips,
+    small('Stored on this phone only. Not sent to the church, to a leader, or to us.')));
 
   // ── The list ────────────────────────────────────────────────────────────
   const open = prayers.open();
@@ -65,13 +69,24 @@ export default async function prayScreen(ctx) {
     const orphans = open.filter((item) => !categories.some((one) => one.id === item.category));
     if (orphans.length) grouped.push({ id: 'other', label: 'Other', tone: 'paper', items: orphans });
 
-    cards.push(section({ className: 'full' },
+    // Categories, as a stack of colour with a count on each — the list screen
+    // this app's design is drawn from, applied to the thing it fits.
+    let openGroup = null;
+    const listWrap = section({ className: 'full' });
+    const paintList = () => swap(listWrap,
       badge(`My prayer list · ${open.length} open`),
-      ...grouped.map((group) => section({},
-        h('div', { style: 'display:flex;justify-content:space-between;align-items:center' },
-          tag(group.label, group.tone),
-          h('span', { class: 'row-meta', text: String(group.items.length) })),
-        rows({}, ...group.items.map((item) => prayerRow(ctx, item, group.tone)))))));
+      stack({},
+        ...grouped.map((group) => band({
+          tone: group.tone, seed: group.id, count: group.items.length,
+          as: 'button', onclick: () => { openGroup = openGroup === group.id ? null : group.id; paintList(); },
+        }, bandName(group.label), bandNote(group.line)))),
+      openGroup
+        ? h('div', { style: 'margin-top:.2rem' },
+            rows({}, ...(grouped.find((g) => g.id === openGroup) || { items: [] }).items
+              .map((item) => prayerRow(ctx, item, openGroup))))
+        : small('Tap a colour to see what is on that part of the list.'));
+    paintList();
+    cards.push(listWrap);
   } else {
     cards.push(card({ tone: 'paper', className: 'full', symbol: 'heart', figureSize: 'sm' },
       badge('My prayer list'),

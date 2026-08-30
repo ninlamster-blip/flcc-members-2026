@@ -13,7 +13,7 @@ import { SEASONS, FOCUS } from '../js/core/profile.js';
 import { isIcon, ICONS } from '../js/core/art.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
-const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
 
 /** The palette, taken from the stylesheet rather than restated here. */
 const TONES = [...css.matchAll(/^\s{2}--([a-z-]+):\s+#[0-9A-F]{6};/gmi)].map((one) => one[1]);
@@ -30,7 +30,7 @@ function looksRight(item, where) {
 }
 
 /** The colours a card may wear. Poppy is not one of them — see below. */
-const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'poppy', 'paper'];
+const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'poppy', 'ember', 'paper'];
 /** Everything a stem, a tag or a character may be. Poppy lives here. */
 const ACCENTS = [...CARD_TONES, 'poppy'];
 /** Which files' tone ends up as a card's own background. */
@@ -58,7 +58,11 @@ test('the six shared colours are exactly these', () => {
     assert.match(css, new RegExp(`--${name}:\\s*${hex};`, 'i'),
       `--${name} should be ${hex} — and flcc-next/css/next.css must match`);
   }
-  assert.match(css, /--paper:\s*#F6F7F5;/i, 'this app sits on a cool near-white');
+  assert.match(css, /--paper:\s*#FAF6F2;/i, 'this app sits on a warm near-white');
+  // The one colour that is this app's own: poppy deepened until white type
+  // sits on it. The reference the layout comes from opens on a deep coral and
+  // none of the six shared colours is dark enough to carry white text.
+  assert.match(css, /--ember:\s*#C24A38;/i, 'the derived ember is gone');
   assert.match(css, /--ink:\s*var\(--navy\)/, 'navy is the only ink');
 });
 

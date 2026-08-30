@@ -10,7 +10,7 @@ build.
 ```
 flcc-adults/
   index.html            the shell
-  css/quiet.css         the Quiet design system
+  css/layers.css        the Layers design system
   js/core/              storage, profile, progress, content, rotation,
                         scripture, prayers, plan, art, ui
   js/screens/           one module per screen
@@ -61,38 +61,39 @@ and no red number telling an adult they have failed at reading the Bible.
 
 ## The design
 
-`css/quiet.css` — the *Quiet* system. This app was drawn twice before this
-one. The second attempt gave every surface a 3px navy outline and a hard
-offset shadow, put a row of rating stars on every card and a cartoon face on
-every picture. It was cheerful and it was, unmistakably, an app for children.
+`css/layers.css` — the *Layers* system. A list here is a stack of colour, and
+what separates one layer from the next is a torn curve rather than a rule.
+Each band carries a hand-drawn texture in the corner where no type goes.
+Everything that is not a list is warm paper.
 
-This one is built the way the interface of a well-run clinic is built:
+- **A list is a stack.** Anything that is a set of things with a count —
+  prayer categories, learning paths, reading plans — is a stack of full-bleed
+  bands with the count set large on the right. Sixty-six Bible books are *not*
+  this: a stack that long is a paint chart, so the shelves stay plain type.
+- **Every band has a texture.** One of four hand-drawn marks — hatch, dashes,
+  dots, comb — in a corner, at a fifth strength. It is what stops a flat
+  colour reading as a swatch.
+- **Waves are seeded, never random.** The same list draws the same edges on
+  every phone, every time (`js/core/art.js`).
+- **Anything that makes something is a sheet.** A white page, a heading with
+  one word marked in ember over a highlighter stroke, the choices as soft
+  filled blocks, and one full-width action along the bottom.
+- **One loud block per screen**, in ember — the deep coral the reference opens
+  on. Everything else is a wash, at about a tenth strength.
 
-- **White is the ground.** Cards are white paper on a cool near-white page,
-  lifted by a shadow soft enough to read as paper rather than as a sticker.
-  Colour arrives as a *wash* — a tenth of a colour, enough to tell one card
-  from another and light enough to put a paragraph on.
-- **One loud block per screen.** Exactly one card is allowed to be a full
-  colour, and it is always navy: the Scripture on Home, the invitation on
-  Pray, the featured path on Grow. Everything else stays quiet so that one
-  block means something.
-- **Hairlines, never outlines.** Nothing in the app has a border thicker than
-  1px. Separation comes from a hairline, a soft shadow or plain space.
-- **Type is set, not shouted.** Headings are 600 weight, sentence case, tight.
-  Nothing is 900, nothing is uppercase except a small tracked label.
-- **Pictures are monoline and have no faces.** Twelve thin icons
-  (`js/core/art.js`) drawn on one grid at one stroke weight, each taking the
-  colour of the text beside it. They can be turned off entirely in **You**.
+Four rules survive from the version of this app that read as an app for
+children, and all four are still enforced by tests: no border over 1px, no
+shadow with a zero blur radius, no font-weight over 600, and no face on any
+drawing.
 
-The palette is the same six colours the kids and teens edition uses — sky
+The palette is the six colours shared with the kids and teens edition — sky
 `#C3D7EA`, captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`,
-sunshine `#EDCE7A` — so the two apps stay a family. What differs is how much
-of them appears at once: the kids app is full-bleed colour, this one is a
-wash.
+sunshine `#EDCE7A` — plus one derived shade, **ember `#C24A38`**: poppy
+deepened until white type sits on it at 4.8:1. Ember is local to this app.
 
-Two typefaces, doing two jobs. The interface is a sans-serif; **Scripture is
-set in a serif**. And the chrome stops at Scripture: the Bible reader is plain
-white paper with nothing on it at all.
+Two typefaces, doing two jobs. The interface is Plus Jakarta Sans; **Scripture
+is set in a serif**. And the chrome stops at Scripture: the Bible reader is
+plain white paper with nothing on it — no band, no texture, no wave.
 
 ## Content
 

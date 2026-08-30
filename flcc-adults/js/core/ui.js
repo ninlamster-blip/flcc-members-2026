@@ -1,8 +1,12 @@
 // The component kit.
 //
-// Everything the reader touches is a card: white paper, a soft lift, a
-// hairline where something has to be separated, and no border. The kit exists
-// so that is true by default rather than by discipline.
+// Two shapes carry this app. A LIST is a `stack()` of full-bleed `band()`s,
+// torn apart by seeded waves and marked with a hand-drawn texture. Everything
+// else is a `card()`: warm paper, a soft lift, and no border.
+//
+// The third shape, `sheet()`, is for the screens that ask the reader to make
+// something: a white page, a two-tone heading, a short column of choices, and
+// one full-width action along the bottom.
 //
 // What is deliberately absent is as much of the design as what is here. There
 // is no badge pill, no star row and no character with a face — all three were
@@ -34,6 +38,13 @@ export function card({ tone = 'paper', solid = false, symbol = '', figureSize = 
     ...(onclick ? { onclick, type: as === 'button' ? 'button' : null } : {}),
     ...rest,
   });
+  // The one loud block on a screen wears a texture, the way every band does.
+  // It is what stops it reading as a plain rectangle of colour.
+  if (solid && showFigures()) {
+    const mark = h('div', { class: 'texture-holder', dataset: { at: 'br' }, 'aria-hidden': 'true' });
+    mark.innerHTML = art.texture(art.pickTexture(symbol || tone), symbol || tone);
+    el.appendChild(mark);
+  }
   // The icon goes at the top-right, level with the first line of type. Placed
   // under the text it becomes a mascot sitting in a field of colour, which is
   // the look this app is trying to leave behind.
@@ -47,12 +58,13 @@ export function card({ tone = 'paper', solid = false, symbol = '', figureSize = 
     kids = kids.length ? [h('div', { class: 'card-head' }, kids[0], mark), ...kids.slice(1)] : [mark];
   }
   el.appendChild(h('div', { class: 'card-body' }, kids));
-  if (foot !== null && foot !== undefined && foot !== false) el.appendChild(band(foot));
+  if (foot !== null && foot !== undefined && foot !== false) el.appendChild(cardFoot(foot));
   return el;
 }
 
-/** The small print along the bottom of a card, above a hairline. */
-export function band(content) {
+/** The small print along the bottom of a card, above a hairline.
+ *  Named `foot` rather than `band` — a band is a layer of a stack now. */
+export function cardFoot(content) {
   const parts = (Array.isArray(content) ? content : [content]).filter((one) => one !== null && one !== undefined && one !== false);
   return h('div', { class: 'card-foot' },
     ...parts.map((one) => (one instanceof Node ? one : h('span', { text: String(one) }))));
@@ -88,6 +100,86 @@ export function figure(name, { size = '', well = false } = {}) {
  */
 export function badge(text) { return h('p', { class: 'label', text }); }
 
+// ── The stack ──────────────────────────────────────────────────────────────
+
+/**
+ * A list, as a stack of colour.
+ *
+ * Used for exactly one thing: a set of things with a count. Prayer categories,
+ * learning paths, reading plans. A list of Bible books is not this — sixty-six
+ * bands is a paint chart, not a list.
+ */
+export function stack({ className = '', ...rest } = {}, ...children) {
+  return h('div', { class: `stack ${className}`.trim(), ...rest },
+    children.flat(Infinity).filter(Boolean));
+}
+
+/**
+ * One band of a stack.
+ *
+ * @param {object} options
+ * @param {string} options.tone     the band's colour, full strength
+ * @param {string} options.texture  one of art.TEXTURES; omitted, one is picked
+ *                                  from the seed so no band is ever bare
+ * @param {string} options.seed     what the wave and texture are drawn from —
+ *                                  pass something stable, like an id
+ * @param {*}      options.count    the figure on the right
+ * @param {boolean} options.tall    a hero band, with room for a heading
+ */
+export function band({ tone = 'rose', texture = '', seed = '', count = null, tall = false,
+                       at = 'tr', as = 'div', onclick, className = '', ...rest } = {}, ...children) {
+  const el = h(as, {
+    class: `band ${className}`.trim(),
+    dataset: { tone, ...(tall ? { tall: '' } : {}) },
+    ...(onclick ? { onclick, type: as === 'button' ? 'button' : null } : {}),
+    ...rest,
+  });
+
+  const edge = h('span', { class: 'wave-holder', style: 'display:contents' });
+  edge.innerHTML = art.wave(seed || tone);
+  el.appendChild(edge.firstChild);
+
+  if (showFigures()) {
+    const mark = h('div', { class: 'texture-holder', dataset: { at }, 'aria-hidden': 'true' });
+    mark.innerHTML = art.texture(art.isTexture(texture) ? texture : art.pickTexture(seed || tone), seed || tone);
+    el.appendChild(mark);
+  }
+
+  const kids = children.flat(Infinity).filter(Boolean);
+  el.appendChild(tall ? h('div', { style: 'display:contents' }, kids) : h('div', {}, kids));
+  if (count !== null && count !== undefined && count !== false) {
+    el.appendChild(h('span', { class: 'band-count', text: String(count) }));
+  }
+  return el;
+}
+
+export function bandName(text) { return h('p', { class: 'band-name', text }); }
+export function bandNote(text) { return h('p', { class: 'band-note', text }); }
+
+// ── The sheet ──────────────────────────────────────────────────────────────
+
+/** A white page that asks the reader to make something. */
+export function sheet({ action = '', onaction = null, disabled = false, className = '', ...rest } = {}, ...children) {
+  const el = h('div', { class: `sheet ${className}`.trim(), ...rest },
+    children.flat(Infinity).filter(Boolean));
+  if (action) {
+    el.appendChild(h('button', {
+      class: 'sheet-foot', type: 'button', text: action,
+      ...(disabled ? { disabled: true } : {}),
+      ...(onaction ? { onclick: onaction } : {}),
+    }));
+  }
+  return el;
+}
+
+/** One choice on a sheet: a soft filled block with a name and what it is. */
+export function pick(name, what, { tone = 'sky', chosen = false, onclick } = {}) {
+  return h('button', {
+    class: 'pick', type: 'button', dataset: { tone },
+    'aria-pressed': String(Boolean(chosen)), onclick,
+  }, h('p', { class: 'pick-name', text: name }), what ? h('p', { class: 'pick-what', text: what }) : null);
+}
+
 /** A group with no chrome at all: used to hold cards, and on the Bible screen. */
 export function section({ className = '', ...rest } = {}, ...children) {
   return h('div', { class: `section ${className}`.trim(), style: 'display:flex;flex-direction:column;gap:.55rem', ...rest },
@@ -100,7 +192,24 @@ export function reader({ className = '', ...rest } = {}, ...children) {
 }
 
 export function label(text) { return h('p', { class: 'label', text }); }
-export function display(text) { return h('h1', { class: 'display', text }); }
+/**
+ * A display heading, optionally with one word marked.
+ *
+ * `display('New list', { mark: 'list' })` sets "list" in ember over a
+ * highlighter stroke — the reference's own device, and the only place in this
+ * app where a heading changes colour mid-phrase.
+ */
+export function display(text, { mark = '' } = {}) {
+  const source = String(text || '');
+  if (!mark || !source.toLowerCase().includes(String(mark).toLowerCase())) {
+    return h('h1', { class: 'display', text: source });
+  }
+  const at = source.toLowerCase().indexOf(String(mark).toLowerCase());
+  return h('h1', { class: 'display' },
+    source.slice(0, at),
+    h('span', { class: 'mark', text: source.slice(at, at + mark.length) }),
+    source.slice(at + mark.length));
+}
 export function title(text, tag = 'h2') { return h(tag, { class: 'title', text }); }
 export function lead(text) { return h('p', { class: 'lead', text }); }
 export function body(text) { return h('p', { class: 'body', text }); }
