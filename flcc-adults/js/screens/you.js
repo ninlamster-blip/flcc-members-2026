@@ -5,7 +5,7 @@
 // the browser's data clears everything. An app that keeps a person's prayers
 // owes them that sentence somewhere they can find it.
 
-import { h, card, badge, display, title, body, small, starRow, choice,
+import { h, card, badge, display, title, body, small, choice,
          act, actions, go, rows, row, section, rise, note, toast, swap } from '../core/ui.js';
 import { getUser, saveUser, SEASONS, FOCUS, seasonOf, getSettings, saveSettings } from '../core/profile.js';
 import * as store from '../core/storage.js';
@@ -21,8 +21,8 @@ export default async function youScreen(ctx) {
   const state = progress.getProgress();
   const cards = [];
 
-  cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'blob',
-      foot: [seasonOf().label, starRow(5)] },
+  cards.push(card({ solid: true, className: 'full', symbol: 'blob',
+      foot: seasonOf().label },
     badge('You'),
     h('div', {},
       display(user.name || 'Friend'),

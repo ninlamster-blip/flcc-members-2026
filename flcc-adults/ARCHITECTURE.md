@@ -52,8 +52,8 @@ Rules that keep it honest:
   same morning and nobody can re-roll a passage they would rather not sit with.
 - **Illustration goes through `figure()` in `js/core/ui.js`**, never straight
   from `js/core/art.js`. `figure()` is where a reader's choice to switch the
-  characters off is honoured; a screen that reaches past it would keep drawing
-  them on some screens and not others.
+  icons off is honoured; a screen that reaches past it would keep drawing them
+  on some screens and not others.
 - **Content is data, never instructions.** Nothing under `content/` is
   executed, and there is no model in this app to hand it to.
 
@@ -135,37 +135,35 @@ Two notes, because a schema is not a neutral document:
 
 ## Design system
 
-`css/sticker.css` is the whole of it, and its opening comment states the rules.
-It is a set of printed thank-you cards made into an app: warm paper stock,
-navy ink, flat colour, thick outlines, hard shadows with no blur, and a small
-cast of characters with faces.
+`css/quiet.css` is the whole of it, and its opening comment states the rules.
+It is the app's third design and the first one an adult would not find
+patronising: white paper, colour as a wash, hairlines instead of outlines,
+soft shadows instead of hard ones, and monoline icons with no faces.
 
-The palette is six colours — sky, captain, navy, rose, poppy, sunshine — on
-warm paper, and it is shared with `flcc-next/` so the two editions read as one
-family. Five of the six may carry a card; poppy may not, because navy on
-poppy is about 3.5:1, which is fine behind a headline and not fine behind the
-paragraphs every card here has. `test/content.test.mjs` fails a content file
-that hands poppy to anything rendered as a card.
+Four of its rules are held by `test/modules.test.mjs` and `test/art.test.mjs`
+rather than by review, and three of them are the exact reverse of what the
+previous system enforced — which is the point of writing them down:
 
-Three of its rules are held by `test/modules.test.mjs` and `test/art.test.mjs`
-rather than by review, because they are the ones that erode first:
+1. **No hard offset shadows.** Every `box-shadow` is blurred. The zero-blur
+   sticker shadow is the single most childish device in UI and the test now
+   fails on it rather than requiring it.
+2. **No thick outlines.** No border anywhere is over 1px.
+3. **Nothing heavier than 600.** A 900-weight heading shouts; this app does
+   not need to.
+4. **No icon has a face.** `test/art.test.mjs` fails a circle, an ellipse or a
+   smile-shaped arc anywhere in the set, because two dots and a curve is all
+   it takes for the whole app to read as a toy again.
 
-1. **No soft shadows.** Every `box-shadow` in the stylesheet is a hard offset
-   (`Xpx Ypx 0 colour`). A blur radius creeping in from muscle memory turns
-   the whole system into a generic app, one component at a time.
-2. **Surfaces come from `card()`.** A screen that hand-writes `class: 'card'`
-   builds something that will not follow the system when the system changes.
-3. **One character set, one weight, one face.** Every mascot is outlined at
-   5px on the same 100 × 100 grid and gets its face from the same `face()`
-   helper, so a thirteenth character cannot arrive in a different style.
-4. **Poppy stays off the cards**, and no content file may carry a colour from
-   either of the app's two retired palettes.
+The fifth rule has no test and is still the most important: **the chrome stops
+at Scripture.** The reader, the book list and the chapter grid are white paper
+and serif type. Everything else is quiet so that the text can be the only
+thing on the page.
 
-The fourth rule has no test and is the most important: **the chrome stops at
-Scripture.** The reader, the book list and the chapter grid are white paper
-with serif type — no colour band, no character, nothing competing with the
-text. Everything else in the app is loud so that Scripture does not have to
-be.
+Two notes on colour. The six named colours are shared with `flcc-next/` and
+pinned by a test in each app; the paper underneath them is not, because this
+app is white-card-on-cool-grey and the kids app is full-bleed-on-warm-cream.
+And poppy still never carries body copy — it is a wash, a dot on a row, and
+the tint behind a warning, nothing more.
 
 ## Tests
 
@@ -176,14 +174,14 @@ node --test 'flcc-adults/test/*.test.mjs'
 | Suite | What it holds the line on |
 |---|---|
 | `storage` | the `adults/v1/` namespace, and that the other four apps' keys throw |
-| `art` | every character draws, is outlined at one weight, has a face, and takes the fill it is given |
+| `art` | every icon draws, is one thin stroke with no fill, takes the colour of the text beside it — and has no face |
 | `rotation` | a full cycle deals the whole bank, nothing repeats inside it, and the same day always deals the same thing |
 | `progress` | day arithmetic, idempotent completion — and that no XP, level or badge has crept in |
 | `prayers` | an answered prayer is kept rather than deleted, and removal is the only thing that destroys anything |
 | `plan` | a plan is a sequence, not a calendar: a month away does not move it |
 | `content` | every authored file's shape, every colour and character it names, that no file still carries a colour from the app's previous palette, and that the writing never promises something no server exists to do |
 | `scripture` | the shared Bible is where the app says it is, every reference resolves, and **every verse the writing prints is word for word the shipped text** |
-| `modules` | every module parses, every screen exports a screen, the app boundary, no soft shadows, no hand-built cards, no screen importing `art.js` behind `figure()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
+| `modules` | every module parses, every screen exports a screen, the app boundary, no hard shadows, no thick outlines, no heading over 600, no colour named in code that the stylesheet does not define, no hand-built cards, no screen importing `art.js` behind `figure()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
 
 The scripture suite is the one worth explaining. Forty passages are quoted
 across the devotionals, the sessions and the guides, and no reviewer catches a

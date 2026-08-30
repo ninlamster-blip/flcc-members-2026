@@ -1,6 +1,6 @@
 // One learning path, and everything in it.
 
-import { h, card, badge, display, title, body, small, starRow,
+import { h, card, badge, display, title, body, small,
          act, actions, go, rows, row, section, thread, rise, note } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -16,8 +16,7 @@ export default async function pathScreen(ctx) {
   const cards = [];
 
   cards.push(card({ tone: path.tone, className: 'full', symbol: path.symbol,
-      foot: [where.finished ? `${where.finished} of ${where.total} finished` : `${where.total} sessions · ${path.minutes}`,
-             starRow(Math.max(1, Math.round((where.percent / 100) * 5)))] },
+      foot: where.finished ? `${where.finished} of ${where.total} finished` : `${where.total} sessions · ${path.minutes}` },
     badge(path.kicker),
     h('div', {},
       display(path.title),
@@ -38,7 +37,7 @@ export default async function pathScreen(ctx) {
 
   if (where.done) {
     cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'star', figureSize: 'sm',
-        foot: ['All done', starRow(5)] },
+        foot: ['All done'] },
       badge('Finished'),
       title('That is the whole path.'),
       body('Take one thing from it into this week. A path read and not acted on is a path read.'),

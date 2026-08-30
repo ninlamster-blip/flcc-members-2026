@@ -1,12 +1,13 @@
 // The component kit.
 //
-// Everything the reader touches is a card: a navy outline, a hard shadow, a
-// flat colour, and a band along the bottom. The kit exists so that is true by
-// default rather than by discipline — there is no way to build a surface in
-// this app that quietly loses its outline.
+// Everything the reader touches is a card: white paper, a soft lift, a
+// hairline where something has to be separated, and no border. The kit exists
+// so that is true by default rather than by discipline.
 //
-// The one deliberate exception is Scripture. `reader()` and the passage type
-// below are plain paper: the Bible screen is where the chrome stops.
+// What is deliberately absent is as much of the design as what is here. There
+// is no badge pill, no star row and no character with a face — all three were
+// in an earlier version of this app and all three are why it read as an app
+// for children rather than for the adults of a church.
 
 import { h, clear, navIcon } from './dom.js';
 import * as art from './art.js';
@@ -16,29 +17,41 @@ import { showFigures } from './profile.js';
  * A card.
  *
  * @param {object} options
- * @param {string} options.tone    the card's colour; its band is derived in CSS
- * @param {string} options.symbol  a character from js/core/art.js, drawn at the
- *                                 end of the body. One per card, at most.
- * @param {*}      options.foot    what goes in the bottom band — a string, an
- *                                 element, or [left, right]
+ * @param {string}  options.tone   tints the card — a tenth of a colour, not
+ *                                 the colour, so a paragraph still sits on it
+ * @param {boolean} options.solid  the ONE full-colour block a screen may have
+ * @param {string}  options.symbol an icon from js/core/art.js, placed in the
+ *                                 card's header rather than under its text
+ * @param {*}       options.foot   small print along the bottom, above a
+ *                                 hairline — a string, an element, or [l, r]
  * @param {boolean} options.tall   a hero card: taller, and its content spreads
  */
-export function card({ tone = 'sky', symbol = '', figureSize = '', foot = null, tall = false,
-                       as = 'div', onclick, className = '', ...rest } = {}, ...children) {
+export function card({ tone = 'paper', solid = false, symbol = '', figureSize = '', foot = null,
+                       tall = false, as = 'div', onclick, className = '', ...rest } = {}, ...children) {
   const el = h(as, {
     class: `card ${className}`.trim(),
-    dataset: { tone, ...(tall ? { tall: '' } : {}) },
+    dataset: { tone, ...(solid ? { solid: '' } : {}), ...(tall ? { tall: '' } : {}) },
     ...(onclick ? { onclick, type: as === 'button' ? 'button' : null } : {}),
     ...rest,
   });
-  const body = h('div', { class: 'card-body' }, children.flat(Infinity).filter(Boolean));
-  if (symbol) body.appendChild(figure(symbol, tone, { size: figureSize }));
-  el.appendChild(body);
+  // The icon goes at the top-right, level with the first line of type. Placed
+  // under the text it becomes a mascot sitting in a field of colour, which is
+  // the look this app is trying to leave behind.
+  //
+  // The pairing is built BEFORE the body exists. Wrapping a child that is
+  // already in the DOM with `replaceWith` puts the child inside its own
+  // replacement, which the DOM rejects outright.
+  let kids = children.flat(Infinity).filter(Boolean);
+  if (symbol) {
+    const mark = figure(symbol, { size: figureSize });
+    kids = kids.length ? [h('div', { class: 'card-head' }, kids[0], mark), ...kids.slice(1)] : [mark];
+  }
+  el.appendChild(h('div', { class: 'card-body' }, kids));
   if (foot !== null && foot !== undefined && foot !== false) el.appendChild(band(foot));
   return el;
 }
 
-/** The band along the bottom of a card. */
+/** The small print along the bottom of a card, above a hairline. */
 export function band(content) {
   const parts = (Array.isArray(content) ? content : [content]).filter((one) => one !== null && one !== undefined && one !== false);
   return h('div', { class: 'card-foot' },
@@ -46,45 +59,38 @@ export function band(content) {
 }
 
 /**
- * One of the characters.
+ * One icon.
  *
- * The fill is chosen against the surface it sits on rather than passed in:
- * a character has to be a different colour from its own card or it disappears,
- * and leaving that to each call site is how a set stops looking like a set.
+ * It takes its colour from the text around it — `currentColor` in the SVG,
+ * `--captain` in the stylesheet — so there is no per-card colour decision to
+ * make and no way for one screen's icons to drift away from another's.
+ *
+ * The reader's choice to switch the icons off is honoured HERE rather than at
+ * each call site: a screen that reaches for one directly must go quiet too,
+ * or turning them off in You clears some screens and not others.
  */
-const ON = {
-  sky: 'poppy', rose: 'captain', sunshine: 'poppy',
-  captain: 'sunshine', navy: 'rose', paper: 'captain',
-};
-
-export function figure(name, on = 'paper', { size = '' } = {}) {
-  // The reader's choice is honoured HERE rather than at each call site: a
-  // screen that reaches for a character directly must go dark too, or turning
-  // them off in You clears some screens and not others.
+export function figure(name, { size = '', well = false } = {}) {
   if (!showFigures()) return h('span', { hidden: true });
-  const el = h('div', { class: 'figure', ...(size ? { dataset: { size } } : {}) });
-  el.innerHTML = art.mascot(art.isMascot(name) ? name : art.pick(name), ON[on] || 'poppy');
+  const el = h('div', {
+    class: 'figure',
+    dataset: { ...(size ? { size } : {}), ...(well ? { well: '' } : {}) },
+  });
+  el.innerHTML = art.icon(art.isIcon(name) ? name : art.pick(name));
   return el;
 }
 
-/** A white pill with a navy outline — the app's eyebrow. */
-export function badge(text, { tone = '' } = {}) {
-  return h('span', { class: 'badge', ...(tone ? { dataset: { tone } } : {}), text });
-}
-
-/** A small aside with a tail, for the thing worth saying in four words. */
-export function bubble(text) { return h('span', { class: 'bubble', text }); }
-
-/** Five stars, `lit` of them filled. Ornament, and the odd small count. */
-export function starRow(lit = 5, total = 5) {
-  const el = h('span', { style: 'display:inline-flex' });
-  el.innerHTML = art.stars(lit, total);
-  return el;
-}
+/**
+ * The eyebrow above a heading: small, tracked, uppercase, and grey.
+ *
+ * It used to be a white pill with a 2px navy outline. Kept as `badge` so the
+ * screens did not all need editing, but it is a label now — an outlined pill
+ * on every card was a third of what made this app look like a toy.
+ */
+export function badge(text) { return h('p', { class: 'label', text }); }
 
 /** A group with no chrome at all: used to hold cards, and on the Bible screen. */
 export function section({ className = '', ...rest } = {}, ...children) {
-  return h('div', { class: `section ${className}`.trim(), style: 'display:flex;flex-direction:column;gap:.85rem', ...rest },
+  return h('div', { class: `section ${className}`.trim(), style: 'display:flex;flex-direction:column;gap:.55rem', ...rest },
     children.flat(Infinity).filter(Boolean));
 }
 
@@ -112,9 +118,13 @@ export function waiting() { return h('div', { class: 'wait', role: 'status', 'ar
  * wall that fills a phone.
  */
 export function scripture(text, { flow = false, tag = 'p' } = {}) {
-  const source = String(text || '');
+  const source = String(text || '').trim();
   const length = source.length > 300 ? 'xl' : source.length > 150 ? 'l' : 'm';
-  return h(tag, { class: `scripture${flow ? ' scripture--flow' : ''}`, dataset: { length }, text: `“${source}”` });
+  // Some passages open with a quotation mark of their own — anything Jesus
+  // says, for a start — and wrapping those again prints ““Come to me.
+  const quoted = /^[“"]/.test(source);
+  return h(tag, { class: `scripture${flow ? ' scripture--flow' : ''}`, dataset: { length },
+    text: quoted ? source : `“${source}”` });
 }
 
 export function cite(text) { return h('p', { class: 'cite', text }); }
@@ -233,10 +243,10 @@ export function rise(elements) {
  * A full-screen moment. The app has exactly one interruption, and this is it:
  * the end of a guided prayer, the end of a path. One line, one way out.
  */
-export function moment({ eyebrow = '', big, line = '', action = 'Amen', symbol = 'star', tone = 'sunshine', onclose }) {
-  const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: `background:var(--${tone})` });
+export function moment({ eyebrow = '', big, line = '', action = 'Amen', symbol = 'star', onclose }) {
+  const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true' });
   screen.append(
-    figure(symbol, tone),
+    figure(symbol),
     eyebrow ? badge(eyebrow) : null,
     h('p', { class: 'display', text: big }),
     line ? lead(line) : null,
@@ -251,9 +261,9 @@ export function toast(message) {
   let el = document.getElementById('toast');
   if (!el) {
     el = h('div', { id: 'toast', role: 'status', 'aria-live': 'polite',
-      style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(6.5rem + env(safe-area-inset-bottom));z-index:70;'
-        + 'background:#FFFDF7;color:#1B2A5C;padding:.7rem 1.1rem;border:2px solid #1B2A5C;border-radius:99px;'
-        + 'box-shadow:3px 4px 0 #1B2A5C;font-size:.84rem;font-weight:700;max-width:90vw;text-align:center' });
+      style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(6rem + env(safe-area-inset-bottom));z-index:70;'
+        + 'background:#2B4C6D;color:#fff;padding:.65rem 1rem;border-radius:12px;'
+        + 'box-shadow:0 8px 24px rgba(43,76,109,.24);font-size:.85rem;font-weight:450;max-width:90vw;text-align:center' });
     document.body.appendChild(el);
   }
   el.textContent = message;

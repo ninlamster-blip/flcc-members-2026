@@ -4,7 +4,7 @@
 // done, not the twelfth day since you started. See js/core/plan.js for why
 // that is the single decision that keeps adults reading.
 
-import { h, card, badge, display, title, body, small, starRow,
+import { h, card, badge, display, title, body, small,
          act, actions, go, rows, row, section, thread, rise, note, toast } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
@@ -27,8 +27,7 @@ export default async function planScreen(ctx) {
   };
 
   cards.push(card({ tone: current.tone, className: 'full', symbol: current.symbol,
-      foot: [active ? (at.done ? `Finished · all ${at.total} days` : `Day ${at.day} of ${at.total}`) : `${current.days.length} days`,
-             starRow(active ? Math.max(1, Math.round((at.percent / 100) * 5)) : 5)] },
+      foot: active ? (at.done ? `Finished · all ${at.total} days` : `Day ${at.day} of ${at.total}`) : `${current.days.length} days` },
     badge(current.kicker),
     h('div', {},
       display(current.title),
@@ -55,7 +54,7 @@ export default async function planScreen(ctx) {
 
   if (active && at.done) {
     cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'star', figureSize: 'sm',
-        foot: ['The whole plan', starRow(5)] },
+        foot: ['The whole plan'] },
       badge('Finished'),
       title('You read the whole thing.'),
       body('It stays here if you want to go through it again — the days are marked, and starting another plan does not erase them.'),

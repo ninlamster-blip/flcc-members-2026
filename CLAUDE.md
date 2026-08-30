@@ -74,11 +74,11 @@ none of the FLCC data files and none of the `FLCC.*` global.
 
 `flcc-adults/` is a **fifth, separate application** — the adult edition of
 FLCC NEXT, for the members of FLCC Church. It has its own `adults/v1/…`
-storage namespace, its own design system (*Sticker* — printed thank-you cards
-made into an app: warm paper, navy ink, flat colour, thick outlines, hard
-shadows and twelve little characters), its own content and its own tests, and
-it must never import `church.js`, read `FLCC.*`, or touch anything under
-`shepherd/` or `lamp/`.
+storage namespace, its own design system (*Quiet* — white cards on a cool
+near-white page, colour as a tenth-strength wash, hairlines instead of
+outlines, soft shadows, and monoline icons with no faces), its own content and
+its own tests, and it must never import `church.js`, read `FLCC.*`, or touch
+anything under `shepherd/` or `lamp/`.
 `flcc-adults/js/core/storage.js` throws on any key outside the namespace.
 
 Read `flcc-adults/ARCHITECTURE.md` before adding a module, a storage key or a
@@ -102,25 +102,24 @@ storage. `flcc-adults/test/modules.test.mjs` fails any file that reaches past
 the Bible into the kids app, and `test/scripture.test.mjs` fails if the shared
 text moves.
 
-Five rules are enforced by tests rather than by review, because they are the
-ones that erode first: every `box-shadow` is a hard offset with no blur; a
-surface is built by `card()` in `js/core/ui.js` and never by hand; a character
-is drawn through `figure()` and never straight from `js/core/art.js` (that is
-where "turn the characters off" is honoured); poppy never carries a card
-(navy on poppy is ~3.5:1 — fine behind a headline, not behind a paragraph);
-and every verse the authored writing quotes must match the shipped World
-English Bible word for word.
+**The adult app must not look like the kids app.** It was drawn twice in a
+playful sticker style and read, both times, as an app for children. Five rules
+are enforced by tests rather than by review, because they are the ones that
+erode first: no `box-shadow` may have a zero blur radius (the hard offset
+sticker shadow); no border may exceed 1px; no `font-weight` may exceed 600; no
+icon may contain a circle, an ellipse or a smile-shaped arc; and every verse
+the authored writing quotes must match the shipped World English Bible word
+for word. A sixth is untested and matters most: **the chrome stops at
+Scripture** — the Bible reader is plain white paper and serif type.
 
-**The palette is shared with `flcc-next/`** — sky `#C3D7EA`, captain
-`#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`, sunshine
-`#EDCE7A`, on paper `#FBF8F0`. The two editions look like one family on
-purpose; they still share no code. Changing a colour means changing it in
-both `flcc-adults/css/sticker.css` and `flcc-next/css/next.css`.
-
-The design system's one untested rule is the one to hold onto in review: **the
-chrome stops at Scripture.** The Bible reader is plain white paper and serif
-type — no colour band, no outline inside it, no character. Everything else in
-the app is loud so that the text does not have to be.
+**The six named colours are shared with `flcc-next/`** — sky `#C3D7EA`,
+captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`, sunshine
+`#EDCE7A` — and a test in each app pins them, so changing one means changing
+both. The paper under them is each app's own: the adult app sits on a cool
+`#F6F7F5` because its surfaces are white cards; the kids app sits on warm
+`#FBF8F0` because its posters are full-bleed colour. In the adult app a colour
+appears as a wash at about a tenth strength, and exactly one card per screen
+— always navy — is allowed to be a full colour.
 
 ## Pull requests
 

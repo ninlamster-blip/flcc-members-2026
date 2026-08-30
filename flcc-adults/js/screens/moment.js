@@ -4,7 +4,7 @@
 // question, one prayer, one practice — each on its own card, because that is
 // how this app separates one thought from the next.
 
-import { h, card, badge, title, body, small, scripture, reference, starRow,
+import { h, card, badge, title, body, small, scripture, reference,
          act, actions, rows, rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
@@ -19,8 +19,8 @@ export default async function momentScreen(ctx) {
 
   const cards = [];
 
-  cards.push(card({ tone: moment.tone, className: 'full', symbol: moment.symbol,
-      foot: [reference(`${moment.ref} · ${moment.translation}`, ctx.go), starRow(5)] },
+  cards.push(card({ solid: true, className: 'full', symbol: moment.symbol,
+      foot: reference(`${moment.ref} · ${moment.translation}`, ctx.go) },
     badge(moment.theme),
     scripture(moment.text, { flow: true })));
 

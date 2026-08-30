@@ -9,7 +9,7 @@
 // a reading plan and any verses they choose to save, and all of it stays on
 // this device.
 
-import { h, card, reader as paper, section, badge, display, title, body, small, scripture, starRow,
+import { h, card, reader as paper, section, badge, display, title, body, small, scripture,
          reference, act, actions, go, rows, row, thread, rise, note, waiting, toast, swap } from '../core/ui.js';
 import * as scriptureCore from '../core/scripture.js';
 import * as content from '../core/content.js';
@@ -211,8 +211,8 @@ export default async function bibleScreen(ctx) {
     ctx.go(`bible/search?q=${encodeURIComponent(raw)}`);
   } }, input, h('div', { style: 'margin-top:1.2rem' }, act('Look it up', null, { type: 'submit' })));
 
-  cards.push(card({ tone: 'sky', className: 'full', symbol: 'book',
-      foot: ['66 books · 3 translations', starRow(5)] },
+  cards.push(card({ solid: true, className: 'full', symbol: 'book',
+      foot: '66 books · 3 translations' },
     badge('The Bible'),
     h('div', {},
       display('The whole thing.'),

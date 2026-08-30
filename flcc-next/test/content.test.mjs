@@ -157,12 +157,13 @@ test('the illustration set covers everything the content asks for', () => {
 /**
  * The six colours, pinned.
  *
- * The adult edition (`flcc-adults/`) wears this same palette so the two apps
- * read as one family, and they share no code — which means nothing but a test
- * stops one of them drifting a shade at a time. The adult suite has the
- * identical block; changing a colour means changing it in both.
+ * The adult edition (`flcc-adults/`) wears the same six so the two apps read
+ * as one family, and they share no code — which means nothing but a test stops
+ * one of them drifting a shade at a time. The adult suite has the matching
+ * block. The paper is each app's own: this one is warm cream because its
+ * posters are full-bleed colour.
  */
-test('the shared palette is exactly these six colours on this paper', () => {
+test('the six shared colours are exactly these', () => {
   const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
   const expected = {
     sunshine: '#EDCE7A', rose: '#EABCB5', sky: '#C3D7EA',

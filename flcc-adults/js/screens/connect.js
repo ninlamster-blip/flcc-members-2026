@@ -5,7 +5,7 @@
 // joining, asking for help), it says who to speak to rather than pretending
 // there is a button.
 
-import { h, card, badge, display, title, body, small, starRow,
+import { h, card, badge, display, title, body, small,
          act, actions, go, rows, row, section, rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as store from '../core/storage.js';
@@ -20,8 +20,8 @@ export default async function connectScreen(ctx) {
   const cards = [];
 
   // ── The family ──────────────────────────────────────────────────────────
-  cards.push(card({ tone: 'captain', tall: true, className: 'full', symbol: 'church',
-      foot: ['Friday · 10:00 AM · Kuwait City', starRow(5)] },
+  cards.push(card({ solid: true, tall: true, className: 'full', symbol: 'church',
+      foot: 'Friday · 10:00 AM · Kuwait City' },
     h('div', {},
       badge('FLCC'),
       h('div', { style: 'margin-top:1rem' }, display('The FLCC family.')),
@@ -58,7 +58,7 @@ export default async function connectScreen(ctx) {
       const paint = () => {
         const attending = rsvps().has(one.id);
         swap(holder, card({ tone: one.tone, className: 'full',
-            foot: [`${one.when} · ${one.where}`, one.recurring ? 'Every week' : (attending ? starRow(5) : '')] },
+            foot: [`${one.when} · ${one.where}`, one.recurring ? 'Every week' : (attending ? 'Going' : '')] },
           badge(one.title),
           body(one.blurb),
           one.recurring ? null : actions(

@@ -4,7 +4,7 @@
 // size; the rest are rows. What you have finished sits at the bottom as three
 // counts — counts, not scores.
 
-import { h, card, badge, display, title, body, small, starRow, figure,
+import { h, card, badge, display, title, body, small, figure,
          act, actions, go, rows, row, section, thread, rise, note } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -29,9 +29,8 @@ export default async function growScreen(ctx) {
   // ── The featured path ───────────────────────────────────────────────────
   if (featured) {
     const next = featured.sessions.find((s) => !progress.isDone('session', `${featured.path.id}:${s.id}`)) || featured.sessions[0];
-    cards.push(card({ tone: featured.path.tone, tall: true, className: 'full', symbol: featured.path.symbol,
-        foot: [`${featured.where.total} sessions · ${featured.path.minutes}`,
-               starRow(Math.max(1, Math.round((featured.where.percent / 100) * 5)))] },
+    cards.push(card({ solid: true, tall: true, className: 'full', symbol: featured.path.symbol,
+        foot: `${featured.where.total} sessions · ${featured.path.minutes}` },
       h('div', {},
         badge(featured.path.kicker),
         h('div', { style: 'margin-top:1rem' }, display(featured.path.title)),

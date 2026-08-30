@@ -5,7 +5,7 @@
 // has been five minutes; it advances nothing on its own, and no step is taken
 // from the reader before they are done with it.
 
-import { h, card, badge, display, title, body, small, reference, starRow,
+import { h, card, badge, display, title, body, small, reference,
          act, actions, thread, rise, note, toast, moment, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -68,7 +68,7 @@ export default async function guideScreen(ctx) {
     const input = h('textarea', { placeholder: 'Anything you want to keep from that? (optional)',
       'aria-label': 'A reflection' });
     swap(el,
-      card({ tone: guide.tone, className: 'full', symbol: 'star', foot: ['Amen', starRow(5)] },
+      card({ tone: guide.tone, className: 'full', symbol: 'star', foot: ['Amen'] },
         badge('Amen'),
         h('div', {}, display('That was prayer.'),
           h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:28ch',

@@ -7,7 +7,7 @@
 // Nothing here leaves the device, and the screen says so where it matters
 // rather than in a policy nobody opens.
 
-import { h, card, badge, display, title, body, small, starRow, tag, figure,
+import { h, card, badge, display, title, body, small, tag, figure,
          act, actions, go, rows, row, section, rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
@@ -20,8 +20,8 @@ export default async function prayScreen(ctx) {
   const today = rotation.pick(guides, { offset: 3 });
 
   // ── Take a moment ───────────────────────────────────────────────────────
-  cards.push(card({ tone: 'rose', tall: true, className: 'full', symbol: today.symbol,
-      foot: [`Today · ${today.title}`, starRow(5)] },
+  cards.push(card({ solid: true, tall: true, className: 'full', symbol: today.symbol,
+      foot: `Today · ${today.title}` },
     h('div', {},
       badge('Pray'),
       h('div', { style: 'margin-top:1rem' }, display('Take a moment.')),
@@ -82,7 +82,7 @@ export default async function prayScreen(ctx) {
   const answered = prayers.answered();
   if (answered.length) {
     cards.push(card({ tone: 'sunshine', className: 'full',
-        foot: [`${answered.length} answered`, starRow(5)] },
+        foot: [`${answered.length} answered`] },
       badge('Answered'),
       rows({}, ...answered.slice(0, 8).map((item) => h('div', { class: 'row' },
         h('i', { class: 'stem', dataset: { accent: toneOf(item.category) } }),

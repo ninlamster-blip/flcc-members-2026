@@ -4,7 +4,7 @@
 // first and at size, then the three places they were part-way through, then
 // what is happening at church. Nothing on this screen is a dashboard tile.
 
-import { h, card, badge, display, title, lead, body, small, scripture, reference, starRow,
+import { h, card, badge, display, title, lead, body, small, scripture, reference,
          act, actions, go, thread, rows, row, section, swap, rise, waiting, figure } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
@@ -31,12 +31,12 @@ function fill(el, work, { quiet = false, retry } = {}) {
 function fortnight() {
   const days = progress.rhythm(14);
   const on = days.filter((day) => day.on).length;
-  return card({ tone: 'paper', foot: [`${on} of 14 days`, starRow(Math.round((on / 14) * 5))] },
+  return card({ tone: 'paper', foot: `${on} of 14 days` },
     badge('The last fortnight'),
-    h('div', { style: 'display:flex;gap:.35rem;align-items:center;flex-wrap:wrap', 'aria-hidden': 'true' },
+    h('div', { style: 'display:flex;gap:.3rem;align-items:center;flex-wrap:wrap', 'aria-hidden': 'true' },
       ...days.map((day) => h('i', {
-        style: 'width:14px;height:14px;border-radius:5px;border:2px solid var(--ink);'
-          + `background:${day.on ? 'var(--yellow)' : 'var(--white)'}`,
+        style: 'width:9px;height:9px;border-radius:50%;'
+          + `background:${day.on ? 'var(--captain)' : 'var(--ink-12)'}`,
       }))),
     small(on === 0
       ? 'Nothing recorded yet. One day counts.'
@@ -55,11 +55,11 @@ export default async function home(ctx) {
     // The character goes in the header rather than under the verse. Below it,
     // a long psalm pushes the card past a phone screen and leaves the mascot
     // sitting in a field of empty colour.
-    cards.push(card({ tone: moment.tone, className: 'full',
-        foot: [reference(moment.ref, ctx.go), starRow(5)] },
+    cards.push(card({ solid: true, className: 'full',
+        foot: reference(moment.ref, ctx.go) },
       h('div', { class: 'card-head' },
         badge(`Today · ${moment.theme}`),
-        figure(moment.symbol, moment.tone, { size: 'sm' })),
+        figure(moment.symbol, { size: 'sm' })),
       scripture(moment.text),
       actions(
         act('Sit with this', () => ctx.go(`moment/${moment.id}`)),
@@ -103,15 +103,14 @@ export default async function home(ctx) {
             badge(going ? 'Continue' : 'Suggested for you'),
             h('div', { style: 'margin-top:.8rem' }, title(pick.path.title)),
             h('p', { class: 'lead', style: 'margin-top:.3rem', text: next.title })),
-          figure(pick.path.symbol, pick.path.tone, { size: 'sm' })),
+          figure(pick.path.symbol, { size: 'sm' })),
         thread(pick.where.percent),
         actions(act(going ? 'Continue reading' : 'Start the first session',
           () => ctx.go(`session/${pick.path.id}/${next.id}`)))),
       h('div', { class: 'card-foot' },
         h('span', { text: pick.where.finished
           ? `${pick.where.finished} of ${pick.where.total} sessions`
-          : `${pick.where.total} sessions · ${pick.path.minutes}` }),
-        starRow(Math.max(1, Math.round((pick.where.percent / 100) * 5)))));
+          : `${pick.where.total} sessions · ${pick.path.minutes}` })));
   }, { retry: ctx.refresh });
 
   // ── Today's reading ─────────────────────────────────────────────────────
@@ -129,7 +128,7 @@ export default async function home(ctx) {
             h('div', {}, badge('Reading plan'),
               h('div', { style: 'margin-top:.8rem' }, title('Nothing on the go')),
               h('p', { class: 'lead', style: 'margin-top:.3rem', text: 'A chapter a day, and a gospel is read inside three weeks.' })),
-            figure('book', 'paper', { size: 'sm' })),
+            figure('book', { size: 'sm' })),
           actions(act('Choose a plan', () => ctx.go('bible'), { quiet: true }))),
         h('div', { class: 'card-foot' }, h('span', { text: 'Three to choose from' })));
       return;
@@ -142,12 +141,11 @@ export default async function home(ctx) {
           h('div', {}, badge(`Day ${at.day} of ${at.total}`),
             h('div', { style: 'margin-top:.8rem' }, title(at.done ? 'Finished' : at.at.ref)),
             at.at && !at.done ? h('p', { class: 'lead', style: 'margin-top:.3rem', text: at.at.note }) : null),
-          figure(current.symbol, current.tone, { size: 'sm' })),
+          figure(current.symbol, { size: 'sm' })),
         thread(at.percent, 'sunshine'),
         actions(act(at.done ? 'See the plan' : 'Read today', () => ctx.go(`plan/${current.id}`)))),
       h('div', { class: 'card-foot' },
-        h('span', { text: current.title }),
-        starRow(Math.max(1, Math.round((at.percent / 100) * 5)))));
+        h('span', { text: current.title })));
   }, { retry: ctx.refresh });
 
   // ── Take a moment ───────────────────────────────────────────────────────
@@ -164,7 +162,7 @@ export default async function home(ctx) {
           h('div', {}, badge('Take a moment'),
             h('div', { style: 'margin-top:.8rem' }, title(guide.title)),
             h('p', { class: 'lead', style: 'margin-top:.3rem', text: guide.line })),
-          figure(guide.symbol, guide.tone, { size: 'sm' })),
+          figure(guide.symbol, { size: 'sm' })),
         actions(act('Pray now', () => ctx.go(`guide/${guide.id}`)))),
       h('div', { class: 'card-foot' },
         h('span', { text: open ? `${open} on your prayer list` : 'Your prayer list is empty' })));

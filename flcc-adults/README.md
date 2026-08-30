@@ -10,7 +10,7 @@ build.
 ```
 flcc-adults/
   index.html            the shell
-  css/sticker.css       the Sticker design system
+  css/quiet.css         the Quiet design system
   js/core/              storage, profile, progress, content, rotation,
                         scripture, prayers, plan, art, ui
   js/screens/           one module per screen
@@ -61,35 +61,38 @@ and no red number telling an adult they have failed at reading the Bible.
 
 ## The design
 
-`css/sticker.css` — the *Sticker* system: printed thank-you cards, made into an
-app. Warm paper stock (`#FBF8F0`), navy ink (`#2B4C6D`), and six named
-colours: sky `#C3D7EA`, captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`,
-poppy `#EB8861` and sunshine `#EDCE7A`. The kids and teens edition
-(`flcc-next/`) wears the same six, so the two apps read as one family.
+`css/quiet.css` — the *Quiet* system. This app was drawn twice before this
+one. The second attempt gave every surface a 3px navy outline and a hard
+offset shadow, put a row of rating stars on every card and a cartoon face on
+every picture. It was cheerful and it was, unmistakably, an app for children.
 
-Poppy never carries a card. Navy on poppy is about 3.5:1 — fine behind a
-headline, not fine behind a paragraph, and every card here has paragraphs on
-it — so poppy is an accent: stems, tags, stars and characters. A test enforces
-that.
+This one is built the way the interface of a well-run clinic is built:
 
-Every surface is a card, drawn the same way every time: a 3px navy outline, a
-hard offset shadow with no blur, one colour, and a band along the bottom in
-one of the two blues, carrying paper-coloured type. Nothing in the app has a
-soft shadow, a gradient or a glow. Navy is the only ink there is — colour goes
-behind the type, never into it. Headings are set at the heaviest weight the
-family has, because on these cards a heading is a block of colour in its own
-right.
+- **White is the ground.** Cards are white paper on a cool near-white page,
+  lifted by a shadow soft enough to read as paper rather than as a sticker.
+  Colour arrives as a *wash* — a tenth of a colour, enough to tell one card
+  from another and light enough to put a paragraph on.
+- **One loud block per screen.** Exactly one card is allowed to be a full
+  colour, and it is always navy: the Scripture on Home, the invitation on
+  Pray, the featured path on Grow. Everything else stays quiet so that one
+  block means something.
+- **Hairlines, never outlines.** Nothing in the app has a border thicker than
+  1px. Separation comes from a hairline, a soft shadow or plain space.
+- **Type is set, not shouted.** Headings are 600 weight, sentence case, tight.
+  Nothing is 900, nothing is uppercase except a small tracked label.
+- **Pictures are monoline and have no faces.** Twelve thin icons
+  (`js/core/art.js`) drawn on one grid at one stroke weight, each taking the
+  colour of the text beside it. They can be turned off entirely in **You**.
 
-Every card can carry one of twelve little characters (`js/core/art.js`): a
-flat shape, a thick navy outline, and a face. They are drawn on one grid at
-one stroke weight with one face, which is what makes twelve separate drawings
-read as a set. A reader who would rather do without them turns them off in
-**You**, and the cards, colours and layout are unaffected.
+The palette is the same six colours the kids and teens edition uses — sky
+`#C3D7EA`, captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`,
+sunshine `#EDCE7A` — so the two apps stay a family. What differs is how much
+of them appears at once: the kids app is full-bleed colour, this one is a
+wash.
 
 Two typefaces, doing two jobs. The interface is a sans-serif; **Scripture is
 set in a serif**. And the chrome stops at Scripture: the Bible reader is plain
-white paper with no band, no outline inside it and no character. The rest of
-the app is loud so that the text does not have to be.
+white paper with nothing on it at all.
 
 ## Content
 

@@ -10,10 +10,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { SEASONS, FOCUS } from '../js/core/profile.js';
-import { isMascot, MASCOTS } from '../js/core/art.js';
+import { isIcon, ICONS } from '../js/core/art.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
-const css = readFileSync(new URL('../css/sticker.css', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
 
 /** The palette, taken from the stylesheet rather than restated here. */
 const TONES = [...css.matchAll(/^\s{2}--([a-z-]+):\s+#[0-9A-F]{6};/gmi)].map((one) => one[1]);
@@ -24,13 +24,13 @@ const isText = (value, min = 1) => typeof value === 'string' && value.trim().len
 function looksRight(item, where) {
   assert.ok(ACCENTS.includes(item.tone), `${where}: unknown tone "${item.tone}"`);
   if ('symbol' in item) {
-    assert.ok(isMascot(item.symbol),
-      `${where}: no character called "${item.symbol}" — the set is ${MASCOTS.join(', ')}`);
+    assert.ok(isIcon(item.symbol),
+      `${where}: no icon called "${item.symbol}" — the set is ${ICONS.join(', ')}`);
   }
 }
 
 /** The colours a card may wear. Poppy is not one of them — see below. */
-const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'paper'];
+const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'poppy', 'paper'];
 /** Everything a stem, a tag or a character may be. Poppy lives here. */
 const ACCENTS = [...CARD_TONES, 'poppy'];
 /** Which files' tone ends up as a card's own background. */
@@ -39,22 +39,26 @@ const ON_CARDS = ['moments.json', 'paths.json', 'prayer-guides.json', 'reading-p
 /**
  * The six colours, pinned.
  *
- * `flcc-next/` wears this same palette so the two editions read as one family,
- * and the two apps share no code — which means nothing but a test stops one of
- * them drifting a shade at a time. The kids edition has the identical block in
- * its own suite; changing a colour means changing it in both, and both tests
- * fail until you do.
+ * `flcc-next/` wears the same six so the two editions read as one family, and
+ * the two apps share no code — which means nothing but a test stops one of
+ * them drifting a shade at a time. The kids edition has the matching block in
+ * its own suite.
+ *
+ * The paper each app sits on is deliberately NOT shared. The kids edition is
+ * warm cream because its posters are full-bleed colour; this one is a cooler
+ * near-white because its surfaces are white cards, and a warm ground behind
+ * white paper reads as a stain rather than as a choice.
  */
-test('the shared palette is exactly these six colours on this paper', () => {
-  const expected = {
+test('the six shared colours are exactly these', () => {
+  const shared = {
     sky: '#C3D7EA', captain: '#4173B0', navy: '#2B4C6D',
     rose: '#EABCB5', poppy: '#EB8861', sunshine: '#EDCE7A',
-    paper: '#FBF8F0',
   };
-  for (const [name, hex] of Object.entries(expected)) {
+  for (const [name, hex] of Object.entries(shared)) {
     assert.match(css, new RegExp(`--${name}:\\s*${hex};`, 'i'),
       `--${name} should be ${hex} — and flcc-next/css/next.css must match`);
   }
+  assert.match(css, /--paper:\s*#F6F7F5;/i, 'this app sits on a cool near-white');
   assert.match(css, /--ink:\s*var\(--navy\)/, 'navy is the only ink');
 });
 
@@ -80,7 +84,7 @@ test('poppy is an accent, never a surface with text on it', () => {
         `${name}/${item.id}: "${item.tone}" cannot carry a card — pick one of ${CARD_TONES.join(', ')}`);
     }
   }
-  assert.equal(/\.card\[data-tone="poppy"\]/.test(css), false, 'poppy became a card colour in the stylesheet');
+  assert.ok(css.includes('--poppy-wash:'), 'poppy needs a wash for its rows and notes');
 });
 
 /**
@@ -90,11 +94,17 @@ test('poppy is an accent, never a surface with text on it', () => {
  * band with no colour — a white strip along the bottom of an otherwise
  * finished card. It is exactly the kind of thing that ships.
  */
-test('every card colour has a band underneath it', () => {
+test('every card colour has a wash to be tinted with', () => {
+  // A card is tinted at about a tenth of a colour's strength, never painted in
+  // it: full-strength colour on every surface is what a screen with no
+  // hierarchy looks like. One block per screen is allowed to be solid, and
+  // that block is navy.
   for (const tone of CARD_TONES) {
-    assert.ok(css.includes(`--${tone}-band:`), `--${tone}-band is missing`);
+    if (tone === 'paper') continue;
+    assert.ok(css.includes(`--${tone}-wash:`), `--${tone}-wash is missing`);
     assert.match(css, new RegExp(`\\.card\\[data-tone="${tone}"\\]`), `.card[data-tone="${tone}"] is not styled`);
   }
+  assert.match(css, /\.card\[data-solid\]/, 'the one solid block has no styling');
 });
 
 test('every Scripture moment is complete, and in an adult voice', () => {

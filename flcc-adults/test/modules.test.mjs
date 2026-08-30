@@ -74,27 +74,51 @@ test('every key written anywhere in the app is namespaced', () => {
 });
 
 /**
- * The design system's rules, enforced.
+ * The design system's rules, enforced — and they are the reverse of what this
+ * app enforced a version ago.
  *
- * Every surface in this app is a card with a navy outline and a hard shadow.
- * The two ways that decays are a surface built by hand out of a bare div, and
- * a soft shadow creeping in from muscle memory — so both are checked.
+ * It was drawn as a stack of stickers: 3px outlines, hard offset shadows, star
+ * ratings and cartoon faces. It read, accurately, as an app for children. The
+ * hard shadow and the thick border are the two devices that did most of that,
+ * so both are now failures rather than requirements.
  */
-test('nothing is drawn with a soft shadow or a colour outside the palette', () => {
-  const css = readFileSync(new URL('../css/sticker.css', import.meta.url), 'utf8');
+test('nothing is drawn with a hard offset shadow', () => {
+  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
   const shadows = [...css.matchAll(/box-shadow:\s*([^;]+);/g)].map(([, value]) => value.trim());
   for (const shadow of shadows) {
-    if (shadow.startsWith('inset') || shadow === 'none' || shadow.includes('var(--drop')) continue;
-    // A hard sticker shadow is "<x> <y> 0 <colour>" — a third length is a blur.
-    assert.match(shadow, /^-?[\d.]+px -?[\d.]+px 0 /, `soft shadow in the stylesheet: ${shadow}`);
+    if (shadow.startsWith('inset') || shadow === 'none' || shadow.includes('var(--lift')) continue;
+    // "<x>px <y>px 0 <colour>" — a zero blur radius is the sticker shadow.
+    assert.equal(/^-?[\d.]+px -?[\d.]+px 0(px)? [^,]+$/.test(shadow), false,
+      `hard offset shadow is back in the stylesheet: ${shadow}`);
   }
-  assert.match(css, /--drop:\s*[\d]+px [\d]+px 0 var\(--ink\)/, 'the hard shadow token is gone');
+  assert.match(css, /--lift:\s*[^;]*rgba/, 'the soft lift token is gone');
 });
 
-test('the characters can be turned off everywhere at once', () => {
-  // figure() checks the setting itself. A screen that builds a mascot straight
-  // from art.js would ignore that, and turning the characters off in You would
-  // clear some screens and not others.
+test('nothing is drawn with a thick outline', () => {
+  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
+  const widths = [
+    // Only real borders — `border-radius` is a length too, and a 20px radius
+    // is the point of this design rather than a violation of it.
+    ...[...css.matchAll(/border(?:-(?:top|right|bottom|left))?:\s*([\d.]+)px/g)].map(([, w]) => Number(w)),
+    ...[...css.matchAll(/box-shadow:\s*inset 0 0 0 ([\d.]+)px/g)].map(([, w]) => Number(w)),
+  ];
+  for (const width of widths) {
+    assert.ok(width <= 2, `a ${width}px border — this system separates with hairlines`);
+  }
+});
+
+test('headings are set, not shouted', () => {
+  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
+  const weights = [...css.matchAll(/font-weight:\s*(\d{3})/g)].map(([, w]) => Number(w));
+  assert.ok(weights.length > 0);
+  assert.ok(Math.max(...weights) <= 600, `weight ${Math.max(...weights)} — nothing here is heavier than 600`);
+  assert.equal(/\.display[^{]*\{[^}]*text-transform:\s*uppercase/.test(css), false, 'headings are sentence case');
+});
+
+test('the icons can be turned off everywhere at once', () => {
+  // figure() checks the setting itself. A screen that builds an icon straight
+  // from art.js would ignore that, and turning them off in You would clear
+  // some screens and not others.
   for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
     assert.equal(/from '\.\.\/core\/art\.js'/.test(code(file)), false,
       `${file} imports art.js directly — go through figure() in core/ui.js`);
@@ -111,7 +135,7 @@ test('the characters can be turned off everywhere at once', () => {
  * undefined variable painted itself black. It looked like a design choice.
  */
 test('every colour named in the code exists in the stylesheet', () => {
-  const css = readFileSync(new URL('../css/sticker.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/quiet.css', import.meta.url), 'utf8');
   const defined = new Set([...css.matchAll(/^\s{2}--([a-z-]+):/gm)].map(([, name]) => name));
   const patterns = [
     /\btone:\s*'([a-z-]+)'/g,           // card({ tone: 'sky' })

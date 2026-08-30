@@ -4,7 +4,7 @@
 // question to sit with, one thing to do, and a prayer. An adult with forty
 // spare minutes a week will finish this. An adult with ten will finish it too.
 
-import { h, card, badge, display, title, body, small, scripture, reference, starRow,
+import { h, card, badge, display, title, body, small, scripture, reference,
          act, actions, go, rise, note, toast } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -23,8 +23,8 @@ export default async function sessionScreen(ctx) {
   const next = sessions[index + 1] || null;
   const cards = [];
 
-  cards.push(card({ tone: path.tone, className: 'full', symbol: path.symbol,
-      foot: [reference(session.ref, ctx.go), starRow(5)] },
+  cards.push(card({ solid: true, className: 'full', symbol: path.symbol,
+      foot: reference(session.ref, ctx.go) },
     badge(`${path.title} · ${index + 1} of ${sessions.length}`),
     h('div', {},
       display(session.title),

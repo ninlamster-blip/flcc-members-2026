@@ -7,7 +7,7 @@
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, greeting, firstName, SEASONS, FOCUS } from './core/profile.js';
-import { card, badge, display, lead, title, act, choice, toast, starRow } from './core/ui.js';
+import { card, badge, display, lead, title, act, choice, toast } from './core/ui.js';
 
 const TABS = [
   { name: 'home',    label: 'Home',    icon: 'home' },
@@ -65,7 +65,7 @@ function onboarding() {
   };
 
   const intro = () => card({ tone: 'sunshine', tall: true, className: 'full', symbol: 'sun',
-      foot: [h('span', { text: 'FLCC Church · Kuwait' }), starRow(5)] },
+      foot: [h('span', { text: 'FLCC Church · Kuwait' })] },
     badge('FLCC NEXT'),
     h('div', {},
       display('A place to keep going.'),
