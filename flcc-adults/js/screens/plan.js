@@ -4,7 +4,7 @@
 // done, not the twelfth day since you started. See js/core/plan.js for why
 // that is the single decision that keeps adults reading.
 
-import { h, card, badge, display, title, body, small,
+import { h, block, card, badge, display, title, body, small, nextLine,
          act, actions, go, rows, row, section, thread, rise, note, toast } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
@@ -26,19 +26,20 @@ export default async function planScreen(ctx) {
     ctx.go(found ? `bible/${found.book.n}/${found.chapter}` : 'bible');
   };
 
-  cards.push(card({ tone: current.tone, className: 'full', symbol: current.symbol,
-      foot: active ? (at.done ? `Finished · all ${at.total} days` : `Day ${at.day} of ${at.total}`) : `${current.days.length} days` },
+  cards.push(block({ className: 'full' },
     badge(current.kicker),
-    h('div', {},
-      display(current.title),
-      h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:30ch', text: current.blurb })),
-    active ? thread(at.percent, 'sunshine') : null,
+    display(current.title),
+    h('p', { class: 'lead', text: current.blurb }),
+    active ? thread(at.percent) : null,
+    h('p', { class: 'cite', text: active
+      ? (at.done ? `Finished · all ${at.total} days` : `Day ${at.day} of ${at.total}`)
+      : `${current.days.length} days` }),
     active ? null : actions(act('Start this plan', () => {
       plan.start(current.id); toast('Started. It is on your Home screen.'); ctx.refresh();
     }))));
 
   if (active && !at.done && at.at) {
-    cards.push(card({ tone: 'paper', className: 'full', symbol: 'book', figureSize: 'sm',
+    cards.push(card({ tone: 'paper', className: 'full', symbol: 'book',
         foot: `Day ${at.day} of ${at.total}` },
       badge(`Day ${at.day}`),
       title(at.at.ref),
@@ -53,8 +54,7 @@ export default async function planScreen(ctx) {
   }
 
   if (active && at.done) {
-    cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'star', figureSize: 'sm',
-        foot: ['The whole plan'] },
+    cards.push(card({ tone: 'paper', className: 'full', symbol: 'star', foot: 'The whole plan' },
       badge('Finished'),
       title('You read the whole thing.'),
       body('It stays here if you want to go through it again — the days are marked, and starting another plan does not erase them.'),
@@ -62,7 +62,7 @@ export default async function planScreen(ctx) {
   }
 
   cards.push(section({ className: 'full' },
-    badge(`Every day · ${current.days.length} readings`),
+    nextLine(`Every day · ${current.days.length} readings`),
     rows({}, ...current.days.map((day, i) => row({
       number: i + 1,
       title: day.ref,

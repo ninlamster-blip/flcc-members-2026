@@ -1,6 +1,6 @@
 // One learning path, and everything in it.
 
-import { h, card, badge, display, title, body, small,
+import { h, block, card, badge, display, title, body, small, nextLine,
          act, actions, go, rows, row, section, thread, rise, note } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -15,18 +15,19 @@ export default async function pathScreen(ctx) {
   const next = sessions.find((one) => !progress.isDone('session', `${id}:${one.id}`)) || sessions[0];
   const cards = [];
 
-  cards.push(card({ tone: path.tone, className: 'full', symbol: path.symbol,
-      foot: where.finished ? `${where.finished} of ${where.total} finished` : `${where.total} sessions · ${path.minutes}` },
+  cards.push(block({ className: 'full' },
     badge(path.kicker),
-    h('div', {},
-      display(path.title),
-      h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:30ch', text: path.blurb })),
-    where.finished ? thread(where.percent, 'sunshine') : null,
+    display(path.title),
+    h('p', { class: 'lead', text: path.blurb }),
+    where.finished ? thread(where.percent) : null,
+    h('p', { class: 'cite', text: where.finished
+      ? `${where.finished} of ${where.total} finished`
+      : `${where.total} sessions · ${path.minutes}` }),
     next ? actions(act(where.finished ? 'Continue' : 'Start the first session',
       () => ctx.go(`session/${path.id}/${next.id}`))) : null));
 
   cards.push(section({ className: 'full' },
-    badge('Sessions'),
+    nextLine('Sessions'),
     rows({}, ...sessions.map((one, i) => row({
       number: i + 1,
       title: one.title,
@@ -36,8 +37,7 @@ export default async function pathScreen(ctx) {
     })))));
 
   if (where.done) {
-    cards.push(card({ tone: 'sunshine', className: 'full', symbol: 'star', figureSize: 'sm',
-        foot: ['All done'] },
+    cards.push(card({ tone: 'paper', className: 'full', symbol: 'star', foot: 'All done' },
       badge('Finished'),
       title('That is the whole path.'),
       body('Take one thing from it into this week. A path read and not acted on is a path read.'),

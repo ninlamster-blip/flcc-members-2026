@@ -10,7 +10,7 @@ export function parse(hash = location.hash) {
   const raw = String(hash || '').replace(/^#\/?/, '');
   const [path, query = ''] = raw.split('?');
   const parts = path.split('/').filter(Boolean);
-  return { name: parts[0] || 'home', args: parts.slice(1), params: Object.fromEntries(new URLSearchParams(query)) };
+  return { name: parts[0] || 'today', args: parts.slice(1), params: Object.fromEntries(new URLSearchParams(query)) };
 }
 
 export function go(path, { replace = false } = {}) {
@@ -21,7 +21,7 @@ export function go(path, { replace = false } = {}) {
   return undefined;
 }
 
-export function back(fallback = 'home') {
+export function back(fallback = 'today') {
   if (history.length > 1) history.back();
   else go(fallback, { replace: true });
 }
@@ -29,7 +29,7 @@ export function back(fallback = 'home') {
 async function handle() {
   const route = parse();
   current = route;
-  const loader = routes.get(route.name) || routes.get('home');
+  const loader = routes.get(route.name) || routes.get('today');
   const module = await loader();
   if (current !== route) return;
   onNavigate(route, module);

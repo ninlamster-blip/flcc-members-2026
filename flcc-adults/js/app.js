@@ -3,32 +3,40 @@
 // Five destinations, a header that stays out of the way, and screens loaded on
 // demand. The shell owns the frame and nothing else: a screen returns
 // `{ title, el }` and never touches the header or the tab bar.
+//
+// The header is deliberately thin. Every root screen sets its own title at
+// display size inside the page — which is what an editorial layout does and
+// what a chrome bar with a centred word in it does not — so up here there is
+// room for the date, and one round control, and nothing else.
 
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
-import { getUser, saveUser, greeting, firstName, SEASONS, FOCUS } from './core/profile.js';
-import { card, badge, display, lead, title, act, choice, toast } from './core/ui.js';
+import { getUser, saveUser, SEASONS, FOCUS } from './core/profile.js';
+import { block, card, badge, display, lead, title, act, choice, toast } from './core/ui.js';
 
 const TABS = [
-  { name: 'home',    label: 'Home',    icon: 'home' },
-  { name: 'bible',   label: 'Bible',   icon: 'bible' },
-  { name: 'pray',    label: 'Pray',    icon: 'pray' },
-  { name: 'grow',    label: 'Grow',    icon: 'grow' },
-  { name: 'connect', label: 'Connect', icon: 'connect' },
+  { name: 'today',     label: 'Today',     icon: 'today' },
+  { name: 'explore',   label: 'Explore',   icon: 'explore' },
+  { name: 'community', label: 'Community', icon: 'community' },
+  { name: 'watch',     label: 'Watch',     icon: 'watch' },
+  { name: 'you',       label: 'You',       icon: 'you' },
 ];
 
 const SCREENS = {
-  home:    () => import('./screens/home.js'),
-  bible:   () => import('./screens/bible.js'),
-  pray:    () => import('./screens/pray.js'),
-  grow:    () => import('./screens/grow.js'),
-  connect: () => import('./screens/connect.js'),
-  moment:  () => import('./screens/moment.js'),
-  path:    () => import('./screens/path.js'),
-  session: () => import('./screens/session.js'),
-  guide:   () => import('./screens/guide.js'),
-  plan:    () => import('./screens/plan.js'),
-  you:     () => import('./screens/you.js'),
+  today:     () => import('./screens/today.js'),
+  explore:   () => import('./screens/explore.js'),
+  community: () => import('./screens/community.js'),
+  watch:     () => import('./screens/watch.js'),
+  you:       () => import('./screens/you.js'),
+  bible:     () => import('./screens/bible.js'),
+  pray:      () => import('./screens/pray.js'),
+  grow:      () => import('./screens/grow.js'),
+  moment:    () => import('./screens/moment.js'),
+  message:   () => import('./screens/message.js'),
+  path:      () => import('./screens/path.js'),
+  session:   () => import('./screens/session.js'),
+  guide:     () => import('./screens/guide.js'),
+  plan:      () => import('./screens/plan.js'),
 };
 for (const [name, loader] of Object.entries(SCREENS)) router.define(name, loader);
 
@@ -37,7 +45,29 @@ const screenEl = document.getElementById('screen');
 const tabsEl = document.getElementById('tabs');
 
 const ROOTS = new Set(TABS.map((tab) => tab.name));
-const UNDER = { moment: 'home', path: 'grow', session: 'grow', guide: 'pray', plan: 'bible', you: 'connect' };
+
+/**
+ * Which tab a screen belongs under.
+ *
+ * Everything reachable from Explore stays lit as Explore, so a member three
+ * taps into a learning path can still see where they are in the app. A screen
+ * missing from here simply lights no tab, which is better than lighting the
+ * wrong one.
+ */
+const UNDER = {
+  moment:  'today',
+  message: 'watch',
+  bible:   'explore',
+  pray:    'explore',
+  grow:    'explore',
+  path:    'explore',
+  session: 'explore',
+  guide:   'explore',
+  plan:    'explore',
+};
+
+const longDate = () => new Date().toLocaleDateString(undefined,
+  { weekday: 'long', day: 'numeric', month: 'long' });
 
 // ── Onboarding ─────────────────────────────────────────────────────────────
 //
@@ -60,18 +90,19 @@ function onboarding() {
 
   const finish = () => {
     saveUser({ name: draft.name, season: draft.season, focus: draft.focus });
-    router.go('home', { replace: true });
+    router.go('today', { replace: true });
     boot();
   };
 
-  const intro = () => card({ tone: 'sunshine', tall: true, className: 'full', symbol: 'sun',
-      foot: [h('span', { text: 'FLCC Church · Kuwait' })] },
-    badge('FLCC NEXT'),
+  const intro = () => block({ tall: true, className: 'full' },
     h('div', {},
-      display('A place to keep going.'),
-      h('p', { class: 'lead', style: 'margin-top:1rem;max-width:26ch',
+      badge('FLCC NEXT'),
+      h('div', { style: 'margin-top:1rem' }, display('Faith for real life.')),
+      h('p', { class: 'lead', style: 'margin-top:1rem',
         text: 'Scripture, prayer and teaching for the adults of FLCC — built for a life that is already full.' })),
-    h('div', {}, act('Begin', next)));
+    h('div', {},
+      act('Begin', next),
+      h('p', { class: 'cite', style: 'margin-top:1.2rem', text: 'FLCC Church · Kuwait' })));
 
   const askName = () => {
     const input = h('input', { type: 'text', id: 'ob-name', maxlength: '40', autocomplete: 'name', placeholder: 'Your name' });
@@ -84,15 +115,14 @@ function onboarding() {
       next();
     } }, input, h('div', { style: 'margin-top:1.6rem' }, act('Next', null, { type: 'submit' })));
 
-    const el = card({ tone: 'sky', tall: true, className: 'full', symbol: 'blob', figureSize: 'sm',
-        foot: 'One of three' },
+    const el = card({ tone: 'paper', tall: true, className: 'full', foot: 'One of three' },
       badge('Your name'),
       h('div', {}, display('What should we call you?'), h('div', { style: 'margin-top:1.4rem' }, form), warn));
     setTimeout(() => input.focus(), 60);
     return el;
   };
 
-  const askSeason = () => card({ tone: 'sky', className: 'full', foot: 'Two of three' },
+  const askSeason = () => card({ tone: 'paper', className: 'full', foot: 'Two of three' },
     badge('Where you are'),
     h('div', {},
       display('Where are you, honestly?'),
@@ -111,7 +141,7 @@ function onboarding() {
         return button;
       }));
 
-    return card({ tone: 'rose', className: 'full', foot: 'Three of three' },
+    return card({ tone: 'paper', className: 'full', foot: 'Three of three' },
       badge('What you came for'),
       h('div', {}, display('What did you come for?'), list),
       h('div', {}, act('Finish', () => { draft.focus = [...chosen]; next(); })));
@@ -135,20 +165,28 @@ function renderTabs(active) {
 
 function renderHead(view, route) {
   clear(headEl);
-  if (route.name === 'home') {
+  if (ROOTS.has(route.name)) {
+    // Every root screen sets its own name inside the page, at display size, so
+    // the header carries the date, one control, and nothing else. An earlier
+    // draft repeated the greeting up here as well, which said the same thing
+    // twice within forty pixels of itself.
     headEl.append(
-      h('p', { class: 'greet' }, `${greeting()}, `, h('b', { text: firstName() })),
-      h('button', { class: 'badge', type: 'button', style: 'cursor:pointer',
-        onclick: () => router.go('you'), text: 'You' }));
-  } else if (ROOTS.has(route.name)) {
-    headEl.append(h('p', { class: 'greet' }, h('b', { text: view.title || '' })), h('span'));
+      h('p', { class: 'day', text: longDate() }),
+      route.name === 'you' ? h('span') : profileButton());
   } else {
     headEl.append(
       h('button', { class: 'back', type: 'button', 'aria-label': 'Back',
-        onclick: () => router.back() }, '←'),
-      h('p', { class: 'label', text: view.title || '' }));
+        onclick: () => router.back('today') }, '←'),
+      h('p', { class: 'page-name', text: view.title || '' }));
   }
   headEl.hidden = false;
+}
+
+function profileButton() {
+  const button = h('button', { class: 'head-btn', type: 'button', 'aria-label': 'You',
+    onclick: () => router.go('you') });
+  button.appendChild(navIcon('you'));
+  return button;
 }
 
 async function show(route, module) {
@@ -166,7 +204,7 @@ async function show(route, module) {
   try {
     view = await module.default(context);
   } catch (error) {
-    view = { title: 'Something broke', el: card({ tone: 'rose', className: 'full', symbol: 'cloud', figureSize: 'sm' },
+    view = { title: 'Something broke', el: card({ tone: 'paper', className: 'full', symbol: 'cloud' },
       badge('Sorry'), title('That screen did not open'),
       h('p', { class: 'note', 'data-level': 'warn', text: String((error && error.message) || error) })) };
   }

@@ -21,23 +21,26 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v4';
+const VERSION = 'adults-v5';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [
-  './', './index.html', './manifest.webmanifest', './css/layers.css', './icons/icon.svg',
+  './', './index.html', './manifest.webmanifest', './css/next.css', './icons/icon.svg',
   './js/app.js',
   './js/core/dom.js', './js/core/ui.js', './js/core/art.js', './js/core/storage.js',
   './js/core/profile.js', './js/core/progress.js', './js/core/router.js',
   './js/core/content.js', './js/core/rotation.js', './js/core/scripture.js',
-  './js/core/prayers.js', './js/core/plan.js',
-  './js/screens/home.js', './js/screens/bible.js', './js/screens/pray.js',
-  './js/screens/grow.js', './js/screens/connect.js', './js/screens/moment.js',
+  './js/core/prayers.js', './js/core/plan.js', './js/core/agenda.js',
+  './js/screens/today.js', './js/screens/explore.js', './js/screens/community.js',
+  './js/screens/watch.js', './js/screens/you.js',
+  './js/screens/bible.js', './js/screens/pray.js', './js/screens/grow.js',
+  './js/screens/moment.js', './js/screens/message.js',
   './js/screens/path.js', './js/screens/session.js', './js/screens/guide.js',
-  './js/screens/plan.js', './js/screens/you.js',
+  './js/screens/plan.js',
   './content/moments.json', './content/paths.json', './content/prayer-guides.json',
   './content/prayer-categories.json', './content/reading-plans.json',
   './content/updates.json', './content/events.json', './content/ministries.json',
+  './content/messages.json',
   './content/paths/foundations.json', './content/paths/bible-deep-dive.json',
   './content/paths/faith-at-work.json', './content/paths/marriage-and-relationships.json',
   // The book list, but not the books. 66 books × 3 translations is far too much

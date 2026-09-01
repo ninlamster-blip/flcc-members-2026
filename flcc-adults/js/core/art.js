@@ -1,7 +1,12 @@
 // The icons.
 //
 // Monoline drawings: one weight, no fill, no outline around a fill, and — the
-// point of this file — no faces. An earlier version of this app gave every
+// point of this file — no faces.
+//
+// In the NEXT system an icon labels a thing; it is never the thing. They are
+// drawn small, they take the colour of the text beside them, and no screen is
+// built out of them — the four-tile icon grid this app used to open on is
+// exactly what `.eblock` in the stylesheet replaced. An earlier version of this app gave every
 // picture two eyes and a smile, which is charming at eight years old and
 // patronising at forty. What an adult needs from a picture beside a heading is
 // that it be quiet and legible, so these are drawn the way the signage in a
@@ -75,89 +80,3 @@ export function hash(text) {
 export function pick(seed) {
   return ICONS[hash(seed) % ICONS.length];
 }
-
-// ── The layered bands ──────────────────────────────────────────────────────
-//
-// A list in this app is a stack of colour, and what separates one layer from
-// the next is a curve rather than a line. Every curve is a pure function of a
-// seed, so the same list draws the same edges on every phone, every time — a
-// divider that reshuffles on reload is noise, not design.
-
-/** A Lehmer generator, scattered first so neighbouring seeds are unrelated. */
-function stream(seed) {
-  let value = (Math.abs(Math.trunc(seed)) % 2147483646) + 1;
-  value ^= value << 13; value >>>= 0;
-  value ^= value >>> 17;
-  value ^= value << 5;  value >>>= 0;
-  value = (value % 2147483646) + 1;
-  return () => (value = (value * 48271) % 2147483647) / 2147483647;
-}
-
-const round = (n) => Math.round(n * 10) / 10;
-
-/**
- * The wavy top edge of a band.
- *
- * Drawn on a 100 × 20 box and stretched, so it scales to any width without
- * the curve getting steeper. The path closes downward, which means the SVG
- * can simply be laid over the top of its own band and filled with the band's
- * colour — the wave then belongs to the layer below it, exactly as it does
- * when paper is torn.
- */
-export function wave(seed) {
-  const next = stream(hash(`${seed}|wave`));
-  const dip = () => round(3 + next() * 9);
-  const a = dip(), b = dip(), c = dip();
-  const d = `M0 ${round(8 + next() * 4)}`
-    + `C${25} ${a}, ${40} ${round(20 - b)}, ${58} ${round(10 + next() * 4)}`
-    + `S${82} ${round(2 + c / 2)}, 100 ${round(5 + next() * 5)}`
-    + 'L100 20 L0 20 Z';
-  return `<svg class="wave" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">`
-    + `<path d="${d}" fill="currentColor"/></svg>`;
-}
-
-/**
- * The hand-drawn textures.
- *
- * The reference this app is drawn from names texture as a first-class choice,
- * alongside colour, and it is what stops a flat colour band from looking like
- * a swatch. Each is a handful of strokes, seeded, and always set at low
- * opacity in a corner where no type goes.
- */
-export const TEXTURES = ['hatch', 'dashes', 'dots', 'comb'];
-
-export function texture(name, seed = name) {
-  const next = stream(hash(`${seed}|${name}`));
-  const marks = [];
-  if (name === 'hatch') {
-    for (let i = 0; i < 7; i++) {
-      const y = 8 + i * 12 + next() * 3;
-      marks.push(`<path d="M6 ${round(y)}q22 ${round(-6 - next() * 6)} 44 0t44 0" fill="none" stroke-width="4"/>`);
-    }
-  } else if (name === 'dashes') {
-    for (let i = 0; i < 26; i++) {
-      const x = 8 + (i % 5) * 21 + next() * 6;
-      const y = 8 + Math.floor(i / 5) * 18 + next() * 6;
-      marks.push(`<path d="M${round(x)} ${round(y)}l0 ${round(7 + next() * 5)}" fill="none" stroke-width="5" stroke-linecap="round"/>`);
-    }
-  } else if (name === 'dots') {
-    for (let i = 0; i < 30; i++) {
-      const x = 8 + (i % 6) * 17 + next() * 5;
-      const y = 8 + Math.floor(i / 6) * 19 + next() * 5;
-      marks.push(`<circle cx="${round(x)}" cy="${round(y)}" r="${round(2 + next() * 1.6)}" stroke="none"/>`);
-    }
-  } else {
-    for (let i = 0; i < 9; i++) {
-      const x = 8 + i * 11 + next() * 2;
-      marks.push(`<path d="M${round(x)} 6q${round(4 + next() * 4)} 22 0 44" fill="none" stroke-width="4" stroke-linecap="round"/>`);
-    }
-  }
-  return `<svg class="texture" viewBox="0 0 110 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true"`
-    + ` fill="currentColor" stroke="currentColor">${marks.join('')}</svg>`;
-}
-
-export const isTexture = (name) => TEXTURES.includes(name);
-
-/** A texture for a band that did not name one. Stable, never random. */
-export const pickTexture = (seed) => TEXTURES[hash(`${seed}|t`) % TEXTURES.length];
-

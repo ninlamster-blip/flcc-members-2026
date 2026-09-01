@@ -4,7 +4,7 @@
 // question, one prayer, one practice — each on its own card, because that is
 // how this app separates one thought from the next.
 
-import { h, card, badge, title, body, small, scripture, reference,
+import { h, block, card, badge, title, body, small, scripture, reference, doneMark,
          act, actions, rows, rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
@@ -19,29 +19,31 @@ export default async function momentScreen(ctx) {
 
   const cards = [];
 
-  cards.push(card({ solid: true, className: 'full', symbol: moment.symbol,
-      foot: reference(`${moment.ref} · ${moment.translation}`, ctx.go) },
+  cards.push(block({ className: 'full' },
     badge(moment.theme),
-    scripture(moment.text, { flow: true })));
+    scripture(moment.text),
+    reference(`${moment.ref} · ${moment.translation}`, ctx.go)));
 
-  cards.push(card({ tone: 'paper' }, badge('Reflection'), body(moment.reflection)));
+  cards.push(card({ tone: 'paper', className: 'full' }, badge('Reflection'), body(moment.reflection)));
 
-  cards.push(card({ tone: 'paper', symbol: 'blob', figureSize: 'sm' },
+  cards.push(card({ tone: 'paper', className: 'full', symbol: 'blob' },
     badge('Sit with this'),
     h('p', { class: 'scripture scripture--flow', text: moment.question })));
 
-  cards.push(card({ tone: 'paper' }, badge('Pray'), body(moment.prayer)));
+  cards.push(card({ tone: 'paper', className: 'full' }, badge('Pray'), body(moment.prayer)));
 
-  cards.push(card({ tone: 'paper' }, badge('Today'), body(moment.practice)));
+  cards.push(card({ tone: 'paper', className: 'full' }, badge('Today'), body(moment.practice)));
 
   // ── Write something ─────────────────────────────────────────────────────
   const input = h('textarea', { placeholder: 'What is this saying to you? One sentence is enough.',
     'aria-label': 'Your reflection' });
   const done = progress.isDone('reflection', moment.id);
 
-  cards.push(card({ tone: 'sky', className: 'full', foot: 'Stays on this device' },
+  const mark = h('div', {});
+  cards.push(card({ tone: 'paper', className: 'full', foot: 'Stays on this device' },
     badge('Your own words'),
     input,
+    mark,
     actions(
       act('Keep this', () => {
         const text = input.value.trim();
@@ -49,13 +51,11 @@ export default async function momentScreen(ctx) {
         prayers.reflect({ text, guide: moment.theme, ref: moment.ref });
         progress.complete('reflection', moment.id);
         input.value = '';
-        toast('Kept. It is in Pray, under Reflections.');
-        ctx.refresh();
+        swap(mark, doneMark('Kept · it is in Pray, under reflections'));
       }),
       done ? null : act('Mark as read', () => {
         progress.complete('reflection', moment.id);
-        toast('Marked.');
-        ctx.refresh();
+        swap(mark, doneMark('Marked as read'));
       }, { quiet: true }))));
 
   const el = h('div', { style: 'display:contents' }, ...cards);
