@@ -1,816 +1,420 @@
 /* =============================================================================
    FLCC NEXT — ADULTS
-   The NEXT system
+   The Poster system
 
-   FAITH FOR REAL LIFE.
+   Faith for real life.
 
-   This is the app's fifth design and the first one that is not built out of
-   coloured rectangles. The four before it each tried to carry the screen with
-   surface — stickers, then bands, then waves and textures — and each of them
-   ended up as a dashboard of tiles wearing a different coat.
+   This is the same design system as the kids and teens edition at
+   `flcc-next/`. Not a cousin of it, not "inspired by" it — the same system:
+   the same cream paper, the same navy ink, the same 3px outline, the same
+   flat illustrations, the same enormous headlines, the same pills and tracks.
+   Two editions of one app, and a member who has seen a child's phone should
+   recognise this instantly as the grown-up half of the same thing.
 
-   This one gives the work to type and to space, and keeps colour for the few
-   places colour actually means something.
+   THE RULES, which are the kids edition's rules verbatim:
 
-   THE FIVE RULES
+   · The interface is a stack of editorial posters. Each poster takes ONE
+     colour, sets its headline enormous, carries one flat illustration drawn
+     in navy outline, and offers one action.
+   · One dominant colour per poster. Never the whole palette on one screen.
+   · Type carries the hierarchy. Labels are tiny; headlines are huge; there is
+     nothing in between pretending to be both.
+   · Navy ink, navy outlines, flat colour. No gradients, no glass, no glow,
+     no drop shadows.
+   · Headings are set at the heaviest weight the family has. A headline here
+     is a block of colour in its own right.
+   · Space is the other half of the design. Posters breathe or they are wrong.
 
-   1. 80 / 15 / 5. Eighty per cent of every screen is warm paper and ink.
-      Fifteen is the one deep ink block a screen is allowed. Five is gold, and
-      gold is a signal — a label, a rule, an arrow, the tab you are on — never
-      a decoration.
-   2. TYPE DOES THE WORK. A heading is large enough that it does not need a box
-      around it. If something needs a border to be found, it is in the wrong
-      place on the page.
-   3. ONE MAIN ACTION PER SCREEN. One filled button. Everything else is a text
-      action with an arrow after it.
-   4. THE LINE POINTS FORWARD. The signature of this system is a hairline that
-      runs out of a heading and ends in an arrowhead — NEXT UP ─────→. Faith,
-      growth, purpose, next. The ARROWHEAD is allowed in exactly two places:
-      a section heading (`.next-line`) and one of the four Explore blocks
-      (`.eblock-go`). Every other text action gets the rule without the head.
-      Put the arrowhead on everything and it stops being a signature and
-      becomes a texture.
-   5. THE CHROME STOPS AT SCRIPTURE. The Bible reader is white paper and serif
-      type. No block, no rule, no gold. The app is quiet so that Scripture can
-      be the loudest thing in it.
+   WHAT IS DIFFERENT, AND IT IS NOT THE LOOK
 
-   Four rules survive from the version of this app that read as an app for
-   children, and all four are still enforced by test/modules.test.mjs:
-   no border over 1px · no shadow with a zero blur radius ·
-   nothing heavier than 600 · no face on any drawing.
+   The adult edition differs in what it *says*, not in how it is drawn: one
+   adult register in the writing, no score, no streak, and prayers that never
+   leave the device. Where this stylesheet adds anything the kids edition does
+   not have — the sheet a prayer is written on, the tag on an event — it is
+   drawn in the same language rather than in a second one.
+
+   NOTE FOR ANYONE EDITING EITHER APP: these two stylesheets are deliberate
+   duplicates, because the two apps share no code by design. A change to the
+   poster language belongs in BOTH files or in neither, and
+   `test/design.test.mjs` in this app checks the pieces that must not drift.
    ========================================================================== */
 
 :root {
-  color-scheme: light;
-
-  /* ── The ground ────────────────────────────────────────────────────────
-     Warm editorial white rather than #FFF. Pure white behind white cards is
-     invisible; this reads as paper, and the white surfaces sit on top of it. */
-  --paper:  #F8F8F6;
-  --white:  #FFFFFF;
-  --ink:    #151515;
-  --ink-2:  #6E6E73;
-  --line:   #E8E8E4;
-
-  /* The one deep block a screen is allowed. 15%. */
-  --block:  #141414;
-
-  /* ── The accent. 5%, and no more than that. ────────────────────────────
-     Two weights of the same gold, because one cannot do both jobs: --gold is
-     the brand mark and is read on the deep block (5.8:1) or as a fill;
-     --gold-ink is the same colour taken down until it carries small text on
-     paper (5.3:1) and white text on itself (5.6:1). */
-  --gold:      #B4884A;
-  --gold-ink:  #8A5F1E;
-  --gold-wash: rgba(180, 136, 74, .10);
-
-  /* ── The family colours ────────────────────────────────────────────────
-     The six shared with the kids and teens edition. They are pinned by a test
-     in each app so the two never drift apart — but in this system they are
-     stems and dots, never surfaces. A screen painted in six colours has no
-     hierarchy, and hierarchy is the whole design. */
+  /* ── The palette ───────────────────────────────────────────────────────
+     The same six colours as the kids and teens edition. Poppy is an accent
+     only: navy on poppy is about 3.5:1, which is fine behind a headline and
+     not fine behind a paragraph, and a poster is mostly paragraphs. */
+  --sunshine: #EDCE7A;
+  --rose:     #EABCB5;
   --sky:      #C3D7EA;
   --captain:  #4173B0;
-  --navy:     #2B4C6D;
-  --rose:     #EABCB5;
   --poppy:    #EB8861;
-  --sunshine: #EDCE7A;
+  --paper:    #FBF8F0;
+  --ink:      #2B4C6D;   /* navy — every letter and every outline */
 
-  /* A wash is a tenth of a colour: enough to tell two rows apart, never
-     enough to become a coloured card. */
-  --sky-wash:      rgba(195, 215, 234, .30);
-  --captain-wash:  rgba(65, 115, 176, .09);
-  --navy-wash:     rgba(43, 76, 109, .08);
-  --rose-wash:     rgba(234, 188, 181, .28);
-  --poppy-wash:    rgba(235, 136, 97, .13);
-  --sunshine-wash: rgba(237, 206, 122, .24);
-  --paper-wash:    transparent;
+  /* Ink at reduced weight — for supporting text ON a colour block. Never a
+     grey: it is always the same navy, held back. */
+  --ink-70: rgba(43, 76, 109, .74);
+  --ink-55: rgba(43, 76, 109, .58);
+  --ink-12: rgba(43, 76, 109, .16);
 
-  --ink-4:  rgba(21, 21, 21, .04);
-  --ink-8:  rgba(21, 21, 21, .08);
-  --ink-12: rgba(21, 21, 21, .12);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Every shadow in this file is blurred. A shadow with no blur is a sticker,
-     and the sticker is what made this app look like a toy. */
-  --lift: 0 1px 2px rgba(21, 21, 21, .04), 0 8px 24px rgba(21, 21, 21, .05);
-  --lift-block: 0 12px 40px rgba(20, 20, 20, .18);
+  /* ── Type. The jumps are deliberate and large. ─────────────────────────── */
+  --label:    .68rem;   /* uppercase, tracked, 800 */
+  --body:     1rem;
+  --lead:     1.15rem;
+  --headline: clamp(1.9rem, 8vw, 2.6rem);
+  --display:  clamp(2.4rem, 12vw, 3.6rem);
+  --numeral:  clamp(3.5rem, 20vw, 6rem);
 
-  /* ── Spacing. 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 ──────────────────── */
-  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
-  --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+  --pad: 1.6rem;        /* the inside edge of every poster */
+  --stack: 1rem;        /* the gap between posters */
+  --rhythm: 2.2rem;     /* the vertical beat inside a poster */
 
-  /* Restrained radii. Small things 12, the big block 20. Nothing is a pill
-     except the things that genuinely are (a tag, a dot). */
-  --r-sm: 12px;
-  --r-lg: 20px;
-
-  /* ── Type ──────────────────────────────────────────────────────────────
-     SF on Apple hardware, the platform's own face everywhere else. There is
-     no webfont for the interface at all: a system face renders instantly, at
-     every weight, in every language a member of this church might read, and
-     the one webfont this app loads is spent on Scripture instead. */
-  --ui: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
-        'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --serif: 'Source Serif 4', ui-serif, Georgia, 'Times New Roman', serif;
-
-  --page: 560px;
+  --edge: 3px;          /* the one outline weight, used everywhere */
+  --radius: 10px;       /* the adult register: squarer than kids, like teens */
+  --speed: 220ms;
+  --ease: cubic-bezier(.2, .7, .3, 1);
 }
 
-*, *::before, *::after { box-sizing: border-box; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; background: var(--paper); }
 
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--ui);
-  font-size: 17px;
-  line-height: 1.55;
-  letter-spacing: -0.011em;
+  font-family: var(--font);
+  font-size: var(--body);
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: calc(74px + env(safe-area-inset-bottom));
+  font-synthesis-weight: none;
 }
 
-button, input, textarea, select { font: inherit; color: inherit; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; border: 0; background: none; }
+:focus-visible { outline: var(--edge) solid var(--ink); outline-offset: 3px; }
 
-:focus-visible {
-  outline: 2px solid var(--gold-ink);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus { left: .75rem; top: .75rem; z-index: 90; background: var(--ink); color: var(--paper); padding: .6rem 1rem; }
 
-.skip-link {
-  position: absolute; left: -9999px; top: 0; z-index: 100;
-  background: var(--ink); color: var(--white);
-  padding: var(--s3) var(--s4); border-radius: 0 0 var(--r-sm) 0;
-  text-decoration: none;
-}
-.skip-link:focus { left: 0; }
-
-/* ── The frame ──────────────────────────────────────────────────────────── */
-
-.app-head {
-  position: sticky; top: 0; z-index: 40;
-  display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s4);
-  max-width: var(--page); margin: 0 auto;
-  padding: calc(var(--s5) + env(safe-area-inset-top)) var(--s5) var(--s3);
-  background: linear-gradient(var(--paper) 72%, rgba(248, 248, 246, 0));
-}
-
-/* The date. The only thing in the header on a root screen, and the only place
-   in the app that says what day it is — a member opening this at 6am should
-   not have to work that out from the content. */
-.app-head .day {
-  margin: 0;
-  font-size: 13px; font-weight: 500;
-  color: var(--ink-2);
-  letter-spacing: .01em;
-}
-
-.app-head .page-name {
-  margin: 0;
-  font-size: 15px; font-weight: 600; color: var(--ink);
-  text-transform: uppercase; letter-spacing: .08em;
-}
-
-.app-head .back {
-  background: none; border: 0; padding: var(--s2) var(--s3) var(--s2) 0;
-  font-size: 22px; line-height: 1; color: var(--ink); cursor: pointer;
-}
-
-/* A round, quiet control at the end of the header — the profile, the cast
-   button, the member count. One per screen at most. */
-.head-btn {
-  flex: none;
-  width: 40px; height: 40px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--white); border: 1px solid var(--line);
-  color: var(--ink-2); cursor: pointer;
-  transition: transform .15s ease, color .15s ease;
-}
-.head-btn:active { transform: scale(.94); }
-.head-btn svg { width: 19px; height: 19px; }
-
-.screen {
-  max-width: var(--page); margin: 0 auto;
-  padding: var(--s2) var(--s5) var(--s8);
-  display: flex; flex-direction: column; gap: var(--s6);
-}
-.screen:focus { outline: none; }
-
-/* ── The tab bar ────────────────────────────────────────────────────────
-   Five destinations, thumb-height, and the active one marked with colour and
-   a dot rather than a filled capsule. A capsule under the thumb is the single
-   most generic thing a phone app can do. */
-
-.tabs {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  padding: var(--s2) var(--s2) calc(var(--s2) + env(safe-area-inset-bottom));
-  background: rgba(248, 248, 246, .92);
-  border-top: 1px solid var(--line);
-  backdrop-filter: saturate(180%) blur(12px);
-}
-
-.tab {
-  position: relative;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  min-height: 52px; padding: var(--s2) 2px 6px;
-  background: none; border: 0; cursor: pointer;
-  color: var(--ink-2);
-  font-size: 10px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .07em;
-  transition: color .15s ease;
-}
-.tab svg { width: 23px; height: 23px; }
-.tab[aria-current] { color: var(--gold-ink); }
-.tab[aria-current]::after {
-  content: ''; position: absolute; bottom: 0;
-  width: 4px; height: 4px; border-radius: 50%; background: var(--gold);
-}
-.tab:active svg { transform: scale(.9); }
-.tab svg { transition: transform .15s ease; }
-
-/* ── Type ───────────────────────────────────────────────────────────────
-   Hero 44–52 · page title 32 · section 22 · content title 19 · body 17 ·
-   label 12. Nothing smaller than 13 carries a sentence. */
-
-.display {
-  margin: 0;
-  font-size: clamp(2.1rem, 9.5vw, 2.9rem);
-  line-height: 1.04;
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  text-transform: uppercase;
-}
-
-/* The line under the greeting on Today. A gold hairline to its left rather
-   than a coloured box around it — the smallest possible way to mark a sentence
-   as the app speaking rather than the church. */
-.said {
-  margin: var(--s4) 0 0;
-  padding-left: var(--s3);
-  border-left: 2px solid var(--gold);
-  font-size: 15px; line-height: 1.45; color: var(--ink-2);
-  max-width: 30ch;
-}
-
-/* The page title on a root screen: the tab's own name, set large, with the
-   line of purpose under it. This is the mark of an editorial page rather than
-   a dashboard — the screen says what it is before it says what is on it. */
-.page-title { margin: 0 0 var(--s2); }
-.page-title h1 {
-  margin: 0;
-  font-size: clamp(1.9rem, 8vw, 2.4rem);
-  line-height: 1.05; font-weight: 600; letter-spacing: -0.035em;
-  text-transform: uppercase;
-}
-.page-title p {
-  margin: var(--s2) 0 0;
-  font-size: 13px; font-weight: 500; color: var(--ink-2);
-  text-transform: uppercase; letter-spacing: .09em;
-}
-.page-title .under {
-  display: block; width: 44px; height: 2px; margin-top: var(--s3);
-  background: var(--gold);
-}
-
-.title {
-  margin: 0;
-  font-size: 1.2rem; line-height: 1.25; font-weight: 600; letter-spacing: -0.02em;
-}
+/* ── Type classes ────────────────────────────────────────────────────────── */
 
 .label {
-  margin: 0;
-  font-size: 12px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .11em;
-  color: var(--ink-2);
+  font-size: var(--label);
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
-.lead   { margin: 0; font-size: 1rem;  line-height: 1.5;  color: var(--ink-2); }
-.body   { margin: 0 0 var(--s3); font-size: 1rem; line-height: 1.62; }
-.body:last-child { margin-bottom: 0; }
-.small  { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
-.note   { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
-.note[data-level="warn"] { color: var(--gold-ink); }
+.display {
+  font-size: var(--display);
+  font-weight: 900;
+  letter-spacing: -.035em;
+  line-height: .94;
+  text-wrap: balance;
+}
+
+.headline {
+  font-size: var(--headline);
+  font-weight: 900;
+  letter-spacing: -.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
 
 .numeral {
-  margin: 0;
-  font-size: 2.2rem; line-height: 1; font-weight: 600; letter-spacing: -0.04em;
+  font-size: var(--numeral);
+  font-weight: 900;
+  letter-spacing: -.05em;
+  line-height: .82;
   font-variant-numeric: tabular-nums;
 }
-/* A figure that is a word rather than a number. "Today" set at the size of a
-   single digit runs out of its third of the row. */
-.numeral[data-word] { font-size: 1.55rem; letter-spacing: -0.03em; }
 
-.rule { border: 0; border-top: 1px solid var(--line); margin: var(--s4) 0; }
+.lead { font-size: var(--lead); line-height: 1.4; font-weight: 500; }
+.body { font-size: var(--body); line-height: 1.55; }
+.body + .body { margin-top: .9rem; }
+.dim  { color: var(--ink-70); }
+.dimmer { color: var(--ink-55); }
 
-/* ── The signature: a section heading that points forward ───────────────
-   NEXT UP ──────────────→ . The rule fills whatever is left of the row and
-   ends in an arrowhead. Used on section headings and nowhere else. */
-
-.next-line {
-  display: flex; align-items: center; gap: var(--s3);
-  margin-bottom: var(--s4);
+/* Scripture, and the reference under it. Set in the same face as everything
+   else — the kids edition does not reach for a serif and neither does this
+   one. What marks Scripture out is the size it is given and the space around
+   it, not a second typeface. */
+.verse { font-size: 1.05rem; line-height: 1.6; font-weight: 500; }
+.verse[data-length="m"] { font-size: 1.35rem; line-height: 1.45; }
+.ref {
+  font-size: .68rem; font-weight: 800; letter-spacing: .14em;
+  text-transform: uppercase;
 }
-.next-line > .label { flex: none; }
-.next-line .track {
-  flex: 1 1 auto; height: 1px; background: var(--line);
-}
-.next-line .tip {
-  flex: none; width: 7px; height: 7px;
-  border-top: 1px solid var(--gold); border-right: 1px solid var(--gold);
-  transform: rotate(45deg) translateX(-2px);
-}
-.next-line .more {
-  flex: none; background: none; border: 0; padding: 0; cursor: pointer;
-  font-size: 12px; font-weight: 600; letter-spacing: .06em;
-  text-transform: uppercase; color: var(--gold-ink);
+button.ref, .ref-link { cursor: pointer; text-align: left; text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── The poster: the app's one layout primitive ──────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack);
+  padding: 0 var(--stack) calc(6.5rem + env(safe-area-inset-bottom));
+  max-width: 34rem;
+  margin: 0 auto;
 }
 
-/* ── The deep block ─────────────────────────────────────────────────────
-   The 15%. One per screen: the Daily Word, the featured message, the profile
-   head. Everything in it is set on near-black, and gold is legible on it. */
-
-.block {
-  position: relative; overflow: hidden;
-  border-radius: var(--r-lg);
-  background: var(--block); color: var(--white);
-  padding: var(--s6) var(--s5) var(--s5);
-  box-shadow: var(--lift-block);
-  display: flex; flex-direction: column; gap: var(--s4);
-}
-.block .label { color: var(--gold); }
-.block .lead  { color: rgba(255, 255, 255, .72); }
-.block .cite  { color: rgba(255, 255, 255, .58); }
-.block .display, .block .title { color: var(--white); }
-
-/* The one abstract mark in the system: a quarter-circle of hairlines in the
-   corner of a deep block, drawn from the same idea as the forward line. It is
-   geometry, not an illustration, and it never sits where type does. */
-.block .arc {
-  position: absolute; right: -70px; top: -70px;
-  width: 240px; height: 240px; border-radius: 50%;
-  border: 1px solid rgba(180, 136, 74, .32);
-  pointer-events: none;
-}
-.block .arc::after {
-  content: ''; position: absolute; inset: 34px; border-radius: 50%;
-  border: 1px solid rgba(180, 136, 74, .18);
-}
-.block > * { position: relative; }
-
-.block--tall { min-height: 62vh; justify-content: space-between; }
-
-/* ── The panel ──────────────────────────────────────────────────────────
-   What used to be a card. White, a hairline, a restrained radius, and no
-   shadow unless it is doing something. Most content does not need one at all
-   — a section heading and a list of rows is enough — so reach for this only
-   when a group of things genuinely has an edge. */
-
-.card {
+.poster {
   position: relative;
-  border-radius: var(--r-sm);
-  background: var(--white);
-  border: 1px solid var(--line);
-  padding: var(--s5);
-  display: flex; flex-direction: column; gap: var(--s3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rhythm);
+  padding: var(--pad);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 12rem;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
 }
-.card[data-tone="paper"] { background: var(--white); }
-.card[data-tone="sky"]      { background: var(--sky-wash);      border-color: transparent; }
-.card[data-tone="rose"]     { background: var(--rose-wash);     border-color: transparent; }
-.card[data-tone="sunshine"] { background: var(--sunshine-wash); border-color: transparent; }
-.card[data-tone="captain"]  { background: var(--captain-wash);  border-color: transparent; }
-.card[data-tone="navy"]     { background: var(--navy-wash);     border-color: transparent; }
-.card[data-tone="poppy"]    { background: var(--poppy-wash);    border-color: transparent; }
-.card[data-tone="gold"]     { background: var(--gold-wash);     border-color: transparent; }
+.poster[data-tone="sunshine"] { background: var(--sunshine); }
+.poster[data-tone="rose"]     { background: var(--rose); }
+.poster[data-tone="sky"]      { background: var(--sky); }
+/* Captain is the one poster colour dark enough to need paper type, so it is
+   inverted alongside ink rather than being a fifth light block. */
+.poster[data-tone="captain"] { background: var(--captain); color: var(--paper); }
+.poster[data-tone="ink"]     { background: var(--ink); color: var(--paper); }
+.poster[data-tone="captain"] .dim, .poster[data-tone="ink"] .dim { color: rgba(251, 248, 240, .78); }
+.poster[data-tone="captain"] .dimmer, .poster[data-tone="ink"] .dimmer { color: rgba(251, 248, 240, .6); }
+/* On a dark poster the outline drawings invert: the line goes to paper, the
+   fill stays dark, so a symbol reads as a white line drawing rather than as
+   nothing at all. */
+.poster[data-tone="ink"] .art svg [stroke],
+.poster[data-tone="captain"] .art svg [stroke] { stroke: var(--paper); }
+.poster[data-tone="ink"] .pill,
+.poster[data-tone="captain"] .pill { background: var(--paper); color: var(--ink); }
+.poster[data-tone="ink"] .pill[data-quiet],
+.poster[data-tone="captain"] .pill[data-quiet] { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 var(--edge) var(--paper); }
+.poster[data-tone="ink"] .track,
+.poster[data-tone="captain"] .track { box-shadow: inset 0 0 0 var(--edge) var(--paper); }
+.poster[data-tone="ink"] .track > i,
+.poster[data-tone="captain"] .track > i { background: var(--paper); }
+.poster[data-tone="ink"] :focus-visible,
+.poster[data-tone="captain"] :focus-visible { outline-color: var(--paper); }
+.poster[data-tone="ink"] .rows > *,
+.poster[data-tone="captain"] .rows > * { border-top-color: rgba(251, 248, 240, .26); }
+.poster[data-tone="paper"] { background: var(--paper); box-shadow: inset 0 0 0 1px var(--ink-12); }
 
-/* The one solid block a screen may have, kept for the screens that ask for it
-   by name. It is the deep block above, not a colour. */
-.card[data-solid] {
-  background: var(--block); color: var(--white);
-  border-color: transparent; border-radius: var(--r-lg);
-  padding: var(--s6) var(--s5) var(--s5);
-  box-shadow: var(--lift-block);
+/* Tall posters — the daily word, a path cover, a featured message. */
+.poster[data-tall] { min-height: 22rem; justify-content: space-between; }
+
+button.poster, a.poster { cursor: pointer; transition: transform var(--speed) var(--ease); }
+button.poster:active, a.poster:active { transform: scale(.988); }
+
+.poster-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.poster-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-top: auto; }
+
+/* The illustration sits in the poster's own space, never as a background. */
+.art { display: block; width: 100%; max-width: 8.5rem; margin-left: auto; }
+.art svg { display: block; width: 100%; height: auto; }
+.art[data-size="lg"] { max-width: 13rem; }
+.art[data-size="sm"] { max-width: 5rem; }
+
+/* ── Actions: an arrow word, or an ink pill ──────────────────────────────── */
+
+.go {
+  display: inline-flex; align-items: center; gap: .5rem;
+  color: inherit; text-decoration: none;
+  font-size: .95rem; font-weight: 700; letter-spacing: -.01em;
+  min-height: 44px; cursor: pointer;
 }
-.card[data-solid] .label { color: var(--gold); }
-.card[data-solid] .lead  { color: rgba(255, 255, 255, .72); }
-.card[data-solid] .cite, .card[data-solid] .small { color: rgba(255, 255, 255, .58); }
-.card[data-solid] .card-foot { border-top-color: rgba(255, 255, 255, .16); }
-.card[data-tall] { min-height: 56vh; justify-content: space-between; }
+.go::after { content: "→"; transition: transform var(--speed) var(--ease); }
+.go:hover::after { transform: translateX(4px); }
 
-.card-body { display: flex; flex-direction: column; gap: var(--s3); }
-.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s4); }
-.card-head > *:first-child { min-width: 0; }
-
-.card-foot {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
-  margin-top: var(--s1);
-  padding-top: var(--s3);
-  border-top: 1px solid var(--line);
-  font-size: 12px; font-weight: 500; color: var(--ink-2);
-  text-transform: uppercase; letter-spacing: .07em;
-}
-
-.full { width: 100%; }
-
-.section { display: flex; flex-direction: column; gap: var(--s3); }
-
-/* ── The editorial block ────────────────────────────────────────────────
-   Explore is built from these: no border, no box, a hairline above, a large
-   name, one line of what it is, and the arrow. This is the shape that replaced
-   the four-tile grid, and it is why Explore no longer looks like a dashboard. */
-
-.eblock {
-  display: block; width: 100%; text-align: left;
-  background: none; border: 0; border-top: 1px solid var(--line);
-  padding: var(--s5) 0 var(--s5);
+.pill {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 48px; padding: .7rem 1.4rem;
+  background: var(--ink); color: var(--paper);
+  border-radius: 99px;
+  font-weight: 700; font-size: .95rem; letter-spacing: -.01em;
   cursor: pointer;
-  color: inherit;
-  transition: opacity .15s ease;
+  transition: transform var(--speed) var(--ease);
 }
-.eblock:active { opacity: .55; }
-.eblock-name {
-  margin: 0;
-  font-size: clamp(1.7rem, 7vw, 2.1rem); line-height: 1.05;
-  font-weight: 600; letter-spacing: -0.035em; text-transform: uppercase;
-}
-.eblock-what { margin: var(--s2) 0 0; font-size: 15px; color: var(--ink-2); max-width: 32ch; }
-/* The rule runs out of the label rather than into it. This is the signature of
-   the system — faith, growth, purpose, next — and a rule sitting to the LEFT of
-   the words points backwards, which is the opposite of the idea. */
-.eblock-go {
-  display: inline-flex; align-items: center; gap: var(--s2);
-  margin-top: var(--s3);
-  font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--gold-ink);
-}
-.eblock-go i { display: block; width: 26px; height: 1px; background: var(--gold); }
-.eblock-go u {
-  display: block; width: 6px; height: 6px; text-decoration: none;
-  border-top: 1px solid var(--gold); border-right: 1px solid var(--gold);
-  transform: rotate(45deg) translateX(-2px);
-}
-/* The last block closes the group. Without this the final hairline is missing
-   and the column reads as unfinished rather than as a list. */
-.eblock:last-child { border-bottom: 1px solid var(--line); }
+.pill:active { transform: scale(.97); }
+.pill[data-quiet] { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 var(--edge) var(--ink); }
+.pill[disabled] { opacity: .4; cursor: default; }
+.pill-row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
 
-/* ── Rows ───────────────────────────────────────────────────────────────
-   A list is hairline-separated rows, not a stack of coloured bands and not a
-   column of little cards. The colour a row carries is a 2px stem — the only
-   place the six family colours appear. */
+/* ── Progress: a thick navy bar, never a thin grey one ───────────────────── */
+
+.track { height: 14px; border-radius: 99px; box-shadow: inset 0 0 0 var(--edge) var(--ink); overflow: hidden; }
+.track > i { display: block; height: 100%; background: var(--ink); border-radius: 99px; transition: width 700ms var(--ease); }
+
+/* Small figures pair up rather than each taking a whole screen. */
+.figures { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--stack); }
+.figures .poster { min-height: 9rem; gap: 1rem; }
+.figures .numeral { font-size: clamp(2.4rem, 12vw, 3.2rem); }
+
+/* ── Rows: a list inside a poster ────────────────────────────────────────
+   Used where a set of things is genuinely a list — the sessions in a path,
+   the days of a reading plan, what is on this device. Hairlines in navy at
+   low weight, so a list never turns into a second grid of boxes. */
 
 .rows { display: flex; flex-direction: column; }
+.rows > * { padding: .85rem 0; border-top: 1px solid var(--ink-12); }
+.rows > *:first-child { border-top: 0; }
+button.row { display: block; width: 100%; text-align: left; cursor: pointer; }
+.row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.row-title { font-size: .95rem; font-weight: 700; letter-spacing: -.01em; }
+.row-note { font-size: .8rem; line-height: 1.45; color: var(--ink-70); margin-top: .3rem; }
+.row-meta { font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-55); white-space: nowrap; }
+.row-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .7rem; }
+.row-actions .pill { min-height: 40px; padding: .45rem 1rem; font-size: .8rem; }
 
-.row {
-  display: grid; grid-template-columns: auto 1fr auto;
-  align-items: center; gap: var(--s4);
-  width: 100%; text-align: left;
-  padding: var(--s4) 0;
-  background: none; border: 0; border-bottom: 1px solid var(--line);
-  color: inherit; cursor: default;
-  font: inherit;
-}
-button.row { cursor: pointer; transition: opacity .15s ease; }
-button.row:active { opacity: .55; }
-.rows > *:last-child .row, .rows > .row:last-child { border-bottom: 0; }
-.rows[data-tight] .row { padding: var(--s3) 0; }
-
-.row .stem { display: block; width: 2px; height: 30px; border-radius: 1px; background: var(--ink-12); }
-.row .stem[data-accent="sky"]      { background: var(--sky); }
-.row .stem[data-accent="captain"]  { background: var(--captain); }
-.row .stem[data-accent="navy"]     { background: var(--navy); }
-.row .stem[data-accent="rose"]     { background: var(--rose); }
-.row .stem[data-accent="poppy"]    { background: var(--poppy); }
-.row .stem[data-accent="sunshine"] { background: var(--sunshine); }
-.row .stem[data-accent="gold"]     { background: var(--gold); }
-.row .stem[data-accent="paper"]    { background: var(--ink-12); }
-
-.row-num {
-  display: block; min-width: 22px;
-  font-size: 13px; font-weight: 600; color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
-.row-title { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.35; letter-spacing: -0.012em; }
-.row-note  { margin: 3px 0 0; font-size: 13px; line-height: 1.4; color: var(--ink-2); }
-.row-meta  { font-size: 12px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
-
-/* The chevron on a row that opens something. Drawn, not a character, so it
-   keeps its weight at every size. */
-.row .chev {
-  display: block; width: 7px; height: 7px;
-  border-top: 1px solid var(--ink-2); border-right: 1px solid var(--ink-2);
-  transform: rotate(45deg);
-}
-
-/* ── Buttons ────────────────────────────────────────────────────────────
-   One filled button per screen. Everything else is a text action with a rule
-   and an arrow. There is no third style. */
-
-.act {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
-  min-height: 50px; padding: 0 var(--s6);
-  border: 0; border-radius: var(--r-sm);
-  background: var(--ink); color: var(--white);
-  font-size: 14px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-  cursor: pointer;
-  transition: transform .12s ease, opacity .15s ease;
-}
-.act:active { transform: scale(.985); opacity: .9; }
-.act:disabled { opacity: .4; cursor: not-allowed; }
-
-.block .act, .card[data-solid] .act { background: var(--gold); color: var(--block); }
-
-.act[data-quiet] {
-  min-height: 40px; padding: 0;
-  background: none; color: var(--gold-ink);
-  letter-spacing: .1em;
-}
-.act[data-small] { min-height: 38px; padding: 0 var(--s4); font-size: 12px; }
-.act[data-quiet][data-small] { padding: 0; }
-.block .act[data-quiet], .card[data-solid] .act[data-quiet] { color: var(--gold); }
-
-.act-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s4); }
-.act-row .act:not([data-quiet]):not([data-small]) { flex: 1 1 auto; }
-
-/* The secondary action: text, a rule, an arrow. */
-.go {
-  display: inline-flex; align-items: center; gap: var(--s2);
-  background: none; border: 0; padding: var(--s2) 0;
-  color: var(--gold-ink); cursor: pointer;
-  font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
-  align-self: flex-start;
-}
-.go::after {
-  content: ''; width: 22px; height: 1px; background: var(--gold);
-  transition: width .18s ease;
-}
-.go:hover::after { width: 32px; }
-
-/* ── Progress ───────────────────────────────────────────────────────────
-   A hairline that fills. No percentage badge, no ring, no confetti. */
-
-.thread { height: 2px; border-radius: 1px; background: var(--ink-8); overflow: hidden; }
-.thread i { display: block; height: 100%; background: var(--ink); transition: width .5s ease; }
-.thread[data-accent="gold"] i     { background: var(--gold); }
-.thread[data-accent="sunshine"] i { background: var(--gold); }
-.thread[data-accent="captain"] i  { background: var(--captain); }
-.block .thread { background: rgba(255, 255, 255, .18); }
-.block .thread i { background: var(--gold); }
-
+/* ── The tag ─────────────────────────────────────────────────────────────
+   A countdown beside a heading, and nothing else uses it. Drawn as an
+   outlined pill so it belongs to the same family as the buttons. */
 .tag {
-  display: inline-block;
-  padding: 3px var(--s2);
-  border-radius: 4px;
-  background: var(--ink-4);
-  font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
-  color: var(--ink-2);
+  display: inline-flex; align-items: center; flex: none;
+  padding: .4rem .7rem;
+  border-radius: 99px;
+  box-shadow: inset 0 0 0 2px currentColor;
+  font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
   white-space: nowrap;
 }
-.tag[data-accent="gold"] { background: var(--gold-wash); color: var(--gold-ink); }
 
-/* ── Scripture ──────────────────────────────────────────────────────────
-   The serif is the one typographic signal that says this text is not ours. */
+/* ── The sheet: where a member writes something ──────────────────────────
+   A paper poster with a field on it. The adult app asks for typed input in
+   three places (a prayer, a reflection, a Bible search) and the kids app
+   asks in one, so this is written out here rather than borrowed. */
 
-.scripture {
-  margin: 0;
-  font-family: var(--serif);
-  font-weight: 400;
-  line-height: 1.28;
-  letter-spacing: -0.02em;
-}
-.scripture[data-length="m"]  { font-size: clamp(1.9rem, 8vw, 2.5rem); }
-.scripture[data-length="l"]  { font-size: clamp(1.5rem, 6.2vw, 1.95rem); line-height: 1.32; }
-.scripture[data-length="xl"] { font-size: clamp(1.2rem, 5vw, 1.5rem); line-height: 1.45; }
-.scripture--flow { font-size: 1.15rem; line-height: 1.6; letter-spacing: -0.01em; }
-
-.cite {
-  margin: 0;
-  font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--ink-2);
-}
-button.cite, .ref-link {
-  background: none; border: 0; padding: 0; cursor: pointer;
-  color: var(--gold-ink); text-align: left;
-}
-
-/* ── The media rail ─────────────────────────────────────────────────────
-   Continue watching, and any other short row of things you are part-way
-   through. It scrolls inside itself and never makes the page scroll sideways. */
-
-.rail {
-  display: flex; gap: var(--s3);
-  overflow-x: auto; scroll-snap-type: x mandatory;
-  margin: 0 calc(var(--s5) * -1); padding: 0 var(--s5) var(--s2);
-  /* Without this the snap point is the padding-box edge, so the browser
-     immediately scrolls the first tile out under the page margin and the rail
-     opens looking like it has already been swiped. */
-  scroll-padding-left: var(--s5);
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.rail::-webkit-scrollbar { display: none; }
-.rail > * { scroll-snap-align: start; }
-
-.tile {
-  flex: none; width: 168px;
-  display: flex; flex-direction: column; gap: var(--s2);
-  background: none; border: 0; padding: 0; text-align: left; cursor: pointer;
-  color: inherit;
-}
-.tile-art {
-  position: relative; overflow: hidden;
-  height: 104px; border-radius: var(--r-sm);
-  background: var(--block);
-  display: grid; place-items: center;
-}
-.tile-art .arc {
-  position: absolute; right: -34px; bottom: -34px;
-  width: 110px; height: 110px; border-radius: 50%;
-  border: 1px solid rgba(180, 136, 74, .28);
-}
-.tile-play {
-  position: relative;
-  width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(255, 255, 255, .14);
-  display: grid; place-items: center;
-}
-/* The play mark is clipped, not drawn with borders. A CSS triangle is three
-   borders in a trench coat, and this system has a rule about border widths
-   that a 9px one would quietly break. */
-.tile-play::after {
-  content: ''; margin-left: 2px;
-  width: 9px; height: 12px;
-  background: var(--white);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-}
-.tile-name { margin: 0; font-size: 14px; font-weight: 500; line-height: 1.3; }
-.tile-by   { margin: 0; font-size: 12px; color: var(--ink-2); }
-.tile .thread { margin-top: 2px; }
-
-/* ── Sheets: the screens that ask you to make something ─────────────────── */
-
-.sheet {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: var(--s5);
-  display: flex; flex-direction: column; gap: var(--s4);
-  overflow: hidden;
-}
-.sheet .display { font-size: clamp(1.7rem, 7vw, 2.1rem); }
-.mark { color: var(--gold-ink); }
-
-.sheet-foot {
-  margin: var(--s2) calc(var(--s5) * -1) calc(var(--s5) * -1);
-  min-height: 56px;
-  background: var(--ink); color: var(--white);
-  border: 0; cursor: pointer;
-  font-size: 14px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
-}
-.sheet-foot:disabled { opacity: .4; cursor: not-allowed; }
-
-textarea, input[type='text'], input[type='search'] {
-  width: 100%;
+textarea, input[type="text"], input[type="search"] {
+  display: block; width: 100%;
+  min-height: 48px;
+  padding: .8rem 1rem;
   background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: var(--s3) var(--s4);
-  font-size: 16px; line-height: 1.5;
   color: var(--ink);
+  border: 0;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 2px var(--ink-12);
+  font: 500 1rem/1.5 var(--font);
 }
-textarea { min-height: 116px; resize: vertical; }
-::placeholder { color: var(--ink-2); opacity: .8; }
-
-.pick {
-  display: block; width: 100%; text-align: left;
-  background: var(--paper); border: 1px solid var(--line);
-  border-radius: var(--r-sm); padding: var(--s3) var(--s4);
-  cursor: pointer;
-  transition: border-color .15s ease, background .15s ease;
+textarea { min-height: 7rem; resize: vertical; }
+textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
+  outline: none; box-shadow: inset 0 0 0 var(--edge) var(--ink);
 }
-.pick[aria-pressed="true"] { border-color: var(--gold); background: var(--gold-wash); }
-.pick-name { margin: 0; font-size: 15px; font-weight: 500; }
-.pick-what { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); }
+::placeholder { color: var(--ink-55); }
+.poster[data-tone="ink"] textarea, .poster[data-tone="captain"] textarea,
+.poster[data-tone="ink"] input, .poster[data-tone="captain"] input {
+  background: rgba(251, 248, 240, .12); color: var(--paper);
+  box-shadow: inset 0 0 0 2px rgba(251, 248, 240, .34);
+}
 
-.choice-list { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.choice-list { display: flex; flex-wrap: wrap; gap: .5rem; }
 .choice {
-  background: var(--white); border: 1px solid var(--line);
-  border-radius: 999px; padding: 10px var(--s4);
-  font-size: 14px; font-weight: 500; cursor: pointer;
-  transition: border-color .15s ease, background .15s ease;
+  padding: .6rem 1rem; min-height: 44px;
+  border-radius: 99px;
+  box-shadow: inset 0 0 0 2px var(--ink);
+  font-size: .85rem; font-weight: 700;
+  cursor: pointer;
 }
-.choice[data-chosen], .choice[aria-pressed="true"] {
-  border-color: var(--ink); background: var(--ink); color: var(--white);
-}
+.choice[data-chosen], .choice[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 
-/* ── Icons ──────────────────────────────────────────────────────────────
-   Line drawings that take the colour of the text beside them. They are small
-   here on purpose: in this system an icon labels a thing, it is never the
-   thing. */
+/* ── Scripture, read ─────────────────────────────────────────────────────
+   The reader is a paper poster: the text at reading size, the verse number
+   small and out of the way. A verse is tappable because a reader who wants
+   to keep one should not have to hunt for a menu. */
 
-.figure { flex: none; width: 30px; height: 30px; color: var(--ink-2); }
-.figure[data-size="sm"] { width: 24px; height: 24px; }
-.figure[data-size="lg"] { width: 40px; height: 40px; }
-.figure .icon { width: 100%; height: 100%; display: block; }
-.block .figure, .card[data-solid] .figure { color: var(--gold); }
-
-/* ── Scripture, read ────────────────────────────────────────────────────
-   The chrome stops here. White paper, serif type, and nothing else at all. */
-
-.reader {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: var(--s5);
-  display: flex; flex-direction: column; gap: var(--s3);
-}
-
-.passage { display: flex; flex-direction: column; }
-.passage-verse { border-bottom: 1px solid var(--line); }
-.passage-verse:last-child { border-bottom: 0; }
-.passage-verse[data-open] { background: var(--gold-wash); border-radius: var(--r-sm); }
-
+.passage { margin-top: 1.2rem; }
+.passage-verse { padding: .1rem 0; }
 .passage-line {
   display: block; width: 100%; text-align: left;
-  background: none; border: 0; padding: var(--s3) var(--s3);
-  font-family: var(--serif); font-size: 1.08rem; line-height: 1.62;
-  color: var(--ink); cursor: pointer;
+  padding: .35rem .4rem;
+  border-radius: 6px;
+  font-size: 1.05rem; line-height: 1.62; font-weight: 400;
+  color: inherit; cursor: pointer;
 }
+.passage-line:hover { background: var(--ink-12); }
+.passage-verse[data-open] .passage-line { background: var(--sky); }
 .passage-num {
-  display: inline-block; min-width: 22px;
-  font-family: var(--ui); font-size: 11px; font-weight: 600;
-  color: var(--gold-ink); vertical-align: 3px;
+  display: inline-block; min-width: 1.5rem;
+  font-size: .68rem; font-weight: 800; color: var(--ink-55);
+  vertical-align: 2px;
 }
+.passage-verse .row-actions { padding-left: .4rem; margin-bottom: .5rem; }
 
-.book-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0; margin-top: var(--s3); }
+.book-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0; margin-top: 1rem; }
 .book {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
-  background: none; border: 0; border-bottom: 1px solid var(--line);
-  padding: var(--s3) 0; cursor: pointer; text-align: left;
+  display: flex; align-items: center; justify-content: space-between; gap: .8rem;
+  padding: .7rem 0;
+  border-top: 1px solid var(--ink-12);
+  text-align: left; cursor: pointer;
 }
-.book-name { font-size: 15px; font-weight: 500; }
-.book-count { font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.book-name { font-size: .92rem; font-weight: 700; letter-spacing: -.01em; }
+.book-count { font-size: .72rem; font-weight: 700; color: var(--ink-55); font-variant-numeric: tabular-nums; }
 
-.chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: var(--s2); }
+.chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr)); gap: .5rem; margin-top: 1rem; }
 .chapter {
-  min-height: 46px; border-radius: var(--r-sm);
-  background: var(--paper); border: 1px solid var(--line);
-  font-size: 15px; font-weight: 500; cursor: pointer;
+  min-height: 48px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--ink-12);
+  font-size: .95rem; font-weight: 700; cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
+.chapter:hover { box-shadow: inset 0 0 0 var(--edge) var(--ink); }
 
-/* ── Counts ─────────────────────────────────────────────────────────────
-   Three numbers in a row, used where a number genuinely helps a person. Not a
-   dashboard: no cards, no icons, no coloured tiles — just figures and labels
-   under a hairline. */
+/* ── The frame ───────────────────────────────────────────────────────────── */
 
-.figures { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); }
-.figures > div { display: flex; flex-direction: column; gap: 2px; }
-
-/* ── The moment ─────────────────────────────────────────────────────────── */
-
-.moment {
-  position: fixed; inset: 0; z-index: 80;
-  display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--s4);
-  padding: var(--s7) var(--s6);
-  background: var(--block); color: var(--white);
-  animation: fade .35s ease both;
+.app-head {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem;
+  padding: calc(1.4rem + env(safe-area-inset-top)) var(--pad) 1.1rem;
+  max-width: 34rem; margin: 0 auto; width: 100%;
 }
-.moment .label { color: var(--gold); }
-.moment .lead { color: rgba(255, 255, 255, .72); }
-.moment .figure { color: var(--gold); }
 
-/* ── Motion ─────────────────────────────────────────────────────────────
-   Content arrives once, from below, and never again. Animation here says
-   something has changed; it does not decorate. */
-
-.rise { opacity: 0; transform: translateY(14px); }
-.rise[data-in] { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s cubic-bezier(.2, .7, .3, 1); }
-
-@keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-
-.wait {
-  height: 2px; border-radius: 1px; overflow: hidden;
-  background: var(--ink-8); position: relative;
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  background: var(--paper);
+  border-top: 1px solid var(--ink-12);
+  padding-bottom: env(safe-area-inset-bottom);
 }
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: .3rem;
+  padding: .65rem .2rem .7rem;
+  min-height: 56px;
+  cursor: pointer;
+  font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-55);
+}
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] { color: var(--ink); }
+
+/* ── Motion ──────────────────────────────────────────────────────────────
+   Posters arrive as you scroll. They land once and they do not bounce. */
+
+.rise { opacity: 0; transform: translateY(16px); }
+.rise[data-in] { opacity: 1; transform: none; transition: opacity 460ms var(--ease), transform 460ms var(--ease); }
+
+.wait { height: var(--edge); border-radius: 99px; background: var(--ink-12); overflow: hidden; position: relative; }
 .wait::after {
-  content: ''; position: absolute; inset: 0 auto 0 0; width: 40%;
-  background: var(--gold);
-  animation: sweep 1.1s ease-in-out infinite;
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 40%;
+  background: var(--ink);
+  animation: sweep 1.1s var(--ease) infinite;
 }
 @keyframes sweep { 0% { left: -40%; } 100% { left: 100%; } }
 
-/* A prayer answered, a session finished, a verse kept — the mark that says a
-   thing landed. One pulse, then still. */
-.done-mark {
-  display: inline-flex; align-items: center; gap: var(--s2);
-  color: var(--gold-ink); font-size: 12px; font-weight: 600;
-  letter-spacing: .1em; text-transform: uppercase;
-  animation: pop .32s cubic-bezier(.2, .9, .3, 1.2) both;
+.note { font-size: .85rem; line-height: 1.5; color: var(--ink-70); }
+
+/* The app has exactly one interruption, and this is it. */
+.moment {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 1.2rem;
+  padding: 3rem var(--pad) calc(3rem + env(safe-area-inset-bottom));
+  color: var(--ink);
+  animation: rise-in 380ms var(--ease) both;
 }
-@keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -821,16 +425,7 @@ textarea { min-height: 116px; resize: vertical; }
   .rise { opacity: 1; transform: none; }
 }
 
-/* ── Wider than a phone ─────────────────────────────────────────────────
-   Mobile first, and one breakpoint. The page does not become a desktop
-   dashboard at 900px; it stays a column and gets more air. */
-
-@media (min-width: 640px) {
-  :root { --page: 620px; }
-  body { font-size: 17px; }
-  .screen { padding: var(--s4) var(--s6) var(--s8); gap: var(--s7); }
-  .app-head { padding-left: var(--s6); padding-right: var(--s6); }
-  .rail { margin: 0 calc(var(--s6) * -1); padding: 0 var(--s6) var(--s2); scroll-padding-left: var(--s6); }
-  .tile { width: 196px; }
-  .tile-art { height: 118px; }
+@media (min-width: 40rem) {
+  :root { --pad: 2rem; --stack: 1.2rem; }
+  .tabs { padding-left: 20%; padding-right: 20%; }
 }

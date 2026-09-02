@@ -1,17 +1,16 @@
 // THE BIBLE — the whole thing, on the device, in three translations.
 //
-// The calmest screen in the app on purpose, and the one place the chrome
-// stops. The reader is white paper and serif type: no block, no rule, no gold,
-// nothing to compete with the text. Every other screen is quiet so that
-// Scripture can be the loudest thing in the app.
+// The calmest screen in the app, and the one place the colour stops. The
+// reader is a paper poster: the text at reading size, the verse number small
+// and out of the way, and nothing else on the block at all. Every other screen
+// is a slab of colour so that this one does not have to be.
 //
 // Nothing here can edit Scripture. The reader keeps a bookmark, a translation,
 // a reading plan and any verses they choose to save, and all of it stays on
 // this device.
 
-import { h, block, card, reader as paper, section, badge, display, title, body, small, scripture,
-         nextLine, reference, act, actions, go, rows, row, thread,
-         rise, note, waiting, toast, swap } from '../core/ui.js';
+import { h, poster, label, display, headline, art, go, pill, track,
+         rows, row, scripture, reference, waiting, note, rise, toast, swap } from '../core/ui.js';
 import * as scriptureCore from '../core/scripture.js';
 import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
@@ -21,6 +20,8 @@ const TESTAMENTS = [
   { id: 'new', label: 'New Testament', line: 'Jesus, the first Christians, and the letters they wrote — 27 books.' },
 ];
 
+const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
+
 /** The reader's translation, remembered between visits. */
 function chosen(bible) {
   const state = scriptureCore.getState();
@@ -28,10 +29,10 @@ function chosen(bible) {
 }
 
 function translationRow(bible, code, onpick) {
-  return actions(...bible.translations.map((one) => act(one.language, () => {
+  return h('div', { class: 'pill-row' }, ...bible.translations.map((one) => pill(one.language, () => {
     scriptureCore.setState({ code: one.code });
     onpick(one.code);
-  }, one.code === code ? { small: true } : { small: true, quiet: true })));
+  }, one.code === code ? {} : { quiet: true })));
 }
 
 // ── The reader ─────────────────────────────────────────────────────────────
@@ -46,9 +47,9 @@ async function reader(ctx, entry, chapter) {
   try {
     read = await scriptureCore.passage(code, entry, at);
   } catch {
-    return { title: entry.name, el: card({ tone: 'paper', className: 'full', symbol: 'cloud' },
-      badge(entry.name),
-      note('This book is not on the device yet, and there is no connection. Open it once online and it stays.', 'warn')) };
+    return { title: entry.name, el: poster({ tone: 'rose' },
+      label(entry.name),
+      note('This book is not on the device yet, and there is no connection. Open it once online and it stays.')) };
   }
 
   const translation = bible.translations.find((one) => one.code === code);
@@ -67,16 +68,16 @@ async function reader(ctx, entry, chapter) {
           h('span', { text: verse.text })));
       if (isOpen) {
         const kept = scriptureCore.isSaved(ref, code);
-        holder.appendChild(actions(
-          act(kept ? 'Saved' : 'Keep this verse', () => {
+        holder.appendChild(h('div', { class: 'row-actions' },
+          pill(kept ? 'Saved' : 'Keep this verse', () => {
             if (kept) { scriptureCore.unsaveVerse(ref, code); toast('Removed.'); }
             else { scriptureCore.saveVerse({ ref, text: verse.text, code }); toast('Kept — it is under “Verses you kept”.'); }
             paint();
-          }, { quiet: true, small: true }),
-          act('Copy', async () => {
+          }, { quiet: true }),
+          pill('Copy', async () => {
             try { await navigator.clipboard.writeText(`“${verse.text}” — ${ref} (${translation.short})`); toast('Copied.'); }
             catch { toast('Hold the text to copy it.'); }
-          }, { quiet: true, small: true })));
+          }, { quiet: true })));
       }
       return holder;
     }));
@@ -86,20 +87,20 @@ async function reader(ctx, entry, chapter) {
   const jump = (to) => ctx.go(`bible/${entry.n}/${to}`);
 
   const el = h('div', { style: 'display:contents' },
-    paper({ className: 'full' },
-      h('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:1rem' },
-        badge(`${entry.name} ${at}`),
+    poster({ tone: 'paper' },
+      h('div', { class: 'poster-head' },
+        label(`${entry.name} ${at}`),
         h('span', { class: 'row-meta', text: `${translation.short} · ${at} of ${entry.chapters}` })),
       lines,
-      h('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:1rem' },
-        actions(
-          at > 1 ? act('‹ Before', () => jump(at - 1), { quiet: true, small: true }) : null,
-          at < entry.chapters ? act('Next ›', () => jump(at + 1), { quiet: true, small: true }) : null),
+      h('div', { class: 'poster-foot' },
+        h('div', { class: 'pill-row' },
+          at > 1 ? pill('‹ Before', () => jump(at - 1), { quiet: true }) : null,
+          at < entry.chapters ? pill('Next ›', () => jump(at + 1), { quiet: true }) : null),
         go('All chapters', () => ctx.go(`bible/${entry.n}`)))),
-    card({ tone: 'paper', className: 'full', foot: translation.short },
-      badge('Read it in'),
+    poster({ tone: 'paper' },
+      label('Read it in'),
       translationRow(bible, code, () => ctx.refresh()),
-      small(`${translation.name} · ${translation.licence}. ${translation.note}`)));
+      note(`${translation.name} · ${translation.licence}. ${translation.note}`)));
 
   // The shell scrolls to the top after a screen is appended, so a landing
   // verse has to be brought back into view after that has happened.
@@ -123,17 +124,18 @@ async function bookScreen(ctx, entry) {
     })));
 
   const el = h('div', { style: 'display:contents' },
-    card({ tone: 'paper', className: 'full', symbol: 'book',
-        foot: `${entry.chapters} chapter${entry.chapters === 1 ? '' : 's'}` },
-      badge(entry.testament === 'old' ? 'Old Testament' : 'New Testament'),
+    poster({ tone: 'sky', tall: true },
+      label(entry.testament === 'old' ? 'Old Testament' : 'New Testament'),
       h('div', {},
-        display(entry.name),
+        display(String(entry.name).toUpperCase()),
         entry.tagalog && entry.tagalog !== entry.name
-          ? h('p', { class: 'cite', style: 'margin-top:.8rem', text: `Sa Tagalog: ${entry.tagalog}` }) : null),
-      h('div', {}, act('Start at chapter 1', () => ctx.go(`bible/${entry.n}/1`)))),
-    paper({ className: 'full' },
-      badge('Every chapter'),
-      h('div', { style: 'margin-top:.9rem' }, grid)));
+          ? h('p', { class: 'lead dim', style: 'margin-top:.8rem', text: `Sa Tagalog: ${entry.tagalog}` }) : null),
+      h('div', { class: 'poster-foot' },
+        pill('Start at chapter 1', () => ctx.go(`bible/${entry.n}/1`)),
+        art('book', { tone: 'sky', size: 'sm' }))),
+    poster({ tone: 'paper' },
+      label(`Every chapter · ${entry.chapters}`),
+      grid));
 
   return { title: entry.name, el };
 }
@@ -144,21 +146,20 @@ async function searchScreen(ctx, term) {
   const bible = await scriptureCore.manifest();
   const code = chosen(bible);
 
-  const status = h('p', { class: 'small', text: 'Looking…' });
-  const list = rows({ tight: true });
+  const status = h('p', { class: 'note', text: 'Looking…' });
+  const list = h('div', { class: 'rows' });
   const controller = new AbortController();
   const el = h('div', { style: 'display:contents' },
-    paper({ className: 'full' }, badge(`Searching for “${term}”`), status, list));
+    poster({ tone: 'paper' }, label(`Searching for “${term}”`), status, list));
 
   const found = [];
   const draw = () => {
     swap(list, ...found.map((hit) => {
       const ref = scriptureCore.refText(hit.book, hit.chapter, hit.verse);
-      return h('div', { style: 'padding:.5rem 0' },
-        h('button', { class: 'passage-line', type: 'button', style: 'font-size:1rem',
-          onclick: () => ctx.go(`bible/${hit.book.n}/${hit.chapter}?v=${hit.verse}`) },
-          h('span', { text: hit.text })),
-        h('p', { class: 'cite', style: 'margin-top:.35rem', text: `${ref} · ${code.toUpperCase()}` }));
+      return h('button', { class: 'row', type: 'button',
+        onclick: () => ctx.go(`bible/${hit.book.n}/${hit.chapter}?v=${hit.verse}`) },
+        h('p', { class: 'row-title', style: 'font-weight:400', text: hit.text }),
+        h('p', { class: 'row-note', text: `${ref} · ${code.toUpperCase()}` }));
     }));
   };
 
@@ -186,8 +187,8 @@ export default async function bibleScreen(ctx) {
   let bible;
   try { bible = await scriptureCore.manifest(); }
   catch (error) {
-    return { title: 'Bible', el: card({ tone: 'paper', className: 'full' },
-      badge('The Bible'), note(`The Bible did not load. ${error.message}`, 'warn')) };
+    return { title: 'Bible', el: poster({ tone: 'rose' },
+      label('The Bible'), note(`The Bible did not load. ${error.message}`)) };
   }
 
   const byNumber = (n) => bible.books.find((one) => one.n === Number(n));
@@ -198,80 +199,79 @@ export default async function bibleScreen(ctx) {
 
   const code = chosen(bible);
   const state = scriptureCore.getState();
-  const cards = [];
+  const parts = [];
 
   // ── Look something up ───────────────────────────────────────────────────
   const input = h('input', { type: 'search', id: 'bible-look', autocomplete: 'off',
     placeholder: 'A reference, or any word' });
-  const form = h('form', { onsubmit: (event) => {
-    event.preventDefault();
+  const look = () => {
     const raw = input.value.trim();
     if (!raw) return;
     const ref = scriptureCore.parseRef(raw, bible.books);
     if (ref) { ctx.go(`bible/${ref.book.n}/${ref.chapter}${ref.verse ? `?v=${ref.verse}` : ''}`); return; }
     ctx.go(`bible/search?q=${encodeURIComponent(raw)}`);
-  } }, input, h('div', { style: 'margin-top:1.2rem' }, act('Look it up', null, { type: 'submit' })));
+  };
+  input.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); look(); } });
 
-  cards.push(block({ className: 'full' },
-    badge('The Bible'),
-    display('The whole thing.'),
-    h('p', { class: 'lead', text: 'Already on this device. No signal needed once a book has been opened.' }),
-    form,
-    h('p', { class: 'cite', text: '66 books · 3 translations' })));
+  parts.push(poster({ tone: 'captain', tall: true },
+    label('66 books · 3 translations'),
+    h('div', {},
+      display('THE WHOLE THING.'),
+      h('p', { class: 'lead dim', style: 'margin-top:1rem',
+        text: 'Already on this device. No signal needed once a book has been opened.' }),
+      h('div', { style: 'margin-top:1.4rem' }, input)),
+    h('div', { class: 'poster-foot' },
+      pill('Look it up', look),
+      art('book', { tone: 'captain', size: 'sm' }))));
 
   // ── Carry on ────────────────────────────────────────────────────────────
   const last = state.last && byNumber(state.last.n);
   if (last) {
-    cards.push(section({ className: 'full' },
-      nextLine('Where you stopped'),
-      rows({}, row({
-        title: `${last.name} ${state.last.chapter}`,
-        note: 'Carry on from here',
-        accent: 'gold', chev: true,
-        onclick: () => ctx.go(`bible/${last.n}/${state.last.chapter}`),
-      }))));
+    parts.push(poster({ tone: 'sunshine', as: 'button', onclick: () => ctx.go(`bible/${last.n}/${state.last.chapter}`) },
+      label('Where you stopped'),
+      headline(`${String(last.name).toUpperCase()} ${state.last.chapter}`),
+      h('div', { class: 'poster-foot' }, h('span', { class: 'go' }, 'Carry on'), h('span'))));
   }
 
   // ── Reading plans ───────────────────────────────────────────────────────
-  const plansSection = section({ className: 'full' }, waiting());
-  cards.push(plansSection);
+  const plansBlock = h('div', { style: 'display:contents' });
+  parts.push(plansBlock);
   (async () => {
     try {
       const plans = await content.plans();
       const active = plan.state().id;
-      swap(plansSection,
-        nextLine(active ? 'Reading plans · one on the go' : `Reading plans · ${plans.length} to choose`),
-        rows({}, ...plans.map((one) => {
+      swap(plansBlock, poster({ tone: 'paper' },
+        label(active ? 'Reading plans · one on the go' : `Reading plans · ${plans.length} to choose`),
+        rows(...plans.map((one) => {
           const at = plan.positionIn(one);
           return row({
             title: one.title,
             note: one.id === active ? `Reading now · ${at.at ? at.at.ref : 'finished'}` : one.kicker,
             meta: one.id === active ? `${at.day}/${at.total}` : `${one.days.length} days`,
-            accent: one.tone,
             onclick: () => ctx.go(`plan/${one.id}`),
           });
-        })));
-    } catch { plansSection.remove(); }
+        }))));
+    } catch { plansBlock.remove(); }
   })();
 
   // ── Verses you kept ─────────────────────────────────────────────────────
   if (state.saved.length) {
-    cards.push(paper({ className: 'full' },
-      nextLine(`Verses you kept · ${state.saved.length}`),
-      ...state.saved.slice(0, 6).map((one) => h('div', { style: 'padding:.7rem 0' },
+    parts.push(poster({ tone: 'rose' },
+      label(`Verses you kept · ${state.saved.length}`),
+      h('div', {}, ...state.saved.slice(0, 6).map((one) => h('div', { style: 'padding:.7rem 0' },
         scripture(one.text, { flow: true }),
-        h('div', { style: 'margin-top:.4rem' }, reference(`${one.ref} · ${one.code.toUpperCase()}`, ctx.go)))),
-      state.saved.length > 6 ? small(`and ${state.saved.length - 6} more on this device.`) : null));
+        reference(`${one.ref} · ${one.code.toUpperCase()}`, ctx.go, { style: 'margin-top:.5rem' })))),
+      state.saved.length > 6 ? note(`and ${state.saved.length - 6} more on this device.`) : null));
   }
 
   // ── The shelves ─────────────────────────────────────────────────────────
   for (const testament of TESTAMENTS) {
     const books = bible.books.filter((one) => one.testament === testament.id);
-    cards.push(paper({ className: 'full' },
-      h('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:1rem' },
-        badge(testament.label),
+    parts.push(poster({ tone: 'paper' },
+      h('div', { class: 'poster-head' },
+        label(testament.label),
         h('span', { class: 'row-meta', text: `${books.length} books` })),
-      h('div', { style: 'margin-top:.7rem' }, small(testament.line)),
+      note(testament.line),
       h('div', { class: 'book-list' },
         ...books.map((one) => h('button', { class: 'book', type: 'button', onclick: () => ctx.go(`bible/${one.n}`) },
           h('span', { class: 'book-name', text: one.name }),
@@ -279,17 +279,16 @@ export default async function bibleScreen(ctx) {
   }
 
   // ── Translations ────────────────────────────────────────────────────────
-  cards.push(card({ tone: 'paper', className: 'full', foot: 'All three are public domain' },
-    nextLine('Translations'),
-    rows({ tight: true },
-      ...bible.translations.map((one) => row({
-        title: `${one.language} — ${one.name}`,
-        note: `${one.note} ${one.licence}.`,
-        meta: one.short,
-      }))),
+  parts.push(poster({ tone: 'paper' },
+    label('Translations · all three are public domain'),
+    rows(...bible.translations.map((one) => row({
+      title: `${one.language} — ${one.name}`,
+      note: `${one.note} ${one.licence}.`,
+      meta: one.short,
+    }))),
     translationRow(bible, code, () => ctx.refresh())));
 
-  const el = h('div', { style: 'display:contents' }, ...cards);
-  rise(cards);
+  const el = h('div', { style: 'display:contents' }, ...parts);
+  rise(parts);
   return { title: 'Bible', el };
 }

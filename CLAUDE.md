@@ -74,11 +74,7 @@ none of the FLCC data files and none of the `FLCC.*` global.
 
 `flcc-adults/` is a **fifth, separate application** — the adult edition of
 FLCC NEXT, for the members of FLCC Church. It has its own `adults/v1/…`
-storage namespace, its own design system (*Layers* — a list is a stack of
-full-bleed colour bands torn apart by seeded waves, each carrying a hand-drawn
-texture; everything else is warm paper, colour as a tenth-strength wash,
-hairlines instead of outlines, soft shadows, and monoline icons with no
-faces), its own content and its own tests, and it must never import
+storage namespace, its own content and its own tests, and it must never import
 `church.js`, read `FLCC.*`, or touch anything under `shepherd/` or `lamp/`.
 `flcc-adults/js/core/storage.js` throws on any key outside the namespace.
 
@@ -103,25 +99,39 @@ storage. `flcc-adults/test/modules.test.mjs` fails any file that reaches past
 the Bible into the kids app, and `test/scripture.test.mjs` fails if the shared
 text moves.
 
-**The adult app must not look like the kids app.** It was drawn in a playful
-sticker style and read, unmistakably, as an app for children. Five rules
-are enforced by tests rather than by review, because they are the ones that
-erode first: no `box-shadow` may have a zero blur radius (the hard offset
-sticker shadow); no border may exceed 1px; no `font-weight` may exceed 600; no
-icon may contain a circle, an ellipse or a smile-shaped arc; and every verse
-the authored writing quotes must match the shipped World English Bible word
-for word. A sixth is untested and matters most: **the chrome stops at
-Scripture** — the Bible reader is plain white paper and serif type.
+### The two editions are one design
+
+**The adult app is drawn in the same system as `flcc-next/` — the poster
+system.** Cream paper `#FBF8F0`, navy ink `#2B4C6D`, one flat colour per
+poster, a single 3px outline weight, Inter at 900 for headlines and 800 for
+labels, flat navy-outline drawings on a 100×100 grid at stroke 5.5, `.pill`
+and `.go` for actions, a 14px outlined `.track` for progress. Nothing in it is
+soft: no gradients, no glass, no glow, and no drop shadow — `box-shadow`
+appears only as an inset outline, which is how a 3px edge is drawn without a
+border changing an element's size.
+
+The two apps still share **no code**. The stylesheet and the illustration set
+are deliberate duplicates, and a duplicate with nothing holding it in place
+drifts, so `flcc-adults/test/design.test.mjs` reads *both* stylesheets and
+fails when the palette, the edge weight, the face, the headline weights, the
+poster tones or the two actions stop matching; `test/art.test.mjs` compares the
+path data of the shared symbols character for character. Both are build-time
+reads of the other app's source — nothing ships to a browser across the
+boundary, and `modules.test.mjs` still enforces that at runtime. **If a rule
+genuinely needs to change, change it in both files.** That is the point of
+those tests, not an obstacle to them.
+
+The adult register is not a different system, it is the same system spoken
+plainly: a squarer 10px radius, no faces in the drawings, and prose written
+for an adult. Two rules are untested and matter most: **the chrome stops at
+Scripture** — the Bible reader is plain white paper and serif type — and
+**poppy is never a whole poster**, because white type does not sit on it
+safely at that size.
 
 **The six named colours are shared with `flcc-next/`** — sky `#C3D7EA`,
-captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`, sunshine
-`#EDCE7A` — and a test in each app pins them, so changing one means changing
-both. Two things are each app's own: the paper (the adult app sits on a warm
-`#FAF6F2`, the kids app on `#FBF8F0`), and the adult app's one derived shade,
-**ember `#C24A38`** — poppy deepened until white type sits on it at 4.8:1.
-In the adult app a colour appears either as a wash at about a tenth strength
-or as a full-bleed band in a stack; exactly one card per screen is allowed to
-be a solid colour.
+captain `#4173B0`, navy/ink `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`,
+sunshine `#EDCE7A`, on the shared cream paper `#FBF8F0` — and a test in each
+app pins them, so changing one means changing both.
 
 ## Pull requests
 

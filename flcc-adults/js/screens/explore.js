@@ -1,64 +1,49 @@
 // EXPLORE — what do you need today?
 //
-// This screen used to be four tiles in a two-by-two grid with an emoji on
-// each. That shape is the single clearest tell of an app built as a menu of
-// features rather than as something a person uses, and it is the shape the
-// blueprint for this redesign names first.
-//
-// It is four editorial blocks now: a hairline, the name at display size, one
-// line saying what is behind it, and the forward arrow. The whole block is the
-// tap target, which is what makes it work for somebody holding a phone in one
-// hand on the way to a shift.
-//
-// Four, and it stays four. The reason to open this tab is that you know what
-// you want; a fifth block would make it a list to read rather than a choice to
-// make.
+// Four posters, each a whole block of colour with one word on it. The kids and
+// teens edition opens its Explore on the same shape, and for the same reason:
+// a member who came here knows roughly what they want, and a grid of small
+// tiles makes them read twelve things to find one.
 
-import { h, eblock, badge, pageTitle, nextLine, rows, row, section, small,
-         go, rise, swap, waiting } from '../core/ui.js';
+import { h, poster, label, display, headline, art, go, pill, track,
+         rows, row, waiting, note, rise, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import * as plan from '../core/plan.js';
 import * as prayers from '../core/prayers.js';
 import * as scripture from '../core/scripture.js';
 
+// The eyebrow says what KIND of thing is behind the door; the arrow word says
+// what you will do there. Setting them to the same words, which an earlier
+// draft did, wastes the line and makes the poster read as a stutter.
+const DOORS = [
+  { name: 'READ',  eyebrow: 'Scripture', tone: 'sky',      symbol: 'book',   route: 'bible',
+    what: 'The whole Bible, in three translations, already on this device.', action: 'Open the Bible' },
+  { name: 'PRAY',  eyebrow: 'Prayer',    tone: 'rose',     symbol: 'flame',  route: 'pray',
+    what: 'Guided prayer for when you do not know how to start, and a list for when you cannot hold it all in your head.', action: 'Take a moment' },
+  { name: 'GROW',  eyebrow: 'Teaching',  tone: 'sunshine', symbol: 'sprout', route: 'grow',
+    what: 'Four learning paths — foundations, the Bible itself, faith at work, marriage and relationships.', action: 'Keep going' },
+  { name: 'PLAN',  eyebrow: 'A habit',   tone: 'captain',  symbol: 'mountain', route: 'bible',
+    what: 'A reading plan that is a sequence, not a calendar. Miss a fortnight and it is exactly where you left it.', action: 'Choose a plan' },
+];
+
 export default async function exploreScreen(ctx) {
-  const parts = [];
-
-  parts.push(pageTitle('What do you need today?', 'Explore · grow · be still'));
-
-  parts.push(h('div', { class: 'full' },
-    eblock({
-      name: 'Read',
-      what: 'The whole Bible, in three translations, already on this device.',
-      go: 'Open the Bible',
-      onclick: () => ctx.go('bible'),
-    }),
-    eblock({
-      name: 'Pray',
-      what: 'Guided prayer for when you do not know how to start, and a list for when you cannot hold it all in your head.',
-      go: 'Take a moment',
-      onclick: () => ctx.go('pray'),
-    }),
-    eblock({
-      name: 'Grow',
-      what: 'Four learning paths — foundations, the Bible itself, faith at work, marriage and relationships.',
-      go: 'Keep going',
-      onclick: () => ctx.go('grow'),
-    }),
-    eblock({
-      name: 'Plan',
-      what: 'A reading plan that is a sequence, not a calendar. Miss a fortnight and it is exactly where you left it.',
-      go: 'Choose a plan',
-      onclick: () => ctx.go('bible'),
-    })));
+  const parts = DOORS.map((door) => poster({ tone: door.tone, tall: true, as: 'button',
+      onclick: () => ctx.go(door.route) },
+    label(door.eyebrow),
+    h('div', {},
+      display(door.name),
+      h('p', { class: 'lead dim', style: 'margin-top:1rem', text: door.what })),
+    h('div', { class: 'poster-foot' },
+      h('span', { class: 'go' }, door.action),
+      art(door.symbol, { tone: door.tone, size: 'sm' }))));
 
   // ── Where you already are ───────────────────────────────────────────────
   //
-  // Under the four choices, not above them. A member who came here to find
+  // Under the four doors, not above them. A member who came here to find
   // something should meet the choice first; this is for the one who came back
   // to carry on and could not remember where they were.
-  const carry = section({ className: 'full' }, waiting());
+  const carry = h('div', { style: 'display:contents' });
   parts.push(carry);
   (async () => {
     try {
@@ -71,11 +56,9 @@ export default async function exploreScreen(ctx) {
         const book = books.find((one) => one.n === bible.last.n);
         if (book) {
           lines.push(row({
-            eyebrow: 'Bible',
             title: `${book.name} ${bible.last.chapter}`,
             note: 'Where you stopped reading',
-            accent: 'gold',
-            chev: true,
+            meta: 'Bible',
             onclick: () => ctx.go(`bible/${book.n}/${bible.last.chapter}`),
           }));
         }
@@ -86,11 +69,9 @@ export default async function exploreScreen(ctx) {
       if (reading) {
         const at = plan.positionIn(reading);
         lines.push(row({
-          eyebrow: 'Reading plan',
           title: at.done ? `${reading.title} — finished` : at.at.ref,
-          note: `Day ${at.day} of ${at.total} · ${reading.title}`,
-          accent: reading.tone,
-          chev: true,
+          note: `${reading.title} · day ${at.day} of ${at.total}`,
+          meta: `${at.percent}%`,
           onclick: () => ctx.go(`plan/${reading.id}`),
         }));
       }
@@ -101,11 +82,9 @@ export default async function exploreScreen(ctx) {
         if (!where.finished || where.finished === where.total) continue;
         const step = sessions.find((s) => !progress.isDone('session', `${one.id}:${s.id}`));
         lines.push(row({
-          eyebrow: one.title,
           title: step ? step.title : 'Next session',
-          note: `${where.finished} of ${where.total} sessions read`,
-          accent: one.tone,
-          chev: true,
+          note: `${one.title} · ${where.finished} of ${where.total} read`,
+          meta: `${where.percent}%`,
           onclick: () => ctx.go(step ? `session/${one.id}/${step.id}` : `path/${one.id}`),
         }));
       }
@@ -113,22 +92,21 @@ export default async function exploreScreen(ctx) {
       const open = prayers.open().length;
       if (open) {
         lines.push(row({
-          eyebrow: 'Prayer list',
           title: `${open} ${open === 1 ? 'prayer' : 'prayers'} you are carrying`,
           note: 'On this phone, and nowhere else',
-          accent: 'rose',
-          chev: true,
+          meta: 'Pray',
           onclick: () => ctx.go('pray'),
         }));
       }
 
       if (!lines.length) { carry.remove(); return; }
-      swap(carry, nextLine('Pick up where you were'), rows({}, ...lines));
+      swap(carry, poster({ tone: 'paper' },
+        label('Pick up where you were'),
+        rows(...lines),
+        h('div', { class: 'poster-foot' },
+          note('Everything here works with no signal once it has been opened once.'), h('span'))));
     } catch { carry.remove(); }
   })();
-
-  parts.push(section({ className: 'full' },
-    small('Everything on this screen works with no signal once it has been opened once. The Bible is already on the device; nothing you read, write or mark here is sent anywhere.')));
 
   const el = h('div', { style: 'display:contents' }, ...parts);
   rise(parts);
