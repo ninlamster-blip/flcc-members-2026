@@ -1,14 +1,16 @@
 // GROW.
 //
-// Four learning paths. The one you are furthest into gets the deep block; the
-// rest are rows. What you have finished sits at the bottom as three counts —
-// counts, not scores.
+// Four learning paths, each its own poster in its own colour. The one you are
+// furthest into leads; the rest follow. What you have finished sits at the
+// bottom as three figures — figures, not scores.
 
-import { h, block, card, badge, display, title, body, small, figure, nextLine,
-         act, actions, go, rows, row, section, thread, rise, note } from '../core/ui.js';
+import { h, poster, label, display, headline, art, go, pill, track,
+         rows, row, note, rise } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import { seasonOf, wants } from '../core/profile.js';
+
+const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
 
 export default async function growScreen(ctx) {
   const paths = await content.paths();
@@ -27,35 +29,40 @@ export default async function growScreen(ctx) {
   // A member with a path half-read does not need to be sold another one.
   const going = states.find((one) => one.where.finished > 0 && !one.where.done);
   const featured = going || states.find((one) => one.path.featured) || states[0];
-  const rest = states.filter((one) => one !== featured);
 
   if (featured) {
+    const tone = toneOf(featured.path.tone);
     const next = featured.sessions.find((s) => !progress.isDone('session', `${featured.path.id}:${s.id}`))
       || featured.sessions[0];
-    parts.push(block({ className: 'full' },
-      badge(going ? 'Where you are' : featured.path.kicker),
-      display(featured.path.title),
-      h('p', { class: 'lead', text: next ? next.title : featured.path.blurb }),
-      featured.where.finished ? thread(featured.where.percent) : null,
-      h('p', { class: 'cite', text: featured.where.finished
-        ? `${featured.where.finished} of ${featured.where.total} sessions · ${featured.path.minutes}`
-        : `${featured.where.total} sessions · ${featured.path.minutes}` }),
-      actions(
-        act(featured.where.finished ? 'Continue' : 'Start', () =>
+    parts.push(poster({ tone, tall: true },
+      label(going ? 'Where you are' : featured.path.kicker),
+      h('div', {},
+        display(String(featured.path.title).toUpperCase()),
+        h('p', { class: 'lead dim', style: 'margin-top:1rem', text: next ? next.title : featured.path.blurb }),
+        featured.where.finished ? h('div', { style: 'margin-top:1.6rem' }, track(featured.where.percent)) : null,
+        h('p', { class: 'body dim', style: 'margin-top:.8rem', text: featured.where.finished
+          ? `${featured.where.finished} of ${featured.where.total} sessions · ${featured.path.minutes}`
+          : `${featured.where.total} sessions · ${featured.path.minutes}` })),
+      h('div', { class: 'poster-foot' },
+        pill(featured.where.finished ? 'Continue' : 'Start', () =>
           ctx.go(next ? `session/${featured.path.id}/${next.id}` : `path/${featured.path.id}`)),
-        go('All sessions', () => ctx.go(`path/${featured.path.id}`)))));
+        art(featured.path.symbol || 'sprout', { tone, size: 'sm' }))));
   }
 
-  parts.push(section({ className: 'full' },
-    nextLine(`Learning paths · ${states.length} in all`),
-    rows({}, ...rest.map((one) => row({
-      eyebrow: one.path.kicker,
-      title: one.path.title,
-      note: one.path.blurb,
-      meta: one.where.finished ? `${one.where.finished}/${one.where.total}` : `${one.where.total} sessions`,
-      accent: one.path.tone,
-      onclick: () => ctx.go(`path/${one.path.id}`),
-    })))));
+  // ── The rest, one poster each ───────────────────────────────────────────
+  for (const one of states.filter((s) => s !== featured)) {
+    const tone = toneOf(one.path.tone);
+    parts.push(poster({ tone, as: 'button', onclick: () => ctx.go(`path/${one.path.id}`) },
+      label(one.path.kicker),
+      h('div', {},
+        headline(String(one.path.title).toUpperCase()),
+        h('p', { class: 'body dim', style: 'margin-top:.8rem', text: one.path.blurb })),
+      h('div', { class: 'poster-foot' },
+        h('span', { class: 'go' }, one.where.finished
+          ? `${one.where.finished} of ${one.where.total} read`
+          : `${one.where.total} sessions`),
+        art(one.path.symbol || 'book', { tone, size: 'sm' }))));
+  }
 
   // ── Where to start, if nothing is ───────────────────────────────────────
   if (!states.some((one) => one.where.finished > 0)) {
@@ -64,32 +71,27 @@ export default async function growScreen(ctx) {
       || states.find((one) => (one.path.forFocus || []).some((f) => wants(f)))
       || states[0];
     if (suggested) {
-      parts.push(card({ tone: 'paper', className: 'full', symbol: suggested.path.symbol,
-          foot: `Because you said: ${season.label.toLowerCase()}` },
-        badge('Where to start'),
-        title(`Start with ${suggested.path.title}`),
-        body(suggested.path.blurb),
-        go('Open it', () => ctx.go(`path/${suggested.path.id}`))));
+      parts.push(poster({ tone: 'paper' },
+        label(`Because you said: ${season.label.toLowerCase()}`),
+        headline(`START WITH ${String(suggested.path.title).toUpperCase()}`),
+        h('div', { class: 'poster-foot' },
+          go('Open it', () => ctx.go(`path/${suggested.path.id}`)), h('span'))));
     }
   }
 
   // ── What you have done ──────────────────────────────────────────────────
   const state = progress.getProgress();
-  parts.push(section({ className: 'full' },
-    nextLine('So far'),
-    h('div', { class: 'figures' },
-      figureCount(progress.count('session'), 'sessions'),
-      figureCount(progress.count('reading'), 'readings'),
-      figureCount(progress.count('prayer'), 'prayers')),
-    small(`These are counts, not scores. Nobody else can see them, and they are not a measure of anything. Best run of days so far: ${state.days.best}.`)));
+  parts.push(poster({ tone: 'paper' },
+    label('So far'),
+    rows(
+      row({ title: 'Sessions read', meta: String(progress.count('session')) }),
+      row({ title: 'Plan readings marked', meta: String(progress.count('reading')) }),
+      row({ title: 'Prayers prayed through', meta: String(progress.count('prayer')) })),
+    h('div', { class: 'poster-foot' },
+      note(`These are counts, not scores. Nobody else can see them, and they are not a measure of anything. Best run of days so far: ${state.days.best}.`),
+      h('span'))));
 
   const el = h('div', { style: 'display:contents' }, ...parts);
   rise(parts);
   return { title: 'Grow', el };
-}
-
-function figureCount(value, name) {
-  return h('div', {},
-    h('p', { class: 'numeral', text: String(value) }),
-    h('p', { class: 'label', text: name }));
 }

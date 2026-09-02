@@ -1,22 +1,27 @@
 // A guided prayer.
 //
-// One step at a time, with a timer that can be ignored. The timer exists
-// because the hardest part of praying for five minutes is knowing whether it
-// has been five minutes; it advances nothing on its own, and no step is taken
-// from the reader before they are done with it.
+// One step at a time, on one poster, with a timer that can be ignored. The
+// timer exists because the hardest part of praying for five minutes is knowing
+// whether it has been five minutes; it advances nothing on its own, and no
+// step is taken from the reader before they are done with it.
 
-import { h, block, card, badge, display, title, body, small, reference,
-         act, actions, thread, rise, note, toast, moment, swap } from '../core/ui.js';
+import { h, poster, label, display, headline, art, go, pill, track, reference,
+         note, moment, rise, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import * as prayers from '../core/prayers.js';
+
+const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
 
 export default async function guideScreen(ctx) {
   const [id] = ctx.route.args;
   const guides = await content.guides();
   const guide = guides.find((one) => one.id === id);
-  if (!guide) return { title: 'Pray', el: card({ tone: 'paper', className: 'full' }, note('That guide has moved.')) };
+  if (!guide) {
+    return { title: 'Pray', el: poster({ tone: 'paper' }, label('Pray'), note('That guide has moved.')) };
+  }
 
+  const tone = toneOf(guide.tone);
   const el = h('div', { style: 'display:contents' });
   let step = 0;
   let timer = null;
@@ -30,8 +35,8 @@ export default async function guideScreen(ctx) {
     elapsed = 0;
     const current = guide.steps[step];
     const seconds = current.seconds || 60;
-    const bar = thread(0, 'gold');
-    const clock = h('span', { text: `${seconds}s` });
+    const bar = track(0);
+    const clock = h('span', { class: 'row-meta', text: `${seconds}s` });
 
     timer = setInterval(() => {
       elapsed += 1;
@@ -43,22 +48,23 @@ export default async function guideScreen(ctx) {
 
     const last = step === guide.steps.length - 1;
     swap(el,
-      block({ tall: true, className: 'full' },
+      poster({ tone, tall: true },
+        label(`${guide.title} · ${step + 1} of ${guide.steps.length}`),
         h('div', {},
-          badge(`${guide.title} · ${step + 1} of ${guide.steps.length}`),
-          h('div', { style: 'margin-top:1rem' }, display(current.label)),
-          h('p', { class: 'lead', style: 'margin-top:.7rem', text: current.prompt })),
+          display(String(current.label).toUpperCase()),
+          h('p', { class: 'lead dim', style: 'margin-top:1.2rem', text: current.prompt })),
         h('div', {},
           bar,
-          h('p', { class: 'cite', style: 'margin-top:.6rem' }, clock),
-          h('div', { class: 'act-row', style: 'margin-top:1.1rem' },
-            act(last ? 'Finish' : 'Next', () => { if (last) finish(); else { step += 1; paint(); } }),
-            step > 0 ? act('Back', () => { step -= 1; paint(); }, { quiet: true, small: true }) : null))),
+          h('div', { class: 'poster-foot', style: 'margin-top:1.2rem' },
+            h('div', { class: 'pill-row' },
+              pill(last ? 'Finish' : 'Next', () => { if (last) finish(); else { step += 1; paint(); } }),
+              step > 0 ? pill('Back', () => { step -= 1; paint(); }, { quiet: true }) : null),
+            clock))),
       guide.ref
-        ? card({ tone: 'paper', className: 'full' }, badge('Alongside this'), reference(guide.ref, ctx.go))
+        ? poster({ tone: 'paper' }, label('Alongside this'), reference(guide.ref, ctx.go))
         : null,
-      card({ tone: 'paper', className: 'full' },
-        small('Nothing you pray here is recorded unless you choose to write it down at the end.')));
+      poster({ tone: 'paper' },
+        note('Nothing you pray here is recorded unless you choose to write it down at the end.')));
     window.scrollTo(0, 0);
   };
 
@@ -68,27 +74,30 @@ export default async function guideScreen(ctx) {
     const input = h('textarea', { placeholder: 'Anything you want to keep from that? (optional)',
       'aria-label': 'A reflection' });
     swap(el,
-      block({ className: 'full' },
-        badge('Amen'),
-        display('That was prayer.'),
-        h('p', { class: 'lead',
-          text: 'Whether it felt like anything or not. Both kinds count, and the ones that feel like nothing count the same.' })),
-      card({ tone: 'paper', className: 'full', foot: 'Reflections stay on this device' },
-        badge('Keep something'),
+      poster({ tone, tall: true },
+        label('Amen'),
+        h('div', {},
+          display('THAT WAS PRAYER.'),
+          h('p', { class: 'lead dim', style: 'margin-top:1.2rem',
+            text: 'Whether it felt like anything or not. Both kinds count, and the ones that feel like nothing count the same.' })),
+        h('div', { class: 'poster-foot' }, h('span'), art('flame', { tone, size: 'sm' }))),
+      poster({ tone: 'paper' },
+        label('Keep something'),
         input,
-        actions(
-          act('Keep it', () => {
-            const text = input.value.trim();
-            if (!text) { toast('Write a line, or just close this.'); input.focus(); return; }
-            prayers.reflect({ text, guide: guide.title, ref: guide.ref || '' });
-            progress.complete('reflection', `${guide.id}-${progress.today()}`);
-            toast('Kept. It is in Pray, under Reflections.');
-            ctx.go('pray');
-          }),
-          act('Done', () => ctx.go('pray'), { quiet: true }))));
+        h('div', { class: 'poster-foot' },
+          h('div', { class: 'pill-row' },
+            pill('Keep it', () => {
+              const text = input.value.trim();
+              if (!text) { toast('Write a line, or just close this.'); input.focus(); return; }
+              prayers.reflect({ text, guide: guide.title, ref: guide.ref || '' });
+              progress.complete('reflection', `${guide.id}-${progress.today()}`);
+              toast('Kept. It is in Pray, under Reflections.');
+              ctx.go('pray');
+            }),
+            pill('Done', () => ctx.go('pray'), { quiet: true })),
+          h('span', { class: 'row-meta', text: 'Stays on this device' }))));
     window.scrollTo(0, 0);
-    moment({ eyebrow: guide.title, big: 'Amen.', line: 'Come back to this whenever you need it.',
-      action: 'Close', symbol: guide.symbol });
+    moment({ tone, eyebrow: guide.title, big: 'AMEN.', line: 'Come back to this whenever you need it.', action: 'Close' });
   };
 
   paint();

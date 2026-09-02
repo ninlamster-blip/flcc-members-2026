@@ -65,41 +65,40 @@ and no red number telling an adult they have failed at reading the Bible.
 
 ## The design
 
-`css/next.css` — the **NEXT system**. It is the app's fifth design and the
-first one that is not built out of coloured rectangles. The four before it each
-tried to carry the screen with surface — stickers, then bands, then seeded
-waves and hand-drawn textures — and each of them ended up as a dashboard of
-tiles wearing a different coat. This one gives the work to type and to space.
+`css/next.css` — the **poster system**, which is the kids and teens edition's
+design system, not a cousin of it. Open `flcc-next/` and this app side by side
+and they are recognisably one product: the same cream paper, the same navy
+ink, the same enormous headlines on flat blocks of colour, the same drawings.
 
-- **80 / 15 / 5.** Eighty per cent of a screen is warm editorial paper
-  (`#F8F8F6`) and near-black ink. Fifteen is the one deep block a screen is
-  allowed — the Daily Word, the featured message, the profile head. Five is
-  gold, and gold is a signal, never a decoration.
-- **Type does the work.** A heading is large enough that it does not need a
-  box around it. Most sections are a heading and a list of hairline-separated
-  rows, with no container at all.
-- **One main action per screen.** One filled button. Everything else is a text
-  action with a rule after it. There is no third style.
-- **The line points forward.** `NEXT UP ─────→` — the signature, and the
-  reason the app is called NEXT. It is on section headings and on the four
-  Explore blocks, and nowhere else.
-- **The chrome stops at Scripture.** The Bible reader is white paper and serif
-  type with nothing on it at all. The app is quiet so that Scripture can be the
-  loudest thing in it.
+It took four other designs to get here. The first was drawn in a playful
+sticker style and read, unmistakably, as an app for children. The three after
+it each ran the other way — bands, then seeded waves and hand-drawn textures,
+then an editorial near-black-and-gold — and each ended up as a dashboard of
+tiles wearing a different coat. The thing the church actually wanted was one
+app with two editions.
 
-The interface is set in the platform's own face — SF on Apple hardware, the
-system face elsewhere — and the one webfont the app loads is spent on
-Scripture. The palette is near-black `#151515` on `#F8F8F6`, hairlines in
-`#E8E8E4`, and gold in two weights: `#B4884A` on the deep block, `#8A5F1E`
-where it carries text on paper. The six colours shared with the kids and teens
-edition are still here and still pinned by a test in both apps, but they are
-2px stems and tenth-strength washes now, never a surface with a paragraph on
-it.
+- **A screen is a run of posters.** Each poster is a whole block of colour
+  carrying one label, one headline and one action. Four big things to scroll
+  through, not twelve small ones to read.
+- **One flat colour per poster**, from the six shared names. Nothing is soft:
+  no gradients, no glass, no glow, no drop shadows.
+- **One outline weight.** 3px, navy, on posters, pills, tracks and drawings
+  alike.
+- **Headlines are heavy.** Inter at 900. A headline in this system is a block
+  of colour in its own right.
+- **The chrome stops at Scripture.** The Bible reader is plain white paper and
+  serif type with nothing on it at all. The app can be as loud as it likes
+  right up to the moment somebody is reading the Bible.
 
-Four rules survive from the version of this app that read as an app for
-children, and all four are still enforced by tests: no border over 1px, no
-shadow with a zero blur radius, no font-weight over 600, and no face on any
-drawing.
+The adult register is the same system spoken plainly: a squarer 10px radius,
+no faces on the drawings, poppy never used as a whole poster (white type does
+not sit safely on it at that size), and prose written for an adult.
+
+The two apps share **no code** — the stylesheet and the drawings are
+deliberate duplicates. `test/design.test.mjs` reads both stylesheets and fails
+if the palette, the edge, the face, the weights, the tones or the actions
+drift apart, and `test/art.test.mjs` compares the shared symbols' path data
+character for character. If a rule needs to change, it changes in both apps.
 
 ## Content
 

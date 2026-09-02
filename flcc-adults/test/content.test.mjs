@@ -29,12 +29,13 @@ function looksRight(item, where) {
   }
 }
 
-/** The colours a panel may wear. */
-const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'poppy', 'gold', 'paper'];
-/** Everything a stem, a tag or an icon may be. */
+/** The colours a poster may wear. `navy` is the content files' name for ink. */
+const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'poppy', 'paper'];
+/** Everything a tone field may name. */
 const ACCENTS = [...CARD_TONES];
-/** Which files' tone ends up as a surface rather than a stem. */
-const ON_CARDS = ['moments.json', 'paths.json', 'prayer-guides.json', 'reading-plans.json', 'events.json', 'messages.json'];
+/** Which files' tone ends up as a whole block of colour. */
+const ON_CARDS = ['moments.json', 'paths.json', 'prayer-guides.json', 'reading-plans.json',
+                  'events.json', 'messages.json', 'prayer-categories.json'];
 
 /**
  * The six colours, pinned.
@@ -51,66 +52,52 @@ const ON_CARDS = ['moments.json', 'paths.json', 'prayer-guides.json', 'reading-p
  */
 test('the six shared colours are exactly these', () => {
   const shared = {
-    sky: '#C3D7EA', captain: '#4173B0', navy: '#2B4C6D',
-    rose: '#EABCB5', poppy: '#EB8861', sunshine: '#EDCE7A',
+    sky: '#C3D7EA', captain: '#4173B0', rose: '#EABCB5',
+    poppy: '#EB8861', sunshine: '#EDCE7A',
   };
   for (const [name, hex] of Object.entries(shared)) {
     assert.match(css, new RegExp(`--${name}:\\s*${hex};`, 'i'),
       `--${name} should be ${hex} — and flcc-next/css/next.css must match`);
   }
-  // The ground is warm editorial white, not #FFF: pure white behind the white
-  // surfaces this system uses is invisible.
-  assert.match(css, /--paper:\s*#F8F8F6;/i, 'this app sits on a warm editorial white');
-  assert.match(css, /--ink:\s*#151515;/i, 'near-black is the ink');
-  assert.match(css, /--ink-2:\s*#6E6E73;/i, 'the secondary ink is gone');
-  assert.match(css, /--line:\s*#E8E8E4;/i, 'the hairline colour is gone');
-  // Gold is this app's own, and there are two weights of it for two jobs.
-  assert.match(css, /--gold:\s*#B4884A;/i, 'the brand gold is gone');
-  assert.match(css, /--gold-ink:\s*#8A5F1E;/i, 'the gold that carries text on paper is gone');
+  // The paper and the ink are shared too, now that both editions are drawn in
+  // one system. `design.test.mjs` compares them against the kids edition
+  // directly; these pin them so that "both moved together" still fails.
+  assert.match(css, /--paper:\s*#FBF8F0;/i, 'both editions sit on the same cream paper');
+  assert.match(css, /--ink:\s*#2B4C6D;/i, 'navy is the only ink');
 });
 
 test('the palette is the one the stylesheet defines', () => {
-  for (const tone of ['paper', 'white', 'ink', 'block', 'gold', 'sky', 'captain', 'navy', 'rose', 'poppy', 'sunshine']) {
+  for (const tone of ['paper', 'ink', 'sky', 'captain', 'rose', 'poppy', 'sunshine']) {
     assert.ok(TONES.includes(tone) || css.includes(`--${tone}:`), `--${tone} is missing from next.css`);
   }
 });
 
 /**
- * The family colours never carry body copy.
+ * Poppy is an accent, never a poster.
  *
- * In the NEXT system they are washes at about a tenth strength and stems 2px
- * wide, so this is mostly belt and braces now — but a content file that named
- * a colour with no wash behind it would render an unstyled surface rather than
- * failing, which is exactly the kind of thing that ships.
+ * Navy on poppy is about 3.5:1, which is fine behind a headline and not fine
+ * behind a paragraph — and a poster is mostly paragraphs. The kids edition
+ * keeps poppy out of its poster tones for the same reason. Where a content
+ * file names it anyway the screens quietly substitute rose, but a file that
+ * relies on that is a file whose author did not get what they asked for, so
+ * the ones that become whole blocks of colour are checked here.
  */
-test('a content colour is one the system can actually paint', () => {
+test('a content colour is one the poster system can actually paint', () => {
   for (const name of ON_CARDS) {
     for (const item of read(name)) {
       assert.ok(CARD_TONES.includes(item.tone),
-        `${name}/${item.id}: "${item.tone}" cannot carry a card — pick one of ${CARD_TONES.join(', ')}`);
+        `${name}/${item.id}: "${item.tone}" is not a colour — pick one of ${CARD_TONES.join(', ')}`);
+      assert.notEqual(item.tone, 'poppy',
+        `${name}/${item.id}: poppy cannot carry a poster — navy on poppy is about 3.5:1`);
     }
   }
-  assert.ok(css.includes('--poppy-wash:'), 'poppy needs a wash for its rows and notes');
 });
 
-/**
- * Every colour a card can wear needs a band to go under it.
- *
- * A card's bottom band is `--<tone>-band`, and a tone without one renders a
- * band with no colour — a white strip along the bottom of an otherwise
- * finished card. It is exactly the kind of thing that ships.
- */
-test('every card colour has a wash to be tinted with', () => {
-  // A card is tinted at about a tenth of a colour's strength, never painted in
-  // it: full-strength colour on every surface is what a screen with no
-  // hierarchy looks like. One block per screen is allowed to be solid, and
-  // that block is navy.
-  for (const tone of CARD_TONES) {
-    if (tone === 'paper') continue;
-    assert.ok(css.includes(`--${tone}-wash:`), `--${tone}-wash is missing`);
-    assert.match(css, new RegExp(`\\.card\\[data-tone="${tone}"\\]`), `.card[data-tone="${tone}"] is not styled`);
+test('every poster colour is one the stylesheet can paint', () => {
+  for (const tone of ['sunshine', 'rose', 'sky', 'captain', 'ink', 'paper']) {
+    assert.match(css, new RegExp(`\\.poster\\[data-tone="${tone}"\\]`),
+      `.poster[data-tone="${tone}"] is not styled`);
   }
-  assert.match(css, /\.card\[data-solid\]/, 'the one solid block has no styling');
 });
 
 test('every Scripture moment is complete, and in an adult voice', () => {
@@ -241,7 +228,7 @@ test('nothing in the content still names a colour from the old palette', () => {
   // This app has been repainted twice. A file left carrying a colour from
   // either of the earlier palettes renders as an unstyled card rather than
   // failing, so every retired name is checked here by hand.
-  const gone = /"(forest|sage|mist|olive|ember|peach|yellow|cream|blush|lilac|coral|orange)"/;
+  const gone = /"(forest|sage|mist|olive|ember|gold|peach|yellow|cream|blush|lilac|coral|orange)"/;
   for (const file of readdirSync(new URL('../content/', import.meta.url), { withFileTypes: true })) {
     if (!file.isFile() || !file.name.endsWith('.json')) continue;
     const raw = readFileSync(new URL(`../content/${file.name}`, import.meta.url), 'utf8');

@@ -1,18 +1,17 @@
 // Boot, onboarding, navigation.
 //
 // Five destinations, a header that stays out of the way, and screens loaded on
-// demand. The shell owns the frame and nothing else: a screen returns
+// demand. The shell owns nothing but the frame: a screen returns
 // `{ title, el }` and never touches the header or the tab bar.
 //
-// The header is deliberately thin. Every root screen sets its own title at
-// display size inside the page — which is what an editorial layout does and
-// what a chrome bar with a centred word in it does not — so up here there is
-// room for the date, and one round control, and nothing else.
+// The frame is the kids and teens edition's frame — the same header, the same
+// tab bar, the same uppercase page names. The one thing missing from it is the
+// streak badge, because this edition keeps no streak.
 
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
-import { getUser, saveUser, SEASONS, FOCUS } from './core/profile.js';
-import { block, card, badge, display, lead, title, act, choice, toast } from './core/ui.js';
+import { getUser, saveUser, greeting, firstName, SEASONS, FOCUS } from './core/profile.js';
+import { poster, label, display, headline, lead, pill, choice, art, toast } from './core/ui.js';
 
 const TABS = [
   { name: 'today',     label: 'Today',     icon: 'today' },
@@ -66,9 +65,6 @@ const UNDER = {
   plan:    'explore',
 };
 
-const longDate = () => new Date().toLocaleDateString(undefined,
-  { weekday: 'long', day: 'numeric', month: 'long' });
-
 // ── Onboarding ─────────────────────────────────────────────────────────────
 //
 // Three questions, and none of them is required to be answered honestly for
@@ -94,45 +90,50 @@ function onboarding() {
     boot();
   };
 
-  const intro = () => block({ tall: true, className: 'full' },
+  const intro = () => poster({ tone: 'captain', tall: true },
+    label('FLCC NEXT'),
     h('div', {},
-      badge('FLCC NEXT'),
-      h('div', { style: 'margin-top:1rem' }, display('Faith for real life.')),
-      h('p', { class: 'lead', style: 'margin-top:1rem',
+      display('FAITH FOR REAL LIFE.'),
+      h('p', { class: 'lead dim', style: 'margin-top:1.2rem',
         text: 'Scripture, prayer and teaching for the adults of FLCC — built for a life that is already full.' })),
-    h('div', {},
-      act('Begin', next),
-      h('p', { class: 'cite', style: 'margin-top:1.2rem', text: 'FLCC Church · Kuwait' })));
+    h('div', { class: 'poster-foot' },
+      pill('Begin', next),
+      art('church', { tone: 'captain', size: 'sm' })));
 
   const askName = () => {
     const input = h('input', { type: 'text', id: 'ob-name', maxlength: '40', autocomplete: 'name', placeholder: 'Your name' });
-    const warn = h('p', { class: 'small' });
-    const form = h('form', { onsubmit: (event) => {
-      event.preventDefault();
+    const warn = h('p', { class: 'note' });
+    const submit = () => {
       const name = input.value.trim();
       if (!name) { warn.textContent = 'We need something to call you.'; input.focus(); return; }
       draft.name = name;
       next();
-    } }, input, h('div', { style: 'margin-top:1.6rem' }, act('Next', null, { type: 'submit' })));
-
-    const el = card({ tone: 'paper', tall: true, className: 'full', foot: 'One of three' },
-      badge('Your name'),
-      h('div', {}, display('What should we call you?'), h('div', { style: 'margin-top:1.4rem' }, form), warn));
+    };
+    const el = poster({ tone: 'sky', tall: true },
+      label('One of three'),
+      h('div', {},
+        display('WHAT SHOULD WE CALL YOU?'),
+        h('div', { style: 'margin-top:1.6rem' }, input),
+        warn),
+      h('div', { class: 'poster-foot' }, pill('Next', submit), art('blob', { tone: 'sky', size: 'sm' })));
+    input.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); submit(); } });
     setTimeout(() => input.focus(), 60);
     return el;
   };
 
-  const askSeason = () => card({ tone: 'paper', className: 'full', foot: 'Two of three' },
-    badge('Where you are'),
+  const askSeason = () => poster({ tone: 'sunshine', tall: true },
+    label('Two of three'),
     h('div', {},
-      display('Where are you, honestly?'),
-      h('p', { class: 'lead', style: 'margin-top:.7rem', text: 'This only changes what we put in front of you first. You can change it whenever you like.' }),
-      h('div', { class: 'choice-list', style: 'margin-top:1.2rem' },
-        ...SEASONS.map((season) => choice(season.label, () => { draft.season = season.id; next(); })))));
+      display('WHERE ARE YOU, HONESTLY?'),
+      h('p', { class: 'body dim', style: 'margin-top:1rem',
+        text: 'This only changes what we put in front of you first. You can change it whenever you like.' }),
+      h('div', { class: 'choice-list', style: 'margin-top:1.4rem' },
+        ...SEASONS.map((season) => choice(season.label, () => { draft.season = season.id; next(); })))),
+    h('div', { class: 'poster-foot' }, h('span'), art('mountain', { tone: 'sunshine', size: 'sm' })));
 
   const askFocus = () => {
     const chosen = new Set();
-    const list = h('div', { class: 'choice-list', style: 'margin-top:1.2rem' },
+    const list = h('div', { class: 'choice-list', style: 'margin-top:1.4rem' },
       ...FOCUS.map((one) => {
         const button = choice(one.label, () => {
           if (chosen.has(one.id)) chosen.delete(one.id); else chosen.add(one.id);
@@ -141,10 +142,12 @@ function onboarding() {
         return button;
       }));
 
-    return card({ tone: 'paper', className: 'full', foot: 'Three of three' },
-      badge('What you came for'),
-      h('div', {}, display('What did you come for?'), list),
-      h('div', {}, act('Finish', () => { draft.focus = [...chosen]; next(); })));
+    return poster({ tone: 'rose', tall: true },
+      label('Three of three'),
+      h('div', {}, display('WHAT DID YOU COME FOR?'), list),
+      h('div', { class: 'poster-foot' },
+        pill('Finish', () => { draft.focus = [...chosen]; next(); }),
+        art('sprout', { tone: 'rose', size: 'sm' })));
   };
 
   render();
@@ -165,28 +168,21 @@ function renderTabs(active) {
 
 function renderHead(view, route) {
   clear(headEl);
-  if (ROOTS.has(route.name)) {
-    // Every root screen sets its own name inside the page, at display size, so
-    // the header carries the date, one control, and nothing else. An earlier
-    // draft repeated the greeting up here as well, which said the same thing
-    // twice within forty pixels of itself.
+  if (route.name === 'today') {
     headEl.append(
-      h('p', { class: 'day', text: longDate() }),
-      route.name === 'you' ? h('span') : profileButton());
+      h('div', {},
+        h('p', { class: 'label dimmer', text: greeting() }),
+        h('p', { class: 'headline', style: 'margin-top:.35rem', text: firstName().toUpperCase() })),
+      h('span'));
+  } else if (ROOTS.has(route.name)) {
+    headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
   } else {
     headEl.append(
-      h('button', { class: 'back', type: 'button', 'aria-label': 'Back',
-        onclick: () => router.back('today') }, '←'),
-      h('p', { class: 'page-name', text: view.title || '' }));
+      h('button', { class: 'go', type: 'button', style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',
+        onclick: () => router.back('today') }, '← Back'),
+      h('p', { class: 'label dimmer', text: view.title || '' }));
   }
   headEl.hidden = false;
-}
-
-function profileButton() {
-  const button = h('button', { class: 'head-btn', type: 'button', 'aria-label': 'You',
-    onclick: () => router.go('you') });
-  button.appendChild(navIcon('you'));
-  return button;
 }
 
 async function show(route, module) {
@@ -204,9 +200,10 @@ async function show(route, module) {
   try {
     view = await module.default(context);
   } catch (error) {
-    view = { title: 'Something broke', el: card({ tone: 'paper', className: 'full', symbol: 'cloud' },
-      badge('Sorry'), title('That screen did not open'),
-      h('p', { class: 'note', 'data-level': 'warn', text: String((error && error.message) || error) })) };
+    view = { title: 'Something broke', el: poster({ tone: 'rose' },
+      label('Sorry'),
+      headline('THAT SCREEN DID NOT OPEN'),
+      h('p', { class: 'note', text: String((error && error.message) || error) })) };
   }
 
   screenEl.appendChild(view.el);

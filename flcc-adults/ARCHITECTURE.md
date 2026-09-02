@@ -65,10 +65,10 @@ Rules that keep it honest:
   screen picks its own material with `Math.random()`. They call
   `rotation.deal()`, which means the whole church meets the same verse on the
   same morning and nobody can re-roll a passage they would rather not sit with.
-- **Illustration goes through `figure()` in `js/core/ui.js`**, never straight
-  from `js/core/art.js`. `figure()` is where a reader's choice to switch the
-  icons off is honoured; a screen that reaches past it would keep drawing them
-  on some screens and not others.
+- **Illustration goes through `art()` in `js/core/ui.js`**, never straight
+  from `js/core/art.js`. `art()` is where a reader's choice to switch the
+  drawings off is honoured; a screen that reaches past it would keep drawing
+  them on some screens and not others.
 - **What is next is `js/core/agenda.js`, and only `agenda.js`.** Countdowns,
   the order of the calendar, and the framing the Today screen opens on are all
   pure functions of an event and a moment. A screen that worked out its own
@@ -157,65 +157,75 @@ Two notes, because a schema is not a neutral document:
 ## Design system
 
 `css/next.css` is the whole of it, and its opening comment states the rules.
-It is the app's fifth design, and the first one not built out of coloured
-rectangles: the four before it each tried to carry the screen with surface —
-stickers, then bands, then seeded waves and hand-drawn textures — and each
-ended up as a dashboard of tiles wearing a different coat. This one gives the
-work to type and to space.
+**It is the same design system as `flcc-next/`** — the poster system — and
+that is the point rather than a coincidence. The adult edition went through
+four designs of its own first (stickers, then bands, then seeded waves, then
+an editorial near-black-and-gold), each one an attempt to be recognisably
+*not* the kids app. What the church actually wanted was one app with two
+editions, so this one is drawn in the kids and teens edition's system,
+spoken in an adult register.
 
-Four rules survive from the version that read as an app for children, and all
-four are still enforced by `test/modules.test.mjs`:
+The pieces:
 
-1. **No hard offset shadows.** Every `box-shadow` is blurred.
-2. **No thick outlines.** No border anywhere is over 1px.
-3. **Nothing heavier than 600.**
-4. **No drawing has a face.** `test/art.test.mjs` fails a circle, an ellipse
-   or a smile-shaped arc anywhere in the icon set.
+| | |
+|---|---|
+| Paper | cream `#FBF8F0`, everywhere, in both editions |
+| Ink | navy `#2B4C6D` — type, outlines and drawings |
+| Colour | one flat tone per poster, from the six shared names |
+| Edge | `--edge: 3px`, one outline weight, drawn as an inset `box-shadow` |
+| Type | Inter — 900 for `.display`/`.headline`/`.numeral`, 800 for `.label` |
+| Radius | `10px` — the adult register is squarer than the kids' |
+| Drawings | flat shapes on a 100×100 grid, one navy outline at stroke 5.5 |
+| Actions | `.pill` (filled), `.pill[data-quiet]`, `.go` (a word and an arrow) |
+| Progress | `.track` — 14px tall and outlined, never a thin grey rule |
 
-What the NEXT system adds on top of them:
+Nothing in it is soft: no gradients, no glass, no glow, and no drop shadow.
+`box-shadow` appears only as an inset outline, which is how a 3px edge is
+drawn without a border changing an element's size.
 
-5. **80 / 15 / 5.** Eighty per cent of a screen is warm paper (`#F8F8F6`) and
-   near-black ink. Fifteen is the one deep block a screen is allowed. Five is
-   gold, and gold is a signal — a label, a rule, an arrowhead, the tab you are
-   on — never a decoration.
-6. **Type does the work.** If something needs a border to be found, it is in
-   the wrong place on the page. Most sections are a heading and a list of rows
-   with no container at all.
-7. **One main action per screen.** One filled `act()`. Everything else is a
-   `go()` — text, a rule, no fill.
-8. **The line points forward.** `NEXT UP ─────→`. The arrowhead is allowed on
-   a section heading (`nextLine()`) and on one of the four Explore blocks
-   (`eblock()`), and nowhere else; put it on everything and it stops being a
-   signature and becomes a texture.
-9. **The chrome stops at Scripture.** The Bible reader, the book list and the
-   chapter grid are white paper and serif type — no block, no rule, no gold.
+**A poster is the layout primitive.** `poster({ tone, tall })` is a whole
+block of colour with a label at the top, a headline in the middle and a
+`.poster-foot` at the bottom carrying one action and one drawing. A screen is
+a vertical run of them, not a grid of tiles — a member scrolls through four
+big things instead of reading twelve small ones to find the one they wanted.
 
-The four shapes a screen is built from live in `js/core/ui.js`:
+Three rules that are the adult register rather than the system:
 
-| | What it is | Where |
-|---|---|---|
-| `block()` | the deep near-black block, one per screen | Daily Word, featured message, profile head |
-| `eblock()` | a large editorial navigation block | Explore, and only Explore |
-| `rows()` | hairline-separated rows, a 2px colour stem at most | everywhere a list appears |
-| `card()` | a panel, for a group that genuinely has an edge | sparingly |
+1. **The chrome stops at Scripture.** The Bible reader, the book list and the
+   chapter grid are plain white paper and serif type — no poster, no colour,
+   no drawing. The app can be as loud as it likes right up to the moment
+   somebody is reading the Bible.
+2. **Poppy is never a whole poster.** It is in the palette and it is used, but
+   white type does not sit safely on it at display size.
+   `test/content.test.mjs` fails a content file that assigns it as a tone.
+3. **No drawing has a face.** The kids edition's characters do not come across;
+   the objects do.
 
-Two details worth knowing before touching it:
+### Keeping the two editions one design
 
-- **There is no webfont for the interface.** `--ui` is SF on Apple hardware
-  and the platform's own face everywhere else. The one webfont this app loads
-  is spent on Scripture, which is the only text in it that should not look
-  like the operating system.
-- **Gold is defined twice on purpose.** `--gold` (`#B4884A`) is the brand mark
-  and is read on the deep block at 5.8:1 or used as a fill; `--gold-ink`
-  (`#8A5F1E`) is the same colour taken down until it carries small text on
-  paper at 5.3:1. One gold cannot do both jobs, and the version that tried
-  failed a contrast check on every eyebrow in the app.
+The two apps share **no code**, so `css/next.css` and `js/core/art.js` here are
+deliberate duplicates of their opposite numbers in `flcc-next/`. A duplicate
+with nothing holding it in place drifts — somebody widens a radius here,
+softens a weight there, and in six months the two apps are cousins instead of
+editions. Two suites stop that:
 
-On colour: the six named colours are still shared with `flcc-next/` and still
-pinned by a test in each app, so the two editions remain one family. But in
-this system they are stems and washes — a 2px rule beside a row, a tint at
-about a tenth strength — never a surface with a paragraph on it. A screen
-painted in six colours has no hierarchy, and hierarchy is the whole design.
+- `test/design.test.mjs` reads **both** stylesheets and fails when the palette,
+  the edge weight, the face, the headline weights, the six poster tones, the
+  two actions or the flat-colour rules stop matching.
+- `test/art.test.mjs` extracts the path data for the symbols that exist in both
+  sets — `book`, `heart`, `mountain`, `star`, and this edition's `sprout`,
+  `sun` and `flame` against their `plant`, `sunrise` and `light` — and compares
+  them character for character.
+
+Both are build-time reads of the other app's source. Nothing crosses the
+boundary at runtime, and `test/modules.test.mjs` still fails any module that
+reaches past `flcc-next/bible/`. **If a rule genuinely needs to change, change
+it in both files** — that is what these tests are for, not an obstacle to
+them.
+
+One detail worth knowing before touching it: this app loads Inter as a webfont,
+the same face and the same weights as the kids edition. The Bible reader does
+not use it — Scripture is set in the platform's own serif.
 
 ## Tests
 
@@ -226,7 +236,7 @@ node --test 'flcc-adults/test/*.test.mjs'
 | Suite | What it holds the line on |
 |---|---|
 | `storage` | the `adults/v1/` namespace, and that the other four apps' keys throw |
-| `art` | every icon draws, is one thin stroke with no fill, takes the colour of the text beside it — and has no face |
+| `art` | every symbol draws, is one navy outline at one weight, takes a single fill from the palette, has no face — and that the symbols shared with `flcc-next/` are character-identical to theirs |
 | `agenda` | the countdown, against fixed dates: an event running now is now rather than next week, a series stops at its last date, and days are counted as calendar days |
 | `rotation` | a full cycle deals the whole bank, nothing repeats inside it, and the same day always deals the same thing |
 | `progress` | day arithmetic, idempotent completion — and that no XP, level or badge has crept in |
@@ -234,7 +244,8 @@ node --test 'flcc-adults/test/*.test.mjs'
 | `plan` | a plan is a sequence, not a calendar: a month away does not move it |
 | `content` | every authored file's shape, every colour and icon it names, that every event can be counted down to, that every message stands up with or without a recording, and that the writing never promises something no server exists to do |
 | `scripture` | the shared Bible is where the app says it is, every reference resolves — the messages' included — and **every verse the writing prints is word for word the shipped text** |
-| `modules` | every module parses, every screen exports a screen, the app boundary, no hard shadows, no thick outlines, no paragraph set in capitals, no hex literal in a screen, every root screen names itself, the tabs and the routes and the `UNDER` map agree, no hand-built cards, no screen importing `art.js` behind `figure()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
+| `design` | the two editions are one design: it reads **both** stylesheets and fails when the palette, the 3px edge, the face, the 900/800 headline weights, the six poster tones, the two actions or the no-shadow-no-gradient-no-blur rules stop matching |
+| `modules` | every module parses, every screen exports a screen, the app boundary, that the stylesheet is still the poster system, no paragraph set in capitals, no hex literal in a screen, every root screen names itself, the tabs and the routes and the `UNDER` map agree, no hand-built posters, no screen importing `art.js` behind `art()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
 
 The scripture suite is the one worth explaining. Forty passages are quoted
 across the devotionals, the sessions and the guides, and no reviewer catches a

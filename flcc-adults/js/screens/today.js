@@ -1,45 +1,26 @@
-// TODAY.
+// TODAY — a vertical run of posters, not a dashboard.
 //
-// The screen answers three questions in this order and refuses to answer a
-// fourth: what is meaningful today, what is happening next, and where was I.
-//
-// It is deliberately not a dashboard. There is one deep block — the Daily Word
-// — and everything under it is a heading and a list. The version of this app
-// that opened on eight coloured tiles told a member everything it could do and
-// nothing about their day; this one tells them their day.
+// The day's word, what is next at church, where you were up to, and one thing
+// the church has said. Each one takes a whole block of colour and says one
+// thing.
 //
 // What is on it changes through the week. `agenda.pulse()` decides the framing
 // in one place so no two screens can drift out of step: the church gathered,
 // the hours after it, the eve of it, and the ordinary days that are most of
 // them.
 
-import { h, block, card, badge, display, title, lead, small, scripture, reference,
-         act, actions, go, nextLine, rail, tile, tag, thread, rows, row, section,
-         swap, rise, waiting, figure } from '../core/ui.js';
+import { h, poster, label, display, headline, lead, art, go, pill, track, tag,
+         rows, row, scripture, reference, waiting, note, rise, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as agenda from '../core/agenda.js';
 import * as progress from '../core/progress.js';
 import * as plan from '../core/plan.js';
 import * as prayers from '../core/prayers.js';
-import { greeting, firstName, seasonOf, wants } from '../core/profile.js';
+import { seasonOf, wants } from '../core/profile.js';
 
-/**
- * Fill a section from the network, and say so if it does not arrive.
- *
- * These load after the screen is already on the page, so a failed fetch used
- * to remove them — a member on a bad connection simply lost "Continue your
- * journey", with nothing left to say it had ever been there.
- */
-function fill(el, work, { quiet = false, retry } = {}) {
-  work().catch(() => {
-    if (quiet) { el.remove(); return; }
-    swap(el, small('This did not load — it needs a connection the first time.'), go('Try again', retry));
-  });
-}
-
-const NAMES = {
-  gathered: 'The church is gathered.',
+const LINES = {
+  gathered: 'The church is gathered right now.',
   after:    'Do not lose the moment.',
   eve:      'Worship is coming.',
 };
@@ -48,57 +29,56 @@ export default async function todayScreen(ctx) {
   const el = h('div', { style: 'display:contents' });
   const parts = [];
 
-  // ── The greeting ────────────────────────────────────────────────────────
-  //
-  // Not "Welcome back". It is the time of day and the member's own name, and
-  // the line under it is the only thing on this screen that changes with the
-  // church's week rather than with the member's own use of the app.
   const events = await content.events().catch(() => []);
   const pulse = agenda.pulse(events);
-  const hello = h('header', {},
-    display(`${greeting()}, ${firstName()}.`),
-    h('p', { class: 'said', text: NAMES[pulse.state] || pulse.line }));
-  parts.push(hello);
 
-  // ── The Daily Word ──────────────────────────────────────────────────────
+  // ── The day's word ──────────────────────────────────────────────────────
   //
-  // The one deep block this screen is allowed, and the centrepiece of the app.
-  // Type does all of the work: no photograph behind it, no gradient, and no
-  // second call to action competing with the first.
+  // The poster this screen exists for. Type does all of the work: the verse at
+  // reading size on a whole block of colour, the reference under it, and one
+  // action.
+  const wordBlock = poster({ tone: 'sky', tall: true }, waiting());
+  parts.push(wordBlock);
+
   let moment = null;
   try { moment = rotation.pick(await content.moments()); } catch { /* the rest still stands */ }
 
   if (moment) {
-    parts.push(block({ className: 'full' },
-      badge('Daily word'),
-      scripture(moment.text),
-      reference(`${moment.ref} · ${moment.translation}`, ctx.go),
-      actions(
-        act('Read & reflect', () => ctx.go(`moment/${moment.id}`)),
-        go('Read the chapter', () => openChapter(ctx, moment.ref)))));
+    wordBlock.dataset.tone = moment.tone || 'sky';
+    swap(wordBlock,
+      label(`Today’s word · ${moment.theme}`),
+      h('div', {},
+        display(String(moment.theme).toUpperCase()),
+        h('div', { style: 'margin-top:1.4rem' }, scripture(moment.text)),
+        reference(`${moment.ref} · ${moment.translation}`, ctx.go, { style: 'margin-top:.9rem' })),
+      h('div', { class: 'poster-foot' },
+        go('Read & reflect', () => ctx.go(`moment/${moment.id}`)),
+        art(moment.symbol || 'book', { tone: moment.tone || 'sky', size: 'sm' })));
   } else {
-    parts.push(card({ tone: 'paper', className: 'full', symbol: 'cloud' },
-      badge('Daily word'), title('Today’s Scripture did not load'),
-      small('It needs a connection the first time. Everything else here still works.')));
+    swap(wordBlock, label('Today’s word'), headline('TODAY’S SCRIPTURE DID NOT LOAD'),
+      note('It needs a connection the first time. Everything else here still works.'));
   }
 
   // ── Next up ─────────────────────────────────────────────────────────────
   //
-  // The app's own name, made into a feature. Whatever is next on the church's
-  // calendar is on the home screen with a countdown against it, so a member
-  // never has to remember what week it is.
+  // The app's own name, made into a poster. Whatever is next on the church's
+  // calendar, with a countdown against it, so a member never has to remember
+  // what week it is.
   const next = agenda.nextUp(events);
   if (next) {
     const { event } = next;
-    parts.push(section({ className: 'full' },
-      nextLine('Next up'),
-      card({ tone: 'paper', className: 'full', foot: event.where },
-        h('div', { class: 'card-head' },
-          title(event.title),
-          tag(next.now ? 'Happening now' : next.countdown, 'gold')),
-        h('p', { class: 'row-note', text: agenda.stamp(next.at) }),
-        h('p', { class: 'lead', text: event.blurb }),
-        go('View experience', () => ctx.go('community')))));
+    parts.push(poster({ tone: 'sunshine', tall: true },
+      h('div', { class: 'poster-head' },
+        label(LINES[pulse.state] ? 'Next up' : 'Next up'),
+        tag(next.now ? 'Happening now' : next.countdown)),
+      h('div', {},
+        display(String(event.title).toUpperCase()),
+        h('p', { class: 'lead', style: 'margin-top:1rem', text: agenda.stamp(next.at) }),
+        h('p', { class: 'body dim', style: 'margin-top:.5rem', text: event.where }),
+        h('p', { class: 'body dim', style: 'margin-top:1rem', text: event.blurb })),
+      h('div', { class: 'poster-foot' },
+        go('What is happening', () => ctx.go('community')),
+        art('church', { tone: 'sunshine', size: 'sm' }))));
   }
 
   // ── At FLCC this week ───────────────────────────────────────────────────
@@ -109,11 +89,10 @@ export default async function todayScreen(ctx) {
   // made-up number on a church app is worse than no number at all.
   //
   // So every figure here is either this device's own or the church's published
-  // calendar, and the line underneath says which is which.
-  const week = section({ className: 'full' }, waiting());
+  // calendar, and the poster says which is which.
+  const week = h('div', { style: 'display:contents' });
   parts.push(week);
-  fill(week, async () => {
-    const updates = await content.updates();
+  content.updates().then((updates) => {
     const recent = updates.filter((one) => {
       const days = agenda.daysBetween(new Date(one.date), new Date());
       return days >= 0 && days <= 30;
@@ -121,135 +100,115 @@ export default async function todayScreen(ctx) {
     const mine = prayers.open().length;
     const soon = agenda.nextUp(events.filter((one) => one.gathering));
 
-    swap(week,
-      nextLine('At FLCC this week'),
-      h('div', { class: 'figures' },
-        count(mine, mine === 1 ? 'prayer you are carrying' : 'prayers you are carrying'),
-        count(recent, recent === 1 ? 'update from church' : 'updates from church'),
-        gathering(soon)),
-      small('Your prayers are counted on this phone and nowhere else — nobody at the church can see them. The rest comes from what FLCC has published.'));
-  }, { quiet: true });
+    // A figure that is a word rather than a number cannot take the numeral
+    // size — "Today" set at 20vw runs straight out of half a screen.
+    const count = (value) => (typeof value === 'number'
+      ? h('p', { class: 'numeral', text: String(value) })
+      : h('p', { class: 'display', text: value }));
 
-  // ── Continue your journey ───────────────────────────────────────────────
-  //
-  // A rail rather than three more panels: these are things a member is
-  // part-way through, and a horizontal row of them says "pick up" in a way a
-  // vertical stack of cards never has.
-  const journey = section({ className: 'full' }, waiting());
+    swap(week, h('div', { class: 'figures' },
+      poster({ tone: 'rose' },
+        count(mine),
+        h('div', { class: 'poster-foot' },
+          label(mine === 1 ? 'Prayer you carry' : 'Prayers you carry'), h('span'))),
+      poster({ tone: 'paper' },
+        count(!soon ? '—' : soon.days === 0 ? 'Today' : soon.days),
+        h('div', { class: 'poster-foot' },
+          label(!soon ? 'Nothing scheduled' : soon.days === 0 ? 'We gather' : soon.days === 1 ? 'Day until we gather' : 'Days until we gather'),
+          h('span')))),
+      poster({ tone: 'paper' },
+        label(`From FLCC · ${recent} in the last month`),
+        note('Your prayers are counted on this phone and nowhere else — nobody at the church can see them. The rest comes from what FLCC has published.'),
+        h('div', { class: 'poster-foot' },
+          go('What the church has said', () => ctx.go('community')), h('span'))));
+  }).catch(() => week.remove());
+
+  // ── Where you were up to ────────────────────────────────────────────────
+  const journey = h('div', { style: 'display:contents' });
   parts.push(journey);
-  fill(journey, async () => {
-    const [paths, plans, messages] = await Promise.all([
-      content.paths(), content.plans(), content.messages().catch(() => []),
-    ]);
+  (async () => {
+    try {
+      const [paths, plans, messages] = await Promise.all([
+        content.paths(), content.plans(), content.messages().catch(() => []),
+      ]);
 
-    const started = await Promise.all(paths.map(async (one) => {
-      const sessions = await content.sessions(one.id).catch(() => []);
-      return { path: one, sessions, where: progress.through('session', sessions.map((s) => `${one.id}:${s.id}`)) };
-    }));
-    const going = started.find((one) => one.where.finished > 0 && !one.where.done);
-    const suggested = started.find((one) => (one.path.forSeason || []).includes(seasonOf().id))
-      || started.find((one) => (one.path.forFocus || []).some((f) => wants(f)))
-      || started[0];
-    const learning = going || suggested;
+      const started = await Promise.all(paths.map(async (one) => {
+        const sessions = await content.sessions(one.id).catch(() => []);
+        return { path: one, sessions, where: progress.through('session', sessions.map((s) => `${one.id}:${s.id}`)) };
+      }));
+      const going = started.find((one) => one.where.finished > 0 && !one.where.done);
+      const suggested = started.find((one) => (one.path.forSeason || []).includes(seasonOf().id))
+        || started.find((one) => (one.path.forFocus || []).some((f) => wants(f)))
+        || started[0];
+      const learning = going || suggested;
 
-    const state = plan.state();
-    const reading = plans.find((one) => one.id === state.id);
-    const heard = messages.filter((one) => progress.isDone('message', one.id));
-    const nextMessage = messages.find((one) => !progress.isDone('message', one.id));
+      const blocks = [];
 
-    const tiles = [];
-    if (learning) {
-      const step = learning.sessions.find((s) => !progress.isDone('session', `${learning.path.id}:${s.id}`))
-        || learning.sessions[0];
-      if (step) {
-        tiles.push(tile({
-          name: step.title,
-          by: learning.path.title,
-          meta: learning.where.finished ? `${learning.where.finished} of ${learning.where.total} done` : `${learning.where.total} sessions`,
-          percent: learning.where.percent,
-          onclick: () => ctx.go(`session/${learning.path.id}/${step.id}`),
-        }));
+      if (learning) {
+        const step = learning.sessions.find((s) => !progress.isDone('session', `${learning.path.id}:${s.id}`))
+          || learning.sessions[0];
+        if (step) {
+          blocks.push(poster({ tone: learning.path.tone === 'poppy' ? 'rose' : (learning.path.tone || 'captain'), tall: true },
+            label(going ? 'Carry on' : 'Where to start'),
+            h('div', {},
+              display(String(step.title).toUpperCase()),
+              h('p', { class: 'lead dim', style: 'margin-top:1rem', text: learning.path.title }),
+              learning.where.finished
+                ? h('div', { style: 'margin-top:1.6rem' }, track(learning.where.percent))
+                : null),
+            h('div', { class: 'poster-foot' },
+              pill(going ? 'Continue' : 'Start', () => ctx.go(`session/${learning.path.id}/${step.id}`)),
+              art(learning.path.symbol || 'sprout', { tone: learning.path.tone || 'captain', size: 'sm' }))));
+        }
       }
-    }
-    if (reading) {
-      const where = plan.positionIn(reading);
-      tiles.push(tile({
-        name: where.done ? 'Finished' : where.at.ref,
-        by: reading.title,
-        meta: `Day ${where.day} of ${where.total}`,
-        percent: where.percent,
-        onclick: () => ctx.go(`plan/${reading.id}`),
-      }));
-    }
-    if (nextMessage) {
-      tiles.push(tile({
-        name: nextMessage.title,
-        by: nextMessage.speaker,
-        meta: `${nextMessage.minutes} min`,
-        onclick: () => ctx.go(`message/${nextMessage.id}`),
-      }));
-    }
-    if (!tiles.length) { journey.remove(); return; }
 
-    swap(journey,
-      nextLine(going || reading || heard.length ? 'Continue your journey' : 'Where to start',
-        { more: 'Explore', onmore: () => ctx.go('explore') }),
-      rail({}, ...tiles));
-  }, { quiet: true });
+      const state = plan.state();
+      const reading = plans.find((one) => one.id === state.id);
+      if (reading) {
+        const at = plan.positionIn(reading);
+        blocks.push(poster({ tone: 'paper' },
+          label(`Reading plan · day ${at.day} of ${at.total}`),
+          h('div', {},
+            headline(at.done ? 'FINISHED' : String(at.at.ref).toUpperCase()),
+            h('div', { style: 'margin-top:1.2rem' }, track(at.percent))),
+          h('div', { class: 'poster-foot' },
+            go('Read today', () => ctx.go(`plan/${reading.id}`)),
+            art('book', { tone: 'paper', size: 'sm' }))));
+      }
+
+      const nextMessage = messages.find((one) => !progress.isDone('message', one.id));
+      if (nextMessage) {
+        blocks.push(poster({ tone: 'paper' },
+          label(nextMessage.series === nextMessage.title ? 'From the Friday service' : nextMessage.series),
+          headline(String(nextMessage.title).toUpperCase()),
+          h('div', { class: 'poster-foot' },
+            go('Open it', () => ctx.go(`message/${nextMessage.id}`)),
+            h('span', { class: 'row-meta', text: `${nextMessage.speaker} · ${nextMessage.minutes} min` }))));
+      }
+
+      if (!blocks.length) { journey.remove(); return; }
+      swap(journey, ...blocks);
+      rise(blocks);
+    } catch { journey.remove(); }
+  })();
 
   // ── One thing from church ───────────────────────────────────────────────
-  const church = section({ className: 'full' }, waiting());
+  const church = h('div', { style: 'display:contents' });
   parts.push(church);
-  fill(church, async () => {
-    const updates = await content.updates();
-    swap(church,
-      nextLine('From FLCC', { more: 'All of it', onmore: () => ctx.go('community') }),
-      rows({}, ...updates.slice(0, 3).map((one) => row({
-        eyebrow: one.from,
+  content.updates().then((updates) => {
+    swap(church, poster({ tone: 'paper' },
+      label('From FLCC'),
+      rows(...updates.slice(0, 3).map((one) => row({
         title: one.title,
-        note: new Date(one.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long' }),
-        accent: one.tone,
-        chev: true,
+        note: one.from,
+        meta: new Date(one.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
         onclick: () => ctx.go('community'),
-      }))));
-  }, { quiet: true });
+      }))),
+      h('div', { class: 'poster-foot' },
+        go('Everything from church', () => ctx.go('community')), h('span'))));
+  }).catch(() => church.remove());
 
   el.append(...parts);
   rise(parts);
   return { title: 'Today', el };
-}
-
-function count(value, name) {
-  return h('div', {},
-    h('p', { class: 'numeral', text: String(value) }),
-    h('p', { class: 'label', text: name }));
-}
-
-/**
- * How long until the church is together.
- *
- * A figure, except on the day itself — "0 days until we gather" is arithmetic
- * showing through the writing, and the answer a member wants that morning is
- * the word "today".
- */
-function gathering(soon) {
-  if (!soon) return count('—', 'nothing scheduled');
-  if (soon.now) return word('Now', 'we are gathered');
-  if (soon.days === 0) return word('Today', 'we gather');
-  return count(soon.days, soon.days === 1 ? 'day until we gather' : 'days until we gather');
-}
-
-function word(value, name) {
-  return h('div', {},
-    h('p', { class: 'numeral', dataset: { word: '' }, text: value }),
-    h('p', { class: 'label', text: name }));
-}
-
-async function openChapter(ctx, ref) {
-  try {
-    const module = await import('../core/scripture.js');
-    const { books } = await module.manifest();
-    const found = module.parseRef(ref, books);
-    ctx.go(found ? `bible/${found.book.n}/${found.chapter}` : 'bible');
-  } catch { ctx.go('bible'); }
 }

@@ -76,76 +76,47 @@ test('every key written anywhere in the app is namespaced', () => {
 /**
  * The design system's rules, enforced.
  *
- * Two versions ago this app was drawn as a stack of stickers: 3px outlines,
- * hard offset shadows, star ratings and cartoon faces. It read, accurately, as
- * an app for children. The hard shadow and the thick border are the two
- * devices that did most of that, so both are failures rather than requirements
- * and have stayed failures through two redesigns since.
+ * This app has been drawn six times, and the rules have swung right across the
+ * board in the process: it has been outlined, then hairlined, then outlined
+ * again. What it is now is the kids and teens edition's poster system, and the
+ * pieces that make the two editions ONE design are checked against that app
+ * directly in `design.test.mjs`. What is left here are the rules that only
+ * this app's own source can answer.
  */
-test('nothing is drawn with a hard offset shadow', () => {
+test('the stylesheet is the poster system', () => {
   const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
-  const shadows = [...css.matchAll(/box-shadow:\s*([^;]+);/g)].map(([, value]) => value.trim());
-  for (const shadow of shadows) {
-    if (shadow.startsWith('inset') || shadow === 'none' || shadow.includes('var(--lift')) continue;
-    // "<x>px <y>px 0 <colour>" — a zero blur radius is the sticker shadow.
-    assert.equal(/^-?[\d.]+px -?[\d.]+px 0(px)? [^,]+$/.test(shadow), false,
-      `hard offset shadow is back in the stylesheet: ${shadow}`);
-  }
-  assert.match(css, /--lift:\s*[^;]*rgba/, 'the soft lift token is gone');
-});
-
-test('nothing is drawn with a thick outline', () => {
-  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
-  const widths = [
-    // Only real borders — `border-radius` is a length too, and a 20px radius
-    // is the point of this design rather than a violation of it.
-    ...[...css.matchAll(/border(?:-(?:top|right|bottom|left))?:\s*([\d.]+)px/g)].map(([, w]) => Number(w)),
-    ...[...css.matchAll(/box-shadow:\s*inset 0 0 0 ([\d.]+)px/g)].map(([, w]) => Number(w)),
-  ];
-  for (const width of widths) {
-    assert.ok(width <= 2, `a ${width}px border — this system separates with hairlines`);
-  }
+  assert.match(css, /^\.poster \{/m, 'the poster is gone');
+  assert.match(css, /--edge:\s*3px;/, 'the one outline weight is gone');
+  assert.match(css, /--paper:\s*#FBF8F0;/i, 'this edition sits on the shared cream paper');
+  assert.match(css, /--ink:\s*#2B4C6D;/i, 'navy is the only ink');
 });
 
 /**
- * Weight, and where shouting is allowed.
+ * Type carries the hierarchy, and it does it by jumping.
  *
- * The NEXT system sets its display headings in caps — that is the editorial
- * look the whole redesign is built on, and it is deliberate. What is never
- * allowed is a *paragraph* in caps: a sentence set in capitals is measurably
- * slower to read, and a church app is read by people at the end of a shift.
- * So the rule moved rather than went away.
+ * Labels are tiny; headlines are huge; there is nothing in between pretending
+ * to be both. What is never allowed is a *paragraph* in capitals: a sentence
+ * set in caps is measurably slower to read, and a church app is read by people
+ * at the end of a shift.
  */
-test('headings may shout; paragraphs may not', () => {
+test('headlines shout; paragraphs never do', () => {
   const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
-  const weights = [...css.matchAll(/font-weight:\s*(\d{3})/g)].map(([, w]) => Number(w));
-  assert.ok(weights.length > 0);
-  assert.ok(Math.max(...weights) <= 600, `weight ${Math.max(...weights)} — nothing here is heavier than 600`);
-
-  for (const selector of ['.body', '.lead', '.scripture', '.row-note', '.eblock-what']) {
-    const rule = new RegExp(`\\${selector}[^{]*\\{[^}]*text-transform:\\s*uppercase`);
+  for (const selector of ['.body', '.lead', '.verse', '.row-note', '.note']) {
+    const rule = new RegExp(`\\${selector} \\{[^}]*text-transform:\\s*uppercase`);
     assert.equal(rule.test(css), false, `${selector} is set in capitals — that is a paragraph`);
   }
+  assert.match(css, /\.label \{[^}]*text-transform: uppercase/, 'the label stopped being a label');
 });
 
 /**
- * The 80 / 15 / 5 rule, as far as a stylesheet can hold it.
+ * Every colour in a screen is a token.
  *
- * The deep block is the 15%, and there is exactly one way to make one. A
- * screen that hand-rolled a second dark surface out of a colour literal would
- * look fine in review and break the rule the whole design rests on.
+ * A hex literal in a screen is a colour that will not follow when the palette
+ * moves — and the palette has now moved three times.
  */
-test('the deep block is made one way, and gold is defined twice on purpose', () => {
-  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
-  assert.match(css, /--block:\s*#141414;/i, 'the deep block colour is gone');
-  assert.match(css, /^\.block \{/m, 'the block component is gone');
-  assert.match(css, /--gold:\s*#B4884A;/i, 'the brand gold is gone');
-  assert.match(css, /--gold-ink:\s*#8A5F1E;/i,
-    'the gold that carries small text on paper is gone — one gold cannot do both jobs');
-
+test('no screen hard-codes a colour', () => {
   for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
-    const body = code(file);
-    assert.equal(/#[0-9a-fA-F]{6}/.test(body), false,
+    assert.equal(/#[0-9a-fA-F]{6}/.test(code(file)), false,
       `${file} hard-codes a colour — every colour in this app is a token in the stylesheet`);
   }
 });
@@ -153,18 +124,17 @@ test('the deep block is made one way, and gold is defined twice on purpose', () 
 /**
  * A root screen has to say what it is.
  *
- * Each of the five tabs opens on its own name, set large, inside the page —
- * the header is a date and one button and nothing else. A root screen that
- * shipped without `pageTitle()` or a `display()` would open as an unlabelled
- * list of rows, which is precisely the dashboard this redesign removed.
+ * Each of the five tabs opens on its own name, and the shell sets it from the
+ * view's title. A root screen that returned no title would show an empty
+ * header.
  */
-test('every root screen names itself in the page', () => {
+test('every root screen names itself', () => {
   const app = source('js/app.js');
   const tabs = [...app.matchAll(/\{ name: '([a-z]+)',\s+label:/g)].map(([, name]) => name);
   assert.deepEqual(tabs, ['today', 'explore', 'community', 'watch', 'you']);
   for (const tab of tabs) {
-    const body = code(`js/screens/${tab}.js`);
-    assert.ok(/pageTitle\(|display\(/.test(body), `js/screens/${tab}.js never names itself`);
+    const body = source(`js/screens/${tab}.js`);
+    assert.match(body, /return \{ title: '[A-Z]/, `js/screens/${tab}.js returns no title`);
   }
 });
 
@@ -192,10 +162,10 @@ test('every tab has a screen, and every sub-screen sits under a real tab', () =>
   }
 });
 
-test('the icons can be turned off everywhere at once', () => {
-  // figure() checks the setting itself. A screen that builds an icon straight
-  // from art.js would ignore that, and turning them off in You would clear
-  // some screens and not others.
+test('the drawings can be turned off everywhere at once', () => {
+  // art() in core/ui.js checks the setting itself. A screen that built a
+  // drawing straight from art.js would ignore that, and turning them off in
+  // You would clear some screens and not others.
   for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
     assert.equal(/from '\.\.\/core\/art\.js'/.test(code(file)), false,
       `${file} imports art.js directly — go through figure() in core/ui.js`);
@@ -235,10 +205,10 @@ test('every colour named in the code exists in the stylesheet', () => {
 test('a screen builds its surfaces from the kit, not out of bare divs', () => {
   for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
     const body = code(file);
-    // `class: 'card'` written by hand means a surface that will not follow the
-    // system when the system changes. The kit's card() is the only way in.
-    assert.equal(/class:\s*['"`]card['"`]/.test(body), false,
-      `${file} hand-builds a card — use card() from core/ui.js`);
+    // `class: 'poster'` written by hand means a surface that will not follow
+    // the system when the system changes. The kit's poster() is the only way in.
+    assert.equal(/class:\s*['"`]poster['"`]/.test(body), false,
+      `${file} hand-builds a poster — use poster() from core/ui.js`);
   }
 });
 

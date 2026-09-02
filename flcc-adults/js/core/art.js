@@ -1,71 +1,174 @@
-// The icons.
+// The illustration system.
 //
-// Monoline drawings: one weight, no fill, no outline around a fill, and — the
-// point of this file — no faces.
+// One language, and it is strict: flat shapes, one navy outline weight, no
+// gradient, no shadow, no detail that does not carry meaning. Every symbol is
+// drawn on the same 100×100 grid with the same stroke, so a book and a church
+// and an open hand look like they were drawn by the same person on the same
+// afternoon.
 //
-// In the NEXT system an icon labels a thing; it is never the thing. They are
-// drawn small, they take the colour of the text beside them, and no screen is
-// built out of them — the four-tile icon grid this app used to open on is
-// exactly what `.eblock` in the stylesheet replaced. An earlier version of this app gave every
-// picture two eyes and a smile, which is charming at eight years old and
-// patronising at forty. What an adult needs from a picture beside a heading is
-// that it be quiet and legible, so these are drawn the way the signage in a
-// good hospital is drawn: thin, even, and out of the way.
+// It is the SAME language as the kids and teens edition at `flcc-next/`: the
+// same grid, the same 5.5 stroke in the same navy, the same helpers, and where
+// a symbol exists in both apps it is the same path data. The two apps share no
+// code by design, so this is a deliberate duplicate rather than an import —
+// the drawings have to match by hand, and `test/art.test.mjs` pins the pieces
+// that must not drift.
 //
-// Everything is stroked in `currentColor`, so an icon takes the colour of the
-// text it sits with rather than carrying a colour of its own. Nothing here
-// touches the DOM — these return markup strings, so the whole set can be
-// checked in tests without a browser.
+// Fills use the palette. A symbol takes one fill colour and no more.
 
-/** Every icon in the set. `test/art.test.mjs` draws all of them. */
-export const ICONS = [
-  'blob', 'book', 'heart', 'mug', 'sprout', 'church',
-  'sun', 'parcel', 'star', 'cloud', 'flame', 'mountain',
-];
+const W = 100;
+
+const S = {
+  // The outline is navy, not black — the same #2B4C6D every letter in the app
+  // is set in. It is written out rather than read from TONE_HEX because this
+  // string is assembled once, at module load, before any tone is known.
+  stroke: 'stroke="#2B4C6D" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"',
+};
+
+const shape = (d, fill = 'none') => `<path d="${d}" fill="${fill}" ${S.stroke}/>`;
+const circle = (cx, cy, r, fill = 'none') => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ${S.stroke}/>`;
+const line = (x1, y1, x2, y2) => `<path d="M${x1} ${y1}L${x2} ${y2}" fill="none" ${S.stroke}/>`;
+const box = (x, y, w, h, fill = 'none', r = 0) =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}" ${S.stroke}/>`;
+
+// Every symbol takes the poster's chosen fill so the drawing belongs to the
+// block it sits on rather than fighting it.
+const SYMBOLS = {
+  // The Bible, open. Identical to the kids edition's `book`.
+  book: (f) => [
+    shape('M50 26c-9-8-20-11-34-11v56c14 0 25 3 34 11 9-8 20-11 34-11V15c-14 0-25 3-34 11Z', f),
+    line(50, 26, 50, 82),
+  ],
+
+  // Identical to the kids edition's `heart`.
+  heart: (f) => [
+    shape('M50 84C26 68 14 56 14 42a18 18 0 0 1 36-6 18 18 0 0 1 36 6c0 14-12 26-36 42Z', f),
+  ],
+
+  // Identical to the kids edition's `mountain`.
+  mountain: (f) => [
+    shape('M12 80 40 32l16 26 8-12 24 34Z', f),
+    line(33, 45, 47, 45),
+  ],
+
+  // Identical to the kids edition's `star`.
+  star: (f) => [
+    shape('M50 14 61 40l28 2-21 18 7 27-25-15-25 15 7-27-21-18 28-2Z', f),
+  ],
+
+  // Growth. The kids edition calls this `plant`; the adult content files were
+  // written against the name `sprout`, so it keeps that name and the drawing.
+  sprout: (f) => [
+    line(50, 88, 50, 46),
+    shape('M50 58C36 58 28 50 28 36c14 0 22 8 22 22Z', f),
+    shape('M50 50c14 0 22-8 22-22-14 0-22 8-22 22Z', f),
+    line(34, 88, 66, 88),
+  ],
+
+  // The kids edition's `sunrise`, under the name the adult content uses.
+  sun: (f) => [
+    circle(50, 56, 18, f),
+    line(14, 80, 86, 80),
+    line(50, 20, 50, 30), line(22, 32, 29, 39), line(78, 32, 71, 39),
+  ],
+
+  // ── Drawn for this edition, in the same language ─────────────────────────
+
+  // The church: a gable, a door, a cross above the ridge.
+  church: (f) => [
+    shape('M18 86V44l32-22 32 22v42Z', f),
+    shape('M42 86V66a8 8 0 0 1 16 0v20', 'none'),
+    line(50, 6, 50, 22), line(42, 13, 58, 13),
+  ],
+
+  // A season that is not your fault.
+  cloud: (f) => [
+    shape('M32 72a18 18 0 0 1 1-36 24 24 0 0 1 45 6 15 15 0 0 1-3 30Z', f),
+    line(36, 84, 33, 92), line(52, 84, 49, 92), line(68, 84, 65, 92),
+  ],
+
+  // Prayer as a lamp rather than as folded hands — the kids edition's `light`,
+  // which the adult writing calls a flame.
+  flame: (f) => [
+    shape('M50 18c9 11 14 19 14 27a14 14 0 0 1-28 0c0-8 5-16 14-27Z', f),
+    line(50, 60, 50, 74), line(34, 74, 66, 74), line(40, 86, 60, 86),
+  ],
+
+  // The cup on the table on a Tuesday night.
+  mug: (f) => [
+    shape('M22 34h48v30a24 24 0 0 1-48 0Z', f),
+    shape('M70 42h8a11 11 0 0 1 0 22h-8', 'none'),
+    line(36, 14, 36, 24), line(50, 12, 50, 24), line(64, 14, 64, 24),
+  ],
+
+  // What is sent home.
+  parcel: (f) => [
+    box(16, 34, 68, 52, f, 3),
+    line(16, 52, 84, 52), line(50, 34, 50, 86),
+    shape('M50 34c-6-12-14-18-20-14s-2 12 20 14Z', f),
+    shape('M50 34c6-12 14-18 20-14s2 12-20 14Z', f),
+  ],
+
+  // The question a member is asked to sit with. The kids edition's `words`,
+  // opened out into a speech bubble.
+  blob: (f) => [
+    shape('M14 26a6 6 0 0 1 6-6h60a6 6 0 0 1 6 6v34a6 6 0 0 1-6 6H40L22 84V66h-2a6 6 0 0 1-6-6Z', f),
+    line(30, 36, 70, 36), line(30, 50, 58, 50),
+  ],
+};
+
+/** Every symbol in the set. `test/art.test.mjs` draws all of them. */
+export const ICONS = Object.keys(SYMBOLS);
+
+export const isIcon = (name) => Object.prototype.hasOwnProperty.call(SYMBOLS, name);
 
 /**
- * The drawings, on a 48-grid.
+ * One symbol as an SVG string. `fill` is a palette colour; the outline is
+ * always the same navy.
  *
- * One stroke weight throughout. Where a shape needs an interior detail it is
- * drawn with the same stroke rather than a fill, so nothing in the set reads
- * heavier than anything else in it.
+ * An unknown name draws the speech bubble rather than nothing, so a typo in a
+ * content file is a wrong picture and never a hole in a poster.
  */
-const PATHS = {
-  // "blob" keeps its name from an earlier draw of this set so the content
-  // files did not all have to change. It is a speech bubble now: it sits
-  // beside the question a reader is asked to sit with, and beside the guide
-  // written for the days when there is nothing to say.
-  blob:     'M8 12a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H20l-9 8v-8a4 4 0 0 1-3-4z',
-  book:     'M6 10h12a6 6 0 0 1 6 6 6 6 0 0 1 6-6h12v28H30a6 6 0 0 0-6 6 6 6 0 0 0-6-6H6zM24 16v28',
-  heart:    'M24 40C13 32 7 26 7 19.5A8.5 8.5 0 0 1 15.5 11c3.6 0 6.6 1.9 8.5 4.8 1.9-2.9 4.9-4.8 8.5-4.8A8.5 8.5 0 0 1 41 19.5C41 26 35 32 24 40z',
-  mug:      'M9 14h22v16a10 10 0 0 1-10 10h-2a10 10 0 0 1-10-10zM31 19h4a6 6 0 0 1 0 12h-4M16 8c0-2 3-2 3-4M25 8c0-2 3-2 3-4',
-  sprout:   'M24 40V22M23 22c-8 0-13-5-13-12 8-1 13 4 13 12zM25 26c7 0 12-5 12-11-7-1-12 4-12 11z',
-  church:   'M24 4v8M20 8h8M10 42V22l14-10 14 10v20zM20 42V32a4 4 0 0 1 8 0v10',
-  sun:      'M24 12a12 12 0 1 0 0 24 12 12 0 0 0 0-24zM24 3v4M24 41v4M45 24h-4M7 24H3M38.8 9.2l-2.8 2.8M12 36l-2.8 2.8M38.8 38.8 36 36M12 12 9.2 9.2',
-  parcel:   'M7 16h34v24a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM5 8h38v8H5zM24 8v34',
-  star:     'M24 5l5.8 12.2L43 19l-9.5 9.2L36 42l-12-6.5L12 42l2.5-13.8L5 19l13.2-1.8z',
-  cloud:    'M15 38c-5.5 0-10-4.2-10-9.4S9.5 19.2 15 19.2h.6C17 13.3 22.4 9 28.8 9 36.1 9 42 14.6 42 21.5c0 .6 0 1.2-.1 1.8 2.4 1.2 4.1 3.6 4.1 6.4 0 4.6-3.9 8.3-8.7 8.3z',
-  flame:    'M24 5c8 8 12 13.5 12 20a12 12 0 0 1-24 0c0-3.8 1.4-6.8 3.8-9.6 1 2.9 2.9 4.4 4.8 5.3C19.6 14.2 21 9.5 24 5z',
-  mountain: 'M3 41 17 15l7.5 12.5L30 19l15 22zM17 15l4.8 8.5c-3.2 1.9-6.6 1.9-9.6 0z',
+export function symbol(name, { fill = 'none', title = '' } = {}) {
+  const draw = SYMBOLS[name] || SYMBOLS.blob;
+  const label = title
+    ? ` role="img" aria-label="${String(title).replace(/"/g, '&quot;')}"`
+    : ' aria-hidden="true"';
+  return `<svg viewBox="0 0 ${W} ${W}"${label}>${draw(fill).join('')}</svg>`;
+}
+
+/** Kept under its old name so the screens did not all need editing. */
+export const icon = (name) => symbol(name);
+
+/** The palette, so screens choose tones by name rather than by hex.
+ *
+ *  The same six colours the kids and teens edition uses, so the two apps read
+ *  as one family. `captain` is the dark one of the four poster tones — with
+ *  only three light colours in the palette, one poster tone has to carry paper
+ *  type, and the stylesheet inverts it the way it already inverts `ink`.
+ *  `poppy` is not a poster tone: navy on poppy is about 3.5:1, which is fine
+ *  behind a headline and not fine behind a paragraph. */
+export const TONES = ['sunshine', 'rose', 'sky', 'captain'];
+export const TONE_HEX = {
+  sunshine: '#EDCE7A', rose: '#EABCB5', sky: '#C3D7EA', captain: '#4173B0',
+  poppy: '#EB8861', paper: '#FBF8F0', ink: '#2B4C6D',
 };
 
 /**
- * One icon, at whatever size its holder gives it.
- *
- * @param {string} name  one of ICONS. An unknown name draws the blob rather
- *                       than nothing, so a typo in the content is a wrong
- *                       picture and never a hole in the layout.
+ * A poster's fill is the paper colour, so the drawing reads as an object
+ * sitting ON the block rather than a hole cut through it.
  */
-export function icon(name) {
-  const d = PATHS[name] || PATHS.blob;
-  return '<svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"'
-    + ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
-    + `<path d="${d}"/></svg>`;
+export function fillFor(tone) {
+  // On a dark poster the stylesheet flips the outline to paper, so the fill
+  // stays dark and the drawing reads as a white line drawing.
+  return (tone === 'ink' || tone === 'captain') ? TONE_HEX.ink : TONE_HEX.paper;
 }
 
-export const isIcon = (name) => Object.prototype.hasOwnProperty.call(PATHS, name);
+/** Rotate tones deterministically, so a list looks composed rather than random. */
+export function toneFor(index, offset = 0) {
+  return TONES[(Math.abs(index) + offset) % TONES.length];
+}
 
-/** FNV-1a — used only to give an item without a named icon a stable one. */
+/** FNV-1a — used only to give an item without a named symbol a stable one. */
 export function hash(text) {
   let value = 2166136261;
   const source = String(text ?? '');
@@ -76,7 +179,7 @@ export function hash(text) {
   return Math.abs(value | 0);
 }
 
-/** An icon for something that did not name one. Stable, never random. */
+/** A symbol for something that did not name one. Stable, never random. */
 export function pick(seed) {
   return ICONS[hash(seed) % ICONS.length];
 }
