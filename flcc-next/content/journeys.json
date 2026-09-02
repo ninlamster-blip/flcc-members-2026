@@ -2,7 +2,7 @@
   {
     "id": "life-of-jesus",
     "title": "THE LIFE OF JESUS",
-    "tone": "blue",
+    "tone": "sky",
     "symbol": "cross",
     "blurb": {
       "kids": "Fifteen steps through the story of Jesus, from the stable to the empty tomb.",
@@ -14,7 +14,7 @@
   {
     "id": "heroes-of-faith",
     "title": "HEROES OF FAITH",
-    "tone": "cream",
+    "tone": "sunshine",
     "symbol": "shield",
     "blurb": {
       "kids": "David, Esther, Daniel and Moses — ordinary people God used.",
@@ -26,7 +26,7 @@
   {
     "id": "big-bible-story",
     "title": "THE BIG BIBLE STORY",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "book",
     "blurb": {
       "kids": "Creation, Jesus, and the Church — the whole story in five steps.",

@@ -99,8 +99,12 @@ as `data-mode`, and it changes three things at once:
 The rules are in `css/next.css` as tokens, and the tests enforce the parts a
 stylesheet cannot.
 
-- **Colour.** Cream `#F4D89A`, pink `#E9A6A3`, blue `#8FC3CF`, sage `#A9C5A2`,
-  off-white `#F7F5F0`, ink `#161616`. One dominant colour per item — a poster
+- **Colour.** Sunshine `#EDCE7A`, rose `#EABCB5`, sky `#C3D7EA`, captain
+  `#4173B0`, poppy `#EB8861` (accents only — navy on poppy is too low a
+  contrast for body copy), paper `#FBF8F0`, ink navy `#2B4C6D`. The same
+  palette the adult edition uses, so the two apps read as one family. Captain
+  is the one dark poster colour and inverts to paper type. One dominant
+  colour per item — a poster
   is a block of colour, not a white card with an accent.
 - **Type.** Inter, 400–800, with dramatic jumps between a `.label` at
   `.68rem` and a `.display` at `clamp(2.6rem, 13.5vw, 4rem)`. Nothing in

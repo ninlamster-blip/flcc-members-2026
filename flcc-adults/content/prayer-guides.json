@@ -1,0 +1,195 @@
+[
+  {
+    "id": "quiet-five",
+    "title": "A quiet five minutes",
+    "line": "The oldest shape there is: adore, admit, thank, ask. Four turns, five minutes.",
+    "steps": [
+      {
+        "label": "Adore",
+        "prompt": "Say one true thing about who God is. Not what he has done for you — who he is.",
+        "seconds": 60
+      },
+      {
+        "label": "Admit",
+        "prompt": "Name one thing plainly, without explaining why it happened. He already knows the context.",
+        "seconds": 60
+      },
+      {
+        "label": "Thank",
+        "prompt": "Three things from the last day. Small ones count, and they are usually the honest ones.",
+        "seconds": 60
+      },
+      {
+        "label": "Ask",
+        "prompt": "Ask for what you actually want, in the words you would use to a friend.",
+        "seconds": 90
+      },
+      {
+        "label": "Stay",
+        "prompt": "Say nothing for a moment. This is the part everyone skips.",
+        "seconds": 60
+      }
+    ],
+    "tone": "rose",
+    "symbol": "mug"
+  },
+  {
+    "id": "anxious",
+    "title": "When you are anxious",
+    "line": "For a mind that is running the same loop. Move it out of your head and into a sentence.",
+    "ref": "Philippians 4:6–7",
+    "steps": [
+      {
+        "label": "Name it",
+        "prompt": "What exactly are you afraid will happen? Say the specific thing, not the mood.",
+        "seconds": 60
+      },
+      {
+        "label": "Separate",
+        "prompt": "Which part of this is yours to do this week, and which part is not yours at all?",
+        "seconds": 75
+      },
+      {
+        "label": "Hand over",
+        "prompt": "Ask God for the part that is not yours. Use the word 'please'.",
+        "seconds": 60
+      },
+      {
+        "label": "Thank",
+        "prompt": "Name one thing that went right recently. Anxiety has a short memory.",
+        "seconds": 60
+      },
+      {
+        "label": "Breathe",
+        "prompt": "Sit still and breathe slowly. Peace is promised as a guard, not as a feeling you produce.",
+        "seconds": 90
+      }
+    ],
+    "tone": "sky",
+    "symbol": "cloud"
+  },
+  {
+    "id": "before-work",
+    "title": "Before the shift",
+    "line": "Four minutes before you clock in, for the hours you are about to spend.",
+    "ref": "Colossians 3:23–24",
+    "steps": [
+      {
+        "label": "Offer",
+        "prompt": "Give the next eight hours to God out loud, before anyone asks anything of you.",
+        "seconds": 45
+      },
+      {
+        "label": "The people",
+        "prompt": "Name the person at work who is hardest to be around. Ask for something good for them.",
+        "seconds": 60
+      },
+      {
+        "label": "The temptation",
+        "prompt": "You know where you will be tempted to cut a corner today. Ask for help there specifically.",
+        "seconds": 60
+      },
+      {
+        "label": "The witness",
+        "prompt": "Ask that something about today makes somebody curious.",
+        "seconds": 45
+      }
+    ],
+    "tone": "sunshine",
+    "symbol": "sun"
+  },
+  {
+    "id": "for-home",
+    "title": "For the people at home",
+    "line": "For a family in another time zone, prayed for by name.",
+    "ref": "Psalm 139:7–10",
+    "steps": [
+      {
+        "label": "Name them",
+        "prompt": "Say each name out loud. One at a time, not as a group.",
+        "seconds": 75
+      },
+      {
+        "label": "What you cannot do",
+        "prompt": "Tell God the thing you would fix if you were there. Ask him to do it.",
+        "seconds": 75
+      },
+      {
+        "label": "The distance",
+        "prompt": "Say honestly what being away costs you. Do not tidy it up.",
+        "seconds": 75
+      },
+      {
+        "label": "Provision",
+        "prompt": "Pray for what you send and how it is used, without anxiety about the amount.",
+        "seconds": 60
+      },
+      {
+        "label": "Bless",
+        "prompt": "Ask God to be to them today what you cannot be.",
+        "seconds": 60
+      }
+    ],
+    "tone": "rose",
+    "symbol": "heart"
+  },
+  {
+    "id": "before-sleep",
+    "title": "Before you sleep",
+    "line": "The examen, plainly: look back over the day with God before you close it.",
+    "steps": [
+      {
+        "label": "Replay",
+        "prompt": "Walk back through the day from waking. Do not judge it yet — just watch it.",
+        "seconds": 90
+      },
+      {
+        "label": "Where he was",
+        "prompt": "Where was God in it? Name the moment you would otherwise have called luck.",
+        "seconds": 75
+      },
+      {
+        "label": "Where you were not",
+        "prompt": "Name one thing you would do differently. Once, and without a speech.",
+        "seconds": 60
+      },
+      {
+        "label": "Leave it",
+        "prompt": "Hand tomorrow over. Anything still open can be open in his hands rather than yours.",
+        "seconds": 75
+      }
+    ],
+    "tone": "navy",
+    "symbol": "star"
+  },
+  {
+    "id": "no-words",
+    "title": "When you have no words",
+    "line": "For grief, exhaustion, or a day when praying feels like acting. Almost nothing is asked of you here.",
+    "ref": "Romans 8:38–39",
+    "steps": [
+      {
+        "label": "Sit",
+        "prompt": "You do not have to say anything yet. Sit for a moment and let that be allowed.",
+        "seconds": 90
+      },
+      {
+        "label": "One word",
+        "prompt": "If one word comes — help, or tired, or please — say only that.",
+        "seconds": 60
+      },
+      {
+        "label": "Hear",
+        "prompt": "Read the verse above slowly, twice. Let it be said to you rather than by you.",
+        "seconds": 90
+      },
+      {
+        "label": "Stay",
+        "prompt": "Stay a little longer than is comfortable. Nothing more is required of you today.",
+        "seconds": 60
+      }
+    ],
+    "tone": "captain",
+    "symbol": "blob"
+  }
+]

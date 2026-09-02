@@ -2,7 +2,7 @@
   {
     "id": "quiz",
     "title": "BIBLE QUIZ",
-    "tone": "pink",
+    "tone": "rose",
     "symbol": "question",
     "difficulty": 2,
     "blurb": {
@@ -18,7 +18,7 @@
   {
     "id": "who-am-i",
     "title": "WHO AM I?",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "mask",
     "difficulty": 3,
     "blurb": {
@@ -40,7 +40,7 @@
   {
     "id": "verse-builder",
     "title": "VERSE BUILDER",
-    "tone": "cream",
+    "tone": "sunshine",
     "symbol": "words",
     "difficulty": 2,
     "blurb": {
@@ -51,7 +51,7 @@
   {
     "id": "speed",
     "title": "SPEED QUIZ",
-    "tone": "blue",
+    "tone": "sky",
     "symbol": "bolt",
     "difficulty": 4,
     "blurb": {
@@ -67,7 +67,7 @@
   {
     "id": "church",
     "title": "OUR CHURCH",
-    "tone": "sage",
+    "tone": "captain",
     "symbol": "people",
     "difficulty": 2,
     "topics": [

@@ -1,0 +1,700 @@
+/* =============================================================================
+   FLCC NEXT — ADULTS
+   The Layers design system
+
+   A list here is a stack of colour, and what separates one layer from the next
+   is a torn curve rather than a rule. Each band carries a hand-drawn texture in
+   the corner where no type goes. Everything that is not a list is warm paper.
+
+   This app has been drawn four times. The version that read as an app for
+   children had 3px outlines, hard offset shadows, rating stars and cartoon
+   faces; the four rules that came out of that are still in force here and are
+   still enforced by tests:
+
+   · No border over 1px.        · No shadow with a zero blur radius.
+   · No font-weight over 600.   · No face on any drawing.
+
+   What this system adds on top of them:
+
+   · A LIST IS A STACK. Anything that is a set of things with a count — prayer
+     categories, learning paths, reading plans — is a stack of full-bleed
+     colour bands, not a column of tiles.
+   · EVERY BAND HAS A TEXTURE. One of four hand-drawn marks, in a corner, at
+     low opacity. It is what stops a flat colour reading as a swatch.
+   · WAVES ARE SEEDED, NEVER RANDOM. The same list draws the same edges on
+     every phone. See js/core/art.js.
+   · The chrome stops at Scripture. The Bible reader is paper and serif type,
+     with nothing on it at all.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ── The palette ───────────────────────────────────────────────────────
+     The six colours shared with the kids and teens edition, plus one shade
+     derived from them. */
+  --sky:      #C3D7EA;
+  --captain:  #4173B0;
+  --navy:     #2B4C6D;
+  --rose:     #EABCB5;
+  --poppy:    #EB8861;
+  --sunshine: #EDCE7A;
+
+  /* Poppy, deepened until white type sits on it at 4.8:1. The reference this
+     app is drawn from opens on a deep coral, and none of the six is dark
+     enough to carry white text — so this is the one derived colour, and it is
+     local to this app rather than shared. */
+  --ember: #C24A38;
+
+  --paper:  #FAF6F2;   /* the page: warm near-white */
+  --white:  #FFFFFF;
+  --ink:    var(--navy);
+
+  /* Tints — a colour at about a tenth of its strength, light enough to set a
+     paragraph on. Most surfaces in this app are one of these. */
+  --sky-wash:      #EDF3F8;
+  --captain-wash:  #ECF1F7;
+  --navy-wash:     #EDF0F3;
+  --rose-wash:     #FBF2F0;
+  --poppy-wash:    #FDF1EA;
+  --sunshine-wash: #FCF6E8;
+  --ember-wash:    #FAEDEA;
+
+  --ink-70: rgba(43, 76, 109, .72);
+  --ink-50: rgba(43, 76, 109, .54);
+  --ink-12: rgba(43, 76, 109, .13);
+  --ink-06: rgba(43, 76, 109, .06);
+  --hair:   rgba(43, 76, 109, .10);
+
+  /* ── Type ────────────────────────────────────────────────────────────── */
+  --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+
+  --label:     .68rem;
+  --body:      .95rem;
+  --lead:      1rem;
+  --title:     clamp(1.15rem, 4.4vw, 1.35rem);
+  --display:   clamp(1.7rem, 7vw, 2.2rem);
+  --scripture: clamp(1.2rem, 5vw, 1.5rem);
+  --numeral:   clamp(1.6rem, 7vw, 2rem);
+
+  --radius:    22px;
+  --radius-sm: 14px;
+  --gutter:    1.15rem;
+  --beat:      .8rem;
+
+  --lift:    0 1px 2px rgba(43, 76, 109, .05), 0 6px 18px rgba(43, 76, 109, .05);
+  --lift-sm: 0 1px 2px rgba(43, 76, 109, .05);
+
+  --speed: 200ms;
+  --ease: cubic-bezier(.2, .7, .3, 1);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; background: var(--paper); }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--body);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -.005em;
+}
+
+h1, h2, h3, p, figure { margin: 0; }
+button { font: inherit; color: inherit; border: 0; background: none; }
+:focus-visible { outline: 2px solid var(--captain); outline-offset: 2px; border-radius: 6px; }
+
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus { left: .75rem; top: .75rem; z-index: 90; background: var(--navy); color: #fff; padding: .6rem 1rem; }
+
+/* ── Type ────────────────────────────────────────────────────────────────── */
+
+.label {
+  font-size: var(--label);
+  font-weight: 600;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--ink-50);
+}
+
+.display { font-size: var(--display); font-weight: 600; letter-spacing: -.024em; line-height: 1.18; text-wrap: balance; }
+
+/* One word of a heading may be marked, the way a highlighter marks it: a
+   colour behind the baseline, not a change of weight. */
+.display .mark {
+  position: relative; display: inline-block;
+  color: var(--ember);
+}
+.display .mark::after {
+  content: ""; position: absolute; left: -.04em; right: -.04em; bottom: .04em;
+  height: .22em; border-radius: 2px;
+  background: var(--sunshine); opacity: .75; z-index: -1;
+}
+.display .mark { z-index: 0; isolation: isolate; }
+.title   { font-size: var(--title);   font-weight: 600; letter-spacing: -.018em; line-height: 1.3;  text-wrap: balance; }
+.lead    { font-size: var(--lead); line-height: 1.55; color: var(--ink-70); }
+.body    { font-size: var(--body); line-height: 1.65; color: var(--ink-70); }
+.dim     { color: var(--ink-70); }
+.numeral { font-size: var(--numeral); font-weight: 600; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.small   { font-size: .8rem; line-height: 1.55; color: var(--ink-50); }
+
+.scripture {
+  font-family: var(--serif);
+  font-size: var(--scripture);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -.005em;
+  text-wrap: pretty;
+  max-width: 26ch;
+  color: var(--ink);
+}
+.scripture--flow { max-width: 36ch; font-size: 1.06rem; line-height: 1.7; }
+.scripture[data-length="l"]  { font-size: clamp(1.1rem, 4.4vw, 1.3rem); max-width: 30ch; }
+.scripture[data-length="xl"] { font-size: clamp(1rem, 4vw, 1.14rem); max-width: 38ch; line-height: 1.62; }
+.scripture--flow[data-length="l"],
+.scripture--flow[data-length="xl"] { font-size: 1.02rem; max-width: 38ch; line-height: 1.68; }
+
+.cite { font-size: .72rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-50); }
+
+/* ── The page ────────────────────────────────────────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--beat);
+  padding: .1rem var(--gutter) calc(6.5rem + env(safe-area-inset-bottom));
+  max-width: 30rem;
+  margin: 0 auto;
+}
+
+/* ── The card ────────────────────────────────────────────────────────────
+   White paper, a soft lift, and no border. `tone` tints it — lightly, so a
+   paragraph still sits on it comfortably — and `data-solid` is reserved for
+   the one block per screen that is allowed to be a full colour. */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--lift);
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+}
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  padding: 1.15rem 1.15rem 1.2rem;
+  flex: 1;
+}
+.card[data-tall] .card-body { min-height: 12rem; justify-content: space-between; }
+
+/* Tinted cards. The wash is the colour at about a tenth of its strength. */
+.card[data-tone="sky"]      { background: var(--sky-wash); }
+.card[data-tone="rose"]     { background: var(--rose-wash); }
+.card[data-tone="sunshine"] { background: var(--sunshine-wash); }
+.card[data-tone="captain"]  { background: var(--captain-wash); }
+.card[data-tone="navy"]     { background: var(--navy-wash); }
+.card[data-tone="poppy"]    { background: var(--poppy-wash); }
+.card[data-tone="ember"]    { background: var(--ember-wash); }
+.card[data-tone="paper"]    { background: var(--white); }
+
+/* The one loud block a screen is allowed: full strength, white type, and a
+   texture in the corner. Ember by default — the deep coral the reference
+   opens on — or navy where the screen is about Scripture rather than about
+   the church. */
+.card[data-solid] { background: var(--ember); color: #fff; box-shadow: 0 10px 26px rgba(194, 74, 56, .22); }
+.card[data-solid][data-tone="navy"] { background: var(--navy); box-shadow: 0 10px 26px rgba(43, 76, 109, .2); }
+.card[data-solid][data-tone="captain"] { background: var(--captain); box-shadow: 0 10px 26px rgba(65, 115, 176, .2); }
+.card[data-solid] .lead, .card[data-solid] .body, .card[data-solid] .dim { color: rgba(255, 255, 255, .78); }
+.card[data-solid] .label, .card[data-solid] .cite, .card[data-solid] .small { color: rgba(255, 255, 255, .62); }
+.card[data-solid] .scripture { color: #fff; }
+.card[data-solid] .icon { color: rgba(255, 255, 255, .55); }
+.card[data-solid] .act { background: #fff; color: var(--navy); }
+.card[data-solid] .act[data-quiet] { background: transparent; color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4); }
+.card[data-solid] .go { color: #fff; }
+.card[data-solid] .thread { background: rgba(255, 255, 255, .22); }
+.card[data-solid] .thread > i { background: var(--sunshine); }
+.card[data-solid] .texture-holder { opacity: .22; }
+.card[data-solid] .card-foot { border-top-color: rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .62); }
+
+button.card, a.card { cursor: pointer; transition: box-shadow var(--speed) var(--ease), transform var(--speed) var(--ease); }
+button.card:hover, a.card:hover { box-shadow: 0 2px 4px rgba(43, 76, 109, .06), 0 12px 28px rgba(43, 76, 109, .09); }
+button.card:active, a.card:active { transform: translateY(1px); }
+
+/* A quiet strip at the foot of a card: a hairline and small print. */
+.card-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: .8rem;
+  padding: .7rem 1.15rem;
+  border-top: 1px solid var(--hair);
+  font-size: .72rem; font-weight: 500; letter-spacing: .01em;
+  color: var(--ink-50);
+}
+
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+
+/* ── The stack ───────────────────────────────────────────────────────────
+   Full-bleed bands, each one torn from the one above it by a seeded curve,
+   each carrying a texture in a corner. This is the app's signature and it is
+   used for exactly one thing: a list of things with a count. */
+
+.stack {
+  position: relative;
+  display: flex; flex-direction: column;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--lift);
+  isolation: isolate;
+}
+
+.band {
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.15rem var(--gutter);
+  width: 100%; text-align: left;
+  color: var(--ink);
+  background: none;                 /* see below — the colour is painted in ::before */
+  overflow: hidden;                 /* a band's texture belongs to that band */
+  transition: filter var(--speed) var(--ease);
+}
+button.band { cursor: pointer; }
+button.band:hover { filter: brightness(.97); }
+button.band:active { filter: brightness(.94); }
+
+/* A band paints its own colour from 18px down, and the top 18px is left to
+   the wave. If the band simply had a `background`, that background would
+   cover the wave and every divider in the app would be a straight line —
+   which is exactly what the first attempt at this looked like. */
+.band::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 18px; bottom: 0;
+  background: var(--band); z-index: 0;
+}
+.band:first-child::before { top: 0; }
+.band > .wave {
+  position: absolute; left: 0; right: 0; top: 0;
+  width: 100%; height: 19px;
+  color: var(--band);
+  z-index: 0; display: block;
+}
+.band:first-child > .wave { display: none; }
+.band + .band { margin-top: -16px; padding-top: 1.75rem; }
+
+/* Content sits above both the wave and the texture. */
+.band > *:not(.wave):not(.texture-holder) { position: relative; z-index: 1; }
+.card-body, .card-foot { position: relative; z-index: 1; }
+
+.band[data-tone="ember"]    { --band: var(--ember);    color: #fff; }
+.band[data-tone="navy"]     { --band: var(--navy);     color: #fff; }
+.band[data-tone="captain"]  { --band: var(--captain);  color: #fff; }
+.band[data-tone="rose"]     { --band: var(--rose); }
+.band[data-tone="sunshine"] { --band: var(--sunshine); }
+.band[data-tone="sky"]      { --band: var(--sky); }
+.band[data-tone="poppy"]    { --band: var(--poppy); }
+.band[data-tone="paper"]    { --band: var(--white); }
+
+.band-name { font-size: 1.05rem; font-weight: 500; letter-spacing: -.015em; }
+.band-note { font-size: .8rem; margin-top: .1rem; opacity: .72; }
+.band-count { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+
+/* A tall band: the hero at the top of a stack, with room for a heading. */
+.band[data-tall] {
+  flex-direction: column; align-items: flex-start; justify-content: flex-end;
+  gap: .6rem; min-height: 11rem;
+  padding-top: 1.5rem; padding-bottom: 1.4rem;
+}
+
+/* The texture. Always in a corner, always low, never behind type.
+   It sits ABOVE the surface's background and BELOW its content — z-index:-1
+   would put it behind the background it is meant to mark. */
+.texture-holder {
+  position: absolute; z-index: 0; pointer-events: none;
+  width: 6.5rem; height: 6rem;
+  opacity: .2;
+  overflow: hidden;
+}
+.texture-holder[data-at="tr"] { top: -.6rem; right: -1rem; }
+.texture-holder[data-at="bl"] { bottom: -1rem; left: -1rem; }
+.texture-holder[data-at="br"] { bottom: -1rem; right: -1rem; }
+.texture { display: block; width: 100%; height: 100%; }
+
+/* ── Icons ───────────────────────────────────────────────────────────────
+   Monoline, currentColor, and small. An icon is a signpost, not a mascot. */
+
+.icon { display: block; width: 100%; height: 100%; }
+.figure {
+  width: 2rem; height: 2rem; flex: none;
+  color: var(--captain);
+  display: grid; place-items: center;
+}
+.figure[data-size="lg"] { width: 2.75rem; height: 2.75rem; }
+.figure[data-size="sm"] { width: 1.5rem; height: 1.5rem; }
+
+/* An icon in a soft round well — used where a row needs a leading mark. */
+.figure[data-well] {
+  width: 2.5rem; height: 2.5rem;
+  border-radius: 50%;
+  background: var(--sky-wash);
+  padding: .55rem;
+}
+.figure[data-well] .icon { width: 100%; height: 100%; }
+
+/* ── Actions ─────────────────────────────────────────────────────────────── */
+
+.act {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  min-height: 44px; padding: .6rem 1.1rem;
+  background: var(--navy); color: #fff;
+  border-radius: var(--radius-sm);
+  font-weight: 500; font-size: .92rem; letter-spacing: -.005em;
+  cursor: pointer;
+  transition: background var(--speed) var(--ease), opacity var(--speed) var(--ease);
+}
+.act:hover { background: #22405C; }
+.act[data-quiet] { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink-12); }
+.act[data-quiet]:hover { background: var(--ink-06); }
+.act[disabled] { opacity: .4; cursor: default; }
+.act[data-small] { min-height: 34px; padding: .3rem .75rem; font-size: .82rem; border-radius: 9px; }
+.act-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+
+.go {
+  display: inline-flex; align-items: center; gap: .35rem;
+  color: var(--captain); cursor: pointer;
+  font-size: .88rem; font-weight: 500;
+  min-height: 40px; text-align: left;
+}
+.go::after { content: "→"; transition: transform var(--speed) var(--ease); }
+.go:hover::after { transform: translateX(3px); }
+
+/* ── Lists ───────────────────────────────────────────────────────────────
+   Rows live inside one card and are separated by hairlines. A list of ten
+   things is one surface, not ten floating tiles. */
+
+.rows {
+  display: flex; flex-direction: column;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--lift);
+  overflow: hidden;
+}
+.rows > * + * { border-top: 1px solid var(--hair); }
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .1rem .8rem;
+  width: 100%; text-align: left; cursor: pointer;
+  color: inherit;
+  padding: .85rem 1.05rem;
+  background: none;
+  transition: background var(--speed) var(--ease);
+}
+button.row:hover { background: var(--ink-06); }
+div.row { cursor: default; }
+.row-title { font-size: .95rem; font-weight: 500; letter-spacing: -.01em; line-height: 1.4; }
+.row-note { font-size: .82rem; line-height: 1.5; color: var(--ink-50); margin-top: .1rem; }
+.row-meta { font-size: .72rem; font-weight: 500; color: var(--ink-50); white-space: nowrap; }
+.row-num {
+  display: grid; place-items: center;
+  width: 1.6rem; height: 1.6rem; flex: none;
+  border-radius: 50%;
+  background: var(--sky-wash);
+  font-size: .72rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--captain);
+}
+
+/* The colour tag on a row: a small dot. Nothing is outlined. */
+.stem { width: .5rem; height: .5rem; flex: none; border-radius: 50%; background: var(--captain); }
+.stem[data-accent="sky"]      { background: #8FB4D4; }
+.stem[data-accent="rose"]     { background: #D99C92; }
+.stem[data-accent="sunshine"] { background: #D9B657; }
+.stem[data-accent="poppy"]    { background: var(--poppy); }
+.stem[data-accent="captain"]  { background: var(--captain); }
+.stem[data-accent="navy"]     { background: var(--navy); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: var(--label); font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-50);
+}
+.tag::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--captain); flex: none; }
+.tag[data-accent="sky"]::before      { background: #8FB4D4; }
+.tag[data-accent="rose"]::before     { background: #D99C92; }
+.tag[data-accent="sunshine"]::before { background: #D9B657; }
+.tag[data-accent="poppy"]::before    { background: var(--poppy); }
+.tag[data-accent="captain"]::before  { background: var(--captain); }
+.tag[data-accent="navy"]::before     { background: var(--navy); }
+
+/* ── Progress ────────────────────────────────────────────────────────────── */
+
+.thread { height: 5px; background: var(--ink-12); border-radius: 99px; overflow: hidden; }
+.thread > i { display: block; height: 100%; background: var(--captain); border-radius: 99px; transition: width 600ms var(--ease); }
+.thread[data-accent="sunshine"] > i { background: #D9B657; }
+.thread[data-accent="poppy"] > i    { background: var(--poppy); }
+
+.figures { display: grid; grid-template-columns: repeat(3, 1fr); }
+.figures > div { padding: .1rem .4rem; }
+.figures > * + * { border-left: 1px solid var(--hair); }
+.figures .numeral { font-size: 1.5rem; }
+.figures .label { font-size: .6rem; margin-top: .1rem; }
+
+/* ── Scripture ───────────────────────────────────────────────────────────── */
+
+.reader {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--lift);
+  padding: 1.3rem 1.2rem 1.4rem;
+}
+.passage { margin-top: .3rem; }
+.passage-line {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  font-family: var(--serif);
+  font-size: 1.06rem; line-height: 1.78; font-weight: 400;
+  padding: .2rem .4rem; margin-left: -.4rem;
+  border-radius: 8px;
+  color: var(--ink);
+  transition: background var(--speed) var(--ease);
+}
+.passage-line:hover { background: var(--ink-06); }
+.passage-verse[data-open] .passage-line { background: var(--sky-wash); }
+.passage-num {
+  font-family: var(--sans);
+  font-size: .6rem; font-weight: 600;
+  vertical-align: .55em; margin-right: .4rem;
+  color: var(--ink-50);
+}
+.passage-verse .act-row { padding-left: .4rem; margin: .2rem 0 .5rem; }
+
+.ref-link {
+  display: inline-flex; align-items: center;
+  color: var(--captain); cursor: pointer; text-align: left;
+  padding: .25rem 0; min-height: 30px;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(65, 115, 176, .35);
+  transition: border-color var(--speed) var(--ease);
+}
+.ref-link:hover { border-bottom-color: var(--captain); }
+.card[data-solid] .ref-link { color: #fff; border-bottom-color: rgba(255, 255, 255, .4); }
+
+.chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.6rem, 1fr)); gap: .3rem; }
+.chapter {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 1; cursor: pointer;
+  font-size: .84rem; font-weight: 500;
+  color: var(--ink-70);
+  background: var(--paper);
+  border-radius: 10px;
+  transition: background var(--speed) var(--ease), color var(--speed) var(--ease);
+}
+.chapter:hover { background: var(--sky-wash); color: var(--captain); }
+
+.book-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0; }
+.book {
+  display: flex; align-items: baseline; justify-content: space-between; gap: .6rem;
+  width: 100%; text-align: left; cursor: pointer;
+  padding: .5rem .5rem; margin-left: -.5rem;
+  border-radius: 8px;
+  transition: background var(--speed) var(--ease);
+}
+.book:hover { background: var(--ink-06); }
+.book-name { font-size: .92rem; font-weight: 450; }
+.book-count { font-size: .7rem; color: var(--ink-50); font-variant-numeric: tabular-nums; }
+
+/* ── Header and navigation ───────────────────────────────────────────────── */
+
+.app-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: calc(1.4rem + env(safe-area-inset-top)) var(--gutter) 1rem;
+  max-width: 30rem; margin: 0 auto; width: 100%;
+}
+.app-head .greet { font-size: 1.05rem; font-weight: 500; letter-spacing: -.018em; }
+.app-head .greet b { font-weight: 600; }
+.app-head .label { cursor: pointer; }
+
+.back {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex: none; margin-left: -.4rem;
+  color: var(--ink-70);
+  border-radius: 50%;
+  font-size: 1rem; cursor: pointer;
+  transition: background var(--speed) var(--ease);
+}
+.back:hover { background: var(--ink-06); }
+
+/* A plain bar. The active tab is simply darker — no pill, no dot, no badge. */
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--hair);
+  padding: .35rem .3rem calc(.35rem + env(safe-area-inset-bottom));
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: .2rem;
+  padding: .5rem .2rem .45rem;
+  min-height: 50px; cursor: pointer;
+  font-size: .62rem; font-weight: 500; letter-spacing: .01em;
+  color: var(--ink-50);
+  transition: color var(--speed) var(--ease);
+}
+.tab svg { width: 21px; height: 21px; }
+.tab[aria-current="page"] { color: var(--navy); font-weight: 600; }
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+
+input[type="text"], input[type="search"], input[type="number"], textarea, select {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: .7rem .85rem;
+  min-height: 44px;
+  transition: border-color var(--speed) var(--ease), background var(--speed) var(--ease);
+}
+input:focus, textarea:focus, select:focus { outline: none; background: var(--white); border-color: var(--captain); }
+textarea { min-height: 6rem; line-height: 1.6; resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--ink-50); }
+
+.choice {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  width: 100%; text-align: left; cursor: pointer;
+  padding: .85rem 1.05rem;
+  background: none;
+  font-size: .95rem; font-weight: 450;
+  transition: background var(--speed) var(--ease);
+}
+.choice:hover { background: var(--ink-06); }
+.choice::after {
+  content: ""; width: 1.05rem; height: 1.05rem; flex: none;
+  border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ink-12);
+  transition: box-shadow var(--speed) var(--ease);
+}
+.choice[aria-pressed="true"], .choice[data-chosen] { font-weight: 550; }
+.choice[aria-pressed="true"]::after, .choice[data-chosen]::after {
+  background: var(--captain); box-shadow: inset 0 0 0 1.5px var(--captain), inset 0 0 0 4px #fff;
+}
+.choice-list {
+  display: flex; flex-direction: column;
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--lift); overflow: hidden;
+}
+.choice-list > * + * { border-top: 1px solid var(--hair); }
+
+/* ── The sheet ───────────────────────────────────────────────────────────
+   The reference's second screen: a white page, a large two-tone heading, a
+   short column of choices, and one full-width action along the bottom. Used
+   wherever this app asks the reader to make something. */
+
+.sheet {
+  position: relative;
+  display: flex; flex-direction: column; gap: 1rem;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--lift);
+  padding: 1.3rem var(--gutter) 0;
+  overflow: hidden;
+}
+.sheet-foot {
+  position: relative;
+  margin: .6rem calc(var(--gutter) * -1) 0;
+  padding: 1.05rem var(--gutter);
+  background: var(--ember); color: #fff;
+  font-size: .74rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  text-align: center; cursor: pointer; width: calc(100% + var(--gutter) * 2);
+  transition: filter var(--speed) var(--ease);
+}
+.sheet-foot:hover { filter: brightness(.96); }
+.sheet-foot[disabled] { opacity: .5; cursor: default; }
+
+/* A choice on a sheet: a soft filled block with a name and what it is. */
+.pick {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: .85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--sky-wash);
+  transition: transform var(--speed) var(--ease), filter var(--speed) var(--ease);
+}
+.pick:hover { filter: brightness(.98); }
+.pick:active { transform: translateY(1px); }
+.pick-name { font-size: .98rem; font-weight: 600; letter-spacing: -.01em; }
+.pick-what { font-size: .78rem; opacity: .7; margin-top: .05rem; }
+.pick[data-tone="ember"]    { background: var(--ember); color: #fff; }
+.pick[data-tone="poppy"]    { background: var(--poppy); color: #fff; }
+.pick[data-tone="rose"]     { background: var(--rose-wash); }
+.pick[data-tone="sunshine"] { background: var(--sunshine-wash); }
+.pick[data-tone="sky"]      { background: var(--sky-wash); }
+.pick[data-tone="captain"]  { background: var(--captain); color: #fff; }
+.pick[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
+
+/* ── Loading, empty, small print ─────────────────────────────────────────── */
+
+.wait { height: 8px; width: 8px; border-radius: 50%; background: var(--ink-12); animation: pulse 900ms var(--ease) infinite alternate; }
+@keyframes pulse { to { opacity: .3; } }
+
+.note {
+  font-size: .88rem; line-height: 1.6;
+  padding: .8rem .95rem;
+  background: var(--sky-wash);
+  border-radius: var(--radius-sm);
+  color: var(--ink-70);
+}
+.note[data-level="warn"] { background: var(--poppy-wash); }
+
+.rule { height: 1px; background: var(--hair); border: 0; margin: .2rem 0; }
+
+/* ── A full-screen moment ────────────────────────────────────────────────── */
+
+.moment {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; justify-content: center; gap: 1rem;
+  padding: 2rem var(--gutter) calc(2.4rem + env(safe-area-inset-bottom));
+  background: var(--white);
+  animation: moment-in 260ms var(--ease) both;
+}
+.moment .figure { width: 2.5rem; height: 2.5rem; margin-bottom: .4rem; }
+@keyframes moment-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Arrival ─────────────────────────────────────────────────────────────── */
+
+.rise { opacity: 0; transform: translateY(8px); }
+.rise[data-in] { opacity: 1; transform: none; transition: opacity 340ms var(--ease), transform 340ms var(--ease); }
+
+/* ── Wider screens ───────────────────────────────────────────────────────── */
+
+@media (min-width: 900px) {
+  :root { --gutter: 1.5rem; --display: clamp(1.8rem, 3vw, 2.2rem); }
+  .screen {
+    max-width: 54rem;
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem; align-items: start; padding-inline: 0;
+  }
+  .screen > .full { grid-column: 1 / -1; }
+  .app-head { max-width: 54rem; padding-inline: 0; }
+  .tabs {
+    left: 50%; transform: translateX(-50%);
+    bottom: 1rem; width: auto; max-width: 28rem;
+    grid-auto-columns: minmax(5rem, 1fr);
+    border: 1px solid var(--hair); border-radius: 16px;
+    box-shadow: var(--lift);
+    padding-bottom: .35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  .rise { opacity: 1; transform: none; }
+}

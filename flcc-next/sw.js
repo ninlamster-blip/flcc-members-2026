@@ -12,7 +12,7 @@
 //                 the files are large, and a book that has been read once
 //                 should stay readable on a bus with no signal.
 
-const VERSION = 'next-v2';
+const VERSION = 'next-v3';
 
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/next.css', './icons/icon.svg',

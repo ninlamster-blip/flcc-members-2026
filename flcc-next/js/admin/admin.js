@@ -132,7 +132,7 @@ async function overview() {
   const queue = prayers.filter((prayer) => prayer.visibility === 'leader' && prayer.moderation_status === 'pending');
   const settings = getSettings();
 
-  const health = poster({ tone: bad.length ? 'pink' : 'sage', tall: true, className: 'full' },
+  const health = poster({ tone: bad.length ? 'rose' : 'captain', tall: true, className: 'full' },
     label('Content health'),
     h('div', {},
       display(bad.length ? `${bad.length} PROBLEM${bad.length === 1 ? '' : 'S'}` : 'ALL GOOD'),
@@ -142,7 +142,7 @@ async function overview() {
           : `Every authored file passes. ${warn.length} thing${warn.length === 1 ? '' : 's'} worth a look.` })),
     h('div', { class: 'poster-foot' },
       pill('Open content', () => go('content'), { quiet: !bad.length }),
-      art(bad.length ? 'shield' : 'light', { tone: bad.length ? 'pink' : 'sage', size: 'sm' })));
+      art(bad.length ? 'shield' : 'light', { tone: bad.length ? 'rose' : 'captain', size: 'sm' })));
 
   const shelf = poster({ tone: 'paper', className: 'full' },
     label('The library'),
@@ -190,7 +190,7 @@ async function overview() {
         })(),
       })));
 
-  const attention = poster({ tone: 'cream', className: 'full' },
+  const attention = poster({ tone: 'sunshine', className: 'full' },
     label('Waiting on you'),
     h('div', { class: 'rows', style: 'margin-top:.6rem' },
       row({
@@ -253,8 +253,8 @@ async function contentSection() {
     h('div', { class: 'row-actions' }, pill('Open Library', () => go('library'), { quiet: true })));
 
   return h('div', { style: 'display:contents' },
-    problemBlock('Problems', bad, bad.length ? 'pink' : 'sage'),
-    warn.length ? problemBlock('Worth a look', warn, 'cream') : null,
+    problemBlock('Problems', bad, bad.length ? 'rose' : 'captain'),
+    warn.length ? problemBlock('Worth a look', warn, 'sunshine') : null,
     files, howTo);
 }
 
@@ -373,7 +373,7 @@ async function librarySection(refresh) {
   const state = library.summary();
 
   // ── What has changed, and how to move it ────────────────────────────────
-  const header = poster({ tone: state.total ? 'cream' : 'paper', className: 'full' },
+  const header = poster({ tone: state.total ? 'sunshine' : 'paper', className: 'full' },
     label('The library'),
     h('div', {},
       display(state.total ? `${state.total} CHANGE${state.total === 1 ? '' : 'S'}` : 'NOTHING CHANGED YET'),
@@ -426,7 +426,7 @@ async function librarySection(refresh) {
 
   const editor = editing ? (() => {
     const problems = h('div', { class: 'rows' });
-    return poster({ tone: 'blue', className: 'full' },
+    return poster({ tone: 'sky', className: 'full' },
       label(editing.key === null ? `New ${kind.one}` : `Editing · ${kind.title(editing.draft) || kind.one}`),
       ...kind.fields.map((field) => fieldEditor(field, editing.draft)),
       problems,
@@ -481,7 +481,7 @@ async function librarySection(refresh) {
         actions: [pill('Put it back', () => { library.restoreRow(kind, kind.key(item)); refresh(); }, { quiet: true })],
       })))) : null;
 
-  const finished = poster({ tone: 'sage', className: 'full' },
+  const finished = poster({ tone: 'captain', className: 'full' },
     label('Make it permanent'),
     h('p', { class: 'row-note',
       text: `Everything above is on this device only. To give it to the whole ministry, copy the finished ${kind.file} and commit it to the repository — then undo the changes here, because the committed file will carry them.` }),
@@ -633,7 +633,7 @@ function prayersSection(refresh) {
         ? 'One prayer on this device was marked “only me and God”. It is counted here and nowhere else — its words are not shown on this page, and nothing sends them anywhere.'
         : `${privateCount} prayers on this device were marked “only me and God”. They are counted here and nowhere else — their words are not shown on this page, and nothing sends them anywhere.` }));
 
-  const exportBlock = poster({ tone: 'cream', className: 'full' },
+  const exportBlock = poster({ tone: 'sunshine', className: 'full' },
     label('Taking these with you'),
     h('p', { class: 'row-note', text: 'This exports the prayers written on this device. Prayers sent from young people’s phones live on the Worker and are read in the queue above. Private prayers are never included in either.' }),
     h('div', { class: 'row-actions' },
@@ -674,7 +674,7 @@ function prayersSection(refresh) {
           error: 'The Worker answered, but not with a queue.',
         }[result.reason] || 'The queue could not be loaded.';
 
-      churchWide.replaceChildren(poster({ tone: result.reason === 'off' ? 'cream' : 'paper', className: 'full' },
+      churchWide.replaceChildren(poster({ tone: result.reason === 'off' ? 'sunshine' : 'paper', className: 'full' },
         label('Sent from phones'),
         h('p', { class: 'body dim', style: 'margin-top:.6rem', text: said }),
         result.reason === 'off'
@@ -712,7 +712,7 @@ function prayersSection(refresh) {
     });
 
     const urgent = result.prayers.filter((prayer) => prayer.urgent).length;
-    churchWide.replaceChildren(poster({ tone: urgent ? 'pink' : 'paper', className: 'full' },
+    churchWide.replaceChildren(poster({ tone: urgent ? 'rose' : 'paper', className: 'full' },
       label(`Sent from phones · ${result.prayers.length}`),
       urgent
         ? h('p', { class: 'body', style: 'margin-top:.5rem',
@@ -764,7 +764,7 @@ async function eventsSection() {
         right: going.has(event.id) ? flag('ok', 'going') : null,
       }))));
 
-  const draft = { id: '', title: '', when: '', where: '', blurb: '', for: 'both', tone: 'cream', symbol: 'star' };
+  const draft = { id: '', title: '', when: '', where: '', blurb: '', for: 'both', tone: 'sunshine', symbol: 'star' };
   const out = h('code', { class: 'code', text: '{}' });
 
   const paint = () => {
@@ -790,7 +790,7 @@ async function eventsSection() {
     h('select', { onchange: (event) => { draft[key] = event.target.value; paint(); } },
       ...options.map((option) => h('option', { value: option, text: option }))));
 
-  const composer = poster({ tone: 'cream', className: 'full' },
+  const composer = poster({ tone: 'sunshine', className: 'full' },
     label('Add an event'),
     h('p', { class: 'row-note', text: 'There is no server to save an event to, so this writes the JSON for you. Paste it into content/events.json and commit it.' }),
     field('Title', 'title', 'Youth night'),
@@ -798,7 +798,7 @@ async function eventsSection() {
     field('Where', 'where', 'NECK Compound'),
     field('One line about it', 'blurb', 'Worship, a word, and food afterwards.'),
     picker('Who it is for', 'for', ['both', 'kids', 'teens']),
-    picker('Colour', 'tone', ['cream', 'pink', 'blue', 'sage', 'ink', 'paper']),
+    picker('Colour', 'tone', ['sunshine', 'rose', 'sky', 'captain', 'ink', 'paper']),
     picker('Illustration', 'symbol', ['star', 'people', 'calendar', 'camera', 'grid', 'light', 'mountain', 'rocket', 'flag', 'heart']),
     out,
     h('div', { class: 'row-actions' },
@@ -881,7 +881,7 @@ function askSection(refresh) {
       row({ title: 'It is checked before it is sent', note: 'A question that suggests danger or self-harm is answered on the device with the help card. Nothing leaves the phone.' }),
       row({ title: 'It sends the question and the age group', note: 'No name, no prayers, no journal, no history beyond the last few turns of the same conversation.' })));
 
-  const disclosure = poster({ tone: 'cream', className: 'full' },
+  const disclosure = poster({ tone: 'sunshine', className: 'full' },
     label('What the young person is told'),
     h('p', { class: 'body', style: 'margin-top:.6rem', text: ai.DISCLOSURE }));
 
@@ -929,7 +929,7 @@ async function go(name, { keep = false } = {}) {
   try {
     el = await RENDER[current]();
   } catch (error) {
-    el = poster({ tone: 'pink', className: 'full' },
+    el = poster({ tone: 'rose', className: 'full' },
       label('Sorry'), headline('THAT SECTION DID NOT OPEN'),
       h('p', { class: 'body', style: 'margin-top:.8rem', text: String((error && error.message) || error) }));
   }

@@ -58,7 +58,7 @@ function finish({ ctx, game, score, total, tone }) {
 }
 
 // ── Bible quiz, and its fast cousin ────────────────────────────────────────
-async function quizGame(ctx, { timed = false, game = 'quiz', tone = 'pink', title = 'Bible quiz', size = 10 } = {}) {
+async function quizGame(ctx, { timed = false, game = 'quiz', tone = 'rose', title = 'Bible quiz', size = 10 } = {}) {
   const definition = (await content.games()).find((one) => one.id === game);
   const all = forTopic(forAge(await content.quiz(), mode()), definition && definition.topics);
   if (timed) size = 20;           // nobody answers 20 inside sixty seconds
@@ -123,7 +123,7 @@ async function whoAmIGame(ctx) {
   const all = forAge(await content.whoAmI(), mode());
   const rounds = deal(all, { count: 5, offset: OFFSET['who-am-i'] });
   const run = runLine(all, 5, 'who-am-i');
-  const tone = 'sage';
+  const tone = 'captain';
   let index = 0;
   let score = 0;
 
@@ -177,7 +177,7 @@ async function verseGame(ctx) {
   const all = forAge(await content.verses(), mode());
   const rounds = deal(all, { count: 5, offset: OFFSET['verse-builder'] });
   const run = runLine(all, 5, 'verse-builder');
-  const tone = 'cream';
+  const tone = 'sunshine';
   let index = 0;
   let score = 0;
 
@@ -409,10 +409,10 @@ async function crosswordGame(ctx) {
 
 const GAMES = {
   quiz: (ctx) => quizGame(ctx),
-  speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'blue', title: 'Speed quiz' }),
+  speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'sky', title: 'Speed quiz' }),
   // A shorter round than the Bible quiz: the FLCC bank is the smallest in the
   // app, and five a day is what makes it last a week for kids as well as teens.
-  church: (ctx) => quizGame(ctx, { game: 'church', tone: 'sage', title: 'Our church', size: 5 }),
+  church: (ctx) => quizGame(ctx, { game: 'church', tone: 'captain', title: 'Our church', size: 5 }),
   'who-am-i': whoAmIGame,
   'verse-builder': verseGame,
   crossword: crosswordGame,

@@ -16,7 +16,7 @@ export default async function lessonScreen(ctx) {
   } catch { /* handled below */ }
   if (!lesson) return { title: 'Lesson', el: poster({ tone: 'paper', className: 'full' }, note('That lesson could not be found.')) };
 
-  const tone = (journey && journey.tone) || 'blue';
+  const tone = (journey && journey.tone) || 'sky';
   const key = `${journeyId}/${lessonId}`;
   const feedback = h('p', { class: 'body', style: 'margin-top:1rem' });
   let answered = progress.isDone('lesson', key);

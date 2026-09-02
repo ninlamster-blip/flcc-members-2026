@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FLCC NEXT">
+  <!-- The mark is one of the app's own organic shapes, drawn by
+       js/core/shapes.js from the seed "flcc adults icon b", with a gold form
+       behind it. Warm paper, deep forest: the same two colours the app opens
+       with. -->
+  <rect width="512" height="512" rx="112" fill="#F9F9F3"/>
+  <g transform="translate(120,96) scale(3.1)">
+    <path d="M93.7 41.94C93.01 55.19,78.59 83.38,65.07 88.57C51.55 93.76,22.12 83.86,12.57 73.09C3.03 62.32,-1.65 34.62,7.79 23.95C17.24 13.29,54.9 6.09,69.22 9.09C83.53 12.09,94.39 28.7,93.7 41.94Z" fill="#ECBA52"/>
+  </g>
+  <g transform="translate(64,128) scale(3.1)">
+    <path d="M93.7 41.94C93.01 55.19,78.59 83.38,65.07 88.57C51.55 93.76,22.12 83.86,12.57 73.09C3.03 62.32,-1.65 34.62,7.79 23.95C17.24 13.29,54.9 6.09,69.22 9.09C83.53 12.09,94.39 28.7,93.7 41.94Z" fill="#253624"/>
+  </g>
+</svg>

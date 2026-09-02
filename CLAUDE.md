@@ -70,6 +70,59 @@ The one thing it shares with the FLCC Members app is the deployed
 `ask-proxy/worker.js`: the proxy holds the API key so no device does. It reads
 none of the FLCC data files and none of the `FLCC.*` global.
 
+## FLCC NEXT — Adults
+
+`flcc-adults/` is a **fifth, separate application** — the adult edition of
+FLCC NEXT, for the members of FLCC Church. It has its own `adults/v1/…`
+storage namespace, its own design system (*Layers* — a list is a stack of
+full-bleed colour bands torn apart by seeded waves, each carrying a hand-drawn
+texture; everything else is warm paper, colour as a tenth-strength wash,
+hairlines instead of outlines, soft shadows, and monoline icons with no
+faces), its own content and its own tests, and it must never import
+`church.js`, read `FLCC.*`, or touch anything under `shepherd/` or `lamp/`.
+`flcc-adults/js/core/storage.js` throws on any key outside the namespace.
+
+Read `flcc-adults/ARCHITECTURE.md` before adding a module, a storage key or a
+screen, and `flcc-adults/README.md` for what it does and the three decisions
+behind it (nothing leaves the device; there is no score; a reading plan is a
+sequence, not a calendar).
+
+It is a separate application from `flcc-next/` on purpose — the kids and teens
+app and the adult app share an identity and no code, because a single codebase
+with an `isAdult` flag through it would serve neither audience. Content is
+written once, in one adult register: there are no age variants here, and
+`flcc-adults/test/content.test.mjs` fails a file that grows a `kids` or `teens`
+key.
+
+One narrow, deliberate exception to the boundary, documented at length in the
+header of `flcc-adults/js/core/scripture.js`: the adult app reads the committed
+text of Scripture from `flcc-next/bible/` rather than committing a second
+14 MB copy of it. That is a one-way read of static, public-domain, same-origin
+text at a fixed path — never `flcc-next/content/`, never a module, never
+storage. `flcc-adults/test/modules.test.mjs` fails any file that reaches past
+the Bible into the kids app, and `test/scripture.test.mjs` fails if the shared
+text moves.
+
+**The adult app must not look like the kids app.** It was drawn in a playful
+sticker style and read, unmistakably, as an app for children. Five rules
+are enforced by tests rather than by review, because they are the ones that
+erode first: no `box-shadow` may have a zero blur radius (the hard offset
+sticker shadow); no border may exceed 1px; no `font-weight` may exceed 600; no
+icon may contain a circle, an ellipse or a smile-shaped arc; and every verse
+the authored writing quotes must match the shipped World English Bible word
+for word. A sixth is untested and matters most: **the chrome stops at
+Scripture** — the Bible reader is plain white paper and serif type.
+
+**The six named colours are shared with `flcc-next/`** — sky `#C3D7EA`,
+captain `#4173B0`, navy `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`, sunshine
+`#EDCE7A` — and a test in each app pins them, so changing one means changing
+both. Two things are each app's own: the paper (the adult app sits on a warm
+`#FAF6F2`, the kids app on `#FBF8F0`), and the adult app's one derived shade,
+**ember `#C24A38`** — poppy deepened until white type sits on it at 4.8:1.
+In the adult app a colour appears either as a wash at about a tenth strength
+or as a full-bleed band in a stack; exactly one card per screen is allowed to
+be a solid colour.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection

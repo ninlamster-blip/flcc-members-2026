@@ -1,0 +1,14 @@
+{
+  "name": "FLCC NEXT — for adults",
+  "short_name": "FLCC NEXT",
+  "description": "Scripture, prayer and teaching for the adults of FLCC Church.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF6F2",
+  "theme_color": "#FAF6F2",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

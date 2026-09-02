@@ -1,0 +1,236 @@
+[
+  {
+    "id": "john-21",
+    "title": "John, in 21 days",
+    "kicker": "Start here",
+    "blurb": "One chapter a day through the gospel written so that you would believe. The best first plan for anyone who has never read a book of the Bible through.",
+    "days": [
+      {
+        "ref": "John 1",
+        "note": "The Word became flesh. The claim is made before the story starts."
+      },
+      {
+        "ref": "John 2",
+        "note": "Water into wine, and the temple cleared. Both are signs, not errands."
+      },
+      {
+        "ref": "John 3",
+        "note": "Nicodemus comes at night, and gets told he must start again."
+      },
+      {
+        "ref": "John 4",
+        "note": "A Samaritan woman is given the plainest answer anyone in this book gets."
+      },
+      {
+        "ref": "John 5",
+        "note": "A healing on the Sabbath, and the argument that will end in a cross."
+      },
+      {
+        "ref": "John 6",
+        "note": "Bread for five thousand, then a sermon that empties the room."
+      },
+      {
+        "ref": "John 7",
+        "note": "Even his own brothers do not believe him."
+      },
+      {
+        "ref": "John 8",
+        "note": "“Before Abraham came into existence, I AM.” They pick up stones."
+      },
+      {
+        "ref": "John 9",
+        "note": "A blind man sees. The people who can see do not."
+      },
+      {
+        "ref": "John 10",
+        "note": "The shepherd who owns the sheep, and lays down his life for them."
+      },
+      {
+        "ref": "John 11",
+        "note": "Lazarus. Note that Jesus weeps knowing exactly what he is about to do."
+      },
+      {
+        "ref": "John 12",
+        "note": "The last public week. A jar of perfume is broken and criticised."
+      },
+      {
+        "ref": "John 13",
+        "note": "He washes their feet — including the feet of the man leaving to betray him."
+      },
+      {
+        "ref": "John 14",
+        "note": "“I am the way.” Comfort spoken to men hours from losing everything."
+      },
+      {
+        "ref": "John 15",
+        "note": "The vine. Fruit is the result of remaining, not of straining."
+      },
+      {
+        "ref": "John 16",
+        "note": "The Spirit promised, and sorrow told plainly that it will turn."
+      },
+      {
+        "ref": "John 17",
+        "note": "Jesus prays for those who will believe through their word. That is you."
+      },
+      {
+        "ref": "John 18",
+        "note": "The arrest, and Peter warming himself at the wrong fire."
+      },
+      {
+        "ref": "John 19",
+        "note": "The crucifixion. “It is finished.”"
+      },
+      {
+        "ref": "John 20",
+        "note": "The empty tomb — and Thomas allowed his doubt without being shamed."
+      },
+      {
+        "ref": "John 21",
+        "note": "Breakfast on a beach. Peter is restored three times, once for each denial."
+      }
+    ],
+    "tone": "sky",
+    "symbol": "book"
+  },
+  {
+    "id": "psalms-hard-season",
+    "title": "Psalms for a hard season",
+    "kicker": "When it is heavy",
+    "blurb": "Fourteen psalms for grief, fear, exhaustion and doubt — including the one that does not resolve. Nothing here asks you to feel better than you do.",
+    "days": [
+      {
+        "ref": "Psalm 42",
+        "note": "Thirst, and a man arguing with his own soul."
+      },
+      {
+        "ref": "Psalm 13",
+        "note": "“How long?” Four times. The Bible permits this."
+      },
+      {
+        "ref": "Psalm 23",
+        "note": "Read it as an adult, not as a memory from school."
+      },
+      {
+        "ref": "Psalm 27",
+        "note": "Confidence and terror in the same poem."
+      },
+      {
+        "ref": "Psalm 34",
+        "note": "Written by a man who had just escaped by pretending to be mad."
+      },
+      {
+        "ref": "Psalm 40",
+        "note": "He waited patiently — the waiting is in the text."
+      },
+      {
+        "ref": "Psalm 46",
+        "note": "Be still. The verse is set in an earthquake, not a quiet room."
+      },
+      {
+        "ref": "Psalm 51",
+        "note": "David after the worst thing he ever did."
+      },
+      {
+        "ref": "Psalm 62",
+        "note": "For God alone my soul waits in silence."
+      },
+      {
+        "ref": "Psalm 73",
+        "note": "The prosperity of the wicked, faced honestly and then reframed."
+      },
+      {
+        "ref": "Psalm 88",
+        "note": "The psalm with no happy ending. It is in the Bible on purpose."
+      },
+      {
+        "ref": "Psalm 103",
+        "note": "Bless the Lord — a deliberate act of remembering."
+      },
+      {
+        "ref": "Psalm 121",
+        "note": "A travelling song for anyone a long way from home."
+      },
+      {
+        "ref": "Psalm 139",
+        "note": "Known completely, and still held."
+      }
+    ],
+    "tone": "rose",
+    "symbol": "cloud"
+  },
+  {
+    "id": "mark-16",
+    "title": "Mark, in 16 days",
+    "kicker": "The short gospel",
+    "blurb": "The fastest of the four gospels, written for people with no religious background and no patience. A fortnight, and you have read a life of Jesus.",
+    "days": [
+      {
+        "ref": "Mark 1",
+        "note": "Everything at speed. “Immediately” is this book's pulse."
+      },
+      {
+        "ref": "Mark 2",
+        "note": "Four friends dig through a roof rather than wait their turn."
+      },
+      {
+        "ref": "Mark 3",
+        "note": "His family come to take him home, believing he is out of his mind."
+      },
+      {
+        "ref": "Mark 4",
+        "note": "Parables about soil, and a storm told to be quiet."
+      },
+      {
+        "ref": "Mark 5",
+        "note": "A legion, a bleeding woman, and a dead girl — all in one chapter."
+      },
+      {
+        "ref": "Mark 6",
+        "note": "John the Baptist is executed. Five thousand are fed."
+      },
+      {
+        "ref": "Mark 7",
+        "note": "Tradition against commandment, and a foreign woman who argues and wins."
+      },
+      {
+        "ref": "Mark 8",
+        "note": "The hinge of the book: “But who do you say that I am?”"
+      },
+      {
+        "ref": "Mark 9",
+        "note": "The transfiguration, and the most honest prayer in Scripture."
+      },
+      {
+        "ref": "Mark 10",
+        "note": "The rich man walks away. A blind beggar refuses to be quiet."
+      },
+      {
+        "ref": "Mark 11",
+        "note": "Into Jerusalem. The fig tree and the temple are the same judgement."
+      },
+      {
+        "ref": "Mark 12",
+        "note": "The greatest commandment, and a widow who gives everything."
+      },
+      {
+        "ref": "Mark 13",
+        "note": "The temple will fall. Watch."
+      },
+      {
+        "ref": "Mark 14",
+        "note": "The anointing, the supper, Gethsemane, the arrest. Read it slowly."
+      },
+      {
+        "ref": "Mark 15",
+        "note": "Trial, crucifixion, and the verdict of a Roman soldier."
+      },
+      {
+        "ref": "Mark 16",
+        "note": "The tomb is empty, and the oldest ending stops mid-sentence."
+      }
+    ],
+    "tone": "sunshine",
+    "symbol": "flame"
+  }
+]

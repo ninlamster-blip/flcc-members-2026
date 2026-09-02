@@ -68,16 +68,16 @@ function onboarding() {
     boot();
   };
 
-  const intro = () => poster({ tone: 'cream', tall: true, className: 'full' },
+  const intro = () => poster({ tone: 'sunshine', tall: true, className: 'full' },
     label('FLCC NEXT'),
     h('div', {},
       display('THIS IS YOUR JOURNEY.'),
       h('p', { class: 'lead dim', style: 'margin-top:1.2rem', text: 'Grow in faith. Discover the Bible. Have fun along the way.' })),
-    h('div', { class: 'poster-foot' }, pill('Start', next), art('rocket', { tone: 'cream', size: 'sm' })));
+    h('div', { class: 'poster-foot' }, pill('Start', next), art('rocket', { tone: 'sunshine', size: 'sm' })));
 
   const askName = () => {
     const input = h('input', { type: 'text', id: 'ob-name', maxlength: '24', autocomplete: 'off', placeholder: 'Type your name' });
-    const warn = h('p', { class: 'label', style: 'color:#161616;opacity:.6' });
+    const warn = h('p', { class: 'label', style: 'color:var(--ink);opacity:.6' });
     const form = h('form', { onsubmit: (event) => {
       event.preventDefault();
       const name = input.value.trim();
@@ -86,15 +86,15 @@ function onboarding() {
       next();
     } }, input, h('div', { style: 'margin-top:1.6rem' }, pill('Next', null, { type: 'submit' })));
 
-    const block = poster({ tone: 'blue', tall: true, className: 'full' },
+    const block = poster({ tone: 'sky', tall: true, className: 'full' },
       label('Step 1 of 3'),
       h('div', {}, display('WHAT’S YOUR NAME?'), h('div', { style: 'margin-top:1.6rem' }, form), warn),
-      h('div', { class: 'poster-foot' }, h('span'), art('star', { tone: 'blue', size: 'sm' })));
+      h('div', { class: 'poster-foot' }, h('span'), art('star', { tone: 'sky', size: 'sm' })));
     setTimeout(() => input.focus(), 60);
     return block;
   };
 
-  const askAge = () => poster({ tone: 'sage', tall: true, className: 'full' },
+  const askAge = () => poster({ tone: 'captain', tall: true, className: 'full' },
     label('Step 2 of 3'),
     h('div', {},
       display('HOW OLD ARE YOU?'),
@@ -103,17 +103,17 @@ function onboarding() {
           choice(`${m.range}   ${m.label.toUpperCase()}`, () => {
             const input = h('input', { type: 'number', min: String(m.min), max: String(m.max), value: String(defaultAge),
               style: 'font-size:2rem;font-weight:800;text-align:center' });
-            const holder = poster({ tone: 'sage', tall: true, className: 'full' },
+            const holder = poster({ tone: 'captain', tall: true, className: 'full' },
               label(`${m.label} · ${m.range}`),
               h('div', {}, display('HOW OLD EXACTLY?'), h('div', { style: 'margin-top:1.4rem' }, input)),
               h('div', { class: 'poster-foot' }, pill('That’s me', () => {
                 const age = Math.min(m.max, Math.max(m.min, Number(input.value) || defaultAge));
                 draft.age = age;
                 next();
-              }), art(m === MODE.kids ? 'plant' : 'mountain', { tone: 'sage', size: 'sm' })));
+              }), art(m === MODE.kids ? 'plant' : 'mountain', { tone: 'captain', size: 'sm' })));
             clear(screenEl).appendChild(holder);
           })))),
-    h('div', { class: 'poster-foot' }, h('span'), art('people', { tone: 'sage', size: 'sm' })));
+    h('div', { class: 'poster-foot' }, h('span'), art('people', { tone: 'captain', size: 'sm' })));
 
   const askInterests = () => {
     const options = [['bible', 'THE BIBLE', 'book'], ['prayer', 'PRAYER', 'hands'], ['games', 'GAMES', 'grid'], ['real', 'REAL LIFE', 'bulb']];
@@ -127,12 +127,12 @@ function onboarding() {
         return button;
       }));
 
-    return poster({ tone: 'pink', tall: true, className: 'full' },
+    return poster({ tone: 'rose', tall: true, className: 'full' },
       label('Step 3 of 3'),
       h('div', {}, display('WHAT DO YOU WANT TO EXPLORE?'), list),
       h('div', { class: 'poster-foot' },
         pill('Let’s go', () => { draft.interests = [...chosen]; next(); }),
-        art('light', { tone: 'pink', size: 'sm' })));
+        art('light', { tone: 'rose', size: 'sm' })));
   };
 
   render();
@@ -188,7 +188,7 @@ async function show(route, module) {
   try {
     view = await module.default(context);
   } catch (error) {
-    view = { title: 'Something broke', el: poster({ tone: 'pink', className: 'full' },
+    view = { title: 'Something broke', el: poster({ tone: 'rose', className: 'full' },
       label('Sorry'), headline('THAT SCREEN DID NOT OPEN'), h('p', { class: 'body dim', text: String(error && error.message || error) })) };
   }
 

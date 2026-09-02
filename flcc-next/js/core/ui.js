@@ -108,7 +108,7 @@ export function rise(elements) {
  * A full-screen moment: a streak milestone, a finished journey, a game result.
  * One headline, one line, one way out. It is the only interruption the app has.
  */
-export function moment({ tone = 'cream', eyebrow = '', big, line = '', action = 'Keep going', onclose }) {
+export function moment({ tone = 'sunshine', eyebrow = '', big, line = '', action = 'Keep going', onclose }) {
   const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: `background:var(--${tone})` },
     eyebrow ? label(eyebrow) : null,
     h('p', { class: 'display', text: big }),
@@ -124,7 +124,7 @@ export function toast(message) {
   let el = document.getElementById('toast');
   if (!el) {
     el = h('div', { id: 'toast', role: 'status', 'aria-live': 'polite',
-      style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(5.5rem + env(safe-area-inset-bottom));z-index:50;background:#161616;color:#F7F5F0;padding:.7rem 1.2rem;border-radius:99px;font-size:.85rem;font-weight:600;max-width:90vw;text-align:center' });
+      style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(5.5rem + env(safe-area-inset-bottom));z-index:50;background:#2B4C6D;color:#FBF8F0;padding:.7rem 1.2rem;border-radius:99px;font-size:.85rem;font-weight:600;max-width:90vw;text-align:center' });
     document.body.appendChild(el);
   }
   el.textContent = message;

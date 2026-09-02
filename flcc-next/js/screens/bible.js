@@ -143,7 +143,7 @@ async function bookScreen(ctx, entry) {
     })));
 
   const el = h('div', { style: 'display:contents' },
-    poster({ tone: 'cream', tall: true, className: 'full' },
+    poster({ tone: 'sunshine', tall: true, className: 'full' },
       label(entry.testament === 'old' ? 'Old Testament' : 'New Testament'),
       h('div', {},
         display(entry.name.toUpperCase()),
@@ -152,7 +152,7 @@ async function bookScreen(ctx, entry) {
           ? h('p', { class: 'ref', style: 'margin-top:.9rem', text: `Sa Tagalog: ${entry.tagalog}` }) : null),
       h('div', { class: 'poster-foot' },
         pill('Start at chapter 1', () => ctx.go(`bible/${entry.n}/1`)),
-        art('book', { tone: 'cream', size: 'sm' }))),
+        art('book', { tone: 'sunshine', size: 'sm' }))),
     poster({ tone: 'paper', className: 'full' },
       label(`${entry.chapters} chapter${entry.chapters === 1 ? '' : 's'}`),
       h('div', { style: 'margin-top:1rem' }, grid)));
@@ -245,7 +245,7 @@ export default async function bibleScreen(ctx) {
     input,
     h('div', { style: 'margin-top:1.1rem' }, pill('Look it up', null, { type: 'submit' })));
 
-  const opening = poster({ tone: 'blue', tall: true, className: 'full' },
+  const opening = poster({ tone: 'sky', tall: true, className: 'full' },
     label('The Bible'),
     h('div', {},
       display(isKids() ? 'LOOK IT UP.' : 'THE WHOLE THING.'),
@@ -254,17 +254,17 @@ export default async function bibleScreen(ctx) {
           ? 'All 66 books are already on your phone. Type where you want to go.'
           : '66 books, three translations, no signal needed once a book has been opened.' }),
       h('div', { style: 'margin-top:1.4rem' }, form)),
-    h('div', { class: 'poster-foot' }, h('span'), art('book', { tone: 'blue', size: 'sm' })));
+    h('div', { class: 'poster-foot' }, h('span'), art('book', { tone: 'sky', size: 'sm' })));
 
   // ── Carry on ───────────────────────────────────────────────────────────
   const last = state.last && byNumber(state.last.n);
-  const carryOn = last ? poster({ tone: 'sage', as: 'button', className: 'full',
+  const carryOn = last ? poster({ tone: 'captain', as: 'button', className: 'full',
     onclick: () => ctx.go(`bible/${last.n}/${state.last.chapter}`) },
     label('Carry on'),
     h('div', {}, headline(`${last.name} ${state.last.chapter}`),
       h('p', { class: 'body dim', style: 'margin-top:.7rem', text: 'Where you stopped reading.' })),
     h('div', { class: 'poster-foot' }, go('Open', () => ctx.go(`bible/${last.n}/${state.last.chapter}`)),
-      art('book', { tone: 'sage', size: 'sm' }))) : null;
+      art('book', { tone: 'captain', size: 'sm' }))) : null;
 
   // ── Where do I look? ───────────────────────────────────────────────────
   let finders = [];
@@ -281,7 +281,7 @@ export default async function bibleScreen(ctx) {
   } catch { /* the finder is authored content; the Bible works without it */ }
 
   // ── Verses you kept ────────────────────────────────────────────────────
-  const kept = state.saved.length ? poster({ tone: 'cream', className: 'full' },
+  const kept = state.saved.length ? poster({ tone: 'sunshine', className: 'full' },
     label(`Verses you kept · ${state.saved.length}`),
     h('div', { class: 'rows', style: 'margin-top:.6rem' },
       ...state.saved.slice(0, 8).map((one) => h('div', {},
