@@ -139,6 +139,38 @@ who has already turned text up gets that, times this. The 3px outlines, the
 corner radius and the progress bars deliberately stay where they are: those are
 the drawing, not the type.
 
+## Changing what is on the Community tab
+
+**`admin/` — the events and notices admin.** Open `…/flcc-adults/admin/`, type
+the passcode, edit, press publish. Changes are live on members' phones in about
+a minute. No GitHub account, no JSON.
+
+It edits two things: **events** (what is on, and what Today counts down to) and
+**announcements** (the "From FLCC" notices). Ministries are rare enough to stay
+a repository edit.
+
+What happens when you press publish: the page POSTs to `/api/publish/adults` on
+this repository's Worker, which checks the passcode, validates the shape, and
+commits the file back to `content/`. Cloudflare rebuilds and the app picks it
+up. **So the repository is still the single source of truth** — every save is
+an ordinary commit with a date and a name on it, the history is the real
+history, and a mistake is one revert away. The app goes on reading static files
+it can cache and serve with no signal, which a database would have taken away.
+
+Two things it will not let you publish, because both break the app quietly
+rather than loudly:
+
+- **An event nothing can count down to.** Every event says when it is twice —
+  the sentence a member reads, and the day and time the countdown is computed
+  from. The page offers the sentence ready-made from the day you picked.
+- **A calendar with no main gathering.** Today frames the whole week around it;
+  without one the app loses its sense of the week for ever.
+
+Setup is two Worker secrets, `ADULTS_ADMIN_PASSCODES` and `GITHUB_TOKEN` — see
+the comments in `wrangler.toml`. Until they are set the endpoint is closed, not
+open. Give each person their own passcode rather than sharing one: it costs
+nothing and makes the commit history worth reading.
+
 ## The design
 
 `css/next.css` — the **poster system**, which is the kids and teens edition's

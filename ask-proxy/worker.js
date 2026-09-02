@@ -793,6 +793,11 @@ async function handleRequest(request, env, ctx) {
     return handleAttendancePublish(request, env);
   }
 
+  // ── /api/publish/adults — the FLCC NEXT Adults events & notices admin ────
+  if (url.pathname === '/api/publish/adults') {
+    return handleAdultsPublish(request, env);
+  }
+
   // ── All other non-POST requests ──────────────────────────────────────────
   // Static files (HTML, JSON, etc.) are served directly by Cloudflare's edge
   // before the Worker runs, so env.ASSETS is not available here.
@@ -1727,4 +1732,171 @@ async function handleAttendancePublish(request, env) {
   return new Response(JSON.stringify({ ok: true, church: slug, path, commit: result?.commit?.sha || null }), {
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
+}
+
+// ── The FLCC NEXT Adults admin ─────────────────────────────────────────────
+//
+// Lets whoever runs the church calendar change what is on the Community tab
+// without touching GitHub — while keeping the repository as the single source
+// of truth. The admin page collects the change, this commits it to
+// `flcc-adults/content/`, and Cloudflare rebuilds. Every save is an ordinary
+// commit: who, what, when, and one click to revert.
+//
+// It is deliberately built on `handleAttendancePublish`'s pattern rather than
+// on a database. The app reads these files straight off the origin and caches
+// them in a service worker, so it keeps working with no signal — moving them
+// into D1 would buy nothing and cost that.
+//
+// Only two files can ever be written, and the file is chosen by a key into a
+// fixed map rather than taken from the request. A path arriving in the body
+// is ignored, exactly as the attendance publisher ignores `church` and `path`.
+
+const ADULTS_FILES = {
+  events:  'flcc-adults/content/events.json',
+  updates: 'flcc-adults/content/updates.json',
+};
+
+const ADULTS_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'paper'];
+const MAX_ADULTS_BYTES = 256 * 1024;
+
+const isFilledText = (value) => typeof value === 'string' && value.trim().length > 0;
+const isDay = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+  && !Number.isNaN(Date.parse(value));
+
+/**
+ * The same rules `flcc-adults/test/content.test.mjs` enforces at build time,
+ * enforced here at write time.
+ *
+ * The suite cannot protect a file that is committed by an API rather than by a
+ * pull request, so these have to be checked before the write, not after it. A
+ * malformed event does not break the build — it makes an event silently stop
+ * appearing under "Next up", which is worse, because nobody finds out until
+ * the Friday nobody came.
+ */
+function validateAdultsEvents(rows) {
+  if (!Array.isArray(rows)) return 'not a list';
+  if (!rows.length) return 'there are no events at all';
+  const seen = new Set();
+  for (const one of rows) {
+    if (!one || typeof one !== 'object' || Array.isArray(one)) return 'an entry is not an event';
+    for (const field of ['id', 'title', 'when', 'where', 'blurb']) {
+      if (!isFilledText(one[field])) return `an event is missing its ${field}`;
+    }
+    if (seen.has(one.id)) return `two events share the id "${one.id}"`;
+    seen.add(one.id);
+    if (!ADULTS_TONES.includes(one.tone)) return `"${one.id}" has an unknown colour`;
+
+    // The countdown rule: an event must say when it is twice — once for a
+    // person to read, once for the app to compute from.
+    const timed = one.weekday !== undefined || one.date || Array.isArray(one.dates);
+    if (!timed) return `"${one.id}" has no day, so nothing can count down to it`;
+    if (!/^\d{1,2}:\d{2}$/.test(String(one.start || ''))) return `"${one.id}" has no start time`;
+    if (!Number.isInteger(one.minutes) || one.minutes <= 0) return `"${one.id}" does not say how long it runs`;
+    if (one.weekday !== undefined) {
+      if (!Number.isInteger(one.weekday) || one.weekday < 0 || one.weekday > 6) {
+        return `"${one.id}" has an impossible weekday`;
+      }
+      if (one.recurring !== true) return `"${one.id}" repeats weekly but is not marked recurring`;
+    }
+    if (one.date !== undefined && !isDay(one.date)) return `"${one.id}" has an unreadable date`;
+    for (const day of one.dates || []) if (!isDay(day)) return `"${one.id}" has an unreadable date in its series`;
+  }
+  // Today's screen frames the whole week around the gathering; without one it
+  // falls back to "ordinary" for ever and the app quietly loses its calendar.
+  if (!rows.some((one) => one.gathering)) return 'no event is marked as the gathering';
+  return null;
+}
+
+function validateAdultsUpdates(rows) {
+  if (!Array.isArray(rows)) return 'not a list';
+  const seen = new Set();
+  for (const one of rows) {
+    if (!one || typeof one !== 'object' || Array.isArray(one)) return 'an entry is not a notice';
+    for (const field of ['id', 'title', 'from', 'body']) {
+      if (!isFilledText(one[field])) return `a notice is missing its ${field}`;
+    }
+    if (seen.has(one.id)) return `two notices share the id "${one.id}"`;
+    seen.add(one.id);
+    if (!isDay(one.date)) return `"${one.id}" has an unreadable date`;
+    if (!ADULTS_TONES.includes(one.tone)) return `"${one.id}" has an unknown colour`;
+  }
+  return null;
+}
+
+const ADULTS_VALIDATORS = { events: validateAdultsEvents, updates: validateAdultsUpdates };
+
+/** Who is allowed to publish. Same shape as ATTENDANCE_PASSCODES: {"name":"code"}. */
+function editorForPasscode(env, passcode) {
+  if (!passcode) return null;
+  let map;
+  try { map = JSON.parse(env.ADULTS_ADMIN_PASSCODES || '{}'); } catch (e) { return null; }
+  for (const [name, code] of Object.entries(map)) {
+    if (code && timingSafeEqual(code, passcode)) return name;
+  }
+  return null;
+}
+
+async function handleAdultsPublish(request, env) {
+  if (request.method !== 'POST') return publishError('Method not allowed', 405);
+
+  if (!env.ADULTS_ADMIN_PASSCODES || !env.GITHUB_TOKEN) {
+    return publishError(
+      'The events admin is not set up on this Worker yet. Ask your admin to add the ADULTS_ADMIN_PASSCODES and GITHUB_TOKEN secrets.',
+      503
+    );
+  }
+
+  const raw = await request.text();
+  if (raw.length > MAX_ADULTS_BYTES) return publishError('That is far too much for a church calendar.', 413);
+
+  let body;
+  try { body = JSON.parse(raw); } catch (e) { return publishError('Could not read the request.', 400); }
+
+  const editor = editorForPasscode(env, body.passcode);
+  if (!editor) return publishError('That passcode was not recognised.', 401);
+
+  // The file is looked up by key. Nothing from the request reaches the path.
+  const which = String(body.file || '');
+  const path = ADULTS_FILES[which];
+  if (!path) return publishError('There is no such file to publish.', 400);
+
+  const problem = ADULTS_VALIDATORS[which](body.content);
+  if (problem) return publishError(`That will not work on the Community tab — ${problem}.`, 400);
+
+  const repo = env.GITHUB_REPO || PUBLISH_REPO_DEFAULT;
+  const api = `https://api.github.com/repos/${repo}/contents/${path}`;
+  const headers = {
+    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+    'User-Agent': 'flcc-adults-admin',
+  };
+
+  const existing = await fetch(api, { headers });
+  const sha = existing.ok ? (await existing.json())?.sha : undefined;
+
+  const content = `${JSON.stringify(body.content, null, 2)}\n`;
+  const encoded = base64(new TextEncoder().encode(content));
+  const today = new Date().toISOString().slice(0, 10);
+  const label = which === 'events' ? 'events' : 'notices';
+
+  const put = await fetch(api, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({
+      message: `FLCC NEXT Adults: update ${label} — ${today} (${editor})`,
+      content: encoded,
+      ...(sha ? { sha } : {}),
+    }),
+  });
+
+  if (!put.ok) {
+    const detail = await put.json().catch(() => ({}));
+    return publishError(detail?.message || `GitHub responded ${put.status}`, 502);
+  }
+
+  const result = await put.json().catch(() => ({}));
+  return new Response(JSON.stringify({
+    ok: true, file: which, path, editor, commit: result?.commit?.sha || null,
+  }), { headers: { ...CORS, 'Content-Type': 'application/json' } });
 }
