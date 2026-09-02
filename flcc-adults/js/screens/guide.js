@@ -5,7 +5,7 @@
 // has been five minutes; it advances nothing on its own, and no step is taken
 // from the reader before they are done with it.
 
-import { h, card, badge, display, title, body, small, reference,
+import { h, block, card, badge, display, title, body, small, reference,
          act, actions, thread, rise, note, toast, moment, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -30,7 +30,7 @@ export default async function guideScreen(ctx) {
     elapsed = 0;
     const current = guide.steps[step];
     const seconds = current.seconds || 60;
-    const bar = thread(0, 'sunshine');
+    const bar = thread(0, 'gold');
     const clock = h('span', { text: `${seconds}s` });
 
     timer = setInterval(() => {
@@ -43,14 +43,14 @@ export default async function guideScreen(ctx) {
 
     const last = step === guide.steps.length - 1;
     swap(el,
-      card({ tone: guide.tone, tall: true, className: 'full', symbol: guide.symbol,
-          foot: [`${guide.title} · ${step + 1} of ${guide.steps.length}`, clock] },
+      block({ tall: true, className: 'full' },
         h('div', {},
-          badge(current.label),
+          badge(`${guide.title} · ${step + 1} of ${guide.steps.length}`),
           h('div', { style: 'margin-top:1rem' }, display(current.label)),
-          h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:28ch', text: current.prompt })),
+          h('p', { class: 'lead', style: 'margin-top:.7rem', text: current.prompt })),
         h('div', {},
           bar,
+          h('p', { class: 'cite', style: 'margin-top:.6rem' }, clock),
           h('div', { class: 'act-row', style: 'margin-top:1.1rem' },
             act(last ? 'Finish' : 'Next', () => { if (last) finish(); else { step += 1; paint(); } }),
             step > 0 ? act('Back', () => { step -= 1; paint(); }, { quiet: true, small: true }) : null))),
@@ -68,11 +68,11 @@ export default async function guideScreen(ctx) {
     const input = h('textarea', { placeholder: 'Anything you want to keep from that? (optional)',
       'aria-label': 'A reflection' });
     swap(el,
-      card({ tone: guide.tone, className: 'full', symbol: 'star', foot: ['Amen'] },
+      block({ className: 'full' },
         badge('Amen'),
-        h('div', {}, display('That was prayer.'),
-          h('p', { class: 'lead', style: 'margin-top:.7rem;max-width:28ch',
-            text: 'Whether it felt like anything or not. Both kinds count, and the ones that feel like nothing count the same.' }))),
+        display('That was prayer.'),
+        h('p', { class: 'lead',
+          text: 'Whether it felt like anything or not. Both kinds count, and the ones that feel like nothing count the same.' })),
       card({ tone: 'paper', className: 'full', foot: 'Reflections stay on this device' },
         badge('Keep something'),
         input,
@@ -88,7 +88,7 @@ export default async function guideScreen(ctx) {
           act('Done', () => ctx.go('pray'), { quiet: true }))));
     window.scrollTo(0, 0);
     moment({ eyebrow: guide.title, big: 'Amen.', line: 'Come back to this whenever you need it.',
-      action: 'Close', symbol: guide.symbol, tone: guide.tone });
+      action: 'Close', symbol: guide.symbol });
   };
 
   paint();

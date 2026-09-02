@@ -36,6 +36,10 @@ function everyReference() {
     for (const session of content(`paths/${file}`)) add(session.ref, `${file}/${session.id}`, session.text);
   }
   for (const guide of content('prayer-guides.json')) add(guide.ref, `guides/${guide.id}`);
+  // The Watch tab prints the passage a message was preached from and links it
+  // straight into the Bible. A typo there is a dead end on the busiest screen
+  // in the app, so it is checked with everything else.
+  for (const one of content('messages.json')) add(one.ref, `messages/${one.id}`);
   for (const plan of content('reading-plans.json')) {
     plan.days.forEach((day, i) => add(day.ref, `${plan.id}/day ${i + 1}`));
   }

@@ -7,34 +7,30 @@
 // Nothing here leaves the device, and the screen says so where it matters
 // rather than in a policy nobody opens.
 
-import { h, card, badge, display, title, body, small, tag, figure, stack, band, bandName, bandNote,
-         sheet, pick as pickChip, act, actions, go, rows, row, section, rise, note, toast, swap } from '../core/ui.js';
+import { h, block, card, badge, display, title, body, small, tag, figure, nextLine,
+         sheet, pick as pickChip, act, actions, go, rows, row, section, doneMark,
+         rise, note, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as prayers from '../core/prayers.js';
 
 export default async function prayScreen(ctx) {
-  const cards = [];
+  const parts = [];
   const [guides, categories] = await Promise.all([content.guides(), content.categories()]);
   const toneOf = (id) => (categories.find((one) => one.id === id) || {}).tone || 'paper';
   const today = rotation.pick(guides, { offset: 3 });
 
   // ── Take a moment ───────────────────────────────────────────────────────
-  cards.push(card({ solid: true, tall: true, className: 'full', symbol: today.symbol,
-      foot: `Today · ${today.title}` },
-    h('div', {},
-      badge('Pray'),
-      h('div', { style: 'margin-top:1rem' }, display('Take a moment.')),
-      h('p', { class: 'lead', style: 'margin-top:.6rem;max-width:24ch', text: 'What is on your heart today?' })),
+  parts.push(block({ className: 'full' },
+    badge('Pray'),
+    display('Take a moment.'),
+    h('p', { class: 'lead', text: today.line }),
+    h('p', { class: 'cite', text: `Today · ${today.title}` }),
     actions(
       act('Pray now', () => ctx.go(`guide/${today.id}`)),
-      go('Other guides', () => document.getElementById('guides')?.scrollIntoView({ behavior: 'smooth', block: 'start' })))));
+      go('Other guides', () => scrollTo('guides')))));
 
   // ── Add to the list ─────────────────────────────────────────────────────
-  //
-  // The reference's second screen, more or less exactly: a white page, a
-  // two-tone heading, the choices as soft filled blocks, and one full-width
-  // action along the bottom.
   const input = h('textarea', { placeholder: 'What do you want to pray about?', 'aria-label': 'A prayer to add' });
   let category = 'personal';
   const chips = h('div', { style: 'display:flex;flex-direction:column;gap:.5rem' });
@@ -53,7 +49,7 @@ export default async function prayScreen(ctx) {
     ctx.refresh();
   };
 
-  cards.push(sheet({ className: 'full', action: 'Add to my list', onaction: keep },
+  parts.push(sheet({ className: 'full', action: 'Add to my list', onaction: keep },
     display('New prayer', { mark: 'prayer' }),
     input,
     badge('Where it belongs'),
@@ -61,44 +57,56 @@ export default async function prayScreen(ctx) {
     small('Stored on this phone only. Not sent to the church, to a leader, or to us.')));
 
   // ── The list ────────────────────────────────────────────────────────────
+  //
+  // Grouped by what it is about, because a prayer list read straight through
+  // is a wall of worry. Each group opens where it stands.
   const open = prayers.open();
   if (open.length) {
     const grouped = categories
       .map((one) => ({ ...one, items: open.filter((item) => item.category === one.id) }))
       .filter((one) => one.items.length);
     const orphans = open.filter((item) => !categories.some((one) => one.id === item.category));
-    if (orphans.length) grouped.push({ id: 'other', label: 'Other', tone: 'paper', items: orphans });
+    if (orphans.length) grouped.push({ id: 'other', label: 'Other', line: '', tone: 'paper', items: orphans });
 
-    // Categories, as a stack of colour with a count on each — the list screen
-    // this app's design is drawn from, applied to the thing it fits.
     let openGroup = null;
     const listWrap = section({ className: 'full' });
     const paintList = () => swap(listWrap,
-      badge(`My prayer list · ${open.length} open`),
-      stack({},
-        ...grouped.map((group) => band({
-          tone: group.tone, seed: group.id, count: group.items.length,
-          as: 'button', onclick: () => { openGroup = openGroup === group.id ? null : group.id; paintList(); },
-        }, bandName(group.label), bandNote(group.line)))),
-      openGroup
-        ? h('div', { style: 'margin-top:.2rem' },
-            rows({}, ...(grouped.find((g) => g.id === openGroup) || { items: [] }).items
-              .map((item) => prayerRow(ctx, item, openGroup))))
-        : small('Tap a colour to see what is on that part of the list.'));
+      nextLine(`My prayer list · ${open.length} open`),
+      rows({}, ...grouped.map((group) => {
+        const holder = h('div', {});
+        const paintGroup = () => swap(holder,
+          row({
+            title: group.label,
+            note: group.line,
+            meta: String(group.items.length),
+            accent: group.tone,
+            onclick: () => { openGroup = openGroup === group.id ? null : group.id; paintList(); },
+          }),
+          openGroup === group.id
+            ? h('div', { style: 'padding:0 0 .6rem 1rem' },
+                rows({ tight: true }, ...group.items.map((item) => prayerRow(ctx, item, group.tone))))
+            : null);
+        paintGroup();
+        return holder;
+      })),
+      small('Tap a group to see what is on that part of the list.'));
     paintList();
-    cards.push(listWrap);
+    parts.push(listWrap);
   } else {
-    cards.push(card({ tone: 'paper', className: 'full', symbol: 'heart', figureSize: 'sm' },
+    parts.push(card({ tone: 'paper', className: 'full', symbol: 'heart' },
       badge('My prayer list'),
       body('Nothing on the list yet. Most people start with one name and one worry.')));
   }
 
   // ── Answered ────────────────────────────────────────────────────────────
+  //
+  // Kept, never deleted. The point of a prayer list is being able to look back
+  // at what God did with it, and an app that clears the row the moment it is
+  // ticked destroys exactly the thing worth keeping.
   const answered = prayers.answered();
   if (answered.length) {
-    cards.push(card({ tone: 'sunshine', className: 'full',
-        foot: [`${answered.length} answered`] },
-      badge('Answered'),
+    parts.push(section({ className: 'full' },
+      nextLine(`Answered · ${answered.length}`),
       rows({}, ...answered.slice(0, 8).map((item) => h('div', { class: 'row' },
         h('i', { class: 'stem', dataset: { accent: toneOf(item.category) } }),
         h('div', {},
@@ -111,8 +119,8 @@ export default async function prayScreen(ctx) {
   }
 
   // ── The guides ──────────────────────────────────────────────────────────
-  cards.push(section({ className: 'full', id: 'guides' },
-    badge('Guided prayer'),
+  parts.push(section({ className: 'full', id: 'guides' },
+    nextLine('Guided prayer'),
     small('Each one is a few minutes, with a timer you can ignore.'),
     rows({}, ...guides.map((one) => row({
       title: one.title,
@@ -125,12 +133,12 @@ export default async function prayScreen(ctx) {
   // ── Reflections ─────────────────────────────────────────────────────────
   const written = prayers.reflections();
   if (written.length) {
-    cards.push(card({ tone: 'sky', className: 'full', foot: `${written.length} kept` },
-      badge('Reflections'),
+    parts.push(section({ className: 'full' },
+      nextLine(`Reflections · ${written.length} kept`),
       rows({}, ...written.slice(0, 6).map((entry) => h('div', { class: 'row' },
         h('span'),
         h('div', {},
-          h('p', { class: 'row-title', style: 'font-weight:500', text: entry.text }),
+          h('p', { class: 'row-title', text: entry.text }),
           h('div', { class: 'act-row', style: 'margin-top:.5rem' },
             h('span', { class: 'row-meta', text: `${entry.guide || ''} · ${new Date(entry.at).toLocaleDateString()}` }),
             act('Remove', () => { prayers.unreflect(entry.id); ctx.refresh(); }, { quiet: true, small: true }))),
@@ -138,13 +146,13 @@ export default async function prayScreen(ctx) {
   }
 
   // ── The church ──────────────────────────────────────────────────────────
-  cards.push(card({ tone: 'paper', className: 'full', symbol: 'church', figureSize: 'sm' },
+  parts.push(card({ tone: 'paper', className: 'full', symbol: 'church' },
     badge('Praying with other people'),
     body('This app cannot pass a prayer request to anyone — there is no server behind it and nothing typed here is sent. For prayer with the church, come to the Tuesday meeting, or speak to a leader after the service.'),
-    go('Church prayer meeting', () => ctx.go('connect'))));
+    go('The Tuesday meeting', () => ctx.go('community'))));
 
-  const el = h('div', { style: 'display:contents' }, ...cards);
-  rise(cards);
+  const el = h('div', { style: 'display:contents' }, ...parts);
+  rise(parts);
   return { title: 'Pray', el };
 }
 
@@ -169,7 +177,7 @@ function prayerRow(ctx, item, tone) {
 
 function answerBox(ctx, item) {
   const noteInput = h('input', { type: 'text', placeholder: 'What happened? (optional)', 'aria-label': 'How it was answered' });
-  return h('div', { style: 'margin-top:.5rem;padding:0 .2rem' },
+  return h('div', { style: 'margin-top:.5rem;padding:0 .2rem .8rem' },
     noteInput,
     actions(
       act('Answered', () => {
@@ -182,4 +190,8 @@ function answerBox(ctx, item) {
         toast('Removed.');
         ctx.refresh();
       }, { quiet: true, small: true })));
+}
+
+function scrollTo(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

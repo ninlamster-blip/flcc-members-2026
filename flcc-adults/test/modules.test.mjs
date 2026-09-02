@@ -74,16 +74,16 @@ test('every key written anywhere in the app is namespaced', () => {
 });
 
 /**
- * The design system's rules, enforced — and they are the reverse of what this
- * app enforced a version ago.
+ * The design system's rules, enforced.
  *
- * It was drawn as a stack of stickers: 3px outlines, hard offset shadows, star
- * ratings and cartoon faces. It read, accurately, as an app for children. The
- * hard shadow and the thick border are the two devices that did most of that,
- * so both are now failures rather than requirements.
+ * Two versions ago this app was drawn as a stack of stickers: 3px outlines,
+ * hard offset shadows, star ratings and cartoon faces. It read, accurately, as
+ * an app for children. The hard shadow and the thick border are the two
+ * devices that did most of that, so both are failures rather than requirements
+ * and have stayed failures through two redesigns since.
  */
 test('nothing is drawn with a hard offset shadow', () => {
-  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
   const shadows = [...css.matchAll(/box-shadow:\s*([^;]+);/g)].map(([, value]) => value.trim());
   for (const shadow of shadows) {
     if (shadow.startsWith('inset') || shadow === 'none' || shadow.includes('var(--lift')) continue;
@@ -95,7 +95,7 @@ test('nothing is drawn with a hard offset shadow', () => {
 });
 
 test('nothing is drawn with a thick outline', () => {
-  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
   const widths = [
     // Only real borders — `border-radius` is a length too, and a 20px radius
     // is the point of this design rather than a violation of it.
@@ -107,12 +107,89 @@ test('nothing is drawn with a thick outline', () => {
   }
 });
 
-test('headings are set, not shouted', () => {
-  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
+/**
+ * Weight, and where shouting is allowed.
+ *
+ * The NEXT system sets its display headings in caps — that is the editorial
+ * look the whole redesign is built on, and it is deliberate. What is never
+ * allowed is a *paragraph* in caps: a sentence set in capitals is measurably
+ * slower to read, and a church app is read by people at the end of a shift.
+ * So the rule moved rather than went away.
+ */
+test('headings may shout; paragraphs may not', () => {
+  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
   const weights = [...css.matchAll(/font-weight:\s*(\d{3})/g)].map(([, w]) => Number(w));
   assert.ok(weights.length > 0);
   assert.ok(Math.max(...weights) <= 600, `weight ${Math.max(...weights)} — nothing here is heavier than 600`);
-  assert.equal(/\.display[^{]*\{[^}]*text-transform:\s*uppercase/.test(css), false, 'headings are sentence case');
+
+  for (const selector of ['.body', '.lead', '.scripture', '.row-note', '.eblock-what']) {
+    const rule = new RegExp(`\\${selector}[^{]*\\{[^}]*text-transform:\\s*uppercase`);
+    assert.equal(rule.test(css), false, `${selector} is set in capitals — that is a paragraph`);
+  }
+});
+
+/**
+ * The 80 / 15 / 5 rule, as far as a stylesheet can hold it.
+ *
+ * The deep block is the 15%, and there is exactly one way to make one. A
+ * screen that hand-rolled a second dark surface out of a colour literal would
+ * look fine in review and break the rule the whole design rests on.
+ */
+test('the deep block is made one way, and gold is defined twice on purpose', () => {
+  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
+  assert.match(css, /--block:\s*#141414;/i, 'the deep block colour is gone');
+  assert.match(css, /^\.block \{/m, 'the block component is gone');
+  assert.match(css, /--gold:\s*#B4884A;/i, 'the brand gold is gone');
+  assert.match(css, /--gold-ink:\s*#8A5F1E;/i,
+    'the gold that carries small text on paper is gone — one gold cannot do both jobs');
+
+  for (const file of modules.filter((one) => one.startsWith('js/screens/'))) {
+    const body = code(file);
+    assert.equal(/#[0-9a-fA-F]{6}/.test(body), false,
+      `${file} hard-codes a colour — every colour in this app is a token in the stylesheet`);
+  }
+});
+
+/**
+ * A root screen has to say what it is.
+ *
+ * Each of the five tabs opens on its own name, set large, inside the page —
+ * the header is a date and one button and nothing else. A root screen that
+ * shipped without `pageTitle()` or a `display()` would open as an unlabelled
+ * list of rows, which is precisely the dashboard this redesign removed.
+ */
+test('every root screen names itself in the page', () => {
+  const app = source('js/app.js');
+  const tabs = [...app.matchAll(/\{ name: '([a-z]+)',\s+label:/g)].map(([, name]) => name);
+  assert.deepEqual(tabs, ['today', 'explore', 'community', 'watch', 'you']);
+  for (const tab of tabs) {
+    const body = code(`js/screens/${tab}.js`);
+    assert.ok(/pageTitle\(|display\(/.test(body), `js/screens/${tab}.js never names itself`);
+  }
+});
+
+/**
+ * The tab bar, the router and the screens agree.
+ *
+ * Three lists in one file that have to line up, and a typo in any of them is a
+ * tab that lights nothing or a screen that can never be reached.
+ */
+test('every tab has a screen, and every sub-screen sits under a real tab', () => {
+  const app = source('js/app.js');
+  const tabs = new Set([...app.matchAll(/\{ name: '([a-z]+)',\s+label:/g)].map(([, name]) => name));
+  const screens = new Set([...app.matchAll(/^\s{2}([a-z]+):\s+\(\) => import\('\.\/screens\/([a-z]+)\.js'\)/gm)]
+    .map(([, route, file]) => { assert.equal(route, file, `route "${route}" loads ${file}.js`); return route; }));
+
+  for (const tab of tabs) assert.ok(screens.has(tab), `the ${tab} tab has no screen`);
+  for (const route of screens) {
+    assert.ok(modules.includes(`js/screens/${route}.js`), `${route} is routed but the file is gone`);
+  }
+  const under = [...app.matchAll(/^\s{2}([a-z]+):\s+'([a-z]+)',/gm)];
+  assert.ok(under.length >= 8, 'the UNDER map has lost its entries');
+  for (const [, screen, tab] of under) {
+    assert.ok(screens.has(screen), `UNDER names "${screen}", which is not a screen`);
+    assert.ok(tabs.has(tab), `UNDER puts ${screen} under "${tab}", which is not a tab`);
+  }
 });
 
 test('the icons can be turned off everywhere at once', () => {
@@ -135,7 +212,7 @@ test('the icons can be turned off everywhere at once', () => {
  * undefined variable painted itself black. It looked like a design choice.
  */
 test('every colour named in the code exists in the stylesheet', () => {
-  const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
   const defined = new Set([...css.matchAll(/^\s{2}--([a-z-]+):/gm)].map(([, name]) => name));
   const patterns = [
     /\btone:\s*'([a-z-]+)'/g,           // card({ tone: 'sky' })

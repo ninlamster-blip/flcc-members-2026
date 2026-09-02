@@ -13,7 +13,7 @@ import { SEASONS, FOCUS } from '../js/core/profile.js';
 import { isIcon, ICONS } from '../js/core/art.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
-const css = readFileSync(new URL('../css/layers.css', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
 
 /** The palette, taken from the stylesheet rather than restated here. */
 const TONES = [...css.matchAll(/^\s{2}--([a-z-]+):\s+#[0-9A-F]{6};/gmi)].map((one) => one[1]);
@@ -29,12 +29,12 @@ function looksRight(item, where) {
   }
 }
 
-/** The colours a card may wear. Poppy is not one of them — see below. */
-const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'poppy', 'ember', 'paper'];
-/** Everything a stem, a tag or a character may be. Poppy lives here. */
-const ACCENTS = [...CARD_TONES, 'poppy'];
-/** Which files' tone ends up as a card's own background. */
-const ON_CARDS = ['moments.json', 'paths.json', 'prayer-guides.json', 'reading-plans.json', 'events.json'];
+/** The colours a panel may wear. */
+const CARD_TONES = ['sky', 'rose', 'sunshine', 'captain', 'navy', 'poppy', 'gold', 'paper'];
+/** Everything a stem, a tag or an icon may be. */
+const ACCENTS = [...CARD_TONES];
+/** Which files' tone ends up as a surface rather than a stem. */
+const ON_CARDS = ['moments.json', 'paths.json', 'prayer-guides.json', 'reading-plans.json', 'events.json', 'messages.json'];
 
 /**
  * The six colours, pinned.
@@ -58,30 +58,32 @@ test('the six shared colours are exactly these', () => {
     assert.match(css, new RegExp(`--${name}:\\s*${hex};`, 'i'),
       `--${name} should be ${hex} — and flcc-next/css/next.css must match`);
   }
-  assert.match(css, /--paper:\s*#FAF6F2;/i, 'this app sits on a warm near-white');
-  // The one colour that is this app's own: poppy deepened until white type
-  // sits on it. The reference the layout comes from opens on a deep coral and
-  // none of the six shared colours is dark enough to carry white text.
-  assert.match(css, /--ember:\s*#C24A38;/i, 'the derived ember is gone');
-  assert.match(css, /--ink:\s*var\(--navy\)/, 'navy is the only ink');
+  // The ground is warm editorial white, not #FFF: pure white behind the white
+  // surfaces this system uses is invisible.
+  assert.match(css, /--paper:\s*#F8F8F6;/i, 'this app sits on a warm editorial white');
+  assert.match(css, /--ink:\s*#151515;/i, 'near-black is the ink');
+  assert.match(css, /--ink-2:\s*#6E6E73;/i, 'the secondary ink is gone');
+  assert.match(css, /--line:\s*#E8E8E4;/i, 'the hairline colour is gone');
+  // Gold is this app's own, and there are two weights of it for two jobs.
+  assert.match(css, /--gold:\s*#B4884A;/i, 'the brand gold is gone');
+  assert.match(css, /--gold-ink:\s*#8A5F1E;/i, 'the gold that carries text on paper is gone');
 });
 
 test('the palette is the one the stylesheet defines', () => {
-  for (const tone of ['paper', 'white', 'sky', 'captain', 'navy', 'rose', 'poppy', 'sunshine']) {
-    assert.ok(TONES.includes(tone) || css.includes(`--${tone}:`), `--${tone} is missing from sticker.css`);
+  for (const tone of ['paper', 'white', 'ink', 'block', 'gold', 'sky', 'captain', 'navy', 'rose', 'poppy', 'sunshine']) {
+    assert.ok(TONES.includes(tone) || css.includes(`--${tone}:`), `--${tone} is missing from next.css`);
   }
 });
 
 /**
- * Poppy may not carry body copy.
+ * The family colours never carry body copy.
  *
- * Navy on poppy is about 3.5:1 — enough behind a headline, not enough behind a
- * paragraph, and every card in this app has paragraphs on it. So poppy is an
- * accent: stems, tags, stars and characters. A content file that hands poppy
- * to something rendered as a card would look fine to a reviewer and fail a
- * contrast check, which is exactly the kind of thing worth a test.
+ * In the NEXT system they are washes at about a tenth strength and stems 2px
+ * wide, so this is mostly belt and braces now — but a content file that named
+ * a colour with no wash behind it would render an unstyled surface rather than
+ * failing, which is exactly the kind of thing that ships.
  */
-test('poppy is an accent, never a surface with text on it', () => {
+test('a content colour is one the system can actually paint', () => {
   for (const name of ON_CARDS) {
     for (const item of read(name)) {
       assert.ok(CARD_TONES.includes(item.tone),
@@ -239,7 +241,7 @@ test('nothing in the content still names a colour from the old palette', () => {
   // This app has been repainted twice. A file left carrying a colour from
   // either of the earlier palettes renders as an unstyled card rather than
   // failing, so every retired name is checked here by hand.
-  const gone = /"(forest|sage|mist|olive|gold|peach|yellow|cream|blush|lilac|coral|orange)"/;
+  const gone = /"(forest|sage|mist|olive|ember|peach|yellow|cream|blush|lilac|coral|orange)"/;
   for (const file of readdirSync(new URL('../content/', import.meta.url), { withFileTypes: true })) {
     if (!file.isFile() || !file.name.endsWith('.json')) continue;
     const raw = readFileSync(new URL(`../content/${file.name}`, import.meta.url), 'utf8');
@@ -258,5 +260,84 @@ test('the writing never promises something the app cannot do', () => {
     if (!file.isFile() || !file.name.endsWith('.json')) continue;
     const raw = readFileSync(new URL(`../content/${file.name}`, import.meta.url), 'utf8');
     assert.equal(promises.test(raw), false, `${file.name} promises something no server exists to do`);
+  }
+});
+
+
+/**
+ * Every event says when it is, twice.
+ *
+ * `when` is the sentence a member reads on the screen. The fields beside it —
+ * `weekday` + `start`, or `date`, or `dates[]` — are what the countdown on the
+ * Today screen is computed from. An event with only the sentence sorts to the
+ * end of the calendar and never appears as "Next up", which is a silent
+ * failure rather than a loud one, so it is checked here.
+ */
+test('every event can be counted down to, not just read', async () => {
+  const agenda = await import('../js/core/agenda.js');
+  const events = read('events.json');
+  assert.ok(events.length >= 4);
+  for (const one of events) {
+    const timed = one.weekday !== undefined || one.date || Array.isArray(one.dates);
+    assert.ok(timed, `${one.id}: no weekday, date or dates — nothing can count down to it`);
+    assert.match(one.start, /^\d{1,2}:\d{2}$/, `${one.id}: "${one.start}" is not a time`);
+    assert.ok(Number.isInteger(one.minutes) && one.minutes > 0, `${one.id}: how long does it run?`);
+    if (one.weekday !== undefined) {
+      assert.ok(one.weekday >= 0 && one.weekday <= 6, `${one.id}: ${one.weekday} is not a day of the week`);
+      assert.equal(one.recurring, true, `${one.id}: has a weekday but is not marked recurring`);
+    }
+    for (const day of one.dates || []) {
+      assert.match(day, /^\d{4}-\d{2}-\d{2}$/, `${one.id}: "${day}" is not a date`);
+    }
+    if (one.date) assert.match(one.date, /^\d{4}-\d{2}-\d{2}$/, `${one.id}: "${one.date}" is not a date`);
+    // A recurring gathering must always resolve to a next occurrence, whenever
+    // it is asked. A one-off is allowed to be in the past.
+    if (one.weekday !== undefined) {
+      assert.ok(agenda.nextOccurrence(one, new Date('2026-09-01T08:00:00')), `${one.id}: never happens again`);
+    }
+  }
+  // Something has to be a gathering, or the Today screen has nothing to frame
+  // the week around and pulse() falls back to "ordinary" for ever.
+  assert.ok(events.some((one) => one.gathering), 'no event is marked as a gathering');
+});
+
+/**
+ * The messages, and the one promise this screen must not make.
+ *
+ * FLCC publishes no video archive. Every message here therefore ships with
+ * `url` empty and stands on what it carries instead — the passage, three
+ * takeaways and the question. The Watch screen only offers "Watch the
+ * recording" when `url` is filled in, so an empty string is a working state
+ * rather than a broken one; what would break is a message with nothing to read
+ * and no recording either, which is what this checks.
+ */
+test('every message can be opened, with or without a recording', () => {
+  const messages = read('messages.json');
+  assert.ok(messages.length >= 6, 'a Watch tab with five messages on it is an empty room');
+  const ids = new Set();
+  for (const one of messages) {
+    assert.ok(isText(one.id), 'a message without an id');
+    assert.equal(ids.has(one.id), false, `duplicate message id ${one.id}`);
+    ids.add(one.id);
+    for (const field of ['title', 'speaker', 'series', 'ref', 'blurb', 'question']) {
+      assert.ok(isText(one[field], 3), `${one.id}: ${field} is missing`);
+    }
+    looksRight(one, `messages/${one.id}`);
+    assert.match(one.date, /^\d{4}-\d{2}-\d{2}$/, `${one.id}: ${one.date} is not a date`);
+    assert.ok(!Number.isNaN(Date.parse(one.date)), `${one.id}: ${one.date} is not a real date`);
+    assert.ok(Number.isInteger(one.minutes) && one.minutes > 0, `${one.id}: how long was it?`);
+    assert.match(one.question, /\?$/, `${one.id}: the question should be a question`);
+    assert.ok(one.blurb.length >= 80, `${one.id}: the blurb is too thin to be worth opening`);
+    assert.equal(typeof one.url, 'string', `${one.id}: url must exist, even empty`);
+    assert.ok(Array.isArray(one.takeaways) && one.takeaways.length === 3,
+      `${one.id}: three takeaways — a member reads three and skims seven`);
+    for (const line of one.takeaways) assert.ok(isText(line, 30), `${one.id}: a thin takeaway`);
+    if (one.url) assert.match(one.url, /^https:\/\//, `${one.id}: a recording link must be https`);
+  }
+  // Every series has to be a series. One message on its own is a message.
+  const series = new Map();
+  for (const one of messages) series.set(one.series, (series.get(one.series) || 0) + 1);
+  for (const [name, count] of series) {
+    assert.ok(count >= 2, `"${name}" has one message in it — that is not a series`);
   }
 });

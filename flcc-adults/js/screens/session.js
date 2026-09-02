@@ -4,7 +4,7 @@
 // question to sit with, one thing to do, and a prayer. An adult with forty
 // spare minutes a week will finish this. An adult with ten will finish it too.
 
-import { h, card, badge, display, title, body, small, scripture, reference,
+import { h, block, card, badge, display, title, body, small, scripture, reference,
          act, actions, go, rise, note, toast } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
@@ -23,25 +23,24 @@ export default async function sessionScreen(ctx) {
   const next = sessions[index + 1] || null;
   const cards = [];
 
-  cards.push(card({ solid: true, className: 'full', symbol: path.symbol,
-      foot: reference(session.ref, ctx.go) },
+  cards.push(block({ className: 'full' },
     badge(`${path.title} · ${index + 1} of ${sessions.length}`),
-    h('div', {},
-      display(session.title),
-      h('div', { style: 'margin-top:1.1rem' }, scripture(session.text, { flow: true })))));
+    display(session.title),
+    scripture(session.text, { flow: true }),
+    reference(session.ref, ctx.go)));
 
   cards.push(card({ tone: 'paper', className: 'full' },
     ...session.body.map((paragraph) => body(paragraph))));
 
-  cards.push(card({ tone: 'paper', symbol: 'blob', figureSize: 'sm' },
+  cards.push(card({ tone: 'paper', className: 'full', symbol: 'blob' },
     badge('Sit with this'),
     h('p', { class: 'scripture scripture--flow', text: session.question })));
 
-  cards.push(card({ tone: 'paper' }, badge('This week'), body(session.practice)));
-  cards.push(card({ tone: 'paper' }, badge('Pray'), body(session.prayer)));
+  cards.push(card({ tone: 'paper', className: 'full' }, badge('This week'), body(session.practice)));
+  cards.push(card({ tone: 'paper', className: 'full' }, badge('Pray'), body(session.prayer)));
 
   const input = h('textarea', { placeholder: 'Anything you want to keep? (optional)', 'aria-label': 'Your notes' });
-  cards.push(card({ tone: 'sky', className: 'full',
+  cards.push(card({ tone: 'paper', className: 'full',
       foot: done ? 'You have read this one before' : 'Notes stay on this device' },
     badge('Your own words'),
     input,

@@ -32,8 +32,23 @@ index.html                       shell: header, screen, tabs. Owns nothing else.
   └── js/app.js                  boot, onboarding, routing
         └── js/screens/*.js      one module per screen, dynamic import()
               └── js/core/*.js   storage, profile, progress, content, rotation,
-                                 scripture, prayers, plan, art, ui
+                                 agenda, scripture, prayers, plan, art, ui
 ```
+
+## The five tabs
+
+| Tab | What it answers | Screens under it |
+|---|---|---|
+| **Today** | What matters to me right now? | `moment` |
+| **Explore** | What do I need today? | `bible`, `pray`, `grow`, `path`, `session`, `guide`, `plan` |
+| **Community** | Who am I doing this with? | — |
+| **Watch** | What was preached? | `message` |
+| **You** | Where have I got to? | — |
+
+`app.js` holds all three lists — the tabs, the routes and the `UNDER` map that
+decides which tab a sub-screen lights. `test/modules.test.mjs` reads that file
+and fails if the three ever disagree, because a typo in any of them is either a
+tab that lights nothing or a screen nobody can reach.
 
 Rules that keep it honest:
 
@@ -54,6 +69,11 @@ Rules that keep it honest:
   from `js/core/art.js`. `figure()` is where a reader's choice to switch the
   icons off is honoured; a screen that reaches past it would keep drawing them
   on some screens and not others.
+- **What is next is `js/core/agenda.js`, and only `agenda.js`.** Countdowns,
+  the order of the calendar, and the framing the Today screen opens on are all
+  pure functions of an event and a moment. A screen that worked out its own
+  "in 3 days" would drift out of step with the one beside it, and neither
+  could be tested without waiting three days.
 - **Content is data, never instructions.** Nothing under `content/` is
   executed, and there is no model in this app to hand it to.
 
@@ -121,6 +141,7 @@ Nothing in this section is built.
 | 8 | `events` / `event_rsvps` | `id, title, when_text, where_text, blurb; event_id, member_id` | `content/events.json`, `adults/v1/rsvps` |
 | 9 | `updates` | `id, title, from_team, body, published_at` | `content/updates.json` |
 | 10 | `saved_verses` | `member_id, ref, translation, saved_at` | `adults/v1/bible.saved` |
+| 11 | `messages` | `id, title, speaker, preached_on, series, ref, blurb, takeaways[], question, url` | `content/messages.json` |
 
 Two notes, because a schema is not a neutral document:
 
@@ -135,10 +156,15 @@ Two notes, because a schema is not a neutral document:
 
 ## Design system
 
-`css/layers.css` is the whole of it, and its opening comment states the rules.
-It is the app's fourth design. The one that failed hardest — 3px outlines,
-hard offset shadows, rating stars, cartoon faces — read as an app for
-children, and the four rules that came out of it are still enforced here:
+`css/next.css` is the whole of it, and its opening comment states the rules.
+It is the app's fifth design, and the first one not built out of coloured
+rectangles: the four before it each tried to carry the screen with surface —
+stickers, then bands, then seeded waves and hand-drawn textures — and each
+ended up as a dashboard of tiles wearing a different coat. This one gives the
+work to type and to space.
+
+Four rules survive from the version that read as an app for children, and all
+four are still enforced by `test/modules.test.mjs`:
 
 1. **No hard offset shadows.** Every `box-shadow` is blurred.
 2. **No thick outlines.** No border anywhere is over 1px.
@@ -146,27 +172,50 @@ children, and the four rules that came out of it are still enforced here:
 4. **No drawing has a face.** `test/art.test.mjs` fails a circle, an ellipse
    or a smile-shaped arc anywhere in the icon set.
 
-What this system adds is the layered band. A list of things with a count is a
-`stack()` of `band()`s: full-bleed colour, torn apart by a curve that is a
-pure function of a seed, each carrying one of four hand-drawn textures. Two
-details are worth knowing before touching it:
+What the NEXT system adds on top of them:
 
-- **A band paints its colour in `::before`, from 18px down.** If it simply had
-  a `background`, that background would cover the wave and every divider in
-  the app would be a straight line — which is exactly what the first attempt
-  looked like.
-- **A band clips its own texture** (`overflow: hidden`). Without that, a mark
-  anchored past the corner bleeds into the band below and the stack looks like
-  one continuous smear.
+5. **80 / 15 / 5.** Eighty per cent of a screen is warm paper (`#F8F8F6`) and
+   near-black ink. Fifteen is the one deep block a screen is allowed. Five is
+   gold, and gold is a signal — a label, a rule, an arrowhead, the tab you are
+   on — never a decoration.
+6. **Type does the work.** If something needs a border to be found, it is in
+   the wrong place on the page. Most sections are a heading and a list of rows
+   with no container at all.
+7. **One main action per screen.** One filled `act()`. Everything else is a
+   `go()` — text, a rule, no fill.
+8. **The line points forward.** `NEXT UP ─────→`. The arrowhead is allowed on
+   a section heading (`nextLine()`) and on one of the four Explore blocks
+   (`eblock()`), and nowhere else; put it on everything and it stops being a
+   signature and becomes a texture.
+9. **The chrome stops at Scripture.** The Bible reader, the book list and the
+   chapter grid are white paper and serif type — no block, no rule, no gold.
 
-The fifth rule has no test and is still the most important: **the chrome stops
-at Scripture.** The reader, the book list and the chapter grid are white paper
-and serif type — no band, no texture, no wave.
+The four shapes a screen is built from live in `js/core/ui.js`:
 
-On colour: the six named colours are shared with `flcc-next/` and pinned by a
-test in each app. Ember is this app's own, and so is the paper. Poppy still
-never carries body copy — it is a wash, a dot on a row, and a band with
-nothing but a name and a number on it.
+| | What it is | Where |
+|---|---|---|
+| `block()` | the deep near-black block, one per screen | Daily Word, featured message, profile head |
+| `eblock()` | a large editorial navigation block | Explore, and only Explore |
+| `rows()` | hairline-separated rows, a 2px colour stem at most | everywhere a list appears |
+| `card()` | a panel, for a group that genuinely has an edge | sparingly |
+
+Two details worth knowing before touching it:
+
+- **There is no webfont for the interface.** `--ui` is SF on Apple hardware
+  and the platform's own face everywhere else. The one webfont this app loads
+  is spent on Scripture, which is the only text in it that should not look
+  like the operating system.
+- **Gold is defined twice on purpose.** `--gold` (`#B4884A`) is the brand mark
+  and is read on the deep block at 5.8:1 or used as a fill; `--gold-ink`
+  (`#8A5F1E`) is the same colour taken down until it carries small text on
+  paper at 5.3:1. One gold cannot do both jobs, and the version that tried
+  failed a contrast check on every eyebrow in the app.
+
+On colour: the six named colours are still shared with `flcc-next/` and still
+pinned by a test in each app, so the two editions remain one family. But in
+this system they are stems and washes — a 2px rule beside a row, a tint at
+about a tenth strength — never a surface with a paragraph on it. A screen
+painted in six colours has no hierarchy, and hierarchy is the whole design.
 
 ## Tests
 
@@ -178,14 +227,14 @@ node --test 'flcc-adults/test/*.test.mjs'
 |---|---|
 | `storage` | the `adults/v1/` namespace, and that the other four apps' keys throw |
 | `art` | every icon draws, is one thin stroke with no fill, takes the colour of the text beside it — and has no face |
-| `art` also | a wave and a texture are pure functions of their seed, so a list draws the same edges every time |
+| `agenda` | the countdown, against fixed dates: an event running now is now rather than next week, a series stops at its last date, and days are counted as calendar days |
 | `rotation` | a full cycle deals the whole bank, nothing repeats inside it, and the same day always deals the same thing |
 | `progress` | day arithmetic, idempotent completion — and that no XP, level or badge has crept in |
 | `prayers` | an answered prayer is kept rather than deleted, and removal is the only thing that destroys anything |
 | `plan` | a plan is a sequence, not a calendar: a month away does not move it |
-| `content` | every authored file's shape, every colour and character it names, that no file still carries a colour from the app's previous palette, and that the writing never promises something no server exists to do |
-| `scripture` | the shared Bible is where the app says it is, every reference resolves, and **every verse the writing prints is word for word the shipped text** |
-| `modules` | every module parses, every screen exports a screen, the app boundary, no hard shadows, no thick outlines, no heading over 600, no colour named in code that the stylesheet does not define, no hand-built cards, no screen importing `art.js` behind `figure()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
+| `content` | every authored file's shape, every colour and icon it names, that every event can be counted down to, that every message stands up with or without a recording, and that the writing never promises something no server exists to do |
+| `scripture` | the shared Bible is where the app says it is, every reference resolves — the messages' included — and **every verse the writing prints is word for word the shipped text** |
+| `modules` | every module parses, every screen exports a screen, the app boundary, no hard shadows, no thick outlines, no paragraph set in capitals, no hex literal in a screen, every root screen names itself, the tabs and the routes and the `UNDER` map agree, no hand-built cards, no screen importing `art.js` behind `figure()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
 
 The scripture suite is the one worth explaining. Forty passages are quoted
 across the devotionals, the sessions and the guides, and no reviewer catches a

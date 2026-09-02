@@ -32,21 +32,26 @@ export function clear(el) {
 /**
  * Navigation icons.
  *
- * Single-weight line drawings at 1.5px, drawn open rather than filled. The
- * active tab is marked with colour and a dot underneath, never with a pill
- * behind the icon — a filled capsule under a thumb is the single most generic
+ * Five destinations, drawn at one weight, open rather than filled. The active
+ * tab is marked with colour and a dot under the label, never with a filled
+ * capsule behind the icon — a capsule under a thumb is the single most generic
  * thing a phone app can do, and this app is trying not to look like every
  * other one.
+ *
+ * They are also drawn to be told apart at 23px by somebody who is not looking
+ * carefully, which rules out the usual set of near-identical rounded squares.
  */
 const NAV = {
-  home:    'M4 10.6 12 4l8 6.6M6.4 9.2V19a1 1 0 0 0 1 1h9.2a1 1 0 0 0 1-1V9.2',
-  bible:   'M5 4.6A1.6 1.6 0 0 1 6.6 3H19v15.6H6.6A1.6 1.6 0 0 0 5 20.2zM5 4.6v15.6M12 7.2v6.2M9.2 10h5.6',
-  // A flame, not a pair of hands. Praying hands drawn in line at 23 pixels
-  // collapse into a dark blob; a candle flame stays legible at any size and
-  // carries the same meaning without the piety.
-  pray:    'M12 3.6c3.1 3 4.7 5.6 4.7 8.4a4.7 4.7 0 1 1-9.4 0c0-1.4.5-2.7 1.5-3.9.4 1 1 1.7 1.7 2.1-.1-2.4.4-4.5 1.5-6.6z',
-  grow:    'M12 20.5v-7.2M12 13.3c0-3.4 2.4-6.1 5.6-6.6.5 3.6-2 6.6-5.6 6.6zM12 15.6C9.2 15.6 7 13.4 6.4 10.2c3 .3 5.2 2.5 5.6 5.4z',
-  connect: 'M9.2 10.4a3.1 3.1 0 1 0 0-6.2 3.1 3.1 0 0 0 0 6.2zM17.2 12.2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM3.4 20.2c0-3.2 2.6-5.8 5.8-5.8s5.8 2.6 5.8 5.8M16.8 14.6c2.4.5 4 2.5 4 5',
+  // A roof and a wall — where you are.
+  today:     'M4 10.6 12 4l8 6.6M6.4 9.2V19a1 1 0 0 0 1 1h9.2a1 1 0 0 0 1-1V9.2',
+  // A compass needle: the tab that asks what you need today.
+  explore:   'M12 3.2a8.8 8.8 0 1 0 0 17.6 8.8 8.8 0 0 0 0-17.6zM15.4 8.6l-2 4.8-4.8 2 2-4.8z',
+  // Three people, not two: this tab is the church, not a contact card.
+  community: 'M12 11.4a2.9 2.9 0 1 0 0-5.8 2.9 2.9 0 0 0 0 5.8zM6.6 19.4a5.4 5.4 0 0 1 10.8 0M5.2 12.4a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4zM18.8 12.4a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4zM2.6 18a3.6 3.6 0 0 1 2.6-3.4M21.4 18a3.6 3.6 0 0 0-2.6-3.4',
+  // A frame with a play mark inside it.
+  watch:     'M3.6 6.6a2 2 0 0 1 2-2h12.8a2 2 0 0 1 2 2v10.8a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2zM10.4 9.4l4.4 2.6-4.4 2.6z',
+  // One person. The only tab that is about you.
+  you:       'M12 11.8a3.9 3.9 0 1 0 0-7.8 3.9 3.9 0 0 0 0 7.8zM4.8 20.4a7.2 7.2 0 0 1 14.4 0',
 };
 
 export function navIcon(name) {
@@ -59,7 +64,17 @@ export function navIcon(name) {
   svg.setAttribute('stroke-linejoin', 'round');
   svg.setAttribute('aria-hidden', 'true');
   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', NAV[name] || NAV.home);
+  path.setAttribute('d', NAV[name] || NAV.today);
   svg.appendChild(path);
   return svg;
+}
+
+/**
+ * A chevron, drawn rather than typed.
+ *
+ * "›" is a different width, weight and baseline in every font this app might
+ * fall back to. Two hairlines rotated are the same mark everywhere.
+ */
+export function chevron() {
+  return h('span', { class: 'chev', 'aria-hidden': 'true' });
 }

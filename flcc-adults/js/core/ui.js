@@ -1,34 +1,111 @@
-// The component kit.
+// The component kit — the NEXT system.
 //
-// Two shapes carry this app. A LIST is a `stack()` of full-bleed `band()`s,
-// torn apart by seeded waves and marked with a hand-drawn texture. Everything
-// else is a `card()`: warm paper, a soft lift, and no border.
+// Four shapes carry this app, and knowing which is which is most of knowing
+// how to add a screen to it:
 //
-// The third shape, `sheet()`, is for the screens that ask the reader to make
-// something: a white page, a two-tone heading, a short column of choices, and
-// one full-width action along the bottom.
+//   block()   the ONE deep near-black block a screen is allowed. The Daily
+//             Word, the featured message, the profile head. 15% of the screen.
+//   eblock()  an editorial navigation block: a hairline, a large name, one
+//             line of what it is, and the forward arrow. Explore is built out
+//             of these, and they are what replaced the four-tile icon grid.
+//   rows()    a list. Hairline-separated rows, a 2px colour stem at most.
+//   card()    a panel, for a group of things that genuinely has an edge.
 //
 // What is deliberately absent is as much of the design as what is here. There
-// is no badge pill, no star row and no character with a face — all three were
-// in an earlier version of this app and all three are why it read as an app
-// for children rather than for the adults of a church.
+// is no coloured band, no wave, no texture, no badge pill, no star row and no
+// character with a face — every one of those was in an earlier version of this
+// app, and every one of them is why it read first as a toy and then as a
+// dashboard.
+//
+// The rule that keeps it honest: if a thing needs a box around it to be found,
+// it is in the wrong place on the page. Reach for a heading and space first.
 
-import { h, clear, navIcon } from './dom.js';
+import { h, clear, navIcon, chevron } from './dom.js';
 import * as art from './art.js';
 import { showFigures } from './profile.js';
 
+// ── The deep block ─────────────────────────────────────────────────────────
+
 /**
- * A card.
+ * The one deep block a screen may have.
  *
  * @param {object} options
- * @param {string}  options.tone   tints the card — a tenth of a colour, not
- *                                 the colour, so a paragraph still sits on it
- * @param {boolean} options.solid  the ONE full-colour block a screen may have
- * @param {string}  options.symbol an icon from js/core/art.js, placed in the
- *                                 card's header rather than under its text
- * @param {*}       options.foot   small print along the bottom, above a
- *                                 hairline — a string, an element, or [l, r]
- * @param {boolean} options.tall   a hero card: taller, and its content spreads
+ * @param {boolean} options.tall  a hero block: fills most of the first screen
+ * @param {boolean} options.arc   the corner geometry — hairline rings, the
+ *                                only abstract mark in the system. Off for a
+ *                                block whose type reaches the corner.
+ */
+export function block({ tall = false, arc = true, as = 'div', onclick, className = '', ...rest } = {}, ...children) {
+  const el = h(as, {
+    class: `block ${tall ? 'block--tall ' : ''}${className}`.trim(),
+    ...(onclick ? { onclick, type: as === 'button' ? 'button' : null } : {}),
+    ...rest,
+  });
+  if (arc) el.appendChild(h('span', { class: 'arc', 'aria-hidden': 'true' }));
+  el.append(...children.flat(Infinity).filter(Boolean));
+  return el;
+}
+
+// ── The editorial block ────────────────────────────────────────────────────
+
+/**
+ * A large navigation block: READ, PRAY, GROW, PLAN.
+ *
+ * The name is set at display size, so it is found by reading rather than by
+ * hunting for an icon, and the whole block is the tap target — which is what
+ * makes this shape work for a fifty-year-old holding a phone in one hand.
+ */
+export function eblock({ name, what = '', go: label = 'Open', onclick, ...rest } = {}) {
+  return h('button', { class: 'eblock', type: 'button', onclick, ...rest },
+    h('p', { class: 'eblock-name', text: name }),
+    what ? h('p', { class: 'eblock-what', text: what }) : null,
+    h('span', { class: 'eblock-go' }, label, h('i'), h('u')));
+}
+
+// ── The signature ──────────────────────────────────────────────────────────
+
+/**
+ * A section heading with the forward line running out of it.
+ *
+ *     NEXT UP ─────────────────────→
+ *
+ * This is the app's signature and the reason it is called NEXT. It belongs on
+ * section headings and nowhere else — put it on every element and it stops
+ * being a signature and becomes a texture.
+ *
+ * @param {string} text        the heading
+ * @param {object} options
+ * @param {string} options.more  a text action at the end of the line
+ */
+export function nextLine(text, { more = '', onmore = null } = {}) {
+  return h('div', { class: 'next-line' },
+    h('p', { class: 'label', text }),
+    h('span', { class: 'track', 'aria-hidden': 'true' }),
+    more && onmore
+      ? h('button', { class: 'more', type: 'button', onclick: onmore, text: more })
+      : h('span', { class: 'tip', 'aria-hidden': 'true' }));
+}
+
+/** The name of a root screen, set as the page's own title. */
+export function pageTitle(name, line = '') {
+  return h('header', { class: 'page-title' },
+    h('h1', { text: name }),
+    line ? h('p', { text: line }) : null,
+    h('span', { class: 'under', 'aria-hidden': 'true' }));
+}
+
+// ── The panel ──────────────────────────────────────────────────────────────
+
+/**
+ * A panel — what used to be a card, kept under the same name so the screens
+ * did not all need editing.
+ *
+ * @param {object} options
+ * @param {string}  options.tone   tints it at about a tenth of a colour
+ * @param {boolean} options.solid  renders it as the deep block instead
+ * @param {string}  options.symbol an icon from js/core/art.js, in the header
+ * @param {*}       options.foot   small print along the bottom, above a rule
+ * @param {boolean} options.tall   a hero panel: taller, its content spread
  */
 export function card({ tone = 'paper', solid = false, symbol = '', figureSize = '', foot = null,
                        tall = false, as = 'div', onclick, className = '', ...rest } = {}, ...children) {
@@ -38,23 +115,17 @@ export function card({ tone = 'paper', solid = false, symbol = '', figureSize = 
     ...(onclick ? { onclick, type: as === 'button' ? 'button' : null } : {}),
     ...rest,
   });
-  // The one loud block on a screen wears a texture, the way every band does.
-  // It is what stops it reading as a plain rectangle of colour.
-  if (solid && showFigures()) {
-    const mark = h('div', { class: 'texture-holder', dataset: { at: 'br' }, 'aria-hidden': 'true' });
-    mark.innerHTML = art.texture(art.pickTexture(symbol || tone), symbol || tone);
-    el.appendChild(mark);
-  }
+  if (solid) el.appendChild(h('span', { class: 'arc', 'aria-hidden': 'true' }));
   // The icon goes at the top-right, level with the first line of type. Placed
   // under the text it becomes a mascot sitting in a field of colour, which is
-  // the look this app is trying to leave behind.
+  // the look this app left behind two designs ago.
   //
   // The pairing is built BEFORE the body exists. Wrapping a child that is
   // already in the DOM with `replaceWith` puts the child inside its own
   // replacement, which the DOM rejects outright.
   let kids = children.flat(Infinity).filter(Boolean);
   if (symbol) {
-    const mark = figure(symbol, { size: figureSize });
+    const mark = figure(symbol, { size: figureSize || 'sm' });
     kids = kids.length ? [h('div', { class: 'card-head' }, kids[0], mark), ...kids.slice(1)] : [mark];
   }
   el.appendChild(h('div', { class: 'card-body' }, kids));
@@ -62,8 +133,7 @@ export function card({ tone = 'paper', solid = false, symbol = '', figureSize = 
   return el;
 }
 
-/** The small print along the bottom of a card, above a hairline.
- *  Named `foot` rather than `band` — a band is a layer of a stack now. */
+/** The small print along the bottom of a panel, above a hairline. */
 export function cardFoot(content) {
   const parts = (Array.isArray(content) ? content : [content]).filter((one) => one !== null && one !== undefined && one !== false);
   return h('div', { class: 'card-foot' },
@@ -73,13 +143,13 @@ export function cardFoot(content) {
 /**
  * One icon.
  *
- * It takes its colour from the text around it — `currentColor` in the SVG,
- * `--captain` in the stylesheet — so there is no per-card colour decision to
- * make and no way for one screen's icons to drift away from another's.
+ * It takes its colour from the text around it — `currentColor` in the SVG —
+ * so there is no per-screen colour decision to make and no way for one
+ * screen's icons to drift away from another's.
  *
  * The reader's choice to switch the icons off is honoured HERE rather than at
- * each call site: a screen that reaches for one directly must go quiet too,
- * or turning them off in You clears some screens and not others.
+ * each call site: a screen that reaches for one directly must go quiet too, or
+ * turning them off in You clears some screens and not others.
  */
 export function figure(name, { size = '', well = false } = {}) {
   if (!showFigures()) return h('span', { hidden: true });
@@ -91,70 +161,37 @@ export function figure(name, { size = '', well = false } = {}) {
   return el;
 }
 
-/**
- * The eyebrow above a heading: small, tracked, uppercase, and grey.
- *
- * It used to be a white pill with a 2px navy outline. Kept as `badge` so the
- * screens did not all need editing, but it is a label now — an outlined pill
- * on every card was a third of what made this app look like a toy.
- */
+/** The eyebrow above a heading: small, tracked, uppercase, and grey. */
 export function badge(text) { return h('p', { class: 'label', text }); }
+export function label(text) { return h('p', { class: 'label', text }); }
 
-// ── The stack ──────────────────────────────────────────────────────────────
+// ── The media rail ─────────────────────────────────────────────────────────
 
-/**
- * A list, as a stack of colour.
- *
- * Used for exactly one thing: a set of things with a count. Prayer categories,
- * learning paths, reading plans. A list of Bible books is not this — sixty-six
- * bands is a paint chart, not a list.
- */
-export function stack({ className = '', ...rest } = {}, ...children) {
-  return h('div', { class: `stack ${className}`.trim(), ...rest },
+/** A row of things you are part-way through. It scrolls inside itself. */
+export function rail({ className = '', ...rest } = {}, ...children) {
+  return h('div', { class: `rail ${className}`.trim(), ...rest },
     children.flat(Infinity).filter(Boolean));
 }
 
 /**
- * One band of a stack.
+ * One tile on a rail.
  *
- * @param {object} options
- * @param {string} options.tone     the band's colour, full strength
- * @param {string} options.texture  one of art.TEXTURES; omitted, one is picked
- *                                  from the seed so no band is ever bare
- * @param {string} options.seed     what the wave and texture are drawn from —
- *                                  pass something stable, like an id
- * @param {*}      options.count    the figure on the right
- * @param {boolean} options.tall    a hero band, with room for a heading
+ * There is no photograph behind it and there is not going to be a stock one:
+ * a message this church has not published a still for gets the deep block and
+ * the corner geometry, which is honest and does not look like a placeholder.
  */
-export function band({ tone = 'rose', texture = '', seed = '', count = null, tall = false,
-                       at = 'tr', as = 'div', onclick, className = '', ...rest } = {}, ...children) {
-  const el = h(as, {
-    class: `band ${className}`.trim(),
-    dataset: { tone, ...(tall ? { tall: '' } : {}) },
-    ...(onclick ? { onclick, type: as === 'button' ? 'button' : null } : {}),
-    ...rest,
-  });
-
-  const edge = h('span', { class: 'wave-holder', style: 'display:contents' });
-  edge.innerHTML = art.wave(seed || tone);
-  el.appendChild(edge.firstChild);
-
-  if (showFigures()) {
-    const mark = h('div', { class: 'texture-holder', dataset: { at }, 'aria-hidden': 'true' });
-    mark.innerHTML = art.texture(art.isTexture(texture) ? texture : art.pickTexture(seed || tone), seed || tone);
-    el.appendChild(mark);
-  }
-
-  const kids = children.flat(Infinity).filter(Boolean);
-  el.appendChild(tall ? h('div', { style: 'display:contents' }, kids) : h('div', {}, kids));
-  if (count !== null && count !== undefined && count !== false) {
-    el.appendChild(h('span', { class: 'band-count', text: String(count) }));
-  }
-  return el;
+export function tile({ name, by = '', meta = '', percent = null, onclick, ...rest } = {}) {
+  return h('button', { class: 'tile', type: 'button', onclick, ...rest },
+    h('span', { class: 'tile-art' },
+      h('span', { class: 'arc', 'aria-hidden': 'true' }),
+      h('span', { class: 'tile-play', 'aria-hidden': 'true' })),
+    h('p', { class: 'tile-name', text: name }),
+    by ? h('p', { class: 'tile-by', text: by }) : null,
+    meta ? h('p', { class: 'tile-by', text: meta }) : null,
+    // Only once there is progress to show. A bar at 0% is a grey rule under a
+    // tile, which reads as a stray divider rather than as "not started".
+    percent > 0 ? thread(percent, 'gold') : null);
 }
-
-export function bandName(text) { return h('p', { class: 'band-name', text }); }
-export function bandNote(text) { return h('p', { class: 'band-note', text }); }
 
 // ── The sheet ──────────────────────────────────────────────────────────────
 
@@ -180,9 +217,9 @@ export function pick(name, what, { tone = 'sky', chosen = false, onclick } = {})
   }, h('p', { class: 'pick-name', text: name }), what ? h('p', { class: 'pick-what', text: what }) : null);
 }
 
-/** A group with no chrome at all: used to hold cards, and on the Bible screen. */
+/** A group with no chrome at all: used to hold a heading and its list. */
 export function section({ className = '', ...rest } = {}, ...children) {
-  return h('div', { class: `section ${className}`.trim(), style: 'display:flex;flex-direction:column;gap:.55rem', ...rest },
+  return h('div', { class: `section ${className}`.trim(), ...rest },
     children.flat(Infinity).filter(Boolean));
 }
 
@@ -191,13 +228,13 @@ export function reader({ className = '', ...rest } = {}, ...children) {
   return h('div', { class: `reader ${className}`.trim(), ...rest }, children.flat(Infinity).filter(Boolean));
 }
 
-export function label(text) { return h('p', { class: 'label', text }); }
+// ── Type ───────────────────────────────────────────────────────────────────
+
 /**
  * A display heading, optionally with one word marked.
  *
- * `display('New list', { mark: 'list' })` sets "list" in ember over a
- * highlighter stroke — the reference's own device, and the only place in this
- * app where a heading changes colour mid-phrase.
+ * `display('New list', { mark: 'list' })` sets "list" in gold — the only place
+ * in this app where a heading changes colour mid-phrase.
  */
 export function display(text, { mark = '' } = {}) {
   const source = String(text || '');
@@ -210,6 +247,7 @@ export function display(text, { mark = '' } = {}) {
     h('span', { class: 'mark', text: source.slice(at, at + mark.length) }),
     source.slice(at + mark.length));
 }
+
 export function title(text, tag = 'h2') { return h(tag, { class: 'title', text }); }
 export function lead(text) { return h('p', { class: 'lead', text }); }
 export function body(text) { return h('p', { class: 'body', text }); }
@@ -238,8 +276,12 @@ export function scripture(text, { flow = false, tag = 'p' } = {}) {
 
 export function cite(text) { return h('p', { class: 'cite', text }); }
 
+// ── Action ─────────────────────────────────────────────────────────────────
+
+/** The secondary action: text, a rule, an arrow. There is no third style. */
 export function go(text, onclick) { return h('button', { class: 'go', type: 'button', onclick }, text); }
 
+/** The one filled button a screen is allowed. `quiet` makes it text instead. */
 export function act(text, onclick, { quiet = false, small: compact = false, ...rest } = {}) {
   return h('button', {
     class: 'act', type: 'button', onclick,
@@ -262,8 +304,14 @@ export function tag(text, accent = '') {
   return h('span', { class: 'tag', ...(accent ? { dataset: { accent } } : {}), text });
 }
 
-/** One row of a list — itself a small card. */
-export function row({ eyebrow = '', title: heading, note: lede = '', meta = '', accent = '', number = '', onclick, ...rest } = {}) {
+/** The mark that says a thing landed: one pulse, then still. */
+export function doneMark(text) { return h('span', { class: 'done-mark', text }); }
+
+// ── Rows ───────────────────────────────────────────────────────────────────
+
+/** One row of a list. Hairline below, a 2px colour stem at most. */
+export function row({ eyebrow = '', title: heading, note: lede = '', meta = '', accent = '', number = '',
+                      chev = false, onclick, ...rest } = {}) {
   const el = h(onclick ? 'button' : 'div', {
     class: 'row', ...(onclick ? { onclick, type: 'button' } : {}), ...rest,
   });
@@ -275,7 +323,10 @@ export function row({ eyebrow = '', title: heading, note: lede = '', meta = '', 
     eyebrow ? h('p', { class: 'label', style: 'margin-bottom:.3rem', text: eyebrow }) : null,
     h('p', { class: 'row-title', text: heading }),
     lede ? h('p', { class: 'row-note', text: lede }) : null));
-  el.appendChild(meta ? h('span', { class: 'row-meta', text: meta }) : h('span'));
+
+  if (meta) el.appendChild(h('span', { class: 'row-meta', text: meta }));
+  else if (chev && onclick) el.appendChild(chevron());
+  else el.appendChild(h('span'));
   return el;
 }
 
@@ -328,7 +379,7 @@ export function swap(el, ...children) {
   return el;
 }
 
-/** Cards arrive as you scroll. They land once, and never again. */
+/** Content arrives as you scroll. It lands once, and never again. */
 export function rise(elements) {
   const nodes = [].concat(elements).filter(Boolean);
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -355,7 +406,7 @@ export function rise(elements) {
 export function moment({ eyebrow = '', big, line = '', action = 'Amen', symbol = 'star', onclose }) {
   const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true' });
   screen.append(
-    figure(symbol),
+    figure(symbol, { size: 'lg' }),
     eyebrow ? badge(eyebrow) : null,
     h('p', { class: 'display', text: big }),
     line ? lead(line) : null,
@@ -370,9 +421,15 @@ export function toast(message) {
   let el = document.getElementById('toast');
   if (!el) {
     el = h('div', { id: 'toast', role: 'status', 'aria-live': 'polite',
+      // `pointer-events:none` matters more than it looks. The toast sits just
+      // above the tab bar for two and a half seconds, and without this it
+      // swallows taps on Community and Watch — the two tabs directly under it —
+      // for every one of them. It is announced to a screen reader and is
+      // untouchable by a finger, which is what a toast should be.
       style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(6rem + env(safe-area-inset-bottom));z-index:70;'
-        + 'background:#2B4C6D;color:#fff;padding:.65rem 1rem;border-radius:12px;'
-        + 'box-shadow:0 8px 24px rgba(43,76,109,.24);font-size:.85rem;font-weight:450;max-width:90vw;text-align:center' });
+        + 'pointer-events:none;'
+        + 'background:#151515;color:#fff;padding:.7rem 1.1rem;border-radius:12px;'
+        + 'box-shadow:0 8px 28px rgba(21,21,21,.28);font-size:.85rem;font-weight:500;max-width:90vw;text-align:center' });
     document.body.appendChild(el);
   }
   el.textContent = message;
@@ -381,4 +438,4 @@ export function toast(message) {
   toastTimer = setTimeout(() => { el.hidden = true; }, 2800);
 }
 
-export { h, clear, navIcon };
+export { h, clear, navIcon, chevron };
