@@ -73,6 +73,20 @@ export function art(name, { tone = 'paper', size = '', title = '' } = {}) {
   return wrap;
 }
 
+/**
+ * The same drawing, as markup rather than an element.
+ *
+ * The match-three board sets sixty-four tiles at once and re-sets them on
+ * every cascade, so building sixty-four wrapper elements a frame is wasteful —
+ * but a screen that reached into `art.js` for the SVG itself would step around
+ * the drawings-off setting, and turning the drawings off would clear the whole
+ * app except the game board. This is the way through: it honours the setting
+ * exactly as `art()` does, and hands back a string.
+ */
+export function artMarkup(name, tone = 'paper') {
+  return showFigures() ? symbol(name, { fill: fillFor(tone) }) : '';
+}
+
 export function go(text, onclick) {
   return h('button', { class: 'go', type: 'button', onclick }, text);
 }

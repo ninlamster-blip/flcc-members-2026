@@ -31,8 +31,11 @@ This repository holds five applications. This is one of them.
 index.html                       shell: header, screen, tabs. Owns nothing else.
   └── js/app.js                  boot, onboarding, routing
         └── js/screens/*.js      one module per screen, dynamic import()
-              └── js/core/*.js   storage, profile, progress, content, rotation,
-                                 agenda, scripture, prayers, plan, art, ui
+              ├── js/core/*.js   storage, profile, progress, content, rotation,
+              │                  agenda, scripture, prayers, plan, notes, ai,
+              │                  safety, art, ui
+              └── js/games/*.js  crossword layout, match-three rules — pure
+                                 functions, no DOM, so they can be tested
 ```
 
 ## The five tabs
@@ -40,10 +43,14 @@ index.html                       shell: header, screen, tabs. Owns nothing else.
 | Tab | What it answers | Screens under it |
 |---|---|---|
 | **Today** | What matters to me right now? | `moment` |
-| **Explore** | What do I need today? | `bible`, `pray`, `grow`, `path`, `session`, `guide`, `plan` |
+| **Explore** | What do I need today? | `bible`, `pray`, `grow`, `path`, `session`, `guide`, `plan`, `ask`, `play`, `crossword`, `game` |
 | **Community** | Who am I doing this with? | — |
-| **Watch** | What was preached? | `message` |
+| **Watch** | What was preached? | `message`, `notes`, `note` |
 | **You** | Where have I got to? | — |
+
+Six doors on Explore, in this order: READ, ASK, PRAY, GROW, PLAN, PLAY. Notes
+sit under Watch rather than under You because a note belongs to the sermon it
+was taken at, and Watch is the tab somebody has open during a service.
 
 `app.js` holds all three lists — the tabs, the routes and the `UNDER` map that
 decides which tab a sub-screen lights. `test/modules.test.mjs` reads that file
@@ -101,6 +108,61 @@ rather than the app.
 per path, so this app's worker only ever sees requests made by this app's
 pages: neither app can evict the other's Scripture.
 
+## ASK
+
+The one part of this app that talks to anything.
+
+`js/screens/ask.js` collects a question; `js/core/ai.js` builds the request and
+sends it to `/proxy` — same origin, served by the deployed
+`ask-proxy/worker.js`, which holds the Anthropic key so that no device does.
+Nothing has to be configured: the app and the proxy are behind the same
+Worker. `settings.aiWorker` overrides the address for a church running this
+somewhere else, and is the only reason that setting still exists.
+
+Three things make it safe to have in a church app at all, and all three are
+tested:
+
+1. **The crisis screen runs before the network.** `js/core/safety.js` matches
+   the ways an adult actually says it — self-harm, domestic abuse, being
+   afraid to go home — and `ask()` returns the safety card without calling
+   `fetch` at all. `test/ai.test.mjs` replaces `fetch` with a throw to prove
+   the ordering. The card names people and phone numbers; it does not counsel,
+   and it does not quote Scripture at somebody who needs a helpline.
+2. **The request carries the question and nothing else.** No name, no season,
+   no prayers, no reflections, no notes, no progress. `test/ai.test.mjs`
+   asserts each of those by name against the serialised body.
+3. **The answer arrives in five marked parts** — `[HEARD]`, `[SCRIPTURE]`,
+   `[MEANING]`, `[PRAY]`, `[STEP]` — and the screen renders those parts as
+   posters itself. A reply that ignores the shape falls through to one block of
+   text, which is visibly not the app's voice. That is the point: it should
+   look unreliable when it is.
+
+The system prompt forbids the things that would do real damage — speaking as
+God, telling somebody what God is saying to them, standing in for a pastor or
+a doctor, presenting a contested question as settled, or telling a grieving
+adult their loss was a lesson. `test/ai.test.mjs` pins each of those lines, so
+removing one fails the suite rather than quietly changing what the app says to
+somebody at 2am.
+
+## Play
+
+Two games, neither of which is a delivery mechanism for anything. No points, no
+streak, no score anybody else can see, and nothing reported to the church.
+
+**The crossword** is dealt, not authored. `rotation.deal()` takes nine clues
+out of `content/crossword.json` (184 of them) for the day, and
+`js/games/crossword.js` interlocks them into a grid. Nobody writes a
+coordinate, there is no puzzle file to exhaust, and the bank is re-permuted
+every cycle so a clue that comes round again arrives crossing different words.
+`test/crossword.test.mjs` builds **every day for two years** and fails if any
+of them strands a word or produces a grid too wide for a phone.
+
+**Match three** is `js/games/match3.js` — pure functions for matching,
+collapsing and playing a swap, so the cascade can be tested without a browser.
+One departure from the genre worth knowing about: a swap that matches nothing
+is *refused* rather than played and snapped back, because there is no reason to
+spend a move on somebody's misread.
+
 ## Storage today
 
 All of it is `localStorage`, JSON-encoded, under `adults/v1/`. `storage.js`
@@ -114,16 +176,22 @@ locked browser), so the app runs rather than crashing.
 | `adults/v1/prayers` | `{ items: [{ id, text, category, created, answered }] }` | Pray |
 | `adults/v1/journal` | `{ entries: [{ id, at, guide, ref, text }] }` | guided prayer, sessions |
 | `adults/v1/rsvps` | `{ going: [eventId] }` | Connect |
-| `adults/v1/settings` | `{ figures }` | You |
+| `adults/v1/settings` | `{ figures, text, ask, aiWorker?, aiSecret? }` | You |
 | `adults/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
 | `adults/v1/plan` | `{ id, started }` | a reading plan |
+| `adults/v1/ask` | `{ turns: [{ role, text, at }], updatedAt }` | ASK |
+| `adults/v1/notes` | `[{ id, title, speaker, ref, body, messageId, createdAt, updatedAt }]` | sermon notes |
+| `adults/v1/play` | `{ crossword: { day, filled{}, given[] } }` | the crossword |
 
-**Nothing crosses devices, and nothing leaves the device at all.** There is no
+**Nothing crosses devices, and none of it leaves the device.** There is no
 account, no server and no sync — a second phone starts empty, and clearing the
 browser's data clears everything. Unlike the kids and teens app there is not
 even a prayer-delivery exception: an adult's prayers about their marriage,
-their money or their manager are not ours to collect. Three screens say so
-where it matters (Pray, Connect, You) rather than burying it in a policy.
+their money or their manager are not ours to collect. Four screens say so where
+it matters (Pray, Connect, Notes, You) rather than burying it in a policy.
+
+The one thing that goes out is an ASK question, and it is not stored here or
+there — see [ASK](#ask) below. Nothing in the table above is ever sent with it.
 
 ## What a server would need
 
@@ -245,6 +313,12 @@ node --test 'flcc-adults/test/*.test.mjs'
 | `content` | every authored file's shape, every colour and icon it names, that every event can be counted down to, that every message stands up with or without a recording, and that the writing never promises something no server exists to do |
 | `scripture` | the shared Bible is where the app says it is, every reference resolves — the messages' included — and **every verse the writing prints is word for word the shipped text** |
 | `design` | the two editions are one design: it reads **both** stylesheets and fails when the palette, the 3px edge, the face, the 900/800 headline weights, the six poster tones, the two actions or the no-shadow-no-gradient-no-blur rules stop matching |
+| `ai` | the shape of the request and of the reply: that it carries the question and nothing about the person, that the crisis screen and the off switch come **before** `fetch` rather than after it, that a reply ignoring the five-part shape arrives as one visible block, and that the prompt still forbids speaking as God, standing in for a pastor, settling a contested question, or calling somebody's grief a lesson |
+| `safety` | both halves of the crisis screen: fourteen ways an adult actually says it, and twelve ordinary hard questions it must leave alone — a screen that fires on "I am struggling at work" is a screen members learn to scroll past |
+| `crossword` | the clue bank's shape and that no clue gives its answer away; that **every day for two years** deals nine words that fully interlock into a phone-sized grid; that a day is the same puzzle on every device and a different one tomorrow; and that the layout engine has not drifted from the kids edition's |
+| `match3` | matching, cascading and collapsing: no holes left in a column, no board that starts solved or deadlocked, no diagonal swaps, and a swap that matches nothing leaving the board untouched |
+| `notes` | a note survives being left mid-sentence, an empty one is thrown away rather than kept as clutter, ids do not collide, and everything stays in the namespace |
+| `textsize` | four sizes that only go up; that the scale multiplies the reader's own browser default rather than replacing it; that the whole type scale is in rem so one number moves it; and that the outline, the radius and the track do **not** grow with the type |
 | `modules` | every module parses, every screen exports a screen, the app boundary, that the stylesheet is still the poster system, no paragraph set in capitals, no hex literal in a screen, every root screen names itself, the tabs and the routes and the `UNDER` map agree, no hand-built posters, no screen importing `art.js` behind `art()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
 
 The scripture suite is the one worth explaining. Forty passages are quoted

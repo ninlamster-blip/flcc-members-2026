@@ -55,8 +55,43 @@ export function firstName(user = getUser()) {
   return name.split(/\s+/)[0] || 'friend';
 }
 
+/**
+ * How big the type is.
+ *
+ * Not a preference so much as an accessibility need: a good part of this
+ * church is over sixty, and the poster system is set in a face that is
+ * beautiful and, at 16px on a phone held at arm's length, genuinely hard.
+ * The scale multiplies the reader's own browser default rather than replacing
+ * it, so somebody who has already turned text up on their phone gets that,
+ * times this.
+ */
+export const TEXT_SIZES = [
+  { id: 'standard', label: 'Standard', scale: 1,    line: 'The size the app was drawn at.' },
+  { id: 'large',    label: 'Large',    scale: 1.15, line: 'A little more room to read.' },
+  { id: 'larger',   label: 'Larger',   scale: 1.3,  line: 'Comfortable at arm’s length.' },
+  { id: 'largest',  label: 'Largest',  scale: 1.5,  line: 'For reading without glasses.' },
+];
+
 export function getSettings() {
-  return { figures: 'on', ...(store.read(store.KEYS.settings, {}) || {}) };
+  return { figures: 'on', text: 'standard', ...(store.read(store.KEYS.settings, {}) || {}) };
+}
+
+export const textSize = (settings = getSettings()) =>
+  TEXT_SIZES.find((one) => one.id === settings.text) || TEXT_SIZES[0];
+
+/**
+ * Put the chosen scale on the root element.
+ *
+ * `index.html` calls this before the first screen is built, so the app is
+ * never drawn at one size and then re-drawn at another — a reader who needs
+ * large type should not have to watch the page jump on every load.
+ */
+export function applyTextSize(settings = getSettings()) {
+  const size = textSize(settings);
+  if (typeof document !== 'undefined' && document.documentElement) {
+    document.documentElement.style.setProperty('--text-scale', String(size.scale));
+  }
+  return size;
 }
 
 export function saveSettings(patch) {

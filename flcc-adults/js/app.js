@@ -10,7 +10,7 @@
 
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
-import { getUser, saveUser, greeting, firstName, SEASONS, FOCUS } from './core/profile.js';
+import { getUser, saveUser, greeting, firstName, applyTextSize, SEASONS, FOCUS } from './core/profile.js';
 import { poster, label, display, headline, lead, pill, choice, art, toast } from './core/ui.js';
 
 const TABS = [
@@ -36,6 +36,12 @@ const SCREENS = {
   session:   () => import('./screens/session.js'),
   guide:     () => import('./screens/guide.js'),
   plan:      () => import('./screens/plan.js'),
+  ask:       () => import('./screens/ask.js'),
+  play:      () => import('./screens/play.js'),
+  crossword: () => import('./screens/crossword.js'),
+  game:      () => import('./screens/game.js'),
+  notes:     () => import('./screens/notes.js'),
+  note:      () => import('./screens/note.js'),
 };
 for (const [name, loader] of Object.entries(SCREENS)) router.define(name, loader);
 
@@ -63,6 +69,13 @@ const UNDER = {
   session: 'explore',
   guide:   'explore',
   plan:    'explore',
+  ask:     'explore',
+  play:    'explore',
+  crossword: 'explore',
+  game:    'explore',
+  // Notes belong to the sermon they were taken at, so they light Watch.
+  notes:   'watch',
+  note:    'watch',
 };
 
 // ── Onboarding ─────────────────────────────────────────────────────────────
@@ -178,7 +191,8 @@ function renderHead(view, route) {
     headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
   } else {
     headEl.append(
-      h('button', { class: 'go', type: 'button', style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',
+      h('button', { class: 'go', 'data-back': '', type: 'button',
+        style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',
         onclick: () => router.back('today') }, '← Back'),
       h('p', { class: 'label dimmer', text: view.title || '' }));
   }
@@ -213,6 +227,9 @@ async function show(route, module) {
 }
 
 function boot() {
+  // Before anything is drawn, so a reader who needs large type never watches
+  // the app render small and then jump.
+  applyTextSize();
   if (!getUser()) { onboarding(); return; }
   router.start(show);
 }

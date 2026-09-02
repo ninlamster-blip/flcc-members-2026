@@ -64,9 +64,15 @@
   --label:    .68rem;   /* uppercase, tracked, 800 */
   --body:     1rem;
   --lead:     1.15rem;
-  --headline: clamp(1.9rem, 8vw, 2.6rem);
-  --display:  clamp(2.4rem, 12vw, 3.6rem);
-  --numeral:  clamp(3.5rem, 20vw, 6rem);
+  /* The lower bound of each clamp is itself capped against the viewport.
+     Without that `min()`, turning the text size up in You scales the floor of
+     the clamp too, and a single long headline word — WEAKNESS, FOUNDATIONS —
+     runs straight off the side of its poster at the largest setting. The
+     reading sizes above scale freely, which is the point of the feature; the
+     display sizes are already large and only need to stay in the poster. */
+  --headline: clamp(min(1.9rem, 8.5vw), 8vw, 2.6rem);
+  --display:  clamp(min(2.4rem, 11vw), 12vw, 3.6rem);
+  --numeral:  clamp(min(3.5rem, 18vw), 20vw, 6rem);
 
   --pad: 1.6rem;        /* the inside edge of every poster */
   --stack: 1rem;        /* the gap between posters */
@@ -81,7 +87,20 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
-html { -webkit-text-size-adjust: 100%; background: var(--paper); }
+/* ── Text size ────────────────────────────────────────────────────────────
+   Every size in this stylesheet is in rem, so the whole app grows from one
+   number. `--text-scale` multiplies the reader's OWN browser default rather
+   than replacing it: somebody who has already set large text on their phone
+   gets that, times this.
+
+   The three fixed sizes below it are deliberate. `--edge`, `--radius` and the
+   track height are the drawing, not the type — a 3px outline at 150% is a 4px
+   outline, and the whole system is one weight. They stay where they are. */
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--paper);
+  font-size: calc(100% * var(--text-scale, 1));
+}
 
 body {
   margin: 0;
@@ -117,6 +136,7 @@ button { font: inherit; color: inherit; border: 0; background: none; }
   letter-spacing: -.035em;
   line-height: .94;
   text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .headline {
@@ -125,6 +145,7 @@ button { font: inherit; color: inherit; border: 0; background: none; }
   letter-spacing: -.03em;
   line-height: 1.02;
   text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .numeral {
@@ -230,6 +251,9 @@ button.poster:active, a.poster:active { transform: scale(.988); }
   min-height: 44px; cursor: pointer;
 }
 .go::after { content: "→"; transition: transform var(--speed) var(--ease); }
+/* The header's Back button borrows the arrow word's type but points the other
+   way, so it must not also get the trailing arrow. */
+.go[data-back]::after { content: none; }
 .go:hover::after { transform: translateX(4px); }
 
 .pill {
@@ -424,6 +448,74 @@ textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
   }
   .rise { opacity: 1; transform: none; }
 }
+
+/* ── The crossword ────────────────────────────────────────────────────────
+   Drawn in the same language as everything else: flat paper cells, one navy
+   outline weight, no grey. The grid scrolls sideways inside its poster rather
+   than shrinking — a puzzle squeezed to fit a phone is a puzzle nobody can
+   tap accurately, and the larger text sizes would make that worse.
+
+   The one place the outline is thinner than `--edge` is between cells, where
+   two 3px edges meeting would read as 6px. `--edge` still draws the outside. */
+.grid-scroll { overflow-x: auto; margin-top: 1.2rem; padding-bottom: .4rem; }
+.xgrid { display: grid; gap: 0; width: max-content; margin: 0 auto; --cell: 2.05rem; }
+.xslot { width: var(--cell); height: var(--cell); }
+.xcell { position: relative; width: var(--cell); height: var(--cell); }
+.xcell input {
+  width: 100%; height: 100%;
+  border: 0; border-radius: 0;
+  box-shadow: inset 0 0 0 2px var(--ink);
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font); font-size: .95rem; font-weight: 800; text-align: center;
+  text-transform: uppercase; padding: 0; caret-color: var(--ink);
+}
+.xcell input:focus { outline: 0; background: var(--sunshine); }
+.xcell[data-lit] input { background: var(--sky); }
+.xcell[data-lit] input:focus { background: var(--sunshine); }
+.xcell[data-wrong] input { background: var(--rose); }
+.xcell[data-given] input { background: var(--sky); font-weight: 900; }
+.xnum {
+  position: absolute; top: 1px; left: 2px; z-index: 1;
+  font-size: .5rem; font-weight: 800; line-height: 1; color: var(--ink-55);
+  pointer-events: none;
+}
+.clue-set { margin-top: 1.4rem; }
+.clue {
+  display: flex; gap: .7rem; width: 100%; text-align: left; cursor: pointer;
+  padding: .55rem .2rem; border-top: 1px solid var(--ink-12);
+  font-size: .92rem; line-height: 1.45; color: inherit;
+}
+.clue:first-child { border-top: 0; }
+.clue[data-lit] { background: var(--ink-12); }
+.clue[data-done] { color: var(--ink-55); text-decoration: line-through; }
+.clue > b { font-weight: 800; min-width: 1.4rem; }
+
+/* ── The match-3 board ────────────────────────────────────────────────────
+   Candy Crush's shape, drawn in this app's system: flat tones, one navy
+   outline, the app's own symbols as the pieces. No shine, no bevel, no
+   particle burst — a tile that clears fades and drops. */
+.board {
+  display: grid; gap: .3rem;
+  margin-top: 1.2rem;
+  touch-action: manipulation;
+}
+.gem {
+  aspect-ratio: 1; border-radius: 8px;
+  box-shadow: inset 0 0 0 var(--edge) var(--ink);
+  display: grid; place-items: center;
+  cursor: pointer; padding: 12%;
+  transition: transform 140ms var(--ease), opacity 140ms var(--ease);
+}
+.gem svg { width: 100%; height: 100%; display: block; }
+.gem[data-tone="sunshine"] { background: var(--sunshine); }
+.gem[data-tone="rose"]     { background: var(--rose); }
+.gem[data-tone="sky"]      { background: var(--sky); }
+.gem[data-tone="poppy"]    { background: var(--poppy); }
+.gem[data-tone="captain"]  { background: var(--captain); }
+.gem[data-tone="captain"] svg [stroke] { stroke: var(--paper); }
+.gem[data-picked] { transform: scale(.88); }
+.gem[data-clearing] { opacity: 0; transform: scale(.6); }
+.gem[data-empty] { background: transparent; box-shadow: none; cursor: default; }
 
 @media (min-width: 40rem) {
   :root { --pad: 2rem; --stack: 1.2rem; }

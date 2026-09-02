@@ -19,12 +19,16 @@ import * as scripture from '../core/scripture.js';
 const DOORS = [
   { name: 'READ',  eyebrow: 'Scripture', tone: 'sky',      symbol: 'book',   route: 'bible',
     what: 'The whole Bible, in three translations, already on this device.', action: 'Open the Bible' },
+  { name: 'ASK',   eyebrow: 'A question', tone: 'ink',     symbol: 'mug',    route: 'ask',
+    what: 'The question you would not put to anybody at church. It answers from Scripture, and it says so where Christians disagree rather than picking a side.', action: 'Ask it' },
   { name: 'PRAY',  eyebrow: 'Prayer',    tone: 'rose',     symbol: 'flame',  route: 'pray',
     what: 'Guided prayer for when you do not know how to start, and a list for when you cannot hold it all in your head.', action: 'Take a moment' },
   { name: 'GROW',  eyebrow: 'Teaching',  tone: 'sunshine', symbol: 'sprout', route: 'grow',
     what: 'Four learning paths — foundations, the Bible itself, faith at work, marriage and relationships.', action: 'Keep going' },
   { name: 'PLAN',  eyebrow: 'A habit',   tone: 'captain',  symbol: 'mountain', route: 'bible',
     what: 'A reading plan that is a sequence, not a calendar. Miss a fortnight and it is exactly where you left it.', action: 'Choose a plan' },
+  { name: 'PLAY',  eyebrow: 'Something else', tone: 'sky', symbol: 'star',   route: 'play',
+    what: 'A hard crossword, dealt new every morning, and a match-three for when you are waiting for a lift after the service.', action: 'Open it' },
 ];
 
 export default async function exploreScreen(ctx) {

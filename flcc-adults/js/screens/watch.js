@@ -18,6 +18,7 @@ import { h, poster, label, display, headline, art, go, pill,
          rows, row, reference, note, rise, toneFor } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
+import * as notes from '../core/notes.js';
 
 const dateOf = (one) => new Date(`${one.date}T00:00:00`);
 const said = (one) => dateOf(one).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
@@ -107,6 +108,30 @@ export default async function watchScreen(ctx) {
       });
     })),
     h('div', { class: 'poster-foot' }, h('span'), art('mug', { tone: 'sky', size: 'sm' }))));
+
+  // ── Notes ───────────────────────────────────────────────────────────────
+  //
+  // Under the messages rather than above them: somebody who came to Watch came
+  // for a sermon. But it is a whole poster rather than a link, because taking
+  // notes on Sunday is the thing this tab is most used for during a service.
+  const written = notes.list();
+  parts.push(poster({ tone: 'captain' },
+    label(written.length ? `Your notes · ${written.length}` : 'Sermon notes'),
+    headline(written.length ? 'WHAT YOU WROTE DOWN' : 'WRITE IT DOWN'),
+    written.length
+      ? rows(...written.slice(0, 3).map((one) => row({
+          title: String(one.title).trim() || 'Untitled',
+          note: [one.speaker, one.ref].filter(Boolean).join(' · '),
+          meta: new Date(one.updatedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+          onclick: () => ctx.go(`note/${one.id}`),
+        })))
+      : h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'A title, the passage, and a page. It saves as you type and stays on this phone.' }),
+    h('div', { class: 'poster-foot' },
+      pill(written.length ? 'Open your notes' : 'Start a note', () => {
+        if (written.length) ctx.go('notes');
+        else ctx.go(`note/${notes.create().id}`);
+      }),
+      art('book', { tone: 'captain', size: 'sm' }))));
 
   // ── What this tab is, and is not ────────────────────────────────────────
   parts.push(poster({ tone: 'paper' },
