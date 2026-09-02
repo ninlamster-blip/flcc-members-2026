@@ -24,3 +24,17 @@ test('read, write and wipe round-trip', () => {
   assert.ok(store.wipe() >= 1);
   assert.equal(store.read(store.KEYS.user), null);
 });
+
+/**
+ * The keys added for Ask, notes and the games are in the namespace like
+ * everything else. Adding a key is the easiest way to open a hole in a
+ * boundary that is otherwise enforced mechanically.
+ */
+test('every key the app knows about is namespaced', () => {
+  for (const [name, key] of Object.entries(store.KEYS)) {
+    assert.ok(key.startsWith('adults/v1/'), `KEYS.${name} is "${key}", outside the namespace`);
+  }
+  for (const needed of ['ask', 'notes', 'play']) {
+    assert.ok(store.KEYS[needed], `KEYS.${needed} is missing`);
+  }
+});

@@ -35,3 +35,4 @@ export const updates   = () => load('updates.json');
 export const events    = () => load('events.json');
 export const ministries = () => load('ministries.json');
 export const messages  = () => load('messages.json');   // what was preached
+export const crossword = () => load('crossword.json');  // the clue bank the day deals from

@@ -14,7 +14,7 @@ import * as store from './storage.js';
 const EMPTY = { days: { count: 0, best: 0, lastDay: null }, done: {}, counts: {} };
 
 /** The kinds of thing that can be completed. Named, so a typo cannot invent one. */
-export const KINDS = ['reading', 'session', 'prayer', 'reflection', 'message'];
+export const KINDS = ['reading', 'session', 'prayer', 'reflection', 'message', 'crossword', 'game'];
 
 export function today(now = new Date()) {
   const pad = (n) => String(n).padStart(2, '0');

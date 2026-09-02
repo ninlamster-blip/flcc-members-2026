@@ -13,7 +13,8 @@
 
 import { h, poster, label, display, headline, art, go, pill, track, choice,
          rows, row, note, rise, toast, swap } from '../core/ui.js';
-import { getUser, saveUser, SEASONS, FOCUS, seasonOf, getSettings, saveSettings } from '../core/profile.js';
+import { getUser, saveUser, SEASONS, FOCUS, seasonOf, getSettings, saveSettings,
+         TEXT_SIZES, textSize, applyTextSize } from '../core/profile.js';
 import * as store from '../core/storage.js';
 import * as progress from '../core/progress.js';
 import * as prayers from '../core/prayers.js';
@@ -102,7 +103,25 @@ export default async function youScreen(ctx) {
       h('span'))));
 
   // ── Settings ────────────────────────────────────────────────────────────
-  parts.push(poster({ tone: 'paper', id: 'settings' },
+  //
+  // Text size comes first, and not out of politeness. A good part of this
+  // church is over sixty; a reader who cannot make out the settings list is
+  // not going to scroll past three posters to find the control that fixes it.
+  const chosenSize = textSize(settings);
+  parts.push(poster({ tone: 'sunshine', id: 'settings' },
+    label('Text size'),
+    h('div', { class: 'choice-list' },
+      ...TEXT_SIZES.map((size) => choice(size.label, () => {
+        // Applied before the redraw, so the new size is what the screen comes
+        // back at — the setting demonstrates itself.
+        applyTextSize(saveSettings({ text: size.id }));
+        ctx.refresh();
+      }, size.id === chosenSize.id ? { 'data-chosen': '' } : {}))),
+    h('p', { class: 'body', style: 'margin-top:1.2rem', text: chosenSize.line }),
+    note('This grows everything in the app, the Bible included. It starts from whatever text size your phone is already set to, so if you have made text bigger there, this adds to it.'),
+    h('div', { class: 'poster-foot' }, h('span'), art('sun', { tone: 'sunshine', size: 'sm' }))));
+
+  parts.push(poster({ tone: 'paper' },
     label('The season you are in'),
     note('This only changes what the app offers you first. It never withholds anything.'),
     h('div', { class: 'choice-list' },
@@ -124,6 +143,23 @@ export default async function youScreen(ctx) {
           ctx.refresh();
         }, chosen ? { 'data-chosen': '' } : {});
       }))));
+
+  // ── ASK ─────────────────────────────────────────────────────────────────
+  //
+  // The one switch in this app that changes what leaves the phone, so it says
+  // so here as well as on the Ask screen itself.
+  parts.push(poster({ tone: 'paper' },
+    label('Ask'),
+    h('p', { class: 'body', text: settings.ask === 'off'
+      ? 'ASK is off. Nothing at all leaves this phone.'
+      : 'ASK sends your question — and nothing else about you — to FLCC’s helper so it can be answered. Your prayers, reflections and sermon notes never leave this phone either way.' }),
+    h('div', { class: 'poster-foot' },
+      pill(settings.ask === 'off' ? 'Turn Ask on' : 'Turn Ask off', () => {
+        saveSettings({ ask: settings.ask === 'off' ? 'on' : 'off' });
+        toast(settings.ask === 'off' ? 'Ask is on.' : 'Ask is off.');
+        ctx.refresh();
+      }, { quiet: true }),
+      h('span'))));
 
   parts.push(poster({ tone: 'paper' },
     label('Appearance'),

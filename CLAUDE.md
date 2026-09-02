@@ -90,14 +90,35 @@ written once, in one adult register: there are no age variants here, and
 `flcc-adults/test/content.test.mjs` fails a file that grows a `kids` or `teens`
 key.
 
-One narrow, deliberate exception to the boundary, documented at length in the
-header of `flcc-adults/js/core/scripture.js`: the adult app reads the committed
-text of Scripture from `flcc-next/bible/` rather than committing a second
-14 MB copy of it. That is a one-way read of static, public-domain, same-origin
-text at a fixed path — never `flcc-next/content/`, never a module, never
-storage. `flcc-adults/test/modules.test.mjs` fails any file that reaches past
-the Bible into the kids app, and `test/scripture.test.mjs` fails if the shared
-text moves.
+Two narrow, deliberate exceptions to the boundary.
+
+The first is documented at length in the header of
+`flcc-adults/js/core/scripture.js`: the adult app reads the committed text of
+Scripture from `flcc-next/bible/` rather than committing a second 14 MB copy of
+it. That is a one-way read of static, public-domain, same-origin text at a
+fixed path — never `flcc-next/content/`, never a module, never storage.
+`flcc-adults/test/modules.test.mjs` fails any file that reaches past the Bible
+into the kids app, and `test/scripture.test.mjs` fails if the shared text
+moves.
+
+The second is **ASK**, and it is the only thing in this app that sends
+anything anywhere. `js/core/ai.js` POSTs a question to `/proxy` — same origin,
+served by the deployed `ask-proxy/worker.js`, which holds the API key so no
+device has to. What goes is the question and the last four turns; what never
+goes is the member's name, season, prayer list, reflections, sermon notes or
+reading progress, and `test/ai.test.mjs` asserts each of those by name against
+the built request. `js/core/safety.js` screens for crisis language **before**
+the network — `ai.test.mjs` replaces `fetch` with a throw to prove it — and
+`test/safety.test.mjs` holds both halves of that screen: what it must catch,
+and the ordinary hard questions it must leave alone. The Ask screen states
+what it sends in body type, and You can switch it off. Everything else in the
+app still never leaves the device.
+
+The crossword's layout engine (`js/games/crossword.js`) is a third deliberate
+duplicate of a `flcc-next/` file, on the same terms as the stylesheet and the
+illustrations: a pure algorithm, copied rather than imported, with
+`test/crossword.test.mjs` comparing the two files below the header and failing
+when they drift.
 
 ### The two editions are one design
 
@@ -126,7 +147,15 @@ plainly: a squarer 10px radius, no faces in the drawings, and prose written
 for an adult. Two rules are untested and matter most: **the chrome stops at
 Scripture** — the Bible reader is plain white paper and serif type — and
 **poppy is never a whole poster**, because white type does not sit on it
-safely at that size.
+safely at that size. The crossword grid and the match-three board are the same
+system at tile size: flat tones, one navy outline, the app's own drawings.
+
+**Type size is a setting** (You → Text size), and everything in the stylesheet
+is in rem so one number moves all of it. The lower bound of each headline
+`clamp()` is capped against the viewport with `min()` — without that, the
+largest setting scales the floor of the clamp too and a long headline word runs
+off the side of its poster. `--edge`, `--radius` and the track height stay in
+px on purpose: they are the drawing, not the type.
 
 **The six named colours are shared with `flcc-next/`** — sky `#C3D7EA`,
 captain `#4173B0`, navy/ink `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`,

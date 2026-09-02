@@ -80,4 +80,7 @@ export const KEYS = {
   settings: `${NS}settings`,  // this device's own configuration
   bible:    `${NS}bible`,     // translation, bookmark, verses kept
   plan:     `${NS}plan`,      // which reading plan, and how far in
+  ask:      `${NS}ask`,       // the ASK conversation, kept on this device only
+  notes:    `${NS}notes`,     // sermon_notes
+  play:     `${NS}play`,      // the crossword and the game: today's state only
 };

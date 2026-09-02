@@ -13,9 +13,10 @@ build.
 ```
 flcc-adults/
   index.html            the shell
-  css/next.css          the NEXT system
+  css/next.css          the poster system
   js/core/              storage, profile, progress, content, rotation, agenda,
-                        scripture, prayers, plan, art, ui
+                        scripture, prayers, plan, notes, ai, safety, art, ui
+  js/games/             crossword layout, match-three rules — pure functions
   js/screens/           one module per screen
   content/              everything the teaching team writes, as JSON
   test/                 node --test 'flcc-adults/test/*.test.mjs'
@@ -29,29 +30,35 @@ honest figures, then whatever you were part-way through. What it says changes
 through the week: the church gathered, the hours after it, the eve of it, and
 the ordinary days that are most of them.
 
-**Explore** — "What do you need today?", and four editorial blocks: **Read**
-(the Bible), **Pray**, **Grow** (the learning paths), **Plan** (a reading
-plan). Under them, where you already were.
+**Explore** — "What do you need today?", and six editorial blocks: **Read**
+(the Bible), **Ask**, **Pray**, **Grow** (the learning paths), **Plan** (a
+reading plan) and **Play**. Under them, where you already were.
 
 **Community** — the prayer meeting, what is happening with real dates against
 it, what the church has said, and where help is needed. Everything on it points
 at something that happens in a room with other people.
 
 **Watch** — the messages preached at FLCC: featured, the rest of the series you
-are in, everything newest first, and by series.
+are in, everything newest first, and by series. Sermon notes live here too,
+because a note belongs to the sermon it was taken at.
 
 **You** — what you have made, how you have been, the settings, and the plain
 truth about what this app holds.
 
 ## Three decisions worth knowing about
 
-**Nothing leaves the device.** There is no server, no account and no sync. Your
-prayer list, your reflections, your reading and your verses live in this
-browser on this phone; a second device starts empty and clearing site data
-clears everything. That is a real cost, and it buys the thing that matters
-more: what an adult prays about their marriage, their money or their manager
-cannot be collected, leaked or read by a leader, because it physically never
-goes anywhere.
+**Nothing leaves the device, except a question you chose to ask.** There is no
+server, no account and no sync. Your prayer list, your reflections, your sermon
+notes, your reading and your verses live in this browser on this phone; a
+second device starts empty and clearing site data clears everything. That is a
+real cost, and it buys the thing that matters more: what an adult prays about
+their marriage, their money or their manager cannot be collected, leaked or
+read by a leader, because it physically never goes anywhere.
+
+The single exception is **Ask**, which has to send your question somewhere to
+answer it. It sends the question and nothing else about you, it can be switched
+off, and it says all of this on its own screen in the same size type as
+everything else. See [Ask](#ask).
 
 **There is no score.** No XP, no levels, no badges, no leaderboard, and no
 streak that breaks. The app counts days you turned up and says plainly that
@@ -62,6 +69,75 @@ ever appear.
 reading you have done, not the twelfth day since you started. Miss a fortnight
 and the plan is exactly where you left it — there is nothing to catch up on,
 and no red number telling an adult they have failed at reading the Bible.
+
+## Ask
+
+The one screen that sends anything anywhere, and it says so on itself rather
+than in a policy.
+
+You type the question you would not put to anybody at church. It answers in
+five parts — what you asked, what Scripture says, what that means here,
+something to pray, one thing to do — and each part is a poster. A reply that
+ignores that shape arrives as one block of grey text, which is deliberate: it
+should *look* unreliable when it is.
+
+What is sent is the question and the last few turns. What is never sent is your
+name, your season, your prayer list, your reflections, your sermon notes or
+your reading. The question goes to FLCC's own helper, which holds the key so
+your phone does not have to; nothing is kept there, and it is not tied to you.
+You can switch the whole thing off in You.
+
+Before any of that, it screens for crisis language **on the device**. If what
+you typed sounds like self-harm or like somebody is hurting you, no request is
+made at all — the screen shows people and phone numbers instead, and stops.
+That path does not depend on a model behaving well, on a network, or on the
+proxy being up.
+
+It will not speak as God, will not tell you what God is saying to you, will not
+stand in for a pastor or a doctor, and will tell you where Christians genuinely
+disagree instead of picking a side. Those are lines in the prompt, and
+`test/ai.test.mjs` fails if any of them is removed.
+
+## Sermon notes
+
+A title, who preached, the passage, and a page to write on. That is the whole
+feature, and the shortness is the point: you are meant to be listening, not
+filling in a template. It saves as you type — there is no Save button to forget
+— an empty note is thrown away rather than kept as clutter, and starting one
+from a message fills the title, the preacher and the passage in for you.
+
+They never leave the phone.
+
+## Play
+
+Two games, and neither is a delivery mechanism for anything. No points, no
+streak, nothing anybody else can see, nothing reported to the church.
+
+**The crossword** is new every morning and meant to be hard. Nine clues are
+dealt from a bank of 184 and interlocked into a grid in code, so it never runs
+out and never repeats a shape — and the clues assume you have read the text.
+"Where the boat came to rest", not "Noah's boat". "Seventy-one interruptions in
+the Psalms, and nobody now knows what it told the musicians to do." A test
+builds every puzzle for the next two years and fails if one of them strands a
+word.
+
+**Match three** is the one everybody already knows how to play, drawn in this
+app's own colours with its own drawings as the pieces. Thirty moves, a modest
+target, no timer and no lives. A swap that matches nothing is refused rather
+than played and snapped back — there is no reason to charge you a move for a
+misread.
+
+## Text size
+
+Four steps, in You, and the first thing in the settings rather than the last. A
+good part of this church is over sixty and the app is set in a face that is
+lovely at 16px on a desk and hard at arm's length on a bus.
+
+It grows everything — the Bible reader included — and it multiplies whatever
+text size your phone is already set to rather than replacing it, so somebody
+who has already turned text up gets that, times this. The 3px outlines, the
+corner radius and the progress bars deliberately stay where they are: those are
+the drawing, not the type.
 
 ## The design
 
@@ -116,6 +192,7 @@ approved.
 | `reading-plans.json` | John in 21 days, Psalms for a hard season, Mark in 16 |
 | `messages.json` | what was preached — passage, substance, question |
 | `updates.json`, `events.json`, `ministries.json` | what is happening at church |
+| `crossword.json` | 184 clues the daily crossword is dealt from |
 
 `test/content.test.mjs` checks the shape of all of it, and
 `test/scripture.test.mjs` checks every quoted verse against the shipped World
@@ -130,6 +207,13 @@ fails the suite.
 series — that is what the countdown on the Today screen is computed from. An
 event with only the sentence never appears as "Next up", and the content suite
 fails it rather than letting it disappear quietly.
+
+**A crossword clue is written, a crossword is not.** Add entries to
+`crossword.json` — an uppercase answer of three to fifteen letters and a clue —
+and the app deals nine of them a day and builds the grid itself. Nobody lays
+out a puzzle. Two rules the suite enforces: the clue may not contain its own
+answer, and it may not trail off into "…in the Bible". Aim at somebody who has
+read the text; the bank sets the level.
 
 **A message does not need a recording.** FLCC publishes no video archive, so
 every message in `messages.json` ships with `url` empty and stands on what it

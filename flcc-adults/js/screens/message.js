@@ -9,6 +9,7 @@ import { h, poster, label, display, headline, art, go, pill,
          rows, row, reference, note, rise, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
+import * as notes from '../core/notes.js';
 import * as prayers from '../core/prayers.js';
 
 const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
@@ -76,6 +77,26 @@ export default async function messageScreen(ctx) {
           swap(mark, h('p', { class: 'note', style: 'margin-top:.8rem', text: 'Marked as heard.' }));
         }, { quiet: true })),
       h('span', { class: 'row-meta', text: 'Stays on this device' }))));
+
+  // ── Notes on this one ───────────────────────────────────────────────────
+  //
+  // A reflection is one kept line; a note is a page. Starting one from here
+  // fills in the title, the preacher and the passage, which is the whole
+  // difference between "I'll write that down later" and writing it down.
+  const already = notes.list().find((one0) => one0.messageId === one.id);
+  parts.push(poster({ tone: 'paper' },
+    label(already ? 'Your note on this' : 'Notes'),
+    h('p', { class: 'body', text: already
+      ? 'You have already started a page on this message.'
+      : 'A page of your own on this message, with the title, the preacher and the passage already filled in.' }),
+    h('div', { class: 'poster-foot' },
+      pill(already ? 'Open your note' : 'Take notes on this', () => {
+        const target = already || notes.create({
+          title: one.title, speaker: one.speaker, ref: one.ref, messageId: one.id,
+        });
+        ctx.go(`note/${target.id}`);
+      }, { quiet: true }),
+      art('book', { tone: 'paper', size: 'sm' }))));
 
   parts.push(poster({ tone: 'paper' },
     label('Every message'),
