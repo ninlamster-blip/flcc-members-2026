@@ -634,8 +634,13 @@ async function handleRequest(request, env, ctx) {
       // live on the same settings page but come from two different places —
       // one you invent, one you generate on GitHub — and "not set up yet"
       // without saying which sends whoever is configuring it hunting.
-      adultsAdmin: !!(env.ADULTS_ADMIN_PASSCODES && env.GITHUB_TOKEN),
-      adultsPasscodes: !!env.ADULTS_ADMIN_PASSCODES,
+      adultsAdmin: !!(String(env.ADULTS_ADMIN_PASSCODES || '').trim() && String(env.GITHUB_TOKEN || '').trim()),
+      adultsPasscodes: !!String(env.ADULTS_ADMIN_PASSCODES || '').trim(),
+      // How many people the passcodes secret actually resolved to. Zero with
+      // adultsPasscodes true means the value is there but unreadable — the one
+      // failure that otherwise looks like every passcode being wrong. It is a
+      // count, never a name and never a value.
+      adultsEditors: editorCount(env),
       githubToken: !!env.GITHUB_TOKEN,
     }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
@@ -1833,13 +1838,53 @@ function validateAdultsUpdates(rows) {
 
 const ADULTS_VALIDATORS = { events: validateAdultsEvents, updates: validateAdultsUpdates };
 
-/** Who is allowed to publish. Same shape as ATTENDANCE_PASSCODES: {"name":"code"}. */
+/**
+ * Who is allowed to publish.
+ *
+ * The intended shape is the same as ATTENDANCE_PASSCODES — `{"name":"code"}`,
+ * so the commit message can say who changed the calendar. But this secret is
+ * typed into a web form by whoever runs a church, often on a phone, and two
+ * things went wrong often enough to be worth handling rather than blaming:
+ *
+ *   · The value pasted in is just the passphrase, with no JSON around it.
+ *     That is a completely reasonable reading of "add your passcode", so it is
+ *     accepted as a single shared passcode rather than rejected.
+ *   · A phone keyboard turned the straight quotes into curly ones. That is not
+ *     JSON, and the symptom is baffling: the secret is plainly set, and every
+ *     passcode is wrong. Straightening them on a second attempt costs nothing.
+ *
+ * Both failures used to surface as "that passcode was not recognised" with no
+ * way to tell why, which is the worst kind of error — it blames the person for
+ * something they cannot see.
+ */
+function passcodeMap(env) {
+  const raw = String(env.ADULTS_ADMIN_PASSCODES || '').trim();
+  if (!raw) return {};
+
+  const asObject = (text) => {
+    try {
+      const value = JSON.parse(text);
+      return (value && typeof value === 'object' && !Array.isArray(value)) ? value : null;
+    } catch { return null; }
+  };
+
+  // Straight JSON, then JSON with smart quotes straightened, then the whole
+  // value as one shared passcode.
+  const straightened = raw.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
+  return asObject(raw) || asObject(straightened) || { admin: raw };
+}
+
+/** How many people are configured. Reported by /ping so a secret that did not
+ *  parse is visible as a number, rather than as every passcode being wrong. */
+export function editorCount(env) { return Object.keys(passcodeMap(env)).length; }
+
 function editorForPasscode(env, passcode) {
-  if (!passcode) return null;
-  let map;
-  try { map = JSON.parse(env.ADULTS_ADMIN_PASSCODES || '{}'); } catch (e) { return null; }
-  for (const [name, code] of Object.entries(map)) {
-    if (code && timingSafeEqual(code, passcode)) return name;
+  const typed = String(passcode || '').trim();
+  if (!typed) return null;
+  for (const [name, code] of Object.entries(passcodeMap(env))) {
+    // Trimmed on both sides: a stray space at the end of a secret is invisible
+    // in the dashboard and would otherwise reject the right passcode for ever.
+    if (code && timingSafeEqual(String(code).trim(), typed)) return name;
   }
   return null;
 }
@@ -1853,8 +1898,11 @@ async function handleAdultsPublish(request, env) {
   // one you generate on GitHub — and whoever is setting this up has no way to
   // see which of them Cloudflare already holds.
   const missing = [
-    !env.ADULTS_ADMIN_PASSCODES && 'ADULTS_ADMIN_PASSCODES (the passcodes you choose)',
-    !env.GITHUB_TOKEN && 'GITHUB_TOKEN (a GitHub token with Contents: read and write)',
+    // Trimmed: a secret saved as a stray space is not configured, and calling
+    // it a wrong passcode sends somebody hunting for a typo in their own
+    // passphrase instead of at the thing that is actually empty.
+    !String(env.ADULTS_ADMIN_PASSCODES || '').trim() && 'ADULTS_ADMIN_PASSCODES (the passcodes you choose)',
+    !String(env.GITHUB_TOKEN || '').trim() && 'GITHUB_TOKEN (a GitHub token with Contents: read and write)',
   ].filter(Boolean);
   if (missing.length) {
     return publishError(

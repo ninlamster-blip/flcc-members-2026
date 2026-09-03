@@ -174,7 +174,7 @@ choose type **Secret** rather than Text so the value cannot be read back.
 
 | Secret | What it is |
 |---|---|
-| `ADULTS_ADMIN_PASSCODES` | who may publish, as JSON: `{"pastor-fred":"a long passphrase","grace":"another"}`. The name on the left goes in the commit message; the value on the right is what they type. |
+| `ADULTS_ADMIN_PASSCODES` | who may publish, as JSON: `{"pastor-fred":"a long passphrase","grace":"another"}`. The name on the left goes in the commit message; the value on the right is what they type. **Or just the passphrase on its own** — no JSON, no quotes — if one shared passcode is enough; it is credited to "admin". Smart quotes from a phone keyboard are straightened rather than rejected. |
 | `GITHUB_TOKEN` | a GitHub **fine-grained** token with **Contents: read and write**, on this repository only. Already set if the church attendance publisher works. |
 
 Give each person their own passcode rather than sharing one: it costs nothing
@@ -187,7 +187,12 @@ naming the secret it is waiting for.
 
 **To check what is set without trying to publish**, open `…/ping` on the
 deployed site. `adultsPasscodes`, `githubToken` and `adultsAdmin` say whether
-each secret exists; none of them ever reveals a value.
+each secret exists, and `adultsEditors` counts how many people the passcodes
+secret resolved to. None of them ever reveals a name or a value.
+
+`adultsEditors: 0` while `adultsPasscodes: true` is the one confusing case
+worth naming: the secret is there but its value could not be read at all. Every
+passcode will be refused until it is re-saved.
 
 ## The design
 
