@@ -32,6 +32,25 @@ database_id = "69cf3b5d-f610-48d0-b5a2-3b8ec3607032"
 #          header, or ask an admin/Claude session to generate a fresh pair)
 # Optionally also add a Text variable VAPID_SUBJECT = "mailto:you@example.com"
 # — without these two, notifications simply stay off; nothing breaks.
+# The FLCC NEXT Adults events admin (flcc-adults/admin/) lets whoever runs the
+# church calendar change what is on the Community tab without a GitHub account.
+# It needs two Secrets on this Worker (Settings → Variables and Secrets → Add
+# → Secret) — without them the endpoint stays closed and returns 503:
+#
+#   ADULTS_ADMIN_PASSCODES   a JSON object of who may publish, for example
+#                            {"pastor-fred":"a-long-passphrase","grace":"another"}
+#                            The name is only used in the commit message, so it
+#                            says who changed the calendar. Give each person
+#                            their own line rather than sharing one passcode —
+#                            it costs nothing and makes the history readable.
+#   GITHUB_TOKEN             a fine-grained token with Contents: read & write on
+#                            this repository only. The same secret the church
+#                            attendance publisher already uses; if that is set
+#                            up, there is nothing more to add.
+#
+# Every save is an ordinary commit to flcc-adults/content/, so the history says
+# who changed what and when, and a mistake is one revert away.
+
 [vars]
 VAPID_PUBLIC_KEY = "BCLTWSVRUpNgl_UB23W2QCSBRd1v5fgkE8Mm5KtrgDzCI0XM-fmDcZ8wQUnRxgx3UhSxbBWnUtzH_-unhU-cVyk"
 

@@ -426,5 +426,147 @@ async function nextCall(env, method, path, body, headers) {
     'prayers older than the retention window are swept, recent ones kept');
 }
 
+// ── The FLCC NEXT Adults events admin ───────────────────────────────────
+//
+// This endpoint writes to the repository, so what it REFUSES matters more than
+// what it accepts. Two things are load-bearing: only the two content files can
+// ever be written whatever the request says, and a malformed calendar is
+// rejected before the commit rather than caught by a test suite that will
+// never run on it.
+{
+  const env = {
+    ADULTS_ADMIN_PASSCODES: JSON.stringify({ 'pastor-fred': 'fred-pass', 'admin-grace': 'grace-pass' }),
+    GITHUB_TOKEN: 'gh-token',
+    GITHUB_REPO: 'example/repo',
+  };
+
+  const gathering = {
+    id: 'friday-service', title: 'Friday main service', when: 'Every Friday · 10:00 AM',
+    where: 'Kuwait City', blurb: 'The whole church together.',
+    weekday: 5, start: '10:00', minutes: 120, recurring: true, gathering: true, tone: 'navy',
+  };
+  const oneOff = {
+    id: 'baptism', title: 'Baptism service', when: 'Friday 7 November · 10:00 AM',
+    where: 'FLCC hall', blurb: 'Six people being baptised.',
+    date: '2026-11-07', start: '10:00', minutes: 120, tone: 'sky',
+  };
+  const notice = {
+    id: 'u-one', title: 'Membership class opens', date: '2026-09-04',
+    from: 'Pastoral team', body: 'Four Fridays after the service.', tone: 'sky',
+  };
+
+  const post = (body, e = env) => worker.fetch(
+    new Request('https://x/api/publish/adults', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    }), e, { waitUntil() {} }
+  );
+
+  const originalFetch = globalThis.fetch;
+  let puts = [];
+  globalThis.fetch = async (url, opts = {}) => {
+    if (String(url).includes('api.github.com')) {
+      if ((opts.method || 'GET') === 'GET') return new Response('{}', { status: 404 });
+      puts.push({ url: String(url), body: JSON.parse(opts.body) });
+      return new Response(JSON.stringify({ commit: { sha: 'cafe1234' } }), { status: 200 });
+    }
+    return originalFetch(url, opts);
+  };
+
+  try {
+    // ── The happy path ──────────────────────────────────────────────────
+    const ok = await post({ passcode: 'fred-pass', file: 'events', content: [gathering, oneOff] });
+    const okBody = await ok.json();
+    assert(ok.status === 200, 'a valid passcode publishes the events');
+    assert(okBody.editor === 'pastor-fred', 'the response names who published');
+    assert(puts.length === 1 && puts[0].url.endsWith('/contents/flcc-adults/content/events.json'),
+      `the write went to the events file (${puts[0]?.url})`);
+    assert(/pastor-fred/.test(puts[0].body.message), 'the commit message credits the editor');
+    const written = JSON.parse(Buffer.from(puts[0].body.content, 'base64').toString('utf8'));
+    assert(Array.isArray(written) && written.length === 2, 'the file is written as the array the app reads');
+    assert(Buffer.from(puts[0].body.content, 'base64').toString('utf8').endsWith('\n'),
+      'the committed file ends with a newline like every other file in the repo');
+
+    puts = [];
+    const notices = await post({ passcode: 'grace-pass', file: 'updates', content: [notice] });
+    assert(notices.status === 200, 'announcements publish too');
+    assert(puts[0].url.endsWith('/contents/flcc-adults/content/updates.json'),
+      'announcements go to their own file');
+
+    // ── The attack this design exists to stop ───────────────────────────
+    puts = [];
+    const traversal = await post({
+      passcode: 'fred-pass', file: '../../../index.html', content: [gathering],
+    });
+    assert(traversal.status === 400, 'a path in place of a file name is refused');
+    assert(puts.length === 0, 'nothing was written for it');
+
+    puts = [];
+    const smuggled = await post({
+      passcode: 'fred-pass', file: 'events', path: 'index.html', repo: 'someone/else',
+      content: [gathering],
+    });
+    assert(smuggled.status === 200, 'naming a path in the body is not an error…');
+    assert(puts[0].url.endsWith('/contents/flcc-adults/content/events.json'),
+      '…because the path comes from the file key and never from the request');
+
+    // ── Who may publish ─────────────────────────────────────────────────
+    puts = [];
+    assert((await post({ passcode: 'wrong', file: 'events', content: [gathering] })).status === 401,
+      'a wrong passcode is refused');
+    assert((await post({ file: 'events', content: [gathering] })).status === 401,
+      'no passcode at all is refused');
+    assert(puts.length === 0, 'neither wrote anything');
+
+    const unset = await post({ passcode: 'fred-pass', file: 'events', content: [gathering] },
+      { GITHUB_TOKEN: 'gh-token' });
+    assert(unset.status === 503, 'with no passcodes configured the endpoint is closed, not open');
+
+    assert((await worker.fetch(new Request('https://x/api/publish/adults'), env, { waitUntil() {} })).status === 405,
+      'GET is not a way in');
+
+    // ── What a broken calendar does to the app, prevented ───────────────
+    puts = [];
+    const cases = [
+      [{ ...gathering, when: '' },                       'an event with no sentence for a member to read'],
+      [{ ...gathering, minutes: 0 },                     'an event that runs for no time'],
+      [{ ...gathering, start: 'half ten' },              'a start time that is not a time'],
+      [{ ...oneOff, date: '7 November' },                'a date the app cannot parse'],
+      [{ ...oneOff, tone: 'poppy' },                     'poppy, which cannot carry a poster'],
+      [{ ...oneOff, tone: 'turquoise' },                 'a colour that does not exist'],
+      [{ ...gathering, weekday: 9 },                     'an impossible weekday'],
+      [{ ...gathering, recurring: false },               'a weekly event not marked recurring'],
+    ];
+    for (const [broken, why] of cases) {
+      const response = await post({ passcode: 'fred-pass', file: 'events', content: [broken, oneOff] });
+      assert(response.status === 400, `refuses ${why}`);
+    }
+
+    const noDay = await post({ passcode: 'fred-pass', file: 'events',
+      content: [gathering, { ...oneOff, date: undefined }] });
+    assert(noDay.status === 400, 'refuses an event nothing can count down to');
+
+    const twins = await post({ passcode: 'fred-pass', file: 'events', content: [gathering, gathering] });
+    assert(twins.status === 400, 'refuses two events sharing an id');
+
+    const noGathering = await post({ passcode: 'fred-pass', file: 'events',
+      content: [{ ...gathering, gathering: false }, oneOff] });
+    assert(noGathering.status === 400,
+      'refuses a calendar with no gathering — Today frames the whole week around it');
+
+    assert((await post({ passcode: 'fred-pass', file: 'events', content: [] })).status === 400,
+      'refuses emptying the calendar');
+    assert((await post({ passcode: 'fred-pass', file: 'events', content: { events: [] } })).status === 400,
+      'refuses something that is not a list');
+
+    const badNotice = await post({ passcode: 'fred-pass', file: 'updates',
+      content: [{ ...notice, from: '' }] });
+    assert(badNotice.status === 400, 'refuses an unattributed announcement');
+
+    assert(puts.length === 0, 'not one malformed payload reached the repository');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
 console.log(failures ? `\n${failures} FAILURE(S)` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

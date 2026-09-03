@@ -114,6 +114,20 @@ and the ordinary hard questions it must leave alone. The Ask screen states
 what it sends in body type, and You can switch it off. Everything else in the
 app still never leaves the device.
 
+A third thing crosses the app's edge, and it is not the app doing it:
+`flcc-adults/admin/` is a **tool that edits this app rather than part of it** —
+a page for whoever runs the church calendar, so changing the Community tab does
+not mean a GitHub account. It borrows the stylesheet and takes nothing else (no
+router, no storage module, no `adults/v1/` key), the app never links to it, and
+the service worker steps aside for it. It POSTs to `/api/publish/adults` on the
+shared Worker, which passcode-gates the write, **repeats the content suite's
+rules** — `content.test.mjs` can never run on a file published through an API —
+and commits `content/events.json` or `content/updates.json` back to this
+repository, so git stays the single source of truth. Only those two paths can
+ever be written: the file is a key into a fixed map, never taken from the
+request. `flcc-adults/test/admin.test.mjs` holds all of that, including that
+the Worker's validator and the content suite have not drifted apart.
+
 The crossword's layout engine (`js/games/crossword.js`) is a third deliberate
 duplicate of a `flcc-next/` file, on the same terms as the stylesheet and the
 illustrations: a pure algorithm, copied rather than imported, with

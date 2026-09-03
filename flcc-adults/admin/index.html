@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FLCC NEXT Adults — events admin</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FBF8F0">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="../css/next.css">
+<style>
+  /* The admin borrows the app's stylesheet so it looks like the thing it
+     edits, and adds only what a form needs that the app has no use for. */
+  body { padding: 1.4rem var(--pad) 5rem; max-width: 46rem; margin: 0 auto; }
+  .field { display: block; margin-top: .9rem; }
+  .field > span {
+    display: block; font-size: .68rem; font-weight: 800; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-70); margin-bottom: .35rem;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  select {
+    width: 100%; font: inherit; color: var(--ink); background: var(--paper);
+    border: 0; border-radius: var(--radius); padding: .7rem .8rem;
+    box-shadow: inset 0 0 0 2px var(--ink-12);
+  }
+  .entry { border-top: var(--edge) solid var(--ink); padding: 1.2rem 0; }
+  .entry:first-of-type { border-top: 0; }
+  .entry-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .tools { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: 1rem; }
+  /* The small quiet buttons only. Without :not(.pill) this repaints a filled
+     navy pill's text navy, and the chosen tab reads as an empty blob. */
+  .tools button:not(.pill) {
+    font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    padding: .45rem .8rem; border-radius: 99px; cursor: pointer;
+    box-shadow: inset 0 0 0 2px var(--ink-12); color: var(--ink-70);
+  }
+  .tools button:not(.pill):hover { box-shadow: inset 0 0 0 2px var(--ink); color: var(--ink); }
+  .switch { display: flex; gap: .5rem; flex-wrap: wrap; }
+  #sign-out { white-space: nowrap; }
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    display: flex; align-items: center; gap: 1rem;
+    padding: .9rem var(--pad) calc(.9rem + env(safe-area-inset-bottom));
+    background: var(--paper); box-shadow: inset 0 var(--edge) 0 var(--ink);
+  }
+  .bar .grow { flex: 1; font-size: .85rem; color: var(--ink-70); }
+  .preview {
+    margin-top: .8rem; padding: .8rem 1rem;
+    border-radius: var(--radius); background: var(--ink-12);
+    font-size: .9rem; line-height: 1.5;
+  }
+  .bad { box-shadow: inset 0 0 0 2px var(--poppy) !important; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ── The door ─────────────────────────────────────────────────────────── -->
+<div id="gate">
+  <p class="label" style="color:var(--ink-70)">FLCC NEXT · adults</p>
+  <h1 class="display" style="margin-top:.6rem">EVENTS &amp; NOTICES</h1>
+  <p class="body dim" style="margin-top:1rem">
+    What members see on the Community tab. Changes go live in about a minute.
+  </p>
+  <label class="field" style="margin-top:1.6rem">
+    <span>Your passcode</span>
+    <input id="pass" type="password" autocomplete="current-password" placeholder="Ask Pastor Fred for this">
+  </label>
+  <div class="tools" style="margin-top:1rem">
+    <button class="pill" id="enter" type="button">Open the editor</button>
+  </div>
+  <p class="note" id="gate-note" style="margin-top:1rem"></p>
+</div>
+
+<!-- ── The editor ───────────────────────────────────────────────────────── -->
+<div id="editor" hidden>
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:1rem">
+    <h1 class="headline">EVENTS &amp; NOTICES</h1>
+    <button class="go" id="sign-out" type="button">Sign out</button>
+  </div>
+
+  <div class="switch" style="margin-top:1.2rem">
+    <button class="pill" id="tab-events" type="button">Events</button>
+    <button class="pill" id="tab-updates" type="button" data-quiet>Announcements</button>
+  </div>
+
+  <p class="note" id="hint" style="margin-top:1rem"></p>
+
+  <div id="list" style="margin-top:1.4rem"></div>
+
+  <div class="tools" style="margin-top:1.4rem">
+    <button class="pill" id="add" type="button" data-quiet>Add another</button>
+  </div>
+</div>
+
+<div class="bar" id="bar" hidden>
+  <span class="grow" id="status">No changes yet.</span>
+  <button class="pill" id="save" type="button">Save &amp; publish</button>
+</div>
+
+<script type="module" src="./admin.js"></script>
+</body>
+</html>

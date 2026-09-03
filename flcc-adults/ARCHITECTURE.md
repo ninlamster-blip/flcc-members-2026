@@ -163,6 +163,53 @@ One departure from the genre worth knowing about: a swap that matches nothing
 is *refused* rather than played and snapped back, because there is no reason to
 spend a move on somebody's misread.
 
+## The events admin
+
+`admin/` is a tool that edits this app; it is not part of it. It shares the
+stylesheet so it looks like the thing it edits, and takes nothing else — no
+router, no storage module, no `adults/v1/` key — and the app never links to it.
+`test/admin.test.mjs` enforces each of those.
+
+```
+admin/index.html ──▶ reads  content/events.json   (live, past the cache)
+                 └─▶ POSTs  /api/publish/adults
+                              │  passcode?  shape?
+                              ▼
+                       GitHub Contents API
+                              │  commit
+                              ▼
+                       flcc-adults/content/*.json
+                              │  Cloudflare rebuild
+                              ▼
+                          members' phones
+```
+
+Three decisions inside that:
+
+1. **It commits to the repository rather than writing to a database.** The app
+   reads these files straight off the origin and its service worker caches
+   them, so it works with no signal; moving them into D1 would have bought
+   nothing and cost that. What it buys instead is a real history — every save
+   is a commit with a date and an editor on it, and a mistake is one revert.
+2. **The path is a key into a fixed map, never taken from the request.** Only
+   `content/events.json` and `content/updates.json` can ever be written, and a
+   `path` or `repo` in the body is ignored — the same posture as the church
+   attendance publisher this is modelled on. `worker.test.mjs` tries both.
+3. **The Worker repeats the content suite's rules.** A file published through
+   the API never passes through a pull request, so `content.test.mjs` will
+   never run on it. `validateAdultsEvents()` therefore checks what that suite
+   checks, and `test/admin.test.mjs` reads both and fails when they drift —
+   otherwise somebody tightens a rule here and the endpoint quietly keeps
+   accepting what the app can no longer render.
+
+The service worker steps aside for `/flcc-adults/admin/` entirely, and the
+admin fetches the content files with a cache-buster. Without that an editor is
+handed the copy the service worker kept, edits it, and silently undoes the
+change they published five minutes ago.
+
+The passcode lives in `sessionStorage` and nowhere else, so closing the tab
+signs you out. It says who may publish, not who anybody is.
+
 ## Storage today
 
 All of it is `localStorage`, JSON-encoded, under `adults/v1/`. `storage.js`
@@ -318,6 +365,7 @@ node --test 'flcc-adults/test/*.test.mjs'
 | `crossword` | the clue bank's shape and that no clue gives its answer away; that **every day for two years** deals nine words that fully interlock into a phone-sized grid; that a day is the same puzzle on every device and a different one tomorrow; and that the layout engine has not drifted from the kids edition's |
 | `match3` | matching, cascading and collapsing: no holes left in a column, no board that starts solved or deadlocked, no diagonal swaps, and a swap that matches nothing leaving the board untouched |
 | `notes` | a note survives being left mid-sentence, an empty one is thrown away rather than kept as clutter, ids do not collide, and everything stays in the namespace |
+| `admin` | the events admin is a tool, not part of the app: it borrows only the stylesheet, the app never links to it, the service worker steps aside for it, the endpoint can only write the two content files, and the Worker's validator still enforces everything the content suite does |
 | `textsize` | four sizes that only go up; that the scale multiplies the reader's own browser default rather than replacing it; that the whole type scale is in rem so one number moves it; and that the outline, the radius and the track do **not** grow with the type |
 | `modules` | every module parses, every screen exports a screen, the app boundary, that the stylesheet is still the poster system, no paragraph set in capitals, no hex literal in a screen, every root screen names itself, the tabs and the routes and the `UNDER` map agree, no hand-built posters, no screen importing `art.js` behind `art()`'s back, no direct `replaceChildren`, and that `sw.js` precaches everything |
 

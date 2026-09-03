@@ -21,7 +21,7 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v7';
+const VERSION = 'adults-v8';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [
@@ -79,6 +79,12 @@ self.addEventListener('fetch', (event) => {
   const isBible = url.pathname.startsWith(BIBLE);
   if (!isBible && !url.pathname.includes('/flcc-adults/')) return;
 
+  // The events admin is a separate tool that happens to live under this path.
+  // It must always talk to the network: an editor handed a cached copy of the
+  // file they published five minutes ago would edit the stale version and
+  // silently undo their own change.
+  if (url.pathname.includes('/flcc-adults/admin/')) return;
+
   // Scripture: cache first, and that is the end of it.
   if (isBible && !url.pathname.endsWith('books.json')) {
     event.respondWith(caches.match(request)
@@ -89,6 +95,10 @@ self.addEventListener('fetch', (event) => {
   // Authored writing and the book list: serve what is cached so the app opens
   // at once, and fetch a fresh copy in the background for next time.
   if (url.pathname.includes('/content/') || url.pathname.endsWith('books.json')) {
+    // A cache-busting query means somebody explicitly asked for the live file
+    // — the admin does this before letting anyone edit it. Answer from the
+    // network and do not keep it, or every save leaves a junk cache entry.
+    if (url.search) { event.respondWith(fetch(request)); return; }
     event.respondWith(caches.match(request).then((hit) => {
       const fresh = fetch(request).then((response) => keep(request, response)).catch(() => hit);
       return hit || fresh;
