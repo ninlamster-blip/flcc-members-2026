@@ -92,11 +92,39 @@ test('the endpoint can only ever write the two content files', () => {
     'the path is no longer looked up by key — check it cannot come from the request');
 });
 
-test('publishing is closed unless a passcode is configured', () => {
-  assert.match(worker, /if \(!env\.ADULTS_ADMIN_PASSCODES \|\| !env\.GITHUB_TOKEN\)/,
-    'the endpoint no longer refuses to run unconfigured');
+test('publishing is closed unless both secrets are configured', () => {
+  assert.match(worker, /!env\.ADULTS_ADMIN_PASSCODES &&/,
+    'the endpoint no longer checks for the passcodes secret');
+  assert.match(worker, /!env\.GITHUB_TOKEN &&/, 'the endpoint no longer checks for the token');
+  assert.match(worker, /if \(missing\.length\) \{/, 'the endpoint no longer refuses to run unconfigured');
   assert.match(worker, /timingSafeEqual\(code, passcode\)/,
     'the passcode comparison is no longer constant-time');
+});
+
+/**
+ * Whoever sets this up cannot see which secrets Cloudflare already holds, and
+ * the two come from different places — one you invent, one you generate on
+ * GitHub. Both the refusal and `/ping` have to name the one that is missing,
+ * and neither may ever report a value.
+ */
+test('an unconfigured Worker says which half it is waiting for', () => {
+  const guard = worker.slice(worker.indexOf('const missing = ['),
+    worker.indexOf('const raw = await request.text()', worker.indexOf('const missing = [')));
+  assert.match(guard, /Variables and Secrets/, 'the refusal no longer says where to put them');
+  assert.match(guard, /missing\.join/, 'the refusal no longer names the missing secrets');
+
+  // Bounded by the handler itself: "/news" appears in a header comment near the
+  // top of the file, so searching forward from zero for it slices nothing.
+  const pingAt = worker.indexOf("url.pathname === '/ping'");
+  const ping = worker.slice(pingAt, worker.indexOf('});', pingAt));
+  for (const field of ['adultsAdmin', 'adultsPasscodes', 'githubToken']) {
+    assert.match(ping, new RegExp(`${field}: !!`),
+      `/ping stopped reporting ${field}, or stopped reporting it as a boolean`);
+  }
+  // `!!` is what keeps this a yes/no. A bare `env.ADULTS_ADMIN_PASSCODES`
+  // would put every passcode in the church into a public endpoint.
+  assert.equal(/adultsPasscodes: env\.|githubToken: env\./.test(ping), false,
+    '/ping would return the secret itself rather than whether it exists');
 });
 
 /**

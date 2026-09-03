@@ -210,6 +210,13 @@ change they published five minutes ago.
 The passcode lives in `sessionStorage` and nowhere else, so closing the tab
 signs you out. It says who may publish, not who anybody is.
 
+Setting it up needs two secrets that come from two different places — one you
+invent, one you generate on GitHub — so neither the 503 nor `/ping` lumps them
+together: both name the one that is actually missing. `/ping` answers the same
+question from a browser before anybody tries to publish, reporting
+`adultsPasscodes`, `githubToken` and `adultsAdmin` as booleans and never a
+value, exactly as it already does for the API key and the leader key.
+
 ## Storage today
 
 All of it is `localStorage`, JSON-encoded, under `adults/v1/`. `storage.js`
