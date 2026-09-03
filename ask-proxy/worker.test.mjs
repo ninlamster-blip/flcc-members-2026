@@ -492,6 +492,32 @@ async function nextCall(env, method, path, body, headers) {
     assert(puts[0].url.endsWith('/contents/flcc-adults/content/updates.json'),
       'announcements go to their own file');
 
+    // ── The door ────────────────────────────────────────────────────────
+    //
+    // A passcode with nothing to publish. This is what lets the admin's door
+    // refuse a wrong passcode at the door rather than after somebody has
+    // filled in a whole calendar.
+    puts = [];
+    const doorOk = await post({ passcode: 'fred-pass', verify: true });
+    const doorBody = await doorOk.json();
+    assert(doorOk.status === 200, 'a good passcode opens the door');
+    assert(doorBody.editor === 'pastor-fred', 'the door says who you are');
+    assert(puts.length === 0, 'opening the door wrote nothing to the repository');
+
+    const doorNo = await post({ passcode: 'not-it', verify: true });
+    assert(doorNo.status === 401, 'a wrong passcode is refused at the door');
+    assert(/not recognised/.test((await doorNo.json()).error.message),
+      'and is told so plainly');
+
+    // Verifying must not be a way to skip the checks a publish gets.
+    const doorSneak = await post({ passcode: 'fred-pass', verify: true, file: 'events', content: [] });
+    assert(doorSneak.status === 200 && puts.length === 0,
+      'a verify carrying a payload still publishes nothing');
+
+    const doorUnset = await post({ passcode: 'fred-pass', verify: true }, { GITHUB_TOKEN: 'gh-token' });
+    assert(doorUnset.status === 503,
+      'an unconfigured Worker refuses at the door too, rather than opening onto a dead editor');
+
     // ── The attack this design exists to stop ───────────────────────────
     puts = [];
     const traversal = await post({

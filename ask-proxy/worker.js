@@ -1874,6 +1874,31 @@ async function handleAdultsPublish(request, env) {
   const editor = editorForPasscode(env, body.passcode);
   if (!editor) return publishError('That passcode was not recognised.', 401);
 
+  /**
+   * A passcode on its own, with nothing to publish.
+   *
+   * The admin's door used to take any text and open the editor, leaving the
+   * passcode unchecked until somebody pressed Save — so a wrong one meant
+   * filling in a whole calendar before finding out. This answers the question
+   * at the door instead.
+   *
+   * It is deliberately not a session or a token: there is nothing to hand back
+   * and nothing to expire, because every publish carries the passcode anyway
+   * and is checked again on its own merits. All this does is answer "is this
+   * the passcode?" honestly and early. Nothing is written, and no repository
+   * call is made.
+   *
+   * It does make guessing a passcode marginally cheaper — but only marginally:
+   * an attempted publish was always an equally good oracle, and no cheaper to
+   * refuse. What actually limits guessing is the passcode being a long
+   * passphrase rather than a PIN, which is why the setup notes say so.
+   */
+  if (body.verify) {
+    return new Response(JSON.stringify({ ok: true, editor }), {
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+
   // The file is looked up by key. Nothing from the request reaches the path.
   const which = String(body.file || '');
   const path = ADULTS_FILES[which];

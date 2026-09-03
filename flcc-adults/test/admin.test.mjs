@@ -162,6 +162,36 @@ test('the Worker enforces what the content suite enforces', () => {
   }
 });
 
+/**
+ * The door has to actually check.
+ *
+ * It used to take any text and open the editor, leaving the passcode
+ * unchecked until Save — so a wrong one meant filling in a whole calendar
+ * before finding out, and a door that opens for anything teaches people the
+ * passcode does not matter.
+ */
+test('the door verifies the passcode before it opens', () => {
+  assert.match(adminJs, /verify: true/, 'the page no longer asks the Worker to check the passcode');
+  assert.match(worker, /if \(body\.verify\) \{/, 'the Worker no longer answers a bare passcode');
+
+  // The check has to come after the passcode check and before anything is
+  // written — otherwise it is either an open door or a publish.
+  const handler = worker.slice(worker.indexOf('async function handleAdultsPublish'));
+  const at = (needle) => handler.indexOf(needle);
+  assert.ok(at('editorForPasscode') < at('if (body.verify) {'),
+    'the door opens before the passcode is checked');
+  assert.ok(at('if (body.verify) {') < at('const path = ADULTS_FILES[which]'),
+    'verifying falls through into publishing a file');
+
+  // The editor is only revealed once the Worker said yes.
+  // Bounded by the listener registration below the function — `$('enter')`
+  // alone also matches the button lookup inside it, which cuts the slice short.
+  const gate = adminJs.slice(adminJs.indexOf('async function enter()'),
+    adminJs.indexOf("$('enter').addEventListener"));
+  assert.ok(gate.indexOf('if (!response.ok)') < gate.indexOf("$('editor').hidden = false"),
+    'the editor is shown before the answer comes back');
+});
+
 test('the page checks the same things before it asks the network to', () => {
   // Not instead of the server check — that one is the real one. This exists so
   // a missing field is a sentence under the button rather than a round trip.

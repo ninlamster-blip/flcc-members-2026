@@ -181,6 +181,10 @@ Give each person their own passcode rather than sharing one: it costs nothing
 and makes the commit history worth reading. Until both are set the endpoint is
 closed, not open — and it says *which* one it is still waiting for.
 
+The door checks your passcode as you sign in, rather than waiting until you
+press publish — and if the Worker has not been set up yet it says so there,
+naming the secret it is waiting for.
+
 **To check what is set without trying to publish**, open `…/ping` on the
 deployed site. `adultsPasscodes`, `githubToken` and `adultsAdmin` say whether
 each secret exists; none of them ever reveals a value.

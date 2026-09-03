@@ -210,6 +210,18 @@ change they published five minutes ago.
 The passcode lives in `sessionStorage` and nowhere else, so closing the tab
 signs you out. It says who may publish, not who anybody is.
 
+**The door checks before it opens.** `{ passcode, verify: true }` asks the
+Worker the one question — is this a passcode? — and writes nothing. It is not a
+session and hands back no token: every publish carries the passcode anyway and
+is checked on its own merits. It exists because the door used to take any text,
+leaving the passcode unchecked until Save, so a wrong one meant filling in a
+whole calendar before finding out — and a door that opens for anything teaches
+people the passcode does not matter. It answers an unconfigured Worker there
+too, naming the missing secret, which is the most useful thing a first-time
+visitor can be told. It does make guessing marginally cheaper, but only
+marginally: an attempted publish was always an equally good oracle. What limits
+guessing is the passcode being a passphrase rather than a PIN.
+
 Setting it up needs two secrets that come from two different places — one you
 invent, one you generate on GitHub — so neither the 503 nor `/ping` lumps them
 together: both name the one that is actually missing. `/ping` answers the same
