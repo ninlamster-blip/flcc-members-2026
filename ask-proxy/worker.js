@@ -629,6 +629,14 @@ async function handleRequest(request, env, ctx) {
       nextPrayers: !!(env.KASAMA_DB && env.NEXT_LEADER_KEY),
       nextDatabase: !!env.KASAMA_DB,
       nextLeaderKey: !!env.NEXT_LEADER_KEY,
+      // Whether the FLCC NEXT Adults events admin can publish. Three fields
+      // for the same reason as the three above: it needs two secrets that
+      // live on the same settings page but come from two different places —
+      // one you invent, one you generate on GitHub — and "not set up yet"
+      // without saying which sends whoever is configuring it hunting.
+      adultsAdmin: !!(env.ADULTS_ADMIN_PASSCODES && env.GITHUB_TOKEN),
+      adultsPasscodes: !!env.ADULTS_ADMIN_PASSCODES,
+      githubToken: !!env.GITHUB_TOKEN,
     }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
@@ -1839,9 +1847,20 @@ function editorForPasscode(env, passcode) {
 async function handleAdultsPublish(request, env) {
   if (request.method !== 'POST') return publishError('Method not allowed', 405);
 
-  if (!env.ADULTS_ADMIN_PASSCODES || !env.GITHUB_TOKEN) {
+  // Naming the one that is actually missing, rather than listing both, is the
+  // difference between a two-minute fix and an afternoon: the two secrets sit
+  // on the same settings page but come from different places — one you invent,
+  // one you generate on GitHub — and whoever is setting this up has no way to
+  // see which of them Cloudflare already holds.
+  const missing = [
+    !env.ADULTS_ADMIN_PASSCODES && 'ADULTS_ADMIN_PASSCODES (the passcodes you choose)',
+    !env.GITHUB_TOKEN && 'GITHUB_TOKEN (a GitHub token with Contents: read and write)',
+  ].filter(Boolean);
+  if (missing.length) {
     return publishError(
-      'The events admin is not set up on this Worker yet. Ask your admin to add the ADULTS_ADMIN_PASSCODES and GITHUB_TOKEN secrets.',
+      `The events admin is not set up on this Worker yet. Missing ${missing.length === 1 ? 'secret' : 'secrets'}: `
+      + `${missing.join(' and ')}. Add ${missing.length === 1 ? 'it' : 'them'} in the Cloudflare dashboard under `
+      + 'Workers & Pages → flcc-members-2026 → Settings → Variables and Secrets → Add → Secret.',
       503
     );
   }

@@ -521,6 +521,38 @@ async function nextCall(env, method, path, body, headers) {
       { GITHUB_TOKEN: 'gh-token' });
     assert(unset.status === 503, 'with no passcodes configured the endpoint is closed, not open');
 
+    // Setting this up means adding two secrets that come from two different
+    // places. Saying which one is missing is the whole difference between a
+    // two-minute fix and an afternoon of guessing.
+    const noPass = await (await post({ passcode: 'x', file: 'events', content: [gathering] },
+      { GITHUB_TOKEN: 'gh-token' })).json();
+    assert(/ADULTS_ADMIN_PASSCODES/.test(noPass.error.message)
+      && !/GITHUB_TOKEN/.test(noPass.error.message),
+      'names the missing passcodes secret, and does not blame the one that is set');
+
+    const noToken = await (await post({ passcode: 'x', file: 'events', content: [gathering] },
+      { ADULTS_ADMIN_PASSCODES: '{}' })).json();
+    assert(/GITHUB_TOKEN/.test(noToken.error.message)
+      && !/ADULTS_ADMIN_PASSCODES/.test(noToken.error.message),
+      'names the missing token, and does not blame the one that is set');
+
+    const neither = await (await post({ passcode: 'x', file: 'events', content: [gathering] }, {})).json();
+    assert(/ADULTS_ADMIN_PASSCODES/.test(neither.error.message)
+      && /GITHUB_TOKEN/.test(neither.error.message), 'names both when both are missing');
+    assert(/Variables and Secrets/.test(neither.error.message),
+      'says where to put them, not just what they are called');
+
+    // The same question, answerable from a browser before anybody tries to
+    // publish at all.
+    const ping = await (await worker.fetch(new Request('https://x/ping'), env, { waitUntil() {} })).json();
+    assert(ping.adultsPasscodes === true && ping.githubToken === true && ping.adultsAdmin === true,
+      '/ping reports the events admin as configured when it is');
+    const blind = await (await worker.fetch(new Request('https://x/ping'), { GITHUB_TOKEN: 'x' }, { waitUntil() {} })).json();
+    assert(blind.adultsPasscodes === false && blind.githubToken === true && blind.adultsAdmin === false,
+      '/ping reports which half is missing');
+    assert(!JSON.stringify(blind).includes('gh-token') && !JSON.stringify(ping).includes('fred-pass'),
+      '/ping reports whether a secret exists and never what it is');
+
     assert((await worker.fetch(new Request('https://x/api/publish/adults'), env, { waitUntil() {} })).status === 405,
       'GET is not a way in');
 

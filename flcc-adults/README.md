@@ -166,10 +166,24 @@ rather than loudly:
 - **A calendar with no main gathering.** Today frames the whole week around it;
   without one the app loses its sense of the week for ever.
 
-Setup is two Worker secrets, `ADULTS_ADMIN_PASSCODES` and `GITHUB_TOKEN` — see
-the comments in `wrangler.toml`. Until they are set the endpoint is closed, not
-open. Give each person their own passcode rather than sharing one: it costs
-nothing and makes the commit history worth reading.
+### Setting it up
+
+Two Worker secrets — Cloudflare dashboard → **Workers & Pages** →
+**flcc-members-2026** → **Settings** → **Variables and Secrets** → **Add**, and
+choose type **Secret** rather than Text so the value cannot be read back.
+
+| Secret | What it is |
+|---|---|
+| `ADULTS_ADMIN_PASSCODES` | who may publish, as JSON: `{"pastor-fred":"a long passphrase","grace":"another"}`. The name on the left goes in the commit message; the value on the right is what they type. |
+| `GITHUB_TOKEN` | a GitHub **fine-grained** token with **Contents: read and write**, on this repository only. Already set if the church attendance publisher works. |
+
+Give each person their own passcode rather than sharing one: it costs nothing
+and makes the commit history worth reading. Until both are set the endpoint is
+closed, not open — and it says *which* one it is still waiting for.
+
+**To check what is set without trying to publish**, open `…/ping` on the
+deployed site. `adultsPasscodes`, `githubToken` and `adultsAdmin` say whether
+each secret exists; none of them ever reveals a value.
 
 ## The design
 
