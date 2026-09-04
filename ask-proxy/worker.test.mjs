@@ -492,6 +492,77 @@ async function nextCall(env, method, path, body, headers) {
     assert(puts[0].url.endsWith('/contents/flcc-adults/content/updates.json'),
       'announcements go to their own file');
 
+    // ── The shapes a church actually types into that secret ─────────────
+    //
+    // This value is typed into a web form by whoever runs a church, often on a
+    // phone. Every one of these used to come back as "that passcode was not
+    // recognised" — an error that blames the person for something invisible.
+    const asEnv = (passcodes) => ({ ...env, ADULTS_ADMIN_PASSCODES: passcodes });
+
+    const plain = await post({ passcode: 'just-the-passphrase', verify: true },
+      asEnv('just-the-passphrase'));
+    assert(plain.status === 200, 'a bare passphrase, with no JSON around it, works');
+    assert((await plain.json()).editor === 'admin', 'and is credited to "admin"');
+
+    // What an iPhone does to " when Smart Punctuation is on.
+    const curly = await post({ passcode: 'fred-pass', verify: true },
+      asEnv('{\u201Cpastor-fred\u201D:\u201Cfred-pass\u201D}'));
+    assert(curly.status === 200, 'JSON with smart quotes is straightened rather than rejected');
+    assert((await curly.json()).editor === 'pastor-fred', 'and still credits the right person');
+
+    const spaced = await post({ passcode: 'fred-pass', verify: true },
+      asEnv('  {"pastor-fred": "fred-pass "}  '));
+    assert(spaced.status === 200, 'stray whitespace around the value or the passcode is ignored');
+
+    assert((await post({ passcode: 'wrong', verify: true }, asEnv('right-one'))).status === 401,
+      'a bare passphrase still refuses the wrong passcode');
+    assert((await post({ passcode: '{"pastor-fred":"fred-pass"}', verify: true },
+      asEnv('{"pastor-fred":"fred-pass"}'))).status === 401,
+      'typing the whole JSON blob as the passcode is not a way in');
+    assert((await post({ passcode: 'pastor-fred', verify: true },
+      asEnv('{"pastor-fred":"fred-pass"}'))).status === 401,
+      'the name on the left is not the passcode');
+    assert((await post({ passcode: '   ', verify: true }, asEnv('  '))).status === 503,
+      'a secret of nothing but spaces is unconfigured, not a passcode of spaces');
+
+    // The same question answered from a browser: a secret that is set but
+    // unreadable shows as zero editors rather than as every passcode failing.
+    const count = async (passcodes) => (await (await worker.fetch(new Request('https://x/ping'),
+      asEnv(passcodes), { waitUntil() {} })).json()).adultsEditors;
+    assert(await count('{"a":"1","b":"2"}') === 2, '/ping counts the people configured');
+    assert(await count('one-shared-passcode') === 1, '/ping counts a bare passphrase as one');
+    assert(await count('') === 0, '/ping counts nothing as nothing');
+    const pingBody = JSON.stringify(await (await worker.fetch(new Request('https://x/ping'),
+      asEnv('{"pastor-fred":"fred-pass"}'), { waitUntil() {} })).json());
+    assert(!pingBody.includes('fred-pass') && !pingBody.includes('pastor-fred'),
+      '/ping counts them without naming anybody or leaking a passcode');
+
+    // ── The door ────────────────────────────────────────────────────────
+    //
+    // A passcode with nothing to publish. This is what lets the admin's door
+    // refuse a wrong passcode at the door rather than after somebody has
+    // filled in a whole calendar.
+    puts = [];
+    const doorOk = await post({ passcode: 'fred-pass', verify: true });
+    const doorBody = await doorOk.json();
+    assert(doorOk.status === 200, 'a good passcode opens the door');
+    assert(doorBody.editor === 'pastor-fred', 'the door says who you are');
+    assert(puts.length === 0, 'opening the door wrote nothing to the repository');
+
+    const doorNo = await post({ passcode: 'not-it', verify: true });
+    assert(doorNo.status === 401, 'a wrong passcode is refused at the door');
+    assert(/not recognised/.test((await doorNo.json()).error.message),
+      'and is told so plainly');
+
+    // Verifying must not be a way to skip the checks a publish gets.
+    const doorSneak = await post({ passcode: 'fred-pass', verify: true, file: 'events', content: [] });
+    assert(doorSneak.status === 200 && puts.length === 0,
+      'a verify carrying a payload still publishes nothing');
+
+    const doorUnset = await post({ passcode: 'fred-pass', verify: true }, { GITHUB_TOKEN: 'gh-token' });
+    assert(doorUnset.status === 503,
+      'an unconfigured Worker refuses at the door too, rather than opening onto a dead editor');
+
     // ── The attack this design exists to stop ───────────────────────────
     puts = [];
     const traversal = await post({

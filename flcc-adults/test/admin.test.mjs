@@ -92,10 +92,30 @@ test('the endpoint can only ever write the two content files', () => {
     'the path is no longer looked up by key — check it cannot come from the request');
 });
 
+/**
+ * The passcodes secret is typed into a web form by whoever runs a church,
+ * often on a phone. Three things they might reasonably type used to come back
+ * as "that passcode was not recognised" — an error that blames the person for
+ * something they cannot see.
+ */
+test('the passcodes secret forgives the ways it is actually typed', () => {
+  const parser = worker.slice(worker.indexOf('function passcodeMap'),
+    worker.indexOf('function editorForPasscode'));
+  assert.match(parser, /\u201C|\\u201C/, 'smart quotes are no longer straightened before parsing');
+  assert.match(parser, /\{ admin: raw \}/, 'a bare passphrase is no longer accepted as one passcode');
+  assert.match(parser, /raw\.trim\(\)|\.trim\(\)/, 'the secret is no longer trimmed');
+  // But it must still be a lock. Anything that made every string open it
+  // would be far worse than the problem it solves.
+  assert.match(worker, /timingSafeEqual\(String\(code\)\.trim\(\), typed\)/,
+    'the comparison is no longer constant-time, or no longer compares the passcode');
+  assert.match(worker, /if \(!typed\) return null;/, 'an empty passcode is no longer refused');
+});
+
 test('publishing is closed unless both secrets are configured', () => {
-  assert.match(worker, /!env\.ADULTS_ADMIN_PASSCODES &&/,
+  assert.match(worker, /!String\(env\.ADULTS_ADMIN_PASSCODES \|\| ''\)\.trim\(\) &&/,
     'the endpoint no longer checks for the passcodes secret');
-  assert.match(worker, /!env\.GITHUB_TOKEN &&/, 'the endpoint no longer checks for the token');
+  assert.match(worker, /!String\(env\.GITHUB_TOKEN \|\| ''\)\.trim\(\) &&/,
+    'the endpoint no longer checks for the token');
   assert.match(worker, /if \(missing\.length\) \{/, 'the endpoint no longer refuses to run unconfigured');
   assert.match(worker, /timingSafeEqual\(code, passcode\)/,
     'the passcode comparison is no longer constant-time');
@@ -160,6 +180,36 @@ test('the Worker enforces what the content suite enforces', () => {
     assert.match(css, new RegExp(`\\.poster\\[data-tone="${selector}"\\]`),
       `the Worker accepts "${tone}", which the stylesheet cannot paint`);
   }
+});
+
+/**
+ * The door has to actually check.
+ *
+ * It used to take any text and open the editor, leaving the passcode
+ * unchecked until Save — so a wrong one meant filling in a whole calendar
+ * before finding out, and a door that opens for anything teaches people the
+ * passcode does not matter.
+ */
+test('the door verifies the passcode before it opens', () => {
+  assert.match(adminJs, /verify: true/, 'the page no longer asks the Worker to check the passcode');
+  assert.match(worker, /if \(body\.verify\) \{/, 'the Worker no longer answers a bare passcode');
+
+  // The check has to come after the passcode check and before anything is
+  // written — otherwise it is either an open door or a publish.
+  const handler = worker.slice(worker.indexOf('async function handleAdultsPublish'));
+  const at = (needle) => handler.indexOf(needle);
+  assert.ok(at('editorForPasscode') < at('if (body.verify) {'),
+    'the door opens before the passcode is checked');
+  assert.ok(at('if (body.verify) {') < at('const path = ADULTS_FILES[which]'),
+    'verifying falls through into publishing a file');
+
+  // The editor is only revealed once the Worker said yes.
+  // Bounded by the listener registration below the function — `$('enter')`
+  // alone also matches the button lookup inside it, which cuts the slice short.
+  const gate = adminJs.slice(adminJs.indexOf('async function enter()'),
+    adminJs.indexOf("$('enter').addEventListener"));
+  assert.ok(gate.indexOf('if (!response.ok)') < gate.indexOf("$('editor').hidden = false"),
+    'the editor is shown before the answer comes back');
 });
 
 test('the page checks the same things before it asks the network to', () => {

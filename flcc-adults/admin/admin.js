@@ -72,15 +72,58 @@ function setStatus(text, tone = '') {
   $('status').style.color = tone === 'bad' ? 'var(--poppy)' : 'var(--ink-70)';
 }
 
+/**
+ * The door checks the passcode before it opens.
+ *
+ * It used to take any text and let you in, leaving the passcode unchecked
+ * until you pressed Save — so somebody with the wrong one could fill in a
+ * whole calendar before finding out, and a door that opens for anything
+ * teaches people the passcode does not matter.
+ *
+ * A wrong passcode is answered here. So is a Worker that has not been set up:
+ * that message names the secret it is still waiting for, which is the most
+ * useful thing anybody opening this page for the first time can be told.
+ */
 async function enter() {
   const typed = $('pass').value.trim();
   if (!typed) { $('pass').focus(); return; }
+
+  const button = $('enter');
+  button.disabled = true;
+  $('gate-note').textContent = 'Checking…';
+  $('gate-note').style.color = '';
+
+  let response;
+  try {
+    response = await fetch('/api/publish/adults', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passcode: typed, verify: true }),
+    });
+  } catch {
+    button.disabled = false;
+    $('gate-note').textContent = 'Could not reach the church’s server. Check your connection and try again.';
+    $('gate-note').style.color = 'var(--poppy)';
+    return;
+  }
+
+  const payload = await response.json().catch(() => ({}));
+  button.disabled = false;
+
+  if (!response.ok) {
+    $('gate-note').textContent = payload?.error?.message || `Something went wrong (HTTP ${response.status}).`;
+    $('gate-note').style.color = 'var(--poppy)';
+    $('pass').select();
+    return;
+  }
+
   passcode = typed;
   sessionStorage.setItem('flcc-adults-admin', passcode);
   $('gate-note').textContent = '';
   $('gate').hidden = true;
   $('editor').hidden = false;
   $('bar').hidden = false;
+  if (payload.editor) $('who').textContent = `Signed in as ${payload.editor}`;
   await load();
 }
 
@@ -389,5 +432,6 @@ window.addEventListener('beforeunload', (event) => {
   event.returnValue = '';
 });
 
-// A passcode already in this tab's session goes straight in.
+// A passcode already in this tab's session still goes through the door: the
+// church may have rotated it since it was typed.
 if (passcode) { $('pass').value = passcode; enter(); }
