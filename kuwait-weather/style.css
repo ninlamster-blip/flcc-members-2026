@@ -1,0 +1,307 @@
+/*
+  A weather app that gets read outdoors, in Kuwait, in sun bright enough to
+  wash a screen out. That decides most of what follows: a light, high-contrast
+  page by default rather than the dark glass every weather app reaches for,
+  type that stays large, and colour used only where it carries meaning — the
+  five dust levels and the four advisory severities. Dark mode is here for
+  anyone reading at night, not as the main event.
+*/
+
+:root {
+  color-scheme: light;
+
+  --paper:   #FAF6EF;   /* sand, not white */
+  --card:    #FFFFFF;
+  --ink:     #16212D;
+  --muted:   #5B6B7C;
+  --line:    #E4DCCF;
+
+  --cool:    #2E7D9A;
+  --info:    #3E7CB1;
+  --watch:   #B8860B;
+  --warning: #C4611F;
+  --severe:  #A8321F;
+  --calm:    #3F7D52;
+
+  --dust-clear: #7FA8B8;
+  --dust-hazy:  #D8C79A;
+  --dust-dusty: #D3A055;
+  --dust-heavy: #B9722F;
+  --dust-storm: #8E4423;
+
+  --radius: 14px;
+  --gap: 14px;
+  --shell: 620px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #111A24;
+    --card:  #182430;
+    --ink:   #ECF1F6;
+    --muted: #9BAEC0;
+    --line:  #27343F;
+    --cool:    #6FB6CE;
+    --info:    #7FB0DA;
+    --watch:   #E0B65A;
+    --warning: #E8925A;
+    --severe:  #E8705A;
+    --calm:    #7FBE93;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 0 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+main, .top, .banner, .first-load {
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gap);
+}
+
+h2 { font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.75rem; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.icon { flex: none; vertical-align: -0.15em; }
+
+/* ── header ───────────────────────────────────────────────────────────── */
+
+.top {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: 0.75rem;
+}
+
+.top-place { position: relative; min-width: 0; }
+
+.top-place select {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; font-size: 16px;
+}
+
+.top-title p { margin: 0; }
+.top-title p:first-child {
+  font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 0.3rem;
+}
+.top-title p:first-child::after {
+  content: ""; width: 0.5rem; height: 0.5rem; border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted); transform: translateY(-25%) rotate(45deg);
+}
+.top-title p:last-child { font-size: 0.8rem; color: var(--muted); }
+
+.top-actions { display: flex; gap: 0.4rem; }
+
+.round {
+  width: 2.5rem; height: 2.5rem; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  display: grid; place-items: center;
+}
+.round:hover { border-color: var(--muted); }
+.round.is-spinning { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .round.is-spinning { animation: none; opacity: 0.5; } }
+
+/* ── banners and first load ───────────────────────────────────────────── */
+
+.banner {
+  margin: 0 auto 0.75rem; padding: 0.6rem 0.8rem;
+  border-radius: 10px; background: var(--card); border: 1px solid var(--line);
+  font-size: 0.85rem; color: var(--muted);
+}
+.banner--warn { border-color: var(--warning); color: var(--warning); }
+
+.first-load { padding-top: 4rem; text-align: center; color: var(--muted); }
+.first-load-mark {
+  width: 2rem; height: 2rem; margin: 0 auto 1rem; border-radius: 50%;
+  border: 3px solid var(--line); border-top-color: var(--cool);
+  animation: spin 0.9s linear infinite;
+}
+
+/* ── hero ─────────────────────────────────────────────────────────────── */
+
+.hero { text-align: center; padding: 1.25rem 0 0.25rem; }
+.hero-mark { color: var(--cool); line-height: 0; }
+.hero-temp {
+  margin: 0.4rem 0 0; font-size: clamp(4rem, 22vw, 6rem); font-weight: 250;
+  letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums;
+}
+.hero-condition { margin: 0.15rem 0 0; font-size: 1.05rem; font-weight: 600; }
+.hero-feels { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.95rem; }
+.hero-feels strong { color: var(--ink); }
+.hero-gap { display: block; font-size: 0.8rem; }
+
+.stamp {
+  margin: 0.5rem 0 1.25rem; text-align: center;
+  font-size: 0.75rem; color: var(--muted);
+}
+.stamp .is-stale { color: var(--warning); }
+#model-time::before { content: "· "; }
+
+/* ── cards ────────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1rem; margin-bottom: var(--gap);
+}
+.card--flush { padding: 1rem 0; }
+.card--flush > h2, .card--flush > .card-note { padding-inline: 1rem; }
+.card-note { margin: -0.4rem 0 0.9rem; font-size: 0.78rem; color: var(--muted); }
+
+/* ── advisories ───────────────────────────────────────────────────────── */
+
+.advisories { list-style: none; margin: 0; padding: 0; }
+.advisory {
+  display: flex; gap: 0.75rem; padding: 0.75rem 1rem;
+  border-left: 4px solid var(--info); align-items: flex-start;
+}
+.advisory + .advisory { border-top: 1px solid var(--line); }
+.advisory .icon { color: var(--info); margin-top: 0.1rem; }
+.advisory-title { margin: 0; font-weight: 650; font-size: 0.98rem; }
+.advisory-detail { margin: 0.15rem 0 0; font-size: 0.87rem; color: var(--muted); }
+
+.advisory--calm    { border-left-color: var(--calm); }    .advisory--calm .icon    { color: var(--calm); }
+.advisory--watch   { border-left-color: var(--watch); }   .advisory--watch .icon   { color: var(--watch); }
+.advisory--warning { border-left-color: var(--warning); } .advisory--warning .icon { color: var(--warning); }
+.advisory--severe  { border-left-color: var(--severe); }  .advisory--severe .icon  { color: var(--severe); }
+.advisory--severe .advisory-title { color: var(--severe); }
+
+/* ── working outdoors ─────────────────────────────────────────────────── */
+
+.ban {
+  display: flex; gap: 0.7rem; align-items: flex-start;
+  padding: 0.75rem; border-radius: 10px; margin-bottom: 0.9rem;
+  background: color-mix(in srgb, var(--warning) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+}
+.ban .icon { color: var(--warning); margin-top: 0.1rem; }
+.ban--idle { background: transparent; border-color: var(--line); }
+.ban--idle .icon { color: var(--muted); }
+.ban-title { margin: 0; font-weight: 650; font-size: 0.92rem; }
+.ban-detail { margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--muted); }
+
+.work-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.work-figure { flex: 1 1 11rem; }
+.work-band { margin: 0; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+.work-sub { margin: 0.2rem 0 0; font-size: 0.82rem; color: var(--muted); }
+
+.work-facts { flex: 1 1 12rem; margin: 0; display: grid; gap: 0.45rem; }
+.work-facts div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.87rem; }
+.work-facts dt { color: var(--muted); }
+.work-facts dd { margin: 0; font-weight: 600; text-align: right; }
+
+.profile { display: flex; gap: 0.4rem; margin-top: 1rem; }
+.profile-btn {
+  flex: 1; padding: 0.5rem 0.3rem; font: inherit; font-size: 0.8rem; font-weight: 600;
+  border: 1px solid var(--line); background: transparent; color: var(--muted);
+  border-radius: 9px; cursor: pointer;
+}
+.profile-btn.is-on { background: var(--ink); border-color: var(--ink); color: var(--card); }
+
+.fineprint { margin: 0.9rem 0 0; font-size: 0.74rem; line-height: 1.45; color: var(--muted); }
+
+/* ── dust ─────────────────────────────────────────────────────────────── */
+
+.dust-head { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.9rem; }
+.dust-badge {
+  align-self: flex-start; padding: 0.25rem 0.6rem; border-radius: 999px;
+  font-size: 0.82rem; font-weight: 700; color: #fff; background: var(--dust-clear);
+}
+.dust--clear .dust-badge { background: var(--dust-clear); }
+.dust--hazy  .dust-badge { background: var(--dust-hazy); color: #3B3115; }
+.dust--dusty .dust-badge { background: var(--dust-dusty); color: #33230C; }
+.dust--heavy .dust-badge { background: var(--dust-heavy); }
+.dust--storm .dust-badge { background: var(--dust-storm); }
+.dust-advice { margin: 0; font-size: 0.88rem; color: var(--muted); }
+
+.facts { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 0.75rem; }
+.facts div { border-top: 1px solid var(--line); padding-top: 0.5rem; }
+.facts dt { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.facts dd { margin: 0.15rem 0 0; font-weight: 650; font-variant-numeric: tabular-nums; }
+
+.empty { margin: 0; font-size: 0.88rem; color: var(--muted); }
+
+/* ── hourly ───────────────────────────────────────────────────────────── */
+
+.hours {
+  list-style: none; margin: 0; padding: 0 1rem 0.25rem;
+  display: flex; gap: 0.15rem; overflow-x: auto; scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.hour {
+  flex: none; width: 3.5rem; text-align: center; padding: 0.5rem 0.15rem;
+  border-radius: 10px; scroll-snap-align: start; color: var(--cool);
+}
+.hour--banned { background: color-mix(in srgb, var(--warning) 10%, transparent); }
+.hour p { margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+.hour-time { font-size: 0.72rem; color: var(--muted) !important; margin-bottom: 0.3rem !important; }
+.hour-temp { font-size: 1rem; font-weight: 650; margin-top: 0.25rem !important; }
+.hour-feels { font-size: 0.72rem; color: var(--muted) !important; }
+.hour-wind { font-size: 0.7rem; color: var(--muted) !important; margin-top: 0.25rem !important; }
+.hour-wind span { display: block; font-size: 0.62rem; letter-spacing: 0.04em; }
+.hour-dust { display: block; height: 4px; border-radius: 2px; margin: 0.4rem 0.4rem 0.1rem; background: var(--line); }
+.hour-dust.dust--clear { background: var(--dust-clear); }
+.hour-dust.dust--hazy  { background: var(--dust-hazy); }
+.hour-dust.dust--dusty { background: var(--dust-dusty); }
+.hour-dust.dust--heavy { background: var(--dust-heavy); }
+.hour-dust.dust--storm { background: var(--dust-storm); }
+
+/* ── week ─────────────────────────────────────────────────────────────── */
+
+.days { list-style: none; margin: 0; padding: 0; }
+.day {
+  display: grid; align-items: center; gap: 0.5rem;
+  grid-template-columns: 2.6rem 3.2rem 1.5rem 3rem 2.2rem 1fr 2.4rem;
+  padding: 0.5rem 0; font-variant-numeric: tabular-nums;
+}
+.day + .day { border-top: 1px solid var(--line); }
+.day p { margin: 0; font-size: 0.87rem; }
+.day .icon { color: var(--cool); }
+.day-name { font-weight: 650; }
+.day-date, .day-min { color: var(--muted); }
+.day-min, .day-max { text-align: right; }
+.day-max { font-weight: 650; }
+.day-dust { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.day-dust.dust--dusty { color: var(--dust-dusty); }
+.day-dust.dust--heavy { color: var(--dust-heavy); }
+.day-dust.dust--storm { color: var(--dust-storm); }
+.day-bar { position: relative; height: 5px; border-radius: 3px; background: var(--line); }
+.day-bar span {
+  position: absolute; top: 0; height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--cool), var(--warning));
+}
+
+@media (max-width: 26rem) {
+  .day { grid-template-columns: 2.4rem 1.4rem 2.8rem 2rem 1fr 2.2rem; }
+  .day-date { display: none; }
+}
+
+/* ── details ──────────────────────────────────────────────────────────── */
+
+.details { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.9rem; }
+.details div { border-top: 1px solid var(--line); padding-top: 0.5rem; }
+.details dt { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.details dd { margin: 0.15rem 0 0; font-size: 1.05rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.details p { margin: 0.1rem 0 0; font-size: 0.72rem; color: var(--muted); }
+
+/* ── footer ───────────────────────────────────────────────────────────── */
+
+.foot { font-size: 0.78rem; line-height: 1.55; color: var(--muted); padding: 0.5rem 0 1rem; }
+.foot p { margin: 0 0 0.7rem; }
+.foot strong { color: var(--ink); }
+.foot a { color: var(--cool); }
+.foot-meta code { font-size: 0.95em; }

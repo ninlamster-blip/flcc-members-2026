@@ -176,6 +176,27 @@ captain `#4173B0`, navy/ink `#2B4C6D`, rose `#EABCB5`, poppy `#EB8861`,
 sunshine `#EDCE7A`, on the shared cream paper `#FBF8F0` — and a test in each
 app pins them, so changing one means changing both.
 
+## Kuwait Weather
+
+`kuwait-weather/` is **not one of the apps above**. It is a standalone weather
+app for Kuwait that happens to live in this repository — heat index and WBGT
+work/rest guidance, dust and visibility, shamal winds, and the 11:00–16:00
+summer outdoor work ban. It is not a church app, nothing links to it, and no
+church data reaches it.
+
+It shares no code with anything here. It must never import `church.js`, read
+`FLCC.*`, or touch `shepherd/`, `lamp/`, `flcc-next/`, `flcc-adults/` or
+`ask-proxy/` — `kuwait-weather/test/boundary.test.mjs` walks every source file
+and fails on any of those, on a package import, on a third-party host, and on
+any `localStorage` reached outside `js/core/storage.js`, which throws on any key
+outside `kw/v1/`.
+
+Read `kuwait-weather/README.md` before changing the forecast source, the WBGT
+model or the work-ban rule. The one thing in it most likely to be got wrong
+twice is the WBGT model: the obvious shade approximation returns physically
+impossible values in Kuwait's dry heat, and `test/heat.test.mjs` pins that
+failure so it cannot come back.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection
