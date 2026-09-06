@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Kuwait Weather — heat, dust and the midday ban</title>
+<meta name="description" content="A weather app for Kuwait: heat index and WBGT work/rest guidance, dust and visibility, shamal winds, and the 11:00–16:00 summer outdoor work ban." />
+<meta name="theme-color" content="#FAF6EF" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#111A24" media="(prefers-color-scheme: dark)" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+<header class="top">
+  <div class="top-place">
+    <label class="sr-only" for="place-select">Place</label>
+    <select id="place-select"></select>
+    <div class="top-title">
+      <p id="place-name">Kuwait City</p>
+      <p id="place-gov">Al Asimah</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button type="button" id="locate" class="round" aria-label="Use my location" title="Use my location"></button>
+    <button type="button" id="units" class="round" aria-label="Switch temperature units">°C</button>
+    <button type="button" id="refresh" class="round" aria-label="Refresh"></button>
+  </div>
+</header>
+
+<p id="banner" class="banner" hidden></p>
+
+<div id="first-load" class="first-load">
+  <p class="first-load-mark"></p>
+  <p>Fetching the forecast for Kuwait…</p>
+</div>
+
+<main id="screen" hidden>
+
+  <section class="hero" id="hero" aria-label="Conditions now"></section>
+  <p class="stamp"><span id="updated"></span> <span id="model-time"></span></p>
+
+  <section class="card card--flush" aria-labelledby="h-advisories">
+    <h2 id="h-advisories" class="sr-only">What to know</h2>
+    <ul id="advisories" class="advisories"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-work">
+    <h2 id="h-work">Working outdoors</h2>
+    <div id="work"></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-dust">
+    <h2 id="h-dust">Dust and air</h2>
+    <div id="dust"></div>
+  </section>
+
+  <section class="card card--flush" aria-labelledby="h-hours">
+    <h2 id="h-hours" class="card-head">Next 24 hours</h2>
+    <p class="card-note">Air temperature, then how it feels. The bar under each hour is dust; shaded hours are inside the midday work ban.</p>
+    <ul id="hours" class="hours"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-days">
+    <h2 id="h-days">The week</h2>
+    <ul id="days" class="days"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-details">
+    <h2 id="h-details">Right now, in detail</h2>
+    <dl id="details" class="details"></dl>
+  </section>
+
+  <footer class="foot">
+    <p><strong>Where this comes from.</strong> Forecast and air quality from
+      <a href="https://open-meteo.com/" rel="noopener">Open-Meteo</a>, which is free, keyless and open —
+      weather from national meteorological services, dust and particulates from the Copernicus
+      atmosphere model. Nothing about you is sent anywhere: the app asks for a set of coordinates and
+      gets a forecast back.</p>
+    <p><strong>Where it stops.</strong> This is not an official warning service. Kuwait's
+      Meteorological Department issues those. Heat index and WBGT are calculated from the forecast,
+      not measured, and the work/rest guidance is for planning a day rather than for meeting an
+      obligation. The 11:00–16:00 summer ban is the standing annual rule — confirm the current
+      year's decree with the Public Authority for Manpower.</p>
+    <p class="foot-meta">Everything this app remembers — your place, your units, your work profile
+      and the last reading — stays in this browser under <code>kw/v1/</code>.</p>
+  </footer>
+
+</main>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
