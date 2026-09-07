@@ -24,6 +24,7 @@ const SHELL = [
   './js/core/heat.js',
   './js/core/places.js',
   './js/core/storage.js',
+  './js/core/textsize.js',
   './js/core/weathercode.js',
   './js/core/wind.js',
   './js/core/workban.js',

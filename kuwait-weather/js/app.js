@@ -9,6 +9,7 @@ import { toneFor } from './ui/tone.js';
 import { shouldAutoLocate, permissionState, isRefusal, placeFromFix } from './core/autolocate.js';
 import { DEFAULT_WORK_PROFILE, WORK_PROFILES } from './core/heat.js';
 import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
+import { SIZES, DEFAULT_SIZE, nextSize, rootScale, announce } from './core/textsize.js';
 import * as view from './ui/render.js';
 import { icon } from './ui/icons.js';
 
@@ -21,6 +22,7 @@ const state = {
   place: null,
   units: DEFAULT_UNITS,
   profile: DEFAULT_WORK_PROFILE,
+  text: DEFAULT_SIZE,
   reading: null,     // normalized, as fetched
   derived: null,     // enriched, as drawn
   loading: false,
@@ -39,6 +41,8 @@ function restore() {
   state.units = store.read(store.KEYS.units) === 'F' ? 'F' : 'C';
   const savedProfile = store.read(store.KEYS.work);
   state.profile = WORK_PROFILES.some((p) => p.id === savedProfile) ? savedProfile : DEFAULT_WORK_PROFILE;
+  const savedText = store.read(store.KEYS.text);
+  state.text = SIZES.some((t) => t.id === savedText) ? savedText : DEFAULT_SIZE;
 
   const last = store.read(store.KEYS.reading);
   if (last && last.place?.id === state.place.id) {
@@ -83,6 +87,13 @@ async function load({ force = false } = {}) {
 }
 
 // ── drawing ─────────────────────────────────────────────────────────────────
+
+function applyTextSize() {
+  document.documentElement.style.setProperty('--text-scale', rootScale(state.text));
+  const button = el('text-size');
+  button.setAttribute('aria-label', announce(state.text));
+  button.title = announce(state.text);
+}
 
 function render() {
   const now = new Date();
@@ -211,6 +222,11 @@ function bind() {
   el('place-select').addEventListener('change', (e) => choosePlace(e.target.value));
   el('refresh').addEventListener('click', () => load({ force: true }));
   el('locate').addEventListener('click', () => locate());
+  el('text-size').addEventListener('click', () => {
+    state.text = nextSize(state.text);
+    store.write(store.KEYS.text, state.text);
+    applyTextSize();
+  });
   el('units').addEventListener('click', () => {
     state.units = state.units === 'C' ? 'F' : 'C';
     store.write(store.KEYS.units, state.units);
@@ -239,6 +255,7 @@ function bind() {
 export function start() {
   restore();
   el('units').textContent = `°${state.units}`;
+  applyTextSize();
   el('locate').innerHTML = icon('pin', { size: 18 });
   el('refresh').innerHTML = icon('refresh', { size: 18 });
   bind();
