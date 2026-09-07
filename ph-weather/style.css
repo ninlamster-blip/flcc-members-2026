@@ -402,7 +402,15 @@ h2 {
 }
 .map-attrib a { color: inherit; }
 
-.map-bar { display: flex; align-items: center; gap: 0.7rem; padding: 0.8rem 1.15rem 0; }
+.map-note { margin: 0.6rem 1.15rem 0; font-size: var(--t-xs); color: var(--muted); }
+
+/* At the largest text size on a 320px screen the timestamp alone is wider than
+   half the screen, and an unwrapped row squeezed the scrubber to nothing. It
+   wraps instead, and the scrubber keeps a floor. */
+.map-bar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 0.3rem 0.7rem; padding: 0.8rem 1.15rem 0;
+}
 .map-play {
   flex: none; width: var(--control); height: var(--control);
   display: grid; place-items: center;
@@ -413,7 +421,7 @@ h2 {
 /* The frame scrubber, drawn rather than left to the browser: the default
    track is a different grey in each colour scheme and neither is this app's. */
 .map-range {
-  flex: 1; min-width: 0; height: var(--control);
+  flex: 1 1 6rem; min-width: 0; height: var(--control);
   appearance: none; -webkit-appearance: none; background: none; cursor: pointer;
 }
 .map-range::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--hair); }
@@ -430,7 +438,7 @@ h2 {
 .map-range:disabled::-webkit-slider-thumb { background: var(--line); }
 .map-range:disabled::-moz-range-thumb { background: var(--line); }
 .map-when {
-  margin: 0; min-width: 7.5rem; text-align: right;
+  margin: 0; flex: 1 0 auto; min-width: 6rem; text-align: right;
   font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums;
 }
 .map-when--forecast { color: var(--info); }

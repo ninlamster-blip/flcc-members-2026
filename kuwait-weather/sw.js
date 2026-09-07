@@ -5,6 +5,10 @@
 // never cached here: a stale temperature presented as current is worse than no
 // temperature, and the last good reading is already kept in localStorage where
 // the app can label it as old.
+//
+// The radar tiles are cross-origin and so never reach this handler at all,
+// which is the right answer for them too: a cached radar sweep is a lie about
+// where the rain is.
 
 const CACHE = 'kuwait-weather-v1';
 
@@ -23,6 +27,7 @@ const SHELL = [
   './js/core/format.js',
   './js/core/heat.js',
   './js/core/places.js',
+  './js/core/radar.js',
   './js/core/storage.js',
   './js/core/textsize.js',
   './js/core/weathercode.js',
@@ -32,7 +37,9 @@ const SHELL = [
   './js/ui/chart.js',
   './js/ui/icons.js',
   './js/ui/tone.js',
+  './js/ui/map.js',
   './js/ui/render.js',
+  './js/ui/tiles.js',
 ];
 
 self.addEventListener('install', (event) => {

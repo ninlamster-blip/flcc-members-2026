@@ -185,11 +185,26 @@ summer outdoor work ban. It is not a church app, nothing links to it, and no
 church data reaches it.
 
 It shares no code with anything here. It must never import `church.js`, read
-`FLCC.*`, or touch `shepherd/`, `lamp/`, `flcc-next/`, `flcc-adults/` or
-`ask-proxy/` — `kuwait-weather/test/boundary.test.mjs` walks every source file
-and fails on any of those, on a package import, on a third-party host, and on
-any `localStorage` reached outside `js/core/storage.js`, which throws on any key
-outside `kw/v1/`.
+`FLCC.*`, or touch `shepherd/`, `lamp/`, `flcc-next/`, `flcc-adults/`,
+`ph-weather/` or `ask-proxy/` — `kuwait-weather/test/boundary.test.mjs` walks
+every source file and fails on any of those, on a package import, on a host
+outside its allowlist, and on any `localStorage` reached outside
+`js/core/storage.js`, which throws on any key outside `kw/v1/`.
+
+That allowlist was Open-Meteo alone until the radar map, and the three hosts
+added for it are the one deliberate loosening: Open-Meteo publishes hourly
+model output and no radar, so *where is the rain right now* cannot be answered
+from it. RainViewer serves the sweeps and CARTO the base map underneath; the
+reasoning is written next to the hosts in the test. **Adding a fourth host is a
+decision, not a convenience.** The map has no mapping library —
+`js/ui/tiles.js` is Web Mercator written out, a deliberate duplicate of
+`ph-weather/`'s file with `test/radar.test.mjs` comparing the two below the
+header and failing when they drift.
+
+The map's one rule is the same shape as the flood app's: **radar coverage is
+not uniform, and where none reaches the frames come back empty, which looks
+exactly like a dry sky.** The card says which it is, in body type, and a test
+fails if that sentence goes away.
 
 The app is no longer Kuwait-only in its plumbing. Open-Meteo is asked for
 `timezone=auto` and `js/core/format.js` installs the reading's own zone through
@@ -217,8 +232,12 @@ actually be measured there.
 It shares no code with anything here — including `kuwait-weather/`, whose
 design language it deliberately duplicates and whose modules it must never
 import. `ph-weather/test/boundary.test.mjs` fails on a path into any other app,
-a package import, a third-party host, or any `localStorage` outside
-`js/core/storage.js`, which throws on any key outside `ph/v1/`.
+a package import, a host outside its allowlist, or any `localStorage` outside
+`js/core/storage.js`, which throws on any key outside `ph/v1/`. That allowlist
+carries the same three radar hosts as Kuwait's, for the same reason and with
+the same warning written next to them; the map itself is documented under
+`kuwait-weather/` above, and the projection exists in both apps with a test
+holding the copies identical.
 
 Two things to read before changing it. `ph-weather/README.md` sets out what the
 flood model is and — at length — what it is not: it knows rainfall and nothing
