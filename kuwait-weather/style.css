@@ -342,9 +342,13 @@ h2 {
 
 /* ── the radar map ────────────────────────────────────────────────────── */
 
+/* The two fixed colours in this stylesheet, and deliberately so: the base map
+   is OpenStreetMap's own tiles, which are light in both themes. A ground and a
+   marker drawn from the theme tokens would put light ink on a light map every
+   dark night. */
 .map {
   position: relative; height: 300px; overflow: hidden;
-  background: var(--hair); border-block: 1px solid var(--hair);
+  background: #E8E4DC; border-block: 1px solid var(--hair);
   touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
 }
 .map.is-dragging { cursor: grabbing; }
@@ -356,8 +360,8 @@ h2 {
 
 .map-pin {
   position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px;
-  border: 3px solid var(--ink); border-radius: 50%;
-  background: var(--sheet); pointer-events: none;
+  border: 3px solid #14202B; border-radius: 50%;
+  background: #FFFFFF; pointer-events: none;
 }
 
 .map-controls { position: absolute; top: 10px; right: 10px; display: grid; gap: 6px; }

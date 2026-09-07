@@ -2,25 +2,35 @@
 // in `tiles.js`. No mapping library, because this app has no build step and
 // no dependencies, and a slippy map does not actually need one.
 //
-// Two tile layers. Underneath, a plain base map in the app's own light or dark
-// register. Over it, the radar frame — which is the point; the base map exists
-// only so the rain has somewhere to be.
+// Two tile layers. Underneath, a plain base map. Over it, the radar frame —
+// which is the point; the base map exists only so the rain has somewhere to
+// be. Coastline and a few place names are the whole job.
 
 import { viewport, pointIn, panBy, TILE_SIZE } from './tiles.js';
 import { icon } from './icons.js';
 import * as radar from '../core/radar.js';
 
-// CARTO's basemaps, which are the only ones with a light and a dark style that
-// sit properly under this app's two themes. Attribution to them and to
-// OpenStreetMap is required and is drawn on the map, not hidden in a footer.
-const BASE_HOST = 'https://basemaps.cartocdn.com';
-const BASE_STYLE = { light: 'light_all', dark: 'dark_all' };
+// OpenStreetMap's own tiles.
+//
+// The first version of this used CARTO, whose basemaps have a light and a dark
+// style and would have matched the app's two themes. They came back reading
+// "API key required" — CARTO gates anonymous use, and a static page cannot
+// hold a key. OSM's standard tiles need none, which is worth more here than
+// matching the dark theme: **a base map behind a rain radar has one job, and
+// it has to keep doing it without an account.**
+//
+// So the map stays light in both themes. OSM publishes no dark style, and
+// inverting these tiles in CSS makes a muddy, misread map rather than a dark
+// one. Attribution is required and is drawn on the map, not hidden in a
+// footer.
+const BASE_HOST = 'https://tile.openstreetmap.org';
 
 const MIN_ZOOM = 4;
 const MAX_ZOOM = 10;
 const FRAME_MS = 500;
 
-const baseUrl = (theme, { z, x, y }) => `${BASE_HOST}/${BASE_STYLE[theme] || BASE_STYLE.light}/${z}/${x}/${y}.png`;
+// No query string: nothing to put a key in, and nothing to get gated on.
+const baseUrl = ({ z, x, y }) => `${BASE_HOST}/${z}/${x}/${y}.png`;
 
 const el = (tag, className) => {
   const node = document.createElement(tag);
@@ -55,10 +65,8 @@ export function createMap(host, { lat, lon, zoom = 7, label = '' } = {}) {
   controls.append(zoomIn, zoomOut, home);
   const attrib = el('p', 'map-attrib');
   attrib.innerHTML = 'Radar <a href="https://www.rainviewer.com/" rel="noopener">RainViewer</a> · '
-    + '© <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> · © CARTO';
+    + '© <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors';
   host.append(base, rain, pin, controls, attrib);
-
-  const theme = () => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
   function size() {
     return { width: host.clientWidth || 320, height: host.clientHeight || 260 };
@@ -98,7 +106,7 @@ export function createMap(host, { lat, lon, zoom = 7, label = '' } = {}) {
   }
 
   function render() {
-    const view = paint(base, (t) => baseUrl(theme(), t));
+    const view = paint(base, baseUrl);
 
     const frame = state.frames[state.index];
     rain.dataset.stamp = frame ? String(frame.time) : '';
@@ -205,10 +213,6 @@ export function createMap(host, { lat, lon, zoom = 7, label = '' } = {}) {
     }
   }
 
-  const themeWatch = matchMedia('(prefers-color-scheme: dark)');
-  const onTheme = () => { base.innerHTML = ''; render(); };
-  themeWatch.addEventListener?.('change', onTheme);
-
   render();
   loadRadar();
 
@@ -225,7 +229,6 @@ export function createMap(host, { lat, lon, zoom = 7, label = '' } = {}) {
     refresh: loadRadar,
     destroy() {
       clearInterval(timer);
-      themeWatch.removeEventListener?.('change', onTheme);
       host.innerHTML = '';
     },
   };

@@ -194,9 +194,13 @@ outside its allowlist, and on any `localStorage` reached outside
 That allowlist was Open-Meteo alone until the radar map, and the three hosts
 added for it are the one deliberate loosening: Open-Meteo publishes hourly
 model output and no radar, so *where is the rain right now* cannot be answered
-from it. RainViewer serves the sweeps and CARTO the base map underneath; the
-reasoning is written next to the hosts in the test. **Adding a fourth host is a
-decision, not a convenience.** The map has no mapping library —
+from it. RainViewer serves the sweeps and OpenStreetMap the base map
+underneath; the reasoning is written next to the hosts in the test. **Adding a
+fourth host is a decision, not a convenience.** The base map was CARTO for one
+deploy, until its tiles came back reading "API key required" — which is the
+shape of the risk in that list: a keyless host can gate later, and a static
+page has nowhere to keep a key. That is also why the map is light in both
+themes; OSM publishes no dark style, and no key beats a matching one. The map has no mapping library —
 `js/ui/tiles.js` is Web Mercator written out, a deliberate duplicate of
 `ph-weather/`'s file with `test/radar.test.mjs` comparing the two below the
 header and failing when they drift.

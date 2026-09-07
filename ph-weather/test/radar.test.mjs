@@ -194,9 +194,41 @@ test('the map is called radar, not forecast', () => {
   assert.match(card, /not a forecast/i);
 });
 
+test('no tile URL this app builds could ever need a key', () => {
+  // This is the test the CARTO failure earned. Its basemaps came back reading
+  // "API key required" on the first real deploy, and a static page has nowhere
+  // to keep a key. A tile URL with a query string is the shape of a URL that
+  // wants one, so there are none: the base map is a path, and the radar URL is
+  // a path.
+  const source = readFileSync(new URL('../js/ui/map.js', import.meta.url), 'utf8');
+  const [, template] = source.match(/const baseUrl = \([^)]*\) => `([^`]+)`/) || [];
+  assert.ok(template, 'baseUrl moved out from under this test');
+  assert.ok(!template.includes('?'), `the base map URL takes a query string: ${template}`);
+  assert.match(source, /const BASE_HOST = 'https:\/\/tile\.openstreetmap\.org';/);
+  assert.equal(template.replace('${BASE_HOST}', ''), '/${z}/${x}/${y}.png');
+
+  for (const url of [
+    radar.tileUrl('https://tilecache.rainviewer.com', '/v2/radar/1', { z: 6, x: 1, y: 2 }),
+    radar.INDEX_URL,
+  ]) {
+    assert.ok(!url.includes('?'), `${url} takes a query string`);
+  }
+});
+
+test('the map does not promise a dark style it cannot serve', () => {
+  // OSM publishes one style, so the map is light under both themes. The pin and
+  // the ground it sits on are therefore the two places in the stylesheet that
+  // must NOT come from the theme tokens — light ink on a light map at night.
+  const source = readFileSync(new URL('../js/ui/map.js', import.meta.url), 'utf8');
+  assert.ok(!/prefers-color-scheme/.test(source), 'the map layer no longer has a dark style to switch to');
+  const pin = css.slice(css.indexOf('.map-pin {'), css.indexOf('}', css.indexOf('.map-pin {')));
+  assert.ok(!pin.includes('var(--'), `the marker must not be drawn from theme tokens: ${pin.trim()}`);
+});
+
 test('the sources under the map are credited on the page', () => {
   assert.match(html, /rainviewer\.com/);
   assert.match(html, /openstreetmap/i);
+  assert.ok(!/carto/i.test(html), 'a service the map no longer uses must not still be credited');
 });
 
 test('every control the map bar needs is in the page and in the stylesheet', () => {

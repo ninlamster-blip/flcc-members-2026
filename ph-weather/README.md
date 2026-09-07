@@ -132,12 +132,21 @@ different source. Two, in fact:
 | --- | --- |
 | `api.rainviewer.com` | the index of radar frames currently published — about two hours back, and a short nowcast forward |
 | the tile host the index names | the radar frames themselves, as map tiles |
-| `basemaps.cartocdn.com` | the plain base map underneath them, in a light and a dark style |
+| `tile.openstreetmap.org` | the plain base map underneath them |
 
-Nothing but a tile coordinate is sent to either. `test/boundary.test.mjs` names
-all three in its allowlist with the reasoning written next to them, because
-that list is the rule and adding to it should be a deliberate act rather than a
-convenience.
+Nothing but a tile coordinate is sent to either, and no URL the app builds has
+a query string — there is nowhere to put a key, which is the point.
+`test/boundary.test.mjs` names all three in its allowlist with the reasoning
+written next to them, because that list is the rule and adding to it should be
+a deliberate act rather than a convenience.
+
+The base map was CARTO first, and it lasted one deploy: CARTO's tiles came back
+reading **"API key required"**. That is the shape of the risk in this whole
+list — a host that is keyless today can gate tomorrow, and a static page has
+nowhere to keep a key. OpenStreetMap's standard tiles never wanted one. The
+cost is that they publish no dark style, so **the map stays light in both
+themes**; inverting them in CSS makes a muddy, misread map rather than a dark
+one, and a base map behind a rain radar has one job.
 
 **Radar coverage is not uniform, and where none reaches, the frames come back
 empty — which looks exactly like a dry sky.** The card says so on screen, in

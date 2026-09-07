@@ -68,13 +68,18 @@ test('nothing loads from a third-party host at runtime', () => {
   // The radar map is the deliberate loosening: Open-Meteo publishes hourly
   // model output and no radar tiles at all, so "where is the rain right now"
   // cannot be answered from it. RainViewer serves the radar sweeps, keyless,
-  // and CARTO the base map underneath them — the tile host itself comes from
-  // RainViewer's own index at runtime rather than being written down here.
-  // Nothing is sent to either but a tile coordinate.
+  // and OpenStreetMap the base map underneath them — the tile host itself
+  // comes from RainViewer's own index at runtime rather than being written
+  // down here. Nothing is sent to either but a tile coordinate.
+  //
+  // The base map was CARTO first, and CARTO's tiles came back reading "API key
+  // required". That is the shape of the risk in this whole list: a host that is
+  // keyless today can gate tomorrow, and a static page has nowhere to keep a
+  // key. Prefer a source that never wanted one.
   const allowed = [
     'api.open-meteo.com', 'air-quality-api.open-meteo.com', 'open-meteo.com',
-    'api.rainviewer.com', 'www.rainviewer.com', 'basemaps.cartocdn.com',
-    'www.openstreetmap.org',
+    'api.rainviewer.com', 'www.rainviewer.com',
+    'tile.openstreetmap.org', 'www.openstreetmap.org',
   ];
   for (const file of appFiles) {
     for (const [, host] of read(file).matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) {
