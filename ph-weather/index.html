@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Philippines Weather — flood, rain and heat</title>
+<meta name="description" content="A weather app for the Philippines: flood likelihood from PAGASA rainfall thresholds and how saturated the ground already is, landslide conditions, heat index and humidity, air quality and everyday allergy triggers." />
+<meta name="theme-color" content="#F7F7F2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#101A1C" media="(prefers-color-scheme: dark)" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+<header class="top">
+  <div class="top-place">
+    <label class="sr-only" for="place-select">Place</label>
+    <select id="place-select"></select>
+    <div class="top-title">
+      <p><span id="place-name">Quezon City</span></p>
+      <p id="place-region">Metro Manila</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button type="button" id="locate" class="round" aria-label="Use my location" title="Use my location"></button>
+    <button type="button" id="text-size" class="round round--text" aria-label="Text size">A</button>
+    <button type="button" id="units" class="round" aria-label="Switch temperature units">°C</button>
+    <button type="button" id="refresh" class="round" aria-label="Refresh"></button>
+  </div>
+</header>
+
+<p id="banner" class="banner" hidden></p>
+
+<div id="first-load" class="first-load">
+  <p class="first-load-mark"></p>
+  <p>Fetching the forecast…</p>
+</div>
+
+<main id="screen" hidden>
+
+  <section class="sheet" id="sheet" aria-label="Conditions now">
+    <div class="sheet-disc" aria-hidden="true"></div>
+    <p class="sheet-city" id="sheet-city"></p>
+    <p class="sheet-note" id="sheet-note"></p>
+    <div class="reading" id="reading"></div>
+    <div class="curve-wrap" id="curve"></div>
+    <ul class="days" id="days"></ul>
+    <p class="stamp"><span id="updated"></span><span id="model-time"></span></p>
+  </section>
+
+  <!-- Flooding sits above everything else, because it is what this app is for. -->
+  <section class="card card--lead" aria-labelledby="h-flood">
+    <h2 id="h-flood">Will it flood</h2>
+    <div id="flood"></div>
+  </section>
+
+  <section class="card card--flush" aria-labelledby="h-rain">
+    <h2 id="h-rain">Rain, hour by hour</h2>
+    <p class="card-note">Each bar is one hour. The lines across are PAGASA's rainfall warning thresholds — a bar reaching a line is rain at that warning level.</p>
+    <div id="rain-chart" class="chart-wrap"></div>
+  </section>
+
+  <section class="card card--flush" aria-labelledby="h-advisories">
+    <h2 id="h-advisories" class="sr-only">What to know</h2>
+    <ul id="advisories" class="advisories"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-slide">
+    <h2 id="h-slide">Landslide conditions</h2>
+    <div id="landslide"></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-heat">
+    <h2 id="h-heat">Heat and humidity</h2>
+    <div id="humidity"></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-air">
+    <h2 id="h-air">Air and allergies</h2>
+    <div id="air"></div>
+  </section>
+
+  <section class="card card--flush" aria-labelledby="h-hours">
+    <h2 id="h-hours">Next 24 hours</h2>
+    <p class="card-note">Temperature, rain in millimetres, and the chance of it. Shaded hours are in a PAGASA warning range.</p>
+    <ul id="hours" class="hours"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-details">
+    <h2 id="h-details">Right now, in detail</h2>
+    <dl id="details" class="details"></dl>
+  </section>
+
+  <footer class="foot">
+    <p><strong>Where this comes from.</strong> Forecast and air quality from
+      <a href="https://open-meteo.com/" rel="noopener">Open-Meteo</a> — free, keyless and open, with
+      weather from national meteorological services and air quality from the Copernicus atmosphere model.
+      The app asks for a coordinate and gets a forecast back; nothing about you is sent anywhere.</p>
+    <p><strong>Where it stops.</strong> This is not an official warning service and it is not PAGASA.
+      The flood and landslide readings are rainfall applied to published thresholds — they do not know your
+      street's drainage, the river level, what a dam upstream is releasing, or how steep the slope above you
+      is. For warnings that account for those, follow PAGASA, PHIVOLCS and your local DRRMO.</p>
+    <p class="foot-meta">Everything this app remembers — your place, your units, your text size and the last
+      reading — stays in this browser under <code>ph/v1/</code>.</p>
+  </footer>
+
+</main>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

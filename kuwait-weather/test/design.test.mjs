@@ -69,7 +69,17 @@ test('contrast is not traded away for the reference\'s pastel', () => {
   }
 });
 
-test('type is in rem, so a phone\'s own text size still moves it', () => {
+test('the browser\'s own text size is respected, not overridden', () => {
+  // `font: 400 16px` on body throws away the size someone already chose on
+  // their phone. The root takes a percentage of it instead, so their setting
+  // is the starting point and the in-app control multiplies from there.
+  assert.match(css, /html\s*\{[^}]*font-size:\s*var\(--text-scale,\s*100%\)/);
+  const body = css.slice(css.indexOf('body {'), css.indexOf('body {') + 400);
+  assert.ok(!/font:[^;]*\d+px/.test(body), 'body must not hardcode a pixel type size');
+  assert.match(body, /font:\s*400\s+1rem/);
+});
+
+test('type is relative, so one number at the root moves all of it', () => {
   const sizes = [...css.matchAll(/font-size:\s*([^;]+);/g)].map((m) => m[1].trim());
   assert.ok(sizes.length > 20);
   const exceptions = new Set([
@@ -78,18 +88,46 @@ test('type is in rem, so a phone\'s own text size still moves it', () => {
     '16px',
   ]);
   for (const size of sizes) {
-    if (size.startsWith('clamp(') || size.endsWith('em') || size === 'inherit') continue;
+    if (size.startsWith('clamp(') || size.startsWith('var(')) continue;
+    if (size.endsWith('em') || size.endsWith('%') || size === 'inherit') continue;
     if (exceptions.has(size)) continue;
     assert.fail(`font-size: ${size} is not relative`);
   }
   assert.equal(sizes.filter((s) => exceptions.has(s)).length, 1, 'only the select carries the iOS workaround');
 });
 
+test('the type scale has a floor, and nothing goes under it', () => {
+  // The labels that used to sit at 0.62rem were about ten pixels — unreadable
+  // at arm's length, which is the distance this app is actually held at.
+  const FLOOR = 0.8;
+  assert.match(css, /--t-xs:\s*0\.8rem/, 'the floor has moved without this test moving');
+  for (const [, value] of css.matchAll(/font-size:\s*(\d*\.?\d+)rem;/g)) {
+    assert.ok(Number(value) >= FLOOR, `font-size: ${value}rem is under the ${FLOOR}rem floor`);
+  }
+  for (const step of ['xs', 'sm', 'base', 'md', 'lg', 'xl']) {
+    assert.match(css, new RegExp(`--t-${step}:`), `--t-${step} is missing from the scale`);
+  }
+});
+
 test('the numeral is the biggest thing on the page, and it is light', () => {
-  const block = css.slice(css.indexOf('.reading-temp'), css.indexOf('.reading-temp') + 300);
+  const block = css.slice(css.indexOf('.reading-temp'), css.indexOf('.reading-temp') + 460);
   assert.match(block, /font-weight:\s*200/, 'the reference numeral is hairline, not bold');
   assert.match(block, /clamp\(/, 'it has to shrink on a narrow phone');
   assert.match(block, /tabular-nums/, 'a changing temperature must not shift the layout');
+  // The floor of the clamp has to be capped against the viewport, or the
+  // largest text setting scales it too and the number leaves the card.
+  assert.match(block, /clamp\(\s*min\(/, 'the clamp floor is not capped against the viewport');
+});
+
+test('touch targets hold still while the type grows', () => {
+  // A thumb does not get bigger when the text does, and four round buttons
+  // scaling with the type would push the place name off the header.
+  assert.match(css, /--control:\s*\d+px/);
+  const round = css.slice(css.indexOf('.round {'), css.indexOf('.round {') + 300);
+  assert.match(round, /width:\s*var\(--control\)/);
+  assert.match(round, /height:\s*var\(--control\)/);
+  const px = Number(css.match(/--control:\s*(\d+)px/)[1]);
+  assert.ok(px >= 44, `${px}px is under the 44px minimum touch target`);
 });
 
 test('the corner radius is one number, used everywhere', () => {

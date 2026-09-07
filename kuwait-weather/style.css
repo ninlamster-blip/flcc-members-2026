@@ -58,6 +58,20 @@
   --dust-heavy: #B9722F;
   --dust-storm: #8E4423;
 
+  /* The type scale. --t-xs is the floor: nothing on this page may be smaller,
+     because the labels that used to sit at 0.62rem were about ten pixels and
+     unreadable at arm's length in sunlight. */
+  --t-xs:   0.8rem;
+  --t-sm:   0.875rem;
+  --t-base: 1rem;
+  --t-md:   1.0625rem;
+  --t-lg:   1.25rem;
+  --t-xl:   1.5rem;
+
+  /* Controls stay in pixels on purpose: a touch target is a thumb, not type,
+     and 44px is the smallest one that reliably gets hit. */
+  --control: 44px;
+
   --radius: 26px;
   --radius-sm: 16px;
   --gap: 14px;
@@ -96,12 +110,18 @@
 
 * { box-sizing: border-box; }
 
+/* The browser's own text size is the base — someone who turned text up on
+   their phone keeps that — and the in-app control multiplies it from there.
+   A pixel size here would throw their setting away, which is what the old
+   `font: 400 16px` on body did. */
+html { font-size: var(--text-scale, 100%); }
+
 body {
   margin: 0;
   padding: 0 0 3rem;
   background: var(--paper);
   color: var(--ink);
-  font: 400 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 400 1rem/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -112,7 +132,7 @@ main, .top, .banner, .first-load {
 }
 
 h2 {
-  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: var(--t-xs); letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--muted); margin: 0 0 0.8rem; font-weight: 700;
 }
 
@@ -128,11 +148,15 @@ h2 {
 /* ── header ───────────────────────────────────────────────────────────── */
 
 .top {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  /* Four 44px controls and a place name do not fit across a 320px phone once
+     the type is turned up. Wrapping to two lines keeps both readable, rather
+     than grinding "Kuwait City" down to "K…". */
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 0.6rem 1rem;
   padding-top: max(1rem, env(safe-area-inset-top));
   padding-bottom: 0.9rem;
 }
-.top-place { position: relative; min-width: 0; }
+.top-place { position: relative; min-width: 0; flex: 1 1 9rem; }
 .top-place select {
   position: absolute; inset: 0; width: 100%; height: 100%;
   /* 16px exactly: iOS Safari zooms the whole page when a control smaller
@@ -142,23 +166,31 @@ h2 {
 }
 .top-title p { margin: 0; }
 .top-title p:first-child {
-  font-size: 1.3rem; font-weight: 700; letter-spacing: -0.015em;
+  font-size: var(--t-lg); font-weight: 700; letter-spacing: -0.015em;
   display: flex; align-items: center; gap: 0.35rem;
+  overflow: hidden; white-space: nowrap;
 }
+.top-title p:first-child span { overflow: hidden; text-overflow: ellipsis; }
 .top-title p:first-child::after {
   content: ""; width: 0.45rem; height: 0.45rem; border-right: 2px solid var(--muted);
   border-bottom: 2px solid var(--muted); transform: translateY(-25%) rotate(45deg);
 }
-.top-title p:last-child { font-size: 0.78rem; color: var(--muted); }
+.top-title p:last-child { font-size: var(--t-sm); color: var(--muted); }
 
-.top-actions { display: flex; gap: 0.4rem; }
+.top-actions { display: flex; gap: 0.35rem; flex: none; }
 .round {
-  width: 2.5rem; height: 2.5rem; border-radius: 50%;
+  width: var(--control); height: var(--control); border-radius: 50%; flex: none;
   border: 1px solid var(--line); background: var(--card); color: var(--ink);
-  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  font-size: var(--t-sm); font-weight: 600; cursor: pointer;
   display: grid; place-items: center;
 }
 .round:hover { border-color: var(--muted); }
+/* Lit while the app is showing where the device actually is, rather than a
+   place picked off the list. */
+.round.is-on { background: var(--tone); border-color: var(--tone); color: var(--sheet); }
+/* The A holds its own size whatever the setting, so the button stays a
+   button rather than growing into the layout it controls. */
+.round--text { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
 .round.is-spinning { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .round.is-spinning { animation: none; opacity: 0.5; } }
@@ -168,7 +200,7 @@ h2 {
 .banner {
   margin: 0 auto 0.75rem; padding: 0.6rem 0.85rem;
   border-radius: var(--radius-sm); background: var(--card); border: 1px solid var(--line);
-  font-size: 0.85rem; color: var(--muted);
+  font-size: var(--t-sm); color: var(--muted);
 }
 .banner--warn { border-color: var(--warning); color: var(--warning); }
 
@@ -197,33 +229,38 @@ h2 {
 
 .sheet-city {
   position: relative; margin: 0; text-align: center;
-  font-size: 1.02rem; font-weight: 700; letter-spacing: 0.01em; color: var(--tone);
+  font-size: var(--t-md); font-weight: 700; letter-spacing: 0.01em; color: var(--tone);
 }
 .sheet-note {
   position: relative; margin: 0.15rem 0 0; text-align: center;
-  font-size: 0.76rem; color: var(--muted);
+  font-size: var(--t-sm); color: var(--muted);
 }
 
 /* The number, and what stands beside it. */
 .reading {
-  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center; gap: 1rem; margin: 1.1rem 0 0.4rem;
+  position: relative; display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: space-between;
+  gap: 0.6rem 1rem; margin: 1.1rem 0 0.4rem;
 }
 .reading-temp {
   margin: 0; color: var(--tone);
-  font-size: clamp(5rem, 31vw, 8.5rem); font-weight: 200; line-height: 0.84;
+  /* min() caps the floor against the viewport. Without it the largest text
+     setting scales the bottom of the clamp as well, and the number walks off
+     the side of the card on a narrow phone. */
+  flex: 0 1 auto;
+  font-size: clamp(min(5rem, 26vw), 31vw, 8.5rem); font-weight: 200; line-height: 0.84;
   letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
 }
 .reading-temp .deg {
   font-size: 0.24em; font-weight: 300; vertical-align: super;
   letter-spacing: 0; margin-left: 0.02em;
 }
-.reading-side { text-align: right; display: grid; gap: 0.55rem; justify-items: end; }
+.reading-side { flex: 0 1 auto; text-align: right; display: grid; gap: 0.55rem; justify-items: end; }
 .reading-art { color: var(--ink); margin-bottom: -0.2rem; }
-.reading-condition { margin: 0; font-size: 1.02rem; font-weight: 600; color: var(--tone); }
+.reading-condition { margin: 0; font-size: var(--t-md); font-weight: 600; color: var(--tone); }
 .reading-pair { margin: 0; }
 .reading-pair b {
-  display: block; font-size: 1.02rem; font-weight: 500; color: var(--ink);
+  display: block; font-size: var(--t-md); font-weight: 500; color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 /* Units live in the value, never in the label. The labels are uppercased, and
@@ -231,7 +268,7 @@ h2 {
    by a factor of a thousand, in a number people use to decide on a mask. */
 .reading-pair b i { font-style: normal; font-size: 0.66em; color: var(--muted); margin-left: 0.15em; }
 .reading-pair span {
-  display: block; font-size: 0.64rem; letter-spacing: 0.06em;
+  display: block; font-size: var(--t-xs); letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--muted);
 }
 
@@ -251,7 +288,7 @@ h2 {
 .curve-peak { fill: var(--sheet); stroke: var(--tone); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .curve-key {
   display: flex; justify-content: center; gap: 1.1rem;
-  margin: 0.15rem 0 0; font-size: 0.66rem; color: var(--muted);
+  margin: 0.15rem 0 0; font-size: var(--t-xs); color: var(--muted);
 }
 .curve-key span { display: inline-flex; align-items: center; gap: 0.35rem; }
 .curve-key i { width: 14px; height: 0; border-top: 2px solid var(--tone); }
@@ -262,19 +299,22 @@ h2 {
 .days {
   list-style: none; margin: 0.9rem 0 0; padding: 0.9rem 0 0;
   border-top: 1px solid var(--hair);
-  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.15rem;
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(2.9rem, 1fr);
+  gap: 0.15rem; overflow-x: auto; -webkit-overflow-scrolling: touch;
 }
 .day { text-align: center; color: var(--ink); }
 .day p { margin: 0; }
 .day-name {
-  font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--muted); font-weight: 600;
+  /* Not uppercased: capitals are wider and slower to read, and "TODAY" did
+     not fit its column. */
+  font-size: var(--t-xs); letter-spacing: 0.01em;
+  color: var(--muted); font-weight: 600; white-space: nowrap;
 }
 .day.is-today .day-name { color: var(--tone); }
 .day .art { margin: 0.35rem auto 0.2rem; }
-.day-temps { font-size: 0.74rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.day-temps { font-size: var(--t-xs); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .day-temps b { font-weight: 500; }
-.day-low { font-size: 0.66rem; color: var(--muted); margin-top: 0.05rem !important; }
+.day-low { font-size: var(--t-xs); color: var(--muted); margin-top: 0.05rem !important; }
 .day-dust {
   display: block; height: 3px; width: 60%; margin: 0.3rem auto 0;
   border-radius: 2px; background: transparent;
@@ -285,7 +325,7 @@ h2 {
 
 .stamp {
   margin: 0.9rem 0 0; text-align: center;
-  font-size: 0.7rem; color: var(--muted);
+  font-size: var(--t-xs); color: var(--muted);
 }
 .stamp .is-stale { color: var(--warning); }
 #model-time::before { content: " · "; }
@@ -298,7 +338,7 @@ h2 {
 }
 .card--flush { padding: 1.15rem 0; }
 .card--flush > h2, .card--flush > .card-note { padding-inline: 1.15rem; }
-.card-note { margin: -0.5rem 0 0.9rem; font-size: 0.76rem; color: var(--muted); }
+.card-note { margin: -0.5rem 0 0.9rem; font-size: var(--t-sm); color: var(--muted); }
 
 /* ── advisories ───────────────────────────────────────────────────────── */
 
@@ -308,8 +348,8 @@ h2 {
 }
 .advisory + .advisory { border-top: 1px solid var(--hair); }
 .advisory .art { margin: -0.35rem 0; }
-.advisory-title { margin: 0; font-weight: 650; font-size: 0.98rem; }
-.advisory-detail { margin: 0.15rem 0 0; font-size: 0.86rem; color: var(--muted); }
+.advisory-title { margin: 0; font-weight: 650; font-size: var(--t-base); }
+.advisory-detail { margin: 0.15rem 0 0; font-size: var(--t-sm); color: var(--muted); }
 
 .advisory--info    .advisory-title { color: var(--info); }
 .advisory--watch   .advisory-title { color: var(--watch); }
@@ -327,30 +367,30 @@ h2 {
 }
 .ban .art { margin: -0.4rem 0; }
 .ban--idle { background: transparent; border-color: var(--line); }
-.ban-title { margin: 0; font-weight: 650; font-size: 0.92rem; }
-.ban-detail { margin: 0.2rem 0 0; font-size: 0.79rem; color: var(--muted); }
+.ban-title { margin: 0; font-weight: 650; font-size: var(--t-base); }
+.ban-detail { margin: 0.2rem 0 0; font-size: var(--t-sm); color: var(--muted); }
 
 .work-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
 .work-figure { flex: 1 1 11rem; }
 .work-band {
-  margin: 0; font-size: 1.45rem; font-weight: 300; letter-spacing: -0.02em; color: var(--tone);
+  margin: 0; font-size: var(--t-xl); font-weight: 300; letter-spacing: -0.02em; color: var(--tone);
 }
-.work-sub { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--muted); }
+.work-sub { margin: 0.25rem 0 0; font-size: var(--t-sm); color: var(--muted); }
 
 .work-facts { flex: 1 1 12rem; margin: 0; display: grid; gap: 0.45rem; }
-.work-facts div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.86rem; }
+.work-facts div { display: flex; justify-content: space-between; gap: 1rem; font-size: var(--t-sm); }
 .work-facts dt { color: var(--muted); }
 .work-facts dd { margin: 0; font-weight: 600; text-align: right; }
 
 .profile { display: flex; gap: 0.4rem; margin-top: 1rem; }
 .profile-btn {
-  flex: 1; padding: 0.55rem 0.3rem; font: inherit; font-size: 0.8rem; font-weight: 600;
+  flex: 1; padding: 0.55rem 0.3rem; font: inherit; font-size: var(--t-sm); font-weight: 600;
   border: 1px solid var(--line); background: transparent; color: var(--muted);
   border-radius: 999px; cursor: pointer;
 }
 .profile-btn.is-on { background: var(--ink); border-color: var(--ink); color: var(--card); }
 
-.fineprint { margin: 0.95rem 0 0; font-size: 0.72rem; line-height: 1.5; color: var(--muted); }
+.fineprint { margin: 0.95rem 0 0; font-size: var(--t-xs); line-height: 1.5; color: var(--muted); }
 
 /* ── dust ─────────────────────────────────────────────────────────────── */
 
@@ -358,21 +398,21 @@ h2 {
 .dust-head .art { margin: -0.4rem 0; }
 .dust-badge {
   display: inline-block; padding: 0.2rem 0.65rem; border-radius: 999px;
-  font-size: 0.78rem; font-weight: 700; color: #fff; background: var(--dust-clear);
+  font-size: var(--t-sm); font-weight: 700; color: #fff; background: var(--dust-clear);
 }
 .dust--clear .dust-badge { background: var(--dust-clear); }
 .dust--hazy  .dust-badge { background: var(--dust-hazy); color: #3B3115; }
 .dust--dusty .dust-badge { background: var(--dust-dusty); color: #33230C; }
 .dust--heavy .dust-badge { background: var(--dust-heavy); }
 .dust--storm .dust-badge { background: var(--dust-storm); }
-.dust-advice { margin: 0.3rem 0 0; font-size: 0.86rem; color: var(--muted); }
+.dust-advice { margin: 0.3rem 0 0; font-size: var(--t-sm); color: var(--muted); }
 
 .facts { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 0.8rem; }
 .facts div { border-top: 1px solid var(--hair); padding-top: 0.5rem; }
-.facts dt { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
-.facts dd { margin: 0.15rem 0 0; font-weight: 500; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.facts dt { font-size: var(--t-xs); color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.facts dd { margin: 0.15rem 0 0; font-weight: 500; font-size: var(--t-md); font-variant-numeric: tabular-nums; }
 
-.empty { margin: 0; font-size: 0.87rem; color: var(--muted); }
+.empty { margin: 0; font-size: var(--t-sm); color: var(--muted); }
 
 /* ── hourly ───────────────────────────────────────────────────────────── */
 
@@ -387,12 +427,12 @@ h2 {
 }
 .hour--banned { background: color-mix(in srgb, var(--warning) 9%, transparent); }
 .hour p { margin: 0; font-variant-numeric: tabular-nums; }
-.hour-time { font-size: 0.68rem; color: var(--muted); }
+.hour-time { font-size: var(--t-xs); color: var(--muted); }
 .hour .art { margin: 0.25rem auto 0.1rem; }
-.hour-temp { font-size: 1rem; font-weight: 500; }
-.hour-feels { font-size: 0.68rem; color: var(--muted); }
-.hour-wind { font-size: 0.66rem; color: var(--muted); margin-top: 0.3rem !important; }
-.hour-wind span { display: block; font-size: 0.6rem; letter-spacing: 0.04em; }
+.hour-temp { font-size: var(--t-base); font-weight: 500; }
+.hour-feels { font-size: var(--t-xs); color: var(--muted); }
+.hour-wind { font-size: var(--t-xs); color: var(--muted); margin-top: 0.3rem !important; }
+.hour-wind span { display: block; font-size: var(--t-xs); letter-spacing: 0.04em; }
 .hour-dust { display: block; height: 3px; border-radius: 2px; margin: 0.4rem 0.5rem 0.1rem; background: var(--hair); }
 .hour-dust.dust--clear { background: var(--dust-clear); }
 .hour-dust.dust--hazy  { background: var(--dust-hazy); }
@@ -404,19 +444,21 @@ h2 {
 
 .details { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.9rem; }
 .details div { border-top: 1px solid var(--hair); padding-top: 0.5rem; }
-.details dt { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
-.details dd { margin: 0.15rem 0 0; font-size: 1.15rem; font-weight: 400; font-variant-numeric: tabular-nums; }
-.details p { margin: 0.15rem 0 0; font-size: 0.7rem; color: var(--muted); }
+.details dt { font-size: var(--t-xs); color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.details dd { margin: 0.15rem 0 0; font-size: var(--t-lg); font-weight: 400; font-variant-numeric: tabular-nums; }
+.details p { margin: 0.15rem 0 0; font-size: var(--t-xs); color: var(--muted); }
 
 /* ── footer ───────────────────────────────────────────────────────────── */
 
-.foot { font-size: 0.77rem; line-height: 1.55; color: var(--muted); padding: 0.5rem 0.25rem 1rem; }
+.foot { font-size: var(--t-sm); line-height: 1.55; color: var(--muted); padding: 0.5rem 0.25rem 1rem; }
 .foot p { margin: 0 0 0.7rem; }
 .foot strong { color: var(--ink); }
 .foot a { color: var(--calm); }
 .foot-meta code { font-size: 0.95em; }
 
-@media (max-width: 24rem) {
-  .days { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; }
-  .day-temps { font-size: 0.62rem; }
+/* The work-profile buttons carry two words each; at the larger settings they
+   stack rather than shrinking the words. */
+@media (max-width: 26rem) {
+  .profile { flex-wrap: wrap; }
+  .profile-btn { flex: 1 1 8rem; }
 }

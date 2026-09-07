@@ -7,40 +7,35 @@ import { derive } from './core/derive.js';
 import { advisories } from './core/advisories.js';
 import { toneFor } from './ui/tone.js';
 import { shouldAutoLocate, permissionState, isRefusal, placeFromFix } from './core/autolocate.js';
-import { DEFAULT_WORK_PROFILE, WORK_PROFILES } from './core/heat.js';
-import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
 import { SIZES, DEFAULT_SIZE, nextSize, rootScale, announce } from './core/textsize.js';
+import { LEVELS as LOCAL_LEVELS, DEFAULT_LEVEL } from './core/localhazard.js';
+import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
 import * as view from './ui/render.js';
 import { icon } from './ui/icons.js';
 
-const REFRESH_MS = 10 * 60 * 1000;   // the model publishes every 15 minutes
-const STALE_MS = 60 * 60 * 1000;     // beyond this a cached reading is labelled old
+const REFRESH_MS = 10 * 60 * 1000;
+const STALE_MS = 60 * 60 * 1000;
 
 const el = (id) => document.getElementById(id);
 
 const state = {
   place: null,
   units: DEFAULT_UNITS,
-  profile: DEFAULT_WORK_PROFILE,
   text: DEFAULT_SIZE,
-  reading: null,     // normalized, as fetched
-  derived: null,     // enriched, as drawn
+  reading: null,
+  derived: null,
   loading: false,
   error: null,
   cached: false,
 };
 
-// ── state, persisted ────────────────────────────────────────────────────────
-
 function restore() {
-  const savedPlace = store.read(store.KEYS.place);
-  const listed = places.place(savedPlace?.id);
-  state.place = (listed && savedPlace?.fromFix ? { ...listed, fromFix: true } : listed)
-    || (savedPlace?.lat != null ? savedPlace : null)
+  const saved = store.read(store.KEYS.place);
+  const listed = places.place(saved?.id);
+  state.place = (listed && saved?.fromFix ? { ...listed, fromFix: true } : listed)
+    || (saved?.lat != null ? saved : null)
     || places.defaultPlace();
   state.units = store.read(store.KEYS.units) === 'F' ? 'F' : 'C';
-  const savedProfile = store.read(store.KEYS.work);
-  state.profile = WORK_PROFILES.some((p) => p.id === savedProfile) ? savedProfile : DEFAULT_WORK_PROFILE;
   const savedText = store.read(store.KEYS.text);
   state.text = SIZES.some((t) => t.id === savedText) ? savedText : DEFAULT_SIZE;
 
@@ -50,8 +45,6 @@ function restore() {
     state.cached = true;
   }
 }
-
-// ── loading ─────────────────────────────────────────────────────────────────
 
 let inFlight = null;
 
@@ -65,18 +58,13 @@ async function load({ force = false } = {}) {
 
   try {
     const reading = await api.load({
-      lat: state.place.lat,
-      lon: state.place.lon,
-      place: state.place,
-      signal: inFlight.signal,
+      lat: state.place.lat, lon: state.place.lon, place: state.place, signal: inFlight.signal,
     });
     state.reading = reading;
     state.cached = false;
     store.write(store.KEYS.reading, reading);
   } catch (err) {
     if (err?.name === 'AbortError') return;
-    // A cached reading is worth more than an empty screen, so a failed refresh
-    // leaves the last one on the page and says so.
     state.error = navigator.onLine === false
       ? 'You are offline. Showing the last reading this device downloaded.'
       : `Could not reach the forecast (${err.message}).`;
@@ -85,8 +73,6 @@ async function load({ force = false } = {}) {
     render();
   }
 }
-
-// ── drawing ─────────────────────────────────────────────────────────────────
 
 function applyTextSize() {
   document.documentElement.style.setProperty('--text-scale', rootScale(state.text));
@@ -99,7 +85,7 @@ function render() {
   const now = new Date();
   el('place-select').innerHTML = view.placeOptions(state.place.id);
   el('place-name').textContent = state.place.name;
-  el('place-gov').textContent = state.place.gov || 'Your location';
+  el('place-region').textContent = state.place.region || 'Your location';
   el('refresh').classList.toggle('is-spinning', state.loading);
   el('locate').classList.toggle('is-on', Boolean(state.place.fromFix));
 
@@ -124,12 +110,12 @@ function render() {
   el('first-load').hidden = true;
   el('screen').hidden = false;
 
-  const d = derive(state.reading, { profile: state.profile, now });
+  const chosen = localLevel();
+  const d = derive(state.reading, { now, localLevel: chosen });
   d.units = state.units;
+  d.localLevel = chosen;
   state.derived = d;
 
-  // The whole page takes its colour from the worst thing standing on it, so
-  // the screen says how the day is before a word of it has been read.
   const alerts = advisories(d, { now });
   const tone = toneFor(alerts);
   document.documentElement.style.setProperty('--tone', `var(--${tone})`);
@@ -137,12 +123,15 @@ function render() {
   el('sheet-city').textContent = view.sheetDate(now);
   el('sheet-note').innerHTML = view.sheetNote(d, tone);
   el('reading').innerHTML = view.reading(d, state.units);
-  el('curve').innerHTML = view.curve(d, now);
-  el('advisories').innerHTML = view.advisoryList(alerts);
-  el('work').innerHTML = view.workCard(d, { profile: state.profile, now });
-  el('dust').innerHTML = view.dustCard(d);
-  el('hours').innerHTML = view.hourStrip(d, state.units, now);
+  el('curve').innerHTML = view.tempChart(d, now);
   el('days').innerHTML = view.dayList(d, state.units);
+  el('flood').innerHTML = view.floodCard(d);
+  el('rain-chart').innerHTML = view.rainChart(d, now);
+  el('advisories').innerHTML = view.advisoryList(alerts);
+  el('landslide').innerHTML = view.landslideCard(d);
+  el('humidity').innerHTML = view.humidityCard(d, state.units);
+  el('air').innerHTML = view.airCard(d);
+  el('hours').innerHTML = view.hourStrip(d, state.units, now);
   el('details').innerHTML = view.detailGrid(d, state.units);
 
   const fetched = new Date(d.fetchedAt);
@@ -151,8 +140,6 @@ function render() {
   el('updated').classList.toggle('is-stale', stale);
   el('model-time').textContent = d.now.time ? `Forecast hour ${clock(parseLocal(d.now.time))}` : '';
 }
-
-// ── events ──────────────────────────────────────────────────────────────────
 
 function choosePlace(id) {
   const next = places.place(id);
@@ -164,6 +151,25 @@ function choosePlace(id) {
   load({ force: true });
 }
 
+/**
+ * What this place's own resident knows about it, kept per place — Marikina
+ * floods and Baguio slides, so one setting for everywhere would be worse than
+ * none. Stored on this device and never sent anywhere.
+ */
+function localLevel() {
+  const all = store.read(store.KEYS.local) || {};
+  const found = all[state.place.id];
+  return LOCAL_LEVELS.some((l) => l.id === found) ? found : DEFAULT_LEVEL;
+}
+
+function setLocalLevel(id) {
+  if (!LOCAL_LEVELS.some((l) => l.id === id)) return;
+  const all = store.read(store.KEYS.local) || {};
+  all[state.place.id] = id;
+  store.write(store.KEYS.local, all);
+  render();
+}
+
 function fix({ timeout = 10000, maximumAge = 10 * 60 * 1000 } = {}) {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) { reject(new Error('Geolocation unavailable')); return; }
@@ -171,10 +177,6 @@ function fix({ timeout = 10000, maximumAge = 10 * 60 * 1000 } = {}) {
   });
 }
 
-/**
- * @param {{auto?: boolean}} options `auto` is the on-load path: it never puts
- *        an error on screen, because nobody asked it to do anything.
- */
 async function locate({ auto = false } = {}) {
   const button = el('locate');
   button.classList.add('is-spinning');
@@ -182,15 +184,13 @@ async function locate({ auto = false } = {}) {
     const { coords } = await fix();
     const chosen = placeFromFix(coords);
     store.write(store.KEYS.geo, { declined: false });
-    if (chosen.id === state.place.id && state.reading) return; // already where we are
+    if (chosen.id === state.place.id && state.reading) return;
     state.place = chosen;
     state.reading = null;
     state.cached = false;
     store.write(store.KEYS.place, chosen);
     await load({ force: true });
   } catch (err) {
-    // A refusal is remembered so the next visit does not ask again. A timeout
-    // is not a refusal and must not be recorded as one.
     if (isRefusal(err)) store.write(store.KEYS.geo, { declined: true });
     if (!auto) {
       state.error = isRefusal(err)
@@ -203,11 +203,6 @@ async function locate({ auto = false } = {}) {
   }
 }
 
-/**
- * The on-load path. It runs after the first paint, so a saved reading is
- * already on screen while this resolves — the app never opens on a blank
- * waiting for a dialog to be answered.
- */
 async function maybeAutoLocate() {
   const allowed = shouldAutoLocate({
     permission: await permissionState(),
@@ -227,29 +222,24 @@ function bind() {
     store.write(store.KEYS.text, state.text);
     applyTextSize();
   });
+  document.addEventListener('click', (e) => {
+    const button = e.target.closest('[data-local]');
+    if (button) setLocalLevel(button.dataset.local);
+  });
   el('units').addEventListener('click', () => {
     state.units = state.units === 'C' ? 'F' : 'C';
     store.write(store.KEYS.units, state.units);
     el('units').textContent = `°${state.units}`;
     render();
   });
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-profile]');
-    if (!btn) return;
-    state.profile = btn.dataset.profile;
-    store.write(store.KEYS.work, state.profile);
-    render();
-  });
 
-  // Coming back to a tab that has been open since this morning should not show
-  // this morning's numbers.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible' || !state.reading) return;
     if (new Date() - new Date(state.reading.fetchedAt) > REFRESH_MS) load();
   });
   window.addEventListener('online', () => load());
   setInterval(() => { if (document.visibilityState === 'visible') load(); }, REFRESH_MS);
-  setInterval(render, 60 * 1000); // the "updated N min ago" line, and the ban clock
+  setInterval(render, 60 * 1000);
 }
 
 export function start() {
@@ -264,7 +254,7 @@ export function start() {
   maybeAutoLocate();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => { /* offline is a bonus, not a requirement */ });
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 }
 

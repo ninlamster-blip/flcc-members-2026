@@ -1,15 +1,15 @@
 // The only module in this app that touches browser storage.
 //
-// Everything lives under `kw/v1/`, and `guard()` throws on anything else.
-// This app is a standalone project that happens to sit in this repository —
-// the namespace is what keeps it from ever reading or writing a key belonging
-// to any of the apps around it.
+// Everything lives under `ph/v1/`, and `guard()` throws on anything else.
+// This app is standalone: it shares a repository with several others and
+// nothing else, and the namespace is what makes that a fact rather than an
+// intention.
 
-export const NS = 'kw/v1/';
+export const NS = 'ph/v1/';
 
 export function guard(key) {
   if (typeof key !== 'string' || !key.startsWith(NS)) {
-    throw new Error(`Kuwait Weather storage refuses "${key}" — keys must start with "${NS}"`);
+    throw new Error(`Philippines Weather storage refuses "${key}" — keys must start with "${NS}"`);
   }
   return key;
 }
@@ -70,10 +70,10 @@ export function wipe() {
 }
 
 export const KEYS = {
-  place:    `${NS}place`,     // which place the app opens on
-  units:    `${NS}units`,     // °C or °F
-  work:     `${NS}work`,      // the outdoor-work profile the guidance is written for
-  reading:  `${NS}reading`,   // the last good reading, so a cold start has something to show
-  text:     `${NS}text`,      // how large this person wants the type
-  geo:      `${NS}geo`,       // whether locating on load has already been refused once
+  place:   `${NS}place`,    // which place the app opens on
+  units:   `${NS}units`,    // °C or °F
+  text:    `${NS}text`,     // how large this person wants the type
+  local:   `${NS}local`,    // what each place's own resident knows about it
+  geo:     `${NS}geo`,      // whether locating on load has been refused once
+  reading: `${NS}reading`,  // the last good reading, so a cold start has something
 };
