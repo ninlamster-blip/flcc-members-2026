@@ -233,6 +233,18 @@ test('the map does not promise a dark style it cannot serve', () => {
   assert.ok(!pin.includes('var(--'), `the marker must not be drawn from theme tokens: ${pin.trim()}`);
 });
 
+test('the service worker cache name is bumped whenever the shell changes', () => {
+  // A test cannot know when a file changed. What it can do is pin the pair, so
+  // that changing SHELL means changing this line too, and changing this line
+  // means seeing the note above it: a new cache name is the only thing that
+  // gets a fixed file onto a phone that already installed the old one.
+  const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+  const [, version] = sw.match(/const CACHE = '[a-z-]+-v(\d+)'/) || [];
+  assert.ok(version, 'the cache name moved out from under this test');
+  assert.ok(Number(version) >= 2, 'the radar map was added to SHELL under v1 and never reached anyone');
+  assert.match(sw, /caches\.keys\(\)[\s\S]*filter\(\(n\) => n !== CACHE\)/, 'stale caches must be deleted');
+});
+
 test('the sources under the map are credited on the page', () => {
   assert.match(html, /rainviewer\.com/);
   assert.match(html, /openstreetmap/i);
