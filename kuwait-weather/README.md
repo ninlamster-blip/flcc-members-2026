@@ -53,6 +53,36 @@ single most useful thing an app can tell them. The app counts down to it, marks
 the banned hours in the hourly strip, and points at the Public Authority for
 Manpower for the current year's decree.
 
+## The design, and the one place it argues with its reference
+
+The layout is borrowed: **one tall card** carrying the date, a huge lightweight
+numeral, the condition and its numbers beside it, a smooth curve across the day,
+and the week along the bottom. The illustrations are borrowed too — **a flat
+colour shape with black line art sitting slightly off it**, the way a two-plate
+print misregisters. One 64×64 grid, one stroke weight, no gradients and no
+shadows.
+
+What is *not* borrowed is the pastel. The reference draws pale blue on white,
+which is lovely on a monitor and invisible on a phone held up in Kuwait in July.
+So the forms are kept and the contrast is not: warm paper, near-black linework,
+and every tone clearing 4.5:1 on the sheet it sits on. `test/design.test.mjs`
+computes those ratios and fails below AA — it caught two tones during the
+redesign that looked fine and were not.
+
+The other change is **what the colour means**. The reference tints its card by
+temperature: a cold city in blue, a warm one in coral. Here that would say
+nothing, because every day from May to September is the same shade of hot. So
+the card takes its colour from the worst advisory standing on it instead. The
+number, the curve, the week and the disc behind the hero all move together,
+which means the app has a colour before it has a word — you know how the day is
+before you have read anything.
+
+`js/ui/chart.js` draws the curve as a Catmull-Rom spline, which passes *through*
+every point rather than near it — a weather curve that misses its own data is a
+drawing, not a chart. Its control points are clamped to the box, because
+unclamped a sharp overnight drop overshoots and draws a temperature that never
+happens.
+
 ## The three decisions behind it
 
 **It reads outdoors.** That is why it is a light, high-contrast page by default
@@ -116,6 +146,9 @@ the only file that would change.
 | `core/places.js` | 24 places across all six governorates |
 | `core/format.js` | numbers and Kuwait times, formatted once |
 | `core/storage.js` | the only module that touches browser storage |
+| `ui/chart.js` | the temperature curve — spline, scale, and the area under it |
+| `ui/art.js` | the flat two-plate illustrations |
+| `ui/tone.js` | what colour the day is |
 
 ## A note on the WBGT model
 
@@ -138,7 +171,7 @@ old model's failure so it cannot come back.
 node --test 'kuwait-weather/test/*.test.mjs'
 ```
 
-127 of them, no dependencies and no build step. The forecast API cannot be
+178 of them, no dependencies and no build step. The forecast API cannot be
 called from a test, so `test/fixtures/forecast.mjs` builds responses in the
 real shape instead — which also lets a test ask for a specific kind of day: a
 July afternoon in a dust storm, a mild January morning, an air-quality endpoint
@@ -155,6 +188,10 @@ that returned nothing.
 | `derive.test.mjs` | per-hour enrichment, daily rollups, the best outdoor window |
 | `advisories.test.mjs` | what is raised, what is not, and in what order |
 | `render.test.mjs` | every section, escaped, balanced, and free of `undefined` |
+| `chart.test.mjs` | the curve passes through its data and stays inside its box |
+| `art.test.mjs` | every weather code has a drawing, on one grid at one weight |
+| `tone.test.mjs` | the worst advisory decides the colour |
+| `design.test.mjs` | contrast against AA, flatness, one radius, relative type |
 | `format.test.mjs` | Kuwait times, temperatures, and "updated" never reading as the future |
 | `storage.test.mjs` | the `kw/v1/` namespace |
 | `boundary.test.mjs` | no other app in this repository, no package, no key, no third-party host |

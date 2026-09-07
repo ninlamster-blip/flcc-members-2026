@@ -1,27 +1,56 @@
 /*
-  A weather app that gets read outdoors, in Kuwait, in sun bright enough to
-  wash a screen out. That decides most of what follows: a light, high-contrast
-  page by default rather than the dark glass every weather app reaches for,
-  type that stays large, and colour used only where it carries meaning — the
-  five dust levels and the four advisory severities. Dark mode is here for
-  anyone reading at night, not as the main event.
+  The design, and the one place it argues with its reference.
+  ───────────────────────────────────────────────────────────
+  The layout is borrowed: one tall card carrying the city, a huge lightweight
+  numeral, the condition and its numbers beside it, a smooth curve across the
+  day, and the week along the bottom. The illustrations are borrowed too — a
+  flat colour shape with black line art sitting slightly off it, the way a
+  two-plate print misregisters.
+
+  What is not borrowed is the pastel. The reference draws pale blue on white,
+  which is lovely on a monitor and invisible on a phone held up in Kuwait in
+  July. So the forms are kept and the contrast is not: warm paper, near-black
+  linework, and a tone that gets *darker* as the day gets more dangerous
+  rather than prettier.
+
+  That tone is the other change. Tinting a card by temperature says nothing
+  here — every summer day is the same shade of hot. It is tinted by the worst
+  advisory standing instead, so the screen has a colour before it has a word.
 */
 
 :root {
   color-scheme: light;
 
-  --paper:   #FAF6EF;   /* sand, not white */
-  --card:    #FFFFFF;
-  --ink:     #16212D;
-  --muted:   #5B6B7C;
-  --line:    #E4DCCF;
+  --paper:  #FAF6EF;
+  --sheet:  #FFFDF9;
+  --card:   #FFFFFF;
+  --ink:    #141C24;
+  --muted:  #61707E;
+  --line:   #E7DFD2;
+  --hair:   #F0EAE0;
 
-  --cool:    #2E7D9A;
-  --info:    #3E7CB1;
-  --watch:   #B8860B;
-  --warning: #C4611F;
-  --severe:  #A8321F;
-  --calm:    #3F7D52;
+  /* The five tones the hero can take, worst last. */
+  /* Each of these carries body text on the near-white sheet, so each clears
+     4.5:1 against it — the reference's pastel does not, and this app is read
+     outdoors. test/design.test.mjs pins the ratios. */
+  --calm:    #2E7D9A;
+  --info:    #3B6FA8;
+  --watch:   #9C6506;
+  --warning: #B25518;
+  --severe:  #A2301D;
+  --tone:    var(--calm);
+
+  /* The flat plate of each illustration. */
+  --flat-sun:   #F4C84E;
+  --flat-moon:  #C2D2E0;
+  --flat-cloud: #A9BFCE;
+  --flat-rain:  #6C9BDD;
+  --flat-storm: #9186DC;
+  --flat-snow:  #8FC0EA;
+  --flat-fog:   #C0AEE0;
+  --flat-dust:  #DCA959;
+  --flat-wind:  #7FC79B;
+  --flat-heat:  #EF9A6B;
 
   --dust-clear: #7FA8B8;
   --dust-hazy:  #D8C79A;
@@ -29,7 +58,8 @@
   --dust-heavy: #B9722F;
   --dust-storm: #8E4423;
 
-  --radius: 14px;
+  --radius: 26px;
+  --radius-sm: 16px;
   --gap: 14px;
   --shell: 620px;
 }
@@ -37,17 +67,30 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --paper: #111A24;
-    --card:  #182430;
-    --ink:   #ECF1F6;
-    --muted: #9BAEC0;
-    --line:  #27343F;
-    --cool:    #6FB6CE;
-    --info:    #7FB0DA;
-    --watch:   #E0B65A;
-    --warning: #E8925A;
-    --severe:  #E8705A;
-    --calm:    #7FBE93;
+    --paper: #12191F;
+    --sheet: #1B242C;
+    --card:  #1B242C;
+    --ink:   #EDF2F6;
+    --muted: #9AACBB;
+    --line:  #2A3540;
+    --hair:  #232E38;
+
+    --calm:    #74B8CE;
+    --info:    #86B2DC;
+    --watch:   #DFAF52;
+    --warning: #E8935C;
+    --severe:  #E9705B;
+
+    --flat-sun:   #C9A33F;
+    --flat-moon:  #7E93A6;
+    --flat-cloud: #6E8395;
+    --flat-rain:  #4C74AB;
+    --flat-storm: #6C63A8;
+    --flat-snow:  #5E88B4;
+    --flat-fog:   #8B7BAE;
+    --flat-dust:  #A87F42;
+    --flat-wind:  #5A9873;
+    --flat-heat:  #B5714E;
   }
 }
 
@@ -68,7 +111,10 @@ main, .top, .banner, .first-load {
   padding-inline: var(--gap);
 }
 
-h2 { font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.75rem; }
+h2 {
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 0.8rem; font-weight: 700;
+}
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -76,35 +122,36 @@ h2 { font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; colo
 }
 
 .icon { flex: none; vertical-align: -0.15em; }
+.art { flex: none; display: block; }
+.art-flat { opacity: 0.92; }
 
 /* ── header ───────────────────────────────────────────────────────────── */
 
 .top {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding-top: max(1rem, env(safe-area-inset-top));
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.9rem;
 }
-
 .top-place { position: relative; min-width: 0; }
-
 .top-place select {
   position: absolute; inset: 0; width: 100%; height: 100%;
+  /* 16px exactly: iOS Safari zooms the whole page when a control smaller
+     than that takes focus. The element is invisible, so this is a browser
+     workaround rather than a type size. */
   opacity: 0; cursor: pointer; font-size: 16px;
 }
-
 .top-title p { margin: 0; }
 .top-title p:first-child {
-  font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em;
-  display: flex; align-items: center; gap: 0.3rem;
+  font-size: 1.3rem; font-weight: 700; letter-spacing: -0.015em;
+  display: flex; align-items: center; gap: 0.35rem;
 }
 .top-title p:first-child::after {
-  content: ""; width: 0.5rem; height: 0.5rem; border-right: 2px solid var(--muted);
+  content: ""; width: 0.45rem; height: 0.45rem; border-right: 2px solid var(--muted);
   border-bottom: 2px solid var(--muted); transform: translateY(-25%) rotate(45deg);
 }
-.top-title p:last-child { font-size: 0.8rem; color: var(--muted); }
+.top-title p:last-child { font-size: 0.78rem; color: var(--muted); }
 
 .top-actions { display: flex; gap: 0.4rem; }
-
 .round {
   width: 2.5rem; height: 2.5rem; border-radius: 50%;
   border: 1px solid var(--line); background: var(--card); color: var(--ink);
@@ -119,8 +166,8 @@ h2 { font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; colo
 /* ── banners and first load ───────────────────────────────────────────── */
 
 .banner {
-  margin: 0 auto 0.75rem; padding: 0.6rem 0.8rem;
-  border-radius: 10px; background: var(--card); border: 1px solid var(--line);
+  margin: 0 auto 0.75rem; padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm); background: var(--card); border: 1px solid var(--line);
   font-size: 0.85rem; color: var(--muted);
 }
 .banner--warn { border-color: var(--warning); color: var(--warning); }
@@ -128,180 +175,248 @@ h2 { font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; colo
 .first-load { padding-top: 4rem; text-align: center; color: var(--muted); }
 .first-load-mark {
   width: 2rem; height: 2rem; margin: 0 auto 1rem; border-radius: 50%;
-  border: 3px solid var(--line); border-top-color: var(--cool);
+  border: 3px solid var(--line); border-top-color: var(--calm);
   animation: spin 0.9s linear infinite;
 }
 
-/* ── hero ─────────────────────────────────────────────────────────────── */
+/* ── the hero sheet ───────────────────────────────────────────────────── */
 
-.hero { text-align: center; padding: 1.25rem 0 0.25rem; }
-.hero-mark { color: var(--cool); line-height: 0; }
-.hero-temp {
-  margin: 0.4rem 0 0; font-size: clamp(4rem, 22vw, 6rem); font-weight: 250;
-  letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums;
+.sheet {
+  position: relative; overflow: hidden;
+  background: var(--sheet); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.5rem 1.25rem 1.1rem;
+  margin-bottom: var(--gap);
 }
-.hero-condition { margin: 0.15rem 0 0; font-size: 1.05rem; font-weight: 600; }
-.hero-feels { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.95rem; }
-.hero-feels strong { color: var(--ink); }
-.hero-gap { display: block; font-size: 0.8rem; }
+
+/* The soft disc bleeding out of the top corner, straight from the reference. */
+.sheet-disc {
+  position: absolute; top: -68px; right: -58px;
+  width: 190px; height: 190px; border-radius: 50%;
+  background: var(--tone); opacity: 0.13; pointer-events: none;
+}
+
+.sheet-city {
+  position: relative; margin: 0; text-align: center;
+  font-size: 1.02rem; font-weight: 700; letter-spacing: 0.01em; color: var(--tone);
+}
+.sheet-note {
+  position: relative; margin: 0.15rem 0 0; text-align: center;
+  font-size: 0.76rem; color: var(--muted);
+}
+
+/* The number, and what stands beside it. */
+.reading {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; gap: 1rem; margin: 1.1rem 0 0.4rem;
+}
+.reading-temp {
+  margin: 0; color: var(--tone);
+  font-size: clamp(5rem, 31vw, 8.5rem); font-weight: 200; line-height: 0.84;
+  letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
+}
+.reading-temp .deg {
+  font-size: 0.24em; font-weight: 300; vertical-align: super;
+  letter-spacing: 0; margin-left: 0.02em;
+}
+.reading-side { text-align: right; display: grid; gap: 0.55rem; justify-items: end; }
+.reading-art { color: var(--ink); margin-bottom: -0.2rem; }
+.reading-condition { margin: 0; font-size: 1.02rem; font-weight: 600; color: var(--tone); }
+.reading-pair { margin: 0; }
+.reading-pair b {
+  display: block; font-size: 1.02rem; font-weight: 500; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+/* Units live in the value, never in the label. The labels are uppercased, and
+   uppercasing "µg/m³" prints "MG/M³" — micrograms shown as milligrams, wrong
+   by a factor of a thousand, in a number people use to decide on a mask. */
+.reading-pair b i { font-style: normal; font-size: 0.66em; color: var(--muted); margin-left: 0.15em; }
+.reading-pair span {
+  display: block; font-size: 0.64rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* ── the curve ────────────────────────────────────────────────────────── */
+
+.curve-wrap { position: relative; margin: 0.5rem -0.35rem 0.2rem; }
+.curve { display: block; width: 100%; height: 104px; overflow: visible; }
+.curve-line {
+  fill: none; stroke: var(--tone); stroke-width: 2.2;
+  stroke-linecap: round; vector-effect: non-scaling-stroke;
+}
+.curve-feels {
+  fill: none; stroke: var(--tone); stroke-width: 1.4; opacity: 0.34;
+  stroke-dasharray: 3 4; stroke-linecap: round; vector-effect: non-scaling-stroke;
+}
+.curve-area { fill: var(--tone); opacity: 0.09; stroke: none; }
+.curve-peak { fill: var(--sheet); stroke: var(--tone); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.curve-key {
+  display: flex; justify-content: center; gap: 1.1rem;
+  margin: 0.15rem 0 0; font-size: 0.66rem; color: var(--muted);
+}
+.curve-key span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.curve-key i { width: 14px; height: 0; border-top: 2px solid var(--tone); }
+.curve-key i.dashed { border-top-style: dashed; opacity: 0.55; }
+
+/* ── the week, along the bottom of the sheet ──────────────────────────── */
+
+.days {
+  list-style: none; margin: 0.9rem 0 0; padding: 0.9rem 0 0;
+  border-top: 1px solid var(--hair);
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.15rem;
+}
+.day { text-align: center; color: var(--ink); }
+.day p { margin: 0; }
+.day-name {
+  font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600;
+}
+.day.is-today .day-name { color: var(--tone); }
+.day .art { margin: 0.35rem auto 0.2rem; }
+.day-temps { font-size: 0.74rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.day-temps b { font-weight: 500; }
+.day-low { font-size: 0.66rem; color: var(--muted); margin-top: 0.05rem !important; }
+.day-dust {
+  display: block; height: 3px; width: 60%; margin: 0.3rem auto 0;
+  border-radius: 2px; background: transparent;
+}
+.day-dust.dust--dusty { background: var(--dust-dusty); }
+.day-dust.dust--heavy { background: var(--dust-heavy); }
+.day-dust.dust--storm { background: var(--dust-storm); }
 
 .stamp {
-  margin: 0.5rem 0 1.25rem; text-align: center;
-  font-size: 0.75rem; color: var(--muted);
+  margin: 0.9rem 0 0; text-align: center;
+  font-size: 0.7rem; color: var(--muted);
 }
 .stamp .is-stale { color: var(--warning); }
-#model-time::before { content: "· "; }
+#model-time::before { content: " · "; }
 
 /* ── cards ────────────────────────────────────────────────────────────── */
 
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 1rem; margin-bottom: var(--gap);
+  padding: 1.15rem; margin-bottom: var(--gap);
 }
-.card--flush { padding: 1rem 0; }
-.card--flush > h2, .card--flush > .card-note { padding-inline: 1rem; }
-.card-note { margin: -0.4rem 0 0.9rem; font-size: 0.78rem; color: var(--muted); }
+.card--flush { padding: 1.15rem 0; }
+.card--flush > h2, .card--flush > .card-note { padding-inline: 1.15rem; }
+.card-note { margin: -0.5rem 0 0.9rem; font-size: 0.76rem; color: var(--muted); }
 
 /* ── advisories ───────────────────────────────────────────────────────── */
 
 .advisories { list-style: none; margin: 0; padding: 0; }
 .advisory {
-  display: flex; gap: 0.75rem; padding: 0.75rem 1rem;
-  border-left: 4px solid var(--info); align-items: flex-start;
+  display: flex; gap: 0.85rem; padding: 0.8rem 1.15rem; align-items: center;
 }
-.advisory + .advisory { border-top: 1px solid var(--line); }
-.advisory .icon { color: var(--info); margin-top: 0.1rem; }
+.advisory + .advisory { border-top: 1px solid var(--hair); }
+.advisory .art { margin: -0.35rem 0; }
 .advisory-title { margin: 0; font-weight: 650; font-size: 0.98rem; }
-.advisory-detail { margin: 0.15rem 0 0; font-size: 0.87rem; color: var(--muted); }
+.advisory-detail { margin: 0.15rem 0 0; font-size: 0.86rem; color: var(--muted); }
 
-.advisory--calm    { border-left-color: var(--calm); }    .advisory--calm .icon    { color: var(--calm); }
-.advisory--watch   { border-left-color: var(--watch); }   .advisory--watch .icon   { color: var(--watch); }
-.advisory--warning { border-left-color: var(--warning); } .advisory--warning .icon { color: var(--warning); }
-.advisory--severe  { border-left-color: var(--severe); }  .advisory--severe .icon  { color: var(--severe); }
-.advisory--severe .advisory-title { color: var(--severe); }
+.advisory--info    .advisory-title { color: var(--info); }
+.advisory--watch   .advisory-title { color: var(--watch); }
+.advisory--warning .advisory-title { color: var(--warning); }
+.advisory--severe  .advisory-title { color: var(--severe); }
+.advisory--calm    .advisory-title { color: var(--calm); }
 
 /* ── working outdoors ─────────────────────────────────────────────────── */
 
 .ban {
-  display: flex; gap: 0.7rem; align-items: flex-start;
-  padding: 0.75rem; border-radius: 10px; margin-bottom: 0.9rem;
-  background: color-mix(in srgb, var(--warning) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+  display: flex; gap: 0.8rem; align-items: center;
+  padding: 0.8rem; border-radius: var(--radius-sm); margin-bottom: 1rem;
+  background: color-mix(in srgb, var(--warning) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 26%, transparent);
 }
-.ban .icon { color: var(--warning); margin-top: 0.1rem; }
+.ban .art { margin: -0.4rem 0; }
 .ban--idle { background: transparent; border-color: var(--line); }
-.ban--idle .icon { color: var(--muted); }
 .ban-title { margin: 0; font-weight: 650; font-size: 0.92rem; }
-.ban-detail { margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--muted); }
+.ban-detail { margin: 0.2rem 0 0; font-size: 0.79rem; color: var(--muted); }
 
 .work-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
 .work-figure { flex: 1 1 11rem; }
-.work-band { margin: 0; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
-.work-sub { margin: 0.2rem 0 0; font-size: 0.82rem; color: var(--muted); }
+.work-band {
+  margin: 0; font-size: 1.45rem; font-weight: 300; letter-spacing: -0.02em; color: var(--tone);
+}
+.work-sub { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--muted); }
 
 .work-facts { flex: 1 1 12rem; margin: 0; display: grid; gap: 0.45rem; }
-.work-facts div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.87rem; }
+.work-facts div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.86rem; }
 .work-facts dt { color: var(--muted); }
 .work-facts dd { margin: 0; font-weight: 600; text-align: right; }
 
 .profile { display: flex; gap: 0.4rem; margin-top: 1rem; }
 .profile-btn {
-  flex: 1; padding: 0.5rem 0.3rem; font: inherit; font-size: 0.8rem; font-weight: 600;
+  flex: 1; padding: 0.55rem 0.3rem; font: inherit; font-size: 0.8rem; font-weight: 600;
   border: 1px solid var(--line); background: transparent; color: var(--muted);
-  border-radius: 9px; cursor: pointer;
+  border-radius: 999px; cursor: pointer;
 }
 .profile-btn.is-on { background: var(--ink); border-color: var(--ink); color: var(--card); }
 
-.fineprint { margin: 0.9rem 0 0; font-size: 0.74rem; line-height: 1.45; color: var(--muted); }
+.fineprint { margin: 0.95rem 0 0; font-size: 0.72rem; line-height: 1.5; color: var(--muted); }
 
 /* ── dust ─────────────────────────────────────────────────────────────── */
 
-.dust-head { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.9rem; }
+.dust-head { display: flex; gap: 0.85rem; align-items: center; margin-bottom: 1rem; }
+.dust-head .art { margin: -0.4rem 0; }
 .dust-badge {
-  align-self: flex-start; padding: 0.25rem 0.6rem; border-radius: 999px;
-  font-size: 0.82rem; font-weight: 700; color: #fff; background: var(--dust-clear);
+  display: inline-block; padding: 0.2rem 0.65rem; border-radius: 999px;
+  font-size: 0.78rem; font-weight: 700; color: #fff; background: var(--dust-clear);
 }
 .dust--clear .dust-badge { background: var(--dust-clear); }
 .dust--hazy  .dust-badge { background: var(--dust-hazy); color: #3B3115; }
 .dust--dusty .dust-badge { background: var(--dust-dusty); color: #33230C; }
 .dust--heavy .dust-badge { background: var(--dust-heavy); }
 .dust--storm .dust-badge { background: var(--dust-storm); }
-.dust-advice { margin: 0; font-size: 0.88rem; color: var(--muted); }
+.dust-advice { margin: 0.3rem 0 0; font-size: 0.86rem; color: var(--muted); }
 
-.facts { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 0.75rem; }
-.facts div { border-top: 1px solid var(--line); padding-top: 0.5rem; }
-.facts dt { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
-.facts dd { margin: 0.15rem 0 0; font-weight: 650; font-variant-numeric: tabular-nums; }
+.facts { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 0.8rem; }
+.facts div { border-top: 1px solid var(--hair); padding-top: 0.5rem; }
+.facts dt { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.facts dd { margin: 0.15rem 0 0; font-weight: 500; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 
-.empty { margin: 0; font-size: 0.88rem; color: var(--muted); }
+.empty { margin: 0; font-size: 0.87rem; color: var(--muted); }
 
 /* ── hourly ───────────────────────────────────────────────────────────── */
 
 .hours {
-  list-style: none; margin: 0; padding: 0 1rem 0.25rem;
-  display: flex; gap: 0.15rem; overflow-x: auto; scroll-snap-type: x proximity;
+  list-style: none; margin: 0; padding: 0 1.15rem 0.25rem;
+  display: flex; gap: 0.1rem; overflow-x: auto; scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
 }
 .hour {
-  flex: none; width: 3.5rem; text-align: center; padding: 0.5rem 0.15rem;
-  border-radius: 10px; scroll-snap-align: start; color: var(--cool);
+  flex: none; width: 3.6rem; text-align: center; padding: 0.5rem 0.15rem 0.6rem;
+  border-radius: var(--radius-sm); scroll-snap-align: start;
 }
-.hour--banned { background: color-mix(in srgb, var(--warning) 10%, transparent); }
-.hour p { margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
-.hour-time { font-size: 0.72rem; color: var(--muted) !important; margin-bottom: 0.3rem !important; }
-.hour-temp { font-size: 1rem; font-weight: 650; margin-top: 0.25rem !important; }
-.hour-feels { font-size: 0.72rem; color: var(--muted) !important; }
-.hour-wind { font-size: 0.7rem; color: var(--muted) !important; margin-top: 0.25rem !important; }
-.hour-wind span { display: block; font-size: 0.62rem; letter-spacing: 0.04em; }
-.hour-dust { display: block; height: 4px; border-radius: 2px; margin: 0.4rem 0.4rem 0.1rem; background: var(--line); }
+.hour--banned { background: color-mix(in srgb, var(--warning) 9%, transparent); }
+.hour p { margin: 0; font-variant-numeric: tabular-nums; }
+.hour-time { font-size: 0.68rem; color: var(--muted); }
+.hour .art { margin: 0.25rem auto 0.1rem; }
+.hour-temp { font-size: 1rem; font-weight: 500; }
+.hour-feels { font-size: 0.68rem; color: var(--muted); }
+.hour-wind { font-size: 0.66rem; color: var(--muted); margin-top: 0.3rem !important; }
+.hour-wind span { display: block; font-size: 0.6rem; letter-spacing: 0.04em; }
+.hour-dust { display: block; height: 3px; border-radius: 2px; margin: 0.4rem 0.5rem 0.1rem; background: var(--hair); }
 .hour-dust.dust--clear { background: var(--dust-clear); }
 .hour-dust.dust--hazy  { background: var(--dust-hazy); }
 .hour-dust.dust--dusty { background: var(--dust-dusty); }
 .hour-dust.dust--heavy { background: var(--dust-heavy); }
 .hour-dust.dust--storm { background: var(--dust-storm); }
 
-/* ── week ─────────────────────────────────────────────────────────────── */
-
-.days { list-style: none; margin: 0; padding: 0; }
-.day {
-  display: grid; align-items: center; gap: 0.5rem;
-  grid-template-columns: 2.6rem 3.2rem 1.5rem 3rem 2.2rem 1fr 2.4rem;
-  padding: 0.5rem 0; font-variant-numeric: tabular-nums;
-}
-.day + .day { border-top: 1px solid var(--line); }
-.day p { margin: 0; font-size: 0.87rem; }
-.day .icon { color: var(--cool); }
-.day-name { font-weight: 650; }
-.day-date, .day-min { color: var(--muted); }
-.day-min, .day-max { text-align: right; }
-.day-max { font-weight: 650; }
-.day-dust { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
-.day-dust.dust--dusty { color: var(--dust-dusty); }
-.day-dust.dust--heavy { color: var(--dust-heavy); }
-.day-dust.dust--storm { color: var(--dust-storm); }
-.day-bar { position: relative; height: 5px; border-radius: 3px; background: var(--line); }
-.day-bar span {
-  position: absolute; top: 0; height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--cool), var(--warning));
-}
-
-@media (max-width: 26rem) {
-  .day { grid-template-columns: 2.4rem 1.4rem 2.8rem 2rem 1fr 2.2rem; }
-  .day-date { display: none; }
-}
-
 /* ── details ──────────────────────────────────────────────────────────── */
 
 .details { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.9rem; }
-.details div { border-top: 1px solid var(--line); padding-top: 0.5rem; }
-.details dt { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
-.details dd { margin: 0.15rem 0 0; font-size: 1.05rem; font-weight: 650; font-variant-numeric: tabular-nums; }
-.details p { margin: 0.1rem 0 0; font-size: 0.72rem; color: var(--muted); }
+.details div { border-top: 1px solid var(--hair); padding-top: 0.5rem; }
+.details dt { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.details dd { margin: 0.15rem 0 0; font-size: 1.15rem; font-weight: 400; font-variant-numeric: tabular-nums; }
+.details p { margin: 0.15rem 0 0; font-size: 0.7rem; color: var(--muted); }
 
 /* ── footer ───────────────────────────────────────────────────────────── */
 
-.foot { font-size: 0.78rem; line-height: 1.55; color: var(--muted); padding: 0.5rem 0 1rem; }
+.foot { font-size: 0.77rem; line-height: 1.55; color: var(--muted); padding: 0.5rem 0.25rem 1rem; }
 .foot p { margin: 0 0 0.7rem; }
 .foot strong { color: var(--ink); }
-.foot a { color: var(--cool); }
+.foot a { color: var(--calm); }
 .foot-meta code { font-size: 0.95em; }
+
+@media (max-width: 24rem) {
+  .days { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; }
+  .day-temps { font-size: 0.62rem; }
+}

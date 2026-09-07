@@ -6,7 +6,7 @@
 <title>Kuwait Weather — heat, dust and the midday ban</title>
 <meta name="description" content="A weather app for Kuwait: heat index and WBGT work/rest guidance, dust and visibility, shamal winds, and the 11:00–16:00 summer outdoor work ban." />
 <meta name="theme-color" content="#FAF6EF" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#111A24" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#12191F" media="(prefers-color-scheme: dark)" />
 <link rel="manifest" href="./manifest.webmanifest" />
 <link rel="icon" href="./icon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="./style.css" />
@@ -38,8 +38,17 @@
 
 <main id="screen" hidden>
 
-  <section class="hero" id="hero" aria-label="Conditions now"></section>
-  <p class="stamp"><span id="updated"></span> <span id="model-time"></span></p>
+  <!-- The hero: city, the number, the condition, the curve and the week,
+       all on one card — the shape the reference design is built around. -->
+  <section class="sheet" id="sheet" aria-label="Conditions now">
+    <div class="sheet-disc" aria-hidden="true"></div>
+    <p class="sheet-city" id="sheet-city"></p>
+    <p class="sheet-note" id="sheet-note"></p>
+    <div class="reading" id="reading"></div>
+    <div class="curve-wrap" id="curve"></div>
+    <ul class="days" id="days"></ul>
+    <p class="stamp"><span id="updated"></span><span id="model-time"></span></p>
+  </section>
 
   <section class="card card--flush" aria-labelledby="h-advisories">
     <h2 id="h-advisories" class="sr-only">What to know</h2>
@@ -57,14 +66,9 @@
   </section>
 
   <section class="card card--flush" aria-labelledby="h-hours">
-    <h2 id="h-hours" class="card-head">Next 24 hours</h2>
+    <h2 id="h-hours">Hour by hour</h2>
     <p class="card-note">Air temperature, then how it feels. The bar under each hour is dust; shaded hours are inside the midday work ban.</p>
     <ul id="hours" class="hours"></ul>
-  </section>
-
-  <section class="card" aria-labelledby="h-days">
-    <h2 id="h-days">The week</h2>
-    <ul id="days" class="days"></ul>
   </section>
 
   <section class="card" aria-labelledby="h-details">

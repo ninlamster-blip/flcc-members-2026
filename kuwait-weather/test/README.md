@@ -24,6 +24,12 @@ checks the service worker caches every module that exists and caches no
 forecast, that every `#id` the app reaches for is in the page, and that every
 icon the screens ask for is one that has been drawn.
 
+`design.test.mjs` computes real contrast ratios rather than eyeballing them.
+The reference this app's look is borrowed from is pastel-on-white, and the
+pressure to drift back towards it is constant; the test failing below 4.5:1 is
+what stops that. It caught two tones during the redesign that looked fine on a
+monitor and were not.
+
 `heat.test.mjs` pins the WBGT model, including the failure of the one it
 replaced: at 48 °C and 22 % humidity the Bureau of Meteorology's shade
 approximation returns above 43 °C, and the test that a Kuwait July noon lands

@@ -43,11 +43,14 @@ const HOUR = new Intl.DateTimeFormat('en-GB', { timeZone: TIME_ZONE, hour: 'nume
 const CLOCK = new Intl.DateTimeFormat('en-GB', { timeZone: TIME_ZONE, hour: '2-digit', minute: '2-digit', hour12: false });
 const WEEKDAY = new Intl.DateTimeFormat('en-GB', { timeZone: TIME_ZONE, weekday: 'short' });
 const DATE = new Intl.DateTimeFormat('en-GB', { timeZone: TIME_ZONE, day: 'numeric', month: 'short' });
+const LONG = new Intl.DateTimeFormat('en-GB', { timeZone: TIME_ZONE, weekday: 'long', day: 'numeric', month: 'long' });
 
 export const hourLabel = (d) => HOUR.format(d).replace(' ', '').toLowerCase();
 export const clock = (d) => CLOCK.format(d);
 export const weekday = (d) => WEEKDAY.format(d);
 export const dayAndMonth = (d) => DATE.format(d);
+/** "Wednesday 15 July" — the card's own heading, and the only date in the app. */
+export const longDate = (d) => LONG.format(d);
 
 /** "Updated 3 min ago" — the only relative time this app needs. */
 export function ago(then, now = new Date()) {

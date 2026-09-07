@@ -5,6 +5,7 @@ import * as api from './core/api.js';
 import * as places from './core/places.js';
 import { derive } from './core/derive.js';
 import { advisories } from './core/advisories.js';
+import { toneFor } from './ui/tone.js';
 import { DEFAULT_WORK_PROFILE, WORK_PROFILES } from './core/heat.js';
 import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
 import * as view from './ui/render.js';
@@ -113,8 +114,17 @@ function render() {
   d.units = state.units;
   state.derived = d;
 
-  el('hero').innerHTML = view.hero(d, state.units);
-  el('advisories').innerHTML = view.advisoryList(advisories(d, { now }));
+  // The whole page takes its colour from the worst thing standing on it, so
+  // the screen says how the day is before a word of it has been read.
+  const alerts = advisories(d, { now });
+  const tone = toneFor(alerts);
+  document.documentElement.style.setProperty('--tone', `var(--${tone})`);
+
+  el('sheet-city').textContent = view.sheetDate(now);
+  el('sheet-note').innerHTML = view.sheetNote(d, tone);
+  el('reading').innerHTML = view.reading(d, state.units);
+  el('curve').innerHTML = view.curve(d, now);
+  el('advisories').innerHTML = view.advisoryList(alerts);
   el('work').innerHTML = view.workCard(d, { profile: state.profile, now });
   el('dust').innerHTML = view.dustCard(d);
   el('hours').innerHTML = view.hourStrip(d, state.units, now);

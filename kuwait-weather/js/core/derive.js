@@ -97,11 +97,18 @@ export function derive(reading, { profile = DEFAULT_WORK_PROFILE, now = new Date
   };
 }
 
-/** The next `count` hours from now, for the hourly strip. */
+/**
+ * The next `count` hours from now, for the hourly strip and the curve.
+ *
+ * When every hour has already passed — a reading left open overnight, a device
+ * whose clock has jumped — the answer is nothing at all. Falling back to the
+ * start of the array would draw yesterday morning under the heading "next 24
+ * hours", which is the one failure this app is built not to have.
+ */
 export function upcoming(hours, count = 24, now = new Date()) {
   const from = hours.findIndex((h) => h.at && h.at.getTime() >= now.getTime() - 30 * 60 * 1000);
-  const start = from === -1 ? 0 : from;
-  return hours.slice(start, start + count);
+  if (from === -1) return [];
+  return hours.slice(from, from + count);
 }
 
 /** The next hour in which the dust rises to `rank` or worse — the "it's coming" line. */

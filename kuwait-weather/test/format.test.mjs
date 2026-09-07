@@ -62,3 +62,9 @@ test('numbers keep their units and their dashes', () => {
   assert.equal(fmt.num(null, 0, '%'), '—');
   assert.equal(fmt.num(NaN, 0), '—');
 });
+
+test('the long date is a Kuwait date, not the machine\'s', () => {
+  // 23:30 UTC is already the next day in Kuwait.
+  assert.equal(fmt.longDate(new Date('2026-07-15T23:30:00Z')), 'Thursday 16 July');
+  assert.equal(fmt.longDate(new Date('2026-07-15T09:00:00Z')), 'Wednesday 15 July');
+});

@@ -134,3 +134,14 @@ test('the best window stays out of the dust as well as the heat', () => {
   assert.ok(clean, 'the cool evening is a window when the air is clean');
   assert.ok(!dirty || dirty.hours < clean.hours, 'and is not one, or is a shorter one, when it is not');
 });
+
+test('a forecast that has entirely run out gives back nothing, not its own start', () => {
+  // Left open overnight, or a device whose clock has jumped. Falling back to
+  // the first hours in the array would put yesterday morning under the
+  // heading "next 24 hours" — stale data presented as current, which is the
+  // one failure this app is built not to have.
+  const d = read();
+  const afterTheEnd = new Date('2026-07-17T06:00:00Z');
+  assert.deepEqual(upcoming(d.hours, 24, afterTheEnd), []);
+  assert.equal(bestOutdoorWindow(d.hours, { now: afterTheEnd }), null);
+});

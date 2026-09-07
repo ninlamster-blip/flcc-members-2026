@@ -26,7 +26,10 @@ const SHELL = [
   './js/core/weathercode.js',
   './js/core/wind.js',
   './js/core/workban.js',
+  './js/ui/art.js',
+  './js/ui/chart.js',
   './js/ui/icons.js',
+  './js/ui/tone.js',
   './js/ui/render.js',
 ];
 
