@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Kuwait Weather">
+  <rect width="512" height="512" rx="112" fill="#16212D"/>
+  <circle cx="256" cy="196" r="74" fill="#E8925A"/>
+  <g stroke="#E8925A" stroke-width="20" stroke-linecap="round">
+    <path d="M256 68v34M256 290v34M148 196h-34M398 196h34M180 120l-24-24M332 272l24 24M180 272l-24 24M332 120l24-24"/>
+  </g>
+  <g stroke="#D3A055" stroke-width="26" stroke-linecap="round" fill="none">
+    <path d="M96 372h200a38 38 0 1 0-36-50"/>
+    <path d="M96 436h150a30 30 0 1 1-28 40"/>
+  </g>
+</svg>

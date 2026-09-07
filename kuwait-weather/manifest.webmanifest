@@ -1,0 +1,16 @@
+{
+  "name": "Kuwait Weather — heat, dust and the midday ban",
+  "short_name": "KW Weather",
+  "description": "Heat index and WBGT work/rest guidance, dust and visibility, shamal winds, and Kuwait's summer outdoor work ban.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF6EF",
+  "theme_color": "#FAF6EF",
+  "lang": "en",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
