@@ -20,8 +20,9 @@ export function advisories(derived, { now = new Date() } = {}) {
   const out = [];
   const cur = derived.now;
 
-  // 1. The midday ban, which is the only item here with the force of law.
-  const ban = banStatus(now);
+  // 1. The midday ban, which is the only item here with the force of law —
+  // and only where that law runs.
+  const ban = derived.inKuwait === false ? { inSeason: false, active: false } : banStatus(now);
   if (ban.active) {
     out.push({
       id: 'work-ban',

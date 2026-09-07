@@ -12,7 +12,10 @@
 
 export const FORECAST_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
 export const AIR_ENDPOINT = 'https://air-quality-api.open-meteo.com/v1/air-quality';
-export const TIME_ZONE = 'Asia/Kuwait';
+// `auto` asks Open-Meteo to answer in the coordinate's own timezone and to
+// say which one that was. Hardcoding Kuwait here is what made every hour on
+// the page wrong for anybody looking at a place outside it.
+export const TIME_ZONE = 'auto';
 
 export const FORECAST_DAYS = 7;
 // The air-quality model runs a shorter horizon than the weather model.
@@ -165,6 +168,9 @@ export function normalize(forecast, air = null, { place = null, fetchedAt = new 
   return {
     place,
     fetchedAt: fetchedAt.toISOString(),
+    // The clock every timestamp in this reading is written on.
+    timeZone: typeof forecast.timezone === 'string' ? forecast.timezone : null,
+    utcOffsetSeconds: Number.isFinite(forecast.utc_offset_seconds) ? forecast.utc_offset_seconds : null,
     hasAirQuality: Boolean(airTimes?.length),
     latitude: forecast.latitude ?? null,
     longitude: forecast.longitude ?? null,

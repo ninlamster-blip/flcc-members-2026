@@ -11,8 +11,9 @@ import { dustLevel } from './dust.js';
 import { shamal, compass, beaufort } from './wind.js';
 import { bannedHour, kuwaitParts } from './workban.js';
 import { parseLocal } from './format.js';
+import { inKuwait } from './places.js';
 
-function enrich(point, { month, profile }) {
+function enrich(point, { month, profile, kuwait = true }) {
   const { tempC, humidity, isDay, cloudCover, windKmh } = point;
   const measurable = Number.isFinite(tempC) && Number.isFinite(humidity);
 
@@ -32,12 +33,12 @@ function enrich(point, { month, profile }) {
     work: wbgt == null ? null : workRest(wbgt, profile),
     waterMl: wbgt == null ? null : waterPerHourMl(wbgt),
     dust: dustLevel({ pm10: point.pm10, dust: point.dust, visibility: point.visibilityM }),
-    shamal: shamal({
+    shamal: kuwait ? shamal({
       speedKmh: point.windKmh,
       directionDeg: point.windDeg,
       gustKmh: point.gustKmh,
       month,
-    }),
+    }) : null,
     compass: compass(point.windDeg),
     beaufort: beaufort(point.windKmh),
   };
@@ -50,12 +51,21 @@ function enrich(point, { month, profile }) {
 export function derive(reading, { profile = DEFAULT_WORK_PROFILE, now = new Date() } = {}) {
   const month = kuwaitParts(now).month;
 
+  // Two things in this app are about Kuwait rather than about weather: the
+  // midday work ban, which is Kuwait law, and naming a northwesterly a shamal.
+  // Both key off the place being *looked at*, not the phone's location — so
+  // somebody in Manila checking Kuwait City still gets them, and somebody
+  // checking Manila does not get a Kuwaiti labour law.
+  const lat = reading.latitude ?? reading.place?.lat;
+  const lon = reading.longitude ?? reading.place?.lon;
+  const kuwait = Number.isFinite(lat) && Number.isFinite(lon) ? inKuwait(lat, lon) : true;
+
   const hours = reading.hours.map((h) => {
     const when = parseLocal(h.time);
     return {
-      ...enrich(h, { month, profile }),
+      ...enrich(h, { month, profile, kuwait }),
       at: when,
-      banned: when ? bannedHour(when) : false,
+      banned: kuwait && when ? bannedHour(when) : false,
     };
   });
 
@@ -90,10 +100,11 @@ export function derive(reading, { profile = DEFAULT_WORK_PROFILE, now = new Date
 
   return {
     ...reading,
-    now: enrich(reading.now, { month, profile }),
+    now: enrich(reading.now, { month, profile, kuwait }),
     hours,
     days,
     profile,
+    inKuwait: kuwait,
   };
 }
 

@@ -191,6 +191,14 @@ and fails on any of those, on a package import, on a third-party host, and on
 any `localStorage` reached outside `js/core/storage.js`, which throws on any key
 outside `kw/v1/`.
 
+The app is no longer Kuwait-only in its plumbing. Open-Meteo is asked for
+`timezone=auto` and `js/core/format.js` installs the reading's own zone through
+`setLocale()` before anything is formatted — hardcoding `Asia/Kuwait` there is
+what made every hour on the page wrong for any place outside it. The two things
+that *are* about Kuwait rather than about weather — the midday work ban and
+naming a northwesterly a shamal — are gated on `derive()`'s `inKuwait`, which
+reads the place being looked at rather than where the phone is.
+
 Read `kuwait-weather/README.md` before changing the forecast source, the WBGT
 model or the work-ban rule. The one thing in it most likely to be got wrong
 twice is the WBGT model: the obvious shade approximation returns physically

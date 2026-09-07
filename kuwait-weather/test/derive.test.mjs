@@ -145,3 +145,44 @@ test('a forecast that has entirely run out gives back nothing, not its own start
   assert.deepEqual(upcoming(d.hours, 24, afterTheEnd), []);
   assert.equal(bestOutdoorWindow(d.hours, { now: afterTheEnd }), null);
 });
+
+// ── Kuwait-specific things belong to Kuwait ─────────────────────────────────
+
+const abroad = (f = forecast(), a = air()) => {
+  const r = api.normalize(f, a, { fetchedAt: NOON });
+  r.latitude = 14.5995;   // Manila
+  r.longitude = 120.9842;
+  return derive(r, { now: NOON });
+};
+
+test('a place outside Kuwait is not told about Kuwait\'s labour law', () => {
+  // The midday ban is Kuwait law. Showing it to somebody in Manila is not a
+  // cosmetic slip — it is telling them work is prohibited when it is not.
+  const there = abroad();
+  assert.equal(there.inKuwait, false);
+  assert.ok(there.hours.every((h) => h.banned === false), 'no hour abroad is inside the ban');
+});
+
+test('and a northwesterly abroad is not called a shamal', () => {
+  const windy = forecast({ hour: () => ({ wind_speed_10m: 40, wind_direction_10m: 320 }),
+    current: { wind_speed_10m: 40, wind_direction_10m: 320 } });
+  assert.equal(abroad(windy).now.shamal, null);
+});
+
+test('but Kuwait City viewed from anywhere still gets both', () => {
+  // The gate is the place being looked at, not where the phone is — checking
+  // home from abroad has to still work properly.
+  const windy = forecast({ hour: () => ({ wind_speed_10m: 40, wind_direction_10m: 320 }),
+    current: { wind_speed_10m: 40, wind_direction_10m: 320 } });
+  const home = derive(api.normalize(windy, air(), { fetchedAt: NOON }), { now: NOON });
+  assert.equal(home.inKuwait, true);
+  assert.ok(home.now.shamal, 'a shamal in Kuwait is still a shamal');
+  assert.ok(home.hours.some((h) => h.banned), 'and the July ban still applies there');
+});
+
+test('a reading with no coordinates is assumed to be Kuwait, not assumed away', () => {
+  const r = api.normalize(forecast(), air(), { fetchedAt: NOON });
+  r.latitude = null;
+  r.longitude = null;
+  assert.equal(derive(r, { now: NOON }).inKuwait, true);
+});

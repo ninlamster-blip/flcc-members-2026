@@ -126,6 +126,25 @@ analytics, no key and no server of ours in the path. Your place, your units,
 your work profile and the last reading it downloaded stay in this browser under
 `kw/v1/`, and `js/core/storage.js` throws on any key outside that namespace.
 
+## It works outside Kuwait, and says less when it does
+
+The app was Kuwait-only in a way that was easy to miss: `Asia/Kuwait` was
+hardcoded into both API calls and into every formatter, so a forecast for
+anywhere else came back correct and was then labelled on Kuwait's clock.
+Opened from Manila, five in the afternoon read as noon.
+
+Open-Meteo is asked for `timezone=auto` now and answers with the location's
+own; `format.setLocale()` installs it before anything is drawn, and
+`parseLocal` subtracts the offset the response reported rather than a constant
+three hours. An unrecognised zone name falls back rather than throwing, because
+a page a few hours wrong beats a page that does not render.
+
+Two things in this app are about Kuwait rather than about weather — the midday
+work ban, which is Kuwait law, and calling a northwesterly a *shamal*. Both are
+gated on **the place being looked at**, not on where the phone is: checking
+Kuwait City from Manila still shows them; checking Manila does not get a
+Kuwaiti labour law.
+
 ## Where the data comes from
 
 [Open-Meteo](https://open-meteo.com/), on two endpoints, called straight from

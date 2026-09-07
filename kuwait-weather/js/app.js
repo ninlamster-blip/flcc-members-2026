@@ -8,7 +8,7 @@ import { advisories } from './core/advisories.js';
 import { toneFor } from './ui/tone.js';
 import { shouldAutoLocate, permissionState, isRefusal, placeFromFix } from './core/autolocate.js';
 import { DEFAULT_WORK_PROFILE, WORK_PROFILES } from './core/heat.js';
-import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
+import { DEFAULT_UNITS, ago, parseLocal, clock, setLocale } from './core/format.js';
 import { SIZES, DEFAULT_SIZE, nextSize, rootScale, announce } from './core/textsize.js';
 import * as view from './ui/render.js';
 import { icon } from './ui/icons.js';
@@ -123,6 +123,10 @@ function render() {
   }
   el('first-load').hidden = true;
   el('screen').hidden = false;
+
+  // Every timestamp in the reading is written on the forecast location's own
+  // clock, so that clock is installed before a single one is formatted.
+  setLocale(state.reading);
 
   const d = derive(state.reading, { profile: state.profile, now });
   d.units = state.units;

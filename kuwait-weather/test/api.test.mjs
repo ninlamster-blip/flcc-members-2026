@@ -24,11 +24,31 @@ test('the request carries coordinates and nothing about the person making it', (
   ]);
 });
 
-test('everything is asked for in Kuwait time and in km/h', () => {
+test('everything is asked for in the location\'s own time, and in km/h', () => {
+  // Not Kuwait's. Hardcoding a zone here is what labelled every hour on the
+  // page with Kuwait's clock for anybody looking at a place outside it.
   const p = params(api.forecastUrl({ lat: 29, lon: 48 }));
-  assert.equal(p.get('timezone'), 'Asia/Kuwait');
+  assert.equal(p.get('timezone'), 'auto');
   assert.equal(p.get('wind_speed_unit'), 'kmh');
-  assert.equal(params(api.airUrl({ lat: 29, lon: 48 })).get('timezone'), 'Asia/Kuwait');
+  assert.equal(params(api.airUrl({ lat: 29, lon: 48 })).get('timezone'), 'auto');
+});
+
+test('the reading keeps the clock its timestamps were written on', () => {
+  const f = forecast();
+  f.timezone = 'Asia/Manila';
+  f.utc_offset_seconds = 8 * 3600;
+  const r = api.normalize(f, air());
+  assert.equal(r.timeZone, 'Asia/Manila');
+  assert.equal(r.utcOffsetSeconds, 28800);
+});
+
+test('a response that says nothing about its zone is not guessed at', () => {
+  const f = forecast();
+  delete f.timezone;
+  delete f.utc_offset_seconds;
+  const r = api.normalize(f, air());
+  assert.equal(r.timeZone, null);
+  assert.equal(r.utcOffsetSeconds, null);
 });
 
 test('the fields the screens read are the fields that get requested', () => {
