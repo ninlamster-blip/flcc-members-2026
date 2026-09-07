@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Philippines Weather">
+  <rect width="512" height="512" rx="112" fill="#12201F"/>
+  <path d="M176 300V196l80-62 80 62v104" fill="none" stroke="#6FA8C9" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M222 300v-58h68v58" fill="none" stroke="#6FA8C9" stroke-width="22" stroke-linejoin="round"/>
+  <g stroke="#4A76C4" stroke-width="26" stroke-linecap="round" fill="none">
+    <path d="M64 330c32-26 58-26 90 0s58 26 90 0 58-26 90 0 40 20 74 0"/>
+    <path d="M64 396c32-26 58-26 90 0s58 26 90 0 58-26 90 0 40 20 74 0"/>
+  </g>
+</svg>

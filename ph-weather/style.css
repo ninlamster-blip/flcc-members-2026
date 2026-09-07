@@ -1,0 +1,405 @@
+/*
+  The same design system as this app's Kuwait sibling — one tall card, a
+  lightweight numeral, flat two-plate illustrations, a tone that follows the
+  worst thing on the page. The two apps share no code; the language is a
+  deliberate duplicate, and each holds its own rules with its own tests.
+
+  What differs is what the colours mean. In Kuwait the danger is heat and the
+  palette runs to rust. Here it is water, so the tones run to deep blue-green,
+  and the hazard scales are their own: rain takes PAGASA's warning colours
+  (yellow, orange, red) because those are the ones people already know.
+*/
+
+:root {
+  color-scheme: light;
+
+  --paper:  #F7F7F2;
+  --sheet:  #FFFFFC;
+  --card:   #FFFFFF;
+  --ink:    #12201F;
+  --muted:  #5A6C6B;
+  --line:   #E1E3DA;
+  --hair:   #EDEEE7;
+
+  /* Worst last. Each clears 4.5:1 on the sheet — see test/design.test.mjs. */
+  --calm:    #217C74;
+  --info:    #2F6FA6;
+  --watch:   #9C6506;
+  --warning: #B25518;
+  --severe:  #A2301D;
+  --tone:    var(--calm);
+
+  /* PAGASA's rainfall warning colours, darkened only as far as legibility needs. */
+  --pagasa-yellow: #9C6D04;
+  --pagasa-orange: #C0561A;
+  --pagasa-red:    #A6291C;
+
+  --flat-sun:   #F4C84E;
+  --flat-moon:  #C2D2E0;
+  --flat-cloud: #A9BFCE;
+  --flat-rain:  #6C9BDD;
+  --flat-downpour: #4A76C4;
+  --flat-storm: #9186DC;
+  --flat-fog:   #C0AEE0;
+  --flat-flood: #6FA8C9;
+  --flat-landslide: #C39A6B;
+  --flat-heat:  #EF9A6B;
+  --flat-wind:  #7FC79B;
+  --flat-air:   #A9C7C4;
+
+  --t-xs:   0.8rem;
+  --t-sm:   0.875rem;
+  --t-base: 1rem;
+  --t-md:   1.0625rem;
+  --t-lg:   1.25rem;
+  --t-xl:   1.5rem;
+
+  --control: 44px;
+  --radius: 26px;
+  --radius-sm: 16px;
+  --gap: 14px;
+  --shell: 620px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #101A1C;
+    --sheet: #182627;
+    --card:  #182627;
+    --ink:   #E9F1F0;
+    --muted: #97AAA9;
+    --line:  #27383A;
+    --hair:  #213133;
+
+    --calm:    #5FBDB2;
+    --info:    #7FB0DA;
+    --watch:   #DFAF52;
+    --warning: #E8935C;
+    --severe:  #E9705B;
+
+    --pagasa-yellow: #E0B65A;
+    --pagasa-orange: #E8935C;
+    --pagasa-red:    #E9705B;
+
+    --flat-sun:   #C9A33F;
+    --flat-moon:  #7E93A6;
+    --flat-cloud: #6E8395;
+    --flat-rain:  #4C74AB;
+    --flat-downpour: #3A5A93;
+    --flat-storm: #6C63A8;
+    --flat-fog:   #8B7BAE;
+    --flat-flood: #4E7C95;
+    --flat-landslide: #8E6E4C;
+    --flat-heat:  #B5714E;
+    --flat-wind:  #5A9873;
+    --flat-air:   #6E8B89;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* The browser's own text size is the base; the in-app control multiplies it.
+   A pixel size here would throw that setting away. */
+html { font-size: var(--text-scale, 100%); }
+
+body {
+  margin: 0;
+  padding: 0 0 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+main, .top, .banner, .first-load {
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gap);
+}
+
+h2 {
+  font-size: var(--t-xs); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 0.8rem; font-weight: 700;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.icon { flex: none; vertical-align: -0.15em; }
+.art { flex: none; display: block; }
+.art-flat { opacity: 0.92; }
+
+/* ── header ───────────────────────────────────────────────────────────── */
+
+.top {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 0.6rem 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: 0.9rem;
+}
+.top-place { position: relative; min-width: 0; flex: 1 1 9rem; }
+.top-place select {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  /* 16px exactly: iOS Safari zooms the page when a control smaller than that
+     takes focus. The element is invisible — a browser workaround, not type. */
+  opacity: 0; cursor: pointer; font-size: 16px;
+}
+.top-title p { margin: 0; }
+.top-title p:first-child {
+  font-size: var(--t-lg); font-weight: 700; letter-spacing: -0.015em;
+  display: flex; align-items: center; gap: 0.35rem;
+  overflow: hidden; white-space: nowrap;
+}
+.top-title p:first-child span { overflow: hidden; text-overflow: ellipsis; }
+.top-title p:first-child::after {
+  content: ""; width: 0.45rem; height: 0.45rem; border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted); transform: translateY(-25%) rotate(45deg); flex: none;
+}
+.top-title p:last-child { font-size: var(--t-xs); color: var(--muted); }
+
+.top-actions { display: flex; gap: 0.35rem; flex: none; }
+.round {
+  width: var(--control); height: var(--control); border-radius: 50%; flex: none;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  font-size: var(--t-sm); font-weight: 600; cursor: pointer;
+  display: grid; place-items: center;
+}
+.round:hover { border-color: var(--muted); }
+.round.is-on { background: var(--tone); border-color: var(--tone); color: var(--sheet); }
+.round--text { font-size: var(--t-md); font-weight: 700; }
+.round.is-spinning { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .round.is-spinning { animation: none; opacity: 0.5; } }
+
+/* ── banners and first load ───────────────────────────────────────────── */
+
+.banner {
+  margin: 0 auto 0.75rem; padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm); background: var(--card); border: 1px solid var(--line);
+  font-size: var(--t-sm); color: var(--muted);
+}
+.banner--warn { border-color: var(--warning); color: var(--warning); }
+
+.first-load { padding-top: 4rem; text-align: center; color: var(--muted); }
+.first-load-mark {
+  width: 2rem; height: 2rem; margin: 0 auto 1rem; border-radius: 50%;
+  border: 3px solid var(--line); border-top-color: var(--calm);
+  animation: spin 0.9s linear infinite;
+}
+
+/* ── the hero sheet ───────────────────────────────────────────────────── */
+
+.sheet {
+  position: relative; overflow: hidden;
+  background: var(--sheet); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.5rem 1.25rem 1.1rem;
+  margin-bottom: var(--gap);
+}
+.sheet-disc {
+  position: absolute; top: -68px; right: -58px;
+  width: 190px; height: 190px; border-radius: 50%;
+  background: var(--tone); opacity: 0.13; pointer-events: none;
+}
+.sheet-city {
+  position: relative; margin: 0; text-align: center;
+  font-size: var(--t-md); font-weight: 700; color: var(--tone);
+}
+.sheet-note {
+  position: relative; margin: 0.15rem 0 0; text-align: center;
+  font-size: var(--t-xs); color: var(--muted);
+}
+
+.reading {
+  position: relative; display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: space-between;
+  gap: 0.6rem 1rem; margin: 1.1rem 0 0.4rem;
+}
+.reading-temp {
+  flex: 0 1 auto; margin: 0; color: var(--tone);
+  /* min() caps the floor against the viewport, so the largest text setting
+     cannot scale the number off the side of the card. */
+  font-size: clamp(min(5rem, 26vw), 31vw, 8.5rem); font-weight: 200; line-height: 0.84;
+  letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
+}
+.reading-temp .deg { font-size: 0.24em; font-weight: 300; vertical-align: super; }
+.reading-side { flex: 0 1 auto; text-align: right; display: grid; gap: 0.55rem; justify-items: end; }
+.reading-art { color: var(--ink); margin-bottom: -0.2rem; }
+.reading-condition { margin: 0; font-size: var(--t-md); font-weight: 600; color: var(--tone); }
+.reading-pair { margin: 0; }
+.reading-pair b {
+  display: block; font-size: var(--t-md); font-weight: 500; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+/* Units live in the value, never in the label — the labels are uppercased. */
+.reading-pair b i { font-style: normal; font-size: 0.66em; color: var(--muted); margin-left: 0.15em; }
+.reading-pair span {
+  display: block; font-size: var(--t-xs); letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted);
+}
+
+.curve-wrap { position: relative; margin: 0.5rem -0.35rem 0.2rem; }
+.curve { display: block; width: 100%; height: 76px; overflow: visible; }
+.curve-line { fill: none; stroke: var(--tone); stroke-width: 2.2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.curve-feels { fill: none; stroke: var(--tone); stroke-width: 1.4; opacity: 0.34; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
+.curve-key { display: flex; justify-content: center; gap: 1.1rem; margin: 0.15rem 0 0; font-size: var(--t-xs); color: var(--muted); }
+.curve-key span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.curve-key i { width: 14px; height: 0; border-top: 2px solid var(--tone); }
+.curve-key i.dashed { border-top-style: dashed; opacity: 0.55; }
+
+/* ── the week ─────────────────────────────────────────────────────────── */
+
+.days {
+  list-style: none; margin: 0.9rem 0 0; padding: 0.9rem 0 0;
+  border-top: 1px solid var(--hair);
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(3rem, 1fr);
+  gap: 0.15rem; overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.day { text-align: center; color: var(--ink); padding-bottom: 0.2rem; border-radius: 10px; }
+.day.is-warned { background: color-mix(in srgb, var(--pagasa-orange) 11%, transparent); }
+.day p { margin: 0; }
+.day-name { font-size: var(--t-xs); color: var(--muted); font-weight: 600; white-space: nowrap; }
+.day.is-today .day-name { color: var(--tone); }
+.day .art { margin: 0.35rem auto 0.2rem; }
+.day-temps { font-size: var(--t-sm); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.day-temps b { font-weight: 500; }
+.day-low { font-size: var(--t-xs); color: var(--muted); }
+.day-rain { font-size: var(--t-xs); color: var(--flat-rain); font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 0.15rem !important; }
+.day-rain span { font-weight: 400; color: var(--muted); font-size: 0.85em; }
+
+.stamp { margin: 0.9rem 0 0; text-align: center; font-size: var(--t-xs); color: var(--muted); }
+.stamp .is-stale { color: var(--warning); }
+#model-time::before { content: " · "; }
+
+/* ── cards ────────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.15rem; margin-bottom: var(--gap);
+}
+/* The flood card leads, and is drawn as such. */
+.card--lead { border-color: color-mix(in srgb, var(--tone) 45%, var(--line)); border-width: 2px; }
+.card--flush { padding: 1.15rem 0; }
+.card--flush > h2, .card--flush > .card-note { padding-inline: 1.15rem; }
+.card-note { margin: -0.5rem 0 0.9rem; font-size: var(--t-xs); color: var(--muted); }
+
+/* ── a hazard, stated ─────────────────────────────────────────────────── */
+
+.hazard { display: flex; gap: 0.9rem; align-items: center; margin-bottom: 1rem; }
+.hazard .art { margin: -0.4rem 0; }
+.hazard-level { margin: 0; font-size: var(--t-lg); font-weight: 600; letter-spacing: -0.01em; }
+.hazard-advice { margin: 0.2rem 0 0; font-size: var(--t-sm); color: var(--muted); }
+.hazard-reason { margin: 0.8rem 0 0; font-size: var(--t-sm); color: var(--muted); }
+.hazard-reason strong { color: var(--ink); }
+
+.hazard--none .hazard-level, .hazard--low .hazard-level { color: var(--calm); }
+.hazard--moderate .hazard-level { color: var(--watch); }
+.hazard--high .hazard-level { color: var(--warning); }
+.hazard--severe .hazard-level { color: var(--severe); }
+.hazard--slide-none .hazard-level { color: var(--calm); }
+.hazard--slide-watch .hazard-level { color: var(--watch); }
+.hazard--slide-elevated .hazard-level { color: var(--warning); }
+.hazard--slide-high .hazard-level { color: var(--severe); }
+.hazard--heat-safe .hazard-level, .hazard--heat-caution .hazard-level { color: var(--calm); }
+.hazard--heat-extreme-caution .hazard-level { color: var(--watch); }
+.hazard--heat-danger .hazard-level { color: var(--warning); }
+.hazard--heat-extreme-danger .hazard-level { color: var(--severe); }
+.hazard--air-good .hazard-level, .hazard--air-moderate .hazard-level { color: var(--calm); }
+.hazard--air-sensitive .hazard-level { color: var(--watch); }
+.hazard--air-unhealthy .hazard-level { color: var(--warning); }
+.hazard--air-very-unhealthy .hazard-level, .hazard--air-hazardous .hazard-level { color: var(--severe); }
+
+.drivers { margin: 0 0 1rem; padding-left: 1.1rem; font-size: var(--t-sm); color: var(--muted); }
+.drivers li { margin-bottom: 0.2rem; }
+
+.facts { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 0.8rem; }
+.facts div { border-top: 1px solid var(--hair); padding-top: 0.5rem; }
+.facts dt { font-size: var(--t-xs); color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.facts dd { margin: 0.15rem 0 0; font-weight: 500; font-size: var(--t-md); font-variant-numeric: tabular-nums; }
+.facts p { margin: 0.1rem 0 0; font-size: var(--t-xs); color: var(--muted); }
+
+.fineprint { margin: 0.95rem 0 0; font-size: var(--t-xs); line-height: 1.5; color: var(--muted); }
+.fineprint strong { color: var(--ink); }
+.empty { margin: 0; font-size: var(--t-sm); color: var(--muted); }
+
+/* ── the rain bars ────────────────────────────────────────────────────── */
+
+.chart-wrap { padding-inline: 1.15rem; }
+.chart-wrap .bar-key { padding-inline: 0; }
+.bars { display: block; width: 100%; height: 130px; overflow: visible; }
+.bar { fill: var(--flat-rain); }
+.bar--light, .bar--moderate { fill: var(--flat-rain); opacity: 0.75; }
+.bar--heavy { fill: var(--pagasa-yellow); }
+.bar--intense { fill: var(--pagasa-orange); }
+.bar--torrential { fill: var(--pagasa-red); }
+.bar-rule { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+.bar-rule--heavy { stroke: var(--pagasa-yellow); }
+.bar-rule--intense { stroke: var(--pagasa-orange); }
+.bar-rule--torrential { stroke: var(--pagasa-red); }
+.bar-key {
+  list-style: none; display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem;
+  margin: 0.5rem 0 0; padding: 0; font-size: var(--t-xs); color: var(--muted);
+}
+.bar-key li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.bar-key i { width: 14px; height: 0; border-top: 2px dashed currentColor; }
+.bar-key--heavy { color: var(--pagasa-yellow); }
+.bar-key--intense { color: var(--pagasa-orange); }
+.bar-key--torrential { color: var(--pagasa-red); }
+.chart-note { margin: 0.6rem 1.15rem 0; font-size: var(--t-xs); color: var(--muted); }
+
+/* ── advisories ───────────────────────────────────────────────────────── */
+
+.advisories { list-style: none; margin: 0; padding: 0; }
+.advisory { display: flex; gap: 0.85rem; padding: 0.8rem 1.15rem; align-items: center; }
+.advisory + .advisory { border-top: 1px solid var(--hair); }
+.advisory .art { margin: -0.35rem 0; }
+.advisory-title { margin: 0; font-weight: 650; font-size: var(--t-base); }
+.advisory-detail { margin: 0.15rem 0 0; font-size: var(--t-sm); color: var(--muted); }
+.advisory--info .advisory-title { color: var(--info); }
+.advisory--watch .advisory-title { color: var(--watch); }
+.advisory--warning .advisory-title { color: var(--warning); }
+.advisory--severe .advisory-title { color: var(--severe); }
+.advisory--calm .advisory-title { color: var(--calm); }
+
+/* ── hourly ───────────────────────────────────────────────────────────── */
+
+.hours {
+  list-style: none; margin: 0; padding: 0 1.15rem 0.25rem;
+  display: flex; gap: 0.1rem; overflow-x: auto; scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.hour {
+  flex: none; width: 3.7rem; text-align: center; padding: 0.5rem 0.15rem 0.6rem;
+  border-radius: var(--radius-sm); scroll-snap-align: start;
+}
+.hour--yellow { background: color-mix(in srgb, var(--pagasa-yellow) 15%, transparent); }
+.hour--orange { background: color-mix(in srgb, var(--pagasa-orange) 17%, transparent); }
+.hour--red    { background: color-mix(in srgb, var(--pagasa-red) 19%, transparent); }
+.hour p { margin: 0; font-variant-numeric: tabular-nums; }
+.hour-time { font-size: var(--t-xs); color: var(--muted); }
+.hour .art { margin: 0.25rem auto 0.1rem; }
+.hour-temp { font-size: var(--t-base); font-weight: 500; }
+.hour-rain { font-size: var(--t-xs); font-weight: 600; color: var(--flat-rain); }
+.hour-rain span { font-weight: 400; color: var(--muted); font-size: 0.85em; }
+.hour-prob { font-size: var(--t-xs); color: var(--muted); }
+
+/* ── details ──────────────────────────────────────────────────────────── */
+
+.details { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.9rem; }
+.details div { border-top: 1px solid var(--hair); padding-top: 0.5rem; }
+.details dt { font-size: var(--t-xs); color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+.details dd { margin: 0.15rem 0 0; font-size: var(--t-md); font-weight: 400; font-variant-numeric: tabular-nums; }
+.details p { margin: 0.15rem 0 0; font-size: var(--t-xs); color: var(--muted); }
+
+/* ── footer ───────────────────────────────────────────────────────────── */
+
+.foot { font-size: var(--t-sm); line-height: 1.55; color: var(--muted); padding: 0.5rem 0.25rem 1rem; }
+.foot p { margin: 0 0 0.7rem; }
+.foot strong { color: var(--ink); }
+.foot a { color: var(--calm); }
+
+@media (max-width: 26rem) {
+  .facts { grid-template-columns: 1fr 1fr; }
+}

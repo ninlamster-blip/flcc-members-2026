@@ -197,6 +197,32 @@ twice is the WBGT model: the obvious shade approximation returns physically
 impossible values in Kuwait's dry heat, and `test/heat.test.mjs` pins that
 failure so it cannot come back.
 
+## Philippines Weather
+
+`ph-weather/` is a **second standalone weather app**, and like `kuwait-weather/`
+it is not a church app. It is built around the hazards that matter in the
+Philippines: flood likelihood from PAGASA's rainfall warning thresholds plus
+how saturated the ground already is, landslide conditions, heat index on
+PAGASA's bands, humidity, air quality and the allergy triggers that can
+actually be measured there.
+
+It shares no code with anything here — including `kuwait-weather/`, whose
+design language it deliberately duplicates and whose modules it must never
+import. `ph-weather/test/boundary.test.mjs` fails on a path into any other app,
+a package import, a third-party host, or any `localStorage` outside
+`js/core/storage.js`, which throws on any key outside `ph/v1/`.
+
+Two things to read before changing it. `ph-weather/README.md` sets out what the
+flood model is and — at length — what it is not: it knows rainfall and nothing
+about drainage, river levels, dams or slope, and every hazard card says so on
+screen. And `js/core/rain.js` holds PAGASA's published thresholds (7.5 / 15 /
+30 mm per hour); every flood and landslide reading in the app is downstream of
+those three numbers, so they are not to be adjusted casually.
+
+The one bug worth not reintroducing is pinned by `test/flood.test.mjs`: soaked
+ground with no rain forecast must never raise a flood warning. Crying wolf
+every week of the habagat is how an app like this gets ignored.
+
 ## Pull requests
 
 Open PRs ready for review, not as drafts — `main` has no branch protection
