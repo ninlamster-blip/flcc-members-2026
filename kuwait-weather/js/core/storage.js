@@ -74,4 +74,5 @@ export const KEYS = {
   units:    `${NS}units`,     // °C or °F
   work:     `${NS}work`,      // the outdoor-work profile the guidance is written for
   reading:  `${NS}reading`,   // the last good reading, so a cold start has something to show
+  geo:      `${NS}geo`,       // whether locating on load has already been refused once
 };

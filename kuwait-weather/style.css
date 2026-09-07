@@ -159,6 +159,9 @@ h2 {
   display: grid; place-items: center;
 }
 .round:hover { border-color: var(--muted); }
+/* Lit while the app is showing where the device actually is, rather than a
+   place picked off the list. */
+.round.is-on { background: var(--tone); border-color: var(--tone); color: var(--sheet); }
 .round.is-spinning { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .round.is-spinning { animation: none; opacity: 0.5; } }

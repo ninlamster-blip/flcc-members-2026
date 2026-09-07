@@ -17,6 +17,7 @@ const SHELL = [
   './js/app.js',
   './js/core/advisories.js',
   './js/core/api.js',
+  './js/core/autolocate.js',
   './js/core/derive.js',
   './js/core/dust.js',
   './js/core/format.js',

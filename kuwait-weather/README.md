@@ -97,6 +97,15 @@ too, where it matters. The work/rest guidance is for planning a day, not for
 meeting an obligation. This is not an official warning service; Kuwait's
 Meteorological Department issues those.
 
+**It opens on where you are.** On load the app locates you and shows that,
+which is what a weather app is for. It is careful about *how* it asks, because
+firing a permission dialog on every visit is how the permission gets denied for
+good: it locates silently when permission is already granted, asks at most once
+otherwise, takes a refusal for an answer, and never overrules a place you picked
+off the list yourself. A timeout in a lift is not a refusal and is not recorded
+as one. `core/autolocate.js` holds that decision as a pure function, and
+`test/autolocate.test.mjs` argues with it.
+
 **Nothing about you goes anywhere.** The app sends a pair of coordinates,
 rounded to four decimals, and gets a forecast back. There is no account, no
 analytics, no key and no server of ours in the path. Your place, your units,
@@ -145,6 +154,7 @@ the only file that would change.
 | `core/advisories.js` | which of the above is worth saying, and in what order |
 | `core/places.js` | 24 places across all six governorates |
 | `core/format.js` | numbers and Kuwait times, formatted once |
+| `core/autolocate.js` | whether to ask the device where it is, and what to call the answer |
 | `core/storage.js` | the only module that touches browser storage |
 | `ui/chart.js` | the temperature curve — spline, scale, and the area under it |
 | `ui/art.js` | the flat two-plate illustrations |
@@ -171,7 +181,7 @@ old model's failure so it cannot come back.
 node --test 'kuwait-weather/test/*.test.mjs'
 ```
 
-178 of them, no dependencies and no build step. The forecast API cannot be
+194 of them, no dependencies and no build step. The forecast API cannot be
 called from a test, so `test/fixtures/forecast.mjs` builds responses in the
 real shape instead — which also lets a test ask for a specific kind of day: a
 July afternoon in a dust storm, a mild January morning, an air-quality endpoint
@@ -194,4 +204,5 @@ that returned nothing.
 | `design.test.mjs` | contrast against AA, flatness, one radius, relative type |
 | `format.test.mjs` | Kuwait times, temperatures, and "updated" never reading as the future |
 | `storage.test.mjs` | the `kw/v1/` namespace |
+| `autolocate.test.mjs` | when to locate on load, and what to call the fix |
 | `boundary.test.mjs` | no other app in this repository, no package, no key, no third-party host |

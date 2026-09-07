@@ -6,6 +6,7 @@ import * as places from './core/places.js';
 import { derive } from './core/derive.js';
 import { advisories } from './core/advisories.js';
 import { toneFor } from './ui/tone.js';
+import { shouldAutoLocate, permissionState, isRefusal, placeFromFix } from './core/autolocate.js';
 import { DEFAULT_WORK_PROFILE, WORK_PROFILES } from './core/heat.js';
 import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
 import * as view from './ui/render.js';
@@ -31,7 +32,8 @@ const state = {
 
 function restore() {
   const savedPlace = store.read(store.KEYS.place);
-  state.place = places.place(savedPlace?.id)
+  const listed = places.place(savedPlace?.id);
+  state.place = (listed && savedPlace?.fromFix ? { ...listed, fromFix: true } : listed)
     || (savedPlace?.lat != null ? savedPlace : null)
     || places.defaultPlace();
   state.units = store.read(store.KEYS.units) === 'F' ? 'F' : 'C';
@@ -88,6 +90,7 @@ function render() {
   el('place-name').textContent = state.place.name;
   el('place-gov').textContent = state.place.gov || 'Your location';
   el('refresh').classList.toggle('is-spinning', state.loading);
+  el('locate').classList.toggle('is-on', Boolean(state.place.fromFix));
 
   const banner = el('banner');
   if (state.error) {
@@ -150,39 +153,64 @@ function choosePlace(id) {
   load({ force: true });
 }
 
-function useMyLocation() {
+function fix({ timeout = 10000, maximumAge = 10 * 60 * 1000 } = {}) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) { reject(new Error('Geolocation unavailable')); return; }
+    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout, maximumAge });
+  });
+}
+
+/**
+ * @param {{auto?: boolean}} options `auto` is the on-load path: it never puts
+ *        an error on screen, because nobody asked it to do anything.
+ */
+async function locate({ auto = false } = {}) {
   const button = el('locate');
-  if (!navigator.geolocation) return;
   button.classList.add('is-spinning');
-  navigator.geolocation.getCurrentPosition(
-    ({ coords }) => {
-      button.classList.remove('is-spinning');
-      const { latitude: lat, longitude: lon } = coords;
-      const { place: near, km } = places.nearest(lat, lon);
-      // Inside Kuwait and close to a listed area, the area's name is more
-      // useful than a coordinate. Anywhere else, the coordinate stands on
-      // its own and the app says where it is.
-      const chosen = places.inKuwait(lat, lon) && km < 12
-        ? near
-        : { id: 'here', name: near && km < 40 ? `Near ${near.name}` : 'Your location', gov: places.inKuwait(lat, lon) ? 'Kuwait' : 'Outside Kuwait', lat, lon };
-      state.place = chosen;
-      state.reading = null;
-      store.write(store.KEYS.place, chosen);
-      load({ force: true });
-    },
-    () => {
-      button.classList.remove('is-spinning');
-      state.error = 'Location permission was declined. Pick a place from the list instead.';
+  try {
+    const { coords } = await fix();
+    const chosen = placeFromFix(coords);
+    store.write(store.KEYS.geo, { declined: false });
+    if (chosen.id === state.place.id && state.reading) return; // already where we are
+    state.place = chosen;
+    state.reading = null;
+    state.cached = false;
+    store.write(store.KEYS.place, chosen);
+    await load({ force: true });
+  } catch (err) {
+    // A refusal is remembered so the next visit does not ask again. A timeout
+    // is not a refusal and must not be recorded as one.
+    if (isRefusal(err)) store.write(store.KEYS.geo, { declined: true });
+    if (!auto) {
+      state.error = isRefusal(err)
+        ? 'Location permission was declined. Pick a place from the list instead.'
+        : 'Could not get a location fix. Pick a place from the list instead.';
       render();
-    },
-    { timeout: 10000, maximumAge: 10 * 60 * 1000 },
-  );
+    }
+  } finally {
+    button.classList.remove('is-spinning');
+  }
+}
+
+/**
+ * The on-load path. It runs after the first paint, so a saved reading is
+ * already on screen while this resolves — the app never opens on a blank
+ * waiting for a dialog to be answered.
+ */
+async function maybeAutoLocate() {
+  const allowed = shouldAutoLocate({
+    permission: await permissionState(),
+    chosen: store.read(store.KEYS.place),
+    declined: store.read(store.KEYS.geo)?.declined === true,
+    supported: Boolean(navigator.geolocation),
+  });
+  if (allowed) await locate({ auto: true });
 }
 
 function bind() {
   el('place-select').addEventListener('change', (e) => choosePlace(e.target.value));
   el('refresh').addEventListener('click', () => load({ force: true }));
-  el('locate').addEventListener('click', useMyLocation);
+  el('locate').addEventListener('click', () => locate());
   el('units').addEventListener('click', () => {
     state.units = state.units === 'C' ? 'F' : 'C';
     store.write(store.KEYS.units, state.units);
@@ -216,6 +244,7 @@ export function start() {
   bind();
   render();
   load();
+  maybeAutoLocate();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => { /* offline is a bonus, not a requirement */ });
