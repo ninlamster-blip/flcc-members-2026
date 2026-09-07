@@ -61,6 +61,19 @@
     <div id="rain-chart" class="chart-wrap"></div>
   </section>
 
+  <section class="card card--flush" aria-labelledby="h-map">
+    <h2 id="h-map">Where the rain is now</h2>
+    <p class="card-note">Live radar — actual sweeps of the sky from the radar network, a few minutes old, not a forecast. Drag to move around; play to see which way the rain is going.</p>
+    <div id="map"></div>
+    <div class="map-bar">
+      <button type="button" id="map-play" class="map-play" aria-label="Play the last two hours"></button>
+      <label class="sr-only" for="map-time">Radar frame</label>
+      <input type="range" id="map-time" class="map-range" min="0" max="0" value="0" step="1" />
+      <p id="map-when" class="map-when">Loading radar…</p>
+    </div>
+    <p id="map-note" class="chart-note">Radar coverage comes from national weather radars, and it does not reach everywhere. Where none reaches, the map is simply blank — which is not the same as no rain.</p>
+  </section>
+
   <section class="card card--flush" aria-labelledby="h-advisories">
     <h2 id="h-advisories" class="sr-only">What to know</h2>
     <ul id="advisories" class="advisories"></ul>
@@ -96,7 +109,10 @@
     <p><strong>Where this comes from.</strong> Forecast and air quality from
       <a href="https://open-meteo.com/" rel="noopener">Open-Meteo</a> — free, keyless and open, with
       weather from national meteorological services and air quality from the Copernicus atmosphere model.
-      The app asks for a coordinate and gets a forecast back; nothing about you is sent anywhere.</p>
+      The app asks for a coordinate and gets a forecast back; nothing about you is sent anywhere.
+      The radar map is the one thing that comes from somewhere else:
+      <a href="https://www.rainviewer.com/" rel="noopener">RainViewer</a>, which publishes national radar
+      sweeps as map tiles, over a base map from OpenStreetMap and CARTO.</p>
     <p><strong>Where it stops.</strong> This is not an official warning service and it is not PAGASA.
       The flood and landslide readings are rainfall applied to published thresholds — they do not know your
       street's drainage, the river level, what a dam upstream is releasing, or how steep the slope above you
