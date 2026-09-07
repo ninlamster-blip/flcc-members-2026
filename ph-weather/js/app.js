@@ -8,6 +8,7 @@ import { advisories } from './core/advisories.js';
 import { toneFor } from './ui/tone.js';
 import { shouldAutoLocate, permissionState, isRefusal, placeFromFix } from './core/autolocate.js';
 import { SIZES, DEFAULT_SIZE, nextSize, rootScale, announce } from './core/textsize.js';
+import { LEVELS as LOCAL_LEVELS, DEFAULT_LEVEL } from './core/localhazard.js';
 import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
 import * as view from './ui/render.js';
 import { icon } from './ui/icons.js';
@@ -109,8 +110,10 @@ function render() {
   el('first-load').hidden = true;
   el('screen').hidden = false;
 
-  const d = derive(state.reading, { now });
+  const chosen = localLevel();
+  const d = derive(state.reading, { now, localLevel: chosen });
   d.units = state.units;
+  d.localLevel = chosen;
   state.derived = d;
 
   const alerts = advisories(d, { now });
@@ -146,6 +149,25 @@ function choosePlace(id) {
   state.cached = false;
   store.write(store.KEYS.place, next);
   load({ force: true });
+}
+
+/**
+ * What this place's own resident knows about it, kept per place — Marikina
+ * floods and Baguio slides, so one setting for everywhere would be worse than
+ * none. Stored on this device and never sent anywhere.
+ */
+function localLevel() {
+  const all = store.read(store.KEYS.local) || {};
+  const found = all[state.place.id];
+  return LOCAL_LEVELS.some((l) => l.id === found) ? found : DEFAULT_LEVEL;
+}
+
+function setLocalLevel(id) {
+  if (!LOCAL_LEVELS.some((l) => l.id === id)) return;
+  const all = store.read(store.KEYS.local) || {};
+  all[state.place.id] = id;
+  store.write(store.KEYS.local, all);
+  render();
 }
 
 function fix({ timeout = 10000, maximumAge = 10 * 60 * 1000 } = {}) {
@@ -199,6 +221,10 @@ function bind() {
     state.text = nextSize(state.text);
     store.write(store.KEYS.text, state.text);
     applyTextSize();
+  });
+  document.addEventListener('click', (e) => {
+    const button = e.target.closest('[data-local]');
+    if (button) setLocalLevel(button.dataset.local);
   });
   el('units').addEventListener('click', () => {
     state.units = state.units === 'C' ? 'F' : 'C';

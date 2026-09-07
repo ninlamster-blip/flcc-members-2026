@@ -8,7 +8,8 @@
 import { heatIndexC, dewPointC, heatBand, comfort, humidityPenaltyC } from './heat.js';
 import { intensityFor, dailyBand } from './rain.js';
 import { saturation, antecedent } from './saturation.js';
-import { floodRisk } from './flood.js';
+import { floodRisk, level as floodLevel } from './flood.js';
+import { applyLocal, DEFAULT_LEVEL } from './localhazard.js';
 import { landslideRisk } from './landslide.js';
 import { monsoon, compass, beaufort } from './monsoon.js';
 import { aqiBand, dampness, irritants } from './air.js';
@@ -46,7 +47,7 @@ function enrich(point, { month, rainMm24h }) {
  * @param {object} reading a normalized reading from `api.normalize`
  * @param {{now?: Date}} options
  */
-export function derive(reading, { now = new Date() } = {}) {
+export function derive(reading, { now = new Date(), localLevel = DEFAULT_LEVEL } = {}) {
   const month = manilaParts(now).month;
 
   const withTimes = reading.hours.map((h) => ({ ...h, at: parseLocal(h.time) }));
@@ -62,7 +63,8 @@ export function derive(reading, { now = new Date() } = {}) {
   const mm7d = antecedent(hours, { now, days: 7 });
   const ground = saturation({ mm3d, mm7d });
 
-  const flood = floodRisk(future, ground);
+  // The rainfall model first, then what the person who lives there knows.
+  const flood = applyLocal(floodRisk(future, ground), localLevel, floodLevel);
   const landslide = landslideRisk(ground, future);
 
   const byDate = new Map();

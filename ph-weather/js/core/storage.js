@@ -73,6 +73,7 @@ export const KEYS = {
   place:   `${NS}place`,    // which place the app opens on
   units:   `${NS}units`,    // °C or °F
   text:    `${NS}text`,     // how large this person wants the type
+  local:   `${NS}local`,    // what each place's own resident knows about it
   geo:     `${NS}geo`,      // whether locating on load has been refused once
   reading: `${NS}reading`,  // the last good reading, so a cold start has something
 };

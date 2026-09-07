@@ -219,9 +219,17 @@ screen. And `js/core/rain.js` holds PAGASA's published thresholds (7.5 / 15 /
 30 mm per hour); every flood and landslide reading in the app is downstream of
 those three numbers, so they are not to be adjusted casually.
 
-The one bug worth not reintroducing is pinned by `test/flood.test.mjs`: soaked
-ground with no rain forecast must never raise a flood warning. Crying wolf
-every week of the habagat is how an app like this gets ignored.
+Two bugs are worth not reintroducing, and both are the same mistake in
+different clothes — inventing a hazard where there is no rain. `test/flood.test.mjs`
+pins that soaked ground with no rain forecast must never raise a flood warning,
+and `test/localhazard.test.mjs` pins that "my street floods easily" must not
+either. Crying wolf every week of the habagat is how an app like this gets
+ignored.
+
+`js/core/localhazard.js` also holds the rule that local knowledge can raise a
+reading freely but can only lower one so far: when the rainfall alone is in
+PAGASA's orange or red range, the floor holds whatever the resident said.
+Optimism about your own street must never be able to mute a red warning.
 
 ## Pull requests
 

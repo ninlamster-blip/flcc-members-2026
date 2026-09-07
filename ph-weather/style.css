@@ -320,6 +320,20 @@ h2 {
 .facts dd { margin: 0.15rem 0 0; font-weight: 500; font-size: var(--t-md); font-variant-numeric: tabular-nums; }
 .facts p { margin: 0.1rem 0 0; font-size: var(--t-xs); color: var(--muted); }
 
+.local {
+  margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--hair);
+}
+.local-ask { margin: 0 0 0.6rem; font-size: var(--t-sm); }
+.local-ask strong { font-weight: 650; }
+.local-choices { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.local-btn {
+  flex: 1 1 8rem; padding: 0.5rem 0.5rem; font: inherit; font-size: var(--t-xs);
+  font-weight: 600; border: 1px solid var(--line); background: transparent;
+  color: var(--muted); border-radius: 999px; cursor: pointer;
+}
+.local-btn.is-on { background: var(--ink); border-color: var(--ink); color: var(--card); }
+.local-note { margin: 0.6rem 0 0; font-size: var(--t-xs); color: var(--muted); }
+
 .fineprint { margin: 0.95rem 0 0; font-size: var(--t-xs); line-height: 1.5; color: var(--muted); }
 .fineprint strong { color: var(--ink); }
 .empty { margin: 0; font-size: var(--t-sm); color: var(--muted); }

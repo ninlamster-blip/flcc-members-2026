@@ -13,6 +13,7 @@ const SHELL = [
   './js/core/advisories.js', './js/core/air.js', './js/core/api.js',
   './js/core/autolocate.js', './js/core/derive.js', './js/core/flood.js',
   './js/core/format.js', './js/core/heat.js', './js/core/landslide.js',
+  './js/core/localhazard.js',
   './js/core/monsoon.js', './js/core/places.js', './js/core/rain.js',
   './js/core/saturation.js', './js/core/storage.js', './js/core/textsize.js',
   './js/core/weathercode.js',

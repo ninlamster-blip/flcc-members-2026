@@ -10,6 +10,7 @@ import { label as codeLabel, icon as codeIcon } from '../core/weathercode.js';
 import { upcoming, wettestWindow } from '../core/derive.js';
 import { WARNING_COLOUR } from '../core/rain.js';
 import { POLLEN_NOTE } from '../core/air.js';
+import { LEVELS as LOCAL_LEVELS } from '../core/localhazard.js';
 import { byRegion } from '../core/places.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
@@ -69,6 +70,17 @@ export function floodCard(d) {
         <dd>${g ? esc(g.label.replace(' ground', '')) : '—'}</dd>
         <p>${g ? esc(g.reason) : 'past week unavailable'}</p></div>
     </dl>
+    <div class="local">
+      <p class="local-ask">How does <strong>your own street</strong> handle heavy rain?</p>
+      <div class="local-choices" role="group" aria-label="How your street handles heavy rain">
+        ${LOCAL_LEVELS.map((l) => `
+          <button type="button" class="local-btn${l.id === (d.localLevel || 'unknown') ? ' is-on' : ''}"
+            data-local="${l.id}">${esc(l.question)}</button>`).join('')}
+      </div>
+      <p class="local-note">${f.local && f.local.note
+        ? esc(f.local.note)
+        : 'Nobody knows a street like the person who lives on it. This is kept on your device and never sent anywhere.'}</p>
+    </div>
     <p class="fineprint"><strong>This is not a flood forecast.</strong> It is rainfall — PAGASA's own warning
       thresholds, plus how much rain has already fallen this week — and nothing else. It does not know your
       street's drainage, the river level, or what a dam upstream is doing. PAGASA and your local DRRMO are

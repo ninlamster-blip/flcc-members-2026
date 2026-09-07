@@ -61,6 +61,31 @@ and the indoor dampness that mould and dust mites need.
 and the *enhanced* habagat — southwest wind carrying a great deal of rain — that
 is the pattern behind most Metro Manila floods.
 
+## The one thing it asks you
+
+The flood model reads rainfall and how wet the ground is. What it cannot read
+is *the street*: whether the drains were cleared this year, whether the road was
+raised, whether the subdivision sits in an old riverbed. That knowledge exists —
+it is just in somebody's head rather than in an API, and the maps that would
+hold it (Project NOAH, the MGB hazard sheets) are not something this app can
+reach.
+
+So it asks, once per place: **how does your own street handle heavy rain?**
+Four answers, kept on the device, never sent anywhere. It is stored per place
+because Marikina floods and Baguio slides, and one setting for everywhere would
+be worse than none.
+
+Two rules bound it, and both are pinned by `test/localhazard.test.mjs`:
+
+- **Optimism cannot silence a warning.** Somebody who says "our street never
+  floods" is usually right — until the afternoon they are not, and that is
+  exactly the afternoon this has to keep shouting. When the rainfall alone is
+  in PAGASA's orange or red range, the floor holds regardless of what anyone
+  told the app. The test checks that across every level and every rainfall,
+  not one case.
+- **It adjusts a risk; it does not invent one.** A street that floods easily is
+  not flooding when nothing is falling on it.
+
 ## What it is not
 
 **It is not a flood forecast, and it is not PAGASA.**
