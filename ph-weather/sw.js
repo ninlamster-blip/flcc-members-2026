@@ -4,8 +4,17 @@
 // app somebody uses to decide whether to leave the house, so nothing from the
 // two APIs is ever stored here. The last good reading already lives in
 // localStorage, where the app can label it as old.
+//
+// The radar tiles are cross-origin and so never reach this handler at all,
+// which is the right answer for them too: a cached radar sweep is a lie about
+// where the rain is.
 
-const CACHE = 'ph-weather-v1';
+// Bump this whenever SHELL changes. The activate handler deletes every cache
+// whose name is not this one, so a new name is the only thing that guarantees
+// a device holding the old shell actually gets the new files — adding an entry
+// to SHELL under the old name does not, and that is how a fixed module can sit
+// in the repository for a day while a phone keeps serving the broken one.
+const CACHE = 'ph-weather-v2';
 
 const SHELL = [
   './', './index.html', './style.css', './icon.svg', './manifest.webmanifest',
@@ -14,11 +23,12 @@ const SHELL = [
   './js/core/autolocate.js', './js/core/derive.js', './js/core/flood.js',
   './js/core/format.js', './js/core/heat.js', './js/core/landslide.js',
   './js/core/localhazard.js',
-  './js/core/monsoon.js', './js/core/places.js', './js/core/rain.js',
+  './js/core/monsoon.js', './js/core/places.js', './js/core/radar.js',
+  './js/core/rain.js',
   './js/core/saturation.js', './js/core/storage.js', './js/core/textsize.js',
   './js/core/weathercode.js',
-  './js/ui/art.js', './js/ui/chart.js', './js/ui/icons.js',
-  './js/ui/render.js', './js/ui/tone.js',
+  './js/ui/art.js', './js/ui/chart.js', './js/ui/icons.js', './js/ui/map.js',
+  './js/ui/render.js', './js/ui/tiles.js', './js/ui/tone.js',
 ];
 
 self.addEventListener('install', (event) => {

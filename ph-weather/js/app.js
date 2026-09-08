@@ -11,9 +11,12 @@ import { SIZES, DEFAULT_SIZE, nextSize, rootScale, announce } from './core/texts
 import { LEVELS as LOCAL_LEVELS, DEFAULT_LEVEL } from './core/localhazard.js';
 import { DEFAULT_UNITS, ago, parseLocal, clock } from './core/format.js';
 import * as view from './ui/render.js';
+import { createMap } from './ui/map.js';
 import { icon } from './ui/icons.js';
 
 const REFRESH_MS = 10 * 60 * 1000;
+// Radar moves faster than the model does, so it is refreshed on its own clock.
+const RADAR_MS = 5 * 60 * 1000;
 const STALE_MS = 60 * 60 * 1000;
 
 const el = (id) => document.getElementById(id);
@@ -148,6 +151,7 @@ function choosePlace(id) {
   state.reading = null;
   state.cached = false;
   store.write(store.KEYS.place, next);
+  map?.goTo({ lat: next.lat, lon: next.lon, label: next.name });
   load({ force: true });
 }
 
@@ -189,6 +193,7 @@ async function locate({ auto = false } = {}) {
     state.reading = null;
     state.cached = false;
     store.write(store.KEYS.place, chosen);
+    map?.goTo({ lat: chosen.lat, lon: chosen.lon, label: chosen.name });
     await load({ force: true });
   } catch (err) {
     if (isRefusal(err)) store.write(store.KEYS.geo, { declined: true });
@@ -213,9 +218,60 @@ async function maybeAutoLocate() {
   if (allowed) await locate({ auto: true });
 }
 
+/* ── the radar map ─────────────────────────────────────────────────────────
+ * The map keeps its own state — frames, which one is showing, whether it is
+ * playing — and tells the page about it through a `mapstate` event. The page
+ * only draws the bar underneath.
+ */
+
+let map = null;
+let playing = false;
+
+function paintMapBar({ loading, error, frames, index, label, forecast }) {
+  const slider = el('map-time');
+  const play = el('map-play');
+  const when = el('map-when');
+
+  slider.max = String(Math.max(0, frames - 1));
+  slider.value = String(index);
+  slider.disabled = frames < 2;
+  play.disabled = frames < 2;
+
+  when.classList.toggle('map-when--forecast', Boolean(forecast) && !error);
+  when.classList.toggle('map-when--error', Boolean(error));
+  if (error) when.textContent = error;
+  else if (loading) when.textContent = 'Loading radar…';
+  else when.textContent = label || 'No radar frames';
+}
+
+function setPlaying(on) {
+  playing = on;
+  map?.play(on);
+  const play = el('map-play');
+  play.innerHTML = icon(on ? 'pause' : 'play', { size: 20 });
+  play.setAttribute('aria-label', on ? 'Pause the radar' : 'Play the last two hours');
+}
+
+function startMap() {
+  const host = el('map');
+  host.addEventListener('mapstate', (e) => paintMapBar(e.detail));
+  map = createMap(host, { lat: state.place.lat, lon: state.place.lon, label: state.place.name });
+
+  setPlaying(false);
+  el('map-play').addEventListener('click', () => setPlaying(!playing));
+  el('map-time').addEventListener('input', (e) => {
+    if (playing) setPlaying(false);
+    map.step(Number(e.target.value));
+  });
+
+  setInterval(() => {
+    if (document.visibilityState === 'visible') map.refresh();
+  }, RADAR_MS);
+}
+
 function bind() {
   el('place-select').addEventListener('change', (e) => choosePlace(e.target.value));
-  el('refresh').addEventListener('click', () => load({ force: true }));
+  el('refresh').addEventListener('click', () => { load({ force: true }); map?.refresh(); });
   el('locate').addEventListener('click', () => locate());
   el('text-size').addEventListener('click', () => {
     state.text = nextSize(state.text);
@@ -249,6 +305,7 @@ export function start() {
   el('locate').innerHTML = icon('pin', { size: 18 });
   el('refresh').innerHTML = icon('refresh', { size: 18 });
   bind();
+  startMap();
   render();
   load();
   maybeAutoLocate();

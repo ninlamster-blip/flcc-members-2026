@@ -126,6 +126,25 @@ analytics, no key and no server of ours in the path. Your place, your units,
 your work profile and the last reading it downloaded stay in this browser under
 `kw/v1/`, and `js/core/storage.js` throws on any key outside that namespace.
 
+## It works outside Kuwait, and says less when it does
+
+The app was Kuwait-only in a way that was easy to miss: `Asia/Kuwait` was
+hardcoded into both API calls and into every formatter, so a forecast for
+anywhere else came back correct and was then labelled on Kuwait's clock.
+Opened from Manila, five in the afternoon read as noon.
+
+Open-Meteo is asked for `timezone=auto` now and answers with the location's
+own; `format.setLocale()` installs it before anything is drawn, and
+`parseLocal` subtracts the offset the response reported rather than a constant
+three hours. An unrecognised zone name falls back rather than throwing, because
+a page a few hours wrong beats a page that does not render.
+
+Two things in this app are about Kuwait rather than about weather — the midday
+work ban, which is Kuwait law, and calling a northwesterly a *shamal*. Both are
+gated on **the place being looked at**, not on where the phone is: checking
+Kuwait City from Manila still shows them; checking Manila does not get a
+Kuwaiti labour law.
+
 ## Where the data comes from
 
 [Open-Meteo](https://open-meteo.com/), on two endpoints, called straight from
@@ -144,6 +163,48 @@ dust and particulates from the Copernicus atmosphere model. Both are asked for
 The air-quality call is allowed to fail on its own. Losing the dust numbers
 should never cost you the temperature, so it is caught separately and every
 dust field goes null rather than the screen going blank.
+
+### The radar map, which is the one exception
+
+Open-Meteo publishes hourly model output and no radar at all, so *where is the
+rain right now* cannot be answered from it. Radar is a different kind of thing
+— an actual sweep of the sky, minutes old rather than modelled — and it needs a
+different source. Two, in fact:
+
+| Host | Carries |
+| --- | --- |
+| `api.rainviewer.com` | the index of radar frames currently published — about two hours back, and a short nowcast forward |
+| the tile host the index names | the radar frames themselves, as map tiles |
+| `tile.openstreetmap.org` | the plain base map underneath them |
+
+Nothing but a tile coordinate is sent to either, and no URL the app builds has
+a query string — there is nowhere to put a key, which is the point.
+`test/boundary.test.mjs` names all three in its allowlist with the reasoning
+written next to them, because that list is the rule and adding to it should be
+a deliberate act rather than a convenience.
+
+The base map was CARTO first, and it lasted one deploy: CARTO's tiles came back
+reading **"API key required"**. That is the shape of the risk in this whole
+list — a host that is keyless today can gate tomorrow, and a static page has
+nowhere to keep a key. OpenStreetMap's standard tiles never wanted one. The
+cost is that they publish no dark style, so **the map stays light in both
+themes**; inverting them in CSS makes a muddy, misread map rather than a dark
+one, and a base map behind a rain radar has one job.
+
+Kuwait is dry for most of the year, and for most of the year this map will be
+empty. The weeks it is not are the ones worth having it for: a winter front
+coming down the Gulf, or the short violent thunderstorms that arrive with a
+shamal and flood an underpass in twenty minutes. **Radar coverage is also not
+uniform, and where none reaches, the frames come back empty — which looks
+exactly like a dry sky.** The card says both of those things on screen, in body
+type, so an empty map in June reads as "nothing to show" rather than as a
+broken app or a promise of no rain.
+
+There is no mapping library. A slippy map is four equations and some absolutely
+positioned images; `ui/tiles.js` is the four equations and `ui/map.js` is the
+images. That file is a deliberate duplicate of the Philippines app's — a pure
+projection, copied rather than imported, with a test in `radar.test.mjs`
+comparing the two below the header and failing when they drift.
 
 Google's WeatherNext was the starting point for this app and is not what it
 uses. WeatherNext is a research forecasting model reached through BigQuery,
@@ -171,6 +232,9 @@ the only file that would change.
 | `core/autolocate.js` | whether to ask the device where it is, and what to call the answer |
 | `core/textsize.js` | four type sizes, on top of whatever the browser is set to |
 | `core/storage.js` | the only module that touches browser storage |
+| `core/radar.js` | RainViewer's frame index, tile URLs and how old a sweep is |
+| `ui/tiles.js` | Web Mercator: the four equations a slippy map actually needs |
+| `ui/map.js` | the map itself — two tile layers, a drag, a zoom and a timeline |
 | `ui/chart.js` | the temperature curve — spline, scale, and the area under it |
 | `ui/art.js` | the flat two-plate illustrations |
 | `ui/tone.js` | what colour the day is |
@@ -196,7 +260,7 @@ old model's failure so it cannot come back.
 node --test 'kuwait-weather/test/*.test.mjs'
 ```
 
-204 of them, no dependencies and no build step. The forecast API cannot be
+235 of them, no dependencies and no build step. The forecast API cannot be
 called from a test, so `test/fixtures/forecast.mjs` builds responses in the
 real shape instead — which also lets a test ask for a specific kind of day: a
 July afternoon in a dust storm, a mild January morning, an air-quality endpoint
@@ -208,6 +272,7 @@ that returned nothing.
 | `dust.test.mjs` | the five levels, and the worse of the two signals winning |
 | `wind.test.mjs` | the compass, and what is and is not a shamal |
 | `workban.test.mjs` | the ban's edges, in Kuwait time, in and out of season |
+| `radar.test.mjs` | the projection against a round trip at every zoom, the frame index, and that the map never lets blank imply dry |
 | `places.test.mjs` | all six governorates, unique ids, every place inside Kuwait |
 | `api.test.mjs` | the URLs, the normalized shape, air-quality hours matched by timestamp |
 | `derive.test.mjs` | per-hour enrichment, daily rollups, the best outdoor window |

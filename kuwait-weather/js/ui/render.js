@@ -92,7 +92,7 @@ export function advisoryList(items) {
 
 export function workCard(d, { profile, now = new Date() } = {}) {
   const n = d.now;
-  const ban = banStatus(now);
+  const ban = d.inKuwait === false ? { inSeason: false } : banStatus(now);
   const window = bestOutdoorWindow(d.hours, { now });
   const work = n.work;
 

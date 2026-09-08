@@ -51,6 +51,19 @@
     <p class="stamp"><span id="updated"></span><span id="model-time"></span></p>
   </section>
 
+  <section class="card card--flush" aria-labelledby="h-map">
+    <h2 id="h-map">Where the rain is now</h2>
+    <p class="card-note">Live radar — actual sweeps of the sky from the radar network, a few minutes old, not a forecast. Most of the year over Kuwait it is empty; the weeks it is not are the ones worth watching. Drag to move around; play to see which way the weather is going.</p>
+    <div id="map"></div>
+    <div class="map-bar">
+      <button type="button" id="map-play" class="map-play" aria-label="Play the last two hours"></button>
+      <label class="sr-only" for="map-time">Radar frame</label>
+      <input type="range" id="map-time" class="map-range" min="0" max="0" value="0" step="1" />
+      <p id="map-when" class="map-when">Loading radar…</p>
+    </div>
+    <p id="map-note" class="map-note">Radar coverage comes from national weather radars, and it does not reach everywhere. Where none reaches, the map is simply blank — which is not the same as no rain.</p>
+  </section>
+
   <section class="card card--flush" aria-labelledby="h-advisories">
     <h2 id="h-advisories" class="sr-only">What to know</h2>
     <ul id="advisories" class="advisories"></ul>
@@ -82,7 +95,9 @@
       <a href="https://open-meteo.com/" rel="noopener">Open-Meteo</a>, which is free, keyless and open —
       weather from national meteorological services, dust and particulates from the Copernicus
       atmosphere model. Nothing about you is sent anywhere: the app asks for a set of coordinates and
-      gets a forecast back.</p>
+      gets a forecast back. The radar map is the one thing that comes from somewhere else:
+      <a href="https://www.rainviewer.com/" rel="noopener">RainViewer</a>, which publishes national radar
+      sweeps as map tiles, over a base map of OpenStreetMap's own tiles.</p>
     <p><strong>Where it stops.</strong> This is not an official warning service. Kuwait's
       Meteorological Department issues those. Heat index and WBGT are calculated from the forecast,
       not measured, and the work/rest guidance is for planning a day rather than for meeting an

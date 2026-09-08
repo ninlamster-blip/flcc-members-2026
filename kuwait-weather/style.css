@@ -340,6 +340,91 @@ h2 {
 .card--flush > h2, .card--flush > .card-note { padding-inline: 1.15rem; }
 .card-note { margin: -0.5rem 0 0.9rem; font-size: var(--t-sm); color: var(--muted); }
 
+/* ── the radar map ────────────────────────────────────────────────────── */
+
+/* The two fixed colours in this stylesheet, and deliberately so: the base map
+   is OpenStreetMap's own tiles, which are light in both themes. A ground and a
+   marker drawn from the theme tokens would put light ink on a light map every
+   dark night. */
+.map {
+  position: relative; height: 300px; overflow: hidden;
+  background: #E8E4DC; border-block: 1px solid var(--hair);
+  touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
+}
+.map.is-dragging { cursor: grabbing; }
+.map-layer { position: absolute; inset: 0; }
+/* The radar sits over the base map, translucent enough that the coastline
+   underneath still reads through a downpour. */
+.map-rain { opacity: 0.82; }
+.map-tile { position: absolute; width: 256px; height: 256px; max-width: none; }
+
+.map-pin {
+  position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px;
+  border: 3px solid #14202B; border-radius: 50%;
+  background: #FFFFFF; pointer-events: none;
+}
+
+.map-controls { position: absolute; top: 10px; right: 10px; display: grid; gap: 6px; }
+.map-btn {
+  width: var(--control); height: var(--control);
+  display: grid; place-items: center;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--card); color: var(--ink);
+  font-size: var(--t-lg); line-height: 1; cursor: pointer;
+}
+/* Only offered once the map has actually been dragged off the place. */
+.map-btn--home:disabled { visibility: hidden; }
+.map-btn:disabled { opacity: 0.4; cursor: default; }
+
+.map-attrib {
+  position: absolute; inset: auto 0 0 0; margin: 0;
+  padding: 0.15rem 0.5rem; text-align: right;
+  font-size: var(--t-xs); color: var(--muted); background: var(--card);
+}
+.map-attrib a { color: inherit; }
+
+.map-note { margin: 0.6rem 1.15rem 0; font-size: var(--t-xs); color: var(--muted); }
+
+/* At the largest text size on a 320px screen the timestamp alone is wider than
+   half the screen, and an unwrapped row squeezed the scrubber to nothing. It
+   wraps instead, and the scrubber keeps a floor. */
+.map-bar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 0.3rem 0.7rem; padding: 0.8rem 1.15rem 0;
+}
+.map-play {
+  flex: none; width: var(--control); height: var(--control);
+  display: grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 50%;
+  background: var(--card); color: var(--ink); cursor: pointer;
+}
+.map-play:disabled { opacity: 0.4; cursor: default; }
+/* The frame scrubber, drawn rather than left to the browser: the default
+   track is a different grey in each colour scheme and neither is this app's. */
+.map-range {
+  flex: 1 1 6rem; min-width: 0; height: var(--control);
+  appearance: none; -webkit-appearance: none; background: none; cursor: pointer;
+}
+.map-range::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--hair); }
+.map-range::-moz-range-track { height: 6px; border-radius: 3px; background: var(--hair); }
+.map-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px; margin-top: -7px;
+  border: 2px solid var(--card); border-radius: 50%; background: var(--flat-rain);
+}
+.map-range::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border: 2px solid var(--card); border-radius: 50%; background: var(--flat-rain);
+}
+.map-range:disabled { cursor: default; }
+.map-range:disabled::-webkit-slider-thumb { background: var(--line); }
+.map-range:disabled::-moz-range-thumb { background: var(--line); }
+.map-when {
+  margin: 0; flex: 1 0 auto; min-width: 6rem; text-align: right;
+  font-size: var(--t-xs); color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.map-when--forecast { color: var(--info); }
+.map-when--error { color: var(--warning); }
+
 /* ── advisories ───────────────────────────────────────────────────────── */
 
 .advisories { list-style: none; margin: 0; padding: 0; }

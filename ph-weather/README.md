@@ -121,6 +121,42 @@ wall-clock time and `format.parseLocal` is the only thing that reads them. The
 air-quality call is caught separately — losing the particulate numbers should
 never cost somebody the flood warning.
 
+### The radar map, which is the one exception
+
+Open-Meteo publishes hourly model output and no radar at all, so *where is the
+rain right now* cannot be answered from it. Radar is a different kind of thing
+— an actual sweep of the sky, minutes old rather than modelled — and it needs a
+different source. Two, in fact:
+
+| Host | Carries |
+| --- | --- |
+| `api.rainviewer.com` | the index of radar frames currently published — about two hours back, and a short nowcast forward |
+| the tile host the index names | the radar frames themselves, as map tiles |
+| `tile.openstreetmap.org` | the plain base map underneath them |
+
+Nothing but a tile coordinate is sent to either, and no URL the app builds has
+a query string — there is nowhere to put a key, which is the point.
+`test/boundary.test.mjs` names all three in its allowlist with the reasoning
+written next to them, because that list is the rule and adding to it should be
+a deliberate act rather than a convenience.
+
+The base map was CARTO first, and it lasted one deploy: CARTO's tiles came back
+reading **"API key required"**. That is the shape of the risk in this whole
+list — a host that is keyless today can gate tomorrow, and a static page has
+nowhere to keep a key. OpenStreetMap's standard tiles never wanted one. The
+cost is that they publish no dark style, so **the map stays light in both
+themes**; inverting them in CSS makes a muddy, misread map rather than a dark
+one, and a base map behind a rain radar has one job.
+
+**Radar coverage is not uniform, and where none reaches, the frames come back
+empty — which looks exactly like a dry sky.** The card says so on screen, in
+body type. That is the whole reason the sentence exists, and
+`radar.test.mjs` fails if it is removed.
+
+There is no mapping library. A slippy map is four equations and some absolutely
+positioned images; `ui/tiles.js` is the four equations, written out and tested
+against a round trip, and `ui/map.js` is the images.
+
 ## The modules
 
 | File | What it owns |
@@ -135,6 +171,9 @@ never cost somebody the flood warning.
 | `core/api.js` | the two URLs, including the week of history |
 | `core/derive.js` | everything the forecast does not say outright |
 | `core/places.js` | 37 places, weighted towards the ones that flood and slide |
+| `core/radar.js` | RainViewer's frame index, tile URLs and how old a sweep is |
+| `ui/tiles.js` | Web Mercator: the four equations a slippy map actually needs |
+| `ui/map.js` | the map itself — two tile layers, a drag, a zoom and a timeline |
 | `ui/chart.js` | the rain bars with PAGASA's lines across them, and the temperature curve |
 
 ## Tests
@@ -143,7 +182,7 @@ never cost somebody the flood warning.
 node --test 'ph-weather/test/*.test.mjs'
 ```
 
-87 of them, no dependencies and no build step. The API cannot be called from a
+119 of them, no dependencies and no build step. The API cannot be called from a
 test, so `test/fixtures/forecast.mjs` builds responses in the real shape —
 including the past week — which lets a test ask for a specific kind of month:
 three dry days then a downpour, a saturating habagat spell, an air-quality
@@ -155,6 +194,10 @@ The two that matter most:
 ground with no rain coming is not a flood warning — raising one would cry wolf
 every week of the habagat and teach people to ignore the app. That test caught
 exactly that bug during the build.
+
+`radar.test.mjs` pins the projection against a round trip — a coordinate turned
+into a tile position and back has to come out where it started, at every zoom —
+and pins the sentence that stops a blank map implying a dry one.
 
 `design.test.mjs` computes real contrast ratios rather than eyeballing them,
 including for the three PAGASA warning colours, which have to be recognisable
