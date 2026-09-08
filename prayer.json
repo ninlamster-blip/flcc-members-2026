@@ -47,13 +47,16 @@
     {"id": "pw-1779804041427", "name": "Fretz Guerzon", "title": "Sis.", "eligibleRoles": ["presider", "exhorter"], "status": "active"},
     {"id": "pw-1779804091843", "name": "Edward Sario", "title": "Bro.", "eligibleRoles": ["presider", "exhorter"], "status": "active"},
     {"id": "pw-dolly-cas", "name": "Dolly Cas", "title": "Sis.", "eligibleRoles": ["exhorter"], "status": "active"},
-    {"id": "pw-sandra-gabriel", "name": "Sandra Gabriel", "title": "Sis.", "eligibleRoles": ["presider"], "status": "active"}
+    {"id": "pw-sandra-gabriel", "name": "Sandra Gabriel", "title": "Sis.", "eligibleRoles": ["presider"], "status": "active"},
+    {"id": "pw-amazelle-de-jesus", "name": "Amazelle De Jesus", "title": "Sis.", "eligibleRoles": ["presider"], "status": "active"},
+    {"id": "pw-christine-santos", "name": "Christine Santos", "title": "Sis.", "eligibleRoles": ["presider"], "status": "active"}
   ],
   "themes": {
     "2026-04": "WORKS OF THE HOLY SPIRIT / CHURCH GROWTH",
     "2026-05": "YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)",
     "2026-06": "WORSHIP / EVANGELISM / DISCIPLESHIP / FELLOWSHIP",
-    "2026-07": ""
+    "2026-07": "",
+    "2026-09": "FINANCIAL STEWARDSHIP"
   },
   "intercessory": [
     {"id": "ip-2026-04-03-friday", "date": "2026-04-03", "service": "Friday", "teamId": "team-worship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
@@ -100,7 +103,14 @@
     {"id": "ip-2026-08-09-sunday", "date": "2026-08-09", "service": "Sunday", "teamId": "team-finance", "startTime": "18:15", "endTime": "18:30", "notes": ""},
     {"id": "ip-2026-08-16-sunday", "date": "2026-08-16", "service": "Sunday", "teamId": "team-evangelism", "startTime": "18:15", "endTime": "18:30", "notes": ""},
     {"id": "ip-2026-08-23-sunday", "date": "2026-08-23", "service": "Sunday", "teamId": "team-prayer", "startTime": "18:15", "endTime": "18:30", "notes": ""},
-    {"id": "ip-2026-08-30-sunday", "date": "2026-08-30", "service": "Sunday", "teamId": "team-auxiliary", "startTime": "18:15", "endTime": "18:30", "notes": ""}
+    {"id": "ip-2026-08-30-sunday", "date": "2026-08-30", "service": "Sunday", "teamId": "team-auxiliary", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-09-04-friday", "date": "2026-09-04", "service": "Friday", "teamId": "team-worship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-09-11-friday", "date": "2026-09-11", "service": "Friday", "teamId": "team-fellowship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-09-18-friday", "date": "2026-09-18", "service": "Friday", "teamId": "team-admin", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-09-06-sunday", "date": "2026-09-06", "service": "Sunday", "teamId": "team-prayer", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-09-13-sunday", "date": "2026-09-13", "service": "Sunday", "teamId": "team-finance", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-09-20-sunday", "date": "2026-09-20", "service": "Sunday", "teamId": "team-evangelism", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-09-27-sunday", "date": "2026-09-27", "service": "Sunday", "teamId": "team-discipleship", "startTime": "18:15", "endTime": "18:30", "notes": ""}
   ],
   "meetings": [
     {"id": "pm-2026-04-02", "date": "2026-04-02", "startTime": "18:30", "type": "sectoral", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "F&T", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
@@ -124,6 +134,10 @@
     {"id": "pm-2026-08-06", "date": "2026-08-06", "startTime": "18:30", "type": "sectoral", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "F&T", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
     {"id": "pm-2026-08-12", "date": "2026-08-12", "startTime": "18:00", "type": "corporate", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "SHEKINAH", "venue": "CPM-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
     {"id": "pm-2026-08-20", "date": "2026-08-20", "startTime": "18:30", "type": "fasting", "presiderId": "bro-04", "exhorterId": "pw-1779804041427", "songLeaderId": "bro-07", "coordinator": "", "venue": "Arciaga Family Flat", "isVirtual": false, "foodInChargeText": "", "notes": ""},
-    {"id": "pm-2026-08-27", "date": "2026-08-27", "startTime": "18:30", "type": "thanksgiving", "presiderId": "sis-20", "exhorterId": "ptr-02", "songLeaderId": "sis-18", "coordinator": "", "venue": "Abundance Hall", "isVirtual": false, "foodInChargeText": "AUGUST CELEBRANT", "notes": ""}
+    {"id": "pm-2026-08-27", "date": "2026-08-27", "startTime": "18:30", "type": "thanksgiving", "presiderId": "sis-20", "exhorterId": "ptr-02", "songLeaderId": "sis-18", "coordinator": "", "venue": "Abundance Hall", "isVirtual": false, "foodInChargeText": "AUGUST CELEBRANT", "notes": ""},
+    {"id": "pm-2026-09-03", "date": "2026-09-03", "startTime": "18:30", "type": "sectoral", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "CORNERSTONE", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-09-09", "date": "2026-09-09", "startTime": "18:00", "type": "corporate", "presiderId": "pw-amazelle-de-jesus", "exhorterId": "sis-13", "songLeaderId": null, "coordinator": "", "venue": "CPM-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-09-17", "date": "2026-09-17", "startTime": "18:30", "type": "fasting", "presiderId": "pw-christine-santos", "exhorterId": "bro-05", "songLeaderId": null, "coordinator": "", "venue": "Pascual Family Flat", "isVirtual": false, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-09-24", "date": "2026-09-24", "startTime": "18:30", "type": "thanksgiving", "presiderId": "pw-1778609198792", "exhorterId": "pw-1779804091843", "songLeaderId": null, "coordinator": "", "venue": "Abundance Hall (2F)", "isVirtual": false, "foodInChargeText": "SEPTEMBER CELEBRANT", "notes": ""}
   ]
 }
