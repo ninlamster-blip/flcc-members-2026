@@ -144,23 +144,38 @@ export function waiting() { return h('div', { class: 'wait', role: 'status', 'ar
  *
  * A reference that will not parse is not left as a dead button — it falls
  * through to a search for the same words, which is what a reader wanted anyway.
+ *
+ * What is printed and what is parsed are not the same string. The screens
+ * print a reference with the translation after it — "Proverbs 3:5–6 · WEB" —
+ * and that label is not part of the reference. Handed the whole line the
+ * parser found nothing, and the fallback searched the Bible for a phrase
+ * ending in "· WEB", which appears in no verse: tapping the reference under
+ * the day's word landed on an empty search. Only the part before the
+ * separator is the reference; the button still reads the way it was written.
  */
 export function reference(text, navigate, { className = 'ref', style = '' } = {}) {
   if (!text) return h('span');
   if (typeof navigate !== 'function') return h('p', { class: className, style, text });
+  const ref = refOnly(text);
   return h('button', {
     class: `${className} ref-link`, type: 'button', style,
-    'aria-label': `Open ${text} in the Bible`,
+    'aria-label': `Open ${ref} in the Bible`,
     onclick: async () => {
       try {
         const module = await import('./scripture.js');
         const { books } = await module.manifest();
-        const found = module.parseRef(text, books);
-        if (!found) { navigate(`bible/search?q=${encodeURIComponent(text)}`); return; }
+        const found = module.parseRef(ref, books);
+        if (!found) { navigate(`bible/search?q=${encodeURIComponent(ref)}`); return; }
         navigate(`bible/${found.book.n}/${found.chapter}${found.verse ? `?v=${found.verse}` : ''}`);
       } catch { toast('The Bible could not be opened just now.'); }
     },
   }, text);
+}
+
+/** "Proverbs 3:5–6 · WEB" → "Proverbs 3:5–6". A line with no label is itself. */
+export function refOnly(text) {
+  const [first] = String(text || '').split('·');
+  return first.trim() || String(text || '').trim();
 }
 
 /**

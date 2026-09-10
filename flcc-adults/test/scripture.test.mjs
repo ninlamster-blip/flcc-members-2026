@@ -95,3 +95,35 @@ test('the ways an adult might type a reference all land somewhere sensible', () 
   assert.equal(scripture.parseRef('', bible.books), null);
   assert.equal(scripture.parseRef('not a reference at all', bible.books), null);
 });
+
+/**
+ * The translation printed after a reference is not part of the reference.
+ *
+ * Every screen that quotes Scripture prints the line the way a reader writes
+ * it — "Proverbs 3:5–6 · WEB". Handed that whole line the parser finds
+ * nothing, and the button falls through to a search for a phrase ending in
+ * "· WEB", which appears in no verse: tapping the reference under the day's
+ * word landed on an empty search rather than on Proverbs 3. `refOnly()` in
+ * core/ui.js takes the part before the separator, and this pins both halves of
+ * it — that the label is dropped, and that dropping it is what makes the
+ * reference open.
+ */
+test('a reference printed with its translation still opens the passage', async () => {
+  const ui = await import('../js/core/ui.js');
+  const cases = [
+    ['Proverbs 3:5–6 · WEB', 'Proverbs 3:5–6', 20, 3, 5],
+    ['John 3:16 · WEB', 'John 3:16', 43, 3, 16],
+    ['Mga Awit 23 · TGL', 'Mga Awit 23', 19, 23, null],
+    ['Psalm 23', 'Psalm 23', 19, 23, null],            // no label: unchanged
+  ];
+  for (const [printed, bare, n, chapter, verse] of cases) {
+    assert.equal(ui.refOnly(printed), bare, `"${printed}" was not reduced to its reference`);
+    const parsed = scripture.parseRef(ui.refOnly(printed), bible.books);
+    assert.ok(parsed, `"${printed}" does not open`);
+    assert.equal(parsed.book.n, n);
+    assert.equal(parsed.chapter, chapter);
+    assert.equal(parsed.verse, verse);
+  }
+  // Why refOnly() has to exist at all.
+  assert.equal(scripture.parseRef('Proverbs 3:5–6 · WEB', bible.books), null);
+});
