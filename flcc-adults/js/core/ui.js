@@ -166,10 +166,22 @@ export function reference(text, navigate, { className = 'ref', style = '' } = {}
         const { books } = await module.manifest();
         const found = module.parseRef(ref, books);
         if (!found) { navigate(`bible/search?q=${encodeURIComponent(ref)}`); return; }
-        navigate(`bible/${found.book.n}/${found.chapter}${found.verse ? `?v=${found.verse}` : ''}`);
+        navigate(`bible/${found.book.n}/${found.chapter}${readerQuery(found)}`);
       } catch { toast('The Bible could not be opened just now.'); }
     },
   }, text);
+}
+
+/**
+ * Where in the reader a parsed reference opens: "?v=5&to=6", or nothing.
+ *
+ * A reference that names a range keeps its range. The reader marks every verse
+ * in it, so "Proverbs 3:5–6" arrives with both verses lit rather than the
+ * first one alone under a heading that promised two.
+ */
+export function readerQuery({ verse, verseEnd }) {
+  if (!verse) return '';
+  return `?v=${verse}${verseEnd && verseEnd !== verse ? `&to=${verseEnd}` : ''}`;
 }
 
 /** "Proverbs 3:5–6 · WEB" → "Proverbs 3:5–6". A line with no label is itself. */

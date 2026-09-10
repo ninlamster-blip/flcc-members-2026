@@ -111,18 +111,20 @@ test('the ways an adult might type a reference all land somewhere sensible', () 
 test('a reference printed with its translation still opens the passage', async () => {
   const ui = await import('../js/core/ui.js');
   const cases = [
-    ['Proverbs 3:5–6 · WEB', 'Proverbs 3:5–6', 20, 3, 5],
-    ['John 3:16 · WEB', 'John 3:16', 43, 3, 16],
-    ['Mga Awit 23 · TGL', 'Mga Awit 23', 19, 23, null],
-    ['Psalm 23', 'Psalm 23', 19, 23, null],            // no label: unchanged
+    ['Proverbs 3:5–6 · WEB', 'Proverbs 3:5–6', 20, 3, 5, 6],
+    ['John 3:16 · WEB', 'John 3:16', 43, 3, 16, null],
+    ['Mga Awit 23 · TGL', 'Mga Awit 23', 19, 23, null, null],
+    ['Psalm 23', 'Psalm 23', 19, 23, null, null],      // no label: unchanged
   ];
-  for (const [printed, bare, n, chapter, verse] of cases) {
+  for (const [printed, bare, n, chapter, verse, verseEnd] of cases) {
     assert.equal(ui.refOnly(printed), bare, `"${printed}" was not reduced to its reference`);
     const parsed = scripture.parseRef(ui.refOnly(printed), bible.books);
     assert.ok(parsed, `"${printed}" does not open`);
     assert.equal(parsed.book.n, n);
     assert.equal(parsed.chapter, chapter);
     assert.equal(parsed.verse, verse);
+    // The reader marks every verse of a range, so it has to survive the label.
+    assert.equal(parsed.verseEnd, verseEnd, `"${printed}" lost its range`);
   }
   // Why refOnly() has to exist at all.
   assert.equal(scripture.parseRef('Proverbs 3:5–6 · WEB', bible.books), null);

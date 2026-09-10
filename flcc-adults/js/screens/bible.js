@@ -10,7 +10,7 @@
 // this device.
 
 import { h, poster, label, display, headline, art, go, pill, track,
-         rows, row, scripture, reference, waiting, note, rise, toast, swap } from '../core/ui.js';
+         rows, row, scripture, reference, readerQuery, waiting, note, rise, toast, swap } from '../core/ui.js';
 import * as scriptureCore from '../core/scripture.js';
 import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
@@ -53,17 +53,33 @@ async function reader(ctx, entry, chapter) {
   }
 
   const translation = bible.translations.find((one) => one.code === code);
+  // The verses a reference pointed at, and the one whose actions are showing.
+  //
+  // These used to be the same thing, which is why "Proverbs 3:5–6" arrived
+  // with verse 5 lit and verse 6 looking like any other line. `open` is a
+  // range now: every verse in it is marked, and the actions sit on the first
+  // of them — where a single verse has always put them. A tap replaces the
+  // range with the one verse tapped, so the mark never outlives the reading
+  // it came from.
   const landing = Number(ctx.route.params.v) || null;
-  let open = landing;
+  const lastVerse = read.verses.length ? read.verses[read.verses.length - 1].n : 0;
+  const landingEnd = Math.min(Math.max(Number(ctx.route.params.to) || 0, landing || 0), lastVerse) || null;
+  let open = landing ? { from: landing, to: landingEnd || landing } : null;
   const lines = h('div', { class: 'passage' });
 
   const paint = () => {
     swap(lines, ...read.verses.map((verse) => {
       const ref = scriptureCore.refText(entry, at, verse.n);
-      const isOpen = open === verse.n;
-      const holder = h('div', { class: 'passage-verse', dataset: isOpen ? { open: '' } : {} },
+      const marked = !!open && verse.n >= open.from && verse.n <= open.to;
+      const isOpen = !!open && verse.n === open.from;
+      const holder = h('div', { class: 'passage-verse', dataset: marked ? { open: '' } : {} },
         h('button', { class: 'passage-line', type: 'button', 'aria-expanded': String(isOpen),
-          onclick: () => { open = isOpen ? null : verse.n; paint(); } },
+          onclick: () => {
+            // Tapping the open verse closes it; tapping anything else — a
+            // second verse of a marked range included — moves to that verse.
+            open = isOpen && open.to === verse.n ? null : { from: verse.n, to: verse.n };
+            paint();
+          } },
           h('span', { class: 'passage-num', text: String(verse.n) }),
           h('span', { text: verse.text })));
       if (isOpen) {
@@ -208,7 +224,7 @@ export default async function bibleScreen(ctx) {
     const raw = input.value.trim();
     if (!raw) return;
     const ref = scriptureCore.parseRef(raw, bible.books);
-    if (ref) { ctx.go(`bible/${ref.book.n}/${ref.chapter}${ref.verse ? `?v=${ref.verse}` : ''}`); return; }
+    if (ref) { ctx.go(`bible/${ref.book.n}/${ref.chapter}${readerQuery(ref)}`); return; }
     ctx.go(`bible/search?q=${encodeURIComponent(raw)}`);
   };
   input.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); look(); } });
