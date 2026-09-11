@@ -31,28 +31,50 @@
 
 <style>
   :root {
-    --bg: #FAFAF5;
-    --surface: #FFFFFF;
-    --ink: #18181B;
-    --ink-muted: #52525B;
-    --ink-subtle: #A1A1AA;
-    --border: #E7E5DE;
-    --border-strong: #D4D4D0;
-    --accent: #6366F1;       /* Prayer ministry accent: indigo (vs Schedule OS terracotta) */
-    --accent-hover: #4F46E5;
-    --accent-soft: #EEF2FF;
-    --success: #15803D;
-    --success-soft: #DCFCE7;
-    --warning: #B45309;
-    --warning-soft: #FEF3C7;
-    --danger: #B91C1C;
-    --danger-soft: #FEE2E2;
-    --info: #1E40AF;
-    --info-soft: #DBEAFE;
-    --purple: #7E22CE;
-    --purple-soft: #F3E8FF;
-    --teal: #0F766E;
-    --teal-soft: #CCFBF1;
+    /* ── NEXTPURE palette ─────────────────────────────────────────────
+       Five swatches on cream paper. They are the drawing — flat fills,
+       chips, rings, illustration. Text and controls use the darker tone
+       of the same family below, because no pastel here reaches 4.5:1. */
+    --paper: #F7F4EA;
+    --sage: #DEECDA;
+    --butter: #F1E4A0;
+    --peach: #F2BC9C;
+    --rose: #EDA89D;
+    --terracotta: #E4743C;
+
+    --bg: #F7F4EA;
+    --surface: #FFFDF8;
+    --ink: #241C17;
+    --ink-muted: #6B5D52;
+    --ink-subtle: #A3937F;
+    --border: #E6DFD0;
+    --border-strong: #D3C8B4;
+    --accent: #78303C;       /* Prayer ministry accent: deep rose (vs Schedule OS terracotta) */
+    --accent-hover: #521E26;
+    --accent-soft: #FDF4F2;
+    --success: #3F6B3C;
+    --success-soft: #EFF6ED;
+    --warning: #7D5F0E;
+    --warning-soft: #FBF5DC;
+    --danger: #A8455A;
+    --danger-soft: #FBE7E2;
+    --info: #96602F;
+    --info-soft: #FCEDE3;
+
+    /* Ring tokens: the raw swatch, one step stronger than the soft fill. */
+    --success-ring: #DEECDA;
+    --warning-ring: #F1E4A0;
+    --danger-ring: #EDA89D;
+    --info-ring: #F2BC9C;
+    --accent-ring: #F6C4A6;
+    /* Two extra category tones, kept clear of the five states above:
+       an olive off the sage, and the deepest of the peach/clay family. */
+    --purple: #5E6B33;
+    --purple-soft: #F0F2E3;
+    --purple-ring: #D3DBAE;
+    --teal: #6B4220;
+    --teal-soft: #FCEDE3;
+    --teal-ring: #F2BC9C;
   }
 
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -84,27 +106,27 @@
     cursor: pointer;
   }
   .btn-primary { background: var(--ink); color: white; }
-  .btn-primary:hover { background: #27272A; }
+  .btn-primary:hover { background: #33291F; }
   .btn-accent { background: var(--accent); color: white; }
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
   .btn-ghost:hover { background: var(--bg); border-color: var(--border-strong); }
-  .btn-soft { background: #F4F4F0; color: var(--ink); }
-  .btn-soft:hover { background: #EDEDE7; }
+  .btn-soft { background: #F2EEE1; color: var(--ink); }
+  .btn-soft:hover { background: #EDE6D6; }
 
   .pill {
     display: inline-flex; align-items: center; gap: 0.375rem;
     padding: 0.125rem 0.625rem; border-radius: 999px;
     font-size: 0.75rem; font-weight: 500; line-height: 1.4;
   }
-  .pill-default { background: #F4F4F0; color: var(--ink-muted); }
-  .pill-success { background: var(--success-soft); color: var(--success); }
-  .pill-warning { background: var(--warning-soft); color: var(--warning); }
-  .pill-danger  { background: var(--danger-soft); color: var(--danger); }
-  .pill-info    { background: var(--info-soft); color: var(--info); }
-  .pill-accent  { background: var(--accent-soft); color: var(--accent); }
-  .pill-purple  { background: var(--purple-soft); color: var(--purple); }
-  .pill-teal    { background: var(--teal-soft); color: var(--teal); }
+  .pill-default { background: #F2EEE1; color: var(--ink-muted); }
+  .pill-success { background: var(--success-soft); color: var(--success); box-shadow: inset 0 0 0 1px var(--success-ring); }
+  .pill-warning { background: var(--warning-soft); color: var(--warning); box-shadow: inset 0 0 0 1px var(--warning-ring); }
+  .pill-danger  { background: var(--danger-soft); color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger-ring); }
+  .pill-info    { background: var(--info-soft); color: var(--info); box-shadow: inset 0 0 0 1px var(--info-ring); }
+  .pill-accent  { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent-ring); }
+  .pill-purple  { background: var(--purple-soft); color: var(--purple); box-shadow: inset 0 0 0 1px var(--purple-ring); }
+  .pill-teal    { background: var(--teal-soft); color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal-ring); }
 
   .input, .select {
     width: 100%;
@@ -161,7 +183,7 @@
     margin: -0.375rem -0.5rem;
     transition: background 0.15s;
   }
-  .role-cell:hover { background: #F4F4F0; }
+  .role-cell:hover { background: #F2EEE1; }
   .role-cell-vacant { color: var(--ink-subtle); font-style: italic; }
 
   .modal-backdrop {
@@ -199,7 +221,7 @@
     cursor: pointer;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .dropdown-item:hover { background: #F4F4F0; }
+  .dropdown-item:hover { background: #F2EEE1; }
   .dropdown-item-empty { color: var(--ink-subtle); font-style: italic; padding: 0.625rem 0.75rem; font-size: 0.8125rem; }
   .dropdown-section {
     padding: 0.375rem 0.75rem 0.25rem;
@@ -217,7 +239,7 @@
   .strip-corporate   { border-left: 3px solid var(--info); }
   .strip-fasting     { border-left: 3px solid var(--warning); }
   .strip-regular     { border-left: 3px solid var(--success); }
-  .strip-thanksgiving{ border-left: 3px solid #DB2777; }
+  .strip-thanksgiving{ border-left: 3px solid #A8455A; }
 
   /* Print */
   @media print {
@@ -241,11 +263,11 @@
   :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes gradientPulse { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
   @keyframes fadeSlideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes accentGlow { 0%,100%{box-shadow:0 0 0 0 rgba(163,59,42,0.25)} 50%{box-shadow:0 0 0 7px rgba(163,59,42,0)} }
+  @keyframes accentGlow { 0%,100%{box-shadow:0 0 0 0 rgba(184,74,28,0.25)} 50%{box-shadow:0 0 0 7px rgba(184,74,28,0)} }
   @keyframes tabPop { from{transform:scaleX(0);opacity:0} to{transform:scaleX(1);opacity:1} }
   @keyframes greetingPop { from{opacity:0;transform:translateY(5px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
 
-  .hdr-strip { height:3px; background:linear-gradient(90deg,var(--accent),#E86848,#D97706,#C2410C,var(--accent)); background-size:250% 100%; animation:gradientPulse 5s ease-in-out infinite; }
+  .hdr-strip { height:3px; background:linear-gradient(90deg,var(--accent),#E4743C,#997617,#96370F,var(--accent)); background-size:250% 100%; animation:gradientPulse 5s ease-in-out infinite; }
   header { background:linear-gradient(180deg,rgba(251,235,231,0.45) 0%,rgba(250,250,245,0.93) 55%) !important; }
   .greeting-h1 { animation:greetingPop 0.55s var(--spring) both; animation-delay:0.08s; }
   .tab { position:relative; }
@@ -255,11 +277,11 @@
   .btn { transition:transform 0.18s var(--spring),box-shadow 0.18s ease,background 0.15s ease !important; }
   .btn:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.12); }
   .btn:active { transform:translateY(0) scale(0.95) !important; box-shadow:none !important; }
-  .btn-accent:hover { box-shadow:0 4px 16px rgba(163,59,42,0.32) !important; }
+  .btn-accent:hover { box-shadow:0 4px 16px rgba(184,74,28,0.32) !important; }
   .row-card { transition:transform 0.18s var(--spring),box-shadow 0.18s ease,border-color 0.15s ease !important; }
   .row-card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); border-color:var(--border-strong); }
   .row-mine { animation:accentGlow 3s ease-in-out infinite; }
-  .input:focus,.select:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(163,59,42,0.1),0 0 0 1px rgba(163,59,42,0.4) !important; }
+  .input:focus,.select:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(184,74,28,0.1),0 0 0 1px rgba(184,74,28,0.4) !important; }
   .modal { animation:fadeSlideUp 0.3s var(--spring) both !important; }
 </style>
 </head>
@@ -951,7 +973,7 @@ function IntercessoryTab({ state, dispatch, mainData }) {
 function IntercessorySection({ service, entries, state, dispatch, mainData }) {
   return (
     <div className="card mb-4 overflow-hidden">
-      <div className="px-5 py-3 flex items-baseline justify-between" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+      <div className="px-5 py-3 flex items-baseline justify-between" style={{ borderBottom: '1px solid var(--border)', background: '#FFFDF8' }}>
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle">{service.label}</div>
         <div className="text-xs ink-muted">
           {service.defaultStart && `${formatTime12(service.defaultStart)}${service.defaultEnd ? ' – ' + formatTime12(service.defaultEnd) : ''}`}
@@ -1567,28 +1589,28 @@ function PrintTab({ state, mainData }) {
         <table className="print-table w-full mb-6" style={{ borderCollapse: 'collapse', border: '1px solid #999' }}>
           <thead>
             <tr>
-              <th colSpan="2" style={{ ...thIP, background: '#BFDBFE' }}>BOTR - NECK</th>
-              <th colSpan="2" style={{ ...thIP, background: '#FEF08A' }}>ABUNDANCE - FRI</th>
-              <th colSpan="2" style={{ ...thIP, background: '#86EFAC' }}>ABUNDANCE - SUN</th>
+              <th colSpan="2" style={{ ...thIP, background: '#DEECDA' }}>BOTR - NECK</th>
+              <th colSpan="2" style={{ ...thIP, background: '#E5D179' }}>ABUNDANCE - FRI</th>
+              <th colSpan="2" style={{ ...thIP, background: '#8FBA89' }}>ABUNDANCE - SUN</th>
             </tr>
             <tr>
-              <th style={{ ...thIP2, background: '#DBEAFE' }}>DATE</th>
-              <th style={{ ...thIP2, background: '#DBEAFE' }}>TIME (AM)<br/>10:00 TO 12:00</th>
-              <th style={{ ...thIP2, background: '#FEFCE8' }}>DATE</th>
-              <th style={{ ...thIP2, background: '#FEFCE8' }}>TIME (PM)<br/>4:15 TO 4:30</th>
-              <th style={{ ...thIP2, background: '#DCFCE7' }}>DATE</th>
-              <th style={{ ...thIP2, background: '#DCFCE7' }}>TIME (PM)<br/>6:15 TO 6:30</th>
+              <th style={{ ...thIP2, background: '#EFF6ED' }}>DATE</th>
+              <th style={{ ...thIP2, background: '#EFF6ED' }}>TIME (AM)<br/>10:00 TO 12:00</th>
+              <th style={{ ...thIP2, background: '#FDFAEE' }}>DATE</th>
+              <th style={{ ...thIP2, background: '#FDFAEE' }}>TIME (PM)<br/>4:15 TO 4:30</th>
+              <th style={{ ...thIP2, background: '#DEECDA' }}>DATE</th>
+              <th style={{ ...thIP2, background: '#DEECDA' }}>TIME (PM)<br/>6:15 TO 6:30</th>
             </tr>
           </thead>
           <tbody>
             {Array.from({ length: Math.max(fridays.length, sundays.length, botr.length, 1) }, (_, i) => (
               <tr key={i}>
-                <td style={{ ...tdIP, background: '#EFF6FF' }}>{botr[i] ? formatDateShort(botr[i].date).toUpperCase().replace('-',' ') : 'N/A'}</td>
-                <td style={{ ...tdIP, background: '#EFF6FF' }}>{botr[i] ? (teamMeta(state, botr[i].teamId)?.name || 'TBD') : 'N/A'}</td>
-                <td style={{ ...tdIP, background: '#FEFCE8' }}>{fridays[i] ? formatDateShort(fridays[i].date).toUpperCase().replace('-',' ') : ''}</td>
-                <td style={{ ...tdIP, background: '#FEFCE8' }}>{fridays[i] ? (teamMeta(state, fridays[i].teamId)?.name || '—') : ''}</td>
-                <td style={{ ...tdIP, background: '#F0FDF4' }}>{sundays[i] ? formatDateShort(sundays[i].date).toUpperCase().replace('-',' ') : ''}</td>
-                <td style={{ ...tdIP, background: '#F0FDF4' }}>{sundays[i] ? (teamMeta(state, sundays[i].teamId)?.name || '—') : ''}</td>
+                <td style={{ ...tdIP, background: '#F6FAF4' }}>{botr[i] ? formatDateShort(botr[i].date).toUpperCase().replace('-',' ') : 'N/A'}</td>
+                <td style={{ ...tdIP, background: '#F6FAF4' }}>{botr[i] ? (teamMeta(state, botr[i].teamId)?.name || 'TBD') : 'N/A'}</td>
+                <td style={{ ...tdIP, background: '#FDFAEE' }}>{fridays[i] ? formatDateShort(fridays[i].date).toUpperCase().replace('-',' ') : ''}</td>
+                <td style={{ ...tdIP, background: '#FDFAEE' }}>{fridays[i] ? (teamMeta(state, fridays[i].teamId)?.name || '—') : ''}</td>
+                <td style={{ ...tdIP, background: '#EFF6ED' }}>{sundays[i] ? formatDateShort(sundays[i].date).toUpperCase().replace('-',' ') : ''}</td>
+                <td style={{ ...tdIP, background: '#EFF6ED' }}>{sundays[i] ? (teamMeta(state, sundays[i].teamId)?.name || '—') : ''}</td>
               </tr>
             ))}
           </tbody>
@@ -1604,7 +1626,7 @@ function PrintTab({ state, mainData }) {
 
         <table className="print-table w-full" style={{ borderCollapse: 'collapse', border: '1px solid #999' }}>
           <thead>
-            <tr style={{ background: '#FEF08A' }}>
+            <tr style={{ background: '#E5D179' }}>
               <th style={th}>DATE (DAY)</th>
               <th style={th}>TIME START</th>
               <th style={th}>PRESIDER</th>
@@ -1635,7 +1657,7 @@ function PrintTab({ state, mainData }) {
                     <td style={td}>{m.venue || ''}</td>
                   </tr>
                   <tr>
-                    <td colSpan="6" style={{ ...td, textAlign: 'center', fontWeight: 600, letterSpacing: '0.1em', background: '#FAFAFA' }}>
+                    <td colSpan="6" style={{ ...td, textAlign: 'center', fontWeight: 600, letterSpacing: '0.1em', background: '#F7F4EA' }}>
                       {meta.label.toUpperCase()}{isCoord && m.coordinator ? ` · C/O ${m.coordinator}` : ''}{m.foodInChargeText ? ` · Food in Charge: ${m.foodInChargeText}` : ''}
                     </td>
                   </tr>
@@ -1772,7 +1794,7 @@ function DataTab({ state, dispatch }) {
         <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: 'var(--accent)' }}>For FLCC Members</div>
         <div className="font-display text-2xl font-semibold mt-1">Publish for Members</div>
         <p className="ink-muted text-sm mt-2 max-w-xl mb-4">
-          Generate <code className="font-mono text-xs px-1 py-0.5 rounded" style={{ background: '#F4F4F0' }}>prayer.json</code> and upload it to <code className="font-mono text-xs">{CHURCH.publishPath('prayer.json')}</code> in the members repo. Once uploaded, the prayer ministry schedule appears alongside the main schedule in {CHURCH.short}'s members view.
+          Generate <code className="font-mono text-xs px-1 py-0.5 rounded" style={{ background: '#F2EEE1' }}>prayer.json</code> and upload it to <code className="font-mono text-xs">{CHURCH.publishPath('prayer.json')}</code> in the members repo. Once uploaded, the prayer ministry schedule appears alongside the main schedule in {CHURCH.short}'s members view.
         </p>
 
         <div className="grid sm:grid-cols-2 gap-3 mb-4">

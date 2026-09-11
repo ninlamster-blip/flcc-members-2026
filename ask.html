@@ -21,24 +21,43 @@
 
 <style>
   :root {
-    --bg: #FAFAF5;
-    --surface: #FFFFFF;
-    --ink: #18181B;
-    --ink-muted: #52525B;
-    --ink-subtle: #A1A1AA;
-    --border: #E7E5DE;
-    --border-strong: #D4D4D0;
-    --accent: #A33B2A;
-    --accent-hover: #8B2E20;
-    --accent-soft: #FBEBE7;
-    --success: #15803D;
-    --success-soft: #DCFCE7;
-    --warning: #B45309;
-    --warning-soft: #FEF3C7;
-    --danger: #B91C1C;
-    --danger-soft: #FEE2E2;
-    --info: #1E40AF;
-    --info-soft: #DBEAFE;
+    /* ── NEXTPURE palette ─────────────────────────────────────────────
+       Five swatches on cream paper. They are the drawing — flat fills,
+       chips, rings, illustration. Text and controls use the darker tone
+       of the same family below, because no pastel here reaches 4.5:1. */
+    --paper: #F7F4EA;
+    --sage: #DEECDA;
+    --butter: #F1E4A0;
+    --peach: #F2BC9C;
+    --rose: #EDA89D;
+    --terracotta: #E4743C;
+
+    --bg: #F7F4EA;
+    --surface: #FFFDF8;
+    --surface-sunk: #F2EEE1;
+    --ink: #241C17;
+    --ink-muted: #6B5D52;
+    --ink-subtle: #A3937F;
+    --border: #E6DFD0;
+    --border-strong: #D3C8B4;
+    --accent: #B84A1C;
+    --accent-hover: #96370F;
+    --accent-soft: #FDF0E8;
+    --success: #3F6B3C;
+    --success-soft: #EFF6ED;
+    --warning: #7D5F0E;
+    --warning-soft: #FBF5DC;
+    --danger: #A8455A;
+    --danger-soft: #FBE7E2;
+    --info: #96602F;
+    --info-soft: #FCEDE3;
+
+    /* Ring tokens: the raw swatch, one step stronger than the soft fill. */
+    --success-ring: #DEECDA;
+    --warning-ring: #F1E4A0;
+    --danger-ring: #EDA89D;
+    --info-ring: #F2BC9C;
+    --accent-ring: #F6C4A6;
   }
 
   *, *::before, *::after {
@@ -119,7 +138,7 @@
   .msg-assistant .avatar {
     width: 28px; height: 28px;
     border-radius: 7px;
-    background: #1E40AF;
+    background: #2C5129;
     border: none;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.5rem;
@@ -160,13 +179,13 @@
   .md code {
     font-family: 'Geist Mono', monospace;
     font-size: 0.85em;
-    background: #F4F4F0;
+    background: #F2EEE1;
     padding: 0.1em 0.375em;
     border-radius: 4px;
     color: var(--accent);
   }
   .md pre {
-    background: #F4F4F0;
+    background: #F2EEE1;
     border-radius: 10px;
     padding: 0.75rem;
     overflow-x: auto;
@@ -185,9 +204,9 @@
   .md hr { border: none; border-top: 1px solid var(--border); margin: 0.85em 0; }
   .md a { color: var(--accent); text-decoration: underline; }
   .md table { width: 100%; border-collapse: collapse; margin: 0.6em 0; font-size: 0.875rem; }
-  .md th { background: #F4F4F0; font-weight: 600; padding: 0.375rem 0.625rem; text-align: left; border: 1px solid var(--border); }
+  .md th { background: #F2EEE1; font-weight: 600; padding: 0.375rem 0.625rem; text-align: left; border: 1px solid var(--border); }
   .md td { padding: 0.375rem 0.625rem; border: 1px solid var(--border); }
-  .md tr:nth-child(even) td { background: #FBFBF7; }
+  .md tr:nth-child(even) td { background: #FFFDF8; }
 
   /* ── Streaming cursor ── */
   .streaming-cursor::after {
@@ -265,10 +284,10 @@
     flex-shrink: 0;
   }
   .send-btn:enabled { background: var(--ink); color: #fff; }
-  .send-btn:enabled:hover { background: #27272A; transform: scale(1.04); }
-  .send-btn:disabled { background: #F4F4F0; color: var(--ink-subtle); cursor: not-allowed; }
+  .send-btn:enabled:hover { background: #33291F; transform: scale(1.04); }
+  .send-btn:disabled { background: #F2EEE1; color: var(--ink-subtle); cursor: not-allowed; }
   .send-btn.stop:enabled { background: var(--danger); }
-  .send-btn.stop:enabled:hover { background: #991B1B; }
+  .send-btn.stop:enabled:hover { background: #521E26; }
 
   /* ── Suggestions ── */
   .suggestions-grid {
@@ -294,7 +313,7 @@
     border-color: var(--accent);
     background: var(--accent-soft);
     color: var(--ink);
-    box-shadow: 0 2px 8px rgba(163,59,42,0.1);
+    box-shadow: 0 2px 8px rgba(184,74,28,0.1);
   }
   .chip-icon { font-size: 1.0625rem; display: block; margin-bottom: 0.3rem; }
 
@@ -311,7 +330,7 @@
     font-family: inherit;
     transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
   }
-  .briefing-card:hover { background: var(--accent-soft); box-shadow: 0 2px 8px rgba(163,59,42,0.1); }
+  .briefing-card:hover { background: var(--accent-soft); box-shadow: 0 2px 8px rgba(184,74,28,0.1); }
   .briefing-card:disabled { cursor: default; opacity: 0.75; }
   .briefing-card:disabled:hover { background: var(--surface); box-shadow: none; }
   .briefing-icon { font-size: 1.125rem; line-height: 1.3; flex-shrink: 0; }
@@ -335,8 +354,8 @@
     font-family: inherit;
   }
   .btn-primary { background: var(--ink); color: #fff; }
-  .btn-primary:hover { background: #27272A; }
-  .btn-primary:disabled { background: #D4D4D0; cursor: not-allowed; }
+  .btn-primary:hover { background: #33291F; }
+  .btn-primary:disabled { background: #D3C8B4; cursor: not-allowed; }
   .btn-accent { background: var(--accent); color: #fff; }
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
@@ -363,7 +382,7 @@
   .error-banner {
     background: var(--danger-soft);
     color: var(--danger);
-    border: 1px solid #FCA5A5;
+    border: 1px solid #DE9490;
     border-radius: 10px;
     padding: 0.625rem 0.875rem;
     font-size: 0.8125rem;
@@ -398,7 +417,7 @@
   .news-card:hover {
     border-color: var(--accent);
     background: var(--accent-soft);
-    box-shadow: 0 2px 8px rgba(163,59,42,0.1);
+    box-shadow: 0 2px 8px rgba(184,74,28,0.1);
   }
   .news-badge {
     display: inline-flex;
@@ -447,7 +466,7 @@
     color: var(--ink-muted);
     font-family: inherit;
   }
-  .icon-btn:hover { background: #F0F0EC; color: var(--ink); }
+  .icon-btn:hover { background: #F2EEE1; color: var(--ink); }
 
   /* ── DYNAMIC UI LAYER ──────────────────────────────────────────── */
   :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -465,7 +484,7 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    background: linear-gradient(90deg,var(--accent),#E86848,#D97706,#C2410C,var(--accent));
+    background: linear-gradient(90deg,var(--accent),#E4743C,#997617,#96370F,var(--accent));
     background-size: 250% 100%;
     animation: gradientPulse 5s ease-in-out infinite;
   }
@@ -476,7 +495,7 @@
   .icon-btn:hover { transform:scale(1.1); }
   .icon-btn:active { transform:scale(0.9) !important; }
   .msg-user, .msg-assistant { animation:msgPop 0.3s var(--spring) both; }
-  .input:focus,.select:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(163,59,42,0.1),0 0 0 1px rgba(163,59,42,0.4) !important; }
+  .input:focus,.select:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(184,74,28,0.1),0 0 0 1px rgba(184,74,28,0.4) !important; }
 </style>
 </head>
 
@@ -595,13 +614,13 @@ function buildSuggestions(appData, today) {
 }
 
 const NEWS_CATEGORIES = {
-  milestone:    { bg: '#FEF3C7', color: '#B45309', icon: '🏆' },
-  prayer:       { bg: '#DBEAFE', color: '#1E40AF', icon: '🙏' },
-  equip:        { bg: '#DCFCE7', color: '#15803D', icon: '📚' },
-  celebration:  { bg: '#FDE8FF', color: '#7E22CE', icon: '🎉' },
-  announcement: { bg: '#FBEBE7', color: '#A33B2A', icon: '📢' },
-  music:        { bg: '#F0FDF4', color: '#166534', icon: '🎵' },
-  testimony:    { bg: '#F0FFFE', color: '#0F766E', icon: '✨' },
+  milestone:    { bg: '#FBF5DC', color: '#7D5F0E', icon: '🏆' },
+  prayer:       { bg: '#EFF6ED', color: '#2C5129', icon: '🙏' },
+  equip:        { bg: '#DEECDA', color: '#2C5129', icon: '📚' },
+  celebration:  { bg: '#FDF4F2', color: '#78303C', icon: '🎉' },
+  announcement: { bg: '#FBE6DA', color: '#B84A1C', icon: '📢' },
+  music:        { bg: '#EFF6ED', color: '#1F3A1D', icon: '🎵' },
+  testimony:    { bg: '#EFF6ED', color: '#3F6B3C', icon: '✨' },
 };
 
 // ─── BOTR live stats (via Apps Script getLiveData endpoint) ─────────────────
@@ -1544,7 +1563,7 @@ function ApiKeyModal({ existingKey, existingProxy, existingSecret, onSave, onClo
               onKeyDown={e => e.key === 'Enter' && proxy.trim() && onSave({ proxy: proxy.trim(), secret: secret.trim() })}
             />
             {existingProxy && (
-              <p className="text-xs mt-1.5" style={{color:'#15803D'}}>✓ Proxy connected</p>
+              <p className="text-xs mt-1.5" style={{color:'#2C5129'}}>✓ Proxy connected</p>
             )}
             <label className="block text-xs font-medium mt-3 mb-1.5" style={{color:'var(--ink-muted)'}}>PROXY SECRET <span style={{fontWeight:400}}>(optional — only if your admin set one)</span></label>
             <input
@@ -1877,7 +1896,7 @@ function App() {
           <div
             style={{
               width:44, height:44, borderRadius:10,
-              background:'#2563EB',
+              background:'#4E7F4A',
               display:'flex', alignItems:'center', justifyContent:'center',
               flexShrink:0,
             }}
@@ -1938,7 +1957,7 @@ function App() {
       <div className="chat-main">
 
         {dataError && (
-          <div className="mx-1 mt-3 px-3 py-2 rounded-xl text-sm" style={{background:'var(--warning-soft)', color:'var(--warning)', border:'1px solid #FDE68A'}}>
+          <div className="mx-1 mt-3 px-3 py-2 rounded-xl text-sm" style={{background:'var(--warning-soft)', color:'var(--warning)', border:'1px solid #E5D179'}}>
             ⚠ {dataError}
           </div>
         )}
@@ -1952,7 +1971,7 @@ function App() {
               <div className="text-center px-2">
                 <div style={{
                   width:52, height:52, borderRadius:14,
-                  background:'#1E40AF',
+                  background:'#2C5129',
                   border:'none',
                   display:'flex', alignItems:'center', justifyContent:'center',
                   margin:'0 auto 0.875rem',
@@ -2045,7 +2064,7 @@ function App() {
                         disabled={(!apiKey && !proxyUrl) || !appData}
                       >
                         <div>
-                          <span className="news-badge" style={{background:'#F1F5F9', color:'#475569'}}>
+                          <span className="news-badge" style={{background:'#F2EEE1', color:'#4A3E33'}}>
                             {item.sourceIcon} {item.source}
                           </span>
                         </div>

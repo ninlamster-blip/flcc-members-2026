@@ -36,15 +36,26 @@
 
 <style>
   :root {
-    --bg: #FAFAF5; --surface: #FFFFFF;
-    --ink: #18181B; --ink-muted: #52525B; --ink-subtle: #A1A1AA;
-    --border: #E7E5DE; --border-strong: #D4D4D0;
-    --accent: #0284C7; --accent-hover: #0369A1;
-    --accent-soft: #E0F2FE; --accent-tint: #F0F9FF;
-    --present: #16A34A; --present-soft: #F0FDF4; --present-ring: #BBF7D0;
-    --late: #D97706; --late-soft: #FFFBEB; --late-ring: #FDE68A;
-    --absent: #DC2626; --absent-soft: #FFF1F2; --absent-ring: #FECDD3;
-    --danger: #B91C1C; --danger-soft: #FEE2E2;
+    /* ── NEXTPURE palette ─────────────────────────────────────────────
+       Five swatches on cream paper. They are the drawing — flat fills,
+       chips, rings, illustration. Text and controls use the darker tone
+       of the same family below, because no pastel here reaches 4.5:1. */
+    --paper: #F7F4EA;
+    --sage: #DEECDA;
+    --butter: #F1E4A0;
+    --peach: #F2BC9C;
+    --rose: #EDA89D;
+    --terracotta: #E4743C;
+
+    --bg: #F7F4EA; --surface: #FFFDF8;
+    --ink: #241C17; --ink-muted: #6B5D52; --ink-subtle: #A3937F;
+    --border: #E6DFD0; --border-strong: #D3C8B4;
+    --accent: #96602F; --accent-hover: #6B4220;
+    --accent-soft: #FCEDE3; --accent-tint: #FEF7F2;
+    --present: #3F6B3C; --present-soft: #EFF6ED; --present-ring: #B5D4AF;
+    --late: #7D5F0E; --late-soft: #FDFAEE; --late-ring: #E5D179;
+    --absent: #A8455A; --absent-soft: #FDF4F2; --absent-ring: #F5CCC5;
+    --danger: #A8455A; --danger-soft: #FBE7E2;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
@@ -59,10 +70,10 @@
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
 
   .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; border: 1px solid transparent; cursor: pointer; white-space: nowrap; }
-  .btn-primary { background: var(--ink); color: white; } .btn-primary:hover { background: #27272A; }
+  .btn-primary { background: var(--ink); color: white; } .btn-primary:hover { background: #33291F; }
   .btn-accent  { background: var(--accent); color: white; } .btn-accent:hover { background: var(--accent-hover); }
   .btn-ghost   { background: transparent; color: var(--ink); border-color: var(--border); } .btn-ghost:hover { background: var(--bg); }
-  .btn-soft    { background: #F4F4F0; color: var(--ink); } .btn-soft:hover { background: #EDEDE7; }
+  .btn-soft    { background: #F2EEE1; color: var(--ink); } .btn-soft:hover { background: #EDE6D6; }
   .btn-danger  { background: var(--danger-soft); color: var(--danger); border: none; }
 
   .input, .select, .textarea {
@@ -71,7 +82,7 @@
     color: var(--ink); font-family: 'Geist', sans-serif;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2,132,199,0.1); }
+  .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(150,96,47,0.1); }
   .textarea { resize: vertical; }
 
   .tab { padding: 0.625rem 0; font-size: 0.8125rem; font-weight: 500; color: var(--ink-muted); border-bottom: 2px solid transparent; cursor: pointer; margin-right: 1.25rem; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; flex-shrink: 0; transition: color .15s; }
@@ -102,16 +113,16 @@
   .bar-label { font-size: 0.5625rem; color: var(--ink-subtle); text-align: center; font-family: 'Geist Mono', monospace; }
 
   /* Undo toast */
-  .undo-toast { position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%; transform: translateX(-50%); background: #1E293B; color: white; padding: 12px 18px; border-radius: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.22); z-index: 60; white-space: nowrap; animation: fadeIn .22s cubic-bezier(.34,1.56,.64,1) both; }
+  .undo-toast { position: fixed; bottom: calc(90px + var(--safe-bottom)); left: 50%; transform: translateX(-50%); background: #33291F; color: white; padding: 12px 18px; border-radius: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.22); z-index: 60; white-space: nowrap; animation: fadeIn .22s cubic-bezier(.34,1.56,.64,1) both; }
 
   /* Sync status dot */
   .sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .sync-dot-ok   { background: #16A34A; }
-  .sync-dot-pend { background: #F59E0B; }
-  .sync-dot-err  { background: #DC2626; }
+  .sync-dot-ok   { background: #3F6B3C; }
+  .sync-dot-pend { background: #B99527; }
+  .sync-dot-err  { background: #A8455A; }
 
   /* Care flag */
-  .care-card { padding: 12px 14px; border-radius: 12px; border-left: 3px solid #F59E0B; background: #FFFBEB; margin-bottom: 10px; animation: fadeIn .2s ease-out; }
+  .care-card { padding: 12px 14px; border-radius: 12px; border-left: 3px solid #B99527; background: #FDFAEE; margin-bottom: 10px; animation: fadeIn .2s ease-out; }
 
   nav::-webkit-scrollbar { display: none; }
 
@@ -119,10 +130,10 @@
   :root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes gradientPulse { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
   @keyframes fadeSlideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes accentGlow { 0%,100%{box-shadow:0 0 0 0 rgba(163,59,42,0.25)} 50%{box-shadow:0 0 0 7px rgba(163,59,42,0)} }
+  @keyframes accentGlow { 0%,100%{box-shadow:0 0 0 0 rgba(184,74,28,0.25)} 50%{box-shadow:0 0 0 7px rgba(184,74,28,0)} }
   @keyframes tabPop { from{transform:scaleX(0);opacity:0} to{transform:scaleX(1);opacity:1} }
 
-  .hdr-strip { height:3px; background:linear-gradient(90deg,var(--accent),#E86848,#D97706,#C2410C,var(--accent)); background-size:250% 100%; animation:gradientPulse 5s ease-in-out infinite; }
+  .hdr-strip { height:3px; background:linear-gradient(90deg,var(--accent),#E4743C,#997617,#96370F,var(--accent)); background-size:250% 100%; animation:gradientPulse 5s ease-in-out infinite; }
   header { background:linear-gradient(180deg,rgba(251,235,231,0.45) 0%,rgba(250,250,245,0.93) 55%) !important; }
   .tab { position:relative; }
   .tab-active { border-bottom-color:transparent !important; }
@@ -133,7 +144,7 @@
   .btn:active { transform:translateY(0) scale(0.95) !important; box-shadow:none !important; }
   .row-card { transition:transform 0.18s var(--spring),box-shadow 0.18s ease,border-color 0.15s ease !important; }
   .row-card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); border-color:var(--border-strong); }
-  .input:focus,.select:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(163,59,42,0.1),0 0 0 1px rgba(163,59,42,0.4) !important; }
+  .input:focus,.select:focus { border-color:var(--accent) !important; box-shadow:0 0 0 3px rgba(184,74,28,0.1),0 0 0 1px rgba(184,74,28,0.4) !important; }
   .modal { animation:fadeSlideUp 0.3s var(--spring) both !important; }
 </style>
 </head>
@@ -159,12 +170,12 @@ const PASSCODE_KEY = CHURCH.key('flcc-attendance-passcode-v1');
 const PUBLISH_BASE_KEY = CHURCH.key('flcc-attendance-publish-base-v1');
 const DATA_URL    = CHURCH.data('data.json');
 const VERSION     = '1.0';
-const ATT_ACCENT  = '#0284C7';
+const ATT_ACCENT  = '#96602F';
 
 const STATUS_CFG = {
-  present: { label: 'Present',     emoji: '✓', color: '#16A34A', soft: '#F0FDF4', ring: '#BBF7D0' },
-  absent:  { label: 'Absent',      emoji: '✗', color: '#DC2626', soft: '#FFF1F2', ring: '#FECDD3' },
-  excused: { label: 'On vacation', emoji: '🧳', color: '#D97706', soft: '#FFFBEB', ring: '#FDE68A' },
+  present: { label: 'Present',     emoji: '✓', color: '#3F6B3C', soft: '#EFF6ED', ring: '#B5D4AF' },
+  absent:  { label: 'Absent',      emoji: '✗', color: '#A8455A', soft: '#FDF4F2', ring: '#F5CCC5' },
+  excused: { label: 'On vacation', emoji: '🧳', color: '#997617', soft: '#FDFAEE', ring: '#E5D179' },
 };
 
 const ROLE_MINISTRY = {
@@ -288,7 +299,7 @@ function deriveMinistry(worker) {
 }
 function workerDisplay(w) { return w ? (w.title ? `${w.title} ${w.name}` : w.name) : ''; }
 
-const AV_COLORS = ['#0284C7','#7C3AED','#BE123C','#0F766E','#B45309','#16A34A','#0369A1','#6D28D9'];
+const AV_COLORS = ['#96602F','#A8455A','#A8455A','#2C5129','#7D5F0E','#3F6B3C','#6B4220','#78303C'];
 function avatarBg(name) { return AV_COLORS[(name||'?').charCodeAt(0) % AV_COLORS.length]; }
 function getInitials(name) {
   const clean = (name||'').replace(/^(Bro\.|Sis\.|Ptr\.)\s*/i,'');
@@ -603,19 +614,19 @@ function SummaryBar({ summary }) {
   return (
     <div style={{ display:'flex', gap:12, flexWrap:'wrap', fontSize:'0.8125rem', alignItems:'center' }}>
       <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-        <div style={{ width:8, height:8, borderRadius:2, background:'#16A34A', flexShrink:0 }}/>
-        <span style={{ fontWeight:700, color:'#16A34A', fontSize:'1rem' }}>{present}</span>
+        <div style={{ width:8, height:8, borderRadius:2, background:'#3F6B3C', flexShrink:0 }}/>
+        <span style={{ fontWeight:700, color:'#3F6B3C', fontSize:'1rem' }}>{present}</span>
         <span style={{ color:'var(--ink-muted)' }}>Present</span>
       </div>
       <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-        <div style={{ width:8, height:8, borderRadius:2, background:'#DC2626', flexShrink:0 }}/>
-        <span style={{ fontWeight:700, color:'#DC2626', fontSize:'1rem' }}>{absent}</span>
+        <div style={{ width:8, height:8, borderRadius:2, background:'#A8455A', flexShrink:0 }}/>
+        <span style={{ fontWeight:700, color:'#A8455A', fontSize:'1rem' }}>{absent}</span>
         <span style={{ color:'var(--ink-muted)' }}>Absent</span>
       </div>
       {excused > 0 && (
         <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-          <div style={{ width:8, height:8, borderRadius:2, background:'#D97706', flexShrink:0 }}/>
-          <span style={{ fontWeight:700, color:'#D97706', fontSize:'1rem' }}>{excused}</span>
+          <div style={{ width:8, height:8, borderRadius:2, background:'#997617', flexShrink:0 }}/>
+          <span style={{ fontWeight:700, color:'#997617', fontSize:'1rem' }}>{excused}</span>
           <span style={{ color:'var(--ink-muted)' }}>On vacation</span>
         </div>
       )}
@@ -631,7 +642,7 @@ function SummaryBar({ summary }) {
   );
 }
 
-function BarChart({ bars, color='#0284C7' }) {
+function BarChart({ bars, color='#96602F' }) {
   const maxVal = Math.max(...bars.map(b=>b.value), 1);
   return (
     <div className="bar-wrap">
@@ -666,14 +677,14 @@ function MemberCard({ member, record, onStatus, isLastAction, onUndo }) {
   };
 
   return (
-    <div className="member-row" style={{ background: isPresent ? '#F0FDF4' : isExcused ? '#FFFBEB' : 'white' }}>
+    <div className="member-row" style={{ background: isPresent ? '#EFF6ED' : isExcused ? '#FDFAEE' : 'white' }}>
       <Avatar name={member.name} />
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{member.fullName || member.name}</div>
-        <div style={{ fontSize:'0.75rem', color: isPresent ? '#15803D' : isExcused ? '#B45309' : 'var(--ink-subtle)', marginTop:1, display:'flex', alignItems:'center', gap:6 }}>
+        <div style={{ fontSize:'0.75rem', color: isPresent ? '#2C5129' : isExcused ? '#7D5F0E' : 'var(--ink-subtle)', marginTop:1, display:'flex', alignItems:'center', gap:6 }}>
           <span>{isPresent ? '✓ Present' : isExcused ? '🧳 On vacation' : 'Not yet recorded'}</span>
           {isExcused && (
-            <button onClick={toggleVacation} style={{ fontSize:'0.6875rem', color:'#B45309', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', padding:0, flexShrink:0 }}>Remove</button>
+            <button onClick={toggleVacation} style={{ fontSize:'0.6875rem', color:'#7D5F0E', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', padding:0, flexShrink:0 }}>Remove</button>
           )}
           {!isPresent && !isExcused && (
             <button onClick={toggleVacation} style={{ fontSize:'0.6875rem', color:ATT_ACCENT, background:'none', border:'none', cursor:'pointer', textDecoration:'underline', padding:0, flexShrink:0 }}>On vacation?</button>
@@ -687,9 +698,9 @@ function MemberCard({ member, record, onStatus, isLastAction, onUndo }) {
         onClick={tap}
         style={{
           width: 54, height: 54, borderRadius: 14,
-          border: `2px solid ${isPresent ? '#16A34A' : '#D1D5DB'}`,
-          background: isPresent ? '#16A34A' : '#F9FAFB',
-          color: isPresent ? 'white' : '#9CA3AF',
+          border: `2px solid ${isPresent ? '#3F6B3C' : '#D3C8B4'}`,
+          background: isPresent ? '#3F6B3C' : '#F7F4EA',
+          color: isPresent ? 'white' : '#A3937F',
           cursor: 'pointer',
           fontSize: isPresent ? '1.5rem' : '1.25rem',
           fontWeight: 700,
@@ -698,7 +709,7 @@ function MemberCard({ member, record, onStatus, isLastAction, onUndo }) {
           flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           WebkitTapHighlightColor: 'transparent',
-          boxShadow: isPresent ? '0 4px 14px rgba(22,163,74,0.35)' : 'none',
+          boxShadow: isPresent ? '0 4px 14px rgba(63,107,60,0.35)' : 'none',
         }}
         aria-label={isPresent ? 'Mark absent' : 'Mark present'}
       >
@@ -862,7 +873,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
         {SERVICE_TYPES.filter(s=>!s.pastoralCare && s.key!==detectedService).map(svc=>(
           <button key={svc.key} onClick={()=>startSession(svc.key)}
             style={{ padding:'12px 16px', borderRadius:12, border:'1px solid var(--border)', background:'var(--surface)', textAlign:'left', cursor:'pointer', fontSize:'0.9375rem', fontWeight:500, transition:'background .15s' }}
-            onMouseEnter={e=>e.currentTarget.style.background='#F4F4F0'}
+            onMouseEnter={e=>e.currentTarget.style.background='#F2EEE1'}
             onMouseLeave={e=>e.currentTarget.style.background=''}>
             {svc.label}
           </button>
@@ -870,7 +881,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
       </div>
 
       {!state.meta.stewardName && (
-        <div style={{ marginTop:20, padding:'12px 14px', borderRadius:10, background:'#FEF3C7', fontSize:'0.8125rem', color:'#92400E' }}>
+        <div style={{ marginTop:20, padding:'12px 14px', borderRadius:10, background:'#FBF5DC', fontSize:'0.8125rem', color:'#63490A' }}>
           ⚠ Set your name in Settings so it's recorded with attendance.
         </div>
       )}
@@ -899,12 +910,12 @@ function TodayTab({ members, state, dispatch, schedule }) {
         </div>
         <SummaryBar summary={summary} />
         {allRecorded && (
-          <div style={{ marginTop:10, padding:'9px 12px', borderRadius:9, background:'#F0FDF4', border:'1px solid #BBF7D0', fontSize:'0.8125rem', color:'#15803D', fontWeight:500 }}>
+          <div style={{ marginTop:10, padding:'9px 12px', borderRadius:9, background:'#EFF6ED', border:'1px solid #B5D4AF', fontSize:'0.8125rem', color:'#2C5129', fontWeight:500 }}>
             ✅ All attendance recorded for this session
           </div>
         )}
         {!allRecorded && hasRecords && (
-          <div style={{ marginTop:10, padding:'9px 12px', borderRadius:9, background:'#FFFBEB', border:'1px solid #FDE68A', fontSize:'0.8125rem', color:'#92400E', fontWeight:500 }}>
+          <div style={{ marginTop:10, padding:'9px 12px', borderRadius:9, background:'#FDFAEE', border:'1px solid #E5D179', fontSize:'0.8125rem', color:'#63490A', fontWeight:500 }}>
             ⚠ Attendance in progress — {summary.present} of {allMembers.length} recorded
           </div>
         )}
@@ -920,7 +931,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
             { k:'excused',   l:'🧳 On vacation' },
             { k:'unrecorded',l:'Not yet tapped' },
           ].map(f=>(
-            <button key={f.k} onClick={()=>setFilter(f.k)} style={{ padding:'4px 12px', borderRadius:999, border:'none', cursor:'pointer', fontSize:'0.75rem', fontWeight:filter===f.k?600:400, whiteSpace:'nowrap', background:filter===f.k?ATT_ACCENT:'#F4F4F0', color:filter===f.k?'white':'var(--ink-muted)', transition:'all .15s', flexShrink:0 }}>{f.l}</button>
+            <button key={f.k} onClick={()=>setFilter(f.k)} style={{ padding:'4px 12px', borderRadius:999, border:'none', cursor:'pointer', fontSize:'0.75rem', fontWeight:filter===f.k?600:400, whiteSpace:'nowrap', background:filter===f.k?ATT_ACCENT:'#F2EEE1', color:filter===f.k?'white':'var(--ink-muted)', transition:'all .15s', flexShrink:0 }}>{f.l}</button>
           ))}
         </div>
       </div>
@@ -955,7 +966,7 @@ function TodayTab({ members, state, dispatch, schedule }) {
       )}
 
       {doneToast && (
-        <div className="undo-toast" style={{ background:'#16A34A', bottom: lastAction ? 'calc(145px + var(--safe-bottom))' : 'calc(90px + var(--safe-bottom))' }}>
+        <div className="undo-toast" style={{ background:'#3F6B3C', bottom: lastAction ? 'calc(145px + var(--safe-bottom))' : 'calc(90px + var(--safe-bottom))' }}>
           <div style={{ fontSize:'0.8125rem' }}>🎉 All {allMembers.length} members recorded!</div>
           <button onClick={() => setDoneToast(false)} style={{ background:'rgba(255,255,255,.18)', border:'none', borderRadius:6, padding:'4px 10px', color:'white', cursor:'pointer', fontSize:'0.8125rem', fontWeight:600 }}>✕</button>
         </div>
@@ -1046,21 +1057,21 @@ function HistoryTab({ state, dispatch, members }) {
                   </div>
                   <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
                     <div style={{ textAlign:'right' }}>
-                      <div style={{ fontSize:'1.375rem', fontWeight:700, color:attendedPct>=80?'#16A34A':attendedPct>=60?'#D97706':'#DC2626', fontFamily:'Fraunces,Georgia,serif' }}>{attendedPct}%</div>
+                      <div style={{ fontSize:'1.375rem', fontWeight:700, color:attendedPct>=80?'#3F6B3C':attendedPct>=60?'#997617':'#A8455A', fontFamily:'Fraunces,Georgia,serif' }}>{attendedPct}%</div>
                       <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)' }}>attendance</div>
                     </div>
                     <div style={{ fontSize:'0.75rem', transform:isOpen?'rotate(90deg)':'rotate(0)', transition:'transform .2s', color:'var(--ink-subtle)' }}>▶</div>
                   </div>
                 </div>
                 <div style={{ display:'flex', gap:14, marginTop:10, fontSize:'0.8125rem' }}>
-                  <span style={{ color:'#16A34A', fontWeight:600 }}>✓ {sum.present} Present</span>
-                  <span style={{ color:'#DC2626', fontWeight:600 }}>✗ {sum.absent} Absent</span>
-                  {sum.excused > 0 && <span style={{ color:'#D97706', fontWeight:600 }}>🧳 {sum.excused} On vacation</span>}
-                  {sess.synced && <span style={{ marginLeft:'auto', color:'#16A34A', fontSize:'0.6875rem' }}>✓ synced</span>}
+                  <span style={{ color:'#3F6B3C', fontWeight:600 }}>✓ {sum.present} Present</span>
+                  <span style={{ color:'#A8455A', fontWeight:600 }}>✗ {sum.absent} Absent</span>
+                  {sum.excused > 0 && <span style={{ color:'#997617', fontWeight:600 }}>🧳 {sum.excused} On vacation</span>}
+                  {sess.synced && <span style={{ marginLeft:'auto', color:'#3F6B3C', fontSize:'0.6875rem' }}>✓ synced</span>}
                 </div>
               </div>
               {isOpen && (
-                <div style={{ borderTop:'1px solid var(--border)', background:'#FAFAFA' }}>
+                <div style={{ borderTop:'1px solid var(--border)', background:'#F7F4EA' }}>
                   <div style={{ maxHeight:280, overflowY:'auto' }}>
                     {[...members,...(state.customMembers||[]).filter(m=>m.sessionDate===sess.date||m.permanent)]
                       .filter(m=>m.status==='active')
@@ -1232,7 +1243,7 @@ function AnalyticsTab({ state, members }) {
           {[{k:'all',l:'All services'},{k:'Friday',l:'Friday'},{k:'Sunday',l:'Sunday'}].map(f=>(
             <button key={f.k} onClick={()=>setServiceView(f.k)} style={{
               flex:1,padding:'6px',borderRadius:8,border:'none',cursor:'pointer',fontSize:'0.8125rem',fontWeight:serviceView===f.k?600:400,
-              background:serviceView===f.k?ATT_ACCENT:'#F4F4F0',color:serviceView===f.k?'white':'var(--ink-muted)',transition:'all .15s'
+              background:serviceView===f.k?ATT_ACCENT:'#F2EEE1',color:serviceView===f.k?'white':'var(--ink-muted)',transition:'all .15s'
             }}>{f.l}</button>
           ))}
         </div>
@@ -1242,8 +1253,8 @@ function AnalyticsTab({ state, members }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
         {[
           {label:'Sessions',  value:sessions.length,  color:ATT_ACCENT},
-          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,s.totalMembers || members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#16A34A'},
-          {label:'Best',      value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#7C3AED'},
+          {label:'Avg %',     value:`${sessions.length?Math.round(sessions.reduce((acc,s)=>{const sum=getSessionSummary(s,s.totalMembers || members.length);return acc+(sum.total?(sum.present/sum.total)*100:0);},0)/sessions.length):0}%`, color:'#3F6B3C'},
+          {label:'Best',      value:sessionBars.length?Math.max(...sessionBars.map(b=>b.value))+'%':'—', color:'#A8455A'},
         ].map(s=>(
           <div key={s.label} className="card" style={{padding:'14px 10px',textAlign:'center'}}>
             <div className="font-display" style={{fontSize:'1.875rem',fontWeight:600,color:s.color}}>{s.value}</div>
@@ -1261,10 +1272,10 @@ function AnalyticsTab({ state, members }) {
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
             {[
               {label:'Total sessions', value:monthReport.total, color:'var(--ink)'},
-              {label:'Friday services', value:monthReport.fridays.length, color:'#0284C7'},
-              {label:'Sunday services', value:monthReport.sundays.length, color:'#7C3AED'},
+              {label:'Friday services', value:monthReport.fridays.length, color:'#96602F'},
+              {label:'Sunday services', value:monthReport.sundays.length, color:'#A8455A'},
             ].map(x=>(
-              <div key={x.label} style={{textAlign:'center',padding:'10px 6px',borderRadius:10,background:'#F9F9F7',border:'1px solid var(--border)'}}>
+              <div key={x.label} style={{textAlign:'center',padding:'10px 6px',borderRadius:10,background:'#F7F4EA',border:'1px solid var(--border)'}}>
                 <div className="font-display" style={{fontSize:'1.5rem',fontWeight:600,color:x.color}}>{x.value}</div>
                 <div style={{fontSize:'0.625rem',color:'var(--ink-muted)',marginTop:1}}>{x.label}</div>
               </div>
@@ -1276,17 +1287,17 @@ function AnalyticsTab({ state, members }) {
               const sum=getSessionSummary(s,s.totalMembers || members.length);
               const pct=sum.total>0?Math.round((sum.present/sum.total)*100):0;
               return (
-                <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:8,background:'#FAFAFA',border:'1px solid var(--border)'}}>
+                <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:8,background:'#F7F4EA',border:'1px solid var(--border)'}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:'0.875rem',fontWeight:500}}>{s.serviceLabel||s.service}</div>
                     <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>{formatDateFull(s.date)}</div>
                   </div>
                   <div style={{display:'flex',gap:8,fontSize:'0.75rem',flexShrink:0}}>
-                    <span style={{color:'#16A34A',fontWeight:600}}>✓ {sum.present} Present</span>
-                    <span style={{color:'#DC2626',fontWeight:600}}>✗ {sum.absent} Absent</span>
-                    {sum.excused > 0 && <span style={{color:'#D97706',fontWeight:600}}>🧳 {sum.excused}</span>}
+                    <span style={{color:'#3F6B3C',fontWeight:600}}>✓ {sum.present} Present</span>
+                    <span style={{color:'#A8455A',fontWeight:600}}>✗ {sum.absent} Absent</span>
+                    {sum.excused > 0 && <span style={{color:'#997617',fontWeight:600}}>🧳 {sum.excused}</span>}
                   </div>
-                  <div style={{fontWeight:700,color:pct>=80?'#16A34A':pct>=60?'#D97706':'#DC2626',fontFamily:'Fraunces,Georgia,serif',fontSize:'1rem',flexShrink:0,minWidth:38,textAlign:'right'}}>{pct}%</div>
+                  <div style={{fontWeight:700,color:pct>=80?'#3F6B3C':pct>=60?'#997617':'#A8455A',fontFamily:'Fraunces,Georgia,serif',fontSize:'1rem',flexShrink:0,minWidth:38,textAlign:'right'}}>{pct}%</div>
                 </div>
               );
             })}
@@ -1326,11 +1337,11 @@ function AnalyticsTab({ state, members }) {
             {monthlyBars.map(b=>(
               <div key={b.mk} onClick={()=>setSelectedMonth(b.mk)} style={{
                 padding:'3px 10px',borderRadius:999,border:'none',cursor:'pointer',fontSize:'0.6875rem',fontWeight:selectedMonth===b.mk?700:400,
-                background:selectedMonth===b.mk?ATT_ACCENT:'#F4F4F0',color:selectedMonth===b.mk?'white':'var(--ink-muted)',whiteSpace:'nowrap',flexShrink:0
+                background:selectedMonth===b.mk?ATT_ACCENT:'#F2EEE1',color:selectedMonth===b.mk?'white':'var(--ink-muted)',whiteSpace:'nowrap',flexShrink:0
               }}>{b.label} · {b.value}%</div>
             ))}
           </div>
-          <BarChart bars={monthlyBars} color='#7C3AED' />
+          <BarChart bars={monthlyBars} color='#A8455A' />
         </div>
       )}
 
@@ -1340,27 +1351,27 @@ function AnalyticsTab({ state, members }) {
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
 
           {/* Friday */}
-          <div className="card" style={{overflow:'hidden',borderTop:`3px solid #0284C7`}}>
-            <div style={{padding:'12px 14px',background:'#F0F9FF',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:6}}>
+          <div className="card" style={{overflow:'hidden',borderTop:`3px solid #96602F`}}>
+            <div style={{padding:'12px 14px',background:'#FEF7F2',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:6}}>
               <span style={{fontSize:'1rem'}}>📅</span>
               <div>
-                <div style={{fontSize:'0.75rem',fontWeight:700,color:'#0284C7'}}>Friday</div>
+                <div style={{fontSize:'0.75rem',fontWeight:700,color:'#96602F'}}>Friday</div>
                 <div style={{fontSize:'0.625rem',color:'var(--ink-subtle)'}}>{fridaySessions.length} sessions</div>
               </div>
             </div>
-            <LeaderList list={topFriday} color='#0284C7' emptyMsg='No Friday data' />
+            <LeaderList list={topFriday} color='#96602F' emptyMsg='No Friday data' />
           </div>
 
           {/* Sunday */}
-          <div className="card" style={{overflow:'hidden',borderTop:'3px solid #7C3AED'}}>
-            <div style={{padding:'12px 14px',background:'#F5F3FF',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:6}}>
+          <div className="card" style={{overflow:'hidden',borderTop:'3px solid #A8455A'}}>
+            <div style={{padding:'12px 14px',background:'#FDF4F2',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:6}}>
               <span style={{fontSize:'1rem'}}>🙏</span>
               <div>
-                <div style={{fontSize:'0.75rem',fontWeight:700,color:'#7C3AED'}}>Sunday</div>
+                <div style={{fontSize:'0.75rem',fontWeight:700,color:'#A8455A'}}>Sunday</div>
                 <div style={{fontSize:'0.625rem',color:'var(--ink-subtle)'}}>{sundaySessions.length} sessions</div>
               </div>
             </div>
-            <LeaderList list={topSunday} color='#7C3AED' emptyMsg='No Sunday data' />
+            <LeaderList list={topSunday} color='#A8455A' emptyMsg='No Sunday data' />
           </div>
         </div>
       </div>
@@ -1368,7 +1379,7 @@ function AnalyticsTab({ state, members }) {
       {/* Overall leaderboard (filtered) */}
       {topFiltered.length > 0 && (
         <div className="card" style={{overflow:'hidden',marginBottom:14}}>
-          <div style={{padding:'12px 16px',background:'#FAFAFA',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{padding:'12px 16px',background:'#F7F4EA',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ink-subtle)'}}>
               Overall Most Present 🏆{selectedMonth!=='all'?` — ${(()=>{const [y,m]=selectedMonth.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'short'});})()}`:''}
             </div>
@@ -1380,9 +1391,9 @@ function AnalyticsTab({ state, members }) {
       {/* Care Mode — compact pointer to dedicated Care tab */}
       {careFlags.length > 0 && (
         <div className="card" style={{overflow:'hidden',marginBottom:14}}>
-          <div style={{padding:'12px 16px',background:'#FFFBEB',borderBottom:'1px solid var(--border)'}}>
-            <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#92400E'}}>🙏 Pastoral Care Needed</div>
-            <div style={{fontSize:'0.75rem',color:'#92400E',marginTop:3}}>{careFlags.length} member{careFlags.length!==1?'s':''} absent 3+ consecutive Friday/Sunday services — see Care tab</div>
+          <div style={{padding:'12px 16px',background:'#FDFAEE',borderBottom:'1px solid var(--border)'}}>
+            <div style={{fontSize:'0.6875rem',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#63490A'}}>🙏 Pastoral Care Needed</div>
+            <div style={{fontSize:'0.75rem',color:'#63490A',marginTop:3}}>{careFlags.length} member{careFlags.length!==1?'s':''} absent 3+ consecutive Friday/Sunday services — see Care tab</div>
           </div>
           {careFlags.slice(0,3).map(flag=>(
             <div key={flag.member.id} className="care-card" style={{margin:'10px 14px 0'}}>
@@ -1403,7 +1414,7 @@ function AnalyticsTab({ state, members }) {
         </div>
       )}
       {careFlags.length===0&&allSessions.length>=3&&(
-        <div className="card" style={{padding:'16px',textAlign:'center',color:'#16A34A'}}>
+        <div className="card" style={{padding:'16px',textAlign:'center',color:'#3F6B3C'}}>
           <div style={{fontSize:'1.5rem',marginBottom:4}}>✓</div>
           <div style={{fontSize:'0.875rem',fontWeight:500}}>No follow-up needed — everyone is engaged!</div>
         </div>
@@ -1446,15 +1457,15 @@ function MembersTab({ members, state, dispatch }) {
                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                   <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.fullName||m.name}</div>
                   {isCustom && <span className="pill" style={{ background:ATT_ACCENT+'20', color:ATT_ACCENT, fontSize:'0.6rem', padding:'1px 5px' }}>custom</span>}
-                  {m.sundayOnly && <span className="pill" style={{ background:'#7C3AED20', color:'#7C3AED', fontSize:'0.6rem', padding:'1px 5px' }}>Sun only</span>}
-                  {m.fridayOnly && <span className="pill" style={{ background:'#EA580C20', color:'#EA580C', fontSize:'0.6rem', padding:'1px 5px' }}>Fri primary</span>}
+                  {m.sundayOnly && <span className="pill" style={{ background:'#7C3AED20', color:'#A8455A', fontSize:'0.6rem', padding:'1px 5px' }}>Sun only</span>}
+                  {m.fridayOnly && <span className="pill" style={{ background:'#EA580C20', color:'#D2622A', fontSize:'0.6rem', padding:'1px 5px' }}>Fri primary</span>}
                 </div>
                 <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{m.ministry||'Ministry'}</div>
               </div>
               <div style={{ textAlign:'right', flexShrink:0 }}>
                 {pct!==null ? (
                   <>
-                    <div style={{ fontWeight:700, color:pct>=80?'#16A34A':pct>=60?'#D97706':'#DC2626', fontFamily:'Fraunces,Georgia,serif', fontSize:'1.125rem' }}>{pct}%</div>
+                    <div style={{ fontWeight:700, color:pct>=80?'#3F6B3C':pct>=60?'#997617':'#A8455A', fontFamily:'Fraunces,Georgia,serif', fontSize:'1.125rem' }}>{pct}%</div>
                     <div style={{ fontSize:'0.6rem', color:'var(--ink-subtle)' }}>attendance</div>
                   </>
                 ) : <span style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', fontStyle:'italic' }}>no data</span>}
@@ -1771,18 +1782,18 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
           {gasGuide?'Hide':'Show'} setup guide →
         </button>
         {gasGuide && (
-          <div style={{ marginTop:12, padding:14, borderRadius:10, background:'#F9FAFB', border:'1px solid var(--border)' }}>
+          <div style={{ marginTop:12, padding:14, borderRadius:10, background:'#F7F4EA', border:'1px solid var(--border)' }}>
             <div style={{ fontWeight:600, fontSize:'0.875rem', marginBottom:8 }}>How to set up Google Sheets sync:</div>
             <ol style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', paddingLeft:18, lineHeight:1.8 }}>
               <li>Open <a href="https://script.google.com" target="_blank" rel="noopener" style={{ color:ATT_ACCENT }}>script.google.com</a> → New project</li>
               <li>Create a Google Sheet → copy its ID from the URL</li>
               <li>Paste the Apps Script code below (copy button)</li>
-              <li>Replace <code style={{ background:'#E5E7EB', padding:'1px 5px', borderRadius:4 }}>YOUR_GOOGLE_SHEET_ID_HERE</code></li>
+              <li>Replace <code style={{ background:'#E6DFD0', padding:'1px 5px', borderRadius:4 }}>YOUR_GOOGLE_SHEET_ID_HERE</code></li>
               <li>Deploy → New deployment → Web app → Execute as: Me → Anyone</li>
               <li>Copy the deployment URL → paste above</li>
             </ol>
             <div style={{ marginTop:12, position:'relative' }}>
-              <pre style={{ background:'#1E293B', color:'#E2E8F0', padding:14, borderRadius:10, fontSize:'0.6875rem', overflowX:'auto', lineHeight:1.6, margin:0 }}>{GAS_TEMPLATE}</pre>
+              <pre style={{ background:'#33291F', color:'#E6DFD0', padding:14, borderRadius:10, fontSize:'0.6875rem', overflowX:'auto', lineHeight:1.6, margin:0 }}>{GAS_TEMPLATE}</pre>
               <button onClick={()=>navigator.clipboard.writeText(GAS_TEMPLATE).then(()=>alert('Copied!')).catch(()=>{})} style={{ position:'absolute', top:8, right:8, padding:'3px 10px', borderRadius:6, background:'rgba(255,255,255,.15)', border:'none', color:'white', cursor:'pointer', fontSize:'0.6875rem' }}>Copy</button>
             </div>
           </div>
@@ -1790,12 +1801,12 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
       </div>
 
       {/* Weekly summary for the pastor */}
-      <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#6D28D9' }}>
-        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#6D28D9' }}>For {pastorName || 'your pastor'} — Weekly Summary</div>
+      <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#78303C' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#78303C' }}>For {pastorName || 'your pastor'} — Weekly Summary</div>
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:14, lineHeight:1.6 }}>
           Generates a formatted Messenger-ready text with this week's sessions, monthly average, top 5 faithful members, and anyone needing pastoral follow-up.
         </p>
-        <button className="btn" style={{ background:'#6D28D9', color:'white', width:'100%', justifyContent:'center', padding:'13px', fontSize:'0.9375rem', fontWeight:700, borderRadius:12 }}
+        <button className="btn" style={{ background:'#78303C', color:'white', width:'100%', justifyContent:'center', padding:'13px', fontSize:'0.9375rem', fontWeight:700, borderRadius:12 }}
           onClick={generateWeeklySummary} disabled={!state.sessions.length}>
           📋 Copy weekly summary for Messenger
         </button>
@@ -1819,13 +1830,13 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
       </div>
 
       {/* Auto-sync to GitHub */}
-      <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#16A34A' }}>
-        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#16A34A' }}>Auto-Sync to Members Dashboard</div>
+      <div className="card" style={{ padding:16, marginBottom:14, borderColor:'#3F6B3C' }}>
+        <div style={{ fontSize:'0.6875rem', fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:4, color:'#3F6B3C' }}>Auto-Sync to Members Dashboard</div>
         <p style={{ fontSize:'0.8125rem', color:'var(--ink-muted)', marginBottom:12, lineHeight:1.5 }}>
           Attendance uploads to GitHub automatically a few seconds after each tap — no button needed.
         </p>
         {!ghToken && (
-          <div style={{ marginBottom:12, padding:'10px 12px', borderRadius:10, background:'#F9FAFB', border:'1px solid var(--border)' }}>
+          <div style={{ marginBottom:12, padding:'10px 12px', borderRadius:10, background:'#F7F4EA', border:'1px solid var(--border)' }}>
             <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginBottom:8, lineHeight:1.5 }}>
               <strong>Opened this from the github.io link?</strong> The passcode publishes through your admin's Worker, not GitHub Pages — paste the Worker's address below once. Skip this if your admin's link already opens the Worker directly.
             </div>
@@ -1850,10 +1861,10 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
         {(passcode || ghToken) ? (
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:10,
-              background: syncStatus==='error' ? '#FEF2F2' : '#F0FDF4',
-              border: `1px solid ${syncStatus==='error' ? '#FECACA' : '#BBF7D0'}` }}>
+              background: syncStatus==='error' ? '#FDF4F2' : '#EFF6ED',
+              border: `1px solid ${syncStatus==='error' ? '#F5CCC5' : '#B5D4AF'}` }}>
               <div className={`sync-dot ${syncStatus==='syncing'?'sync-dot-pend':syncStatus==='error'?'sync-dot-err':'sync-dot-ok'}`} />
-              <span style={{ fontSize:'0.8125rem', fontWeight:500, color: syncStatus==='error'?'#DC2626':'#16A34A', flex:1 }}>
+              <span style={{ fontSize:'0.8125rem', fontWeight:500, color: syncStatus==='error'?'#A8455A':'#3F6B3C', flex:1 }}>
                 {syncStatus==='syncing' ? 'Uploading to dashboard…'
                   : syncStatus==='saved'  ? '✓ Dashboard updated'
                   : syncStatus==='error'  ? '⚠ Upload failed'
@@ -1862,10 +1873,10 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
               <button onClick={passcode ? clearPasscode : clearGhToken} style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>Remove</button>
             </div>
             {syncStatus==='error' && syncErrMsg && (
-              <div style={{ marginTop:6, padding:'8px 12px', borderRadius:8, background:'#FEF2F2', border:'1px solid #FECACA', fontSize:'0.75rem', color:'#DC2626', lineHeight:1.5 }}>
+              <div style={{ marginTop:6, padding:'8px 12px', borderRadius:8, background:'#FDF4F2', border:'1px solid #F5CCC5', fontSize:'0.75rem', color:'#A8455A', lineHeight:1.5 }}>
                 <strong>Error:</strong> {syncErrMsg}
                 {(syncErrMsg.toLowerCase().includes('bad credentials') || syncErrMsg.includes('401') || syncErrMsg.toLowerCase().includes('passcode')) && (
-                  <div style={{ marginTop:4, color:'#991B1B' }}>
+                  <div style={{ marginTop:4, color:'#521E26' }}>
                     {passcode
                       ? <>That passcode was rejected — tap <strong>Remove</strong> above and ask your admin for the current one.</>
                       : <>Token expired or invalid — tap <strong>Remove</strong> above and reconnect a new token.</>}
@@ -1876,7 +1887,7 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
             <button
               onClick={onSyncNow}
               disabled={syncStatus==='syncing' || !state.sessions.length}
-              style={{ marginTop:8, width:'100%', padding:'10px', borderRadius:10, border:'1px solid #BBF7D0', background:'#F0FDF4', color:'#16A34A', fontWeight:600, fontSize:'0.875rem', cursor: (!state.sessions.length || syncStatus==='syncing') ? 'not-allowed' : 'pointer', opacity: !state.sessions.length ? 0.5 : 1 }}
+              style={{ marginTop:8, width:'100%', padding:'10px', borderRadius:10, border:'1px solid #B5D4AF', background:'#EFF6ED', color:'#3F6B3C', fontWeight:600, fontSize:'0.875rem', cursor: (!state.sessions.length || syncStatus==='syncing') ? 'not-allowed' : 'pointer', opacity: !state.sessions.length ? 0.5 : 1 }}
             >
               {syncStatus==='syncing' ? '↻ Uploading…' : '☁ Sync to dashboard now'}
             </button>
@@ -1894,7 +1905,7 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
                 value={passcodeInput} onChange={e=>setPasscodeInput(e.target.value)}
                 onKeyDown={e=>e.key==='Enter'&&savePasscode()}
               />
-              <button className="btn" style={{ background:'#16A34A', color:'white', flexShrink:0 }} onClick={savePasscode} disabled={!passcodeInput.trim()}>Connect</button>
+              <button className="btn" style={{ background:'#3F6B3C', color:'white', flexShrink:0 }} onClick={savePasscode} disabled={!passcodeInput.trim()}>Connect</button>
             </div>
             <div style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', marginTop:6, lineHeight:1.5 }}>
               The passcode only ever publishes {CHURCH.short}'s attendance — it can't touch another church, and it never expires.
@@ -1910,7 +1921,7 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
                 <li>Click <strong>Generate new token</strong></li>
                 <li>Repository access → Only select repositories → <strong>flcc-members-2026</strong></li>
                 <li>Permissions → Repository permissions → Contents → <strong>Read and write</strong></li>
-                <li>Click Generate → Copy the token (starts with <code style={{ background:'#F4F4F0', padding:'1px 4px', borderRadius:4, fontSize:'0.75rem' }}>github_pat_</code>)</li>
+                <li>Click Generate → Copy the token (starts with <code style={{ background:'#F2EEE1', padding:'1px 4px', borderRadius:4, fontSize:'0.75rem' }}>github_pat_</code>)</li>
               </ol>
               <div style={{ display:'flex', gap:6 }}>
                 <input
@@ -1919,7 +1930,7 @@ function SettingsTab({ state, dispatch, members, pastorName, ghToken, setGhToken
                   value={ghTokenInput} onChange={e=>setGhTokenInput(e.target.value)}
                   onKeyDown={e=>e.key==='Enter'&&saveGhToken()}
                 />
-                <button className="btn" style={{ background:'#16A34A', color:'white', flexShrink:0 }} onClick={saveGhToken} disabled={!ghTokenInput.trim()}>Connect</button>
+                <button className="btn" style={{ background:'#3F6B3C', color:'white', flexShrink:0 }} onClick={saveGhToken} disabled={!ghTokenInput.trim()}>Connect</button>
               </div>
             </details>
           </div>
@@ -2070,42 +2081,42 @@ function CareTab({ state, members, pastorName }) {
         <p style={{fontSize:'0.8125rem',color:'var(--ink-muted)',lineHeight:1.6,marginBottom:10}}>
           Members absent for <strong>3 or more consecutive sessions</strong> are flagged here. Strictly for pastoral follow-up — not visible to general members.
         </p>
-        <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'5px 12px',borderRadius:999,background:'#EFF6FF',border:'1px solid #BAE6FD',fontSize:'0.75rem',color:'#0369A1',fontWeight:500,lineHeight:1.5}}>
+        <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'5px 12px',borderRadius:999,background:'#F6FAF4',border:'1px solid #F2BC9C',fontSize:'0.75rem',color:'#6B4220',fontWeight:500,lineHeight:1.5}}>
           ✝️ <strong style={{margin:'0 3px'}}>Friday and Sunday tracked separately</strong> — missing 3+ consecutive Fridays OR 3+ consecutive Sundays triggers a flag, even if the other service is attended
         </div>
       </div>
 
       {/* Summary chips */}
       <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
-        <div style={{padding:'10px 16px',borderRadius:12,background:'#FEF3C7',border:'1px solid #FDE68A',flex:1,minWidth:120,textAlign:'center'}}>
-          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#D97706',lineHeight:1}}>{gentle.length}</div>
-          <div style={{fontSize:'0.6875rem',color:'#92400E',marginTop:3,fontWeight:600}}>🟡 Gentle follow-up</div>
-          <div style={{fontSize:'0.6rem',color:'#92400E',marginTop:1}}>3–4 absences</div>
+        <div style={{padding:'10px 16px',borderRadius:12,background:'#FBF5DC',border:'1px solid #E5D179',flex:1,minWidth:120,textAlign:'center'}}>
+          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#997617',lineHeight:1}}>{gentle.length}</div>
+          <div style={{fontSize:'0.6875rem',color:'#63490A',marginTop:3,fontWeight:600}}>🟡 Gentle follow-up</div>
+          <div style={{fontSize:'0.6rem',color:'#63490A',marginTop:1}}>3–4 absences</div>
         </div>
-        <div style={{padding:'10px 16px',borderRadius:12,background:'#FEE2E2',border:'1px solid #FECACA',flex:1,minWidth:120,textAlign:'center'}}>
-          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#DC2626',lineHeight:1}}>{priority.length}</div>
-          <div style={{fontSize:'0.6875rem',color:'#991B1B',marginTop:3,fontWeight:600}}>🔴 Pastor priority</div>
-          <div style={{fontSize:'0.6rem',color:'#991B1B',marginTop:1}}>5+ absences</div>
+        <div style={{padding:'10px 16px',borderRadius:12,background:'#FBE7E2',border:'1px solid #F5CCC5',flex:1,minWidth:120,textAlign:'center'}}>
+          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#A8455A',lineHeight:1}}>{priority.length}</div>
+          <div style={{fontSize:'0.6875rem',color:'#521E26',marginTop:3,fontWeight:600}}>🔴 Pastor priority</div>
+          <div style={{fontSize:'0.6rem',color:'#521E26',marginTop:1}}>5+ absences</div>
         </div>
-        <div style={{padding:'10px 16px',borderRadius:12,background:'#F0FDF4',border:'1px solid #BBF7D0',flex:1,minWidth:120,textAlign:'center'}}>
-          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#16A34A',lineHeight:1}}>{members.length - careFlags.length}</div>
-          <div style={{fontSize:'0.6875rem',color:'#15803D',marginTop:3,fontWeight:600}}>✅ All good</div>
-          <div style={{fontSize:'0.6rem',color:'#15803D',marginTop:1}}>members</div>
+        <div style={{padding:'10px 16px',borderRadius:12,background:'#EFF6ED',border:'1px solid #B5D4AF',flex:1,minWidth:120,textAlign:'center'}}>
+          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#3F6B3C',lineHeight:1}}>{members.length - careFlags.length}</div>
+          <div style={{fontSize:'0.6875rem',color:'#2C5129',marginTop:3,fontWeight:600}}>✅ All good</div>
+          <div style={{fontSize:'0.6rem',color:'#2C5129',marginTop:1}}>members</div>
         </div>
       </div>
 
       {careFlags.length === 0 ? (
-        <div style={{textAlign:'center',padding:'48px 20px',borderRadius:16,background:'#F0FDF4',border:'1px solid #BBF7D0'}}>
+        <div style={{textAlign:'center',padding:'48px 20px',borderRadius:16,background:'#EFF6ED',border:'1px solid #B5D4AF'}}>
           <div style={{fontSize:'2.5rem',marginBottom:12}}>✅</div>
-          <div className="font-display" style={{fontSize:'1.25rem',color:'#16A34A',fontWeight:600}}>No follow-up needed</div>
-          <p style={{fontSize:'0.875rem',color:'#15803D',marginTop:8}}>Everyone has been attending faithfully. Praise God! 🙏</p>
+          <div className="font-display" style={{fontSize:'1.25rem',color:'#3F6B3C',fontWeight:600}}>No follow-up needed</div>
+          <p style={{fontSize:'0.875rem',color:'#2C5129',marginTop:8}}>Everyone has been attending faithfully. Praise God! 🙏</p>
         </div>
       ) : (
         <>
           {/* Copy full report */}
           <button onClick={copyFullReport} style={{
             width:'100%',padding:'13px',marginBottom:20,borderRadius:12,
-            background:'#7C3AED',color:'white',border:'none',cursor:'pointer',
+            background:'#A8455A',color:'white',border:'none',cursor:'pointer',
             fontSize:'0.9375rem',fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:8,
           }}>
             📋 Copy full report for {pastorName || 'your pastor'}
@@ -2117,13 +2128,13 @@ function CareTab({ state, members, pastorName }) {
               <div style={{
                 display:'flex',alignItems:'center',gap:10,
                 padding:'10px 14px',borderRadius:'12px 12px 0 0',
-                background:'#DC2626',color:'white',
+                background:'#A8455A',color:'white',
                 fontSize:'0.8125rem',fontWeight:700,letterSpacing:'.04em',
               }}>
                 🔴 PASTORAL PRIORITY — 5+ Consecutive Absences
                 <span style={{marginLeft:'auto',fontSize:'0.75rem',fontWeight:400,opacity:.85}}>Pastor should reach out personally</span>
               </div>
-              <div style={{borderRadius:'0 0 12px 12px',border:'2px solid #FECACA',borderTop:'none',overflow:'hidden'}}>
+              <div style={{borderRadius:'0 0 12px 12px',border:'2px solid #F5CCC5',borderTop:'none',overflow:'hidden'}}>
                 {priority.map((flag,i) => (
                   <CareMemberCard key={flag.member.id} flag={flag} stewardName={stewardName} churchName={churchName} isLast={i===priority.length-1} />
                 ))}
@@ -2137,13 +2148,13 @@ function CareTab({ state, members, pastorName }) {
               <div style={{
                 display:'flex',alignItems:'center',gap:10,
                 padding:'10px 14px',borderRadius:'12px 12px 0 0',
-                background:'#D97706',color:'white',
+                background:'#997617',color:'white',
                 fontSize:'0.8125rem',fontWeight:700,letterSpacing:'.04em',
               }}>
                 🟡 GENTLE FOLLOW-UP — 3–4 Consecutive Absences
                 <span style={{marginLeft:'auto',fontSize:'0.75rem',fontWeight:400,opacity:.85}}>Steward or CSL can reach out</span>
               </div>
-              <div style={{borderRadius:'0 0 12px 12px',border:'2px solid #FDE68A',borderTop:'none',overflow:'hidden'}}>
+              <div style={{borderRadius:'0 0 12px 12px',border:'2px solid #E5D179',borderTop:'none',overflow:'hidden'}}>
                 {gentle.map((flag,i) => (
                   <CareMemberCard key={flag.member.id} flag={flag} stewardName={stewardName} churchName={churchName} isLast={i===gentle.length-1} />
                 ))}
@@ -2152,11 +2163,11 @@ function CareTab({ state, members, pastorName }) {
           )}
 
           {/* Scripture footer */}
-          <div style={{padding:'16px 18px',borderRadius:12,background:'#F5F3FF',border:'1px solid #DDD6FE',textAlign:'center'}}>
-            <div style={{fontSize:'0.8125rem',color:'#6D28D9',fontStyle:'italic',lineHeight:1.7}}>
+          <div style={{padding:'16px 18px',borderRadius:12,background:'#FDF4F2',border:'1px solid #F5CCC5',textAlign:'center'}}>
+            <div style={{fontSize:'0.8125rem',color:'#78303C',fontStyle:'italic',lineHeight:1.7}}>
               "Suppose one of you has a hundred sheep and loses one of them. Does he not leave the ninety-nine… and go after the lost sheep until he finds it?"
             </div>
-            <div style={{fontSize:'0.6875rem',color:'#7C3AED',marginTop:6,fontWeight:600}}>— Luke 15:4</div>
+            <div style={{fontSize:'0.6875rem',color:'#A8455A',marginTop:6,fontWeight:600}}>— Luke 15:4</div>
           </div>
         </>
       )}
@@ -2169,8 +2180,8 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
   const [copied,   setCopied]   = useState(false);
   const m = flag.member;
   const isP = flag.level === 'priority';
-  const accentColor  = isP ? '#DC2626' : '#D97706';
-  const accentSoft   = isP ? '#FEF2F2' : '#FFFBEB';
+  const accentColor  = isP ? '#A8455A' : '#997617';
+  const accentSoft   = isP ? '#FDF4F2' : '#FDFAEE';
 
   const message = buildFollowUpMessage(flag, stewardName, churchName);
 
@@ -2188,7 +2199,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
 
   return (
     <div style={{
-      borderBottom: isLast ? 'none' : '1px solid #F3F4F6',
+      borderBottom: isLast ? 'none' : '1px solid #F2EEE1',
       background: expanded ? accentSoft : 'white',
       transition: 'background .2s',
     }}>
@@ -2226,7 +2237,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
 
         {/* Stats + chevron */}
         <div style={{textAlign:'right',flexShrink:0}}>
-          <div className="font-display" style={{fontSize:'1.25rem',fontWeight:700,color:flag.overallPct>=60?'#D97706':'#DC2626'}}>{flag.overallPct}%</div>
+          <div className="font-display" style={{fontSize:'1.25rem',fontWeight:700,color:flag.overallPct>=60?'#997617':'#A8455A'}}>{flag.overallPct}%</div>
           <div style={{fontSize:'0.6rem',color:'var(--ink-subtle)'}}>overall</div>
           <div style={{fontSize:'0.6875rem',color:'var(--ink-subtle)',marginTop:4,transition:'transform .2s',transform:expanded?'rotate(180deg)':'rotate(0)'}}>▼</div>
         </div>
@@ -2239,7 +2250,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
             {[
               {label:'Consecutive',value:`${flag.streak} absent`,color:accentColor},
-              {label:'Overall %', value:`${flag.overallPct}%`,   color:flag.overallPct>=60?'#D97706':'#DC2626'},
+              {label:'Overall %', value:`${flag.overallPct}%`,   color:flag.overallPct>=60?'#997617':'#A8455A'},
               {label:'Total sessions',value:flag.totalSessions,  color:'var(--ink-muted)'},
             ].map(s=>(
               <div key={s.label} style={{textAlign:'center',padding:'10px 8px',borderRadius:10,background:'white',border:'1px solid var(--border)'}}>
@@ -2256,7 +2267,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
             </div>
             <div style={{
               padding:'12px 14px',borderRadius:10,
-              background:isP?'#FEF2F2':'#FFFBEB',
+              background:isP?'#FDF4F2':'#FDFAEE',
               border:`1px solid ${accentColor}30`,
               fontSize:'0.8125rem',color:'var(--ink)',lineHeight:1.7,
               whiteSpace:'pre-wrap',fontFamily:'Geist,sans-serif',
@@ -2268,7 +2279,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
           <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
             <button onClick={copyMsg} style={{
               flex:1,padding:'11px',borderRadius:10,border:'none',cursor:'pointer',
-              background:copied?'#16A34A':accentColor,color:'white',
+              background:copied?'#3F6B3C':accentColor,color:'white',
               fontSize:'0.875rem',fontWeight:700,transition:'background .2s',
               display:'flex',alignItems:'center',justifyContent:'center',gap:6,
             }}>
@@ -2276,7 +2287,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
             </button>
             <button onClick={openMessenger} style={{
               flex:1,padding:'11px',borderRadius:10,border:'none',cursor:'pointer',
-              background:'#0084FF',color:'white',
+              background:'#4E7F4A',color:'white',
               fontSize:'0.875rem',fontWeight:700,
               display:'flex',alignItems:'center',justifyContent:'center',gap:6,
             }}>
@@ -2424,9 +2435,9 @@ function App() {
             <div style={{ textAlign:'right', fontSize:'0.75rem', color:'var(--ink-subtle)', flex:'none', whiteSpace:'nowrap' }}>
               {state.meta.stewardName && <div style={{ fontWeight:500, color:'var(--ink-muted)' }}>{state.meta.stewardName}</div>}
               <div>{todayStr}</div>
-              {syncStatus==='syncing' && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#D97706', fontWeight:500 }}>Saving…</span></div>}
-              {syncStatus==='saved'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-ok"/><span style={{ color:'#16A34A', fontWeight:500 }}>Saved ✓</span></div>}
-              {syncStatus==='error'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-err"/><span style={{ color:'#DC2626', fontWeight:500 }}>Sync error</span></div>}
+              {syncStatus==='syncing' && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#997617', fontWeight:500 }}>Saving…</span></div>}
+              {syncStatus==='saved'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-ok"/><span style={{ color:'#3F6B3C', fontWeight:500 }}>Saved ✓</span></div>}
+              {syncStatus==='error'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-err"/><span style={{ color:'#A8455A', fontWeight:500 }}>Sync error</span></div>}
             </div>
           </div>
           <nav style={{ display:'flex', overflowX:'auto', scrollbarWidth:'none' }}>
@@ -2446,7 +2457,7 @@ function App() {
 
       {/* Loading error — no data.json */}
       {dataLoaded && !mainData && (
-        <div style={{ margin:'16px', padding:'12px 16px', borderRadius:10, background:'#FEF3C7', border:'1px solid #FDE68A', fontSize:'0.8125rem', color:'#92400E' }}>
+        <div style={{ margin:'16px', padding:'12px 16px', borderRadius:10, background:'#FBF5DC', border:'1px solid #E5D179', fontSize:'0.8125rem', color:'#63490A' }}>
           ⚠ Could not load data.json. Place attendance.html alongside data.json in your repo, or add members manually in the Members tab.
         </div>
       )}
