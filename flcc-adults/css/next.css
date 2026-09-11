@@ -412,6 +412,9 @@ textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
   color: var(--ink-55);
 }
 .tab svg { width: 22px; height: 22px; }
+/* Only the rail has room for a wordmark; on a phone the tab bar is five icons
+   and nothing else. The wide-screen block below turns it back on. */
+.rail-mark { display: none; }
 .tab[aria-current="page"] { color: var(--ink); }
 
 /* ── Motion ──────────────────────────────────────────────────────────────
@@ -517,7 +520,121 @@ textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
 .gem[data-clearing] { opacity: 0; transform: scale(.6); }
 .gem[data-empty] { background: transparent; box-shadow: none; cursor: default; }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   BIGGER SCREENS
+
+   The app was drawn for a phone and that is still where most of it is read.
+   None of what follows changes the poster system — same paper, same ink, same
+   3px edge, same enormous headlines. It changes only how much room the posters
+   get and where the five tabs sit.
+
+   Three sizes:
+
+     under 48rem   a phone. Untouched.
+     48–64rem      a tablet held upright. Wider column, tabs still at the
+                   bottom where a thumb is.
+     over 64rem    a tablet on its side, or a computer. The tabs become a rail
+                   down the left, because a bottom bar on a 27-inch monitor is
+                   a long way from what somebody is reading, and because a
+                   pointer has no thumb to favour.
+
+   The reading column stops at 44rem however wide the window is. That is not
+   timidity about space: a line of prose past about 75 characters is measurably
+   harder to read, and this app is mostly prose and Scripture. The room a big
+   screen buys is spent on breathing space and, where a screen is a menu rather
+   than a read, on a second column.
+   ══════════════════════════════════════════════════════════════════════════ */
+
 @media (min-width: 40rem) {
   :root { --pad: 2rem; --stack: 1.2rem; }
   .tabs { padding-left: 20%; padding-right: 20%; }
+}
+
+/* ── A tablet upright ─────────────────────────────────────────────────── */
+@media (min-width: 48rem) {
+  :root { --reading: 44rem; }
+  .screen, .app-head { max-width: var(--reading); }
+  .app-head { padding-top: calc(2rem + env(safe-area-inset-top)); }
+  .tabs { padding-left: 25%; padding-right: 25%; }
+}
+
+/* ── A tablet on its side, or a computer ──────────────────────────────── */
+@media (min-width: 64rem) {
+  :root { --rail: 15rem; }
+
+  /* The rail is a fixed column; the body is inset by exactly its width, so
+     the content column goes on centring itself inside what is left. */
+  body { padding-left: var(--rail); }
+
+  .tabs {
+    top: 0; right: auto; bottom: 0; left: 0;
+    width: var(--rail);
+    display: flex; flex-direction: column; align-items: stretch;
+    gap: .2rem;
+    padding: 2rem .9rem calc(2rem + env(safe-area-inset-bottom));
+    border-top: 0;
+    border-right: 1px solid var(--ink-12);
+    overflow-y: auto;
+  }
+
+  .rail-mark {
+    display: block;
+    padding: 0 .7rem 1.6rem;
+    font-size: .68rem; font-weight: 800; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-55);
+  }
+
+  .tab {
+    flex-direction: row; align-items: center; gap: .9rem;
+    justify-content: flex-start;
+    padding: .8rem .7rem;
+    min-height: 48px;
+    border-radius: var(--radius);
+    font-size: .72rem;
+  }
+  .tab svg { width: 20px; height: 20px; flex: none; }
+  .tab:hover { background: var(--ink-12); color: var(--ink); }
+  .tab[aria-current="page"] { background: var(--ink); color: var(--paper); }
+
+  /* Nothing is hiding behind a bottom bar any more. The side padding matches
+     the header's so a page title lines up with the posters underneath it —
+     on a phone the difference is a few pixels nobody sees, and on a wide
+     screen it reads as a heading that has slipped. */
+  .screen { padding: 0 var(--pad) 4rem; }
+  .app-head { padding-top: 2.4rem; }
+
+  /* The interruption and the toast belong over the content, not the rail. */
+  .moment { left: var(--rail); }
+  #toast { left: calc(50% + (var(--rail) / 2)); bottom: 2rem; }
+
+  /* ── Two up, where a screen is a menu rather than a read ──────────────
+     Explore, Play, Community, Watch and the two libraries are lists of
+     things to choose between, and a choice is easier to make when you can
+     see the options together. Today, Ask, a message, a session and the
+     Bible stay one column, because those are for reading — `app.js` says
+     which is which, and `modules.test.mjs` checks the list names real
+     screens. */
+  body[data-grid] .screen {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: 58rem;
+    /* Stretched, not top-aligned. Two flat blocks of colour side by side with
+       different bottom edges read as an accident; the same two squared off
+       read as a pair. The cost is some empty colour inside the shorter one,
+       which in a system built from blocks of colour is no cost at all. */
+    align-items: stretch;
+  }
+  /* The header widens with it, so the page title lines up with the posters
+     it names rather than sitting indented from them. */
+  body[data-grid] .app-head { max-width: 58rem; }
+  /* A poster that wants the full width across both columns says so.
+     Descendant, not child: every screen wraps its posters in a
+     `display: contents` div, so they are grid items but not DOM children. */
+  body[data-grid] .screen .full { grid-column: 1 / -1; }
+}
+
+/* ── A pointer, rather than a thumb ───────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  button.poster:hover, a.poster:hover { transform: translateY(-2px); }
+  .row:hover { background: var(--ink-12); }
 }

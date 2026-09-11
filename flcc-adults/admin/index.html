@@ -15,6 +15,15 @@
   /* The admin borrows the app's stylesheet so it looks like the thing it
      edits, and adds only what a form needs that the app has no use for. */
   body { padding: 1.4rem var(--pad) 5rem; max-width: 46rem; margin: 0 auto; }
+  /* On a desktop the two side-by-side fields have room to stay side by side,
+     and an entry reads better with its form indented under its heading than
+     running the full width of a laptop. */
+  @media (min-width: 64rem) {
+    body { max-width: 52rem; }
+    .bar { padding-left: calc((100vw - 52rem) / 2 + var(--pad)); padding-right: calc((100vw - 52rem) / 2 + var(--pad)); }
+  }
+  /* A tablet upright is wide enough for the paired fields; a phone is not. */
+  @media (max-width: 30rem) { .row2 { grid-template-columns: 1fr; } }
   .field { display: block; margin-top: .9rem; }
   .field > span {
     display: block; font-size: .68rem; font-weight: 800; letter-spacing: .16em;

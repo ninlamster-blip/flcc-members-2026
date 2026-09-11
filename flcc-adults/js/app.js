@@ -59,6 +59,20 @@ const ROOTS = new Set(TABS.map((tab) => tab.name));
  * missing from here simply lights no tab, which is better than lighting the
  * wrong one.
  */
+/**
+ * Which screens are a menu rather than a read.
+ *
+ * On a wide screen these lay out two posters across; everything else stays a
+ * single column. The split is not about which screens are important, it is
+ * about what somebody is doing on them: choosing between things is easier when
+ * the things are side by side, and reading is easier in one column of a
+ * sensible measure. Today, Ask, a message, a session and the Bible are for
+ * reading, so they keep the column.
+ *
+ * `modules.test.mjs` checks every name here is a real screen.
+ */
+const GRID = new Set(['explore', 'play', 'community', 'watch', 'grow', 'pray', 'notes']);
+
 const UNDER = {
   moment:  'today',
   message: 'watch',
@@ -170,6 +184,9 @@ function onboarding() {
 
 function renderTabs(active) {
   clear(tabsEl);
+  // Only ever seen on a wide screen, where the tabs are a rail down the side
+  // and a column of five icons with nothing above them reads as an orphan.
+  tabsEl.appendChild(h('p', { class: 'rail-mark', text: 'FLCC NEXT' }));
   for (const tab of TABS) {
     const button = h('button', { class: 'tab', type: 'button', onclick: () => router.go(tab.name) },
       navIcon(tab.icon), h('span', { text: tab.label }));
@@ -221,6 +238,9 @@ async function show(route, module) {
   }
 
   screenEl.appendChild(view.el);
+  // On <body>, not on the screen: the header has to widen with the grid too,
+  // or the page title sits indented from the posters it names.
+  document.body.toggleAttribute('data-grid', GRID.has(route.name));
   renderHead(view, route);
   renderTabs(ROOTS.has(route.name) ? route.name : UNDER[route.name] || null);
   window.scrollTo(0, 0);
