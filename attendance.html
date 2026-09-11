@@ -175,7 +175,7 @@ const ATT_ACCENT  = '#96602F';
 const STATUS_CFG = {
   present: { label: 'Present',     emoji: '✓', color: '#3F6B3C', soft: '#EFF6ED', ring: '#B5D4AF' },
   absent:  { label: 'Absent',      emoji: '✗', color: '#A8455A', soft: '#FDF4F2', ring: '#F5CCC5' },
-  excused: { label: 'On vacation', emoji: '🧳', color: '#997617', soft: '#FDFAEE', ring: '#E5D179' },
+  excused: { label: 'On vacation', emoji: '🧳', color: '#7D5F0E', soft: '#FDFAEE', ring: '#E5D179' },
 };
 
 const ROLE_MINISTRY = {
@@ -625,8 +625,8 @@ function SummaryBar({ summary }) {
       </div>
       {excused > 0 && (
         <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-          <div style={{ width:8, height:8, borderRadius:2, background:'#997617', flexShrink:0 }}/>
-          <span style={{ fontWeight:700, color:'#997617', fontSize:'1rem' }}>{excused}</span>
+          <div style={{ width:8, height:8, borderRadius:2, background:'#7D5F0E', flexShrink:0 }}/>
+          <span style={{ fontWeight:700, color:'#7D5F0E', fontSize:'1rem' }}>{excused}</span>
           <span style={{ color:'var(--ink-muted)' }}>On vacation</span>
         </div>
       )}
@@ -1057,7 +1057,7 @@ function HistoryTab({ state, dispatch, members }) {
                   </div>
                   <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
                     <div style={{ textAlign:'right' }}>
-                      <div style={{ fontSize:'1.375rem', fontWeight:700, color:attendedPct>=80?'#3F6B3C':attendedPct>=60?'#997617':'#A8455A', fontFamily:'Fraunces,Georgia,serif' }}>{attendedPct}%</div>
+                      <div style={{ fontSize:'1.375rem', fontWeight:700, color:attendedPct>=80?'#3F6B3C':attendedPct>=60?'#7D5F0E':'#A8455A', fontFamily:'Fraunces,Georgia,serif' }}>{attendedPct}%</div>
                       <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)' }}>attendance</div>
                     </div>
                     <div style={{ fontSize:'0.75rem', transform:isOpen?'rotate(90deg)':'rotate(0)', transition:'transform .2s', color:'var(--ink-subtle)' }}>▶</div>
@@ -1066,7 +1066,7 @@ function HistoryTab({ state, dispatch, members }) {
                 <div style={{ display:'flex', gap:14, marginTop:10, fontSize:'0.8125rem' }}>
                   <span style={{ color:'#3F6B3C', fontWeight:600 }}>✓ {sum.present} Present</span>
                   <span style={{ color:'#A8455A', fontWeight:600 }}>✗ {sum.absent} Absent</span>
-                  {sum.excused > 0 && <span style={{ color:'#997617', fontWeight:600 }}>🧳 {sum.excused} On vacation</span>}
+                  {sum.excused > 0 && <span style={{ color:'#7D5F0E', fontWeight:600 }}>🧳 {sum.excused} On vacation</span>}
                   {sess.synced && <span style={{ marginLeft:'auto', color:'#3F6B3C', fontSize:'0.6875rem' }}>✓ synced</span>}
                 </div>
               </div>
@@ -1295,9 +1295,9 @@ function AnalyticsTab({ state, members }) {
                   <div style={{display:'flex',gap:8,fontSize:'0.75rem',flexShrink:0}}>
                     <span style={{color:'#3F6B3C',fontWeight:600}}>✓ {sum.present} Present</span>
                     <span style={{color:'#A8455A',fontWeight:600}}>✗ {sum.absent} Absent</span>
-                    {sum.excused > 0 && <span style={{color:'#997617',fontWeight:600}}>🧳 {sum.excused}</span>}
+                    {sum.excused > 0 && <span style={{color:'#7D5F0E',fontWeight:600}}>🧳 {sum.excused}</span>}
                   </div>
-                  <div style={{fontWeight:700,color:pct>=80?'#3F6B3C':pct>=60?'#997617':'#A8455A',fontFamily:'Fraunces,Georgia,serif',fontSize:'1rem',flexShrink:0,minWidth:38,textAlign:'right'}}>{pct}%</div>
+                  <div style={{fontWeight:700,color:pct>=80?'#3F6B3C':pct>=60?'#7D5F0E':'#A8455A',fontFamily:'Fraunces,Georgia,serif',fontSize:'1rem',flexShrink:0,minWidth:38,textAlign:'right'}}>{pct}%</div>
                 </div>
               );
             })}
@@ -1457,15 +1457,15 @@ function MembersTab({ members, state, dispatch }) {
                 <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                   <div style={{ fontWeight:600, fontSize:'0.9375rem', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.fullName||m.name}</div>
                   {isCustom && <span className="pill" style={{ background:ATT_ACCENT+'20', color:ATT_ACCENT, fontSize:'0.6rem', padding:'1px 5px' }}>custom</span>}
-                  {m.sundayOnly && <span className="pill" style={{ background:'#7C3AED20', color:'#A8455A', fontSize:'0.6rem', padding:'1px 5px' }}>Sun only</span>}
-                  {m.fridayOnly && <span className="pill" style={{ background:'#EA580C20', color:'#D2622A', fontSize:'0.6rem', padding:'1px 5px' }}>Fri primary</span>}
+                  {m.sundayOnly && <span className="pill" style={{ background:'#A8455A20', color:'#A8455A', fontSize:'0.6rem', padding:'1px 5px' }}>Sun only</span>}
+                  {m.fridayOnly && <span className="pill" style={{ background:'#B84A1C20', color:'#A03E12', fontSize:'0.6rem', padding:'1px 5px' }}>Fri primary</span>}
                 </div>
                 <div style={{ fontSize:'0.75rem', color:'var(--ink-muted)', marginTop:1 }}>{m.ministry||'Ministry'}</div>
               </div>
               <div style={{ textAlign:'right', flexShrink:0 }}>
                 {pct!==null ? (
                   <>
-                    <div style={{ fontWeight:700, color:pct>=80?'#3F6B3C':pct>=60?'#997617':'#A8455A', fontFamily:'Fraunces,Georgia,serif', fontSize:'1.125rem' }}>{pct}%</div>
+                    <div style={{ fontWeight:700, color:pct>=80?'#3F6B3C':pct>=60?'#7D5F0E':'#A8455A', fontFamily:'Fraunces,Georgia,serif', fontSize:'1.125rem' }}>{pct}%</div>
                     <div style={{ fontSize:'0.6rem', color:'var(--ink-subtle)' }}>attendance</div>
                   </>
                 ) : <span style={{ fontSize:'0.75rem', color:'var(--ink-subtle)', fontStyle:'italic' }}>no data</span>}
@@ -2089,7 +2089,7 @@ function CareTab({ state, members, pastorName }) {
       {/* Summary chips */}
       <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
         <div style={{padding:'10px 16px',borderRadius:12,background:'#FBF5DC',border:'1px solid #E5D179',flex:1,minWidth:120,textAlign:'center'}}>
-          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#997617',lineHeight:1}}>{gentle.length}</div>
+          <div className="font-display" style={{fontSize:'2rem',fontWeight:700,color:'#7D5F0E',lineHeight:1}}>{gentle.length}</div>
           <div style={{fontSize:'0.6875rem',color:'#63490A',marginTop:3,fontWeight:600}}>🟡 Gentle follow-up</div>
           <div style={{fontSize:'0.6rem',color:'#63490A',marginTop:1}}>3–4 absences</div>
         </div>
@@ -2148,7 +2148,7 @@ function CareTab({ state, members, pastorName }) {
               <div style={{
                 display:'flex',alignItems:'center',gap:10,
                 padding:'10px 14px',borderRadius:'12px 12px 0 0',
-                background:'#997617',color:'white',
+                background:'#7D5F0E',color:'white',
                 fontSize:'0.8125rem',fontWeight:700,letterSpacing:'.04em',
               }}>
                 🟡 GENTLE FOLLOW-UP — 3–4 Consecutive Absences
@@ -2180,7 +2180,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
   const [copied,   setCopied]   = useState(false);
   const m = flag.member;
   const isP = flag.level === 'priority';
-  const accentColor  = isP ? '#A8455A' : '#997617';
+  const accentColor  = isP ? '#A8455A' : '#7D5F0E';
   const accentSoft   = isP ? '#FDF4F2' : '#FDFAEE';
 
   const message = buildFollowUpMessage(flag, stewardName, churchName);
@@ -2237,7 +2237,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
 
         {/* Stats + chevron */}
         <div style={{textAlign:'right',flexShrink:0}}>
-          <div className="font-display" style={{fontSize:'1.25rem',fontWeight:700,color:flag.overallPct>=60?'#997617':'#A8455A'}}>{flag.overallPct}%</div>
+          <div className="font-display" style={{fontSize:'1.25rem',fontWeight:700,color:flag.overallPct>=60?'#7D5F0E':'#A8455A'}}>{flag.overallPct}%</div>
           <div style={{fontSize:'0.6rem',color:'var(--ink-subtle)'}}>overall</div>
           <div style={{fontSize:'0.6875rem',color:'var(--ink-subtle)',marginTop:4,transition:'transform .2s',transform:expanded?'rotate(180deg)':'rotate(0)'}}>▼</div>
         </div>
@@ -2250,7 +2250,7 @@ function CareMemberCard({ flag, stewardName, churchName, isLast }) {
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
             {[
               {label:'Consecutive',value:`${flag.streak} absent`,color:accentColor},
-              {label:'Overall %', value:`${flag.overallPct}%`,   color:flag.overallPct>=60?'#997617':'#A8455A'},
+              {label:'Overall %', value:`${flag.overallPct}%`,   color:flag.overallPct>=60?'#7D5F0E':'#A8455A'},
               {label:'Total sessions',value:flag.totalSessions,  color:'var(--ink-muted)'},
             ].map(s=>(
               <div key={s.label} style={{textAlign:'center',padding:'10px 8px',borderRadius:10,background:'white',border:'1px solid var(--border)'}}>
@@ -2435,7 +2435,7 @@ function App() {
             <div style={{ textAlign:'right', fontSize:'0.75rem', color:'var(--ink-subtle)', flex:'none', whiteSpace:'nowrap' }}>
               {state.meta.stewardName && <div style={{ fontWeight:500, color:'var(--ink-muted)' }}>{state.meta.stewardName}</div>}
               <div>{todayStr}</div>
-              {syncStatus==='syncing' && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#997617', fontWeight:500 }}>Saving…</span></div>}
+              {syncStatus==='syncing' && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-pend"/><span style={{ color:'#7D5F0E', fontWeight:500 }}>Saving…</span></div>}
               {syncStatus==='saved'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-ok"/><span style={{ color:'#3F6B3C', fontWeight:500 }}>Saved ✓</span></div>}
               {syncStatus==='error'   && <div style={{ display:'flex', alignItems:'center', gap:4, justifyContent:'flex-end', marginTop:2 }}><div className="sync-dot sync-dot-err"/><span style={{ color:'#A8455A', fontWeight:500 }}>Sync error</span></div>}
             </div>

@@ -284,9 +284,9 @@ const DEFAULT_ROLES = [
 
 // Default service types — Edmund can edit
 const DEFAULT_SERVICE_TYPES = [
-  { key: 'Friday',       label: 'Friday Service',   dot: '#4E7F4A' },
-  { key: 'Sunday',       label: 'Sunday Service',   dot: '#B99527' },
-  { key: 'PrayerMeeting', label: 'Prayer Meeting',   dot: '#BE5E6E' },
+  { key: 'Friday',       label: 'Friday Service',   dot: '#3F6B3C' },
+  { key: 'Sunday',       label: 'Sunday Service',   dot: '#7D5F0E' },
+  { key: 'PrayerMeeting', label: 'Prayer Meeting',   dot: '#A8455A' },
 ];
 
 // =============================================================================
@@ -1062,7 +1062,7 @@ function ServiceTypesEditor({ state, dispatch }) {
   const update = (i, patch) => setTypes(types.map((t, idx) => idx === i ? { ...t, ...patch } : t));
   const add = () => {
     const key = `svc-${Date.now()}`;
-    setTypes([...types, { key, label: 'New Service', dot: '#8A7A6B' }]);
+    setTypes([...types, { key, label: 'New Service', dot: '#6B5D52' }]);
   };
   const remove = (i) => {
     if (types.length === 1) { alert('You need at least one service type.'); return; }
