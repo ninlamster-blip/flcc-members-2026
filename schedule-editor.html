@@ -18,14 +18,25 @@
 <script src="./church.js"></script>
 <style>
   :root {
-    --bg:#F8F7F2; --surface:#FFFFFF; --ink:#1A1A1E; --ink-2:#3D3D44; --ink-3:#6E6E78; --ink-4:#A8A8B3;
-    --border:#E8E6DF; --border-2:#D5D2C8;
-    --friday:#0EA5E9; --friday-soft:#E0F2FE; --friday-mid:#BAE6FD;
-    --sunday:#8B5CF6; --sunday-soft:#EDE9FE; --sunday-mid:#DDD6FE;
-    --accent:#A33B2A; --accent-hover:#7E2D1F;
-    --success:#16A34A; --success-soft:#DCFCE7;
-    --warning:#D97706; --warning-soft:#FEF3C7;
-    --danger:#DC2626;
+    /* ── NEXTPURE palette ─────────────────────────────────────────────
+       Five swatches on cream paper. They are the drawing — flat fills,
+       chips, rings, illustration. Text and controls use the darker tone
+       of the same family below, because no pastel here reaches 4.5:1. */
+    --paper: #F7F4EA;
+    --sage: #DEECDA;
+    --butter: #F1E4A0;
+    --peach: #F2BC9C;
+    --rose: #EDA89D;
+    --terracotta: #E4743C;
+
+    --bg:#F7F4EA; --surface:#FFFDF8; --ink:#241C17; --ink-2:#4A3E33; --ink-3:#8A7A6B; --ink-4:#A3937F;
+    --border:#E6DFD0; --border-2:#D3C8B4;
+    --friday:#96602F; --friday-soft:#FCEDE3; --friday-mid:#F2BC9C;
+    --sunday:#78303C; --sunday-soft:#FBE7E2; --sunday-mid:#F5CCC5;
+    --accent:#B84A1C; --accent-hover:#96370F;
+    --success:#3F6B3C; --success-soft:#DEECDA;
+    --warning:#7D5F0E; --warning-soft:#F1E4A0;
+    --danger:#A8455A;
   }
   *{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
   html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Geist',ui-sans-serif,system-ui,sans-serif;}
@@ -53,7 +64,7 @@
   .card-body.open{max-height:1000px;opacity:1;}
 
   .field-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:.45rem .7rem;font-size:.875rem;color:var(--ink);font-family:'Geist',sans-serif;transition:border-color .15s,box-shadow .15s,background .15s;outline:none;}
-  .field-input:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px rgba(163,59,42,.12);}
+  .field-input:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px rgba(184,74,28,.12);}
   select.field-input{font-family:'Geist',sans-serif;}
 
   .btn{display:inline-flex;align-items:center;gap:.45rem;padding:.5rem 1rem;border-radius:10px;font-size:.875rem;font-weight:600;border:1.5px solid transparent;cursor:pointer;transition:all .18s;white-space:nowrap;-webkit-tap-highlight-color:transparent;font-family:'Geist',sans-serif;}
@@ -61,27 +72,27 @@
   .btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--border-2);}
   .btn-ghost:hover{background:var(--bg);}
 
-  .publish-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.75rem;border-radius:12px;font-size:.9375rem;font-weight:700;border:none;cursor:pointer;background:var(--accent);color:#fff;box-shadow:0 4px 18px rgba(163,59,42,.35);transition:background .2s,box-shadow .2s,transform .15s;-webkit-tap-highlight-color:transparent;font-family:'Geist',sans-serif;}
+  .publish-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.75rem;border-radius:12px;font-size:.9375rem;font-weight:700;border:none;cursor:pointer;background:var(--accent);color:#fff;box-shadow:0 4px 18px rgba(184,74,28,.35);transition:background .2s,box-shadow .2s,transform .15s;-webkit-tap-highlight-color:transparent;font-family:'Geist',sans-serif;}
   .publish-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%);background-size:400px 100%;opacity:0;transition:opacity .3s;}
   .publish-btn.loading::before{opacity:1;animation:shimmer 1.2s linear infinite;}
-  .publish-btn:hover:not(:disabled){background:var(--accent-hover);box-shadow:0 6px 24px rgba(163,59,42,.42);transform:translateY(-1px);}
+  .publish-btn:hover:not(:disabled){background:var(--accent-hover);box-shadow:0 6px 24px rgba(184,74,28,.42);transform:translateY(-1px);}
   .publish-btn:active:not(:disabled){transform:translateY(0) scale(.97);}
   .publish-btn:disabled{opacity:.7;cursor:wait;}
-  .publish-btn.ok {background:var(--success);box-shadow:0 4px 18px rgba(22,163,74,.3);animation:bounce .5s ease;}
-  .publish-btn.err{background:var(--danger); box-shadow:0 4px 18px rgba(220,38,38,.3);}
+  .publish-btn.ok {background:var(--success);box-shadow:0 4px 18px rgba(63,107,60,.3);animation:bounce .5s ease;}
+  .publish-btn.err{background:var(--danger); box-shadow:0 4px 18px rgba(168,69,90,.3);}
 
   .nav-tab{display:flex;align-items:center;gap:9px;width:100%;padding:.5rem .75rem;border-radius:10px;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .18s;color:var(--ink-3);border:none;background:transparent;text-align:left;margin-bottom:2px;font-family:'Geist',sans-serif;}
-  .nav-tab:hover {background:rgba(163,59,42,.06);color:var(--ink);}
-  .nav-tab.active{background:rgba(163,59,42,.1);color:var(--accent);font-weight:700;}
+  .nav-tab:hover {background:rgba(184,74,28,.06);color:var(--ink);}
+  .nav-tab.active{background:rgba(184,74,28,.1);color:var(--accent);font-weight:700;}
 
   .month-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;border-radius:10px;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .18s;color:var(--ink-3);border:none;background:transparent;width:100%;text-align:left;font-family:'Geist',sans-serif;}
-  .month-item:hover {background:rgba(163,59,42,.07);color:var(--ink);}
-  .month-item.active{background:rgba(163,59,42,.1);color:var(--accent);font-weight:700;}
+  .month-item:hover {background:rgba(184,74,28,.07);color:var(--ink);}
+  .month-item.active{background:rgba(184,74,28,.1);color:var(--accent);font-weight:700;}
 
   .m-tab{padding:.375rem .875rem;border-radius:999px;font-size:.8125rem;font-weight:500;cursor:pointer;border:none;white-space:nowrap;flex-shrink:0;transition:all .2s;font-family:'Geist',sans-serif;}
-  .m-tab.active{background:var(--accent);color:#fff;box-shadow:0 3px 10px rgba(163,59,42,.3);}
-  .m-tab.idle  {background:#F0EFE9;color:var(--ink-3);}
-  .m-tab.idle:hover{background:#E5E3DB;color:var(--ink);}
+  .m-tab.active{background:var(--accent);color:#fff;box-shadow:0 3px 10px rgba(184,74,28,.3);}
+  .m-tab.idle  {background:#F2EEE1;color:var(--ink-3);}
+  .m-tab.idle:hover{background:#EDE6D6;color:var(--ink);}
 
   .svc-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .65rem;border-radius:999px;font-size:.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
   .field-label{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px;}
@@ -95,7 +106,7 @@
   input[type=checkbox].toggle::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
   input[type=checkbox].toggle:checked::after{transform:translateX(16px);}
 
-  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1A1A1E;color:#fff;padding:12px 20px;border-radius:12px;font-size:.875rem;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:100;white-space:nowrap;animation:notif 3.5s ease forwards;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#241C17;color:#fff;padding:12px 20px;border-radius:12px;font-size:.875rem;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:100;white-space:nowrap;animation:notif 3.5s ease forwards;}
 
   .progress-line{height:3px;border-radius:99px;background:var(--border);overflow:hidden;}
   .progress-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.22,1,.36,1);}
@@ -120,7 +131,7 @@
   @keyframes tabPop { from{transform:scaleX(0);opacity:0} to{transform:scaleX(1);opacity:1} }
 
   .main-header {
-    background: linear-gradient(180deg,rgba(237,233,254,0.4) 0%,rgba(250,250,245,0.95) 55%) !important;
+    background: linear-gradient(180deg,rgba(251,231,226,0.4) 0%,rgba(250,250,245,0.95) 55%) !important;
     position: relative;
     overflow: hidden;
   }
@@ -129,7 +140,7 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    background: linear-gradient(90deg,#7C3AED,#6D28D9,#4F46E5,#7C3AED);
+    background: linear-gradient(90deg,#A8455A,#78303C,#7D5F0E,#A8455A);
     background-size: 250% 100%;
     animation: gradientPulse 5s ease-in-out infinite;
   }
@@ -138,7 +149,7 @@
   .btn:active { transform:translateY(0) scale(0.95) !important; }
   .card { transition:box-shadow 0.18s ease,border-color 0.15s ease !important; }
   .card:hover { box-shadow:0 6px 18px rgba(0,0,0,0.07); }
-  input:focus, select:focus, textarea:focus { outline:none; border-color:#7C3AED !important; box-shadow:0 0 0 3px rgba(124,58,237,0.1) !important; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:#A8455A !important; box-shadow:0 0 0 3px rgba(168,69,90,0.1) !important; }
 </style>
 </head>
 <body>
@@ -176,10 +187,10 @@ const TABS = [
 ];
 
 const EVT_COLORS = {
-  birthday:    { bg:'#FEF3C7', color:'#92400E', border:'#FDE68A' },
-  anniversary: { bg:'#EDE9FE', color:'#6D28D9', border:'#DDD6FE' },
-  holiday:     { bg:'#F0FDF4', color:'#15803D', border:'#BBF7D0' },
-  general:     { bg:'#F0F9FF', color:'#0369A1', border:'#BAE6FD' },
+  birthday:    { bg:'#FBF5DC', color:'#63490A', border:'#E5D179' },
+  anniversary: { bg:'#FBE7E2', color:'#78303C', border:'#F5CCC5' },
+  holiday:     { bg:'#EFF6ED', color:'#2C5129', border:'#B5D4AF' },
+  general:     { bg:'#FEF7F2', color:'#6B4220', border:'#F2BC9C' },
 };
 
 function fmt(iso) {
@@ -201,10 +212,10 @@ function workerName(id,workers){
 // ─── SvcBadge ─────────────────────────────────────────────────────────────────
 function SvcBadge({service}){
   const cfg = service==='Friday'
-    ? {bg:'var(--friday-soft)',color:'var(--friday)',dot:'#0EA5E9',label:'Friday'}
+    ? {bg:'var(--friday-soft)',color:'var(--friday)',dot:'#B07A45',label:'Friday'}
     : service==='Sunday'
-    ? {bg:'var(--sunday-soft)',color:'var(--sunday)',dot:'#8B5CF6',label:'Sunday'}
-    : {bg:'#F0EFE9',color:'var(--ink-3)',dot:'var(--ink-4)',label:service||'Other'};
+    ? {bg:'var(--sunday-soft)',color:'var(--sunday)',dot:'#BE5E6E',label:'Sunday'}
+    : {bg:'#F2EEE1',color:'var(--ink-3)',dot:'var(--ink-4)',label:service||'Other'};
   return (
     <span className="svc-badge" style={{background:cfg.bg,color:cfg.color}}>
       <span style={{width:6,height:6,borderRadius:'50%',background:cfg.dot,display:'inline-block'}}/>
@@ -235,7 +246,7 @@ function ServiceCard({entry,isOpen,onToggle,onChange,onDelete,index,workers}){
           <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:6}}>
             <SvcBadge service={entry.service}/>
             {entry.isSpecial && (
-              <span style={{fontSize:'.6875rem',padding:'2px 8px',borderRadius:999,background:'#FEF3C7',color:'#92400E',fontWeight:600,border:'1px solid #FDE68A'}}>
+              <span style={{fontSize:'.6875rem',padding:'2px 8px',borderRadius:999,background:'#FBF5DC',color:'#63490A',fontWeight:600,border:'1px solid #E5D179'}}>
                 ✦ {entry.specialNote||'Special'}
               </span>
             )}
@@ -788,7 +799,7 @@ function App(){
                 <button key={m} className={`month-item ${activeMonth===m?'active':''}`} onClick={()=>{setActiveMonth(m);setExpandedId(null);}}>
                   {m}
                   {monthStats[m]>0&&(
-                    <span style={{fontSize:'.6875rem',padding:'1px 7px',borderRadius:999,background:activeMonth===m?'rgba(163,59,42,.15)':'var(--bg)',color:activeMonth===m?'var(--accent)':'var(--ink-4)',fontWeight:600,border:'1px solid var(--border)'}}>
+                    <span style={{fontSize:'.6875rem',padding:'1px 7px',borderRadius:999,background:activeMonth===m?'rgba(184,74,28,.15)':'var(--bg)',color:activeMonth===m?'var(--accent)':'var(--ink-4)',fontWeight:600,border:'1px solid var(--border)'}}>
                       {monthStats[m]}
                     </span>
                   )}
@@ -801,7 +812,7 @@ function App(){
         {/* Footer */}
         <div style={{marginTop:'auto',paddingTop:16}}>
           {ghToken?(
-            <div style={{padding:'10px 12px',borderRadius:12,background:'var(--success-soft)',border:'1px solid #BBF7D0',fontSize:'.75rem',color:'var(--success)',fontWeight:500,marginBottom:10}}>
+            <div style={{padding:'10px 12px',borderRadius:12,background:'var(--success-soft)',border:'1px solid #B5D4AF',fontSize:'.75rem',color:'var(--success)',fontWeight:500,marginBottom:10}}>
               ✓ GitHub connected
               <button onClick={()=>{setGhToken('');try{localStorage.removeItem(GH_TOKEN_KEY);}catch{};}} style={{display:'block',marginTop:4,fontSize:'.6875rem',color:'var(--ink-4)',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',padding:0,fontFamily:'Geist,sans-serif'}}>Disconnect</button>
             </div>
@@ -905,7 +916,7 @@ function App(){
                 <div style={{fontSize:'3rem',marginBottom:12}}>📋</div>
                 <div className="font-display" style={{fontSize:'1.375rem',color:'var(--ink-2)',fontWeight:600}}>No services for {activeMonth}</div>
                 <p style={{color:'var(--ink-4)',fontSize:'.9375rem',marginTop:6,marginBottom:20}}>Add the first service to get started.</p>
-                <button onClick={addEntry} style={{padding:'.7rem 1.5rem',borderRadius:12,background:'var(--accent)',color:'#fff',border:'none',fontWeight:700,fontSize:'.9375rem',cursor:'pointer',boxShadow:'0 4px 18px rgba(163,59,42,.3)',fontFamily:'Geist,sans-serif'}}>
+                <button onClick={addEntry} style={{padding:'.7rem 1.5rem',borderRadius:12,background:'var(--accent)',color:'#fff',border:'none',fontWeight:700,fontSize:'.9375rem',cursor:'pointer',boxShadow:'0 4px 18px rgba(184,74,28,.3)',fontFamily:'Geist,sans-serif'}}>
                   + Add service
                 </button>
               </div>

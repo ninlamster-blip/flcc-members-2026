@@ -11,16 +11,27 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:#fafaf7;
-  --bg2:#f3f2ee;
-  --bg3:#eceae4;
-  --text:#1a1814;
-  --text2:#4a4640;
-  --muted:#8a8480;
-  --accent:#6d3a1f;
-  --accent2:#7c3aed;
-  --gold:#b5860d;
-  --border:#ddd9d0;
+  /* ── NEXTPURE palette ─────────────────────────────────────────────
+     Five swatches on cream paper. They are the drawing — flat fills,
+     chips, rings, illustration. Text and controls use the darker tone
+     of the same family below, because no pastel here reaches 4.5:1. */
+  --paper: #F7F4EA;
+  --sage: #DEECDA;
+  --butter: #F1E4A0;
+  --peach: #F2BC9C;
+  --rose: #EDA89D;
+  --terracotta: #E4743C;
+
+  --bg:#F7F4EA;
+  --bg2:#F2EEE1;
+  --bg3:#EDE6D6;
+  --text:#241C17;
+  --text2:#6B5D52;
+  --muted:#A3937F;
+  --accent:#96370F;
+  --accent2:#B84A1C;
+  --gold:#7D5F0E;
+  --border:#E6DFD0;
   --radius:10px;
   --shadow:0 2px 12px rgba(0,0,0,.08);
 }
@@ -135,7 +146,7 @@ body{
 }
 .state-box .label{font-family:'Lora',serif;font-size:1.1rem;margin-bottom:.5rem;color:var(--text);}
 .state-box p{font-size:.9rem;color:var(--muted);}
-.error-box{color:#dc2626;}
+.error-box{color:#A8455A;}
 .spinner{
   width:36px;height:36px;border:3px solid var(--border);
   border-top-color:var(--accent2);border-radius:50%;
@@ -152,7 +163,7 @@ body{
   background:#fff;border:1px solid var(--border);border-radius:var(--radius);
   padding:.85rem 1rem;cursor:pointer;transition:border-color .12s,box-shadow .12s;
 }
-.pop-card:hover{border-color:var(--accent2);box-shadow:0 2px 8px rgba(124,58,237,.12);}
+.pop-card:hover{border-color:var(--accent2);box-shadow:0 2px 8px rgba(184,74,28,.12);}
 .pop-ref{font-size:.8rem;font-weight:600;color:var(--accent2);margin-bottom:.3rem;}
 .pop-preview{font-size:.8rem;color:var(--text2);line-height:1.5;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}

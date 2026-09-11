@@ -38,24 +38,43 @@
 
 <style>
   :root {
-    --bg: #FAFAF5;
-    --surface: #FFFFFF;
-    --ink: #18181B;
-    --ink-muted: #52525B;
-    --ink-subtle: #A1A1AA;
-    --border: #E7E5DE;
-    --border-strong: #D4D4D0;
-    --accent: #A33B2A;
-    --accent-hover: #8B2E20;
-    --accent-soft: #FBEBE7;
-    --success: #15803D;
-    --success-soft: #DCFCE7;
-    --warning: #B45309;
-    --warning-soft: #FEF3C7;
-    --danger: #B91C1C;
-    --danger-soft: #FEE2E2;
-    --info: #1E40AF;
-    --info-soft: #DBEAFE;
+    /* ── NEXTPURE palette ─────────────────────────────────────────────
+       Five swatches on cream paper. They are the drawing — flat fills,
+       chips, rings, illustration. Text and controls use the darker tone
+       of the same family below, because no pastel here reaches 4.5:1. */
+    --paper: #F7F4EA;
+    --sage: #DEECDA;
+    --butter: #F1E4A0;
+    --peach: #F2BC9C;
+    --rose: #EDA89D;
+    --terracotta: #E4743C;
+
+    --bg: #F7F4EA;
+    --surface: #FFFDF8;
+    --surface-sunk: #F2EEE1;
+    --ink: #241C17;
+    --ink-muted: #6B5D52;
+    --ink-subtle: #A3937F;
+    --border: #E6DFD0;
+    --border-strong: #D3C8B4;
+    --accent: #B84A1C;
+    --accent-hover: #96370F;
+    --accent-soft: #FDF0E8;
+    --success: #3F6B3C;
+    --success-soft: #EFF6ED;
+    --warning: #7D5F0E;
+    --warning-soft: #FBF5DC;
+    --danger: #A8455A;
+    --danger-soft: #FBE7E2;
+    --info: #96602F;
+    --info-soft: #FCEDE3;
+
+    /* Ring tokens: the raw swatch, one step stronger than the soft fill. */
+    --success-ring: #DEECDA;
+    --warning-ring: #F1E4A0;
+    --danger-ring: #EDA89D;
+    --info-ring: #F2BC9C;
+    --accent-ring: #F6C4A6;
   }
 
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -91,7 +110,7 @@
     cursor: pointer;
   }
   .btn-primary { background: var(--ink); color: white; }
-  .btn-primary:hover { background: #27272A; }
+  .btn-primary:hover { background: #33291F; }
   .btn-accent { background: var(--accent); color: white; }
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
@@ -102,30 +121,30 @@
     background: var(--accent); color: #fff;
     text-decoration: none; font-weight: 600;
     font-size: 0.875rem; line-height: 1;
-    box-shadow: 0 2px 8px rgba(163,59,42,0.25);
+    box-shadow: 0 2px 8px rgba(184,74,28,0.25);
     letter-spacing: -0.01em;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     transition: background 0.15s;
   }
   .ask-pill:hover { background: var(--accent-hover); }
-  .btn-soft { background: #F4F4F0; color: var(--ink); }
-  .btn-soft:hover { background: #EDEDE7; }
+  .btn-soft { background: #F2EEE1; color: var(--ink); }
+  .btn-soft:hover { background: #EDE6D6; }
   .btn-danger { background: var(--danger); color: white; }
-  .btn-danger:hover { background: #991B1B; }
+  .btn-danger:hover { background: #521E26; }
 
   .pill {
     display: inline-flex; align-items: center; gap: 0.375rem;
     padding: 0.125rem 0.625rem; border-radius: 999px;
     font-size: 0.75rem; font-weight: 500; line-height: 1.4;
   }
-  .pill-default { background: #F4F4F0; color: var(--ink-muted); }
-  .pill-success { background: var(--success-soft); color: var(--success); }
-  .pill-warning { background: var(--warning-soft); color: var(--warning); }
-  .pill-danger  { background: var(--danger-soft); color: var(--danger); }
-  .pill-info    { background: var(--info-soft); color: var(--info); }
-  .pill-accent  { background: var(--accent-soft); color: var(--accent); }
-  .pill-pink    { background: #FCE7F3; color: #BE185D; }
+  .pill-default { background: #F2EEE1; color: var(--ink-muted); }
+  .pill-success { background: var(--success-soft); color: var(--success); box-shadow: inset 0 0 0 1px var(--success-ring); }
+  .pill-warning { background: var(--warning-soft); color: var(--warning); box-shadow: inset 0 0 0 1px var(--warning-ring); }
+  .pill-danger  { background: var(--danger-soft); color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger-ring); }
+  .pill-info    { background: var(--info-soft); color: var(--info); box-shadow: inset 0 0 0 1px var(--info-ring); }
+  .pill-accent  { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent-ring); }
+  .pill-pink    { background: #FBE7E2; color: #78303C; }
 
   .input, .select {
     width: 100%;
@@ -206,7 +225,7 @@
     overflow: hidden;
   }
   .cal-header-cell {
-    background: #FBFBF7;
+    background: #FFFDF8;
     padding: 0.5rem;
     text-align: center;
     font-size: 0.6875rem;
@@ -226,8 +245,8 @@
     transition: background 0.15s;
     position: relative;
   }
-  .cal-day:hover { background: #FAFAF5; }
-  .cal-day-other { background: #FBFBF7; }
+  .cal-day:hover { background: #F7F4EA; }
+  .cal-day-other { background: #FFFDF8; }
   .cal-day-other .cal-day-num { color: var(--ink-subtle); }
   .cal-day-today { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
   .cal-day-mine { background: linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 60%); }
@@ -390,7 +409,7 @@
     transition: background 0.15s;
     background: var(--surface);
   }
-  .ios-cal-day:active { background: #F4F4F0; }
+  .ios-cal-day:active { background: #F2EEE1; }
   .ios-cal-day-num {
     font-size: 1rem;
     font-weight: 400;
@@ -509,9 +528,9 @@
     box-sizing: border-box;
   }
   .sn-line { border-bottom: 1.5px solid var(--border); }
-  .sn-line:focus { border-bottom-color: #16A34A; }
+  .sn-line:focus { border-bottom-color: #3F6B3C; }
   .sn-note-dot {
-    width: 7px; height: 7px; border-radius: 50%; background: #16A34A; flex-shrink: 0;
+    width: 7px; height: 7px; border-radius: 50%; background: #3F6B3C; flex-shrink: 0;
     animation: snNoteDot .32s cubic-bezier(.34,1.56,.64,1) both;
   }
 
@@ -520,14 +539,14 @@
   @keyframes snSlideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   .sn-scan-ripple {
     position: absolute; inset: -6px; border-radius: 12px;
-    border: 2px solid #16A34A;
+    border: 2px solid #3F6B3C;
     animation: snRipple 1.5s ease-out infinite;
   }
   @keyframes snRipple { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.18)} }
   .sn-scan-result { animation: snSlideUp .3s cubic-bezier(.34,1.56,.64,1) both; }
   .sn-body-edit:empty::before {
     content: attr(data-placeholder);
-    color: #9CA3AF;
+    color: #A3937F;
     pointer-events: none;
     display: block;
     white-space: pre;
@@ -551,8 +570,8 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   @keyframes accentGlow {
-    0%,100% { box-shadow: 0 0 0 0 rgba(163,59,42,0.25); }
-    50%     { box-shadow: 0 0 0 7px rgba(163,59,42,0); }
+    0%,100% { box-shadow: 0 0 0 0 rgba(184,74,28,0.25); }
+    50%     { box-shadow: 0 0 0 7px rgba(184,74,28,0); }
   }
   @keyframes tabPop {
     from { transform: scaleX(0); opacity: 0; }
@@ -573,8 +592,8 @@
     50%      { transform: translateY(-8px) rotate(3deg); }
   }
   @keyframes arenaGlow {
-    0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.4); }
-    50%      { box-shadow: 0 0 50px rgba(59,130,246,0.8), 0 0 80px rgba(212,175,55,0.3); }
+    0%,100% { box-shadow: 0 0 20px rgba(104,156,99,0.4); }
+    50%      { box-shadow: 0 0 50px rgba(104,156,99,0.8), 0 0 80px rgba(185,149,39,0.3); }
   }
   @keyframes arenaShake {
     0%,100% { transform: translateX(0); }
@@ -621,7 +640,7 @@
   /* Animated header accent strip */
   .hdr-strip {
     height: 3px;
-    background: linear-gradient(90deg, var(--accent), #E86848, #D97706, #C2410C, var(--accent));
+    background: linear-gradient(90deg, var(--accent), #E4743C, #997617, #96370F, var(--accent));
     background-size: 250% 100%;
     animation: gradientPulse 5s ease-in-out infinite;
   }
@@ -679,7 +698,7 @@
   }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
   .btn:active { transform: translateY(0) scale(0.95) !important; box-shadow: none !important; }
-  .btn-accent:hover { box-shadow: 0 4px 16px rgba(163,59,42,0.32) !important; }
+  .btn-accent:hover { box-shadow: 0 4px 16px rgba(184,74,28,0.32) !important; }
   .btn-primary:hover { box-shadow: 0 4px 16px rgba(24,24,27,0.22) !important; }
 
   /* Ask pill spring hover */
@@ -688,7 +707,7 @@
   }
   .ask-pill:hover {
     transform: translateY(-2px) scale(1.04) !important;
-    box-shadow: 0 6px 22px rgba(163,59,42,0.38) !important;
+    box-shadow: 0 6px 22px rgba(184,74,28,0.38) !important;
   }
   .ask-pill:active { transform: scale(0.95) !important; }
 
@@ -728,7 +747,7 @@
   /* Input / select accent focus */
   .input:focus, .select:focus {
     border-color: var(--accent) !important;
-    box-shadow: 0 0 0 3px rgba(163,59,42,0.1), 0 0 0 1px rgba(163,59,42,0.4) !important;
+    box-shadow: 0 0 0 3px rgba(184,74,28,0.1), 0 0 0 1px rgba(184,74,28,0.4) !important;
   }
 
   /* Calendar day hover warm */
@@ -773,13 +792,13 @@ window.addEventListener('error', function(e) {
   if (root && !root.hasChildNodes()) {
     root.innerHTML = '<div style="padding:2rem;text-align:center;font-family:Geist,ui-sans-serif,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem">' +
       '<div style="font-size:2.5rem">⚠️</div>' +
-      '<div style="font-size:1.25rem;font-weight:600;color:#18181B">App failed to start</div>' +
-      '<div style="font-size:0.875rem;color:#52525B;max-width:420px;word-break:break-word;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;padding:1rem;text-align:left">' +
+      '<div style="font-size:1.25rem;font-weight:600;color:#241C17">App failed to start</div>' +
+      '<div style="font-size:0.875rem;color:#6B5D52;max-width:420px;word-break:break-word;background:#FDF4F2;border:1px solid #DE9490;border-radius:10px;padding:1rem;text-align:left">' +
         (e.message || 'Unknown error') +
-        '<br><span style="font-size:0.75rem;color:#9CA3AF">Line ' + e.lineno + '</span>' +
+        '<br><span style="font-size:0.75rem;color:#A3937F">Line ' + e.lineno + '</span>' +
       '</div>' +
-      '<div style="font-size:0.75rem;color:#A1A1AA">Please screenshot this and share it.</div>' +
-      '<button style="padding:0.5rem 1.25rem;background:#18181B;color:white;border-radius:8px;border:none;cursor:pointer;font-size:0.875rem" onclick="location.reload()">↻ Reload</button>' +
+      '<div style="font-size:0.75rem;color:#A3937F">Please screenshot this and share it.</div>' +
+      '<button style="padding:0.5rem 1.25rem;background:#241C17;color:white;border-radius:8px;border:none;cursor:pointer;font-size:0.875rem" onclick="location.reload()">↻ Reload</button>' +
     '</div>';
   }
 });
@@ -803,12 +822,12 @@ const ROLES = [
 ];
 
 const EVENT_TYPES = [
-  { key: 'bible-study',    label: 'Bible Study',    dot: '#D97706' },
-  { key: 'prayer-meeting', label: 'Prayer Meeting', dot: '#16A34A' },
-  { key: 'birthday',       label: 'Birthday',       dot: '#DB2777' },
-  { key: 'meeting',        label: 'Meeting',        dot: '#2563EB' },
-  { key: 'fellowship',     label: 'Fellowship',     dot: '#A33B2A' },
-  { key: 'other',          label: 'Other',          dot: '#71717A' },
+  { key: 'bible-study',    label: 'Bible Study',    dot: '#7D5F0E' },
+  { key: 'prayer-meeting', label: 'Prayer Meeting', dot: '#3F6B3C' },
+  { key: 'birthday',       label: 'Birthday',       dot: '#A8455A' },
+  { key: 'meeting',        label: 'Meeting',        dot: '#2C5129' },
+  { key: 'fellowship',     label: 'Fellowship',     dot: '#B84A1C' },
+  { key: 'other',          label: 'Other',          dot: '#6B5D52' },
 ];
 
 const CONFLICT_REASONS = [
@@ -850,7 +869,7 @@ const PRAYER_LOG_KEY     = CHURCH.key('flcc-prayer-log-v1');
 const GOSPEL_KEY         = CHURCH.key('flcc-gospel-count-v1');
 const BOTR_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbwvKuqB85PnY3S3Cn6o9JwqesCMpeKxvZ2Q1lWTJT0mrWAez8eMFY-hWE4os30f0JEx/exec';
 const BOTR_2026_TARGET   = 54000;
-const MUSIC_ACCENT = '#EA580C';
+const MUSIC_ACCENT = '#A03E12';
 
 /** Birthdays or anniversaries falling within the next `days` days.
  *  Stored as "MM-DD", so the year is whichever one puts the next occurrence on
@@ -1038,11 +1057,11 @@ const PRAYER_ROLES = [
 ];
 
 const PRAYER_MEETING_TYPES = [
-  { key: 'sectoral',     label: 'Sectoral Prayer Meeting',     dot: '#7E22CE' },
-  { key: 'corporate',    label: 'Corporate Prayer Meeting',    dot: '#1E40AF' },
-  { key: 'fasting',      label: 'Prayer & Fasting',            dot: '#B45309' },
-  { key: 'regular',      label: 'Regular Prayer Meeting',      dot: '#15803D' },
-  { key: 'thanksgiving', label: 'Thanksgiving Prayer Meeting', dot: '#DB2777' },
+  { key: 'sectoral',     label: 'Sectoral Prayer Meeting',     dot: '#78303C' },
+  { key: 'corporate',    label: 'Corporate Prayer Meeting',    dot: '#2C5129' },
+  { key: 'fasting',      label: 'Prayer & Fasting',            dot: '#7D5F0E' },
+  { key: 'regular',      label: 'Regular Prayer Meeting',      dot: '#2C5129' },
+  { key: 'thanksgiving', label: 'Thanksgiving Prayer Meeting', dot: '#A8455A' },
 ];
 
 // Find music team member matching the logged-in member by normalized name
@@ -1066,12 +1085,12 @@ function findMusicMatch(memberWorker, musicWorkers) {
 const PERSONAL_EVENTS_KEY = CHURCH.key('flcc-personal-events-v1');
 
 const PERSONAL_CATEGORIES = [
-  { key: 'work',     label: 'Work',     color: '#3B82F6', emoji: '💼' },
-  { key: 'family',   label: 'Family',   color: '#EC4899', emoji: '👨‍👩‍👧' },
-  { key: 'personal', label: 'Personal', color: '#8B5CF6', emoji: '⭐' },
-  { key: 'travel',   label: 'Travel',   color: '#F59E0B', emoji: '✈️' },
-  { key: 'health',   label: 'Health',   color: '#10B981', emoji: '🏥' },
-  { key: 'other',    label: 'Other',    color: '#71717A', emoji: '📌' },
+  { key: 'work',     label: 'Work',     color: '#3F6B3C', emoji: '💼' },
+  { key: 'family',   label: 'Family',   color: '#A8455A', emoji: '👨‍👩‍👧' },
+  { key: 'personal', label: 'Personal', color: '#78303C', emoji: '⭐' },
+  { key: 'travel',   label: 'Travel',   color: '#7D5F0E', emoji: '✈️' },
+  { key: 'health',   label: 'Health',   color: '#2C5129', emoji: '🏥' },
+  { key: 'other',    label: 'Other',    color: '#6B5D52', emoji: '📌' },
 ];
 
 function catMeta(key) {
@@ -1179,7 +1198,7 @@ function PersonalEventModal({ initialEvent, onSave, onDelete, onClose, conflictD
                   onClick={() => set({ category: c.key })}
                   className="pill"
                   style={{
-                    background: ev.category === c.key ? c.color : '#F4F4F0',
+                    background: ev.category === c.key ? c.color : '#F2EEE1',
                     color: ev.category === c.key ? 'white' : 'var(--ink-muted)',
                     cursor: 'pointer', border: 'none',
                     transition: 'all 0.15s',
@@ -1225,7 +1244,7 @@ function PersonalEventModal({ initialEvent, onSave, onDelete, onClose, conflictD
 
           {/* Conflict warning inline */}
           {conflict && (
-            <div className="rounded-lg p-3 text-sm" style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
+            <div className="rounded-lg p-3 text-sm" style={{ background: '#FBF5DC', color: '#7D5F0E', border: '1px solid #E5D179' }}>
               ⚠️ You have a church assignment on this date. This event will show a conflict badge — you can report it directly from your schedule.
             </div>
           )}
@@ -1253,7 +1272,7 @@ function PersonalEventCard({ ev, onEdit, hasConflict, onConflictReport }) {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium">{cat.emoji} {ev.title}</span>
             <span className="pill pill-default text-xs">{cat.label}</span>
-            {hasConflict && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Church assignment</span>}
+            {hasConflict && <span className="pill text-xs" style={{ background: '#FBF5DC', color: '#7D5F0E' }}>⚠️ Church assignment</span>}
           </div>
           <div className="text-xs ink-muted mt-1">
             {formatDateLong ? formatDateLong(ev.date) : ev.date}
@@ -1730,7 +1749,7 @@ function NamePicker({ workers, onPick, onSkip, churchName }) {
                 key={w.id}
                 className="px-3 py-2 cursor-pointer rounded-md hover:bg-app text-sm"
                 style={{ background: 'transparent' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#F4F4F0'}
+                onMouseEnter={e => e.currentTarget.style.background = '#F2EEE1'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 onClick={() => onPick(w.id)}
               >
@@ -1872,16 +1891,16 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
 
       {/* Ministry Identity Card */}
       {!me.hideMinistryCard && (
-      <div className="card p-5 mb-5" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)' }}>
+      <div className="card p-5 mb-5" style={{ background: '#FBE6DA', border: '1px solid rgba(184,74,28,0.2)' }}>
         <div className="flex items-start justify-between mb-3 gap-2">
           <div>
-            <div className="text-xs tracking-widest uppercase mb-1" style={{ color: '#A33B2A' }}>Ministry Card</div>
-            <div className="font-bold" style={{ fontSize: '1.15rem', letterSpacing: '0.02em', color: '#18181B' }}>{me.title ? me.title + ' ' : ''}{me.name}</div>
-            <div className="text-sm font-medium mt-0.5" style={{ color: '#A33B2A' }}>{me.designation || 'Church Leader'}</div>
-            <div className="text-xs mt-1" style={{ color: '#52525B' }}>{data.meta?.churchName || CHURCH.name}</div>
+            <div className="text-xs tracking-widest uppercase mb-1" style={{ color: '#B84A1C' }}>Ministry Card</div>
+            <div className="font-bold" style={{ fontSize: '1.15rem', letterSpacing: '0.02em', color: '#241C17' }}>{me.title ? me.title + ' ' : ''}{me.name}</div>
+            <div className="text-sm font-medium mt-0.5" style={{ color: '#B84A1C' }}>{me.designation || 'Church Leader'}</div>
+            <div className="text-xs mt-1" style={{ color: '#6B5D52' }}>{data.meta?.churchName || CHURCH.name}</div>
           </div>
           <button className="text-xs px-3 py-1 rounded-lg flex-shrink-0"
-            style={{ background: 'rgba(163,59,42,0.1)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.2)', cursor: 'pointer' }}
+            style={{ background: 'rgba(184,74,28,0.1)', color: '#B84A1C', border: '1px solid rgba(184,74,28,0.2)', cursor: 'pointer' }}
             onClick={() => {
               const roleList = (me.eligibleRoles || []).map(r => ROLES.find(x => x.key === r)?.label || r).join(', ');
               const card = `${me.title ? me.title + ' ' : ''}${me.name}\n${me.designation || 'Church Leader'}\n${data.meta?.churchName || CHURCH.name}${roleList ? '\n\nService Roles: ' + roleList : ''}\n\n#FLCC ${CHURCH.hashtag}`;
@@ -1895,7 +1914,7 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
             {(me.eligibleRoles || []).map(rk => {
               const role = ROLES.find(r => r.key === rk);
               return (
-                <span key={rk} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(163,59,42,0.08)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.15)' }}>
+                <span key={rk} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(184,74,28,0.08)', color: '#B84A1C', border: '1px solid rgba(184,74,28,0.15)' }}>
                   {role?.label || rk}
                 </span>
               );
@@ -1931,11 +1950,11 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
       )}
 
       {myUpcomingBirthday && (
-        <div className="card p-4 mb-4 flex items-center gap-3" style={{ background: '#FCE7F3' }}>
+        <div className="card p-4 mb-4 flex items-center gap-3" style={{ background: '#FBE7E2' }}>
           <span className="text-2xl">🎂</span>
           <div>
-            <div className="text-sm font-medium" style={{ color: '#BE185D' }}>Your next birthday</div>
-            <div className="text-xs" style={{ color: '#9D174D' }}>
+            <div className="text-sm font-medium" style={{ color: '#78303C' }}>Your next birthday</div>
+            <div className="text-xs" style={{ color: '#521E26' }}>
               {parseISODate(myUpcomingBirthday).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </div>
           </div>
@@ -2044,7 +2063,7 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
               const cat = catMeta(ev.category);
               const conflict = myAssignmentDates.has(ev.date);
               return (
-                <div key={`personal-${ev.id}`} className="row-card" style={{ borderLeftWidth: '3px', borderLeftColor: cat.color, background: '#FEFEFE' }}>
+                <div key={`personal-${ev.id}`} className="row-card" style={{ borderLeftWidth: '3px', borderLeftColor: cat.color, background: '#FFFDF8' }}>
                   <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                     <div>
                       <div className="font-display text-lg font-semibold">{cat.emoji} {ev.title}</div>
@@ -2055,7 +2074,7 @@ function MyScheduleTab({ data, prayerData, musicData, me, onConflict, personalEv
                       </div>
                       <div className="flex flex-wrap gap-1 mt-1">
                         <Pill tone="default">{cat.label}</Pill>
-                        {conflict && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Church assignment same day</span>}
+                        {conflict && <span className="pill text-xs" style={{ background: '#FBF5DC', color: '#7D5F0E' }}>⚠️ Church assignment same day</span>}
                       </div>
                     </div>
                     <button className="btn btn-soft text-xs" onClick={() => onEditPersonal(ev)}>Edit</button>
@@ -2377,12 +2396,12 @@ function BibleReadingCard({ setActiveTab }) {
   };
 
   return (
-    <div className="home-card" style={{ borderLeftColor: '#7C3AED', borderLeftWidth: 3 }}>
-      <div className="home-card-eyebrow" style={{ color: '#7C3AED' }}>📖 Bible Reading Plan · Day {dayNum} of {NT_TOTAL}</div>
+    <div className="home-card" style={{ borderLeftColor: '#A8455A', borderLeftWidth: 3 }}>
+      <div className="home-card-eyebrow" style={{ color: '#A8455A' }}>📖 Bible Reading Plan · Day {dayNum} of {NT_TOTAL}</div>
       <div className="home-card-title">{reading.ref}</div>
       <div className="text-xs mt-1">
         {isRead
-          ? <span style={{ color: '#15803D' }}>✓ Completed today</span>
+          ? <span style={{ color: '#2C5129' }}>✓ Completed today</span>
           : <span className="ink-muted">Today's chapter</span>}
         {streak.current > 0 && <span className="ink-muted ml-2">🔥 {streak.current}-day streak</span>}
       </div>
@@ -2440,7 +2459,7 @@ function EncourageModal({ worker, data, onClose }) {
         <div className="space-y-2 mb-4">
           {ENCOURAGE_PRESETS.map((msg, i) => (
             <button key={i} className="w-full text-left text-sm p-3 rounded-xl"
-              style={{ border: selected === i ? '2px solid #93C5FD' : '1px solid #E4E4E7', background: selected === i ? '#EFF6FF' : '#FAFAFA', cursor: 'pointer', display: 'block', lineHeight: 1.5 }}
+              style={{ border: selected === i ? '2px solid #B5D4AF' : '1px solid #E6DFD0', background: selected === i ? '#F6FAF4' : '#F7F4EA', cursor: 'pointer', display: 'block', lineHeight: 1.5 }}
               onClick={() => { setSelected(i); setCustom(''); }}>
               {msg}
             </button>
@@ -2449,7 +2468,7 @@ function EncourageModal({ worker, data, onClose }) {
         <div className="mb-4">
           <div className="text-xs ink-muted mb-1">Or write a custom message:</div>
           <textarea className="w-full text-sm p-3 rounded-xl"
-            style={{ border: '1px solid #E4E4E7', minHeight: 72, resize: 'vertical', fontFamily: 'inherit' }}
+            style={{ border: '1px solid #E6DFD0', minHeight: 72, resize: 'vertical', fontFamily: 'inherit' }}
             placeholder="Type your encouragement..."
             value={custom}
             onChange={e => { setCustom(e.target.value); setSelected(null); }} />
@@ -2660,21 +2679,21 @@ function HomeTopCard({ setActiveTab, me }) {
   return (
     <React.Fragment>
       {/* Verse of the Day card */}
-      <div className="card mb-3" style={{ background: '#FBEBE7', border: '1px solid rgba(163,59,42,0.2)' }}>
+      <div className="card mb-3" style={{ background: '#FBE6DA', border: '1px solid rgba(184,74,28,0.2)' }}>
         <div className="p-4">
-          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#A33B2A' }}>Verse of the Day</div>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#B84A1C' }}>Verse of the Day</div>
           {verseText ? (
             <>
-              <div className="text-sm italic mb-2" style={{ color: '#18181B', lineHeight: 1.65 }}>
+              <div className="text-sm italic mb-2" style={{ color: '#241C17', lineHeight: 1.65 }}>
                 "{verseText.length > 140 ? verseText.slice(0, 140).trimEnd() + '…' : verseText}"
               </div>
-              <div className="text-xs font-medium" style={{ color: '#52525B' }}>— {votd.reference} · KJV</div>
+              <div className="text-xs font-medium" style={{ color: '#6B5D52' }}>— {votd.reference} · KJV</div>
             </>
           ) : (
-            <div className="text-xs" style={{ color: '#52525B' }}>Loading verse…</div>
+            <div className="text-xs" style={{ color: '#6B5D52' }}>Loading verse…</div>
           )}
           <button className="text-xs mt-3 px-2 py-1 rounded-lg"
-            style={{ background: 'rgba(163,59,42,0.1)', color: '#A33B2A', border: '1px solid rgba(163,59,42,0.2)', cursor: 'pointer' }}
+            style={{ background: 'rgba(184,74,28,0.1)', color: '#B84A1C', border: '1px solid rgba(184,74,28,0.2)', cursor: 'pointer' }}
             onClick={() => setActiveTab('bible')}>
             Open Bible →
           </button>
@@ -2687,13 +2706,13 @@ function HomeTopCard({ setActiveTab, me }) {
           <div className="flex items-center gap-4">
             <div className="text-center flex-shrink-0" style={{ minWidth: 72 }}>
               <div style={{ fontSize: '2rem' }}>{weatherEmoji(weather.code, weather.isDay)}</div>
-              <div className="font-bold" style={{ fontSize: '1.3rem', color: '#18181B' }}>{Math.round(weather.temp)}°C</div>
-              {weather.city && <div className="text-xs mt-0.5" style={{ color: '#52525B', lineHeight: 1.3 }}>{weather.city}</div>}
-              <div className="text-xs font-medium mt-0.5" style={{ color: '#A33B2A' }}>{weatherLabel(weather.code, weather.isDay)}</div>
+              <div className="font-bold" style={{ fontSize: '1.3rem', color: '#241C17' }}>{Math.round(weather.temp)}°C</div>
+              {weather.city && <div className="text-xs mt-0.5" style={{ color: '#6B5D52', lineHeight: 1.3 }}>{weather.city}</div>}
+              <div className="text-xs font-medium mt-0.5" style={{ color: '#B84A1C' }}>{weatherLabel(weather.code, weather.isDay)}</div>
             </div>
             <div className="flex-1">
-              <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#A33B2A' }}>{weather.isDay ? "Today's Encouragement" : "Tonight's Encouragement"}</div>
-              <div className="text-sm" style={{ color: '#18181B', lineHeight: 1.65 }}>{aiMessage || spiritualMessage(weather.code, weather.isDay)}</div>
+              <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#B84A1C' }}>{weather.isDay ? "Today's Encouragement" : "Tonight's Encouragement"}</div>
+              <div className="text-sm" style={{ color: '#241C17', lineHeight: 1.65 }}>{aiMessage || spiritualMessage(weather.code, weather.isDay)}</div>
             </div>
           </div>
         </div>
@@ -3017,14 +3036,14 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       {/* Personal birthday / anniversary greeting */}
       {(isMyBirthday || isMyAnniversary) && (
         <div className="mb-5 rounded-2xl p-5 text-center" style={{
-          background: isMyBirthday ? 'linear-gradient(135deg,#FDF2F8,#FCE7F3)' : 'linear-gradient(135deg,#FFF7ED,#FFEDD5)',
-          border: isMyBirthday ? '2px solid #F9A8D4' : '2px solid #FED7AA',
+          background: isMyBirthday ? 'linear-gradient(135deg,#FDF4F2,#FBE7E2)' : 'linear-gradient(135deg,#FDF3EC,#FBE6DA)',
+          border: isMyBirthday ? '2px solid #DE9490' : '2px solid #F6C4A6',
         }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{isMyBirthday ? '🎂🎉' : '💍🎉'}</div>
-          <div className="font-bold" style={{ fontSize: '1.25rem', color: isMyBirthday ? '#BE185D' : '#C2410C', marginBottom: '0.5rem' }}>
+          <div className="font-bold" style={{ fontSize: '1.25rem', color: isMyBirthday ? '#78303C' : '#96370F', marginBottom: '0.5rem' }}>
             {isMyBirthday ? `Happy Birthday, ${me.name.split(' ')[0]}!` : `Happy Anniversary, ${me.name.split(' ')[0]}!`}
           </div>
-          <div className="text-sm" style={{ color: isMyBirthday ? '#9D174D' : '#9A3412', lineHeight: 1.6 }}>
+          <div className="text-sm" style={{ color: isMyBirthday ? '#521E26' : '#7A320E', lineHeight: 1.6 }}>
             {isMyBirthday
               ? `Today is YOUR special day and the whole FLCC family celebrates YOU! 🙏 May God shower you with His blessings, fill your heart with joy, and surround you with His love all year long. We are so grateful you are part of our family — from ${CHURCH.family}!`
               : `Today is YOUR special day and the whole FLCC family celebrates your marriage! 🙏 May God continue to strengthen your bond, fill your home with joy, and let your love grow deeper every single day. You are a beautiful blessing to our family — from ${CHURCH.family}!`}
@@ -3271,8 +3290,8 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">🎂 Birthdays coming up</div>
           <div className="home-grid">
             {upcomingBirthdays.slice(0, 6).map(b => (
-              <div key={b.worker.id} className="home-card" style={{ background: '#FDF2F8' }}>
-                <div className="home-card-eyebrow" style={{ color: '#BE185D' }}>
+              <div key={b.worker.id} className="home-card" style={{ background: '#FDF4F2' }}>
+                <div className="home-card-eyebrow" style={{ color: '#78303C' }}>
                   {b.daysAway === 0 ? '🎉 Today!' : b.daysAway === 1 ? 'Tomorrow' : `In ${b.daysAway} days`}
                 </div>
                 <div className="home-card-title" style={{ fontSize: '1rem' }}>{workerDisplay(b.worker)}</div>
@@ -3282,7 +3301,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                 <div className="home-card-actions">
                   <button
                     className="btn btn-soft text-xs"
-                    style={{ color: '#BE185D' }}
+                    style={{ color: '#78303C' }}
                     onClick={() => {
                       const name = `${b.worker.title ? b.worker.title + ' ' : ''}${b.worker.name}`;
                       const msg = `🎂 Happy Birthday, ${name}! 🎉\n\nMay this special day be filled with joy, love, and God's abundant grace. We thank God for the gift of your life and the blessing you are to our church family.\n\nWith love and prayers, from ${CHURCH.family}! 🙏`;
@@ -3310,8 +3329,8 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">💍 Anniversaries coming up</div>
           <div className="home-grid">
             {upcomingAnniversaries.slice(0, 6).map(a => (
-              <div key={a.worker.id} className="home-card" style={{ background: '#FFF7ED' }}>
-                <div className="home-card-eyebrow" style={{ color: '#C2410C' }}>
+              <div key={a.worker.id} className="home-card" style={{ background: '#FDF3EC' }}>
+                <div className="home-card-eyebrow" style={{ color: '#96370F' }}>
                   {a.daysAway === 0 ? '🎉 Today!' : a.daysAway === 1 ? 'Tomorrow' : `In ${a.daysAway} days`}
                 </div>
                 <div className="home-card-title" style={{ fontSize: '1rem' }}>{workerDisplay(a.worker)}</div>
@@ -3321,7 +3340,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                 <div className="home-card-actions">
                   <button
                     className="btn btn-soft text-xs"
-                    style={{ color: '#C2410C' }}
+                    style={{ color: '#96370F' }}
                     onClick={() => {
                       const name = `${a.worker.title ? a.worker.title + ' ' : ''}${a.worker.name}`;
                       const msg = `💍 Happy Anniversary, ${name}! 🎉\n\nMay God continue to bless your marriage with love, faith, and joy that grows stronger every year. We are grateful for the beautiful example you are to our church family.\n\nWith love and prayers, from ${CHURCH.family}! 🙏`;
@@ -3393,7 +3412,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
                     <div>
                       <div className="home-card-eyebrow" style={{ color: cat.color }}>
                         {cat.emoji} {daysAway(ev.date)} · {cat.label}
-                        {conflict && <span className="ml-2 pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Church assignment</span>}
+                        {conflict && <span className="ml-2 pill text-xs" style={{ background: '#FBF5DC', color: '#7D5F0E' }}>⚠️ Church assignment</span>}
                       </div>
                       <div className="home-card-title" style={{ fontSize: '1rem' }}>{ev.title}</div>
                       <div className="home-card-body text-xs ink-muted">
@@ -3502,17 +3521,17 @@ function BibleSection() {
       </div>
 
       {/* Verse of the Day */}
-      <div className="card p-5 mb-3" style={{background:'linear-gradient(135deg,#1E1B4B 0%,#312E81 100%)',border:'none',color:'white'}}>
-        <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'#A5B4FC'}}>📖 Verse of the Day</div>
-        {votdLoading && <div className="text-sm" style={{color:'#C7D2FE'}}>Loading…</div>}
-        {votdError  && <div className="text-sm" style={{color:'#FCA5A5'}}>{votdError}</div>}
+      <div className="card p-5 mb-3" style={{background:'linear-gradient(135deg,#4A3806 0%,#4A3806 100%)',border:'none',color:'white'}}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{color:'#D4B451'}}>📖 Verse of the Day</div>
+        {votdLoading && <div className="text-sm" style={{color:'#E5D179'}}>Loading…</div>}
+        {votdError  && <div className="text-sm" style={{color:'#DE9490'}}>{votdError}</div>}
         {votd && !votdLoading && (
           <>
-            <blockquote className="font-display text-base leading-relaxed mb-3" style={{color:'#EEF2FF',fontStyle:'italic'}}>
+            <blockquote className="font-display text-base leading-relaxed mb-3" style={{color:'#FDFAEE',fontStyle:'italic'}}>
               "{votd.text?.trim()}"
             </blockquote>
-            <div className="text-sm font-semibold" style={{color:'#A5B4FC'}}>
-              {votd.reference} <span className="font-normal" style={{color:'#818CF8'}}>· {translation.toUpperCase()}</span>
+            <div className="text-sm font-semibold" style={{color:'#D4B451'}}>
+              {votd.reference} <span className="font-normal" style={{color:'#D4B451'}}>· {translation.toUpperCase()}</span>
             </div>
           </>
         )}
@@ -3636,7 +3655,7 @@ function ThisMonthTab({ data, prayerData, musicData, me, currentMonth, setCurren
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-medium">{cat.emoji} {ev.title}</span>
                         <Pill tone="default">{cat.label}</Pill>
-                        {conflict && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>⚠️ Assignment this day</span>}
+                        {conflict && <span className="pill text-xs" style={{ background: '#FBF5DC', color: '#7D5F0E' }}>⚠️ Assignment this day</span>}
                       </div>
                       <div className="text-xs ink-muted mt-1">
                         {formatDateLong(ev.date)}
@@ -3734,7 +3753,7 @@ function NotifyMembersPanel({ entry, workers, churchName, serviceTimes, interces
             </div>
             <details className="mt-2">
               <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
-              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#F2EEE1', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
             </details>
           </div>
         );
@@ -3744,7 +3763,7 @@ function NotifyMembersPanel({ entry, workers, churchName, serviceTimes, interces
         const teamName = intercessoryTeam.name;
         const msg = generateIntercessoryMessage(entry, intercessory, teamName, churchName, serviceTimes);
         return (
-          <div key={ipKey} style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #6366F1' }}>
+          <div key={ipKey} style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #997617' }}>
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <div className="text-sm font-semibold">🙏 {teamName}</div>
@@ -3768,7 +3787,7 @@ function NotifyMembersPanel({ entry, workers, churchName, serviceTimes, interces
             </div>
             <details className="mt-2">
               <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
-              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#F2EEE1', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
             </details>
           </div>
         );
@@ -3803,7 +3822,7 @@ function NotifyIntercessoryPanel({ entry, team, churchName, serviceTimes }) {
 
   return (
     <div className="mt-2">
-      <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #6366F1' }}>
+      <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #997617' }}>
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <div className="text-sm font-semibold">🙏 {teamName}</div>
@@ -3816,7 +3835,7 @@ function NotifyIntercessoryPanel({ entry, team, churchName, serviceTimes }) {
         </div>
         <details className="mt-2">
           <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
-          <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+          <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#F2EEE1', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
         </details>
       </div>
     </div>
@@ -3878,7 +3897,7 @@ function NotifyPrayerMeetingPanel({ meeting, prayerWorkers, churchName }) {
             </div>
             <details className="mt-2">
               <summary className="text-xs ink-muted cursor-pointer select-none">Preview message</summary>
-              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f4f4f0', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
+              <pre style={{ marginTop: 6, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#F2EEE1', borderRadius: 6, padding: '8px 10px', color: 'var(--ink-muted)' }}>{msg}</pre>
             </details>
           </div>
         );
@@ -4032,7 +4051,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
         endTime: ip.endTime,
         location: '',
         kind: 'prayer-intercessory',
-        dot: '#6366F1',
+        dot: '#7D5F0E',
       });
       map.set(ip.date, list);
     }
@@ -4153,7 +4172,7 @@ function CalendarTab({ data, prayerData, musicData, currentMonth, setCurrentMont
             id: ip.id, date: ip.date,
             title: `🙏 Intercessory · ${team ? team.name : 'TBD'} (${ip.service})`,
             startTime: ip.startTime, endTime: ip.endTime, location: '',
-            dot: '#6366F1',
+            dot: '#7D5F0E',
             _prayerKind: 'intercessory', _raw: ip,
           });
         }
@@ -4287,10 +4306,10 @@ function CalendarMobile({ currentMonth, setCurrentMonth, cells, today, eventsByD
         <button className="btn btn-soft text-xs" onClick={() => { setCurrentMonth(monthKey(today)); }}>Today</button>
         <div className="flex flex-wrap gap-3 text-xs ink-subtle">
           <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: 'var(--accent)' }}></span>Service</div>
-          {prayerData && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#6366F1' }}></span>Prayer</div>}
+          {prayerData && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#997617' }}></span>Prayer</div>}
           {musicData && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: MUSIC_ACCENT }}></span>Music</div>}
-          {(personalEvents || []).length > 0 && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#8B5CF6' }}></span>My events</div>}
-          <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#D97706' }}></span>Event</div>
+          {(personalEvents || []).length > 0 && <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#BE5E6E' }}></span>My events</div>}
+          <div className="flex items-center gap-1"><span className="ios-cal-dot" style={{ background: '#997617' }}></span>Event</div>
         </div>
       </div>
 
@@ -4560,14 +4579,14 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
       {/* BOTR Church Network Section */}
       {botr && (
         <div className="card p-6 mb-4">
-          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#7C3AED' }}>⛪ {botr.name || 'FLCC BOTR Church Network'}</div>
+          <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#A8455A' }}>⛪ {botr.name || 'FLCC BOTR Church Network'}</div>
           {botr.network && <div className="text-xs ink-subtle mb-3">{botr.network}</div>}
 
           {/* Mission */}
           {botr.missionTarget && (
-            <div className="mb-4 px-3 py-2 rounded-lg" style={{ background: '#F5F3FF', border: '1px solid #DDD6FE' }}>
-              <div className="text-xs font-semibold" style={{ color: '#7C3AED' }}>🎯 Mission Target</div>
-              <div className="text-sm mt-0.5" style={{ color: '#4C1D95' }}>{botr.missionTarget}</div>
+            <div className="mb-4 px-3 py-2 rounded-lg" style={{ background: '#FDF4F2', border: '1px solid #F5CCC5' }}>
+              <div className="text-xs font-semibold" style={{ color: '#A8455A' }}>🎯 Mission Target</div>
+              <div className="text-sm mt-0.5" style={{ color: '#521E26' }}>{botr.missionTarget}</div>
               {botr.totalChurches && <div className="text-xs ink-subtle mt-1">{botr.totalChurches} satellite locations + virtual platform</div>}
             </div>
           )}
@@ -4637,11 +4656,11 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
           {/* Live BOTR Network Stats */}
           <div className="dotted-divider my-3" />
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-medium tracking-widest uppercase" style={{color:'#7C3AED'}}>📡 Live Ministry Progress</div>
+            <div className="text-xs font-medium tracking-widest uppercase" style={{color:'#A8455A'}}>📡 Live Ministry Progress</div>
             <button
               onClick={onRefreshBotr}
               className="text-xs px-2 py-0.5 rounded-full"
-              style={{background:'#F5F3FF',color:'#7C3AED',border:'1px solid #DDD6FE'}}
+              style={{background:'#FDF4F2',color:'#A8455A',border:'1px solid #F5CCC5'}}
             >↻ Refresh</button>
           </div>
           {botrLiveStatus === 'idle' && (
@@ -4656,9 +4675,9 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
           {botrLiveStatus === 'ok' && botrLive && (() => {
             const pct = Math.min(100, Math.round((botrLive.totalGospel / BOTR_2026_TARGET) * 100));
             const sectors = [
-              { id: 'hope',  label: 'Hope',  color: '#7C3AED' },
-              { id: 'faith', label: 'Faith', color: '#0284C7' },
-              { id: 'love',  label: 'Love',  color: '#DB2777' },
+              { id: 'hope',  label: 'Hope',  color: '#A8455A' },
+              { id: 'faith', label: 'Faith', color: '#96602F' },
+              { id: 'love',  label: 'Love',  color: '#A8455A' },
             ];
             const minsAgo = Math.round((Date.now() - botrLive.updatedAt) / 60000);
             return (
@@ -4668,8 +4687,8 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
                     <span className="font-semibold">{botrLive.totalGospel.toLocaleString()} gospel decisions</span>
                     <span className="ink-subtle">/ {BOTR_2026_TARGET.toLocaleString()} 2026 goal</span>
                   </div>
-                  <div className="rounded-full overflow-hidden" style={{height:'8px',background:'#EDE9FE'}}>
-                    <div style={{width:`${pct}%`,height:'100%',background:'linear-gradient(90deg,#7C3AED,#A855F7)',borderRadius:'9999px',transition:'width 0.6s ease'}} />
+                  <div className="rounded-full overflow-hidden" style={{height:'8px',background:'#FBE7E2'}}>
+                    <div style={{width:`${pct}%`,height:'100%',background:'linear-gradient(90deg,#A8455A,#BE5E6E)',borderRadius:'9999px',transition:'width 0.6s ease'}} />
                   </div>
                   <div className="text-xs ink-subtle mt-1">{pct}% · {botrLive.totalDisc} disciples · {botrLive.totalLeaders} leaders</div>
                 </div>
@@ -4677,9 +4696,9 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
                   {sectors.map(sec => {
                     const s = botrLive.sectors[sec.id] || {};
                     return (
-                      <div key={sec.id} className="flex-1 rounded-lg px-2 py-1.5 text-center" style={{background:'#F9F7FF',border:'1px solid #EDE9FE'}}>
+                      <div key={sec.id} className="flex-1 rounded-lg px-2 py-1.5 text-center" style={{background:'#FDF4F2',border:'1px solid #FBE7E2'}}>
                         <div className="text-xs font-semibold" style={{color:sec.color}}>{sec.label}</div>
-                        <div className="text-sm font-bold" style={{color:'#1E1B4B'}}>{(Number(s.gospel)||0).toLocaleString()}</div>
+                        <div className="text-sm font-bold" style={{color:'#4A3806'}}>{(Number(s.gospel)||0).toLocaleString()}</div>
                         <div className="text-xs ink-subtle">gospel</div>
                       </div>
                     );
@@ -4702,10 +4721,10 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
           <>
             {/* Monthly Sermon Themes */}
             <div className="card p-6 mb-4">
-              <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{ color:'#0284C7' }}>📖 2026 Sermon Themes</div>
+              <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{ color:'#96602F' }}>📖 2026 Sermon Themes</div>
               {r.monthlyThemes[currentMonth] && (
-                <div className="px-3 py-2 rounded-lg mb-3" style={{ background:'#EFF6FF', border:'1px solid #BFDBFE' }}>
-                  <div className="text-xs font-semibold" style={{ color:'#1D4ED8' }}>This Month — {r.monthlyThemes[currentMonth].month}</div>
+                <div className="px-3 py-2 rounded-lg mb-3" style={{ background:'#F6FAF4', border:'1px solid #DEECDA' }}>
+                  <div className="text-xs font-semibold" style={{ color:'#3F6B3C' }}>This Month — {r.monthlyThemes[currentMonth].month}</div>
                   <div className="text-sm font-medium mt-0.5">{r.monthlyThemes[currentMonth].theme}</div>
                 </div>
               )}
@@ -4723,19 +4742,19 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
             <div className="card p-6 mb-4">
               <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-4">🎙 Ministry Workers 2026</div>
               <div className="mb-4">
-                <div className="text-xs font-semibold mb-2" style={{ color:'#1D4ED8' }}>Preachers</div>
+                <div className="text-xs font-semibold mb-2" style={{ color:'#3F6B3C' }}>Preachers</div>
                 <div className="flex flex-wrap gap-1">
                   {r.preachers.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
                 </div>
               </div>
               <div className="mb-4">
-                <div className="text-xs font-semibold mb-2" style={{ color:'#6D28D9' }}>Pastoral Prayer</div>
+                <div className="text-xs font-semibold mb-2" style={{ color:'#78303C' }}>Pastoral Prayer</div>
                 <div className="flex flex-wrap gap-1">
                   {r.pastoralPrayer.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
                 </div>
               </div>
               <div className="mb-4">
-                <div className="text-xs font-semibold mb-2" style={{ color:'#D97706' }}>EMCEE / Presiders</div>
+                <div className="text-xs font-semibold mb-2" style={{ color:'#7D5F0E' }}>EMCEE / Presiders</div>
                 <div className="flex flex-wrap gap-1">
                   {r.emcee.map((p, i) => <span key={i} className="pill pill-default text-xs">{p}</span>)}
                 </div>
@@ -4791,8 +4810,8 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
 
       {/* Ptr. Doddie Arciaga */}
       {doddieArciaga && (
-        <div className="card p-6 mb-4" style={{ borderTop: '3px solid #6366F1' }}>
-          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>✝️ Pastor</div>
+        <div className="card p-6 mb-4" style={{ borderTop: '3px solid #997617' }}>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#7D5F0E' }}>✝️ Pastor</div>
           <div className="font-display text-2xl font-semibold">{doddieArciaga.title} {doddieArciaga.name}</div>
           <div className="text-sm ink-muted mt-1">Pastor · {CHURCH.plainName}</div>
         </div>
@@ -4815,7 +4834,7 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
       {/* Prayer ministry */}
       {pm && pm.headName && (
         <div className="card p-6 mb-4">
-          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#6366F1' }}>🙏 Prayer Ministry</div>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: '#7D5F0E' }}>🙏 Prayer Ministry</div>
           <div className="font-display text-2xl font-semibold">{pm.headName}</div>
           {pm.headTitle && <div className="text-sm ink-muted mt-1">{pm.headTitle}</div>}
           <div className="dotted-divider my-4" />
@@ -4847,7 +4866,7 @@ function AboutTab({ data, prayerData, musicData, equipData, me, onChangeName, bo
       {/* Equip-defined ministries (Discipleship, Admin, Finance, etc.) */}
       {equipMinistries.map(em => (
         <div key={em.id} className="card p-6 mb-4">
-          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: em.color || '#16A34A' }}>{em.icon} {em.name}</div>
+          <div className="text-xs font-medium tracking-widest uppercase mb-2" style={{ color: em.color || '#3F6B3C' }}>{em.icon} {em.name}</div>
           <div className="font-display text-2xl font-semibold">{em.headName}</div>
           {em.headTitle && <div className="text-sm ink-muted mt-1">{em.headTitle}</div>}
           {(em.whatsapp || em.messenger || em.phone || em.email) && (
@@ -4911,12 +4930,12 @@ function ConflictModal({ entry, role, me, ministry, isPrayer, isMusic, onClose }
 
   const channels = [
     {
-      key: 'whatsapp', label: 'WhatsApp', icon: '💬', bg: '#25D366',
+      key: 'whatsapp', label: 'WhatsApp', icon: '💬', bg: '#4E7F4A',
       enabled: !!ministry.whatsapp,
       url: () => whatsappURL(ministry.whatsapp, message),
     },
     {
-      key: 'messenger', label: 'Messenger', icon: 'M', bg: '#0084FF',
+      key: 'messenger', label: 'Messenger', icon: 'M', bg: '#4E7F4A',
       enabled: !!ministry.messenger,
       url: () => messengerURL(ministry.messenger),
       // Messenger doesn't accept prefilled message; we copy to clipboard then open
@@ -4924,12 +4943,12 @@ function ConflictModal({ entry, role, me, ministry, isPrayer, isMusic, onClose }
       hint: 'Message copied to clipboard — paste it into the Messenger chat',
     },
     {
-      key: 'sms', label: 'SMS', icon: '📱', bg: '#34C759',
+      key: 'sms', label: 'SMS', icon: '📱', bg: '#4E7F4A',
       enabled: !!ministry.phone,
       url: () => smsURL(ministry.phone, message),
     },
     {
-      key: 'email', label: 'Email', icon: '✉', bg: '#EF4444',
+      key: 'email', label: 'Email', icon: '✉', bg: '#BE5E6E',
       enabled: !!ministry.email,
       url: () => emailURL(ministry.email, subject, message),
     },
@@ -4987,7 +5006,7 @@ function ConflictModal({ entry, role, me, ministry, isPrayer, isMusic, onClose }
               onClick={() => sendVia(c)}
               title={c.enabled ? '' : 'Not configured by ministry'}
             >
-              <div className="channel-icon" style={{ background: c.enabled ? c.bg : '#E7E5DE', color: c.enabled ? 'white' : 'var(--ink-subtle)' }}>{c.icon}</div>
+              <div className="channel-icon" style={{ background: c.enabled ? c.bg : '#E6DFD0', color: c.enabled ? 'white' : 'var(--ink-subtle)' }}>{c.icon}</div>
               <div>
                 <div className="text-sm font-medium">{c.label}</div>
                 <div className="text-xs ink-subtle">{c.enabled ? 'Tap to open' : 'Not available'}</div>
@@ -5551,30 +5570,30 @@ function MusicTab({ data, musicData, me, currentMonth, setCurrentMonth, onConfli
 // EQUIP — Learning Management System
 // =============================================================================
 
-const EQUIP_ACCENT = '#16A34A';
-const EQUIP_SOFT  = '#DCFCE7';
-const EQUIP_TINT  = '#F0FDF4';
+const EQUIP_ACCENT = '#3F6B3C';
+const EQUIP_SOFT  = '#DEECDA';
+const EQUIP_TINT  = '#EFF6ED';
 const EQUIP_PROGRESS_KEY = CHURCH.key('flcc-equip-progress-v1');
 const EQUIP_BOOKMARKS_KEY = CHURCH.key('flcc-equip-bookmarks-v1');
 const EQUIP_ACTIVITY_KEY  = CHURCH.key('flcc-equip-activity-v1');
 
 const TRACK_META = {
-  foundation:     { label: 'Foundation',     color: '#16A34A', icon: '🌱' },
-  evangelism:     { label: 'Evangelism',     color: '#0284C7', icon: '🕊️' },
-  discipleship:   { label: 'Discipleship',   color: '#6D28D9', icon: '⚓' },
-  leadership:     { label: 'Leadership',     color: '#BE123C', icon: '👑' },
-  multiplication: { label: 'Multiplication', color: '#0F766E', icon: '🌿' },
+  foundation:     { label: 'Foundation',     color: '#3F6B3C', icon: '🌱' },
+  evangelism:     { label: 'Evangelism',     color: '#96602F', icon: '🕊️' },
+  discipleship:   { label: 'Discipleship',   color: '#78303C', icon: '⚓' },
+  leadership:     { label: 'Leadership',     color: '#A8455A', icon: '👑' },
+  multiplication: { label: 'Multiplication', color: '#2C5129', icon: '🌿' },
 };
 
 const RES_META = {
-  pdf:            { label: 'PDF',         icon: '📄', color: '#B45309' },
-  audio:          { label: 'Audio',       icon: '🎧', color: '#7C3AED' },
-  video:          { label: 'Video',       icon: '▶️',  color: '#DC2626' },
-  devotional:     { label: 'Devotional',  icon: '🙏', color: '#059669' },
-  playlist:       { label: 'Playlist',    icon: '🎵', color: '#EA580C' },
-  'sermon-notes': { label: 'Sermon',      icon: '📝', color: '#6366F1' },
-  guide:          { label: 'Guide',       icon: '📚', color: '#16A34A' },
-  external:       { label: 'Link',        icon: '🔗', color: '#0284C7' },
+  pdf:            { label: 'PDF',         icon: '📄', color: '#7D5F0E' },
+  audio:          { label: 'Audio',       icon: '🎧', color: '#A8455A' },
+  video:          { label: 'Video',       icon: '▶️',  color: '#A8455A' },
+  devotional:     { label: 'Devotional',  icon: '🙏', color: '#3F6B3C' },
+  playlist:       { label: 'Playlist',    icon: '🎵', color: '#A03E12' },
+  'sermon-notes': { label: 'Sermon',      icon: '📝', color: '#6B4220' },
+  guide:          { label: 'Guide',       icon: '📚', color: '#3F6B3C' },
+  external:       { label: 'Link',        icon: '🔗', color: '#96602F' },
 };
 
 const EQUIP_COURSES = [
@@ -5685,12 +5704,12 @@ const EQUIP_COURSES = [
 ];
 
 const LEADERSHIP_PATHWAY = [
-  { stage: 1, name: 'Foundation', icon: '🌱', color: '#16A34A', description: 'Established in the faith basics', requiredCourses: ['new-believer', 'bible-study'] },
-  { stage: 2, name: 'Evangelist', icon: '🕊️', color: '#0284C7', description: 'Equipped to share the gospel', requiredCourses: ['four-spiritual-laws'] },
-  { stage: 3, name: 'Disciple Maker', icon: '⚓', color: '#6D28D9', description: 'Actively discipling others', requiredCourses: ['discipleship'] },
-  { stage: 4, name: 'Servant Leader', icon: '👑', color: '#BE123C', description: 'Leading in ministry', requiredCourses: ['jesus-on-leadership'] },
-  { stage: 5, name: 'Ministry Leader', icon: '🦅', color: '#EA580C', description: 'Leading ministry teams', requiredCourses: ['leadership-training'] },
-  { stage: 6, name: 'Church Planter', icon: '🌿', color: '#0F766E', description: 'Ready to plant and multiply', requiredCourses: ['multiply-churches'] },
+  { stage: 1, name: 'Foundation', icon: '🌱', color: '#3F6B3C', description: 'Established in the faith basics', requiredCourses: ['new-believer', 'bible-study'] },
+  { stage: 2, name: 'Evangelist', icon: '🕊️', color: '#96602F', description: 'Equipped to share the gospel', requiredCourses: ['four-spiritual-laws'] },
+  { stage: 3, name: 'Disciple Maker', icon: '⚓', color: '#78303C', description: 'Actively discipling others', requiredCourses: ['discipleship'] },
+  { stage: 4, name: 'Servant Leader', icon: '👑', color: '#A8455A', description: 'Leading in ministry', requiredCourses: ['jesus-on-leadership'] },
+  { stage: 5, name: 'Ministry Leader', icon: '🦅', color: '#A03E12', description: 'Leading ministry teams', requiredCourses: ['leadership-training'] },
+  { stage: 6, name: 'Church Planter', icon: '🌿', color: '#2C5129', description: 'Ready to plant and multiply', requiredCourses: ['multiply-churches'] },
 ];
 
 const EQUIP_RESOURCES = [
@@ -5819,26 +5838,26 @@ function BiblePlanTab() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 mb-5">
         <div className="card p-3 text-center">
-          <div className="font-display text-2xl font-semibold" style={{ color: streak.current > 0 ? '#F59E0B' : 'var(--ink)' }}>{streak.current}</div>
+          <div className="font-display text-2xl font-semibold" style={{ color: streak.current > 0 ? '#7D5F0E' : 'var(--ink)' }}>{streak.current}</div>
           <div className="text-xs ink-muted">Day streak 🔥</div>
         </div>
         <div className="card p-3 text-center">
-          <div className="font-display text-2xl font-semibold" style={{ color: '#7C3AED' }}>{completedDates.length}</div>
+          <div className="font-display text-2xl font-semibold" style={{ color: '#A8455A' }}>{completedDates.length}</div>
           <div className="text-xs ink-muted">Days read</div>
         </div>
         <div className="card p-3 text-center">
-          <div className="font-display text-2xl font-semibold" style={{ color: '#15803D' }}>{Math.min(100, Math.round(completedDates.length / NT_TOTAL * 100))}%</div>
+          <div className="font-display text-2xl font-semibold" style={{ color: '#2C5129' }}>{Math.min(100, Math.round(completedDates.length / NT_TOTAL * 100))}%</div>
           <div className="text-xs ink-muted">NT progress</div>
         </div>
       </div>
 
       {/* Today's reading */}
-      <div className="card p-5 mb-5" style={{ borderLeft: '3px solid #7C3AED' }}>
-        <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#7C3AED' }}>Today · Day {dayNum} of {NT_TOTAL}</div>
+      <div className="card p-5 mb-5" style={{ borderLeft: '3px solid #A8455A' }}>
+        <div className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: '#A8455A' }}>Today · Day {dayNum} of {NT_TOTAL}</div>
         <div className="font-display text-2xl font-semibold mb-1">{todayReading.ref}</div>
         <div className="text-xs ink-muted mb-3">{todayReading.book}, Chapter {todayReading.chapter}</div>
         {passageText[today] && (
-          <blockquote style={{ borderLeft: '2px solid #7C3AED', paddingLeft: 12, fontStyle: 'italic', fontSize: 14, lineHeight: 1.75, color: 'var(--ink-muted)', marginBottom: 12 }}>
+          <blockquote style={{ borderLeft: '2px solid #A8455A', paddingLeft: 12, fontStyle: 'italic', fontSize: 14, lineHeight: 1.75, color: 'var(--ink-muted)', marginBottom: 12 }}>
             {passageText[today]}
           </blockquote>
         )}
@@ -5858,11 +5877,11 @@ function BiblePlanTab() {
       <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-3">Reading Calendar (–7 to +13 days)</div>
       <div className="space-y-2 mb-6">
         {days.map(({ ds, dn, reading, done, isToday, isFuture }) => (
-          <div key={ds} className="card p-3 flex items-center gap-3" style={{ opacity: isFuture ? 0.55 : 1, borderLeft: isToday ? '3px solid #7C3AED' : '3px solid transparent' }}>
+          <div key={ds} className="card p-3 flex items-center gap-3" style={{ opacity: isFuture ? 0.55 : 1, borderLeft: isToday ? '3px solid #A8455A' : '3px solid transparent' }}>
             <button
               onClick={() => !isFuture && toggleDay(ds)}
               disabled={isFuture}
-              style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, border: `2px solid ${done ? '#7C3AED' : 'var(--border-strong)'}`, background: done ? '#7C3AED' : 'transparent', color: done ? '#fff' : 'var(--ink-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isFuture ? 'default' : 'pointer', fontSize: 14, fontWeight: 700 }}
+              style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, border: `2px solid ${done ? '#A8455A' : 'var(--border-strong)'}`, background: done ? '#A8455A' : 'transparent', color: done ? '#fff' : 'var(--ink-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isFuture ? 'default' : 'pointer', fontSize: 14, fontWeight: 700 }}
             >
               {done ? '✓' : ''}
             </button>
@@ -5991,7 +6010,7 @@ function EquipTab({ equipData }) {
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2 mb-5">
         <div className="card p-3 text-center">
-          <div className="font-display text-2xl font-semibold" style={{ color: streak.current > 0 ? '#F59E0B' : 'var(--ink)' }}>{streak.current}</div>
+          <div className="font-display text-2xl font-semibold" style={{ color: streak.current > 0 ? '#7D5F0E' : 'var(--ink)' }}>{streak.current}</div>
           <div className="text-xs ink-muted">Day streak 🔥</div>
         </div>
         <div className="card p-3 text-center">
@@ -6010,7 +6029,7 @@ function EquipTab({ equipData }) {
       <div className="flex overflow-x-auto gap-1.5 mb-6 pb-1" style={{ scrollbarWidth: 'none' }}>
         {subTabs.map(t => (
           <button key={t.key} onClick={() => setSubTab(t.key)} style={{
-            background: subTab === t.key ? EQUIP_ACCENT : '#F4F4F0',
+            background: subTab === t.key ? EQUIP_ACCENT : '#F2EEE1',
             color: subTab === t.key ? 'white' : 'var(--ink-muted)',
             border: 'none', cursor: 'pointer', borderRadius: 999,
             padding: '0.375rem 0.875rem', fontSize: '0.8125rem', fontWeight: subTab === t.key ? 600 : 400,
@@ -6084,7 +6103,7 @@ function EquipOverview({ progress, streak, badges, pathwayStage, setSubTab, setS
                     </div>
                     <div className="text-sm font-semibold flex-shrink-0" style={{ color: tr.color }}>{p.percent}%</div>
                   </div>
-                  <div className="h-1.5 rounded-full" style={{ background: '#E5E7EB' }}>
+                  <div className="h-1.5 rounded-full" style={{ background: '#E6DFD0' }}>
                     <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: tr.color }} />
                   </div>
                 </div>
@@ -6113,7 +6132,7 @@ function EquipOverview({ progress, streak, badges, pathwayStage, setSubTab, setS
 
       {/* Streak card */}
       {streak.current > 0 && (
-        <div className="card p-4" style={{ background: '#FFFBEB', borderColor: '#FDE68A' }}>
+        <div className="card p-4" style={{ background: '#FDFAEE', borderColor: '#E5D179' }}>
           <div className="font-medium text-sm">🔥 {streak.current}-day learning streak!</div>
           <div className="text-xs ink-muted mt-0.5">Longest streak: {streak.longest} days. Keep going!</div>
         </div>
@@ -6147,7 +6166,7 @@ function EquipCourses({ progress, setSelectedCourse }) {
       <div className="flex flex-wrap gap-1.5 mb-5">
         {filters.map(f => (
           <button key={f.key} onClick={() => setFilter(f.key)} style={{
-            background: filter === f.key ? EQUIP_ACCENT : '#F4F4F0',
+            background: filter === f.key ? EQUIP_ACCENT : '#F2EEE1',
             color: filter === f.key ? 'white' : 'var(--ink-muted)',
             border: 'none', cursor: 'pointer', borderRadius: 999,
             padding: '0.3rem 0.75rem', fontSize: '0.8125rem', fontWeight: filter === f.key ? 600 : 400,
@@ -6180,8 +6199,8 @@ function EquipCourseCard({ course, progress, onClick }) {
         <div className="flex flex-col items-end gap-1">
           <span className="pill text-xs" style={{ background: tr.color + '20', color: tr.color }}>{tr.icon} {tr.label}</span>
           {p.percent === 100 && <span className="pill text-xs" style={{ background: EQUIP_SOFT, color: EQUIP_ACCENT }}>✓ Complete</span>}
-          {p.percent > 0 && p.percent < 100 && <span className="pill text-xs" style={{ background: '#FEF3C7', color: '#B45309' }}>In Progress</span>}
-          {locked && <span className="pill text-xs" style={{ background: '#F4F4F0', color: 'var(--ink-subtle)' }}>🔒 Locked</span>}
+          {p.percent > 0 && p.percent < 100 && <span className="pill text-xs" style={{ background: '#FBF5DC', color: '#7D5F0E' }}>In Progress</span>}
+          {locked && <span className="pill text-xs" style={{ background: '#F2EEE1', color: 'var(--ink-subtle)' }}>🔒 Locked</span>}
         </div>
       </div>
       <div className="font-display text-lg font-semibold mb-0.5">{course.title}</div>
@@ -6195,7 +6214,7 @@ function EquipCourseCard({ course, progress, onClick }) {
       {p.percent > 0 && (
         <div>
           <div className="flex justify-between text-xs ink-muted mb-1"><span>{p.completedLessons.length}/{course.lessons.length} done</span><span>{p.percent}%</span></div>
-          <div className="h-1.5 rounded-full" style={{ background: '#E5E7EB' }}>
+          <div className="h-1.5 rounded-full" style={{ background: '#E6DFD0' }}>
             <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
           </div>
         </div>
@@ -6237,7 +6256,7 @@ function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onUpd
             <span>{p.completedLessons.length}/{course.lessons.length} lessons</span>
             <span style={{ color: tr.color }}>{p.percent}%</span>
           </div>
-          <div className="h-2 rounded-full" style={{ background: '#E5E7EB' }}>
+          <div className="h-2 rounded-full" style={{ background: '#E6DFD0' }}>
             <div className="h-2 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
           </div>
           {p.percent === 100 && (
@@ -6257,7 +6276,7 @@ function EquipCourseModal({ course, progress, onToggleLesson, onSaveNotes, onUpd
                 const isOpen = openLesson === lesson.id;
                 return (
                   <div key={lesson.id}>
-                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: done ? EQUIP_TINT : '#F9F9F7', border: `1px solid ${done ? EQUIP_ACCENT + '40' : 'var(--border)'}` }}>
+                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: done ? EQUIP_TINT : '#F7F4EA', border: `1px solid ${done ? EQUIP_ACCENT + '40' : 'var(--border)'}` }}>
                       <button onClick={() => onToggleLesson(course.id, lesson.id)} className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm" style={{ background: done ? EQUIP_ACCENT : 'white', border: `2px solid ${done ? EQUIP_ACCENT : 'var(--border-strong)'}`, color: done ? 'white' : 'transparent', cursor: 'pointer' }}>✓</button>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate" style={{ color: done ? EQUIP_ACCENT : 'var(--ink)' }}>{idx + 1}. {lesson.title}</div>
@@ -6351,7 +6370,7 @@ function EquipResources({ bookmarks, toggleBookmark, resSearch, setResSearch, re
 
       <div className="flex gap-2 mb-3">
         <input className="input flex-1" value={resSearch} onChange={e => setResSearch(e.target.value)} placeholder="Search resources…" />
-        <button onClick={() => setShowBookmarked(b => !b)} className="btn text-xs flex-shrink-0" style={{ background: showBookmarked ? EQUIP_SOFT : '#F4F4F0', color: showBookmarked ? EQUIP_ACCENT : 'var(--ink-muted)', border: 'none' }}>
+        <button onClick={() => setShowBookmarked(b => !b)} className="btn text-xs flex-shrink-0" style={{ background: showBookmarked ? EQUIP_SOFT : '#F2EEE1', color: showBookmarked ? EQUIP_ACCENT : 'var(--ink-muted)', border: 'none' }}>
           🔖 {showBookmarked ? 'Saved' : 'Saved'}
         </button>
       </div>
@@ -6361,7 +6380,7 @@ function EquipResources({ bookmarks, toggleBookmark, resSearch, setResSearch, re
           const m = RES_META[t];
           return (
             <button key={t} onClick={() => setResType(t)} style={{
-              background: resType === t ? (m?.color || EQUIP_ACCENT) : '#F4F4F0',
+              background: resType === t ? (m?.color || EQUIP_ACCENT) : '#F2EEE1',
               color: resType === t ? 'white' : 'var(--ink-muted)',
               border: 'none', cursor: 'pointer', borderRadius: 999,
               padding: '0.25rem 0.625rem', fontSize: '0.75rem', fontWeight: resType === t ? 600 : 400,
@@ -6396,7 +6415,7 @@ function EquipResourceCard({ resource, isBookmarked, onToggle }) {
             <div className="text-xs ink-muted mt-0.5 leading-relaxed">{resource.description}</div>
           </div>
         </div>
-        <button onClick={onToggle} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.125rem', color: isBookmarked ? '#F59E0B' : 'var(--ink-subtle)', transition: 'color 0.15s', flexShrink: 0 }} title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}>
+        <button onClick={onToggle} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.125rem', color: isBookmarked ? '#7D5F0E' : 'var(--ink-subtle)', transition: 'color 0.15s', flexShrink: 0 }} title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}>
           🔖
         </button>
       </div>
@@ -6423,7 +6442,7 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
         <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-4">🔥 Learning Streak</div>
         <div className="grid grid-cols-2 gap-4 text-center">
           <div>
-            <div className="font-display text-5xl font-semibold" style={{ color: streak.current > 0 ? '#F59E0B' : 'var(--ink-subtle)' }}>{streak.current}</div>
+            <div className="font-display text-5xl font-semibold" style={{ color: streak.current > 0 ? '#7D5F0E' : 'var(--ink-subtle)' }}>{streak.current}</div>
             <div className="text-xs ink-muted mt-1">Current streak (days)</div>
           </div>
           <div>
@@ -6441,7 +6460,7 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
           <div className="font-display text-3xl font-semibold" style={{ color: EQUIP_ACCENT }}>{overall}%</div>
           <div className="text-sm ink-muted">{doneLessons} of {totalLessons} lessons complete</div>
         </div>
-        <div className="h-3 rounded-full" style={{ background: '#E5E7EB' }}>
+        <div className="h-3 rounded-full" style={{ background: '#E6DFD0' }}>
           <div className="h-3 rounded-full" style={{ width: `${overall}%`, background: EQUIP_ACCENT, transition: 'width 0.5s ease' }} />
         </div>
       </div>
@@ -6459,7 +6478,7 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
             return (
               <div key={stage.stage} className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-xl"
-                  style={{ background: completed ? stage.color : isCurrent ? stage.color + '18' : '#F4F4F0', border: `2px solid ${completed || isCurrent ? stage.color : 'var(--border)'}`, color: completed ? 'white' : 'inherit' }}>
+                  style={{ background: completed ? stage.color : isCurrent ? stage.color + '18' : '#F2EEE1', border: `2px solid ${completed || isCurrent ? stage.color : 'var(--border)'}`, color: completed ? 'white' : 'inherit' }}>
                   {completed ? '✓' : stage.icon}
                 </div>
                 <div className="flex-1">
@@ -6469,7 +6488,7 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
                   </div>
                   <div className="text-xs ink-muted mb-1">{stage.description}</div>
                   {!completed && (
-                    <div className="h-1 rounded-full" style={{ background: '#E5E7EB' }}>
+                    <div className="h-1 rounded-full" style={{ background: '#E6DFD0' }}>
                       <div className="h-1 rounded-full" style={{ width: `${stagePercent}%`, background: stage.color }} />
                     </div>
                   )}
@@ -6513,7 +6532,7 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
 
       {/* Per-course stats */}
       <div className="card overflow-hidden">
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FFFDF8' }}>
           <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Course Breakdown</div>
         </div>
         <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
@@ -6525,7 +6544,7 @@ function EquipProgress({ progress, badges, streak, pathwayStage }) {
                 <div className="text-xl flex-shrink-0">{c.badge}</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{c.title}</div>
-                  <div className="h-1.5 rounded-full mt-1.5" style={{ background: '#E5E7EB' }}>
+                  <div className="h-1.5 rounded-full mt-1.5" style={{ background: '#E6DFD0' }}>
                     <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
                   </div>
                 </div>
@@ -6568,7 +6587,7 @@ function EquipAdmin({ progress }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Total Courses', value: COURSES.length,    color: 'var(--ink)' },
-          { label: 'In Progress',   value: inProg.length,     color: '#B45309' },
+          { label: 'In Progress',   value: inProg.length,     color: '#7D5F0E' },
           { label: 'Completed',     value: completed.length,  color: EQUIP_ACCENT },
           { label: 'Not Started',   value: notStart.length,   color: 'var(--ink-subtle)' },
         ].map(s => (
@@ -6580,7 +6599,7 @@ function EquipAdmin({ progress }) {
       </div>
 
       <div className="card overflow-hidden">
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FBFBF7' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border)', background: '#FFFDF8' }}>
           <div className="text-xs font-medium tracking-widest uppercase ink-subtle">Course Status Table</div>
         </div>
         <table className="schedule-table">
@@ -6595,7 +6614,7 @@ function EquipAdmin({ progress }) {
                   <td><span className="pill text-xs" style={{ background: tr.color + '20', color: tr.color }}>{tr.label}</span></td>
                   <td>
                     <div className="flex items-center gap-2">
-                      <div className="h-1.5 rounded-full" style={{ background: '#E5E7EB', minWidth: 60, flex: 1 }}>
+                      <div className="h-1.5 rounded-full" style={{ background: '#E6DFD0', minWidth: 60, flex: 1 }}>
                         <div className="h-1.5 rounded-full" style={{ width: `${p.percent}%`, background: p.percent === 100 ? EQUIP_ACCENT : tr.color }} />
                       </div>
                       <span className="text-xs font-mono ink-muted">{p.percent}%</span>
@@ -6603,8 +6622,8 @@ function EquipAdmin({ progress }) {
                   </td>
                   <td>
                     <span className="pill text-xs" style={{
-                      background: p.percent === 100 ? EQUIP_SOFT : p.percent > 0 ? '#FEF3C7' : '#F4F4F0',
-                      color: p.percent === 100 ? EQUIP_ACCENT : p.percent > 0 ? '#B45309' : 'var(--ink-subtle)',
+                      background: p.percent === 100 ? EQUIP_SOFT : p.percent > 0 ? '#FBF5DC' : '#F2EEE1',
+                      color: p.percent === 100 ? EQUIP_ACCENT : p.percent > 0 ? '#7D5F0E' : 'var(--ink-subtle)',
                     }}>{p.percent === 100 ? '✓ Done' : p.percent > 0 ? 'In Progress' : 'Not Started'}</span>
                   </td>
                 </tr>
@@ -6627,9 +6646,9 @@ function EquipAdmin({ progress }) {
 // SERMON NOTES — Personal spiritual journal tied to service dates
 // =============================================================================
 
-const SN_NOTES_GREEN  = '#16A34A';
-const SN_NOTES_SOFT   = '#DCFCE7';
-const SN_NOTES_TINT   = '#F0FDF4';
+const SN_NOTES_GREEN  = '#3F6B3C';
+const SN_NOTES_SOFT   = '#DEECDA';
+const SN_NOTES_TINT   = '#EFF6ED';
 const SERMON_NOTES_STORE_KEY = CHURCH.key('flcc-sermon-notes-v1');
 
 function loadSermonNotes()       { try { return JSON.parse(localStorage.getItem(SERMON_NOTES_STORE_KEY) || '{}'); } catch { return {}; } }
@@ -6643,9 +6662,9 @@ function getEntryPreacher(entry, workers) {
 
 function exportNoteToPDF(note, meta) {
   const sec = (label, val) => val
-    ? `<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${SN_NOTES_GREEN};margin-bottom:5px">${label}</div><div style="font-size:14px;line-height:1.7;white-space:pre-wrap;color:#18181B">${String(val).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>` : '';
+    ? `<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${SN_NOTES_GREEN};margin-bottom:5px">${label}</div><div style="font-size:14px;line-height:1.7;white-space:pre-wrap;color:#241C17">${String(val).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>` : '';
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sermon Notes · ${meta.date}</title>
-  <style>*{box-sizing:border-box}body{font-family:Georgia,'Times New Roman',serif;max-width:580px;margin:48px auto;padding:0 28px;color:#18181B;line-height:1.65}h1{font-size:26px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}.sub{font-size:13px;color:#52525B;margin:0 0 22px}.meta{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#71717A;border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;padding:10px 0;margin-bottom:28px}.body-text{font-size:15px;line-height:1.8;margin-bottom:28px;color:#18181B}.ftr{margin-top:48px;font-size:11px;color:#A1A1AA;border-top:1px solid #E5E7EB;padding-top:10px}@media print{body{margin:0;padding:20px}}</style>
+  <style>*{box-sizing:border-box}body{font-family:Georgia,'Times New Roman',serif;max-width:580px;margin:48px auto;padding:0 28px;color:#241C17;line-height:1.65}h1{font-size:26px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}.sub{font-size:13px;color:#6B5D52;margin:0 0 22px}.meta{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#8A7A6B;border-top:1px solid #E6DFD0;border-bottom:1px solid #E6DFD0;padding:10px 0;margin-bottom:28px}.body-text{font-size:15px;line-height:1.8;margin-bottom:28px;color:#241C17}.ftr{margin-top:48px;font-size:11px;color:#A3937F;border-top:1px solid #E6DFD0;padding-top:10px}@media print{body{margin:0;padding:20px}}</style>
   </head><body>
   <h1>${note.title || 'Sermon Notes'}</h1>
   <div class="sub">${meta.dateLabel} · ${meta.service} Service</div>
@@ -7069,7 +7088,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
               <button key={v} onClick={() => setView(v)} style={{
                 padding: '4px 13px', borderRadius: 999, border: 'none', cursor: 'pointer',
                 fontSize: '0.8125rem', fontWeight: view === v ? 600 : 400,
-                background: view === v ? 'var(--ink)' : '#F4F4F0',
+                background: view === v ? 'var(--ink)' : '#F2EEE1',
                 color: view === v ? 'white' : 'var(--ink-muted)',
                 transition: 'all .22s cubic-bezier(.34,1.56,.64,1)',
                 transform: view === v ? 'scale(1.03)' : 'scale(1)',
@@ -7079,9 +7098,9 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {saveStatus === 'saving' && <span style={{ fontSize: '0.6875rem', color: 'var(--ink-subtle)', transition: 'opacity .2s' }}>Saving…</span>}
             {saveStatus === 'saved'  && <span style={{ fontSize: '0.6875rem', color: SN_NOTES_GREEN, animation: 'snSaveFlash 2.6s ease-out both' }}>✓ Saved</span>}
-            <button onClick={handleClose} style={{ background: '#F4F4F0', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: '0.8125rem', cursor: 'pointer', color: 'var(--ink-muted)', transition: 'background .15s' }}
-              onMouseEnter={e => e.currentTarget.style.background='#EBEBEB'}
-              onMouseLeave={e => e.currentTarget.style.background='#F4F4F0'}
+            <button onClick={handleClose} style={{ background: '#F2EEE1', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: '0.8125rem', cursor: 'pointer', color: 'var(--ink-muted)', transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background='#EDE6D6'}
+              onMouseLeave={e => e.currentTarget.style.background='#F2EEE1'}
             >✕</button>
           </div>
         </div>
@@ -7120,9 +7139,9 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                     <button
                       onClick={startTranscription}
                       title={txLang === 'fil-PH' ? 'Transcribe in Filipino/Taglish' : 'Transcribe in English'}
-                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
-                      onMouseEnter={e => e.currentTarget.style.background='#FDE68A'}
-                      onMouseLeave={e => e.currentTarget.style.background='#FEF3C7'}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#FBF5DC', border: '1px solid #E5D179', color: '#63490A', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background='#E5D179'}
+                      onMouseLeave={e => e.currentTarget.style.background='#FBF5DC'}
                     >
                       <span style={{ fontSize: '0.875rem' }}>🎙</span> Transcribe
                     </button>
@@ -7130,7 +7149,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                     <button
                       onClick={() => setTxLang(l => l === 'fil-PH' ? 'en-PH' : 'fil-PH')}
                       title={txLang === 'fil-PH' ? 'Currently: Filipino/Taglish — tap to switch to English' : 'Currently: English — tap to switch to Filipino/Taglish'}
-                      style={{ padding: '3px 8px', borderRadius: 999, background: txLang === 'fil-PH' ? '#DBEAFE' : '#F3F4F6', border: `1px solid ${txLang === 'fil-PH' ? '#93C5FD' : '#D1D5DB'}`, color: txLang === 'fil-PH' ? '#1D4ED8' : '#6B7280', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '.02em', transition: 'all .15s' }}
+                      style={{ padding: '3px 8px', borderRadius: 999, background: txLang === 'fil-PH' ? '#EFF6ED' : '#F2EEE1', border: `1px solid ${txLang === 'fil-PH' ? '#B5D4AF' : '#D3C8B4'}`, color: txLang === 'fil-PH' ? '#3F6B3C' : '#6B5D52', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '.02em', transition: 'all .15s' }}
                     >
                       {txLang === 'fil-PH' ? 'FIL' : 'EN'}
                     </button>
@@ -7142,7 +7161,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                   <button
                     onClick={stopAndSave}
                     title="Tap to stop and save transcription to notes"
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: '#DC2626', border: 'none', color: 'white', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', animation: 'snPulse 1.4s ease-in-out infinite' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: '#A8455A', border: 'none', color: 'white', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', animation: 'snPulse 1.4s ease-in-out infinite' }}
                   >
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'white', display: 'inline-block', flexShrink: 0 }}/>
                     Stop &amp; Save
@@ -7154,9 +7173,9 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                   <button
                     onClick={() => cameraInputRef.current?.click()}
                     title="Point at the presentation screen to scan slide text"
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#15803D', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
-                    onMouseEnter={e => e.currentTarget.style.background='#DCFCE7'}
-                    onMouseLeave={e => e.currentTarget.style.background='#F0FDF4'}
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 999, background: '#EFF6ED', border: '1px solid #B5D4AF', color: '#2C5129', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#DEECDA'}
+                    onMouseLeave={e => e.currentTarget.style.background='#EFF6ED'}
                   >
                     <span style={{ fontSize: '0.875rem' }}>📷</span> Scan
                   </button>
@@ -7166,11 +7185,11 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                 {scanState === 'scanning' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 180 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: 4, background: '#16A34A', animation: 'snPulse 1.2s ease-in-out infinite', flexShrink: 0 }} />
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#15803D' }}>{scanMsg || 'Processing…'}</span>
+                      <div style={{ width: 8, height: 8, borderRadius: 4, background: '#3F6B3C', animation: 'snPulse 1.2s ease-in-out infinite', flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#2C5129' }}>{scanMsg || 'Processing…'}</span>
                     </div>
-                    <div style={{ height: 3, borderRadius: 2, background: '#DCFCE7', overflow: 'hidden' }}>
-                      <div style={{ height: 3, borderRadius: 2, background: '#16A34A', width: `${scanProgress}%`, transition: 'width .4s ease' }} />
+                    <div style={{ height: 3, borderRadius: 2, background: '#DEECDA', overflow: 'hidden' }}>
+                      <div style={{ height: 3, borderRadius: 2, background: '#3F6B3C', width: `${scanProgress}%`, transition: 'width .4s ease' }} />
                     </div>
                   </div>
                 )}
@@ -7180,7 +7199,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                       <span style={{ fontSize: '0.75rem', color: 'var(--danger)', fontWeight: 500 }}>⚠ {scanMsg || 'Scan failed'}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => cameraInputRef.current?.click()} style={{ fontSize: '0.75rem', color: '#15803D', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>Try again</button>
+                      <button onClick={() => cameraInputRef.current?.click()} style={{ fontSize: '0.75rem', color: '#2C5129', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>Try again</button>
                       <button onClick={() => { setScanState('idle'); setScanMsg(''); }} style={{ fontSize: '0.75rem', color: 'var(--ink-subtle)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Dismiss</button>
                     </div>
                   </div>
@@ -7190,9 +7209,9 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 
             {/* ── Live transcription panel ── */}
             {txState === 'listening' && (
-              <div style={{ marginBottom: 14, borderRadius: 12, overflow: 'hidden', border: '1.5px solid #FCA5A5', background: '#FFF5F5' }}>
+              <div style={{ marginBottom: 14, borderRadius: 12, overflow: 'hidden', border: '1.5px solid #DE9490', background: '#FDF4F2' }}>
                 {/* Header */}
-                <div style={{ padding: '8px 14px', background: '#DC2626', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ padding: '8px 14px', background: '#A8455A', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'white', animation: 'snPulse 1.2s ease-in-out infinite', flexShrink: 0 }}/>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'white', letterSpacing: '.04em' }}>LIVE — Listening to sermon…</span>
                   <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,.85)', marginLeft: 'auto' }}>{txLang === 'fil-PH' ? '🇵🇭 Tagalog/Taglish' : '🇬🇧 English'}</span>
@@ -7208,23 +7227,23 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                   )}
                   {/* Interim (unconfirmed) words */}
                   {txInterim && (
-                    <p style={{ fontSize: '0.875rem', lineHeight: 1.7, color: '#9CA3AF', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: '0.875rem', lineHeight: 1.7, color: '#A3937F', fontStyle: 'italic' }}>
                       {txInterim}
                     </p>
                   )}
                   {!liveBufferRef.current && !txInterim && (
-                    <p style={{ fontSize: '0.875rem', color: '#9CA3AF', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: '0.875rem', color: '#A3937F', fontStyle: 'italic' }}>
                       Waiting for speech… speak clearly or move closer to the speaker.
                     </p>
                   )}
                 </div>
 
                 {/* Actions */}
-                <div style={{ padding: '8px 14px 12px', display: 'flex', gap: 8, borderTop: '1px solid #FCA5A5' }}>
-                  <button onClick={stopAndSave} style={{ padding: '7px 16px', borderRadius: 8, background: '#DC2626', color: 'white', border: 'none', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer' }}>
+                <div style={{ padding: '8px 14px 12px', display: 'flex', gap: 8, borderTop: '1px solid #DE9490' }}>
+                  <button onClick={stopAndSave} style={{ padding: '7px 16px', borderRadius: 8, background: '#A8455A', color: 'white', border: 'none', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer' }}>
                     ⏹ Stop &amp; Add to Notes
                   </button>
-                  <button onClick={discardTranscription} style={{ padding: '7px 12px', borderRadius: 8, background: '#F4F4F0', color: 'var(--ink-muted)', border: 'none', fontSize: '0.8125rem', cursor: 'pointer' }}>
+                  <button onClick={discardTranscription} style={{ padding: '7px 12px', borderRadius: 8, background: '#F2EEE1', color: 'var(--ink-muted)', border: 'none', fontSize: '0.8125rem', cursor: 'pointer' }}>
                     Discard
                   </button>
                 </div>
@@ -7233,9 +7252,9 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 
             {/* Transcription error */}
             {txState === 'error' && (
-              <div style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 10, background: '#FEE2E2', border: '1px solid #FCA5A5', fontSize: '0.8125rem', color: '#991B1B' }}>
+              <div style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 10, background: '#FBE7E2', border: '1px solid #DE9490', fontSize: '0.8125rem', color: '#521E26' }}>
                 <div style={{ fontWeight: 600, marginBottom: 4 }}>⚠ {txError}</div>
-                <button onClick={() => { setTxState('idle'); setTxError(''); }} style={{ fontSize: '0.75rem', color: '#991B1B', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Dismiss</button>
+                <button onClick={() => { setTxState('idle'); setTxError(''); }} style={{ fontSize: '0.75rem', color: '#521E26', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Dismiss</button>
               </div>
             )}
 
@@ -7251,15 +7270,15 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 
             {/* Scan result pane */}
             {scanState === 'result' && (
-              <div className="sn-scan-result" style={{ marginBottom: 14, borderRadius: 12, overflow: 'hidden', border: '1px solid #BBF7D0', background: '#F0FDF4' }}>
+              <div className="sn-scan-result" style={{ marginBottom: 14, borderRadius: 12, overflow: 'hidden', border: '1px solid #B5D4AF', background: '#EFF6ED' }}>
                 {scanPreview && (
-                  <div style={{ display: 'flex', justifyContent: 'center', background: '#DCFCE7', padding: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', background: '#DEECDA', padding: '10px' }}>
                     <img src={scanPreview} alt="Captured notes" style={{ maxHeight: 120, maxWidth: '100%', borderRadius: 8, objectFit: 'contain', boxShadow: '0 2px 8px rgba(0,0,0,.12)' }} />
                   </div>
                 )}
                 <div style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#15803D' }}>✦ Slide Transcription</span>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2C5129' }}>✦ Slide Transcription</span>
                     <span style={{ fontSize: '0.6875rem', color: 'var(--ink-subtle)' }}>— review &amp; edit before adding</span>
                   </div>
                   <textarea
@@ -7271,17 +7290,17 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                   <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                     <button
                       onClick={() => applyScan('append')}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: '#16A34A', color: 'white', border: 'none', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', transition: 'background .15s' }}
-                      onMouseEnter={e => e.currentTarget.style.background='#15803D'}
-                      onMouseLeave={e => e.currentTarget.style.background='#16A34A'}
+                      style={{ padding: '6px 14px', borderRadius: 8, background: '#3F6B3C', color: 'white', border: 'none', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', transition: 'background .15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background='#2C5129'}
+                      onMouseLeave={e => e.currentTarget.style.background='#3F6B3C'}
                     >+ Add to notes</button>
                     <button
                       onClick={() => applyScan('replace')}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: '#F4F4F0', color: 'var(--ink)', border: 'none', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer' }}
+                      style={{ padding: '6px 14px', borderRadius: 8, background: '#F2EEE1', color: 'var(--ink)', border: 'none', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer' }}
                     >↺ Replace notes</button>
                     <button
                       onClick={() => cameraInputRef.current?.click()}
-                      style={{ padding: '6px 14px', borderRadius: 8, background: '#F4F4F0', color: 'var(--ink)', border: 'none', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer' }}
+                      style={{ padding: '6px 14px', borderRadius: 8, background: '#F2EEE1', color: 'var(--ink)', border: 'none', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer' }}
                     >📷 Scan again</button>
                     <button
                       onClick={() => { setScanState('idle'); setScanResult(''); setScanPreview(''); }}
@@ -7301,10 +7320,10 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                   title="Bold selected text"
                   style={{ padding: '3px 9px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFF', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)' }}>B</button>
                 <button
-                  onMouseDown={e => { e.preventDefault(); document.execCommand('hiliteColor', false, '#FEF08A'); }}
+                  onMouseDown={e => { e.preventDefault(); document.execCommand('hiliteColor', false, '#E5D179'); }}
                   title="Highlight selected text"
-                  style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 9px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFFBEB', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#92400E' }}
-                ><span style={{ background: '#FEF08A', padding: '1px 3px', borderRadius: 2 }}>A</span> Highlight</button>
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '3px 9px', borderRadius: 6, border: '1px solid var(--border)', background: '#FDFAEE', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, color: '#63490A' }}
+                ><span style={{ background: '#E5D179', padding: '1px 3px', borderRadius: 2 }}>A</span> Highlight</button>
                 <div style={{ width: 1, height: 14, background: 'var(--border)', margin: '0 2px' }} />
                 <button onMouseDown={e => { e.preventDefault(); document.execCommand('justifyLeft'); }} title="Align left"
                   style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid var(--border)', background: '#FFF', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--ink-muted)' }}>Left</button>
@@ -7384,7 +7403,7 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
                           <div key={n.id}
                             onClick={() => { if (!isCurrent && onOpenNote) { onOpenNote({ id: n.id, meta: { date: n.date, service: n.service, dateLabel: formatDateLong(n.date) } }); } }}
                             style={{ padding: '14px 16px', borderRadius: 14, background: isCurrent ? SN_NOTES_TINT : 'var(--bg)', border: `1px solid ${isCurrent ? SN_NOTES_GREEN + '50' : 'var(--border)'}`, transition: 'border-color .2s, background .15s', cursor: isCurrent ? 'default' : 'pointer' }}
-                            onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = '#FAFAF9'; }}
+                            onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = '#F7F4EA'; }}
                             onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = 'var(--bg)'; }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
@@ -7423,9 +7442,9 @@ function SermonNotesModal({ noteId, meta, sermonNotes, onSave, onDelete, onClose
 // =============================================================================
 
 const GAMES_KEY  = 'flcc-games-v1';
-const G_ACCENT   = '#7C3AED';
-const G_SOFT     = '#EDE9FE';
-const G_TINT     = '#F5F3FF';
+const G_ACCENT   = '#A8455A';
+const G_SOFT     = '#FBE7E2';
+const G_TINT     = '#FDF4F2';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const W_WORDS = [
@@ -7552,10 +7571,10 @@ function buildWSGrid(words, SIZE = 10) {
 
 // ─── GAME HUB ─────────────────────────────────────────────────────────────────
 const GAMES_META = [
-  {key:'trivia',icon:'❓',name:'Bible Trivia', desc:'Test your Bible knowledge · 3 levels',  color:'#0284C7'},
-  {key:'wordle',icon:'🔤',name:'Wordle',        desc:'Daily 5-letter Bible word',              color:'#16A34A'},
-  {key:'match', icon:'🃏',name:'Memory Match',  desc:'Match verses to scripture references',  color:'#BE123C'},
-  {key:'search',icon:'🔍',name:'Word Search',   desc:'Find hidden Bible words in the grid',   color:'#B45309'},
+  {key:'trivia',icon:'❓',name:'Bible Trivia', desc:'Test your Bible knowledge · 3 levels',  color:'#96602F'},
+  {key:'wordle',icon:'🔤',name:'Wordle',        desc:'Daily 5-letter Bible word',              color:'#3F6B3C'},
+  {key:'match', icon:'🃏',name:'Memory Match',  desc:'Match verses to scripture references',  color:'#A8455A'},
+  {key:'search',icon:'🔍',name:'Word Search',   desc:'Find hidden Bible words in the grid',   color:'#7D5F0E'},
   {key:'fitb',  icon:'✍️', name:'Fill the Blank',desc:'Complete the scripture verse',          color:G_ACCENT},
 ];
 
@@ -7592,8 +7611,8 @@ function GameHub({ onClose }) {
             </div>
             {!active && <div style={{fontSize:'0.8125rem',color:'var(--ink-muted)',marginTop:2}}>Spiritual games for while you wait · scores saved locally</div>}
           </div>
-          <button onClick={handleClose} style={{background:'#F4F4F0',border:'none',borderRadius:8,padding:'4px 10px',fontSize:'0.8125rem',cursor:'pointer',color:'var(--ink-muted)',transition:'background .15s'}}
-            onMouseEnter={e=>e.currentTarget.style.background='#EBEBEB'} onMouseLeave={e=>e.currentTarget.style.background='#F4F4F0'}>✕</button>
+          <button onClick={handleClose} style={{background:'#F2EEE1',border:'none',borderRadius:8,padding:'4px 10px',fontSize:'0.8125rem',cursor:'pointer',color:'var(--ink-muted)',transition:'background .15s'}}
+            onMouseEnter={e=>e.currentTarget.style.background='#EDE6D6'} onMouseLeave={e=>e.currentTarget.style.background='#F2EEE1'}>✕</button>
         </div>
 
         {/* Content */}
@@ -7673,16 +7692,16 @@ function BibleTrivia({ gState, setGState }) {
     <div style={{padding:20}}>
       <div className="font-display" style={{fontSize:'1.25rem',fontWeight:600,marginBottom:6}}>Choose Difficulty</div>
       <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:20}}>10 questions per round. Higher difficulty = more points per correct answer.</div>
-      {[{k:'easy',l:'🌱 Easy',d:'Bible basics · 10 pts each',c:'#16A34A'},
-        {k:'medium',l:'📖 Medium',d:'Deeper knowledge · 20 pts each',c:'#0284C7'},
-        {k:'hard',l:'🔥 Hard',d:'Scholar level · 30 pts each',c:'#BE123C'}].map(x=>(
+      {[{k:'easy',l:'🌱 Easy',d:'Bible basics · 10 pts each',c:'#3F6B3C'},
+        {k:'medium',l:'📖 Medium',d:'Deeper knowledge · 20 pts each',c:'#96602F'},
+        {k:'hard',l:'🔥 Hard',d:'Scholar level · 30 pts each',c:'#A8455A'}].map(x=>(
         <div key={x.k} onClick={()=>start(x.k)} style={{padding:'16px 18px',borderRadius:12,border:`1px solid ${x.c}30`,marginBottom:10,cursor:'pointer',background:x.c+'0A',transition:'background .15s'}}
           onMouseEnter={e=>e.currentTarget.style.background=x.c+'18'} onMouseLeave={e=>e.currentTarget.style.background=x.c+'0A'}>
           <div style={{fontWeight:600,color:x.c}}>{x.l}</div>
           <div style={{fontSize:'0.8125rem',color:'var(--ink-muted)',marginTop:2}}>{x.d}</div>
         </div>
       ))}
-      {gState.trivia?.highScore>0 && <div style={{textAlign:'center',fontSize:'0.8125rem',color:'var(--ink-muted)',marginTop:8}}>Best score: <strong style={{color:'#0284C7'}}>{gState.trivia.highScore}</strong></div>}
+      {gState.trivia?.highScore>0 && <div style={{textAlign:'center',fontSize:'0.8125rem',color:'var(--ink-muted)',marginTop:8}}>Best score: <strong style={{color:'#96602F'}}>{gState.trivia.highScore}</strong></div>}
     </div>
   );
 
@@ -7694,7 +7713,7 @@ function BibleTrivia({ gState, setGState }) {
         <div style={{fontSize:'3rem',marginBottom:12}}>{pct>=90?'🏆':pct>=70?'🌟':pct>=50?'📖':'🙏'}</div>
         <div className="font-display" style={{fontSize:'2.25rem',fontWeight:600,marginBottom:4}}>{score} pts</div>
         <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:8}}>{pct>=90?'Bible Scholar!':pct>=70?'Great job!':pct>=50?'Keep studying!':'Keep reading your Bible!'}</div>
-        {gState.trivia?.highScore===score&&score>0&&<div style={{color:'#F59E0B',fontWeight:600,marginBottom:16}}>⭐ New high score!</div>}
+        {gState.trivia?.highScore===score&&score>0&&<div style={{color:'#7D5F0E',fontWeight:600,marginBottom:16}}>⭐ New high score!</div>}
         <button onClick={()=>setDiff(null)} style={{padding:'10px 24px',borderRadius:999,background:'var(--ink)',color:'white',border:'none',cursor:'pointer',fontSize:'0.875rem',fontWeight:600}}>Play again</button>
       </div>
     );
@@ -7705,18 +7724,18 @@ function BibleTrivia({ gState, setGState }) {
     <div style={{padding:20}}>
       <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
         <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>Q {qIdx+1}/10 · {diff}</div>
-        <div style={{fontSize:'0.875rem',fontWeight:600,color:'#0284C7'}}>{score} pts</div>
+        <div style={{fontSize:'0.875rem',fontWeight:600,color:'#96602F'}}>{score} pts</div>
       </div>
       <div style={{height:4,borderRadius:2,background:'var(--border)',marginBottom:20}}>
-        <div style={{height:4,borderRadius:2,background:'#0284C7',width:`${((qIdx)/10)*100}%`,transition:'width .3s'}}/>
+        <div style={{height:4,borderRadius:2,background:'#96602F',width:`${((qIdx)/10)*100}%`,transition:'width .3s'}}/>
       </div>
       <div className="font-display" style={{fontSize:'1.125rem',fontWeight:600,lineHeight:1.5,marginBottom:24,minHeight:56}}>{q.q}</div>
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
         {q.o.map(opt=>{
-          let bg='#F9F9F7',border='var(--border)',color='var(--ink)';
+          let bg='#F7F4EA',border='var(--border)',color='var(--ink)';
           if(ans){
-            if(opt===q.a){bg='#F0FDF4';border='#16A34A';color='#15803D';}
-            else if(opt===sel&&sel!==q.a){bg='#FEF2F2';border='#DC2626';color='#DC2626';}
+            if(opt===q.a){bg='#EFF6ED';border='#3F6B3C';color='#2C5129';}
+            else if(opt===sel&&sel!==q.a){bg='#FDF4F2';border='#A8455A';color='#A8455A';}
           }
           return (
             <button key={opt} onClick={()=>pick(opt)} disabled={!!ans}
@@ -7759,9 +7778,9 @@ function BibleWordle({ gState, setGState }) {
   },[guesses,ANSWER]);
 
   const cellColor=(g,col)=>{
-    if(ANSWER[col]===g[col]) return '#16A34A';
-    if(ANSWER.includes(g[col])) return '#D97706';
-    return '#6B7280';
+    if(ANSWER[col]===g[col]) return '#3F6B3C';
+    if(ANSWER.includes(g[col])) return '#997617';
+    return '#6B5D52';
   };
 
   const submit=()=>{
@@ -7793,7 +7812,7 @@ function BibleWordle({ gState, setGState }) {
 
   const kbColor=k=>{
     const st=letterState[k];
-    return st==='correct'?'#16A34A':st==='present'?'#D97706':st==='absent'?'#9CA3AF':'#E5E7EB';
+    return st==='correct'?'#3F6B3C':st==='present'?'#997617':st==='absent'?'#A3937F':'#E6DFD0';
   };
   const kbText=k=>letterState[k]?'white':'var(--ink)';
 
@@ -7810,9 +7829,9 @@ function BibleWordle({ gState, setGState }) {
             {Array.from({length:5},(_,col)=>{
               const g=guesses[row]; const revealed=!!g;
               const ch=g?g[col]:(row===guesses.length?cur[col]:'');
-              let bg='transparent',border='#D1D5DB',color='var(--ink)';
+              let bg='transparent',border='#D3C8B4',color='var(--ink)';
               if(revealed){bg=cellColor(g,col);border=bg;color='white';}
-              else if(ch)border='#6B7280';
+              else if(ch)border='#6B5D52';
               return (
                 <div key={col} style={{width:50,height:50,display:'flex',alignItems:'center',justifyContent:'center',border:`2px solid ${border}`,borderRadius:8,fontWeight:700,fontSize:'1.375rem',background:bg,color,fontFamily:'Geist Mono,monospace',
                   animation:(!revealed&&row===guesses.length&&shake)?'snShakeX .4s ease':'none',transition:'background .3s'}}>
@@ -7825,8 +7844,8 @@ function BibleWordle({ gState, setGState }) {
       </div>
 
       {(won||lost)&&(
-        <div style={{textAlign:'center',padding:'10px 14px',borderRadius:10,background:won?'#F0FDF4':'#FEF2F2',marginBottom:12}}>
-          <div style={{fontWeight:700,color:won?'#16A34A':'#DC2626'}}>{won?`✓ ${ANSWER} — Well done! 🎉`:`The word was: ${ANSWER}`}</div>
+        <div style={{textAlign:'center',padding:'10px 14px',borderRadius:10,background:won?'#EFF6ED':'#FDF4F2',marginBottom:12}}>
+          <div style={{fontWeight:700,color:won?'#3F6B3C':'#A8455A'}}>{won?`✓ ${ANSWER} — Well done! 🎉`:`The word was: ${ANSWER}`}</div>
           <div style={{fontSize:'0.75rem',color:'var(--ink-muted)',marginTop:3}}>Come back tomorrow for a new word!</div>
         </div>
       )}
@@ -7835,11 +7854,11 @@ function BibleWordle({ gState, setGState }) {
       <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
         {KEYS.map((row,ri)=>(
           <div key={ri} style={{display:'flex',gap:4}}>
-            {ri===2&&<button onClick={()=>handleKey('ENTER')} style={{padding:'13px 6px',borderRadius:7,background:'#374151',color:'white',border:'none',fontSize:'0.625rem',fontWeight:700,cursor:'pointer',letterSpacing:'.04em'}}>ENTER</button>}
+            {ri===2&&<button onClick={()=>handleKey('ENTER')} style={{padding:'13px 6px',borderRadius:7,background:'#4A3E33',color:'white',border:'none',fontSize:'0.625rem',fontWeight:700,cursor:'pointer',letterSpacing:'.04em'}}>ENTER</button>}
             {row.split('').map(k=>(
               <button key={k} onClick={()=>handleKey(k)} style={{width:30,height:42,borderRadius:7,background:kbColor(k),color:kbText(k),border:'none',fontSize:'0.875rem',fontWeight:700,cursor:'pointer',transition:'background .2s'}}>{k}</button>
             ))}
-            {ri===2&&<button onClick={()=>handleKey('DEL')} style={{padding:'13px 6px',borderRadius:7,background:'#374151',color:'white',border:'none',fontSize:'0.625rem',fontWeight:700,cursor:'pointer'}}>DEL</button>}
+            {ri===2&&<button onClick={()=>handleKey('DEL')} style={{padding:'13px 6px',borderRadius:7,background:'#4A3E33',color:'white',border:'none',fontSize:'0.625rem',fontWeight:700,cursor:'pointer'}}>DEL</button>}
           </div>
         ))}
       </div>
@@ -7897,7 +7916,7 @@ function MemoryMatch({ gState, setGState }) {
     <div style={{padding:20}}>
       <div className="font-display" style={{fontSize:'1.25rem',fontWeight:600,marginBottom:6}}>Memory Match</div>
       <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:20}}>Flip cards to match Bible verses with their scripture references.</div>
-      {[{k:'easy',l:'🌱 Easy — 4 pairs',c:'#16A34A'},{k:'medium',l:'📖 Medium — 8 pairs',c:'#0284C7'},{k:'hard',l:'🔥 Hard — 12 pairs',c:'#BE123C'}].map(x=>(
+      {[{k:'easy',l:'🌱 Easy — 4 pairs',c:'#3F6B3C'},{k:'medium',l:'📖 Medium — 8 pairs',c:'#96602F'},{k:'hard',l:'🔥 Hard — 12 pairs',c:'#A8455A'}].map(x=>(
         <div key={x.k} onClick={()=>start(x.k)} style={{padding:'14px 18px',borderRadius:12,border:`1px solid ${x.c}30`,marginBottom:10,cursor:'pointer',background:x.c+'0A',transition:'background .15s'}}
           onMouseEnter={e=>e.currentTarget.style.background=x.c+'18'} onMouseLeave={e=>e.currentTarget.style.background=x.c+'0A'}>
           <div style={{fontWeight:600,color:x.c}}>{x.l}</div>
@@ -7931,8 +7950,8 @@ function MemoryMatch({ gState, setGState }) {
             <div key={card.id} onClick={()=>tap(card.id)} style={{
               aspectRatio:'2/3',borderRadius:10,cursor:'pointer',padding:8,
               display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',
-              background:isMatch?'#F0FDF4':isFlip?(card.type==='verse'?'#EFF6FF':G_TINT):'#1E293B',
-              border:`2px solid ${isMatch?'#16A34A':isFlip?G_ACCENT:'#334155'}`,
+              background:isMatch?'#EFF6ED':isFlip?(card.type==='verse'?'#F6FAF4':G_TINT):'#33291F',
+              border:`2px solid ${isMatch?'#3F6B3C':isFlip?G_ACCENT:'#4A3E33'}`,
               color:isFlip?'var(--ink)':'transparent',
               fontSize:diff==='hard'?'0.5625rem':'0.625rem',
               lineHeight:1.35,fontWeight:500,
@@ -8005,7 +8024,7 @@ function WordSearch({ gState, setGState }) {
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {WS_THEMES.map((t,i)=>(
           <div key={i} onClick={()=>startTheme(i)} style={{padding:14,borderRadius:12,border:'1px solid var(--border)',cursor:'pointer',transition:'background .15s'}}
-            onMouseEnter={e=>e.currentTarget.style.background='#F4F4F0'} onMouseLeave={e=>e.currentTarget.style.background=''}>
+            onMouseEnter={e=>e.currentTarget.style.background='#F2EEE1'} onMouseLeave={e=>e.currentTarget.style.background=''}>
             <div style={{fontWeight:600,fontSize:'0.9375rem',marginBottom:2}}>{t.name}</div>
             <div style={{fontSize:'0.75rem',color:'var(--ink-muted)'}}>{t.words.length} words</div>
           </div>
@@ -8021,15 +8040,15 @@ function WordSearch({ gState, setGState }) {
         <div style={{fontSize:'0.8125rem',color:'var(--ink-muted)'}}>{found.length}/{gd.placed.length} found</div>
       </div>
 
-      {wonMsg&&<div style={{textAlign:'center',padding:'8px 14px',borderRadius:8,background:'#F0FDF4',color:'#16A34A',fontWeight:700,marginBottom:10,fontSize:'0.875rem'}}>
-        {wonMsg} <button onClick={()=>setThemeIdx(null)} style={{marginLeft:8,fontSize:'0.75rem',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',color:'#16A34A'}}>Play another</button>
+      {wonMsg&&<div style={{textAlign:'center',padding:'8px 14px',borderRadius:8,background:'#EFF6ED',color:'#3F6B3C',fontWeight:700,marginBottom:10,fontSize:'0.875rem'}}>
+        {wonMsg} <button onClick={()=>setThemeIdx(null)} style={{marginLeft:8,fontSize:'0.75rem',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',color:'#3F6B3C'}}>Play another</button>
       </div>}
 
       <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:12}}>
         {gd.placed.map(p=>(
           <span key={p.word} style={{fontSize:'0.6875rem',fontWeight:600,padding:'2px 8px',borderRadius:999,
-            background:found.some(f=>f.word===p.word)?'#F0FDF4':'#F4F4F0',
-            color:found.some(f=>f.word===p.word)?'#16A34A':'var(--ink-muted)',
+            background:found.some(f=>f.word===p.word)?'#EFF6ED':'#F2EEE1',
+            color:found.some(f=>f.word===p.word)?'#3F6B3C':'var(--ink-muted)',
             textDecoration:found.some(f=>f.word===p.word)?'line-through':'none',letterSpacing:'.04em'}}>{p.word}</span>
         ))}
       </div>
@@ -8045,9 +8064,9 @@ function WordSearch({ gState, setGState }) {
               onPointerUp={()=>tryWord([r,c])}
               style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
                 borderRadius:6,fontWeight:700,fontSize:'0.8125rem',fontFamily:'Geist Mono,monospace',cursor:'pointer',
-                background:isF?'#F0FDF4':isS?G_ACCENT:isP?G_SOFT:'#F9F9F7',
-                color:isF?'#16A34A':isS?'white':isP?G_ACCENT:'var(--ink)',
-                border:`1px solid ${isF?'#BBF7D0':isP?G_ACCENT:'var(--border)'}`,
+                background:isF?'#EFF6ED':isS?G_ACCENT:isP?G_SOFT:'#F7F4EA',
+                color:isF?'#3F6B3C':isS?'white':isP?G_ACCENT:'var(--ink)',
+                border:`1px solid ${isF?'#B5D4AF':isP?G_ACCENT:'var(--border)'}`,
                 transition:'background .08s',}}>
               {ch}
             </div>
@@ -8092,7 +8111,7 @@ function FillBlank({ gState, setGState }) {
         <div style={{fontSize:'3rem',marginBottom:12}}>{pct>=80?'🏆':pct>=60?'🌟':'📖'}</div>
         <div className="font-display" style={{fontSize:'2.25rem',fontWeight:600,marginBottom:4}}>{score}/100</div>
         <div style={{fontSize:'0.875rem',color:'var(--ink-muted)',marginBottom:16}}>{pct>=80?'Scripture Scholar!':pct>=60?'Keep memorizing!':'Keep reading your Bible!'}</div>
-        {gState.fitb?.highScore===score&&score>0&&<div style={{color:'#F59E0B',fontWeight:600,marginBottom:16}}>⭐ New high score!</div>}
+        {gState.fitb?.highScore===score&&score>0&&<div style={{color:'#7D5F0E',fontWeight:600,marginBottom:16}}>⭐ New high score!</div>}
         <button onClick={()=>{setQIdx(0);setScore(0);setAns(null);setSel(null);setDone(false);}} style={{padding:'10px 24px',borderRadius:999,background:'var(--ink)',color:'white',border:'none',cursor:'pointer',fontSize:'0.875rem',fontWeight:600}}>Play again</button>
       </div>
     );
@@ -8122,8 +8141,8 @@ function FillBlank({ gState, setGState }) {
 
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {q.o.map(opt=>{
-          let bg='#F9F9F7',border='var(--border)',color='var(--ink)';
-          if(ans){if(opt===q.b){bg='#F0FDF4';border='#16A34A';color='#15803D';}else if(opt===sel&&sel!==q.b){bg='#FEF2F2';border='#DC2626';color='#DC2626';}}
+          let bg='#F7F4EA',border='var(--border)',color='var(--ink)';
+          if(ans){if(opt===q.b){bg='#EFF6ED';border='#3F6B3C';color='#2C5129';}else if(opt===sel&&sel!==q.b){bg='#FDF4F2';border='#A8455A';color='#A8455A';}}
           return (
             <button key={opt} onClick={()=>pick(opt)} disabled={!!ans}
               style={{padding:'14px',borderRadius:12,border:`2px solid ${border}`,background:bg,color,fontSize:'0.9375rem',fontWeight:600,cursor:ans?'default':'pointer',transition:'all .2s'}}>
@@ -8140,7 +8159,7 @@ function FillBlank({ gState, setGState }) {
 // PERSONAL ATTENDANCE — member sees own history from attendance.json
 // =============================================================================
 
-const ATT_BLUE = '#0284C7';
+const ATT_BLUE = '#96602F';
 
 // Find this member's records in attendance.json by name matching
 function matchAttendanceRecord(me, attendanceData) {
@@ -8209,8 +8228,8 @@ function PersonalAttendanceCard({ me, attendanceData, compact }) {
 
   const pctColor = pct =>
     pct === null ? 'var(--ink-subtle)' :
-    pct >= 80 ? '#16A34A' :
-    pct >= 60 ? '#D97706' : '#DC2626';
+    pct >= 80 ? '#3F6B3C' :
+    pct >= 60 ? '#7D5F0E' : '#A8455A';
 
   if (compact) {
     // Small badge for Home tab
@@ -8238,7 +8257,7 @@ function PersonalAttendanceCard({ me, attendanceData, compact }) {
           )}
           {stats.streak > 1 && (
             <div style={{ textAlign:'center' }}>
-              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:'#F59E0B', lineHeight:1 }}>🔥{stats.streak}</div>
+              <div className="font-display" style={{ fontSize:'1.375rem', fontWeight:700, color:'#7D5F0E', lineHeight:1 }}>🔥{stats.streak}</div>
               <div style={{ fontSize:'0.6875rem', color:'var(--ink-muted)', marginTop:2 }}>Streak</div>
             </div>
           )}
@@ -8277,7 +8296,7 @@ function PersonalAttendanceCard({ me, attendanceData, compact }) {
           </div>
         </div>
         {stats.streak >= 2 && (
-          <div style={{ marginTop:8, fontSize:'0.8125rem', color:'#F59E0B', fontWeight:600 }}>
+          <div style={{ marginTop:8, fontSize:'0.8125rem', color:'#7D5F0E', fontWeight:600 }}>
             🔥 {stats.streak} consecutive sessions — keep it up!
           </div>
         )}
@@ -8292,14 +8311,14 @@ function PersonalAttendanceCard({ me, attendanceData, compact }) {
               style={{
                 display:'flex', flexDirection:'column', alignItems:'center', gap:3,
                 padding:'6px 4px', borderRadius:8, minWidth:36,
-                background: r.status === 'present' ? '#F0FDF4' : '#FFF1F2',
-                border: `1px solid ${r.status === 'present' ? '#BBF7D0' : '#FECDD3'}`,
+                background: r.status === 'present' ? '#EFF6ED' : '#FDF4F2',
+                border: `1px solid ${r.status === 'present' ? '#B5D4AF' : '#F5CCC5'}`,
               }}>
               <div style={{ fontSize:'0.875rem' }}>{r.status === 'present' ? '✓' : '✗'}</div>
               <div style={{ fontSize:'0.5625rem', color:'var(--ink-subtle)', fontFamily:'Geist Mono,monospace', lineHeight:1.2, textAlign:'center' }}>
                 {r.date.slice(5)}
               </div>
-              <div style={{ fontSize:'0.5rem', color:r.service==='Friday'?ATT_BLUE:'#7C3AED', fontWeight:600 }}>
+              <div style={{ fontSize:'0.5rem', color:r.service==='Friday'?ATT_BLUE:'#A8455A', fontWeight:600 }}>
                 {r.service.slice(0,3).toUpperCase()}
               </div>
             </div>
@@ -8309,7 +8328,7 @@ function PersonalAttendanceCard({ me, attendanceData, compact }) {
 
       {/* Progress bar */}
       <div style={{ padding:'12px 16px 14px' }}>
-        <div style={{ height:6, borderRadius:3, background:'#E5E7EB', overflow:'hidden' }}>
+        <div style={{ height:6, borderRadius:3, background:'#E6DFD0', overflow:'hidden' }}>
           <div style={{ height:6, borderRadius:3, background:ATT_BLUE, width:`${stats.overall}%`, transition:'width .5s ease' }} />
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, fontSize:'0.6875rem', color:'var(--ink-subtle)' }}>
@@ -8670,14 +8689,14 @@ function AskPastorTab({ data }) {
                   key={q.id}
                   className="card p-4"
                   style={{
-                    borderLeft: `3px solid ${q.answered ? '#16A34A' : 'var(--accent)'}`,
+                    borderLeft: `3px solid ${q.answered ? '#3F6B3C' : 'var(--accent)'}`,
                     opacity: q.answered ? 0.7 : 1,
                   }}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="text-xs ink-muted">
                       For <strong>{q.pastorName}</strong> · {formatDateShort(q.date)}
-                      {q.answered && <span className="ml-2" style={{ color: '#16A34A' }}>✓ Answered</span>}
+                      {q.answered && <span className="ml-2" style={{ color: '#3F6B3C' }}>✓ Answered</span>}
                     </div>
                     <button className="text-xs ink-subtle hover:ink" onClick={() => deleteQ(q.id)}>✕</button>
                   </div>
@@ -8702,7 +8721,7 @@ function AskPastorTab({ data }) {
                     <button
                       className="btn btn-soft text-xs"
                       onClick={() => toggleAnswered(q.id)}
-                      style={q.answered ? { color: '#16A34A' } : {}}
+                      style={q.answered ? { color: '#3F6B3C' } : {}}
                     >
                       {q.answered ? '↩ Mark unanswered' : '✓ Mark answered'}
                     </button>
@@ -8727,9 +8746,9 @@ function AskPastorTab({ data }) {
 // =============================================================================
 // WORSHIP TAB
 // =============================================================================
-const WORSHIP_ACCENT = '#7C3AED';
-const WORSHIP_SOFT   = '#EDE9FE';
-const WORSHIP_TINT   = '#F5F3FF';
+const WORSHIP_ACCENT = '#A8455A';
+const WORSHIP_SOFT   = '#FBE7E2';
+const WORSHIP_TINT   = '#FDF4F2';
 
 function WorshipTab({ worshipData }) {
   const [subTab, setSubTab]     = useState('songs');
@@ -9079,22 +9098,22 @@ function DevotionalTab({ me, data }) {
       </SectionHeading>
 
       {/* Daily Mission Card */}
-      <div className="card p-5 mb-5" style={{ background: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', border: '1.5px solid #BFDBFE' }}>
+      <div className="card p-5 mb-5" style={{ background: 'linear-gradient(135deg,#F6FAF4,#EFF6ED)', border: '1.5px solid #DEECDA' }}>
         <div className="flex items-center gap-3 mb-3">
           <span style={{ fontSize: '1.75rem' }}>{plan.icon}</span>
           <div>
-            <div className="text-xs font-medium tracking-widest uppercase" style={{ color: '#1D4ED8' }}>Today's Theme</div>
-            <div className="font-bold text-lg" style={{ color: '#1E40AF' }}>{plan.theme}</div>
+            <div className="text-xs font-medium tracking-widest uppercase" style={{ color: '#3F6B3C' }}>Today's Theme</div>
+            <div className="font-bold text-lg" style={{ color: '#2C5129' }}>{plan.theme}</div>
           </div>
         </div>
-        <div className="text-sm mb-1" style={{ color: '#1E3A8A' }}>📖 {plan.verse}</div>
-        <div className="text-sm italic mb-4" style={{ color: '#1D4ED8', lineHeight: 1.6 }}>{plan.text}</div>
+        <div className="text-sm mb-1" style={{ color: '#1F3A1D' }}>📖 {plan.verse}</div>
+        <div className="text-sm italic mb-4" style={{ color: '#3F6B3C', lineHeight: 1.6 }}>{plan.text}</div>
         <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(255,255,255,0.7)' }}>
-          <div className="text-xs font-medium mb-1" style={{ color: '#1E40AF' }}>🎯 Today's Mission</div>
-          <div className="text-sm" style={{ color: '#1E3A8A', lineHeight: 1.5 }}>{plan.mission}</div>
+          <div className="text-xs font-medium mb-1" style={{ color: '#2C5129' }}>🎯 Today's Mission</div>
+          <div className="text-sm" style={{ color: '#1F3A1D', lineHeight: 1.5 }}>{plan.mission}</div>
         </div>
         {me && (
-          <div className="text-xs text-center" style={{ color: '#3B82F6' }}>
+          <div className="text-xs text-center" style={{ color: '#3F6B3C' }}>
             Good {greetingTime}, {me.title ? me.title + ' ' : ''}{me.name.split(' ')[0]}! Keep shining for God today. 🌟
           </div>
         )}
@@ -9106,9 +9125,9 @@ function DevotionalTab({ me, data }) {
 
         {!timerActive && !timerDone && (
           <div className="text-center">
-            <div className="font-bold mb-1" style={{ fontSize: '3rem', color: '#16A34A', fontVariantNumeric: 'tabular-nums' }}>5:00</div>
+            <div className="font-bold mb-1" style={{ fontSize: '3rem', color: '#3F6B3C', fontVariantNumeric: 'tabular-nums' }}>5:00</div>
             <div className="text-sm ink-muted mb-4">Guided 5-minute prayer with soft tone &amp; Scripture prompts</div>
-            <button className="btn btn-primary" style={{ background: '#16A34A', borderColor: '#15803D' }} onClick={startTimer}>
+            <button className="btn btn-primary" style={{ background: '#3F6B3C', borderColor: '#2C5129' }} onClick={startTimer}>
               🙏 Begin Prayer
             </button>
           </div>
@@ -9118,20 +9137,20 @@ function DevotionalTab({ me, data }) {
           <div className="text-center">
             <div className="relative mx-auto mb-3" style={{ width: 130, height: 130 }}>
               <svg width="130" height="130" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
-                <circle cx="65" cy="65" r="56" fill="none" stroke="#D1FAE5" strokeWidth="8" />
-                <circle cx="65" cy="65" r="56" fill="none" stroke="#16A34A" strokeWidth="8"
+                <circle cx="65" cy="65" r="56" fill="none" stroke="#DEECDA" strokeWidth="8" />
+                <circle cx="65" cy="65" r="56" fill="none" stroke="#3F6B3C" strokeWidth="8"
                   strokeDasharray={String(2 * Math.PI * 56)}
                   strokeDashoffset={String(2 * Math.PI * 56 * (1 - progress))}
                   style={{ transition: 'stroke-dashoffset 1s linear' }} />
               </svg>
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
-                <div className="font-bold" style={{ fontSize: '1.5rem', color: '#16A34A', fontVariantNumeric: 'tabular-nums' }}>
+                <div className="font-bold" style={{ fontSize: '1.5rem', color: '#3F6B3C', fontVariantNumeric: 'tabular-nums' }}>
                   {mins}:{secs.toString().padStart(2, '0')}
                 </div>
-                <div className="text-xs" style={{ color: '#4ADE80' }}>🎵 ♪</div>
+                <div className="text-xs" style={{ color: '#3F6B3C' }}>🎵 ♪</div>
               </div>
             </div>
-            <div className="text-sm p-3 rounded-xl mb-4" style={{ background: '#F0FDF4', color: '#166534', lineHeight: 1.6 }}>
+            <div className="text-sm p-3 rounded-xl mb-4" style={{ background: '#EFF6ED', color: '#1F3A1D', lineHeight: 1.6 }}>
               {currentPrompt.text}
             </div>
             <button className="btn btn-soft text-sm" onClick={stopTimer}>⏹ Stop</button>
@@ -9141,7 +9160,7 @@ function DevotionalTab({ me, data }) {
         {timerDone && (
           <div className="text-center">
             <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🙏</div>
-            <div className="font-semibold text-lg mb-1" style={{ color: '#16A34A' }}>Amen! Prayer complete.</div>
+            <div className="font-semibold text-lg mb-1" style={{ color: '#3F6B3C' }}>Amen! Prayer complete.</div>
             <div className="text-sm ink-muted mb-4">5 minutes logged to your prayer record.</div>
             <button className="btn btn-soft" onClick={() => { setTimerDone(false); setSecondsLeft(300); setCurrentPrompt(PRAYER_PROMPTS[0]); }}>
               🔄 Pray Again
@@ -9149,18 +9168,18 @@ function DevotionalTab({ me, data }) {
           </div>
         )}
 
-        <div className="flex gap-6 mt-4 pt-4 justify-center" style={{ borderTop: '1px solid #E4E4E7' }}>
+        <div className="flex gap-6 mt-4 pt-4 justify-center" style={{ borderTop: '1px solid #E6DFD0' }}>
           <div className="text-center">
-            <div className="text-2xl font-bold" style={{ color: '#16A34A' }}>{monthlyMinutes}</div>
+            <div className="text-2xl font-bold" style={{ color: '#3F6B3C' }}>{monthlyMinutes}</div>
             <div className="text-xs ink-muted">min this month</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold" style={{ color: '#16A34A' }}>{prayerLog.length}</div>
+            <div className="text-2xl font-bold" style={{ color: '#3F6B3C' }}>{prayerLog.length}</div>
             <div className="text-xs ink-muted">sessions total</div>
           </div>
         </div>
         {monthlyMinutes > 0 && (
-          <div className="text-xs text-center mt-2" style={{ color: '#16A34A' }}>
+          <div className="text-xs text-center mt-2" style={{ color: '#3F6B3C' }}>
             You prayed {monthlyMinutes} min{monthlyMinutes !== 1 ? 's' : ''} in {nowDate.toLocaleDateString('en-US', { month: 'long' })}! 🙏
           </div>
         )}
@@ -15247,7 +15266,7 @@ const TABS = [
 ];
 
 const GIVING_KEY = CHURCH.key('flcc-giving-name-v1');
-const GIVING_GOLD = '#D97706';
+const GIVING_GOLD = '#7D5F0E';
 
 // ── number to words (KWD) ───────────────────────────────────────────────────
 const G_ONES=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
@@ -15295,7 +15314,7 @@ function GivingTab({ givingData, me }) {
   const recentRecs = (record?.records||[]).slice(0,8);
 
   // Consistency colour
-  const consColor = consistency>=80?'#16A34A':consistency>=50?GIVING_GOLD:'#DC2626';
+  const consColor = consistency>=80?'#3F6B3C':consistency>=50?GIVING_GOLD:'#A8455A';
 
   return (
     <div className="fade-in" style={{ paddingBottom: 80 }}>
@@ -15364,7 +15383,7 @@ function GivingTab({ givingData, me }) {
               <span style={{ fontSize: '.8125rem', fontWeight: 600 }}>Giving Consistency</span>
               <span style={{ fontSize: '.8125rem', fontWeight: 700, color: consColor }}>{consistency}%</span>
             </div>
-            <div style={{ height: 10, borderRadius: 5, background: '#F0F0EE', overflow: 'hidden', marginBottom: 6 }}>
+            <div style={{ height: 10, borderRadius: 5, background: '#F2EEE1', overflow: 'hidden', marginBottom: 6 }}>
               <div style={{ height: 10, borderRadius: 5, background: consColor, width: `${consistency}%`, transition: 'width .6s cubic-bezier(.34,1.56,.64,1)' }}/>
             </div>
             <div style={{ fontSize: '.7rem', color: 'var(--ink-muted)' }}>
@@ -15388,7 +15407,7 @@ function GivingTab({ givingData, me }) {
                       <div style={{ fontSize: '.45rem', color: isLatest ? GIVING_GOLD : 'var(--ink-subtle)', fontFamily: 'Geist Mono,monospace', fontWeight: isLatest ? 700 : 400 }}>
                         {m.totalKD > 0 ? f3(m.totalKD) : ''}
                       </div>
-                      <div style={{ width: '100%', height: `${h}px`, borderRadius: '3px 3px 0 0', background: isLatest ? GIVING_GOLD : '#D97706', opacity: isLatest ? 1 : 0.5, transition: 'height .4s ease' }}/>
+                      <div style={{ width: '100%', height: `${h}px`, borderRadius: '3px 3px 0 0', background: isLatest ? GIVING_GOLD : '#997617', opacity: isLatest ? 1 : 0.5, transition: 'height .4s ease' }}/>
                       <div style={{ fontSize: '.45rem', color: isLatest ? GIVING_GOLD : 'var(--ink-subtle)', fontWeight: isLatest ? 700 : 400, textAlign: 'center', whiteSpace: 'nowrap' }}>
                         {m.label.split(' ')[0]}
                       </div>
@@ -15407,7 +15426,7 @@ function GivingTab({ givingData, me }) {
           {/* Recent records */}
           {recentRecs.length > 0 && (
             <div className="card" style={{ overflow: 'hidden' }}>
-              <div style={{ padding: '10px 14px', background: '#F9F9F7', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ padding: '10px 14px', background: '#F7F4EA', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ fontSize: '.6rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-subtle)' }}>Recent Giving History</div>
               </div>
               {recentRecs.map((r, i) => (
@@ -15850,13 +15869,13 @@ function App() {
           the game list, so it only occupies one 54px circle on screen
           instead of a permanent stack of one per game. */}
       {showGames && [
-        { key: 'blessing', href: 'daily-blessing/index.html', bottom: 92, bg: '#1E5EFF', border: '2px solid rgba(214,167,86,0.5)', shadow: 'rgba(30,94,255,0.35)', icon: '🎁', title: 'Daily Blessing' },
-        { key: 'armor', href: 'armor-of-god/index.html', bottom: 156, bg: G_ACCENT, border: 'none', shadow: 'rgba(124,58,237,0.38)', icon: '⚔️', title: 'Armor of God: Spiritual Battle' },
-        { key: 'snake', href: 'snake/index.html', bottom: 220, bg: '#064e3b', border: '2px solid rgba(0,255,136,0.35)', shadow: 'rgba(0,255,136,0.28)', icon: '🐍', title: 'Snake: Nokia Reborn' },
-        { key: 'maze', href: 'spiritual-maze/index.html', bottom: 284, bg: '#0F2A4A', border: '2px solid rgba(252,211,77,0.45)', shadow: 'rgba(252,211,77,0.25)', icon: '✦', title: 'Walk in the Light: Spiritual Maze' },
-        { key: 'faithmatch', href: 'faith-match/index.html', bottom: 348, bg: '#1e3a5f', border: '2px solid rgba(37,99,235,0.5)', shadow: 'rgba(37,99,235,0.35)', icon: '🧩', title: 'Faith Match: Scripture Match-3' },
-        { key: 'scripturetetris', href: 'scripture-tetris/index.html', bottom: 412, bg: '#1A2440', border: '2px solid rgba(124,92,255,0.5)', shadow: 'rgba(124,92,255,0.35)', icon: '✝', title: 'Scripture Tetris' },
-        { key: 'crossword', href: 'bible-crossword/index.html', bottom: 476, bg: 'var(--accent)', border: '2px solid rgba(163,59,42,0.35)', shadow: 'rgba(163,59,42,0.35)', icon: '▦', title: 'Bible Crossword: a harder way to know the Word' },
+        { key: 'blessing', href: 'daily-blessing/index.html', bottom: 92, bg: '#7D5F0E', border: '2px solid rgba(212,180,81,0.5)', shadow: 'rgba(104,156,99,0.35)', icon: '🎁', title: 'Daily Blessing' },
+        { key: 'armor', href: 'armor-of-god/index.html', bottom: 156, bg: G_ACCENT, border: 'none', shadow: 'rgba(168,69,90,0.38)', icon: '⚔️', title: 'Armor of God: Spiritual Battle' },
+        { key: 'snake', href: 'snake/index.html', bottom: 220, bg: '#2C5129', border: '2px solid rgba(143,186,137,0.35)', shadow: 'rgba(143,186,137,0.28)', icon: '🐍', title: 'Snake: Nokia Reborn' },
+        { key: 'maze', href: 'spiritual-maze/index.html', bottom: 284, bg: '#96602F', border: '2px solid rgba(229,209,121,0.45)', shadow: 'rgba(229,209,121,0.25)', icon: '✦', title: 'Walk in the Light: Spiritual Maze' },
+        { key: 'faithmatch', href: 'faith-match/index.html', bottom: 348, bg: '#78303C', border: '2px solid rgba(78,127,74,0.5)', shadow: 'rgba(78,127,74,0.35)', icon: '🧩', title: 'Faith Match: Scripture Match-3' },
+        { key: 'scripturetetris', href: 'scripture-tetris/index.html', bottom: 412, bg: '#5C2409', border: '2px solid rgba(208,126,138,0.5)', shadow: 'rgba(208,126,138,0.35)', icon: '✝', title: 'Scripture Tetris' },
+        { key: 'crossword', href: 'bible-crossword/index.html', bottom: 476, bg: 'var(--accent)', border: '2px solid rgba(184,74,28,0.35)', shadow: 'rgba(184,74,28,0.35)', icon: '▦', title: 'Bible Crossword: a harder way to know the Word' },
       ].map((g) => (
         <button
           key={g.key}
@@ -15885,7 +15904,7 @@ function App() {
           border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.375rem', lineHeight: 1,
-          boxShadow: '0 4px 20px rgba(124,58,237,0.38)',
+          boxShadow: '0 4px 20px rgba(168,69,90,0.38)',
           zIndex: 26, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent',
         }}
         title={showGames ? 'Close games menu' : 'Games'}
@@ -15931,12 +15950,12 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{ padding: '2rem', textAlign: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', fontFamily: 'Geist, ui-sans-serif, system-ui, sans-serif' }}>
           <div style={{ fontSize: '2.5rem' }}>⚠️</div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 600, color: '#18181B' }}>Something went wrong</div>
-          <div style={{ fontSize: '0.875rem', color: '#52525B', maxWidth: 420, wordBreak: 'break-word', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 10, padding: '1rem' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 600, color: '#241C17' }}>Something went wrong</div>
+          <div style={{ fontSize: '0.875rem', color: '#6B5D52', maxWidth: 420, wordBreak: 'break-word', background: '#FDF4F2', border: '1px solid #DE9490', borderRadius: 10, padding: '1rem' }}>
             {this.state.error?.message || 'Unknown render error'}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#A1A1AA' }}>Please screenshot this and share it so we can fix it.</div>
-          <button style={{ padding: '0.5rem 1.25rem', background: '#18181B', color: 'white', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.875rem' }} onClick={() => window.location.reload()}>
+          <div style={{ fontSize: '0.75rem', color: '#A3937F' }}>Please screenshot this and share it so we can fix it.</div>
+          <button style={{ padding: '0.5rem 1.25rem', background: '#241C17', color: 'white', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.875rem' }} onClick={() => window.location.reload()}>
             ↻ Reload page
           </button>
         </div>
