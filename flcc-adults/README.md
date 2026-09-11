@@ -194,6 +194,18 @@ secret resolved to. None of them ever reveals a name or a value.
 worth naming: the secret is there but its value could not be read at all. Every
 passcode will be refused until it is re-saved.
 
+## Phone, tablet, desktop
+
+It is a phone app first and still reads best there. On a tablet held upright
+the column widens and the tabs stay at the bottom. On a tablet turned sideways
+or on a computer the tabs become a rail down the left — a bottom bar on a
+27-inch monitor is a long way from what you are reading — and the screens that
+are a menu rather than a read lay out two posters across.
+
+The reading column never grows past about 700px whatever the window. Long lines
+are harder to read, and this app is mostly prose and Scripture; the extra room
+goes on space, not on stretching a sentence across a desk.
+
 ## The design
 
 `css/next.css` — the **poster system**, which is the kids and teens edition's

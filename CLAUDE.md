@@ -164,6 +164,17 @@ Scripture** — the Bible reader is plain white paper and serif type — and
 safely at that size. The crossword grid and the match-three board are the same
 system at tile size: flat tones, one navy outline, the app's own drawings.
 
+**It is a phone app that also fits a tablet and a desktop.** Under 48rem
+nothing changes. From 48rem the reading column grows from 34rem to 44rem. From
+64rem the tab bar becomes a rail down the left and the screens named in `GRID`
+(`app.js`) lay out two posters across — menus, never reading screens, because
+Scripture in a half-width column beside something else is the thing that split
+exists to prevent. The column never passes 44rem however wide the window is.
+Two traps, both of which were bugs first: the grid flag goes on `<body>` so the
+header widens with it, and posters are grid items but **not** DOM children
+(every screen wraps them in a `display: contents` div), so `.screen > .poster`
+matches nothing.
+
 **Type size is a setting** (You → Text size), and everything in the stylesheet
 is in rem so one number moves all of it. The lower bound of each headline
 `clamp()` is capped against the viewport with `min()` — without that, the

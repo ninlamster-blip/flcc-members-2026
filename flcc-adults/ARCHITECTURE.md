@@ -335,6 +335,47 @@ Three rules that are the adult register rather than the system:
 3. **No drawing has a face.** The kids edition's characters do not come across;
    the objects do.
 
+### Bigger screens
+
+The app was drawn for a phone and that is still where most of it is read.
+Nothing below changes the poster system — same paper, same ink, same 3px edge,
+same enormous headlines. It changes how much room the posters get and where the
+five tabs sit.
+
+| Width | What changes |
+|---|---|
+| under 48rem | a phone. Untouched. |
+| 48–64rem | a tablet upright: the column grows from 34rem to 44rem, tabs stay at the bottom where a thumb is |
+| over 64rem | a tablet on its side, or a computer: the tabs become a rail down the left, and menu screens lay out two posters across |
+
+**The reading column stops at 44rem however wide the window is.** That is not
+timidity about space: a line of prose past about 75 characters is measurably
+harder to read, and this app is mostly prose and Scripture. The room a big
+screen buys is spent on breathing space and, where a screen is a menu rather
+than a read, on a second column.
+
+**Which screens go two up is a decision about what somebody is doing**, not
+about which screens matter. Choosing between things is easier when the things
+are side by side; reading is easier in one column of a sensible measure. So
+Explore, Play, Community, Watch, Grow, Pray and Notes lay out two across, and
+Today, Ask, the Bible, a message, a session and a guided prayer keep the
+column. `GRID` in `app.js` holds the list and `modules.test.mjs` fails if it
+names a screen that does not exist — or if a reading screen creeps into it.
+
+Two details that were bugs before they were rules:
+
+- **The flag lives on `<body>`, not on the screen.** The header has to widen
+  with the grid, or the page title sits visibly indented from the posters it
+  names.
+- **Posters are grid items but not DOM children.** Every screen wraps its
+  contents in a `display: contents` div, so a `.screen > .poster` selector
+  matches nothing. Use a descendant selector.
+
+The grid stretches rather than top-aligning. Two flat blocks of colour side by
+side with different bottom edges read as an accident; squared off they read as
+a pair, and empty colour inside the shorter one costs nothing in a system built
+from blocks of colour.
+
 ### Keeping the two editions one design
 
 The two apps share **no code**, so `css/next.css` and `js/core/art.js` here are

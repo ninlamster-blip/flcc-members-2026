@@ -162,6 +162,34 @@ test('every tab has a screen, and every sub-screen sits under a real tab', () =>
   }
 });
 
+/**
+ * The two-column list has to name real screens.
+ *
+ * A typo here is invisible: the screen simply never lays out two up on a wide
+ * display, and nobody notices for months because it still looks fine.
+ */
+test('every screen that lays out two up on a wide screen is a real screen', () => {
+  const app = code('js/app.js');
+  const grid = [...app.matchAll(/const GRID = new Set\(\[([^\]]+)\]/g)]
+    .flatMap(([, names]) => [...names.matchAll(/'([a-z]+)'/g)].map(([, name]) => name));
+  assert.ok(grid.length >= 4, 'the two-column list has emptied out');
+  // On <body>: the header has to widen with the grid, or the page title sits
+  // indented from the posters it names.
+  assert.match(app, /document\.body\.toggleAttribute\('data-grid'/,
+    'the two-column flag no longer reaches the header');
+
+  const screens = new Set([...app.matchAll(/^\s{2}([a-z]+):\s+\(\) => import/gm)].map(([, name]) => name));
+  for (const name of grid) {
+    assert.ok(screens.has(name), `GRID names "${name}", which is not a screen`);
+  }
+  // Reading screens keep the single column. Scripture in a half-width column
+  // beside something else is the thing this split exists to prevent.
+  for (const name of ['today', 'bible', 'moment', 'message', 'session', 'ask']) {
+    assert.equal(grid.includes(name), false,
+      `${name} is a reading screen and should not lay out two up`);
+  }
+});
+
 test('the drawings can be turned off everywhere at once', () => {
   // art() in core/ui.js checks the setting itself. A screen that built a
   // drawing straight from art.js would ignore that, and turning them off in
