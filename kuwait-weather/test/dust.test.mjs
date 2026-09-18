@@ -57,3 +57,18 @@ test('nulls and nonsense are ignored rather than treated as zero', () => {
   // A missing visibility must not read as "you cannot see anything".
   assert.equal(dust.dustLevel({ pm10: 20, visibility: null }).id, 'clear');
 });
+
+test('the published bands and the rank function are one table, not two', () => {
+  // `rankFromPm10` used to hold the four numbers inline. They are exported
+  // now because the hero's PM10 curve draws one of them as a line, and a
+  // chart with its own copy of a threshold will one day disagree with the
+  // badge underneath it. This pins the two to each other.
+  assert.deepEqual(dust.PM10_BANDS, [50, 150, 350, 800]);
+  assert.equal(dust.PM10_BANDS.length, dust.LEVELS.length - 1, 'four edges, five levels');
+  dust.PM10_BANDS.forEach((edge, i) => {
+    assert.equal(dust.rankFromPm10(edge - 0.01), i, `just under ${edge} is rank ${i}`);
+    assert.equal(dust.rankFromPm10(edge), i + 1, `${edge} itself is rank ${i + 1}`);
+  });
+  assert.equal(dust.PM10_MASK, 150);
+  assert.equal(dust.level(dust.rankFromPm10(dust.PM10_MASK)).id, 'dusty');
+});

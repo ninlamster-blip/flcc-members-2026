@@ -3,6 +3,11 @@
 const P = {
   sun: '<circle cx="12" cy="12" r="4.5"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/>',
   moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>',
+  // The sun on the horizon, told apart by which way the arrow points. Both
+  // are read at 15px beside a time in the hero, so the dome carries only two
+  // rays — the full eight close up into a blob at that size.
+  sunrise: '<path d="M3 20.5h18"/><path d="M7 20.5a5 5 0 0 1 10 0"/><path d="M4.8 14.6 3.4 13.2M19.2 14.6l1.4-1.4"/><path d="M12 10.2v-6"/><path d="m8.8 7.4 3.2-3.2 3.2 3.2"/>',
+  sunset: '<path d="M3 20.5h18"/><path d="M7 20.5a5 5 0 0 1 10 0"/><path d="M4.8 14.6 3.4 13.2M19.2 14.6l1.4-1.4"/><path d="M12 4.2v6"/><path d="m8.8 7 3.2 3.2L15.2 7"/>',
   partly: '<circle cx="9" cy="8.5" r="3.4"/><path d="M9 1.9v1.8M3.6 8.5H1.8M4.6 4.1 3.3 2.8M14.4 4.1l1.3-1.3"/><path d="M7.5 19.5h9.8a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-1 3.4 3.4 0 0 0-1.3 7.4z"/>',
   partlyNight: '<path d="M15.5 9.6A5.4 5.4 0 0 1 10 4.2a5.4 5.4 0 1 0 5.5 5.4z"/><path d="M7.5 19.8h9.8a3.2 3.2 0 0 0 .3-6.4 4.6 4.6 0 0 0-8.8-1 3.4 3.4 0 0 0-1.3 7.4z"/>',
   cloud: '<path d="M6.8 19h10.4a3.5 3.5 0 0 0 .3-7 5 5 0 0 0-9.6-1.1A3.7 3.7 0 0 0 6.8 19z"/>',

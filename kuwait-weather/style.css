@@ -272,6 +272,15 @@ h2 {
   text-transform: uppercase; color: var(--muted);
 }
 
+/* Sunrise and sunset share one slot so the hero still carries three things
+   beside the number, not four — stacked, because side by side the pair is
+   nearly twice as wide as anything else this column has held and the whole
+   column drops below the numeral. The arrows carry which is which: the label
+   has room for one word, and "SUNRISE · SUNSET" uppercased has not. */
+.reading-sun b { display: flex; align-items: center; justify-content: flex-end; gap: 0.25rem; }
+.reading-sun b + b { margin-top: 0.1rem; }
+.reading-sun .icon { color: var(--muted); }
+
 /* ── the curve ────────────────────────────────────────────────────────── */
 
 .curve-wrap { position: relative; margin: 0.5rem -0.35rem 0.2rem; }
@@ -293,6 +302,24 @@ h2 {
 .curve-key span { display: inline-flex; align-items: center; gap: 0.35rem; }
 .curve-key i { width: 14px; height: 0; border-top: 2px solid var(--tone); }
 .curve-key i.dashed { border-top-style: dashed; opacity: 0.55; }
+
+/* The PM10 curve under the temperature one. It shares the tone and the line
+   weight because it is the same card and the same day; what tells them apart
+   is the rule across it and its own key. Shorter, because two charts at the
+   full 104px would be most of the hero. */
+.curve--dust { height: 72px; }
+.curve-rule {
+  stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 2 5;
+  stroke-linecap: round; vector-effect: non-scaling-stroke; opacity: 0.8;
+}
+/* The mask line's label runs longer than "Feels like", so this key is allowed
+   to take a second row rather than push itself off the side of the card. */
+.curve-key--dust { flex-wrap: wrap; gap: 0.3rem 1.1rem; }
+.curve-key i.rule { border-top: 1.4px dashed var(--muted); opacity: 0.8; }
+
+/* A curve with nothing to draw returns an empty string, and an empty box
+   still carries its own margins. */
+.curve-wrap:empty { display: none; }
 
 /* ── the week, along the bottom of the sheet ──────────────────────────── */
 

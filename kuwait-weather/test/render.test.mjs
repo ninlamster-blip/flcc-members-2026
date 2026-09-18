@@ -7,6 +7,7 @@ import { derive } from '../js/core/derive.js';
 import { advisories } from '../js/core/advisories.js';
 import { toneFor } from '../js/ui/tone.js';
 import * as view from '../js/ui/render.js';
+import * as dust from '../js/core/dust.js';
 import { forecast, air } from './fixtures/forecast.mjs';
 
 const NOON = new Date('2026-07-15T09:00:00Z');
@@ -38,8 +39,36 @@ test('the three things beside the number are the three Kuwait needs', () => {
   const html = view.reading(reading(), 'C');
   assert.match(html, /Clear/, 'what the sky is doing');
   assert.match(html, /Feels like/);
-  assert.match(html, /PM10/, 'the reference puts pollution here, and here it earns its place');
-  assert.equal((html.match(/class="reading-pair"/g) || []).length, 2);
+  // PM10 held the third slot and lost it. Dust has a whole card of its own
+  // below with the same number on it, so the hero was saying it twice, while
+  // the two ends of the daylight were said once at the very bottom of the
+  // page — the wrong way round in a country where the question is when you
+  // can be outside.
+  assert.match(html, /04:55/, 'sunrise, on the place\'s own clock');
+  assert.match(html, /18:48/, 'sunset');
+  assert.ok(!/PM10/.test(html), 'PM10 belongs to the dust card now, not to the hero');
+  assert.equal((html.match(/class="reading-pair/g) || []).length, 2);
+});
+
+test('the hero says which sun time is which without a word for it', () => {
+  // Two times in one slot, and the label has room for "SUN". The arrows are
+  // the only thing telling a reader which of them is the sunrise, so each one
+  // leading its own time is the whole readability of the slot.
+  const html = view.reading(reading(), 'C');
+  assert.ok(html.indexOf('sun-up') < html.indexOf('04:55'), 'the rise arrow leads its time');
+  assert.ok(html.indexOf('04:55') < html.indexOf('sun-down'), 'the set arrow follows it');
+  assert.ok(html.indexOf('sun-down') < html.indexOf('18:48'));
+});
+
+test('a day the forecast gives no sunrise for prints a dash', () => {
+  // Open-Meteo answers with nulls rather than omitting the field, and the
+  // hero must not print "Invalid Date" or 01:00 on the epoch for it.
+  const f = forecast();
+  f.daily.sunrise = f.daily.sunrise.map(() => null);
+  f.daily.sunset = f.daily.sunset.map(() => null);
+  const html = view.reading(reading(f), 'C');
+  assert.ok(!/undefined|NaN|Invalid/.test(html), html);
+  assert.equal((html.match(/\u2014/g) || []).length, 2, 'one dash for each missing end of the day');
 });
 
 test('units switch all the way through', () => {
@@ -54,6 +83,30 @@ test('the note under the city says how the day is, and flags trapped humidity', 
 
   const dry = reading(forecast({ hour: () => ({ temperature_2m: 24, relative_humidity_2m: 20 }) }));
   assert.ok(!/humidity adds/.test(view.sheetNote(dry, 'calm')), 'a dry day has nothing to add');
+});
+
+test('the PM10 curve says what its dashed line is, in the unit it is in', () => {
+  const html = view.dustCurve(reading(), NOON);
+  assert.match(html, /class="curve curve--dust"/);
+  assert.match(html, /PM10/);
+  assert.match(html, new RegExp(`${dust.PM10_MASK} µg/m³`), 'the rule is unlabelled');
+});
+
+test('the line the hero draws is the line the badge below it uses', () => {
+  // Two copies of 150 — one in the chart, one in the level table — is a
+  // drift waiting to happen: the curve would cross its own line in a place
+  // the card underneath still called hazy.
+  assert.equal(dust.PM10_MASK, dust.PM10_BANDS[1]);
+  assert.equal(dust.rankFromPm10(dust.PM10_MASK - 1), 1, 'below the line the app says hazy');
+  assert.equal(dust.rankFromPm10(dust.PM10_MASK), 2, 'on it, the app says dusty');
+  assert.match(view.dustCurve(reading(), NOON), new RegExp(`${dust.PM10_MASK}`));
+});
+
+test('no air-quality data is an empty string, so the box collapses', () => {
+  // `.curve-wrap:empty` is display:none. Returning an empty chart instead
+  // would leave a labelled box with no line in it on the hero.
+  const d = reading(forecast(), null);
+  assert.equal(view.dustCurve(d, NOON), '');
 });
 
 test('the curve draws the day and labels its two lines', () => {
@@ -152,6 +205,7 @@ test('every section closes the tags it opens', () => {
   for (const [name, html] of Object.entries({
     reading: view.reading(d, 'C'),
     curve: view.curve(d, NOON),
+    dustCurve: view.dustCurve(d, NOON),
     work: view.workCard(d, { profile: 'moderate', now: NOON }),
     dust: view.dustCard(d),
     hours: view.hourStrip(d, 'C', NOON),
@@ -169,7 +223,7 @@ test('nothing renders the string "undefined" or "NaN" at a reader', () => {
   sparse.current.pressure_msl = null;
   const d = reading(sparse, null);
   const all = [
-    view.reading(d, 'C'), view.sheetNote(d, 'calm'), view.curve(d, NOON),
+    view.reading(d, 'C'), view.sheetNote(d, 'calm'), view.curve(d, NOON), view.dustCurve(d, NOON),
     view.workCard(d, { profile: 'light', now: NOON }), view.dustCard(d),
     view.hourStrip(d, 'C', NOON), view.dayList(d, 'C'), view.detailGrid(d, 'C'),
   ].join('');
@@ -197,10 +251,12 @@ test('no unit is printed inside a label the stylesheet uppercases', () => {
   const labels = [...html.matchAll(/<span>([^<]*)<\/span>/g)].map((m) => m[1]);
   assert.ok(labels.length);
   for (const text of labels) {
-    assert.equal(text, text.toUpperCase() === text.toUpperCase() ? text : text);
     for (const unit of ['µg', 'g/m', 'km/h', 'hPa', 'mm', 'kPa']) {
       assert.ok(!text.includes(unit), `"${text}" is uppercased on screen and carries the unit "${unit}"`);
     }
   }
-  assert.match(html, /<i>µg\/m³<\/i>/, 'the unit belongs in the value, which is not uppercased');
+  // The hero carries no unit at all now that PM10 has moved on — a clock time
+  // has none. The rule holds where the number went, and the stylesheet keeps
+  // the `<i>` that the next number to reach this slot will need.
+  assert.match(view.dustCard(reading()), /µg\/m³/, 'the unit followed PM10 to the card it lives on');
 });
