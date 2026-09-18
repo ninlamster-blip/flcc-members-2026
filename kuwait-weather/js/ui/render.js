@@ -16,6 +16,16 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
 ));
 
+/**
+ * A sunrise or sunset stamp as the place's own wall clock. The forecast can
+ * answer with nothing at all — a polar day has no sunrise, and a sparse
+ * response has no daily block — so the dash is a real case, not a guard.
+ */
+const sunTime = (stamp) => {
+  const at = fmt.parseLocal(stamp);
+  return at ? fmt.clock(at) : '\u2014';
+};
+
 export function placeOptions(selectedId) {
   return byGovernorate().map(({ gov, places }) => `
     <optgroup label="${esc(gov)}">
@@ -25,12 +35,25 @@ export function placeOptions(selectedId) {
 
 /**
  * The number, and the three things that stand beside it: what the sky is
- * doing, today's range, and what is in the air. The reference puts exactly
- * these three there, and for Kuwait they happen to be the right three.
+ * doing, what it feels like, and the two ends of the daylight.
+ *
+ * PM10 held that last slot, and it was the reference's choice rather than
+ * Kuwait's. Dust already has a card of its own further down carrying the same
+ * number, the band it falls in and what to do about it, so the hero was
+ * saying it twice; sunrise and sunset were said once, in the last row of the
+ * detail grid at the very bottom of the page. In a country where the question
+ * is when you can be outside, that is the wrong way round.
+ *
+ * Still three, not four. The numeral gets most of the card and a fourth slot
+ * beside it takes that room back, so the two times share one, stacked rather
+ * than side by side: on one line they ran 143px wide against the 78px PM10
+ * needed, and the column dropped below the numeral instead of standing next
+ * to it. The arrows say which time is which.
  */
 export function reading(d, units) {
   const n = d.now;
   const feels = n.heatIndexC ?? n.apparentC;
+  const today = d.days[0] || {};
 
   return `
     <p class="reading-temp">${Math.round(fmt.toDisplayTemp(n.tempC, units) ?? 0)}<span class="deg">°</span></p>
@@ -38,7 +61,10 @@ export function reading(d, units) {
       <div class="reading-art">${art(codeIcon(n.code, n.isDay), { size: 60 })}</div>
       <p class="reading-condition">${esc(codeLabel(n.code))}</p>
       <p class="reading-pair"><b>${fmt.temp(feels, units, { sign: false })}</b><span>Feels like</span></p>
-      <p class="reading-pair"><b>${fmt.num(n.pm10, 0)}<i>µg/m³</i></b><span>PM10</span></p>
+      <p class="reading-pair reading-sun">
+        <b>${icon('sunrise', { size: 15, className: 'sun-up' })}${esc(sunTime(today.sunrise))}</b>
+        <b>${icon('sunset', { size: 15, className: 'sun-down' })}${esc(sunTime(today.sunset))}</b>
+        <span>Sun</span></p>
     </div>`;
 }
 
@@ -187,7 +213,7 @@ export function detailGrid(d, units) {
       <p>Sea level</p></div>
     <div><dt>${icon('eye', { size: 16 })} Visibility</dt><dd>${fmt.visibility(n.visibilityM)}</dd>
       <p>${n.dust ? esc(n.dust.label) : '—'}</p></div>
-    <div><dt>${icon('clock', { size: 16 })} Sun</dt><dd>${d.days[0]?.sunrise ? esc(fmt.clock(fmt.parseLocal(d.days[0].sunrise))) : '—'} · ${d.days[0]?.sunset ? esc(fmt.clock(fmt.parseLocal(d.days[0].sunset))) : '—'}</dd>
+    <div><dt>${icon('clock', { size: 16 })} Sun</dt><dd>${esc(sunTime(d.days[0]?.sunrise))} · ${esc(sunTime(d.days[0]?.sunset))}</dd>
       <p>Rise and set</p></div>`;
 }
 

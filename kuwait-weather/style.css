@@ -272,6 +272,15 @@ h2 {
   text-transform: uppercase; color: var(--muted);
 }
 
+/* Sunrise and sunset share one slot so the hero still carries three things
+   beside the number, not four — stacked, because side by side the pair is
+   nearly twice as wide as anything else this column has held and the whole
+   column drops below the numeral. The arrows carry which is which: the label
+   has room for one word, and "SUNRISE · SUNSET" uppercased has not. */
+.reading-sun b { display: flex; align-items: center; justify-content: flex-end; gap: 0.25rem; }
+.reading-sun b + b { margin-top: 0.1rem; }
+.reading-sun .icon { color: var(--muted); }
+
 /* ── the curve ────────────────────────────────────────────────────────── */
 
 .curve-wrap { position: relative; margin: 0.5rem -0.35rem 0.2rem; }

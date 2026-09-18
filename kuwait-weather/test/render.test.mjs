@@ -38,8 +38,36 @@ test('the three things beside the number are the three Kuwait needs', () => {
   const html = view.reading(reading(), 'C');
   assert.match(html, /Clear/, 'what the sky is doing');
   assert.match(html, /Feels like/);
-  assert.match(html, /PM10/, 'the reference puts pollution here, and here it earns its place');
-  assert.equal((html.match(/class="reading-pair"/g) || []).length, 2);
+  // PM10 held the third slot and lost it. Dust has a whole card of its own
+  // below with the same number on it, so the hero was saying it twice, while
+  // the two ends of the daylight were said once at the very bottom of the
+  // page — the wrong way round in a country where the question is when you
+  // can be outside.
+  assert.match(html, /04:55/, 'sunrise, on the place\'s own clock');
+  assert.match(html, /18:48/, 'sunset');
+  assert.ok(!/PM10/.test(html), 'PM10 belongs to the dust card now, not to the hero');
+  assert.equal((html.match(/class="reading-pair/g) || []).length, 2);
+});
+
+test('the hero says which sun time is which without a word for it', () => {
+  // Two times in one slot, and the label has room for "SUN". The arrows are
+  // the only thing telling a reader which of them is the sunrise, so each one
+  // leading its own time is the whole readability of the slot.
+  const html = view.reading(reading(), 'C');
+  assert.ok(html.indexOf('sun-up') < html.indexOf('04:55'), 'the rise arrow leads its time');
+  assert.ok(html.indexOf('04:55') < html.indexOf('sun-down'), 'the set arrow follows it');
+  assert.ok(html.indexOf('sun-down') < html.indexOf('18:48'));
+});
+
+test('a day the forecast gives no sunrise for prints a dash', () => {
+  // Open-Meteo answers with nulls rather than omitting the field, and the
+  // hero must not print "Invalid Date" or 01:00 on the epoch for it.
+  const f = forecast();
+  f.daily.sunrise = f.daily.sunrise.map(() => null);
+  f.daily.sunset = f.daily.sunset.map(() => null);
+  const html = view.reading(reading(f), 'C');
+  assert.ok(!/undefined|NaN|Invalid/.test(html), html);
+  assert.equal((html.match(/\u2014/g) || []).length, 2, 'one dash for each missing end of the day');
 });
 
 test('units switch all the way through', () => {
@@ -197,10 +225,12 @@ test('no unit is printed inside a label the stylesheet uppercases', () => {
   const labels = [...html.matchAll(/<span>([^<]*)<\/span>/g)].map((m) => m[1]);
   assert.ok(labels.length);
   for (const text of labels) {
-    assert.equal(text, text.toUpperCase() === text.toUpperCase() ? text : text);
     for (const unit of ['µg', 'g/m', 'km/h', 'hPa', 'mm', 'kPa']) {
       assert.ok(!text.includes(unit), `"${text}" is uppercased on screen and carries the unit "${unit}"`);
     }
   }
-  assert.match(html, /<i>µg\/m³<\/i>/, 'the unit belongs in the value, which is not uppercased');
+  // The hero carries no unit at all now that PM10 has moved on — a clock time
+  // has none. The rule holds where the number went, and the stylesheet keeps
+  // the `<i>` that the next number to reach this slot will need.
+  assert.match(view.dustCard(reading()), /µg\/m³/, 'the unit followed PM10 to the card it lives on');
 });
