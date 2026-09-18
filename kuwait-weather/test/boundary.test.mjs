@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -116,6 +117,59 @@ test('the service worker caches every module the app actually loads', () => {
   for (const file of modules) {
     const path = `./${relative(ROOT, file)}`;
     assert.ok(sw.includes(path), `sw.js does not cache ${path}`);
+  }
+});
+
+/** The paths listed in SHELL, minus './', which is index.html under another name. */
+function shellPaths(sw) {
+  const from = sw.indexOf('const SHELL = [');
+  const block = sw.slice(from, sw.indexOf('];', from));
+  return [...block.matchAll(/'\.\/([^']*)'/g)].map((m) => m[1]).filter(Boolean).sort();
+}
+
+/** What the cache name has to carry: the content of everything it caches. */
+function fingerprint(paths) {
+  const h = createHash('sha256');
+  for (const path of paths) {
+    h.update(path);
+    h.update(readFileSync(join(ROOT, path)));
+  }
+  return h.digest('hex').slice(0, 8);
+}
+
+test('the cache name carries a fingerprint of the shell it caches', () => {
+  // The old version of this test pinned the shape of a hand-written "v2" and
+  // said in its own comment that a test cannot know when a file changed. It
+  // can, if the expected content is written down — and the weaker version let
+  // six changed shell files ship under an unchanged name, so every device that
+  // had installed the app kept serving the old one. The fetch handler below is
+  // cache-first, so that is forever, not until the next reload.
+  const sw = read(join(ROOT, 'sw.js'));
+  const paths = shellPaths(sw);
+  assert.ok(paths.length > 20, 'SHELL moved out from under this test');
+
+  const [, name] = sw.match(/const CACHE = '([^']+)'/) || [];
+  assert.ok(name, 'the cache name moved out from under this test');
+
+  const want = fingerprint(paths);
+  assert.ok(
+    name.endsWith(`-${want}`),
+    `the shell changed but the cache name did not. Set CACHE to 'kuwait-weather-vN-${want}' `
+    + `(bump N too), so the activate handler drops the old cache and devices get the new files. `
+    + `It reads '${name}'.`,
+  );
+
+  const [, version] = name.match(/-v(\d+)-/) || [];
+  assert.ok(Number(version) >= 3, 'the version only ever goes up');
+  assert.match(sw, /caches\.keys\(\)[\s\S]*filter\(\(n\) => n !== CACHE\)/, 'stale caches must be deleted');
+});
+
+test('every file the shell promises to cache is a file that exists', () => {
+  // addAll() rejects as a whole if any one entry 404s, which installs nothing
+  // and leaves the app with no offline shell at all.
+  const sw = read(join(ROOT, 'sw.js'));
+  for (const path of shellPaths(sw)) {
+    assert.ok(existsSync(join(ROOT, path)), `sw.js caches ./${path}, which is not in the app`);
   }
 });
 
