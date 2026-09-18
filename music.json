@@ -31,17 +31,17 @@
     {
       "key": "Friday",
       "label": "Friday Service",
-      "dot": "#10B981"
+      "dot": "#3F6B3C"
     },
     {
       "key": "Sunday",
       "label": "Sunday Service",
-      "dot": "#F59E0B"
+      "dot": "#7D5F0E"
     },
     {
       "key": "PrayerMeeting",
       "label": "Prayer Meeting",
-      "dot": "#8B5CF6"
+      "dot": "#A8455A"
     }
   ],
   "workers": [

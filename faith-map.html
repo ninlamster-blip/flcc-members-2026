@@ -10,15 +10,26 @@
   <style>
     /* ── Design tokens — identical to main FLCC app ──────────────── */
     :root {
-      --bg:            #FAFAF5;
-      --surface:       #FFFFFF;
-      --ink:           #18181B;
-      --ink-muted:     #52525B;
-      --ink-subtle:    #A1A1AA;
-      --border:        #E7E5DE;
-      --border-strong: #D4D4D0;
-      --accent:        #A33B2A;
-      --accent-hover:  #8B2E20;
+      /* ── NEXTPURE palette ─────────────────────────────────────────────
+         Five swatches on cream paper. They are the drawing — flat fills,
+         chips, rings, illustration. Text and controls use the darker tone
+         of the same family below, because no pastel here reaches 4.5:1. */
+      --paper: #F7F4EA;
+      --sage: #DEECDA;
+      --butter: #F1E4A0;
+      --peach: #F2BC9C;
+      --rose: #EDA89D;
+      --terracotta: #E4743C;
+
+      --bg:            #F7F4EA;
+      --surface:       #FFFDF8;
+      --ink:           #241C17;
+      --ink-muted:     #6B5D52;
+      --ink-subtle:    #A3937F;
+      --border:        #E6DFD0;
+      --border-strong: #D3C8B4;
+      --accent:        #B84A1C;
+      --accent-hover:  #96370F;
       --shadow-sm: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -54,26 +65,26 @@
       transition: all 0.15s ease;
     }
     .mode-btn.active   { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .mode-btn:hover:not(.active) { background: #F4F4F0; color: var(--ink); }
+    .mode-btn:hover:not(.active) { background: #F2EEE1; color: var(--ink); }
     #legend { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; color: var(--ink-muted); }
     .legend-swatch { display: inline-block; width: 18px; height: 7px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.07); }
 
     /* ── Map ──────────────────────────────────────────────────────── */
-    #map-wrap { flex: 1; min-height: 0; overflow: hidden; position: relative; background: #D8ECF4; cursor: grab; }
+    #map-wrap { flex: 1; min-height: 0; overflow: hidden; position: relative; background: #F8D6C2; cursor: grab; }
     #map-wrap.dragging { cursor: grabbing; }
     #world-map { width: 100%; height: 100%; display: block; }
     /* Fill transitions handled by CSS — no JS animation library needed */
     .country {
-      stroke: #D0CAC0; stroke-width: 0.4; cursor: pointer;
+      stroke: #D3C8B4; stroke-width: 0.4; cursor: pointer;
       transition: fill 0.7s ease, stroke 0.12s, stroke-width 0.12s;
     }
     .country:hover { stroke: var(--accent); stroke-width: 1.2; }
 
     /* Persecution pulse — app red accent family */
     @keyframes persecutionPulse {
-      0%   { filter: drop-shadow(0 0 1px rgba(163,59,42,0.3)); }
-      50%  { filter: drop-shadow(0 0 7px rgba(138,18,32,0.75)) drop-shadow(0 0 14px rgba(163,59,42,0.3)); }
-      100% { filter: drop-shadow(0 0 1px rgba(163,59,42,0.3)); }
+      0%   { filter: drop-shadow(0 0 1px rgba(184,74,28,0.3)); }
+      50%  { filter: drop-shadow(0 0 7px rgba(120,48,60,0.75)) drop-shadow(0 0 14px rgba(184,74,28,0.3)); }
+      100% { filter: drop-shadow(0 0 1px rgba(184,74,28,0.3)); }
     }
     .glow-extreme  { animation: persecutionPulse 2.4s ease-in-out infinite; }
     .glow-veryhigh { animation: persecutionPulse 3.2s ease-in-out infinite; }
@@ -117,11 +128,11 @@
       display: inline-block; padding: 2px 9px; border-radius: 999px;
       font-size: 0.67rem; font-weight: 600; letter-spacing: 0.04em; margin-top: 5px;
     }
-    .badge-extreme  { background: #FEE2E2; color: #991B1B; }
-    .badge-veryhigh { background: #FFEDD5; color: #9A3412; }
-    .badge-high     { background: #FEF3C7; color: #92400E; }
-    .badge-moderate { background: #F0FDF4; color: #166534; }
-    .badge-low      { background: #F4F4F0; color: var(--ink-muted); }
+    .badge-extreme  { background: #FBE7E2; color: #521E26; }
+    .badge-veryhigh { background: #FBE6DA; color: #7A320E; }
+    .badge-high     { background: #FBF5DC; color: #63490A; }
+    .badge-moderate { background: #EFF6ED; color: #1F3A1D; }
+    .badge-low      { background: #F2EEE1; color: var(--ink-muted); }
     .divider { height: 1px; background: var(--border); margin: 12px 0; }
     .section-label {
       font-size: 0.63rem; font-weight: 600; letter-spacing: 0.1em;
@@ -137,7 +148,7 @@
     .stat-value { font-size: 1rem; font-weight: 700; color: var(--ink); }
     .stat-value.accent { color: var(--accent); }
     .persecution-bar-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; }
-    .persecution-bar-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg,#C88878,#8A1220); transition: width 0.9s ease; }
+    .persecution-bar-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg,#ED9A6E,#78303C); transition: width 0.9s ease; }
     .prayer-req-item {
       display: flex; align-items: flex-start; gap: 8px;
       padding: 6px 0; border-bottom: 1px solid var(--border);
@@ -631,16 +642,16 @@ function threshold(domain, range) {
 
 const presenceScale = threshold(
   [3, 10, 25, 45, 65, 80],
-  ['#EAE6DE','#DDD3BB','#CEB882','#BE9E50','#A88430','#8C6818','#704E0A']
+  ['#EDE6D6','#D3C8B4','#CEB882','#BE9E50','#A88430','#8C6818','#704E0A']
 );
 const persecutionScale = threshold(
   [15, 35, 55, 75],
-  ['#EAE6DE','#EDD4CC','#D09080','#B04840','#8A1220']
+  ['#EDE6D6','#F6C4A6','#ED9A6E','#B84A1C','#78303C']
 );
 
 function colorFor(id) {
   const cd = COUNTRY_DATA[String(id)];
-  if (!cd) return '#E4E0D8';
+  if (!cd) return '#EDE6D6';
   return currentMode === 'presence'
     ? presenceScale(cd.christianPercent || 0)
     : persecutionScale(cd.persecutionIndex || 0);
@@ -659,7 +670,7 @@ function buildMap() {
   // Ocean background (outside zoomed group so it fills the viewport)
   const ocean = document.createElementNS(NS, 'rect');
   ocean.setAttribute('width', '960'); ocean.setAttribute('height', '500');
-  ocean.setAttribute('fill', '#D8ECF4');
+  ocean.setAttribute('fill', '#F8D6C2');
   svgEl.appendChild(ocean);
 
   // Zoom/pan group
@@ -670,7 +681,7 @@ function buildMap() {
   const grat = document.createElementNS(NS, 'path');
   grat.setAttribute('d', MAP_DATA.graticule);
   grat.setAttribute('fill', 'none');
-  grat.setAttribute('stroke', '#C0D4E0');
+  grat.setAttribute('stroke', '#F2BC9C');
   grat.setAttribute('stroke-width', '0.35');
   gEl.appendChild(grat);
 
@@ -678,7 +689,7 @@ function buildMap() {
   const sphere = document.createElementNS(NS, 'path');
   sphere.setAttribute('d', MAP_DATA.sphere);
   sphere.setAttribute('fill', 'none');
-  sphere.setAttribute('stroke', '#A8C4D4');
+  sphere.setAttribute('stroke', '#DCB08C');
   sphere.setAttribute('stroke-width', '0.7');
   gEl.appendChild(sphere);
 
@@ -849,14 +860,14 @@ function setupHover(svgEl) {
       (currentMode === 'presence'
         ? (cd ? `Christians: <strong>${cd.christianPercent}%</strong>` : 'Data not available')
         : (cd ? `Persecution index: <strong>${cd.persecutionIndex}/100</strong>` : 'Data not available'));
-    p.setAttribute('stroke', '#A33B2A');
+    p.setAttribute('stroke', '#B84A1C');
     p.setAttribute('stroke-width', '1.2');
   });
   svgEl.addEventListener('mouseout', e => {
     const p = e.target.closest('.country');
     if (!p) return;
     tip.style.display = 'none';
-    p.setAttribute('stroke', '#D0CAC0');
+    p.setAttribute('stroke', '#D3C8B4');
     p.setAttribute('stroke-width', '0.4');
     hoveredEl = null;
   });
@@ -906,8 +917,8 @@ function applyGlowClasses() {
 function buildLegend() {
   const el = document.getElementById('legend');
   const [swatches, left, right] = currentMode === 'presence'
-    ? [['#EAE6DE','#DDD3BB','#CEB882','#BE9E50','#A88430','#8C6818','#704E0A'], 'Fewer', 'More Christian']
-    : [['#EAE6DE','#EDD4CC','#D09080','#B04840','#8A1220'], 'Peaceful', 'Extreme Persecution'];
+    ? [['#EDE6D6','#D3C8B4','#CEB882','#BE9E50','#A88430','#8C6818','#704E0A'], 'Fewer', 'More Christian']
+    : [['#EDE6D6','#F6C4A6','#ED9A6E','#B84A1C','#78303C'], 'Peaceful', 'Extreme Persecution'];
   el.innerHTML = `<span>${left}</span>` +
     swatches.map(c => `<span class="legend-swatch" style="background:${c};"></span>`).join('') +
     `<span style="color:${currentMode==='presence'?'var(--ink-muted)':'var(--accent)'}">${right}</span>`;

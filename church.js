@@ -42,20 +42,20 @@
      scripts/new-church.mjs appends entries between the two markers. */
   /* REGISTRY-START */
   var CHURCHES = [
-    { slug: 'abundance',   name: 'FLCC - Abundance Church', short: 'Abundance',   sector: 'Hope',  dataBase: '.',                      accent: '#A33B2A' },
-    { slug: 'fb',          name: 'FLCC - FB',               short: 'FB',          sector: 'Hope',  dataBase: './churches/fb',          accent: '#B45309' },
-    { slug: 'ft',          name: 'FLCC - F&T',              short: 'F&T',         sector: 'Hope',  dataBase: './churches/ft',          accent: '#C2410C' },
-    { slug: 'cornerstone', name: 'FLCC - Cornerstone',      short: 'Cornerstone', sector: 'Hope',  dataBase: './churches/cornerstone', accent: '#9A3412' },
-    { slug: 'botr-friday', name: 'FLCC - BOTR Friday',      short: 'BOTR Friday', sector: 'Faith', dataBase: './churches/botr-friday', accent: '#1D4ED8' },
-    { slug: 'botr-sunday', name: 'FLCC - BOTR Sunday',      short: 'BOTR Sunday', sector: 'Faith', dataBase: './churches/botr-sunday', accent: '#4338CA' },
-    { slug: 'shekinah',    name: 'FLCC - Shekinah',         short: 'Shekinah',    sector: 'Faith', dataBase: './churches/shekinah',    accent: '#1E40AF' },
-    { slug: 'agape',       name: 'FLCC - Agape',            short: 'Agape',       sector: 'Faith', dataBase: './churches/agape',       accent: '#0E7490' },
-    { slug: 'hotk',        name: 'FLCC - HOTK',             short: 'HOTK',        sector: 'Faith', dataBase: './churches/hotk',        accent: '#0F766E' },
-    { slug: 'mtcc',        name: 'FLCC - MTCC',             short: 'MTCC',        sector: 'Love',  dataBase: './churches/mtcc',        accent: '#15803D' },
-    { slug: 'gil',         name: 'FLCC - GIL',              short: 'GIL',         sector: 'Love',  dataBase: './churches/gil',         accent: '#4D7C0F' },
-    { slug: 'jaoc',        name: 'FLCC - JAOC',             short: 'JAOC',        sector: 'Love',  dataBase: './churches/jaoc',        accent: '#6D28D9' },
-    { slug: 'harvester',   name: 'FLCC - Harvester',        short: 'Harvester',   sector: 'Love',  dataBase: './churches/harvester',   accent: '#7E22CE' },
-    { slug: 'virtual',     name: 'FLCC - Virtual Church',   short: 'Virtual',     sector: 'Love',  dataBase: './churches/virtual',     accent: '#BE185D' },
+    { slug: 'abundance',   name: 'FLCC - Abundance Church', short: 'Abundance',   sector: 'Hope',  dataBase: '.',                      accent: '#B84A1C' },
+    { slug: 'fb',          name: 'FLCC - FB',               short: 'FB',          sector: 'Hope',  dataBase: './churches/fb',          accent: '#D2622A' },
+    { slug: 'ft',          name: 'FLCC - F&T',              short: 'F&T',         sector: 'Hope',  dataBase: './churches/ft',          accent: '#96602F' },
+    { slug: 'cornerstone', name: 'FLCC - Cornerstone',      short: 'Cornerstone', sector: 'Hope',  dataBase: './churches/cornerstone', accent: '#7A320E' },
+    { slug: 'botr-friday', name: 'FLCC - BOTR Friday',      short: 'BOTR Friday', sector: 'Faith', dataBase: './churches/botr-friday', accent: '#7D5F0E' },
+    { slug: 'botr-sunday', name: 'FLCC - BOTR Sunday',      short: 'BOTR Sunday', sector: 'Faith', dataBase: './churches/botr-sunday', accent: '#997617' },
+    { slug: 'shekinah',    name: 'FLCC - Shekinah',         short: 'Shekinah',    sector: 'Faith', dataBase: './churches/shekinah',    accent: '#5E6B33' },
+    { slug: 'agape',       name: 'FLCC - Agape',            short: 'Agape',       sector: 'Faith', dataBase: './churches/agape',       accent: '#2C5129' },
+    { slug: 'hotk',        name: 'FLCC - HOTK',             short: 'HOTK',        sector: 'Faith', dataBase: './churches/hotk',        accent: '#4E7F4A' },
+    { slug: 'mtcc',        name: 'FLCC - MTCC',             short: 'MTCC',        sector: 'Love',  dataBase: './churches/mtcc',        accent: '#A8455A' },
+    { slug: 'gil',         name: 'FLCC - GIL',              short: 'GIL',         sector: 'Love',  dataBase: './churches/gil',         accent: '#BE5E6E' },
+    { slug: 'jaoc',        name: 'FLCC - JAOC',             short: 'JAOC',        sector: 'Love',  dataBase: './churches/jaoc',        accent: '#78303C' },
+    { slug: 'harvester',   name: 'FLCC - Harvester',        short: 'Harvester',   sector: 'Love',  dataBase: './churches/harvester',   accent: '#6B4220' },
+    { slug: 'virtual',     name: 'FLCC - Virtual Church',   short: 'Virtual',     sector: 'Love',  dataBase: './churches/virtual',     accent: '#B07A45' },
   ];
   /* REGISTRY-END */
 
