@@ -144,6 +144,7 @@ function render() {
   el('sheet-note').innerHTML = view.sheetNote(d, tone);
   el('reading').innerHTML = view.reading(d, state.units);
   el('curve').innerHTML = view.curve(d, now);
+  el('dust-curve').innerHTML = view.dustCurve(d, now);
   el('advisories').innerHTML = view.advisoryList(alerts);
   el('work').innerHTML = view.workCard(d, { profile: state.profile, now });
   el('dust').innerHTML = view.dustCard(d);

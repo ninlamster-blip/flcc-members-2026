@@ -31,14 +31,25 @@ export function level(rank) {
   return LEVELS[Math.min(LEVELS.length - 1, Math.max(0, rank))];
 }
 
-/** PM10 in µg/m³ → a rank. WHO's 24-hour guideline is 45; a shamal reaches four figures. */
+/**
+ * The PM10 edges between the five levels, in µg/m³. WHO's 24-hour guideline
+ * is 45; a shamal reaches four figures. They are a named export because the
+ * hero's PM10 curve draws one of them as a line, and a chart quietly holding
+ * its own copy of a threshold is a chart that will one day disagree with the
+ * badge underneath it.
+ */
+export const PM10_BANDS = [50, 150, 350, 800];
+
+/**
+ * The one edge worth drawing: above it the app stops calling the air hazy and
+ * starts telling you to wear a mask for outdoor work.
+ */
+export const PM10_MASK = PM10_BANDS[1];
+
+/** PM10 in µg/m³ → a rank. */
 export function rankFromPm10(pm10) {
   if (pm10 == null || !Number.isFinite(pm10)) return null;
-  if (pm10 < 50) return 0;
-  if (pm10 < 150) return 1;
-  if (pm10 < 350) return 2;
-  if (pm10 < 800) return 3;
-  return 4;
+  return PM10_BANDS.filter((edge) => pm10 >= edge).length;
 }
 
 /** Visibility in metres → a rank, on the WMO thresholds. */

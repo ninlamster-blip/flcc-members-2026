@@ -1,8 +1,10 @@
-// The temperature curve.
+// The curves.
 //
 // Two smooth lines across the next twenty-four hours — what the thermometer
 // will read, and what it will feel like — because the shape of a day is
-// something you read in a second and a column of numbers is not.
+// something you read in a second and a column of numbers is not. And below
+// them the same twenty-four hours of PM10, drawn against the edge where the
+// app starts telling you to wear a mask.
 //
 // The smoothing is a Catmull-Rom spline converted to cubic béziers, which is
 // the curve that passes *through* every point rather than near it. A weather
@@ -111,6 +113,41 @@ export function chart(series, { width = 320, height = 96, tension = 1, padX = 6 
     <path class="curve-area" d="${areaPath(actualPoints, { height, tension })}"/>
     ${feelsPoints.length ? `<path class="curve-feels" d="${smoothPath(feelsPoints, { tension, height })}"/>` : ''}
     <path class="curve-line" d="${smoothPath(actualPoints, { tension, height })}"/>
+    <circle class="curve-peak" cx="${round(peak.x)}" cy="${round(peak.y)}" r="3.5"/>
+  </svg>`;
+}
+
+/**
+ * The PM10 curve, drawn against one threshold.
+ *
+ * The scale includes the threshold rather than fitting the data, and that is
+ * the whole point of this chart. Fitted to its own values, a clean day where
+ * PM10 wanders between 12 and 26 µg/m³ draws a mountain range — the same
+ * dramatic shape a shamal draws, because a fitted axis has no opinion about
+ * what the numbers mean. Here the rule stays on the chart and the curve is
+ * always read against it: a flat line low in the box is what clean air looks
+ * like, and it should look like nothing.
+ *
+ * @param {{pm10: number[], threshold: number}} series
+ */
+export function dustChart(series, { width = 320, height = 72, tension = 1, padX = 6 } = {}) {
+  const values = series.pm10 || [];
+  const threshold = series.threshold;
+  if (!Number.isFinite(threshold)) return '';
+  const scale = bounds([...values, threshold]);
+  if (!scale || values.filter(Number.isFinite).length < 2) return '';
+
+  const box = { width, height, padX, min: scale.min, max: scale.max };
+  const points = project(values, box);
+  const [rule] = project([threshold], { ...box, padX: 0 });
+  const peak = points.reduce((hi, p) => (p.value > hi.value ? p : hi), points[0]);
+
+  return `<svg class="curve curve--dust" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none"
+    role="img" aria-label="PM10 over the next 24 hours, against ${threshold} micrograms per cubic metre"
+    focusable="false">
+    <path class="curve-area" d="${areaPath(points, { height, tension })}"/>
+    <line class="curve-rule" x1="0" y1="${round(rule.y)}" x2="${width}" y2="${round(rule.y)}"/>
+    <path class="curve-line" d="${smoothPath(points, { tension, height })}"/>
     <circle class="curve-peak" cx="${round(peak.x)}" cy="${round(peak.y)}" r="3.5"/>
   </svg>`;
 }

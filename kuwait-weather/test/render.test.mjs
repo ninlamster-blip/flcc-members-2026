@@ -7,6 +7,7 @@ import { derive } from '../js/core/derive.js';
 import { advisories } from '../js/core/advisories.js';
 import { toneFor } from '../js/ui/tone.js';
 import * as view from '../js/ui/render.js';
+import * as dust from '../js/core/dust.js';
 import { forecast, air } from './fixtures/forecast.mjs';
 
 const NOON = new Date('2026-07-15T09:00:00Z');
@@ -82,6 +83,30 @@ test('the note under the city says how the day is, and flags trapped humidity', 
 
   const dry = reading(forecast({ hour: () => ({ temperature_2m: 24, relative_humidity_2m: 20 }) }));
   assert.ok(!/humidity adds/.test(view.sheetNote(dry, 'calm')), 'a dry day has nothing to add');
+});
+
+test('the PM10 curve says what its dashed line is, in the unit it is in', () => {
+  const html = view.dustCurve(reading(), NOON);
+  assert.match(html, /class="curve curve--dust"/);
+  assert.match(html, /PM10/);
+  assert.match(html, new RegExp(`${dust.PM10_MASK} µg/m³`), 'the rule is unlabelled');
+});
+
+test('the line the hero draws is the line the badge below it uses', () => {
+  // Two copies of 150 — one in the chart, one in the level table — is a
+  // drift waiting to happen: the curve would cross its own line in a place
+  // the card underneath still called hazy.
+  assert.equal(dust.PM10_MASK, dust.PM10_BANDS[1]);
+  assert.equal(dust.rankFromPm10(dust.PM10_MASK - 1), 1, 'below the line the app says hazy');
+  assert.equal(dust.rankFromPm10(dust.PM10_MASK), 2, 'on it, the app says dusty');
+  assert.match(view.dustCurve(reading(), NOON), new RegExp(`${dust.PM10_MASK}`));
+});
+
+test('no air-quality data is an empty string, so the box collapses', () => {
+  // `.curve-wrap:empty` is display:none. Returning an empty chart instead
+  // would leave a labelled box with no line in it on the hero.
+  const d = reading(forecast(), null);
+  assert.equal(view.dustCurve(d, NOON), '');
 });
 
 test('the curve draws the day and labels its two lines', () => {
@@ -180,6 +205,7 @@ test('every section closes the tags it opens', () => {
   for (const [name, html] of Object.entries({
     reading: view.reading(d, 'C'),
     curve: view.curve(d, NOON),
+    dustCurve: view.dustCurve(d, NOON),
     work: view.workCard(d, { profile: 'moderate', now: NOON }),
     dust: view.dustCard(d),
     hours: view.hourStrip(d, 'C', NOON),
@@ -197,7 +223,7 @@ test('nothing renders the string "undefined" or "NaN" at a reader', () => {
   sparse.current.pressure_msl = null;
   const d = reading(sparse, null);
   const all = [
-    view.reading(d, 'C'), view.sheetNote(d, 'calm'), view.curve(d, NOON),
+    view.reading(d, 'C'), view.sheetNote(d, 'calm'), view.curve(d, NOON), view.dustCurve(d, NOON),
     view.workCard(d, { profile: 'light', now: NOON }), view.dustCard(d),
     view.hourStrip(d, 'C', NOON), view.dayList(d, 'C'), view.detailGrid(d, 'C'),
   ].join('');

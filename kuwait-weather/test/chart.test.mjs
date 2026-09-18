@@ -3,7 +3,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bounds, project, smoothPath, areaPath, chart } from '../js/ui/chart.js';
+import { bounds, project, smoothPath, areaPath, chart, dustChart } from '../js/ui/chart.js';
 
 const coords = (d) => [...d.matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
 const ys = (d) => coords(d).filter((_, i) => i % 2 === 1);
@@ -128,4 +128,50 @@ test('the plot is inset, so the marker on the hottest hour is never sliced', () 
   const points = project([1, 2, 3], { width: 100, height: 50, min: 0, max: 4, padX: 6 });
   assert.equal(points[0].x, 6);
   assert.equal(points[2].x, 94);
+});
+
+// ── the PM10 curve ──────────────────────────────────────────────────────────
+
+// `ys()` above returns every y in a path, control points included. Lower on
+// screen is a bigger y, which is what the two threshold tests below compare.
+const ruleY = (svg) => Number(svg.match(/class="curve-rule"[^>]*y1="(-?[\d.]+)"/)[1]);
+const lineD = (svg) => svg.match(/class="curve-line" d="([^"]+)"/)[1];
+
+test('the PM10 curve draws its threshold as a rule inside the box', () => {
+  const svg = dustChart({ pm10: [20, 40, 80, 300, 120, 30], threshold: 150 }, { height: 72 });
+  assert.match(svg, /class="curve-rule"/);
+  const y = ruleY(svg);
+  assert.ok(y > 0 && y < 72, `the rule is at ${y}, outside a 72-high box`);
+});
+
+test('clean air draws a flat line under the rule, not a mountain range', () => {
+  // The bug this prevents: a chart fitted to its own values gives a day that
+  // wanders between 12 and 26 µg/m³ the same dramatic shape as a shamal,
+  // because a fitted axis has no opinion about what the numbers mean. The
+  // threshold is in the scale, so clean air has to look like nothing.
+  const svg = dustChart({ pm10: [12, 18, 26, 14, 22, 16], threshold: 150 }, { height: 72 });
+  const y = ruleY(svg);
+  assert.ok(ys(lineD(svg)).every((v) => v > y), 'a clean day drew part of itself above the mask line');
+});
+
+test('a shamal draws above the rule, which is the whole point of the rule', () => {
+  const svg = dustChart({ pm10: [60, 200, 600, 900, 400, 80], threshold: 150 }, { height: 72 });
+  const y = ruleY(svg);
+  const curve = ys(lineD(svg));
+  assert.ok(Math.min(...curve) < y, 'the storm never crossed the line');
+  assert.ok(Math.max(...curve) > y, 'and it never came back under it');
+});
+
+test('the dustiest hour is the one marked', () => {
+  const svg = dustChart({ pm10: [20, 900, 40, 60], threshold: 150 }, { width: 320, height: 72 });
+  const cx = Number(svg.match(/class="curve-peak" cx="([\d.]+)"/)[1]);
+  const points = project([20, 900, 40, 60], { width: 320, height: 72, padX: 6, min: 0, max: 1000 });
+  assert.equal(cx, points[1].x);
+});
+
+test('a PM10 curve with nothing to draw returns nothing rather than an empty box', () => {
+  assert.equal(dustChart({ pm10: [], threshold: 150 }), '');
+  assert.equal(dustChart({ pm10: [40], threshold: 150 }), '', 'one hour is not a curve');
+  assert.equal(dustChart({ pm10: [null, null, null], threshold: 150 }), '');
+  assert.equal(dustChart({ pm10: [20, 40, 60] }), '', 'no threshold means no chart to read it against');
 });

@@ -3,7 +3,7 @@
 
 import { icon } from './icons.js';
 import { art } from './art.js';
-import { chart } from './chart.js';
+import { chart, dustChart } from './chart.js';
 import { toneNote } from './tone.js';
 import * as fmt from '../core/format.js';
 import { label as codeLabel, icon as codeIcon } from '../core/weathercode.js';
@@ -11,6 +11,7 @@ import { banStatus, BAN } from '../core/workban.js';
 import { upcoming, bestOutdoorWindow } from '../core/derive.js';
 import { WORK_PROFILES, heatIndexReliable } from '../core/heat.js';
 import { byGovernorate } from '../core/places.js';
+import { PM10_MASK } from '../core/dust.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
@@ -97,6 +98,29 @@ export function curve(d, now = new Date()) {
     <p class="curve-key">
       <span><i></i>Air</span>
       <span><i class="dashed"></i>Feels like</span>
+    </p>`;
+}
+
+/**
+ * The same twenty-four hours again, in PM10.
+ *
+ * It sits under the temperature curve rather than on the dust card because
+ * the two questions a hero answers are how hot and how dusty, and the second
+ * one is about the shape of the day as much as the first: 113 µg/m³ falling
+ * all afternoon and 113 climbing into a shamal are the same number and not
+ * remotely the same day.
+ *
+ * The dashed rule is `PM10_MASK`, read from `dust.js` so it cannot drift away
+ * from the badge on the card below.
+ */
+export function dustCurve(d, now = new Date()) {
+  const ahead = upcoming(d.hours, 24, now);
+  const svg = dustChart({ pm10: ahead.map((h) => h.pm10), threshold: PM10_MASK });
+  if (!svg) return '';
+  return `${svg}
+    <p class="curve-key curve-key--dust">
+      <span><i></i>PM10</span>
+      <span><i class="rule"></i>${PM10_MASK} µg/m³ — dusty above this</span>
     </p>`;
 }
 
