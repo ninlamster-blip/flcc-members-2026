@@ -13,6 +13,19 @@
     "tone": "navy"
   },
   {
+    "id": "abundance-friday-service",
+    "title": "Friday service — FLCC Abundance",
+    "when": "Every Friday · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "FLCC - Abundance Church's own Friday service, alongside the main service at the National Evangelical Church in Kuwait. Intercessory prayer runs 4:15–4:30 PM beforehand.",
+    "recurring": true,
+    "gathering": true,
+    "weekday": 5,
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
+  },
+  {
     "id": "sunday-service",
     "title": "Sunday service",
     "when": "Every Sunday · 6:30 PM",
@@ -39,13 +52,13 @@
   {
     "id": "friday-2026-09-25",
     "title": "Friday 25 September — Fellowship service",
-    "when": "Friday 25 September · 10:00 AM",
-    "where": "National Evangelical Church in Kuwait, Kuwait City",
+    "when": "Friday 25 September · 4:30 PM",
+    "where": "Farwaniya",
     "blurb": "This Friday is led by the Women's & Men's Fellowship. Communion assistants for September's Friday services: Sis. Laidz Pascual and Bro. Allen Santos.",
     "date": "2026-09-25",
-    "start": "10:00",
+    "start": "16:30",
     "minutes": 120,
-    "tone": "rose"
+    "tone": "captain"
   },
   {
     "id": "sunday-2026-09-27",
