@@ -82,5 +82,5 @@ export const KEYS = {
   plan:     `${NS}plan`,      // which reading plan, and how far in
   ask:      `${NS}ask`,       // the ASK conversation, kept on this device only
   notes:    `${NS}notes`,     // sermon_notes
-  play:     `${NS}play`,      // the crossword and the game: today's state only
+  play:     `${NS}play`,      // the crossword's state today, and the wave Galaga continues from
 };
