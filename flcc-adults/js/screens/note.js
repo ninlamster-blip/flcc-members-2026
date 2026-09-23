@@ -10,7 +10,7 @@
 // to press, and a sermon note lost to a locked screen is the whole feature
 // wasted.
 
-import { h, poster, label, art, go, pill, note as noteLine, rise, toast, reference } from '../core/ui.js';
+import { h, poster, label, art, go, pill, pillRow, note as noteLine, rise, toast, reference } from '../core/ui.js';
 import * as notes from '../core/notes.js';
 
 export default async function noteScreen(ctx) {
@@ -52,6 +52,13 @@ export default async function noteScreen(ctx) {
     notes.tidy();
   };
   window.addEventListener('hashchange', settle, { once: true });
+
+  // Sharing has to send what is on the screen, including the last second of
+  // typing that has not been written to storage yet.
+  const settled = () => {
+    clearTimeout(timer);
+    return notes.update(id, fields()) || { ...held, ...fields() };
+  };
   window.addEventListener('pagehide', settle);
 
   const parts = [
@@ -66,6 +73,15 @@ export default async function noteScreen(ctx) {
     poster({ tone: 'paper' }, body),
 
     poster({ tone: 'paper' },
+      label('Keep a copy'),
+      h('div', { class: 'poster-foot' },
+        pillRow(
+          pill('Share', () => share(settled())),
+          pill('Save as a file', () => download(settled()), { quiet: true })),
+        h('span')),
+      noteLine('Share sends it wherever you choose — WhatsApp, email, your notes app. Nothing is sent until you pick where.')),
+
+    poster({ tone: 'paper' },
       label('This note'),
       h('div', { class: 'poster-foot' },
         pill('Delete it', () => {
@@ -75,10 +91,42 @@ export default async function noteScreen(ctx) {
           ctx.go('notes');
         }, { quiet: true }),
         art('parcel', { tone: 'paper', size: 'sm' })),
-      noteLine('It saves itself as you write. Nothing here leaves this phone.')),
+      noteLine('It saves itself as you write. Nothing here leaves this phone unless you share it.')),
   ];
 
   const el = h('div', { style: 'display:contents' }, ...parts);
   rise(parts);
   return { title: 'Note', el };
+}
+
+/**
+ * The phone's own share sheet where there is one; a copy where there is not;
+ * a file as the last resort. A share the member cancels is not an error.
+ */
+async function share(one) {
+  const text = notes.asText(one);
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: String(one.title || '').trim() || 'Sermon notes', text });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Copied — paste it anywhere.');
+  } catch {
+    download(one);
+  }
+}
+
+function download(one) {
+  const url = URL.createObjectURL(new Blob([notes.asText(one)], { type: 'text/plain;charset=utf-8' }));
+  const link = h('a', { href: url, download: notes.fileName(one), style: 'display:none' });
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Saved as a file.');
 }

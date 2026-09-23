@@ -95,3 +95,20 @@ test('notes live in this app’s own namespace and nowhere else', () => {
   assert.ok(keys.includes(store.KEYS.notes));
   for (const key of keys) assert.ok(key.startsWith('adults/v1/'), `${key} escaped the namespace`);
 });
+
+test('a shared note reads properly as plain text', () => {
+  const one = { title: 'Faith', speaker: 'Ptr. Justin Flores', ref: 'Hebrews 11:1',
+    body: 'Faith is being sure of what we hope for.\n\nAct on it this week.' };
+  const text = notes.asText(one, { date: new Date('2026-09-25T16:30:00') });
+  const lines = text.split('\n');
+  assert.equal(lines[0], 'Faith');
+  assert.equal(lines[1], 'Ptr. Justin Flores · Hebrews 11:1');
+  assert.match(lines[2], /2026/);
+  assert.equal(lines[3], '');
+  assert.ok(text.includes('Faith is being sure of what we hope for.\n\nAct on it this week.'));
+  // Nothing typed but the body still gets a heading, and nothing blank is invented.
+  assert.equal(notes.asText({ body: 'Just this.' }), 'Sermon notes\n\nJust this.\n');
+  assert.equal(notes.fileName(one), 'faith.txt');
+  assert.equal(notes.fileName({ title: '  ' }), 'sermon-notes.txt');
+  assert.equal(notes.fileName({ title: 'Faith: Hebrews 11 / week 2!' }), 'faith-hebrews-11-week-2.txt');
+});

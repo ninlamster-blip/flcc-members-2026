@@ -47,7 +47,7 @@ export default async function notesScreen(ctx) {
   parts.push(poster({ tone: 'paper' },
     label('Where these live'),
     h('p', { class: 'body', text: 'On this phone, and nowhere else. There is no account behind this app, so nobody at the church can read your notes — and a second phone starts empty.' }),
-    note('Clearing your browser’s data for this site clears them too. If a note matters, copy it somewhere.')));
+    note('Clearing your browser’s data for this site clears them too. If a note matters, open it and tap Share to keep a copy somewhere else.')));
 
   const el = h('div', { style: 'display:contents' }, ...parts);
   rise(parts);
