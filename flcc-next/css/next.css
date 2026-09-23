@@ -328,6 +328,7 @@ body[data-arcade] { overflow: hidden; }
   width: 2.6rem; height: 2.6rem; flex: none; border-radius: 99px;
   box-shadow: inset 0 0 0 var(--edge) var(--ink);
   font-size: 1.1rem; font-weight: 900; line-height: 1;
+  display: grid; place-items: center;
 }
 .arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: start center; }
 .arcade {

@@ -9,6 +9,7 @@ import * as progress from '../core/progress.js';
 import { mode } from '../core/profile.js';
 import * as crossword from '../games/crossword.js';
 import * as galaga from '../games/galaga.js';
+import * as chiptune from '../games/chiptune.js';
 import * as store from '../core/storage.js';
 import { deal, pick as pickForDay, cycleOf, askOrder } from '../core/rotation.js';
 
@@ -419,6 +420,10 @@ async function crosswordGame(ctx) {
 // Losing the last ship does not send anyone back to wave one. The wave reached
 // and the score so far are kept on this device, and both the game-over card
 // and the next visit offer to continue from there — or to start again.
+//
+// It plays retro sounds (`js/games/chiptune.js`, made in the browser — no
+// audio files) for firing, hits and the moments between waves, with a mute
+// button in the top bar that this phone remembers.
 
 /** The palette, read out of the stylesheet so no colour is written down twice. */
 function palette() {
@@ -429,6 +434,12 @@ function palette() {
     poppy: read('poppy'), rose: read('rose'), sunshine: read('sunshine'), sky: read('sky'),
   };
 }
+
+/** The mute button's two faces, drawn in currentColor so they follow the ink. */
+const SPEAKER = {
+  on: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 010 6M18.5 6.5a8 8 0 010 11"/></svg>',
+  off: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+};
 
 function galagaGame(ctx) {
   // The game-over card. Sunshine, not captain: navy type sits on it cleanly.
@@ -443,6 +454,8 @@ function galagaGame(ctx) {
   };
   const seed = () => Date.now() % 2147483647;
   let state = galaga.create(seed(), saved());
+  // Sound is on unless this phone has been told otherwise.
+  const sound = chiptune.player({ muted: Boolean(arcade().galagaMuted) });
   const held = { left: false, right: false };
   let raf = 0;
   let last = 0;
@@ -534,6 +547,7 @@ function galagaGame(ctx) {
     const dt = last ? (now - last) / 1000 : 0;
     last = now;
     const events = galaga.step(state, held, dt);
+    sound.play(events);
     if (events.some((one) => one !== 'fire')) paintNumbers();
     if (events.includes('life')) toast('A spare ship.');
     // Every new wave is a place to come back to, even if the game is simply closed.
@@ -552,6 +566,7 @@ function galagaGame(ctx) {
   }
 
   const press = (side, on) => {
+    if (on) sound.wake();
     held[side] = on;
     pads[side].toggleAttribute('data-held', on);
   };
@@ -604,9 +619,25 @@ function galagaGame(ctx) {
     document.removeEventListener('visibilitychange', onHide);
     window.removeEventListener('hashchange', onRoute);
     document.body.removeAttribute('data-arcade');
+    sound.close();
     if (shown && shown.isConnected) shown.remove();
   }
   const leave = () => { teardown(); ctx.go('play'); };
+
+  // The mute button. Tapping it is a press too, so it can wake the sound.
+  const mute = h('button', { class: 'arcade-close', type: 'button' });
+  const paintMute = () => {
+    mute.innerHTML = sound.muted ? SPEAKER.off : SPEAKER.on;
+    mute.setAttribute('aria-label', sound.muted ? 'Turn sound on' : 'Turn sound off');
+    mute.setAttribute('aria-pressed', String(sound.muted));
+  };
+  mute.addEventListener('click', () => {
+    sound.muted = !sound.muted;
+    keep({ galagaMuted: sound.muted });
+    if (!sound.muted) sound.wake();
+    paintMute();
+  });
+  paintMute();
 
   // The whole screen, while the game is open: numbers in a thin bar, the
   // field as large as the window allows, the pads under the thumbs.
@@ -615,7 +646,8 @@ function galagaGame(ctx) {
       h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close Galaga', text: '✕', onclick: leave }),
       h('div', {}, scoreEl, h('p', { class: 'label dim', text: 'score' })),
       h('span', { class: 'grow' }),
-      h('div', { class: 'stat' }, waveEl, livesEl)),
+      h('div', { class: 'stat' }, waveEl, livesEl),
+      mute),
     h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)),
     h('div', { class: 'arcade-pad' }, pads.left, pads.right));
 

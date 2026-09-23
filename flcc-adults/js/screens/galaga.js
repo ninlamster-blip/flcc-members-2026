@@ -14,6 +14,10 @@
 // and both the game-over card and the next visit offer to continue from it, at
 // that wave's difficulty, or to start again.
 //
+// It plays retro sounds (`js/games/chiptune.js`, made in the browser — no
+// audio files) for firing, hits and the moments between waves, with a mute
+// button in the top bar that this device remembers.
+//
 // It takes the whole screen while it is open — the header and the tab bar sit
 // under it — and ✕, Escape or the back button all put the app back as it was.
 //
@@ -23,6 +27,7 @@
 
 import { h, moment, pill } from '../core/ui.js';
 import * as galaga from '../games/galaga.js';
+import * as chiptune from '../games/chiptune.js';
 import * as store from '../core/storage.js';
 
 /** The palette, read out of the stylesheet so no colour is written down twice. */
@@ -35,6 +40,12 @@ function palette() {
   };
 }
 
+/** The mute button's two faces, drawn in currentColor so they follow the ink. */
+const SPEAKER = {
+  on: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 010 6M18.5 6.5a8 8 0 010 11"/></svg>',
+  off: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+};
+
 export default async function galagaScreen(ctx) {
   const play = () => store.read(store.KEYS.play, {}) || {};
   // The wave a continued run picks up from. Only the wave: this edition keeps no score.
@@ -42,6 +53,8 @@ export default async function galagaScreen(ctx) {
   const keepWave = (wave) => store.write(store.KEYS.play, { ...play(), galaga: { wave } });
   const seed = () => Date.now() % 2147483647;
   let state = galaga.create(seed(), { wave: savedWave() });
+  // Sound is on unless this device has been told otherwise.
+  const sound = chiptune.player({ muted: Boolean(play().galagaMuted) });
   const held = { left: false, right: false };
   let raf = 0;
   let last = 0;
@@ -121,6 +134,7 @@ export default async function galagaScreen(ctx) {
     const dt = last ? (now - last) / 1000 : 0;
     last = now;
     const events = galaga.step(state, held, dt);
+    sound.play(events);
     if (events.some((one) => one !== 'fire')) paintNumbers();
     // Every new wave is a place to come back to, even if the game is simply closed.
     if (events.includes('wave')) keepWave(state.wave);
@@ -138,6 +152,7 @@ export default async function galagaScreen(ctx) {
   }
 
   const press = (side, on) => {
+    if (on) sound.wake();
     held[side] = on;
     pads[side].toggleAttribute('data-held', on);
   };
@@ -190,9 +205,25 @@ export default async function galagaScreen(ctx) {
     document.removeEventListener('visibilitychange', onHide);
     window.removeEventListener('hashchange', onRoute);
     document.body.removeAttribute('data-arcade');
+    sound.close();
     if (shown && shown.isConnected) shown.remove();
   }
   const leave = () => { teardown(); ctx.go('play'); };
+
+  // The mute button. Tapping it is a press too, so it can wake the sound.
+  const mute = h('button', { class: 'arcade-close', type: 'button' });
+  const paintMute = () => {
+    mute.innerHTML = sound.muted ? SPEAKER.off : SPEAKER.on;
+    mute.setAttribute('aria-label', sound.muted ? 'Turn sound on' : 'Turn sound off');
+    mute.setAttribute('aria-pressed', String(sound.muted));
+  };
+  mute.addEventListener('click', () => {
+    sound.muted = !sound.muted;
+    store.write(store.KEYS.play, { ...play(), galagaMuted: sound.muted });
+    if (!sound.muted) sound.wake();
+    paintMute();
+  });
+  paintMute();
 
   const parts = [
     // The whole screen, while the game is open: the wave in a thin bar, the
@@ -202,7 +233,8 @@ export default async function galagaScreen(ctx) {
         h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close Galaga', text: '✕', onclick: leave }),
         h('div', {}, waveEl, h('p', { class: 'label dim', text: 'wave' })),
         h('span', { class: 'grow' }),
-        h('div', { class: 'stat' }, h('p', { class: 'label', text: 'No end' }), livesEl)),
+        h('div', { class: 'stat' }, h('p', { class: 'label', text: 'No end' }), livesEl),
+        mute),
       h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)),
       h('div', { class: 'arcade-pad' }, pads.left, pads.right)),
   ];
