@@ -36,7 +36,12 @@ export default async function communityScreen(ctx) {
   // The poster this screen opens on, and the one action it wants from you. The
   // number on it is your own list — the only prayer count in this app that is
   // true.
-  const meeting = events.find((one) => one.id === 'prayer-tuesday') || events.find((one) => one.gathering);
+  //
+  // The prayer meeting moves week to week, so it is found by name: the soonest
+  // one still ahead, falling back to the main gathering once none is.
+  const praying = agenda.upcoming(events.filter((one) => /prayer meeting/i.test(one.title)))
+    .find((one) => one.at);
+  const meeting = praying ? praying.event : events.find((one) => one.gathering);
   const nextMeeting = meeting ? agenda.nextOccurrence(meeting) : null;
   const mine = prayers.open().length;
 
@@ -46,7 +51,7 @@ export default async function communityScreen(ctx) {
       display(mine ? `${mine} ON YOUR LIST.` : 'PRAY WITH THE CHURCH.'),
       meeting
         ? h('p', { class: 'lead dim', style: 'margin-top:1.2rem',
-            text: `${meeting.title} — ${agenda.countdown(nextMeeting).toLowerCase()}, ${meeting.where.toLowerCase()}. Praying it out loud with other people is the part an app cannot do for you.` })
+            text: `${meeting.title} — ${agenda.countdown(nextMeeting).toLowerCase()}, ${meeting.where}. Praying it out loud with other people is the part an app cannot do for you.` })
         : null),
     h('div', { class: 'poster-foot' },
       pill(mine ? 'Open your prayer list' : 'Start a prayer list', () => ctx.go('pray')),
