@@ -82,6 +82,30 @@ test('clearing a wave brings the next one', () => {
   assert.equal(state.enemies.length, galaga.wave(2).rows * galaga.wave(2).cols);
 });
 
+test('a run can continue from the wave it reached, as hard as that wave', () => {
+  const state = galaga.create(5, { wave: 3, score: 1200 });
+  assert.equal(state.wave, 3, 'it does not go back to wave one');
+  assert.equal(state.score, 1200, 'the score carries over');
+  assert.equal(state.lives, 3, 'with three fresh ships');
+  assert.deepEqual(state.config, galaga.wave(3), 'at wave three\'s difficulty');
+  assert.equal(state.enemies.length, galaga.wave(3).rows * galaga.wave(3).cols);
+
+  // And it keeps getting harder from there.
+  run(state, { right: true }, DT);
+  state.enemies = [];
+  run(state, {}, 3);
+  assert.equal(state.wave, 4);
+  assert.ok(state.config.diveSpeed > galaga.wave(3).diveSpeed);
+});
+
+test('a bad saved wave falls back to wave one rather than breaking', () => {
+  for (const wave of [0, -4, NaN, undefined, 'x']) {
+    const state = galaga.create(5, { wave });
+    assert.equal(state.wave, 1, String(wave));
+    assert.ok(state.enemies.length > 0);
+  }
+});
+
 test('a shot that reaches a ship destroys it and scores', () => {
   const state = galaga.create(9);
   run(state, { right: true }, DT);

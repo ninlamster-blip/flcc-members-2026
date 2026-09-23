@@ -415,6 +415,10 @@ async function crosswordGame(ctx) {
 // brings a harder one. Holding left or right flies the ship and fires it at
 // once — there is no fire button — so a whole run is played with one thumb.
 // The best score stays on this device and is never compared with anybody's.
+//
+// Losing the last ship does not send anyone back to wave one. The wave reached
+// and the score so far are kept on this device, and both the game-over card
+// and the next visit offer to continue from there — or to start again.
 
 /** The palette, read out of the stylesheet so no colour is written down twice. */
 function palette() {
@@ -427,9 +431,18 @@ function palette() {
 }
 
 function galagaGame(ctx) {
-  const tone = 'captain';
-  const best = () => (store.read(store.KEYS.arcade, {}) || {}).galaga || 0;
-  let state = galaga.create(Date.now() % 2147483647);
+  // The game-over card. Sunshine, not captain: navy type sits on it cleanly.
+  const tone = 'sunshine';
+  const arcade = () => store.read(store.KEYS.arcade, {}) || {};
+  const keep = (patch) => store.write(store.KEYS.arcade, { ...arcade(), ...patch });
+  const best = () => arcade().galaga || 0;
+  // Where a continued run picks up: the wave reached and the score so far.
+  const saved = () => {
+    const resume = arcade().galagaResume || {};
+    return { wave: Math.max(1, Math.trunc(resume.wave) || 1), score: Math.max(0, Math.trunc(resume.score) || 0) };
+  };
+  const seed = () => Date.now() % 2147483647;
+  let state = galaga.create(seed(), saved());
   const held = { left: false, right: false };
   let raf = 0;
   let last = 0;
@@ -467,19 +480,49 @@ function galagaGame(ctx) {
     if (canvas.width) galaga.paint(g, state, { colors, scale: canvas.width / galaga.WIDTH, edge: 3 * ratio });
   };
 
+  /**
+   * A card with two ways out: carry on from `wave`, or start again from one.
+   * The kit's moment has one action, so the second is a quiet pill beside it
+   * that picks "fresh" and then presses the first — which keeps every close
+   * path (the button, Escape, leaving the screen) going through one place.
+   */
+  const choose = ({ eyebrow, big, line }) => {
+    let fresh = false;
+    const { wave } = saved();
+    shown = moment({
+      tone, eyebrow, big, line,
+      action: `Continue from wave ${wave}`,
+      onclose: () => begin(fresh),
+    });
+    const main = shown.querySelector('.pill');
+    main.parentElement.classList.add('pill-row');
+    main.parentElement.appendChild(pill('Start from wave 1', () => { fresh = true; main.click(); }, { quiet: true }));
+  };
+
   const over = () => {
     const record = state.score > best();
-    if (record) store.write(store.KEYS.arcade, { ...(store.read(store.KEYS.arcade, {}) || {}), galaga: state.score });
+    if (record) keep({ galaga: state.score });
+    keep({ galagaResume: { wave: state.wave, score: state.score } });
+    // The XP goes in the card's eyebrow rather than a toast: a toast sits
+    // exactly where the Continue button is, and would swallow the tap.
     const result = progress.complete('game', `galaga:${progress.today()}`);
-    if (result.first) toast(`+${progress.XP.game} XP`);
+    const xp = result.first ? ` · +${progress.XP.game} XP` : '';
     paintNumbers();
-    shown = moment({
-      tone,
-      eyebrow: `Game over · wave ${state.wave}`,
+    if (state.wave === 1) {
+      shown = moment({
+        tone,
+        eyebrow: `Game over · wave 1${xp}`,
+        big: String(state.score),
+        line: record ? 'A new best on this phone.' : `Your best is ${best()}. One more go?`,
+        action: 'Play again',
+        onclose: () => begin(true),
+      });
+      return;
+    }
+    choose({
+      eyebrow: `Game over · wave ${state.wave}${xp}`,
       big: String(state.score),
-      line: record ? 'A new best on this phone.' : `Your best is ${best()}. One more go?`,
-      action: 'Play again',
-      onclose: restart,
+      line: `${record ? 'A new best on this phone. ' : ''}Carry on from wave ${state.wave} with three new ships and your score, or start again.`,
     });
   };
 
@@ -493,13 +536,16 @@ function galagaGame(ctx) {
     const events = galaga.step(state, held, dt);
     if (events.some((one) => one !== 'fire')) paintNumbers();
     if (events.includes('life')) toast('A spare ship.');
+    // Every new wave is a place to come back to, even if the game is simply closed.
+    if (events.includes('wave')) keep({ galagaResume: { wave: state.wave, score: state.score } });
     draw();
     if (state.over) { over(); return; }
     raf = requestAnimationFrame(frame);
   };
 
-  function restart() {
-    state = galaga.create(Date.now() % 2147483647);
+  function begin(fresh) {
+    if (fresh) keep({ galagaResume: { wave: 1, score: 0 } });
+    state = galaga.create(seed(), saved());
     last = 0;
     paintNumbers();
     if (!raf) raf = requestAnimationFrame(frame);
@@ -576,6 +622,13 @@ function galagaGame(ctx) {
   const el = h('div', { style: 'display:contents' }, stage);
   paintNumbers();
   raf = requestAnimationFrame(frame);
+  if (saved().wave > 1) {
+    choose({
+      eyebrow: 'Galaga',
+      big: `WAVE ${saved().wave}.`,
+      line: `Pick up where you left off${saved().score ? `, with ${saved().score} points` : ''} — or start again from wave 1.`,
+    });
+  }
   return { title: 'Galaga', el };
 }
 

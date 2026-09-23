@@ -11,6 +11,9 @@
 //     — until the curve flattens at a ceiling a good thumb can still survive.
 //   · There is no fire button. Holding left or right moves the ship AND fires
 //     it; letting go stops both. One thumb plays the whole game.
+//   · Losing the last ship does not send you back to the start. A run can
+//     begin at any wave — the one you reached — with the difficulty of that
+//     wave, three fresh ships and, if the screen wants it, the score so far.
 //   · Everything random comes from a seeded generator, so a run can be
 //     replayed exactly for a test.
 //
@@ -62,13 +65,17 @@ export function wave(n) {
   };
 }
 
-/** A fresh run, parked on wave one until the first press. */
-export function create(seed = 1) {
+/**
+ * A run, parked until the first press. It starts on wave one unless it is told
+ * otherwise: `{ wave, score }` continues a run from the wave it reached, at
+ * that wave's difficulty, with three fresh ships.
+ */
+export function create(seed = 1, { wave: from = 1, score = 0 } = {}) {
   const state = {
     random: seeded(seed),
     time: 0,
     wave: 0,
-    score: 0,
+    score: Math.max(0, Math.trunc(score) || 0),
     lives: START_LIVES,
     ship: { x: WIDTH / 2, y: SHIP_Y, safe: 0 },
     shots: [],
@@ -81,7 +88,7 @@ export function create(seed = 1) {
     started: false,
     over: false,
   };
-  startWave(state, 1);
+  startWave(state, Math.max(1, Math.trunc(from) || 1));
   return state;
 }
 
@@ -371,6 +378,9 @@ export function paint(g, state, { colors, scale, edge }) {
   const blinking = state.ship.safe > 0 && Math.floor(state.ship.safe * 8) % 2 === 0;
   if (!state.over && !blinking) drawShip(g, state.ship.x, state.ship.y, colors);
 
-  if (!state.started) caption(g, 'HOLD ◀ OR ▶ TO FLY', colors, HEIGHT * 0.62);
+  if (!state.started) {
+    if (state.wave > 1) caption(g, `WAVE ${state.wave}`, colors, HEIGHT * 0.52);
+    caption(g, 'HOLD ◀ OR ▶ TO FLY', colors, HEIGHT * 0.62);
+  }
   else if (state.rest > 0) caption(g, `WAVE ${state.wave + 1}`, colors);
 }

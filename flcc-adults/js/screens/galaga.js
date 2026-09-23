@@ -7,8 +7,12 @@
 //
 // This edition keeps no score, and that holds here too. The engine counts
 // points because the kids and teens edition shows them; this screen never
-// does. What it shows is how far you got — the wave — and it keeps nothing
-// once the screen is closed.
+// does. What it shows is how far you got — the wave.
+//
+// Losing the last ship does not send you back to wave one. The wave reached is
+// kept on this device (under `play`, beside the crossword — and nowhere else),
+// and both the game-over card and the next visit offer to continue from it, at
+// that wave's difficulty, or to start again.
 //
 // It takes the whole screen while it is open — the header and the tab bar sit
 // under it — and ✕, Escape or the back button all put the app back as it was.
@@ -17,8 +21,9 @@
 // duplicate of the kids edition's file on the same terms as the crossword:
 // `test/galaga.test.mjs` fails when the two drift.
 
-import { h, moment } from '../core/ui.js';
+import { h, moment, pill } from '../core/ui.js';
 import * as galaga from '../games/galaga.js';
+import * as store from '../core/storage.js';
 
 /** The palette, read out of the stylesheet so no colour is written down twice. */
 function palette() {
@@ -31,8 +36,12 @@ function palette() {
 }
 
 export default async function galagaScreen(ctx) {
-  let state = galaga.create(Date.now() % 2147483647);
-  let furthest = 0;                 // this sitting only; nothing is saved
+  const play = () => store.read(store.KEYS.play, {}) || {};
+  // The wave a continued run picks up from. Only the wave: this edition keeps no score.
+  const savedWave = () => Math.max(1, Math.trunc((play().galaga || {}).wave) || 1);
+  const keepWave = (wave) => store.write(store.KEYS.play, { ...play(), galaga: { wave } });
+  const seed = () => Date.now() % 2147483647;
+  let state = galaga.create(seed(), { wave: savedWave() });
   const held = { left: false, right: false };
   let raf = 0;
   let last = 0;
@@ -68,19 +77,39 @@ export default async function galagaScreen(ctx) {
     if (canvas.width) galaga.paint(g, state, { colors, scale: canvas.width / galaga.WIDTH, edge: 3 * ratio });
   };
 
-  const over = () => {
-    const before = furthest;
-    furthest = Math.max(furthest, state.wave);
-    paintNumbers();
+  /**
+   * A card with two ways out: carry on from the saved wave, or start again
+   * from one. The kit's moment has one action, so the second is a quiet pill
+   * beside it that picks "fresh" and then presses the first — which keeps
+   * every close path (the button, Escape, leaving the screen) in one place.
+   */
+  const choose = ({ eyebrow, big, line }) => {
+    let fresh = false;
     shown = moment({
-      tone: 'sky',
+      tone: 'sky', eyebrow, big, line,
+      action: `Continue from wave ${savedWave()}`,
+      onclose: () => begin(fresh),
+    });
+    const main = shown.querySelector('.pill');
+    main.parentElement.classList.add('pill-row');
+    main.parentElement.appendChild(pill('Start from wave 1', () => { fresh = true; main.click(); }, { quiet: true }));
+  };
+
+  const over = () => {
+    keepWave(state.wave);
+    paintNumbers();
+    if (state.wave === 1) {
+      shown = moment({
+        tone: 'sky', eyebrow: 'Galaga', big: 'WAVE 1.',
+        line: 'Another run whenever you like.', action: 'Fly again',
+        onclose: () => begin(true),
+      });
+      return;
+    }
+    choose({
       eyebrow: 'Galaga',
       big: `WAVE ${state.wave}.`,
-      line: before && state.wave > before
-        ? 'Further than any run this sitting.'
-        : `You reached wave ${state.wave}. Another run whenever you like.`,
-      action: 'Fly again',
-      onclose: restart,
+      line: `Carry on from wave ${state.wave} with three new ships, or start again from the beginning.`,
     });
   };
 
@@ -93,13 +122,16 @@ export default async function galagaScreen(ctx) {
     last = now;
     const events = galaga.step(state, held, dt);
     if (events.some((one) => one !== 'fire')) paintNumbers();
+    // Every new wave is a place to come back to, even if the game is simply closed.
+    if (events.includes('wave')) keepWave(state.wave);
     draw();
     if (state.over) { over(); return; }
     raf = requestAnimationFrame(frame);
   };
 
-  function restart() {
-    state = galaga.create(Date.now() % 2147483647);
+  function begin(fresh) {
+    if (fresh) keepWave(1);
+    state = galaga.create(seed(), { wave: savedWave() });
     last = 0;
     paintNumbers();
     if (!raf) raf = requestAnimationFrame(frame);
@@ -178,5 +210,12 @@ export default async function galagaScreen(ctx) {
   const el = h('div', { style: 'display:contents' }, ...parts);
   paintNumbers();
   raf = requestAnimationFrame(frame);
+  if (savedWave() > 1) {
+    choose({
+      eyebrow: 'Galaga',
+      big: `WAVE ${savedWave()}.`,
+      line: 'Pick up where you left off, or start again from wave 1.',
+    });
+  }
   return { title: 'Galaga', el };
 }
