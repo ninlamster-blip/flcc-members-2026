@@ -27,6 +27,7 @@ const FIRE_EVERY = 0.26;      // seconds between shots while a direction is held
 const MAX_SHOTS = 4;
 const SHOT_SPEED = 130;
 const ENEMY_RADIUS = 3.8;
+const BOMB_RADIUS = 2.2;      // matches the dart as drawn, so a hit is one you could see
 const START_LIVES = 3;
 const MAX_LIVES = 5;
 const SAFE_AFTER_HIT = 2;     // seconds the ship cannot be hit after losing a life
@@ -237,7 +238,7 @@ export function step(state, input = {}, dt = 1 / 60) {
   state.shots = state.shots.filter((shot) => shot.y > -4);
 
   if (ship.safe === 0) {
-    const bomb = state.bombs.find((one) => near(one, ship, SHIP_RADIUS + 1));
+    const bomb = state.bombs.find((one) => near(one, ship, SHIP_RADIUS + BOMB_RADIUS));
     const rammer = state.enemies.find((enemy) => enemy.hp > 0 && enemy.wait <= 0 && near(enemy, ship, SHIP_RADIUS + ENEMY_RADIUS - 1));
     if (bomb || rammer) {
       if (bomb) bomb.y = HEIGHT + 99;
@@ -274,6 +275,7 @@ function moveBombs(state, dt) {
 
 const SHIP = [[0, -5.5], [5, 4], [1.8, 2.4], [0, 4.2], [-1.8, 2.4], [-5, 4]];
 const TONE_BY_KIND = ['poppy', 'rose', 'sunshine', 'sky'];
+const BOMB = [[0, 5], [2.8, -0.3], [0, -4.4], [-2.8, -0.3]];
 
 function outline(g, points) {
   g.beginPath();
@@ -349,11 +351,21 @@ export function paint(g, state, { colors, scale, edge }) {
   g.fillStyle = colors.ink;
   for (const shot of state.shots) g.fillRect(shot.x - 0.6, shot.y - 2, 1.2, 4);
 
-  g.fillStyle = colors.poppy;
+  // Enemy fire is the one thing on the field that has to be seen at a glance,
+  // so it is drawn large: a poppy dart in the navy outline, pointing the way
+  // it is travelling, with a short navy trail behind it.
   for (const bomb of state.bombs) {
-    outline(g, [[bomb.x, bomb.y - 1.8], [bomb.x + 1.2, bomb.y], [bomb.x, bomb.y + 1.8], [bomb.x - 1.2, bomb.y]]);
+    const angle = Math.atan2(bomb.vy, bomb.vx) - Math.PI / 2;
+    g.save();
+    g.translate(bomb.x, bomb.y);
+    g.rotate(angle);
+    g.fillStyle = colors.ink;
+    g.fillRect(-0.6, -9, 1.2, 4.6);
+    outline(g, BOMB);
+    g.fillStyle = colors.poppy;
     g.fill();
     g.stroke();
+    g.restore();
   }
 
   const blinking = state.ship.safe > 0 && Math.floor(state.ship.safe * 8) % 2 === 0;

@@ -434,6 +434,9 @@ function galagaGame(ctx) {
   let raf = 0;
   let last = 0;
   let attached = false;
+  let shown = null;                 // the game-over moment, if one is open
+  let gone = false;
+  const home = location.hash;       // this screen's route, to notice leaving it
 
   const canvas = h('canvas', { 'aria-label': 'Galaga. Hold left or right to fly and fire.', role: 'img' });
   const g = canvas.getContext('2d');
@@ -442,13 +445,11 @@ function galagaGame(ctx) {
   const scoreEl = h('p', { class: 'headline', text: '0' });
   const waveEl = h('p', { class: 'label', text: 'Wave 1' });
   const livesEl = h('p', { class: 'label dim', text: '' });
-  const bestEl = h('p', { class: 'label dim', text: '' });
 
   const paintNumbers = () => {
     scoreEl.textContent = String(state.score);
     waveEl.textContent = `Wave ${state.wave}`;
-    livesEl.textContent = `${state.lives} ${state.lives === 1 ? 'ship' : 'ships'} left`;
-    bestEl.textContent = best() ? `Best ${best()}` : 'No best yet';
+    livesEl.textContent = `${state.lives} ${state.lives === 1 ? 'ship' : 'ships'} · ${best() ? `best ${best()}` : 'no best yet'}`;
   };
 
   const size = () => {
@@ -472,7 +473,7 @@ function galagaGame(ctx) {
     const result = progress.complete('game', `galaga:${progress.today()}`);
     if (result.first) toast(`+${progress.XP.game} XP`);
     paintNumbers();
-    moment({
+    shown = moment({
       tone,
       eyebrow: `Game over · wave ${state.wave}`,
       big: String(state.score),
@@ -485,6 +486,7 @@ function galagaGame(ctx) {
   const frame = (now) => {
     raf = 0;
     if (!canvas.isConnected) { if (attached) { teardown(); return; } raf = requestAnimationFrame(frame); return; }
+    if (!attached) document.body.toggleAttribute('data-arcade', true);
     attached = true;
     const dt = last ? (now - last) / 1000 : 0;
     last = now;
@@ -532,36 +534,46 @@ function galagaGame(ctx) {
   const KEYS = { ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
   const onKey = (event) => {
     if (!canvas.isConnected) { teardown(); return; }
+    if (event.key === 'Escape' && event.type === 'keydown' && !document.querySelector('.moment')) { leave(); return; }
     const side = KEYS[event.key];
     if (!side || document.querySelector('.moment')) return;
     event.preventDefault();
     press(side, event.type === 'keydown');
   };
   const onHide = () => { if (document.hidden) lift(); };
+  // The back button leaves without a click anywhere in here, and after a game
+  // over the loop is not running to notice — so watch the route as well.
+  const onRoute = () => { if (location.hash !== home) teardown(); };
   window.addEventListener('keydown', onKey);
   window.addEventListener('keyup', onKey);
   document.addEventListener('visibilitychange', onHide);
+  window.addEventListener('hashchange', onRoute);
   function teardown() {
+    if (gone) return;
+    gone = true;
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     window.removeEventListener('keydown', onKey);
     window.removeEventListener('keyup', onKey);
     document.removeEventListener('visibilitychange', onHide);
+    window.removeEventListener('hashchange', onRoute);
+    document.body.removeAttribute('data-arcade');
+    if (shown && shown.isConnected) shown.remove();
   }
+  const leave = () => { teardown(); ctx.go('play'); };
 
-  // One poster, numbers on top: a separate score poster pushed the pads under
-  // the tab bar on a phone, and the pads are the whole game.
-  const field = poster({ tone, className: 'full' },
-    h('div', { class: 'arcade-hud' },
+  // The whole screen, while the game is open: numbers in a thin bar, the
+  // field as large as the window allows, the pads under the thumbs.
+  const stage = h('div', { class: 'arcade-stage', role: 'application', 'aria-label': 'Galaga' },
+    h('div', { class: 'arcade-bar' },
+      h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close Galaga', text: '✕', onclick: leave }),
       h('div', {}, scoreEl, h('p', { class: 'label dim', text: 'score' })),
-      h('div', { style: 'text-align:right' }, waveEl, livesEl, bestEl)),
-    h('div', { class: 'arcade' }, canvas),
+      h('span', { class: 'grow' }),
+      h('div', { class: 'stat' }, waveEl, livesEl)),
+    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)),
     h('div', { class: 'arcade-pad' }, pads.left, pads.right));
 
-  const how = poster({ tone: 'paper', className: 'full' },
-    note('Hold ◀ or ▶ to fly — the ship fires by itself while it moves. Every wave is harder than the last, and there is always another. On a keyboard, the arrow keys.'));
-
-  const el = h('div', { style: 'display:contents' }, field, how);
+  const el = h('div', { style: 'display:contents' }, stage);
   paintNumbers();
   raf = requestAnimationFrame(frame);
   return { title: 'Galaga', el };

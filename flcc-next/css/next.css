@@ -304,16 +304,34 @@ button.poster:active, a.poster:active { transform: scale(.988); }
 .xw-list button[aria-current="true"] { font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 .xw-list button[data-solved] { opacity: .45; }
 
-/* ── The arcade field (Galaga) ────────────────────────────────────────────
-   The poster system at arcade size: a paper field with one navy edge, and two
-   hold-down pads under it. Holding a pad flies the ship AND fires it — there
-   is no fire button. Drawn as an ink frame around the canvas rather than a
-   border, so the 3px edge never changes the field's size. The field is kept
-   short enough that the pads stay above the tab bar on a phone. */
-.arcade-hud { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+/* ── The arcade (Galaga) ──────────────────────────────────────────────────
+   The game takes the whole screen while it is open: a thin bar of numbers
+   on top, the field as large as the window allows, and two hold-down pads
+   under it. Holding a pad flies the ship AND fires it — there is no fire
+   button. It sits above the header and the tab bar (and under a moment),
+   and the page behind it does not scroll. The field is framed in ink rather
+   than bordered, so the 3px edge never changes its size, and it is sized by
+   container units so it fits both the width and the height of any screen. */
+body[data-arcade] { overflow: hidden; }
+.arcade-stage {
+  position: fixed; inset: 0; z-index: 40;
+  display: flex; flex-direction: column; gap: .7rem;
+  background: var(--paper); color: var(--ink);
+  padding: calc(.7rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right))
+           calc(.9rem + env(safe-area-inset-bottom)) calc(1rem + env(safe-area-inset-left));
+}
+.arcade-bar { display: flex; align-items: center; gap: .8rem; }
+.arcade-bar .grow { flex: 1; }
+.arcade-bar .headline { line-height: 1; }
+.arcade-bar .stat { text-align: right; }
+.arcade-close {
+  width: 2.6rem; height: 2.6rem; flex: none; border-radius: 99px;
+  box-shadow: inset 0 0 0 var(--edge) var(--ink);
+  font-size: 1.1rem; font-weight: 900; line-height: 1;
+}
+.arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: start center; }
 .arcade {
-  margin: .9rem auto 0;
-  width: min(100%, calc((100svh - 20rem) * 100 / 140));
+  width: min(100cqw, (100cqh - 6px) * 100 / 140);
   padding: var(--edge); border-radius: 12px;
   background: var(--ink);
 }
@@ -322,15 +340,12 @@ button.poster:active, a.poster:active { transform: scale(.988); }
   border-radius: 9px; background: var(--paper);
   touch-action: none; user-select: none; -webkit-user-select: none;
 }
-.arcade-pad {
-  display: grid; grid-template-columns: 1fr 1fr; gap: .6rem;
-  width: min(100%, calc((100svh - 20rem) * 100 / 140)); margin: .9rem auto 0;
-}
+.arcade-pad { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; width: min(100%, 34rem); margin: 0 auto; }
 .arcade-pad button {
-  min-height: 3.6rem; border-radius: 99px;
+  min-height: 4rem; border-radius: 99px;
   background: var(--paper); color: var(--ink);
   box-shadow: inset 0 0 0 var(--edge) var(--ink);
-  font-size: 1.4rem; font-weight: 900;
+  font-size: 1.5rem; font-weight: 900;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
 .arcade-pad button[data-held] { background: var(--ink); color: var(--paper); }
