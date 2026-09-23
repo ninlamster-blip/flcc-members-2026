@@ -13,6 +13,19 @@
     "tone": "navy"
   },
   {
+    "id": "sunday-service",
+    "title": "Sunday service",
+    "when": "Every Sunday · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "The Sunday evening service. Communion is served with the help of the month's communion assistants.",
+    "recurring": true,
+    "gathering": true,
+    "weekday": 0,
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
     "id": "prayer-tuesday",
     "title": "Tuesday prayer meeting",
     "when": "Tuesdays · 9:00 PM",
@@ -26,47 +39,25 @@
     "tone": "captain"
   },
   {
-    "id": "membership-class",
-    "title": "Membership class",
-    "when": "Fridays in September · after the service",
-    "where": "Church hall, room 2",
-    "blurb": "Four sessions on what FLCC believes and what belonging here means.",
-    "dates": ["2026-09-04", "2026-09-11", "2026-09-18", "2026-09-25"],
-    "start": "12:15",
-    "minutes": 60,
-    "tone": "sky"
-  },
-  {
-    "id": "couples-evening",
-    "title": "Couples and singles evening",
-    "when": "Friday 18 September · 6:30 PM",
-    "where": "FLCC hall",
-    "blurb": "One evening on relationships across a distance — for married couples apart from their spouse, and for anyone single and tired of being asked about it.",
-    "date": "2026-09-18",
-    "start": "18:30",
+    "id": "friday-2026-09-25",
+    "title": "Friday 25 September — Fellowship service",
+    "when": "Friday 25 September · 10:00 AM",
+    "where": "National Evangelical Church in Kuwait, Kuwait City",
+    "blurb": "This Friday is led by the Women's & Men's Fellowship. Communion assistants for September's Friday services: Sis. Laidz Pascual and Bro. Allen Santos.",
+    "date": "2026-09-25",
+    "start": "10:00",
     "minutes": 120,
     "tone": "rose"
   },
   {
-    "id": "mens-breakfast",
-    "title": "Men's breakfast",
-    "when": "Saturday 26 September · 7:30 AM",
-    "where": "Salmiya, host's flat",
-    "blurb": "Food, one short talk, and honest conversation. Numbers are capped at twenty so it stays a conversation.",
-    "date": "2026-09-26",
-    "start": "07:30",
+    "id": "sunday-2026-09-27",
+    "title": "Sunday 27 September — who is serving",
+    "when": "Sunday 27 September · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Grace Siangco · Song leader: Bro. Edmund Gabriel · Preacher: Sis. Fretz Guerzon · Pastoral prayer: Sis. Laidz Pascual · Food: Flores family. Communion assistants: Bro. Wilson Guerzon and Ptr. Nerwin Suelo.",
+    "date": "2026-09-27",
+    "start": "18:30",
     "minutes": 120,
     "tone": "sunshine"
-  },
-  {
-    "id": "network-conference",
-    "title": "BOTR network conference",
-    "when": "12–14 November",
-    "where": "N.E.C.K. compound",
-    "blurb": "All fourteen FLCC churches together for three days of teaching and worship. Registration opens in October.",
-    "date": "2026-11-12",
-    "start": "09:00",
-    "minutes": 480,
-    "tone": "captain"
   }
 ]
