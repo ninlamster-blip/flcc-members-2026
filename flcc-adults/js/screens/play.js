@@ -1,4 +1,4 @@
-// PLAY — two of them, and neither one is trying to disciple you.
+// PLAY — three of them, and none of them is trying to disciple you.
 //
 // Worth stating, because a church app is the exact place this goes wrong: the
 // games here are not a delivery mechanism for anything. There is no verse to
@@ -44,6 +44,16 @@ export default async function playScreen(ctx) {
     h('div', { class: 'poster-foot' },
       h('span', { class: 'go' }, 'Play'),
       art('heart', { tone: 'rose', size: 'sm' }))));
+
+  parts.push(poster({ tone: 'sunshine', tall: true, as: 'button', onclick: () => ctx.go('galaga') },
+    label('Arcade'),
+    h('div', {},
+      display('GALAGA'),
+      h('p', { class: 'lead dim', style: 'margin-top:1rem',
+        text: 'The arcade classic. Hold left or right to fly — the ship fires by itself while it moves. It never ends, and every wave is harder than the last.' })),
+    h('div', { class: 'poster-foot' },
+      h('span', { class: 'go' }, 'Fly'),
+      art('star', { tone: 'sunshine', size: 'sm' }))));
 
   parts.push(poster({ tone: 'paper' },
     label('What these are not'),

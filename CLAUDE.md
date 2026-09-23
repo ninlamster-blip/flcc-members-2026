@@ -133,6 +133,9 @@ duplicate of a `flcc-next/` file, on the same terms as the stylesheet and the
 illustrations: a pure algorithm, copied rather than imported, with
 `test/crossword.test.mjs` comparing the two files below the header and failing
 when they drift.
+The Galaga engine (`js/games/galaga.js`) is a fourth, on the same terms, held
+by `test/galaga.test.mjs` — and that test also fails if the adult screen ever
+reads the score, because this edition keeps none: it shows the wave reached.
 
 ### The two editions are one design
 

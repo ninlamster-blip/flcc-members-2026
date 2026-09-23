@@ -73,6 +73,7 @@ browser), so the app runs rather than crashing.
 | `next/v1/ask` | the current Ask NEXT thread | Ask |
 | `next/v1/settings` | `{ theme, motion, aiWorker, aiSecret, aiEnabled, aiModel }` | the dashboard |
 | `next/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
+| `next/v1/arcade` | `{ galaga }` — the best Galaga score on this device | Galaga |
 | `next/v1/library` | `{ version, updated, files: { <file>: { added[], edited{}, removed[] } } }` | the dashboard's Library |
 
 Two consequences worth stating plainly, because the dashboard states them too:

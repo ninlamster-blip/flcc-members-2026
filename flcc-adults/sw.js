@@ -21,7 +21,7 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v8';
+const VERSION = 'adults-v9';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [
@@ -39,8 +39,8 @@ const SHELL = [
   './js/screens/path.js', './js/screens/session.js', './js/screens/guide.js',
   './js/screens/plan.js',
   './js/screens/ask.js', './js/screens/play.js', './js/screens/crossword.js',
-  './js/screens/game.js', './js/screens/notes.js', './js/screens/note.js',
-  './js/games/crossword.js', './js/games/match3.js',
+  './js/screens/game.js', './js/screens/galaga.js', './js/screens/notes.js', './js/screens/note.js',
+  './js/games/crossword.js', './js/games/match3.js', './js/games/galaga.js',
   './content/moments.json', './content/paths.json', './content/prayer-guides.json',
   './content/prayer-categories.json', './content/reading-plans.json',
   './content/updates.json', './content/events.json', './content/ministries.json',

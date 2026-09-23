@@ -77,5 +77,16 @@
       "kids": "Ten questions about FLCC — who we are and what we believe.",
       "teens": "FLCC, the BOTR network, and what this church actually holds to."
     }
+  },
+  {
+    "id": "galaga",
+    "title": "GALAGA",
+    "tone": "captain",
+    "symbol": "rocket",
+    "difficulty": 4,
+    "blurb": {
+      "kids": "Fly your ship and blast the bugs! Hold left or right to move — it fires by itself.",
+      "teens": "The arcade classic. It never ends, and every wave is harder than the last. Hold a side to fly and fire."
+    }
   }
 ]
