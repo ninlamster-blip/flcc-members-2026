@@ -5,10 +5,13 @@
 // and fully listening to the room, and every extra control is a decision they
 // have to make instead of writing down the thing they just heard.
 //
-// So: a title, two small fields, and a text area that grows. It saves as you
-// type — there is no Save button, because a Save button is a thing to forget
-// to press, and a sermon note lost to a locked screen is the whole feature
-// wasted.
+// It follows the shape of a message on the Watch tab, section for section —
+// the message, what it was about, what it said in three points, the question
+// to sit with, and your own words — so a note taken on Friday reads back like
+// the messages beside it. Every section is optional; write in the ones you
+// have. It saves as you type — there is no Save button, because a Save button
+// is a thing to forget to press, and a sermon note lost to a locked screen is
+// the whole feature wasted.
 
 import { h, poster, label, art, go, pill, pillRow, note as noteLine, rise, toast, reference } from '../core/ui.js';
 import * as notes from '../core/notes.js';
@@ -33,16 +36,40 @@ export default async function noteScreen(ctx) {
     timer = setTimeout(() => notes.update(id, fields()), 600);
   };
 
-  const title = h('input', { type: 'text', value: held.title, 'aria-label': 'What the sermon was about',
-    placeholder: 'What was it about?' });
+  const title = h('input', { type: 'text', value: held.title, 'aria-label': 'The message',
+    placeholder: 'The message — e.g. Faith' });
   const speaker = h('input', { type: 'text', value: held.speaker, 'aria-label': 'Who preached', placeholder: 'Who preached' });
   const ref = h('input', { type: 'text', value: held.ref, 'aria-label': 'The passage', placeholder: 'The passage' });
-  const body = h('textarea', { rows: '16', 'aria-label': 'Your notes',
-    placeholder: 'Whatever you want to remember.\n\nThe point he made about verse 4.\nThe thing that was uncomfortable.\nWhat to do about it this week.' });
+  const about = h('textarea', { rows: '3', 'aria-label': 'What it was about', style: 'min-height:5rem',
+    placeholder: 'In a sentence or two, what was it about?' });
+  about.value = held.about || '';
+  // Textareas rather than one-line inputs: a point heard in a sermon is a
+  // sentence, and a one-line field hides the end of it off the side.
+  const short = 'min-height:3.4rem';
+  const points = notes.pointsOf(held).map((value, i) => {
+    const field = h('textarea', { rows: '2', 'aria-label': `Point ${i + 1}`, placeholder: `${i + 1}.`, style: short });
+    field.value = value;
+    return field;
+  });
+  const question = h('textarea', { rows: '2', 'aria-label': 'Sit with this', style: short,
+    placeholder: 'The question it left you with.' });
+  question.value = held.question || '';
+  const body = h('textarea', { rows: '8', 'aria-label': 'Your own words',
+    placeholder: 'What is this saying to you?\n\nThe thing that was uncomfortable.\nWhat to do about it this week.' });
   body.value = held.body;
 
-  const fields = () => ({ title: title.value, speaker: speaker.value, ref: ref.value, body: body.value });
-  for (const field of [title, speaker, ref, body]) field.addEventListener('input', () => patch(fields));
+  const fields = () => ({
+    title: title.value, speaker: speaker.value, ref: ref.value,
+    about: about.value, points: points.map((field) => field.value),
+    question: question.value, body: body.value,
+  });
+  for (const field of [title, speaker, ref, about, ...points, question, body]) {
+    field.addEventListener('input', () => patch(fields));
+  }
+
+  const stack = (...children) => h('div', { style: 'margin-top:.8rem;display:flex;flex-direction:column;gap:.6rem' }, ...children);
+  const when = new Date(held.createdAt || Date.now())
+    .toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
   // Leaving the screen must not lose the last second of typing, and must not
   // leave an empty note behind either.
@@ -63,14 +90,27 @@ export default async function noteScreen(ctx) {
 
   const parts = [
     poster({ tone: 'paper' },
-      label('The sermon'),
-      h('div', { style: 'margin-top:.8rem;display:flex;flex-direction:column;gap:.6rem' },
-        title, speaker, ref),
+      label(`Message · ${when}`),
+      stack(title, speaker, ref),
       held.ref
         ? reference(held.ref, ctx.go, { style: 'margin-top:.9rem' })
         : noteLine('Type a passage like “Romans 8:28” and it becomes a link to the Bible next time you open this.')),
 
-    poster({ tone: 'paper' }, body),
+    poster({ tone: 'paper' },
+      label('What it was about'),
+      stack(about)),
+
+    poster({ tone: 'paper' },
+      label('What it said'),
+      stack(...points)),
+
+    poster({ tone: 'sky' },
+      label('Sit with this'),
+      stack(question)),
+
+    poster({ tone: 'sunshine' },
+      label('Your own words'),
+      stack(body)),
 
     poster({ tone: 'paper' },
       label('Keep a copy'),

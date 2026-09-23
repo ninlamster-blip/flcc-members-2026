@@ -125,7 +125,7 @@ export default async function watchScreen(ctx) {
           meta: new Date(one.updatedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
           onclick: () => ctx.go(`note/${one.id}`),
         })))
-      : h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'A title, the passage, and a page. It saves as you type and stays on this phone.' }),
+      : h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'What it was about, three points, what to sit with, and your own words. It saves as you type and stays on this phone.' }),
     h('div', { class: 'poster-foot' },
       pill(written.length ? 'Open your notes' : 'Start a note', () => {
         if (written.length) ctx.go('notes');

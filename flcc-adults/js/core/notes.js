@@ -5,9 +5,13 @@
 // page that is already open and a keyboard, not a template with eight headings
 // asking them to categorise a thought while the preacher is still talking.
 //
-// So a note is a title, an optional passage and speaker, and a body. Nothing
-// is required, nothing is validated, and an empty note is thrown away rather
-// than saved as a piece of clutter to tidy up later.
+// So a note is shaped like a message on the Watch tab, because that is the
+// shape members asked to write in: the message (title, preacher, passage),
+// what it was about, what it said in three points, the question to sit with,
+// and then their own words (`body`). Nothing is required, nothing is
+// validated, and an empty note is thrown away rather than saved as a piece of
+// clutter to tidy up later. Notes written before the sections existed have
+// only `body`, and read back as "your own words" with the rest blank.
 //
 // Notes never leave the device on their own. There is no server behind this
 // app, and a sermon note is the most private thing in it after a prayer — it
@@ -41,11 +45,21 @@ export function get(id) { return all().find((one) => one.id === id) || null; }
 let counter = 0;
 const nextId = () => `n${Date.now().toString(36)}${(counter++).toString(36)}`;
 
-export function create({ title = '', speaker = '', ref = '', body = '', messageId = '' } = {}) {
+/** Three, like the Watch tab. A member reading it back will read three. */
+export const POINTS = 3;
+
+/** The three points of a note, always three strings, whatever was stored. */
+export function pointsOf(note) {
+  const kept = Array.isArray(note && note.points) ? note.points : [];
+  return Array.from({ length: POINTS }, (_, i) => String(kept[i] || ''));
+}
+
+export function create({ title = '', speaker = '', ref = '', about = '', points = [],
+                         question = '', body = '', messageId = '' } = {}) {
   const now = new Date().toISOString();
   const note = {
     id: nextId(),
-    title, speaker, ref, body, messageId,
+    title, speaker, ref, about, points: pointsOf({ points }), question, body, messageId,
     createdAt: now, updatedAt: now,
   };
   save([note, ...all()]);
@@ -67,7 +81,8 @@ export function remove(id) {
 
 /** A note nobody typed anything into is not a note. */
 export const isEmpty = (note) =>
-  !note || !(String(note.title).trim() || String(note.body).trim() || String(note.ref).trim());
+  !note || ![note.title, note.body, note.ref, note.about, note.question, ...pointsOf(note)]
+    .some((field) => String(field || '').trim());
 
 /** Drop the blanks. Called when a note screen is left. */
 export function tidy() {
@@ -80,20 +95,34 @@ export function tidy() {
  * A note as plain text, for sharing, copying or saving as a file.
  *
  * Plain text because it has to read properly wherever it lands — a WhatsApp
- * chat, an email, a notes app — and every one of those takes plain text.
+ * chat, an email, a notes app — and every one of those takes plain text. It
+ * follows the note's own sections, and a section left blank is left out
+ * rather than printed as an empty heading.
  */
 export function asText(note, { date = null } = {}) {
   if (!note) return '';
-  const title = String(note.title || '').trim() || 'Sermon notes';
+  const clean = (value) => String(value || '').trim();
+  const title = clean(note.title) || 'Sermon notes';
   const when = date || (note.createdAt ? new Date(note.createdAt) : null);
   const heading = [
-    [String(note.speaker || '').trim(), String(note.ref || '').trim()].filter(Boolean).join(' · '),
+    [clean(note.speaker), clean(note.ref)].filter(Boolean).join(' · '),
     when && !Number.isNaN(when.getTime())
       ? when.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       : '',
   ].filter(Boolean);
-  const body = String(note.body || '').trim();
-  return [title, ...heading, '', body].join('\n').trim() + '\n';
+
+  const points = pointsOf(note).map(clean);
+  const said = points.some(Boolean)
+    ? points.map((line, i) => (line ? `${i + 1}. ${line}` : '')).filter(Boolean).join('\n')
+    : '';
+  const sections = [
+    ['WHAT IT WAS ABOUT', clean(note.about)],
+    ['WHAT IT SAID', said],
+    ['SIT WITH THIS', clean(note.question)],
+    ['YOUR OWN WORDS', clean(note.body)],
+  ].filter(([, text]) => text).map(([name, text]) => `${name}\n${text}`);
+
+  return [[title, ...heading].join('\n'), ...sections].join('\n\n') + '\n';
 }
 
 /** A file name for the note, safe on every phone and desktop. */
