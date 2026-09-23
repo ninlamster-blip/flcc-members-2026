@@ -123,9 +123,15 @@ export function stamp(start) {
  * An event with no machine-readable shape at all is kept rather than dropped —
  * it simply sorts to the end and shows its own sentence. A church notice that
  * somebody forgot to date should still appear on the Community screen.
+ *
+ * A dated event whose last date has passed is the opposite case: it is over,
+ * and left in it would sit at the bottom of the calendar as a stale card until
+ * somebody remembered to delete it. So it drops off by itself.
  */
 export function upcoming(events, { now = new Date(), limit = 0 } = {}) {
-  const list = (Array.isArray(events) ? events : []).map((event) => {
+  const dated = (event) => Boolean(event.date) || (Array.isArray(event.dates) && event.dates.length > 0);
+  const list = (Array.isArray(events) ? events : []).filter((event) =>
+    !(event && dated(event) && !nextOccurrence(event, now))).map((event) => {
     const start = nextOccurrence(event, now);
     return {
       event,

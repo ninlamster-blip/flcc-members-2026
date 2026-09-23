@@ -114,6 +114,18 @@ test('an undated event keeps its place in the list rather than disappearing', ()
   assert.equal(list[1].countdown, '');
 });
 
+test('a dated event drops off once it is over', () => {
+  // Otherwise last month's roster sits at the bottom of the Community screen
+  // until somebody remembers to delete it.
+  const past = { id: 'past', date: '2026-08-20', start: '18:30', minutes: 90 };
+  const series = { id: 'series', dates: ['2026-08-01', '2026-08-08'], start: '10:00', minutes: 60 };
+  const list = agenda.upcoming([past, series, service], { now: on('2026-09-01T08:00:00') });
+  assert.deepEqual(list.map((one) => one.event.id), ['friday']);
+  // Still on the list while it is running.
+  const running = agenda.upcoming([past], { now: on('2026-08-20T19:00:00') });
+  assert.equal(running.length, 1);
+});
+
 /**
  * The framing on the Today screen.
  *
