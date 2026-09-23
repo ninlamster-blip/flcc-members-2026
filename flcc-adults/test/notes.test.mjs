@@ -96,18 +96,45 @@ test('notes live in this app’s own namespace and nowhere else', () => {
   for (const key of keys) assert.ok(key.startsWith('adults/v1/'), `${key} escaped the namespace`);
 });
 
-test('a shared note reads properly as plain text', () => {
+test('a note has the shape of a message: three points, however it was stored', () => {
+  reset();
+  const one = notes.create({ title: 'Faith' });
+  assert.deepEqual(one.points, ['', '', '']);
+  assert.deepEqual(notes.pointsOf({ points: ['a'] }), ['a', '', '']);
+  assert.deepEqual(notes.pointsOf({ points: ['a', 'b', 'c', 'd'] }), ['a', 'b', 'c']);
+  // A note written before the sections existed has only a body.
+  assert.deepEqual(notes.pointsOf({ body: 'old' }), ['', '', '']);
+  // Any one section is enough to be worth keeping.
+  assert.equal(notes.isEmpty({ title: '', body: '', ref: '', points: ['', 'Faith is a verb', ''] }), false);
+  assert.equal(notes.isEmpty({ title: '', body: '', ref: '', about: 'Hebrews 11' }), false);
+  assert.equal(notes.isEmpty({ title: '', body: '', ref: '', question: 'What am I waiting to see?' }), false);
+  assert.equal(notes.isEmpty({ title: ' ', body: '', ref: '', about: ' ', question: '', points: [' ', '', ''] }), true);
+});
+
+test('a shared note reads like the message it was taken on', () => {
   const one = { title: 'Faith', speaker: 'Ptr. Justin Flores', ref: 'Hebrews 11:1',
-    body: 'Faith is being sure of what we hope for.\n\nAct on it this week.' };
+    about: 'What faith is, and what it is not.',
+    points: ['Faith is being sure of what we hope for.', 'Faith acts before it sees.', 'Faith is kept, not felt.'],
+    question: 'Where am I waiting to see before I obey?',
+    body: 'This is about my contract.\n\nCall home on Saturday.' };
   const text = notes.asText(one, { date: new Date('2026-09-25T16:30:00') });
-  const lines = text.split('\n');
-  assert.equal(lines[0], 'Faith');
-  assert.equal(lines[1], 'Ptr. Justin Flores · Hebrews 11:1');
-  assert.match(lines[2], /2026/);
-  assert.equal(lines[3], '');
-  assert.ok(text.includes('Faith is being sure of what we hope for.\n\nAct on it this week.'));
-  // Nothing typed but the body still gets a heading, and nothing blank is invented.
-  assert.equal(notes.asText({ body: 'Just this.' }), 'Sermon notes\n\nJust this.\n');
+  const blocks = text.trim().split('\n\n');
+  const head = blocks[0].split('\n');
+  assert.equal(head[0], 'Faith');
+  assert.equal(head[1], 'Ptr. Justin Flores · Hebrews 11:1');
+  assert.match(head[2], /2026/);
+  assert.equal(blocks[1], 'WHAT IT WAS ABOUT\nWhat faith is, and what it is not.');
+  assert.equal(blocks[2], 'WHAT IT SAID\n1. Faith is being sure of what we hope for.\n2. Faith acts before it sees.\n3. Faith is kept, not felt.');
+  assert.equal(blocks[3], 'SIT WITH THIS\nWhere am I waiting to see before I obey?');
+  assert.ok(text.includes('YOUR OWN WORDS\nThis is about my contract.\n\nCall home on Saturday.'));
+
+  // A section left blank is left out, not printed as an empty heading, and a
+  // point keeps its own number even when the one before it is blank.
+  const sparse = notes.asText({ title: '', points: ['', 'Only the second'], body: 'Just this.' });
+  assert.equal(sparse, 'Sermon notes\n\nWHAT IT SAID\n2. Only the second\n\nYOUR OWN WORDS\nJust this.\n');
+  // A note from before the sections existed still shares its body.
+  assert.equal(notes.asText({ body: 'Just this.' }), 'Sermon notes\n\nYOUR OWN WORDS\nJust this.\n');
+
   assert.equal(notes.fileName(one), 'faith.txt');
   assert.equal(notes.fileName({ title: '  ' }), 'sermon-notes.txt');
   assert.equal(notes.fileName({ title: 'Faith: Hebrews 11 / week 2!' }), 'faith-hebrews-11-week-2.txt');

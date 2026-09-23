@@ -28,7 +28,7 @@ export default async function notesScreen(ctx) {
       h('p', { class: 'lead dim', style: 'margin-top:1rem',
         text: all.length
           ? 'Everything you have written, newest first. It stays on this phone.'
-          : 'A title, the passage, and a page to write on. Nothing else — you are meant to be listening.' })),
+          : 'The same shape as a message here: what it was about, what it said in three points, what to sit with, and your own words. Fill in what you catch — you are meant to be listening.' })),
     h('div', { class: 'poster-foot' },
       pill('Start a note', () => ctx.go(`note/${notes.create().id}`)),
       art('book', { tone: 'captain', size: 'sm' }))));
