@@ -8,6 +8,8 @@ import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import { mode } from '../core/profile.js';
 import * as crossword from '../games/crossword.js';
+import * as galaga from '../games/galaga.js';
+import * as store from '../core/storage.js';
 import { deal, pick as pickForDay, cycleOf, askOrder } from '../core/rotation.js';
 
 const forAge = (rows, band) => rows.filter((row) => !row.ageGroup || row.ageGroup === 'both' || row.ageGroup === band);
@@ -407,6 +409,164 @@ async function crosswordGame(ctx) {
   return { title: 'Crossword', el };
 }
 
+// ── Galaga ──────────────────────────────────────────────────────────────────
+//
+// The arcade classic, and the one game here with no end: every wave cleared
+// brings a harder one. Holding left or right flies the ship and fires it at
+// once — there is no fire button — so a whole run is played with one thumb.
+// The best score stays on this device and is never compared with anybody's.
+
+/** The palette, read out of the stylesheet so no colour is written down twice. */
+function palette() {
+  const css = getComputedStyle(document.documentElement);
+  const read = (name) => css.getPropertyValue(`--${name}`).trim();
+  return {
+    paper: read('paper'), ink: read('ink'), faint: read('ink-12'), captain: read('captain'),
+    poppy: read('poppy'), rose: read('rose'), sunshine: read('sunshine'), sky: read('sky'),
+  };
+}
+
+function galagaGame(ctx) {
+  const tone = 'captain';
+  const best = () => (store.read(store.KEYS.arcade, {}) || {}).galaga || 0;
+  let state = galaga.create(Date.now() % 2147483647);
+  const held = { left: false, right: false };
+  let raf = 0;
+  let last = 0;
+  let attached = false;
+
+  const canvas = h('canvas', { 'aria-label': 'Galaga. Hold left or right to fly and fire.', role: 'img' });
+  const g = canvas.getContext('2d');
+  const colors = palette();
+
+  const scoreEl = h('p', { class: 'headline', text: '0' });
+  const waveEl = h('p', { class: 'label', text: 'Wave 1' });
+  const livesEl = h('p', { class: 'label dim', text: '' });
+  const bestEl = h('p', { class: 'label dim', text: '' });
+
+  const paintNumbers = () => {
+    scoreEl.textContent = String(state.score);
+    waveEl.textContent = `Wave ${state.wave}`;
+    livesEl.textContent = `${state.lives} ${state.lives === 1 ? 'ship' : 'ships'} left`;
+    bestEl.textContent = best() ? `Best ${best()}` : 'No best yet';
+  };
+
+  const size = () => {
+    const ratio = window.devicePixelRatio || 1;
+    const width = Math.round(canvas.clientWidth * ratio);
+    if (width && canvas.width !== width) {
+      canvas.width = width;
+      canvas.height = Math.round(width * galaga.HEIGHT / galaga.WIDTH);
+    }
+    return ratio;
+  };
+
+  const draw = () => {
+    const ratio = size();
+    if (canvas.width) galaga.paint(g, state, { colors, scale: canvas.width / galaga.WIDTH, edge: 3 * ratio });
+  };
+
+  const over = () => {
+    const record = state.score > best();
+    if (record) store.write(store.KEYS.arcade, { ...(store.read(store.KEYS.arcade, {}) || {}), galaga: state.score });
+    const result = progress.complete('game', `galaga:${progress.today()}`);
+    if (result.first) toast(`+${progress.XP.game} XP`);
+    paintNumbers();
+    moment({
+      tone,
+      eyebrow: `Game over · wave ${state.wave}`,
+      big: String(state.score),
+      line: record ? 'A new best on this phone.' : `Your best is ${best()}. One more go?`,
+      action: 'Play again',
+      onclose: restart,
+    });
+  };
+
+  const frame = (now) => {
+    raf = 0;
+    if (!canvas.isConnected) { if (attached) { teardown(); return; } raf = requestAnimationFrame(frame); return; }
+    attached = true;
+    const dt = last ? (now - last) / 1000 : 0;
+    last = now;
+    const events = galaga.step(state, held, dt);
+    if (events.some((one) => one !== 'fire')) paintNumbers();
+    if (events.includes('life')) toast('A spare ship.');
+    draw();
+    if (state.over) { over(); return; }
+    raf = requestAnimationFrame(frame);
+  };
+
+  function restart() {
+    state = galaga.create(Date.now() % 2147483647);
+    last = 0;
+    paintNumbers();
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+
+  const press = (side, on) => {
+    held[side] = on;
+    pads[side].toggleAttribute('data-held', on);
+  };
+
+  const hold = (side, symbolText, name) => h('button', {
+    type: 'button', 'aria-label': name, text: symbolText,
+    onpointerdown: (event) => { event.preventDefault(); press(side, true); },
+    onpointerup: () => press(side, false),
+    onpointerleave: () => press(side, false),
+    onpointercancel: () => press(side, false),
+    oncontextmenu: (event) => event.preventDefault(),
+  });
+  const pads = { left: hold('left', '◀', 'Fly left and fire'), right: hold('right', '▶', 'Fly right and fire') };
+
+  // The field itself is a pad too: the left half flies left, the right half right.
+  const fieldSide = (event) => (event.offsetX < canvas.clientWidth / 2 ? 'left' : 'right');
+  canvas.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
+    press(fieldSide(event), true);
+  });
+  const lift = () => { press('left', false); press('right', false); };
+  canvas.addEventListener('pointerup', lift);
+  canvas.addEventListener('pointercancel', lift);
+
+  const KEYS = { ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
+  const onKey = (event) => {
+    if (!canvas.isConnected) { teardown(); return; }
+    const side = KEYS[event.key];
+    if (!side || document.querySelector('.moment')) return;
+    event.preventDefault();
+    press(side, event.type === 'keydown');
+  };
+  const onHide = () => { if (document.hidden) lift(); };
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('keyup', onKey);
+  document.addEventListener('visibilitychange', onHide);
+  function teardown() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    window.removeEventListener('keydown', onKey);
+    window.removeEventListener('keyup', onKey);
+    document.removeEventListener('visibilitychange', onHide);
+  }
+
+  // One poster, numbers on top: a separate score poster pushed the pads under
+  // the tab bar on a phone, and the pads are the whole game.
+  const field = poster({ tone, className: 'full' },
+    h('div', { class: 'arcade-hud' },
+      h('div', {}, scoreEl, h('p', { class: 'label dim', text: 'score' })),
+      h('div', { style: 'text-align:right' }, waveEl, livesEl, bestEl)),
+    h('div', { class: 'arcade' }, canvas),
+    h('div', { class: 'arcade-pad' }, pads.left, pads.right));
+
+  const how = poster({ tone: 'paper', className: 'full' },
+    note('Hold ◀ or ▶ to fly — the ship fires by itself while it moves. Every wave is harder than the last, and there is always another. On a keyboard, the arrow keys.'));
+
+  const el = h('div', { style: 'display:contents' }, field, how);
+  paintNumbers();
+  raf = requestAnimationFrame(frame);
+  return { title: 'Galaga', el };
+}
+
 const GAMES = {
   quiz: (ctx) => quizGame(ctx),
   speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'sky', title: 'Speed quiz' }),
@@ -416,6 +576,7 @@ const GAMES = {
   'who-am-i': whoAmIGame,
   'verse-builder': verseGame,
   crossword: crosswordGame,
+  galaga: galagaGame,
 };
 
 export default async function gameScreen(ctx) {

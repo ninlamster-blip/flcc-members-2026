@@ -80,6 +80,7 @@ export const KEYS = {
   settings: `${NS}settings`,  // this device's own configuration
   bible:    `${NS}bible`,     // which translation, where it stopped, verses kept
   library:  `${NS}library`,   // the ministry's edits to the authored content
+  arcade:   `${NS}arcade`,    // this device's best arcade scores, never sent anywhere
 };
 
 // Achievements are deliberately absent: they are derived from progress every
