@@ -26,16 +26,14 @@
     "tone": "sky"
   },
   {
-    "id": "prayer-tuesday",
-    "title": "Tuesday prayer meeting",
-    "when": "Tuesdays · 9:00 PM",
-    "where": "Online through the summer",
-    "blurb": "An hour of prayer for the church, the network and the nation. Come late if your shift ends late.",
-    "recurring": true,
-    "gathering": true,
-    "weekday": 2,
-    "start": "21:00",
-    "minutes": 60,
+    "id": "prayer-2026-09-24",
+    "title": "Thanksgiving prayer meeting",
+    "when": "Thursday 24 September · 6:30 PM",
+    "where": "Abundance Hall (2F)",
+    "blurb": "Presider: Sis. Celsa Sario · Exhorter: Bro. Edward Sario · Song leader: to be announced.",
+    "date": "2026-09-24",
+    "start": "18:30",
+    "minutes": 90,
     "tone": "captain"
   },
   {
@@ -54,7 +52,7 @@
     "title": "Sunday 27 September — who is serving",
     "when": "Sunday 27 September · 6:30 PM",
     "where": "Farwaniya",
-    "blurb": "Presider: Sis. Grace Siangco · Song leader: Bro. Edmund Gabriel · Preacher: Sis. Fretz Guerzon · Pastoral prayer: Sis. Laidz Pascual · Food: Flores family. Communion assistants: Bro. Wilson Guerzon and Ptr. Nerwin Suelo.",
+    "blurb": "Presider: Sis. Grace Siangco · Song leader: Bro. Edmund Gabriel · Preacher: Sis. Fretz Guerzon · Pastoral prayer: Sis. Laidz Pascual · Food: Flores family. Communion assistants: Bro. Wilson Guerzon and Ptr. Nerwin Suelo. Intercessory prayer before the service, 6:15–6:30 PM: Discipleship Ministry — the service coordinator and presider join too.",
     "date": "2026-09-27",
     "start": "18:30",
     "minutes": 120,
