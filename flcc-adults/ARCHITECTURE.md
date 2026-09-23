@@ -247,7 +247,7 @@ locked browser), so the app runs rather than crashing.
 | `adults/v1/plan` | `{ id, started }` | a reading plan |
 | `adults/v1/ask` | `{ turns: [{ role, text, at }], updatedAt }` | ASK |
 | `adults/v1/notes` | `[{ id, title, speaker, ref, body, messageId, createdAt, updatedAt }]` | sermon notes |
-| `adults/v1/play` | `{ crossword: { day, filled{}, given[] }, galaga: { wave } }` | the crossword; the wave a Galaga run continues from (never a score) |
+| `adults/v1/play` | `{ crossword: { day, filled{}, given[] }, galaga: { wave }, galagaMuted }` | the crossword; the wave a Galaga run continues from (never a score), and whether its sound is off |
 
 **Nothing crosses devices, and none of it leaves the device.** There is no
 account, no server and no sync — a second phone starts empty, and clearing the

@@ -136,6 +136,8 @@ when they drift.
 The Galaga engine (`js/games/galaga.js`) is a fourth, on the same terms, held
 by `test/galaga.test.mjs` — and that test also fails if the adult screen ever
 reads the score, because this edition keeps none: it shows the wave reached.
+Its sounds (`js/games/chiptune.js`, Web Audio recipes, no audio files) are a
+fifth, held by `test/chiptune.test.mjs` the same way.
 
 ### The two editions are one design
 
