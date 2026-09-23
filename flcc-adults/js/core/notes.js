@@ -9,9 +9,11 @@
 // is required, nothing is validated, and an empty note is thrown away rather
 // than saved as a piece of clutter to tidy up later.
 //
-// Notes never leave the device. There is no server behind this app, and a
-// sermon note is the most private thing in it after a prayer — it is where
-// somebody writes "this is about me" next to a point the preacher made.
+// Notes never leave the device on their own. There is no server behind this
+// app, and a sermon note is the most private thing in it after a prayer — it
+// is where somebody writes "this is about me" next to a point the preacher
+// made. The one way out is the member's own hand: Share on a note hands its
+// text to the phone's share sheet, a copy, or a file, and only when tapped.
 
 import * as store from './storage.js';
 
@@ -72,4 +74,31 @@ export function tidy() {
   const kept = all().filter((one) => !isEmpty(one));
   if (kept.length !== all().length) save(kept);
   return kept;
+}
+
+/**
+ * A note as plain text, for sharing, copying or saving as a file.
+ *
+ * Plain text because it has to read properly wherever it lands — a WhatsApp
+ * chat, an email, a notes app — and every one of those takes plain text.
+ */
+export function asText(note, { date = null } = {}) {
+  if (!note) return '';
+  const title = String(note.title || '').trim() || 'Sermon notes';
+  const when = date || (note.createdAt ? new Date(note.createdAt) : null);
+  const heading = [
+    [String(note.speaker || '').trim(), String(note.ref || '').trim()].filter(Boolean).join(' · '),
+    when && !Number.isNaN(when.getTime())
+      ? when.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+      : '',
+  ].filter(Boolean);
+  const body = String(note.body || '').trim();
+  return [title, ...heading, '', body].join('\n').trim() + '\n';
+}
+
+/** A file name for the note, safe on every phone and desktop. */
+export function fileName(note) {
+  const base = String((note && note.title) || '').trim().toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+  return `${base || 'sermon-notes'}.txt`;
 }
