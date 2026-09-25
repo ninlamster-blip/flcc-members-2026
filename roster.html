@@ -21,10 +21,21 @@
 -->
 <style>
   :root {
-    --bg:#F8F7F2; --surface:#FFFFFF; --ink:#1A1A1E; --ink-2:#3D3D44; --ink-3:#6E6E78; --ink-4:#A8A8B3;
-    --border:#E8E6DF; --border-2:#D5D2C8;
-    --accent:#A33B2A; --accent-hover:#7E2D1F;
-    --success:#16A34A; --danger:#DC2626;
+    /* ── NEXTPURE palette ─────────────────────────────────────────────
+       Five swatches on cream paper. They are the drawing — flat fills,
+       chips, rings, illustration. Text and controls use the darker tone
+       of the same family below, because no pastel here reaches 4.5:1. */
+    --paper: #F7F4EA;
+    --sage: #DEECDA;
+    --butter: #F1E4A0;
+    --peach: #F2BC9C;
+    --rose: #EDA89D;
+    --terracotta: #E4743C;
+
+    --bg:#F7F4EA; --surface:#FFFDF8; --ink:#241C17; --ink-2:#4A3E33; --ink-3:#8A7A6B; --ink-4:#A3937F;
+    --border:#E6DFD0; --border-2:#D3C8B4;
+    --accent:#B84A1C; --accent-hover:#96370F;
+    --success:#3F6B3C; --danger:#A8455A;
   }
   *{box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
   /* Sized up for older eyes — the people filling this in are often elders
@@ -45,7 +56,7 @@
     padding:.6rem .75rem;font-size:1.0625rem;color:var(--ink);font-family:inherit;outline:none;
     transition:border-color .15s,box-shadow .15s,background .15s;}
   input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface);
-    box-shadow:0 0 0 3px rgba(163,59,42,.12);}
+    box-shadow:0 0 0 3px rgba(184,74,28,.12);}
   textarea{min-height:150px;resize:vertical;line-height:1.7;}
 
   button{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.65rem 1.1rem;
@@ -184,20 +195,20 @@
 <script>
 /* CHURCHES-START — stamped from church.js by scripts/build-church-links.mjs */
 var CHURCHES = [
-  { slug: 'abundance', name: 'FLCC - Abundance Church', accent: '#A33B2A' },
-  { slug: 'fb', name: 'FLCC - FB', accent: '#B45309' },
-  { slug: 'ft', name: 'FLCC - F&T', accent: '#C2410C' },
-  { slug: 'cornerstone', name: 'FLCC - Cornerstone', accent: '#9A3412' },
-  { slug: 'botr-friday', name: 'FLCC - BOTR Friday', accent: '#1D4ED8' },
-  { slug: 'botr-sunday', name: 'FLCC - BOTR Sunday', accent: '#4338CA' },
-  { slug: 'shekinah', name: 'FLCC - Shekinah', accent: '#1E40AF' },
-  { slug: 'agape', name: 'FLCC - Agape', accent: '#0E7490' },
-  { slug: 'hotk', name: 'FLCC - HOTK', accent: '#0F766E' },
-  { slug: 'mtcc', name: 'FLCC - MTCC', accent: '#15803D' },
-  { slug: 'gil', name: 'FLCC - GIL', accent: '#4D7C0F' },
-  { slug: 'jaoc', name: 'FLCC - JAOC', accent: '#6D28D9' },
-  { slug: 'harvester', name: 'FLCC - Harvester', accent: '#7E22CE' },
-  { slug: 'virtual', name: 'FLCC - Virtual Church', accent: '#BE185D' }
+  { slug: 'abundance', name: 'FLCC - Abundance Church', accent: '#B84A1C' },
+  { slug: 'fb', name: 'FLCC - FB', accent: '#D2622A' },
+  { slug: 'ft', name: 'FLCC - F&T', accent: '#96602F' },
+  { slug: 'cornerstone', name: 'FLCC - Cornerstone', accent: '#7A320E' },
+  { slug: 'botr-friday', name: 'FLCC - BOTR Friday', accent: '#7D5F0E' },
+  { slug: 'botr-sunday', name: 'FLCC - BOTR Sunday', accent: '#997617' },
+  { slug: 'shekinah', name: 'FLCC - Shekinah', accent: '#5E6B33' },
+  { slug: 'agape', name: 'FLCC - Agape', accent: '#2C5129' },
+  { slug: 'hotk', name: 'FLCC - HOTK', accent: '#4E7F4A' },
+  { slug: 'mtcc', name: 'FLCC - MTCC', accent: '#A8455A' },
+  { slug: 'gil', name: 'FLCC - GIL', accent: '#BE5E6E' },
+  { slug: 'jaoc', name: 'FLCC - JAOC', accent: '#78303C' },
+  { slug: 'harvester', name: 'FLCC - Harvester', accent: '#6B4220' },
+  { slug: 'virtual', name: 'FLCC - Virtual Church', accent: '#B07A45' }
 ];
 /* CHURCHES-END */
 

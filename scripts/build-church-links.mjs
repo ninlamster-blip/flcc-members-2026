@@ -24,8 +24,8 @@ const HEAD = (title) => `<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#FAFAF5; --surface:#FFFFFF; --ink:#18181B; --ink-muted:#52525B;
-          --ink-subtle:#A1A1AA; --border:#E7E5DE; --accent:#A33B2A; }
+  :root { --bg:#F7F4EA; --surface:#FFFDF8; --ink:#241C17; --ink-muted:#6B5D52;
+          --ink-subtle:#A3937F; --border:#E6DFD0; --accent:#B84A1C; }
   * { box-sizing:border-box; -webkit-font-smoothing:antialiased; }
   html { font-size:17px; }
   body { margin:0; background:var(--bg); color:var(--ink);
