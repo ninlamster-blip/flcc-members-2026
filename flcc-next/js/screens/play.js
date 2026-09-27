@@ -1,6 +1,6 @@
 // PLAY — each game gets its own colour and its own poster.
 
-import { h, poster, label, display, art, rise, note } from '../core/ui.js';
+import { h, poster, label, display, headline, art, rise, note } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { forMode } from '../core/profile.js';
 import { count } from '../core/progress.js';
@@ -18,7 +18,7 @@ export default async function playScreen(ctx) {
   },
     label(index === 0 ? 'Today’s game' : 'Game'),
     h('div', {},
-      index === 0 ? display(game.title) : h('h2', { class: 'headline', text: game.title }),
+      index === 0 ? display(game.title) : headline(game.title),
       h('p', { class: 'body dim', style: 'margin-top:.8rem', text: forMode(game.blurb, ctx.mode) })),
     h('div', { class: 'poster-foot' },
       h('p', { class: 'label', text: '★'.repeat(game.difficulty) + '☆'.repeat(5 - game.difficulty) }),

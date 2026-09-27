@@ -102,7 +102,7 @@ button { font: inherit; color: inherit; border: 0; background: none; }
 }
 
 .display {
-  font-size: var(--display);
+  font-size: min(var(--display), var(--fit-size, 99rem));
   font-weight: 900;
   letter-spacing: -.035em;
   line-height: .94;
@@ -110,12 +110,19 @@ button { font: inherit; color: inherit; border: 0; background: none; }
 }
 
 .headline {
-  font-size: var(--headline);
+  font-size: min(var(--headline), var(--fit-size, 99rem));
   font-weight: 900;
   letter-spacing: -.03em;
   line-height: 1.02;
   text-wrap: balance;
 }
+
+/* A headline word wider than its poster — FORGIVENESS, RELATIONSHIPS — would
+   run off the edge, because a word cannot wrap. ui.js hands over the length of
+   the longest word as --fit, and the size is capped so that word fits the
+   poster it is in (cqi, the poster's own width, so a half-width poster on a
+   desktop fits too). An Inter 900 capital is at most ~.7em wide. */
+[style*="--fit"] { --fit-size: calc(100cqi / (var(--fit) * .72)); }
 
 .numeral {
   font-size: var(--numeral);
@@ -154,6 +161,7 @@ button { font: inherit; color: inherit; border: 0; background: none; }
   overflow: hidden;
   text-align: left;
   width: 100%;
+  container-type: inline-size;
 }
 .poster[data-tone="sunshine"] { background: var(--sunshine); }
 .poster[data-tone="rose"]     { background: var(--rose); }
@@ -202,6 +210,8 @@ button.poster:active, a.poster:active { transform: scale(.988); }
   min-height: 44px; cursor: pointer;
 }
 .go::after { content: "→"; transition: transform var(--speed) var(--ease); }
+/* Back already points the other way; a second arrow read "← BACK →". */
+.go[data-back]::after { content: none; }
 .go:hover::after { transform: translateX(4px); }
 
 .pill {
@@ -224,8 +234,12 @@ button.poster:active, a.poster:active { transform: scale(.988); }
 .track > i { display: block; height: 100%; background: var(--ink); border-radius: 99px; transition: width 700ms var(--ease); }
 
 /* Small figures pair up rather than each taking a whole screen. */
-.figures { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--stack); }
+.figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--stack); }
 .figures .poster { min-height: 9rem; gap: 1rem; }
+.figures .label { letter-spacing: .08em; }
+/* On the narrowest phones a half-width poster's own padding leaves too little
+   room for DEVOTIONALS. */
+@media (max-width: 22.5rem) { .figures .poster { padding: 1.1rem; } }
 .figures .numeral { font-size: clamp(2.4rem, 12vw, 3.2rem); }
 
 /* ── Streak, stamps and other collectible objects ────────────────────────── */
@@ -245,8 +259,10 @@ button.poster:active, a.poster:active { transform: scale(.988); }
 .stamp[data-tone="sky"]      { background: var(--sky); }
 .stamp[data-tone="captain"]  { background: var(--captain); }
 .stamp .art { max-width: 3.2rem; margin: 0 auto; }
-.stamp-name { font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; line-height: 1.15; text-align: center; }
-.stamp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+.stamp-name { overflow-wrap: anywhere; font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; line-height: 1.15; text-align: center; }
+/* Three across on a phone, two on the narrowest, where three would split
+   PRAYER WARRIOR mid-word. */
+.stamp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.6rem, 1fr)); gap: .7rem; }
 
 /* ── Crossword ───────────────────────────────────────────────────────────
    A newspaper grid, not a game board: white squares, black rules, numbers
@@ -258,7 +274,9 @@ button.poster:active, a.poster:active { transform: scale(.988); }
   gap: 2px;
   justify-content: center;
   margin: 1.4rem auto 0;
-  --xw-cell: clamp(1.5rem, calc((100vw - 4.5rem) / var(--xw-cols)), 2.9rem);
+  /* The poster's own width, not the window's: at 320px the window-based size
+     left the grid wider than the poster and its last column clipped. */
+  --xw-cell: clamp(1.2rem, calc((100cqi - (var(--xw-cols) - 1) * 2px) / var(--xw-cols)), 2.9rem);
 }
 .xw-holder { position: relative; display: block; }
 /* Wins over the general text-input rule below, which would otherwise make
@@ -297,6 +315,7 @@ button.poster:active, a.poster:active { transform: scale(.988); }
 .xw-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; margin-top: 1.6rem; }
 .xw-list ol { list-style: none; display: flex; flex-direction: column; gap: .5rem; margin-top: .6rem; }
 .xw-list button {
+  hyphens: auto; overflow-wrap: anywhere;
   display: block; width: 100%; text-align: left;
   font-size: .82rem; line-height: 1.35; font-weight: 500; color: inherit;
   background: transparent; cursor: pointer; padding: .15rem 0;

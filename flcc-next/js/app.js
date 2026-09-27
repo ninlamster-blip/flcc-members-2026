@@ -7,7 +7,7 @@ import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, mode, greeting, MODE } from './core/profile.js';
 import { getProgress } from './core/progress.js';
-import { poster, label, display, headline, pill, choice, art, toast } from './core/ui.js';
+import { poster, label, display, headline, fit, pill, choice, art, toast } from './core/ui.js';
 
 const TABS = [
   { name: 'today',   label: 'Today',   icon: 'today' },
@@ -159,13 +159,13 @@ function renderHead(view, route) {
     headEl.append(
       h('div', {},
         h('p', { class: 'label dimmer', text: greeting() }),
-        h('p', { class: 'headline', style: 'margin-top:.35rem', text: (user.name || 'Friend').toUpperCase() })),
+        fit(h('p', { class: 'headline', style: 'margin-top:.35rem', text: (user.name || 'Friend').toUpperCase() }))),
       streak > 0 ? h('span', { class: 'streak', title: `${streak} day streak` }, `${streak} day${streak === 1 ? '' : 's'}`) : h('span'));
   } else if (ROOTS.has(route.name)) {
     headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
   } else {
     headEl.append(
-      h('button', { class: 'go', type: 'button', style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',
+      h('button', { class: 'go', type: 'button', dataset: { back: '' }, style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',
         onclick: () => router.back() }, '← Back'),
       h('p', { class: 'label dimmer', text: view.title || '' }));
   }
