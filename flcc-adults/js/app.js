@@ -211,7 +211,7 @@ function renderHead(view, route) {
   } else {
     headEl.append(
       h('button', { class: 'go', 'data-back': '', type: 'button',
-        style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',
+        style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;flex:none',
         onclick: () => router.back('today') }, '← Back'),
       h('p', { class: 'label dimmer', text: view.title || '' }));
   }
