@@ -29,8 +29,16 @@ export function poster({ tone = 'paper', tall = false, as = 'div', onclick, clas
 }
 
 export function label(text) { return h('div', { class: 'label', text }); }
-export function display(text) { return h('h1', { class: 'display', text }); }
-export function headline(text, tag = 'h2') { return h(tag, { class: 'headline', text }); }
+export function display(text) { return fit(h('h1', { class: 'display', text })); }
+export function headline(text, tag = 'h2') { return fit(h(tag, { class: 'headline', text })); }
+
+/** Hands the stylesheet the longest word, so a headline word that cannot wrap
+ *  is sized to fit its poster instead of breaking mid-word. */
+export function fit(el) {
+  const longest = Math.max(0, ...el.textContent.split(/\s+/).map((word) => word.length));
+  if (longest) el.style.setProperty('--fit', String(longest));
+  return el;
+}
 export function lead(text) { return h('p', { class: 'lead', text }); }
 export function body(text) { return h('p', { class: 'body', text }); }
 export function dim(text) { return h('p', { class: 'body dim', text }); }
@@ -248,7 +256,7 @@ export function moment({ tone = 'sunshine', eyebrow = '', big, line = '', action
 
   const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: `background:var(--${tone})` },
     eyebrow ? label(eyebrow) : null,
-    h('p', { class: 'display', text: big }),
+    fit(h('p', { class: 'display', text: big })),
     line ? h('p', { class: 'lead dim', text: line }) : null,
     h('div', { style: 'margin-top:auto' }, pill(action, close)));
 
