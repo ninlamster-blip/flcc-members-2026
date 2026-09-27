@@ -56,7 +56,8 @@
     "2026-05": "YOU ARE WHAT YOU EAT (PHYSICALLY & SPIRITUALLY)",
     "2026-06": "WORSHIP / EVANGELISM / DISCIPLESHIP / FELLOWSHIP",
     "2026-07": "",
-    "2026-09": "FINANCIAL STEWARDSHIP"
+    "2026-09": "FINANCIAL STEWARDSHIP",
+    "2026-10": "MISSIONS"
   },
   "intercessory": [
     {"id": "ip-2026-04-03-friday", "date": "2026-04-03", "service": "Friday", "teamId": "team-worship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
@@ -110,7 +111,17 @@
     {"id": "ip-2026-09-06-sunday", "date": "2026-09-06", "service": "Sunday", "teamId": "team-prayer", "startTime": "18:15", "endTime": "18:30", "notes": ""},
     {"id": "ip-2026-09-13-sunday", "date": "2026-09-13", "service": "Sunday", "teamId": "team-finance", "startTime": "18:15", "endTime": "18:30", "notes": ""},
     {"id": "ip-2026-09-20-sunday", "date": "2026-09-20", "service": "Sunday", "teamId": "team-evangelism", "startTime": "18:15", "endTime": "18:30", "notes": ""},
-    {"id": "ip-2026-09-27-sunday", "date": "2026-09-27", "service": "Sunday", "teamId": "team-discipleship", "startTime": "18:15", "endTime": "18:30", "notes": ""}
+    {"id": "ip-2026-09-27-sunday", "date": "2026-09-27", "service": "Sunday", "teamId": "team-discipleship", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-10-09-botr", "date": "2026-10-09", "service": "BOTR-NECK", "teamId": "team-pastors-csl", "startTime": "10:00", "endTime": "12:00", "notes": ""},
+    {"id": "ip-2026-10-02-friday", "date": "2026-10-02", "service": "Friday", "teamId": "team-worship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-10-09-friday", "date": "2026-10-09", "service": "Friday", "teamId": "team-fellowship", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-10-16-friday", "date": "2026-10-16", "service": "Friday", "teamId": "team-admin", "startTime": "16:15", "endTime": "16:30", "notes": ""},
+    {"id": "ip-2026-10-23-friday", "date": "2026-10-23", "service": "Friday", "teamId": "team-auxiliary", "startTime": "16:15", "endTime": "16:30", "notes": "WAM"},
+    {"id": "ip-2026-10-30-friday", "date": "2026-10-30", "service": "Friday", "teamId": "team-auxiliary", "startTime": "16:15", "endTime": "16:30", "notes": "MAM"},
+    {"id": "ip-2026-10-04-sunday", "date": "2026-10-04", "service": "Sunday", "teamId": "team-prayer", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-10-11-sunday", "date": "2026-10-11", "service": "Sunday", "teamId": "team-finance", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-10-18-sunday", "date": "2026-10-18", "service": "Sunday", "teamId": "team-evangelism", "startTime": "18:15", "endTime": "18:30", "notes": ""},
+    {"id": "ip-2026-10-25-sunday", "date": "2026-10-25", "service": "Sunday", "teamId": "team-discipleship", "startTime": "18:15", "endTime": "18:30", "notes": ""}
   ],
   "meetings": [
     {"id": "pm-2026-04-02", "date": "2026-04-02", "startTime": "18:30", "type": "sectoral", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "F&T", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
@@ -138,6 +149,11 @@
     {"id": "pm-2026-09-03", "date": "2026-09-03", "startTime": "18:30", "type": "sectoral", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "CORNERSTONE", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
     {"id": "pm-2026-09-09", "date": "2026-09-09", "startTime": "18:00", "type": "corporate", "presiderId": "pw-amazelle-de-jesus", "exhorterId": "sis-13", "songLeaderId": null, "coordinator": "", "venue": "CPM-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
     {"id": "pm-2026-09-17", "date": "2026-09-17", "startTime": "18:30", "type": "fasting", "presiderId": "pw-christine-santos", "exhorterId": "bro-05", "songLeaderId": null, "coordinator": "", "venue": "Pascual Family Flat", "isVirtual": false, "foodInChargeText": "", "notes": ""},
-    {"id": "pm-2026-09-24", "date": "2026-09-24", "startTime": "18:30", "type": "thanksgiving", "presiderId": "pw-1778609198792", "exhorterId": "pw-1779804091843", "songLeaderId": null, "coordinator": "", "venue": "Abundance Hall (2F)", "isVirtual": false, "foodInChargeText": "SEPTEMBER CELEBRANT", "notes": ""}
+    {"id": "pm-2026-09-24", "date": "2026-09-24", "startTime": "18:30", "type": "thanksgiving", "presiderId": "pw-1778609198792", "exhorterId": "pw-1779804091843", "songLeaderId": null, "coordinator": "", "venue": "Abundance Hall (2F)", "isVirtual": false, "foodInChargeText": "SEPTEMBER CELEBRANT", "notes": ""},
+    {"id": "pm-2026-10-01", "date": "2026-10-01", "startTime": "18:30", "type": "sectoral", "presiderId": "pw-sandra-gabriel", "exhorterId": "bro-07", "songLeaderId": "pw-dolly-cas", "coordinator": "", "venue": "HS-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-10-08", "date": "2026-10-08", "startTime": "18:30", "type": "regular", "presiderId": "sis-18", "exhorterId": "pw-1778609033558", "songLeaderId": "ptr-01", "coordinator": "", "venue": "Arciaga Family Flat", "isVirtual": false, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-10-14", "date": "2026-10-14", "startTime": "18:00", "type": "corporate", "presiderId": null, "exhorterId": null, "songLeaderId": null, "coordinator": "AGAPE", "venue": "CPM-ZOOM", "isVirtual": true, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-10-22", "date": "2026-10-22", "startTime": "18:30", "type": "fasting", "presiderId": "pw-1779804041427", "exhorterId": "bro-04", "songLeaderId": "sis-18", "coordinator": "", "venue": "Flores Family Flat", "isVirtual": false, "foodInChargeText": "", "notes": ""},
+    {"id": "pm-2026-10-29", "date": "2026-10-29", "startTime": "18:30", "type": "thanksgiving", "presiderId": "pw-dolly-cas", "exhorterId": "bro-02", "songLeaderId": "bro-07", "coordinator": "", "venue": "Abundance Hall (2F)", "isVirtual": false, "foodInChargeText": "OCTOBER CELEBRANT", "notes": ""}
   ]
 }
