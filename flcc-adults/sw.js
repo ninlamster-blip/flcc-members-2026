@@ -21,7 +21,7 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v12';
+const VERSION = 'adults-v13';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [
@@ -64,7 +64,11 @@ self.addEventListener('activate', (event) => {
     .then(() => self.clients.claim()));
 });
 
+// Only a good answer is kept. Scripture is served from the cache and never
+// refetched, so one 404 or one 5xx kept here would be what that chapter
+// opened to on this phone, for good.
 const keep = (request, response) => {
+  if (!response.ok) return response;
   const copy = response.clone();
   caches.open(VERSION).then((cache) => cache.put(request, copy)).catch(() => {});
   return response;
