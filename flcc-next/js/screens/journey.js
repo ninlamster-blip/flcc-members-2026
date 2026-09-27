@@ -1,6 +1,6 @@
 // One journey: its lessons, in order, with what has been finished.
 
-import { h, poster, label, display, art, track, note, rise } from '../core/ui.js';
+import { h, poster, label, display, headline, art, track, note, rise } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { forMode } from '../core/profile.js';
 import * as progress from '../core/progress.js';
@@ -24,7 +24,7 @@ export default async function journeyScreen(ctx) {
     return poster({ tone: finished ? 'paper' : journey.tone, as: 'button',
       onclick: () => ctx.go(`lesson/${id}/${lesson.id}`) },
       label(`Lesson ${index + 1}${finished ? ' · done' : ''}`),
-      h('div', {}, h('h2', { class: 'headline', text: lesson.title }),
+      h('div', {}, headline(lesson.title),
         h('p', { class: 'label dim', style: 'margin-top:.7rem', text: lesson.ref })));
   });
 

@@ -17,8 +17,16 @@ export function poster({ tone = 'paper', tall = false, as = 'div', onclick, clas
 }
 
 export function label(text) { return h('div', { class: 'label', text }); }
-export function display(text) { return h('h1', { class: 'display', text }); }
-export function headline(text, tag = 'h2') { return h(tag, { class: 'headline', text }); }
+export function display(text) { return fit(h('h1', { class: 'display', text })); }
+export function headline(text, tag = 'h2') { return fit(h(tag, { class: 'headline', text })); }
+
+/** Hands the stylesheet the longest word, so a headline that cannot wrap is
+ *  sized to fit its poster instead of running off the edge. */
+export function fit(el) {
+  const longest = Math.max(0, ...el.textContent.split(/\s+/).map((word) => word.length));
+  if (longest > 6) el.style.setProperty('--fit', String(longest));
+  return el;
+}
 
 /** An illustration, sized for its poster and filled to sit on the colour. */
 export function art(name, { tone = 'paper', size = '', title = '' } = {}) {
@@ -111,7 +119,7 @@ export function rise(elements) {
 export function moment({ tone = 'sunshine', eyebrow = '', big, line = '', action = 'Keep going', onclose }) {
   const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: `background:var(--${tone})` },
     eyebrow ? label(eyebrow) : null,
-    h('p', { class: 'display', text: big }),
+    fit(h('p', { class: 'display', text: big })),
     line ? h('p', { class: 'lead dim', text: line }) : null,
     h('div', { style: 'margin-top:auto' }, pill(action, () => { screen.remove(); if (onclose) onclose(); })));
   document.body.appendChild(screen);

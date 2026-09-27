@@ -1,6 +1,6 @@
 // ME — the journey so far, as a set of objects worth collecting.
 
-import { h, poster, label, display, art, track, pill, rise, toast, note } from '../core/ui.js';
+import { h, poster, label, display, fit, art, track, pill, rise, toast, note } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as store from '../core/storage.js';
 import * as progress from '../core/progress.js';
@@ -29,7 +29,7 @@ export default async function meScreen(ctx) {
         h('div', { class: 'poster-foot' },
           h('div', {},
             h('p', { class: 'label', text: `Level ${progress.level(xp)}` }),
-            h('p', { class: 'headline', style: 'margin-top:.3rem', text: progress.levelTitle(xp).toUpperCase() })),
+            fit(h('p', { class: 'headline', style: 'margin-top:.3rem', text: progress.levelTitle(xp).toUpperCase() }))),
           art('rocket', { tone: 'sunshine', size: 'sm' })))),
 
     h('div', { class: 'figures full' },
@@ -42,7 +42,7 @@ export default async function meScreen(ctx) {
 
     poster({ tone: 'paper', className: 'full' },
       label('You'),
-      h('p', { class: 'headline', text: (user.name || 'Friend').toUpperCase() }),
+      fit(h('p', { class: 'headline', text: (user.name || 'Friend').toUpperCase() })),
       h('p', { class: 'body dim', style: 'margin-top:.5rem',
         text: `${user.age ?? '—'} years old · ${MODE[mode()].label} mode · sessions of about ${MODE[mode()].minutes}` }),
       h('div', { class: 'poster-foot' },

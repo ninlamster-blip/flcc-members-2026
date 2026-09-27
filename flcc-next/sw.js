@@ -12,7 +12,7 @@
 //                 the files are large, and a book that has been read once
 //                 should stay readable on a bus with no signal.
 
-const VERSION = 'next-v7';
+const VERSION = 'next-v8';
 
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/next.css', './icons/icon.svg',
@@ -49,7 +49,11 @@ self.addEventListener('activate', (event) => {
     .then(() => self.clients.claim()));
 });
 
+// Only a good answer is kept. Scripture is served from the cache and never
+// refetched, so one 404 or one 5xx kept here would be what that book opened
+// to on this phone, for good.
 const keep = (request, response) => {
+  if (!response.ok) return response;
   const copy = response.clone();
   caches.open(VERSION).then((cache) => cache.put(request, copy)).catch(() => {});
   return response;
