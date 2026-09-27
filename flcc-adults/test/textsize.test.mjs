@@ -85,3 +85,32 @@ test('applying a size is safe with no document at all', () => {
   assert.doesNotThrow(() => applyTextSize());
   assert.equal(applyTextSize({ text: 'largest' }).id, 'largest');
 });
+
+// Three things the largest setting broke on a real phone width, each pinned so
+// it cannot come back: a headline word split mid-word (FOUNDATION / S, and
+// even Tod / ay in a half-width figure), the fifth tab pushed off the edge, and
+// a poster's actions pushed off the side.
+
+test('a headline word is sized to fit its poster, not split mid-word', () => {
+  const ui = readFileSync(new URL('../js/core/ui.js', import.meta.url), 'utf8');
+  assert.match(css.match(/^\.poster \{[^}]+\}/m)[0], /container-type:\s*inline-size/,
+    'the poster must be a size container, or cqi measures the window');
+  for (const name of ['display', 'headline']) {
+    assert.match(css.match(new RegExp(`^\\.${name} \\{[^}]+\\}`, 'm'))[0], /--fit-size/,
+      `.${name} is no longer capped to fit its longest word`);
+  }
+  assert.match(css, /--fit-size:\s*calc\(100cqi/);
+  assert.match(ui, /export function display\(text\) \{ return fit\(/);
+  assert.match(ui, /export function headline\([^)]*\) \{ return fit\(/);
+});
+
+test('the tab bar keeps all five tabs on screen at every size', () => {
+  assert.match(css.match(/^\.tabs \{[^}]+\}/m)[0], /grid-auto-columns:\s*minmax\(0, 1fr\)/,
+    'a plain 1fr column cannot shrink below its label, so COMMUNITY pushed YOU off the edge');
+  assert.match(css.match(/^\.tab \{[^}]+\}/m)[0], /font-size:\s*min\([^)]*vw\)/,
+    'the tab label must be capped to what fits a fifth of the screen');
+});
+
+test('a poster foot wraps rather than pushing its actions off the side', () => {
+  assert.match(css.match(/^\.poster-foot \{[^}]+\}/m)[0], /flex-wrap:\s*wrap/);
+});

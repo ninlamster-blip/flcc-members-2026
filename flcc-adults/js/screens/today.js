@@ -10,7 +10,7 @@
 // them.
 
 import { h, poster, label, display, headline, lead, art, go, pill, track, tag,
-         rows, row, scripture, reference, waiting, note, rise, swap } from '../core/ui.js';
+         rows, row, scripture, reference, waiting, note, rise, swap, fit } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as agenda from '../core/agenda.js';
@@ -104,7 +104,7 @@ export default async function todayScreen(ctx) {
     // size — "Today" set at 20vw runs straight out of half a screen.
     const count = (value) => (typeof value === 'number'
       ? h('p', { class: 'numeral', text: String(value) })
-      : h('p', { class: 'display', text: value }));
+      : fit(h('p', { class: 'display', text: value })));
 
     swap(week, h('div', { class: 'figures' },
       poster({ tone: 'rose' },

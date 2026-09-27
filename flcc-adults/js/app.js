@@ -11,7 +11,7 @@
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, greeting, firstName, applyTextSize, SEASONS, FOCUS } from './core/profile.js';
-import { poster, label, display, headline, lead, pill, choice, art, toast } from './core/ui.js';
+import { poster, label, display, headline, fit, lead, pill, choice, art, toast } from './core/ui.js';
 
 const TABS = [
   { name: 'today',     label: 'Today',     icon: 'today' },
@@ -204,14 +204,14 @@ function renderHead(view, route) {
     headEl.append(
       h('div', {},
         h('p', { class: 'label dimmer', text: greeting() }),
-        h('p', { class: 'headline', style: 'margin-top:.35rem', text: firstName().toUpperCase() })),
+        fit(h('p', { class: 'headline', style: 'margin-top:.35rem', text: firstName().toUpperCase() }))),
       h('span'));
   } else if (ROOTS.has(route.name)) {
     headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
   } else {
     headEl.append(
       h('button', { class: 'go', 'data-back': '', type: 'button',
-        style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',
+        style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;flex:none',
         onclick: () => router.back('today') }, '← Back'),
       h('p', { class: 'label dimmer', text: view.title || '' }));
   }

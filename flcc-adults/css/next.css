@@ -131,7 +131,7 @@ button { font: inherit; color: inherit; border: 0; background: none; }
 }
 
 .display {
-  font-size: var(--display);
+  font-size: min(var(--display), var(--fit-size, 99rem));
   font-weight: 900;
   letter-spacing: -.035em;
   line-height: .94;
@@ -139,8 +139,15 @@ button { font: inherit; color: inherit; border: 0; background: none; }
   overflow-wrap: break-word;
 }
 
+/* A headline word wider than its poster — FOUNDATIONS, INDISPENSABLE — broke
+   mid-word (FOUNDATION / S). ui.js hands over the length of the longest word
+   as --fit, and the size is capped so that word fits the poster it is in (cqi,
+   the poster's own width, whatever the text-size setting). break-word above
+   stays as the last resort. An Inter 900 capital is at most ~.7em wide. */
+[style*="--fit"] { --fit-size: calc(100cqi / (var(--fit) * .72)); }
+
 .headline {
-  font-size: var(--headline);
+  font-size: min(var(--headline), var(--fit-size, 99rem));
   font-weight: 900;
   letter-spacing: -.03em;
   line-height: 1.02;
@@ -198,6 +205,7 @@ button.ref, .ref-link { cursor: pointer; text-align: left; text-decoration: unde
   overflow: hidden;
   text-align: left;
   width: 100%;
+  container-type: inline-size;
 }
 .poster[data-tone="sunshine"] { background: var(--sunshine); }
 .poster[data-tone="rose"]     { background: var(--rose); }
@@ -234,7 +242,7 @@ button.poster, a.poster { cursor: pointer; transition: transform var(--speed) va
 button.poster:active, a.poster:active { transform: scale(.988); }
 
 .poster-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.poster-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-top: auto; }
+.poster-foot { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-top: auto; }
 
 /* The illustration sits in the poster's own space, never as a background. */
 .art { display: block; width: 100%; max-width: 8.5rem; margin-left: auto; }
@@ -398,7 +406,7 @@ textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
 
 .tabs {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
-  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
   background: var(--paper);
   border-top: 1px solid var(--ink-12);
   padding-bottom: env(safe-area-inset-bottom);
@@ -408,7 +416,9 @@ textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
   padding: .65rem .2rem .7rem;
   min-height: 56px;
   cursor: pointer;
-  font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  /* Capped at what fits a fifth of the screen: at Largest text a 360px phone
+     otherwise pushed COMMUNITY wide enough to shove YOU off the edge. */
+  font-size: min(.6rem, 2.4vw); font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   color: var(--ink-55);
 }
 .tab svg { width: 22px; height: 22px; }
