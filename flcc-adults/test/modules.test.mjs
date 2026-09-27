@@ -284,3 +284,9 @@ test('the service worker precaches every module and every content file', () => {
     assert.ok(sw.includes(`./content/${file}`), `sw.js does not precache content/${file}`);
   }
 });
+
+test('the service worker never keeps a failed response', () => {
+  // Scripture is cache-first and never refetched, so a kept 404 or 5xx would
+  // be what that chapter opened to on that phone from then on.
+  assert.match(source('sw.js'), /const keep = \(request, response\) => \{\s*if \(!response\.ok\) return response;/);
+});
