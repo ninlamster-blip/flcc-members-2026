@@ -58,6 +58,15 @@ export function forMode(value, current = mode()) {
   return value[current] ?? value[current === 'kids' ? 'teens' : 'kids'] ?? null;
 }
 
+/**
+ * Whether a row tagged with an `ageGroup` may be shown to this reader. A row
+ * with no tag, or tagged `both`, is for everyone; a `teens` row never reaches
+ * a kid by any route — a list, a link, or a typed-in address.
+ */
+export function forAgeGroup(row, current = mode()) {
+  return Boolean(row) && (!row.ageGroup || row.ageGroup === 'both' || row.ageGroup === current);
+}
+
 export function getSettings() {
   // leaderKey is a ministry leader's own credential for reading the prayer
   // queue. It lives only on a leader's device and is never shipped to a young

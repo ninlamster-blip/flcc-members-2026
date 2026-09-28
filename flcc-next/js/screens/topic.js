@@ -2,12 +2,15 @@
 
 import { h, poster, label, display, art, pill, go, note, reference } from '../core/ui.js';
 import * as content from '../core/content.js';
-import { forMode } from '../core/profile.js';
+import { forMode, forAgeGroup } from '../core/profile.js';
 
 export default async function topicScreen(ctx) {
   const id = ctx.route.args[0];
   let topic = null;
   try { topic = (await content.realLife()).find((row) => row.id === id); } catch { /* below */ }
+  // Explore only lists what suits this reader's age, but a link or a typed-in
+  // address can name any topic, so the age check is made here too.
+  if (topic && !forAgeGroup(topic, ctx.mode)) topic = null;
   if (!topic) return { title: 'Real life', el: poster({ tone: 'paper', className: 'full' }, note('That topic could not be found.')) };
 
   const el = h('div', { style: 'display:contents' },

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { modeForAge, forMode, mode, MODE, MODES } from '../js/core/profile.js';
+import { modeForAge, forMode, forAgeGroup, mode, MODE, MODES } from '../js/core/profile.js';
 
 test('the two age groups split at 12 and 13', () => {
   for (let age = 7; age <= 12; age++) assert.equal(modeForAge(age), 'kids', String(age));
@@ -37,4 +37,18 @@ test('a record without the derived age group still lands a child in kids mode', 
   assert.equal(mode({ name: 'Sam', ageGroup: 'kids', age: 16 }), 'kids', 'a stored group still wins');
   assert.equal(mode({ name: 'Sam' }), 'teens', 'with nothing to go on, the safer register');
   assert.equal(mode(null), 'teens');
+});
+
+test('a teens-only row never reaches a kid, by any route', () => {
+  assert.equal(forAgeGroup({ ageGroup: 'teens' }, 'kids'), false);
+  assert.equal(forAgeGroup({ ageGroup: 'teens' }, 'teens'), true);
+  assert.equal(forAgeGroup({ ageGroup: 'both' }, 'kids'), true);
+  assert.equal(forAgeGroup({}, 'kids'), true, 'an untagged row is for everyone');
+  assert.equal(forAgeGroup(null, 'kids'), false);
+});
+
+test('the topic screen checks age itself, not only the Explore list', async () => {
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('../js/screens/topic.js', import.meta.url), 'utf8');
+  assert.match(source, /forAgeGroup\(topic/, 'a link to a teens topic must not open it for a kid');
 });
