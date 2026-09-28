@@ -88,5 +88,16 @@
       "kids": "Fly your ship and blast the bugs! Hold left or right to move — it fires by itself.",
       "teens": "The arcade classic. It never ends, and every wave is harder than the last. Hold a side to fly and fire."
     }
+  },
+  {
+    "id": "hop",
+    "title": "HOP ACROSS",
+    "tone": "sunshine",
+    "symbol": "chicken",
+    "difficulty": 3,
+    "blurb": {
+      "kids": "Help the chicken cross the roads, ride the logs and dodge the trains! Tap to hop.",
+      "teens": "Roads, rivers, trains and a mist at your back. It never ends — how far can you get?"
+    }
   }
 ]

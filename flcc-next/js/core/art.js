@@ -131,6 +131,16 @@ const SYMBOLS = {
     shape('M56 12 26 56h18l-6 34 32-46H52Z', f),
   ],
 
+  // Hop Across — the chicken, side on, facing its next lane
+  chicken: (f) => [
+    shape('M38 32c0-8 4-12 8-8 1-6 8-7 10-1 5-2 8 3 5 9', 'none'),
+    box(26, 32, 48, 46, f, 16),
+    shape('M74 46l12 6-12 6Z', f),
+    shape('M34 58c6 8 18 8 24 0', 'none'),
+    line(62, 46, 62, 47),
+    line(42, 78, 42, 88), line(58, 78, 58, 88),
+  ],
+
   // Connect
   calendar: (f) => [
     box(16, 24, 68, 62, f, 4),

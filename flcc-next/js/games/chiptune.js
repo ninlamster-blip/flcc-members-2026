@@ -47,17 +47,18 @@ export const SOUNDS = {
 export const length = (recipe) => Math.max(...recipe.map((part) => part.at + part.dur));
 
 /** Which sounds a frame's engine events call for, once each, in the order to play them. */
-export function cue(events) {
+export function cue(events, sounds = SOUNDS) {
   const wanted = new Set(events);
-  return Object.keys(SOUNDS).filter((name) => wanted.has(name));
+  return Object.keys(sounds).filter((name) => wanted.has(name));
 }
 
 /**
  * A player for one screen. `wake()` must be called from a press (a tap or a
  * key) before anything is heard; `play(events)` then plays what a frame calls
  * for. Muting takes effect at once, including on a sound already playing.
+ * `sounds` is the recipe book — these unless a game brings its own.
  */
-export function player({ muted = false } = {}) {
+export function player({ muted = false, sounds = SOUNDS } = {}) {
   let ctx = null;
   let master = null;
   let noise = null;
@@ -117,7 +118,7 @@ export function player({ muted = false } = {}) {
     play(events) {
       if (quiet || !ctx || ctx.state !== 'running') return;
       const now = ctx.currentTime;
-      for (const name of cue(events)) part(SOUNDS[name], now);
+      for (const name of cue(events, sounds)) part(sounds[name], now);
     },
     get muted() { return quiet; },
     set muted(value) {

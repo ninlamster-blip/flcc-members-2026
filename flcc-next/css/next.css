@@ -350,13 +350,17 @@ body[data-arcade] { overflow: hidden; }
   display: grid; place-items: center;
 }
 .arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: start center; }
+/* --field-w / --field-h are the field's own units: Galaga's 100 × 140 by
+   default, Hop Across's nine lanes by thirteen rows. */
 .arcade {
-  width: min(100cqw, (100cqh - 6px) * 100 / 140);
+  --field-w: 100; --field-h: 140;
+  width: min(100cqw, (100cqh - 6px) * var(--field-w) / var(--field-h));
   padding: var(--edge); border-radius: 12px;
   background: var(--ink);
 }
+.arcade[data-shape="hop"] { --field-w: 9; --field-h: 13; }
 .arcade canvas {
-  display: block; width: 100%; aspect-ratio: 100 / 140;
+  display: block; width: 100%; aspect-ratio: var(--field-w) / var(--field-h);
   border-radius: 9px; background: var(--paper);
   touch-action: none; user-select: none; -webkit-user-select: none;
 }
@@ -369,6 +373,10 @@ body[data-arcade] { overflow: hidden; }
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
 .arcade-pad button[data-held] { background: var(--ink); color: var(--paper); }
+/* Hop Across taps rather than holds, so four smaller pads in one row. */
+.arcade-pad[data-pads="4"] { grid-template-columns: repeat(4, 1fr); }
+.arcade-pad[data-pads="4"] button { min-height: 3.4rem; font-size: 1.25rem; }
+.arcade-pad[data-pads="4"] button:active { background: var(--ink); color: var(--paper); }
 
 /* ── The library editor ──────────────────────────────────────────────────
    Dashboard-only. Nothing here is seen by a young person, so it is plain
