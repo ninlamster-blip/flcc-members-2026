@@ -127,6 +127,27 @@ export function moment({ tone = 'sunshine', eyebrow = '', big, line = '', action
   return screen;
 }
 
+/**
+ * What `progress.complete()` just did, worth stopping for: a streak reward
+ * unlocked, or a round-number streak. Anything else passes quietly.
+ */
+export function celebrate(result) {
+  if (!result) return null;
+  const fresh = result.unlocked || [];
+  if (fresh.length) {
+    const reward = fresh[fresh.length - 1];
+    return moment({
+      tone: 'sunshine', eyebrow: `${result.streak.count}-day streak · new reward`,
+      big: `${reward.title.toUpperCase()}.`,
+      line: `Unlocked for ${reward.game}. Put it on from the Me tab.`, action: 'Nice',
+    });
+  }
+  if (result.streakGrew && [3, 7, 30, 100].includes(result.streak.count)) {
+    return moment({ tone: 'sunshine', eyebrow: 'Streak', big: `${result.streak.count} DAYS.`, line: 'Keep going.', action: 'Thanks' });
+  }
+  return null;
+}
+
 let toastTimer = null;
 export function toast(message) {
   let el = document.getElementById('toast');

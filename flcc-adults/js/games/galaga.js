@@ -290,11 +290,11 @@ function outline(g, points) {
   g.closePath();
 }
 
-function drawShip(g, x, y, colors) {
+function drawShip(g, x, y, colors, tone = 'captain') {
   g.save();
   g.translate(x, y);
   outline(g, SHIP);
-  g.fillStyle = colors.captain;
+  g.fillStyle = colors[tone] || colors.captain;
   g.fill();
   g.stroke();
   g.restore();
@@ -334,9 +334,9 @@ function caption(g, text, colors, y = HEIGHT / 2) {
 
 /**
  * Paint the whole field. `scale` is canvas pixels per field unit, `edge` the
- * outline weight in canvas pixels.
+ * outline weight in canvas pixels, `ship` the palette tone the ship is painted in.
  */
-export function paint(g, state, { colors, scale, edge }) {
+export function paint(g, state, { colors, scale, edge, ship = 'captain' }) {
   g.setTransform(scale, 0, 0, scale, 0, 0);
   g.fillStyle = colors.paper;
   g.fillRect(0, 0, WIDTH, HEIGHT);
@@ -376,7 +376,7 @@ export function paint(g, state, { colors, scale, edge }) {
   }
 
   const blinking = state.ship.safe > 0 && Math.floor(state.ship.safe * 8) % 2 === 0;
-  if (!state.over && !blinking) drawShip(g, state.ship.x, state.ship.y, colors);
+  if (!state.over && !blinking) drawShip(g, state.ship.x, state.ship.y, colors, ship);
 
   if (!state.started) {
     if (state.wave > 1) caption(g, `WAVE ${state.wave}`, colors, HEIGHT * 0.52);

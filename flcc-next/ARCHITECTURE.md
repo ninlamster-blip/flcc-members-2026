@@ -73,7 +73,7 @@ browser), so the app runs rather than crashing.
 | `next/v1/ask` | the current Ask NEXT thread | Ask |
 | `next/v1/settings` | `{ theme, motion, aiWorker, aiSecret, aiEnabled, aiModel }` | the dashboard |
 | `next/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
-| `next/v1/arcade` | `{ galaga, galagaResume: { wave, score }, galagaMuted, hop, hopMuted }` — the best Galaga score, where a continued run picks up, the furthest Hop Across row, and whether each game's sound is off | Galaga, Hop Across |
+| `next/v1/arcade` | `{ galaga, galagaResume: { wave, score }, galagaMuted, hop, hopMuted, hopHat, galagaShip }` — the best Galaga score, where a continued run picks up, the furthest Hop Across row, whether each game’s sound is off, and the streak rewards being worn (`js/core/rewards.js`) | Galaga, Hop Across, Me |
 | `next/v1/library` | `{ version, updated, files: { <file>: { added[], edited{}, removed[] } } }` | the dashboard's Library |
 
 Two consequences worth stating plainly, because the dashboard states them too:

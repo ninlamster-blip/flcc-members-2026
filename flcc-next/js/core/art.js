@@ -131,6 +131,12 @@ const SYMBOLS = {
     shape('M56 12 26 56h18l-6 34 32-46H52Z', f),
   ],
 
+  // A streak — the fire that keeps going as long as you keep coming back
+  fire: (f) => [
+    shape('M50 12c4 14 24 24 24 46a24 24 0 0 1-48 0c0-12 6-20 12-26 1 8 5 13 10 14-3-12-2-24 2-34Z', f),
+    shape('M50 56c5 6 10 10 10 17a10 10 0 0 1-20 0c0-7 5-11 10-17Z'),
+  ],
+
   // Hop Across — the chicken, side on, facing its next lane
   chicken: (f) => [
     shape('M38 32c0-8 4-12 8-8 1-6 8-7 10-1 5-2 8 3 5 9', 'none'),
