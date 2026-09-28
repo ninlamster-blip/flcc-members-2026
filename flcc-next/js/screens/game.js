@@ -10,6 +10,7 @@ import { mode } from '../core/profile.js';
 import * as crossword from '../games/crossword.js';
 import * as galaga from '../games/galaga.js';
 import * as hop from '../games/hopacross.js';
+import * as rewards from '../core/rewards.js';
 import * as chiptune from '../games/chiptune.js';
 import * as store from '../core/storage.js';
 import { deal, pick as pickForDay, cycleOf, askOrder } from '../core/rotation.js';
@@ -468,6 +469,8 @@ function galagaGame(ctx) {
   const canvas = h('canvas', { 'aria-label': 'Galaga. Hold left or right to fly and fire.', role: 'img' });
   const g = canvas.getContext('2d');
   const colors = palette();
+  // The ship colour a streak has earned (js/core/rewards.js), if one is worn.
+  const shipTone = rewards.wearing('galagaShip', arcade().galagaShip, progress.getProgress().streak.best) || 'captain';
 
   const scoreEl = h('p', { class: 'headline', text: '0' });
   const waveEl = h('p', { class: 'label', text: 'Wave 1' });
@@ -491,7 +494,7 @@ function galagaGame(ctx) {
 
   const draw = () => {
     const ratio = size();
-    if (canvas.width) galaga.paint(g, state, { colors, scale: canvas.width / galaga.WIDTH, edge: 3 * ratio });
+    if (canvas.width) galaga.paint(g, state, { colors, scale: canvas.width / galaga.WIDTH, edge: 3 * ratio, ship: shipTone });
   };
 
   /**
@@ -691,6 +694,8 @@ function hopGame(ctx) {
   const canvas = h('canvas', { 'aria-label': 'Hop Across. Tap to hop forward, swipe to hop any way.', role: 'img' });
   const g = canvas.getContext('2d');
   const colors = palette();
+  // The hat a streak has earned (js/core/rewards.js), if one is worn.
+  const hat = rewards.wearing('hopHat', arcade().hopHat, progress.getProgress().streak.best);
 
   const scoreEl = h('p', { class: 'headline', text: '0' });
   const levelEl = h('p', { class: 'label', text: 'Level 1' });
@@ -714,7 +719,7 @@ function hopGame(ctx) {
 
   const draw = () => {
     const ratio = size();
-    if (canvas.width) hop.paint(g, state, { colors, scale: canvas.width / hop.COLS, edge: 3 * ratio });
+    if (canvas.width) hop.paint(g, state, { colors, scale: canvas.width / hop.COLS, edge: 3 * ratio, hat });
   };
 
   const over = () => {

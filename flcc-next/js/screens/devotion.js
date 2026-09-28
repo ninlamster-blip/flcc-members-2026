@@ -1,6 +1,6 @@
 // The day's devotional, opened from Today's word.
 
-import { h, poster, label, display, headline, art, pill, go, note, toast, reference } from '../core/ui.js';
+import { h, poster, label, display, headline, art, pill, go, note, toast, reference, celebrate } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { pick as pickForDay } from '../core/rotation.js';
 import { forMode } from '../core/profile.js';
@@ -39,6 +39,7 @@ export default async function devotionScreen(ctx) {
           event.currentTarget.textContent = 'Finished';
           event.currentTarget.disabled = true;
           if (result.first) toast(`+${progress.XP.devotional} XP`);
+          celebrate(result);
         }, progress.isDone('devotional', day) ? { disabled: '' } : {}),
         go('Ask about this', () => ctx.go('ask')))),
   );

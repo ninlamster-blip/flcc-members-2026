@@ -519,7 +519,7 @@ function drawCoin(g, state, c, row, y, colors) {
   g.stroke();
 }
 
-function drawChicken(g, state, colors) {
+function drawChicken(g, state, colors, hat) {
   const player = state.player;
   if (player.hidden) return;
   const y = rowY(state, player.y);
@@ -551,7 +551,40 @@ function drawChicken(g, state, colors) {
   g.fillStyle = colors.ink;
   g.beginPath(); g.arc(-0.15, -0.14, 0.035, 0, Math.PI * 2); g.fill();
   g.beginPath(); g.arc(0.15, -0.14, 0.035, 0, Math.PI * 2); g.fill();
+  drawHat(g, hat, colors);
   g.restore();
+}
+
+/** A polygon, filled and outlined. */
+function shapeOf(g, points, fill) {
+  g.beginPath();
+  points.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+  g.closePath();
+  g.fillStyle = fill;
+  g.fill();
+  g.stroke();
+}
+
+/**
+ * The streak rewards (`js/core/rewards.js`), worn behind the eyes so the face
+ * stays readable. Drawn in the chicken's own turned frame: forward is up.
+ */
+export const HATS = ['cap', 'bow', 'crown', 'party'];
+
+function drawHat(g, hat, colors) {
+  if (hat === 'cap') {
+    box(g, -0.15, -0.12, 0.3, 0.1, 0.04, colors.captain);
+    dot(g, 0, 0.08, 0.16, colors.captain);
+  } else if (hat === 'bow') {
+    shapeOf(g, [[0, 0.16], [-0.2, 0.05], [-0.2, 0.27]], colors.rose);
+    shapeOf(g, [[0, 0.16], [0.2, 0.05], [0.2, 0.27]], colors.rose);
+    dot(g, 0, 0.16, 0.05, colors.rose);
+  } else if (hat === 'crown') {
+    shapeOf(g, [[-0.2, 0.22], [-0.2, 0], [-0.1, 0.09], [0, -0.04], [0.1, 0.09], [0.2, 0], [0.2, 0.22]], colors.sunshine);
+  } else if (hat === 'party') {
+    shapeOf(g, [[-0.16, 0.24], [0.16, 0.24], [0, -0.04]], colors.poppy);
+    dot(g, 0, -0.04, 0.05, colors.sunshine);
+  }
 }
 
 /** The top edge of row `r`, in field units, for the current camera. */
@@ -595,9 +628,9 @@ function caption(g, big, small, { colors, scale, edge }, at) {
 
 /**
  * Paint the whole field. `scale` is canvas pixels per lane, `edge` the
- * outline weight in canvas pixels.
+ * outline weight in canvas pixels, `hat` the streak reward the chicken wears.
  */
-export function paint(g, state, { colors, scale, edge }) {
+export function paint(g, state, { colors, scale, edge, hat = null }) {
   g.setTransform(scale, 0, 0, scale, 0, 0);
   g.fillStyle = colors.paper;
   g.fillRect(0, 0, COLS, VIEW);
@@ -627,7 +660,7 @@ export function paint(g, state, { colors, scale, edge }) {
     else if (row.type === 'road') for (const car of row.objs) drawCar(g, car, row, y, colors);
     else { drawTrain(g, row, y, colors); drawSignal(g, state, row, y, 0.3, colors); drawSignal(g, state, row, y, COLS - 0.3, colors); }
     if (row.coin != null) drawCoin(g, state, row.coin, row, y, colors);
-    if (r === on) drawChicken(g, state, colors);
+    if (r === on) drawChicken(g, state, colors, hat);
   }
 
   // The mist: flat paper rising from the bottom, edged in navy like any poster.

@@ -23,11 +23,11 @@ Five destinations along the bottom, and none of them is named after a feature.
 
 | Tab | What it does |
 |---|---|
-| **Today** | One thing for today: a verse, what it means, a prayer, a challenge, and the devotional behind it |
+| **Today** | One thing for today: a verse, what it means, a prayer, a challenge, and the devotional behind it; this week's memory verse; and on Friday and Saturday, church notes |
 | **Explore** | The Bible itself, Bible journeys with lessons, and real-life topics — pressure, doubt, friendship, phones |
 | **Play** | Six games: Bible quiz, speed quiz, Our church, Who am I?, verse builder and a crossword — a fresh set each day |
-| **Connect** | What is on, sharing a prayer, and Ask NEXT |
-| **Me** | Streak, level, XP and achievements as collectible stamps, plus name and delete-everything |
+| **Connect** | What is on, church notes, sharing a prayer, and Ask NEXT |
+| **Me** | Streak, level, XP, streak rewards to wear in the games, and 27 achievements as collectible stamps (some secret until earned), plus name and delete-everything |
 
 Behind them: **the Bible**, all 66 books in three translations on the device;
 **Ask NEXT**, a study helper that answers in five fixed parts and is off until
@@ -152,6 +152,7 @@ exists.
 | `real-life.json` | 14 real-life topics |
 | `games.json` + `games/*.json` | The games — six rounds plus Galaga and Hop Across — and their banks — 189 quiz questions, 81 Who am I? rounds, 104 verses, 36 crosswords |
 | `events.json` | What is on |
+| `sermons.json` | The message for each service day — date, passage, title and big idea — shown on the church notes sheet |
 | `achievements.json` | The collectible stamps and how each is earned |
 | `bible-books.json` | One line saying what each of the 66 books is |
 | `bible-find.json` | *Where do I look?* — a feeling, and the places to read |

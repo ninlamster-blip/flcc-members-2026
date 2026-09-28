@@ -11,6 +11,7 @@ import { hasSymbol, TONES } from '../core/art.js';
 import { MODES } from '../core/profile.js';
 import { build } from '../games/crossword.js';
 import { cycleOf } from '../core/rotation.js';
+import { KIND_NAMES } from '../core/stamps.js';
 
 const ERROR = 'error';
 const WARN = 'warning';
@@ -240,10 +241,24 @@ export function audit(bundle) {
     if (!['kids', 'teens', 'both'].includes(event.for)) problems.push({ level: ERROR, where, text: 'needs to say who it is for' });
   }
 
+  // ── Sermons ──────────────────────────────────────────────────────────────
+  const sermons = file('sermons.json', []);
+  counts.Sermons = sermons.length;
+  const preached = new Set();
+  for (const row of sermons) {
+    const where = `sermons.json · ${row.date || row.ref || 'untitled'}`;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(row.date || '')) problems.push({ level: ERROR, where, text: 'needs a date written 2026-10-02' });
+    else if (preached.has(row.date)) problems.push({ level: ERROR, where, text: 'shares its date with another sermon' });
+    preached.add(row.date);
+    if (!row.ref) problems.push({ level: ERROR, where, text: 'needs the Bible passage' });
+    bothModes(problems, row.title, `${where} · title`);
+    bothModes(problems, row.idea, `${where} · big idea`);
+  }
+
   // ── Achievements ─────────────────────────────────────────────────────────
   const achievements = file('achievements.json', []);
   counts.Achievements = achievements.length;
-  const kinds = new Set(['streak', 'devotional', 'lesson', 'game', 'challenge', 'prayer']);
+  const kinds = new Set(KIND_NAMES);
   for (const row of achievements) {
     const where = `achievements.json · ${row.title || row.id}`;
     look(problems, row, where);
@@ -346,6 +361,6 @@ export function audit(bundle) {
 export const FILES = [
   'daily.json', 'journeys.json', 'real-life.json', 'games.json',
   'games/quiz.json', 'games/who-am-i.json', 'games/verse-builder.json', 'games/crossword.json',
-  'events.json', 'achievements.json', 'help-lines.json',
+  'events.json', 'sermons.json', 'achievements.json', 'help-lines.json',
   'bible-books.json', 'bible-find.json',
 ];

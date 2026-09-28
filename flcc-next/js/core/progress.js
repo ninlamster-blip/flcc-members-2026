@@ -5,6 +5,7 @@
 // child: there is no leaderboard, and there never will be.
 
 import * as store from './storage.js';
+import { newlyUnlocked } from './rewards.js';
 
 export const XP = {
   devotional: 20,
@@ -13,6 +14,7 @@ export const XP = {
   game: 10,
   memory: 20,
   prayer: 10,
+  service: 15,
 };
 
 // Levels are slow on purpose. Reaching one should mean weeks of turning up.
@@ -79,9 +81,13 @@ export function complete(kind, key, now = new Date()) {
     state.counts[kind] = (state.counts[kind] || 0) + 1;
   }
   const before = state.streak.count;
+  const bestBefore = state.streak.best || 0;
   state.streak = bumpStreak(state.streak, day);
   save(state);
-  return { first, xp: state.xp, streak: state.streak, streakGrew: state.streak.count !== before };
+  return {
+    first, xp: state.xp, streak: state.streak, streakGrew: state.streak.count !== before,
+    unlocked: newlyUnlocked(bestBefore, state.streak.best),
+  };
 }
 
 export function isDone(kind, key) {

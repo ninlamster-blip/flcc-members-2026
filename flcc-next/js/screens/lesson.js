@@ -1,6 +1,6 @@
 // One lesson: Scripture, what it means, and one question to answer.
 
-import { h, poster, label, display, headline, art, pill, choice, note, toast, moment, reference } from '../core/ui.js';
+import { h, poster, label, display, headline, art, pill, choice, note, toast, moment, reference, celebrate } from '../core/ui.js';
 import * as content from '../core/content.js';
 import { forMode } from '../core/profile.js';
 import * as progress from '../core/progress.js';
@@ -36,23 +36,24 @@ export default async function lessonScreen(ctx) {
         if (!right) options.children[asked.answer].dataset.right = '';
         feedback.textContent = forMode(quiz.why, ctx.mode);
         const result = progress.complete('lesson', key);
-        if (result.first) {
-          toast(`+${progress.XP.lesson} XP`);
-          checkJourneyFinished();
-        }
+        if (result.first) toast(`+${progress.XP.lesson} XP`);
+        // One card at a time: finishing a whole journey outranks a streak.
+        checkJourneyFinished(result.first).then((finished) => { if (!finished) celebrate(result); });
       });
       return button;
     }));
 
-  const checkJourneyFinished = async () => {
-    if (!journey) return;
+  const checkJourneyFinished = async (first) => {
+    if (!journey || !first) return false;
     const lessons = await content.lessons(journeyId);
     const state = progress.getProgress();
     const done = lessons.filter((row) => state.done[`lesson:${journeyId}/${row.id}`]).length;
     if (done === lessons.length) {
       moment({ tone, eyebrow: 'Journey complete', big: journey.title,
         line: 'Finished, all the way through.', action: 'Nice', onclose: () => ctx.go('explore') });
+      return true;
     }
+    return false;
   };
 
   const el = h('div', { style: 'display:contents' },

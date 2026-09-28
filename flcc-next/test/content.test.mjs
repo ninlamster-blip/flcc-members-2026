@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { MODES } from '../js/core/profile.js';
 import { hasSymbol, TONES, TONE_HEX } from '../js/core/art.js';
+import { KIND_NAMES } from '../js/core/stamps.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
 
@@ -120,7 +121,8 @@ test('achievements can actually be earned, and events can be attended', () => {
   for (const row of read('achievements.json')) {
     assert.ok(hasSymbol(row.symbol), `${row.title}: no symbol`);
     validTone(row.tone, row.title);
-    assert.ok(['streak', 'devotional', 'lesson', 'game', 'challenge', 'prayer'].includes(row.need.kind), `${row.title}: unknown requirement`);
+    assert.ok(KIND_NAMES.includes(row.need.kind), `${row.title}: unknown requirement`);
+    if ('hidden' in row) assert.equal(typeof row.hidden, 'boolean', `${row.title}: hidden is true or false`);
     assert.ok(row.need.count > 0 && row.how, `${row.title}: needs a threshold and an explanation`);
   }
   for (const row of read('events.json')) {

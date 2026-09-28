@@ -86,5 +86,220 @@
       "count": 25
     },
     "how": "Twenty-five challenges done and dusted."
+  },
+  {
+    "id": "three-in-a-row",
+    "title": "THREE IN A ROW",
+    "symbol": "fire",
+    "tone": "sunshine",
+    "need": {
+      "kind": "streak",
+      "count": 3
+    },
+    "how": "Come back three days in a row."
+  },
+  {
+    "id": "two-weeks",
+    "title": "TWO WEEKS STRONG",
+    "symbol": "fire",
+    "tone": "rose",
+    "need": {
+      "kind": "streak",
+      "count": 14
+    },
+    "how": "Fourteen days in a row."
+  },
+  {
+    "id": "sixty-days",
+    "title": "KEEPS BURNING",
+    "symbol": "fire",
+    "tone": "sky",
+    "need": {
+      "kind": "streak",
+      "count": 60
+    },
+    "how": "Sixty days in a row.",
+    "hidden": true
+  },
+  {
+    "id": "hundred-days",
+    "title": "ONE HUNDRED",
+    "symbol": "star",
+    "tone": "sunshine",
+    "need": {
+      "kind": "streak",
+      "count": 100
+    },
+    "how": "One hundred days in a row.",
+    "hidden": true
+  },
+  {
+    "id": "week-of-words",
+    "title": "WEEK OF WORDS",
+    "symbol": "light",
+    "tone": "sky",
+    "need": {
+      "kind": "devotional",
+      "count": 7
+    },
+    "how": "Read seven devotionals."
+  },
+  {
+    "id": "daily-reader",
+    "title": "DAILY READER",
+    "symbol": "sunrise",
+    "tone": "sunshine",
+    "need": {
+      "kind": "devotional",
+      "count": 30
+    },
+    "how": "Read thirty devotionals."
+  },
+  {
+    "id": "journey-halfway",
+    "title": "HALFWAY THERE",
+    "symbol": "mountain",
+    "tone": "rose",
+    "need": {
+      "kind": "lesson",
+      "count": 12
+    },
+    "how": "Finish twelve journey lessons."
+  },
+  {
+    "id": "every-lesson",
+    "title": "ALL THE WAY",
+    "symbol": "rocket",
+    "tone": "captain",
+    "need": {
+      "kind": "lesson",
+      "count": 24
+    },
+    "how": "Finish every lesson in every journey.",
+    "hidden": true
+  },
+  {
+    "id": "prayer-habit",
+    "title": "PRAYER HABIT",
+    "symbol": "hands",
+    "tone": "sky",
+    "need": {
+      "kind": "prayer",
+      "count": 20
+    },
+    "how": "Write twenty prayers."
+  },
+  {
+    "id": "fifty-challenges",
+    "title": "DOER OF THE WORD",
+    "symbol": "shield",
+    "tone": "captain",
+    "need": {
+      "kind": "challenge",
+      "count": 50
+    },
+    "how": "Complete fifty daily challenges.",
+    "hidden": true
+  },
+  {
+    "id": "game-fan",
+    "title": "GAME FAN",
+    "symbol": "grid",
+    "tone": "rose",
+    "need": {
+      "kind": "game",
+      "count": 25
+    },
+    "how": "Play twenty-five games."
+  },
+  {
+    "id": "game-legend",
+    "title": "GAME LEGEND",
+    "symbol": "bolt",
+    "tone": "sunshine",
+    "need": {
+      "kind": "game",
+      "count": 50
+    },
+    "how": "Play fifty games."
+  },
+  {
+    "id": "road-crosser",
+    "title": "ROAD CROSSER",
+    "symbol": "chicken",
+    "tone": "sunshine",
+    "need": {
+      "kind": "hop",
+      "count": 20
+    },
+    "how": "Reach row 20 in Hop Across."
+  },
+  {
+    "id": "far-hopper",
+    "title": "FAR HOPPER",
+    "symbol": "chicken",
+    "tone": "rose",
+    "need": {
+      "kind": "hop",
+      "count": 60
+    },
+    "how": "Reach row 60 in Hop Across — past the mist.",
+    "hidden": true
+  },
+  {
+    "id": "star-pilot",
+    "title": "STAR PILOT",
+    "symbol": "rocket",
+    "tone": "sky",
+    "need": {
+      "kind": "galaga",
+      "count": 5000
+    },
+    "how": "Score 5,000 in Galaga.",
+    "hidden": true
+  },
+  {
+    "id": "first-verse",
+    "title": "HIDDEN IN MY HEART",
+    "symbol": "heart",
+    "tone": "rose",
+    "need": {
+      "kind": "memory",
+      "count": 1
+    },
+    "how": "Learn your first memory verse by heart."
+  },
+  {
+    "id": "four-verses",
+    "title": "VERSE KEEPER",
+    "symbol": "book",
+    "tone": "sunshine",
+    "need": {
+      "kind": "memory",
+      "count": 4
+    },
+    "how": "Learn four memory verses by heart."
+  },
+  {
+    "id": "first-notes",
+    "title": "LISTENING EARS",
+    "symbol": "words",
+    "tone": "sky",
+    "need": {
+      "kind": "service",
+      "count": 1
+    },
+    "how": "Keep notes at church for the first time."
+  },
+  {
+    "id": "four-services",
+    "title": "EVERY WEEK",
+    "symbol": "calendar",
+    "tone": "captain",
+    "need": {
+      "kind": "service",
+      "count": 4
+    },
+    "how": "Keep notes at church four times."
   }
 ]

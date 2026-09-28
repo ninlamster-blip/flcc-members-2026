@@ -81,6 +81,7 @@ export const KEYS = {
   bible:    `${NS}bible`,     // which translation, where it stopped, verses kept
   library:  `${NS}library`,   // the ministry's edits to the authored content
   arcade:   `${NS}arcade`,    // this device's best arcade scores, never sent anywhere
+  notes:    `${NS}notes`,     // church notes kept on service day, never sent anywhere
 };
 
 // Achievements are deliberately absent: they are derived from progress every
