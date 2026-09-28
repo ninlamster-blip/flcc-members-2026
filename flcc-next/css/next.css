@@ -564,6 +564,14 @@ input[type="text"], input[type="search"], textarea, select {
 }
 textarea { border: var(--edge) solid var(--ink); border-radius: var(--radius); padding: .9rem; min-height: 7rem; font-weight: 500; }
 input::placeholder, textarea::placeholder { color: var(--ink-55); font-weight: 500; }
+/* On the two dark posters a field inverts with the type around it — navy
+   letters on captain blue cannot be read (Ask NEXT's question box). */
+.poster[data-tone="captain"] :is(input[type="text"], input[type="search"], textarea),
+.poster[data-tone="ink"] :is(input[type="text"], input[type="search"], textarea) {
+  color: var(--paper); border-color: var(--paper); caret-color: var(--paper);
+}
+.poster[data-tone="captain"] :is(input, textarea)::placeholder,
+.poster[data-tone="ink"] :is(input, textarea)::placeholder { color: rgba(251, 248, 240, .6); }
 
 .choice {
   display: flex; align-items: center; gap: .9rem;
