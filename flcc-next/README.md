@@ -150,7 +150,7 @@ exists.
 | `daily.json` | 49 daily words: verse, reflection, prayer, challenge, devotional |
 | `journeys.json` + `journeys/*.json` | Three journeys, 24 lessons — fifteen of them the life of Jesus |
 | `real-life.json` | 14 real-life topics |
-| `games.json` + `games/*.json` | The six games and their banks — 189 quiz questions, 81 Who am I? rounds, 104 verses, 36 crosswords |
+| `games.json` + `games/*.json` | The games — six rounds plus Galaga and Hop Across — and their banks — 189 quiz questions, 81 Who am I? rounds, 104 verses, 36 crosswords |
 | `events.json` | What is on |
 | `achievements.json` | The collectible stamps and how each is earned |
 | `bible-books.json` | One line saying what each of the 66 books is |

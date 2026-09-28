@@ -12,7 +12,7 @@
 //                 the files are large, and a book that has been read once
 //                 should stay readable on a bus with no signal.
 
-const VERSION = 'next-v8';
+const VERSION = 'next-v9';
 
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/next.css', './icons/icon.svg',
@@ -22,6 +22,7 @@ const SHELL = [
   './js/core/content.js', './js/core/library.js', './js/core/rotation.js',
   './js/core/scripture.js', './js/core/safety.js', './js/core/ai.js',
   './js/games/crossword.js', './js/games/galaga.js', './js/games/chiptune.js',
+  './js/games/hopacross.js',
   './js/screens/today.js', './js/screens/devotion.js', './js/screens/explore.js',
   './js/screens/journey.js', './js/screens/lesson.js', './js/screens/topic.js',
   './js/screens/play.js', './js/screens/game.js', './js/screens/connect.js',

@@ -1,4 +1,4 @@
-// The games. Six of them, each a small self-contained round.
+// The games: the rounds, and two arcade games that never end.
 //
 // Scores are never compared between children, and a game can always be left
 // without losing anything.
@@ -9,6 +9,7 @@ import * as progress from '../core/progress.js';
 import { mode } from '../core/profile.js';
 import * as crossword from '../games/crossword.js';
 import * as galaga from '../games/galaga.js';
+import * as hop from '../games/hopacross.js';
 import * as chiptune from '../games/chiptune.js';
 import * as store from '../core/storage.js';
 import { deal, pick as pickForDay, cycleOf, askOrder } from '../core/rotation.js';
@@ -664,6 +665,195 @@ function galagaGame(ctx) {
   return { title: 'Galaga', el };
 }
 
+// ── Hop Across ──────────────────────────────────────────────────────────────
+//
+// A chicken crossing roads, rivers and railway lines, one lane at a time. Like
+// Galaga it has no end: every twenty rows is a harder level. A tap on the field
+// hops forward and a swipe hops that way; the four pads under the field and the
+// arrow keys do the same. The best distance stays on this device and is never
+// compared with anybody's, and its sound can be switched off like Galaga's.
+
+function hopGame(ctx) {
+  const tone = 'sunshine';
+  const arcade = () => store.read(store.KEYS.arcade, {}) || {};
+  const keep = (patch) => store.write(store.KEYS.arcade, { ...arcade(), ...patch });
+  const best = () => arcade().hop || 0;
+  const seed = () => Date.now() % 2147483647;
+  let state = hop.create(seed());
+  const sound = chiptune.player({ muted: Boolean(arcade().hopMuted), sounds: hop.SOUNDS });
+  let raf = 0;
+  let last = 0;
+  let attached = false;
+  let shown = null;
+  let gone = false;
+  const home = location.hash;
+
+  const canvas = h('canvas', { 'aria-label': 'Hop Across. Tap to hop forward, swipe to hop any way.', role: 'img' });
+  const g = canvas.getContext('2d');
+  const colors = palette();
+
+  const scoreEl = h('p', { class: 'headline', text: '0' });
+  const levelEl = h('p', { class: 'label', text: 'Level 1' });
+  const coinsEl = h('p', { class: 'label dim', text: '' });
+
+  const paintNumbers = () => {
+    scoreEl.textContent = String(state.score);
+    levelEl.textContent = `Level ${state.level}`;
+    coinsEl.textContent = `${state.coins} ${state.coins === 1 ? 'coin' : 'coins'} · ${best() ? `best ${best()}` : 'no best yet'}`;
+  };
+
+  const size = () => {
+    const ratio = window.devicePixelRatio || 1;
+    const width = Math.round(canvas.clientWidth * ratio);
+    if (width && canvas.width !== width) {
+      canvas.width = width;
+      canvas.height = Math.round(width * hop.VIEW / hop.COLS);
+    }
+    return ratio;
+  };
+
+  const draw = () => {
+    const ratio = size();
+    if (canvas.width) hop.paint(g, state, { colors, scale: canvas.width / hop.COLS, edge: 3 * ratio });
+  };
+
+  const over = () => {
+    const record = state.score > best();
+    if (record) keep({ hop: state.score });
+    // As in Galaga, the XP rides in the eyebrow: a toast would sit on the button.
+    const result = progress.complete('game', `hop:${progress.today()}`);
+    const xp = result.first ? ` · +${progress.XP.game} XP` : '';
+    const [title, why] = hop.CAUSES[state.cause] || hop.CAUSES.car;
+    paintNumbers();
+    shown = moment({
+      tone,
+      eyebrow: `${title} · level ${state.level}${xp}`,
+      big: `${state.score} ${state.score === 1 ? 'ROW' : 'ROWS'}`,
+      line: `${why} ${record && state.score ? 'A new best on this phone.' : `Your best is ${best()}.`}`,
+      action: 'Play again',
+      onclose: begin,
+    });
+  };
+
+  const frame = (now) => {
+    raf = 0;
+    if (!canvas.isConnected) { if (attached) { teardown(); return; } raf = requestAnimationFrame(frame); return; }
+    if (!attached) document.body.toggleAttribute('data-arcade', true);
+    attached = true;
+    const dt = last ? (now - last) / 1000 : 0;
+    last = now;
+    const events = hop.step(state, dt);
+    sound.play(events);
+    if (events.length) paintNumbers();
+    draw();
+    if (state.over) { over(); return; }
+    raf = requestAnimationFrame(frame);
+  };
+
+  function begin() {
+    state = hop.create(seed());
+    last = 0;
+    paintNumbers();
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+
+  const go = (dx, dy) => {
+    if (document.querySelector('.moment')) return;
+    sound.wake();
+    const events = hop.move(state, dx, dy);
+    sound.play(events);
+  };
+
+  const pad = (dx, dy, text, name) => h('button', {
+    type: 'button', 'aria-label': name, text,
+    onpointerdown: (event) => { event.preventDefault(); go(dx, dy); },
+    // A keyboard press on a focused pad arrives as a click with no pointer.
+    onclick: (event) => { if (event.detail === 0) go(dx, dy); },
+    oncontextmenu: (event) => event.preventDefault(),
+  });
+
+  // The field: a tap hops forward, a swipe hops the way it went.
+  let touch = null;
+  canvas.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
+    touch = { x: event.clientX, y: event.clientY };
+  });
+  canvas.addEventListener('pointerup', (event) => {
+    if (!touch) return;
+    const dx = event.clientX - touch.x;
+    const dy = event.clientY - touch.y;
+    touch = null;
+    if (Math.hypot(dx, dy) < 24) go(0, 1);
+    else if (Math.abs(dx) > Math.abs(dy)) go(dx > 0 ? 1 : -1, 0);
+    else go(0, dy < 0 ? 1 : -1);
+  });
+  canvas.addEventListener('pointercancel', () => { touch = null; });
+
+  const KEYS = {
+    ArrowUp: [0, 1], w: [0, 1], W: [0, 1], ' ': [0, 1],
+    ArrowDown: [0, -1], s: [0, -1], S: [0, -1],
+    ArrowLeft: [-1, 0], a: [-1, 0], A: [-1, 0],
+    ArrowRight: [1, 0], d: [1, 0], D: [1, 0],
+  };
+  const onKey = (event) => {
+    if (!canvas.isConnected) { teardown(); return; }
+    if (document.querySelector('.moment')) return;
+    if (event.key === 'Escape') { leave(); return; }
+    const way = KEYS[event.key];
+    // Space on a focused button is that button's own press.
+    if (!way || (event.key === ' ' && event.target.closest?.('button'))) return;
+    event.preventDefault();
+    if (!event.repeat) go(way[0], way[1]);
+  };
+  const onRoute = () => { if (location.hash !== home) teardown(); };
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('hashchange', onRoute);
+  function teardown() {
+    if (gone) return;
+    gone = true;
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    window.removeEventListener('keydown', onKey);
+    window.removeEventListener('hashchange', onRoute);
+    document.body.removeAttribute('data-arcade');
+    sound.close();
+    if (shown && shown.isConnected) shown.remove();
+  }
+  const leave = () => { teardown(); ctx.go('play'); };
+
+  const mute = h('button', { class: 'arcade-close', type: 'button' });
+  const paintMute = () => {
+    mute.innerHTML = sound.muted ? SPEAKER.off : SPEAKER.on;
+    mute.setAttribute('aria-label', sound.muted ? 'Turn sound on' : 'Turn sound off');
+    mute.setAttribute('aria-pressed', String(sound.muted));
+  };
+  mute.addEventListener('click', () => {
+    sound.muted = !sound.muted;
+    keep({ hopMuted: sound.muted });
+    if (!sound.muted) sound.wake();
+    paintMute();
+  });
+  paintMute();
+
+  const stage = h('div', { class: 'arcade-stage', role: 'application', 'aria-label': 'Hop Across' },
+    h('div', { class: 'arcade-bar' },
+      h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close Hop Across', text: '✕', onclick: leave }),
+      h('div', {}, scoreEl, h('p', { class: 'label dim', text: 'rows' })),
+      h('span', { class: 'grow' }),
+      h('div', { class: 'stat' }, levelEl, coinsEl),
+      mute),
+    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade', dataset: { shape: 'hop' } }, canvas)),
+    h('div', { class: 'arcade-pad', dataset: { pads: '4' } },
+      pad(-1, 0, '◀', 'Hop left'), pad(0, 1, '▲', 'Hop forward'),
+      pad(0, -1, '▼', 'Hop back'), pad(1, 0, '▶', 'Hop right')));
+
+  const el = h('div', { style: 'display:contents' }, stage);
+  paintNumbers();
+  raf = requestAnimationFrame(frame);
+  return { title: 'Hop Across', el };
+}
+
 const GAMES = {
   quiz: (ctx) => quizGame(ctx),
   speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'sky', title: 'Speed quiz' }),
@@ -674,6 +864,7 @@ const GAMES = {
   'verse-builder': verseGame,
   crossword: crosswordGame,
   galaga: galagaGame,
+  hop: hopGame,
 };
 
 export default async function gameScreen(ctx) {

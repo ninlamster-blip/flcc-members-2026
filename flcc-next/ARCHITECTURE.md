@@ -73,7 +73,7 @@ browser), so the app runs rather than crashing.
 | `next/v1/ask` | the current Ask NEXT thread | Ask |
 | `next/v1/settings` | `{ theme, motion, aiWorker, aiSecret, aiEnabled, aiModel }` | the dashboard |
 | `next/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
-| `next/v1/arcade` | `{ galaga, galagaResume: { wave, score }, galagaMuted }` — the best Galaga score, where a continued run picks up, and whether its sound is off | Galaga |
+| `next/v1/arcade` | `{ galaga, galagaResume: { wave, score }, galagaMuted, hop, hopMuted }` — the best Galaga score, where a continued run picks up, the furthest Hop Across row, and whether each game's sound is off | Galaga, Hop Across |
 | `next/v1/library` | `{ version, updated, files: { <file>: { added[], edited{}, removed[] } } }` | the dashboard's Library |
 
 Two consequences worth stating plainly, because the dashboard states them too:
@@ -185,6 +185,7 @@ node --test 'flcc-next/test/*.test.mjs'
 | `content` | the authored JSON's schema, including both age variants |
 | `audit` | the dashboard's audit agrees with the suite, and catches what it claims to |
 | `crossword` | every puzzle interlocks, numbering is right, scoring is right |
+| `hopacross` | the chicken can always move off the start, a hop is never swallowed, water, cars and trains end a run, and every level is at least as hard as the last |
 | `library` | an edit survives, a removal stays removed, an import does not overwrite |
 | `scripture` | the 66 books are all there, references resolve, and every reference the content quotes points at a verse that exists |
 | `modules` also | every screen that quotes Scripture links the reference, so the Bible stays one tap away as screens are added |
