@@ -94,6 +94,8 @@ test('every game exists in code, and every question can be answered', () => {
   for (const row of read('games/who-am-i.json')) {
     assert.equal(row.clues.length, 3, `who-am-i: ${row.answer} needs three clues`);
     assert.ok(row.options.includes(row.answer), `who-am-i: ${row.answer} is not among its own options`);
+    // Untagged rounds go to everyone; a tag must be one the game can filter on.
+    if (row.ageGroup !== undefined) assert.ok(['both', ...MODES].includes(row.ageGroup), `who-am-i: ${row.answer} ageGroup`);
     for (const clue of row.clues) {
       assert.ok(!clue.toLowerCase().includes(row.answer.toLowerCase()), `who-am-i: a clue gives away ${row.answer}`);
     }
