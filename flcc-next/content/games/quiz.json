@@ -2036,7 +2036,19 @@
     ],
     "answer": 1,
     "why": "Sinless — which is why his death could stand in for ours.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "Did Jesus ever do anything wrong?",
+    "options": [
+      "Never — not once",
+      "Only a little",
+      "Yes, like everyone"
+    ],
+    "answer": 0,
+    "why": "Jesus never sinned. That is why he could take the punishment for our wrong things.",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2060,7 +2072,19 @@
     ],
     "answer": 2,
     "why": "Man fell through disobedience; Christ died to buy us back.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "Why did Jesus die on the cross?",
+    "options": [
+      "To show he was brave",
+      "By accident",
+      "To save us and bring us back to God"
+    ],
+    "answer": 2,
+    "why": "We all do wrong things. Jesus died to take them away and bring us back to God.",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2072,7 +2096,19 @@
     ],
     "answer": 2,
     "why": "Being born again is not optional in what this church believes.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does it mean to be \"born again\"?",
+    "options": [
+      "Having another birthday",
+      "Getting a new heart from God when you trust Jesus",
+      "Only something pastors do"
+    ],
+    "answer": 1,
+    "why": "When you trust Jesus, God makes you new inside and you become his child.",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2096,7 +2132,19 @@
     ],
     "answer": 0,
     "why": "We believe in divine healing — which is why we pray for the sick.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "Can God make sick people better?",
+    "options": [
+      "Yes — so we pray for people who are sick",
+      "No, never",
+      "Only doctors can help"
+    ],
+    "answer": 0,
+    "why": "Our church believes God heals, so we pray for sick people. God can use doctors too!",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2168,7 +2216,19 @@
     ],
     "answer": 0,
     "why": "That is the first sentence of our statement of faith.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does our church believe about the Bible?",
+    "options": [
+      "It is God's true Word",
+      "It is just a storybook",
+      "Some of it is wrong"
+    ],
+    "answer": 0,
+    "why": "God gave us the Bible. Everything it says is true, and we can trust it.",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2216,7 +2276,19 @@
     ],
     "answer": 0,
     "why": "Deity, atoning death, bodily resurrection — the heart of the statement of faith.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "A friend asks you who Jesus is. What could you say?",
+    "options": [
+      "Jesus is God, he died for us, and he came back to life",
+      "I don't know",
+      "He was just a kind man"
+    ],
+    "answer": 0,
+    "why": "Jesus is God. He died for us and rose again. That is the good news!",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2228,7 +2300,19 @@
     ],
     "answer": 2,
     "why": "Our vision calls FLCC a family of prayer and worshippers, not of singers.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "What is worship?",
+    "options": [
+      "Only singing songs",
+      "Something only the band does",
+      "Loving God with everything we do"
+    ],
+    "answer": 2,
+    "why": "Singing is worship, and so is praying, obeying and being kind. We can worship God all day.",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2240,7 +2324,19 @@
     ],
     "answer": 1,
     "why": "Grown up, then sent to grow others.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "What does our church want to help Christians do?",
+    "options": [
+      "Stay the same",
+      "Grow strong in following Jesus",
+      "Never make a mistake"
+    ],
+    "answer": 1,
+    "why": "Our church helps people keep learning and growing closer to Jesus.",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
@@ -2252,7 +2348,19 @@
     ],
     "answer": 1,
     "why": "Discipled, trained, and then multiplying — that is the whole shape.",
-    "ageGroup": "both",
+    "ageGroup": "teens",
+    "topic": "flcc"
+  },
+  {
+    "q": "When you have grown strong in following Jesus, what can you do next?",
+    "options": [
+      "Stop going to church",
+      "Help someone else follow Jesus too",
+      "Keep it to yourself"
+    ],
+    "answer": 1,
+    "why": "Someone helped you follow Jesus. Now you can help someone else!",
+    "ageGroup": "kids",
     "topic": "flcc"
   },
   {
