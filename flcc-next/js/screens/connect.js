@@ -124,8 +124,16 @@ export default async function connectScreen(ctx) {
         h('p', { class: 'label dimmer', text: 'Nothing posted yet' }),
         art('camera', { tone: 'paper', size: 'sm' })));
 
-    events.replaceChildren(...blocks, ask, moments);
-    rise([...blocks, ask, moments]);
+    const notes = poster({ tone: 'captain', className: 'full' },
+      label('Church notes'),
+      headline('WHAT DID YOU HEAR ON FRIDAY?'),
+      h('p', { class: 'body dim', text: 'Keep notes during the message — the passage, one thing you learned, one thing you will do. They stay on this phone.' }),
+      h('div', { class: 'poster-foot' },
+        pill('Open my notes', () => ctx.go('service')),
+        art('words', { tone: 'captain', size: 'sm' })));
+
+    events.replaceChildren(...blocks, notes, ask, moments);
+    rise([...blocks, notes, ask, moments]);
   })();
 
   return { title: 'Connect', el };

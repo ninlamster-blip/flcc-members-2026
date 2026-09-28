@@ -31,6 +31,8 @@ const SCREENS = {
   game:    () => import('./screens/game.js'),
   devotion:() => import('./screens/devotion.js'),
   bible:   () => import('./screens/bible.js'),
+  memory:  () => import('./screens/memory.js'),
+  service: () => import('./screens/service.js'),
 };
 for (const [name, loader] of Object.entries(SCREENS)) router.define(name, loader);
 
@@ -39,7 +41,7 @@ const screenEl = document.getElementById('screen');
 const tabsEl = document.getElementById('tabs');
 
 const ROOTS = new Set(TABS.map((tab) => tab.name));
-const UNDER = { journey: 'explore', lesson: 'explore', topic: 'explore', bible: 'explore', game: 'play', prayer: 'connect', ask: 'connect', devotion: 'today' };
+const UNDER = { journey: 'explore', lesson: 'explore', topic: 'explore', bible: 'explore', game: 'play', prayer: 'connect', ask: 'connect', devotion: 'today', memory: 'today', service: 'today' };
 
 export function applyMode() {
   document.documentElement.dataset.mode = mode();

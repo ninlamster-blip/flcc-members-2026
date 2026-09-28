@@ -74,6 +74,7 @@ browser), so the app runs rather than crashing.
 | `next/v1/settings` | `{ theme, motion, aiWorker, aiSecret, aiEnabled, aiModel }` | the dashboard |
 | `next/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
 | `next/v1/arcade` | `{ galaga, galagaResume: { wave, score }, galagaMuted, hop, hopMuted, hopHat, galagaShip }` — the best Galaga score, where a continued run picks up, the furthest Hop Across row, whether each game’s sound is off, and the streak rewards being worn (`js/core/rewards.js`) | Galaga, Hop Across, Me |
+| `next/v1/notes` | `{ items: [{ date, passage, learned, doing, question }] }` — one set of church notes per service day, newest first, at most 52 | Church notes |
 | `next/v1/library` | `{ version, updated, files: { <file>: { added[], edited{}, removed[] } } }` | the dashboard's Library |
 
 Two consequences worth stating plainly, because the dashboard states them too:
@@ -185,6 +186,10 @@ node --test 'flcc-next/test/*.test.mjs'
 | `content` | the authored JSON's schema, including both age variants |
 | `audit` | the dashboard's audit agrees with the suite, and catches what it claims to |
 | `crossword` | every puzzle interlocks, numbering is right, scoring is right |
+| `rewards` | the streak ladder climbs, a broken streak keeps its rewards, and nothing unearned can be worn |
+| `stamps` | every stamp counts something the app records, and a hidden stamp stays secret until earned |
+| `memory` | the same verse all week, short verses for kids, and each step hides more, never different, words |
+| `service` | the sheet shows that week's sermon and never an old or future one, and the audit refuses a sermon it cannot show |
 | `hopacross` | the chicken can always move off the start, a hop is never swallowed, water, cars and trains end a run, and every level is at least as hard as the last |
 | `library` | an edit survives, a removal stays removed, an import does not overwrite |
 | `scripture` | the 66 books are all there, references resolve, and every reference the content quotes points at a verse that exists |

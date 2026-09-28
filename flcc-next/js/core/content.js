@@ -47,6 +47,7 @@ export const whoAmI = () => load('games/who-am-i.json');
 export const verses = () => load('games/verse-builder.json');
 export const crosswords = () => load('games/crossword.json');
 export const events = () => load('events.json');
+export const sermons = () => load('sermons.json');
 export const achievements = () => load('achievements.json');
 export const help = () => load('help-lines.json');
 export const bibleBooks = () => load('bible-books.json');

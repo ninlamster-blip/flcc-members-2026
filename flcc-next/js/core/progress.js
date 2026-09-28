@@ -14,6 +14,7 @@ export const XP = {
   game: 10,
   memory: 20,
   prayer: 10,
+  service: 15,
 };
 
 // Levels are slow on purpose. Reaching one should mean weeks of turning up.

@@ -8,11 +8,22 @@ import * as content from '../core/content.js';
 import { pick as pickForDay } from '../core/rotation.js';
 import { forMode } from '../core/profile.js';
 import * as progress from '../core/progress.js';
+import * as memory from '../core/memory.js';
+import * as service from '../core/service.js';
 
 export default async function todayScreen(ctx) {
   const now = new Date();
   const el = h('div', { style: 'display:contents' });
   const day = progress.today(now);
+
+  // ── At church today (Friday and Saturday) ─────────────────────────────────
+  if (service.isServiceDay(day)) {
+    el.appendChild(poster({ tone: 'captain', as: 'button', className: 'full', onclick: () => ctx.go('service') },
+      label('At church today?'),
+      h('div', {}, headline(progress.isDone('service', day) ? 'NOTES KEPT. ADD MORE?' : 'KEEP YOUR NOTES HERE.'),
+        h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'The passage, one thing you learned, one thing you will do — and any question you still have.' })),
+      h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Open my notes' }), art('words', { tone: 'captain', size: 'sm' }))));
+  }
 
   // ── The day's word ────────────────────────────────────────────────────────
   const wordBlock = poster({ tone: 'sky', tall: true, className: 'full' }, waiting());
@@ -21,6 +32,10 @@ export default async function todayScreen(ctx) {
   // ── The day's challenge ───────────────────────────────────────────────────
   const challengeBlock = poster({ tone: 'sunshine', tall: true, className: 'full' });
   el.appendChild(challengeBlock);
+
+  // ── This week's memory verse ──────────────────────────────────────────────
+  const memoryBlock = h('div', { style: 'display:contents' });
+  el.appendChild(memoryBlock);
 
   // ── Where you are up to ───────────────────────────────────────────────────
   const journeyBlock = h('div', { style: 'display:contents' });
@@ -63,6 +78,22 @@ export default async function todayScreen(ctx) {
         display(challengeText.toUpperCase().replace(/\.$/, '')),
         entry.reflection ? h('p', { class: 'body dim', style: 'margin-top:1.2rem', text: forMode(entry.reflection, ctx.mode) }) : null),
       h('div', { class: 'poster-foot' }, doneButton, art('flag', { tone: 'sunshine', size: 'sm' })));
+  })();
+
+  (async () => {
+    const week = memory.weekOf(day);
+    let verse = null;
+    try { verse = memory.verseFor(await content.verses(), ctx.mode, week); } catch { return; }
+    if (!verse) return;
+    const learned = progress.isDone('memory', week);
+    memoryBlock.replaceChildren(poster({ tone: 'rose', as: 'button', className: 'full', onclick: () => ctx.go('memory') },
+      label(learned ? 'Memory verse · learned' : 'This week’s memory verse'),
+      h('div', {},
+        headline(verse.ref.toUpperCase()),
+        h('p', { class: 'body dim', style: 'margin-top:.8rem', text: learned
+          ? 'Learned by heart. Say it once more today so it stays.'
+          : 'One verse a week, learned a few words at a time. Can you say it by Sunday?' })),
+      h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: learned ? 'Practise again' : 'Start learning' }), art('heart', { tone: 'rose', size: 'sm' }))));
   })();
 
   (async () => {

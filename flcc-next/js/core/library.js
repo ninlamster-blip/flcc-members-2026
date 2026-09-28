@@ -23,6 +23,7 @@
 
 import * as store from './storage.js';
 import { SYMBOL_NAMES, TONES } from './art.js';
+import { KIND_NAMES } from './stamps.js';
 
 const PALETTE = [...TONES, 'paper', 'ink'];
 const AUDIENCE = ['both', 'kids', 'teens'];
@@ -235,6 +236,22 @@ export const KINDS = [
     ],
   },
   {
+    id: 'sermons',
+    file: 'sermons.json',
+    label: 'Sermons',
+    one: 'sermon',
+    note: 'The message for a service day. It shows at the top of the young people’s church notes that day, and for six days after, so Saturday’s congregations see Friday’s.',
+    key: (row) => row.date,
+    title: (row) => `${row.date || '—'} · ${(row.title && (row.title.teens || row.title.kids)) || row.ref || 'untitled'}`,
+    blank: () => ({ date: '', ref: '', title: { kids: '', teens: '' }, idea: { kids: '', teens: '' } }),
+    fields: [
+      { path: 'date', label: 'Date', type: 'text', help: '2026-10-02 — the day it is preached' },
+      { path: 'ref', label: 'Bible passage', type: 'text', help: 'Matthew 7:24-27' },
+      dual('title', 'Title'),
+      dual('idea', 'The big idea, in one line'),
+    ],
+  },
+  {
     id: 'achievements',
     file: 'achievements.json',
     label: 'Achievements',
@@ -248,8 +265,7 @@ export const KINDS = [
       { path: 'id', label: 'Id', type: 'text' },
       { path: 'title', label: 'Title', type: 'text' },
       { path: 'how', label: 'How you get it', type: 'long' },
-      { path: 'need.kind', label: 'Counted from', type: 'choice',
-        options: ['streak', 'devotional', 'lesson', 'game', 'challenge', 'prayer'] },
+      { path: 'need.kind', label: 'Counted from', type: 'choice', options: KIND_NAMES },
       { path: 'need.count', label: 'How many', type: 'number', min: 1, max: 500 },
       { path: 'tone', label: 'Colour', type: 'choice', options: PALETTE },
       { path: 'symbol', label: 'Illustration', type: 'choice', options: SYMBOL_NAMES },
