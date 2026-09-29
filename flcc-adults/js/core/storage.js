@@ -83,6 +83,7 @@ export const KEYS = {
   ask:      `${NS}ask`,       // the ASK conversation, kept on this device only
   notes:    `${NS}notes`,     // sermon_notes
   play:     `${NS}play`,      // the crossword's state today, and the wave Galaga continues from
+  resources: `${NS}resources`, // Cru resources a member added to "My resources", and which are finished
   shared:   `${NS}shared`,    // the prayer wall: this phone's random id, and tokens for what it shared
   online:   `${NS}online`,    // a live-room nickname and its token — only once a member chooses rooms
 };
