@@ -452,7 +452,9 @@ textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
 /* Only the rail has room for a wordmark; on a phone the tab bar is five icons
    and nothing else. The wide-screen block below turns it back on. */
 .rail-mark { display: none; }
-.tab[aria-current="page"] { color: var(--ink); }
+/* The tab you are on reads at a glance: the app's blue, heavier, icon included. */
+.tab[aria-current="page"] { color: var(--captain); font-weight: 900; }
+.tab[aria-current="page"] svg { stroke-width: 2.4; }
 
 /* ── Motion ──────────────────────────────────────────────────────────────
    Posters arrive as you scroll. They land once and they do not bounce. */
@@ -686,7 +688,7 @@ body[data-arcade] { overflow: hidden; }
   }
   .tab svg { width: 20px; height: 20px; flex: none; }
   .tab:hover { background: var(--ink-12); color: var(--ink); }
-  .tab[aria-current="page"] { background: var(--ink); color: var(--paper); }
+  .tab[aria-current="page"] { background: var(--captain); color: var(--paper); }
 
   /* Nothing is hiding behind a bottom bar any more. The side padding matches
      the header's so a page title lines up with the posters underneath it —

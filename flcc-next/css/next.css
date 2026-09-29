@@ -537,7 +537,9 @@ body[data-arcade] { overflow: hidden; }
   color: var(--ink-55);
 }
 .tab svg { width: 22px; height: 22px; }
-.tab[aria-current="page"] { color: var(--ink); }
+/* The tab you are on reads at a glance: the app's blue, heavier, icon included. */
+.tab[aria-current="page"] { color: var(--captain); font-weight: 900; }
+.tab[aria-current="page"] svg { stroke-width: 2.4; }
 
 /* ── Ministry dashboard ──────────────────────────────────────────────────
    Same poster language, different job: this is a working surface, so it runs
