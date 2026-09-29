@@ -24,8 +24,15 @@ export default async function playScreen(ctx) {
       h('p', { class: 'label', text: '★'.repeat(game.difficulty) + '☆'.repeat(5 - game.difficulty) }),
       art(game.symbol, { tone: game.tone, size: index === 0 ? '' : 'sm' }))));
 
+  // Play together: a quiz for 2–4 players taking turns on one phone.
+  const together = poster({ tone: 'sky', className: 'full', as: 'button', onclick: () => ctx.go('party') },
+    label('With friends'),
+    h('div', {}, headline('PLAY TOGETHER'),
+      h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'A Bible quiz for 2 to 4 players on one phone. Take turns, pass the phone, see who wins.' })),
+    h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Start a game' }), art('people', { tone: 'sky', size: 'sm' })));
+
   const el = h('div', { style: 'display:contents' },
-    ...blocks,
+    blocks[0], together, ...blocks.slice(1),
     played ? poster({ tone: 'paper', className: 'full' },
       label('So far'),
       h('p', { class: 'numeral', text: String(played) }),
