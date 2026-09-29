@@ -264,3 +264,16 @@ test('an avatar is a drawing for kids and teens; only adults may use a photo', a
   const state = (await call(e, 'GET', `/api/next/play/room?code=${room.code}`, null, { 'x-play-token': adult.token })).data;
   assert.equal(state.players[0].avatar, photo, 'and so does a room');
 });
+
+test('once the tables exist, joining and playing make no schema change', async () => {
+  const e = env();
+  const alters = [];
+  const prepare = e.KASAMA_DB.prepare;
+  e.KASAMA_DB.prepare = (sql) => { if (/^\s*ALTER/i.test(sql)) alters.push(sql); return prepare(sql); };
+  const first = await join(e, 'kids');
+  const fresh = { KASAMA_DB: e.KASAMA_DB };   // a new env object, as a new request can bring
+  alters.length = 0;
+  await call(fresh, 'POST', '/api/next/play/score', { token: first.token, game: 'hop', value: 5 });
+  await call(fresh, 'GET', '/api/next/play/board?ageGroup=kids&game=hop');
+  assert.deepEqual(alters, []);
+});

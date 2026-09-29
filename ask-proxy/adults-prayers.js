@@ -31,7 +31,7 @@
 // A reaction and a report are counted once per phone: the phone sends a random
 // id it made itself, and the server keeps only its SHA-256.
 
-import { cleanAvatar } from './next-play.js';
+import { cleanAvatar, addMissingColumns } from './next-play.js';
 
 export const RETENTION_DAYS = 30;
 export const REPORTS_TO_HIDE = 3;
@@ -67,10 +67,11 @@ export async function ensureAdultPrayerSchema(db) {
     )`),
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_adult_prayers_created ON adult_prayers (created_ms DESC)`),
   ]);
-  // Added after the wall first shipped. ALTER fails harmlessly where it exists.
-  for (const [column, type] of [['answered_ms', 'INTEGER'], ['answered_note', 'TEXT'], ['avatar', 'TEXT']]) {
-    try { await db.prepare(`ALTER TABLE adult_prayers ADD COLUMN ${column} ${type}`).run(); } catch { /* already there */ }
-  }
+  // Added after the wall first shipped. Look first, and ALTER only what is
+  // missing: a schema change on every request — even one that fails at once
+  // because the column exists — is the slowest thing D1 does, and three of
+  // them before every read is how the wall came to time out on phones.
+  await addMissingColumns(db, 'adult_prayers', [['answered_ms', 'INTEGER'], ['answered_note', 'TEXT'], ['avatar', 'TEXT']]);
 }
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {

@@ -49,7 +49,13 @@ async function ask(path, { method = 'GET', body, headers = {} } = {}) {
     const data = await response.json().catch(() => null);
     return { ok: response.ok, status: response.status, data, message: data && data.error && data.error.message };
   } catch {
-    return { ok: false, status: 0, data: null, message: 'Could not reach the church. Try again when you are online.' };
+    // Two different failures, said differently: no connection at all, or the
+    // church's server not answering in time. Telling them apart is how the
+    // next report of this says where to look.
+    const slow = controller.signal.aborted;
+    return { ok: false, status: 0, timedOut: slow, data: null, message: slow
+      ? 'The church’s server took too long to answer. Try again in a moment.'
+      : 'Could not reach the church. Try again when you are online.' };
   } finally {
     clearTimeout(timer);
   }
@@ -82,8 +88,8 @@ export function buildShare(text, user = getUser()) {
  * offline, not set up on this Worker, or the server's own message.
  */
 export async function list() {
-  const { ok, status, data, message } = await ask(BASE, { headers: { 'x-prayer-device': device() } });
-  if (!status) return { error: 'The prayer wall needs a connection; your own prayer list does not.' };
+  const { ok, status, data, message, timedOut } = await ask(BASE, { headers: { 'x-prayer-device': device() } });
+  if (!status) return { error: timedOut ? message : 'The prayer wall needs a connection; your own prayer list does not.' };
   if (data && data.configured === false) return { error: 'The prayer wall is not switched on for this server yet.' };
   if (!ok || !data || !Array.isArray(data.prayers)) {
     return { error: `The prayer wall could not be read (${status}${message ? `: ${message}` : ''}).` };

@@ -166,3 +166,19 @@ test('a request can carry a drawn avatar or a small photo, and nothing else', as
   assert.equal(avatars.filter((one) => /^data:image\/jpeg;base64,A{200}$/.test(one || '')).length, 1, 'the small photo is kept');
   assert.equal(avatars.filter((one) => one === null).length, 2, 'a link elsewhere, and a photo too big, are both refused');
 });
+
+test('once the tables exist, a request makes no schema change', async () => {
+  // Three ALTERs before every read — each failing because the column was
+  // already there — is how the wall came to time out on phones. Look first.
+  const e = env();
+  const alters = [];
+  const prepare = e.KASAMA_DB.prepare;
+  e.KASAMA_DB.prepare = (sql) => { if (/^\s*ALTER/i.test(sql)) alters.push(sql); return prepare(sql); };
+  await share(e);
+  assert.equal(alters.length, 3, 'a brand-new database gets its three columns, once');
+  alters.length = 0;
+  await wall(e);
+  await share(e, { device: device(2) });
+  await wall(e, device(2));
+  assert.deepEqual(alters, [], 'after that, not one ALTER per request');
+});
