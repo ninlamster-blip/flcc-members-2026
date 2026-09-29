@@ -75,6 +75,7 @@ browser), so the app runs rather than crashing.
 | `next/v1/bible` | `{ code, last: { n, chapter }, saved: [{ ref, text, code, at }] }` | the Bible reader |
 | `next/v1/arcade` | `{ galaga, galagaResume: { wave, score }, galagaMuted, hop, hopMuted, hopHat, galagaShip }` — the best Galaga score, where a continued run picks up, the furthest Hop Across row, whether each game’s sound is off, and the streak rewards being worn (`js/core/rewards.js`) | Galaga, Hop Across, Me |
 | `next/v1/notes` | `{ items: [{ date, passage, learned, doing, question }] }` — one set of church notes per service day, newest first, at most 52 | Church notes |
+| `next/v1/online` | `{ token, id, nickname, ageGroup, onBoard }` — only after choosing to play online; the token proves this phone is that nickname | Play online |
 | `next/v1/library` | `{ version, updated, files: { <file>: { added[], edited{}, removed[] } } }` | the dashboard's Library |
 
 Two consequences worth stating plainly, because the dashboard states them too:
@@ -87,6 +88,17 @@ Two consequences worth stating plainly, because the dashboard states them too:
    FLCC NEXT that leaves the device, it is opt-in per prayer, and it exists
    because the alternative — telling a child their prayer was sent when it was
    not — is worse than the privacy cost. Retention is 90 days.
+
+1b. **A second exception, opt-in: playing online.** A young person who joins
+   (Play → Leaderboard & team goal) sends their age group and, after each
+   Hop Across or Galaga run, the score — to `/api/next/play/*` on the same
+   Worker (`ask-proxy/next-play.js`). They appear only as a nickname the
+   server picks from two word lists; kids and teens never share a board; the
+   only messages are cheers from a fixed list, checked by index on the
+   server. There is no typed text anywhere in it. Leaving deletes the
+   player, their scores and their cheers; idle players go after 90 days.
+   `test/online.test.mjs` checks that no request carries a name, an age or
+   anything typed, and `ask-proxy/next-play.test.mjs` holds the server side.
 
 2. **There are no church-wide numbers.** Progress, prayers and RSVPs exist only
    where they were typed, so the dashboard's figures are always this-device

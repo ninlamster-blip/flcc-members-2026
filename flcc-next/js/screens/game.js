@@ -11,6 +11,7 @@ import * as crossword from '../games/crossword.js';
 import * as galaga from '../games/galaga.js';
 import * as hop from '../games/hopacross.js';
 import * as rewards from '../core/rewards.js';
+import * as online from '../core/online.js';
 import * as chiptune from '../games/chiptune.js';
 import * as store from '../core/storage.js';
 import { deal, pick as pickForDay, cycleOf, askOrder } from '../core/rotation.js';
@@ -524,6 +525,7 @@ function galagaGame(ctx) {
   const over = () => {
     const record = state.score > best();
     if (record) keep({ galaga: state.score });
+    online.submit('galaga', state.score, mode());   // only if this phone has joined online play
     keep({ galagaResume: { wave: state.wave, score: state.score } });
     // The XP goes in the card's eyebrow rather than a toast: a toast sits
     // exactly where the Continue button is, and would swallow the tap.
@@ -732,6 +734,7 @@ function hopGame(ctx) {
   const over = () => {
     const record = state.score > best();
     if (record) keep({ hop: state.score });
+    online.submit('hop', state.score, mode());      // only if this phone has joined online play
     // As in Galaga, the XP rides in the eyebrow: a toast would sit on the button.
     const result = progress.complete('game', `hop:${progress.today()}`);
     const xp = result.first ? ` · +${progress.XP.game} XP` : '';
