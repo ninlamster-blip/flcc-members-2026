@@ -6,6 +6,7 @@
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, mode, greeting, MODE } from './core/profile.js';
+import { avatar } from './core/avatar.js';
 import { getProgress } from './core/progress.js';
 import { poster, label, display, headline, fit, pill, choice, art, toast } from './core/ui.js';
 
@@ -165,7 +166,11 @@ function renderHead(view, route) {
       h('div', {},
         h('p', { class: 'label dimmer', text: greeting() }),
         fit(h('p', { class: 'headline', style: 'margin-top:.35rem', text: (user.name || 'Friend').toUpperCase() }))),
-      streak > 0 ? h('span', { class: 'streak', title: `${streak} day streak` }, `${streak} day${streak === 1 ? '' : 's'}`) : h('span'));
+      h('div', { class: 'head-right' },
+        streak > 0 ? h('span', { class: 'streak', title: `${streak} day streak` }, `${streak} day${streak === 1 ? '' : 's'}`) : null,
+        // Your avatar, opposite your name: tap it to change it on Me.
+        h('button', { class: 'head-avatar', type: 'button', 'aria-label': 'Your avatar — open Me', onclick: () => router.go('me') },
+          avatar(user.avatar, { size: 'md', seed: user.id || user.name || '' }))));
   } else if (ROOTS.has(route.name)) {
     headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
   } else {

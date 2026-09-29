@@ -11,6 +11,7 @@
 import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, greeting, firstName, applyTextSize, SEASONS, FOCUS } from './core/profile.js';
+import { avatar } from './core/avatar.js';
 import { poster, label, display, headline, lead, pill, choice, art, toast } from './core/ui.js';
 
 const TABS = [
@@ -209,7 +210,9 @@ function renderHead(view, route) {
       h('div', {},
         h('p', { class: 'label dimmer', text: greeting() }),
         h('p', { class: 'headline', style: 'margin-top:.35rem', text: firstName().toUpperCase() })),
-      h('span'));
+      // Your picture, opposite your name: tap it to change it on You.
+      h('button', { class: 'head-avatar', type: 'button', 'aria-label': 'Your picture — open You', onclick: () => router.go('you') },
+        avatar((getUser() || {}).avatar, { size: 'md', seed: (getUser() || {}).name || 'friend' })));
   } else if (ROOTS.has(route.name)) {
     headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
   } else {
