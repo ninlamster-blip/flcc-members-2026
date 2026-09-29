@@ -23,6 +23,7 @@ import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
 import * as rotation from '../core/rotation.js';
 import * as avatars from '../core/avatar.js';
+import * as tap from '../core/tap.js';
 import * as rooms from '../core/rooms.js';
 
 export default async function youScreen(ctx) {
@@ -214,6 +215,16 @@ export default async function youScreen(ctx) {
     h('div', { class: 'poster-foot' },
       pill(settings.figures === 'off' ? 'Turn the drawings on' : 'Turn the drawings off', () => {
         saveSettings({ figures: settings.figures === 'off' ? 'on' : 'off' });
+        ctx.refresh();
+      }, { quiet: true }),
+      h('span'))));
+
+  parts.push(poster({ tone: 'paper' },
+    label('Tap sounds'),
+    h('p', { class: 'body', text: 'A soft tick when you press a button, and a light buzz on phones that can. Silent when your phone is on silent.' }),
+    h('div', { class: 'poster-foot' },
+      pill(tap.enabled() ? 'Turn tap sounds off' : 'Turn tap sounds on', () => {
+        tap.setEnabled(!tap.enabled());
         ctx.refresh();
       }, { quiet: true }),
       h('span'))));

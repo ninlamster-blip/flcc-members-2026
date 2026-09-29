@@ -21,7 +21,7 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v23';
+const VERSION = 'adults-v24';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [
@@ -31,7 +31,7 @@ const SHELL = [
   './js/core/profile.js', './js/core/progress.js', './js/core/router.js',
   './js/core/content.js', './js/core/rotation.js', './js/core/scripture.js',
   './js/core/prayers.js', './js/core/plan.js', './js/core/agenda.js',
-  './js/core/ai.js', './js/core/safety.js', './js/core/notes.js', './js/core/rooms.js', './js/core/wall.js', './js/core/avatar.js', './js/core/resources.js',
+  './js/core/ai.js', './js/core/safety.js', './js/core/notes.js', './js/core/rooms.js', './js/core/wall.js', './js/core/avatar.js', './js/core/resources.js', './js/core/tap.js',
   './js/screens/today.js', './js/screens/explore.js', './js/screens/community.js',
   './js/screens/watch.js', './js/screens/you.js',
   './js/screens/bible.js', './js/screens/pray.js', './js/screens/grow.js',
