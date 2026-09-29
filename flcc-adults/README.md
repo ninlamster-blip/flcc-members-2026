@@ -47,7 +47,8 @@ truth about what this app holds.
 
 ## Three decisions worth knowing about
 
-**Nothing leaves the device, except a question you chose to ask.** There is no
+**Nothing leaves the device, except a question you chose to ask or a quiz room
+you chose to join.** There is no
 server, no account and no sync. Your prayer list, your reflections, your sermon
 notes, your reading and your verses live in this browser on this phone; a
 second device starts empty and clearing site data clears everything. That is a
@@ -60,8 +61,15 @@ answer it. It sends the question and nothing else about you, it can be switched
 off, and it says all of this on its own screen in the same size type as
 everything else. See [Ask](#ask).
 
+The second is a **quiz room** on the Play tab, and it too is opt-in. A room
+sends a nickname the server picks, whether each answer was right, and which
+ready-made line was tapped — never a name and never anything typed, because
+there is nowhere to type. See [Quiz rooms](#quiz-rooms).
+
 **There is no score.** No XP, no levels, no badges, no leaderboard, and no
-streak that breaks. The app counts days you turned up and says plainly that
+streak that breaks. A quiz room shows who got what right at the end of that
+game, to the people in it, and keeps nothing afterwards — the server refuses to
+store an adult's score at all. The app counts days you turned up and says plainly that
 they are not a measure of anything. `test/progress.test.mjs` fails if points
 ever appear.
 
@@ -126,6 +134,32 @@ app's own colours with its own drawings as the pieces. Thirty moves, a modest
 target, no timer and no lives. A swap that matches nothing is refused rather
 than played and snapped back — there is no reason to charge you a move for a
 misread.
+
+## Quiz rooms
+
+The one game played with other people, and the one part of Play that goes
+online. One member makes a room and reads out its four letters; the others type
+them in. Everyone answers the same ten Bible questions at the same moment,
+twelve seconds each, dealt from `content/quiz.json` by the room's seed so every
+phone asks the same thing. After each answer the reason and the reference are
+shown — the point is the text, not the race.
+
+What it sends and what it keeps, which the screen itself states before anyone
+joins:
+
+- **A nickname the server picks** from two word lists. Your name never goes.
+- **Whether each answer was right**, not which option you tapped.
+- **Which ready-made line you tapped** ("🤝 Good game!"), as a number. There is
+  no text box, so nothing typed can be sent.
+- **No score and no leaderboard.** The results show at the end of the game to
+  the people in the room. The server refuses an adult score, cheer or board,
+  and deletes a room a few hours after it was made.
+
+Rooms are adults only: the server keeps the kids, teens and adult editions in
+separate rooms. "Stop playing in rooms" deletes the nickname on the server and
+on this phone. The server side is `ask-proxy/next-play.js`, shared with FLCC
+NEXT's rooms — the apps share that endpoint and no code, and
+`test/rooms.test.mjs` builds every request and checks what is in it.
 
 ## Text size
 

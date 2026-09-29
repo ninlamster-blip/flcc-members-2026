@@ -101,8 +101,8 @@ fixed path — never `flcc-next/content/`, never a module, never storage.
 into the kids app, and `test/scripture.test.mjs` fails if the shared text
 moves.
 
-The second is **ASK**, and it is the only thing in this app that sends
-anything anywhere. `js/core/ai.js` POSTs a question to `/proxy` — same origin,
+The second is **ASK**, and until quiz rooms it was the only thing in this app
+that sent anything anywhere. `js/core/ai.js` POSTs a question to `/proxy` — same origin,
 served by the deployed `ask-proxy/worker.js`, which holds the API key so no
 device has to. What goes is the question and the last four turns; what never
 goes is the member's name, season, prayer list, reflections, sermon notes or
@@ -111,8 +111,17 @@ the built request. `js/core/safety.js` screens for crisis language **before**
 the network — `ai.test.mjs` replaces `fetch` with a throw to prove it — and
 `test/safety.test.mjs` holds both halves of that screen: what it must catch,
 and the ordinary hard questions it must leave alone. The Ask screen states
-what it sends in body type, and You can switch it off. Everything else in the
-app still never leaves the device.
+what it sends in body type, and You can switch it off.
+
+The other is **quiz rooms** on Play (`js/core/rooms.js`, `js/screens/room.js`),
+opt-in, against the same `/api/next/play/room/*` endpoint FLCC NEXT's rooms use
+in `ask-proxy/next-play.js` — a shared server, no shared code. A room sends a
+server-picked nickname, whether each answer was right and the index of a
+ready-made line; there is no text field, and `test/rooms.test.mjs` builds every
+request and fails on a name, a season, a prayer or free text. This edition
+still keeps no score: the server answers an adult `/score`, `/cheer` or
+`/board-visibility` with 403, the board refuses the `adults` group, and rooms
+never mix editions. Everything else in the app still never leaves the device.
 
 A third thing crosses the app's edge, and it is not the app doing it:
 `flcc-adults/admin/` is a **tool that edits this app rather than part of it** —

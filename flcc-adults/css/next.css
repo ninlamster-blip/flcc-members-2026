@@ -345,6 +345,14 @@ textarea:focus, input[type="text"]:focus, input[type="search"]:focus {
 }
 .choice[data-chosen], .choice[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 
+/* A live room's answers: one per line, and once tapped, which was right. */
+.room-choices { flex-direction: column; flex-wrap: nowrap; }
+.room-choices .choice { text-align: left; border-radius: var(--radius); }
+.choice[data-right] { background: var(--sunshine); color: var(--ink); box-shadow: inset 0 0 0 var(--edge) var(--ink); }
+.choice[data-wrong] { background: var(--poppy); color: var(--ink); box-shadow: inset 0 0 0 var(--edge) var(--ink); }
+.room-said { display: flex; flex-direction: column; gap: .3rem; margin-top: .4rem; }
+.room-code-input { text-transform: uppercase; letter-spacing: .3em; font-weight: 900; font-size: 1.6rem; }
+
 /* ── Scripture, read ─────────────────────────────────────────────────────
    The reader is a paper poster: the text at reading size, the verse number
    small and out of the way. A verse is tappable because a reader who wants
