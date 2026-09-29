@@ -12,8 +12,9 @@
 //  1. NO REAL NAMES. A player is a nickname the SERVER chooses from two fixed
 //     word lists ("Brave Lion 42"). The app never sends a name, an age, a
 //     church or anything typed, and there is no field that could carry one.
-//  2. KIDS AND TEENS NEVER MEET. Every board, goal and cheer is scoped to one
-//     age group. A 7-year-old's board holds only kids.
+//  2. KIDS AND TEENS NEVER MEET. Every board, goal, cheer and room is scoped to
+//     one age group. A 7-year-old's board holds only kids. Adults (the
+//     flcc-adults edition) join only for rooms, with other adults.
 //  3. NOTHING TYPED TRAVELS. A cheer is an index into CHEERS below, checked
 //     here; free text is not accepted anywhere in this module.
 //  4. LEAVING MEANS GONE. POST /leave deletes the player and every score and
@@ -23,7 +24,14 @@
 // A player proves who they are with a random token only their phone holds.
 // The server stores its SHA-256, never the token itself.
 
-export const AGE_GROUPS = ['kids', 'teens'];
+export const AGE_GROUPS = ['kids', 'teens', 'adults'];
+/**
+ * Who has a leaderboard, a team goal and cheers. The adult edition (flcc-adults)
+ * joins for live rooms only: it promises "no score, no leaderboard", so the
+ * server refuses to keep an adult's score rather than trusting the app not to
+ * send one.
+ */
+export const BOARD_GROUPS = ['kids', 'teens'];
 export const GAMES = { hop: { max: 5000 }, galaga: { max: 10_000_000 } };
 
 /** What the whole age group is working towards together, each week. */
@@ -178,7 +186,7 @@ export async function handleNextPlay(request, env, url) {
   if (request.method === 'GET' && path === '/board') {
     const ageGroup = url.searchParams.get('ageGroup');
     const game = url.searchParams.get('game');
-    if (!AGE_GROUPS.includes(ageGroup) || !GAMES[game]) return json({ error: { message: 'Which board?' } }, 400);
+    if (!BOARD_GROUPS.includes(ageGroup) || !GAMES[game]) return json({ error: { message: 'Which board?' } }, 400);
     const me = await playerFor(db, request.headers.get('x-play-token'));
     if (me && me.age_group !== ageGroup) return json({ error: { message: 'That board is for another age group.' } }, 403);
     return json({ configured: true, ...(await board(db, ageGroup, game, weekOf(), me)) });
@@ -233,6 +241,11 @@ export async function handleNextPlay(request, env, url) {
   if (path === '/board-visibility') {
     await db.prepare(`UPDATE next_players SET on_board = ? WHERE id = ?`).bind(body.show ? 1 : 0, me.id).run();
     return json({ configured: true, onBoard: Boolean(body.show) });
+  }
+
+  // The leaderboard's own routes are for kids and teens only.
+  if (['/score', '/cheer', '/board-visibility'].includes(path) && !BOARD_GROUPS.includes(me.age_group)) {
+    return json({ error: { message: 'This edition keeps no score and no leaderboard.' } }, 403);
   }
 
   // POST /score { game, value } — one finished run
@@ -313,7 +326,7 @@ async function roomState(db, room, me) {
   }
   const { results: players } = await db.prepare(
     `SELECT p.id, p.nickname, r.score, r.progress, r.alive FROM next_room_players r JOIN next_players p ON p.id = r.player_id
-     WHERE r.code = ? ORDER BY r.joined_ms`
+     WHERE r.code = ? ORDER BY r.joined_ms, r.rowid`
   ).bind(room.code).all();
   if (room.status === 'playing' && room.kind === 'hop' && players.length && players.every((p) => !p.alive)) {
     await db.prepare(`UPDATE next_rooms SET status = 'done' WHERE code = ?`).bind(room.code).run();

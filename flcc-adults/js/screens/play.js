@@ -1,4 +1,4 @@
-// PLAY — three of them, and none of them is trying to disciple you.
+// PLAY — three of them on this phone, and a quiz room to play with others; none of them is trying to disciple you.
 //
 // Worth stating, because a church app is the exact place this goes wrong: the
 // games here are not a delivery mechanism for anything. There is no verse to
@@ -55,10 +55,20 @@ export default async function playScreen(ctx) {
       h('span', { class: 'go' }, 'Fly'),
       art('star', { tone: 'sunshine', size: 'sm' }))));
 
+  parts.push(poster({ tone: 'ink', tall: true, as: 'button', onclick: () => ctx.go('room') },
+    label('Play together'),
+    h('div', {},
+      display('QUIZ ROOM'),
+      h('p', { class: 'lead dim', style: 'margin-top:1rem',
+        text: 'Ten Bible questions, answered at the same moment on your own phones. One of you makes a room and reads out four letters. The only part of this tab that goes online, and only if you choose it.' })),
+    h('div', { class: 'poster-foot' },
+      h('span', { class: 'go' }, 'Open a room'),
+      art('star', { tone: 'ink', size: 'sm' }))));
+
   parts.push(poster({ tone: 'paper' },
     label('What these are not'),
     rows(
-      row({ title: 'A score anyone else can see', meta: 'No' }),
+      row({ title: 'A score that is kept, or a leaderboard', meta: 'No' }),
       row({ title: 'A streak you lose by missing a day', meta: 'No' }),
       row({ title: 'Anything reported to the church', meta: 'No' }),
     ),

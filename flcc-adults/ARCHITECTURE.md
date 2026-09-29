@@ -163,6 +163,18 @@ One departure from the genre worth knowing about: a swap that matches nothing
 is *refused* rather than played and snapped back, because there is no reason to
 spend a move on somebody's misread.
 
+**Quiz rooms** are `js/core/rooms.js` and `js/screens/room.js`, played against
+`/api/next/play/room/*` on the shared Worker (`ask-proxy/next-play.js`, the
+same endpoint FLCC NEXT's rooms use — shared server, no shared code). The
+server deals nothing: it holds a seed, a start time and who answered right,
+and every phone deals the same ten questions from `content/quiz.json` with
+`rooms.questionsFor()`, showing the options in an order `rooms.shown()` derives
+from the question's own text. The phone polls once a second and corrects for
+the server's clock. The server holds the adult edition to "no score": `/score`,
+`/cheer` and `/board-visibility` refuse an adult with 403 and the board refuses
+the `adults` group, and rooms never mix editions. What can be said is an index
+into `ROOM_SAYS`, which `test/rooms.test.mjs` holds equal to the server's list.
+
 ## The events admin
 
 `admin/` is a tool that edits this app; it is not part of it. It shares the
@@ -247,6 +259,7 @@ locked browser), so the app runs rather than crashing.
 | `adults/v1/plan` | `{ id, started }` | a reading plan |
 | `adults/v1/ask` | `{ turns: [{ role, text, at }], updatedAt }` | ASK |
 | `adults/v1/notes` | `[{ id, title, speaker, ref, body, messageId, createdAt, updatedAt }]` | sermon notes |
+| `adults/v1/online` | `{ token, id, nickname, ageGroup: 'adults' }` | a quiz room — only once a member chooses to play in one |
 | `adults/v1/play` | `{ crossword: { day, filled{}, given[] }, galaga: { wave }, galagaMuted }` | the crossword; the wave a Galaga run continues from (never a score), and whether its sound is off |
 
 **Nothing crosses devices, and none of it leaves the device.** There is no
@@ -256,8 +269,11 @@ even a prayer-delivery exception: an adult's prayers about their marriage,
 their money or their manager are not ours to collect. Four screens say so where
 it matters (Pray, Connect, Notes, You) rather than burying it in a policy.
 
-The one thing that goes out is an ASK question, and it is not stored here or
-there — see [ASK](#ask) below. Nothing in the table above is ever sent with it.
+Two things go out, both opt-in. An ASK question, which is not stored here or
+there — see [ASK](#ask) below. And a quiz room's play: a server-picked
+nickname, whether each answer was right, and which ready-made line was tapped —
+see [Play](#play). Nothing in the table above is ever sent with either; the
+`online` row is the room's own token, kept so the member can leave.
 
 ## What a server would need
 

@@ -48,7 +48,7 @@ test('joining gives a server-chosen nickname, and nothing typed is stored', asyn
   const stored = JSON.stringify(e.KASAMA_DB.raw.prepare('SELECT * FROM next_players').all());
   assert.ok(!stored.includes('Real Name'), 'a name sent anyway is never stored');
   assert.ok(!stored.includes(me.token), 'only a hash of the token is kept');
-  assert.equal((await call(e, 'POST', '/api/next/play/join', { ageGroup: 'adults' })).status, 400);
+  assert.equal((await call(e, 'POST', '/api/next/play/join', { ageGroup: 'grown-ups' })).status, 400);
 });
 
 test('a score counts for the board and the team, and the best is kept', async () => {
@@ -175,7 +175,7 @@ test('a quiz answer counts once, and only while its question is being asked', as
   await room(e, b.token, 'answer', { code, question: 1, right: true });
   assert.equal((await room(e, b.token, 'answer', { code, question: 0, right: true })).status, 409, 'not after it has gone');
   const state = await look(e, a.token, code);
-  assert.deepEqual(state.players.map((p) => p.score), [1, 1]);
+  assert.deepEqual(state.players.map((p) => p.score).sort(), [1, 1]);
   ask(ROOM_KINDS.quiz.questions);
   assert.equal((await look(e, a.token, code)).status, 'done', 'the clock ends the quiz');
 });
@@ -207,8 +207,9 @@ test('a race keeps each racer\'s furthest row, and ends when nobody is left runn
   await room(e, a.token, 'progress', { code, row: 8, alive: false });
   await room(e, b.token, 'progress', { code, row: 5 });
   let state = await look(e, a.token, code);
-  assert.equal(state.players[0].progress, 12, 'a lower report never lowers the row');
-  assert.equal(state.players[0].alive, false);
+  const racer = state.players.find((p) => p.you);   // by who, not by position in the list
+  assert.equal(racer.progress, 12, 'a lower report never lowers the row');
+  assert.equal(racer.alive, false);
   assert.equal(state.status, 'playing', 'one racer is still running');
   await room(e, b.token, 'progress', { code, row: 20, alive: false });
   state = await look(e, a.token, code);
@@ -227,4 +228,20 @@ test('a host leaving an unstarted room closes it; rooms are swept after a few ho
   await sweepNextPlay(e);
   assert.equal(e.KASAMA_DB.raw.prepare('SELECT COUNT(*) AS n FROM next_rooms').get().n, 0);
   assert.equal((await room(e, a.token, 'join', { code: again.code })).status, 404);
+});
+
+test('adults join for rooms only: no score, no board, no cheers — and never with kids', async () => {
+  const e = env();
+  const adult = await join(e, 'adults');
+  const kid = await join(e, 'kids');
+  assert.match(adult.nickname, /^[A-Z][a-z]+ [A-Z][a-z]+ \d{2}$/);
+  assert.equal((await call(e, 'POST', '/api/next/play/score', { token: adult.token, game: 'galaga', value: 10 })).status, 403, 'the adult edition keeps no score');
+  assert.equal((await call(e, 'GET', '/api/next/play/board?ageGroup=adults&game=galaga')).status, 400, 'there is no adult board');
+  assert.equal((await call(e, 'POST', '/api/next/play/cheer', { token: adult.token, to: kid.id, kind: 0 })).status, 403);
+  const { code } = (await room(e, adult.token, 'create', { kind: 'quiz' })).data;
+  assert.equal((await room(e, kid.token, 'join', { code })).status, 403, 'a child cannot join an adults room');
+  const other = await join(e, 'adults');
+  assert.equal((await room(e, other.token, 'join', { code })).status, 200);
+  const kidRoom = (await room(e, kid.token, 'create', { kind: 'quiz' })).data.code;
+  assert.equal((await room(e, adult.token, 'join', { code: kidRoom })).status, 403, 'an adult cannot join a kids room');
 });
