@@ -157,6 +157,15 @@ function renderTabs(active) {
   tabsEl.hidden = false;
 }
 
+// Tabs whose header carries your avatar in the top-right corner, besides Today.
+const WITH_AVATAR = new Set(['connect']);
+
+/** Your avatar, opposite your name or the tab's title: tap it to change it on Me. */
+function headAvatar(user) {
+  return h('button', { class: 'head-avatar', type: 'button', 'aria-label': 'Your avatar — open Me', onclick: () => router.go('me') },
+    avatar(user.avatar, { size: 'md', seed: user.id || user.name || '' }));
+}
+
 function renderHead(view, route) {
   clear(headEl);
   const user = getUser() || {};
@@ -168,11 +177,10 @@ function renderHead(view, route) {
         fit(h('p', { class: 'headline', style: 'margin-top:.35rem', text: (user.name || 'Friend').toUpperCase() }))),
       h('div', { class: 'head-right' },
         streak > 0 ? h('span', { class: 'streak', title: `${streak} day streak` }, `${streak} day${streak === 1 ? '' : 's'}`) : null,
-        // Your avatar, opposite your name: tap it to change it on Me.
-        h('button', { class: 'head-avatar', type: 'button', 'aria-label': 'Your avatar — open Me', onclick: () => router.go('me') },
-          avatar(user.avatar, { size: 'md', seed: user.id || user.name || '' }))));
+        headAvatar(user)));
   } else if (ROOTS.has(route.name)) {
-    headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
+    headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }),
+      WITH_AVATAR.has(route.name) ? headAvatar(user) : h('span'));
   } else {
     headEl.append(
       h('button', { class: 'go', type: 'button', dataset: { back: '' }, style: 'font-size:.8rem;letter-spacing:.12em;text-transform:uppercase',

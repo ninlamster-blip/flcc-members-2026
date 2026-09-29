@@ -203,6 +203,16 @@ function renderTabs(active) {
   tabsEl.hidden = false;
 }
 
+// Tabs whose header carries your picture in the top-right corner, besides Today.
+const WITH_AVATAR = new Set(['community']);
+
+/** Your picture, opposite your name or the tab's title: tap it to change it on You. */
+function headAvatar() {
+  const user = getUser() || {};
+  return h('button', { class: 'head-avatar', type: 'button', 'aria-label': 'Your picture — open You', onclick: () => router.go('you') },
+    avatar(user.avatar, { size: 'md', seed: user.name || 'friend' }));
+}
+
 function renderHead(view, route) {
   clear(headEl);
   if (route.name === 'today') {
@@ -210,11 +220,10 @@ function renderHead(view, route) {
       h('div', {},
         h('p', { class: 'label dimmer', text: greeting() }),
         h('p', { class: 'headline', style: 'margin-top:.35rem', text: firstName().toUpperCase() })),
-      // Your picture, opposite your name: tap it to change it on You.
-      h('button', { class: 'head-avatar', type: 'button', 'aria-label': 'Your picture — open You', onclick: () => router.go('you') },
-        avatar((getUser() || {}).avatar, { size: 'md', seed: (getUser() || {}).name || 'friend' })));
+      headAvatar());
   } else if (ROOTS.has(route.name)) {
-    headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }), h('span'));
+    headEl.append(h('p', { class: 'headline', text: (view.title || '').toUpperCase() }),
+      WITH_AVATAR.has(route.name) ? headAvatar() : h('span'));
   } else {
     headEl.append(
       h('button', { class: 'go', 'data-back': '', type: 'button',
