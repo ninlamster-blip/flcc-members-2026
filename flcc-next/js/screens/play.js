@@ -24,8 +24,29 @@ export default async function playScreen(ctx) {
       h('p', { class: 'label', text: '★'.repeat(game.difficulty) + '☆'.repeat(5 - game.difficulty) }),
       art(game.symbol, { tone: game.tone, size: index === 0 ? '' : 'sm' }))));
 
+  // Play together: a quiz for 2–4 players taking turns on one phone.
+  const together = poster({ tone: 'sky', className: 'full', as: 'button', onclick: () => ctx.go('party') },
+    label('With friends'),
+    h('div', {}, headline('PLAY TOGETHER'),
+      h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'A Bible quiz for 2 to 4 players on one phone. Take turns, pass the phone, see who wins.' })),
+    h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Start a game' }), art('people', { tone: 'sky', size: 'sm' })));
+
+  // Online: the weekly leaderboard and team goal (opt-in, nicknames only).
+  const onlineCard = poster({ tone: 'captain', className: 'full', as: 'button', onclick: () => ctx.go('board') },
+    label('Online'),
+    h('div', {}, headline('LEADERBOARD & TEAM GOAL'),
+      h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'See how everyone your age is doing in Hop Across and Galaga this week, work on a team goal together, and send cheers.' })),
+    h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Open' }), art('star', { tone: 'captain', size: 'sm' })));
+
+  // Rooms: a live quiz battle or Hop Across race with friends, by code.
+  const roomCard = poster({ tone: 'rose', className: 'full', as: 'button', onclick: () => ctx.go('room') },
+    label('Live, with friends'),
+    h('div', {}, headline('QUIZ BATTLE & HOP RACE'),
+      h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'Make a room, share its four-letter code, and play at the same time on your own phones.' })),
+    h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Make or join a room' }), art('bolt', { tone: 'rose', size: 'sm' })));
+
   const el = h('div', { style: 'display:contents' },
-    ...blocks,
+    blocks[0], together, roomCard, onlineCard, ...blocks.slice(1),
     played ? poster({ tone: 'paper', className: 'full' },
       label('So far'),
       h('p', { class: 'numeral', text: String(played) }),

@@ -33,6 +33,7 @@
 // =============================================================================
 
 import { sendWebPush } from './webpush.js';
+import { handleNextPlay, sweepNextPlay } from './next-play.js';
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -595,6 +596,7 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(sendEveningSanctuaryReminder(env).catch(() => {}));
     ctx.waitUntil(sweepNextPrayers(env).catch(() => {}));
+    ctx.waitUntil(sweepNextPlay(env).catch(() => {}));
   },
 };
 
@@ -628,6 +630,7 @@ async function handleRequest(request, env, ctx) {
       // exists, exactly as keySet and secretRequired above already do.
       nextPrayers: !!(env.KASAMA_DB && env.NEXT_LEADER_KEY),
       nextDatabase: !!env.KASAMA_DB,
+      nextPlay: !!env.KASAMA_DB,
       nextLeaderKey: !!env.NEXT_LEADER_KEY,
       // Whether the FLCC NEXT Adults events admin can publish. Three fields
       // for the same reason as the three above: it needs two secrets that
@@ -794,6 +797,11 @@ async function handleRequest(request, env, ctx) {
   // ── /api/next/prayers — FLCC NEXT: a young person's prayer, to leaders ───
   if (url.pathname === '/api/next/prayers' || url.pathname === '/api/next/prayers/status') {
     return handleNextPrayers(request, env, url);
+  }
+
+  // ── /api/next/play — FLCC NEXT: nicknames, leaderboard, team goal, cheers ─
+  if (url.pathname.startsWith('/api/next/play/')) {
+    return handleNextPlay(request, env, url);
   }
 
   // ── /api/push — "new prayer" browser push notifications (opt-in) ─────────

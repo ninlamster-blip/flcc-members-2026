@@ -82,6 +82,7 @@ export const KEYS = {
   library:  `${NS}library`,   // the ministry's edits to the authored content
   arcade:   `${NS}arcade`,    // this device's best arcade scores, never sent anywhere
   notes:    `${NS}notes`,     // church notes kept on service day, never sent anywhere
+  online:   `${NS}online`,    // opt-in: the play token and the server-chosen nickname
 };
 
 // Achievements are deliberately absent: they are derived from progress every
