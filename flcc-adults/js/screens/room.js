@@ -12,6 +12,7 @@
 import { h, poster, label, display, headline, art, pill, choice, track, note, toast, waiting, rows, row, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rooms from '../core/rooms.js';
+import { avatar } from '../core/avatar.js';
 
 const POLL_MS = 1000;
 
@@ -40,6 +41,7 @@ export default async function roomScreen(ctx) {
           row({ title: 'A nickname the app picks', meta: 'Sent' }),
           row({ title: 'Whether each answer was right', meta: 'Sent' }),
           row({ title: 'Lines you tap, like “🤝 Good game!”', meta: 'Sent' }),
+          row({ title: 'Your picture, if you set one on You', meta: 'Sent' }),
           row({ title: 'Your name, or anything you type', meta: 'Never' }),
           row({ title: 'A score or a leaderboard', meta: 'None' }),
         ),
@@ -79,10 +81,13 @@ export default async function roomScreen(ctx) {
 
   const players = (state, finalRound = false) => rows(...[...state.players]
     .sort((a, b) => (finalRound ? b.score - a.score : 0))
-    .map((p) => row({
-      title: `${p.nickname}${p.you ? ' (you)' : ''}`,
-      meta: finalRound ? `${p.score} right` : state.status === 'playing' ? (p.progress >= (state.question ?? -1) ? 'answered' : '…') : '',
-    })));
+    .map((p) => {
+      const meta = finalRound ? `${p.score} right` : state.status === 'playing' ? (p.progress >= (state.question ?? -1) ? 'answered' : '…') : '';
+      return h('div', { class: 'row' },
+        h('div', { class: 'row-top', style: 'align-items:center' },
+          h('div', { class: 'who' }, avatar(p.avatar, { seed: p.id }), h('p', { class: 'row-title', text: `${p.nickname}${p.you ? ' (you)' : ''}` })),
+          meta ? h('span', { class: 'row-meta', text: meta }) : null));
+    }));
 
   // ── No room yet: make one, or join one ──────────────────────────────────
   const menu = () => {

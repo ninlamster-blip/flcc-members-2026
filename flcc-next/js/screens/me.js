@@ -7,6 +7,8 @@ import * as progress from '../core/progress.js';
 import * as rewards from '../core/rewards.js';
 import * as stampRules from '../core/stamps.js';
 import { getUser, saveUser, mode, MODE } from '../core/profile.js';
+import * as avatars from '../core/avatar.js';
+import * as online from '../core/online.js';
 
 const REWARD_ART = { hopHat: ['chicken', 'sunshine'], galagaShip: ['rocket', 'sky'] };
 
@@ -53,6 +55,40 @@ function rewardShelf(streak) {
   return block;
 }
 
+/**
+ * Your avatar: one of the app's drawings, on a colour you pick. Never a photo —
+ * other kids see it on the leaderboard and in rooms.
+ */
+function avatarPicker() {
+  const block = poster({ tone: 'paper', className: 'full' });
+  const paint = () => {
+    const user = getUser() || {};
+    const current = avatars.parse(user.avatar) || avatars.parse(avatars.fallback(user.id));
+    const choose = (spec) => {
+      saveUser({ avatar: spec });
+      online.setAvatar(spec);
+      paint();
+    };
+    block.replaceChildren(
+      label('Your avatar'),
+      h('div', { style: 'display:flex;align-items:center;gap:1rem;margin-top:.4rem' },
+        avatars.avatar(avatars.make(current.symbol, current.tone), { size: 'lg', label: 'Your avatar' }),
+        h('p', { class: 'body', text: 'Pick a picture and a colour. This is what friends see beside your nickname — never a photo of you.' })),
+      h('div', { class: 'avatar-pick', role: 'group', 'aria-label': 'Picture' },
+        ...avatars.SYMBOLS.map((name) => h('button', {
+          type: 'button', 'aria-label': `Picture: ${name}`, 'aria-pressed': String(name === current.symbol),
+          onclick: () => choose(avatars.make(name, current.tone)),
+        }, avatars.avatar(avatars.make(name, current.tone))))),
+      h('div', { class: 'avatar-pick', role: 'group', 'aria-label': 'Colour' },
+        ...avatars.TONES.map((tone) => h('button', {
+          type: 'button', 'aria-label': `Colour: ${tone}`, 'aria-pressed': String(tone === current.tone),
+          onclick: () => choose(avatars.make(current.symbol, tone)),
+        }, avatars.avatar(avatars.make(current.symbol, tone))))));
+  };
+  paint();
+  return block;
+}
+
 export default async function meScreen(ctx) {
   const user = getUser() || {};
   const state = progress.getProgress();
@@ -78,6 +114,8 @@ export default async function meScreen(ctx) {
             h('p', { class: 'label', text: `Level ${progress.level(xp)}` }),
             fit(h('p', { class: 'headline', style: 'margin-top:.3rem', text: progress.levelTitle(xp).toUpperCase() }))),
           art('rocket', { tone: 'sunshine', size: 'sm' })))),
+
+    avatarPicker(),
 
     rewardShelf(state.streak),
 

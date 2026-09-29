@@ -11,7 +11,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import worker from './worker.js';
-import { REPORTS_TO_HIDE, SHARES_PER_DAY, RETENTION_DAYS, sweepAdultPrayers } from './adults-prayers.js';
+import { REPORTS_TO_HIDE, SHARES_PER_DAY, RETENTION_DAYS, NOTE_MAX, REACTIONS, sweepAdultPrayers } from './adults-prayers.js';
 
 class BoundStatement {
   constructor(db, sql) { this.db = db; this.sql = sql; this.args = []; }
@@ -48,7 +48,7 @@ test('a shared request carries its text and a first name, and nothing else is st
   const res = await share(e, { season: 'grieving', lastName: 'Santos', email: 'a@b.c' });
   assert.equal(res.data.shared, true);
   const [one] = await wall(e);
-  assert.deepEqual(Object.keys(one).sort(), ['at', 'firstName', 'id', 'prayed', 'prayedByYou', 'text']);
+  assert.deepEqual(Object.keys(one).sort(), ['answered', 'at', 'avatar', 'firstName', 'id', 'prayed', 'prayedByYou', 'reactions', 'text', 'yourReactions']);
   assert.equal(one.firstName, 'Allen');
   const stored = JSON.stringify(e.KASAMA_DB.raw.prepare('SELECT * FROM adult_prayers').all());
   for (const leak of ['grieving', 'Santos', 'a@b.c', res.data.token, device(1)]) {
@@ -122,4 +122,47 @@ test('a server error is answered with its reason, not a bare failure', async () 
   const res = await call(broken, 'GET', '/api/adults/prayers');
   assert.equal(res.status, 500);
   assert.match(res.data.error.message, /server error: boom/);
+});
+
+test('reactions are from the list, once per phone each, and a second tap takes one back', async () => {
+  const e = env();
+  const { id } = (await share(e)).data;
+  const react = (kind, d = device(2)) => call(e, 'POST', '/api/adults/prayers/react', { id, device: d, kind });
+  assert.equal((await react('love')).data.count, 1);
+  assert.equal((await react('with', device(3))).data.count, 1);
+  assert.equal((await react('love')).data.count, 0, 'tapped again, it is taken back');
+  assert.equal((await react('love')).data.count, 1);
+  assert.equal((await react('you are wrong')).status, 400, 'nothing typed');
+  assert.equal((await react('praise')).status, 400, '🙌 waits for an answer');
+  const [one] = await wall(e, device(2));
+  assert.deepEqual(one.reactions, { prayed: 0, love: 1, with: 1, praise: 0 });
+  assert.deepEqual(one.yourReactions, ['love']);
+  assert.deepEqual(Object.keys(REACTIONS), ['prayed', 'love', 'with', 'praise']);
+});
+
+test('only the sharer can mark it answered, with a short note, and take that back', async () => {
+  const e = env();
+  const { id, token } = (await share(e)).data;
+  assert.equal((await call(e, 'POST', '/api/adults/prayers/answer', { id, token: 'guess', device: device(2), note: 'x' })).status, 403);
+  const done = await call(e, 'POST', '/api/adults/prayers/answer', { id, token, device: device(1), note: `Surgery went well. ${'!'.repeat(400)}` });
+  assert.equal(done.data.answered.note.length, NOTE_MAX, 'a long note is cut');
+  const [one] = await wall(e);
+  assert.ok(one.answered.at && one.answered.note.startsWith('Surgery went well.'));
+  assert.equal((await call(e, 'POST', '/api/adults/prayers/react', { id, device: device(3), kind: 'praise' })).data.count, 1, '🙌 opens');
+  await call(e, 'POST', '/api/adults/prayers/answer', { id, token, device: device(1), answered: false });
+  const [again] = await wall(e);
+  assert.equal(again.answered, null);
+  assert.equal(again.reactions.praise, 0, 'un-answering clears the 🙌');
+});
+
+test('a request can carry a drawn avatar or a small photo, and nothing else', async () => {
+  const e = env();
+  await share(e, { avatar: 'draw:heart:rose' });
+  await share(e, { avatar: `data:image/jpeg;base64,${'A'.repeat(200)}` });
+  await share(e, { avatar: 'https://tracker.example/pixel.gif' });
+  await share(e, { avatar: `data:image/jpeg;base64,${'A'.repeat(20000)}` });
+  const avatars = (await wall(e)).map((one) => one.avatar);
+  assert.ok(avatars.includes('draw:heart:rose'));
+  assert.equal(avatars.filter((one) => /^data:image\/jpeg;base64,A{200}$/.test(one || '')).length, 1, 'the small photo is kept');
+  assert.equal(avatars.filter((one) => one === null).length, 2, 'a link elsewhere, and a photo too big, are both refused');
 });

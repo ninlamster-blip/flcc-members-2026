@@ -429,3 +429,13 @@ of the brief need a server and are specified, not implemented — see
 - **Community moments.** The photo wall is a placeholder; a shared, moderated
   photo feed for minors needs storage, moderation and consent that a static
   site cannot provide.
+
+## Avatars
+
+Me → "Your avatar": one of the app's own drawings on a colour. It shows beside
+the nickname on the leaderboard and in rooms. **It is never a photo.** Kids and
+teens see each other's avatars, and a photo of a child is not something this
+app shows another child — so there is no upload anywhere in this app, and the
+server (`ask-proxy/next-play.js` `cleanAvatar`) refuses a photo from the kids
+and teens age groups however it arrives. What travels is only
+`draw:<symbol>:<tone>`. `test/avatar.test.mjs` holds both halves.

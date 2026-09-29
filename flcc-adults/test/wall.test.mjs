@@ -96,3 +96,43 @@ test('when the wall cannot be read, it says why', async () => {
   assert.match((await wall.list()).error, /needs a connection/);
   globalThis.fetch = offline;
 });
+
+test('reactions on the phone are the reactions the server accepts', () => {
+  const server = read('../../ask-proxy/adults-prayers.js');
+  const line = server.match(/export const REACTIONS = \{([^}]*)\}/);
+  assert.ok(line, 'the server list has moved');
+  const kinds = [...line[1].matchAll(/(\w+):/g)].map((m) => m[1]);
+  assert.deepEqual(wall.REACTIONS.map((r) => r.kind), kinds);
+});
+
+test('a reaction sends which one and this phone’s id, nothing typed', async () => {
+  person();
+  reply = () => ({ configured: true, count: 1, yours: true });
+  await wall.react('w9', 'love');
+  assert.deepEqual(Object.keys(JSON.parse(sent[0].body)).sort(), ['device', 'id', 'kind']);
+});
+
+test('only the sharer can mark it answered, and the note is screened first', async () => {
+  person();
+  reply = () => ({ configured: true, shared: true, id: 'w5', token: 'mine-5' });
+  await wall.share('For a job interview on Thursday');
+  sent.length = 0;
+  assert.equal((await wall.answer('not-mine', 'Got it!')).ok, false);
+  assert.equal(sent.length, 0);
+  assert.equal((await wall.answer('w5', 'I want to die')).concerning, true);
+  assert.equal(sent.length, 0, 'a worrying note is not sent');
+  reply = () => ({ configured: true, answered: { at: 1, note: 'Got the job!' } });
+  await wall.answer('w5', `Got the job! ${'x'.repeat(400)}`);
+  const body = JSON.parse(sent[0].body);
+  assert.equal(body.token, 'mine-5');
+  assert.equal(body.note.length, wall.NOTE_MAX);
+});
+
+test('a shared request carries the member’s picture when they set one, and never anything else', async () => {
+  person();
+  const user = JSON.parse(JSON.stringify(store.read(store.KEYS.user)));
+  store.write(store.KEYS.user, { ...user, avatar: 'draw:heart:rose' });
+  assert.equal(wall.buildShare('For my family').avatar, 'draw:heart:rose');
+  store.write(store.KEYS.user, { ...user, avatar: 'https://example.com/me.jpg' });
+  assert.equal('avatar' in wall.buildShare('For my family'), false, 'a link is never sent as a picture');
+});

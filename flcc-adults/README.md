@@ -132,6 +132,25 @@ The server side is `ask-proxy/adults-prayers.js` on the shared Worker.
 `test/wall.test.mjs` builds every request and fails if it carries more than
 the text, the first name and the phone's id.
 
+### Answered, and reactions
+
+The person who shared a request can tap **It was answered** on it and add a
+note of up to 280 characters ("Surgery went well — thank you all!"). The note
+is screened like the request itself, the card gets an Answered badge, and a
+fourth reaction opens. Everyone else reacts with **🙏 Praying · ❤️ Love ·
+🤝 With you**, and **🙌 Praise** once it is answered — one of each per phone,
+tapped again to take it back. There is no comment box.
+
+## Your picture
+
+You → "Your picture". A drawing from this app's set on a colour, or your own
+photo. A photo is cropped and shrunk to a 96-pixel square **on the phone**
+before it is kept (`js/core/avatar.js`), so the full picture never leaves it.
+It is shown in exactly two places: beside your first name on a request you
+share, and beside your nickname in a quiz room. The server
+(`ask-proxy/next-play.js` `cleanAvatar`) refuses anything bigger, and anything
+that is not a drawing or an image — a link to somewhere else never passes.
+
 ## Sermon notes
 
 A title, who preached, the passage, and a page to write on. That is the whole

@@ -245,3 +245,22 @@ test('adults join for rooms only: no score, no board, no cheers — and never wi
   const kidRoom = (await room(e, kid.token, 'create', { kind: 'quiz' })).data.code;
   assert.equal((await room(e, adult.token, 'join', { code: kidRoom })).status, 403, 'an adult cannot join a kids room');
 });
+
+test('an avatar is a drawing for kids and teens; only adults may use a photo', async () => {
+  const e = env();
+  const photo = `data:image/jpeg;base64,${'A'.repeat(300)}`;
+  const kid = (await call(e, 'POST', '/api/next/play/join', { ageGroup: 'kids', avatar: 'draw:rocket:sky' })).data;
+  assert.equal(kid.avatar, 'draw:rocket:sky');
+  assert.equal((await call(e, 'POST', '/api/next/play/avatar', { token: kid.token, avatar: photo })).status, 400, 'no photo of a child');
+  assert.equal((await call(e, 'POST', '/api/next/play/avatar', { token: kid.token, avatar: 'draw:star:sunshine' })).data.avatar, 'draw:star:sunshine');
+  const teen = (await call(e, 'POST', '/api/next/play/join', { ageGroup: 'teens', avatar: photo })).data;
+  assert.equal(teen.avatar, null, 'a photo sent at join is dropped for teens');
+  const adult = (await call(e, 'POST', '/api/next/play/join', { ageGroup: 'adults', avatar: photo })).data;
+  assert.equal(adult.avatar, photo);
+  await call(e, 'POST', '/api/next/play/score', { token: kid.token, game: 'hop', value: 10 });
+  const board = (await call(e, 'GET', '/api/next/play/board?ageGroup=kids&game=hop')).data;
+  assert.equal(board.top[0].avatar, 'draw:star:sunshine', 'the board shows it');
+  const room = (await call(e, 'POST', '/api/next/play/room/create', { token: adult.token, kind: 'quiz' })).data;
+  const state = (await call(e, 'GET', `/api/next/play/room?code=${room.code}`, null, { 'x-play-token': adult.token })).data;
+  assert.equal(state.players[0].avatar, photo, 'and so does a room');
+});
