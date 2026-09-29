@@ -75,12 +75,17 @@ export default async function galagaScreen(ctx) {
     livesEl.textContent = `${state.lives} ${state.lives === 1 ? 'ship' : 'ships'} left`;
   };
 
+  // The field fills its whole well: 100 units across, and as tall as the
+  // screen makes that — so a tall phone gets more sky, not an empty band.
+  const fieldHeight = () => (canvas.width ? canvas.height / (canvas.width / galaga.WIDTH) : galaga.HEIGHT);
   const size = () => {
     const ratio = window.devicePixelRatio || 1;
     const width = Math.round(canvas.clientWidth * ratio);
-    if (width && canvas.width !== width) {
+    const height = Math.round(canvas.clientHeight * ratio);
+    if (width && (canvas.width !== width || canvas.height !== height)) {
       canvas.width = width;
-      canvas.height = Math.round(width * galaga.HEIGHT / galaga.WIDTH);
+      canvas.height = height;
+      galaga.resize(state, fieldHeight());
     }
     return ratio;
   };
@@ -145,7 +150,7 @@ export default async function galagaScreen(ctx) {
 
   function begin(fresh) {
     if (fresh) keepWave(1);
-    state = galaga.create(seed(), { wave: savedWave() });
+    state = galaga.create(seed(), { wave: savedWave(), height: fieldHeight() });
     last = 0;
     paintNumbers();
     if (!raf) raf = requestAnimationFrame(frame);
@@ -235,7 +240,7 @@ export default async function galagaScreen(ctx) {
         h('span', { class: 'grow' }),
         h('div', { class: 'stat' }, h('p', { class: 'label', text: 'No end' }), livesEl),
         mute),
-      h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)),
+      h('div', { class: 'arcade-well' }, h('div', { class: 'arcade', dataset: { shape: 'fill' } }, canvas)),
       h('div', { class: 'arcade-pad' }, pads.left, pads.right)),
   ];
 
