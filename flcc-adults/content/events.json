@@ -39,36 +39,102 @@
     "tone": "sky"
   },
   {
-    "id": "prayer-2026-09-24",
-    "title": "Thanksgiving prayer meeting",
-    "when": "Thursday 24 September · 6:30 PM",
-    "where": "Abundance Hall (2F)",
-    "blurb": "Presider: Sis. Celsa Sario · Exhorter: Bro. Edward Sario · Song leader: to be announced.",
-    "date": "2026-09-24",
-    "start": "18:30",
-    "minutes": 90,
-    "tone": "captain"
-  },
-  {
-    "id": "friday-2026-09-25",
-    "title": "Friday 25 September — Fellowship service",
-    "when": "Friday 25 September · 4:30 PM",
+    "id": "friday-2026-10-02",
+    "title": "Friday 2 October — who is serving",
+    "when": "Friday 2 October · 4:30 PM",
     "where": "Farwaniya",
-    "blurb": "This Friday is led by the Women's & Men's Fellowship. Communion assistants for September's Friday services: Sis. Laidz Pascual and Bro. Allen Santos.",
-    "date": "2026-09-25",
+    "blurb": "Presider: Sis. Jhem Tulagan · Song leader: Sis. Laidz Pascual · Preacher: Ptr. Justin Flores · Pastoral prayer: Ptr. Doddie Arciaga · Food: Tharah & Juneth. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual.",
+    "date": "2026-10-02",
     "start": "16:30",
     "minutes": 120,
-    "tone": "captain"
+    "tone": "rose"
   },
   {
-    "id": "sunday-2026-09-27",
-    "title": "Sunday 27 September — who is serving",
-    "when": "Sunday 27 September · 6:30 PM",
+    "id": "sunday-2026-10-04",
+    "title": "Sunday 4 October — who is serving",
+    "when": "Sunday 4 October · 6:30 PM",
     "where": "Farwaniya",
-    "blurb": "Presider: Sis. Grace Siangco · Song leader: Bro. Edmund Gabriel · Preacher: Sis. Fretz Guerzon · Pastoral prayer: Sis. Laidz Pascual · Food: Flores family. Communion assistants: Bro. Wilson Guerzon and Ptr. Nerwin Suelo. Intercessory prayer before the service, 6:15–6:30 PM: Discipleship Ministry — the service coordinator and presider join too.",
-    "date": "2026-09-27",
+    "blurb": "Presider: Sis. Annabelle Arciaga · Song leader: Bro. Bong Cas · Preacher: Ptr. Doddie Arciaga · Pastoral prayer: Ptr. Justin Flores · Food: the Cas family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon.",
+    "date": "2026-10-04",
     "start": "18:30",
     "minutes": 120,
-    "tone": "sunshine"
+    "tone": "sky"
+  },
+  {
+    "id": "friday-2026-10-09",
+    "title": "Friday 9 October — who is serving",
+    "when": "Friday 9 October · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Mae de Jesus · Song leader: Ptr. Justin Flores · Preacher: Bro. Edmund Gabriel · Pastoral prayer: Sis. Laidz Pascual · Food: the Guerzon family. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual.",
+    "date": "2026-10-09",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
+  },
+  {
+    "id": "sunday-2026-10-11",
+    "title": "Sunday 11 October — who is serving",
+    "when": "Sunday 11 October · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Kitz Tejares · Song leader: Bro. Elbert Siangco · Preacher: Bro. Wilson Guerzon · Pastoral prayer: Bro. Edmund Gabriel · Food: the Vergara family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon.",
+    "date": "2026-10-11",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
+    "id": "friday-2026-10-16",
+    "title": "Friday 16 October — who is serving",
+    "when": "Friday 16 October · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Lizel Ocenar · Song leader: Bro. Bong Cas · Preacher: Bro. Allen Santos · Pastoral prayer: Bro. Wilson Guerzon · Food: the Pascual family. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual.",
+    "date": "2026-10-16",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
+  },
+  {
+    "id": "sunday-2026-10-18",
+    "title": "Sunday 18 October — who is serving",
+    "when": "Sunday 18 October · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Sheena Biboso · Song leader: Sis. Grace Siangco · Preacher: Sis. Celsa Sario · Pastoral prayer: Sis. Laidz Pascual · Food: the Arciaga family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon.",
+    "date": "2026-10-18",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
+    "id": "friday-2026-10-23",
+    "title": "Friday 23 October — who is serving",
+    "when": "Friday 23 October · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Dolly Cas · Song leader: Bro. Dandreb Serna · Preacher: Bro. Edward Sario · Pastoral prayer: Bro. Allen Santos · Food: Bless & Mae. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual.",
+    "date": "2026-10-23",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
+  },
+  {
+    "id": "sunday-2026-10-25",
+    "title": "Sunday 25 October — who is serving",
+    "when": "Sunday 25 October · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Fretz Guerzon · Song leader: Bro. Dave Vergara · Preacher: Ptr. Nerwin Suelo · Pastoral prayer: Bro. Wilson Guerzon · Food: the Sario family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon.",
+    "date": "2026-10-25",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
+    "id": "friday-2026-10-30",
+    "title": "Friday 30 October — who is serving",
+    "when": "Friday 30 October · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Thara Embo · Song leader: Bro. Edmund Gabriel · Preacher: Sis. Laidz Pascual · Pastoral prayer: Bro. Edmund Gabriel · Food: the Sabangan family. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual.",
+    "date": "2026-10-30",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
   }
 ]
