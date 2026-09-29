@@ -560,6 +560,11 @@ body[data-arcade] { overflow: hidden; }
   border-radius: 9px; background: var(--paper);
   touch-action: none; user-select: none; -webkit-user-select: none;
 }
+/* The field is not a fixed shape: as wide as its ratio allows and as tall as
+   the well, never shorter than 140 units, so a tall phone sees more sky and
+   no empty band is left above the game or below it. */
+.arcade[data-shape="fill"] { height: 100cqh; }
+.arcade[data-shape="fill"] canvas { height: 100%; aspect-ratio: auto; }
 .arcade-pad { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; width: min(100%, 34rem); margin: 0 auto; }
 .arcade-pad button {
   min-height: 4rem; border-radius: 99px;
