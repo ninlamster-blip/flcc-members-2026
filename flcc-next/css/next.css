@@ -277,6 +277,7 @@ button.stamp[disabled] { cursor: default; }
 .board-name { overflow-wrap: anywhere; }
 .board-score { font-weight: 800; font-variant-numeric: tabular-nums; }
 .board-cheer { width: 2.4rem; height: 2.4rem; border-radius: 99px; background: none; border: 0; box-shadow: inset 0 0 0 var(--edge) var(--ink); cursor: pointer; font-size: 1rem; }
+.room-said { display: flex; flex-direction: column; gap: .3rem; margin-top: .4rem; }
 .stamp-when { font-size: .56rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-align: center; opacity: .75; }
 /* Three across on a phone, two on the narrowest, where three would split
    PRAYER WARRIOR mid-word. */

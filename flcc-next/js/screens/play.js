@@ -38,8 +38,15 @@ export default async function playScreen(ctx) {
       h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'See how everyone your age is doing in Hop Across and Galaga this week, work on a team goal together, and send cheers.' })),
     h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Open' }), art('star', { tone: 'captain', size: 'sm' })));
 
+  // Rooms: a live quiz battle or Hop Across race with friends, by code.
+  const roomCard = poster({ tone: 'rose', className: 'full', as: 'button', onclick: () => ctx.go('room') },
+    label('Live, with friends'),
+    h('div', {}, headline('QUIZ BATTLE & HOP RACE'),
+      h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'Make a room, share its four-letter code, and play at the same time on your own phones.' })),
+    h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Make or join a room' }), art('bolt', { tone: 'rose', size: 'sm' })));
+
   const el = h('div', { style: 'display:contents' },
-    blocks[0], together, onlineCard, ...blocks.slice(1),
+    blocks[0], together, roomCard, onlineCard, ...blocks.slice(1),
     played ? poster({ tone: 'paper', className: 'full' },
       label('So far'),
       h('p', { class: 'numeral', text: String(played) }),

@@ -80,3 +80,18 @@ test('leaving forgets the player on the phone too', async () => {
   assert.equal(online.me(), null);
   assert.equal(store.has('next/v1/online'), false);
 });
+
+test('the room lines on the phone are the lines the server accepts, and nothing typed goes', async () => {
+  const { ROOM_SAYS: server } = await import('../../ask-proxy/next-play.js');
+  assert.deepEqual(online.ROOM_SAYS, server);
+  await online.join('kids');
+  calls.length = 0;
+  await online.say('ABCD', 2);
+  await online.answer('ABCD', 3, true);
+  await online.race('ABCD', 17.9, false);
+  await online.joinRoom(' abcd ');
+  assert.deepEqual(Object.keys(JSON.parse(calls[0].body)).sort(), ['code', 'kind', 'token']);
+  assert.deepEqual(JSON.parse(calls[2].body).row, 17);
+  assert.equal(JSON.parse(calls[3].body).code, 'ABCD', 'a code is cleaned up before it is sent');
+  for (const call of calls) assert.ok(!call.body.includes('Maria'));
+});

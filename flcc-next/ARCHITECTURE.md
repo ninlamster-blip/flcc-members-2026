@@ -97,6 +97,12 @@ Two consequences worth stating plainly, because the dashboard states them too:
    only messages are cheers from a fixed list, checked by index on the
    server. There is no typed text anywhere in it. Leaving deletes the
    player, their scores and their cheers; idle players go after 90 days.
+   The same nickname plays in **live rooms** — a quiz battle or a Hop
+   Across race — made by one player and joined with a four-letter code, one
+   age group per room, up to eight players. Rooms carry the room's seed (so
+   every phone deals the same questions or builds the same road), each
+   player's score or furthest row, and lines tapped from a fixed list; they
+   are swept a few hours after they are made.
    `test/online.test.mjs` checks that no request carries a name, an age or
    anything typed, and `ask-proxy/next-play.test.mjs` holds the server side.
 

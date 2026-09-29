@@ -35,6 +35,21 @@ export const TEAM_GOALS = {
 /** The only things one player can send another. Index-addressed; never text. */
 export const CHEERS = ['🙌 Great job!', '🔥 On fire!', '🙏 Praying for you', '⭐ Keep going!', '😂 Nice one!', '👏 Well played!'];
 
+/**
+ * What can be said in a game room — tapped, never typed. Index-addressed and
+ * checked on this side, like CHEERS.
+ */
+export const ROOM_SAYS = ['👋 Hi!', '✅ Ready!', '🙌 Great job!', '😮 Wow!', '😂', '🔥', '🙏 Praying for you', '🤝 Good game!', '🔁 One more round?'];
+
+/** Live rooms: a quiz battle, or a Hop Across race. */
+export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {} };
+export const ROOM_MAX_PLAYERS = 8;
+const ROOM_COUNTDOWN_MS = 3000;
+const ROOM_LIFETIME_HOURS = 2;
+const ROOM_MESSAGES_PER_MINUTE = 12;
+// No I, L, O, U or 0/1: a code read out across a church hall should not be misheard.
+const CODE_LETTERS = 'ABCDEFGHJKMNPQRSTVWXYZ';
+
 const ADJECTIVES = ['Brave', 'Bright', 'Bold', 'Swift', 'Kind', 'Happy', 'Mighty', 'Gentle', 'Joyful', 'Faithful', 'Clever', 'Shining', 'Steady', 'Quick', 'Cheerful', 'Loyal'];
 const ANIMALS = ['Lion', 'Eagle', 'Lamb', 'Dove', 'Fox', 'Bear', 'Otter', 'Falcon', 'Whale', 'Panda', 'Tiger', 'Owl', 'Deer', 'Dolphin', 'Sparrow', 'Turtle'];
 
@@ -84,6 +99,32 @@ export async function ensureNextPlaySchema(db) {
       to_id       TEXT NOT NULL,
       kind        INTEGER NOT NULL,
       created_at  TEXT DEFAULT (datetime('now'))
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS next_rooms (
+      code        TEXT PRIMARY KEY,
+      kind        TEXT NOT NULL,
+      age_group   TEXT NOT NULL,
+      host_id     TEXT NOT NULL,
+      seed        INTEGER NOT NULL,
+      status      TEXT NOT NULL DEFAULT 'lobby',
+      started_ms  INTEGER,
+      created_at  TEXT DEFAULT (datetime('now'))
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS next_room_players (
+      code        TEXT NOT NULL,
+      player_id   TEXT NOT NULL,
+      score       INTEGER NOT NULL DEFAULT 0,
+      progress    INTEGER NOT NULL DEFAULT -1,
+      alive       INTEGER NOT NULL DEFAULT 1,
+      joined_ms   INTEGER NOT NULL,
+      PRIMARY KEY (code, player_id)
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS next_room_says (
+      id          TEXT PRIMARY KEY,
+      code        TEXT NOT NULL,
+      player_id   TEXT NOT NULL,
+      kind        INTEGER NOT NULL,
+      at_ms       INTEGER NOT NULL
     )`),
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_next_scores_week ON next_scores (game, week, best DESC)`),
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_next_cheers_to ON next_cheers (to_id, created_at DESC)`),
@@ -141,6 +182,16 @@ export async function handleNextPlay(request, env, url) {
     const me = await playerFor(db, request.headers.get('x-play-token'));
     if (me && me.age_group !== ageGroup) return json({ error: { message: 'That board is for another age group.' } }, 403);
     return json({ configured: true, ...(await board(db, ageGroup, game, weekOf(), me)) });
+  }
+
+  // GET /room?code=ABCD — everything a phone in the room needs, polled
+  if (request.method === 'GET' && path === '/room') {
+    const me = await playerFor(db, request.headers.get('x-play-token'));
+    if (!me) return json({ error: { message: 'Not signed in to play online.' } }, 401);
+    const room = await roomFor(db, url.searchParams.get('code'));
+    if (!room) return json({ error: { message: 'That room has closed.' } }, 404);
+    if (!(await inRoom(db, room.code, me.id))) return json({ error: { message: 'You are not in that room.' } }, 403);
+    return json({ configured: true, ...(await roomState(db, room, me)) });
   }
 
   // GET /cheers — the cheers you have been sent this week
@@ -210,13 +261,168 @@ export async function handleNextPlay(request, env, url) {
     return json({ configured: true, sent: CHEERS[kind] });
   }
 
+  // ── Live rooms ─────────────────────────────────────────────────────────
+  if (path.startsWith('/room/')) return handleRoom(db, path, body, me);
+
   // POST /leave — everything about this player, gone
   if (path === '/leave') {
     await db.batch([
       db.prepare(`DELETE FROM next_scores WHERE player_id = ?`).bind(me.id),
       db.prepare(`DELETE FROM next_cheers WHERE from_id = ? OR to_id = ?`).bind(me.id, me.id),
+      db.prepare(`DELETE FROM next_room_players WHERE player_id = ?`).bind(me.id),
+      db.prepare(`DELETE FROM next_room_says WHERE player_id = ?`).bind(me.id),
       db.prepare(`DELETE FROM next_players WHERE id = ?`).bind(me.id),
     ]);
+    return json({ configured: true, left: true });
+  }
+
+  return json({ error: { message: 'Not found' } }, 404);
+}
+
+// ── Rooms ────────────────────────────────────────────────────────────────
+//
+// A room is a code, a kind, one age group, and a seed every phone in it uses
+// to deal the same questions or build the same road. Phones poll GET /room
+// about once a second; the server's clock (`now`) keeps them in step. Scores
+// are reported by the phones — this is a game between friends, not an exam —
+// but each is bounded: one point per question, once, while it is being asked.
+
+async function roomFor(db, code) {
+  if (typeof code !== 'string' || !/^[A-Z]{4}$/.test(code.toUpperCase())) return null;
+  return db.prepare(`SELECT * FROM next_rooms WHERE code = ? AND created_at > datetime('now', ?)`)
+    .bind(code.toUpperCase(), `-${ROOM_LIFETIME_HOURS} hours`).first();
+}
+
+const inRoom = async (db, code, playerId) =>
+  Boolean(await db.prepare(`SELECT 1 FROM next_room_players WHERE code = ? AND player_id = ?`).bind(code, playerId).first());
+
+/** Which quiz question is being asked at `now` (−1 in the countdown, `questions` once over). */
+export function questionAt(room, now) {
+  if (room.status === 'lobby' || room.started_ms == null) return -1;
+  const into = now - room.started_ms;
+  if (into < 0) return -1;
+  return Math.min(ROOM_KINDS.quiz.questions, Math.floor(into / ROOM_KINDS.quiz.questionMs));
+}
+
+async function roomState(db, room, me) {
+  const now = Date.now();
+  // A quiz ends by the clock; a race ends when nobody is left running.
+  if (room.status === 'playing' && room.kind === 'quiz' && questionAt(room, now) >= ROOM_KINDS.quiz.questions) {
+    await db.prepare(`UPDATE next_rooms SET status = 'done' WHERE code = ?`).bind(room.code).run();
+    room.status = 'done';
+  }
+  const { results: players } = await db.prepare(
+    `SELECT p.id, p.nickname, r.score, r.progress, r.alive FROM next_room_players r JOIN next_players p ON p.id = r.player_id
+     WHERE r.code = ? ORDER BY r.joined_ms`
+  ).bind(room.code).all();
+  if (room.status === 'playing' && room.kind === 'hop' && players.length && players.every((p) => !p.alive)) {
+    await db.prepare(`UPDATE next_rooms SET status = 'done' WHERE code = ?`).bind(room.code).run();
+    room.status = 'done';
+  }
+  const { results: says } = await db.prepare(
+    `SELECT s.id, s.kind, s.at_ms, p.nickname FROM next_room_says s JOIN next_players p ON p.id = s.player_id
+     WHERE s.code = ? ORDER BY s.at_ms DESC LIMIT 12`
+  ).bind(room.code).all();
+  return {
+    code: room.code, kind: room.kind, seed: room.seed, status: room.status, startedMs: room.started_ms, now,
+    host: room.host_id === me.id,
+    question: room.kind === 'quiz' ? questionAt(room, now) : null,
+    questions: room.kind === 'quiz' ? ROOM_KINDS.quiz.questions : null,
+    questionMs: room.kind === 'quiz' ? ROOM_KINDS.quiz.questionMs : null,
+    players: (players || []).map((p) => ({ id: p.id, nickname: p.nickname, score: p.score, progress: p.progress, alive: Boolean(p.alive), you: p.id === me.id })),
+    says: (says || []).reverse().map((row) => ({ id: row.id, text: ROOM_SAYS[row.kind], from: row.nickname, at: row.at_ms })),
+  };
+}
+
+async function handleRoom(db, path, body, me) {
+  // POST /room/create { kind } — a new room with a fresh code, you as host
+  if (path === '/room/create') {
+    if (!ROOM_KINDS[body.kind]) return json({ error: { message: 'Which game?' } }, 400);
+    let code = '';
+    for (let tries = 0; tries < 20; tries++) {
+      code = Array.from({ length: 4 }, () => CODE_LETTERS[Math.floor(Math.random() * CODE_LETTERS.length)]).join('');
+      if (!(await roomFor(db, code))) break;
+    }
+    await db.prepare(`DELETE FROM next_rooms WHERE code = ?`).bind(code).run();       // an expired room with the same code
+    await db.prepare(`DELETE FROM next_room_players WHERE code = ?`).bind(code).run();
+    await db.prepare(`DELETE FROM next_room_says WHERE code = ?`).bind(code).run();
+    await db.prepare(`INSERT INTO next_rooms (code, kind, age_group, host_id, seed) VALUES (?, ?, ?, ?, ?)`)
+      .bind(code, body.kind, me.age_group, me.id, Math.floor(Math.random() * 2147483646) + 1).run();
+    await db.prepare(`INSERT INTO next_room_players (code, player_id, joined_ms) VALUES (?, ?, ?)`).bind(code, me.id, Date.now()).run();
+    return json({ configured: true, code });
+  }
+
+  const room = await roomFor(db, body.code);
+  if (!room) return json({ error: { message: 'No room with that code. Check the letters with whoever made it.' } }, 404);
+  if (room.age_group !== me.age_group) return json({ error: { message: 'That room is for another age group.' } }, 403);
+
+  // POST /room/join { code }
+  if (path === '/room/join') {
+    if (await inRoom(db, room.code, me.id)) return json({ configured: true, code: room.code });
+    if (room.status !== 'lobby') return json({ error: { message: 'That game has already started.' } }, 409);
+    const count = await db.prepare(`SELECT COUNT(*) AS n FROM next_room_players WHERE code = ?`).bind(room.code).first();
+    if (count.n >= ROOM_MAX_PLAYERS) return json({ error: { message: 'That room is full.' } }, 409);
+    await db.prepare(`INSERT INTO next_room_players (code, player_id, joined_ms) VALUES (?, ?, ?)`).bind(room.code, me.id, Date.now()).run();
+    return json({ configured: true, code: room.code });
+  }
+
+  if (!(await inRoom(db, room.code, me.id))) return json({ error: { message: 'You are not in that room.' } }, 403);
+
+  // POST /room/start — the host, with at least two players, starts the countdown
+  if (path === '/room/start') {
+    if (room.host_id !== me.id) return json({ error: { message: 'Only whoever made the room can start it.' } }, 403);
+    if (room.status !== 'lobby') return json({ error: { message: 'Already started.' } }, 409);
+    const count = await db.prepare(`SELECT COUNT(*) AS n FROM next_room_players WHERE code = ?`).bind(room.code).first();
+    if (count.n < 2) return json({ error: { message: 'Wait for at least one friend to join.' } }, 409);
+    await db.prepare(`UPDATE next_rooms SET status = 'playing', started_ms = ? WHERE code = ?`).bind(Date.now() + ROOM_COUNTDOWN_MS, room.code).run();
+    return json({ configured: true, started: true });
+  }
+
+  // POST /room/answer { code, question, right } — once per question, while it is being asked
+  if (path === '/room/answer') {
+    if (room.kind !== 'quiz' || room.status !== 'playing') return json({ error: { message: 'Not answering now.' } }, 409);
+    const question = Math.trunc(Number(body.question));
+    if (question !== questionAt(room, Date.now())) return json({ error: { message: 'Too late for that one.' } }, 409);
+    const result = await db.prepare(
+      `UPDATE next_room_players SET progress = ?, score = score + ? WHERE code = ? AND player_id = ? AND progress < ?`
+    ).bind(question, body.right ? 1 : 0, room.code, me.id, question).run();
+    return json({ configured: true, counted: result.meta.changes > 0 });
+  }
+
+  // POST /room/progress { code, row, alive } — a racer's furthest row, and whether they are still running
+  if (path === '/room/progress') {
+    if (room.kind !== 'hop' || room.status !== 'playing') return json({ error: { message: 'Not racing now.' } }, 409);
+    const row = Math.trunc(Number(body.row));
+    if (!Number.isFinite(row) || row < 0 || row > 5000) return json({ error: { message: 'That row does not look right.' } }, 400);
+    await db.prepare(
+      `UPDATE next_room_players SET progress = MAX(progress, ?), score = MAX(score, ?), alive = alive AND ? WHERE code = ? AND player_id = ?`
+    ).bind(row, row, body.alive === false ? 0 : 1, room.code, me.id).run();
+    return json({ configured: true });
+  }
+
+  // POST /room/say { code, kind } — one of ROOM_SAYS, never text
+  if (path === '/room/say') {
+    const kind = Number(body.kind);
+    if (!Number.isInteger(kind) || kind < 0 || kind >= ROOM_SAYS.length) return json({ error: { message: 'Pick one from the list.' } }, 400);
+    const recent = await db.prepare(`SELECT COUNT(*) AS n FROM next_room_says WHERE player_id = ? AND at_ms > ?`).bind(me.id, Date.now() - 60000).first();
+    if (recent.n >= ROOM_MESSAGES_PER_MINUTE) return json({ error: { message: 'Slow down a little!' } }, 429);
+    await db.prepare(`INSERT INTO next_room_says (id, code, player_id, kind, at_ms) VALUES (?, ?, ?, ?, ?)`)
+      .bind(crypto.randomUUID(), room.code, me.id, kind, Date.now()).run();
+    return json({ configured: true, said: ROOM_SAYS[kind] });
+  }
+
+  // POST /room/leave { code } — out of this room; a host leaving closes it
+  if (path === '/room/leave') {
+    if (room.host_id === me.id && room.status === 'lobby') {
+      await db.batch([
+        db.prepare(`DELETE FROM next_room_players WHERE code = ?`).bind(room.code),
+        db.prepare(`DELETE FROM next_room_says WHERE code = ?`).bind(room.code),
+        db.prepare(`DELETE FROM next_rooms WHERE code = ?`).bind(room.code),
+      ]);
+    } else {
+      await db.prepare(`UPDATE next_room_players SET alive = 0 WHERE code = ? AND player_id = ?`).bind(room.code, me.id).run();
+      if (room.status === 'lobby') await db.prepare(`DELETE FROM next_room_players WHERE code = ? AND player_id = ?`).bind(room.code, me.id).run();
+    }
     return json({ configured: true, left: true });
   }
 
@@ -241,4 +447,14 @@ export async function sweepNextPlay(env) {
   }
   await db.prepare(`DELETE FROM next_scores WHERE week < ?`).bind(weekOf(cutoff)).run();
   await db.prepare(`DELETE FROM next_cheers WHERE created_at < datetime('now', '-30 days')`).run();
+  // Rooms are for one sitting: gone after a few hours, with what was said in them.
+  const { results: stale } = await db.prepare(`SELECT code FROM next_rooms WHERE created_at < datetime('now', ?)`)
+    .bind(`-${ROOM_LIFETIME_HOURS * 2} hours`).all();
+  for (const { code } of stale || []) {
+    await db.batch([
+      db.prepare(`DELETE FROM next_room_players WHERE code = ?`).bind(code),
+      db.prepare(`DELETE FROM next_room_says WHERE code = ?`).bind(code),
+      db.prepare(`DELETE FROM next_rooms WHERE code = ?`).bind(code),
+    ]);
+  }
 }

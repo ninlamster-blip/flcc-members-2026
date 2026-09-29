@@ -25,7 +25,7 @@ Five destinations along the bottom, and none of them is named after a feature.
 |---|---|
 | **Today** | One thing for today: a verse, what it means, a prayer, a challenge, and the devotional behind it; this week's memory verse; and on Friday and Saturday, church notes |
 | **Explore** | The Bible itself, Bible journeys with lessons, and real-life topics — pressure, doubt, friendship, phones |
-| **Play** | Eight games — Bible quiz, speed quiz, Our church, Who am I?, verse builder, crossword, Galaga and Hop Across — plus Play together (a quiz for 2–4 players on one phone) and, opt-in, a weekly nickname leaderboard with a team goal and ready-made cheers |
+| **Play** | Eight games — Bible quiz, speed quiz, Our church, Who am I?, verse builder, crossword, Galaga and Hop Across — plus Play together (a quiz for 2–4 players on one phone) and, opt-in with a server-chosen nickname, a weekly leaderboard with a team goal and ready-made cheers, plus live rooms by four-letter code for a quiz battle or a Hop Across race |
 | **Connect** | What is on, church notes, sharing a prayer, and Ask NEXT |
 | **Me** | Streak, level, XP, streak rewards to wear in the games, and 27 achievements as collectible stamps (some secret until earned), plus name and delete-everything |
 

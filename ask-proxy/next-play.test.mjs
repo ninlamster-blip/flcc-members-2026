@@ -11,7 +11,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import worker from './worker.js';
-import { CHEERS, weekOf, nickname, sweepNextPlay } from './next-play.js';
+import { CHEERS, ROOM_SAYS, ROOM_KINDS, weekOf, nickname, sweepNextPlay } from './next-play.js';
 
 class BoundStatement {
   constructor(db, sql) { this.db = db; this.sql = sql; this.args = []; }
@@ -128,4 +128,103 @@ test('idle players are swept, and a new nickname never carries anything typed', 
   assert.match(next.nickname, /^[A-Z][a-z]+ [A-Z][a-z]+ \d{2}$/);
   assert.match(nickname(() => 0), /^Brave Lion 10$/);
   assert.equal(weekOf(new Date('2026-10-04T12:00:00Z')), '2026-09-28');
+});
+
+// ── Rooms ────────────────────────────────────────────────────────────────
+
+const room = (e, token, what, extra = {}) => call(e, 'POST', `/api/next/play/room/${what}`, { token, ...extra });
+const look = async (e, token, code) => (await call(e, 'GET', `/api/next/play/room?code=${code}`, null, { 'x-play-token': token })).data;
+
+test('a room is one age group, needs a friend to start, and only the host starts it', async () => {
+  const e = env();
+  const host = await join(e, 'kids');
+  const friend = await join(e, 'kids');
+  const teen = await join(e, 'teens');
+  const { code } = (await room(e, host.token, 'create', { kind: 'quiz' })).data;
+  assert.match(code, /^[A-HJKMNP-TV-Z]{4}$/, 'four letters, none that can be misheard');
+  assert.equal((await room(e, host.token, 'start', { code })).status, 409, 'not alone');
+  assert.equal((await room(e, teen.token, 'join', { code })).status, 403, 'a teen cannot join a kids room');
+  assert.equal((await room(e, friend.token, 'join', { code: code.toLowerCase() })).status, 200, 'codes are not case-sensitive');
+  assert.equal((await room(e, friend.token, 'start', { code })).status, 403, 'only the host starts');
+  assert.equal((await room(e, host.token, 'start', { code })).status, 200);
+  const late = await join(e, 'kids');
+  assert.equal((await room(e, late.token, 'join', { code })).status, 409, 'no joining once it has started');
+  const state = await look(e, friend.token, code);
+  assert.equal(state.status, 'playing');
+  assert.equal(state.players.length, 2);
+  assert.equal(state.host, false);
+  assert.ok(state.seed > 0, 'every phone gets the same seed');
+  assert.equal((await call(e, 'GET', `/api/next/play/room?code=${code}`, null, { 'x-play-token': late.token })).status, 403, 'outsiders cannot watch');
+});
+
+test('a quiz answer counts once, and only while its question is being asked', async () => {
+  const e = env();
+  const a = await join(e, 'kids');
+  const b = await join(e, 'kids');
+  const { code } = (await room(e, a.token, 'create', { kind: 'quiz' })).data;
+  await room(e, b.token, 'join', { code });
+  await room(e, a.token, 'start', { code });
+  const db = e.KASAMA_DB.raw;
+  const ask = (q) => db.prepare('UPDATE next_rooms SET started_ms = ? WHERE code = ?').run(Date.now() - q * ROOM_KINDS.quiz.questionMs - 100, code);
+  ask(0);
+  assert.equal((await room(e, a.token, 'answer', { code, question: 0, right: true })).data.counted, true);
+  assert.equal((await room(e, a.token, 'answer', { code, question: 0, right: true })).data.counted, false, 'not twice');
+  assert.equal((await room(e, a.token, 'answer', { code, question: 3, right: true })).status, 409, 'not ahead of time');
+  ask(1);
+  await room(e, a.token, 'answer', { code, question: 1, right: false });
+  await room(e, b.token, 'answer', { code, question: 1, right: true });
+  assert.equal((await room(e, b.token, 'answer', { code, question: 0, right: true })).status, 409, 'not after it has gone');
+  const state = await look(e, a.token, code);
+  assert.deepEqual(state.players.map((p) => p.score), [1, 1]);
+  ask(ROOM_KINDS.quiz.questions);
+  assert.equal((await look(e, a.token, code)).status, 'done', 'the clock ends the quiz');
+});
+
+test('in a room, only the ready-made messages can be said', async () => {
+  const e = env();
+  const a = await join(e, 'kids');
+  const b = await join(e, 'kids');
+  const { code } = (await room(e, a.token, 'create', { kind: 'quiz' })).data;
+  await room(e, b.token, 'join', { code });
+  assert.equal((await room(e, a.token, 'say', { code, kind: 'meet me after church' })).status, 400);
+  assert.equal((await room(e, a.token, 'say', { code, kind: ROOM_SAYS.length })).status, 400);
+  assert.equal((await room(e, a.token, 'say', { code, kind: 0 })).data.said, ROOM_SAYS[0]);
+  const state = await look(e, b.token, code);
+  assert.deepEqual(state.says.map((s) => [s.text, s.from]), [[ROOM_SAYS[0], a.nickname]]);
+  let last;
+  for (let i = 0; i < 15; i++) last = await room(e, a.token, 'say', { code, kind: 1 });
+  assert.equal(last.status, 429, 'no flooding the room');
+});
+
+test('a race keeps each racer\'s furthest row, and ends when nobody is left running', async () => {
+  const e = env();
+  const a = await join(e, 'teens');
+  const b = await join(e, 'teens');
+  const { code } = (await room(e, a.token, 'create', { kind: 'hop' })).data;
+  await room(e, b.token, 'join', { code });
+  await room(e, a.token, 'start', { code });
+  await room(e, a.token, 'progress', { code, row: 12 });
+  await room(e, a.token, 'progress', { code, row: 8, alive: false });
+  await room(e, b.token, 'progress', { code, row: 5 });
+  let state = await look(e, a.token, code);
+  assert.equal(state.players[0].progress, 12, 'a lower report never lowers the row');
+  assert.equal(state.players[0].alive, false);
+  assert.equal(state.status, 'playing', 'one racer is still running');
+  await room(e, b.token, 'progress', { code, row: 20, alive: false });
+  state = await look(e, a.token, code);
+  assert.equal(state.status, 'done');
+  assert.equal((await room(e, a.token, 'progress', { code, row: 9000 })).status, 409);
+});
+
+test('a host leaving an unstarted room closes it; rooms are swept after a few hours', async () => {
+  const e = env();
+  const a = await join(e, 'kids');
+  const { code } = (await room(e, a.token, 'create', { kind: 'hop' })).data;
+  await room(e, a.token, 'leave', { code });
+  assert.equal((await room(e, a.token, 'join', { code })).status, 404);
+  const again = (await room(e, a.token, 'create', { kind: 'quiz' })).data;
+  e.KASAMA_DB.raw.prepare(`UPDATE next_rooms SET created_at = datetime('now', '-5 hours')`).run();
+  await sweepNextPlay(e);
+  assert.equal(e.KASAMA_DB.raw.prepare('SELECT COUNT(*) AS n FROM next_rooms').get().n, 0);
+  assert.equal((await room(e, a.token, 'join', { code: again.code })).status, 404);
 });

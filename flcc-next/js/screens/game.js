@@ -688,7 +688,10 @@ function hopGame(ctx) {
   const arcade = () => store.read(store.KEYS.arcade, {}) || {};
   const keep = (patch) => store.write(store.KEYS.arcade, { ...arcade(), ...patch });
   const best = () => arcade().hop || 0;
-  const seed = () => Date.now() % 2147483647;
+  // A race (from a room, js/screens/room.js) plays the room's road: every
+  // racer gets the same seed, so the same cars, logs and trains.
+  const race = ctx.route.params.room ? { code: ctx.route.params.room, seed: Number(ctx.route.params.seed) || 1, place: '' } : null;
+  const seed = () => (race ? race.seed : Date.now() % 2147483647);
   let state = hop.create(seed());
   const sound = chiptune.player({ muted: Boolean(arcade().hopMuted), sounds: hop.SOUNDS });
   let raf = 0;
@@ -711,8 +714,27 @@ function hopGame(ctx) {
   const paintNumbers = () => {
     scoreEl.textContent = String(state.score);
     levelEl.textContent = `Level ${state.level}`;
-    coinsEl.textContent = `${state.coins} ${state.coins === 1 ? 'coin' : 'coins'} · ${best() ? `best ${best()}` : 'no best yet'}`;
+    coinsEl.textContent = race
+      ? `Race ${race.code}${race.place ? ` · ${race.place}` : ''}`
+      : `${state.coins} ${state.coins === 1 ? 'coin' : 'coins'} · ${best() ? `best ${best()}` : 'no best yet'}`;
   };
+
+  // In a race: tell the room how far this chicken is, once a second, and read
+  // back where that puts it. The last report, on the way out, says "out".
+  let raceTimer = 0;
+  const report = async (alive) => {
+    if (!race) return;
+    await online.race(race.code, state.score, alive);
+    const room = await online.room(race.code);
+    if (room && room.players) {
+      const sorted = [...room.players].sort((a, b) => b.progress - a.progress);
+      const at = sorted.findIndex((p) => p.you);
+      const running = room.players.filter((p) => p.alive).length;
+      race.place = `${['1st', '2nd', '3rd'][at] || `${at + 1}th`} of ${sorted.length}${running ? ` · ${running} running` : ''}`;
+      paintNumbers();
+    }
+  };
+  if (race) raceTimer = setInterval(() => { if (!gone && !state.over) report(true); }, 1000);
 
   const size = () => {
     const ratio = window.devicePixelRatio || 1;
@@ -740,6 +762,17 @@ function hopGame(ctx) {
     const xp = result.first ? ` · +${progress.XP.game} XP` : '';
     const [title, why] = hop.CAUSES[state.cause] || hop.CAUSES.car;
     paintNumbers();
+    if (race) {
+      clearInterval(raceTimer);
+      report(false);
+      shown = moment({
+        tone, eyebrow: `${title} · race ${race.code}${xp}`,
+        big: `${state.score} ${state.score === 1 ? 'ROW' : 'ROWS'}`,
+        line: 'Out of the race. See how everyone else does — the room shows the final places.',
+        action: 'See the race', onclose: () => ctx.go(`room?code=${race.code}`),
+      });
+      return;
+    }
     shown = moment({
       tone,
       eyebrow: `${title} · level ${state.level}${xp}`,
@@ -827,6 +860,9 @@ function hopGame(ctx) {
   function teardown() {
     if (gone) return;
     gone = true;
+    clearInterval(raceTimer);
+    // Closing a race half-way is being out of it, or the room would wait for ever.
+    if (race && !state.over) online.race(race.code, state.score, false);
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     window.removeEventListener('keydown', onKey);

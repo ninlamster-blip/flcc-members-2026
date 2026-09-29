@@ -120,3 +120,36 @@ export async function cheer(to, kind) {
   const { ok, status, data } = await withToken('/api/next/play/cheer', { to, kind });
   return { sent: Boolean(ok && data && data.sent), limited: status === 429 };
 }
+
+// ── Live rooms: a quiz battle or a Hop Across race, joined with a code ─────
+
+/** What can be said in a room — tapped, never typed. Must match ask-proxy/next-play.js. */
+export const ROOM_SAYS = ['👋 Hi!', '✅ Ready!', '🙌 Great job!', '😮 Wow!', '😂', '🔥', '🙏 Praying for you', '🤝 Good game!', '🔁 One more round?'];
+
+const roomCall = async (what, extra) => {
+  const result = await withToken(`/api/next/play/room/${what}`, extra);
+  return { ok: result.ok, status: result.status, data: result.data, message: result.data && result.data.error && result.data.error.message };
+};
+
+export const createRoom = (kind) => roomCall('create', { kind });
+export const joinRoom = (code) => roomCall('join', { code: String(code || '').trim().toUpperCase() });
+export const startRoom = (code) => roomCall('start', { code });
+export const leaveRoom = (code) => roomCall('leave', { code });
+export const answer = (code, question, right) => roomCall('answer', { code, question, right: Boolean(right) });
+export const race = (code, row, alive) => roomCall('progress', { code, row: Math.max(0, Math.trunc(row) || 0), alive: Boolean(alive) });
+export const say = (code, kind) => roomCall('say', { code, kind });
+
+/**
+ * The room as the server sees it, with `clock()` added: the server's time
+ * now, so every phone counts the same question down together.
+ */
+export async function room(code) {
+  const self = me();
+  if (!self) return null;
+  const sent = Date.now();
+  const { ok, status, data } = await ask(`/api/next/play/room?code=${encodeURIComponent(code)}`, { token: self.token });
+  if (!ok || !data) return { gone: status === 404 || status === 403, offline: !status };
+  const received = Date.now();
+  const offset = data.now - (sent + received) / 2;
+  return { ...data, clock: () => Date.now() + offset };
+}

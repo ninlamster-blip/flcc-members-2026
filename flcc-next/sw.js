@@ -12,7 +12,7 @@
 //                 the files are large, and a book that has been read once
 //                 should stay readable on a bus with no signal.
 
-const VERSION = 'next-v11';
+const VERSION = 'next-v12';
 
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/next.css', './icons/icon.svg',
@@ -28,7 +28,7 @@ const SHELL = [
   './js/screens/journey.js', './js/screens/lesson.js', './js/screens/topic.js',
   './js/screens/play.js', './js/screens/game.js', './js/screens/connect.js',
   './js/screens/prayer.js', './js/screens/me.js', './js/screens/ask.js',
-  './js/screens/bible.js', './js/screens/memory.js', './js/screens/service.js', './js/screens/party.js', './js/screens/board.js',
+  './js/screens/bible.js', './js/screens/memory.js', './js/screens/service.js', './js/screens/party.js', './js/screens/board.js', './js/screens/room.js',
   './content/daily.json', './content/journeys.json', './content/real-life.json',
   './content/games.json', './content/events.json', './content/sermons.json', './content/achievements.json',
   './content/help-lines.json', './content/bible-books.json', './content/bible-find.json',
