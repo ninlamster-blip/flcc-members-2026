@@ -1,0 +1,88 @@
+{
+  "about": "Free study and growth material published by Cru (cru.org). Nothing of Cru's is copied into this app: each entry is a title, a line written here to say what it is, and a link that opens it on cru.org, where Cru's own read-online and download buttons are. The summaries are ours; the material, and its copyright, are Cru's.",
+  "source": { "name": "Cru", "url": "https://www.cru.org/us/en/train-and-grow.html" },
+  "todaysPromise": {
+    "title": "Today's Promise",
+    "by": "Bill Bright",
+    "line": "A verse to hold, a short passage to read, and one thing to do today — a few minutes from Cru's daily devotional.",
+    "base": "https://www.cru.org/us/en/train-and-grow/spiritual-growth/devotionals/todays-promise/"
+  },
+  "groups": [
+    {
+      "id": "studies",
+      "title": "Bible studies to download",
+      "tone": "sky",
+      "items": [
+        { "id": "the-community", "title": "The Community", "kind": "page", "tone": "sky",
+          "summary": "Cru's small-group curriculum: over a hundred studies that start with the basics of faith and build from there. Free to download.",
+          "url": "https://www.cru.org/us/en/train-and-grow/bible-studies/the-community.html" },
+        { "id": "holy-spirit-series", "title": "The Holy Spirit — a five-part study", "kind": "page", "tone": "sky",
+          "summary": "Who the Holy Spirit is, what walking in the Spirit looks like, and how he helps you walk with God. Written for groups.",
+          "url": "https://www.cru.org/us/en/train-and-grow/bible-studies/thrive/holy-spirit.html" },
+        { "id": "jesus-investigative", "title": "Jesus: an investigative study", "kind": "page", "tone": "sky",
+          "summary": "A study that looks at who Jesus is from the Gospels — suited to a group with a friend who is still asking.",
+          "url": "https://www.cru.org/us/en/train-and-grow/bible-studies/jesus-investigative-bible-study.html" },
+        { "id": "all-downloads", "title": "Every study to read online or download", "kind": "page", "tone": "sky",
+          "summary": "Cru's full list of free studies, by topic and by book of the Bible.",
+          "url": "https://www.cru.org/us/en/train-and-grow/bible-studies/download.html" },
+        { "id": "by-book", "title": "Group studies by book of the Bible", "kind": "page", "tone": "sky",
+          "summary": "Pick the book your group is reading and find a study written for it.",
+          "url": "https://www.cru.org/us/en/train-and-grow/bible-studies/group-bible-study/browse-by-book.html" },
+        { "id": "by-topic", "title": "Group studies by topic", "kind": "page", "tone": "sky",
+          "summary": "Studies grouped by subject — prayer, identity, relationships and more.",
+          "url": "https://www.cru.org/us/en/train-and-grow/bible-studies/group-bible-study/browse-by-topic.html" }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "Growing in the faith",
+      "tone": "sunshine",
+      "items": [
+        { "id": "transferable-concepts", "title": "Transferable Concepts", "kind": "page", "tone": "sunshine",
+          "summary": "Bill Bright's short teachings on the essentials — assurance, the Spirit, prayer, sharing your faith. Made to be passed on.",
+          "url": "https://www.cru.org/us/en/train-and-grow/spiritual-growth/transferable-concepts.html" },
+        { "id": "filled-with-the-spirit", "title": "How you can be filled with the Holy Spirit", "kind": "page", "tone": "sunshine",
+          "summary": "One of the Transferable Concepts, including the idea of \"spiritual breathing\".",
+          "url": "https://www.cru.org/us/en/train-and-grow/transferable-concepts/be-filled-with-the-holy-spirit.8.html" },
+        { "id": "holy-spirit-kit", "title": "Holy Spirit resource kit", "kind": "page", "tone": "sunshine",
+          "summary": "Cru's collected material on the Holy Spirit in one place.",
+          "url": "https://www.cru.org/us/en/train-and-grow/spiritual-growth/holy-spirit-resource-kit.html" },
+        { "id": "basic-step-3", "title": "The Christian and the Holy Spirit", "kind": "page", "tone": "sunshine",
+          "summary": "Step three of Cru's Ten Basic Steps toward Christian maturity.",
+          "url": "https://www.cru.org/us/en/train-and-grow/10-basic-steps/3-the-holy-spirit.html" },
+        { "id": "theology-central", "title": "Theology Central", "kind": "page", "tone": "sunshine",
+          "summary": "Plain explanations of what Christians believe, and why.",
+          "url": "https://www.cru.org/us/en/train-and-grow/spiritual-growth/core-christian-beliefs/theology-central.html" }
+      ]
+    },
+    {
+      "id": "habits",
+      "title": "Time with God",
+      "tone": "rose",
+      "items": [
+        { "id": "daily-time", "title": "How to have a daily time with God", "kind": "page", "tone": "rose",
+          "summary": "A practical guide to a quiet time that is about meeting God rather than ticking a box.",
+          "url": "https://www.cru.org/us/en/train-and-grow/spiritual-growth/devotionals/a-daily-time-with-the-lord.html" },
+        { "id": "study-on-your-own", "title": "How to study the Bible on your own", "kind": "page", "tone": "rose",
+          "summary": "A simple method for reading a passage closely without a group or a commentary.",
+          "url": "https://www.cru.org/us/en/train-and-grow/bible-studies/personal-bible-study/how-to-study-the-bible-on-your-own.html" },
+        { "id": "passages", "title": "Passages — a daily devotional on sharing your faith", "kind": "page", "tone": "rose",
+          "summary": "Short daily readings, prayer and reflection on talking about Jesus with the people you already know.",
+          "url": "https://www.cru.org/us/en/train-and-grow/spiritual-growth/devotionals/passages.html" }
+      ]
+    },
+    {
+      "id": "sharing",
+      "title": "Sharing your faith",
+      "tone": "captain",
+      "items": [
+        { "id": "knowing-god-personally", "title": "Knowing God Personally (booklet)", "kind": "pdf", "tone": "captain",
+          "summary": "The booklet that explains how to begin a relationship with God, step by step. A PDF you can keep on your phone.",
+          "url": "https://www.cru.org/content/dam/cru/how-to-know-god/knowing-god-personally.pdf" },
+        { "id": "training-videos", "title": "Short training videos", "kind": "video", "tone": "captain",
+          "summary": "Cru's library of brief videos on leading, sharing your faith and discipleship.",
+          "url": "https://www.cru.org/us/en/train-and-grow/video.html" }
+      ]
+    }
+  ]
+}

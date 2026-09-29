@@ -141,6 +141,25 @@ fourth reaction opens. Everyone else reacts with **🙏 Praying · ❤️ Love �
 🤝 With you**, and **🙌 Praise** once it is answered — one of each per phone,
 tapped again to take it back. There is no comment box.
 
+## Resources from Cru
+
+Grow carries two things from Cru (cru.org), and both are **links, not copies**
+— Cru's material is theirs, so this app never stores it:
+
+- **Today's Promise**, the bite-size card: Cru's daily devotional by Bill
+  Bright, one page per calendar day on cru.org. "Read today's" opens that
+  day's page (29 February opens the 28th).
+- **My resources**: Grow → "Browse resources from Cru" lists free studies,
+  guides and a booklet, each with a line written here. "Add to My resources"
+  keeps it on this phone's own list on Grow, with Open / Download, Finished
+  and Remove. Download opens Cru's own page or PDF, where their download is.
+
+The list lives in `content/resources.json` — add a resource by adding an entry
+with a `cru.org` link; `test/resources.test.mjs` refuses any other host, a
+summary that reads like a copy, or a Today's Promise date that does not exist.
+Only ids and a "finished" flag are kept, under `adults/v1/resources`; opening
+a link is ordinary navigation and sends nothing about the member.
+
 ## Your picture
 
 You → "Your picture". A drawing from this app's set on a colour, or your own

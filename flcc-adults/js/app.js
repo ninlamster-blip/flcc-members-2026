@@ -44,6 +44,7 @@ const SCREENS = {
   galaga:    () => import('./screens/galaga.js'),
   room:      () => import('./screens/room.js'),
   wall:      () => import('./screens/wall.js'),
+  resources: () => import('./screens/resources.js'),
   notes:     () => import('./screens/notes.js'),
   note:      () => import('./screens/note.js'),
 };
@@ -94,6 +95,7 @@ const UNDER = {
   galaga:  'explore',
   room:    'explore',
   wall:    'explore',
+  resources: 'explore',
   // Notes belong to the sermon they were taken at, so they light Watch.
   notes:   'watch',
   note:    'watch',

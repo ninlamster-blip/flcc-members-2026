@@ -9,6 +9,7 @@ import { h, poster, label, display, headline, art, go, pill, track,
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import { seasonOf, wants } from '../core/profile.js';
+import * as resources from '../core/resources.js';
 
 const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
 
@@ -62,6 +63,43 @@ export default async function growScreen(ctx) {
           ? `${one.where.finished} of ${one.where.total} read`
           : `${one.where.total} sessions`),
         art(one.path.symbol || 'book', { tone, size: 'sm' }))));
+  }
+
+  // ── A few minutes today, from Cru ───────────────────────────────────────
+  //
+  // Cru's daily devotional, linked rather than copied: a page per calendar
+  // day on cru.org. And the member's own list of Cru material, kept here.
+  let bank = null;
+  try { bank = await content.resources(); } catch { /* the paths still stand */ }
+  if (bank) {
+    const promise = bank.todaysPromise;
+    const today = new Date();
+    parts.push(poster({ tone: 'captain' },
+      label(`Bite-size · from ${bank.source.name}`),
+      h('div', {},
+        headline(`${String(promise.title).toUpperCase()}.`),
+        h('p', { class: 'body dim', style: 'margin-top:.8rem', text: `${promise.line} By ${promise.by}.` })),
+      h('div', { class: 'poster-foot' },
+        pill('Read today’s', () =>
+          resources.open(resources.todaysPromiseUrl(promise.base, today))),
+        art('sun', { tone: 'captain', size: 'sm' }))));
+
+    const mine = resources.mine(bank);
+    const KIND = { page: 'Open', pdf: 'Download', video: 'Watch' };
+    parts.push(poster({ tone: 'paper' },
+      label(mine.length ? `My resources · ${mine.filter((one) => one.done).length} of ${mine.length} done` : 'My resources'),
+      mine.length
+        ? rows(...mine.map((one) => h('div', {},
+          h('p', { class: 'row-title', text: `${one.done ? '✓ ' : ''}${one.title}` }),
+          h('p', { class: 'row-note', text: one.summary }),
+          h('div', { class: 'row-actions' },
+            pill(KIND[one.kind] || 'Open', () => resources.open(one.url)),
+            pill(one.done ? 'Not finished' : 'Finished', () => { resources.setDone(one.id, !one.done); ctx.refresh(); }, { quiet: true }),
+            pill('Remove', () => { resources.remove(one.id); ctx.refresh(); }, { quiet: true })))))
+        : h('p', { class: 'body', text: `Free studies, guides and booklets from ${bank.source.name}. Add the ones you want and they wait for you here.` }),
+      h('div', { class: 'poster-foot', style: 'margin-top:1rem' },
+        go(mine.length ? 'Browse more from Cru' : 'Browse resources from Cru', () => ctx.go('resources')),
+        art('book', { tone: 'paper', size: 'sm' }))));
   }
 
   // ── Where to start, if nothing is ───────────────────────────────────────
