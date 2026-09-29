@@ -121,7 +121,17 @@ ready-made line; there is no text field, and `test/rooms.test.mjs` builds every
 request and fails on a name, a season, a prayer or free text. This edition
 still keeps no score: the server answers an adult `/score`, `/cheer` or
 `/board-visibility` with 403, the board refuses the `adults` group, and rooms
-never mix editions. Everything else in the app still never leaves the device.
+never mix editions.
+
+The third is the **prayer wall** (`js/core/wall.js`, `js/screens/wall.js`,
+server `ask-proxy/adults-prayers.js` at `/api/adults/prayers`). A member shares
+one request by choice — the private prayer list in `prayers.js` stays on the
+phone and `wall.js` never reads it. The request goes with its text, the first
+name that signs it and a random per-phone id, nothing else, and
+`test/wall.test.mjs` asserts that against the built request. Words that trip
+`safety.js` are not posted. Only the sharing phone can take a request down;
+three reports hide one; every request is deleted after 30 days. Everything
+else in the app still never leaves the device.
 
 A third thing crosses the app's edge, and it is not the app doing it:
 `flcc-adults/admin/` is a **tool that edits this app rather than part of it** —

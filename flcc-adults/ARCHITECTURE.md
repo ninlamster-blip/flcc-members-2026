@@ -259,6 +259,7 @@ locked browser), so the app runs rather than crashing.
 | `adults/v1/plan` | `{ id, started }` | a reading plan |
 | `adults/v1/ask` | `{ turns: [{ role, text, at }], updatedAt }` | ASK |
 | `adults/v1/notes` | `[{ id, title, speaker, ref, body, messageId, createdAt, updatedAt }]` | sermon notes |
+| `adults/v1/shared` | `{ device, mine: { [id]: token }, reported: [id] }` | the prayer wall — this phone's random id, and the token that takes down what it shared |
 | `adults/v1/online` | `{ token, id, nickname, ageGroup: 'adults' }` | a quiz room — only once a member chooses to play in one |
 | `adults/v1/play` | `{ crossword: { day, filled{}, given[] }, galaga: { wave }, galagaMuted }` | the crossword; the wave a Galaga run continues from (never a score), and whether its sound is off |
 
@@ -269,10 +270,13 @@ even a prayer-delivery exception: an adult's prayers about their marriage,
 their money or their manager are not ours to collect. Four screens say so where
 it matters (Pray, Connect, Notes, You) rather than burying it in a policy.
 
-Two things go out, both opt-in. An ASK question, which is not stored here or
+Three things go out, all opt-in. A prayer request shared on the prayer wall
+(`js/core/wall.js` → `/api/adults/prayers`, served by `ask-proxy/adults-prayers.js`):
+its text, the first name that signs it and the phone's own random id — never
+the list it came from, which `wall.js` does not read. An ASK question, which is not stored here or
 there — see [ASK](#ask) below. And a quiz room's play: a server-picked
 nickname, whether each answer was right, and which ready-made line was tapped —
-see [Play](#play). Nothing in the table above is ever sent with either; the
+see [Play](#play). Nothing else in the table above is ever sent with any of them; the
 `online` row is the room's own token, kept so the member can leave.
 
 ## What a server would need
