@@ -359,7 +359,10 @@ body[data-arcade] { overflow: hidden; }
   font-size: 1.1rem; font-weight: 900; line-height: 1;
   display: grid; place-items: center;
 }
-.arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: start center; }
+/* On a tall phone the field fills the width and height is left over. It sits
+   at the bottom of the well, against the pads, so the spare room goes under
+   the numbers rather than between the thumbs and the game. */
+.arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: end center; }
 /* --field-w / --field-h are the field's own units: Galaga's 100 × 140 by
    default, Hop Across's nine lanes by thirteen rows. */
 .arcade {
@@ -369,6 +372,12 @@ body[data-arcade] { overflow: hidden; }
   background: var(--ink);
 }
 .arcade[data-shape="hop"] { --field-w: 9; --field-h: 13; }
+/* Neither game is a fixed shape in this edition: each is as wide as its
+   ratio allows and as tall as the well — Hop Across never fewer than
+   thirteen rows, Galaga never shorter than 140 units — so a tall phone
+   sees more of the game, and no empty band is left anywhere around it. */
+.arcade[data-shape="hop"], .arcade[data-shape="fill"] { height: 100cqh; }
+.arcade[data-shape="hop"] canvas, .arcade[data-shape="fill"] canvas { height: 100%; aspect-ratio: auto; }
 .arcade canvas {
   display: block; width: 100%; aspect-ratio: var(--field-w) / var(--field-h);
   border-radius: 9px; background: var(--paper);

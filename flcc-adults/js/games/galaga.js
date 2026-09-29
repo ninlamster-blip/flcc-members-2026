@@ -17,13 +17,15 @@
 //   · Everything random comes from a seeded generator, so a run can be
 //     replayed exactly for a test.
 //
-// The field is measured in its own units — 100 across, 140 down — and the
-// screen scales it to whatever canvas it has.
+// The field is measured in its own units — 100 across, and 140 down unless
+// the screen asks for taller (`create(..., { height })`, `resize()`), so a
+// tall phone is filled by the game rather than by empty paper. The ship
+// always flies 12 units above the bottom, whatever the height.
 
 export const WIDTH = 100;
 export const HEIGHT = 140;
 
-const SHIP_Y = HEIGHT - 12;
+const SHIP_ABOVE = 12;        // how far above the bottom the ship flies
 const SHIP_SPEED = 62;        // units a second
 const SHIP_RADIUS = 3.6;
 const FIRE_EVERY = 0.26;      // seconds between shots while a direction is held
@@ -70,14 +72,16 @@ export function wave(n) {
  * otherwise: `{ wave, score }` continues a run from the wave it reached, at
  * that wave's difficulty, with three fresh ships.
  */
-export function create(seed = 1, { wave: from = 1, score = 0 } = {}) {
+export function create(seed = 1, { wave: from = 1, score = 0, height = HEIGHT } = {}) {
+  const tall = Math.max(HEIGHT, Number(height) || HEIGHT);
   const state = {
+    height: tall,
     random: seeded(seed),
     time: 0,
     wave: 0,
     score: Math.max(0, Math.trunc(score) || 0),
     lives: START_LIVES,
-    ship: { x: WIDTH / 2, y: SHIP_Y, safe: 0 },
+    ship: { x: WIDTH / 2, y: tall - SHIP_ABOVE, safe: 0 },
     shots: [],
     bombs: [],
     enemies: [],
@@ -123,6 +127,17 @@ function startWave(state, n) {
       index += 1;
     }
   }
+}
+
+/**
+ * Make the field `height` units tall (never less than HEIGHT) — the screen
+ * calls this when the phone turns or the window changes. The ship keeps its
+ * place above the bottom edge.
+ */
+export function resize(state, height) {
+  state.height = Math.max(HEIGHT, Number(height) || HEIGHT);
+  state.ship.y = state.height - SHIP_ABOVE;
+  return state;
 }
 
 /** Where a ship's formation slot actually is right now, with the sway. */
@@ -198,7 +213,7 @@ export function step(state, input = {}, dt = 1 / 60) {
       enemy.vx += (pull - enemy.vx) * Math.min(1, dt * 2);
       enemy.x = clamp(enemy.x + (enemy.vx + Math.sin(enemy.phase * 5) * 18) * dt, 3, WIDTH - 3);
       enemy.y += config.diveSpeed * dt;
-      if (enemy.y > HEIGHT + 8) { enemy.y = -8; enemy.mode = 'return'; }
+      if (enemy.y > state.height + 8) { enemy.y = -8; enemy.mode = 'return'; }
     }
   }
 
@@ -220,11 +235,11 @@ export function step(state, input = {}, dt = 1 / 60) {
   state.fireClock -= dt;
   if (state.fireClock <= 0) {
     state.fireClock = config.fireEvery;
-    const divers = state.enemies.filter((enemy) => enemy.mode === 'dive' && enemy.y < SHIP_Y - 20);
+    const divers = state.enemies.filter((enemy) => enemy.mode === 'dive' && enemy.y < ship.y - 20);
     const pool = divers.length ? divers : state.enemies.filter((enemy) => enemy.mode === 'form');
     if (pool.length) {
       const enemy = pool[Math.floor(state.random() * pool.length)];
-      const aim = clamp((ship.x - enemy.x) / Math.max(20, SHIP_Y - enemy.y), -0.5, 0.5);
+      const aim = clamp((ship.x - enemy.x) / Math.max(20, ship.y - enemy.y), -0.5, 0.5);
       state.bombs.push({ x: enemy.x, y: enemy.y + 4, vx: aim * config.shotSpeed, vy: config.shotSpeed });
     }
   }
@@ -248,7 +263,7 @@ export function step(state, input = {}, dt = 1 / 60) {
     const bomb = state.bombs.find((one) => near(one, ship, SHIP_RADIUS + BOMB_RADIUS));
     const rammer = state.enemies.find((enemy) => enemy.hp > 0 && enemy.wait <= 0 && near(enemy, ship, SHIP_RADIUS + ENEMY_RADIUS - 1));
     if (bomb || rammer) {
-      if (bomb) bomb.y = HEIGHT + 99;
+      if (bomb) bomb.y = state.height + 99;
       if (rammer) rammer.hp = 0;
       state.lives -= 1;
       ship.safe = SAFE_AFTER_HIT;
@@ -270,7 +285,7 @@ export function step(state, input = {}, dt = 1 / 60) {
 
 function moveBombs(state, dt) {
   for (const bomb of state.bombs) { bomb.x += bomb.vx * dt; bomb.y += bomb.vy * dt; }
-  state.bombs = state.bombs.filter((bomb) => bomb.y < HEIGHT + 4 && bomb.x > -4 && bomb.x < WIDTH + 4);
+  state.bombs = state.bombs.filter((bomb) => bomb.y < state.height + 4 && bomb.x > -4 && bomb.x < WIDTH + 4);
 }
 
 // ── Drawing ────────────────────────────────────────────────────────────────
@@ -324,7 +339,7 @@ function drawEnemy(g, enemy, time, colors) {
   g.restore();
 }
 
-function caption(g, text, colors, y = HEIGHT / 2) {
+function caption(g, text, colors, y) {
   g.fillStyle = colors.ink;
   g.textAlign = 'center';
   g.textBaseline = 'middle';
@@ -339,13 +354,14 @@ function caption(g, text, colors, y = HEIGHT / 2) {
 export function paint(g, state, { colors, scale, edge, ship = 'captain' }) {
   g.setTransform(scale, 0, 0, scale, 0, 0);
   g.fillStyle = colors.paper;
-  g.fillRect(0, 0, WIDTH, HEIGHT);
+  const tall = state.height || HEIGHT;
+  g.fillRect(0, 0, WIDTH, tall);
 
   // A slow drift of dots, so the field reads as moving even between waves.
   g.fillStyle = colors.faint;
   for (let i = 0; i < 28; i++) {
     const x = (i * 37.3) % WIDTH;
-    const y = (i * 53.7 + state.time * (8 + (i % 3) * 6)) % HEIGHT;
+    const y = (i * 53.7 + state.time * (8 + (i % 3) * 6)) % tall;
     g.fillRect(x, y, 0.8, 0.8);
   }
 
@@ -379,8 +395,8 @@ export function paint(g, state, { colors, scale, edge, ship = 'captain' }) {
   if (!state.over && !blinking) drawShip(g, state.ship.x, state.ship.y, colors, ship);
 
   if (!state.started) {
-    if (state.wave > 1) caption(g, `WAVE ${state.wave}`, colors, HEIGHT * 0.52);
-    caption(g, 'HOLD ◀ OR ▶ TO FLY', colors, HEIGHT * 0.62);
+    if (state.wave > 1) caption(g, `WAVE ${state.wave}`, colors, tall * 0.52);
+    caption(g, 'HOLD ◀ OR ▶ TO FLY', colors, tall * 0.62);
   }
-  else if (state.rest > 0) caption(g, `WAVE ${state.wave + 1}`, colors);
+  else if (state.rest > 0) caption(g, `WAVE ${state.wave + 1}`, colors, tall / 2);
 }

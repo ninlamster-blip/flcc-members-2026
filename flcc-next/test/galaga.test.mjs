@@ -135,3 +135,20 @@ test('a long run with the controls held is deterministic for a seed', () => {
   };
   assert.deepEqual(play(), play());
 });
+
+test('a taller screen gets a taller field, never a shorter one, with the ship at the bottom', () => {
+  const tall = galaga.create(3, { height: 220 });
+  assert.equal(tall.height, 220);
+  assert.equal(tall.ship.y, 208, 'the ship flies 12 units above the bottom');
+  assert.equal(galaga.create(3, { height: 90 }).height, galaga.HEIGHT, 'never shorter than the standard field');
+  assert.equal(galaga.create(3).height, galaga.HEIGHT, 'the standard field when nobody asks');
+
+  galaga.resize(tall, 180);
+  assert.equal(tall.ship.y, 168, 'turning the phone moves the ship with the bottom edge');
+
+  // Enemy fire leaves by the bottom of the field actually shown, not the old 140.
+  run(tall, { right: true }, DT);
+  tall.bombs = [{ x: 10, y: 150, vx: 0, vy: 0 }];
+  galaga.step(tall, {}, DT);
+  assert.equal(tall.bombs.length, 1, 'a bomb at 150 is still on a 180-tall field');
+});

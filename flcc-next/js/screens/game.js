@@ -482,12 +482,17 @@ function galagaGame(ctx) {
     livesEl.textContent = `${state.lives} ${state.lives === 1 ? 'ship' : 'ships'} · ${best() ? `best ${best()}` : 'no best yet'}`;
   };
 
+  // The field fills its whole well: 100 units across, and as tall as the
+  // screen makes that — so a tall phone gets more sky, not an empty band.
+  const fieldHeight = () => (canvas.width ? canvas.height / (canvas.width / galaga.WIDTH) : galaga.HEIGHT);
   const size = () => {
     const ratio = window.devicePixelRatio || 1;
     const width = Math.round(canvas.clientWidth * ratio);
-    if (width && canvas.width !== width) {
+    const height = Math.round(canvas.clientHeight * ratio);
+    if (width && (canvas.width !== width || canvas.height !== height)) {
       canvas.width = width;
-      canvas.height = Math.round(width * galaga.HEIGHT / galaga.WIDTH);
+      canvas.height = height;
+      galaga.resize(state, fieldHeight());
     }
     return ratio;
   };
@@ -563,7 +568,7 @@ function galagaGame(ctx) {
 
   function begin(fresh) {
     if (fresh) keep({ galagaResume: { wave: 1, score: 0 } });
-    state = galaga.create(seed(), saved());
+    state = galaga.create(seed(), { ...saved(), height: fieldHeight() });
     last = 0;
     paintNumbers();
     if (!raf) raf = requestAnimationFrame(frame);
@@ -652,7 +657,7 @@ function galagaGame(ctx) {
       h('span', { class: 'grow' }),
       h('div', { class: 'stat' }, waveEl, livesEl),
       mute),
-    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)),
+    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade', dataset: { shape: 'fill' } }, canvas)),
     h('div', { class: 'arcade-pad' }, pads.left, pads.right));
 
   const el = h('div', { style: 'display:contents' }, stage);
@@ -709,17 +714,19 @@ function hopGame(ctx) {
 
   const size = () => {
     const ratio = window.devicePixelRatio || 1;
+    // The field fills its well, so its height follows the screen, not the width.
     const width = Math.round(canvas.clientWidth * ratio);
-    if (width && canvas.width !== width) {
+    const height = Math.round(canvas.clientHeight * ratio);
+    if (width && (canvas.width !== width || canvas.height !== height)) {
       canvas.width = width;
-      canvas.height = Math.round(width * hop.VIEW / hop.COLS);
+      canvas.height = height;
     }
     return ratio;
   };
 
   const draw = () => {
     const ratio = size();
-    if (canvas.width) hop.paint(g, state, { colors, scale: canvas.width / hop.COLS, edge: 3 * ratio, hat });
+    if (canvas.width) hop.paint(g, state, { colors, scale: canvas.width / hop.COLS, edge: 3 * ratio, hat, rows: canvas.height / (canvas.width / hop.COLS) });
   };
 
   const over = () => {

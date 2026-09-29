@@ -546,7 +546,10 @@ body[data-arcade] { overflow: hidden; }
   font-size: 1.1rem; font-weight: 900; line-height: 1;
   display: grid; place-items: center;
 }
-.arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: start center; }
+/* On a tall phone the field fills the width and height is left over. It sits
+   at the bottom of the well, against the pads, so the spare room goes under
+   the numbers rather than between the thumbs and the game. */
+.arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: end center; }
 .arcade {
   width: min(100cqw, (100cqh - 6px) * 100 / 140);
   padding: var(--edge); border-radius: 12px;
