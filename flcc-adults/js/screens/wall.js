@@ -102,10 +102,11 @@ export default async function wallScreen(ctx) {
   const load = async () => {
     swap(listHolder, poster({ tone: 'paper' }, waiting()));
     const prayers = await wall.list();
-    if (!prayers) {
+    if (!Array.isArray(prayers)) {
       swap(listHolder, poster({ tone: 'paper' },
         label('The wall'),
-        h('p', { class: 'body', text: 'The prayer wall could not be reached. It needs a connection; your own prayer list does not.' })));
+        h('p', { class: 'body', text: prayers.error }),
+        h('div', { class: 'poster-foot', style: 'margin-top:1rem' }, pill('Try again', load, { quiet: true }))));
       return;
     }
     swap(listHolder, poster({ tone: 'sky' },

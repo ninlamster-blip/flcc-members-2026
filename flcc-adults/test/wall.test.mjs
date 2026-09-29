@@ -86,3 +86,13 @@ test('the screen says what is sent before anything is', () => {
   assert.ok(/Signed “\$\{name\}”/.test(screen), 'the note naming the signature has gone');
   assert.ok(/Anyone who opens this app can read it/.test(screen), 'the note saying who reads it has gone');
 });
+
+test('when the wall cannot be read, it says why', async () => {
+  person();
+  reply = () => ({ configured: false });
+  assert.match((await wall.list()).error, /not switched on/);
+  const offline = globalThis.fetch;
+  globalThis.fetch = async () => { throw new TypeError('offline'); };
+  assert.match((await wall.list()).error, /needs a connection/);
+  globalThis.fetch = offline;
+});

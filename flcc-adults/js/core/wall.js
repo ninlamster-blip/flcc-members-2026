@@ -62,10 +62,17 @@ export function buildShare(text, user = getUser()) {
   return { text: String(text || '').trim(), firstName: firstName(user), device: device() };
 }
 
-/** The wall, newest first. `null` when the Worker is not reachable or not set up. */
+/**
+ * The wall, newest first — or `{ error }` saying why it could not be read:
+ * offline, not set up on this Worker, or the server's own message.
+ */
 export async function list() {
-  const { ok, data } = await ask(BASE, { headers: { 'x-prayer-device': device() } });
-  if (!ok || !data || !data.configured) return null;
+  const { ok, status, data, message } = await ask(BASE, { headers: { 'x-prayer-device': device() } });
+  if (!status) return { error: 'The prayer wall needs a connection; your own prayer list does not.' };
+  if (data && data.configured === false) return { error: 'The prayer wall is not switched on for this server yet.' };
+  if (!ok || !data || !Array.isArray(data.prayers)) {
+    return { error: `The prayer wall could not be read (${status}${message ? `: ${message}` : ''}).` };
+  }
   const mine = saved().mine;
   return (data.prayers || []).map((one) => ({ ...one, yours: Boolean(mine[one.id]) }));
 }

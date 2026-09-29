@@ -70,8 +70,8 @@ async function wall(db, device) {
     `SELECT p.id, p.first_name, p.content, p.created_ms,
        (SELECT COUNT(*) FROM adult_prayer_marks m WHERE m.prayer_id = p.id AND m.kind = 'prayed') AS prayed,
        (SELECT COUNT(*) FROM adult_prayer_marks m WHERE m.prayer_id = p.id AND m.kind = 'report') AS reports
-     FROM adult_prayers p WHERE p.created_ms > ? ORDER BY p.created_ms DESC LIMIT ?`
-  ).bind(since, WALL_SIZE * 2).all();
+     FROM adult_prayers p WHERE p.created_ms > ? ORDER BY p.created_ms DESC LIMIT ${WALL_SIZE * 2}`
+  ).bind(since).all();
   let mine = new Set();
   if (device) {
     const { results: marks } = await db.prepare(
@@ -89,6 +89,16 @@ async function wall(db, device) {
 }
 
 export async function handleAdultPrayers(request, env, url) {
+  try {
+    return await route(request, env, url);
+  } catch (err) {
+    // Said plainly, so the wall can show why rather than a bare "could not
+    // be reached" — nothing in it identifies anyone.
+    return json({ configured: true, error: { message: `The prayer wall hit a server error: ${err.message}` } }, 500);
+  }
+}
+
+async function route(request, env, url) {
   if (!env.KASAMA_DB) return json({ configured: false });
   const db = env.KASAMA_DB;
   await ensureAdultPrayerSchema(db);

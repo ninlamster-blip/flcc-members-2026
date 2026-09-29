@@ -116,3 +116,10 @@ test(`requests are swept after ${RETENTION_DAYS} days`, async () => {
   await sweepAdultPrayers(e);
   assert.equal(e.KASAMA_DB.raw.prepare('SELECT COUNT(*) AS n FROM adult_prayers').get().n, 0);
 });
+
+test('a server error is answered with its reason, not a bare failure', async () => {
+  const broken = { KASAMA_DB: { prepare() { throw new Error('boom'); }, batch() { throw new Error('boom'); } } };
+  const res = await call(broken, 'GET', '/api/adults/prayers');
+  assert.equal(res.status, 500);
+  assert.match(res.data.error.message, /server error: boom/);
+});
