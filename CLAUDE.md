@@ -130,8 +130,17 @@ phone and `wall.js` never reads it. The request goes with its text, the first
 name that signs it and a random per-phone id, nothing else, and
 `test/wall.test.mjs` asserts that against the built request. Words that trip
 `safety.js` are not posted. Only the sharing phone can take a request down;
-three reports hide one; every request is deleted after 30 days. Everything
-else in the app still never leaves the device.
+three reports hide one; every request is deleted after 30 days. The sharer
+can mark a request answered with a short note (screened the same way), and
+others react from a fixed set (🙏 ❤️ 🤝, and 🙌 once answered) — never typed.
+A request carries the member's picture (`js/core/avatar.js`): a drawing, or a
+photo shrunk on the phone to a 96-pixel square; it is also shown in quiz
+rooms. Everything else in the app still never leaves the device.
+
+Avatars in `flcc-next/` are **drawings only, never photos**: kids and teens see
+each other's on the leaderboard and in rooms. `cleanAvatar` in
+`ask-proxy/next-play.js` refuses a photo from those two age groups, and
+`flcc-next/test/avatar.test.mjs` fails if the app ever grows an upload.
 
 A third thing crosses the app's edge, and it is not the app doing it:
 `flcc-adults/admin/` is a **tool that edits this app rather than part of it** —

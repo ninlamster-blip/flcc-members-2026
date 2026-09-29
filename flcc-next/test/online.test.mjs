@@ -44,7 +44,7 @@ test('joining sends the age group and nothing else, and remembers the nickname',
   calls.length = 0;
   const result = await online.join('kids');
   assert.equal(result.joined, true);
-  assert.deepEqual(JSON.parse(calls[0].body), { ageGroup: 'kids' });
+  assert.deepEqual(JSON.parse(calls[0].body), { ageGroup: 'kids' }, 'with no avatar picked, only the age group');
   assert.equal(online.me('kids').nickname, 'Brave Lion 42');
   assert.equal(online.me('teens'), null, 'a phone that becomes a teen is not on the kids board');
 });

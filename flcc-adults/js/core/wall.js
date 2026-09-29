@@ -6,7 +6,11 @@
 //
 //   · the request's text, as it was written
 //   · the member's first name, which signs it
-//   · a random id this phone made itself, so "I prayed" counts once per phone
+//   · a random id this phone made itself, so a reaction counts once per phone
+//   · the member's picture, if they set one on You (avatar.js)
+//
+// Afterwards the sharer can mark it answered, with a short note; everyone can
+// react with one of REACTIONS — tapped, never typed.
 //
 // What never goes: the rest of the name, the season, the rest of the list, a
 // reflection, a note. `test/wall.test.mjs` builds every request and checks.
@@ -18,9 +22,19 @@
 import * as store from './storage.js';
 import { firstName, getUser } from './profile.js';
 import { isConcerning } from './safety.js';
+import { valid as validAvatar } from './avatar.js';
 
 const TIMEOUT = 8000;
 const BASE = '/api/adults/prayers';
+
+/** What can be said about a request. Must match ask-proxy/adults-prayers.js. 🙌 opens once it is answered. */
+export const REACTIONS = [
+  { kind: 'prayed', emoji: '🙏', label: 'Praying' },
+  { kind: 'love', emoji: '❤️', label: 'Love' },
+  { kind: 'with', emoji: '🤝', label: 'With you' },
+  { kind: 'praise', emoji: '🙌', label: 'Praise', answeredOnly: true },
+];
+export const NOTE_MAX = 280;
 
 async function ask(path, { method = 'GET', body, headers = {} } = {}) {
   const controller = new AbortController();
@@ -59,7 +73,8 @@ function device() {
 
 /** What would be sent, built without sending it — the test reads this. */
 export function buildShare(text, user = getUser()) {
-  return { text: String(text || '').trim(), firstName: firstName(user), device: device() };
+  const avatar = validAvatar((user || {}).avatar);
+  return { text: String(text || '').trim(), firstName: firstName(user), device: device(), ...(avatar ? { avatar } : {}) };
 }
 
 /**
@@ -74,7 +89,13 @@ export async function list() {
     return { error: `The prayer wall could not be read (${status}${message ? `: ${message}` : ''}).` };
   }
   const mine = saved().mine;
-  return (data.prayers || []).map((one) => ({ ...one, yours: Boolean(mine[one.id]) }));
+  return (data.prayers || []).map((one) => ({
+    ...one,
+    answered: one.answered || null,
+    reactions: one.reactions || { prayed: one.prayed || 0 },
+    yourReactions: one.yourReactions || (one.prayedByYou ? ['prayed'] : []),
+    yours: Boolean(mine[one.id]),
+  }));
 }
 
 /**
@@ -93,7 +114,21 @@ export async function share(text) {
   return { ok: true, id: result.data.id };
 }
 
-export const prayFor = (id) => ask(`${BASE}/pray`, { method: 'POST', body: { id, device: device() } });
+/** Add a reaction, or take it back if this phone already gave it. */
+export const react = (id, kind) => ask(`${BASE}/react`, { method: 'POST', body: { id, kind, device: device() } });
+
+/**
+ * Mark one of your own requests answered, with an optional note — or, with
+ * `answered: false`, take the mark back off. The note is screened like the
+ * request itself before anything is sent.
+ */
+export async function answer(id, note = '', { answered = true } = {}) {
+  const token = saved().mine[id];
+  if (!token) return { ok: false, message: 'Only the phone that shared it can mark it answered.' };
+  const text = String(note || '').trim().slice(0, NOTE_MAX);
+  if (answered && isConcerning(text)) return { ok: false, concerning: true };
+  return ask(`${BASE}/answer`, { method: 'POST', body: { id, token, device: device(), ...(answered ? { note: text } : { answered: false }) } });
+}
 
 export async function report(id) {
   const result = await ask(`${BASE}/report`, { method: 'POST', body: { id, device: device() } });

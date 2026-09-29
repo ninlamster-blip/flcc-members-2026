@@ -270,6 +270,35 @@ button.poster:active, a.poster:active { transform: scale(.988); }
 .pill[disabled] { opacity: .4; cursor: default; }
 .pill-row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
 
+/* An avatar: a photo, or one of the app's drawings on a circle of colour. */
+.avatar { display: inline-grid; place-items: center; flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+  box-shadow: inset 0 0 0 var(--edge) var(--ink); background: var(--paper); overflow: hidden; position: relative; }
+.avatar svg { width: 72%; height: 72%; display: block; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
+.avatar[data-photo]::after { content: ''; position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 var(--edge) var(--ink); }
+.avatar[data-size="lg"] { width: 5.5rem; height: 5.5rem; }
+.avatar[data-tone="sky"] { background: var(--sky); }
+.avatar[data-tone="rose"] { background: var(--rose); }
+.avatar[data-tone="sunshine"] { background: var(--sunshine); }
+.avatar[data-tone="captain"] { background: var(--captain); }
+.avatar[data-tone="ink"] { background: var(--ink); }
+.avatar[data-tone="captain"] svg [stroke], .avatar[data-tone="ink"] svg [stroke] { stroke: var(--paper); }
+.avatar-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr)); gap: .6rem; margin-top: 1rem; }
+.avatar-pick button { font: inherit; border: 0; background: none; padding: .2rem; border-radius: 50%; cursor: pointer; display: grid; place-items: center; }
+.avatar-pick button .avatar { width: 2.8rem; height: 2.8rem; }
+.avatar-pick button[aria-pressed="true"] { outline: var(--edge) solid var(--ink); outline-offset: 1px; }
+.who { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+
+/* The prayer wall: a request, who shared it, and the reactions under it. */
+.wall-item { display: flex; gap: .8rem; align-items: flex-start; }
+.wall-item > div { min-width: 0; flex: 1; }
+.answered-note { margin-top: .6rem; padding: .6rem .8rem; border-radius: var(--radius); background: var(--sunshine);
+  box-shadow: inset 0 0 0 2px var(--ink); font-size: .85rem; line-height: 1.45; }
+.reactions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+.reaction { font: inherit; font-size: .8rem; font-weight: 700; min-height: 36px; padding: .3rem .7rem; border: 0; border-radius: 99px;
+  background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); cursor: pointer; }
+.reaction[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
 /* ── Progress: a thick navy bar, never a thin grey one ───────────────────── */
 
 .track { height: 14px; border-radius: 99px; box-shadow: inset 0 0 0 var(--edge) var(--ink); overflow: hidden; }

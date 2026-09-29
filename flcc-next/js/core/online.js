@@ -7,6 +7,8 @@
 //   · their age group — so kids and teens are never on the same board
 //   · their Hop Across rows and Galaga score, at the end of each run
 //   · which cheer they picked, from the fixed list below
+//   · the avatar they picked — `draw:<symbol>:<tone>`, one of the app's own
+//     drawings (avatar.js), never a photo
 //
 // What never goes: their name, their age, anything they have typed anywhere in
 // the app. The nickname is chosen by the server from two word lists, and there
@@ -16,6 +18,8 @@
 // The endpoint is the app's own origin — the same Worker that serves the app.
 
 import * as store from './storage.js';
+import { parse as parseAvatar } from './avatar.js';
+import { getUser } from './profile.js';
 
 const TIMEOUT = 8000;
 
@@ -60,11 +64,18 @@ export async function available() {
   return Boolean(ok && data && data.nextPlay);
 }
 
-/** Join with a server-chosen nickname. Sends the age group and nothing else. */
+/** The avatar this phone would show — only ever a drawing from the app's set. */
+const myAvatar = () => {
+  const spec = (getUser() || {}).avatar;
+  return parseAvatar(spec) ? spec : null;
+};
+
+/** Join with a server-chosen nickname. Sends the age group and the drawn avatar, nothing else. */
 export async function join(ageGroup) {
-  const { ok, data } = await ask('/api/next/play/join', { method: 'POST', body: { ageGroup } });
+  const avatar = myAvatar();
+  const { ok, data } = await ask('/api/next/play/join', { method: 'POST', body: { ageGroup, ...(avatar ? { avatar } : {}) } });
   if (!ok || !data || !data.token) return { joined: false, reason: data && data.configured === false ? 'off' : 'offline' };
-  const saved = { token: data.token, id: data.id, nickname: data.nickname, ageGroup: data.ageGroup, onBoard: true };
+  const saved = { token: data.token, id: data.id, nickname: data.nickname, ageGroup: data.ageGroup, onBoard: true, avatar: data.avatar || null };
   store.write(store.KEYS.online, saved);
   return { joined: true, ...saved };
 }
@@ -74,6 +85,14 @@ const withToken = async (path, extra = {}) => {
   if (!self) return { ok: false, data: null, status: 401 };
   return ask(path, { method: 'POST', body: { token: self.token, ...extra } });
 };
+
+/** Show a newly picked avatar online too, if this phone has joined. A photo is never sent. */
+export async function setAvatar(spec) {
+  if (!me() || !parseAvatar(spec)) return false;
+  const { ok } = await withToken('/api/next/play/avatar', { avatar: spec });
+  if (ok) store.write(store.KEYS.online, { ...me(), avatar: spec });
+  return ok;
+}
 
 export async function rename() {
   const { ok, data } = await withToken('/api/next/play/rename');

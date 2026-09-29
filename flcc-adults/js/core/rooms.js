@@ -6,6 +6,8 @@
 //   · that this is the adult edition — rooms hold adults only
 //   · which room, and whether each answer was right
 //   · which ready-made line was tapped, from the fixed list below
+//   · the member's picture, if they set one on You (avatar.js) — a drawing,
+//     or their photo shrunk to a 96-pixel square
 //
 // What never goes: a name, anything typed, a prayer, a note, a reflection. The
 // member plays as a nickname the server picks from two word lists. Nothing is
@@ -20,6 +22,8 @@
 
 import * as store from './storage.js';
 import { permute, hash } from './rotation.js';
+import { valid as validAvatar } from './avatar.js';
+import { getUser } from './profile.js';
 
 const TIMEOUT = 8000;
 export const EDITION = 'adults';
@@ -61,9 +65,12 @@ export async function available() {
   return Boolean(ok && data && data.nextPlay);
 }
 
-/** A nickname for rooms. Sends only which edition this is. */
+const myAvatar = () => validAvatar((getUser() || {}).avatar);
+
+/** A nickname for rooms. Sends which edition this is, and the member's picture if they set one. */
 export async function join() {
-  const { ok, data } = await ask('/api/next/play/join', { method: 'POST', body: { ageGroup: EDITION } });
+  const avatar = myAvatar();
+  const { ok, data } = await ask('/api/next/play/join', { method: 'POST', body: { ageGroup: EDITION, ...(avatar ? { avatar } : {}) } });
   if (!ok || !data || !data.token) return { joined: false };
   const saved = { token: data.token, id: data.id, nickname: data.nickname, ageGroup: data.ageGroup };
   store.write(store.KEYS.online, saved);
@@ -75,6 +82,13 @@ const withToken = async (path, extra = {}) => {
   if (!self) return { ok: false, status: 401, data: null };
   return ask(path, { method: 'POST', body: { token: self.token, ...extra } });
 };
+
+/** A new picture shows in rooms too, if this phone has a room nickname. */
+export async function setAvatar(spec) {
+  if (!me() || !validAvatar(spec)) return false;
+  const { ok } = await withToken('/api/next/play/avatar', { avatar: spec });
+  return ok;
+}
 
 /** Stop playing in rooms: the nickname is deleted on the server, then here. */
 export async function leave() {

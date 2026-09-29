@@ -50,6 +50,29 @@ export const CHEERS = ['🙌 Great job!', '🔥 On fire!', '🙏 Praying for you
 export const ROOM_SAYS = ['👋 Hi!', '✅ Ready!', '🙌 Great job!', '😮 Wow!', '😂', '🔥', '🙏 Praying for you', '🤝 Good game!', '🔁 One more round?'];
 
 /** Live rooms: a quiz battle, or a Hop Across race. */
+/**
+ * An avatar is a drawing chosen from the app's own set — `draw:<symbol>:<tone>`
+ * — and nothing a child could upload. Only the adult edition may send a photo,
+ * and only a small one: a data URL of at most AVATAR_PHOTO_MAX characters,
+ * which a 96×96 JPEG fits in comfortably.
+ */
+export const AVATAR_TONES = ['sky', 'captain', 'rose', 'poppy', 'sunshine', 'ink'];
+export const AVATAR_PHOTO_MAX = 16000;
+export function cleanAvatar(value, ageGroup) {
+  const text = String(value || '');
+  const drawn = new RegExp(`^draw:[a-z]{2,16}:(${AVATAR_TONES.join('|')})$`);
+  if (drawn.test(text)) return text;
+  if (ageGroup === 'adults' && text.length <= AVATAR_PHOTO_MAX
+    && /^data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+/]+=*$/.test(text)) return text;
+  return null;
+}
+
+/** A column added after the table first shipped: added once, quietly, where it is missing. */
+const migrated = new WeakSet();
+async function addColumn(db, table, column, type) {
+  try { await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`).run(); } catch { /* already there */ }
+}
+
 export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {} };
 export const ROOM_MAX_PLAYERS = 8;
 const ROOM_COUNTDOWN_MS = 3000;
@@ -83,6 +106,7 @@ async function sha256(text) {
 }
 
 export async function ensureNextPlaySchema(db) {
+  if (migrated.has(db)) return;
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS next_players (
       id          TEXT PRIMARY KEY,
@@ -137,6 +161,8 @@ export async function ensureNextPlaySchema(db) {
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_next_scores_week ON next_scores (game, week, best DESC)`),
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_next_cheers_to ON next_cheers (to_id, created_at DESC)`),
   ]);
+  await addColumn(db, 'next_players', 'avatar', 'TEXT');
+  migrated.add(db);
 }
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
@@ -145,7 +171,7 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
 
 async function playerFor(db, token) {
   if (typeof token !== 'string' || token.length < 20 || token.length > 100) return null;
-  const player = await db.prepare(`SELECT id, nickname, age_group, on_board FROM next_players WHERE token_hash = ?`)
+  const player = await db.prepare(`SELECT id, nickname, age_group, on_board, avatar FROM next_players WHERE token_hash = ?`)
     .bind(await sha256(token)).first();
   if (player) await db.prepare(`UPDATE next_players SET seen_at = datetime('now') WHERE id = ?`).bind(player.id).run();
   return player;
@@ -154,7 +180,7 @@ async function playerFor(db, token) {
 /** The week's board for one game and one age group, plus the team's total. */
 async function board(db, ageGroup, game, week, me) {
   const { results } = await db.prepare(
-    `SELECT p.id, p.nickname, s.best FROM next_scores s JOIN next_players p ON p.id = s.player_id
+    `SELECT p.id, p.nickname, p.avatar, s.best FROM next_scores s JOIN next_players p ON p.id = s.player_id
      WHERE s.game = ? AND s.week = ? AND p.age_group = ? AND p.on_board = 1 AND s.best > 0
      ORDER BY s.best DESC, p.nickname LIMIT 10`
   ).bind(game, week, ageGroup).all();
@@ -170,7 +196,7 @@ async function board(db, ageGroup, game, week, me) {
   }
   return {
     week, game, ageGroup,
-    top: (results || []).map((row, i) => ({ rank: i + 1, id: row.id, nickname: row.nickname, best: row.best, you: Boolean(me && row.id === me.id) })),
+    top: (results || []).map((row, i) => ({ rank: i + 1, id: row.id, nickname: row.nickname, avatar: row.avatar || null, best: row.best, you: Boolean(me && row.id === me.id) })),
     team: { total: team ? team.total : 0, players: team ? team.players : 0, goal: TEAM_GOALS[ageGroup][game] },
     mine,
   };
@@ -221,10 +247,10 @@ export async function handleNextPlay(request, env, url) {
   if (path === '/join') {
     if (!AGE_GROUPS.includes(body.ageGroup)) return json({ error: { message: 'Which age group?' } }, 400);
     const token = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, '');
-    const player = { id: crypto.randomUUID(), nickname: nickname(), ageGroup: body.ageGroup };
-    await db.prepare(`INSERT INTO next_players (id, token_hash, nickname, age_group) VALUES (?, ?, ?, ?)`)
-      .bind(player.id, await sha256(token), player.nickname, player.ageGroup).run();
-    return json({ configured: true, token, id: player.id, nickname: player.nickname, ageGroup: player.ageGroup });
+    const player = { id: crypto.randomUUID(), nickname: nickname(), ageGroup: body.ageGroup, avatar: cleanAvatar(body.avatar, body.ageGroup) };
+    await db.prepare(`INSERT INTO next_players (id, token_hash, nickname, age_group, avatar) VALUES (?, ?, ?, ?, ?)`)
+      .bind(player.id, await sha256(token), player.nickname, player.ageGroup, player.avatar).run();
+    return json({ configured: true, token, id: player.id, nickname: player.nickname, ageGroup: player.ageGroup, avatar: player.avatar });
   }
 
   const me = await playerFor(db, body.token);
@@ -235,6 +261,14 @@ export async function handleNextPlay(request, env, url) {
     const name = nickname();
     await db.prepare(`UPDATE next_players SET nickname = ? WHERE id = ?`).bind(name, me.id).run();
     return json({ configured: true, nickname: name });
+  }
+
+  // POST /avatar { avatar } — a drawing from the app's set (or, for adults, a small photo); null clears it
+  if (path === '/avatar') {
+    const avatar = body.avatar == null ? null : cleanAvatar(body.avatar, me.age_group);
+    if (body.avatar != null && !avatar) return json({ error: { message: 'That picture cannot be used.' } }, 400);
+    await db.prepare(`UPDATE next_players SET avatar = ? WHERE id = ?`).bind(avatar, me.id).run();
+    return json({ configured: true, avatar });
   }
 
   // POST /board-visibility { show } — on the leaderboard, or only in the team total
@@ -325,7 +359,7 @@ async function roomState(db, room, me) {
     room.status = 'done';
   }
   const { results: players } = await db.prepare(
-    `SELECT p.id, p.nickname, r.score, r.progress, r.alive FROM next_room_players r JOIN next_players p ON p.id = r.player_id
+    `SELECT p.id, p.nickname, p.avatar, r.score, r.progress, r.alive FROM next_room_players r JOIN next_players p ON p.id = r.player_id
      WHERE r.code = ? ORDER BY r.joined_ms, r.rowid`
   ).bind(room.code).all();
   if (room.status === 'playing' && room.kind === 'hop' && players.length && players.every((p) => !p.alive)) {
@@ -342,7 +376,7 @@ async function roomState(db, room, me) {
     question: room.kind === 'quiz' ? questionAt(room, now) : null,
     questions: room.kind === 'quiz' ? ROOM_KINDS.quiz.questions : null,
     questionMs: room.kind === 'quiz' ? ROOM_KINDS.quiz.questionMs : null,
-    players: (players || []).map((p) => ({ id: p.id, nickname: p.nickname, score: p.score, progress: p.progress, alive: Boolean(p.alive), you: p.id === me.id })),
+    players: (players || []).map((p) => ({ id: p.id, nickname: p.nickname, avatar: p.avatar || null, score: p.score, progress: p.progress, alive: Boolean(p.alive), you: p.id === me.id })),
     says: (says || []).reverse().map((row) => ({ id: row.id, text: ROOM_SAYS[row.kind], from: row.nickname, at: row.at_ms })),
   };
 }

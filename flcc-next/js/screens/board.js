@@ -6,6 +6,7 @@
 
 import { h, poster, label, display, headline, art, pill, track, note, toast, waiting } from '../core/ui.js';
 import * as online from '../core/online.js';
+import { avatar } from '../core/avatar.js';
 
 export default async function boardScreen(ctx) {
   const el = h('div', { style: 'display:contents' }, poster({ tone: 'paper', className: 'full' }, waiting()));
@@ -38,7 +39,7 @@ export default async function boardScreen(ctx) {
         h('div', { class: 'poster-foot' }, h('span'), art('people', { tone: 'sky', size: 'sm' }))),
       poster({ tone: 'paper', className: 'full' },
         label('Before you join'),
-        h('p', { class: 'body', text: 'You get a nickname the app picks, like "Brave Lion 42". Nobody sees your real name — not even us.' }),
+        h('p', { class: 'body', text: 'You get a nickname the app picks, like "Brave Lion 42", and your avatar from Me shows beside it. Nobody sees your real name or a photo of you — not even us.' }),
         h('p', { class: 'body', style: 'margin-top:.7rem', text: `What gets sent: that you are in the ${kids ? 'kids (7–12)' : 'teens (13–18)'} group, and your Hop Across and Galaga scores. You only ever see players your own age.` }),
         h('p', { class: 'body', style: 'margin-top:.7rem', text: 'What never gets sent: your name, your age, your prayers, or anything you type. Messages are cheers picked from a list — nobody can type anything to you.' }),
         kids ? h('p', { class: 'lead', style: 'margin-top:1rem', text: 'Ask a parent before you join.' }) : null,
@@ -85,7 +86,7 @@ export default async function boardScreen(ctx) {
     const rows = data.top.length
       ? data.top.map((row) => h('div', { class: 'board-row', dataset: row.you ? { you: '' } : {} },
         h('span', { class: 'board-rank', text: `${row.rank}` }),
-        h('span', { class: 'board-name', text: row.you ? `${row.nickname} (you)` : row.nickname }),
+        h('span', { class: 'board-name who' }, avatar(row.avatar, { seed: row.id }), h('span', { text: row.you ? `${row.nickname} (you)` : row.nickname })),
         h('span', { class: 'board-score', text: row.best.toLocaleString() }),
         row.you ? h('span') : h('button', { class: 'board-cheer', type: 'button', 'aria-label': `Cheer ${row.nickname}`, text: '🙌', onclick: () => pickCheer(row) })))
       : [h('p', { class: 'body dim', text: 'Nobody has played yet this week. Be the first!' })];

@@ -133,3 +133,14 @@ test('the question bank is complete and written the same way throughout', () => 
     assert.equal('kids' in question || 'teens' in question, false, 'this edition has no age variants');
   }
 });
+
+test('a room carries the member’s picture if they set one, and nothing else about them', async () => {
+  store.wipe();
+  store.write(store.KEYS.user, { name: 'Allen Ramos', season: 'grieving', avatar: 'draw:sun:sky', created: 1 });
+  sent.length = 0;
+  await rooms.join();
+  assert.deepEqual(JSON.parse(sent[0].body), { ageGroup: 'adults', avatar: 'draw:sun:sky' });
+  sent.length = 0;
+  assert.equal(await rooms.setAvatar('https://example.com/me.jpg'), false);
+  assert.equal(sent.length, 0, 'a link is never sent as a picture');
+});

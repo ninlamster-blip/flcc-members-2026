@@ -22,6 +22,8 @@ import * as scripture from '../core/scripture.js';
 import * as content from '../core/content.js';
 import * as plan from '../core/plan.js';
 import * as rotation from '../core/rotation.js';
+import * as avatars from '../core/avatar.js';
+import * as rooms from '../core/rooms.js';
 
 export default async function youScreen(ctx) {
   const user = getUser() || {};
@@ -39,6 +41,51 @@ export default async function youScreen(ctx) {
     h('div', { class: 'poster-foot' },
       go('Change any of this', () => document.getElementById('settings')?.scrollIntoView({ behavior: 'smooth', block: 'start' })),
       art('blob', { tone: 'captain', size: 'sm' }))));
+
+  // ── Your picture ────────────────────────────────────────────────────────
+  //
+  // Seen only where you choose to be seen: beside your first name on a prayer
+  // request you share, and beside your nickname in a quiz room.
+  const picture = h('div', { style: 'display:contents' });
+  parts.push(picture);
+  const paintPicture = () => {
+    const current = getUser() || {};
+    const spec = avatars.valid(current.avatar) || avatars.fallback(current.name || 'friend');
+    const drawn = avatars.parse(spec) || avatars.parse(avatars.fallback(current.name || 'friend'));
+    const choose = (next) => {
+      saveUser({ avatar: next });
+      rooms.setAvatar(next);
+      paintPicture();
+    };
+    const file = h('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-label': 'Choose a photo',
+      onchange: async () => {
+        const url = await avatars.photoFromFile(file.files && file.files[0]);
+        if (!url) { toast('That picture could not be used. Try another.'); return; }
+        choose(url);
+        toast('Photo set.');
+      } });
+    swap(picture, poster({ tone: 'paper' },
+      label('Your picture'),
+      h('div', { style: 'display:flex;align-items:center;gap:1rem;margin-top:.4rem' },
+        avatars.avatar(spec, { size: 'lg', label: 'Your picture' }),
+        h('p', { class: 'body', text: 'Shown beside your first name when you share a prayer request, and beside your nickname in a quiz room. Nowhere else.' })),
+      h('div', { class: 'avatar-pick', role: 'group', 'aria-label': 'Drawing' },
+        ...avatars.SYMBOLS.map((name) => h('button', {
+          type: 'button', 'aria-label': `Picture: ${name}`, 'aria-pressed': String(!avatars.isPhoto(spec) && name === drawn.symbol),
+          onclick: () => choose(avatars.make(name, drawn.tone)),
+        }, avatars.avatar(avatars.make(name, drawn.tone))))),
+      h('div', { class: 'avatar-pick', role: 'group', 'aria-label': 'Colour' },
+        ...avatars.TONES.map((tone) => h('button', {
+          type: 'button', 'aria-label': `Colour: ${tone}`, 'aria-pressed': String(!avatars.isPhoto(spec) && tone === drawn.tone),
+          onclick: () => choose(avatars.make(drawn.symbol, tone)),
+        }, avatars.avatar(avatars.make(drawn.symbol, tone))))),
+      file,
+      h('div', { class: 'pill-row', style: 'margin-top:1.2rem' },
+        pill(avatars.isPhoto(spec) ? 'Choose another photo' : 'Use a photo', () => file.click()),
+        avatars.isPhoto(spec) ? pill('Use a drawing instead', () => choose(avatars.make(drawn.symbol, drawn.tone)), { quiet: true }) : null),
+      note('A photo is cropped to a small square on this phone before it is kept; the original never leaves it.')));
+  };
+  paintPicture();
 
   // ── What you have made ──────────────────────────────────────────────────
   const journey = h('div', { style: 'display:contents' });

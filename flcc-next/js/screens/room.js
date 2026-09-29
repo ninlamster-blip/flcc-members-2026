@@ -11,6 +11,7 @@ import * as content from '../core/content.js';
 import * as online from '../core/online.js';
 import { permute, askOrder } from '../core/rotation.js';
 import { forAgeGroup } from '../core/profile.js';
+import { avatar } from '../core/avatar.js';
 
 const POLL_MS = 1000;
 
@@ -53,7 +54,7 @@ export default async function roomScreen(ctx) {
     const sorted = [...state.players].sort((a, b) => b[by] - a[by]);
     return h('div', { class: 'board' }, ...sorted.map((p, i) => h('div', { class: 'board-row', dataset: p.you ? { you: '' } : {} },
       h('span', { class: 'board-rank', text: String(i + 1) }),
-      h('span', { class: 'board-name', text: `${p.nickname}${p.you ? ' (you)' : ''}${state.kind === 'hop' && !p.alive && state.status === 'playing' ? ' · out' : ''}` }),
+      h('span', { class: 'board-name who' }, avatar(p.avatar, { seed: p.id }), h('span', { text: `${p.nickname}${p.you ? ' (you)' : ''}${state.kind === 'hop' && !p.alive && state.status === 'playing' ? ' · out' : ''}` })),
       h('span', { class: 'board-score', text: String(Math.max(0, p[by])) }),
       h('span'))));
   };
