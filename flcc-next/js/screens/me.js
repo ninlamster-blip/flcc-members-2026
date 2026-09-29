@@ -9,6 +9,7 @@ import * as stampRules from '../core/stamps.js';
 import { getUser, saveUser, mode, MODE } from '../core/profile.js';
 import * as avatars from '../core/avatar.js';
 import * as online from '../core/online.js';
+import * as tap from '../core/tap.js';
 
 const REWARD_ART = { hopHat: ['chicken', 'sunshine'], galagaShip: ['rocket', 'sky'] };
 
@@ -116,6 +117,16 @@ export default async function meScreen(ctx) {
           art('rocket', { tone: 'sunshine', size: 'sm' })))),
 
     avatarPicker(),
+
+    poster({ tone: 'paper', className: 'full' },
+      label('Tap sounds'),
+      h('p', { class: 'body', text: 'A little tick when you press a button, and a tiny buzz on phones that can do it.' }),
+      h('div', { class: 'poster-foot' },
+        pill(tap.enabled() ? 'Turn tap sounds off' : 'Turn tap sounds on', () => {
+          tap.setEnabled(!tap.enabled());
+          ctx.refresh();
+        }, { quiet: true }),
+        h('span'))),
 
     rewardShelf(state.streak),
 
