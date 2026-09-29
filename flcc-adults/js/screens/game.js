@@ -113,7 +113,7 @@ export default async function gameScreen(ctx) {
     if (result.cascades > 1) toast(`${result.cascades} in a row.`);
 
     if (cleared >= TARGET) {
-      progress.complete('game', new Date().toISOString().slice(0, 10));
+      progress.complete('game', progress.today());
       moment({ tone: 'sunshine', eyebrow: 'Match three', big: 'DONE.',
         line: `${cleared} cleared, with ${moves} ${moves === 1 ? 'move' : 'moves'} to spare.`,
         action: 'Close' });
