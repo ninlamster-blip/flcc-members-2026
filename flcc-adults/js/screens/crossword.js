@@ -25,7 +25,10 @@ import * as store from '../core/storage.js';
 // moment's — a member should not meet the same theme twice in one morning.
 const OFFSET = 5;
 
-const today = () => new Date().toISOString().slice(0, 10);
+// The phone's own day — the same day the grid is dealt by (rotation.dayIndex).
+// A UTC date here kept yesterday's answers in today's grid for the first hours
+// of every morning east of Greenwich: until 03:00 in Kuwait, 08:00 in Manila.
+const today = () => progress.today();
 
 /** Today's grid only. Yesterday's answers are of no use to anybody. */
 function loadState() {

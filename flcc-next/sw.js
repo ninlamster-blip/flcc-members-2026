@@ -12,7 +12,7 @@
 //                 the files are large, and a book that has been read once
 //                 should stay readable on a bus with no signal.
 
-const VERSION = 'next-v15';
+const VERSION = 'next-v16';
 
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/next.css', './icons/icon.svg',
@@ -21,7 +21,7 @@ const SHELL = [
   './js/core/profile.js', './js/core/progress.js', './js/core/router.js',
   './js/core/content.js', './js/core/library.js', './js/core/rotation.js',
   './js/core/scripture.js', './js/core/safety.js', './js/core/ai.js', './js/core/rewards.js',
-  './js/core/stamps.js', './js/core/memory.js', './js/core/service.js', './js/core/party.js', './js/core/online.js', './js/core/avatar.js',
+  './js/core/stamps.js', './js/core/memory.js', './js/core/service.js', './js/core/party.js', './js/core/online.js', './js/core/avatar.js', './js/core/delivery.js',
   './js/games/crossword.js', './js/games/galaga.js', './js/games/chiptune.js',
   './js/games/hopacross.js',
   './js/screens/today.js', './js/screens/devotion.js', './js/screens/explore.js',
@@ -34,6 +34,8 @@ const SHELL = [
   './content/help-lines.json', './content/bible-books.json', './content/bible-find.json',
   './content/games/quiz.json', './content/games/who-am-i.json',
   './content/games/verse-builder.json', './content/games/crossword.json',
+  './content/journeys/life-of-jesus.json', './content/journeys/heroes-of-faith.json',
+  './content/journeys/big-bible-story.json',
   // The book list, but not the books. 66 books × 3 translations is far too much
   // to precache; each one is kept the first time it is actually opened.
   './bible/books.json',

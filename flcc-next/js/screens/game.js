@@ -100,7 +100,7 @@ async function quizGame(ctx, { timed = false, game = 'quiz', tone = 'rose', titl
         options.children[option].dataset[right ? 'right' : 'wrong'] = '';
         if (!right) options.children[asked.answer].dataset.right = '';
         feedback.textContent = round.why;
-        setTimeout(() => { index += 1; draw(); }, timed ? 550 : 1100);
+        setTimeout(() => { if (!block.isConnected) return; index += 1; draw(); }, timed ? 550 : 1100);
       })));
 
     block.replaceChildren(
@@ -113,6 +113,9 @@ async function quizGame(ctx, { timed = false, game = 'quiz', tone = 'rose', titl
 
   if (timed) {
     ticker = setInterval(() => {
+      // Left the screen: stop the clock. A round nobody is playing must not
+      // finish itself a minute later on some other screen, and award XP.
+      if (!block.isConnected) { stop(); return; }
       remaining -= 1;
       const readout = block.querySelector('.label');
       if (readout) readout.textContent = `${remaining}s`;
@@ -156,7 +159,7 @@ async function whoAmIGame(ctx) {
         options.children[option].dataset[right ? 'right' : 'wrong'] = '';
         if (!right) options.children[asked.answer].dataset.right = '';
         feedback.textContent = round.fact;
-        setTimeout(() => { index += 1; draw(); }, 1400);
+        setTimeout(() => { if (!block.isConnected) return; index += 1; draw(); }, 1400);
       })));
 
     const another = pill('Another clue', () => {
@@ -219,7 +222,7 @@ async function verseGame(ctx) {
       if (right) score += 1;
       line.textContent = round.text;
       feedback.textContent = right ? `Exactly right — ${round.ref}.` : `Not quite. It reads: “${round.text}” (${round.ref}).`;
-      setTimeout(() => { index += 1; draw(); }, 1800);
+      setTimeout(() => { if (!block.isConnected) return; index += 1; draw(); }, 1800);
     };
 
     paint();

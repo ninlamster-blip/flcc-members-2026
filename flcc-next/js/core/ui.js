@@ -117,11 +117,30 @@ export function rise(elements) {
  * One headline, one line, one way out. It is the only interruption the app has.
  */
 export function moment({ tone = 'sunshine', eyebrow = '', big, line = '', action = 'Keep going', onclose }) {
+  // Two ways it goes away. The button (or Escape) is an answer, so it runs
+  // `onclose` — which often navigates somewhere. Leaving the screen another way
+  // (the phone's Back button, a tab) only takes the card down: it must not sit
+  // on top of every screen after it, swallowing taps, and it must not then yank
+  // the reader to wherever its button would have sent them.
+  let closed = false;
+  const dismiss = (answered) => {
+    if (closed) return;
+    closed = true;
+    window.removeEventListener('hashchange', left);
+    document.removeEventListener('keydown', onKey);
+    screen.remove();
+    if (answered && onclose) onclose();
+  };
+  const left = () => dismiss(false);
+  const onKey = (event) => { if (event.key === 'Escape') dismiss(true); };
+
   const screen = h('div', { class: 'moment', role: 'dialog', 'aria-modal': 'true', style: `background:var(--${tone})` },
     eyebrow ? label(eyebrow) : null,
     fit(h('p', { class: 'display', text: big })),
     line ? h('p', { class: 'lead dim', text: line }) : null,
-    h('div', { style: 'margin-top:auto' }, pill(action, () => { screen.remove(); if (onclose) onclose(); })));
+    h('div', { style: 'margin-top:auto' }, pill(action, () => dismiss(true))));
+  window.addEventListener('hashchange', left);
+  document.addEventListener('keydown', onKey);
   document.body.appendChild(screen);
   screen.querySelector('.pill').focus();
   return screen;

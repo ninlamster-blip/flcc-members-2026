@@ -23,7 +23,7 @@ export default async function playScreen(ctx) {
     run = rotation.cycleOf(bank.clues, { count: bank.perDay || 9, offset: 5 });
   } catch { /* the poster still stands, just without the day count */ }
 
-  const solvedToday = progress.isDone('crossword', new Date().toISOString().slice(0, 10));
+  const solvedToday = progress.isDone('crossword', progress.today());
 
   parts.push(poster({ tone: 'sky', tall: true, as: 'button', onclick: () => ctx.go('crossword') },
     label(solvedToday ? 'Today’s crossword · solved' : 'Today’s crossword'),
