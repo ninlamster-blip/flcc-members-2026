@@ -20,7 +20,7 @@
 //   · Everything random comes from a seeded generator, so a run can be
 //     replayed exactly for a test.
 //
-// The field is measured in lanes: COLS across, VIEW rows down, and the screen
+// The field is measured in lanes: COLS across, at least VIEW rows down, and the screen
 // scales that to whatever canvas it has.
 
 export const COLS = 9;
@@ -588,7 +588,12 @@ function drawHat(g, hat, colors) {
 }
 
 /** The top edge of row `r`, in field units, for the current camera. */
-const rowY = (state, r) => VIEW * BASE - (r - state.cam);
+const rowY = (state, r) => view - VIEW * (1 - BASE) - (r - state.cam);
+
+// How many rows the canvas being painted is tall. At least VIEW; a tall phone
+// gets more, and the extra rows go ahead of the chicken, never behind it, so
+// the chicken stays the same distance above the thumbs whatever the screen.
+let view = VIEW;
 
 /**
  * A headline and a label on a paper plate, centred at row-height `at`. Drawn
@@ -630,16 +635,17 @@ function caption(g, big, small, { colors, scale, edge }, at) {
  * Paint the whole field. `scale` is canvas pixels per lane, `edge` the
  * outline weight in canvas pixels, `hat` the streak reward the chicken wears.
  */
-export function paint(g, state, { colors, scale, edge, hat = null }) {
+export function paint(g, state, { colors, scale, edge, hat = null, rows = VIEW }) {
+  view = Math.max(VIEW, rows || VIEW);
   g.setTransform(scale, 0, 0, scale, 0, 0);
   g.fillStyle = colors.paper;
-  g.fillRect(0, 0, COLS, VIEW);
+  g.fillRect(0, 0, COLS, view);
   g.lineWidth = edge / scale;
   g.lineJoin = 'round';
   g.lineCap = 'round';
   g.strokeStyle = colors.ink;
 
-  const high = Math.ceil(state.cam + VIEW * BASE) + 1;
+  const high = Math.ceil(state.cam + view - VIEW * (1 - BASE)) + 1;
   const low = Math.floor(state.cam - VIEW * (1 - BASE)) - 1;
   for (let r = high; r >= low; r--) {
     const row = state.rows[r];
@@ -666,9 +672,9 @@ export function paint(g, state, { colors, scale, edge, hat = null }) {
   // The mist: flat paper rising from the bottom, edged in navy like any poster.
   if (state.level >= 3 && state.mist > -50) {
     const y = rowY(state, state.mist) + 1;
-    if (y < VIEW) {
+    if (y < view) {
       g.fillStyle = colors.paper;
-      g.fillRect(0, y, COLS, VIEW - y + 1);
+      g.fillRect(0, y, COLS, view - y + 1);
       g.beginPath();
       for (let x = 0; x <= COLS; x += 0.5) {
         const wave = y + Math.sin(x * 2 + state.time * 2) * 0.06;
@@ -679,6 +685,6 @@ export function paint(g, state, { colors, scale, edge, hat = null }) {
   }
 
   const plate = { colors, scale, edge };
-  if (!state.started) caption(g, 'TAP OR ▲ TO HOP', 'SWIPE OR ◀ ▶ ▼ TO MOVE', plate, VIEW * 0.3);
-  else if (state.banner > 0) caption(g, `LEVEL ${state.level}`, LEVEL_NEWS(state.level).toUpperCase(), plate, VIEW * 0.3);
+  if (!state.started) caption(g, 'TAP OR ▲ TO HOP', 'SWIPE OR ◀ ▶ ▼ TO MOVE', plate, view * 0.3);
+  else if (state.banner > 0) caption(g, `LEVEL ${state.level}`, LEVEL_NEWS(state.level).toUpperCase(), plate, view * 0.3);
 }

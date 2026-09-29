@@ -709,17 +709,19 @@ function hopGame(ctx) {
 
   const size = () => {
     const ratio = window.devicePixelRatio || 1;
+    // The field fills its well, so its height follows the screen, not the width.
     const width = Math.round(canvas.clientWidth * ratio);
-    if (width && canvas.width !== width) {
+    const height = Math.round(canvas.clientHeight * ratio);
+    if (width && (canvas.width !== width || canvas.height !== height)) {
       canvas.width = width;
-      canvas.height = Math.round(width * hop.VIEW / hop.COLS);
+      canvas.height = height;
     }
     return ratio;
   };
 
   const draw = () => {
     const ratio = size();
-    if (canvas.width) hop.paint(g, state, { colors, scale: canvas.width / hop.COLS, edge: 3 * ratio, hat });
+    if (canvas.width) hop.paint(g, state, { colors, scale: canvas.width / hop.COLS, edge: 3 * ratio, hat, rows: canvas.height / (canvas.width / hop.COLS) });
   };
 
   const over = () => {

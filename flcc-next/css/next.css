@@ -359,7 +359,10 @@ body[data-arcade] { overflow: hidden; }
   font-size: 1.1rem; font-weight: 900; line-height: 1;
   display: grid; place-items: center;
 }
-.arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: start center; }
+/* On a tall phone the field fills the width and height is left over. It sits
+   at the bottom of the well, against the pads, so the spare room goes under
+   the numbers rather than between the thumbs and the game. */
+.arcade-well { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: end center; }
 /* --field-w / --field-h are the field's own units: Galaga's 100 × 140 by
    default, Hop Across's nine lanes by thirteen rows. */
 .arcade {
@@ -369,6 +372,11 @@ body[data-arcade] { overflow: hidden; }
   background: var(--ink);
 }
 .arcade[data-shape="hop"] { --field-w: 9; --field-h: 13; }
+/* Hop Across is not a fixed shape: nine lanes wide and as tall as the well
+   allows, never fewer than thirteen rows. A tall phone sees further ahead,
+   and there is no empty band left between the field and the pads. */
+.arcade[data-shape="hop"] { height: 100cqh; }
+.arcade[data-shape="hop"] canvas { height: 100%; aspect-ratio: auto; }
 .arcade canvas {
   display: block; width: 100%; aspect-ratio: var(--field-w) / var(--field-h);
   border-radius: 9px; background: var(--paper);
