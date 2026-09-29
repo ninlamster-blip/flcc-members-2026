@@ -9,7 +9,8 @@
 //    exactly the thing worth keeping.
 //
 // 2. **Nothing here leaves the device.** Not to the church, not to a leader,
-//    not to a server — there is no server. What an adult prays about their
+//    not to a server. Sharing one request on the prayer wall is a separate,
+//    deliberate act in wall.js, and it never reads this list. What an adult prays about their
 //    marriage, their money or their manager is not ours to collect, and the
 //    screens say so plainly rather than burying it in a policy.
 

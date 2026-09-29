@@ -42,6 +42,7 @@ const SCREENS = {
   game:      () => import('./screens/game.js'),
   galaga:    () => import('./screens/galaga.js'),
   room:      () => import('./screens/room.js'),
+  wall:      () => import('./screens/wall.js'),
   notes:     () => import('./screens/notes.js'),
   note:      () => import('./screens/note.js'),
 };
@@ -91,6 +92,7 @@ const UNDER = {
   game:    'explore',
   galaga:  'explore',
   room:    'explore',
+  wall:    'explore',
   // Notes belong to the sermon they were taken at, so they light Watch.
   notes:   'watch',
   note:    'watch',

@@ -4,20 +4,25 @@
 // who wants to pray and does not know how to start; the prayer list is for the
 // person who prays constantly and cannot hold it all in their head.
 //
-// Nothing here leaves the device, and the screen says so where it matters
-// rather than in a policy nobody opens.
+// The list stays on the device, and the screen says so where it matters rather
+// than in a policy nobody opens. One prayer leaves only when the member taps
+// "Share with the church" on it, which opens the prayer wall with it written
+// in — signed with their first name, and sent only from there.
 
 import { h, poster, label, display, headline, art, go, pill, choice,
          rows, row, note, rise, toast, swap } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as rotation from '../core/rotation.js';
 import * as prayers from '../core/prayers.js';
+import * as agenda from '../core/agenda.js';
 
 const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
 
 export default async function prayScreen(ctx) {
   const parts = [];
-  const [guides, categories] = await Promise.all([content.guides(), content.categories()]);
+  const [guides, categories, events] = await Promise.all([
+    content.guides(), content.categories(), content.events().catch(() => []),
+  ]);
   const today = rotation.pick(guides, { offset: 3 });
   const catTone = (id) => toneOf((categories.find((one) => one.id === id) || {}).tone);
 
@@ -54,7 +59,7 @@ export default async function prayScreen(ctx) {
         toast('On your list.');
         ctx.refresh();
       }),
-      note('Stored on this phone only. Not sent to the church, to a leader, or to us.'))));
+      note('Stored on this phone only. To ask the church to pray too, open it in your list and share it.'))));
 
   // ── The list ────────────────────────────────────────────────────────────
   //
@@ -124,12 +129,20 @@ export default async function prayScreen(ctx) {
   }
 
   // ── The church ──────────────────────────────────────────────────────────
+  //
+  // The prayer meeting moves from week to week, so it is found by name in the
+  // calendar — the soonest one still ahead — and named by its own day.
+  const meeting = agenda.upcoming(events.filter((one) => /prayer meeting/i.test(one.title))).find((one) => one.at);
+  const day = meeting ? meeting.at.toLocaleDateString(undefined, { weekday: 'long' }) : '';
   parts.push(poster({ tone: 'paper' },
     label('Praying with other people'),
-    h('p', { class: 'body', text: 'This app cannot pass a prayer request to anyone — there is no server behind it and nothing typed here is sent. For prayer with the church, come to the Tuesday meeting, or speak to a leader after the service.' }),
-    h('div', { class: 'poster-foot' },
-      go('The Tuesday meeting', () => ctx.go('community')),
-      art('church', { tone: 'paper', size: 'sm' }))));
+    h('p', { class: 'body', text: meeting
+      ? `Share a request on the prayer wall and the church can pray with you — it is signed with your first name. Or pray together at ${day}’s prayer meeting: ${agenda.stamp(meeting.at)}, ${meeting.event.where}.`
+      : 'Share a request on the prayer wall and the church can pray with you — it is signed with your first name. Or speak to a leader after the service.' }),
+    h('div', { class: 'pill-row', style: 'margin-top:1rem' },
+      go('The prayer wall', () => ctx.go('wall')),
+      meeting ? go(`${day}’s prayer meeting`, () => ctx.go('community')) : null),
+    h('div', { class: 'poster-foot' }, h('span'), art('church', { tone: 'paper', size: 'sm' }))));
 
   const el = h('div', { style: 'display:contents' }, ...parts);
   rise(parts);
@@ -156,6 +169,7 @@ function prayerRow(ctx, item) {
           toast('Moved to Answered. It is kept, not deleted.');
           ctx.refresh();
         }),
+        pill('Share with the church', () => ctx.go(`wall?share=${encodeURIComponent(item.text)}`), { quiet: true }),
         pill('Remove', () => {
           prayers.remove(item.id);
           toast('Removed.');

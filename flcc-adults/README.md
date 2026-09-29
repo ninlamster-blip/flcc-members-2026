@@ -47,8 +47,8 @@ truth about what this app holds.
 
 ## Three decisions worth knowing about
 
-**Nothing leaves the device, except a question you chose to ask or a quiz room
-you chose to join.** There is no
+**Nothing leaves the device, except a question you chose to ask, a quiz room
+you chose to join, or a prayer request you chose to share.** There is no
 server, no account and no sync. Your prayer list, your reflections, your sermon
 notes, your reading and your verses live in this browser on this phone; a
 second device starts empty and clearing site data clears everything. That is a
@@ -65,6 +65,12 @@ The second is a **quiz room** on the Play tab, and it too is opt-in. A room
 sends a nickname the server picks, whether each answer was right, and which
 ready-made line was tapped — never a name and never anything typed, because
 there is nowhere to type. See [Quiz rooms](#quiz-rooms).
+
+The third is the **prayer wall**. Your prayer list stays on this phone, but one
+request can be shared with everyone in the app — written on the wall, or sent
+there from the list with "Share with the church". It goes signed with your
+first name and nothing else about you; the screen says so beside the button.
+See [The prayer wall](#the-prayer-wall).
 
 **There is no score.** No XP, no levels, no badges, no leaderboard, and no
 streak that breaks. A quiz room shows who got what right at the end of that
@@ -105,6 +111,26 @@ It will not speak as God, will not tell you what God is saying to you, will not
 stand in for a pastor or a doctor, and will tell you where Christians genuinely
 disagree instead of picking a side. Those are lines in the prompt, and
 `test/ai.test.mjs` fails if any of them is removed.
+
+## The prayer wall
+
+Pray → "The prayer wall". Requests the people of this church chose to share,
+newest first, each signed with a first name. Tap **🙏 I prayed** when you have;
+that count is the only number on the wall, and it is for the person who asked.
+
+- **What goes:** the request's text, your first name, and a random id this
+  phone made itself so "I prayed" counts once per phone. Never the rest of your
+  name, your season, or anything else on your list.
+- **Danger words are not posted.** A request that reads like someone is in
+  danger shows the same "bigger than an app" card as Ask, and is not sent.
+- **You can take it down.** Only the phone that shared a request holds the
+  token that removes it. Every request is deleted after 30 days anyway.
+- **The church can take it down.** Any reader can report one; three reports
+  from different phones hide it, with nobody needing to be awake at the time.
+
+The server side is `ask-proxy/adults-prayers.js` on the shared Worker.
+`test/wall.test.mjs` builds every request and fails if it carries more than
+the text, the first name and the phone's id.
 
 ## Sermon notes
 

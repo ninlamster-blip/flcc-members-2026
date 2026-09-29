@@ -34,6 +34,7 @@
 
 import { sendWebPush } from './webpush.js';
 import { handleNextPlay, sweepNextPlay } from './next-play.js';
+import { handleAdultPrayers, sweepAdultPrayers } from './adults-prayers.js';
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -597,6 +598,7 @@ export default {
     ctx.waitUntil(sendEveningSanctuaryReminder(env).catch(() => {}));
     ctx.waitUntil(sweepNextPrayers(env).catch(() => {}));
     ctx.waitUntil(sweepNextPlay(env).catch(() => {}));
+    ctx.waitUntil(sweepAdultPrayers(env).catch(() => {}));
   },
 };
 
@@ -631,6 +633,8 @@ async function handleRequest(request, env, ctx) {
       nextPrayers: !!(env.KASAMA_DB && env.NEXT_LEADER_KEY),
       nextDatabase: !!env.KASAMA_DB,
       nextPlay: !!env.KASAMA_DB,
+      // Whether the Adults app's prayer wall has somewhere to keep requests.
+      adultsPrayers: !!env.KASAMA_DB,
       nextLeaderKey: !!env.NEXT_LEADER_KEY,
       // Whether the FLCC NEXT Adults events admin can publish. Three fields
       // for the same reason as the three above: it needs two secrets that
@@ -802,6 +806,11 @@ async function handleRequest(request, env, ctx) {
   // ── /api/next/play — FLCC NEXT: nicknames, leaderboard, team goal, cheers ─
   if (url.pathname.startsWith('/api/next/play/')) {
     return handleNextPlay(request, env, url);
+  }
+
+  // ── /api/adults/prayers — FLCC NEXT Adults: the prayer wall ────────────────
+  if (url.pathname === '/api/adults/prayers' || url.pathname.startsWith('/api/adults/prayers/')) {
+    return handleAdultPrayers(request, env, url);
   }
 
   // ── /api/push — "new prayer" browser push notifications (opt-in) ─────────

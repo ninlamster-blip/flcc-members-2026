@@ -21,7 +21,7 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v14';
+const VERSION = 'adults-v15';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [
@@ -31,7 +31,7 @@ const SHELL = [
   './js/core/profile.js', './js/core/progress.js', './js/core/router.js',
   './js/core/content.js', './js/core/rotation.js', './js/core/scripture.js',
   './js/core/prayers.js', './js/core/plan.js', './js/core/agenda.js',
-  './js/core/ai.js', './js/core/safety.js', './js/core/notes.js', './js/core/rooms.js',
+  './js/core/ai.js', './js/core/safety.js', './js/core/notes.js', './js/core/rooms.js', './js/core/wall.js',
   './js/screens/today.js', './js/screens/explore.js', './js/screens/community.js',
   './js/screens/watch.js', './js/screens/you.js',
   './js/screens/bible.js', './js/screens/pray.js', './js/screens/grow.js',
@@ -40,7 +40,7 @@ const SHELL = [
   './js/screens/plan.js',
   './js/screens/ask.js', './js/screens/play.js', './js/screens/crossword.js',
   './js/screens/game.js', './js/screens/galaga.js', './js/screens/notes.js', './js/screens/note.js',
-  './js/screens/room.js',
+  './js/screens/room.js', './js/screens/wall.js',
   './js/games/crossword.js', './js/games/match3.js', './js/games/galaga.js', './js/games/chiptune.js',
   './content/moments.json', './content/paths.json', './content/prayer-guides.json',
   './content/prayer-categories.json', './content/reading-plans.json',
