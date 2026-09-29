@@ -67,10 +67,20 @@ export function cleanAvatar(value, ageGroup) {
   return null;
 }
 
-/** A column added after the table first shipped: added once, quietly, where it is missing. */
+/**
+ * Columns added after a table first shipped. One read of the table's columns,
+ * and an ALTER only for what is missing — so once they exist, a request costs
+ * a single quick read rather than a schema change. `columns` is a fixed list
+ * written in this file, never anything from a request.
+ */
 const migrated = new WeakSet();
-async function addColumn(db, table, column, type) {
-  try { await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`).run(); } catch { /* already there */ }
+export async function addMissingColumns(db, table, columns) {
+  const { results } = await db.prepare(`SELECT name FROM pragma_table_info('${table}')`).all();
+  const have = new Set((results || []).map((row) => row.name));
+  for (const [column, type] of columns) {
+    if (have.has(column)) continue;
+    try { await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`).run(); } catch { /* added by a request alongside */ }
+  }
 }
 
 export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {} };
@@ -161,7 +171,7 @@ export async function ensureNextPlaySchema(db) {
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_next_scores_week ON next_scores (game, week, best DESC)`),
     db.prepare(`CREATE INDEX IF NOT EXISTS idx_next_cheers_to ON next_cheers (to_id, created_at DESC)`),
   ]);
-  await addColumn(db, 'next_players', 'avatar', 'TEXT');
+  await addMissingColumns(db, 'next_players', [['avatar', 'TEXT']]);
   migrated.add(db);
 }
 
