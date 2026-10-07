@@ -4,13 +4,17 @@
 // at the ship — kept as pure functions over one state object, so it can be
 // tested without a browser and the screen only has to draw what it is handed.
 //
-// Three decisions shape it:
+// A few decisions shape it:
 //
 //   · It never ends by being won. Clearing a wave brings the next one, and
 //     every wave is harder than the last — more ships, faster dives, more fire
 //     — until the curve flattens at a ceiling a good thumb can still survive.
-//   · There is no fire button. Holding left or right moves the ship AND fires
-//     it; letting go stops both. One thumb plays the whole game.
+//   · There is no fire button. Holding a direction — or a finger on the
+//     field — moves the ship AND fires it; letting go stops both. One thumb
+//     plays the whole game.
+//   · The ship flies anywhere in the lower half of the field, not only along
+//     the bottom: a finger on the field pulls it toward that point, so it can
+//     slip up and around a diver or a stream of fire rather than only sideways.
 //   · Losing the last ship does not send you back to the start. A run can
 //     begin at any wave — the one you reached — with the difficulty of that
 //     wave, three fresh ships and, if the screen wants it, the score so far.
@@ -20,13 +24,16 @@
 // The field is measured in its own units — 100 across, and 140 down unless
 // the screen asks for taller (`create(..., { height })`, `resize()`), so a
 // tall phone is filled by the game rather than by empty paper. The ship
-// always flies 12 units above the bottom, whatever the height.
+// starts 12 units above the bottom, whatever the height, and never climbs
+// above the middle of the field.
 
 export const WIDTH = 100;
 export const HEIGHT = 140;
 
 const SHIP_ABOVE = 12;        // how far above the bottom the ship flies
 const SHIP_SPEED = 62;        // units a second
+const TOUCH_SPEED = 120;      // units a second, gliding toward a finger
+const SHIP_FLOOR = 6;         // the lowest the ship flies, above the bottom edge
 const SHIP_RADIUS = 3.6;
 const FIRE_EVERY = 0.26;      // seconds between shots while a direction is held
 const MAX_SHOTS = 4;
@@ -132,12 +139,18 @@ function startWave(state, n) {
 /**
  * Make the field `height` units tall (never less than HEIGHT) — the screen
  * calls this when the phone turns or the window changes. The ship keeps its
- * place above the bottom edge.
+ * height above the bottom edge.
  */
 export function resize(state, height) {
+  const above = state.height - state.ship.y;
   state.height = Math.max(HEIGHT, Number(height) || HEIGHT);
-  state.ship.y = state.height - SHIP_ABOVE;
+  state.ship.y = clamp(state.height - above, ceiling(state), state.height - SHIP_FLOOR);
   return state;
+}
+
+/** The highest the ship may fly: the middle of the field, below the formation. */
+export function ceiling(state) {
+  return state.height / 2;
 }
 
 /** Where a ship's formation slot actually is right now, with the sway. */
@@ -149,19 +162,21 @@ export function slot(state, enemy) {
 }
 
 const near = (a, b, r) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2 <= r * r;
-const clamp = (value, lo, hi) => Math.max(lo, Math.min(hi, value));
+function clamp(value, lo, hi) { return Math.max(lo, Math.min(hi, value)); }
 
 /**
- * Advance the run by `dt` seconds. `input` is `{ left, right }` — what is held
- * right now. Returns what happened, so the screen can repaint the numbers only
- * when they change.
+ * Advance the run by `dt` seconds. `input` is what is held right now:
+ * `{ left, right, up, down }`, and/or `to: { x, y }` — a point on the field,
+ * in field units, that a finger is on. Returns what happened, so the screen
+ * can repaint the numbers only when they change.
  */
 export function step(state, input = {}, dt = 1 / 60) {
   const events = [];
   if (state.over) return events;
-  const left = Boolean(input.left);
-  const right = Boolean(input.right);
-  const held = left !== right;               // both at once cancels out
+  const across = Boolean(input.right) - Boolean(input.left);   // both at once cancels out
+  const along = Boolean(input.down) - Boolean(input.up);
+  const to = input.to && Number.isFinite(input.to.x) && Number.isFinite(input.to.y) ? input.to : null;
+  const held = Boolean(to) || across !== 0 || along !== 0;
   if (!state.started) {
     if (!held) return events;
     state.started = true;
@@ -172,7 +187,20 @@ export function step(state, input = {}, dt = 1 / 60) {
 
   // ── The ship: move and fire together, or neither ────────────────────────
   const ship = state.ship;
-  if (held) ship.x = clamp(ship.x + (right ? 1 : -1) * SHIP_SPEED * dt, 6, WIDTH - 6);
+  if (to) {
+    // Glide toward the finger — fast, but never a teleport.
+    const dx = clamp(to.x, 6, WIDTH - 6) - ship.x;
+    const dy = clamp(to.y, ceiling(state), state.height - SHIP_FLOOR) - ship.y;
+    const distance = Math.hypot(dx, dy);
+    const reach = Math.min(1, (TOUCH_SPEED * dt) / (distance || 1));
+    ship.x += dx * reach;
+    ship.y += dy * reach;
+  } else if (held) {
+    ship.x += across * SHIP_SPEED * dt;
+    ship.y += along * SHIP_SPEED * dt;
+  }
+  ship.x = clamp(ship.x, 6, WIDTH - 6);
+  ship.y = clamp(ship.y, ceiling(state), state.height - SHIP_FLOOR);
   ship.safe = Math.max(0, ship.safe - dt);
   state.cooldown = Math.max(0, state.cooldown - dt);
   if (held && state.cooldown === 0 && state.shots.length < MAX_SHOTS && state.rest === 0) {

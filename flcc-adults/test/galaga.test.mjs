@@ -48,6 +48,36 @@ test('the ship stays on the field', () => {
   assert.ok(state.ship.x <= galaga.WIDTH);
 });
 
+test('a finger on the field flies the ship up, down and across, and fires', () => {
+  const state = galaga.create(3);
+  const start = { ...state.ship };
+  const firing = run(state, { to: { x: 20, y: 100 } }, 1);
+  assert.ok(firing.includes('start'), 'a touch starts the run');
+  assert.ok(firing.filter((one) => one === 'fire').length >= 3, 'a finger down fires');
+  assert.ok(Math.abs(state.ship.x - 20) < 0.01 && Math.abs(state.ship.y - 100) < 0.01, 'the ship reaches the finger');
+  assert.ok(state.ship.y < start.y, 'the ship climbed');
+
+  run(state, { to: { x: 80, y: 130 } }, DT);
+  assert.ok(state.ship.x - 20 < 3, 'it glides toward the finger rather than jumping');
+
+  const parked = { ...state.ship };
+  assert.equal(run(state, {}, 1).filter((one) => one === 'fire').length, 0, 'lifting the finger stops the firing');
+  assert.deepEqual({ x: state.ship.x, y: state.ship.y }, { x: parked.x, y: parked.y }, 'and the ship stays put');
+});
+
+test('the ship never climbs above the middle of the field or off its edges', () => {
+  const state = galaga.create(3, { height: 200 });
+  run(state, { to: { x: -50, y: -50 } }, 3);
+  assert.equal(state.ship.y, galaga.ceiling(state));
+  assert.equal(state.ship.y, 100);
+  assert.ok(state.ship.x >= 0);
+  run(state, { to: { x: 500, y: 900 } }, 3);
+  assert.ok(state.ship.x <= galaga.WIDTH);
+  assert.ok(state.ship.y < state.height, 'the ship stays on the field');
+  run(state, { up: true }, 5);
+  assert.equal(state.ship.y, 100, 'holding up stops at the middle too');
+});
+
 test('every wave is at least as hard as the one before, and some are harder', () => {
   const harder = { rows: 1, cols: 1, sway: 1, divers: 1, diveSpeed: 1, shotSpeed: 1, armoured: 1, diveEvery: -1, fireEvery: -1 };
   for (let n = 1; n < 60; n++) {

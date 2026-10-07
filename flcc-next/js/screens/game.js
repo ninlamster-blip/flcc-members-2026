@@ -419,8 +419,9 @@ async function crosswordGame(ctx) {
 // ── Galaga ──────────────────────────────────────────────────────────────────
 //
 // The arcade classic, and the one game here with no end: every wave cleared
-// brings a harder one. Holding left or right flies the ship and fires it at
-// once — there is no fire button — so a whole run is played with one thumb.
+// brings a harder one. A finger on the field pulls the ship toward it — up,
+// down and across — and fires it at once; the ◀ ▶ pads still fly it sideways.
+// There is no fire button, so a whole run is played with one thumb.
 // The best score stays on this device and is never compared with anybody's.
 //
 // Losing the last ship does not send anyone back to wave one. The wave reached
@@ -462,7 +463,7 @@ function galagaGame(ctx) {
   let state = galaga.create(seed(), saved());
   // Sound is on unless this phone has been told otherwise.
   const sound = chiptune.player({ muted: Boolean(arcade().galagaMuted) });
-  const held = { left: false, right: false };
+  const held = { left: false, right: false, up: false, down: false, to: null };
   let raf = 0;
   let last = 0;
   let attached = false;
@@ -470,7 +471,7 @@ function galagaGame(ctx) {
   let gone = false;
   const home = location.hash;       // this screen's route, to notice leaving it
 
-  const canvas = h('canvas', { 'aria-label': 'Galaga. Hold left or right to fly and fire.', role: 'img' });
+  const canvas = h('canvas', { 'aria-label': 'Galaga. Touch and drag on the field to fly anywhere and fire, or hold left or right.', role: 'img' });
   const g = canvas.getContext('2d');
   const colors = palette();
   // The ship colour a streak has earned (js/core/rewards.js), if one is worn.
@@ -582,7 +583,7 @@ function galagaGame(ctx) {
   const press = (side, on) => {
     if (on) sound.wake();
     held[side] = on;
-    pads[side].toggleAttribute('data-held', on);
+    pads[side]?.toggleAttribute('data-held', on);
   };
 
   const hold = (side, symbolText, name) => h('button', {
@@ -595,18 +596,37 @@ function galagaGame(ctx) {
   });
   const pads = { left: hold('left', '◀', 'Fly left and fire'), right: hold('right', '▶', 'Fly right and fire') };
 
-  // The field itself is a pad too: the left half flies left, the right half right.
-  const fieldSide = (event) => (event.offsetX < canvas.clientWidth / 2 ? 'left' : 'right');
+  // The field itself is the stick: a finger on it pulls the ship toward that
+  // point — up and down as well as across — and fires while it stays down.
+  // The ship aims a little above the fingertip so the thumb does not hide it.
+  const LIFT = 10;                  // field units between fingertip and ship
+  let finger = null;
+  const aim = (event) => {
+    const box = canvas.getBoundingClientRect();
+    if (!box.width) return;
+    const units = galaga.WIDTH / box.width;   // the field is scaled evenly both ways
+    held.to = { x: (event.clientX - box.left) * units, y: (event.clientY - box.top) * units - LIFT };
+  };
   canvas.addEventListener('pointerdown', (event) => {
     event.preventDefault();
     canvas.setPointerCapture?.(event.pointerId);
-    press(fieldSide(event), true);
+    sound.wake();
+    finger = event.pointerId;
+    aim(event);
   });
-  const lift = () => { press('left', false); press('right', false); };
+  canvas.addEventListener('pointermove', (event) => { if (event.pointerId === finger) aim(event); });
+  const lift = () => {
+    finger = null;
+    held.to = null;
+    for (const side of ['left', 'right', 'up', 'down']) press(side, false);
+  };
   canvas.addEventListener('pointerup', lift);
   canvas.addEventListener('pointercancel', lift);
 
-  const KEYS = { ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
+  const KEYS = {
+    ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right',
+    ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down',
+  };
   const onKey = (event) => {
     if (!canvas.isConnected) { teardown(); return; }
     if (event.key === 'Escape' && event.type === 'keydown' && !document.querySelector('.moment')) { leave(); return; }

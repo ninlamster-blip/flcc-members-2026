@@ -1,9 +1,9 @@
 // GALAGA — the arcade classic, drawn in this app's own system.
 //
 // The one game here with no end: every wave cleared brings a harder one, and
-// the curve flattens at a ceiling rather than running away. Holding left or
-// right flies the ship and fires it at once — there is no fire button — so a
-// run is played with one thumb while waiting for a lift after the service.
+// the curve flattens at a ceiling rather than running away. A finger on the
+// field pulls the ship toward it — up, down and across — and fires it at once;
+// there is no fire button, so a run is played with one thumb while waiting for a lift after the service.
 //
 // This edition keeps no score, and that holds here too. The engine counts
 // points because the kids and teens edition shows them; this screen never
@@ -55,7 +55,7 @@ export default async function galagaScreen(ctx) {
   let state = galaga.create(seed(), { wave: savedWave() });
   // Sound is on unless this device has been told otherwise.
   const sound = chiptune.player({ muted: Boolean(play().galagaMuted) });
-  const held = { left: false, right: false };
+  const held = { left: false, right: false, up: false, down: false, to: null };
   let raf = 0;
   let last = 0;
   let attached = false;
@@ -63,7 +63,7 @@ export default async function galagaScreen(ctx) {
   let gone = false;
   const home = location.hash;       // this screen's route, to notice leaving it
 
-  const canvas = h('canvas', { 'aria-label': 'Galaga. Hold left or right to fly and fire.', role: 'img' });
+  const canvas = h('canvas', { 'aria-label': 'Galaga. Touch and drag on the field to fly anywhere and fire, or hold left or right.', role: 'img' });
   const g = canvas.getContext('2d');
   const colors = palette();
 
@@ -159,7 +159,7 @@ export default async function galagaScreen(ctx) {
   const press = (side, on) => {
     if (on) sound.wake();
     held[side] = on;
-    pads[side].toggleAttribute('data-held', on);
+    pads[side]?.toggleAttribute('data-held', on);
   };
 
   const hold = (side, symbolText, name) => h('button', {
@@ -172,18 +172,37 @@ export default async function galagaScreen(ctx) {
   });
   const pads = { left: hold('left', '◀', 'Fly left and fire'), right: hold('right', '▶', 'Fly right and fire') };
 
-  // The field itself is a pad too: the left half flies left, the right half right.
-  const fieldSide = (event) => (event.offsetX < canvas.clientWidth / 2 ? 'left' : 'right');
+  // The field itself is the stick: a finger on it pulls the ship toward that
+  // point — up and down as well as across — and fires while it stays down.
+  // The ship aims a little above the fingertip so the thumb does not hide it.
+  const LIFT = 10;                  // field units between fingertip and ship
+  let finger = null;
+  const aim = (event) => {
+    const box = canvas.getBoundingClientRect();
+    if (!box.width) return;
+    const units = galaga.WIDTH / box.width;   // the field is scaled evenly both ways
+    held.to = { x: (event.clientX - box.left) * units, y: (event.clientY - box.top) * units - LIFT };
+  };
   canvas.addEventListener('pointerdown', (event) => {
     event.preventDefault();
     canvas.setPointerCapture?.(event.pointerId);
-    press(fieldSide(event), true);
+    sound.wake();
+    finger = event.pointerId;
+    aim(event);
   });
-  const lift = () => { press('left', false); press('right', false); };
+  canvas.addEventListener('pointermove', (event) => { if (event.pointerId === finger) aim(event); });
+  const lift = () => {
+    finger = null;
+    held.to = null;
+    for (const side of ['left', 'right', 'up', 'down']) press(side, false);
+  };
   canvas.addEventListener('pointerup', lift);
   canvas.addEventListener('pointercancel', lift);
 
-  const KEYS = { ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
+  const KEYS = {
+    ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right',
+    ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', S: 'down',
+  };
   const onKey = (event) => {
     if (!canvas.isConnected) { teardown(); return; }
     if (event.key === 'Escape' && event.type === 'keydown' && !document.querySelector('.moment')) { leave(); return; }
