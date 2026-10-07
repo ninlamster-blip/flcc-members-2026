@@ -39,6 +39,16 @@ export const SOUNDS = {
     { type: 'triangle', from: 784, to: 784, at: 0, dur: 0.1, gain: 0.1 },
     { type: 'triangle', from: 1175, to: 1175, at: 0.1, dur: 0.16, gain: 0.1 },
   ],
+  // A power for the new wave: a fast rising sweep and a bright top note.
+  power: [
+    { type: 'square', from: 392, to: 1568, at: 0, dur: 0.22, gain: 0.05 },
+    { type: 'triangle', from: 1568, to: 1568, at: 0.22, dur: 0.16, gain: 0.09 },
+  ],
+  // The shield taking a hit for you: a bright ring, not the boom of a lost ship.
+  shield: [
+    { type: 'triangle', from: 1800, to: 900, at: 0, dur: 0.2, gain: 0.1 },
+    { noise: true, cutFrom: 6000, cutTo: 1500, at: 0, dur: 0.12, gain: 0.06 },
+  ],
   // Game over: a falling four-note tune.
   over: [523, 440, 349, 262].map((hz, i) => ({ type: 'square', from: hz, to: hz * (i === 3 ? 0.9 : 1), at: i * 0.16, dur: i === 3 ? 0.34 : 0.14, gain: 0.06 })),
 };
