@@ -15,6 +15,9 @@
 //   · The ship flies anywhere in the lower half of the field, not only along
 //     the bottom: a finger on the field pulls it toward that point, so it can
 //     slip up and around a diver or a stream of fire rather than only sideways.
+//   · Every new wave hands the ship a power for that wave, in turn: a shield
+//     that soaks up one hit, rapid fire, a three-way spread, then extra speed
+//     — and round again. Wave one has none; clearing a wave ends its power.
 //   · Losing the last ship does not send you back to the start. A run can
 //     begin at any wave — the one you reached — with the difficulty of that
 //     wave, three fresh ships and, if the screen wants it, the score so far.
@@ -44,6 +47,23 @@ const START_LIVES = 3;
 const MAX_LIVES = 5;
 const SAFE_AFTER_HIT = 2;     // seconds the ship cannot be hit after losing a life
 const BETWEEN_WAVES = 1.6;    // seconds of breathing room after a wave clears
+const SHOW_POWER = 2.2;       // seconds the new power's name stays on the field
+
+/**
+ * The powers, in the order the waves hand them out, and what each one changes.
+ * Wave two gets the first, wave three the second, and so on, round and round.
+ */
+export const POWERS = ['shield', 'rapid', 'spread', 'speed'];
+export const POWER_NAMES = { shield: 'SHIELD', rapid: 'RAPID FIRE', spread: 'TRIPLE SHOT', speed: 'SPEED BOOST' };
+const RAPID = { every: 0.12, shots: 9, speed: 1.6 };    // fire rate, missiles at once, missile speed
+const SPREAD = { angle: 22, shots: 12 };                // sideways drift of the outer two, missiles at once
+const SPEED_BOOST = 1.7;
+
+/** The power wave `n` hands the ship, or null for wave one. */
+export function powerFor(n) {
+  const w = Math.max(1, Math.trunc(n));
+  return w > 1 ? POWERS[(w - 2) % POWERS.length] : null;
+}
 
 /** A seeded generator returning floats in [0, 1). */
 export function seeded(seed) {
@@ -93,6 +113,9 @@ export function create(seed = 1, { wave: from = 1, score = 0, height = HEIGHT } 
     bombs: [],
     enemies: [],
     cooldown: 0,
+    power: null,
+    shield: false,
+    showPower: 0,
     diveClock: 0,
     fireClock: 0,
     rest: 0,
@@ -107,6 +130,9 @@ function startWave(state, n) {
   const config = wave(n);
   state.wave = n;
   state.config = config;
+  state.power = powerFor(n);
+  state.shield = state.power === 'shield';
+  state.showPower = state.power ? SHOW_POWER : 0;
   state.diveClock = config.diveEvery;
   state.fireClock = config.fireEvery;
   state.enemies = [];
@@ -187,35 +213,45 @@ export function step(state, input = {}, dt = 1 / 60) {
 
   // ── The ship: move and fire together, or neither ────────────────────────
   const ship = state.ship;
+  const power = state.power;
+  const boost = power === 'speed' ? SPEED_BOOST : 1;
+  state.showPower = Math.max(0, state.showPower - dt);
   if (to) {
     // Glide toward the finger — fast, but never a teleport.
     const dx = clamp(to.x, 6, WIDTH - 6) - ship.x;
     const dy = clamp(to.y, ceiling(state), state.height - SHIP_FLOOR) - ship.y;
     const distance = Math.hypot(dx, dy);
-    const reach = Math.min(1, (TOUCH_SPEED * dt) / (distance || 1));
+    const reach = Math.min(1, (TOUCH_SPEED * boost * dt) / (distance || 1));
     ship.x += dx * reach;
     ship.y += dy * reach;
   } else if (held) {
-    ship.x += across * SHIP_SPEED * dt;
-    ship.y += along * SHIP_SPEED * dt;
+    ship.x += across * SHIP_SPEED * boost * dt;
+    ship.y += along * SHIP_SPEED * boost * dt;
   }
   ship.x = clamp(ship.x, 6, WIDTH - 6);
   ship.y = clamp(ship.y, ceiling(state), state.height - SHIP_FLOOR);
   ship.safe = Math.max(0, ship.safe - dt);
   state.cooldown = Math.max(0, state.cooldown - dt);
-  if (held && state.cooldown === 0 && state.shots.length < MAX_SHOTS && state.rest === 0) {
-    state.shots.push({ x: ship.x, y: ship.y - 5 });
-    state.cooldown = FIRE_EVERY;
+  const most = power === 'rapid' ? RAPID.shots : power === 'spread' ? SPREAD.shots : MAX_SHOTS;
+  if (held && state.cooldown === 0 && state.shots.length < most && state.rest === 0) {
+    const vy = SHOT_SPEED * (power === 'rapid' ? RAPID.speed : 1);
+    const drifts = power === 'spread' ? [-SPREAD.angle, 0, SPREAD.angle] : [0];
+    for (const vx of drifts) state.shots.push({ x: ship.x, y: ship.y - 5, vx, vy });
+    state.cooldown = power === 'rapid' ? RAPID.every : FIRE_EVERY;
     events.push('fire');
   }
-  for (const shot of state.shots) shot.y -= SHOT_SPEED * dt;
-  state.shots = state.shots.filter((shot) => shot.y > -4);
+  for (const shot of state.shots) { shot.x += (shot.vx || 0) * dt; shot.y -= (shot.vy || SHOT_SPEED) * dt; }
+  state.shots = state.shots.filter(onField);
 
   // ── Between waves: let the field clear, then bring the next ─────────────
   if (state.rest > 0) {
     state.rest = Math.max(0, state.rest - dt);
     moveBombs(state, dt);
-    if (state.rest === 0) { startWave(state, state.wave + 1); events.push('wave'); }
+    if (state.rest === 0) {
+      startWave(state, state.wave + 1);
+      events.push('wave');
+      if (state.power) events.push('power');
+    }
     return events;
   }
 
@@ -285,7 +321,7 @@ export function step(state, input = {}, dt = 1 / 60) {
       break;
     }
   }
-  state.shots = state.shots.filter((shot) => shot.y > -4);
+  state.shots = state.shots.filter(onField);
 
   if (ship.safe === 0) {
     const bomb = state.bombs.find((one) => near(one, ship, SHIP_RADIUS + BOMB_RADIUS));
@@ -293,6 +329,13 @@ export function step(state, input = {}, dt = 1 / 60) {
     if (bomb || rammer) {
       if (bomb) bomb.y = state.height + 99;
       if (rammer) rammer.hp = 0;
+      if (state.shield) {
+        // The shield takes the hit instead, and is gone.
+        state.shield = false;
+        ship.safe = 1;
+        events.push('shield');
+        return events;
+      }
       state.lives -= 1;
       ship.safe = SAFE_AFTER_HIT;
       state.bombs = [];
@@ -306,9 +349,16 @@ export function step(state, input = {}, dt = 1 / 60) {
     // A spare ship every fifth wave, so a long run can survive a mistake.
     if (state.wave % 5 === 0 && state.lives < MAX_LIVES) { state.lives += 1; events.push('life'); }
     state.rest = BETWEEN_WAVES;
+    state.power = null;                    // a power lasts the wave it came with
+    state.shield = false;
+    state.showPower = 0;
     events.push('cleared');
   }
   return events;
+}
+
+function onField(shot) {
+  return shot.y > -4 && shot.x > -4 && shot.x < WIDTH + 4;
 }
 
 function moveBombs(state, dt) {
@@ -343,6 +393,19 @@ function drawShip(g, x, y, colors, tone = 'captain') {
   g.restore();
 }
 
+/** The shield: a sky ring in the navy outline, close around the ship. */
+function drawShield(g, x, y, colors) {
+  g.save();
+  g.beginPath();
+  g.arc(x, y, 8, 0, Math.PI * 2);
+  g.fillStyle = colors.sky;
+  g.globalAlpha = 0.55;
+  g.fill();
+  g.globalAlpha = 1;
+  g.stroke();
+  g.restore();
+}
+
 function drawEnemy(g, enemy, time, colors) {
   const flap = Math.sin(time * 9 + enemy.slotX) * 0.9;
   g.save();
@@ -367,11 +430,11 @@ function drawEnemy(g, enemy, time, colors) {
   g.restore();
 }
 
-function caption(g, text, colors, y) {
+function caption(g, text, colors, y, size = 7) {
   g.fillStyle = colors.ink;
   g.textAlign = 'center';
   g.textBaseline = 'middle';
-  g.font = '900 7px Inter, system-ui, sans-serif';
+  g.font = `900 ${size}px Inter, system-ui, sans-serif`;
   g.fillText(text, WIDTH / 2, y);
 }
 
@@ -400,7 +463,8 @@ export function paint(g, state, { colors, scale, edge, ship = 'captain' }) {
   for (const enemy of state.enemies) if (enemy.wait <= 0) drawEnemy(g, enemy, state.time, colors);
 
   g.fillStyle = colors.ink;
-  for (const shot of state.shots) g.fillRect(shot.x - 0.6, shot.y - 2, 1.2, 4);
+  const thick = state.power === 'rapid' ? 1 : 0.6;       // rapid-fire missiles are heavier
+  for (const shot of state.shots) g.fillRect(shot.x - thick, shot.y - 2.5, thick * 2, 5);
 
   // Enemy fire is the one thing on the field that has to be seen at a glance,
   // so it is drawn large: a poppy dart in the navy outline, pointing the way
@@ -420,11 +484,23 @@ export function paint(g, state, { colors, scale, edge, ship = 'captain' }) {
   }
 
   const blinking = state.ship.safe > 0 && Math.floor(state.ship.safe * 8) % 2 === 0;
+  if (!state.over && state.shield) drawShield(g, state.ship.x, state.ship.y, colors);
   if (!state.over && !blinking) drawShip(g, state.ship.x, state.ship.y, colors, ship);
 
+  const name = state.power ? POWER_NAMES[state.power] : '';
   if (!state.started) {
     if (state.wave > 1) caption(g, `WAVE ${state.wave}`, colors, tall * 0.52);
-    caption(g, 'HOLD ◀ OR ▶ TO FLY', colors, tall * 0.62);
+    caption(g, 'TOUCH AND DRAG TO FLY', colors, tall * 0.62, 6);
+    if (name) caption(g, `POWER: ${name}`, colors, tall * 0.7, 5);
   }
   else if (state.rest > 0) caption(g, `WAVE ${state.wave + 1}`, colors, tall / 2);
+  else if (state.showPower > 0) caption(g, `${name}!`, colors, tall * 0.62);
+  else if (name) {
+    // While it lasts, the power's name sits small in the bottom corner.
+    g.fillStyle = colors.ink;
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
+    g.font = '800 3.6px Inter, system-ui, sans-serif';
+    g.fillText(state.power === 'shield' && !state.shield ? 'SHIELD USED' : name, 2.5, tall - 2.5);
+  }
 }
