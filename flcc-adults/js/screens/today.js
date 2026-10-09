@@ -17,6 +17,7 @@ import * as agenda from '../core/agenda.js';
 import * as progress from '../core/progress.js';
 import * as plan from '../core/plan.js';
 import * as prayers from '../core/prayers.js';
+import * as notes from '../core/notes.js';
 import { seasonOf, wants } from '../core/profile.js';
 
 const LINES = {
@@ -31,6 +32,27 @@ export default async function todayScreen(ctx) {
 
   const events = await content.events().catch(() => []);
   const pulse = agenda.pulse(events);
+
+  // ── At church today ─────────────────────────────────────────────────────
+  //
+  // The kids edition's card, on any day a service is on the church's
+  // calendar. It goes first because on that day it is the thing a member has
+  // their phone out for, and it opens the note they started today rather than
+  // a fresh one each tap.
+  if (agenda.serviceToday(events)) {
+    const kept = notes.fromToday();
+    const written = kept && !notes.isEmpty(kept);
+    parts.push(poster({ tone: 'captain', as: 'button', className: 'full',
+      onclick: () => ctx.go(`note/${(kept || notes.create()).id}`) },
+      label('At church today?'),
+      h('div', {},
+        headline(written ? 'NOTES KEPT. ADD MORE?' : 'KEEP YOUR NOTES HERE.'),
+        h('p', { class: 'body dim', style: 'margin-top:.8rem',
+          text: 'The passage, one thing you learned, one thing you will do — and any question you still have.' })),
+      h('div', { class: 'poster-foot' },
+        h('p', { class: 'label', text: 'Open my notes' }),
+        art('words', { tone: 'captain', size: 'sm' }))));
+  }
 
   // ── The day's word ──────────────────────────────────────────────────────
   //

@@ -139,3 +139,11 @@ test('a shared note reads like the message it was taken on', () => {
   assert.equal(notes.fileName({ title: '  ' }), 'sermon-notes.txt');
   assert.equal(notes.fileName({ title: 'Faith: Hebrews 11 / week 2!' }), 'faith-hebrews-11-week-2.txt');
 });
+
+test('the service-day card goes back to the note started today', () => {
+  reset();
+  assert.equal(notes.fromToday(), null);
+  const one = notes.create({ title: 'Faith' });
+  assert.equal(notes.fromToday().id, one.id);
+  assert.equal(notes.fromToday(new Date(Date.now() + 2 * 86400000)), null, 'not on another day');
+});
