@@ -48,7 +48,7 @@ export default async function todayScreen(ctx) {
       h('div', {},
         headline(written ? 'NOTES KEPT. ADD MORE?' : 'KEEP YOUR NOTES HERE.'),
         h('p', { class: 'body dim', style: 'margin-top:.8rem',
-          text: 'The passage, one thing you learned, one thing you will do — and any question you still have.' })),
+          text: 'What it was about, the three points it made, the question it left you with — and your own words.' })),
       h('div', { class: 'poster-foot' },
         h('p', { class: 'label', text: 'Open my notes' }),
         art('words', { tone: 'captain', size: 'sm' }))));
