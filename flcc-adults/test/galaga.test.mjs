@@ -48,6 +48,36 @@ test('the ship stays on the field', () => {
   assert.ok(state.ship.x <= galaga.WIDTH);
 });
 
+test('a finger on the field flies the ship up, down and across, and fires', () => {
+  const state = galaga.create(3);
+  const start = { ...state.ship };
+  const firing = run(state, { to: { x: 20, y: 100 } }, 1);
+  assert.ok(firing.includes('start'), 'a touch starts the run');
+  assert.ok(firing.filter((one) => one === 'fire').length >= 3, 'a finger down fires');
+  assert.ok(Math.abs(state.ship.x - 20) < 0.01 && Math.abs(state.ship.y - 100) < 0.01, 'the ship reaches the finger');
+  assert.ok(state.ship.y < start.y, 'the ship climbed');
+
+  run(state, { to: { x: 80, y: 130 } }, DT);
+  assert.ok(state.ship.x - 20 < 3, 'it glides toward the finger rather than jumping');
+
+  const parked = { ...state.ship };
+  assert.equal(run(state, {}, 1).filter((one) => one === 'fire').length, 0, 'lifting the finger stops the firing');
+  assert.deepEqual({ x: state.ship.x, y: state.ship.y }, { x: parked.x, y: parked.y }, 'and the ship stays put');
+});
+
+test('the ship never climbs above the middle of the field or off its edges', () => {
+  const state = galaga.create(3, { height: 200 });
+  run(state, { to: { x: -50, y: -50 } }, 3);
+  assert.equal(state.ship.y, galaga.ceiling(state));
+  assert.equal(state.ship.y, 100);
+  assert.ok(state.ship.x >= 0);
+  run(state, { to: { x: 500, y: 900 } }, 3);
+  assert.ok(state.ship.x <= galaga.WIDTH);
+  assert.ok(state.ship.y < state.height, 'the ship stays on the field');
+  run(state, { up: true }, 5);
+  assert.equal(state.ship.y, 100, 'holding up stops at the middle too');
+});
+
 test('every wave is at least as hard as the one before, and some are harder', () => {
   const harder = { rows: 1, cols: 1, sway: 1, divers: 1, diveSpeed: 1, shotSpeed: 1, armoured: 1, diveEvery: -1, fireEvery: -1 };
   for (let n = 1; n < 60; n++) {
@@ -125,6 +155,75 @@ test('being hit costs a ship, and losing the last ends the run', () => {
   assert.ok(events.includes('hit') && events.includes('over'));
   assert.equal(state.over, true);
   assert.deepEqual(galaga.step(state, { left: true }, DT), [], 'a finished run stays finished');
+});
+
+test('every new wave hands the ship a power, in turn, and wave one has none', () => {
+  assert.equal(galaga.powerFor(1), null);
+  assert.deepEqual([2, 3, 4, 5, 6].map(galaga.powerFor), ['shield', 'rapid', 'spread', 'speed', 'shield']);
+  for (const power of galaga.POWERS) assert.ok(galaga.POWER_NAMES[power], `${power} has no name to show`);
+
+  const state = galaga.create(9);
+  assert.equal(state.power, null);
+  run(state, { right: true }, DT);
+  state.enemies = [];
+  const events = run(state, {}, 3);
+  assert.ok(events.includes('power'), 'the new wave announces its power');
+  assert.equal(state.power, 'shield');
+  assert.equal(galaga.create(5, { wave: 4 }).power, 'spread', 'a continued run gets its wave\'s power');
+});
+
+test('the shield soaks up one hit instead of a ship, then is gone', () => {
+  const state = galaga.create(9, { wave: 2 });
+  run(state, { right: true }, DT);
+  const hit = () => { state.bombs = [{ x: state.ship.x, y: state.ship.y, vx: 0, vy: 0 }]; return galaga.step(state, {}, DT); };
+  const first = hit();
+  assert.ok(first.includes('shield') && !first.includes('hit'));
+  assert.equal(state.lives, 3, 'no ship lost');
+  assert.equal(state.shield, false);
+  run(state, {}, 1.1);                        // past the moment of grace
+  assert.ok(hit().includes('hit'), 'the next hit costs a ship');
+  assert.equal(state.lives, 2);
+});
+
+test('rapid fire shoots faster missiles, more often', () => {
+  const fired = (wave) => {
+    const state = galaga.create(9, { wave });
+    // One ship parked off the field: nothing to hit, but the wave is not over.
+    state.enemies = [{ id: 'x', row: 1, kind: 1, hp: 1, slotX: 50, slotY: 10, x: 50, y: -50, mode: 'form', wait: 9, phase: 0, vx: 0, vy: 0 }];
+    const shots = run(state, { right: true }, 1).filter((one) => one === 'fire').length;
+    return { shots, speed: state.shots[0].vy };
+  };
+  const normal = fired(1);
+  const rapid = fired(3);
+  assert.ok(rapid.shots >= normal.shots * 1.8, `${rapid.shots} vs ${normal.shots}`);
+  assert.ok(rapid.speed > normal.speed);
+});
+
+test('the triple shot fires three missiles that fan out', () => {
+  const state = galaga.create(9, { wave: 4 });
+  state.enemies = [{ id: 'x', row: 1, kind: 1, hp: 1, slotX: 50, slotY: 10, x: 50, y: -50, mode: 'form', wait: 1, phase: 0, vx: 0, vy: 0 }];
+  galaga.step(state, { right: true }, DT);
+  assert.equal(state.shots.length, 3);
+  assert.deepEqual(state.shots.map((shot) => Math.sign(shot.vx)), [-1, 0, 1]);
+});
+
+test('the speed boost flies the ship faster', () => {
+  const moved = (wave) => {
+    const state = galaga.create(9, { wave });
+    const x = state.ship.x;
+    run(state, { left: true }, 0.3);
+    return x - state.ship.x;
+  };
+  assert.ok(moved(5) > moved(1) * 1.5);
+});
+
+test('a power lasts its wave and ends when the wave is cleared', () => {
+  const state = galaga.create(9, { wave: 3 });
+  run(state, { right: true }, DT);
+  state.enemies = [];
+  const events = galaga.step(state, {}, DT);
+  assert.ok(events.includes('cleared'));
+  assert.equal(state.power, null);
 });
 
 test('a long run with the controls held is deterministic for a seed', () => {

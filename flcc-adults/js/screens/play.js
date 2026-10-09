@@ -50,7 +50,7 @@ export default async function playScreen(ctx) {
     h('div', {},
       display('GALAGA'),
       h('p', { class: 'lead dim', style: 'margin-top:1rem',
-        text: 'The arcade classic. Hold left or right to fly — the ship fires by itself while it moves. It never ends, and every wave is harder than the last.' })),
+        text: 'The arcade classic. Touch the field and drag to fly anywhere — the ship fires by itself while it moves, and each new wave brings a power: a shield, rapid fire, a triple shot or extra speed. It never ends, and every wave is harder than the last.' })),
     h('div', { class: 'poster-foot' },
       h('span', { class: 'go' }, 'Fly'),
       art('star', { tone: 'sunshine', size: 'sm' }))));

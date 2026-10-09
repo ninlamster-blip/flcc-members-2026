@@ -39,7 +39,7 @@ test('nothing lasts longer than a second', () => {
 });
 
 test('every engine event worth hearing has a sound', () => {
-  for (const event of ['fire', 'dent', 'kill', 'hit', 'cleared', 'life', 'over']) {
+  for (const event of ['fire', 'dent', 'kill', 'hit', 'cleared', 'life', 'over', 'power', 'shield']) {
     assert.ok(chiptune.SOUNDS[event], `no sound for "${event}"`);
   }
 });

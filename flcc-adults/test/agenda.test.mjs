@@ -156,3 +156,29 @@ test('days are counted as calendar days, not as multiples of 24 hours', () => {
   assert.equal(agenda.daysBetween(on('2026-09-01T00:30:00'), on('2026-09-01T23:30:00')), 0);
   assert.equal(agenda.daysBetween(on('2026-09-04T10:00:00'), on('2026-09-01T10:00:00')), -3);
 });
+
+/**
+ * "At church today?" — the card on the Today screen that opens sermon notes.
+ *
+ * Whole-day, unlike `pulse()`: it is up before the service, during it and
+ * after it, on any day a gathering meets, and on no other day.
+ */
+test('a service day lasts the whole day', () => {
+  const sunday = { id: 'sunday', gathering: true, weekday: 0, start: '18:30', minutes: 120 };
+  const late = { id: 'late', gathering: true, weekday: 5, start: '16:30', minutes: 120 };
+  const events = [late, service, sunday, oneOff, series];
+  for (const at of ['2026-09-04T07:00:00', '2026-09-04T11:00:00', '2026-09-04T23:30:00']) {
+    assert.equal(agenda.serviceToday(events, on(at))?.id, 'friday', at);
+  }
+  assert.equal(agenda.serviceToday(events, on('2026-09-06T08:00:00'))?.id, 'sunday');
+  assert.equal(agenda.serviceToday(events, on('2026-09-02T08:00:00')), null, 'no service on a Wednesday');
+  // Only gatherings count: a breakfast or a class is not "church today".
+  assert.equal(agenda.serviceToday(events, on('2026-09-26T08:00:00')), null);
+  assert.equal(agenda.serviceToday([{ ...oneOff, gathering: true }], on('2026-09-26T20:00:00'))?.id, 'breakfast');
+  assert.equal(agenda.serviceToday([{ ...series, gathering: true }], on('2026-09-11T08:00:00'))?.id, 'class');
+  assert.equal(agenda.serviceToday(null), null);
+  // A prayer meeting is church too, though it is not the main gathering.
+  const prayerMeeting = { id: 'prayer-2026-09-03', title: 'Regular prayer meeting', date: '2026-09-03', start: '18:30', minutes: 90 };
+  assert.equal(agenda.serviceToday([prayerMeeting], on('2026-09-03T09:00:00'))?.id, 'prayer-2026-09-03');
+  assert.equal(agenda.serviceToday([prayerMeeting], on('2026-09-10T09:00:00')), null);
+});

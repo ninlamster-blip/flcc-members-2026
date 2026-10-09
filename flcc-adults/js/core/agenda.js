@@ -197,3 +197,36 @@ export function pulse(events, now = new Date()) {
   }
   return { state: 'ordinary', event: next ? next.event : null, line: 'Your faith journey continues today.' };
 }
+
+/** "2026-09-04" for a moment, in local time — how the calendar writes a day. */
+const dayOf = (date) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+/**
+ * The service on today's calendar, or null on a day without one.
+ *
+ * Whole-day on purpose, which is what `pulse()` is not. "At church today?"
+ * is the card a member opens before the sermon, during it and on the drive
+ * home, so it stays up from midnight to midnight on any day a `gathering`
+ * meets — not only for the two hours `isNow()` would allow. The earliest
+ * service that day wins; on a Friday with two, either one is "church today".
+ *
+ * A prayer meeting counts too. It is not a `gathering` — that flag is the
+ * main service the Today countdown frames the week around — and it arrives
+ * from the calendar editor as a dated row somebody typed, so it is known by
+ * what it is called rather than by a flag nobody would think to set.
+ */
+export function serviceToday(events, now = new Date()) {
+  const today = dayOf(now);
+  const meets = (event) => {
+    if (Array.isArray(event.dates) && event.dates.length) return event.dates.includes(today);
+    if (event.date) return event.date === today;
+    if (event.weekday === undefined || event.weekday === null) return false;
+    return Number(event.weekday) === new Date(now).getDay();
+  };
+  return (Array.isArray(events) ? events : [])
+    .filter((one) => one && (one.gathering || /prayer meeting/i.test(String(one.title || ''))) && meets(one))
+    .sort((a, b) => String(a.start || '').localeCompare(String(b.start || '')))[0] || null;
+}
