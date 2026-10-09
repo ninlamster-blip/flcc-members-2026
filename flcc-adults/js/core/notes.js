@@ -79,6 +79,15 @@ export function remove(id) {
   save(all().filter((one) => one.id !== id));
 }
 
+/**
+ * The note started today, newest first — so "Open my notes" on a service day
+ * goes back to the page already half-written rather than starting a second.
+ */
+export function fromToday(now = new Date()) {
+  const day = new Date(now).toDateString();
+  return list().find((one) => new Date(one.createdAt).toDateString() === day) || null;
+}
+
 /** A note nobody typed anything into is not a note. */
 export const isEmpty = (note) =>
   !note || ![note.title, note.body, note.ref, note.about, note.question, ...pointsOf(note)]
