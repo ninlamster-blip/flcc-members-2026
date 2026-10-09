@@ -212,6 +212,11 @@ const dayOf = (date) => {
  * home, so it stays up from midnight to midnight on any day a `gathering`
  * meets — not only for the two hours `isNow()` would allow. The earliest
  * service that day wins; on a Friday with two, either one is "church today".
+ *
+ * A prayer meeting counts too. It is not a `gathering` — that flag is the
+ * main service the Today countdown frames the week around — and it arrives
+ * from the calendar editor as a dated row somebody typed, so it is known by
+ * what it is called rather than by a flag nobody would think to set.
  */
 export function serviceToday(events, now = new Date()) {
   const today = dayOf(now);
@@ -222,6 +227,6 @@ export function serviceToday(events, now = new Date()) {
     return Number(event.weekday) === new Date(now).getDay();
   };
   return (Array.isArray(events) ? events : [])
-    .filter((one) => one && one.gathering && meets(one))
+    .filter((one) => one && (one.gathering || /prayer meeting/i.test(String(one.title || ''))) && meets(one))
     .sort((a, b) => String(a.start || '').localeCompare(String(b.start || '')))[0] || null;
 }

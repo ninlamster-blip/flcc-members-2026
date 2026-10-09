@@ -21,7 +21,7 @@
 // Bump VERSION when the shell changes. Bumping it is also the only way a
 // corrected Bible file reaches a device that already cached the old one.
 
-const VERSION = 'adults-v24';
+const VERSION = 'adults-v25';
 const BIBLE = '/flcc-next/bible/';
 
 const SHELL = [

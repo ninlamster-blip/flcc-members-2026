@@ -177,4 +177,8 @@ test('a service day lasts the whole day', () => {
   assert.equal(agenda.serviceToday([{ ...oneOff, gathering: true }], on('2026-09-26T20:00:00'))?.id, 'breakfast');
   assert.equal(agenda.serviceToday([{ ...series, gathering: true }], on('2026-09-11T08:00:00'))?.id, 'class');
   assert.equal(agenda.serviceToday(null), null);
+  // A prayer meeting is church too, though it is not the main gathering.
+  const prayerMeeting = { id: 'prayer-2026-09-03', title: 'Regular prayer meeting', date: '2026-09-03', start: '18:30', minutes: 90 };
+  assert.equal(agenda.serviceToday([prayerMeeting], on('2026-09-03T09:00:00'))?.id, 'prayer-2026-09-03');
+  assert.equal(agenda.serviceToday([prayerMeeting], on('2026-09-10T09:00:00')), null);
 });
