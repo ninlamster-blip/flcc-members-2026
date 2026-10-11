@@ -217,6 +217,31 @@ test('a race keeps each racer\'s furthest row, and ends when nobody is left runn
   assert.equal((await room(e, a.token, 'progress', { code, row: 9000 })).status, 409);
 });
 
+test('a Galaga race ranks by score, keeps the furthest wave, and is not for the adult edition', async () => {
+  const e = env();
+  const a = await join(e, 'kids');
+  const b = await join(e, 'kids');
+  const { code } = (await room(e, a.token, 'create', { kind: 'galaga' })).data;
+  await room(e, b.token, 'join', { code });
+  await room(e, a.token, 'start', { code });
+  await room(e, a.token, 'progress', { code, row: 3, score: 4200 });
+  await room(e, a.token, 'progress', { code, row: 2, score: 900 });
+  let state = await look(e, a.token, code);
+  const flyer = state.players.find((p) => p.you);
+  assert.equal(state.kind, 'galaga');
+  assert.equal(flyer.progress, 3, 'a lower report never lowers the wave');
+  assert.equal(flyer.score, 4200, 'or the score');
+  assert.equal((await room(e, b.token, 'progress', { code, row: 2, score: -5 })).status, 400);
+  assert.equal((await room(e, b.token, 'progress', { code, row: 2, score: 99_000_000 })).status, 400, 'an impossible score is refused');
+  await room(e, a.token, 'progress', { code, row: 3, score: 4200, alive: false });
+  await room(e, b.token, 'progress', { code, row: 4, score: 6000, alive: false });
+  state = await look(e, a.token, code);
+  assert.equal(state.status, 'done', 'over when every ship is down');
+
+  const adult = await join(e, 'adults');
+  assert.equal((await room(e, adult.token, 'create', { kind: 'galaga' })).status, 403, 'a race is a score, and this edition keeps none');
+});
+
 test('a host leaving an unstarted room closes it; rooms are swept after a few hours', async () => {
   const e = env();
   const a = await join(e, 'kids');
