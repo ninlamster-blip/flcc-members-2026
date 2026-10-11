@@ -12,6 +12,7 @@ import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, greeting, firstName, applyTextSize, SEASONS, FOCUS } from './core/profile.js';
 import { avatar } from './core/avatar.js';
+import * as tap from './core/tap.js';
 import { poster, label, display, headline, lead, pill, choice, art, toast } from './core/ui.js';
 
 const TABS = [
@@ -270,6 +271,7 @@ function boot() {
   // Before anything is drawn, so a reader who needs large type never watches
   // the app render small and then jump.
   applyTextSize();
+  tap.install();
   if (!getUser()) { onboarding(); return; }
   router.start(show);
 }

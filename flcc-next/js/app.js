@@ -7,6 +7,7 @@ import { h, clear, navIcon } from './core/dom.js';
 import * as router from './core/router.js';
 import { getUser, saveUser, mode, greeting, MODE } from './core/profile.js';
 import { avatar } from './core/avatar.js';
+import * as tap from './core/tap.js';
 import { getProgress } from './core/progress.js';
 import { poster, label, display, headline, fit, pill, choice, art, toast } from './core/ui.js';
 
@@ -219,6 +220,7 @@ async function show(route, module) {
 
 function boot() {
   applyMode();
+  tap.install();
   if (!getUser()) { onboarding(); return; }
   router.start(show);
 }
