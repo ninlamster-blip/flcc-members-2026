@@ -251,3 +251,93 @@ test('a taller screen gets a taller field, never a shorter one, with the ship at
   galaga.step(tall, {}, DT);
   assert.equal(tall.bombs.length, 1, 'a bomb at 150 is still on a 180-tall field');
 });
+
+// ── Bosses, the mothership and the fleet ───────────────────────────────────
+
+const quiet = (state) => { state.bombs = []; state.config = { ...state.config, fireEvery: 999, diveEvery: 999 }; state.fireClock = 999; state.diveClock = 999; };
+
+test('the top row carries two Boss Galagas, two hits each', () => {
+  for (const n of [1, 4, 12]) {
+    const bosses = galaga.create(9, { wave: n }).enemies.filter((enemy) => enemy.boss);
+    assert.equal(bosses.length, 2, `wave ${n}`);
+    assert.ok(bosses.every((enemy) => enemy.row === 0 && enemy.hp === 2));
+  }
+});
+
+test('a tractor beam captures the ship and costs it; shooting that boss brings it home as a wingman', () => {
+  const state = galaga.create(9);
+  run(state, { right: true }, DT);
+  quiet(state);
+  const boss = { id: 'b', row: 0, kind: 0, hp: 2, boss: true, captive: false, slotX: 50, slotY: 18, x: state.ship.x, y: 50, mode: 'beam', wait: 0, phase: 1, vx: 0, vy: 0 };
+  state.enemies = [boss];
+  const events = galaga.step(state, {}, DT);
+  assert.ok(events.includes('captured'));
+  assert.equal(state.lives, 2, 'the captured ship is a ship lost');
+  assert.equal(boss.captive, true);
+  assert.equal(boss.mode, 'return', 'the boss carries it home');
+
+  boss.hp = 1;
+  state.shots = [{ x: boss.x, y: boss.y + 2 }];
+  const rescued = galaga.step(state, {}, DT);
+  assert.ok(rescued.includes('rescue'));
+  assert.equal(state.wingmen, 1);
+});
+
+test('a beam that has not reached the ground yet, or a shield, does not capture', () => {
+  const state = galaga.create(9, { wave: 2 });
+  run(state, { right: true }, DT);
+  quiet(state);
+  const boss = { id: 'b', row: 0, kind: 0, hp: 2, boss: true, captive: false, slotX: 50, slotY: 18, x: state.ship.x, y: 50, mode: 'beam', wait: 0, phase: 0, vx: 0, vy: 0 };
+  state.enemies = [boss];
+  assert.ok(!galaga.step(state, {}, DT).includes('captured'), 'still opening');
+  boss.phase = 1;
+  assert.ok(!galaga.step(state, {}, DT).includes('captured'), 'the shield holds it off');
+  assert.equal(state.lives, 3);
+});
+
+test('wingmen fly beside the ship, fire with it, and are lost before a ship is', () => {
+  const state = galaga.create(9);
+  run(state, { right: true }, DT);
+  quiet(state);
+  state.enemies = [{ id: 'x', row: 1, kind: 1, hp: 1, slotX: 50, slotY: 10, x: 50, y: -50, mode: 'form', wait: 9, phase: 0, vx: 0, vy: 0 }];
+  state.wingmen = 2;
+  state.shots = [];
+  state.cooldown = 0;
+  galaga.step(state, { right: true }, DT);
+  assert.equal(state.shots.length, 3, 'one missile from each of the three');
+  assert.deepEqual(galaga.wingSpots(state).map((one) => one.side), [-1, 1]);
+
+  const [left] = galaga.wingSpots(state);
+  state.bombs = [{ x: left.x, y: left.y, vx: 0, vy: 0 }];
+  const events = galaga.step(state, {}, DT);
+  assert.ok(events.includes('wingman-lost'));
+  assert.equal(state.wingmen, 1);
+  assert.equal(state.lives, 3, 'no ship lost while a wingman could take it');
+});
+
+test('every fifth wave brings a mothership, and the wave is not clear until it is down', () => {
+  assert.deepEqual([1, 4, 5, 9, 10, 15].map(galaga.hasMothership), [false, false, true, false, true, true]);
+  assert.equal(galaga.create(9, { wave: 4 }).mothership, null);
+  const state = galaga.create(9, { wave: 5 });
+  run(state, { right: true }, DT);
+  quiet(state);
+  assert.ok(state.mothership && state.mothership.hp > 10);
+  state.enemies = [];
+  assert.ok(!galaga.step(state, {}, DT).includes('cleared'), 'the formation alone is not the wave');
+
+  const mother = state.mothership;
+  mother.y = 9;
+  mother.hp = 1;
+  state.shots = [{ x: mother.x, y: mother.y + 1 }];
+  const events = galaga.step(state, {}, DT);
+  assert.ok(events.includes('mothership'));
+  assert.equal(state.wingmen, 1, 'downing it brings a wingman');
+  assert.ok(events.includes('cleared'));
+});
+
+test('a mothership launches escorts that dive and do not join the formation', () => {
+  const state = galaga.create(9, { wave: 10 });
+  run(state, { right: true }, DT);
+  run(state, {}, 6);
+  assert.ok(state.enemies.some((enemy) => enemy.escort && enemy.mode === 'dive'));
+});

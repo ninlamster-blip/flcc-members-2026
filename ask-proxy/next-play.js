@@ -49,7 +49,6 @@ export const CHEERS = ['🙌 Great job!', '🔥 On fire!', '🙏 Praying for you
  */
 export const ROOM_SAYS = ['👋 Hi!', '✅ Ready!', '🙌 Great job!', '😮 Wow!', '😂', '🔥', '🙏 Praying for you', '🤝 Good game!', '🔁 One more round?'];
 
-/** Live rooms: a quiz battle, or a Hop Across race. */
 /**
  * An avatar is a drawing chosen from the app's own set — `draw:<symbol>:<tone>`
  * — and nothing a child could upload. Only the adult edition may send a photo,
@@ -83,7 +82,13 @@ export async function addMissingColumns(db, table, columns) {
   }
 }
 
-export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {} };
+/**
+ * Live rooms: a quiz battle, a Hop Across race, or a Galaga race — everyone
+ * flying the same seeded waves at once, ranked by score. A race is a score,
+ * so it is for the groups with a board; the adult edition keeps none.
+ */
+export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {}, galaga: { groups: BOARD_GROUPS } };
+const RACES = ['hop', 'galaga'];
 export const ROOM_MAX_PLAYERS = 8;
 const ROOM_COUNTDOWN_MS = 3000;
 const ROOM_LIFETIME_HOURS = 2;
@@ -372,7 +377,7 @@ async function roomState(db, room, me) {
     `SELECT p.id, p.nickname, p.avatar, r.score, r.progress, r.alive FROM next_room_players r JOIN next_players p ON p.id = r.player_id
      WHERE r.code = ? ORDER BY r.joined_ms, r.rowid`
   ).bind(room.code).all();
-  if (room.status === 'playing' && room.kind === 'hop' && players.length && players.every((p) => !p.alive)) {
+  if (room.status === 'playing' && RACES.includes(room.kind) && players.length && players.every((p) => !p.alive)) {
     await db.prepare(`UPDATE next_rooms SET status = 'done' WHERE code = ?`).bind(room.code).run();
     room.status = 'done';
   }
@@ -395,6 +400,9 @@ async function handleRoom(db, path, body, me) {
   // POST /room/create { kind } — a new room with a fresh code, you as host
   if (path === '/room/create') {
     if (!ROOM_KINDS[body.kind]) return json({ error: { message: 'Which game?' } }, 400);
+    if (ROOM_KINDS[body.kind].groups && !ROOM_KINDS[body.kind].groups.includes(me.age_group)) {
+      return json({ error: { message: 'That game is not in your edition.' } }, 403);
+    }
     let code = '';
     for (let tries = 0; tries < 20; tries++) {
       code = Array.from({ length: 4 }, () => CODE_LETTERS[Math.floor(Math.random() * CODE_LETTERS.length)]).join('');
@@ -446,14 +454,18 @@ async function handleRoom(db, path, body, me) {
     return json({ configured: true, counted: result.meta.changes > 0 });
   }
 
-  // POST /room/progress { code, row, alive } — a racer's furthest row, and whether they are still running
+  // POST /room/progress { code, row, alive } — a racer's furthest row (Hop
+  // Across) or wave (Galaga, with its score), and whether they are still going
   if (path === '/room/progress') {
-    if (room.kind !== 'hop' || room.status !== 'playing') return json({ error: { message: 'Not racing now.' } }, 409);
+    if (!RACES.includes(room.kind) || room.status !== 'playing') return json({ error: { message: 'Not racing now.' } }, 409);
     const row = Math.trunc(Number(body.row));
-    if (!Number.isFinite(row) || row < 0 || row > 5000) return json({ error: { message: 'That row does not look right.' } }, 400);
+    const most = room.kind === 'hop' ? GAMES.hop.max : 1000;
+    if (!Number.isFinite(row) || row < 0 || row > most) return json({ error: { message: 'That row does not look right.' } }, 400);
+    const score = room.kind === 'galaga' ? Math.trunc(Number(body.score)) : row;
+    if (!Number.isFinite(score) || score < 0 || score > GAMES[room.kind].max) return json({ error: { message: 'That score does not look right.' } }, 400);
     await db.prepare(
       `UPDATE next_room_players SET progress = MAX(progress, ?), score = MAX(score, ?), alive = alive AND ? WHERE code = ? AND player_id = ?`
-    ).bind(row, row, body.alive === false ? 0 : 1, room.code, me.id).run();
+    ).bind(row, score, body.alive === false ? 0 : 1, room.code, me.id).run();
     return json({ configured: true });
   }
 

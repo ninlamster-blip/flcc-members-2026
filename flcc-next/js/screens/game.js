@@ -431,6 +431,11 @@ async function crosswordGame(ctx) {
 // It plays retro sounds (`js/games/chiptune.js`, made in the browser — no
 // audio files) for firing, hits and the moments between waves, with a mute
 // button in the top bar that this phone remembers.
+//
+// From a room (js/screens/room.js) it is a race: every phone flies the room's
+// seed, so the same waves, bosses and motherships, from wave one with no
+// continuing. Once a second it tells the room the wave reached and the score,
+// and reads back where that puts this ship.
 
 /** The palette, read out of the stylesheet so no colour is written down twice. */
 function palette() {
@@ -459,8 +464,9 @@ function galagaGame(ctx) {
     const resume = arcade().galagaResume || {};
     return { wave: Math.max(1, Math.trunc(resume.wave) || 1), score: Math.max(0, Math.trunc(resume.score) || 0) };
   };
+  const race = ctx.route.params.room ? { code: ctx.route.params.room, seed: Number(ctx.route.params.seed) || 1, place: '' } : null;
   const seed = () => Date.now() % 2147483647;
-  let state = galaga.create(seed(), saved());
+  let state = race ? galaga.create(race.seed) : galaga.create(seed(), saved());
   // Sound is on unless this phone has been told otherwise.
   const sound = chiptune.player({ muted: Boolean(arcade().galagaMuted) });
   const held = { left: false, right: false, up: false, down: false, to: null };
@@ -484,8 +490,28 @@ function galagaGame(ctx) {
   const paintNumbers = () => {
     scoreEl.textContent = String(state.score);
     waveEl.textContent = `Wave ${state.wave}`;
-    livesEl.textContent = `${state.lives} ${state.lives === 1 ? 'ship' : 'ships'} · ${best() ? `best ${best()}` : 'no best yet'}`;
+    const fleet = `${state.lives} ${state.lives === 1 ? 'ship' : 'ships'}${state.wingmen ? ` +${state.wingmen} wing` : ''}`;
+    livesEl.textContent = race
+      ? `${fleet} · race ${race.code}${race.place ? ` · ${race.place}` : ''}`
+      : `${fleet} · ${best() ? `best ${best()}` : 'no best yet'}`;
   };
+
+  // In a race: tell the room the wave and the score once a second, and read
+  // back where that puts this ship. The last report, on the way out, says "out".
+  let raceTimer = 0;
+  const report = async (alive) => {
+    if (!race) return;
+    await online.race(race.code, state.wave, alive, state.score);
+    const room = await online.room(race.code);
+    if (room && room.players) {
+      const sorted = [...room.players].sort((a, b) => b.score - a.score);
+      const at = sorted.findIndex((p) => p.you);
+      const flying = room.players.filter((p) => p.alive).length;
+      race.place = `${['1st', '2nd', '3rd'][at] || `${at + 1}th`} of ${sorted.length}${flying ? ` · ${flying} flying` : ''}`;
+      paintNumbers();
+    }
+  };
+  if (race) raceTimer = setInterval(() => { if (!gone && !state.over && state.started) report(true); }, 1000);
 
   // The field fills its whole well: 100 units across, and as tall as the
   // screen makes that — so a tall phone gets more sky, not an empty band.
@@ -530,6 +556,20 @@ function galagaGame(ctx) {
     const record = state.score > best();
     if (record) keep({ galaga: state.score });
     online.submit('galaga', state.score, mode());   // only if this phone has joined online play
+    if (race) {
+      clearInterval(raceTimer);
+      report(false);
+      const result = progress.complete('game', `galaga:${progress.today()}`);
+      paintNumbers();
+      shown = moment({
+        tone,
+        eyebrow: `Game over · wave ${state.wave} · race ${race.code}${result.first ? ` · +${progress.XP.game} XP` : ''}`,
+        big: String(state.score),
+        line: 'Out of the race. See how everyone else does — the room shows the final places.',
+        action: 'See the race', onclose: () => ctx.go(`room?code=${race.code}`),
+      });
+      return;
+    }
     keep({ galagaResume: { wave: state.wave, score: state.score } });
     // The XP goes in the card's eyebrow rather than a toast: a toast sits
     // exactly where the Continue button is, and would swallow the tap.
@@ -564,9 +604,12 @@ function galagaGame(ctx) {
     const events = galaga.step(state, held, dt);
     sound.play(events);
     if (events.some((one) => one !== 'fire')) paintNumbers();
-    if (events.includes('life')) toast('A spare ship.');
+    if (events.includes('rescue')) toast('Ship rescued! It flies beside you now.');
+    else if (events.includes('wingman')) toast('Mothership down! A wingman joins you.');
+    else if (events.includes('life')) toast('A spare ship.');
+    if (events.includes('captured')) toast('Captured! Shoot that boss to get your ship back.');
     // Every new wave is a place to come back to, even if the game is simply closed.
-    if (events.includes('wave')) keep({ galagaResume: { wave: state.wave, score: state.score } });
+    if (events.includes('wave') && !race) keep({ galagaResume: { wave: state.wave, score: state.score } });
     draw();
     if (state.over) { over(); return; }
     raf = requestAnimationFrame(frame);
@@ -646,6 +689,9 @@ function galagaGame(ctx) {
   function teardown() {
     if (gone) return;
     gone = true;
+    clearInterval(raceTimer);
+    // Closing a race half-way is being out of it, or the room would wait for ever.
+    if (race && !state.over) online.race(race.code, state.wave, false, state.score);
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     window.removeEventListener('keydown', onKey);
@@ -688,7 +734,7 @@ function galagaGame(ctx) {
   const el = h('div', { style: 'display:contents' }, stage);
   paintNumbers();
   raf = requestAnimationFrame(frame);
-  if (saved().wave > 1) {
+  if (!race && saved().wave > 1) {
     choose({
       eyebrow: 'Galaga',
       big: `WAVE ${saved().wave}.`,
