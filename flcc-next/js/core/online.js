@@ -140,7 +140,7 @@ export async function cheer(to, kind) {
   return { sent: Boolean(ok && data && data.sent), limited: status === 429 };
 }
 
-// ── Live rooms: a quiz battle or a Hop Across race, joined with a code ─────
+// ── Live rooms: a quiz battle, or a Hop Across or Galaga race, by code ─────
 
 /** What can be said in a room — tapped, never typed. Must match ask-proxy/next-play.js. */
 export const ROOM_SAYS = ['👋 Hi!', '✅ Ready!', '🙌 Great job!', '😮 Wow!', '😂', '🔥', '🙏 Praying for you', '🤝 Good game!', '🔁 One more round?'];
@@ -155,7 +155,11 @@ export const joinRoom = (code) => roomCall('join', { code: String(code || '').tr
 export const startRoom = (code) => roomCall('start', { code });
 export const leaveRoom = (code) => roomCall('leave', { code });
 export const answer = (code, question, right) => roomCall('answer', { code, question, right: Boolean(right) });
-export const race = (code, row, alive) => roomCall('progress', { code, row: Math.max(0, Math.trunc(row) || 0), alive: Boolean(alive) });
+/** A racer's progress: the row reached (Hop Across) or the wave reached and the score (Galaga). */
+export const race = (code, row, alive, score) => roomCall('progress', {
+  code, row: Math.max(0, Math.trunc(row) || 0), alive: Boolean(alive),
+  ...(score == null ? {} : { score: Math.max(0, Math.trunc(score) || 0) }),
+});
 export const say = (code, kind) => roomCall('say', { code, kind });
 
 /**
