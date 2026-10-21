@@ -18,6 +18,9 @@
 //   · Every new wave hands the ship a power for that wave, in turn: a shield
 //     that soaks up one hit, rapid fire, a three-way spread, then extra speed
 //     — and round again. Wave one has none; clearing a wave ends its power.
+//     A mothership wave is the exception: it always brings the triple shot
+//     AND a shield, and the ship goes into it as a twin — a wingman beside
+//     it if it has none — because that is the hardest fight in the game.
 //   · Losing the last ship does not send you back to the start. A run can
 //     begin at any wave — the one you reached — with the difficulty of that
 //     wave, three fresh ships and, if the screen wants it, the score so far.
@@ -80,10 +83,21 @@ const RAPID = { every: 0.12, shots: 9, speed: 1.6 };    // fire rate, missiles a
 const SPREAD = { angle: 22, shots: 12 };                // sideways drift of the outer two, missiles at once
 const SPEED_BOOST = 1.7;
 
-/** The power wave `n` hands the ship, or null for wave one. */
+/**
+ * The power wave `n` hands the ship, or null for wave one. A mothership wave
+ * always gets the triple shot (and, in startWave, a shield and a twin too).
+ */
 export function powerFor(n) {
   const w = Math.max(1, Math.trunc(n));
+  if (hasMothership(w)) return 'spread';
   return w > 1 ? POWERS[(w - 2) % POWERS.length] : null;
+}
+
+/** What the field calls the ship's powers right now, or '' for none. */
+export function powerLabel(state) {
+  if (!state.power) return '';
+  if (hasMothership(state.wave)) return state.shield ? 'TRIPLE SHOT + SHIELD' : 'TRIPLE SHOT · SHIELD USED';
+  return state.power === 'shield' && !state.shield ? 'SHIELD USED' : POWER_NAMES[state.power];
 }
 
 /** Whether wave `n` brings a mothership. */
@@ -165,7 +179,8 @@ function startWave(state, n) {
   state.wave = n;
   state.config = config;
   state.power = powerFor(n);
-  state.shield = state.power === 'shield';
+  state.shield = state.power === 'shield' || hasMothership(n);
+  if (hasMothership(n)) state.wingmen = Math.max(state.wingmen || 0, 1);   // into the big fight as a twin
   state.showPower = state.power ? SHOW_POWER : 0;
   state.diveClock = config.diveEvery;
   state.fireClock = config.fireEvery;
@@ -714,23 +729,26 @@ export function paint(g, state, { colors, scale, edge, ship = 'captain' }) {
     for (const wing of wingSpots(state)) drawShip(g, wing.x, wing.y, colors, ship);
   }
 
-  const name = state.power ? POWER_NAMES[state.power] : '';
+  const name = powerLabel(state);
   if (!state.started) {
     if (state.wave > 1) caption(g, `WAVE ${state.wave}`, colors, tall * 0.52);
     caption(g, 'TOUCH AND DRAG TO FLY', colors, tall * 0.62, 6);
-    if (name) caption(g, `POWER: ${name}`, colors, tall * 0.7, 5);
+    if (name) caption(g, `POWER: ${name}`, colors, tall * 0.7, name.length > 14 ? 4.2 : 5);
   }
   else if (state.rest > 0) {
     caption(g, `WAVE ${state.wave + 1}`, colors, tall / 2);
     if (hasMothership(state.wave + 1)) caption(g, 'MOTHERSHIP!', colors, tall * 0.58, 5);
   }
-  else if (state.showPower > 0) caption(g, `${name}!`, colors, tall * 0.62);
+  else if (state.showPower > 0) {
+    caption(g, `${name}!`, colors, tall * 0.62, name.length > 14 ? 5.5 : 7);
+    if (hasMothership(state.wave)) caption(g, 'AND A TWIN SHIP', colors, tall * 0.68, 4.5);
+  }
   else if (name) {
     // While it lasts, the power's name sits small in the bottom corner.
     g.fillStyle = colors.ink;
     g.textAlign = 'left';
     g.textBaseline = 'alphabetic';
     g.font = '800 3.6px Inter, system-ui, sans-serif';
-    g.fillText(state.power === 'shield' && !state.shield ? 'SHIELD USED' : name, 2.5, tall - 2.5);
+    g.fillText(name, 2.5, tall - 2.5);
   }
 }

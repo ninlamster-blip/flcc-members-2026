@@ -159,7 +159,7 @@ test('being hit costs a ship, and losing the last ends the run', () => {
 
 test('every new wave hands the ship a power, in turn, and wave one has none', () => {
   assert.equal(galaga.powerFor(1), null);
-  assert.deepEqual([2, 3, 4, 5, 6].map(galaga.powerFor), ['shield', 'rapid', 'spread', 'speed', 'shield']);
+  assert.deepEqual([2, 3, 4, 6, 7, 8, 9].map(galaga.powerFor), ['shield', 'rapid', 'spread', 'shield', 'rapid', 'spread', 'speed']);
   for (const power of galaga.POWERS) assert.ok(galaga.POWER_NAMES[power], `${power} has no name to show`);
 
   const state = galaga.create(9);
@@ -214,7 +214,7 @@ test('the speed boost flies the ship faster', () => {
     run(state, { left: true }, 0.3);
     return x - state.ship.x;
   };
-  assert.ok(moved(5) > moved(1) * 1.5);
+  assert.ok(moved(9) > moved(1) * 1.5);
 });
 
 test('a power lasts its wave and ends when the wave is cleared', () => {
