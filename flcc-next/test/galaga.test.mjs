@@ -159,7 +159,7 @@ test('being hit costs a ship, and losing the last ends the run', () => {
 
 test('every new wave hands the ship a power, in turn, and wave one has none', () => {
   assert.equal(galaga.powerFor(1), null);
-  assert.deepEqual([2, 3, 4, 5, 6].map(galaga.powerFor), ['shield', 'rapid', 'spread', 'speed', 'shield']);
+  assert.deepEqual([2, 3, 4, 6, 7, 8, 9].map(galaga.powerFor), ['shield', 'rapid', 'spread', 'shield', 'rapid', 'spread', 'speed']);
   for (const power of galaga.POWERS) assert.ok(galaga.POWER_NAMES[power], `${power} has no name to show`);
 
   const state = galaga.create(9);
@@ -214,7 +214,7 @@ test('the speed boost flies the ship faster', () => {
     run(state, { left: true }, 0.3);
     return x - state.ship.x;
   };
-  assert.ok(moved(5) > moved(1) * 1.5);
+  assert.ok(moved(9) > moved(1) * 1.5);
 });
 
 test('a power lasts its wave and ends when the wave is cleared', () => {
@@ -331,7 +331,7 @@ test('every fifth wave brings a mothership, and the wave is not clear until it i
   state.shots = [{ x: mother.x, y: mother.y + 1 }];
   const events = galaga.step(state, {}, DT);
   assert.ok(events.includes('mothership'));
-  assert.equal(state.wingmen, 1, 'downing it brings a wingman');
+  assert.equal(state.wingmen, 2, 'downing it brings a wingman, beside the twin the wave started with');
   assert.ok(events.includes('cleared'));
 });
 
@@ -340,4 +340,26 @@ test('a mothership launches escorts that dive and do not join the formation', ()
   run(state, { right: true }, DT);
   run(state, {}, 6);
   assert.ok(state.enemies.some((enemy) => enemy.escort && enemy.mode === 'dive'));
+});
+
+test('a mothership wave always brings the triple shot, a shield and a twin ship', () => {
+  for (const n of [5, 10, 15, 20]) {
+    assert.equal(galaga.powerFor(n), 'spread', `wave ${n}`);
+    const state = galaga.create(9, { wave: n });
+    assert.equal(state.power, 'spread');
+    assert.equal(state.shield, true, `wave ${n} has a shield`);
+    assert.equal(state.wingmen, 1, `wave ${n} starts as a twin`);
+    assert.equal(galaga.powerLabel(state), 'TRIPLE SHOT + SHIELD');
+  }
+  // Reached in a run with two wingmen already: it keeps both.
+  const state = galaga.create(9, { wave: 4 });
+  run(state, { right: true }, DT);
+  state.wingmen = 2;
+  state.enemies = [];
+  run(state, {}, 3);
+  assert.equal(state.wave, 5);
+  assert.equal(state.wingmen, 2);
+  assert.equal(state.shield, true);
+  state.shield = false;
+  assert.equal(galaga.powerLabel(state), 'TRIPLE SHOT · SHIELD USED');
 });
