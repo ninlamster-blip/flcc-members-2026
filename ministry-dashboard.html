@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLCC-GMPI Ministry Dashboard 2026</title>
+  <link rel="stylesheet" href="ministry-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-container">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fas fa-church"></i></div>
+      <div class="brand-text">
+        <div class="brand-name">FLCC-GMPI</div>
+        <div class="brand-subtitle">Ministry Dashboard 2026</div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-link active" data-section="dashboard"><i class="fas fa-gauge-high"></i><span>Dashboard</span></a>
+      <a href="#" class="nav-link" data-section="schedule"><i class="fas fa-calendar-check"></i><span>Schedule Calendar</span></a>
+      <a href="#" class="nav-link" data-section="preachers"><i class="fas fa-microphone"></i><span>Preachers</span></a>
+      <a href="#" class="nav-link" data-section="emcees"><i class="fas fa-user-tie"></i><span>EMCEEs</span></a>
+      <a href="#" class="nav-link" data-section="pastoral"><i class="fas fa-hands-praying"></i><span>Pastoral Prayer</span></a>
+      <a href="#" class="nav-link" data-section="vacations"><i class="fas fa-plane"></i><span>Vacation Leaves</span></a>
+      <a href="#" class="nav-link" data-section="holidays"><i class="fas fa-star-and-crescent"></i><span>Kuwait Holidays</span></a>
+      <a href="#" class="nav-link" data-section="events"><i class="fas fa-calendar-star"></i><span>Events</span></a>
+      <a href="#" class="nav-link" data-section="conflicts"><i class="fas fa-triangle-exclamation"></i><span>Conflict Checker</span></a>
+      <a href="#" class="nav-link" data-section="reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+      <a href="#" class="nav-link" data-section="prayer"><i class="fas fa-heart"></i><span>Prayer Needs</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i><span>Dark Mode</span></button>
+      <div class="sidebar-year">FLCC-GMPI &copy; 2026</div>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ── MAIN WRAPPER ── -->
+  <div class="main-wrapper">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-left">
+        <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="header-right">
+        <div class="search-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search name, date, event…" autocomplete="off">
+          <div class="search-results" id="searchResults"></div>
+        </div>
+        <div class="header-date"><i class="fas fa-calendar-day"></i><span id="headerDate"></span></div>
+        <button class="btn-icon" onclick="renderDashboard()" title="Refresh"><i class="fas fa-rotate"></i></button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content-area">
+
+      <!-- ════════════ DASHBOARD ════════════ -->
+      <section class="section active" id="section-dashboard">
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <h2>Good <span id="timeGreeting">day</span>, Pastor Michelle! <span class="wave">👋</span></h2>
+            <p>Ministry overview for <strong id="currentMonthYear"></strong></p>
+          </div>
+          <div class="welcome-actions">
+            <button class="btn btn-outline" style="border-color:rgba(255,255,255,.6);color:#fff" onclick="openScheduleModal()"><i class="fas fa-plus"></i> Quick Schedule</button>
+            <button class="btn btn-outline" style="border-color:rgba(255,255,255,.6);color:#fff" onclick="runConflictCheck()"><i class="fas fa-shield-check"></i> Check Conflicts</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div id="dashboardAlerts"></div>
+
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3><i class="fas fa-map"></i> Ministry Map — <span id="ministryMapMonth"></span></h3>
+              <div class="card-actions">
+                <button class="btn-icon-sm" onclick="dashPrevMonth()" title="Previous month"><i class="fas fa-chevron-left"></i></button>
+                <button class="btn-icon-sm" onclick="dashNextMonth()" title="Next month"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            </div>
+            <div class="card-body" id="ministryMap"></div>
+          </div>
+
+          <div class="side-cards">
+            <div class="dashboard-card">
+              <div class="card-header"><h3><i class="fas fa-users" style="color:var(--success)"></i> Available This Month</h3></div>
+              <div class="card-body" id="availableWorkers"></div>
+            </div>
+            <div class="dashboard-card">
+              <div class="card-header"><h3><i class="fas fa-plane" style="color:var(--warning)"></i> On Leave This Month</h3></div>
+              <div class="card-body" id="onLeaveWorkers"></div>
+            </div>
+            <div class="dashboard-card">
+              <div class="card-header"><h3><i class="fas fa-calendar-star" style="color:var(--purple)"></i> Upcoming Events</h3></div>
+              <div class="card-body" id="upcomingEvents"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3><i class="fas fa-clock"></i> Upcoming Services</h3>
+            <button class="btn btn-sm btn-outline" onclick="navigateTo('schedule')">View All</button>
+          </div>
+          <div class="card-body" id="upcomingServices"></div>
+        </div>
+      </section>
+
+      <!-- ════════════ SCHEDULE ════════════ -->
+      <section class="section" id="section-schedule">
+        <div class="section-toolbar">
+          <div class="toolbar-left">
+            <div class="view-toggle">
+              <button class="view-btn active" onclick="setScheduleView('calendar',this)"><i class="fas fa-calendar"></i> Calendar</button>
+              <button class="view-btn" onclick="setScheduleView('table',this)"><i class="fas fa-table"></i> Table</button>
+            </div>
+            <div class="filter-group" id="scheduleFilters">
+              <select id="filterMonth" onchange="applyScheduleFilters()"><option value="">All Months</option></select>
+              <select id="filterPerson" onchange="applyScheduleFilters()"><option value="">All People</option></select>
+              <select id="filterEvent" onchange="applyScheduleFilters()"><option value="">All Events</option></select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="openScheduleModal()"><i class="fas fa-plus"></i> Add Schedule</button>
+        </div>
+
+        <!-- Calendar View -->
+        <div class="view-panel" id="calendarView">
+          <div class="cal-nav">
+            <button class="btn btn-sm btn-ghost" onclick="calPrevMonth()"><i class="fas fa-chevron-left"></i></button>
+            <h3 id="calMonthTitle"></h3>
+            <button class="btn btn-sm btn-ghost" onclick="calNextMonth()"><i class="fas fa-chevron-right"></i></button>
+          </div>
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="legend-dot green"></span>Service Day (Fri)</span>
+            <span class="legend-item"><span class="legend-dot blue"></span>Assigned</span>
+            <span class="legend-item"><span class="legend-dot yellow"></span>Holiday</span>
+            <span class="legend-item"><span class="legend-dot purple"></span>Event</span>
+          </div>
+          <div id="scheduleCalendar"></div>
+        </div>
+
+        <!-- Table View -->
+        <div class="view-panel hidden" id="tableView">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th onclick="sortScheduleTable('date')">Date <i class="fas fa-sort"></i></th>
+                  <th onclick="sortScheduleTable('theme')">Theme <i class="fas fa-sort"></i></th>
+                  <th onclick="sortScheduleTable('preacher')">Preacher <i class="fas fa-sort"></i></th>
+                  <th>Pastoral Prayer</th>
+                  <th>EMCEE</th>
+                  <th>Event</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════ PREACHERS ════════════ -->
+      <section class="section" id="section-preachers">
+        <div class="section-toolbar">
+          <h3>Preachers Management</h3>
+          <button class="btn btn-primary" onclick="openAddMemberModal('Preacher')"><i class="fas fa-plus"></i> Add Preacher</button>
+        </div>
+        <div class="team-grid" id="preachersGrid"></div>
+      </section>
+
+      <!-- ════════════ EMCEES ════════════ -->
+      <section class="section" id="section-emcees">
+        <div class="section-toolbar">
+          <h3>EMCEEs Management</h3>
+          <button class="btn btn-primary" onclick="openAddMemberModal('EMCEE')"><i class="fas fa-plus"></i> Add EMCEE</button>
+        </div>
+        <div class="team-grid" id="emceesGrid"></div>
+      </section>
+
+      <!-- ════════════ PASTORAL PRAYER ════════════ -->
+      <section class="section" id="section-pastoral">
+        <div class="section-toolbar">
+          <h3>Pastoral Prayer Leaders</h3>
+          <button class="btn btn-primary" onclick="openAddMemberModal('Pastoral Prayer')"><i class="fas fa-plus"></i> Add Leader</button>
+        </div>
+        <div class="team-grid" id="pastoralGrid"></div>
+      </section>
+
+      <!-- ════════════ VACATION LEAVES ════════════ -->
+      <section class="section" id="section-vacations">
+        <div class="section-toolbar">
+          <h3>Vacation Leaves 2026</h3>
+          <button class="btn btn-primary" onclick="openVacationModal()"><i class="fas fa-plus"></i> Add Leave</button>
+        </div>
+        <div class="filter-bar">
+          <select id="vacPersonFilter" onchange="renderVacations()"><option value="">All Team Members</option></select>
+          <select id="vacMonthFilter" onchange="renderVacations()"><option value="">All Months</option></select>
+        </div>
+        <div id="vacationList"></div>
+      </section>
+
+      <!-- ════════════ KUWAIT HOLIDAYS ════════════ -->
+      <section class="section" id="section-holidays">
+        <div class="section-toolbar">
+          <h3>Kuwait Public Holidays 2026</h3>
+          <button class="btn btn-primary" onclick="openHolidayModal()"><i class="fas fa-plus"></i> Add Holiday</button>
+        </div>
+        <div id="holidayList"></div>
+      </section>
+
+      <!-- ════════════ CHURCH EVENTS ════════════ -->
+      <section class="section" id="section-events">
+        <div class="section-toolbar">
+          <h3>Church Events</h3>
+          <button class="btn btn-primary" onclick="openEventModal()"><i class="fas fa-plus"></i> Add Event</button>
+        </div>
+        <div id="eventList"></div>
+      </section>
+
+      <!-- ════════════ CONFLICT CHECKER ════════════ -->
+      <section class="section" id="section-conflicts">
+        <div class="section-toolbar">
+          <h3>Smart Conflict Checker</h3>
+          <button class="btn btn-primary" onclick="renderConflicts()"><i class="fas fa-shield-check"></i> Run Check</button>
+        </div>
+        <div id="conflictResults"></div>
+      </section>
+
+      <!-- ════════════ REPORTS ════════════ -->
+      <section class="section" id="section-reports">
+        <div class="section-toolbar">
+          <h3>Ministry Reports</h3>
+          <div class="export-buttons">
+            <button class="btn btn-outline" onclick="exportCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+            <button class="btn btn-outline" onclick="exportPDF()"><i class="fas fa-print"></i> Print / PDF</button>
+          </div>
+        </div>
+        <div class="report-controls">
+          <select id="reportMonth"><option value="">All Year 2026</option></select>
+        </div>
+        <div class="stats-grid" id="reportStats"></div>
+        <div class="charts-grid">
+          <div class="chart-card"><h4><i class="fas fa-chart-bar"></i> Monthly Service Count</h4><canvas id="monthlyChart"></canvas></div>
+          <div class="chart-card"><h4><i class="fas fa-chart-pie"></i> Preacher Distribution</h4><canvas id="preacherChart"></canvas></div>
+          <div class="chart-card"><h4><i class="fas fa-chart-line"></i> Monthly Availability %</h4><canvas id="healthChart"></canvas></div>
+        </div>
+        <div class="dashboard-card" style="margin-top:20px">
+          <div class="card-header"><h3><i class="fas fa-table"></i> Detailed Schedule Report</h3></div>
+          <div class="card-body" id="reportTable"></div>
+        </div>
+      </section>
+
+      <!-- ════════════ PRAYER NEEDS ════════════ -->
+      <section class="section" id="section-prayer">
+        <div class="section-toolbar">
+          <h3>Prayer Needs Dashboard</h3>
+          <button class="btn btn-outline" onclick="renderPrayer()"><i class="fas fa-rotate"></i> Refresh</button>
+        </div>
+        <div id="prayerDashboard"></div>
+      </section>
+
+    </main>
+  </div><!-- /.main-wrapper -->
+</div><!-- /.app-container -->
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="scheduleModalTitle">Add Schedule</h3>
+      <button class="modal-close" onclick="closeModal('scheduleModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="scheduleForm" onsubmit="return false">
+        <input type="hidden" id="scheduleId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="schedDate">Service Date <span class="required">*</span></label>
+            <input type="date" id="schedDate" onchange="checkModalConflicts()" required>
+          </div>
+          <div class="form-group">
+            <label for="schedTheme">Service Theme</label>
+            <input type="text" id="schedTheme" placeholder="Enter sermon theme or series">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="schedPreacher">Preacher <span class="required">*</span></label>
+            <select id="schedPreacher" onchange="checkModalConflicts()"><option value="">Select Preacher</option></select>
+          </div>
+          <div class="form-group">
+            <label for="schedPastoral">Pastoral Prayer</label>
+            <select id="schedPastoral"><option value="">Select Person</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="schedEmcee">EMCEE</label>
+            <select id="schedEmcee"><option value="">Select EMCEE</option></select>
+          </div>
+          <div class="form-group">
+            <label for="schedEvent">Special Event</label>
+            <select id="schedEvent"><option value="">No Special Event</option></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="schedNotes">Notes</label>
+          <textarea id="schedNotes" rows="2" placeholder="Additional notes…"></textarea>
+        </div>
+        <div class="conflict-preview hidden" id="modalConflictPreview"></div>
+        <div class="recommendations hidden" id="modalRecommendations"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('scheduleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSchedule()"><i class="fas fa-save"></i> Save Schedule</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vacation Modal -->
+<div class="modal-overlay" id="vacationModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="vacationModalTitle">Add Vacation Leave</h3>
+      <button class="modal-close" onclick="closeModal('vacationModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="vacationForm" onsubmit="return false">
+        <input type="hidden" id="vacationId">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vacPerson">Team Member <span class="required">*</span></label>
+            <select id="vacPerson" required><option value="">Select Person</option></select>
+          </div>
+          <div class="form-group">
+            <label for="vacStatus">Status</label>
+            <select id="vacStatus">
+              <option value="confirmed">Confirmed</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vacStart">Start Date</label>
+            <input type="date" id="vacStart">
+          </div>
+          <div class="form-group">
+            <label for="vacEnd">End Date</label>
+            <input type="date" id="vacEnd">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="vacNotes">Notes</label>
+          <textarea id="vacNotes" rows="2" placeholder="Vacation notes…"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('vacationModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVacation()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Holiday Modal -->
+<div class="modal-overlay" id="holidayModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 id="holidayModalTitle">Add Holiday</h3>
+      <button class="modal-close" onclick="closeModal('holidayModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="holidayForm" onsubmit="return false">
+        <input type="hidden" id="holidayId">
+        <div class="form-group">
+          <label for="holName">Holiday Name <span class="required">*</span></label>
+          <input type="text" id="holName" required placeholder="e.g. National Day">
+        </div>
+        <div class="form-group">
+          <label for="holDate">Date <span class="required">*</span></label>
+          <input type="date" id="holDate" required>
+        </div>
+        <div class="form-group">
+          <label for="holType">Type</label>
+          <select id="holType">
+            <option value="public">Public Holiday</option>
+            <option value="islamic">Islamic Holiday</option>
+            <option value="national">National Holiday</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="holNotes">Notes</label>
+          <input type="text" id="holNotes" placeholder="Additional notes">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('holidayModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveHoliday()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Event Modal -->
+<div class="modal-overlay" id="eventModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 id="eventModalTitle">Add Church Event</h3>
+      <button class="modal-close" onclick="closeModal('eventModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="eventForm" onsubmit="return false">
+        <input type="hidden" id="eventId">
+        <div class="form-group">
+          <label for="evtName">Event Name <span class="required">*</span></label>
+          <input type="text" id="evtName" required placeholder="e.g. Leadership Summit">
+        </div>
+        <div class="form-group">
+          <label for="evtDate">Date</label>
+          <input type="date" id="evtDate">
+        </div>
+        <div class="form-group">
+          <label for="evtCategory">Category</label>
+          <select id="evtCategory">
+            <option value="special">Special Service</option>
+            <option value="celebration">Celebration</option>
+            <option value="outreach">Outreach</option>
+            <option value="training">Training</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="evtNotes">Notes</label>
+          <textarea id="evtNotes" rows="2" placeholder="Event notes…"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('eventModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEvent()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Team Member Modal -->
+<div class="modal-overlay" id="teamModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 id="teamModalTitle">Add Team Member</h3>
+      <button class="modal-close" onclick="closeModal('teamModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="teamForm" onsubmit="return false">
+        <input type="hidden" id="teamMemberId">
+        <div class="form-group">
+          <label for="memberName">Name <span class="required">*</span></label>
+          <input type="text" id="memberName" required placeholder="e.g. Justin">
+        </div>
+        <div class="form-group">
+          <label for="memberDisplayName">Display Name</label>
+          <input type="text" id="memberDisplayName" placeholder="e.g. Ptr. Justin">
+        </div>
+        <div class="form-group">
+          <label>Roles <span class="required">*</span></label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="memberRole" value="Preacher"> Preacher</label>
+            <label><input type="checkbox" name="memberRole" value="EMCEE"> EMCEE</label>
+            <label><input type="checkbox" name="memberRole" value="Pastoral Prayer"> Pastoral Prayer</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="memberStatus">Status</label>
+          <select id="memberStatus">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="memberNote">Notes</label>
+          <input type="text" id="memberNote" placeholder="e.g. Not travelling">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('teamModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTeamMember()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day Detail Modal -->
+<div class="modal-overlay" id="dayModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="dayModalTitle">Day Details</h3>
+      <button class="modal-close" onclick="closeModal('dayModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="dayModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('dayModal')">Close</button>
+      <button class="btn btn-primary" id="dayModalScheduleBtn"><i class="fas fa-plus"></i> Add Service</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3><i class="fas fa-triangle-exclamation" style="color:var(--warning)"></i> Confirm Action</h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMessage" style="font-size:.95rem">Are you sure?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmBtn">Confirm Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="ministry-data.js"></script>
+<script src="ministry-app.js"></script>
+</body>
+</html>
