@@ -110,5 +110,16 @@
       "kids": "Swipe up to shoot the ball through the moving hoop! Make enough baskets to win each level.",
       "teens": "Swipe to shoot at sliding hoops. Every level is harder — faster rims, wind, a defender — and every one can be beaten."
     }
+  },
+  {
+    "id": "claw",
+    "title": "CLAW MACHINE",
+    "tone": "rose",
+    "symbol": "star",
+    "difficulty": 3,
+    "blurb": {
+      "kids": "Move the claw, press DROP and grab a prize! Win enough prizes to beat each level.",
+      "teens": "A prize machine that isn't rigged: a centred grab always holds. Beat each level before the tries run out — it gets harder every time."
+    }
   }
 ]
