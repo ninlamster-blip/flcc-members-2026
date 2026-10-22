@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FLCC-GMPI Ministry Dashboard 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --blue-50:#eff6ff;--blue-100:#dbeafe;--blue-200:#bfdbfe;--blue-300:#93c5fd;
+    --blue-400:#60a5fa;--blue-500:#3b82f6;--blue-600:#2563eb;--blue-700:#1d4ed8;
+    --blue-800:#1e40af;--blue-900:#1e3a8a;
+    --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
+    --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;--gray-700:#334155;
+    --gray-800:#1e293b;--gray-900:#0f172a;
+    --green-100:#dcfce7;--green-600:#16a34a;--green-700:#15803d;
+    --yellow-100:#fef9c3;--yellow-600:#ca8a04;--yellow-700:#a16207;
+    --red-100:#fee2e2;--red-500:#ef4444;--red-600:#dc2626;--red-700:#b91c1c;
+    --purple-100:#f3e8ff;--purple-600:#9333ea;
+    --orange-100:#ffedd5;--orange-600:#ea580c;
+    --sidebar-w:240px;--header-h:64px;--radius:12px;--radius-sm:8px;
+    --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+    --shadow-md:0 4px 6px rgba(0,0,0,.07),0 10px 30px rgba(0,0,0,.1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:15px}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh}
+  button{cursor:pointer;border:none;background:none;font-family:inherit}
+  input,select,textarea{font-family:inherit}
+  .app-shell{display:flex;min-height:100vh}
+  .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--blue-900);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;transition:transform .25s}
+  .sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .sidebar-logo .org{font-size:11px;font-weight:600;color:var(--blue-300);letter-spacing:.08em;text-transform:uppercase}
+  .sidebar-logo .name{font-size:18px;font-weight:700;color:#fff;line-height:1.2;margin-top:2px}
+  .sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+  .sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+  .nav-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;padding:12px 20px 4px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:rgba(255,255,255,.65);font-size:13.5px;font-weight:500;cursor:pointer;transition:background .15s,color .15s;position:relative}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav-item.active{background:rgba(255,255,255,.1);color:#fff}
+  .nav-item.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;background:var(--blue-400);border-radius:0 2px 2px 0}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8}
+  .sidebar-bottom{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08)}
+  .sidebar-bottom .version{font-size:11px;color:rgba(255,255,255,.3)}
+  .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+  .topbar{height:var(--header-h);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:50;flex-shrink:0}
+  .topbar-title{font-size:17px;font-weight:600;color:var(--gray-800);flex:1}
+  .topbar-sub{font-size:13px;color:var(--gray-400)}
+  .content{padding:28px;flex:1}
+  .page{display:none}
+  .page.active{display:block}
+  .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-100)}
+  .card-header{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between}
+  .card-title{font-size:14px;font-weight:600;color:var(--gray-700)}
+  .card-body{padding:16px 20px 20px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;transition:all .15s;cursor:pointer;border:none}
+  .btn-primary{background:var(--blue-600);color:#fff}
+  .btn-primary:hover{background:var(--blue-700)}
+  .btn-secondary{background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200)}
+  .btn-secondary:hover{background:var(--gray-200)}
+  .btn-danger{background:var(--red-100);color:var(--red-600)}
+  .btn-danger:hover{background:var(--red-600);color:#fff}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn-icon{padding:6px;border-radius:var(--radius-sm)}
+  .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+  .badge-blue{background:var(--blue-100);color:var(--blue-700)}
+  .badge-green{background:var(--green-100);color:var(--green-700)}
+  .badge-yellow{background:var(--yellow-100);color:var(--yellow-700)}
+  .badge-red{background:var(--red-100);color:var(--red-700)}
+  .badge-purple{background:var(--purple-100);color:var(--purple-600)}
+  .badge-gray{background:var(--gray-100);color:var(--gray-600)}
+  .badge-orange{background:var(--orange-100);color:var(--orange-600)}
+  .stat-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-100);padding:20px}
+  .stat-label{font-size:12px;font-weight:500;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em}
+  .stat-value{font-size:28px;font-weight:700;color:var(--gray-900);margin:4px 0 2px;line-height:1}
+  .stat-sub{font-size:12px;color:var(--gray-400)}
+  .stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .tbl-wrap{overflow-x:auto;border-radius:var(--radius-sm)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:var(--gray-50);padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-200);white-space:nowrap}
+  tbody tr{border-bottom:1px solid var(--gray-100);transition:background .1s}
+  tbody tr:hover{background:var(--blue-50)}
+  tbody td{padding:10px 14px;color:var(--gray-700);vertical-align:middle}
+  .form-group{margin-bottom:16px}
+  .form-label{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px}
+  .form-control{width:100%;padding:8px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:13.5px;color:var(--gray-800);background:#fff;transition:border .15s,box-shadow .15s}
+  .form-control:focus{outline:none;border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  select.form-control{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:14px;padding-right:32px}
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(2px);z-index:200;display:none;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-md);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
+  @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
+  .modal-title{font-size:16px;font-weight:700;color:var(--gray-900)}
+  .modal-body{padding:20px 24px}
+  .modal-footer{padding:16px 24px 20px;border-top:1px solid var(--gray-100);display:flex;gap:10px;justify-content:flex-end}
+  .alert{border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .alert-warning{background:var(--yellow-100);color:var(--yellow-700);border:1px solid #fde047}
+  .alert-danger{background:var(--red-100);color:var(--red-700);border:1px solid #fca5a5}
+  .alert-success{background:var(--green-100);color:var(--green-700);border:1px solid #86efac}
+  .alert-info{background:var(--blue-50);color:var(--blue-700);border:1px solid var(--blue-200)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-day-header{font-size:11px;font-weight:600;color:var(--gray-400);text-align:center;padding:8px 4px}
+  .cal-day{min-height:80px;border-radius:8px;border:1px solid var(--gray-100);padding:6px;background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative}
+  .cal-day:hover{border-color:var(--blue-300);box-shadow:0 0 0 3px rgba(59,130,246,.08)}
+  .cal-day.has-service{border-color:var(--blue-200);background:var(--blue-50)}
+  .cal-day.has-holiday{border-color:#fca5a5;background:var(--red-100)}
+  .cal-day.has-conflict{border-color:#fde047;background:var(--yellow-100)}
+  .cal-day.today{border-color:var(--blue-500);border-width:2px}
+  .cal-day.other-month{opacity:.3}
+  .cal-date{font-size:12px;font-weight:600;color:var(--gray-600)}
+  .cal-event{font-size:10px;line-height:1.3;color:var(--blue-700);font-weight:500;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+  .cal-holiday-tag{font-size:9px;color:var(--red-600);font-weight:600}
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:8px}
+  .bar-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .bar{width:100%;border-radius:4px 4px 0 0;background:var(--blue-200);transition:height .4s ease;cursor:pointer;min-height:4px}
+  .bar:hover{background:var(--blue-400)}
+  .bar-label{font-size:10px;color:var(--gray-400);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40px}
+  .bar-val{font-size:10px;font-weight:600;color:var(--blue-600)}
+  .progress-bar{height:6px;border-radius:3px;background:var(--gray-100);overflow:hidden}
+  .progress-fill{height:100%;border-radius:3px;background:var(--blue-500);transition:width .4s}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-100);color:var(--blue-700);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+  .section-title{font-size:20px;font-weight:700;color:var(--gray-900)}
+  .section-sub{font-size:13px;color:var(--gray-400);margin-top:2px}
+  .divider{height:1px;background:var(--gray-100);margin:16px 0}
+  .filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .search-wrap{position:relative}
+  .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--gray-400);pointer-events:none}
+  .search-input{padding-left:32px!important}
+  .conflict-row{background:var(--yellow-100)!important}
+  .holiday-row{background:var(--red-100)!important}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--gray-400)}
+  .empty-state p{font-size:14px}
+  #toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+  .toast{background:var(--gray-900);color:#fff;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;display:flex;align-items:center;gap:8px;min-width:220px;max-width:360px;pointer-events:all;box-shadow:var(--shadow-md);animation:toastIn .2s ease}
+  .toast.toast-success{border-left:3px solid #4ade80}
+  .toast.toast-error{border-left:3px solid var(--red-500)}
+  .toast.toast-warning{border-left:3px solid #facc15}
+  @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+  .menu-toggle{display:none}
+  @media(max-width:900px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.open{transform:translateX(0)}
+    .main{margin-left:0}
+    .grid-4{grid-template-columns:repeat(2,1fr)}
+    .grid-3{grid-template-columns:1fr 1fr}
+    .topbar{padding:0 16px}
+    .content{padding:16px}
+    .menu-toggle{display:flex}
+  }
+  @media(max-width:540px){
+    .grid-4,.grid-3,.grid-2{grid-template-columns:1fr}
+    .cal-day{min-height:54px}
+  }
+  @media print{
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+    .sidebar,.topbar,.btn,.btn-sm,.btn-icon,.filter-bar,.modal-overlay,
+    #toast-container,.menu-toggle,.progress-bar{display:none!important}
+    .main{margin-left:0!important}
+    .app-shell{display:block!important}
+    .content{padding:12px!important}
+    .page{display:block!important;page-break-after:always}
+    .page:last-child{page-break-after:auto}
+    .card,.stat-card{box-shadow:none!important;border:1px solid #ccc!important;break-inside:avoid;margin-bottom:12px}
+    .grid-4,.grid-3,.grid-2,.grid-auto{grid-template-columns:repeat(2,1fr)!important}
+    table{font-size:11px!important}
+    tbody td,thead th{padding:6px 8px!important}
+    .badge{border:1px solid currentColor!important}
+    .section-title{font-size:16px!important}
+    .cal-day{min-height:60px!important}
+    .bar-chart{height:80px!important}
+    #print-header{display:block!important}
+    .nav-item,.nav-section-label,.sidebar-logo,.sidebar-bottom{display:none!important}
+  }
+</style>
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Edit</span>
+      <button class="btn btn-icon" onclick="closeModal()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="org">FLCC – GMPI</div>
+      <div class="name">Ministry Hub</div>
+      <div class="sub">Preaching Dashboard 2026</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <div class="nav-item active" onclick="navigate('dashboard',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-section-label">Schedule</div>
+      <div class="nav-item" onclick="navigate('schedule',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Schedule
+      </div>
+      <div class="nav-item" onclick="navigate('calendar',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Calendar
+      </div>
+      <div class="nav-section-label">People</div>
+      <div class="nav-item" onclick="navigate('workers',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Workers
+      </div>
+      <div class="nav-item" onclick="navigate('leaves',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Leave Tracker
+      </div>
+      <div class="nav-section-label">Church</div>
+      <div class="nav-item" onclick="navigate('holidays',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        Holidays
+      </div>
+      <div class="nav-item" onclick="navigate('events',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        Special Events
+      </div>
+      <div class="nav-section-label">Insights</div>
+      <div class="nav-item" onclick="navigate('conflicts',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        Conflicts
+        <span id="conflict-badge" class="badge badge-red" style="margin-left:auto;display:none">0</span>
+      </div>
+      <div class="nav-item" onclick="navigate('analytics',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Analytics
+      </div>
+      <div class="nav-item" onclick="navigate('prayer',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        Prayer Needs
+      </div>
+    </nav>
+    <div class="sidebar-bottom"><div class="version">v1.0 · 2026 · FLCC-GMPI</div></div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="btn btn-icon menu-toggle" onclick="toggleSidebar()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div style="flex:1">
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub" id="topbar-sub">Ministry Overview · 2026</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="exportPrint()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+        Print
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        CSV
+      </button>
+    </header>
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="section-header">
+          <div><div class="section-title">Good day, Pastor Michelle 👋</div><div class="section-sub" id="dash-date"></div></div>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Service</button>
+        </div>
+        <div class="grid-4" id="stat-cards"></div>
+        <div style="height:20px"></div>
+        <div class="grid-2">
+          <div class="card"><div class="card-header"><span class="card-title">Upcoming Services</span><span class="badge badge-blue" id="upcoming-count">—</span></div><div class="card-body" id="upcoming-list"></div></div>
+          <div class="card"><div class="card-header"><span class="card-title">⚠️ Conflict Alerts</span></div><div class="card-body" id="dash-conflicts"></div></div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="grid-2">
+          <div class="card"><div class="card-header"><span class="card-title">Kuwait Holidays Ahead</span></div><div class="card-body" id="dash-holidays"></div></div>
+          <div class="card"><div class="card-header"><span class="card-title">Currently on Leave</span></div><div class="card-body" id="dash-onleave"></div></div>
+        </div>
+      </div>
+      <!-- SCHEDULE -->
+      <div class="page" id="page-schedule">
+        <div class="section-header">
+          <div><div class="section-title">Preaching Schedule</div><div class="section-sub">All 2026 Sunday services · FLCC-GMPI</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Service</button>
+        </div>
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input class="form-control search-input" id="sched-search" placeholder="Search…" oninput="renderSchedule()" style="width:200px">
+          </div>
+          <select class="form-control" id="sched-month" onchange="renderSchedule()" style="width:140px">
+            <option value="">All Months</option>
+            <option>January</option><option>February</option><option>March</option><option>April</option>
+            <option>May</option><option>June</option><option>July</option><option>August</option>
+            <option>September</option><option>October</option><option>November</option><option>December</option>
+          </select>
+          <select class="form-control" id="sched-person" onchange="renderSchedule()" style="width:150px"><option value="">All People</option></select>
+          <select class="form-control" id="sched-event" onchange="renderSchedule()" style="width:140px">
+            <option value="">All Events</option>
+            <option>LS</option><option>Mother's Day</option><option>Father's Day</option>
+            <option>34th Anniv</option><option>Christmas</option><option>Pastor's App</option>
+          </select>
+        </div>
+        <div class="card"><div class="tbl-wrap"><table id="sched-table">
+          <thead><tr><th>Date</th><th>Month Theme</th><th>Preacher</th><th>Pastoral Prayer</th><th>EMCEE</th><th>Event</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="sched-tbody"></tbody>
+        </table></div></div>
+      </div>
+      <!-- CALENDAR -->
+      <div class="page" id="page-calendar">
+        <div class="section-header">
+          <div><div class="section-title">Calendar View</div><div class="section-sub">Click a day to view or edit service details</div></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-secondary btn-sm" onclick="calPrev()">‹ Prev</button>
+            <span id="cal-month-label" style="font-weight:600;font-size:15px;min-width:130px;text-align:center;"></span>
+            <button class="btn btn-secondary btn-sm" onclick="calNext()">Next ›</button>
+          </div>
+        </div>
+        <div class="card" style="padding:16px;"><div class="cal-grid" id="cal-grid"></div></div>
+        <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--gray-500);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:var(--blue-100);border:1px solid var(--blue-300);border-radius:3px;display:inline-block;"></span>Service</span>
+          <span style="font-size:12px;color:var(--gray-500);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:var(--red-100);border:1px solid #fca5a5;border-radius:3px;display:inline-block;"></span>Holiday</span>
+          <span style="font-size:12px;color:var(--gray-500);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:var(--yellow-100);border:1px solid #fde047;border-radius:3px;display:inline-block;"></span>Conflict</span>
+        </div>
+      </div>
+      <!-- WORKERS -->
+      <div class="page" id="page-workers">
+        <div class="section-header">
+          <div><div class="section-title">Ministry Workers</div><div class="section-sub">Preachers, EMCEEs, and Prayer Leaders</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openAddWorkerModal()">+ Add Worker</button>
+        </div>
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input class="form-control search-input" id="worker-search" placeholder="Search worker…" oninput="renderWorkers()" style="width:200px">
+          </div>
+          <select class="form-control" id="worker-role" onchange="renderWorkers()" style="width:160px">
+            <option value="">All Roles</option><option>Preacher</option><option>Lay Preacher</option><option>EMCEE</option><option>Prayer Leader</option>
+          </select>
+        </div>
+        <div class="grid-auto" id="worker-cards"></div>
+      </div>
+      <!-- LEAVES -->
+      <div class="page" id="page-leaves">
+        <div class="section-header">
+          <div><div class="section-title">Leave Tracker</div><div class="section-sub">Minister availability and vacation records</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openAddLeaveModal()">+ Add Leave</button>
+        </div>
+        <div class="grid-2" style="margin-bottom:20px;" id="leave-summary"></div>
+        <div class="card"><div class="card-header"><span class="card-title">All Leave Records</span></div>
+          <div class="card-body"><div class="tbl-wrap"><table>
+            <thead><tr><th>Person</th><th>From</th><th>To</th><th>Duration</th><th>Notes</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="leave-tbody"></tbody>
+          </table></div></div>
+        </div>
+      </div>
+      <!-- HOLIDAYS -->
+      <div class="page" id="page-holidays">
+        <div class="section-header">
+          <div><div class="section-title">Kuwait Holidays 2026</div><div class="section-sub">Public holidays affecting Sunday services</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openAddHolidayModal()">+ Add Holiday</button>
+        </div>
+        <div class="card"><div class="tbl-wrap"><table>
+          <thead><tr><th>Date</th><th>Holiday</th><th>Day</th><th>Affects Service?</th><th>Actions</th></tr></thead>
+          <tbody id="holiday-tbody"></tbody>
+        </table></div></div>
+      </div>
+      <!-- EVENTS -->
+      <div class="page" id="page-events">
+        <div class="section-header">
+          <div><div class="section-title">Special Events</div><div class="section-sub">Church milestones and celebrations</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openAddEventModal()">+ Add Event</button>
+        </div>
+        <div class="grid-auto" id="events-grid"></div>
+      </div>
+      <!-- CONFLICTS -->
+      <div class="page" id="page-conflicts">
+        <div class="section-header">
+          <div><div class="section-title">Conflict Detection</div><div class="section-sub">Scheduling issues that need attention</div></div>
+          <button class="btn btn-secondary btn-sm" onclick="detectConflicts();renderConflicts();showToast('Conflicts re-scanned','success')">↻ Rescan</button>
+        </div>
+        <div id="conflicts-list"></div>
+      </div>
+      <!-- ANALYTICS -->
+      <div class="page" id="page-analytics">
+        <div class="section-header"><div><div class="section-title">Ministry Analytics</div><div class="section-sub">Participation, workload, and trends</div></div></div>
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div class="card"><div class="card-header"><span class="card-title">Preaching Load</span></div><div class="card-body" id="chart-preachers"></div></div>
+          <div class="card"><div class="card-header"><span class="card-title">EMCEE Load</span></div><div class="card-body" id="chart-emcees"></div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px;"><div class="card-header"><span class="card-title">Monthly Service Count</span></div><div class="card-body" id="chart-monthly"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">Worker Assignment Statistics</span></div>
+          <div class="card-body"><div class="tbl-wrap"><table>
+            <thead><tr><th>Worker</th><th>Preached</th><th>Led Prayer</th><th>EMCEE</th><th>Total</th><th>Load</th></tr></thead>
+            <tbody id="stats-tbody"></tbody>
+          </table></div></div>
+        </div>
+      </div>
+      <!-- PRAYER -->
+      <div class="page" id="page-prayer">
+        <div class="section-header"><div><div class="section-title">Prayer Needs</div><div class="section-sub">Auto-generated from schedules and leaves</div></div></div>
+        <div id="prayer-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_THEMES={'January':'Recommitment / New Beginning','February':'Love – Sacrificial, Unconditional Love','March':'Prayer & Fasting','April':'Works of the Holy Spirit / Church Growth','May':'You are What You Eat Physically & Spiritually','June':'Worship / Evangelism / Discipleship / Fellowship','July':'Book of 1 Thessalonians','August':'Book of ___','September':'Financial Stewardship','October':'Missions','November':'Thanksgiving','December':'Birth of Christ / God Incarnate'};
+function defaultData(){return{
+services:[
+{id:'s1',date:'2026-01-02',preacher:'Ptr Jopet',prayer:'Ptra. Ellen',emcee:'Bro. Allen',event:'LS'},
+{id:'s2',date:'2026-01-09',preacher:'Ptr Wing',prayer:'Rev. Oscar',emcee:'Sis. Zeny',event:''},
+{id:'s3',date:'2026-01-16',preacher:'Ptra Mitch',prayer:'Ptra. Weng',emcee:'Bro. Wilson',event:''},
+{id:'s4',date:'2026-01-23',preacher:'Ptra Verna',prayer:'Ptr. Mike J.',emcee:'Sis. Emma',event:''},
+{id:'s5',date:'2026-01-30',preacher:'Lala',prayer:'Ptra. Mitch',emcee:'Bro. Ryan',event:''},
+{id:'s6',date:'2026-02-06',preacher:'Ptr Ver',prayer:'Ptr. Froi',emcee:'Sis. Lovely',event:'LS'},
+{id:'s7',date:'2026-02-13',preacher:'Ptr Justin',prayer:'Ptra. Verna',emcee:'Sis. AJ',event:''},
+{id:'s8',date:'2026-02-20',preacher:'Ptr Doddie',prayer:'Rev. Ver',emcee:'Sis. Ying',event:''},
+{id:'s9',date:'2026-02-27',preacher:'Ptr Anson',prayer:'Ptra. Cathy',emcee:'Sis Laidz',event:''},
+{id:'s10',date:'2026-03-06',preacher:'Ptr Rodel',prayer:'Ptr. Justin',emcee:'Sis. Alma',event:'LS'},
+{id:'s11',date:'2026-03-13',preacher:'Ptr Mike',prayer:'Rev. Rodel',emcee:'Sis. Maricel',event:''},
+{id:'s12',date:'2026-03-20',preacher:'AJ',prayer:'Ptr. Doddie',emcee:'Bro Edmund',event:''},
+{id:'s13',date:'2026-03-27',preacher:'Ptra Ellen',prayer:'Rev. Jopet',emcee:'Bro Rey',event:''},
+{id:'s14',date:'2026-04-03',preacher:'7 LAST WORDS',prayer:'Ptr. Anson',emcee:'Sis Lala',event:'LS'},
+{id:'s15',date:'2026-04-10',preacher:'Ptr Jopet',prayer:'Ptra. Ellen',emcee:'Sis Annabelle',event:'34th Anniv'},
+{id:'s16',date:'2026-04-17',preacher:'Ptr Froi',prayer:'Rev. Oscar',emcee:'Bro. Rolly',event:''},
+{id:'s17',date:'2026-04-24',preacher:'Wilson',prayer:'Ptra. Weng',emcee:'',event:''},
+{id:'s18',date:'2026-05-01',preacher:'Ptr Oca',prayer:'Ptr Mike',emcee:'Sis. Rona',event:'LS'},
+{id:'s19',date:'2026-05-08',preacher:'Ptra Cathy',prayer:'Ptr Oca',emcee:'Sis. Ying',event:"Mother's Day"},
+{id:'s20',date:'2026-05-15',preacher:'Edmund',prayer:'Mitch',emcee:'Bro. Allen',event:''},
+{id:'s21',date:'2026-05-22',preacher:'Laidz',prayer:'Ptr Froi',emcee:'Sis Aj',event:''},
+{id:'s22',date:'2026-05-29',preacher:'Ptra Wing',prayer:'Ptra. Verna',emcee:'Bro. Wilson',event:''},
+{id:'s23',date:'2026-06-05',preacher:'Ptr Ver',prayer:'Ptra. Verna',emcee:'Sis. Emma',event:'LS'},
+{id:'s24',date:'2026-06-12',preacher:'Ptra Verna',prayer:'Ptra. Cathy',emcee:'Bro. Ryan',event:''},
+{id:'s25',date:'2026-06-19',preacher:'Maricel',prayer:'Ptr. Justin',emcee:'Sis. Lovely',event:"Father's Day"},
+{id:'s26',date:'2026-06-26',preacher:'Ptra Mitch',prayer:'Rev. Ver',emcee:'Sis. Zeny',event:''},
+{id:'s27',date:'2026-07-03',preacher:'Ptr Jopet',prayer:'Ptr. Doddie',emcee:'Sis. Precy',event:'LS'},
+{id:'s28',date:'2026-07-10',preacher:'Ptr Doddie',prayer:'Rev. Jopet',emcee:'Sis. Alma',event:''},
+{id:'s29',date:'2026-07-17',preacher:'Ptr Mike',prayer:'Ptr. Anson',emcee:'Sis. Maricel',event:''},
+{id:'s30',date:'2026-07-24',preacher:'Ptra Cathy',prayer:'Rev. Oscar',emcee:'Bro. Edmund',event:''},
+{id:'s31',date:'2026-07-31',preacher:'Ptr Froi',prayer:'Ptra. Weng',emcee:'Bro. Rey',event:''},
+{id:'s32',date:'2026-08-07',preacher:'Ptr Rodel',prayer:'',emcee:'Sis. Lala',event:''},
+{id:'s33',date:'2026-08-14',preacher:'Ptra. Wing',prayer:'',emcee:'Sis Belle',event:''},
+{id:'s34',date:'2026-08-21',preacher:'Ptr. Anson',prayer:'',emcee:'Bro. Rolly',event:''},
+{id:'s35',date:'2026-08-28',preacher:'Ptra. Ellen',prayer:'',emcee:'Bro. Ferdie',event:''},
+{id:'s36',date:'2026-09-04',preacher:'Ptr Oca',prayer:'',emcee:'Sis. Rona',event:'LS'},
+{id:'s37',date:'2026-09-11',preacher:'Ptra Verna',prayer:'',emcee:'Sis. Ying',event:''},
+{id:'s38',date:'2026-09-18',preacher:'Ptra. Mitch',prayer:'',emcee:'Sis. Laidz',event:''},
+{id:'s39',date:'2026-09-25',preacher:'Ptr. Justin',prayer:'',emcee:'',event:''},
+{id:'s40',date:'2026-10-02',preacher:'Ptr Rodel',prayer:'',emcee:'',event:'LS'},
+{id:'s41',date:'2026-10-09',preacher:'Ptr. Doddie',prayer:'',emcee:'',event:''},
+{id:'s42',date:'2026-10-16',preacher:'Ptr. Mike',prayer:'',emcee:'',event:''},
+{id:'s43',date:'2026-10-23',preacher:'Ptra Cathy',prayer:'',emcee:'',event:"Pastor's App"},
+{id:'s44',date:'2026-10-30',preacher:'Ptr Doodz',prayer:'',emcee:'',event:''},
+{id:'s45',date:'2026-11-06',preacher:'Ptr Ver',prayer:'',emcee:'',event:'LS'},
+{id:'s46',date:'2026-11-13',preacher:'Ptr Froi',prayer:'',emcee:'',event:''},
+{id:'s47',date:'2026-11-20',preacher:'Ptr Anson',prayer:'',emcee:'',event:''},
+{id:'s48',date:'2026-11-27',preacher:'Ptra Mitch',prayer:'',emcee:'',event:''},
+{id:'s49',date:'2026-12-04',preacher:'Ptr Oca',prayer:'',emcee:'',event:'LS'},
+{id:'s50',date:'2026-12-11',preacher:'Ptr Justin',prayer:'',emcee:'',event:''},
+{id:'s51',date:'2026-12-18',preacher:'Emma',prayer:'',emcee:'',event:''},
+{id:'s52',date:'2026-12-25',preacher:'Ptr Jopet',prayer:'',emcee:'',event:'Christmas'},
+],
+workers:[
+{id:'w1',name:'Ptr Jopet',role:'Preacher'},{id:'w2',name:'Ptr Wing',role:'Preacher'},
+{id:'w3',name:'Ptra Mitch',role:'Preacher'},{id:'w4',name:'Ptra Verna',role:'Preacher'},
+{id:'w5',name:'Ptr Ver',role:'Preacher'},{id:'w6',name:'Ptr Justin',role:'Preacher'},
+{id:'w7',name:'Ptr Doddie',role:'Preacher'},{id:'w8',name:'Ptr Anson',role:'Preacher'},
+{id:'w9',name:'Ptr Rodel',role:'Preacher'},{id:'w10',name:'Ptr Mike',role:'Preacher'},
+{id:'w11',name:'Ptra Ellen',role:'Preacher'},{id:'w12',name:'Ptr Oca',role:'Preacher'},
+{id:'w13',name:'Ptra Cathy',role:'Preacher'},{id:'w14',name:'Ptr Froi',role:'Preacher'},
+{id:'w15',name:'Ptra Wing',role:'Preacher'},{id:'w16',name:'Ptr Doodz',role:'Preacher'},
+{id:'w17',name:'Lala',role:'Lay Preacher'},{id:'w18',name:'AJ',role:'Lay Preacher'},
+{id:'w19',name:'Wilson',role:'Lay Preacher'},{id:'w20',name:'Edmund',role:'Lay Preacher'},
+{id:'w21',name:'Laidz',role:'Lay Preacher'},{id:'w22',name:'Maricel',role:'Lay Preacher'},
+{id:'w23',name:'Emma',role:'Lay Preacher'},
+{id:'w24',name:'Bro. Allen',role:'EMCEE'},{id:'w25',name:'Sis. Zeny',role:'EMCEE'},
+{id:'w26',name:'Bro. Wilson',role:'EMCEE'},{id:'w27',name:'Sis. Emma',role:'EMCEE'},
+{id:'w28',name:'Bro. Ryan',role:'EMCEE'},{id:'w29',name:'Sis. Lovely',role:'EMCEE'},
+{id:'w30',name:'Sis. AJ',role:'EMCEE'},{id:'w31',name:'Sis. Ying',role:'EMCEE'},
+{id:'w32',name:'Sis Laidz',role:'EMCEE'},{id:'w33',name:'Sis. Alma',role:'EMCEE'},
+{id:'w34',name:'Sis. Maricel',role:'EMCEE'},{id:'w35',name:'Bro Edmund',role:'EMCEE'},
+{id:'w36',name:'Bro Rey',role:'EMCEE'},{id:'w37',name:'Sis Lala',role:'EMCEE'},
+{id:'w38',name:'Sis Annabelle',role:'EMCEE'},{id:'w39',name:'Bro. Rolly',role:'EMCEE'},
+{id:'w40',name:'Sis. Rona',role:'EMCEE'},{id:'w41',name:'Sis. Precy',role:'EMCEE'},
+{id:'w42',name:'Sis Belle',role:'EMCEE'},{id:'w43',name:'Bro. Ferdie',role:'EMCEE'},
+{id:'w44',name:'Sis Aj',role:'EMCEE'},
+{id:'w45',name:'Ptra. Ellen',role:'Prayer Leader'},{id:'w46',name:'Rev. Oscar',role:'Prayer Leader'},
+{id:'w47',name:'Ptra. Weng',role:'Prayer Leader'},{id:'w48',name:'Ptr. Mike J.',role:'Prayer Leader'},
+{id:'w49',name:'Ptr. Froi',role:'Prayer Leader'},{id:'w50',name:'Ptra. Verna',role:'Prayer Leader'},
+{id:'w51',name:'Rev. Ver',role:'Prayer Leader'},{id:'w52',name:'Ptra. Cathy',role:'Prayer Leader'},
+{id:'w53',name:'Ptr. Justin',role:'Prayer Leader'},{id:'w54',name:'Rev. Rodel',role:'Prayer Leader'},
+{id:'w55',name:'Ptr. Doddie',role:'Prayer Leader'},{id:'w56',name:'Rev. Jopet',role:'Prayer Leader'},
+{id:'w57',name:'Ptr. Anson',role:'Prayer Leader'},{id:'w58',name:'Mitch',role:'Prayer Leader'},
+{id:'w59',name:'Ptr Mike',role:'Prayer Leader'},{id:'w60',name:'Ptr Oca',role:'Prayer Leader'},
+{id:'w61',name:'Ptr Froi',role:'Prayer Leader'},
+],
+leaves:[
+{id:'l1',person:'LPJ',from:'2026-02-09',to:'2026-04-26',notes:'Feb 9 – Apr 26'},
+{id:'l2',person:'LPJ',from:'2026-06-11',to:'2026-10-01',notes:'Jun 11 – Oct'},
+{id:'l3',person:'Ver',from:'2026-08-21',to:'2026-10-10',notes:'Aug 21 – Oct 10'},
+{id:'l4',person:'Rodel',from:'2026-01-24',to:'2026-01-31',notes:'Jan 24-31'},
+{id:'l5',person:'Rodel',from:'2026-05-31',to:'2026-07-07',notes:'May 31 – Jul 7'},
+{id:'l6',person:'Ellen',from:'2026-08-15',to:'2026-12-31',notes:'Retiring mid-August'},
+{id:'l7',person:'Cathy',from:'2026-10-27',to:'2026-11-30',notes:'Oct 27 – Nov 30'},
+{id:'l8',person:'Anson',from:'2026-05-08',to:'2026-06-07',notes:'May 8 – Jun 7'},
+{id:'l9',person:'Anson',from:'2026-12-19',to:'2027-01-16',notes:'Dec 19 – Jan 16'},
+{id:'l10',person:'Verna',from:'2026-06-16',to:'2026-08-30',notes:'Jun 16 – Aug 30'},
+{id:'l11',person:'Doddie',from:'2026-12-01',to:'2026-12-31',notes:'Dec 1-31'},
+{id:'l12',person:'Mike',from:'2026-01-01',to:'2026-12-31',notes:'Not travelling 2026'},
+{id:'l13',person:'Froi',from:'2026-09-16',to:'2026-10-31',notes:'Sep 16 – Oct 31'},
+{id:'l14',person:'Mitch',from:'2026-10-30',to:'2026-12-03',notes:'Oct 30 – Dec 3'},
+{id:'l15',person:'Justin',from:'2026-06-25',to:'2026-08-07',notes:'Jun 25 – Aug 7'},
+{id:'l16',person:'Wing',from:'2026-12-01',to:'2026-12-31',notes:'Dec 1-31'},
+],
+holidays:[
+{id:'h1',date:'2026-01-01',name:"New Year's Day",affects:false},
+{id:'h2',date:'2026-01-16',name:'Isra & Miraj',affects:true},
+{id:'h3',date:'2026-02-25',name:'National Day',affects:false},
+{id:'h4',date:'2026-02-26',name:'Liberation Day',affects:false},
+{id:'h5',date:'2026-03-20',name:'Eid Al Fitr',affects:true},
+{id:'h6',date:'2026-03-21',name:'Eid Al Fitr (2nd)',affects:false},
+{id:'h7',date:'2026-03-22',name:'Eid Al Fitr (3rd)',affects:false},
+{id:'h8',date:'2026-04-03',name:'Good Friday',affects:true},
+{id:'h9',date:'2026-04-05',name:'Easter Sunday',affects:true},
+{id:'h10',date:'2026-05-26',name:'Arafat / Eid Al Adha',affects:true},
+{id:'h11',date:'2026-05-27',name:'Eid Al Adha',affects:false},
+{id:'h12',date:'2026-05-28',name:'Eid Al Adha (2nd)',affects:false},
+{id:'h13',date:'2026-05-29',name:'Eid Al Adha (3rd)',affects:false},
+{id:'h14',date:'2026-08-27',name:'PBUH Birthday',affects:false},
+],
+specialEvents:[
+{id:'e1',date:'2026-04-10',name:'34th Church Anniversary',type:'Anniversary',notes:''},
+{id:'e2',date:'2026-05-08',name:"Mother's Day",type:"Mother's Day",notes:''},
+{id:'e3',date:'2026-06-19',name:"Father's Day",type:"Father's Day",notes:''},
+{id:'e4',date:'2026-10-23',name:"Pastor's Appreciation",type:'Appreciation',notes:''},
+{id:'e5',date:'2026-11-26',name:'Thanksgiving Service',type:'Thanksgiving',notes:''},
+{id:'e6',date:'2026-12-25',name:'Christmas Service',type:'Christmas',notes:''},
+]
+};}
+function loadData(){try{const s=localStorage.getItem('flcc_gmpi_2026');return s?JSON.parse(s):defaultData();}catch{return defaultData();}}
+function saveData(){localStorage.setItem('flcc_gmpi_2026',JSON.stringify(DB));}
+let DB=loadData();
+const PAGE_LABELS={dashboard:['Dashboard','Ministry Overview · 2026'],schedule:['Preaching Schedule','All 2026 Sunday services'],calendar:['Calendar View','Visual monthly overview'],workers:['Ministry Workers','Preachers, EMCEEs, Prayer Leaders'],leaves:['Leave Tracker','Vacation records'],holidays:['Kuwait Holidays','Public holidays 2026'],events:['Special Events','Church milestones'],conflicts:['Conflict Alerts','Scheduling issues'],analytics:['Analytics','Ministry workload and trends'],prayer:['Prayer Needs','Intercession for workers']};
+function navigate(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+  const [title,sub]=PAGE_LABELS[page]||['',''];
+  document.getElementById('topbar-title').textContent=title;
+  document.getElementById('topbar-sub').textContent=sub;
+  if(page==='dashboard')renderDashboard();
+  if(page==='schedule')renderSchedule();
+  if(page==='calendar')renderCalendar();
+  if(page==='workers')renderWorkers();
+  if(page==='leaves')renderLeaves();
+  if(page==='holidays')renderHolidays();
+  if(page==='events')renderEvents();
+  if(page==='conflicts')renderConflicts();
+  if(page==='analytics')renderAnalytics();
+  if(page==='prayer')renderPrayer();
+  if(window.innerWidth<900)document.getElementById('sidebar').classList.remove('open');
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+function fmtDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function dayOfWeek(d){return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(d+'T00:00:00').getDay()];}
+function monthOf(d){if(!d)return'';return MONTHS[parseInt(d.split('-')[1])-1];}
+function today(){return new Date().toISOString().split('T')[0];}
+function parseDate(s){return new Date(s+'T00:00:00');}
+function isOnLeave(person,date){
+  if(!person)return false;
+  const d=parseDate(date),p=person.toLowerCase();
+  return DB.leaves.some(l=>{const nm=l.person.toLowerCase();return(p===nm||p.includes(nm)||nm.includes(p))&&d>=parseDate(l.from)&&d<=parseDate(l.to);});
+}
+function isHoliday(date){return DB.holidays.find(h=>h.date===date);}
+function uid(){return'i'+Date.now()+Math.random().toString(36).slice(2,6);}
+function avatar(n){const p=n.trim().split(/\s+/);return(p.length>1?p[0][0]+p[1][0]:n.slice(0,2)).toUpperCase();}
+function colorForRole(r){return r==='Preacher'?'badge-blue':r==='Lay Preacher'?'badge-purple':r==='EMCEE'?'badge-green':r==='Prayer Leader'?'badge-orange':'badge-gray';}
+let CONFLICTS=[];
+function detectConflicts(){
+  CONFLICTS=[];
+  DB.services.forEach(s=>{
+    [s.preacher,s.prayer,s.emcee].filter(Boolean).forEach(p=>{if(isOnLeave(p,s.date))CONFLICTS.push({type:'leave',severity:'high',date:s.date,msg:`${p} is on vacation but scheduled on ${fmtDate(s.date)}`});});
+    const h=isHoliday(s.date);
+    if(h&&h.affects)CONFLICTS.push({type:'holiday',severity:'medium',date:s.date,msg:`Service on ${fmtDate(s.date)} falls on ${h.name}`});
+    if(!s.preacher)CONFLICTS.push({type:'missing',severity:'high',date:s.date,msg:`No preacher assigned for ${fmtDate(s.date)}`});
+    if(!s.emcee)CONFLICTS.push({type:'missing',severity:'low',date:s.date,msg:`No EMCEE assigned for ${fmtDate(s.date)}`});
+  });
+  const pc={};DB.services.forEach(s=>{if(s.preacher)pc[s.preacher]=(pc[s.preacher]||0)+1;});
+  Object.entries(pc).forEach(([p,c])=>{if(c>8)CONFLICTS.push({type:'overload',severity:'low',date:'',msg:`${p} is assigned ${c} times — consider rotation review`});});
+  const b=document.getElementById('conflict-badge');
+  if(CONFLICTS.length){b.style.display='';b.textContent=CONFLICTS.length;}else b.style.display='none';
+}
+function renderDashboard(){
+  detectConflicts();
+  const now=today(),nd=new Date();
+  document.getElementById('dash-date').textContent=nd.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const up=DB.services.filter(s=>s.date>=now).length;
+  const onL=DB.leaves.filter(l=>parseDate(l.from)<=nd&&parseDate(l.to)>=nd);
+  const hi=CONFLICTS.filter(c=>c.severity==='high').length;
+  document.getElementById('stat-cards').innerHTML=`
+    <div class="stat-card" style="display:flex;gap:14px;align-items:flex-start;">
+      <div class="stat-icon" style="background:var(--blue-50);color:var(--blue-600)"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
+      <div><div class="stat-label">Total Services</div><div class="stat-value">${DB.services.length}</div><div class="stat-sub">Scheduled 2026</div></div>
+    </div>
+    <div class="stat-card" style="display:flex;gap:14px;align-items:flex-start;">
+      <div class="stat-icon" style="background:var(--green-100);color:var(--green-600)"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+      <div><div class="stat-label">Workers</div><div class="stat-value">${DB.workers.length}</div><div class="stat-sub">${onL.length} on leave now</div></div>
+    </div>
+    <div class="stat-card" style="display:flex;gap:14px;align-items:flex-start;">
+      <div class="stat-icon" style="background:var(--blue-50);color:var(--blue-500)"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <div><div class="stat-label">Upcoming</div><div class="stat-value">${up}</div><div class="stat-sub">Services remaining</div></div>
+    </div>
+    <div class="stat-card" style="display:flex;gap:14px;align-items:flex-start;">
+      <div class="stat-icon" style="background:var(--red-100);color:var(--red-600)"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+      <div><div class="stat-label">Conflicts</div><div class="stat-value">${CONFLICTS.length}</div><div class="stat-sub">${hi} high priority</div></div>
+    </div>`;
+  const n5=DB.services.filter(s=>s.date>=now).slice(0,5);
+  document.getElementById('upcoming-count').textContent=up;
+  document.getElementById('upcoming-list').innerHTML=n5.length?n5.map(s=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100);">
+      <div style="min-width:50px;text-align:center;background:var(--blue-50);border-radius:8px;padding:4px 6px;">
+        <div style="font-size:9px;font-weight:600;color:var(--blue-400);text-transform:uppercase">${monthOf(s.date).slice(0,3)}</div>
+        <div style="font-size:18px;font-weight:700;color:var(--blue-700);line-height:1">${s.date.split('-')[2]}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.preacher||'<em style="color:var(--red-500)">TBA</em>'}</div>
+        <div style="font-size:11px;color:var(--gray-400)">${(MONTH_THEMES[monthOf(s.date)]||'').slice(0,40)}</div>
+      </div>
+      ${s.event?`<span class="badge badge-purple">${s.event}</span>`:''}
+      ${isHoliday(s.date)?'<span class="badge badge-red">Holiday</span>':''}
+    </div>`).join(''):'<div class="empty-state"><p>No upcoming services.</p></div>';
+  document.getElementById('dash-conflicts').innerHTML=CONFLICTS.slice(0,4).length?CONFLICTS.slice(0,4).map(c=>`<div class="alert ${c.severity==='high'?'alert-danger':c.severity==='medium'?'alert-warning':'alert-info'}" style="margin-bottom:6px;font-size:12px"><span>${c.severity==='high'?'🔴':'🟡'}</span> ${c.msg}</div>`).join(''):'<div class="alert alert-success"><span>✓</span> No conflicts — schedule is clean!</div>';
+  document.getElementById('dash-holidays').innerHTML=DB.holidays.filter(h=>h.date>=now).slice(0,4).map(h=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-100);font-size:13px"><div><strong>${h.name}</strong><span style="color:var(--gray-400);font-size:11px;margin-left:8px">${fmtDate(h.date)}</span></div>${h.affects?'<span class="badge badge-red">Affects</span>':'<span class="badge badge-gray">No impact</span>'}</div>`).join('')||'<div style="font-size:13px;color:var(--gray-400)">No upcoming holidays.</div>';
+  document.getElementById('dash-onleave').innerHTML=onL.length?onL.map(l=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--gray-100)"><div class="avatar">${avatar(l.person)}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${l.person}</div><div style="font-size:11px;color:var(--gray-400)">Until ${fmtDate(l.to)}</div></div><span class="badge badge-yellow">On Leave</span></div>`).join(''):'<div style="font-size:13px;color:var(--gray-400);padding:8px 0">No workers currently on leave.</div>';
+}
+function renderSchedule(){
+  const sel=document.getElementById('sched-person');
+  if(sel){const prev=sel.value;sel.innerHTML='<option value="">All People</option>';[...new Set(DB.services.flatMap(s=>[s.preacher,s.prayer,s.emcee]).filter(Boolean))].sort().forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});sel.value=prev;}
+  const q=(document.getElementById('sched-search')?.value||'').toLowerCase();
+  const month=document.getElementById('sched-month')?.value||'';
+  const person=document.getElementById('sched-person')?.value||'';
+  const event=document.getElementById('sched-event')?.value||'';
+  let rows=DB.services.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  if(month)rows=rows.filter(s=>monthOf(s.date)===month);
+  if(person)rows=rows.filter(s=>[s.preacher,s.prayer,s.emcee].some(x=>x&&x.includes(person)));
+  if(event)rows=rows.filter(s=>s.event===event);
+  if(q)rows=rows.filter(s=>JSON.stringify(s).toLowerCase().includes(q));
+  document.getElementById('sched-tbody').innerHTML=rows.map(s=>{
+    const conflict=CONFLICTS.some(c=>c.date===s.date&&c.severity==='high');
+    const hol=isHoliday(s.date);
+    return`<tr class="${conflict?'conflict-row':hol&&hol.affects?'holiday-row':''}">
+      <td><strong>${fmtDate(s.date)}</strong><br><span style="font-size:11px;color:var(--gray-400)">${dayOfWeek(s.date)}</span></td>
+      <td style="max-width:160px;font-size:12px;color:var(--gray-500)">${(MONTH_THEMES[monthOf(s.date)]||'').slice(0,38)}</td>
+      <td><div style="display:flex;align-items:center;gap:6px">
+        ${s.preacher?`<div class="avatar" style="width:24px;height:24px;font-size:9px">${avatar(s.preacher)}</div>`:''}
+        <span>${s.preacher||'<em style="color:var(--red-500)">TBA</em>'}</span>
+        ${isOnLeave(s.preacher||'',s.date)?'<span class="badge badge-yellow" style="font-size:9px;padding:1px 5px">Leave?</span>':''}
+      </div></td>
+      <td style="font-size:12px">${s.prayer||'—'}</td>
+      <td style="font-size:12px">${s.emcee||'<em style="color:var(--gray-400)">TBA</em>'}</td>
+      <td>${s.event?`<span class="badge badge-purple">${s.event}</span>`:hol?`<span class="badge badge-red" style="font-size:9px">${hol.name.slice(0,14)}</span>`:'—'}</td>
+      <td>${conflict?'<span class="badge badge-red">⚠ Conflict</span>':hol&&hol.affects?'<span class="badge badge-yellow">Holiday</span>':'<span class="badge badge-green">OK</span>'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-secondary btn-sm" onclick="openEditModal('${s.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteService('${s.id}')">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray-400)">No services match filter.</td></tr>`;
+}
+let calYear=2026,calMonth=0;
+function renderCalendar(){
+  detectConflicts();
+  document.getElementById('cal-month-label').textContent=`${MONTHS[calMonth]} ${calYear}`;
+  const grid=document.getElementById('cal-grid');
+  let html=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-day-header">${d}</div>`).join('');
+  const first=new Date(calYear,calMonth,1).getDay(),total=new Date(calYear,calMonth+1,0).getDate(),prev=new Date(calYear,calMonth,0).getDate(),ts=today();
+  for(let i=0;i<first;i++)html+=`<div class="cal-day other-month"><div class="cal-date">${prev-first+1+i}</div></div>`;
+  for(let d=1;d<=total;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const sv=DB.services.filter(s=>s.date===ds),hol=isHoliday(ds),cf=CONFLICTS.some(c=>c.date===ds);
+    html+=`<div class="${['cal-day',sv.length?'has-service':'',hol?'has-holiday':'',cf?'has-conflict':'',ds===ts?'today':''].filter(Boolean).join(' ')}" onclick="openCalDayModal('${ds}')">
+      <div class="cal-date">${d}</div>
+      ${hol?`<div class="cal-holiday-tag">${hol.name.slice(0,14)}</div>`:''}
+      ${sv.map(s=>`<div class="cal-event">${s.preacher||'TBA'}</div>`).join('')}
+    </div>`;
+  }
+  const rem=(7-((first+total)%7))%7;
+  for(let i=1;i<=rem;i++)html+=`<div class="cal-day other-month"><div class="cal-date">${i}</div></div>`;
+  grid.innerHTML=html;
+}
+function calPrev(){if(calMonth===0){calMonth=11;calYear--;}else calMonth--;renderCalendar();}
+function calNext(){if(calMonth===11){calMonth=0;calYear++;}else calMonth++;renderCalendar();}
+function openCalDayModal(ds){
+  const sv=DB.services.filter(s=>s.date===ds),hol=isHoliday(ds);
+  openModal(`Services – ${fmtDate(ds)}`,`
+    ${hol?`<div class="alert alert-danger" style="margin-bottom:12px">🗓 Kuwait Holiday: <strong>${hol.name}</strong></div>`:''}
+    ${sv.length?sv.map(s=>`<div style="border:1px solid var(--gray-200);border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--blue-600);margin-bottom:8px">${MONTH_THEMES[monthOf(s.date)]||''}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">
+        <div><span style="color:var(--gray-400)">Preacher:</span> <strong>${s.preacher||'TBA'}</strong></div>
+        <div><span style="color:var(--gray-400)">Prayer:</span> ${s.prayer||'—'}</div>
+        <div><span style="color:var(--gray-400)">EMCEE:</span> ${s.emcee||'TBA'}</div>
+        <div><span style="color:var(--gray-400)">Event:</span> ${s.event||'—'}</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="closeModal();openEditModal('${s.id}')">Edit Service</button>
+    </div>`).join(''):`<div class="empty-state" style="padding:20px"><p>No service scheduled.</p></div>`}
+    <button class="btn btn-secondary btn-sm" onclick="closeModal();openAddModalForDate('${ds}')">+ Add Service Here</button>
+  `,[]);
+}
+function renderWorkers(){
+  const q=(document.getElementById('worker-search')?.value||'').toLowerCase();
+  const role=document.getElementById('worker-role')?.value||'';
+  const nd=new Date();
+  const ct={};DB.services.forEach(s=>{if(s.preacher)ct[s.preacher]=(ct[s.preacher]||0)+1;if(s.emcee)ct[s.emcee]=(ct[s.emcee]||0)+1;if(s.prayer)ct[s.prayer]=(ct[s.prayer]||0)+1;});
+  const workers=DB.workers.filter(w=>(!q||w.name.toLowerCase().includes(q))&&(!role||w.role===role));
+  document.getElementById('worker-cards').innerHTML=workers.map(w=>{
+    const onL=DB.leaves.some(l=>{const nm=l.person.toLowerCase(),wn=w.name.toLowerCase();return(nm===wn||wn.includes(nm))&&parseDate(l.from)<=nd&&parseDate(l.to)>=nd;});
+    const c=ct[w.name]||0;
+    return`<div class="card" style="padding:16px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div class="avatar" style="width:40px;height:40px;font-size:14px">${avatar(w.name)}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">${w.name}</div><span class="badge ${colorForRole(w.role)}">${w.role}</span></div>
+        ${onL?'<span class="badge badge-yellow">On Leave</span>':'<span class="badge badge-green">Available</span>'}
+      </div>
+      <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px">2026 assignments: <strong>${c}</strong></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,c*7)}%"></div></div>
+      <div style="display:flex;gap:6px;margin-top:12px">
+        <button class="btn btn-secondary btn-sm" onclick="openEditWorkerModal('${w.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteWorker('${w.id}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty-state"><p>No workers found.</p></div>';
+}
+function renderLeaves(){
+  const nd=new Date();
+  const cur=DB.leaves.filter(l=>parseDate(l.from)<=nd&&parseDate(l.to)>=nd);
+  const upc=DB.leaves.filter(l=>parseDate(l.from)>nd);
+  document.getElementById('leave-summary').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Currently on Leave</div><div class="stat-value">${cur.length}</div><div class="stat-sub">Active now</div></div>
+    <div class="stat-card"><div class="stat-label">Upcoming Leaves</div><div class="stat-value">${upc.length}</div><div class="stat-sub">Scheduled</div></div>`;
+  document.getElementById('leave-tbody').innerHTML=DB.leaves.slice().sort((a,b)=>a.from.localeCompare(b.from)).map(l=>{
+    const active=parseDate(l.from)<=nd&&parseDate(l.to)>=nd,future=parseDate(l.from)>nd;
+    const days=Math.max(0,Math.ceil((parseDate(l.to)-parseDate(l.from))/86400000));
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:26px;height:26px;font-size:10px">${avatar(l.person)}</div>${l.person}</div></td>
+      <td style="font-size:12px">${fmtDate(l.from)}</td><td style="font-size:12px">${fmtDate(l.to)}</td>
+      <td style="font-size:12px">${days} days</td>
+      <td style="font-size:12px;color:var(--gray-500)">${l.notes||'—'}</td>
+      <td>${active?'<span class="badge badge-yellow">Active</span>':future?'<span class="badge badge-blue">Upcoming</span>':'<span class="badge badge-gray">Past</span>'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-secondary btn-sm" onclick="openEditLeaveModal('${l.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteLeave('${l.id}')">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function renderHolidays(){
+  document.getElementById('holiday-tbody').innerHTML=DB.holidays.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(h=>`<tr>
+    <td>${fmtDate(h.date)}</td><td><strong>${h.name}</strong></td><td>${dayOfWeek(h.date)}</td>
+    <td>${h.affects?'<span class="badge badge-red">Yes – Affects service</span>':'<span class="badge badge-green">No direct impact</span>'}</td>
+    <td><div style="display:flex;gap:4px">
+      <button class="btn btn-secondary btn-sm" onclick="openEditHolidayModal('${h.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteHoliday('${h.id}')">Del</button>
+    </div></td>
+  </tr>`).join('');
+}
+const EI={Anniversary:'🎊',"Mother's Day":'💐',"Father's Day":'👔',Appreciation:'🙏',Thanksgiving:'🦃',Christmas:'🎄',Other:'📌'};
+function renderEvents(){
+  document.getElementById('events-grid').innerHTML=DB.specialEvents.map(e=>`
+    <div class="card" style="padding:20px">
+      <div style="font-size:32px;margin-bottom:10px">${EI[e.type]||'📌'}</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${e.name}</div>
+      <div style="font-size:13px;color:var(--blue-600);margin-bottom:8px">${fmtDate(e.date)}</div>
+      <span class="badge badge-purple">${e.type}</span>
+      ${e.notes?`<div style="font-size:12px;color:var(--gray-400);margin-top:8px">${e.notes}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:12px">
+        <button class="btn btn-secondary btn-sm" onclick="openEditEventModal('${e.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Del</button>
+      </div>
+    </div>`).join('');
+}
+function renderConflicts(){
+  detectConflicts();
+  const el=document.getElementById('conflicts-list');
+  if(!CONFLICTS.length){el.innerHTML='<div class="alert alert-success"><span>✓</span> No scheduling conflicts. All 2026 services look clean!</div>';return;}
+  const g={high:[],medium:[],low:[]};CONFLICTS.forEach(c=>g[c.severity].push(c));
+  let h='';
+  if(g.high.length){h+=`<div style="font-size:14px;font-weight:700;color:var(--red-600);margin-bottom:10px">🔴 High Priority (${g.high.length})</div>`;h+=g.high.map(c=>`<div class="alert alert-danger" style="margin-bottom:8px;flex-direction:column;gap:8px"><div><strong>${c.date?fmtDate(c.date):'Workload'}</strong> — ${c.msg}</div>${c.date?`<button class="btn btn-danger btn-sm" onclick="openEditModalByDate('${c.date}')">Fix Schedule →</button>`:''}</div>`).join('');}
+  if(g.medium.length){h+=`<div style="font-size:14px;font-weight:700;color:var(--yellow-700);margin:16px 0 10px">🟡 Medium Priority (${g.medium.length})</div>`;h+=g.medium.map(c=>`<div class="alert alert-warning" style="margin-bottom:8px"><span>⚠</span> ${c.msg}</div>`).join('');}
+  if(g.low.length){h+=`<div style="font-size:14px;font-weight:700;color:var(--blue-600);margin:16px 0 10px">🔵 Low Priority (${g.low.length})</div>`;h+=g.low.map(c=>`<div class="alert alert-info" style="margin-bottom:8px"><span>ℹ</span> ${c.msg}</div>`).join('');}
+  el.innerHTML=h;
+}
+function renderAnalytics(){
+  const pc={},ec={},prc={};
+  DB.services.forEach(s=>{if(s.preacher)pc[s.preacher]=(pc[s.preacher]||0)+1;if(s.emcee)ec[s.emcee]=(ec[s.emcee]||0)+1;if(s.prayer)prc[s.prayer]=(prc[s.prayer]||0)+1;});
+  document.getElementById('chart-preachers').innerHTML=buildBar(pc,'Preaching assignments');
+  document.getElementById('chart-emcees').innerHTML=buildBar(ec,'EMCEE assignments');
+  const mc={};DB.services.forEach(s=>{const m=monthOf(s.date);mc[m]=(mc[m]||0)+1;});
+  document.getElementById('chart-monthly').innerHTML=`<div class="bar-chart">${MONTHS.map(m=>{const v=mc[m]||0;return`<div class="bar-item"><div class="bar-val">${v}</div><div class="bar" style="height:${v*18}px"></div><div class="bar-label">${m.slice(0,3)}</div></div>`;}).join('')}</div>`;
+  const all=[...new Set([...Object.keys(pc),...Object.keys(ec),...Object.keys(prc)])].sort();
+  document.getElementById('stats-tbody').innerHTML=all.map(n=>{const p=pc[n]||0,e=ec[n]||0,pr=prc[n]||0,t=p+e+pr;return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:24px;height:24px;font-size:9px">${avatar(n)}</div>${n}</div></td><td>${p||'—'}</td><td>${pr||'—'}</td><td>${e||'—'}</td><td><strong>${t}</strong></td><td style="min-width:80px"><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,t*5)}%"></div></div></td></tr>`;}).join('');
+}
+function buildBar(data,label){const s=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,12),mx=Math.max(...s.map(e=>e[1]),1);return`<div class="bar-chart">${s.map(([n,v])=>`<div class="bar-item"><div class="bar-val">${v}</div><div class="bar" style="height:${Math.max(8,v/mx*90)}px" title="${n}: ${v}"></div><div class="bar-label">${n.split(' ').slice(-1)[0]}</div></div>`).join('')}</div><div style="font-size:11px;color:var(--gray-400);margin-top:6px">${label}</div>`;}
+function renderPrayer(){
+  const nd=new Date();
+  const onL=DB.leaves.filter(l=>parseDate(l.from)<=nd&&parseDate(l.to)>=nd);
+  const soon=DB.leaves.filter(l=>parseDate(l.from)>nd&&parseDate(l.from)<=new Date(nd.getTime()+30*864e5));
+  const hi=CONFLICTS.filter(c=>c.severity==='high');
+  let h=`<div class="alert alert-info" style="margin-bottom:16px"><span>🙏</span> <strong>Ministry Prayer Focus</strong> — Pray for workers on leave, those covering extra services, and services near Kuwait holidays.</div>`;
+  if(onL.length)h+=`<div class="card" style="margin-bottom:16px"><div class="card-header"><span class="card-title">🛫 Currently Away — Pray for Safe Travel & Rest</span></div><div class="card-body">${onL.map(l=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100)"><div class="avatar">${avatar(l.person)}</div><div><strong>${l.person}</strong> — on leave until ${fmtDate(l.to)}<br><span style="font-size:11px;color:var(--gray-400)">${l.notes}</span></div></div>`).join('')}</div></div>`;
+  if(soon.length)h+=`<div class="card" style="margin-bottom:16px"><div class="card-header"><span class="card-title">📅 Departing Soon — Pray for Preparation</span></div><div class="card-body">${soon.map(l=>`<div style="padding:8px 0;border-bottom:1px solid var(--gray-100);font-size:13px"><strong>${l.person}</strong> — leaves ${fmtDate(l.from)}</div>`).join('')}</div></div>`;
+  if(hi.length)h+=`<div class="card"><div class="card-header"><span class="card-title">⚠️ Pray for Scheduling Grace</span></div><div class="card-body">${hi.map(c=>`<div style="padding:8px 0;border-bottom:1px solid var(--gray-100);font-size:13px;color:var(--red-600)">⚡ ${c.msg}</div>`).join('')}</div></div>`;
+  document.getElementById('prayer-list').innerHTML=h;
+}
+function openModal(title,body,buttons){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn btn-secondary" onclick="closeModal()">Close</button>`+(buttons||[]).map(b=>`<button class="btn btn-primary" onclick="${b.fn}">${b.label}</button>`).join('');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function svcForm(s){const wn=[...new Set(DB.workers.map(w=>w.name))].sort();const opt=sel=>wn.map(w=>`<option value="${w}"${w===sel?' selected':''}>${w}</option>`).join('');return`
+  <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-control" id="f-date" value="${s?.date||''}"></div>
+  <div class="form-group"><label class="form-label">Preacher</label><select class="form-control" id="f-preacher"><option value="">— Select —</option>${opt(s?.preacher)}</select></div>
+  <div class="form-group"><label class="form-label">Pastoral Prayer</label><select class="form-control" id="f-prayer"><option value="">— Select —</option>${opt(s?.prayer)}</select></div>
+  <div class="form-group"><label class="form-label">EMCEE</label><select class="form-control" id="f-emcee"><option value="">— Select —</option>${opt(s?.emcee)}</select></div>
+  <div class="form-group"><label class="form-label">Special Event</label><select class="form-control" id="f-event">
+    <option value="">None</option>${['LS',"Mother's Day","Father's Day",'34th Anniv','Christmas',"Pastor's App"].map(e=>`<option${e===s?.event?' selected':''}>${e}</option>`).join('')}
+  </select></div>`;}
+function gSvcForm(){return{date:document.getElementById('f-date').value,preacher:document.getElementById('f-preacher').value,prayer:document.getElementById('f-prayer').value,emcee:document.getElementById('f-emcee').value,event:document.getElementById('f-event').value};}
+function openAddModal(){openModal('Add Service',svcForm(null),[{label:'Save Service',fn:'saveNewService()'}]);}
+function openAddModalForDate(d){openModal('Add Service',svcForm({date:d}),[{label:'Save Service',fn:'saveNewService()'}]);}
+function saveNewService(){const f=gSvcForm();if(!f.date){showToast('Please select a date','error');return;}DB.services.push({id:uid(),...f});saveData();detectConflicts();closeModal();renderSchedule();renderDashboard();showToast('Service added!','success');}
+function openEditModal(id){const s=DB.services.find(x=>x.id===id);if(!s)return;openModal('Edit Service',svcForm(s),[{label:'Save Changes',fn:`saveEditService('${id}')`}]);}
+function openEditModalByDate(date){const s=DB.services.find(x=>x.date===date);if(s)openEditModal(s.id);else openAddModalForDate(date);}
+function saveEditService(id){const s=DB.services.find(x=>x.id===id);if(!s)return;Object.assign(s,gSvcForm());saveData();detectConflicts();closeModal();renderSchedule();renderDashboard();showToast('Service updated!','success');}
+function deleteService(id){if(!confirm('Delete this service?'))return;DB.services=DB.services.filter(s=>s.id!==id);saveData();detectConflicts();renderSchedule();renderDashboard();showToast('Deleted','warning');}
+function openAddWorkerModal(){openModal('Add Worker',`
+  <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-control" id="fw-name" placeholder="e.g. Ptr Juan"></div>
+  <div class="form-group"><label class="form-label">Role</label><select class="form-control" id="fw-role"><option>Preacher</option><option>Lay Preacher</option><option>EMCEE</option><option>Prayer Leader</option></select></div>
+`,[{label:'Add Worker',fn:'saveNewWorker()'}]);}
+function saveNewWorker(){const name=document.getElementById('fw-name').value.trim();if(!name){showToast('Name required','error');return;}DB.workers.push({id:uid(),name,role:document.getElementById('fw-role').value});saveData();closeModal();renderWorkers();showToast('Worker added!','success');}
+function openEditWorkerModal(id){const w=DB.workers.find(x=>x.id===id);if(!w)return;openModal('Edit Worker',`
+  <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-control" id="fw-name" value="${w.name}"></div>
+  <div class="form-group"><label class="form-label">Role</label><select class="form-control" id="fw-role">${['Preacher','Lay Preacher','EMCEE','Prayer Leader'].map(r=>`<option${r===w.role?' selected':''}>${r}</option>`).join('')}</select></div>
+`,[{label:'Save',fn:`saveEditWorker('${id}')`}]);}
+function saveEditWorker(id){const w=DB.workers.find(x=>x.id===id);if(!w)return;w.name=document.getElementById('fw-name').value.trim();w.role=document.getElementById('fw-role').value;saveData();closeModal();renderWorkers();showToast('Updated!','success');}
+function deleteWorker(id){if(!confirm('Remove this worker?'))return;DB.workers=DB.workers.filter(w=>w.id!==id);saveData();renderWorkers();showToast('Removed','warning');}
+function openAddLeaveModal(){openModal('Add Leave Record',`
+  <div class="form-group"><label class="form-label">Person</label><input type="text" class="form-control" id="fl-person" placeholder="e.g. Ver"></div>
+  <div class="form-group"><label class="form-label">From</label><input type="date" class="form-control" id="fl-from"></div>
+  <div class="form-group"><label class="form-label">To</label><input type="date" class="form-control" id="fl-to"></div>
+  <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" id="fl-notes"></div>
+`,[{label:'Save Leave',fn:'saveNewLeave()'}]);}
+function saveNewLeave(){const p=document.getElementById('fl-person').value.trim();if(!p){showToast('Name required','error');return;}DB.leaves.push({id:uid(),person:p,from:document.getElementById('fl-from').value,to:document.getElementById('fl-to').value,notes:document.getElementById('fl-notes').value});saveData();detectConflicts();closeModal();renderLeaves();renderDashboard();showToast('Leave added!','success');}
+function openEditLeaveModal(id){const l=DB.leaves.find(x=>x.id===id);if(!l)return;openModal('Edit Leave',`
+  <div class="form-group"><label class="form-label">Person</label><input type="text" class="form-control" id="fl-person" value="${l.person}"></div>
+  <div class="form-group"><label class="form-label">From</label><input type="date" class="form-control" id="fl-from" value="${l.from}"></div>
+  <div class="form-group"><label class="form-label">To</label><input type="date" class="form-control" id="fl-to" value="${l.to}"></div>
+  <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" id="fl-notes" value="${l.notes||''}"></div>
+`,[{label:'Save',fn:`saveEditLeave('${id}')`}]);}
+function saveEditLeave(id){const l=DB.leaves.find(x=>x.id===id);if(!l)return;l.person=document.getElementById('fl-person').value;l.from=document.getElementById('fl-from').value;l.to=document.getElementById('fl-to').value;l.notes=document.getElementById('fl-notes').value;saveData();detectConflicts();closeModal();renderLeaves();renderDashboard();showToast('Updated!','success');}
+function deleteLeave(id){if(!confirm('Delete leave record?'))return;DB.leaves=DB.leaves.filter(l=>l.id!==id);saveData();detectConflicts();renderLeaves();renderDashboard();showToast('Deleted','warning');}
+function openAddHolidayModal(){openModal('Add Holiday',`
+  <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-control" id="fh-date"></div>
+  <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-control" id="fh-name" placeholder="e.g. National Day"></div>
+  <div class="form-group"><label class="form-label">Affects Sunday Service?</label><select class="form-control" id="fh-affects"><option value="false">No</option><option value="true">Yes</option></select></div>
+`,[{label:'Add Holiday',fn:'saveNewHoliday()'}]);}
+function saveNewHoliday(){const n=document.getElementById('fh-name').value.trim();if(!n){showToast('Name required','error');return;}DB.holidays.push({id:uid(),date:document.getElementById('fh-date').value,name:n,affects:document.getElementById('fh-affects').value==='true'});saveData();detectConflicts();closeModal();renderHolidays();renderDashboard();showToast('Holiday added!','success');}
+function openEditHolidayModal(id){const h=DB.holidays.find(x=>x.id===id);if(!h)return;openModal('Edit Holiday',`
+  <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-control" id="fh-date" value="${h.date}"></div>
+  <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-control" id="fh-name" value="${h.name}"></div>
+  <div class="form-group"><label class="form-label">Affects Sunday Service?</label><select class="form-control" id="fh-affects"><option value="false"${!h.affects?' selected':''}>No</option><option value="true"${h.affects?' selected':''}>Yes</option></select></div>
+`,[{label:'Save',fn:`saveEditHoliday('${id}')`}]);}
+function saveEditHoliday(id){const h=DB.holidays.find(x=>x.id===id);if(!h)return;h.date=document.getElementById('fh-date').value;h.name=document.getElementById('fh-name').value;h.affects=document.getElementById('fh-affects').value==='true';saveData();detectConflicts();closeModal();renderHolidays();renderDashboard();showToast('Updated!','success');}
+function deleteHoliday(id){if(!confirm('Delete holiday?'))return;DB.holidays=DB.holidays.filter(h=>h.id!==id);saveData();detectConflicts();renderHolidays();renderDashboard();showToast('Deleted','warning');}
+function openAddEventModal(){openModal('Add Special Event',`
+  <div class="form-group"><label class="form-label">Event Name</label><input type="text" class="form-control" id="fe-name" placeholder="e.g. 35th Anniversary"></div>
+  <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-control" id="fe-date"></div>
+  <div class="form-group"><label class="form-label">Type</label><select class="form-control" id="fe-type"><option>Anniversary</option><option>Mother's Day</option><option>Father's Day</option><option>Appreciation</option><option>Thanksgiving</option><option>Christmas</option><option>Other</option></select></div>
+  <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" id="fe-notes"></div>
+`,[{label:'Add Event',fn:'saveNewEvent()'}]);}
+function saveNewEvent(){const n=document.getElementById('fe-name').value.trim();if(!n){showToast('Name required','error');return;}DB.specialEvents.push({id:uid(),name:n,date:document.getElementById('fe-date').value,type:document.getElementById('fe-type').value,notes:document.getElementById('fe-notes').value});saveData();closeModal();renderEvents();showToast('Event added!','success');}
+function openEditEventModal(id){const e=DB.specialEvents.find(x=>x.id===id);if(!e)return;openModal('Edit Event',`
+  <div class="form-group"><label class="form-label">Event Name</label><input type="text" class="form-control" id="fe-name" value="${e.name}"></div>
+  <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-control" id="fe-date" value="${e.date}"></div>
+  <div class="form-group"><label class="form-label">Type</label><select class="form-control" id="fe-type">${['Anniversary',"Mother's Day","Father's Day",'Appreciation','Thanksgiving','Christmas','Other'].map(t=>`<option${t===e.type?' selected':''}>${t}</option>`).join('')}</select></div>
+  <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" id="fe-notes" value="${e.notes||''}"></div>
+`,[{label:'Save',fn:`saveEditEvent('${id}')`}]);}
+function saveEditEvent(id){const e=DB.specialEvents.find(x=>x.id===id);if(!e)return;e.name=document.getElementById('fe-name').value;e.date=document.getElementById('fe-date').value;e.type=document.getElementById('fe-type').value;e.notes=document.getElementById('fe-notes').value;saveData();closeModal();renderEvents();showToast('Updated!','success');}
+function deleteEvent(id){if(!confirm('Delete event?'))return;DB.specialEvents=DB.specialEvents.filter(e=>e.id!==id);saveData();renderEvents();showToast('Deleted','warning');}
+function showToast(msg,type='success'){const t=document.createElement('div');t.className=`toast toast-${type}`;t.innerHTML=`<span>${type==='success'?'✓':type==='error'?'✕':'⚠'}</span><span>${msg}</span>`;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),3000);}
+function exportPrint(){
+  // Temporarily show the active page only for printing (cleaner output)
+  // Add a print title header
+  const activePage = document.querySelector('.page.active');
+  const pageId = activePage ? activePage.id.replace('page-','') : 'dashboard';
+  const labels = PAGE_LABELS[pageId] || ['FLCC-GMPI Ministry Dashboard','2026'];
+  
+  // Inject a print header
+  const header = document.createElement('div');
+  header.id = 'print-header';
+  header.style.cssText = 'display:none;font-family:Inter,sans-serif;padding:16px 0 12px;border-bottom:2px solid #2563eb;margin-bottom:16px;';
+  header.innerHTML = `
+    <div style="font-size:11px;font-weight:600;color:#2563eb;letter-spacing:.08em;text-transform:uppercase">FLCC – GMPI · Ministry Hub</div>
+    <div style="font-size:20px;font-weight:700;color:#0f172a;margin-top:2px">${labels[0]}</div>
+    <div style="font-size:12px;color:#64748b;margin-top:2px">Printed ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+  `;
+  document.querySelector('.content').prepend(header);
+  
+  header.style.display = 'block';
+  window.addEventListener('afterprint', () => header.remove(), {once:true});
+  window.print();
+}
+function exportCSV(){
+  const rows=[['Date','Day','Preacher','Pastoral Prayer','EMCEE','Event','Month Theme']];
+  DB.services.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(s=>rows.push([s.date,dayOfWeek(s.date),s.preacher,s.prayer,s.emcee,s.event,MONTH_THEMES[monthOf(s.date)]||'']));
+  const csv=rows.map(r=>r.map(c=>`"${(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='FLCC-GMPI-Schedule-2026.csv';a.click();
+  showToast('CSV exported!','success');
+}
+window.addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))closeModal();});
+detectConflicts();
+renderDashboard();
+const _nd=new Date();
+calYear=_nd.getFullYear()===2026?_nd.getFullYear():2026;
+calMonth=_nd.getFullYear()===2026?_nd.getMonth():0;
+</script>
+</body>
+</html>
