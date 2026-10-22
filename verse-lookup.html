@@ -528,6 +528,12 @@ refInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); }
 // ── Init ──────────────────────────────────────────────────────────────────────
 buildSidebar();
 buildPopular();
+
+// A verse tapped in Sermon Notes arrives as ?ref=Romans%208:28 and should open
+// on the passage rather than on the popular list. Anything else in the query
+// string (?church=, added by FLCC.url) is ignored here.
+const initialRef = new URLSearchParams(window.location.search).get('ref');
+if (initialRef) doLookup(initialRef);
 </script>
 </body>
 </html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FAF7F0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="The Bible as one story, told for FLCC kids and youth — 23 stories, at whichever age you are, with questions and a verse for each one.">
+<title>The Big Story · FLCC</title>
+
+<link rel="icon" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <button type="button" class="back" id="btn-back" hidden>&larr; <span id="back-label">Back</span></button>
+    <a class="back" id="link-out" href="../">&larr; FLCC Members</a>
+    <button type="button" class="who" id="btn-who" hidden>
+      <span class="avatar" id="who-avatar">?</span>
+      <span class="who-name" id="who-name">Me</span>
+    </button>
+  </div>
+
+  <main id="view"><div class="state">Loading&hellip;</div></main>
+
+</div>
+
+<div id="sheet-host"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

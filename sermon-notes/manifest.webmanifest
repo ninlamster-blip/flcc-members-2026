@@ -1,0 +1,13 @@
+{
+  "name": "Sermon Notes · FLCC",
+  "short_name": "Sermon Notes",
+  "description": "Notes from the service, on the right date, saved as you write.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAFAF5",
+  "theme_color": "#FAFAF5",
+  "icons": [
+    { "src": "../logo.png", "sizes": "256x256", "type": "image/png", "purpose": "any" }
+  ]
+}

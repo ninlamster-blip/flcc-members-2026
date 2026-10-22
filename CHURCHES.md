@@ -38,10 +38,12 @@ that isn't one.
 
 **Shared by the whole network** (not per church): `botr.json`,
 `botr-schedule.json`, `announcements.json`, the Bible tools, World Watch,
-Faith Map, Equip content, the games, `ofw-companion/` and `daily-blessing/`.
+Faith Map, Equip content, the games, `big-story/` (the children's and youth
+app), `ofw-companion/` and `daily-blessing/`.
 
 **Per church**: members and workers, the service schedule, attendance, prayer
-ministry, music ministry, worship songs, giving.
+ministry, music ministry, worship songs, giving, and the sermon notes a member
+takes at their own church's services (`sermon-notes/`).
 
 `botr-schedule.json` is the exception that proves the rule. It is BOTR
 Friday's Friday-morning worship service at 10:00 AM, but the whole network is
@@ -360,6 +362,18 @@ nobody who is already using the app loses anything.
 
 Device-wide preferences stay shared across churches on purpose: Bible
 translation, Bible reading plan, game scores, and the Ask API key.
+
+One key is read and written by **two** apps: `flcc-sermon-notes-v1`, by
+`index.html` and by `sermon-notes/`. They share the note id (`2026-08-30|Sunday`)
+as well, so a note taken in either opens in the other, and both spread the
+stored note before saving so neither drops a field the other added. A test holds
+them to it — see `sermon-notes/README.md`.
+
+An app in a **subdirectory** has one thing to watch: `FLCC.data()` answers
+relative to the site root, because every page that has ever called it sits at
+the root. `sermon-notes/` walks the answer back up a level before fetching it;
+anything else added below the root has to do the same, or a member of Abundance
+asks for `/sermon-notes/data.json` and gets a 404.
 
 ## Still network-wide
 

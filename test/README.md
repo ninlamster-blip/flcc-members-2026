@@ -15,6 +15,8 @@ here; the two applications share no code.
 | `network.test.mjs` | The 14-church registry, every church's data files, the one-app rule |
 | `assistant.test.mjs` | Ask FLCC: what it is told, and which files it is told it from |
 | `crossword.test.mjs` | Bible Crossword: the answer bank, the grids, the daily puzzle, the streak |
+| `sermon-notes.test.mjs` | Sermon Notes: the reference parser, which service a note belongs to, and the notes it shares with `index.html` |
+| `big-story.test.mjs` | The Big Story: the story and question banks, the age tiers, the quiz and the memory verses |
 
 ## How these reach into a single-file app
 
@@ -37,6 +39,12 @@ and storage directly. It only reaches for `extract.mjs` for the one piece that
 lives inside `index.html` — the Home tab's crossword card, which reads the same
 localStorage key the game writes and is checked against it so the two cannot
 drift.
+
+`sermon-notes/` is the same arrangement, for the same reason, and with more at
+stake: it does not only read a key `index.html` writes, it writes the same notes
+back. So `sermon-notes.test.mjs` imports its modules directly and then reaches
+into `index.html` for `makeNoteId` and the storage key, and fails if the two
+apps ever stop agreeing about where a member's notes live.
 
 ## What these are defending
 

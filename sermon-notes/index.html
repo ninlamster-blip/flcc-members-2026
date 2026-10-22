@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FAFAF5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="Sermon notes for FLCC members. Opens on the right service, saves as you write, and works with no signal.">
+<title>Sermon Notes · FLCC Members</title>
+
+<link rel="icon" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script src="../church.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" id="back" href="../" aria-label="Back to the FLCC Members app">&larr; FLCC Members</a>
+    <div class="topbar-actions">
+      <span class="save-state" id="save-state" role="status" aria-live="polite"></span>
+      <button type="button" class="icon-btn" id="btn-all">All notes <span class="count" id="note-count" hidden>0</span></button>
+    </div>
+  </div>
+
+  <!-- Loading and failure both live here so the editor is never half-built. -->
+  <div class="state" id="state-loading">
+    <p>Opening your notes&hellip;</p>
+  </div>
+
+  <div class="state" id="state-error" hidden>
+    <h2>The schedule didn&rsquo;t load</h2>
+    <p id="error-detail">This app takes its dates, services and preachers from the church schedule, and it hasn&rsquo;t been able to reach it. Once it has loaded here once, it works with no signal.</p>
+    <button type="button" class="btn btn-accent" id="btn-retry">Try again</button>
+  </div>
+
+  <!-- Thirteen of the fourteen churches have not published a schedule yet.
+       That is not a failure, and saying "it didn't load" would send somebody
+       looking for a problem that isn't there. -->
+  <div class="state" id="state-empty" hidden>
+    <h2>No services published yet</h2>
+    <p id="empty-detail">Sermon Notes puts your notes on the service they belong to, and takes the dates from your church&rsquo;s published schedule. As soon as the leaders publish one, this opens on the right day by itself.</p>
+    <a class="btn btn-accent" id="empty-back" href="../">Back to the app</a>
+  </div>
+
+  <div id="app" hidden>
+
+    <header class="service">
+      <button type="button" class="service-switch" id="btn-switch" aria-haspopup="dialog">
+        <p class="eyebrow" id="svc-when">&nbsp;</p>
+        <h1 class="font-display" id="svc-date">&nbsp;</h1>
+        <p class="service-meta" id="svc-label"></p>
+        <p class="service-meta service-preacher" id="svc-preacher"></p>
+        <span class="switch-hint">Change</span>
+      </button>
+      <p class="theme" id="svc-theme" hidden></p>
+    </header>
+
+    <main class="sheet">
+      <h2 class="sr-only">Your notes for this service</h2>
+
+      <label class="sr-only" for="f-title">Sermon title</label>
+      <input class="field field-title" id="f-title" type="text" placeholder="Sermon title"
+             autocomplete="off" spellcheck="true">
+
+      <div class="field-row">
+        <label for="f-passage">Passage</label>
+        <input class="field" id="f-passage" type="text" placeholder="Romans 8"
+               autocomplete="off" autocapitalize="words" spellcheck="false">
+      </div>
+
+      <label class="sr-only" for="f-body">Notes</label>
+      <textarea class="field field-body" id="f-body" spellcheck="true"
+                placeholder="What was said, and what it meant."></textarea>
+      <!-- A textarea prints only as much as its box shows, whatever height is
+           set on it, so what gets printed is this copy of the same text. -->
+      <div class="print-body" id="print-body" aria-hidden="true"></div>
+
+      <section class="block" id="block-verses">
+        <h3 class="block-title">Verses mentioned</h3>
+        <ul class="verse-list" id="verse-list"></ul>
+        <form class="verse-form" id="verse-form">
+          <label class="sr-only" for="f-verse">Add a verse</label>
+          <input class="field" id="f-verse" type="text" placeholder="rom 8:28"
+                 autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+          <button type="submit" class="btn">Add</button>
+        </form>
+        <p class="hint">Short forms work — <span class="mono">1 cor 13</span>, <span class="mono">ps 23</span>, <span class="mono">jn 3:16-17</span>. Tap a verse to read it.</p>
+      </section>
+
+      <section class="block" id="block-takeaway">
+        <h3 class="block-title"><label for="f-takeaway">One thing to do this week</label></h3>
+        <input class="field" id="f-takeaway" type="text" placeholder="Optional" spellcheck="true">
+      </section>
+    </main>
+
+    <div class="actions" id="actions">
+      <button type="button" class="btn" id="btn-share">Share</button>
+      <button type="button" class="btn btn-quiet" id="btn-print">Print</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-danger" id="btn-delete" hidden>Delete</button>
+    </div>
+
+    <div class="confirm" id="confirm-delete" hidden>
+      <span>Delete these notes? This can&rsquo;t be undone.</span>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-quiet" id="btn-delete-cancel">Keep</button>
+      <button type="button" class="btn btn-danger" id="btn-delete-yes">Delete</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Panels ──────────────────────────────────────────────────────────────── -->
+
+<div class="overlay" id="overlay" hidden></div>
+
+<aside class="panel" id="panel-services" role="dialog" aria-modal="true" aria-labelledby="services-title" hidden>
+  <div class="panel-head">
+    <h2 id="services-title">Which service?</h2>
+    <button type="button" class="icon-btn" data-close>Close</button>
+  </div>
+  <div class="panel-body" id="services-body"></div>
+</aside>
+
+<aside class="panel" id="panel-notes" role="dialog" aria-modal="true" aria-labelledby="notes-title" hidden>
+  <div class="panel-head">
+    <h2 id="notes-title">All notes</h2>
+    <button type="button" class="icon-btn" data-close>Close</button>
+  </div>
+  <div class="panel-search">
+    <label class="sr-only" for="f-search">Search your notes</label>
+    <input id="f-search" type="search" placeholder="Search your notes" autocomplete="off">
+  </div>
+  <div class="panel-body" id="notes-body"></div>
+</aside>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
