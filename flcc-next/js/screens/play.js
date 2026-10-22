@@ -38,11 +38,11 @@ export default async function playScreen(ctx) {
       h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'See how everyone your age is doing in Hop Across and Galaga this week, work on a team goal together, and send cheers.' })),
     h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Open' }), art('star', { tone: 'captain', size: 'sm' })));
 
-  // Rooms: a live quiz battle, Hop Across race or Galaga race with friends, by code.
+  // Rooms: a live quiz battle, or a Hop Across, Galaga or basketball race with friends, by code.
   const roomCard = poster({ tone: 'rose', className: 'full', as: 'button', onclick: () => ctx.go('room') },
     label('Live, online'),
     h('div', {}, headline('PLAY WITH FRIENDS'),
-      h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'A quiz battle, a Hop Across race or a Galaga race. Make a room, share its four-letter code, and play at the same time on your own phones.' })),
+      h('p', { class: 'body dim', style: 'margin-top:.8rem', text: 'A quiz battle, or a Hop Across, Galaga or basketball race. Make a room, share its four-letter code, and play at the same time on your own phones.' })),
     h('div', { class: 'poster-foot' }, h('p', { class: 'label', text: 'Make or join a room' }), art('bolt', { tone: 'rose', size: 'sm' })));
 
   const el = h('div', { style: 'display:contents' },

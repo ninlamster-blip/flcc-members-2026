@@ -83,12 +83,15 @@ export async function addMissingColumns(db, table, columns) {
 }
 
 /**
- * Live rooms: a quiz battle, a Hop Across race, or a Galaga race — everyone
- * flying the same seeded waves at once, ranked by score. A race is a score,
- * so it is for the groups with a board; the adult edition keeps none.
+ * Live rooms: a quiz battle, or a race — Hop Across, Galaga or basketball
+ * (Hoops) — with everyone playing the same seeded road, waves or levels at
+ * once, ranked by score. A race is a score, so Galaga and Hoops races are for
+ * the groups with a board; the adult edition keeps none.
  */
-export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {}, galaga: { groups: BOARD_GROUPS } };
-const RACES = ['hop', 'galaga'];
+export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {}, galaga: { groups: BOARD_GROUPS }, hoops: { groups: BOARD_GROUPS } };
+const RACES = ['hop', 'galaga', 'hoops'];
+/** The highest score a racer can report, per race. Hoops has no weekly board, so its cap lives here. */
+const RACE_SCORE_MAX = { hop: GAMES.hop.max, galaga: GAMES.galaga.max, hoops: 1_000_000 };
 export const ROOM_MAX_PLAYERS = 8;
 const ROOM_COUNTDOWN_MS = 3000;
 const ROOM_LIFETIME_HOURS = 2;
@@ -455,14 +458,14 @@ async function handleRoom(db, path, body, me) {
   }
 
   // POST /room/progress { code, row, alive } — a racer's furthest row (Hop
-  // Across) or wave (Galaga, with its score), and whether they are still going
+  // Across), wave (Galaga) or level (Hoops) with its score, and whether they are still going
   if (path === '/room/progress') {
     if (!RACES.includes(room.kind) || room.status !== 'playing') return json({ error: { message: 'Not racing now.' } }, 409);
     const row = Math.trunc(Number(body.row));
     const most = room.kind === 'hop' ? GAMES.hop.max : 1000;
     if (!Number.isFinite(row) || row < 0 || row > most) return json({ error: { message: 'That row does not look right.' } }, 400);
-    const score = room.kind === 'galaga' ? Math.trunc(Number(body.score)) : row;
-    if (!Number.isFinite(score) || score < 0 || score > GAMES[room.kind].max) return json({ error: { message: 'That score does not look right.' } }, 400);
+    const score = room.kind === 'hop' ? row : Math.trunc(Number(body.score));
+    if (!Number.isFinite(score) || score < 0 || score > RACE_SCORE_MAX[room.kind]) return json({ error: { message: 'That score does not look right.' } }, 400);
     await db.prepare(
       `UPDATE next_room_players SET progress = MAX(progress, ?), score = MAX(score, ?), alive = alive AND ? WHERE code = ? AND player_id = ?`
     ).bind(row, score, body.alive === false ? 0 : 1, room.code, me.id).run();

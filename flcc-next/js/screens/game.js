@@ -10,6 +10,7 @@ import { mode } from '../core/profile.js';
 import * as crossword from '../games/crossword.js';
 import * as galaga from '../games/galaga.js';
 import * as hop from '../games/hopacross.js';
+import * as hoops from '../games/hoops.js';
 import * as rewards from '../core/rewards.js';
 import * as online from '../core/online.js';
 import * as chiptune from '../games/chiptune.js';
@@ -974,6 +975,263 @@ function hopGame(ctx) {
   return { title: 'Hop Across', el };
 }
 
+// ── Hoops ───────────────────────────────────────────────────────────────────
+//
+// A basketball shoot-out against hoops that slide along a rail. A swipe up
+// throws — its direction is the aim, its length the strength — and the ball
+// has to drop through a rim. Each level asks for so many baskets from so many
+// balls; missing the target replays that level, never level one. The best
+// level reached stays on this device. Like Galaga and Hop Across it plays
+// chiptune sounds with a mute button this phone remembers.
+//
+// From a room (js/screens/room.js) it is a race: every phone shoots at the
+// room's seed — the same hoops, wind and defender — from level one, and a
+// missed target is the end of that racer's run rather than a retry.
+
+function hoopsGame(ctx) {
+  const tone = 'sky';
+  const arcade = () => store.read(store.KEYS.arcade, {}) || {};
+  const keep = (patch) => store.write(store.KEYS.arcade, { ...arcade(), ...patch });
+  const best = () => arcade().hoops || 0;
+  const saved = () => {
+    const resume = arcade().hoopsResume || {};
+    return { level: Math.max(1, Math.trunc(resume.level) || 1), score: Math.max(0, Math.trunc(resume.score) || 0) };
+  };
+  const race = ctx.route.params.room ? { code: ctx.route.params.room, seed: Number(ctx.route.params.seed) || 1, place: '' } : null;
+  const seed = () => (race ? race.seed : Date.now() % 2147483647);
+  let state = race ? hoops.create(race.seed) : hoops.create(seed(), saved());
+  const sound = chiptune.player({ muted: Boolean(arcade().hoopsMuted), sounds: hoops.SOUNDS });
+  let raf = 0;
+  let last = 0;
+  let attached = false;
+  let shown = null;
+  let gone = false;
+  const home = location.hash;
+
+  const canvas = h('canvas', { 'aria-label': 'Hoops. Swipe up on the field to shoot; the direction aims and the length is the strength.', role: 'img' });
+  const g = canvas.getContext('2d');
+  const colors = palette();
+
+  const scoreEl = h('p', { class: 'headline', text: '0' });
+  const levelEl = h('p', { class: 'label', text: 'Level 1' });
+  const infoEl = h('p', { class: 'label dim', text: '' });
+
+  const paintNumbers = () => {
+    scoreEl.textContent = String(state.score);
+    levelEl.textContent = `Level ${state.level}`;
+    infoEl.textContent = race
+      ? `Race ${race.code}${race.place ? ` · ${race.place}` : ''}`
+      : best() ? `best: level ${best()}` : 'no best yet';
+  };
+
+  // In a race: tell the room the level reached and the score once a second.
+  let raceTimer = 0;
+  const report = async (alive) => {
+    if (!race) return;
+    await online.race(race.code, state.level, alive, state.score);
+    const room = await online.room(race.code);
+    if (room && room.players) {
+      const sorted = [...room.players].sort((a, b) => b.score - a.score);
+      const at = sorted.findIndex((p) => p.you);
+      const shooting = room.players.filter((p) => p.alive).length;
+      race.place = `${['1st', '2nd', '3rd'][at] || `${at + 1}th`} of ${sorted.length}${shooting ? ` · ${shooting} shooting` : ''}`;
+      paintNumbers();
+    }
+  };
+  if (race) raceTimer = setInterval(() => { if (!gone && !state.over && state.started) report(true); }, 1000);
+
+  const fieldHeight = () => (canvas.width ? canvas.height / (canvas.width / hoops.WIDTH) : hoops.HEIGHT);
+  const size = () => {
+    const ratio = window.devicePixelRatio || 1;
+    const width = Math.round(canvas.clientWidth * ratio);
+    const height = Math.round(canvas.clientHeight * ratio);
+    if (width && (canvas.width !== width || canvas.height !== height)) {
+      canvas.width = width;
+      canvas.height = height;
+      hoops.resize(state, fieldHeight());
+    }
+    return ratio;
+  };
+
+  let aim = null;                   // the swipe being drawn, in field units
+  const draw = () => {
+    const ratio = size();
+    if (canvas.width) hoops.paint(g, state, { colors, scale: canvas.width / hoops.WIDTH, edge: 3 * ratio, aim });
+  };
+
+  const over = () => {
+    const record = state.level > best();
+    if (record) keep({ hoops: state.level });
+    const result = progress.complete('game', `hoops:${progress.today()}`);
+    const xp = result.first ? ` · +${progress.XP.game} XP` : '';
+    paintNumbers();
+    if (race) {
+      clearInterval(raceTimer);
+      report(false);
+      shown = moment({
+        tone, eyebrow: `Out of balls · race ${race.code}${xp}`,
+        big: String(state.score),
+        line: `You reached level ${state.level}. See how everyone else does — the room shows the final places.`,
+        action: 'See the race', onclose: () => ctx.go(`room?code=${race.code}`),
+      });
+      return;
+    }
+    // A missed target replays the same level, with the score it started with.
+    keep({ hoopsResume: { level: state.level, score: state.levelScore } });
+    let fresh = false;
+    shown = moment({
+      tone,
+      eyebrow: `Level ${state.level} · ${state.made} of ${state.config.target}${xp}`,
+      big: 'SO CLOSE.',
+      line: `${record ? 'Your furthest level yet. ' : ''}Try level ${state.level} again — you keep the ${state.levelScore} points you came in with.`,
+      action: `Try level ${state.level} again`,
+      onclose: () => begin(fresh),
+    });
+    if (state.level > 1) {
+      const main = shown.querySelector('.pill');
+      main.parentElement.classList.add('pill-row');
+      main.parentElement.appendChild(pill('Start from level 1', () => { fresh = true; main.click(); }, { quiet: true }));
+    }
+  };
+
+  const frame = (now) => {
+    raf = 0;
+    if (!canvas.isConnected) { if (attached) { teardown(); return; } raf = requestAnimationFrame(frame); return; }
+    if (!attached) document.body.toggleAttribute('data-arcade', true);
+    attached = true;
+    const dt = last ? (now - last) / 1000 : 0;
+    last = now;
+    const events = hoops.step(state, dt);
+    sound.play(events);
+    if (events.length) paintNumbers();
+    if (events.includes('level')) {
+      if (state.level >= best()) keep({ hoops: state.level + 1 });
+      if (!race) keep({ hoopsResume: { level: state.level + 1, score: state.score } });
+      progress.complete('game', `hoops:${progress.today()}`);
+    }
+    draw();
+    if (state.over) { over(); return; }
+    raf = requestAnimationFrame(frame);
+  };
+
+  function begin(fresh) {
+    if (fresh) keep({ hoopsResume: { level: 1, score: 0 } });
+    state = hoops.create(seed(), { ...saved(), height: fieldHeight() });
+    last = 0;
+    aim = null;
+    paintNumbers();
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+
+  const shoot = (swipe) => {
+    if (document.querySelector('.moment')) return;
+    sound.wake();
+    sound.play(hoops.shoot(state, swipe));
+    paintNumbers();
+  };
+
+  // The field: put a finger down anywhere, draw the throw upward, let go.
+  let touch = null;
+  const point = (event) => {
+    const box = canvas.getBoundingClientRect();
+    const units = hoops.WIDTH / (box.width || 1);
+    return { x: (event.clientX - box.left) * units, y: (event.clientY - box.top) * units };
+  };
+  canvas.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
+    sound.wake();
+    touch = { id: event.pointerId, ...point(event) };
+  });
+  canvas.addEventListener('pointermove', (event) => {
+    if (!touch || event.pointerId !== touch.id) return;
+    const at = point(event);
+    aim = { dx: at.x - touch.x, dy: at.y - touch.y };
+  });
+  canvas.addEventListener('pointerup', (event) => {
+    if (!touch || event.pointerId !== touch.id) return;
+    const at = point(event);
+    const swipe = { dx: at.x - touch.x, dy: at.y - touch.y };
+    touch = null;
+    aim = null;
+    shoot(swipe);
+  });
+  canvas.addEventListener('pointercancel', () => { touch = null; aim = null; });
+
+  // Keys: ◀ ▶ lean the aim, ▲ or Space shoots it at a medium strength,
+  // held longer for a stronger throw.
+  let lean = 0;
+  let charging = 0;
+  const onKey = (event) => {
+    if (!canvas.isConnected) { teardown(); return; }
+    if (document.querySelector('.moment')) return;
+    if (event.key === 'Escape' && event.type === 'keydown') { leave(); return; }
+    if (event.key === ' ' && event.target.closest?.('button')) return;
+    if (event.type === 'keydown' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault();
+      lean = Math.max(-30, Math.min(30, lean + (event.key === 'ArrowLeft' ? -3 : 3)));
+      aim = { dx: lean, dy: -60 };
+    } else if (event.key === 'ArrowUp' || event.key === ' ') {
+      event.preventDefault();
+      if (event.type === 'keydown' && !event.repeat) charging = performance.now();
+      if (event.type === 'keyup' && charging) {
+        const held = Math.min(1.2, (performance.now() - charging) / 1000);
+        charging = 0;
+        aim = null;
+        shoot({ dx: lean, dy: -(45 + held * 40) });
+      }
+    }
+  };
+  const onRoute = () => { if (location.hash !== home) teardown(); };
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('keyup', onKey);
+  window.addEventListener('hashchange', onRoute);
+  function teardown() {
+    if (gone) return;
+    gone = true;
+    clearInterval(raceTimer);
+    // Closing a race half-way is being out of it, or the room would wait for ever.
+    if (race && !state.over) online.race(race.code, state.level, false, state.score);
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    window.removeEventListener('keydown', onKey);
+    window.removeEventListener('keyup', onKey);
+    window.removeEventListener('hashchange', onRoute);
+    document.body.removeAttribute('data-arcade');
+    sound.close();
+    if (shown && shown.isConnected) shown.remove();
+  }
+  const leave = () => { teardown(); ctx.go('play'); };
+
+  const mute = h('button', { class: 'arcade-close', type: 'button' });
+  const paintMute = () => {
+    mute.innerHTML = sound.muted ? SPEAKER.off : SPEAKER.on;
+    mute.setAttribute('aria-label', sound.muted ? 'Turn sound on' : 'Turn sound off');
+    mute.setAttribute('aria-pressed', String(sound.muted));
+  };
+  mute.addEventListener('click', () => {
+    sound.muted = !sound.muted;
+    keep({ hoopsMuted: sound.muted });
+    if (!sound.muted) sound.wake();
+    paintMute();
+  });
+  paintMute();
+
+  const stage = h('div', { class: 'arcade-stage', role: 'application', 'aria-label': 'Hoops' },
+    h('div', { class: 'arcade-bar' },
+      h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close Hoops', text: '✕', onclick: leave }),
+      h('div', {}, scoreEl, h('p', { class: 'label dim', text: 'points' })),
+      h('span', { class: 'grow' }),
+      h('div', { class: 'stat' }, levelEl, infoEl),
+      mute),
+    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade', dataset: { shape: 'fill' } }, canvas)));
+
+  const el = h('div', { style: 'display:contents' }, stage);
+  paintNumbers();
+  raf = requestAnimationFrame(frame);
+  return { title: 'Hoops', el };
+}
+
 const GAMES = {
   quiz: (ctx) => quizGame(ctx),
   speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'sky', title: 'Speed quiz' }),
@@ -985,6 +1243,7 @@ const GAMES = {
   crossword: crosswordGame,
   galaga: galagaGame,
   hop: hopGame,
+  hoops: hoopsGame,
 };
 
 export default async function gameScreen(ctx) {

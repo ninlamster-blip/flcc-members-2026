@@ -147,6 +147,14 @@ const SYMBOLS = {
     line(42, 78, 42, 88), line(58, 78, 58, 88),
   ],
 
+  // Hoops — a basketball, seams and all
+  ball: (f) => [
+    circle(50, 50, 34, f),
+    line(16, 50, 84, 50), line(50, 16, 50, 84),
+    shape('M26 26c10 12 10 36 0 48'),
+    shape('M74 26c-10 12-10 36 0 48'),
+  ],
+
   // Connect
   calendar: (f) => [
     box(16, 24, 68, 62, f, 4),
