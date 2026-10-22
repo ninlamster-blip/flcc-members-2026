@@ -19,11 +19,19 @@ const finish = (state, dt = DT) => {
   return events;
 };
 
-/** Move the claw to `x` and drop it there. */
-const grabAt = (state, x, dt = DT) => {
+/**
+ * Move the claw to `x` and drop it there. Over a sliding box, let go after
+ * `release` seconds of hovering (or leave it to the claw's own clock).
+ */
+const grabAt = (state, x, dt = DT, release = null) => {
   const events = [];
   for (let i = 0; i < 400 && Math.abs(state.claw.x - x) > 0.01 && state.claw.mode === 'aim'; i++) events.push(...claw.step(state, { to: x }, dt));
   if (state.claw.mode === 'aim') events.push(...claw.drop(state));
+  for (let i = 0; i < 1200 && state.claw.mode !== 'aim' && state.claw.mode !== 'hover'; i++) events.push(...claw.step(state, {}, dt));
+  if (state.claw.mode === 'hover' && release !== null) {
+    for (let t = 0; t < release; t += dt) events.push(...claw.step(state, {}, dt));
+    events.push(...claw.drop(state));
+  }
   return [...events, ...finish(state, dt)];
 };
 
@@ -33,13 +41,19 @@ const grabAt = (state, x, dt = DT) => {
  * wins a prize. Returns the real try's events, or null when nothing works.
  */
 function bestGrab(state) {
+  const releases = state.config.box ? [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3] : [null];
   for (let wait = 0; wait < 10; wait++) {
     for (let x = 22; x <= 94; x += 0.5) {
-      const copy = structuredClone(state);
-      for (let i = 0; i < wait * 9; i++) claw.step(copy, { to: copy.claw.x }, 1 / 30);
-      if (grabAt(copy, x, 1 / 30).includes('prize')) {
-        for (let i = 0; i < wait * 9; i++) claw.step(state, { to: state.claw.x }, 1 / 30);
-        return grabAt(state, x, 1 / 30);
+      for (const release of releases) {
+        const copy = structuredClone(state);
+        for (let i = 0; i < wait * 9; i++) claw.step(copy, { to: copy.claw.x }, 1 / 30);
+        const tried = grabAt(copy, x, 1 / 30, release);
+        if (tried.includes('prize')) {
+          for (let i = 0; i < wait * 9; i++) claw.step(state, { to: state.claw.x }, 1 / 30);
+          return grabAt(state, x, 1 / 30, release);
+        }
+        // Nothing lifted here: no release timing will change that.
+        if (!tried.includes('grab')) break;
       }
     }
   }
@@ -128,8 +142,9 @@ test('a grab is never left to chance: the same grab always does the same thing',
   assert.deepEqual(play(), play());
 });
 
-test('every level is at least as hard as the one before, and some are harder', () => {
-  const harder = { target: 1, clock: 0, belt: 1, sway: 1, grip: -1, size: -1 };
+test('every level is at least as hard as the one before, up to level 25, and then stays there', () => {
+  const harder = { target: 1, clock: 0, belt: 1, sway: 1, grip: -1, size: -1, slip: -1, box: 1, heavy: 1 };
+  assert.equal(claw.HARDEST, 25);
   for (let n = 1; n < 60; n++) {
     const now = claw.level(n);
     const next = claw.level(n + 1);
@@ -143,6 +158,14 @@ test('every level is at least as hard as the one before, and some are harder', (
     }
     assert.ok(now.tries - now.target >= 2, `level ${n} leaves fewer than two spare tries`);
   }
+  for (let n = 26; n < 60; n++) assert.deepEqual(claw.level(n), claw.level(25), `level ${n} is not the same as level 25`);
+  const before = claw.level(24);
+  const top = claw.level(25);
+  assert.ok(Object.keys(top).some((key) => top[key] !== before[key]), 'level 25 is still harder than level 24');
+  // Each new hazard arrives on its level.
+  assert.ok(claw.level(8).slip === 1 && claw.level(9).slip < 1, 'the slippery claw arrives at level 9');
+  assert.ok(!claw.level(12).box && claw.level(13).box > 0, 'the sliding box arrives at level 13');
+  assert.ok(!claw.level(16).heavy && claw.level(17).heavy > 0, 'heavy toys arrive at level 17');
   const first = claw.level(1);
   const tenth = claw.level(10);
   assert.equal(first.clock + first.belt + first.sway, 0, 'level one has no clock, belt or sway');
@@ -196,8 +219,49 @@ test('every prize is one of the app’s own drawings', async () => {
   for (const kind of claw.PRIZES) assert.ok(art.hasSymbol(kind), `${kind} is not in art.js`);
 });
 
+test('a heavy toy cannot be lifted', () => {
+  const state = claw.create(5, { level: 17 });
+  state.config = { ...state.config, belt: 0, sway: 0 };
+  const heavy = state.prizes.find((one) => one.heavy);
+  assert.ok(heavy, 'level 17 has a heavy toy');
+  const events = grabAt(state, heavy.x);
+  assert.ok(events.includes('heavy') && !events.includes('prize'));
+  assert.ok(state.prizes.includes(heavy), 'it stays in the pile');
+});
+
+test('a slippery claw loses a grab that is good but not near-perfect on the way to the box', () => {
+  const state = claw.create(5, { level: 12 });
+  state.config = { ...state.config, belt: 0, sway: 0, box: 0 };
+  const prize = state.prizes.find((one) => !one.heavy && one.x > 50) || state.prizes.find((one) => !one.heavy);
+  const off = prize.r * state.config.grip * (state.config.slip + 1) / 2;   // inside the grip, outside the slippery part
+  const events = grabAt(state, prize.x + off);
+  assert.ok(events.includes('grab') && events.includes('slip') && !events.includes('prize'), events.join());
+});
+
+test('over a sliding box the claw waits for DROP: let go at the right moment and the toy is won, at the wrong one it bounces back', () => {
+  const state = claw.create(5, { level: 13 });
+  state.config = { ...state.config, belt: 0, sway: 0, slip: 1 };
+  const prize = state.prizes.find((one) => !one.heavy);
+  for (let i = 0; i < 400 && Math.abs(state.claw.x - prize.x) > 0.01; i++) claw.step(state, { to: prize.x }, DT);
+  claw.drop(state);
+  for (let i = 0; i < 1200 && state.claw.mode !== 'hover'; i++) claw.step(state, {}, DT);
+  assert.equal(state.claw.mode, 'hover', 'it hovers over the box and waits');
+  assert.ok(claw.hovering(state));
+  const outcomes = new Set();
+  for (let wait = 0; wait < 3.5; wait += 0.1) {
+    const copy = structuredClone(state);
+    for (let t = 0; t < wait; t += DT) claw.step(copy, {}, DT);
+    claw.drop(copy);
+    const events = finish(copy);
+    assert.ok(events.includes('release'));
+    if (events.includes('prize')) outcomes.add('won');
+    if (events.includes('bounced')) { outcomes.add('bounced'); assert.equal(copy.won, 0); }
+  }
+  assert.deepEqual([...outcomes].sort(), ['bounced', 'won'], 'the timing of the release decides it');
+});
+
 test('every level can be beaten', () => {
-  for (let n = 1; n <= 20; n++) {
+  for (let n = 1; n <= claw.HARDEST; n++) {
     const state = claw.create(2000 + n, { level: n, height: n % 2 ? 260 : 140 });
     let guard = 0;
     while (state.level === n && !state.over && guard++ < 30) {
