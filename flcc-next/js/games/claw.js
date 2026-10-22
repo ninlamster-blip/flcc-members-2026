@@ -19,8 +19,9 @@
 //     drops the claw for you from level three, a conveyor carries the
 //     prizes along from level four, and the claw sways as it drops from
 //     level six.
-//   · The prizes are the app's own drawings. Now and then one is gold and
-//     worth three times as much.
+//   · The prizes are toys — a teddy, a bunny, a duck, a dinosaur, a car, a
+//     robot, a ball and a yo-yo — drawn in the app's own flat style. Now and
+//     then one is gold and worth three times as much.
 //   · Everything random comes from a seed kept as a number on the state, so
 //     a level can be replayed, a test can try a grab on a copy, and every
 //     phone in a room race sees the same machine.
@@ -47,8 +48,8 @@ const BETWEEN = 1.6;          // seconds between levels
 const SHOW_LEVEL = 2.4;
 const GOLD_EVERY = 6;         // about one prize in six is gold
 
-/** The drawings a prize can be — symbols in js/core/art.js. */
-export const PRIZES = ['star', 'heart', 'rocket', 'chicken', 'book', 'light', 'bulb', 'flag', 'shield', 'ball', 'plant', 'bolt'];
+/** The toys a prize can be: soft ones and hard ones, drawn as symbols in js/core/art.js. */
+export const PRIZES = ['teddy', 'bunny', 'duck', 'dino', 'car', 'robot', 'ball', 'yoyo'];
 /** The palette tones a prize can be filled with. */
 export const TONES = ['sky', 'rose', 'sunshine', 'captain', 'poppy'];
 
@@ -125,7 +126,7 @@ export function create(seed = 1, { level: from = 1, score = 0, height = HEIGHT }
 
 function newPrize(state, x, y) {
   const config = state.config;
-  const r = (5.5 + random(state) * 1.5) * config.size;
+  const r = (7 + random(state) * 1.5) * config.size;
   return {
     x, y: y ?? floorOf(state) - r, r, vy: 0,
     kind: PRIZES[Math.floor(random(state) * PRIZES.length)],
@@ -143,7 +144,7 @@ function startLevel(state, n) {
   state.showLevel = SHOW_LEVEL;
   state.falling = [];
   // Prizes in slots along the floor, each nudged a little within its slot.
-  const count = Math.max(4, Math.floor(pitWidth / (13 * state.config.size + 2)));
+  const count = Math.max(3, Math.floor(pitWidth / (16 * state.config.size + 2)));
   const slot = pitWidth / count;
   state.prizes = Array.from({ length: count }, (_, i) => {
     const prize = newPrize(state, 0);
@@ -323,7 +324,7 @@ export function step(state, input = {}, dt = 1 / 60) {
       const prize = claw.held;
       claw.held = null;
       state.won += 1;
-      const points = (prize.gold ? 30 : 10) + (prize.r < 5 ? 5 : 0);
+      const points = (prize.gold ? 30 : 10) + (prize.r < 6 ? 5 : 0);
       state.score += points;
       state.lastPrize = { kind: prize.kind, tone: prize.tone, gold: prize.gold, points };
       state.last = 'prize';
@@ -390,7 +391,7 @@ function drawPrize(g, prize, colors, sprite) {
     g.stroke();
   }
   if (image) {
-    const size = prize.r * 2.3;
+    const size = prize.r * 2.5;
     g.drawImage(image, prize.x - size / 2, prize.y - size / 2, size, size);
   } else {
     g.beginPath();
