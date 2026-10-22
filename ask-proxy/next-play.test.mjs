@@ -242,6 +242,29 @@ test('a Galaga race ranks by score, keeps the furthest wave, and is not for the 
   assert.equal((await room(e, adult.token, 'create', { kind: 'galaga' })).status, 403, 'a race is a score, and this edition keeps none');
 });
 
+test('a basketball race keeps the furthest level and the best score, and is not for the adult edition', async () => {
+  const e = env();
+  const a = await join(e, 'teens');
+  const b = await join(e, 'teens');
+  const { code } = (await room(e, a.token, 'create', { kind: 'hoops' })).data;
+  await room(e, b.token, 'join', { code });
+  await room(e, a.token, 'start', { code });
+  await room(e, a.token, 'progress', { code, row: 4, score: 87 });
+  await room(e, a.token, 'progress', { code, row: 3, score: 40 });
+  let state = await look(e, a.token, code);
+  const shooter = state.players.find((p) => p.you);
+  assert.equal(state.kind, 'hoops');
+  assert.equal(shooter.progress, 4);
+  assert.equal(shooter.score, 87);
+  assert.equal((await room(e, b.token, 'progress', { code, row: 2, score: 5_000_000 })).status, 400, 'an impossible score is refused');
+  await room(e, a.token, 'progress', { code, row: 4, score: 87, alive: false });
+  await room(e, b.token, 'progress', { code, row: 5, score: 120, alive: false });
+  state = await look(e, a.token, code);
+  assert.equal(state.status, 'done', 'over when everyone is out of balls');
+  const adult = await join(e, 'adults');
+  assert.equal((await room(e, adult.token, 'create', { kind: 'hoops' })).status, 403);
+});
+
 test('a host leaving an unstarted room closes it; rooms are swept after a few hours', async () => {
   const e = env();
   const a = await join(e, 'kids');

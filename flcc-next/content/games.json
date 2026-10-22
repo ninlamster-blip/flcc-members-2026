@@ -99,5 +99,16 @@
       "kids": "Help the chicken cross the roads, ride the logs and dodge the trains! Tap to hop.",
       "teens": "Roads, rivers, trains and a mist at your back. It never ends — how far can you get?"
     }
+  },
+  {
+    "id": "hoops",
+    "title": "HOOPS",
+    "tone": "sky",
+    "symbol": "ball",
+    "difficulty": 3,
+    "blurb": {
+      "kids": "Swipe up to shoot the ball through the moving hoop! Make enough baskets to win each level.",
+      "teens": "Swipe to shoot at sliding hoops. Every level is harder — faster rims, wind, a defender — and every one can be beaten."
+    }
   }
 ]

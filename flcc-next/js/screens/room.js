@@ -16,8 +16,8 @@ import { forAgeGroup } from '../core/profile.js';
 import { avatar } from '../core/avatar.js';
 
 const POLL_MS = 1000;
-const KIND_NAMES = { quiz: 'Quiz battle', hop: 'Hop Across race', galaga: 'Galaga race' };
-const RACES = ['hop', 'galaga'];
+const KIND_NAMES = { quiz: 'Quiz battle', hop: 'Hop Across race', galaga: 'Galaga race', hoops: 'Basketball race' };
+const RACES = ['hop', 'galaga', 'hoops'];
 
 export default async function roomScreen(ctx) {
   const el = h('div', { style: 'display:contents' });
@@ -59,7 +59,7 @@ export default async function roomScreen(ctx) {
     return h('div', { class: 'board' }, ...sorted.map((p, i) => h('div', { class: 'board-row', dataset: p.you ? { you: '' } : {} },
       h('span', { class: 'board-rank', text: String(i + 1) }),
       h('span', { class: 'board-name who' }, avatar(p.avatar, { seed: p.id }), h('span', { text: `${p.nickname}${p.you ? ' (you)' : ''}${RACES.includes(state.kind) && !p.alive && state.status === 'playing' ? ' · out' : ''}` })),
-      h('span', { class: 'board-score', text: state.kind === 'galaga' ? `${Math.max(0, p.score)} · W${Math.max(1, p.progress)}` : String(Math.max(0, p[by])) }),
+      h('span', { class: 'board-score', text: state.kind === 'galaga' ? `${Math.max(0, p.score)} · W${Math.max(1, p.progress)}` : state.kind === 'hoops' ? `${Math.max(0, p.score)} · L${Math.max(1, p.progress)}` : String(Math.max(0, p[by])) }),
       h('span'))));
   };
 
@@ -79,7 +79,7 @@ export default async function roomScreen(ctx) {
         label(`Play with friends · ${online.me().nickname}`),
         h('div', {}, display('MAKE A ROOM.'),
           h('p', { class: 'body dim', style: 'margin-top:1rem', text: 'You get a four-letter code. Friends your age type it in, and you all play at the same time.' })),
-        h('div', { class: 'pill-row' }, pill('Quiz battle', make('quiz')), pill('Hop Across race', make('hop')), pill('Galaga race', make('galaga')))),
+        h('div', { class: 'pill-row' }, pill('Quiz battle', make('quiz')), pill('Hop Across race', make('hop')), pill('Galaga race', make('galaga')), pill('Basketball race', make('hoops')))),
       poster({ tone: 'paper', className: 'full' },
         label('Got a code?'),
         h('div', { style: 'margin-top:.6rem' }, input),
@@ -179,7 +179,7 @@ export default async function roomScreen(ctx) {
     el.replaceChildren(
       poster({ tone: 'sky', tall: true, className: 'full' },
         label(`${KIND_NAMES[state.kind]} · ${state.code}`),
-        h('div', {}, display(`${running} STILL ${state.kind === 'galaga' ? 'FLYING' : 'RUNNING'}.`),
+        h('div', {}, display(`${running} STILL ${{ galaga: 'FLYING', hoops: 'SHOOTING' }[state.kind] || 'RUNNING'}.`),
           h('p', { class: 'body dim', style: 'margin-top:1rem', text: 'You are out of this one. The final places show here when everyone is.' })),
         h('span')),
       poster({ tone: 'paper', className: 'full' }, label('So far'), standings(state, by)),
@@ -195,7 +195,7 @@ export default async function roomScreen(ctx) {
       poster({ tone: 'sunshine', tall: true, className: 'full' },
         label(`${KIND_NAMES[state.kind] || 'Room'} · final`),
         h('div', {}, display(winners.length > 1 ? 'A DRAW!' : `${winners[0].nickname.toUpperCase()} WINS!`),
-          h('p', { class: 'body dim', style: 'margin-top:1rem', text: { quiz: `Out of ${state.questions} questions.`, hop: 'By the furthest row reached.', galaga: 'By score, with the wave each ship reached.' }[state.kind] })),
+          h('p', { class: 'body dim', style: 'margin-top:1rem', text: { quiz: `Out of ${state.questions} questions.`, hop: 'By the furthest row reached.', galaga: 'By score, with the wave each ship reached.', hoops: 'By points, with the level each player reached.' }[state.kind] })),
         h('div', { class: 'pill-row' }, pill('New room', () => ctx.go('room')), pill('Back to Play', () => ctx.go('play'), { quiet: true }))),
       poster({ tone: 'paper', className: 'full' }, label('Final'), standings(state, by)),
       talk(state));
