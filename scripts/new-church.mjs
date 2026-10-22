@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { ROOT, addToRegistry } from './lib/registry.mjs';
 import { execFileSync } from 'node:child_process';
 
-const [, , name, slug, sector, accent = '#A33B2A'] = process.argv;
+const [, , name, slug, sector, accent = '#B84A1C'] = process.argv;
 
 if (!name || !slug || !sector) {
   console.error('usage: node scripts/new-church.mjs "<Display Name>" <slug> <Hope|Faith|Love> [#accent]');
