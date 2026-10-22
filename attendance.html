@@ -2339,7 +2339,7 @@ function App() {
   // Auto-publish to GitHub 5 s after the last attendance change
   const skippedMountSync = useRef(false);
   useEffect(() => {
-    if (!ghToken || !state.sessions.length) return;
+    if ((!ghToken && !passcode) || !state.sessions.length) return;
     // Opening the app is not a change. This effect also runs on mount, which
     // published a fresh commit every time the dashboard was opened — and, back
     // when publishing overwrote instead of merging, was how a browser holding
