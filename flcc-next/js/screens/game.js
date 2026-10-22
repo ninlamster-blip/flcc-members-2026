@@ -1239,8 +1239,9 @@ function hoopsGame(ctx) {
 // A prize machine that is not rigged: drag along the glass (or hold ◀ ▶) to
 // move the claw, press DROP, and whether it holds is decided by how centred
 // the grab was. Each level asks for so many prizes from so many tries;
-// missing the target replays that level, never level one. The prizes are the
-// app's own drawings, and every one won goes on a shelf kept on this phone.
+// missing the target replays that level, never level one. The prizes are
+// toys drawn in the app's own style, and every one won goes on a shelf kept
+// on this phone.
 //
 // From a room (js/screens/room.js) it is a race on the room's seed, from
 // level one, and a missed target is the end of that racer's run.
@@ -1272,7 +1273,7 @@ function clawGame(ctx) {
   const g = canvas.getContext('2d');
   const colors = palette();
 
-  // The prizes are art.js drawings, turned into images once each.
+  // The toys are art.js drawings, turned into images once each.
   const sprites = new Map();
   const sprite = (kind, fill) => {
     const key = `${kind}:${fill}`;
@@ -1296,7 +1297,7 @@ function clawGame(ctx) {
     levelEl.textContent = `Level ${state.level}`;
     infoEl.textContent = race
       ? `Race ${race.code}${race.place ? ` · ${race.place}` : ''}`
-      : `shelf: ${shelfCount()} ${shelfCount() === 1 ? 'prize' : 'prizes'}`;
+      : `shelf: ${shelfCount()} ${shelfCount() === 1 ? 'toy' : 'toys'}`;
   };
 
   // In a race: tell the room the level reached and the score once a second.
@@ -1355,7 +1356,7 @@ function clawGame(ctx) {
       tone,
       eyebrow: `Level ${state.level} · ${state.won} of ${state.config.target}${xp}`,
       big: 'SO CLOSE.',
-      line: `${record ? 'Your furthest level yet. ' : ''}Try level ${state.level} again — you keep the ${state.levelScore} points you came in with. ${shelfCount()} prizes on your shelf.`,
+      line: `${record ? 'Your furthest level yet. ' : ''}Try level ${state.level} again — you keep the ${state.levelScore} points you came in with. ${shelfCount()} toys on your shelf.`,
       action: `Try level ${state.level} again`,
       onclose: () => begin(fresh),
     });

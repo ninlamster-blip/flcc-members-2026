@@ -76,6 +76,32 @@ test('a centred grab wins the prize; dropping costs a try', () => {
   assert.ok(!state.prizes.includes(prize), 'the prize is gone from the pile');
 });
 
+test('a won toy is seen falling all the way into the box, and counts only once it lands', () => {
+  const state = claw.create(5);
+  const prize = state.prizes[2];
+  for (let i = 0; i < 400 && Math.abs(state.claw.x - prize.x) > 0.01; i++) claw.step(state, { to: prize.x }, DT);
+  claw.drop(state);
+  let released = false;
+  let lastY = -Infinity;
+  for (let i = 0; i < 1200 && state.claw.mode !== 'aim'; i++) {
+    const events = claw.step(state, {}, DT);
+    if (events.includes('release')) { released = true; assert.equal(state.won, 0, 'not won while it is still in the air'); }
+    if (state.drop) {
+      assert.ok(state.drop.y >= lastY, 'it only ever falls');
+      lastY = state.drop.y;
+    }
+    if (events.includes('prize')) {
+      assert.ok(released, 'it was let go over the box first');
+      assert.equal(state.drop, null);
+      assert.ok(state.bounce > 0, 'the box bounces');
+      assert.ok(state.pop && state.pop.text.startsWith('+'), 'the points float up');
+    }
+  }
+  assert.ok(released);
+  assert.equal(state.won, 1);
+  assert.ok(lastY > state.height - 30, 'it fell down to the box, not just out of the claw');
+});
+
 test('a grab well off-centre lifts the prize and lets it slip; one that misses closes on nothing', () => {
   const slip = claw.create(5);
   const prize = slip.prizes[2];

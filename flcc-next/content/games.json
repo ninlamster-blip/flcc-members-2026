@@ -115,11 +115,11 @@
     "id": "claw",
     "title": "CLAW MACHINE",
     "tone": "rose",
-    "symbol": "star",
+    "symbol": "teddy",
     "difficulty": 3,
     "blurb": {
-      "kids": "Move the claw, press DROP and grab a prize! Win enough prizes to beat each level.",
-      "teens": "A prize machine that isn't rigged: a centred grab always holds. Beat each level before the tries run out — it gets harder every time."
+      "kids": "Move the claw, press DROP and grab a toy — a teddy, a dino, a robot! Win enough toys to beat each level.",
+      "teens": "A toy machine that isn't rigged: a centred grab always holds. Beat each level before the tries run out — it gets harder every time."
     }
   }
 ]
