@@ -7,6 +7,10 @@
 //
 // A few decisions shape it:
 //
+//   · A won toy is seen all the way home: the claw carries it to the chute,
+//     opens, and the toy falls into the prize box — the lid flaps open, the
+//     box gives a little bounce and the points float up out of it. The toy
+//     only counts once it has landed in the box.
 //   · Nothing is down to luck. Whether a grab holds is decided by how
 //     centred the claw is over the prize, against the level's grip, never by
 //     a dice roll — so a careful player always wins, and a test can prove
@@ -43,7 +47,8 @@ const PIT = { left: 23, right: 97 };
 const START_X = 60;
 const SPEED = { move: 48, down: 60, up: 50, carry: 55, fall: 160 };
 const CLOSE_TIME = 0.35;
-const OPEN_TIME = 0.3;
+const BOUNCE_TIME = 0.45;      // how long the prize box bounces after a toy lands
+const POP_TIME = 1.1;         // how long the points float above the box
 const BETWEEN = 1.6;          // seconds between levels
 const SHOW_LEVEL = 2.4;
 const GOLD_EVERY = 6;         // about one prize in six is gold
@@ -59,6 +64,7 @@ export const SOUNDS = {
   grab: [{ type: 'square', from: 220, to: 330, at: 0, dur: 0.08, gain: 0.05 }],
   slip: [{ type: 'sawtooth', from: 400, to: 150, at: 0, dur: 0.25, gain: 0.05 }],
   miss: [{ type: 'square', from: 300, to: 200, at: 0, dur: 0.12, gain: 0.04 }],
+  release: [{ type: 'triangle', from: 900, to: 260, at: 0, dur: 0.35, gain: 0.05 }],
   prize: [
     { type: 'triangle', from: 784, to: 784, at: 0, dur: 0.08, gain: 0.08 },
     { type: 'triangle', from: 1047, to: 1047, at: 0.08, dur: 0.08, gain: 0.08 },
@@ -119,6 +125,9 @@ export function create(seed = 1, { level: from = 1, score = 0, height = HEIGHT }
     claw: { x: START_X, y: RAIL_Y, mode: 'aim', clock: 0, held: null, slipAt: null, sway: 0 },
     aimClock: 0,
     last: null,                 // what the last try did: 'prize', 'slip' or 'miss'
+    drop: null,                 // a won toy on its way down into the prize box
+    bounce: 0,                  // the box's bounce, counting down
+    pop: null,                  // the points floating up out of the box
   };
   startLevel(state, Math.max(1, Math.trunc(from) || 1));
   return state;
@@ -216,6 +225,8 @@ export function step(state, input = {}, dt = 1 / 60) {
   dt = Math.min(dt, 0.05);
   state.time += dt;
   state.showLevel = Math.max(0, state.showLevel - dt);
+  state.bounce = Math.max(0, state.bounce - dt);
+  if (state.pop) { state.pop.t -= dt; if (state.pop.t <= 0) state.pop = null; }
   const config = state.config;
   const floor = floorOf(state);
   const tallness = state.height / HEIGHT;
@@ -315,18 +326,30 @@ export function step(state, input = {}, dt = 1 / 60) {
     case 'carry': {
       const gap = CHUTE_X - claw.x;
       claw.x += Math.sign(gap) * Math.min(Math.abs(gap), SPEED.carry * dt);
-      if (claw.x === CHUTE_X) { claw.mode = 'open'; claw.clock = OPEN_TIME; }
+      if (claw.x === CHUTE_X) claw.mode = 'open';
       break;
     }
     case 'open': {
-      claw.clock -= dt;
-      if (claw.clock > 0) break;
-      const prize = claw.held;
-      claw.held = null;
+      // The claw lets go, and the toy falls the whole way into the box.
+      if (claw.held) {
+        const toy = claw.held;
+        claw.held = null;
+        state.drop = { ...toy, x: CHUTE_X, y: claw.y + REACH + toy.r * 0.5, vy: 0, spin: 0 };
+        events.push('release');
+      }
+      const toy = state.drop;
+      toy.vy += SPEED.fall * tallness * dt;
+      toy.y += toy.vy * dt;
+      toy.spin += dt * 5;
+      if (toy.y < floor - 3) break;
+      const prize = toy;
+      state.drop = null;
+      state.bounce = BOUNCE_TIME;
       state.won += 1;
       const points = (prize.gold ? 30 : 10) + (prize.r < 6 ? 5 : 0);
       state.score += points;
       state.lastPrize = { kind: prize.kind, tone: prize.tone, gold: prize.gold, points };
+      state.pop = { text: `+${points}`, t: POP_TIME };
       state.last = 'prize';
       events.push('prize');
       // A new prize drops onto the pile where there is most room.
@@ -403,6 +426,55 @@ function drawPrize(g, prize, colors, sprite) {
   g.restore();
 }
 
+/**
+ * The prize box, with a toy falling into it: the toy is drawn only above the
+ * box's open top, so it disappears inside as it lands. The lid flaps open
+ * while a toy is coming, and the box squashes and springs back when one lands.
+ */
+function drawBox(g, state, colors, floor, sprite) {
+  const left = 2;
+  const width = CHUTE_WALL - 2;
+  const squash = state.bounce > 0 ? Math.sin((1 - state.bounce / BOUNCE_TIME) * Math.PI) * 2.2 : 0;
+  const top = floor - 20 + squash;
+  const bottom = floor + FLOOR_ABOVE - 2;
+  const toy = state.drop;
+  if (toy) {
+    g.save();
+    g.beginPath();
+    g.rect(0, 0, CHUTE_WALL + 4, top + 0.5);
+    g.clip();
+    g.save();
+    g.translate(toy.x, toy.y);
+    g.rotate(Math.sin(toy.spin) * 0.35);
+    drawPrize(g, { ...toy, x: 0, y: 0 }, colors, sprite);
+    g.restore();
+    g.restore();
+  }
+  g.fillStyle = colors.sky;
+  g.fillRect(left, top, width, bottom - top);
+  g.strokeRect(left, top, width, bottom - top);
+  // The lid: two flaps, swung open while a toy is on its way in.
+  const open = toy || state.bounce > 0 ? 1 : 0;
+  g.beginPath();
+  g.moveTo(left, top); g.lineTo(left - 3 * open, top - 5 * open - 0.01);
+  g.moveTo(left + width, top); g.lineTo(left + width + 3 * open, top - 5 * open - 0.01);
+  g.stroke();
+  g.fillStyle = colors.ink;
+  g.font = '900 3.6px Inter, system-ui, sans-serif';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText('PRIZE', left + width / 2, (top + floor) / 2 + 2);
+  // The points, floating up out of the box and fading.
+  if (state.pop) {
+    const rise = 1 - state.pop.t / POP_TIME;
+    g.save();
+    g.globalAlpha = Math.min(1, state.pop.t * 2);
+    g.font = '900 6px Inter, system-ui, sans-serif';
+    g.fillText(state.pop.text, left + width / 2, top - 6 - rise * 14);
+    g.restore();
+  }
+}
+
 function drawClaw(g, x, y, mode, colors) {
   // The cable, the head, and two fingers — open while aiming, shut once closed.
   g.beginPath();
@@ -440,14 +512,7 @@ export function paint(g, state, { colors, scale, edge, sprite = null }) {
   g.moveTo(2, 4); g.lineTo(WIDTH - 2, 4);
   g.moveTo(CHUTE_WALL, floor); g.lineTo(PIT.right + 1, floor);
   g.stroke();
-  g.fillStyle = colors.sky;
-  g.fillRect(2, floor - 20, CHUTE_WALL - 2, 20 + FLOOR_ABOVE - 2);
-  g.strokeRect(2, floor - 20, CHUTE_WALL - 2, 20 + FLOOR_ABOVE - 2);
-  g.fillStyle = colors.ink;
-  g.font = '900 3.6px Inter, system-ui, sans-serif';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText('PRIZE', (2 + CHUTE_WALL) / 2, floor - 10);
+  drawBox(g, state, colors, floor, sprite);
 
   // The prizes, with the conveyor's wrap drawn on both sides of the seam.
   g.save();
