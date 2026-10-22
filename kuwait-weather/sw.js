@@ -10,12 +10,20 @@
 // which is the right answer for them too: a cached radar sweep is a lie about
 // where the rain is.
 
-// Bump this whenever SHELL changes. The activate handler deletes every cache
-// whose name is not this one, so a new name is the only thing that guarantees
-// a device holding the old shell actually gets the new files — adding an entry
-// to SHELL under the old name does not, and that is how a fixed module can sit
-// in the repository for a day while a phone keeps serving the broken one.
-const CACHE = 'kuwait-weather-v2';
+// The activate handler deletes every cache whose name is not this one, so a
+// new name is the only thing that guarantees a device holding the old shell
+// actually gets the new files. Editing a file in SHELL under the old name does
+// not, and that is how a fixed module can sit in the repository for a day
+// while a phone keeps serving the broken one.
+//
+// So the name carries a fingerprint of everything in SHELL, and
+// test/boundary.test.mjs recomputes it and fails when the two disagree. The
+// rule is mechanical now rather than remembered: change a shell file and this
+// line has to change with it. It was remembered once and forgotten, and a
+// phone kept serving the old hero for a deploy — the version test that was
+// meant to catch it said so itself, that a test cannot know when a file
+// changed. It can, if the expected content is written down.
+const CACHE = 'kuwait-weather-v3-87a19692';
 
 const SHELL = [
   './',
