@@ -11,6 +11,8 @@ import * as crossword from '../games/crossword.js';
 import * as galaga from '../games/galaga.js';
 import * as hop from '../games/hopacross.js';
 import * as hoops from '../games/hoops.js';
+import * as claw from '../games/claw.js';
+import { symbol as drawSymbol, TONE_HEX } from '../core/art.js';
 import * as rewards from '../core/rewards.js';
 import * as online from '../core/online.js';
 import * as chiptune from '../games/chiptune.js';
@@ -1232,6 +1234,285 @@ function hoopsGame(ctx) {
   return { title: 'Hoops', el };
 }
 
+// ── Claw ────────────────────────────────────────────────────────────────────
+//
+// A prize machine that is not rigged: drag along the glass (or hold ◀ ▶) to
+// move the claw, press DROP, and whether it holds is decided by how centred
+// the grab was. Each level asks for so many prizes from so many tries;
+// missing the target replays that level, never level one. The prizes are the
+// app's own drawings, and every one won goes on a shelf kept on this phone.
+//
+// From a room (js/screens/room.js) it is a race on the room's seed, from
+// level one, and a missed target is the end of that racer's run.
+
+function clawGame(ctx) {
+  const tone = 'rose';
+  const arcade = () => store.read(store.KEYS.arcade, {}) || {};
+  const keep = (patch) => store.write(store.KEYS.arcade, { ...arcade(), ...patch });
+  const best = () => arcade().claw || 0;
+  const shelf = () => arcade().clawShelf || {};
+  const shelfCount = () => Object.values(shelf()).reduce((sum, n) => sum + (Number(n) || 0), 0);
+  const saved = () => {
+    const resume = arcade().clawResume || {};
+    return { level: Math.max(1, Math.trunc(resume.level) || 1), score: Math.max(0, Math.trunc(resume.score) || 0) };
+  };
+  const race = ctx.route.params.room ? { code: ctx.route.params.room, seed: Number(ctx.route.params.seed) || 1, place: '' } : null;
+  const seed = () => (race ? race.seed : Date.now() % 2147483647);
+  let state = race ? claw.create(race.seed) : claw.create(seed(), saved());
+  const sound = chiptune.player({ muted: Boolean(arcade().clawMuted), sounds: claw.SOUNDS });
+  const held = { left: false, right: false, to: null };
+  let raf = 0;
+  let last = 0;
+  let attached = false;
+  let shown = null;
+  let gone = false;
+  const home = location.hash;
+
+  const canvas = h('canvas', { 'aria-label': 'Claw machine. Drag along the field to move the claw, then press Drop.', role: 'img' });
+  const g = canvas.getContext('2d');
+  const colors = palette();
+
+  // The prizes are art.js drawings, turned into images once each.
+  const sprites = new Map();
+  const sprite = (kind, fill) => {
+    const key = `${kind}:${fill}`;
+    if (!sprites.has(key)) {
+      const image = new Image();
+      const svg = drawSymbol(kind, { fill: TONE_HEX[fill] || TONE_HEX.rose })
+        .replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" ');
+      image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      sprites.set(key, image);
+    }
+    const image = sprites.get(key);
+    return image.complete && image.naturalWidth ? image : null;
+  };
+
+  const scoreEl = h('p', { class: 'headline', text: '0' });
+  const levelEl = h('p', { class: 'label', text: 'Level 1' });
+  const infoEl = h('p', { class: 'label dim', text: '' });
+
+  const paintNumbers = () => {
+    scoreEl.textContent = String(state.score);
+    levelEl.textContent = `Level ${state.level}`;
+    infoEl.textContent = race
+      ? `Race ${race.code}${race.place ? ` · ${race.place}` : ''}`
+      : `shelf: ${shelfCount()} ${shelfCount() === 1 ? 'prize' : 'prizes'}`;
+  };
+
+  // In a race: tell the room the level reached and the score once a second.
+  let raceTimer = 0;
+  const report = async (alive) => {
+    if (!race) return;
+    await online.race(race.code, state.level, alive, state.score);
+    const room = await online.room(race.code);
+    if (room && room.players) {
+      const sorted = [...room.players].sort((a, b) => b.score - a.score);
+      const at = sorted.findIndex((p) => p.you);
+      const playing = room.players.filter((p) => p.alive).length;
+      race.place = `${['1st', '2nd', '3rd'][at] || `${at + 1}th`} of ${sorted.length}${playing ? ` · ${playing} playing` : ''}`;
+      paintNumbers();
+    }
+  };
+  if (race) raceTimer = setInterval(() => { if (!gone && !state.over && state.started) report(true); }, 1000);
+
+  const fieldHeight = () => (canvas.width ? canvas.height / (canvas.width / claw.WIDTH) : claw.HEIGHT);
+  const size = () => {
+    const ratio = window.devicePixelRatio || 1;
+    const width = Math.round(canvas.clientWidth * ratio);
+    const height = Math.round(canvas.clientHeight * ratio);
+    if (width && (canvas.width !== width || canvas.height !== height)) {
+      canvas.width = width;
+      canvas.height = height;
+      claw.resize(state, fieldHeight());
+    }
+    return ratio;
+  };
+  const draw = () => {
+    const ratio = size();
+    if (canvas.width) claw.paint(g, state, { colors, scale: canvas.width / claw.WIDTH, edge: 3 * ratio, sprite });
+  };
+
+  const over = () => {
+    const record = state.level > best();
+    if (record) keep({ claw: state.level });
+    const result = progress.complete('game', `claw:${progress.today()}`);
+    const xp = result.first ? ` · +${progress.XP.game} XP` : '';
+    paintNumbers();
+    if (race) {
+      clearInterval(raceTimer);
+      report(false);
+      shown = moment({
+        tone, eyebrow: `Out of tries · race ${race.code}${xp}`,
+        big: String(state.score),
+        line: `You reached level ${state.level}. See how everyone else does — the room shows the final places.`,
+        action: 'See the race', onclose: () => ctx.go(`room?code=${race.code}`),
+      });
+      return;
+    }
+    keep({ clawResume: { level: state.level, score: state.levelScore } });
+    let fresh = false;
+    shown = moment({
+      tone,
+      eyebrow: `Level ${state.level} · ${state.won} of ${state.config.target}${xp}`,
+      big: 'SO CLOSE.',
+      line: `${record ? 'Your furthest level yet. ' : ''}Try level ${state.level} again — you keep the ${state.levelScore} points you came in with. ${shelfCount()} prizes on your shelf.`,
+      action: `Try level ${state.level} again`,
+      onclose: () => begin(fresh),
+    });
+    if (state.level > 1) {
+      const main = shown.querySelector('.pill');
+      main.parentElement.classList.add('pill-row');
+      main.parentElement.appendChild(pill('Start from level 1', () => { fresh = true; main.click(); }, { quiet: true }));
+    }
+  };
+
+  const frame = (now) => {
+    raf = 0;
+    if (!canvas.isConnected) { if (attached) { teardown(); return; } raf = requestAnimationFrame(frame); return; }
+    if (!attached) document.body.toggleAttribute('data-arcade', true);
+    attached = true;
+    const dt = last ? (now - last) / 1000 : 0;
+    last = now;
+    const events = claw.step(state, held, dt);
+    sound.play(events);
+    if (events.includes('prize') && state.lastPrize) {
+      const kept = shelf();
+      keep({ clawShelf: { ...kept, [state.lastPrize.kind]: (kept[state.lastPrize.kind] || 0) + 1 } });
+    }
+    if (events.includes('level')) {
+      if (state.level >= best()) keep({ claw: state.level + 1 });
+      if (!race) keep({ clawResume: { level: state.level + 1, score: state.score } });
+      progress.complete('game', `claw:${progress.today()}`);
+    }
+    if (events.length) paintNumbers();
+    draw();
+    if (state.over) { over(); return; }
+    raf = requestAnimationFrame(frame);
+  };
+
+  function begin(fresh) {
+    if (fresh) keep({ clawResume: { level: 1, score: 0 } });
+    state = claw.create(seed(), { ...saved(), height: fieldHeight() });
+    last = 0;
+    paintNumbers();
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+
+  const dropNow = () => {
+    if (document.querySelector('.moment')) return;
+    sound.wake();
+    sound.play(claw.drop(state));
+    paintNumbers();
+  };
+
+  const press = (side, on) => {
+    if (on) sound.wake();
+    held[side] = on;
+    pads[side]?.toggleAttribute('data-held', on);
+  };
+  const hold = (side, text, name) => h('button', {
+    type: 'button', 'aria-label': name, text,
+    onpointerdown: (event) => { event.preventDefault(); press(side, true); },
+    onpointerup: () => press(side, false),
+    onpointerleave: () => press(side, false),
+    onpointercancel: () => press(side, false),
+    oncontextmenu: (event) => event.preventDefault(),
+  });
+  const pads = { left: hold('left', '◀', 'Move the claw left'), right: hold('right', '▶', 'Move the claw right') };
+  const dropButton = h('button', {
+    type: 'button', 'aria-label': 'Drop the claw', text: 'DROP',
+    onpointerdown: (event) => { event.preventDefault(); dropNow(); },
+    onclick: (event) => { if (event.detail === 0) dropNow(); },
+    oncontextmenu: (event) => event.preventDefault(),
+  });
+
+  // The glass itself is the stick: a finger on it pulls the claw over that spot.
+  let finger = null;
+  const aim = (event) => {
+    const box = canvas.getBoundingClientRect();
+    if (box.width) held.to = (event.clientX - box.left) * (claw.WIDTH / box.width);
+  };
+  canvas.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
+    sound.wake();
+    finger = event.pointerId;
+    aim(event);
+  });
+  canvas.addEventListener('pointermove', (event) => { if (event.pointerId === finger) aim(event); });
+  const lift = () => { finger = null; held.to = null; press('left', false); press('right', false); };
+  canvas.addEventListener('pointerup', lift);
+  canvas.addEventListener('pointercancel', lift);
+
+  const KEYS = { ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right' };
+  const onKey = (event) => {
+    if (!canvas.isConnected) { teardown(); return; }
+    if (document.querySelector('.moment')) return;
+    if (event.key === 'Escape' && event.type === 'keydown') { leave(); return; }
+    if ((event.key === ' ' || event.key === 'ArrowDown' || event.key === 'Enter') && !event.target.closest?.('button')) {
+      event.preventDefault();
+      if (event.type === 'keydown' && !event.repeat) dropNow();
+      return;
+    }
+    const side = KEYS[event.key];
+    if (!side) return;
+    event.preventDefault();
+    press(side, event.type === 'keydown');
+  };
+  const onHide = () => { if (document.hidden) lift(); };
+  const onRoute = () => { if (location.hash !== home) teardown(); };
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('keyup', onKey);
+  document.addEventListener('visibilitychange', onHide);
+  window.addEventListener('hashchange', onRoute);
+  function teardown() {
+    if (gone) return;
+    gone = true;
+    clearInterval(raceTimer);
+    // Closing a race half-way is being out of it, or the room would wait for ever.
+    if (race && !state.over) online.race(race.code, state.level, false, state.score);
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    window.removeEventListener('keydown', onKey);
+    window.removeEventListener('keyup', onKey);
+    document.removeEventListener('visibilitychange', onHide);
+    window.removeEventListener('hashchange', onRoute);
+    document.body.removeAttribute('data-arcade');
+    sound.close();
+    if (shown && shown.isConnected) shown.remove();
+  }
+  const leave = () => { teardown(); ctx.go('play'); };
+
+  const mute = h('button', { class: 'arcade-close', type: 'button' });
+  const paintMute = () => {
+    mute.innerHTML = sound.muted ? SPEAKER.off : SPEAKER.on;
+    mute.setAttribute('aria-label', sound.muted ? 'Turn sound on' : 'Turn sound off');
+    mute.setAttribute('aria-pressed', String(sound.muted));
+  };
+  mute.addEventListener('click', () => {
+    sound.muted = !sound.muted;
+    keep({ clawMuted: sound.muted });
+    if (!sound.muted) sound.wake();
+    paintMute();
+  });
+  paintMute();
+
+  const stage = h('div', { class: 'arcade-stage', role: 'application', 'aria-label': 'Claw machine' },
+    h('div', { class: 'arcade-bar' },
+      h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close the claw machine', text: '✕', onclick: leave }),
+      h('div', {}, scoreEl, h('p', { class: 'label dim', text: 'points' })),
+      h('span', { class: 'grow' }),
+      h('div', { class: 'stat' }, levelEl, infoEl),
+      mute),
+    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade', dataset: { shape: 'fill' } }, canvas)),
+    h('div', { class: 'arcade-pad', dataset: { pads: '3' } }, pads.left, dropButton, pads.right));
+
+  const el = h('div', { style: 'display:contents' }, stage);
+  paintNumbers();
+  raf = requestAnimationFrame(frame);
+  return { title: 'Claw machine', el };
+}
+
 const GAMES = {
   quiz: (ctx) => quizGame(ctx),
   speed: (ctx) => quizGame(ctx, { timed: true, game: 'speed', tone: 'sky', title: 'Speed quiz' }),
@@ -1244,6 +1525,7 @@ const GAMES = {
   galaga: galagaGame,
   hop: hopGame,
   hoops: hoopsGame,
+  claw: clawGame,
 };
 
 export default async function gameScreen(ctx) {

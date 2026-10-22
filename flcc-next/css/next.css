@@ -421,6 +421,9 @@ body[data-arcade] { overflow: hidden; }
 .arcade-pad[data-pads="4"] { grid-template-columns: repeat(4, 1fr); }
 .arcade-pad[data-pads="4"] button { min-height: 3.4rem; font-size: 1.25rem; }
 .arcade-pad[data-pads="4"] button:active { background: var(--ink); color: var(--paper); }
+/* The claw machine: ◀ and ▶ either side of a wider DROP. */
+.arcade-pad[data-pads="3"] { grid-template-columns: 1fr 1.6fr 1fr; }
+.arcade-pad[data-pads="3"] button:active { background: var(--ink); color: var(--paper); }
 
 /* ── The library editor ──────────────────────────────────────────────────
    Dashboard-only. Nothing here is seen by a young person, so it is plain
