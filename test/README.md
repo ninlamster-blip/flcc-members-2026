@@ -15,6 +15,7 @@ here; the two applications share no code.
 | `network.test.mjs` | The 14-church registry, every church's data files, the one-app rule |
 | `assistant.test.mjs` | Ask FLCC: what it is told, and which files it is told it from |
 | `crossword.test.mjs` | Bible Crossword: the answer bank, the grids, the daily puzzle, the streak |
+| `anniversary.test.mjs` | The anniversary timeline: dates, milestone order, photos, no hardcoded church |
 
 ## How these reach into a single-file app
 
