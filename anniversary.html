@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anniversary Timeline</title>
+
+<!--
+  A church's history, projected one milestone at a time for an anniversary
+  service. Built for a projector and a presentation clicker, not a phone:
+  every slide fills a 16:9 screen and nothing on it scrolls.
+
+  The history itself lives in the church's own anniversary.json, read through
+  FLCC.data() like every other per-church file. A church without one gets a
+  plain notice rather than somebody else's history.
+
+  Keys:  → Space PageDown  next      ← PageUp  back
+         Home / End  first / last   P  play / pause   F  full screen
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="./church.js"></script>
+
+<style>
+  :root {
+    --stage: #14100E;
+    --stage-2: #221A16;
+    --ink: #FBF6EE;
+    --ink-muted: #CFC4B6;
+    --ink-subtle: #8C8075;
+    --gold: #E2B95B;
+    --gold-soft: rgba(226, 185, 91, 0.18);
+    --track: rgba(251, 246, 238, 0.16);
+    --accent: #A33B2A;
+    --ease: cubic-bezier(.2, .7, .2, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: radial-gradient(120% 90% at 30% 20%, var(--stage-2), var(--stage) 70%);
+    color: var(--ink);
+    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+  body.idle { cursor: none; }
+  .display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.01em; }
+
+  /* ── Frame: header, stage, timeline ───────────────────────────────────── */
+  .frame {
+    position: fixed; inset: 0;
+    display: grid; grid-template-rows: auto 1fr auto;
+    padding: 4.5vh 5vw 5vh;
+  }
+  .top {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: clamp(12px, 1.6vh, 20px); letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+  .top .church { display: flex; align-items: center; gap: 0.8em; }
+  .top .dot { width: 0.7em; height: 0.7em; border-radius: 50%; background: var(--accent); }
+  .sample {
+    border: 1px solid var(--gold); color: var(--gold);
+    padding: 0.35em 0.8em; border-radius: 999px; letter-spacing: 0.18em;
+  }
+
+  .stage { position: relative; }
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 700ms var(--ease);
+  }
+  .slide.on { opacity: 1; pointer-events: auto; }
+
+  /* Anything marked .rise slides up and fades in once its slide is on,
+     staggered by --d so a slide assembles itself rather than appearing. */
+  .rise {
+    opacity: 0; transform: translateY(4vh);
+    transition: opacity 900ms var(--ease), transform 900ms var(--ease);
+    transition-delay: calc(var(--d, 0) * 1ms);
+  }
+  .slide.on .rise { opacity: 1; transform: none; }
+
+  /* ── Opening ──────────────────────────────────────────────────────────── */
+  .intro { flex-direction: column; justify-content: center; text-align: center; width: 100%; }
+  .intro .kicker { color: var(--gold); font-size: clamp(14px, 2.2vh, 28px); letter-spacing: 0.3em; text-transform: uppercase; }
+  .intro h1 { font-size: clamp(36px, 9vh, 120px); font-weight: 600; line-height: 1.02; margin: 2.5vh auto 0; max-width: 16ch; }
+  .intro .span { margin-top: 3vh; font-size: clamp(18px, 3.4vh, 44px); color: var(--ink-muted); }
+  .intro .span b { color: var(--gold); font-weight: 600; }
+
+  .verse { margin: 5vh auto 0; max-width: 60ch; font-size: clamp(15px, 2.4vh, 30px); line-height: 1.5; color: var(--ink-muted); font-style: italic; }
+  .verse cite { display: block; margin-top: 1.2vh; font-style: normal; font-size: 0.8em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-subtle); }
+
+  /* ── Milestones ───────────────────────────────────────────────────────── */
+  .milestone { gap: 5vw; width: 100%; }
+  .milestone .year {
+    flex: 0 0 auto;
+    font-size: clamp(64px, 26vh, 320px); font-weight: 700; line-height: 0.9;
+    color: var(--gold);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .milestone .body { flex: 1 1 auto; min-width: 0; display: flex; gap: 3vw; align-items: center; }
+  .milestone .words { flex: 1 1 0; min-width: 0; }
+  .milestone .nth { font-size: clamp(12px, 1.8vh, 22px); letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-subtle); }
+  .milestone h2 { font-size: clamp(28px, 6.5vh, 88px); font-weight: 600; line-height: 1.08; margin-top: 1.5vh; }
+  .milestone p { font-size: clamp(16px, 3vh, 38px); line-height: 1.45; color: var(--ink-muted); margin-top: 2.5vh; max-width: 38ch; }
+  .milestone .rule { height: 3px; width: 0; background: var(--gold); margin-top: 3vh; transition: width 1100ms var(--ease) 500ms; }
+  .slide.on .rule { width: 12vw; }
+  .milestone figure {
+    flex: 0 1 40%; max-height: 52vh; aspect-ratio: 4 / 3;
+    border-radius: 1.4vh; overflow: hidden; background: var(--stage-2);
+    box-shadow: 0 0 0 1px var(--track);
+  }
+  .milestone figure img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transform: scale(1.12); transition: transform 9s linear;
+  }
+  .slide.on figure img { transform: scale(1); }
+
+  /* ── Finale ───────────────────────────────────────────────────────────── */
+  .finale { flex-direction: column; justify-content: center; text-align: center; width: 100%; }
+  .finale .count {
+    font-size: clamp(120px, 40vh, 520px); font-weight: 700; line-height: 0.85;
+    color: var(--gold);
+    font-variant-numeric: lining-nums tabular-nums;
+    text-shadow: 0 0 8vh var(--gold-soft);
+  }
+  .finale .years { font-size: clamp(16px, 3.2vh, 40px); letter-spacing: 0.4em; text-transform: uppercase; color: var(--ink-muted); margin-top: 1vh; }
+  .finale h2 { font-size: clamp(28px, 6vh, 80px); font-weight: 600; margin-top: 4vh; }
+  .finale p { font-size: clamp(16px, 2.8vh, 34px); color: var(--ink-muted); margin: 2vh auto 0; max-width: 46ch; line-height: 1.45; }
+
+  /* ── Timeline: draws itself forward to the current milestone ──────────── */
+  .timeline { position: relative; height: 9vh; margin-top: 3vh; }
+  .timeline .track, .timeline .fill {
+    position: absolute; left: 0; top: 2.2vh; height: 3px; border-radius: 3px;
+  }
+  .timeline .track { right: 0; background: var(--track); }
+  .timeline .fill { width: 0; background: var(--gold); transition: width 1200ms var(--ease); }
+  .timeline .stop {
+    position: absolute; top: 2.2vh; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center;
+    background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer;
+  }
+  .timeline .pip {
+    width: 1.5vh; height: 1.5vh; border-radius: 50%;
+    background: var(--stage); box-shadow: 0 0 0 2px var(--track);
+    transition: background 400ms, box-shadow 400ms, transform 400ms;
+    margin-top: 0; transform-origin: center;
+  }
+  .timeline .label {
+    position: absolute; top: 2.6vh; white-space: nowrap;
+    font-size: clamp(11px, 1.7vh, 20px); color: var(--ink-subtle);
+    font-variant-numeric: tabular-nums; transition: color 400ms;
+  }
+  .timeline .stop.past .pip { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+  .timeline .stop.now .pip { transform: scale(1.6); animation: pulse 2s ease-out infinite; }
+  .timeline .stop.now .label { color: var(--ink); }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 2px var(--gold), 0 0 0 0 rgba(226, 185, 91, 0.55); }
+    100% { box-shadow: 0 0 0 2px var(--gold), 0 0 0 2vh rgba(226, 185, 91, 0); }
+  }
+
+  /* ── Chrome that gets out of the way ──────────────────────────────────── */
+  .hint {
+    position: fixed; left: 50%; bottom: 1.2vh; transform: translateX(-50%);
+    font-size: clamp(11px, 1.4vh, 16px); color: var(--ink-subtle);
+    transition: opacity 600ms; white-space: nowrap;
+  }
+  body.idle .hint { opacity: 0; }
+  .hint kbd { font-family: inherit; border: 1px solid var(--track); border-radius: 4px; padding: 0 0.4em; }
+  .playing { color: var(--gold); }
+
+  .notice {
+    position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 8vw;
+  }
+  .notice h1 { font-size: clamp(28px, 5vh, 56px); font-weight: 600; }
+  .notice p { margin-top: 2vh; color: var(--ink-muted); font-size: clamp(16px, 2.4vh, 26px); max-width: 44ch; line-height: 1.5; }
+  .notice code { color: var(--gold); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 1ms !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame" id="frame" hidden>
+  <div class="top">
+    <div class="church"><span class="dot" id="dot"></span><span id="church-name"></span></div>
+    <span class="sample" id="sample" hidden>Sample content</span>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="timeline" id="timeline">
+    <div class="track"></div>
+    <div class="fill" id="fill"></div>
+  </div>
+</div>
+
+<div class="hint" id="hint" hidden>
+  <kbd>←</kbd> <kbd>→</kbd> move · <kbd>P</kbd> <span id="play-state">play</span> · <kbd>F</kbd> full screen
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var FLCC = window.FLCC;
+  var STORY_URL = FLCC.data('anniversary.json');
+
+  /* ── Pure helpers ───────────────────────────────────────────────────────── */
+
+  /** Milestones in year order, dropping any entry without a year or a title. */
+  function orderedMilestones(story) {
+    return (story.milestones || [])
+      .filter(function (m) { return m && Number.isFinite(m.year) && m.title; })
+      .slice()
+      .sort(function (a, b) { return a.year - b.year; });
+  }
+
+  /** Where `year` sits along the timeline, 0–100. One year is a point at 0. */
+  function timelinePercent(year, first, last) {
+    if (last <= first) return 0;
+    return Math.max(0, Math.min(100, ((year - first) / (last - first)) * 100));
+  }
+
+  /** "20" for a church founded in 2006 celebrating in 2026. */
+  function yearsSince(founded, anniversaryDate) {
+    var end = anniversaryDate ? new Date(anniversaryDate + 'T00:00:00').getFullYear() : new Date().getFullYear();
+    return Math.max(0, end - founded);
+  }
+
+  /** A photo path is relative to the church's own data folder unless it's absolute. */
+  function photoUrl(src) {
+    if (!src) return '';
+    return /^(https?:)?\/\//.test(src) || src.charAt(0) === '/' ? src : FLCC.data(src);
+  }
+
+  /* ── DOM ────────────────────────────────────────────────────────────────── */
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function rise(node, delay) { node.classList.add('rise'); node.style.setProperty('--d', delay); return node; }
+
+  function verseNode(v) {
+    var q = el('blockquote', 'verse', v.text);
+    if (v.ref) q.appendChild(el('cite', null, v.ref));
+    return q;
+  }
+
+  function introSlide(story, first, last) {
+    var s = el('section', 'slide intro');
+    s.appendChild(rise(el('div', 'kicker', story.subtitle || 'Anniversary'), 0));
+    s.appendChild(rise(el('h1', 'display', story.title || ''), 200));
+    var span = el('div', 'span display');
+    span.appendChild(el('b', null, String(story.founded || first)));
+    span.appendChild(document.createTextNode('  —  '));
+    span.appendChild(el('b', null, String(last)));
+    s.appendChild(rise(span, 450));
+    if (story.verse && story.verse.text) s.appendChild(rise(verseNode(story.verse), 800));
+    return s;
+  }
+
+  function milestoneSlide(m, i, total) {
+    var s = el('section', 'slide milestone');
+    var year = rise(el('div', 'year display', String(m.year)), 0);
+    year.dataset.year = m.year;
+    s.appendChild(year);
+
+    var body = el('div', 'body');
+    var words = el('div', 'words');
+    words.appendChild(rise(el('div', 'nth', (i + 1) + ' of ' + total), 250));
+    words.appendChild(rise(el('h2', 'display', m.title), 350));
+    if (m.text) words.appendChild(rise(el('p', null, m.text), 550));
+    words.appendChild(el('div', 'rule'));
+    body.appendChild(words);
+
+    if (m.photo) {
+      var fig = rise(el('figure'), 450);
+      var img = el('img');
+      img.src = photoUrl(m.photo);
+      img.alt = m.caption || m.title;
+      img.onerror = function () { fig.remove(); };
+      fig.appendChild(img);
+      body.appendChild(fig);
+    }
+    s.appendChild(body);
+    return s;
+  }
+
+  function finaleSlide(story, years) {
+    var c = story.closing || {};
+    var s = el('section', 'slide finale');
+    var count = el('div', 'count display', '0');
+    count.dataset.to = years;
+    s.appendChild(count);
+    s.appendChild(rise(el('div', 'years', years === 1 ? 'Year' : 'Years'), 300));
+    if (c.heading) s.appendChild(rise(el('h2', 'display', c.heading), 1900));
+    if (c.text) s.appendChild(rise(el('p', null, c.text), 2200));
+    if (c.verse && c.verse.text) s.appendChild(rise(verseNode(c.verse), 2600));
+    return s;
+  }
+
+  /* ── Animations that CSS can't do alone ─────────────────────────────────── */
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var running = [];
+  function stopTweens() { running.forEach(cancelAnimationFrame); running = []; }
+
+  /** Counts a number up (or across years) with an ease-out, so it lands softly. */
+  function tween(node, from, to, ms) {
+    if (reduceMotion || from === to) { node.textContent = String(to); return; }
+    var t0 = performance.now();
+    (function frame(now) {
+      var p = Math.min(1, (now - t0) / ms);
+      var eased = 1 - Math.pow(1 - p, 3);
+      node.textContent = String(Math.round(from + (to - from) * eased));
+      if (p < 1) running.push(requestAnimationFrame(frame));
+    })(t0);
+  }
+
+  /* ── Presentation ───────────────────────────────────────────────────────── */
+
+  function present(story) {
+    var milestones = orderedMilestones(story);
+    var first = milestones.length ? milestones[0].year : story.founded;
+    var last = milestones.length ? milestones[milestones.length - 1].year : first;
+    var years = yearsSince(story.founded || first, story.anniversaryDate);
+
+    document.title = (story.title || 'Anniversary') + ' — ' + FLCC.name;
+    document.getElementById('church-name').textContent = FLCC.name;
+    document.getElementById('dot').style.background = FLCC.accent;
+    document.getElementById('sample').hidden = !milestones.some(function (m) { return m.placeholder; });
+
+    var stage = document.getElementById('stage');
+    var slides = [introSlide(story, first, last)]
+      .concat(milestones.map(function (m, i) { return milestoneSlide(m, i, milestones.length); }))
+      .concat([finaleSlide(story, years)]);
+    slides.forEach(function (s) { stage.appendChild(s); });
+
+    // One stop on the timeline per milestone; clicking one jumps there.
+    var timeline = document.getElementById('timeline');
+    var stops = milestones.map(function (m, i) {
+      var b = el('button', 'stop');
+      b.type = 'button';
+      b.style.left = timelinePercent(m.year, first, last) + '%';
+      b.setAttribute('aria-label', m.year + ': ' + m.title);
+      b.appendChild(el('span', 'pip'));
+      b.appendChild(el('span', 'label', String(m.year)));
+      b.addEventListener('click', function (e) { e.stopPropagation(); go(i + 1); });
+      timeline.appendChild(b);
+      return b;
+    });
+    var fill = document.getElementById('fill');
+
+    var index = -1;
+    var shownYear = first;
+
+    function go(n) {
+      n = Math.max(0, Math.min(slides.length - 1, n));
+      if (n === index) return;
+      stopTweens();
+      if (index >= 0) slides[index].classList.remove('on');
+      index = n;
+      var slide = slides[index];
+      // Re-adding .on restarts every CSS entrance on the slide.
+      void slide.offsetWidth;
+      slide.classList.add('on');
+
+      // The milestone a slide stands for: none before the first, all after the last.
+      var at = index === 0 ? -1 : Math.min(index - 1, milestones.length - 1);
+      var atYear = at < 0 ? first : milestones[at].year;
+      fill.style.width = (at < 0 ? 0 : index === slides.length - 1 ? 100 : timelinePercent(atYear, first, last)) + '%';
+      stops.forEach(function (s, i) {
+        s.classList.toggle('past', i <= at);
+        s.classList.toggle('now', i === at && index !== slides.length - 1);
+      });
+
+      var yearNode = slide.querySelector('.year');
+      if (yearNode) tween(yearNode, shownYear, +yearNode.dataset.year, 900);
+      shownYear = atYear;
+
+      var count = slide.querySelector('.count');
+      if (count) tween(count, 0, +count.dataset.to, 1800);
+
+      try { history.replaceState(null, '', '#' + index); } catch (e) {}
+      if (playing) schedule();
+    }
+
+    /* Auto-play: P toggles; it stops by itself on the finale. */
+    var playing = false, timer = null;
+    var perSlide = Math.max(3, +story.secondsPerSlide || 9) * 1000;
+    function schedule() {
+      clearTimeout(timer);
+      if (index >= slides.length - 1) { setPlaying(false); return; }
+      timer = setTimeout(function () { go(index + 1); }, perSlide);
+    }
+    function setPlaying(on) {
+      playing = on;
+      var state = document.getElementById('play-state');
+      state.textContent = on ? 'pause' : 'play';
+      state.classList.toggle('playing', on);
+      if (on) schedule(); else clearTimeout(timer);
+    }
+
+    function fullscreen() {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      switch (e.key) {
+        case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter':
+          go(index + 1); break;
+        case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace':
+          go(index - 1); break;
+        case 'Home': go(0); break;
+        case 'End': go(slides.length - 1); break;
+        case 'p': case 'P': setPlaying(!playing); break;
+        case 'f': case 'F': fullscreen(); break;
+        default: return;
+      }
+      e.preventDefault();
+    });
+
+    // A click on the left fifth goes back, anywhere else goes forward.
+    document.addEventListener('click', function (e) {
+      go(e.clientX < window.innerWidth / 5 ? index - 1 : index + 1);
+    });
+
+    var touchX = null;
+    document.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (touchX == null) return;
+      var dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) > 40) { e.preventDefault(); go(dx < 0 ? index + 1 : index - 1); }
+    });
+
+    // Hide the cursor and key hint once the presenter stops touching the mouse.
+    var idle;
+    function wake() {
+      document.body.classList.remove('idle');
+      clearTimeout(idle);
+      idle = setTimeout(function () { document.body.classList.add('idle'); }, 2500);
+    }
+    document.addEventListener('mousemove', wake);
+    wake();
+
+    document.getElementById('frame').hidden = false;
+    document.getElementById('hint').hidden = false;
+    var start = parseInt(location.hash.slice(1), 10);
+    go(Number.isFinite(start) ? start : 0);
+  }
+
+  function notice(title, text) {
+    var n = el('div', 'notice');
+    var inner = el('div');
+    inner.appendChild(el('h1', 'display', title));
+    var p = el('p');
+    p.innerHTML = text;
+    inner.appendChild(p);
+    n.appendChild(inner);
+    document.body.appendChild(n);
+  }
+
+  fetch(STORY_URL + '?t=' + Date.now())
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(present)
+    .catch(function () {
+      notice('No anniversary timeline yet',
+        'Nothing has been published for this church. Add an <code>anniversary.json</code> beside its ' +
+        '<code>data.json</code> — the root one is an example to copy.');
+    });
+})();
+</script>
+</body>
+</html>
