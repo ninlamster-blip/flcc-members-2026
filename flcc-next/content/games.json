@@ -121,5 +121,16 @@
       "kids": "Move the claw, press DROP and grab a toy — a teddy, a dino, a robot! Win enough toys to beat each level.",
       "teens": "A toy machine that isn't rigged: a centred grab always holds. 25 levels of conveyors, a swinging claw, a slippery grip, a sliding prize box and toys too heavy to lift."
     }
+  },
+  {
+    "id": "giant",
+    "title": "DAVID & THE GIANT",
+    "tone": "sky",
+    "symbol": "mountain",
+    "difficulty": 4,
+    "blurb": {
+      "kids": "The giant has taken a lamb! Run, climb the ladders and jump the barrels to bring it home.",
+      "teens": "Climb the girders, jump the giant's barrels and save the lamb — 25 levels of fireballs, springs and crumbling floors."
+    }
   }
 ]

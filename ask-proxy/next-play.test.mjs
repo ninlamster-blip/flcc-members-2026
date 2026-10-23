@@ -285,6 +285,26 @@ test('a claw race ranks by points and ends when everyone is out of tries; adults
   assert.equal((await room(e, adult.token, 'create', { kind: 'claw' })).status, 403);
 });
 
+test('a giant race ranks by points and ends when everyone is out of lives; adults cannot make one', async () => {
+  const e = env();
+  const a = await join(e, 'teens');
+  const b = await join(e, 'teens');
+  const { code } = (await room(e, a.token, 'create', { kind: 'giant' })).data;
+  await room(e, b.token, 'join', { code });
+  await room(e, a.token, 'start', { code });
+  await room(e, a.token, 'progress', { code, row: 2, score: 1300 });
+  assert.equal((await room(e, b.token, 'progress', { code, row: 1, score: 9_999_999 })).status, 400);
+  let state = await look(e, a.token, code);
+  assert.equal(state.kind, 'giant');
+  assert.equal(state.players.find((p) => p.you).score, 1300);
+  await room(e, a.token, 'progress', { code, row: 2, score: 1300, alive: false });
+  await room(e, b.token, 'progress', { code, row: 1, score: 400, alive: false });
+  state = await look(e, a.token, code);
+  assert.equal(state.status, 'done');
+  const adult = await join(e, 'adults');
+  assert.equal((await room(e, adult.token, 'create', { kind: 'giant' })).status, 403);
+});
+
 test('a host leaving an unstarted room closes it; rooms are swept after a few hours', async () => {
   const e = env();
   const a = await join(e, 'kids');

@@ -84,15 +84,15 @@ export async function addMissingColumns(db, table, columns) {
 
 /**
  * Live rooms: a quiz battle, or a race — Hop Across, Galaga, basketball
- * (Hoops) or the claw machine — with everyone playing the same seeded road,
- * waves or levels at once, ranked by score. A race is a score, so the Galaga,
- * Hoops and Claw races are for the groups with a board; the adult edition
- * keeps none.
+ * (Hoops), the claw machine or David and the Giant — with everyone playing
+ * the same seeded road, waves or levels at once, ranked by score. A race is a
+ * score, so every race but Hop Across is for the groups with a board; the
+ * adult edition keeps none.
  */
-export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {}, galaga: { groups: BOARD_GROUPS }, hoops: { groups: BOARD_GROUPS }, claw: { groups: BOARD_GROUPS } };
-const RACES = ['hop', 'galaga', 'hoops', 'claw'];
-/** The highest score a racer can report, per race. Hoops and Claw have no weekly board, so their caps live here. */
-const RACE_SCORE_MAX = { hop: GAMES.hop.max, galaga: GAMES.galaga.max, hoops: 1_000_000, claw: 1_000_000 };
+export const ROOM_KINDS = { quiz: { questions: 10, questionMs: 12000 }, hop: {}, galaga: { groups: BOARD_GROUPS }, hoops: { groups: BOARD_GROUPS }, claw: { groups: BOARD_GROUPS }, giant: { groups: BOARD_GROUPS } };
+const RACES = ['hop', 'galaga', 'hoops', 'claw', 'giant'];
+/** The highest score a racer can report, per race. Only Hop Across and Galaga have a weekly board, so the others' caps live here. */
+const RACE_SCORE_MAX = { hop: GAMES.hop.max, galaga: GAMES.galaga.max, hoops: 1_000_000, claw: 1_000_000, giant: 1_000_000 };
 export const ROOM_MAX_PLAYERS = 8;
 const ROOM_COUNTDOWN_MS = 3000;
 const ROOM_LIFETIME_HOURS = 2;
@@ -459,7 +459,7 @@ async function handleRoom(db, path, body, me) {
   }
 
   // POST /room/progress { code, row, alive } — a racer's furthest row (Hop
-  // Across), wave (Galaga) or level (Hoops, Claw) with its score, and whether they are still going
+  // Across), wave (Galaga) or level (Hoops, Claw, Giant) with its score, and whether they are still going
   if (path === '/room/progress') {
     if (!RACES.includes(room.kind) || room.status !== 'playing') return json({ error: { message: 'Not racing now.' } }, 409);
     const row = Math.trunc(Number(body.row));
