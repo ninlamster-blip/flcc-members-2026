@@ -424,9 +424,6 @@ body[data-arcade] { overflow: hidden; }
 /* The claw machine: ◀ and ▶ either side of a wider DROP. */
 .arcade-pad[data-pads="3"] { grid-template-columns: 1fr 1.6fr 1fr; }
 .arcade-pad[data-pads="3"] button:active { background: var(--ink); color: var(--paper); }
-/* David and the Giant: run, climb and a JUMP in the middle, all held. */
-.arcade-pad[data-pads="5"] { grid-template-columns: 1fr 1fr 1.5fr 1fr 1fr; gap: .4rem; }
-.arcade-pad[data-pads="5"] button { min-height: 3.6rem; font-size: 1.15rem; }
 
 /* ── The library editor ──────────────────────────────────────────────────
    Dashboard-only. Nothing here is seen by a young person, so it is plain

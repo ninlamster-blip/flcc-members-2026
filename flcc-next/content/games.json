@@ -123,14 +123,14 @@
     }
   },
   {
-    "id": "giant",
-    "title": "DAVID & THE GIANT",
+    "id": "vines",
+    "title": "MONKEY CLIMB",
     "tone": "sky",
-    "symbol": "mountain",
+    "symbol": "plant",
     "difficulty": 4,
     "blurb": {
-      "kids": "The giant has taken a lamb! Run, climb the ladders and jump the barrels to bring it home.",
-      "teens": "Climb the girders, jump the giant's barrels and save the lamb — 25 levels of fireballs, springs and crumbling floors."
+      "kids": "Papa monkey is locked in a cage! Climb the vines, dodge the lizards and birds, and bring him the key.",
+      "teens": "Two vines climb fast, one slides fast. Knock fruit onto the lizards, dodge birds and coconuts — 25 levels to free papa."
     }
   }
 ]

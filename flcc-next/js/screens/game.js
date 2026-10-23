@@ -12,7 +12,7 @@ import * as galaga from '../games/galaga.js';
 import * as hop from '../games/hopacross.js';
 import * as hoops from '../games/hoops.js';
 import * as claw from '../games/claw.js';
-import * as giant from '../games/giant.js';
+import * as vines from '../games/vines.js';
 import { symbol as drawSymbol, TONE_HEX } from '../core/art.js';
 import * as rewards from '../core/rewards.js';
 import * as online from '../core/online.js';
@@ -1515,29 +1515,32 @@ function clawGame(ctx) {
   return { title: 'Claw machine', el };
 }
 
-// ── David and the Giant ─────────────────────────────────────────────────────
+// ── Monkey Climb ────────────────────────────────────────────────────────────
 //
-// A climb-and-jump game: run along the girders, climb the ladders and jump
-// the barrels the giant rolls down, to reach the lamb at the top. Each level
-// gives three lives; losing them replays that level, never level one. The
-// best level reached stays on this device.
+// A vine-climbing game: the little monkey climbs the jungle vines to fetch the
+// key and free papa from his cage, dodging lizards, birds and coconuts and
+// knocking fruit down onto them. One finger steers: put it down anywhere on
+// the jungle and drag the way to go — up and down to climb, left and right to
+// run, swing and grab — and a quick tap jumps. Each level gives three lives;
+// losing them replays that level, never level one. The best level reached
+// stays on this device.
 //
 // From a room (js/screens/room.js) it is a race on the room's seed, from
 // level one, and running out of lives is the end of that racer's run.
 
-function giantGame(ctx) {
+function vinesGame(ctx) {
   const tone = 'sky';
   const arcade = () => store.read(store.KEYS.arcade, {}) || {};
   const keep = (patch) => store.write(store.KEYS.arcade, { ...arcade(), ...patch });
-  const best = () => arcade().giant || 0;
+  const best = () => arcade().vines || 0;
   const saved = () => {
-    const resume = arcade().giantResume || {};
+    const resume = arcade().vinesResume || {};
     return { level: Math.max(1, Math.trunc(resume.level) || 1), score: Math.max(0, Math.trunc(resume.score) || 0) };
   };
   const race = ctx.route.params.room ? { code: ctx.route.params.room, seed: Number(ctx.route.params.seed) || 1, place: '' } : null;
   const seed = () => (race ? race.seed : Date.now() % 2147483647);
-  let state = race ? giant.create(race.seed) : giant.create(seed(), saved());
-  const sound = chiptune.player({ muted: Boolean(arcade().giantMuted), sounds: giant.SOUNDS });
+  let state = race ? vines.create(race.seed) : vines.create(seed(), saved());
+  const sound = chiptune.player({ muted: Boolean(arcade().vinesMuted), sounds: vines.SOUNDS });
   const held = { left: false, right: false, up: false, down: false, jump: false };
   let raf = 0;
   let last = 0;
@@ -1546,7 +1549,7 @@ function giantGame(ctx) {
   let gone = false;
   const home = location.hash;
 
-  const canvas = h('canvas', { 'aria-label': 'David and the Giant. Run, climb the ladders and jump the barrels to reach the lamb at the top.', role: 'img' });
+  const canvas = h('canvas', { 'aria-label': 'Monkey Climb. Drag on the jungle to climb and run, tap to jump. Arrow keys and Space work too.', role: 'img' });
   const g = canvas.getContext('2d');
   const colors = palette();
 
@@ -1584,15 +1587,16 @@ function giantGame(ctx) {
     if (width && (canvas.width !== width || canvas.height !== height)) { canvas.width = width; canvas.height = height; }
     return ratio;
   };
+  let stick = null;                 // where a finger went down, and how far it has dragged
   const draw = () => {
     const ratio = size();
-    if (canvas.width) giant.paint(g, state, { colors, scale: canvas.width / giant.WIDTH, edge: 3 * ratio });
+    if (canvas.width) vines.paint(g, state, { colors, scale: canvas.width / vines.WIDTH, edge: 3 * ratio, stick });
   };
 
   const over = () => {
     const record = state.level > best();
-    if (record) keep({ giant: state.level });
-    const result = progress.complete('game', `giant:${progress.today()}`);
+    if (record) keep({ vines: state.level });
+    const result = progress.complete('game', `vines:${progress.today()}`);
     const xp = result.first ? ` · +${progress.XP.game} XP` : '';
     paintNumbers();
     if (race) {
@@ -1606,7 +1610,7 @@ function giantGame(ctx) {
       });
       return;
     }
-    keep({ giantResume: { level: state.level, score: state.levelScore } });
+    keep({ vinesResume: { level: state.level, score: state.levelScore } });
     let fresh = false;
     shown = moment({
       tone,
@@ -1623,6 +1627,7 @@ function giantGame(ctx) {
     }
   };
 
+  let tap = false;                  // a tap jumps for exactly one frame
   const frame = (now) => {
     raf = 0;
     if (!canvas.isConnected) { if (attached) { teardown(); return; } raf = requestAnimationFrame(frame); return; }
@@ -1630,12 +1635,13 @@ function giantGame(ctx) {
     attached = true;
     const dt = last ? (now - last) / 1000 : 0;
     last = now;
-    const events = giant.step(state, held, dt);
+    const events = vines.step(state, { ...held, jump: held.jump || tap }, dt);
+    tap = false;
     sound.play(events);
     if (events.includes('level')) {
-      if (state.level >= best()) keep({ giant: state.level + 1 });
-      if (!race) keep({ giantResume: { level: state.level + 1, score: state.score } });
-      progress.complete('game', `giant:${progress.today()}`);
+      if (state.level >= best()) keep({ vines: state.level + 1 });
+      if (!race) keep({ vinesResume: { level: state.level + 1, score: state.score } });
+      progress.complete('game', `vines:${progress.today()}`);
     }
     if (events.length) paintNumbers();
     draw();
@@ -1644,31 +1650,51 @@ function giantGame(ctx) {
   };
 
   function begin(fresh) {
-    if (fresh) keep({ giantResume: { level: 1, score: 0 } });
-    state = giant.create(seed(), saved());
+    if (fresh) keep({ vinesResume: { level: 1, score: 0 } });
+    state = vines.create(seed(), saved());
     last = 0;
     paintNumbers();
     if (!raf) raf = requestAnimationFrame(frame);
   }
 
-  const press = (key, on) => {
-    if (on) sound.wake();
-    held[key] = on;
-    pads[key]?.toggleAttribute('data-held', on);
+  // One finger steers. It goes down anywhere; dragging past a small dead zone
+  // holds that direction — both at once on a diagonal — and lifting a finger
+  // that barely moved, quickly, is a jump.
+  const DEAD = 4;                   // field units of drag before a direction counts
+  const point = (event) => {
+    const box = canvas.getBoundingClientRect();
+    const units = vines.WIDTH / (box.width || 1);
+    return { x: (event.clientX - box.left) * units, y: (event.clientY - box.top) * units };
   };
-  const hold = (key, text, name) => h('button', {
-    type: 'button', 'aria-label': name, text,
-    onpointerdown: (event) => { event.preventDefault(); press(key, true); },
-    onpointerup: () => press(key, false),
-    onpointerleave: () => press(key, false),
-    onpointercancel: () => press(key, false),
-    oncontextmenu: (event) => event.preventDefault(),
+  const steer = () => {
+    held.left = stick ? stick.dx < -DEAD : false;
+    held.right = stick ? stick.dx > DEAD : false;
+    held.up = stick ? stick.dy < -DEAD : false;
+    held.down = stick ? stick.dy > DEAD : false;
+  };
+  canvas.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
+    sound.wake();
+    const at = point(event);
+    stick = { id: event.pointerId, x: at.x, y: at.y, dx: 0, dy: 0, since: performance.now(), far: 0 };
   });
-  const pads = {
-    left: hold('left', '◀', 'Run left'), up: hold('up', '▲', 'Climb up'),
-    jump: hold('jump', 'JUMP', 'Jump'),
-    down: hold('down', '▼', 'Climb down'), right: hold('right', '▶', 'Run right'),
+  canvas.addEventListener('pointermove', (event) => {
+    if (!stick || event.pointerId !== stick.id) return;
+    const at = point(event);
+    stick.dx = at.x - stick.x;
+    stick.dy = at.y - stick.y;
+    stick.far = Math.max(stick.far, Math.hypot(stick.dx, stick.dy));
+    steer();
+  });
+  const lift = (event) => {
+    if (!stick || (event && event.pointerId !== stick.id)) return;
+    if (event && stick.far < DEAD && performance.now() - stick.since < 300) tap = true;
+    stick = null;
+    steer();
   };
+  canvas.addEventListener('pointerup', lift);
+  canvas.addEventListener('pointercancel', () => { stick = null; steer(); });
 
   const KEYS = {
     ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right',
@@ -1681,10 +1707,10 @@ function giantGame(ctx) {
     const key = KEYS[event.key];
     if (!key || (event.key === ' ' && event.target.closest?.('button'))) return;
     event.preventDefault();
-    press(key, event.type === 'keydown');
+    if (event.type === 'keydown') sound.wake();
+    held[key] = event.type === 'keydown';
   };
-  const lift = () => { for (const key of Object.keys(held)) press(key, false); };
-  const onHide = () => { if (document.hidden) lift(); };
+  const onHide = () => { if (document.hidden) { stick = null; for (const key of Object.keys(held)) held[key] = false; } };
   const onRoute = () => { if (location.hash !== home) teardown(); };
   window.addEventListener('keydown', onKey);
   window.addEventListener('keyup', onKey);
@@ -1716,26 +1742,25 @@ function giantGame(ctx) {
   };
   mute.addEventListener('click', () => {
     sound.muted = !sound.muted;
-    keep({ giantMuted: sound.muted });
+    keep({ vinesMuted: sound.muted });
     if (!sound.muted) sound.wake();
     paintMute();
   });
   paintMute();
 
-  const stage = h('div', { class: 'arcade-stage', role: 'application', 'aria-label': 'David and the Giant' },
+  const stage = h('div', { class: 'arcade-stage', role: 'application', 'aria-label': 'Monkey Climb' },
     h('div', { class: 'arcade-bar' },
-      h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close David and the Giant', text: '✕', onclick: leave }),
+      h('button', { class: 'arcade-close', type: 'button', 'aria-label': 'Close Monkey Climb', text: '✕', onclick: leave }),
       h('div', {}, scoreEl, h('p', { class: 'label dim', text: 'points' })),
       h('span', { class: 'grow' }),
       h('div', { class: 'stat' }, levelEl, infoEl),
       mute),
-    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)),
-    h('div', { class: 'arcade-pad', dataset: { pads: '5' } }, pads.left, pads.up, pads.jump, pads.down, pads.right));
+    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)));
 
   const el = h('div', { style: 'display:contents' }, stage);
   paintNumbers();
   raf = requestAnimationFrame(frame);
-  return { title: 'David and the Giant', el };
+  return { title: 'Monkey Climb', el };
 }
 
 const GAMES = {
@@ -1751,7 +1776,7 @@ const GAMES = {
   hop: hopGame,
   hoops: hoopsGame,
   claw: clawGame,
-  giant: giantGame,
+  vines: vinesGame,
 };
 
 export default async function gameScreen(ctx) {
