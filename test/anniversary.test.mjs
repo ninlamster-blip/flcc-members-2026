@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { loadChurch, readRepoFile, readRepoJSON, exists } from './lib/extract.mjs';
+import { load, loadChurch, readRepoFile, readRepoJSON, exists } from './lib/extract.mjs';
 
 const FLCC = loadChurch();
 
@@ -69,3 +69,20 @@ for (const { slug, file } of STORIES) {
     }
   });
 }
+
+// ── The Home tab's card ──────────────────────────────────────────────────────
+
+const { ordinal } = load('index.html', ['ordinal']);
+
+test('the Home card names the anniversary with the right ordinal', () => {
+  const cases = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 11: '11th', 12: '12th', 13: '13th',
+    20: '20th', 21: '21st', 22: '22nd', 23: '23rd', 25: '25th', 50: '50th', 101: '101st', 111: '111th' };
+  for (const [n, want] of Object.entries(cases)) assert.equal(ordinal(+n), want, `ordinal(${n})`);
+});
+
+test('the Home card reads the church\'s own file and links to the timeline on the same church', () => {
+  const src = readRepoFile('index.html');
+  assert.match(src, /const ANNIVERSARY_DATA_URL = CHURCH\.data\('anniversary\.json'\)/);
+  assert.match(src, /CHURCH\.url\('anniversary\.html'\)/);
+  assert.match(src, /<AnniversaryCard \/>/, 'the card must be placed on the Home tab');
+});
