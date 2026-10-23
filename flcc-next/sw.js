@@ -12,7 +12,7 @@
 //                 the files are large, and a book that has been read once
 //                 should stay readable on a bus with no signal.
 
-const VERSION = 'next-v26';
+const VERSION = 'next-v29';
 
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/next.css', './icons/icon.svg',
@@ -23,7 +23,7 @@ const SHELL = [
   './js/core/scripture.js', './js/core/safety.js', './js/core/ai.js', './js/core/rewards.js',
   './js/core/stamps.js', './js/core/memory.js', './js/core/service.js', './js/core/party.js', './js/core/online.js', './js/core/avatar.js', './js/core/delivery.js',
   './js/games/crossword.js', './js/games/galaga.js', './js/games/chiptune.js',
-  './js/games/hopacross.js', './js/games/hoops.js', './js/games/claw.js',
+  './js/games/hopacross.js', './js/games/hoops.js', './js/games/claw.js', './js/games/vines.js',
   './js/screens/today.js', './js/screens/devotion.js', './js/screens/explore.js',
   './js/screens/journey.js', './js/screens/lesson.js', './js/screens/topic.js',
   './js/screens/play.js', './js/screens/game.js', './js/screens/connect.js',

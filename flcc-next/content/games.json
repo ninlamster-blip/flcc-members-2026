@@ -121,5 +121,16 @@
       "kids": "Move the claw, press DROP and grab a toy — a teddy, a dino, a robot! Win enough toys to beat each level.",
       "teens": "A toy machine that isn't rigged: a centred grab always holds. 25 levels of conveyors, a swinging claw, a slippery grip, a sliding prize box and toys too heavy to lift."
     }
+  },
+  {
+    "id": "vines",
+    "title": "MONKEY CLIMB",
+    "tone": "sky",
+    "symbol": "plant",
+    "difficulty": 4,
+    "blurb": {
+      "kids": "Papa monkey is locked in a cage! Climb the vines, dodge the lizards and birds, and bring him the key.",
+      "teens": "Two vines climb fast, one slides fast. Knock fruit onto the lizards, dodge birds and coconuts — 25 levels to free papa."
+    }
   }
 ]
