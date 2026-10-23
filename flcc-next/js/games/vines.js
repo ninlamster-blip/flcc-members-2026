@@ -440,151 +440,555 @@ function moveFruit(state, dt, events) {
 
 // ── Drawing ────────────────────────────────────────────────────────────────
 //
-// The poster system in a jungle: paper behind, flat palette fills, one navy
-// outline. `colors` is the palette read out of the stylesheet by the screen.
-// `stick` is where a finger is steering from, drawn as a faint ring.
+// A twilight jungle drawn in the app's poster system: flat fills only — tints
+// mixed from the palette for depth, never a gradient — and one navy outline.
+// The scenery is layered back to front (a pale sky and moon, a far canopy, a
+// mid canopy, the leaf fringe), and every actor is a small illustration with a
+// face and a pose: the monkey climbs hand over hand, runs and leaps; the
+// lizards snap; the toucans flap. `colors` is the palette read out of the
+// stylesheet by the screen; `stick` is where a finger is steering from.
 
-function caption(g, text, colors, y, size = 7) {
-  g.fillStyle = colors.ink;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.font = `900 ${size}px Inter, system-ui, sans-serif`;
-  g.fillText(text, WIDTH / 2, y);
+/** Mix two #rrggbb colours: `t` = 0 is `a`, 1 is `b`. A flat tint, not a gradient. */
+function mix(a, b, t) {
+  const hex = (c) => (/^#[0-9a-f]{6}$/i.test(c) ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) : null);
+  const x = hex(a);
+  const y = hex(b);
+  if (!x || !y) return a;
+  return `#${x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('')}`;
 }
 
-function drawMonkey(g, m, colors, time, big = 1) {
+/** The scene's tones, worked out once per palette. */
+const toneCache = new WeakMap();
+function tones(colors) {
+  if (toneCache.has(colors)) return toneCache.get(colors);
+  const t = {
+    sky: mix(colors.sky, colors.paper, 0.55),
+    moon: mix(colors.sunshine, colors.paper, 0.45),
+    far: mix(colors.sky, colors.paper, 0.2),
+    mid: mix(colors.sky, colors.captain, 0.45),
+    leaf: colors.captain,
+    leafDark: mix(colors.captain, colors.ink, 0.45),
+    vine: mix(colors.captain, colors.ink, 0.3),
+    vineLight: mix(colors.sky, colors.captain, 0.55),
+    wood: mix(colors.poppy, colors.ink, 0.55),
+    woodLight: mix(colors.poppy, colors.ink, 0.3),
+    fur: mix(colors.poppy, colors.ink, 0.32),
+    furDark: mix(colors.poppy, colors.ink, 0.55),
+    skin: mix(colors.rose, colors.paper, 0.35),
+    gold: colors.sunshine,
+    goldDark: mix(colors.sunshine, colors.poppy, 0.55),
+    lizard: mix(colors.poppy, colors.rose, 0.15),
+    lizardDark: mix(colors.poppy, colors.ink, 0.35),
+    soil: mix(colors.captain, colors.ink, 0.55),
+    grass: mix(colors.captain, colors.sky, 0.25),
+  };
+  toneCache.set(colors, t);
+  return t;
+}
+
+function caption(g, text, colors, y, size = 7) {
+  g.save();
+  g.font = `900 ${size}px Inter, system-ui, sans-serif`;
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  const w = g.measureText(text).width + size * 1.4;
+  g.fillStyle = colors.paper;
+  g.beginPath();
+  g.roundRect?.(WIDTH / 2 - w / 2, y - size * 0.85, w, size * 1.7, size * 0.85);
+  if (!g.roundRect) g.rect(WIDTH / 2 - w / 2, y - size * 0.85, w, size * 1.7);
+  g.fill();
+  g.stroke();
+  g.fillStyle = colors.ink;
+  g.fillText(text, WIDTH / 2, y + size * 0.05);
+  g.restore();
+}
+
+const fine = (g, k = 0.55) => { g.lineWidth *= k; };
+
+/** A pointed leaf, `len` long, pointing at `angle`, with a midrib. */
+function leaf(g, x, y, len, angle, fill) {
+  g.save();
+  g.translate(x, y);
+  g.rotate(angle);
+  g.beginPath();
+  g.moveTo(0, 0);
+  g.quadraticCurveTo(len * 0.5, -len * 0.38, len, 0);
+  g.quadraticCurveTo(len * 0.5, len * 0.38, 0, 0);
+  g.fillStyle = fill;
+  g.fill();
+  g.stroke();
+  fine(g, 0.5);
+  g.beginPath();
+  g.moveTo(len * 0.1, 0);
+  g.lineTo(len * 0.8, 0);
+  g.stroke();
+  g.restore();
+}
+
+function drawScenery(g, colors, t, time) {
+  // The sky and a low moon.
+  g.fillStyle = t.sky;
+  g.fillRect(0, 0, WIDTH, HEIGHT);
+  g.fillStyle = t.moon;
+  g.beginPath(); g.arc(70, 16, 11, 0, Math.PI * 2); g.fill();
+  // The far canopy: soft round crowns with no outline, so they sit back.
+  g.fillStyle = t.far;
+  for (let i = 0; i < 9; i++) {
+    const x = i * 13 - 4;
+    const y = 48 + Math.sin(i * 1.7) * 6;
+    g.beginPath(); g.arc(x, y, 10 + (i % 3) * 2, 0, Math.PI * 2); g.fill();
+  }
+  g.fillRect(0, 50, WIDTH, HEIGHT - 50);
+  // The mid canopy and its trunks, one tone darker.
+  g.fillStyle = t.mid;
+  for (const [x, w] of [[6, 5], [36, 4], [80, 6], [96, 4]]) g.fillRect(x - w / 2, 70, w, HEIGHT - 70);
+  for (let i = 0; i < 8; i++) {
+    const x = i * 15 + 2;
+    const y = 76 + Math.sin(i * 2.3) * 5;
+    g.beginPath(); g.arc(x, y, 9 + (i % 2) * 3, 0, Math.PI * 2); g.fill();
+  }
+  // Fireflies drifting in the dusk.
+  g.fillStyle = t.moon;
+  for (let i = 0; i < 7; i++) {
+    const x = (i * 29 + time * (3 + i)) % WIDTH;
+    const y = 60 + ((i * 37) % 60) + Math.sin(time * 2 + i) * 3;
+    g.beginPath(); g.arc(x, y, 0.5, 0, Math.PI * 2); g.fill();
+  }
+  // The jungle floor: soil, a grass edge and a few flowers.
+  const floor = LEDGES[0].y;
+  g.fillStyle = t.soil;
+  g.fillRect(0, floor, WIDTH, HEIGHT - floor);
+  g.fillStyle = t.grass;
+  g.beginPath();
+  g.moveTo(0, floor + 2);
+  for (let x = 0; x <= WIDTH; x += 2.5) g.lineTo(x, floor - (x % 5 === 0 ? 2.2 : 0.6));
+  g.lineTo(WIDTH, floor + 2);
+  g.closePath();
+  g.fill();
+  g.stroke();
+  for (const [x, c] of [[14, colors.rose], [38, colors.sunshine], [60, colors.rose], [84, colors.sunshine]]) {
+    g.fillStyle = c;
+    for (let k = 0; k < 5; k++) { g.beginPath(); g.arc(x + Math.cos(k * 1.26) * 1.1, floor - 1.6 + Math.sin(k * 1.26) * 1.1, 0.75, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = colors.paper;
+    g.beginPath(); g.arc(x, floor - 1.6, 0.55, 0, Math.PI * 2); g.fill();
+  }
+}
+
+/** The leaf fringe across the very top, drawn over everything at the back. */
+function drawFringe(g, t) {
+  for (let i = 0; i < 14; i++) {
+    const x = i * 7.6 + 1;
+    leaf(g, x, -1, 7 + (i % 3) * 1.6, Math.PI / 2 + (i % 2 ? 0.35 : -0.35), i % 2 ? t.leaf : t.leafDark);
+  }
+}
+
+function drawVine(g, vine, t, time) {
+  const sway = (y) => Math.sin(y * 0.35 + vine.x) * 0.45 + Math.sin(time * 1.3 + vine.x) * 0.15 * ((y - vine.top) / 60);
+  // A rope of two strands: navy edge, green-blue body, light twist.
+  const path = (dx) => {
+    g.beginPath();
+    for (let y = vine.top - 4; y <= vine.bottom + 1; y += 1.5) {
+      const x = vine.x + sway(y) + dx;
+      if (y === vine.top - 4) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+  };
+  const base = g.lineWidth;
+  path(0);
+  g.lineWidth = base * 2.6;
+  g.strokeStyle = g.ink;
+  g.stroke();
+  g.lineWidth = base * 1.6;
+  g.strokeStyle = t.vine;
+  g.stroke();
+  g.lineWidth = base * 0.5;
+  g.strokeStyle = t.vineLight;
+  g.beginPath();
+  for (let y = vine.top - 2; y <= vine.bottom; y += 3) {
+    g.moveTo(vine.x + sway(y) - 0.5, y);
+    g.lineTo(vine.x + sway(y) + 0.5, y + 1.4);
+  }
+  g.stroke();
+  g.lineWidth = base;
+  g.strokeStyle = g.ink;
+  // Leaves along it, side to side.
+  let side = vine.x % 2 ? 1 : -1;
+  for (let y = vine.top + 6; y < vine.bottom - 2; y += 9) {
+    leaf(g, vine.x + sway(y), y, 3.6, side > 0 ? -0.5 : Math.PI + 0.5, side > 0 ? t.leaf : t.leafDark);
+    side = -side;
+  }
+  // A curl at the bottom.
+  g.beginPath();
+  g.arc(vine.x + sway(vine.bottom) + 0.9, vine.bottom + 1.2, 1, Math.PI, Math.PI * 2.6);
+  g.stroke();
+}
+
+function drawBranch(g, l, t, colors) {
+  if (l === LEDGES[0]) return;
+  const h = 4;
+  g.fillStyle = t.wood;
+  g.beginPath();
+  g.roundRect?.(l.x1, l.y, l.x2 - l.x1, h, 2);
+  if (!g.roundRect) g.rect(l.x1, l.y, l.x2 - l.x1, h);
+  g.fill();
+  g.stroke();
+  // Bark: a lighter top edge, grain lines and the odd knot.
+  g.fillStyle = t.woodLight;
+  g.fillRect(l.x1 + 1.5, l.y + 0.6, l.x2 - l.x1 - 3, 1);
+  g.save();
+  fine(g, 0.5);
+  g.beginPath();
+  for (let x = l.x1 + 4; x < l.x2 - 2; x += 6.5) { g.moveTo(x, l.y + 2.2); g.lineTo(x + 3, l.y + 2.6); }
+  g.stroke();
+  for (let x = l.x1 + 9; x < l.x2 - 4; x += 19) { g.beginPath(); g.ellipse(x, l.y + 2.3, 1, 0.7, 0, 0, Math.PI * 2); g.stroke(); }
+  g.restore();
+  // Tufts of leaves at each end.
+  leaf(g, l.x1 + 1, l.y + 1, 4, Math.PI + 0.4, t.leafDark);
+  leaf(g, l.x1 + 1, l.y + 1, 3.4, Math.PI - 0.5, t.leaf);
+  leaf(g, l.x2 - 1, l.y + 1, 4, -0.4, t.leafDark);
+  leaf(g, l.x2 - 1, l.y + 1, 3.4, 0.5, t.leaf);
+}
+
+/**
+ * The monkey, in a pose: climbing hand over hand on a vine, running, leaping,
+ * or standing. Drawn about 8 units tall from its feet; `big` scales papa.
+ */
+function drawMonkey(g, m, colors, t, time, { big = 1, sad = false } = {}) {
+  const face = m.face || 1;
+  const pose = m.mode === 'vine' ? 'climb' : m.mode === 'air' ? 'leap' : m.vx ? 'run' : 'stand';
+  const beat = time * (pose === 'run' ? 14 : 8);
   g.save();
   g.translate(m.x, m.y);
   g.scale(big, big);
-  const swing = m.mode === 'ground' && m.vx ? Math.sin(time * 16) * 1 : 0;
-  g.fillStyle = colors.poppy;
-  // Body and head.
-  g.beginPath(); g.ellipse(0, -2.6, 2, 2.6, 0, 0, Math.PI * 2); g.fill(); g.stroke();
-  g.beginPath(); g.arc(0, -6.4, 2, 0, Math.PI * 2); g.fill(); g.stroke();
-  g.fillStyle = colors.rose;
-  g.beginPath(); g.ellipse(0.4 * (m.face || 1), -6, 1.2, 1, 0, 0, Math.PI * 2); g.fill();
-  // Arms: up on a vine, out to the sides otherwise.
+  const limb = (x1, y1, x2, y2, w = 1.1) => {
+    g.save();
+    g.lineCap = 'round';
+    g.lineWidth = w + g.lineWidth * 2;
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.strokeStyle = colors.ink; g.stroke();
+    g.lineWidth = w;
+    g.strokeStyle = t.fur; g.stroke();
+    g.restore();
+  };
+  const paw = (x, y) => { g.fillStyle = t.skin; g.beginPath(); g.arc(x, y, 0.55, 0, Math.PI * 2); g.fill(); g.stroke(); };
+  // Tail: a curl behind.
+  g.save();
+  g.lineWidth *= 1;
   g.beginPath();
-  if (m.mode === 'vine') { g.moveTo(-1.4, -4); g.lineTo(-0.6, -9); g.moveTo(1.4, -4); g.lineTo(0.6, -9); }
-  else { g.moveTo(-1.8, -3.6); g.lineTo(-3.2, -2 + swing); g.moveTo(1.8, -3.6); g.lineTo(3.2, -2 - swing); }
+  g.moveTo(-face * 1.2, -2.2);
+  g.bezierCurveTo(-face * 4.2, -1.6, -face * 4.6, -5.6, -face * 2.8, -5.4);
+  g.lineCap = 'round';
+  const tw = g.lineWidth;
+  g.lineWidth = 0.9 + tw * 2; g.strokeStyle = colors.ink; g.stroke();
+  g.lineWidth = 0.9; g.strokeStyle = t.fur; g.stroke();
+  g.restore();
+  // Legs.
+  if (pose === 'climb') {
+    const k = Math.sin(beat) * 0.9;
+    limb(-0.7, -2.4, -1.4, -0.6 + k); limb(0.7, -2.4, 1.4, -0.6 - k);
+    paw(-1.4, -0.6 + k); paw(1.4, -0.6 - k);
+  } else if (pose === 'leap') {
+    limb(-0.7, -2.4, -2, -1.2); limb(0.7, -2.4, 2, -0.6);
+    paw(-2, -1.2); paw(2, -0.6);
+  } else {
+    const k = pose === 'run' ? Math.sin(beat) * 1.3 : 0;
+    limb(-0.6, -2.4, -0.7 + k, 0); limb(0.6, -2.4, 0.7 - k, 0);
+    paw(-0.7 + k, 0); paw(0.7 - k, 0);
+  }
+  // Body with a pale belly.
+  g.fillStyle = t.fur;
+  g.beginPath(); g.ellipse(0, -3.6, 1.8, 2.1, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = t.skin;
+  g.beginPath(); g.ellipse(face * 0.3, -3.4, 1, 1.4, 0, 0, Math.PI * 2); g.fill();
+  // Arms.
+  if (pose === 'climb') {
+    const k = Math.sin(beat) * 1.1;
+    limb(-1.2, -4.8, -0.5, -9.2 - k); limb(1.2, -4.8, 0.5, -9.2 + k);
+    paw(-0.5, -9.2 - k); paw(0.5, -9.2 + k);
+  } else if (pose === 'leap') {
+    limb(-1.3, -4.8, -2.6, -7.4); limb(1.3, -4.8, 2.6, -7.4);
+    paw(-2.6, -7.4); paw(2.6, -7.4);
+  } else {
+    const k = pose === 'run' ? Math.sin(beat) * 1.1 : Math.sin(time * 2) * 0.2;
+    limb(-1.4, -4.6, -2 - k * 0.4, -2.6); limb(1.4, -4.6, 2 + k * 0.4, -2.6);
+    paw(-2 - k * 0.4, -2.6); paw(2 + k * 0.4, -2.6);
+  }
+  // Head: ears, round head, heart-shaped face, eyes with a glint, a smile.
+  const hy = -7.4;
+  for (const side of [-1, 1]) {
+    g.fillStyle = t.fur; g.beginPath(); g.arc(side * 2.2, hy - 0.3, 1, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.fillStyle = t.skin; g.beginPath(); g.arc(side * 2.2, hy - 0.3, 0.5, 0, Math.PI * 2); g.fill();
+  }
+  g.fillStyle = t.fur;
+  g.beginPath(); g.arc(0, hy, 2.3, 0, Math.PI * 2); g.fill(); g.stroke();
+  const fx = pose === 'climb' ? 0 : face * 0.35;
+  g.fillStyle = t.skin;
+  g.beginPath();
+  g.arc(fx - 0.75, hy - 0.4, 0.95, 0, Math.PI * 2);
+  g.arc(fx + 0.75, hy - 0.4, 0.95, 0, Math.PI * 2);
+  g.fill();
+  g.beginPath(); g.ellipse(fx, hy + 0.85, 1.45, 1, 0, 0, Math.PI * 2); g.fill();
+  g.save();
+  fine(g, 0.5);
+  g.beginPath(); g.ellipse(fx, hy + 0.85, 1.45, 1, 0, 0, Math.PI * 2); g.stroke();
+  g.restore();
+  for (const side of [-1, 1]) {
+    g.fillStyle = colors.ink;
+    g.beginPath(); g.arc(fx + side * 0.72, hy - 0.4, 0.42, 0, Math.PI * 2); g.fill();
+    g.fillStyle = colors.paper;
+    g.beginPath(); g.arc(fx + side * 0.72 + 0.14, hy - 0.55, 0.14, 0, Math.PI * 2); g.fill();
+  }
+  g.save();
+  fine(g, 0.5);
+  g.beginPath();
+  if (sad) { g.moveTo(fx - 0.6, hy + 1.3); g.quadraticCurveTo(fx, hy + 0.8, fx + 0.6, hy + 1.3); }
+  else { g.moveTo(fx - 0.6, hy + 1); g.quadraticCurveTo(fx, hy + 1.6, fx + 0.6, hy + 1); }
+  g.stroke();
+  g.fillStyle = colors.ink;
+  g.beginPath(); g.arc(fx - 0.25, hy + 0.45, 0.13, 0, Math.PI * 2); g.arc(fx + 0.25, hy + 0.45, 0.13, 0, Math.PI * 2); g.fill();
+  if (sad) { g.beginPath(); g.moveTo(fx - 1.2, hy - 1.5); g.lineTo(fx - 0.4, hy - 1.2); g.moveTo(fx + 1.2, hy - 1.5); g.lineTo(fx + 0.4, hy - 1.2); g.stroke(); }
+  g.restore();
+  g.restore();
+}
+
+/** A snapping lizard, nose first along `angle`, legs paddling, jaw snapping. */
+function drawLizard(g, x, y, angle, colors, t, time, seed) {
+  g.save();
+  g.translate(x, y);
+  g.rotate(angle);
+  const walk = Math.sin(time * 14 + seed) * 0.7;
+  const snap = Math.max(0, Math.sin(time * 9 + seed)) * 0.5;
   // Tail.
-  g.moveTo(-(m.face || 1) * 1.8, -1); g.quadraticCurveTo(-(m.face || 1) * 4.5, -1, -(m.face || 1) * 3.6, -4);
+  g.fillStyle = t.lizard;
+  g.beginPath();
+  g.moveTo(-1.6, -0.7);
+  g.quadraticCurveTo(-4, -0.4 + walk * 0.6, -5.4, 0.6 + walk);
+  g.quadraticCurveTo(-3.8, 0.6, -1.6, 0.8);
+  g.closePath(); g.fill(); g.stroke();
+  // Legs.
+  g.save();
+  fine(g, 0.8);
+  g.beginPath();
+  for (const [lx, side, k] of [[1, -1, walk], [1, 1, -walk], [-1.2, -1, -walk], [-1.2, 1, walk]]) {
+    g.moveTo(lx, side * 0.6); g.lineTo(lx + k * 0.6, side * 1.7); g.lineTo(lx + k * 0.6 + 0.5, side * 1.9);
+  }
   g.stroke();
   g.restore();
+  // Body with spots.
+  g.fillStyle = t.lizard;
+  g.beginPath(); g.ellipse(0, 0, 2, 1, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = colors.sunshine;
+  for (const sx of [-1, 0.2]) { g.beginPath(); g.arc(sx, -0.1, 0.35, 0, Math.PI * 2); g.fill(); }
+  // Head with a snapping jaw and an eye.
+  g.fillStyle = t.lizard;
+  g.beginPath();
+  g.moveTo(1.6, -0.8);
+  g.quadraticCurveTo(3.4, -0.9, 3.6, -0.15 - snap);
+  g.lineTo(2.3, 0);
+  g.lineTo(3.6, 0.15 + snap);
+  g.quadraticCurveTo(3.2, 0.9, 1.6, 0.8);
+  g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = colors.paper;
+  g.beginPath(); g.arc(2.4, -0.45, 0.35, 0, Math.PI * 2); g.fill();
+  g.fillStyle = colors.ink;
+  g.beginPath(); g.arc(2.5, -0.45, 0.18, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+
+/** A toucan: navy body, pale chest, big sunshine beak, beating wings. */
+function drawToucan(g, b, colors, t, time) {
+  const flap = Math.sin(time * 12 + b.phase);
+  g.save();
+  g.translate(b.x, b.y);
+  g.scale(b.dir, 1);
+  // Far wing.
+  g.fillStyle = t.leafDark;
+  g.beginPath(); g.moveTo(-0.6, -0.4); g.lineTo(-2.4, -2.6 - flap * 1.4); g.lineTo(0.6, -0.8); g.closePath(); g.fill(); g.stroke();
+  // Tail and body.
+  g.fillStyle = colors.ink;
+  g.beginPath(); g.moveTo(-2, 0); g.lineTo(-4, 0.8); g.lineTo(-3.6, -0.6); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.ellipse(-0.3, 0, 2.3, 1.5, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = colors.paper;
+  g.beginPath(); g.ellipse(1, 0.3, 1, 1, 0, 0, Math.PI * 2); g.fill();
+  // Beak and eye.
+  g.fillStyle = colors.sunshine;
+  g.beginPath(); g.moveTo(1.6, -0.6); g.quadraticCurveTo(4.4, -0.8, 4.8, 0.2); g.quadraticCurveTo(3.4, 0.5, 1.6, 0.4); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = colors.poppy;
+  g.beginPath(); g.moveTo(4.2, -0.4); g.quadraticCurveTo(4.6, -0.3, 4.8, 0.2); g.lineTo(4.1, 0.3); g.closePath(); g.fill();
+  g.fillStyle = colors.sky;
+  g.beginPath(); g.arc(1.1, -0.5, 0.45, 0, Math.PI * 2); g.fill();
+  g.fillStyle = colors.ink;
+  g.beginPath(); g.arc(1.15, -0.5, 0.2, 0, Math.PI * 2); g.fill();
+  // Near wing.
+  g.fillStyle = t.leaf;
+  g.beginPath(); g.moveTo(-1.2, -0.2); g.lineTo(-2.8, -2.4 - flap * 1.8); g.lineTo(0.4, -0.6); g.closePath(); g.fill(); g.stroke();
+  g.restore();
+}
+
+/** A bunch of three bananas hanging from a stalk. */
+function drawBananas(g, x, y, colors, t) {
+  g.save();
+  g.translate(x, y);
+  g.beginPath(); g.moveTo(0, -2.4); g.lineTo(0, -1); g.stroke();
+  for (const a of [-0.6, 0, 0.6]) {
+    g.save();
+    g.rotate(a);
+    g.fillStyle = colors.sunshine;
+    g.beginPath();
+    g.moveTo(0, -1);
+    g.quadraticCurveTo(1.6, 0.4, 0.6, 2.6);
+    g.quadraticCurveTo(0.2, 0.6, -0.5, -0.8);
+    g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = t.wood;
+    g.beginPath(); g.arc(0.6, 2.6, 0.3, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+  g.restore();
+}
+
+function drawCoconut(g, x, y, colors, t) {
+  g.fillStyle = t.wood;
+  g.beginPath(); g.arc(x, y, NUT_R, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = t.woodLight;
+  g.beginPath(); g.arc(x - 0.6, y - 0.6, 0.7, 0, Math.PI * 2); g.fill();
+  g.fillStyle = colors.ink;
+  for (const [dx, dy] of [[0.5, 0.3], [1, 0.9], [0.1, 1]]) { g.beginPath(); g.arc(x + dx, y + dy, 0.22, 0, Math.PI * 2); g.fill(); }
+}
+
+function drawCage(g, colors, t, time) {
+  // A wooden ledge, papa sitting behind the bars, a padlock on the door.
+  g.fillStyle = t.wood;
+  g.fillRect(2, CAGE.y, 16, 4); g.strokeRect(2, CAGE.y, 16, 4);
+  g.fillStyle = t.woodLight;
+  g.fillRect(3, CAGE.y + 0.6, 14, 1);
+  drawMonkey(g, { x: CAGE.x, y: CAGE.y, mode: 'ground', face: 1, vx: 0 }, colors, t, time, { big: 1.35, sad: true });
+  g.fillStyle = t.wood;
+  g.fillRect(2.2, CAGE.y - 15.5, 15.6, 2); g.strokeRect(2.2, CAGE.y - 15.5, 15.6, 2);
+  g.save();
+  g.lineCap = 'round';
+  for (let x = 3.4; x <= 17; x += 2.7) {
+    g.beginPath(); g.moveTo(x, CAGE.y - 13.5); g.lineTo(x, CAGE.y);
+    const w = g.lineWidth;
+    g.lineWidth = w * 1.8; g.strokeStyle = colors.ink; g.stroke();
+    g.lineWidth = w * 0.7; g.strokeStyle = colors.sky; g.stroke();
+    g.lineWidth = w; g.strokeStyle = colors.ink;
+  }
+  g.restore();
+  g.fillStyle = colors.sunshine;
+  g.beginPath(); g.arc(12.5, CAGE.y - 6.5, 0.9, Math.PI, 0); g.stroke();
+  g.fillRect(11.3, CAGE.y - 6.5, 2.4, 2); g.strokeRect(11.3, CAGE.y - 6.5, 2.4, 2);
+  g.fillStyle = colors.ink;
+  g.beginPath(); g.arc(12.5, CAGE.y - 5.7, 0.25, 0, Math.PI * 2); g.fill();
+}
+
+function drawKey(g, colors, t, time) {
+  const bob = Math.sin(time * 3) * 0.6;
+  g.save();
+  g.translate(KEY.x, KEY.y - 6 + bob);
+  g.rotate(-0.5);
+  g.fillStyle = colors.sunshine;
+  g.beginPath(); g.arc(0, -2.2, 1.9, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = t.sky;
+  g.beginPath(); g.arc(0, -2.2, 0.8, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = colors.sunshine;
+  g.fillRect(-0.5, -0.4, 1, 5); g.strokeRect(-0.5, -0.4, 1, 5);
+  g.fillRect(0.5, 2.6, 1.3, 0.8); g.strokeRect(0.5, 2.6, 1.3, 0.8);
+  g.fillRect(0.5, 3.8, 1, 0.8); g.strokeRect(0.5, 3.8, 1, 0.8);
+  g.restore();
+  // A twinkle that turns.
+  const k = (Math.sin(time * 4) + 1) / 2;
+  g.save();
+  g.translate(KEY.x + 2.6, KEY.y - 10 + bob);
+  g.rotate(time);
+  g.fillStyle = colors.paper;
+  g.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const r = i % 2 ? 0.35 : 0.8 + k * 0.7;
+    g.lineTo(Math.cos((i * Math.PI) / 4) * r, Math.sin((i * Math.PI) / 4) * r);
+  }
+  g.closePath(); g.fill(); g.stroke();
+  g.restore();
+}
+
+function heart(g, x, y, r, fill) {
+  g.fillStyle = fill;
+  g.beginPath();
+  g.moveTo(x, y + r * 0.9);
+  g.bezierCurveTo(x - r * 1.6, y - r * 0.2, x - r * 0.6, y - r * 1.3, x, y - r * 0.35);
+  g.bezierCurveTo(x + r * 0.6, y - r * 1.3, x + r * 1.6, y - r * 0.2, x, y + r * 0.9);
+  g.fill();
+  g.stroke();
 }
 
 /** Paint the whole jungle. `scale` is canvas pixels per field unit, `edge` the outline in canvas pixels. */
 export function paint(g, state, { colors, scale, edge, stick = null }) {
   g.setTransform(scale, 0, 0, scale, 0, 0);
-  g.fillStyle = colors.paper;
-  g.fillRect(0, 0, WIDTH, HEIGHT);
+  const t = tones(colors);
+  g.ink = colors.ink;
   g.lineWidth = edge / scale;
   g.lineJoin = 'round';
   g.lineCap = 'round';
   g.strokeStyle = colors.ink;
+  const time = state.time;
 
-  // Vines, wavy, with a leaf here and there.
-  for (const vine of VINES) {
-    g.beginPath();
-    for (let y = vine.top - 4; y <= vine.bottom; y += 2) {
-      const x = vine.x + Math.sin(y * 0.4) * 0.5;
-      if (y === vine.top - 4) g.moveTo(x, y); else g.lineTo(x, y);
-    }
-    g.stroke();
-    g.fillStyle = colors.sky;
-    for (let y = vine.top + 8; y < vine.bottom; y += 16) {
-      g.beginPath(); g.ellipse(vine.x + 1.6, y, 1.6, 0.8, -0.5, 0, Math.PI * 2); g.fill(); g.stroke();
-    }
-  }
-  // Branches.
-  for (const l of LEDGES) {
-    g.fillStyle = l === LEDGES[0] ? colors.sky : colors.sunshine;
-    g.fillRect(l.x1, l.y, l.x2 - l.x1, l === LEDGES[0] ? HEIGHT - l.y : 3);
-    g.strokeRect(l.x1, l.y, l.x2 - l.x1, l === LEDGES[0] ? HEIGHT - l.y : 3);
-  }
-  // Papa's cage, top left, and the key.
-  g.fillStyle = colors.sunshine;
-  g.fillRect(2, CAGE.y, 16, 3); g.strokeRect(2, CAGE.y, 16, 3);
-  drawMonkey(g, { x: CAGE.x, y: CAGE.y, mode: 'ground', face: 1 }, colors, 0, 1.6);
-  g.beginPath();
-  for (let x = 3; x <= 17; x += 2.8) { g.moveTo(x, CAGE.y); g.lineTo(x, CAGE.y - 14); }
-  g.moveTo(2.5, CAGE.y - 14); g.lineTo(17.5, CAGE.y - 14);
-  g.stroke();
-  g.save();
-  g.translate(KEY.x, KEY.y - 5 + Math.sin(state.time * 3) * 0.6);
-  g.fillStyle = colors.sunshine;
-  g.beginPath(); g.arc(0, -2, 2, 0, Math.PI * 2); g.fill(); g.stroke();
-  g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 4); g.moveTo(0, 2.6); g.lineTo(1.4, 2.6); g.moveTo(0, 4); g.lineTo(1.4, 4); g.stroke();
-  g.restore();
+  drawScenery(g, colors, t, time);
+  for (const vine of VINES) drawVine(g, vine, t, time);
+  for (const l of LEDGES) drawBranch(g, l, t, colors);
+  drawCage(g, colors, t, time);
+  drawKey(g, colors, t, time);
+  drawFringe(g, t);
 
-  // Fruit: a rose berry with a leaf.
-  for (const f of state.fruit) {
-    g.fillStyle = colors.rose;
-    g.beginPath(); g.arc(f.x, f.y, FRUIT_R, 0, Math.PI * 2); g.fill(); g.stroke();
-    g.beginPath(); g.moveTo(f.x, f.y - FRUIT_R); g.lineTo(f.x + 1, f.y - FRUIT_R - 1.2); g.stroke();
-  }
-  // Lizards on the vines, crawlers on the branches.
-  const lizard = (x, y, angle) => {
-    g.save();
-    g.translate(x, y);
-    g.rotate(angle);
-    g.fillStyle = colors.captain;
-    g.beginPath(); g.ellipse(0, 0, LIZARD_R, LIZARD_R * 0.7, 0, 0, Math.PI * 2); g.fill(); g.stroke();
-    g.beginPath(); g.moveTo(LIZARD_R, 0); g.lineTo(LIZARD_R + 1.6, -0.6); g.moveTo(LIZARD_R, 0); g.lineTo(LIZARD_R + 1.6, 0.6);
-    g.moveTo(-LIZARD_R, 0); g.lineTo(-LIZARD_R - 2, 0.4); g.stroke();
-    g.restore();
-  };
-  for (const z of state.lizards) lizard(z.x, z.y, z.falling ? state.time * 10 : z.dir > 0 ? Math.PI / 2 : -Math.PI / 2);
-  for (const c of state.crawlers) if (!c.bonked) lizard(c.x, LEDGES[c.ledge].y - LIZARD_R, c.dir > 0 ? 0 : Math.PI);
-  // Birds: a sky body with flapping wings.
-  for (const b of state.birds) {
-    const flap = Math.sin(state.time * 14 + b.phase) * 1.4;
-    g.fillStyle = colors.sky;
-    g.beginPath(); g.ellipse(b.x, b.y, BIRD_R, BIRD_R * 0.7, 0, 0, Math.PI * 2); g.fill(); g.stroke();
-    g.beginPath(); g.moveTo(b.x - 1, b.y - 0.5); g.lineTo(b.x - 2.6, b.y - 2 - flap); g.moveTo(b.x + 1, b.y - 0.5); g.lineTo(b.x + 2.6, b.y - 2 - flap);
-    g.moveTo(b.x + b.dir * BIRD_R, b.y); g.lineTo(b.x + b.dir * (BIRD_R + 1.4), b.y + 0.4); g.stroke();
-  }
-  // Coconuts, and the shadow that warns of one.
+  for (const f of state.fruit) drawBananas(g, f.x, f.y, colors, t);
+  state.lizards.forEach((z, i) => drawLizard(g, z.x, z.y, z.falling ? time * 10 : z.dir > 0 ? Math.PI / 2 : -Math.PI / 2, colors, t, time, i));
+  state.crawlers.forEach((c, i) => { if (!c.bonked) drawLizard(g, c.x, LEDGES[c.ledge].y - 1.2, c.dir > 0 ? 0 : Math.PI, colors, t, time, i + 5); });
+  for (const b of state.birds) drawToucan(g, b, colors, t, time);
   for (const n of state.nuts) {
     if (!n.falling) {
-      g.save(); g.globalAlpha = 0.35 + 0.35 * Math.sin(state.time * 20);
-      g.fillStyle = colors.ink; g.fillRect(n.x - NUT_R, LEDGES[0].y - 1, NUT_R * 2, 1); g.restore();
+      // A flashing shadow on the floor where it will land.
+      g.save();
+      g.globalAlpha = 0.25 + 0.25 * Math.sin(time * 20);
+      g.fillStyle = colors.ink;
+      g.beginPath(); g.ellipse(n.x, LEDGES[0].y - 0.4, NUT_R * 1.3, 0.6, 0, 0, Math.PI * 2); g.fill();
+      g.restore();
       continue;
     }
-    g.fillStyle = colors.captain;
-    g.beginPath(); g.arc(n.x, n.y, NUT_R, 0, Math.PI * 2); g.fill(); g.stroke();
+    drawCoconut(g, n.x, n.y, colors, t);
   }
 
   const blink = state.pause > 0 && Math.floor(state.pause * 8) % 2 === 0;
-  if (!blink) drawMonkey(g, state.monkey, colors, state.time);
+  if (!blink) drawMonkey(g, state.monkey, colors, t, time, { big: 1.15 });
 
   // A finger steering: a ring where it went down, a dot where it is now.
   if (stick) {
     g.save();
-    g.globalAlpha = 0.35;
+    g.globalAlpha = 0.4;
     g.beginPath(); g.arc(stick.x, stick.y, 6, 0, Math.PI * 2); g.stroke();
     g.fillStyle = colors.ink;
     g.beginPath(); g.arc(stick.x + clamp(stick.dx, -6, 6), stick.y + clamp(stick.dy, -6, 6), 2, 0, Math.PI * 2); g.fill();
     g.restore();
   }
 
-  g.fillStyle = colors.ink;
-  g.textBaseline = 'alphabetic';
-  g.font = '800 4px Inter, system-ui, sans-serif';
-  g.textAlign = 'left';
-  g.fillText('♥'.repeat(Math.max(0, state.lives)), 3, 7);
+  // Lives as hearts, and the bonus on a paper tab.
+  for (let i = 0; i < Math.max(0, state.lives); i++) heart(g, 25 + i * 4.6, 13, 1.6, colors.poppy);
+  g.save();
+  g.font = '800 3.6px Inter, system-ui, sans-serif';
   g.textAlign = 'right';
-  g.fillText(`BONUS ${Math.round(state.clock) * 10}`, WIDTH - 3, 7);
+  g.textBaseline = 'middle';
+  const bonus = `BONUS ${Math.round(state.clock) * 10}`;
+  const w = g.measureText(bonus).width + 3;
+  g.fillStyle = colors.paper;
+  g.fillRect(WIDTH - 3 - w, 10.6, w, 5); g.strokeRect(WIDTH - 3 - w, 10.6, w, 5);
+  g.fillStyle = colors.ink;
+  g.fillText(bonus, WIDTH - 4.5, 13.2);
+  g.restore();
 
   const middle = HEIGHT * 0.58;
   if (state.rest > 0) {
     caption(g, 'PAPA IS FREE!', colors, middle, 6.5);
-    caption(g, `NEXT: LEVEL ${state.level + 1}`, colors, middle + 9, 5);
+    caption(g, `NEXT: LEVEL ${state.level + 1}`, colors, middle + 10, 4.5);
   } else if (state.pause > 0) {
-    caption(g, state.lives > 0 ? `OUCH! ${state.lives} ${state.lives === 1 ? 'LIFE' : 'LIVES'} LEFT` : 'OUT OF LIVES', colors, middle, 5.5);
+    caption(g, state.lives > 0 ? `OUCH! ${state.lives} ${state.lives === 1 ? 'LIFE' : 'LIVES'} LEFT` : 'OUT OF LIVES', colors, middle, 5);
   } else if (!state.started || state.showLevel > 0) {
-    caption(g, `LEVEL ${state.level}`, colors, middle - 6);
-    caption(g, 'CLIMB TO THE KEY!', colors, middle + 3, 5);
-    if (!state.started) caption(g, 'DRAG TO MOVE · TAP TO JUMP', colors, middle + 11, 4.2);
+    caption(g, `LEVEL ${state.level}`, colors, middle - 8, 6.5);
+    caption(g, 'CLIMB TO THE KEY!', colors, middle + 2, 4.5);
+    if (!state.started) caption(g, 'DRAG TO MOVE · TAP TO JUMP', colors, middle + 10, 3.8);
   }
 }
