@@ -77,6 +77,14 @@ for (const { slug, file } of STORIES) {
     { name: 'the closing', title: story.closing?.heading, highlight: story.closing?.highlight, captions: story.closing?.captions },
   ];
 
+  test(`${slug}: the auto-play settings are a switch and a sensible reading pace`, () => {
+    if (story.autoplay != null) assert.equal(typeof story.autoplay, 'boolean', 'autoplay must be true or false');
+    if (story.wordsPerMinute != null) {
+      assert.ok(Number.isFinite(story.wordsPerMinute) && story.wordsPerMinute >= 60 && story.wordsPerMinute <= 300,
+        `wordsPerMinute ${story.wordsPerMinute} is outside 60–300; a room reads about 140`);
+    }
+  });
+
   test(`${slug}: every highlight is a phrase from its own title`, () => {
     for (const p of panels) {
       if (p.highlight == null) continue;

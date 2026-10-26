@@ -4,7 +4,8 @@
   "subtitle": "20th Anniversary Celebration",
   "founded": 2006,
   "anniversaryDate": "2026-11-15",
-  "secondsPerBeat": 4,
+  "autoplay": true,
+  "wordsPerMinute": 140,
   "captions": [
     "Sample: Twenty years ago, a small group started something.",
     "Sample: This is how God has been faithful, year by year.",

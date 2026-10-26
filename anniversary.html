@@ -18,12 +18,20 @@
     3. the story and its photo arrive, and the year is circled in marker
   The opening and the finale build the same way.
 
+  It plays itself. Each beat stays up long enough for a room to read what it
+  just put on screen — the caption plus any title, story or verse that
+  arrived with it — at wordsPerMinute (140 unless anniversary.json says
+  otherwise), and that clock only starts once the camera has finished
+  travelling. A line along the top of the ruler fills as the beat runs, so
+  whoever is at the laptop can see the next step coming. The clicker still
+  steps by hand at any time; P pauses.
+
   The history itself lives in the church's own anniversary.json, read through
   FLCC.data() like every other per-church file. A church without one gets a
   plain notice rather than somebody else's history.
 
   Keys:  → Space PageDown  next beat    ← PageUp  back
-         Home / End  first / last     P  play / pause   F  full screen
+         Home / End  first / last     P  pause / play   F  full screen
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -271,6 +279,10 @@
     transition: background 400ms;
   }
   .ruler .yr.mark.past::after { background: var(--highlighter); }
+  .ruler .progress {
+    position: absolute; left: 0; top: -2px; height: 4px; width: 0; z-index: 1;
+    background: var(--marker);
+  }
   .ruler .needle {
     position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; transform: translateX(-50%);
     background: var(--marker);
@@ -311,6 +323,7 @@
   <div class="ruler" id="ruler">
     <div class="strip" id="strip"></div>
     <div class="needle"></div>
+    <div class="progress" id="progress"></div>
   </div>
 </div>
 
@@ -483,6 +496,31 @@
     return s;
   }
 
+  /** Words in a piece of text, the way a reader counts them. */
+  function wordCount(text) {
+    return ((text || '').match(/\S+/g) || []).length;
+  }
+
+  /**
+   * How long a beat stays up for a room to read it: a moment to settle, then
+   * the words at the given pace. Never less than 3.5 s, so a beat as short as
+   * "It's 2006." still lands; never more than 16 s, so a long verse moves on.
+   */
+  function readingMs(words, wordsPerMinute) {
+    return Math.min(16000, Math.max(3500, 1200 + words * 60000 / wordsPerMinute));
+  }
+
+  /** The words beat n puts on screen: its caption, and the text that arrives with it. */
+  function wordsInBeat(slide, n) {
+    var words = wordCount(slide.captions[n]);
+    slide.querySelectorAll('[data-beat="' + n + '"]').forEach(function (node) {
+      // A highlight inside an earlier beat's title adds no new words.
+      if (node.parentElement.closest('[data-beat]')) return;
+      words += wordCount(node.textContent);
+    });
+    return words;
+  }
+
   /** How many beats a panel has: one more than the highest beat any piece waits for. */
   function beatsIn(slide) {
     var max = 0;
@@ -569,7 +607,7 @@
       }, caption.textContent ? 300 : 0);
     }
 
-    var index = -1, step = 0;
+    var index = -1, step = 0, arriving = 0;
     var shownYear = first;
 
     /** The year a panel stands on: the founding for the opening, the anniversary for the finale. */
@@ -584,12 +622,15 @@
       b = Math.max(0, Math.min(beats[n] - 1, b));
       if (n === index && b === step) return;
       var moved = n !== index;
+      // How long until this beat has finished arriving and can be read.
+      arriving = 800;
 
       if (moved) {
         stopTweens();
         if (index >= 0) slides[index].classList.remove('on');
         var distance = index < 0 ? 0 : Math.abs(yearOf(n) - yearOf(index));
         var pan = Math.min(1400 + 120 * Math.max(distance - 1, 0), 3200) + 'ms';
+        if (index >= 0) arriving = parseInt(pan, 10);
         track.style.setProperty('--pan', pan);
         strip.style.setProperty('--pan', pan);
         track.style.setProperty('--i', n);
@@ -611,7 +652,7 @@
         node.classList.toggle('shown', +node.dataset.beat <= step);
       });
       var count = slides[index].querySelector('.count');
-      if (count && moved) tween(count, 0, +count.dataset.to, 1800);
+      if (count && moved) { tween(count, 0, +count.dataset.to, 1800); arriving = Math.max(arriving, 1800); }
 
       setCaption(slides[index].captions[step] || '');
       try { history.replaceState(null, '', '#' + index); } catch (e) {}
@@ -627,15 +668,32 @@
       else if (index > 0) go(index - 1, beats[index - 1] - 1);
     }
 
-    /* Auto-play: P toggles; it stops by itself on the last beat of the finale. */
+    /* Auto-play: on from the start, paced for reading; P pauses and resumes.
+       It stops by itself on the last beat of the finale. */
     var playing = false, timer = null;
-    var perBeat = Math.max(2, +story.secondsPerBeat || 4) * 1000;
+    var wordsPerMinute = Math.max(60, +story.wordsPerMinute || 140);
+    var readFor = slides.map(function (slide, i) {
+      var list = [];
+      for (var b = 0; b < beats[i]; b++) list.push(readingMs(wordsInBeat(slide, b), wordsPerMinute));
+      return list;
+    });
+    var progress = document.getElementById('progress');
+    function runProgress(ms) {
+      progress.style.transition = 'none';
+      progress.style.width = '0';
+      if (!ms) return;
+      void progress.offsetWidth;
+      progress.style.transition = 'width ' + ms + 'ms linear';
+      progress.style.width = '100%';
+    }
     function atEnd() { return index === slides.length - 1 && step === beats[index] - 1; }
     function schedule() {
       clearTimeout(timer);
       if (atEnd()) { setPlaying(false); return; }
-      // A step that moves to a new year waits for the glide too.
-      var wait = step === beats[index] - 1 ? perBeat + 1200 : perBeat;
+      // The reading clock starts once the beat has arrived: after the glide
+      // to a new year, after the count, after the highlighter's swipe.
+      var wait = arriving + readFor[index][step];
+      runProgress(wait);
       timer = setTimeout(next, wait);
     }
     function setPlaying(on) {
@@ -643,7 +701,7 @@
       var state = document.getElementById('play-state');
       state.textContent = on ? 'pause' : 'play';
       state.classList.toggle('playing', on);
-      if (on) schedule(); else clearTimeout(timer);
+      if (on) schedule(); else { clearTimeout(timer); runProgress(0); }
     }
 
     function fullscreen() {
@@ -698,6 +756,7 @@
     document.getElementById('hint').hidden = false;
     var start = parseInt(location.hash.slice(1), 10);
     go(Number.isFinite(start) ? start : 0, 0);
+    if (story.autoplay !== false) setPlaying(true);
     // Opening on a later year (#5) lands there directly; only moves after
     // that glide.
     requestAnimationFrame(function () {
