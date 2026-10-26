@@ -31,21 +31,55 @@ test('nothing moves until something is pressed', () => {
 });
 
 test('one vine climbs slowly and slides fast; two climb fast and slide slowly', () => {
-  const climbRate = (two, dir) => {
+  const climbRate = (x, dir) => {
+    const state = vines.create(3);
+    run(state, { right: true }, DT);
+    quiet(state);
+    walkTo(state, x);
+    run(state, { up: true }, DT);
+    assert.equal(state.monkey.mode, 'vine');
+    run(state, { up: true }, 2);                   // somewhere in the middle
+    const y = state.monkey.y;
+    run(state, dir < 0 ? { up: true } : { down: true }, 0.5);
+    return { rate: Math.abs(state.monkey.y - y) / 0.5, two: state.monkey.two };
+  };
+  // The pair on the left, and the single vine hanging from the middle branch.
+  const pairUp = climbRate(24, -1);
+  const oneUp = climbRate(44, -1);
+  assert.equal(pairUp.two, true, 'grabbing one of a pair takes both');
+  assert.equal(oneUp.two, false, 'a single vine is held alone');
+  assert.ok(pairUp.rate > oneUp.rate * 1.5, 'two vines climb faster');
+  assert.ok(climbRate(44, 1).rate > climbRate(24, 1).rate * 1.5, 'one vine slides faster');
+});
+
+test('a side held through a grab does not jump straight off; pressed again, it does', () => {
+  const state = vines.create(3);
+  run(state, { right: true }, DT);
+  quiet(state);
+  Object.assign(state.monkey, { mode: 'vine', vine: 5, two: false, x: 71, y: 80 });
+  // Jump right off the pair holding ▶, and keep holding it through the catch.
+  const events = [...run(state, { right: true }, DT), ...run(state, { right: true }, 0.8)];
+  assert.ok(events.includes('grab'));
+  assert.equal(state.monkey.mode, 'vine', 'still on the vine it caught');
+  assert.equal(state.monkey.vine, 6);
+  run(state, {}, DT);
+  assert.ok(run(state, { right: true }, DT).includes('jump'), 'a fresh press jumps off');
+});
+
+test('jumping off a pair lets go of both, from the side it jumps', () => {
+  for (const [dir, index] of [[{ left: true }, 0], [{ right: true }, 1]]) {
     const state = vines.create(3);
     run(state, { right: true }, DT);
     quiet(state);
     walkTo(state, 24);
-    run(state, { up: true }, DT);
-    assert.equal(state.monkey.mode, 'vine');
-    if (two) { run(state, { right: true }, DT); assert.equal(state.monkey.two, true, 'pushing toward the partner grabs both'); }
-    run(state, { up: true }, 2);                   // somewhere in the middle
-    const y = state.monkey.y;
-    run(state, dir < 0 ? { up: true } : { down: true }, 0.5);
-    return Math.abs(state.monkey.y - y) / 0.5;
-  };
-  assert.ok(climbRate(true, -1) > climbRate(false, -1) * 1.5, 'two vines climb faster');
-  assert.ok(climbRate(false, 1) > climbRate(true, 1) * 1.5, 'one vine slides faster');
+    run(state, { up: true }, 1);
+    run(state, {}, DT);
+    assert.equal(state.monkey.two, true);
+    assert.ok(run(state, dir, DT).includes('jump'));
+    assert.equal(state.monkey.letGo, index, 'the outer vine is the one let go last');
+    const events = run(state, {}, 1);
+    assert.ok(!events.includes('grab') || state.monkey.vine !== index, 'it does not catch the pair again');
+  }
 });
 
 test('the top of a vine leads onto the branch above, and the key clears the level', () => {

@@ -10,8 +10,8 @@
 //
 //   · Climbing is the game. Holding one vine, the monkey climbs slowly and
 //     slides down fast; holding two side by side, it climbs fast and slides
-//     slowly. Pushing toward a vine's partner grabs both; pushing away jumps
-//     off, and a jump can catch the next vine in mid-air.
+//     slowly. Grabbing a vine that has a partner takes both at once; pushing
+//     away from it jumps off, and a jump can catch the next vine in mid-air.
 //   · Fruit hangs on some vines. Touching one knocks it loose, and it falls
 //     straight down, knocking off every lizard or bird it hits for points.
 //   · It is played in levels. Reaching the key clears a level; each level
@@ -293,7 +293,7 @@ function resetRound(state) {
   const { ledges, vines, key } = stageOf(state);
   // The monkey starts on the floor, at the end away from the key, facing in.
   const fromRight = key.x < WIDTH / 2;
-  state.monkey = { x: fromRight ? WIDTH - 9 : 8, y: ledges[0].y, vx: 0, vy: 0, mode: 'ground', vine: null, two: false, face: fromRight ? -1 : 1, letGo: null, letGoClock: 0 };
+  state.monkey = { x: fromRight ? WIDTH - 9 : 8, y: ledges[0].y, vx: 0, vy: 0, mode: 'ground', vine: null, two: false, face: fromRight ? -1 : 1, letGo: null, letGoClock: 0, settled: true };
   state.lizards = [];
   state.birds = [];
   state.nuts = [];
@@ -428,14 +428,20 @@ function moveMonkey(state, input, dt, events) {
   if (m.mode === 'vine') {
     const vine = vines[m.vine];
     const mate = partner(vines, vine);
-    // Toward the partner vine grabs both; away from it lets go of it.
-    if (input.across && mate) {
-      const toward = Math.sign(mate.x - vine.x) === input.across;
-      if (toward && !m.two) { m.two = true; events.push('grab'); }
-      else if (!toward && m.two) { m.two = false; }
-      else if (!toward && !m.two) return jumpOff(m, input.across, events);
-    } else if (input.across && !mate) return jumpOff(m, input.across, events);
-    if (input.jump) return jumpOff(m, m.face, events);
+    // Off the side: from a pair, it is the outer vine that is let go last,
+    // so the jump does not catch it again on the way past.
+    const leave = (dir) => {
+      if (m.two && Math.sign(mate.x - vine.x) === dir) m.vine = vines.indexOf(mate);
+      return jumpOff(m, dir, events);
+    };
+    // A side held from before the grab is not a push: it has to be let go
+    // and pressed again, or holding ▶ through a catch would jump straight off.
+    if (!input.across) m.settled = true;
+    const across = m.settled ? input.across : 0;
+    // Toward a partner not yet held takes both; any other push jumps off.
+    if (across && mate && !m.two && Math.sign(mate.x - vine.x) === across) { m.two = true; events.push('grab'); }
+    else if (across) return leave(across);
+    if (input.jump) return leave(m.face);
 
     const speeds = m.two ? CLIMB.two : CLIMB.one;
     const top = Math.max(vine.top, m.two ? mate.top : vine.top) + HANG;
@@ -457,16 +463,16 @@ function moveMonkey(state, input, dt, events) {
     if (input.climb < 0) {
       const vine = vines.find((v) => Math.abs(v.x - m.x) <= MONKEY.reach && v.bottom + HANG >= m.y - 10 && v.top + HANG <= m.y);
       if (vine) {
-        m.mode = 'vine'; m.vine = vines.indexOf(vine); m.two = false; m.vx = 0;
+        hold(m, vines, vine, events);
+        m.vx = 0;
         m.y = Math.min(m.y, vine.bottom + HANG);
-        events.push('grab');
         return;
       }
     }
     // Down onto a vine that hangs from the branch.
     if (input.climb > 0) {
       const vine = vines.find((v) => Math.abs(v.x - m.x) <= MONKEY.reach && Math.abs(v.top - 4 - m.y) < 0.01);
-      if (vine) { m.mode = 'vine'; m.vine = vines.indexOf(vine); m.two = false; m.y = vine.top + HANG; events.push('grab'); return; }
+      if (vine) { hold(m, vines, vine, events); m.y = vine.top + HANG; return; }
     }
     m.vx = input.across * MONKEY.run;
     if (input.jump) { m.mode = 'air'; m.vy = -MONKEY.jump; m.vx = input.across * MONKEY.run; events.push('jump'); return; }
@@ -483,9 +489,9 @@ function moveMonkey(state, input, dt, events) {
   for (const [index, vine] of vines.entries()) {
     if (index === m.letGo && m.letGoClock > 0) continue;
     if (Math.abs(vine.x - m.x) <= 1.6 && m.y >= vine.top + HANG && m.y <= vine.bottom + HANG + 2) {
-      m.mode = 'vine'; m.vine = index; m.two = false; m.vx = 0; m.vy = 0;
+      hold(m, vines, vine, events);
+      m.vx = 0; m.vy = 0;
       m.y = clamp(m.y, vine.top + HANG, vine.bottom + HANG);
-      events.push('grab');
       return;
     }
   }
@@ -497,6 +503,15 @@ function moveMonkey(state, input, dt, events) {
       }
     }
   }
+}
+
+/** Take hold of a vine — and of its partner too, when it has one. */
+function hold(m, vines, vine, events) {
+  m.mode = 'vine';
+  m.vine = vines.indexOf(vine);
+  m.two = Boolean(partner(vines, vine));
+  m.settled = false;
+  events.push('grab');
 }
 
 function jumpOff(m, dir, events) {
@@ -623,7 +638,7 @@ function moveFruit(state, dt, events) {
 // mid canopy, the leaf fringe), and every actor is a small illustration with a
 // face and a pose: the monkey climbs hand over hand, runs and leaps; the
 // lizards snap; the toucans flap. `colors` is the palette read out of the
-// stylesheet by the screen; `stick` is where a finger is steering from.
+// stylesheet by the screen.
 
 /** Mix two #rrggbb colours: `t` = 0 is `a`, 1 is `b`. A flat tint, not a gradient. */
 function mix(a, b, t) {
@@ -1291,7 +1306,7 @@ function heart(g, x, y, r, fill) {
 }
 
 /** Paint the whole jungle. `scale` is canvas pixels per field unit, `edge` the outline in canvas pixels. */
-export function paint(g, state, { colors, scale, edge, stick = null }) {
+export function paint(g, state, { colors, scale, edge }) {
   g.setTransform(scale, 0, 0, scale, 0, 0);
   const stage = stageOf(state);
   const t = tones(colors, stage.sky);
@@ -1331,16 +1346,6 @@ export function paint(g, state, { colors, scale, edge, stick = null }) {
   drawKey(g, state, colors, t, time);
   drawCheer(g, state, colors, t, time);
 
-  // A finger steering: a ring where it went down, a dot where it is now.
-  if (stick) {
-    g.save();
-    g.globalAlpha = 0.4;
-    g.beginPath(); g.arc(stick.x, stick.y, 6, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = colors.ink;
-    g.beginPath(); g.arc(stick.x + clamp(stick.dx, -6, 6), stick.y + clamp(stick.dy, -6, 6), 2, 0, Math.PI * 2); g.fill();
-    g.restore();
-  }
-
   // Lives as hearts, and the bonus on a paper tab, together in the middle of
   // the top — the cage and the key take the two ends, on one side or the
   // other — and out of the way while the key is carried across.
@@ -1371,6 +1376,6 @@ export function paint(g, state, { colors, scale, edge, stick = null }) {
   } else if (!state.started || state.showLevel > 0) {
     caption(g, `LEVEL ${state.level}`, colors, middle - 8, 6.5);
     caption(g, 'CLIMB TO THE KEY!', colors, middle + 2, 4.5);
-    if (!state.started) caption(g, 'DRAG TO MOVE · TAP TO JUMP', colors, middle + 10, 3.8);
+    if (!state.started) caption(g, 'HOLD THE ARROWS · TAP JUMP', colors, middle + 10, 3.8);
   }
 }

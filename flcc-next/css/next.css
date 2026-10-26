@@ -424,6 +424,18 @@ body[data-arcade] { overflow: hidden; }
 /* The claw machine: ◀ and ▶ either side of a wider DROP. */
 .arcade-pad[data-pads="3"] { grid-template-columns: 1fr 1.6fr 1fr; }
 .arcade-pad[data-pads="3"] button:active { background: var(--ink); color: var(--paper); }
+/* Monkey Climb: ◀, ▲ over ▼, ▶, and a wide JUMP — the arrows held, JUMP tapped. */
+.arcade-pad[data-pads="climb"] {
+  grid-template-columns: 1fr 1fr 1fr 1.5fr; grid-template-rows: auto auto;
+  grid-template-areas: "left up right jump" "left down right jump";
+}
+.arcade-pad[data-pads="climb"] button { min-height: 2.9rem; font-size: 1.25rem; }
+.arcade-pad[data-pads="climb"] [data-side="left"] { grid-area: left; }
+.arcade-pad[data-pads="climb"] [data-side="up"] { grid-area: up; }
+.arcade-pad[data-pads="climb"] [data-side="down"] { grid-area: down; }
+.arcade-pad[data-pads="climb"] [data-side="right"] { grid-area: right; }
+.arcade-pad[data-pads="climb"] [data-side="jump"] { grid-area: jump; font-size: 1.1rem; letter-spacing: .04em; }
+.arcade-pad[data-pads="climb"] [data-side="jump"]:active { background: var(--ink); color: var(--paper); }
 
 /* ── The library editor ──────────────────────────────────────────────────
    Dashboard-only. Nothing here is seen by a young person, so it is plain

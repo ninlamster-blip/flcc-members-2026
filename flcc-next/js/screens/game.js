@@ -1549,7 +1549,7 @@ function vinesGame(ctx) {
   let gone = false;
   const home = location.hash;
 
-  const canvas = h('canvas', { 'aria-label': 'Monkey Climb. Drag on the jungle to climb and run, tap to jump. Arrow keys and Space work too.', role: 'img' });
+  const canvas = h('canvas', { 'aria-label': 'Monkey Climb. Hold the arrow buttons to climb and run, and tap Jump. Arrow keys and Space work too.', role: 'img' });
   const g = canvas.getContext('2d');
   const colors = palette();
 
@@ -1587,10 +1587,9 @@ function vinesGame(ctx) {
     if (width && (canvas.width !== width || canvas.height !== height)) { canvas.width = width; canvas.height = height; }
     return ratio;
   };
-  let stick = null;                 // where a finger went down, and how far it has dragged
   const draw = () => {
     const ratio = size();
-    if (canvas.width) vines.paint(g, state, { colors, scale: canvas.width / vines.WIDTH, edge: 3 * ratio, stick });
+    if (canvas.width) vines.paint(g, state, { colors, scale: canvas.width / vines.WIDTH, edge: 3 * ratio });
   };
 
   const over = () => {
@@ -1627,7 +1626,7 @@ function vinesGame(ctx) {
     }
   };
 
-  let tap = false;                  // a tap jumps for exactly one frame
+  let tap = false;                  // a press of JUMP jumps for exactly one frame
   const frame = (now) => {
     raf = 0;
     if (!canvas.isConnected) { if (attached) { teardown(); return; } raf = requestAnimationFrame(frame); return; }
@@ -1657,44 +1656,38 @@ function vinesGame(ctx) {
     if (!raf) raf = requestAnimationFrame(frame);
   }
 
-  // One finger steers. It goes down anywhere; dragging past a small dead zone
-  // holds that direction — both at once on a diagonal — and lifting a finger
-  // that barely moved, quickly, is a jump.
-  const DEAD = 4;                   // field units of drag before a direction counts
-  const point = (event) => {
-    const box = canvas.getBoundingClientRect();
-    const units = vines.WIDTH / (box.width || 1);
-    return { x: (event.clientX - box.left) * units, y: (event.clientY - box.top) * units };
+  // Buttons under the jungle: hold an arrow to keep moving, tap JUMP. Each
+  // button is its own pointer, so a thumb can hold ▶ while the other jumps.
+  const press = (side, on) => {
+    if (on) sound.wake();
+    held[side] = on;
+    pads[side]?.toggleAttribute('data-held', on);
   };
-  const steer = () => {
-    held.left = stick ? stick.dx < -DEAD : false;
-    held.right = stick ? stick.dx > DEAD : false;
-    held.up = stick ? stick.dy < -DEAD : false;
-    held.down = stick ? stick.dy > DEAD : false;
+  const hold = (side, text, name) => h('button', {
+    type: 'button', 'aria-label': name, text, dataset: { side },
+    onpointerdown: (event) => { event.preventDefault(); press(side, true); },
+    onpointerup: () => press(side, false),
+    onpointerleave: () => press(side, false),
+    onpointercancel: () => press(side, false),
+    oncontextmenu: (event) => event.preventDefault(),
+  });
+  const pads = {
+    left: hold('left', '◀', 'Left: run, or jump off a vine'),
+    up: hold('up', '▲', 'Climb up'),
+    down: hold('down', '▼', 'Climb down'),
+    right: hold('right', '▶', 'Right: run, or jump off a vine'),
   };
-  canvas.addEventListener('pointerdown', (event) => {
-    event.preventDefault();
-    canvas.setPointerCapture?.(event.pointerId);
+  const jumpNow = () => {
+    if (document.querySelector('.moment')) return;
     sound.wake();
-    const at = point(event);
-    stick = { id: event.pointerId, x: at.x, y: at.y, dx: 0, dy: 0, since: performance.now(), far: 0 };
-  });
-  canvas.addEventListener('pointermove', (event) => {
-    if (!stick || event.pointerId !== stick.id) return;
-    const at = point(event);
-    stick.dx = at.x - stick.x;
-    stick.dy = at.y - stick.y;
-    stick.far = Math.max(stick.far, Math.hypot(stick.dx, stick.dy));
-    steer();
-  });
-  const lift = (event) => {
-    if (!stick || (event && event.pointerId !== stick.id)) return;
-    if (event && stick.far < DEAD && performance.now() - stick.since < 300) tap = true;
-    stick = null;
-    steer();
+    tap = true;
   };
-  canvas.addEventListener('pointerup', lift);
-  canvas.addEventListener('pointercancel', () => { stick = null; steer(); });
+  const jumpButton = h('button', {
+    type: 'button', 'aria-label': 'Jump', text: 'JUMP', dataset: { side: 'jump' },
+    onpointerdown: (event) => { event.preventDefault(); jumpNow(); },
+    onclick: (event) => { if (event.detail === 0) jumpNow(); },
+    oncontextmenu: (event) => event.preventDefault(),
+  });
 
   const KEYS = {
     ArrowLeft: 'left', a: 'left', A: 'left', ArrowRight: 'right', d: 'right', D: 'right',
@@ -1710,7 +1703,7 @@ function vinesGame(ctx) {
     if (event.type === 'keydown') sound.wake();
     held[key] = event.type === 'keydown';
   };
-  const onHide = () => { if (document.hidden) { stick = null; for (const key of Object.keys(held)) held[key] = false; } };
+  const onHide = () => { if (document.hidden) for (const key of Object.keys(held)) press(key, false); };
   const onRoute = () => { if (location.hash !== home) teardown(); };
   window.addEventListener('keydown', onKey);
   window.addEventListener('keyup', onKey);
@@ -1755,7 +1748,8 @@ function vinesGame(ctx) {
       h('span', { class: 'grow' }),
       h('div', { class: 'stat' }, levelEl, infoEl),
       mute),
-    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)));
+    h('div', { class: 'arcade-well' }, h('div', { class: 'arcade' }, canvas)),
+    h('div', { class: 'arcade-pad', dataset: { pads: 'climb' } }, pads.left, pads.up, pads.down, pads.right, jumpButton));
 
   const el = h('div', { style: 'display:contents' }, stage);
   paintNumbers();
