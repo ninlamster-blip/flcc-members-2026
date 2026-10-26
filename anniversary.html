@@ -68,12 +68,23 @@
     padding: 0.35em 0.8em; border-radius: 999px; letter-spacing: 0.18em;
   }
 
+  /* The camera pan: every slide sits side by side on one long track, a gap
+     apart, and moving through the story glides the whole track sideways, so
+     time reads left to right. --i is the slide in view; --pan stretches the
+     glide a little when a jump crosses several years. */
   .stage { position: relative; }
-  .slide {
+  .track {
     position: absolute; inset: 0;
+    display: flex; gap: var(--gap);
+    --gap: 12vw;
+    transform: translateX(calc(var(--i, 0) * (-100% - var(--gap))));
+  }
+  .track.ready { transition: transform var(--pan, 1100ms) cubic-bezier(.65, 0, .25, 1); }
+  .slide {
+    flex: 0 0 100%; min-width: 0;
     display: flex; align-items: center;
-    opacity: 0; pointer-events: none;
-    transition: opacity 700ms var(--ease);
+    opacity: 0.12; pointer-events: none;
+    transition: opacity 900ms var(--ease);
   }
   .slide.on { opacity: 1; pointer-events: auto; }
 
@@ -344,7 +355,9 @@
     var slides = [introSlide(story, first, last)]
       .concat(milestones.map(function (m, i) { return milestoneSlide(m, i, milestones.length); }))
       .concat([finaleSlide(story, years)]);
-    slides.forEach(function (s) { stage.appendChild(s); });
+    var track = el('div', 'track');
+    slides.forEach(function (s) { track.appendChild(s); });
+    stage.appendChild(track);
 
     // One stop on the timeline per milestone; clicking one jumps there.
     var timeline = document.getElementById('timeline');
@@ -369,6 +382,9 @@
       if (n === index) return;
       stopTweens();
       if (index >= 0) slides[index].classList.remove('on');
+      var distance = index < 0 ? 0 : Math.abs(n - index);
+      track.style.setProperty('--pan', (1100 + 160 * Math.min(Math.max(distance - 1, 0), 6)) + 'ms');
+      track.style.setProperty('--i', n);
       index = n;
       var slide = slides[index];
       // Re-adding .on restarts every CSS entrance on the slide.
@@ -460,6 +476,9 @@
     document.getElementById('hint').hidden = false;
     var start = parseInt(location.hash.slice(1), 10);
     go(Number.isFinite(start) ? start : 0);
+    // Opening on a later slide (#5) lands there directly; only moves after
+    // that glide.
+    requestAnimationFrame(function () { requestAnimationFrame(function () { track.classList.add('ready'); }); });
   }
 
   function notice(title, text) {
