@@ -6,25 +6,27 @@
 <title>Anniversary Timeline</title>
 
 <!--
-  A church's history, told the way an explainer video tells it: on paper,
-  one year at a time, one beat at a time. Built for a projector and a
+  A church's history, told like a documentary opener: a dark, warm stage with
+  film grain, big worn years, old photographs dropped in one after another,
+  and a camera that travels down the years. Built for a projector and a
   presentation clicker, not a phone — every slide fills a 16:9 screen and
   nothing on it scrolls.
 
   Each year builds in beats, and each beat has a caption along the bottom:
-    1. the camera glides to the year while the ruler scrolls through every
-       year in between and the big year counts up to it
-    2. the key phrase of the title is swiped with a highlighter
-    3. the story and its photo arrive, and the year is circled in marker
+    1. the camera travels to the year — it pulls back, a light leak sweeps
+       across, the film strip below runs through every year in between, and
+       the big year counts up to it
+    2. the title arrives, its key phrase drawn in gold
+    3. the story arrives and the photographs drop in, one after another
   The opening and the finale build the same way.
 
   It plays itself. Each beat stays up long enough for a room to read what it
   just put on screen — the caption plus any title, story or verse that
   arrived with it — at wordsPerMinute (140 unless anniversary.json says
   otherwise), and that clock only starts once the camera has finished
-  travelling. A line along the top of the ruler fills as the beat runs, so
-  whoever is at the laptop can see the next step coming. The clicker still
-  steps by hand at any time; P pauses.
+  travelling. A line along the top of the film strip fills as the beat runs,
+  so whoever is at the laptop can see the next step coming. The clicker
+  still steps by hand at any time; P pauses.
 
   The history itself lives in the church's own anniversary.json, read through
   FLCC.data() like every other per-church file. A church without one gets a
@@ -36,40 +38,39 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
 
 <script src="./church.js"></script>
 
 <style>
-  /* Layout: a paper desk the camera pans across — one panel per year, a year
-     ruler along the bottom that scrolls under a fixed needle, captions above it. */
+  /* Layout: a dark film stage the camera travels across — one panel per
+     year (the words on the left, a stack of prints on the right), a film
+     strip of every year along the bottom, captions above it. */
   :root {
-    --paper: #F2EEE4;
-    --paper-edge: #E4DDCD;
-    --ink: #1B1A17;
-    --ink-muted: #5C574D;
-    --rule: #B9B09E;
-    --highlighter: rgba(255, 221, 51, 0.85);
-    --marker: #E0412B;
-    --caption-bg: #1B1A17;
-    --caption-ink: #FFFFFF;
+    --stage: #14100C;
+    --stage-warm: #2A1F15;
+    --ink: #F2E7D3;
+    --ink-muted: #B3A188;
+    --gold: #D9A441;
+    --gold-soft: rgba(217, 164, 65, 0.35);
+    --print: #EDE3CF;
+    --film: #0B0907;
+    --caption-bg: rgba(10, 8, 6, 0.78);
     --accent: #A33B2A;
-    --display: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', sans-serif;
-    --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    --hand: 'Permanent Marker', 'Comic Sans MS', cursive;
+    --display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+    --serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+    --script: 'Mrs Saint Delafield', 'Brush Script MT', cursive;
     --ease: cubic-bezier(.2, .7, .2, 1);
     --pan-ease: cubic-bezier(.65, 0, .25, 1);
-    color-scheme: light;
+    /* Worn ink: a speckled mask that knocks small holes out of big type. */
+    --worn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3 2.7'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; overflow: hidden; }
   body {
-    background-color: var(--paper);
-    /* Paper grain, drawn rather than downloaded. */
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.25 0 0 0 0 0.2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-      radial-gradient(120% 90% at 50% 40%, transparent 55%, var(--paper-edge));
+    background: radial-gradient(120% 95% at 45% 35%, var(--stage-warm), var(--stage) 62%);
     color: var(--ink);
     font-family: var(--serif);
     -webkit-font-smoothing: antialiased;
@@ -77,234 +78,241 @@
   }
   body.idle { cursor: none; }
 
+  /* ── Film: grain, vignette and a faint flicker over everything ────────── */
+  .grain, .vignette, .leak { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  .grain {
+    inset: -50%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.92 0 0 0 0 0.8 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain 0.9s steps(6) infinite;
+  }
+  @keyframes grain {
+    0% { transform: translate(0, 0); } 20% { transform: translate(-4%, 3%); } 40% { transform: translate(3%, -5%); }
+    60% { transform: translate(-2%, 6%); } 80% { transform: translate(5%, 1%); } 100% { transform: translate(0, 0); }
+  }
+  .vignette {
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.62) 100%);
+    animation: flicker 5s infinite;
+  }
+  @keyframes flicker { 0%, 100% { opacity: 1; } 47% { opacity: 1; } 48% { opacity: 0.86; } 49% { opacity: 1; } 73% { opacity: 0.93; } 74% { opacity: 1; } }
+
+  /* A warm light leak that sweeps across while the camera travels. */
+  .leak {
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 170, 80, 0.20) 45%, rgba(255, 210, 140, 0.28) 50%, rgba(255, 170, 80, 0.18) 55%, transparent 70%);
+    transform: translateX(-100%); opacity: 0;
+  }
+  .leak.run { animation: leak var(--pan, 1400ms) var(--pan-ease); }
+  @keyframes leak { 0% { transform: translateX(-90%); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(90%); opacity: 0; } }
+
   /* ── Frame ────────────────────────────────────────────────────────────── */
   .frame { position: fixed; inset: 0; }
   .top {
     position: absolute; left: 5vw; right: 5vw; top: 4.5vh; z-index: 3;
     display: flex; justify-content: space-between; align-items: center;
-    font-family: var(--display); font-weight: 600;
-    font-size: clamp(12px, 2vh, 24px); letter-spacing: 0.16em; text-transform: uppercase;
+    font-family: var(--display); font-size: clamp(14px, 2.4vh, 28px); letter-spacing: 0.22em;
     color: var(--ink-muted);
   }
   .top .church { display: flex; align-items: center; gap: 0.7em; }
-  .top .dot { width: 0.7em; height: 0.7em; border-radius: 50%; background: var(--accent); }
-  .sample {
-    font-family: var(--hand); text-transform: none; letter-spacing: 0.02em;
-    color: var(--marker); transform: rotate(-3deg);
-    border: 2px solid var(--marker); border-radius: 0.4em; padding: 0.15em 0.6em;
-  }
+  .top .dot { width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--accent); }
+  .sample { color: var(--gold); border: 1px solid var(--gold); padding: 0.1em 0.7em 0; letter-spacing: 0.2em; }
 
-  /* ── The camera: panels side by side, the track glides between them ──── */
-  .stage { position: absolute; left: 5vw; right: 5vw; top: 11vh; bottom: 27vh; }
+  /* ── The camera: panels side by side; travelling pulls back, then in ─── */
+  .stage { position: absolute; left: 6vw; right: 6vw; top: 11vh; bottom: 27vh; transform-origin: 50% 55%; }
+  .stage.travel { animation: travel var(--pan, 1400ms) var(--pan-ease); }
+  @keyframes travel { 0% { transform: scale(1); } 45% { transform: scale(0.86); } 100% { transform: scale(1); } }
   .track {
     position: absolute; inset: 0;
     display: flex; gap: var(--gap);
-    --gap: 12vw;
+    --gap: 14vw;
     transform: translateX(calc(var(--i, 0) * (-100% - var(--gap))));
   }
   .track.ready { transition: transform var(--pan, 1400ms) var(--pan-ease); }
   .slide {
     flex: 0 0 100%; min-width: 0; position: relative;
     display: flex; align-items: center;
-    opacity: 0.18; pointer-events: none;
+    opacity: 0.25; pointer-events: none;
     transition: opacity 900ms var(--ease);
   }
   .slide.on { opacity: 1; pointer-events: auto; }
 
   /* A beat's pieces wait until their beat; .shown brings them in. */
   [data-beat] {
-    opacity: 0; transform: translateY(2.5vh);
-    transition: opacity 650ms var(--ease), transform 650ms var(--ease);
+    opacity: 0; transform: translateY(3vh);
+    transition: opacity 800ms var(--ease), transform 800ms var(--ease);
+    transition-delay: calc(var(--d, 0) * 1ms);
   }
   [data-beat].shown { opacity: 1; transform: none; }
 
-  /* The highlighter: a swipe that grows left to right behind the words. */
+  /* Worn type: big display lettering gets the speckled mask. */
+  .worn { -webkit-mask-image: var(--worn); mask-image: var(--worn); -webkit-mask-size: 320px; mask-size: 320px; }
+
+  /* The key phrase: gold, with a brush line drawn in underneath. */
   .hl {
-    background-image: linear-gradient(100deg, transparent 0.4em, var(--highlighter) 0.5em, var(--highlighter) calc(100% - 0.4em), transparent calc(100% - 0.3em));
-    background-repeat: no-repeat; background-position: 0 70%;
-    background-size: 0% 62%;
-    transition: background-size 800ms var(--ease) 150ms;
-    padding: 0 0.12em; margin: 0 -0.12em;
-    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+    color: var(--ink);
+    background-image: linear-gradient(var(--gold), var(--gold));
+    background-repeat: no-repeat; background-position: 0 96%; background-size: 0% 0.09em;
+    transition: color 700ms var(--ease) 100ms, background-size 900ms var(--ease) 200ms;
   }
-  .hl.shown { background-size: 100% 62%; }
-  .hl[data-beat] { opacity: 1; transform: none; } /* the words are already there; only the swipe waits */
-
-  /* The marker circle: a hand-drawn loop that draws itself on. */
-  .scribble {
-    position: absolute; pointer-events: none; overflow: visible;
-    opacity: 1; transform: none;
-  }
-  .scribble path {
-    fill: none; stroke: var(--marker); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 1; stroke-dashoffset: 1;
-    transition: stroke-dashoffset 900ms var(--ease) 200ms;
-  }
-  .scribble.shown path { stroke-dashoffset: 0; }
-
-  .note {
-    font-family: var(--hand); color: var(--marker);
-    font-size: clamp(16px, 3.2vh, 40px); line-height: 1.1;
-  }
+  .hl.shown { color: var(--gold); background-size: 100% 0.09em; }
+  .hl[data-beat] { opacity: 1; transform: none; } /* the words are already there; only the gold waits */
+  /* Titles that wrap, and the script heading, turn gold without the line —
+     under tight lines it would cut through the line below. */
+  .intro .hl, .finale .hl { background: none; }
 
   /* ── Opening ──────────────────────────────────────────────────────────── */
-  .intro { flex-direction: column; justify-content: center; text-align: center; width: 100%; gap: 3vh; }
-  .intro .kicker {
-    font-family: var(--display); font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.3em; font-size: clamp(14px, 2.6vh, 32px); color: var(--ink-muted);
-  }
+  .intro { flex-direction: column; justify-content: center; text-align: center; width: 100%; gap: 2vh; }
+  .intro .kicker { font-family: var(--script); color: var(--gold); font-size: clamp(28px, 6vh, 84px); line-height: 1; }
   .intro h1 {
-    font-family: var(--display); font-weight: 800; text-transform: uppercase;
-    font-size: clamp(40px, 11vh, 150px); line-height: 0.95; letter-spacing: -0.005em;
-    max-width: 16ch; margin: 0 auto; text-wrap: balance;
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(44px, 11.5vh, 170px); line-height: 0.92; letter-spacing: 0.02em;
+    max-width: 14ch; margin: 0 auto; text-wrap: balance;
   }
   .intro .span {
-    font-family: var(--display); font-weight: 800;
-    font-size: clamp(22px, 5vh, 64px); letter-spacing: 0.04em;
-    display: inline-flex; align-items: center; gap: 0.5em; justify-content: center;
+    font-family: var(--display); font-size: clamp(22px, 5vh, 64px); letter-spacing: 0.3em; color: var(--ink-muted);
+    display: inline-flex; align-items: center; gap: 0.7em; justify-content: center;
   }
-  .intro .span .arrow { font-family: var(--hand); color: var(--marker); font-weight: 400; }
+  .intro .span i { display: inline-block; width: 4vw; height: 2px; background: var(--gold); }
 
   .verse {
     font-family: var(--serif); font-style: italic; color: var(--ink);
-    font-size: clamp(16px, 2.8vh, 34px); line-height: 1.45;
+    font-size: clamp(15px, 2.6vh, 32px); line-height: 1.55;
     max-width: 52ch; margin: 0 auto;
   }
   .verse cite {
-    display: block; margin-top: 1vh; font-style: normal;
-    font-family: var(--display); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
-    font-size: 0.75em; color: var(--ink-muted);
+    display: block; margin-top: 1.2vh; font-style: normal;
+    font-family: var(--display); letter-spacing: 0.24em; font-size: 0.95em; color: var(--gold);
   }
 
   /* ── A year ───────────────────────────────────────────────────────────── */
   .milestone { gap: 4vw; width: 100%; }
-  .milestone .yearbox { position: relative; flex: 0 0 auto; }
+  .milestone .words { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 1.6vh; }
+  .milestone .nth { font-family: var(--display); letter-spacing: 0.3em; font-size: clamp(13px, 2.2vh, 26px); color: var(--gold); }
   .milestone .year {
-    font-family: var(--display); font-weight: 800;
-    font-size: clamp(80px, 30vh, 380px); line-height: 0.82; letter-spacing: -0.02em;
+    font-family: var(--display);
+    font-size: clamp(90px, 30vh, 400px); line-height: 0.8; letter-spacing: 0.01em;
     font-variant-numeric: lining-nums tabular-nums;
-    transform: rotate(-2deg);
-  }
-  .milestone .yearbox .scribble { left: -8%; top: -14%; width: 116%; height: 128%; }
-  .milestone .body { flex: 1 1 auto; min-width: 0; display: flex; gap: 3vw; align-items: center; }
-  .milestone .words { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2.4vh; }
-  .milestone .nth {
-    font-family: var(--display); font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.22em; font-size: clamp(12px, 2vh, 24px); color: var(--ink-muted);
+    color: var(--ink);
   }
   .milestone h2 {
-    font-family: var(--serif); font-weight: 700;
-    font-size: clamp(30px, 7vh, 92px); line-height: 1.06; letter-spacing: -0.01em;
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(30px, 7.4vh, 100px); line-height: 0.95; letter-spacing: 0.04em;
     text-wrap: balance;
   }
-  .milestone p { font-size: clamp(17px, 3.1vh, 40px); line-height: 1.42; color: var(--ink); max-width: 36ch; }
+  .milestone p { font-size: clamp(15px, 2.7vh, 34px); line-height: 1.55; color: var(--ink); max-width: 38ch; }
 
-  /* A photo is a print cut out and taped down. */
-  .milestone figure {
-    position: relative; flex: 0 1 38%; max-width: 100%;
-    background: #fff; padding: 1.1vh 1.1vh 4.2vh;
-    box-shadow: 0 0.6vh 1.8vh rgba(40, 30, 10, 0.22);
-    --tilt: 2.5deg;
-    transform: rotate(var(--tilt)) translateY(3vh) scale(0.96);
+  /* The prints: old photographs dropped onto the stage one after another. */
+  .prints { position: relative; flex: 0 0 40%; height: 54vh; }
+  .print {
+    position: absolute; width: 64%;
+    background: var(--print); padding: 1vh 1vh 4.6vh;
+    box-shadow: 0 1.2vh 3vh rgba(0, 0, 0, 0.55);
+    --tilt: 0deg;
+    transform: translateY(-6vh) rotate(calc(var(--tilt) * 2.5)) scale(1.08);
   }
-  .milestone figure.shown { transform: rotate(var(--tilt)); }
-  .milestone figure::before {
-    content: ""; position: absolute; top: -1.6vh; left: 50%; width: 30%; height: 3.4vh;
-    transform: translateX(-50%) rotate(-4deg);
-    background: rgba(250, 240, 200, 0.75); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  .print.shown { transform: rotate(var(--tilt)); }
+  .print:nth-child(1) { left: 0;   top: 2%;  --tilt: -4deg; }
+  .print:nth-child(2) { right: 0;  top: 22%; --tilt: 3deg; }
+  .print:nth-child(3) { left: 14%; top: 46%; --tilt: -1.5deg; }
+  .prints.one .print { width: 88%; left: 6%; top: 6%; --tilt: -2deg; }
+  .print .pic { aspect-ratio: 4 / 3; overflow: hidden; background: #2b2219; }
+  .print img {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    filter: sepia(0.55) contrast(1.05) brightness(0.95);
+    transform: scale(1.12); transition: transform 14s linear;
   }
-  .milestone figure img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; max-height: 44vh; }
-  .milestone figcaption {
-    position: absolute; left: 0; right: 0; bottom: 0.8vh; text-align: center;
-    font-family: var(--hand); font-size: clamp(12px, 2.2vh, 26px); color: var(--ink-muted);
+  .slide.on .print.shown img { transform: scale(1); }
+  .print figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0.4vh; text-align: center;
+    font-family: var(--script); font-size: clamp(18px, 3.6vh, 44px); color: #3B2F22; line-height: 1;
+  }
+  /* A sample print, until a real photograph is added. */
+  .print .ph {
+    width: 100%; height: 100%; display: grid; place-items: center;
+    background:
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0 1.2vh, transparent 1.2vh 2.4vh),
+      linear-gradient(160deg, #5a4632, #2b2219);
+    font-family: var(--display); letter-spacing: 0.25em; font-size: clamp(14px, 2.6vh, 30px); color: rgba(242, 231, 211, 0.55);
   }
 
   /* ── Finale ───────────────────────────────────────────────────────────── */
-  .finale { flex-direction: column; justify-content: center; text-align: center; width: 100%; gap: 2.4vh; }
-  .finale .countbox { position: relative; display: inline-block; margin: 0 auto; }
+  .finale { flex-direction: column; justify-content: center; text-align: center; width: 100%; gap: 1.6vh; }
   .finale .count {
-    font-family: var(--display); font-weight: 800;
-    font-size: clamp(120px, 36vh, 460px); line-height: 0.82;
-    font-variant-numeric: lining-nums tabular-nums;
+    font-family: var(--display); font-size: clamp(120px, 31vh, 420px); line-height: 0.8;
+    font-variant-numeric: lining-nums tabular-nums; color: var(--gold);
   }
-  .finale .countbox .scribble { left: -22%; top: -12%; width: 144%; height: 124%; }
-  .finale .years {
-    font-family: var(--display); font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.4em; font-size: clamp(16px, 3.4vh, 42px); color: var(--ink-muted);
+  /* The glow sits behind the number rather than on it, so the wear can't speckle it. */
+  .finale .countwrap { position: relative; }
+  .finale .countwrap::before {
+    content: ""; position: absolute; inset: 10% 25%; border-radius: 50%;
+    background: var(--gold-soft); filter: blur(7vh); z-index: -1;
   }
-  .finale h2 { font-family: var(--serif); font-weight: 700; font-size: clamp(28px, 6vh, 80px); line-height: 1.1; }
-  .finale p { font-size: clamp(16px, 2.8vh, 34px); line-height: 1.45; max-width: 44ch; margin: 0 auto; }
+  .finale .years { font-family: var(--display); letter-spacing: 0.6em; font-size: clamp(18px, 3.8vh, 46px); color: var(--ink-muted); margin-right: -0.6em; }
+  .finale h2 { font-family: var(--script); font-weight: 400; color: var(--ink); font-size: clamp(40px, 9.5vh, 130px); line-height: 1; }
+  .finale p { font-size: clamp(15px, 2.6vh, 32px); line-height: 1.55; max-width: 46ch; margin: 0 auto; }
 
   /* ── Captions: what the narrator would say, one beat at a time ────────── */
   .caption {
-    position: absolute; left: 50%; bottom: 15.5vh; z-index: 3;
+    position: absolute; left: 50%; bottom: 16vh; z-index: 3;
     transform: translateX(-50%);
-    max-width: 78vw; text-align: center;
-    background: var(--caption-bg); color: var(--caption-ink);
-    font-family: var(--display); font-weight: 600;
-    font-size: clamp(16px, 3.3vh, 40px); line-height: 1.25; letter-spacing: 0.01em;
-    padding: 0.35em 0.8em;
+    max-width: 80vw; text-align: center;
+    background: var(--caption-bg); color: var(--ink);
+    font-family: var(--serif); font-size: clamp(16px, 3vh, 36px); line-height: 1.35;
+    padding: 0.45em 1.1em;
+    border-left: 3px solid var(--gold);
     transition: opacity 300ms var(--ease);
   }
   .caption.out { opacity: 0; }
 
-  /* ── The ruler: every year, scrolling under a fixed needle ────────────── */
+  /* ── The film strip: every year, running under a fixed gold needle ────── */
   .ruler {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 13vh; z-index: 2;
-    overflow: hidden;
-    border-top: 2px solid var(--ink);
+    position: absolute; left: 0; right: 0; bottom: 0; height: 12vh; z-index: 2;
+    overflow: hidden; background: var(--film);
   }
+  .ruler::before, .ruler::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 1.6vh; z-index: 1;
+    background: repeating-linear-gradient(90deg, transparent 0 1.1vw, rgba(242, 231, 211, 0.22) 1.1vw 2.2vw, transparent 2.2vw 3.3vw);
+    -webkit-mask: linear-gradient(transparent 25%, #000 25% 75%, transparent 75%);
+    mask: linear-gradient(transparent 25%, #000 25% 75%, transparent 75%);
+  }
+  .ruler::before { top: 0.4vh; }
+  .ruler::after { bottom: 0.4vh; }
   .ruler .strip {
     position: absolute; top: 0; bottom: 0; left: 50%;
     transform: translateX(calc(var(--x, 0) * -1));
   }
   .ruler.ready .strip { transition: transform var(--pan, 1400ms) var(--pan-ease); }
   .ruler .yr {
-    position: absolute; top: 0; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center;
-    background: none; border: 0; padding: 0; font: inherit; color: inherit;
+    position: absolute; top: 2.6vh; bottom: 2.6vh; transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: center;
+    width: 8vw; border-left: 1px solid rgba(242, 231, 211, 0.12);
+    background: none; border-top: 0; border-right: 0; border-bottom: 0; padding: 0; color: inherit;
+    font-family: var(--display); font-size: clamp(14px, 3vh, 36px); letter-spacing: 0.08em;
+    color: rgba(242, 231, 211, 0.35);
   }
-  .ruler .yr::before { content: ""; width: 2px; height: 2.2vh; background: var(--rule); }
-  .ruler .yr span {
-    margin-top: 0.8vh; font-family: var(--display); font-weight: 600;
-    font-size: clamp(11px, 2vh, 24px); color: var(--ink-muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .ruler .yr.mark { cursor: pointer; }
-  .ruler .yr.mark::before { height: 3.6vh; width: 3px; background: var(--ink); }
-  .ruler .yr.mark span { color: var(--ink); font-weight: 800; }
-  .ruler .yr.mark::after {
-    content: ""; position: absolute; top: 2.6vh; width: 1.6vh; height: 1.6vh; border-radius: 50%;
-    background: var(--paper); box-shadow: 0 0 0 3px var(--ink);
-    transition: background 400ms;
-  }
-  .ruler .yr.mark.past::after { background: var(--highlighter); }
-  .ruler .progress {
-    position: absolute; left: 0; top: -2px; height: 4px; width: 0; z-index: 1;
-    background: var(--marker);
-  }
+  .ruler .yr.mark { color: var(--ink); cursor: pointer; }
+  .ruler .yr.mark.past { color: var(--gold); }
   .ruler .needle {
-    position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; transform: translateX(-50%);
-    background: var(--marker);
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 8vw; transform: translateX(-50%);
+    box-shadow: inset 0 0 0 2px var(--gold), 0 0 3vh rgba(217, 164, 65, 0.25);
+    pointer-events: none;
   }
-  .ruler .needle::before {
-    content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    border: 1vh solid transparent; border-top: 1.4vh solid var(--marker);
+  .ruler .progress {
+    position: absolute; left: 0; top: 0; height: 3px; width: 0; z-index: 2;
+    background: var(--gold);
   }
 
   .hint {
-    position: fixed; right: 2vw; bottom: 1vh; z-index: 4;
-    font-family: var(--display); font-size: clamp(11px, 1.5vh, 16px); color: var(--ink-muted);
+    position: fixed; right: 2vw; bottom: 12.6vh; z-index: 6;
+    font-family: var(--display); letter-spacing: 0.12em; font-size: clamp(11px, 1.6vh, 18px); color: var(--ink-muted);
     transition: opacity 600ms; white-space: nowrap;
   }
   body.idle .hint { opacity: 0; }
-  .hint kbd { font-family: inherit; border: 1px solid var(--rule); border-radius: 3px; padding: 0 0.4em; }
-  .playing { color: var(--marker); }
+  .hint kbd { font-family: inherit; border: 1px solid rgba(242, 231, 211, 0.3); padding: 0 0.4em; }
+  .playing { color: var(--gold); }
 
   .notice { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 8vw; }
-  .notice h1 { font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: clamp(30px, 6vh, 64px); }
-  .notice p { margin-top: 2vh; color: var(--ink-muted); font-size: clamp(16px, 2.4vh, 26px); max-width: 44ch; line-height: 1.5; }
-  .notice code { background: var(--highlighter); padding: 0 0.2em; }
+  .notice h1 { font-family: var(--display); font-weight: 400; letter-spacing: 0.06em; font-size: clamp(34px, 7vh, 80px); }
+  .notice p { margin-top: 2vh; color: var(--ink-muted); font-size: clamp(15px, 2.3vh, 24px); max-width: 46ch; line-height: 1.6; }
+  .notice code { color: var(--gold); }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition-duration: 1ms !important; transition-delay: 0ms !important; animation: none !important; }
@@ -316,7 +324,7 @@
 <div class="frame" id="frame" hidden>
   <div class="top">
     <div class="church"><span class="dot" id="dot"></span><span id="church-name"></span></div>
-    <span class="sample" id="sample" hidden>sample content</span>
+    <span class="sample" id="sample" hidden>Sample content</span>
   </div>
   <div class="stage" id="stage"></div>
   <div class="caption out" id="caption"></div>
@@ -326,6 +334,9 @@
     <div class="progress" id="progress"></div>
   </div>
 </div>
+<div class="leak" id="leak" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
 
 <div class="hint" id="hint" hidden>
   <kbd>←</kbd> <kbd>→</kbd> step · <kbd>P</kbd> <span id="play-state">play</span> · <kbd>F</kbd> full screen
@@ -360,6 +371,19 @@
     return /^(https?:)?\/\//.test(src) || src.charAt(0) === '/' ? src : FLCC.data(src);
   }
 
+  /**
+   * A milestone's photographs, at most three, each as { src, caption }.
+   * `photos` takes plain paths or { src, caption }; the older single
+   * `photo` + `caption` still works.
+   */
+  function photosOf(m) {
+    var list = Array.isArray(m.photos) ? m.photos : (m.photo ? [{ src: m.photo, caption: m.caption }] : []);
+    return list
+      .map(function (p) { return typeof p === 'string' ? { src: p } : (p || {}); })
+      .filter(function (p) { return p.src; })
+      .slice(0, 3);
+  }
+
   /** The captions for a panel's beats, padded with blanks so beat n always has an entry. */
   function beatCaptions(list, beats) {
     var out = [];
@@ -367,21 +391,18 @@
     return out;
   }
 
+  /** Words in a piece of text, the way a reader counts them. */
+  function wordCount(text) {
+    return ((text || '').match(/\S+/g) || []).length;
+  }
+
   /**
-   * A hand-drawn loop filling a w×h box: an ellipse that wobbles a little and
-   * overshoots its start, the way a marker circle does. Seeded, so the same
-   * year gets the same loop every time the page loads.
+   * How long a beat stays up for a room to read it: a moment to settle, then
+   * the words at the given pace. Never less than 3.5 s, so a beat as short as
+   * "It's 2006." still lands; never more than 16 s, so a long verse moves on.
    */
-  function scribblePath(seed, w, h) {
-    var s = seed % 2147483647 || 1;
-    function rand() { s = (s * 16807) % 2147483647; return s / 2147483647; }
-    var pts = [], n = 46, start = -1.9, sweep = Math.PI * 2 * 1.1;
-    for (var i = 0; i <= n; i++) {
-      var t = start + sweep * (i / n);
-      var wobble = 1 + (rand() - 0.5) * 0.06 + (i / n) * 0.05;
-      pts.push((w / 2 + Math.cos(t) * w * 0.47 * wobble).toFixed(1) + ' ' + (h / 2 + Math.sin(t) * h * 0.44 * wobble).toFixed(1));
-    }
-    return 'M' + pts.join(' L');
+  function readingMs(words, wordsPerMinute) {
+    return Math.min(16000, Math.max(3500, 1200 + words * 60000 / wordsPerMinute));
   }
 
   /* ── DOM ────────────────────────────────────────────────────────────────── */
@@ -392,29 +413,13 @@
     if (text != null) n.textContent = text;
     return n;
   }
-  function beat(node, n) { node.dataset.beat = n; return node; }
-
-  function scribble(seed, n) {
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('aria-hidden', 'true');
-    svg.setAttribute('class', 'scribble');
-    svg.dataset.beat = n;
-    svg.dataset.seed = seed;
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('pathLength', '1');
-    svg.appendChild(path);
-    return svg;
+  function beat(node, n, delay) {
+    node.dataset.beat = n;
+    if (delay) node.style.setProperty('--d', delay);
+    return node;
   }
 
-  /** Draws a loop at its box's real size, so the marker line keeps one width. */
-  function fitScribble(svg) {
-    var r = svg.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    svg.setAttribute('viewBox', '0 0 ' + r.width.toFixed(1) + ' ' + r.height.toFixed(1));
-    svg.firstChild.setAttribute('d', scribblePath(+svg.dataset.seed, r.width, r.height));
-  }
-
-  /** The title as text, with its key phrase wrapped in a highlighter swipe for beat n. */
+  /** The title as text, with its key phrase wrapped to turn gold on beat n. */
   function highlighted(tag, cls, text, phrase, n) {
     var node = el(tag, cls);
     var at = phrase ? text.indexOf(phrase) : -1;
@@ -434,10 +439,10 @@
   function introSlide(story, first, last) {
     var s = el('section', 'slide intro');
     s.appendChild(beat(el('div', 'kicker', story.subtitle || 'Anniversary'), 0));
-    s.appendChild(beat(highlighted('h1', null, story.title || '', story.highlight, 1), 0));
+    s.appendChild(beat(highlighted('h1', 'worn', story.title || '', story.highlight, 1), 0, 250));
     var span = beat(el('div', 'span'), 1);
     span.appendChild(el('span', null, String(story.founded || first)));
-    span.appendChild(el('span', 'arrow', '→'));
+    span.appendChild(el('i'));
     span.appendChild(el('span', null, String(last)));
     s.appendChild(span);
     if (story.verse && story.verse.text) s.appendChild(beat(verseNode(story.verse), 2));
@@ -445,34 +450,43 @@
     return s;
   }
 
+  function printNode(p, i) {
+    var fig = beat(el('figure', 'print'), 2, 350 + i * 450);
+    var pic = el('div', 'pic');
+    if (p.src) {
+      var img = el('img');
+      img.src = photoUrl(p.src);
+      img.alt = p.caption || '';
+      img.onerror = function () { fig.remove(); };
+      pic.appendChild(img);
+    } else {
+      pic.appendChild(el('div', 'ph', 'Photo'));
+    }
+    fig.appendChild(pic);
+    if (p.caption) fig.appendChild(el('figcaption', null, p.caption));
+    return fig;
+  }
+
   function milestoneSlide(m, i, total) {
     var s = el('section', 'slide milestone');
-    var box = el('div', 'yearbox');
-    var year = el('div', 'year', String(m.year));
-    year.dataset.year = m.year;
-    box.appendChild(year);
-    box.appendChild(scribble(m.year * 7919, 2));
-    s.appendChild(box);
-
-    var body = el('div', 'body');
     var words = el('div', 'words');
     words.appendChild(beat(el('div', 'nth', (i + 1) + ' of ' + total), 0));
-    words.appendChild(beat(highlighted('h2', null, m.title, m.highlight, 1), 1));
+    var year = el('div', 'year worn', String(m.year));
+    year.dataset.year = m.year;
+    words.appendChild(year);
+    words.appendChild(beat(highlighted('h2', 'worn', m.title, m.highlight, 1), 1));
     if (m.text) words.appendChild(beat(el('p', null, m.text), 2));
-    body.appendChild(words);
+    s.appendChild(words);
 
-    if (m.photo) {
-      var fig = beat(el('figure'), 2);
-      fig.style.setProperty('--tilt', (i % 2 ? -2.5 : 2.5) + 'deg');
-      var img = el('img');
-      img.src = photoUrl(m.photo);
-      img.alt = m.caption || m.title;
-      img.onerror = function () { fig.remove(); };
-      fig.appendChild(img);
-      if (m.caption) fig.appendChild(el('figcaption', null, m.caption));
-      body.appendChild(fig);
+    // Real photographs, or — on sample content only — two blank prints, so
+    // the layout shows where the pictures will go.
+    var photos = photosOf(m);
+    if (!photos.length && m.placeholder) photos = [{ caption: '' }, { caption: '' }];
+    if (photos.length) {
+      var prints = el('div', 'prints' + (photos.length === 1 ? ' one' : ''));
+      photos.forEach(function (p, k) { prints.appendChild(printNode(p, k)); });
+      s.appendChild(prints);
     }
-    s.appendChild(body);
     s.captions = beatCaptions(m.captions, 3);
     return s;
   }
@@ -480,34 +494,24 @@
   function finaleSlide(story, years) {
     var c = story.closing || {};
     var s = el('section', 'slide finale');
-    var box = beat(el('div', 'countbox'), 0);
-    var count = el('div', 'count', '0');
+    var wrap = beat(el('div', 'countwrap'), 0);
+    var count = el('div', 'count worn', '0');
     count.dataset.to = years;
-    // Room for the final number from the start, so the circle fits "20", not "0".
-    count.style.minWidth = String(years).length + 'ch';
-    box.appendChild(count);
-    box.appendChild(scribble(years * 104729, 0));
-    s.appendChild(box);
-    s.appendChild(beat(el('div', 'years', years === 1 ? 'Year' : 'Years'), 0));
+    wrap.appendChild(count);
+    s.appendChild(wrap);
+    s.appendChild(beat(el('div', 'years', years === 1 ? 'Year' : 'Years'), 0, 300));
     if (c.heading) s.appendChild(beat(highlighted('h2', null, c.heading, c.highlight, 1), 1));
-    if (c.text) s.appendChild(beat(el('p', null, c.text), 1));
+    if (c.text) s.appendChild(beat(el('p', null, c.text), 1, 300));
     if (c.verse && c.verse.text) s.appendChild(beat(verseNode(c.verse), 2));
     s.captions = beatCaptions(c.captions, 3);
     return s;
   }
 
-  /** Words in a piece of text, the way a reader counts them. */
-  function wordCount(text) {
-    return ((text || '').match(/\S+/g) || []).length;
-  }
-
-  /**
-   * How long a beat stays up for a room to read it: a moment to settle, then
-   * the words at the given pace. Never less than 3.5 s, so a beat as short as
-   * "It's 2006." still lands; never more than 16 s, so a long verse moves on.
-   */
-  function readingMs(words, wordsPerMinute) {
-    return Math.min(16000, Math.max(3500, 1200 + words * 60000 / wordsPerMinute));
+  /** How many beats a panel has: one more than the highest beat any piece waits for. */
+  function beatsIn(slide) {
+    var max = 0;
+    slide.querySelectorAll('[data-beat]').forEach(function (n) { max = Math.max(max, +n.dataset.beat); });
+    return max + 1;
   }
 
   /** The words beat n puts on screen: its caption, and the text that arrives with it. */
@@ -519,13 +523,6 @@
       words += wordCount(node.textContent);
     });
     return words;
-  }
-
-  /** How many beats a panel has: one more than the highest beat any piece waits for. */
-  function beatsIn(slide) {
-    var max = 0;
-    slide.querySelectorAll('[data-beat]').forEach(function (n) { max = Math.max(max, +n.dataset.beat); });
-    return max + 1;
   }
 
   /* ── Animations that CSS can't do alone ─────────────────────────────────── */
@@ -546,6 +543,13 @@
     })(t0);
   }
 
+  /** Restarts a CSS animation by taking its class off and putting it back. */
+  function replay(node, cls) {
+    node.classList.remove(cls);
+    void node.offsetWidth;
+    node.classList.add(cls);
+  }
+
   /* ── Presentation ───────────────────────────────────────────────────────── */
 
   function present(story) {
@@ -562,6 +566,7 @@
     document.getElementById('sample').hidden = !milestones.some(function (m) { return m.placeholder; });
 
     var stage = document.getElementById('stage');
+    var leak = document.getElementById('leak');
     var slides = [introSlide(story, first, last)]
       .concat(milestones.map(function (m, i) { return milestoneSlide(m, i, milestones.length); }))
       .concat([finaleSlide(story, years)]);
@@ -570,16 +575,15 @@
     slides.forEach(function (s) { track.appendChild(s); });
     stage.appendChild(track);
 
-    // The ruler: one tick per year, the milestone years marked and clickable.
+    // The film strip: one frame per year, the milestone years lit and clickable.
     var ruler = document.getElementById('ruler');
     var strip = document.getElementById('strip');
-    var YEAR_W = 9; // vw per year
+    var YEAR_W = 8; // vw per year — one film frame
     var marks = {};
     for (var y = first; y <= last; y++) {
       var isMark = milestones.some(function (m) { return m.year === y; });
-      var t = el(isMark ? 'button' : 'div', 'yr' + (isMark ? ' mark' : ''));
+      var t = el(isMark ? 'button' : 'div', 'yr' + (isMark ? ' mark' : ''), String(y));
       t.style.left = ((y - first) * YEAR_W) + 'vw';
-      t.appendChild(el('span', null, String(y)));
       if (isMark) {
         t.type = 'button';
         t.setAttribute('aria-label', 'Go to ' + y);
@@ -623,21 +627,23 @@
       if (n === index && b === step) return;
       var moved = n !== index;
       // How long until this beat has finished arriving and can be read.
-      arriving = 800;
+      arriving = 900;
 
       if (moved) {
         stopTweens();
         if (index >= 0) slides[index].classList.remove('on');
         var distance = index < 0 ? 0 : Math.abs(yearOf(n) - yearOf(index));
-        var pan = Math.min(1400 + 120 * Math.max(distance - 1, 0), 3200) + 'ms';
-        if (index >= 0) arriving = parseInt(pan, 10);
-        track.style.setProperty('--pan', pan);
-        strip.style.setProperty('--pan', pan);
+        var pan = Math.min(1800 + 120 * Math.max(distance - 1, 0), 3400) + 'ms';
+        [track, strip, stage, leak].forEach(function (node) { node.style.setProperty('--pan', pan); });
+        if (index >= 0) {
+          arriving = parseInt(pan, 10);
+          replay(stage, 'travel');
+          replay(leak, 'run');
+        }
         track.style.setProperty('--i', n);
         rulerTo(yearOf(n));
         index = n;
         slides[index].classList.add('on');
-        slides[index].querySelectorAll('.scribble').forEach(fitScribble);
 
         Object.keys(marks).forEach(function (y) { marks[y].classList.toggle('past', +y <= yearOf(n) && n > 0); });
 
@@ -651,8 +657,11 @@
       slides[index].querySelectorAll('[data-beat]').forEach(function (node) {
         node.classList.toggle('shown', +node.dataset.beat <= step);
       });
+      // Prints drop in one after another; give the last one time to land.
+      var dropping = slides[index].querySelectorAll('.print[data-beat="' + step + '"]').length;
+      if (dropping) arriving = Math.max(arriving, 1150 + (dropping - 1) * 450);
       var count = slides[index].querySelector('.count');
-      if (count && moved) { tween(count, 0, +count.dataset.to, 1800); arriving = Math.max(arriving, 1800); }
+      if (count && moved) { tween(count, 0, +count.dataset.to, 2000); arriving = Math.max(arriving, 2000); }
 
       setCaption(slides[index].captions[step] || '');
       try { history.replaceState(null, '', '#' + index); } catch (e) {}
@@ -690,8 +699,8 @@
     function schedule() {
       clearTimeout(timer);
       if (atEnd()) { setPlaying(false); return; }
-      // The reading clock starts once the beat has arrived: after the glide
-      // to a new year, after the count, after the highlighter's swipe.
+      // The reading clock starts once the beat has arrived: after the
+      // travel to a new year, after the count, after the prints land.
       var wait = arriving + readFor[index][step];
       runProgress(wait);
       timer = setTimeout(next, wait);
@@ -748,9 +757,6 @@
     }
     document.addEventListener('mousemove', wake);
     wake();
-    window.addEventListener('resize', function () {
-      document.querySelectorAll('.scribble').forEach(fitScribble);
-    });
 
     document.getElementById('frame').hidden = false;
     document.getElementById('hint').hidden = false;
@@ -758,7 +764,7 @@
     go(Number.isFinite(start) ? start : 0, 0);
     if (story.autoplay !== false) setPlaying(true);
     // Opening on a later year (#5) lands there directly; only moves after
-    // that glide.
+    // that travel.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () { track.classList.add('ready'); ruler.classList.add('ready'); });
     });

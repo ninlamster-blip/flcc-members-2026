@@ -63,9 +63,23 @@ for (const { slug, file } of STORIES) {
   test(`${slug}: every photo named in the timeline exists`, () => {
     const base = FLCC.dataFor(slug, '').replace(/^\.\//, '').replace(/\/$/, '');
     for (const m of story.milestones) {
-      if (!m.photo || /^(https?:)?\/\//.test(m.photo)) continue;
-      const path = m.photo.startsWith('/') ? m.photo.slice(1) : (base ? base + '/' : '') + m.photo;
-      assert.ok(exists(path), `${m.year}: photo ${path} is not in the repo`);
+      // `photos` holds paths or { src, caption }; the single `photo` still works.
+      const srcs = (Array.isArray(m.photos) ? m.photos : [m.photo])
+        .map(p => (p && typeof p === 'object' ? p.src : p))
+        .filter(Boolean);
+      for (const src of srcs) {
+        if (/^(https?:)?\/\//.test(src)) continue;
+        const path = src.startsWith('/') ? src.slice(1) : (base ? base + '/' : '') + src;
+        assert.ok(exists(path), `${m.year}: photo ${path} is not in the repo`);
+      }
+    }
+  });
+
+  test(`${slug}: a year shows at most three photos`, () => {
+    for (const m of story.milestones) {
+      if (m.photos == null) continue;
+      assert.ok(Array.isArray(m.photos), `${m.year}: photos must be a list`);
+      assert.ok(m.photos.length <= 3, `${m.year}: only the first three of ${m.photos.length} photos would show`);
     }
   });
 
