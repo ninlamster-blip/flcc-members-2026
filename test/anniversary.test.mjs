@@ -68,6 +68,29 @@ for (const { slug, file } of STORIES) {
       assert.ok(exists(path), `${m.year}: photo ${path} is not in the repo`);
     }
   });
+
+  // Each slide builds in up to three beats, with one caption per beat. A
+  // highlight that isn't in its title would silently swipe the whole title.
+  const panels = [
+    { name: 'the opening', title: story.title, highlight: story.highlight, captions: story.captions },
+    ...story.milestones.map(m => ({ name: String(m.year), ...m })),
+    { name: 'the closing', title: story.closing?.heading, highlight: story.closing?.highlight, captions: story.closing?.captions },
+  ];
+
+  test(`${slug}: every highlight is a phrase from its own title`, () => {
+    for (const p of panels) {
+      if (p.highlight == null) continue;
+      assert.ok(p.title && p.title.includes(p.highlight), `${p.name}: "${p.highlight}" is not in "${p.title}"`);
+    }
+  });
+
+  test(`${slug}: captions are up to three lines of text, one per beat`, () => {
+    for (const p of panels) {
+      if (p.captions == null) continue;
+      assert.ok(Array.isArray(p.captions) && p.captions.length <= 3, `${p.name}: captions must be a list of at most 3`);
+      for (const c of p.captions) assert.equal(typeof c, 'string', `${p.name}: every caption must be text`);
+    }
+  });
 }
 
 // ── The Home tab's card ──────────────────────────────────────────────────────
