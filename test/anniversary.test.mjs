@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { loadChurch, readRepoFile, readRepoJSON, exists } from './lib/extract.mjs';
+import { load, loadChurch, readRepoFile, readRepoJSON, exists } from './lib/extract.mjs';
 
 const FLCC = loadChurch();
 
@@ -63,9 +63,71 @@ for (const { slug, file } of STORIES) {
   test(`${slug}: every photo named in the timeline exists`, () => {
     const base = FLCC.dataFor(slug, '').replace(/^\.\//, '').replace(/\/$/, '');
     for (const m of story.milestones) {
-      if (!m.photo || /^(https?:)?\/\//.test(m.photo)) continue;
-      const path = m.photo.startsWith('/') ? m.photo.slice(1) : (base ? base + '/' : '') + m.photo;
-      assert.ok(exists(path), `${m.year}: photo ${path} is not in the repo`);
+      // `photos` holds paths or { src, caption }; the single `photo` still works.
+      const srcs = (Array.isArray(m.photos) ? m.photos : [m.photo])
+        .map(p => (p && typeof p === 'object' ? p.src : p))
+        .filter(Boolean);
+      for (const src of srcs) {
+        if (/^(https?:)?\/\//.test(src)) continue;
+        const path = src.startsWith('/') ? src.slice(1) : (base ? base + '/' : '') + src;
+        assert.ok(exists(path), `${m.year}: photo ${path} is not in the repo`);
+      }
+    }
+  });
+
+  test(`${slug}: a year shows at most three photos`, () => {
+    for (const m of story.milestones) {
+      if (m.photos == null) continue;
+      assert.ok(Array.isArray(m.photos), `${m.year}: photos must be a list`);
+      assert.ok(m.photos.length <= 3, `${m.year}: only the first three of ${m.photos.length} photos would show`);
+    }
+  });
+
+  // Each slide builds in up to three beats, with one caption per beat. A
+  // highlight that isn't in its title would silently swipe the whole title.
+  const panels = [
+    { name: 'the opening', title: story.title, highlight: story.highlight, captions: story.captions },
+    ...story.milestones.map(m => ({ name: String(m.year), ...m })),
+    { name: 'the closing', title: story.closing?.heading, highlight: story.closing?.highlight, captions: story.closing?.captions },
+  ];
+
+  test(`${slug}: the auto-play settings are a switch and a sensible reading pace`, () => {
+    if (story.autoplay != null) assert.equal(typeof story.autoplay, 'boolean', 'autoplay must be true or false');
+    if (story.wordsPerMinute != null) {
+      assert.ok(Number.isFinite(story.wordsPerMinute) && story.wordsPerMinute >= 60 && story.wordsPerMinute <= 300,
+        `wordsPerMinute ${story.wordsPerMinute} is outside 60–300; a room reads about 140`);
+    }
+  });
+
+  test(`${slug}: every highlight is a phrase from its own title`, () => {
+    for (const p of panels) {
+      if (p.highlight == null) continue;
+      assert.ok(p.title && p.title.includes(p.highlight), `${p.name}: "${p.highlight}" is not in "${p.title}"`);
+    }
+  });
+
+  test(`${slug}: captions are up to three lines of text, one per beat`, () => {
+    for (const p of panels) {
+      if (p.captions == null) continue;
+      assert.ok(Array.isArray(p.captions) && p.captions.length <= 3, `${p.name}: captions must be a list of at most 3`);
+      for (const c of p.captions) assert.equal(typeof c, 'string', `${p.name}: every caption must be text`);
     }
   });
 }
+
+// ── The Home tab's card ──────────────────────────────────────────────────────
+
+const { ordinal } = load('index.html', ['ordinal']);
+
+test('the Home card names the anniversary with the right ordinal', () => {
+  const cases = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 11: '11th', 12: '12th', 13: '13th',
+    20: '20th', 21: '21st', 22: '22nd', 23: '23rd', 25: '25th', 50: '50th', 101: '101st', 111: '111th' };
+  for (const [n, want] of Object.entries(cases)) assert.equal(ordinal(+n), want, `ordinal(${n})`);
+});
+
+test('the Home card reads the church\'s own file and links to the timeline on the same church', () => {
+  const src = readRepoFile('index.html');
+  assert.match(src, /const ANNIVERSARY_DATA_URL = CHURCH\.data\('anniversary\.json'\)/);
+  assert.match(src, /CHURCH\.url\('anniversary\.html'\)/);
+  assert.match(src, /<AnniversaryCard \/>/, 'the card must be placed on the Home tab');
+});

@@ -6,203 +6,383 @@
 <title>Anniversary Timeline</title>
 
 <!--
-  A church's history, projected one milestone at a time for an anniversary
-  service. Built for a projector and a presentation clicker, not a phone:
-  every slide fills a 16:9 screen and nothing on it scrolls.
+  A church's history, told like a documentary opener. Each year is one
+  photograph filling the whole screen, slowly drifting; over it, the
+  milestone's title and its story, and — quietly, in small type — the year.
+  The picture leads, the words follow, the date only places them. Built for
+  a projector and a presentation clicker, not a phone: every slide fills a
+  16:9 screen and nothing on it scrolls.
+
+  It never sits still. Years whip in and out — the old one flies off
+  blurred, the new one rushes in behind a warm flash — and every photograph
+  punches in and keeps drifting. Words don't fade, they move: a title's
+  words rise out of a mask one after another, a story ripples in word by
+  word, the opening's title slams in from a blur. Warm dust drifts through
+  the light the whole time and the film strip keeps running.
+
+  Each year builds in beats, and each beat has a caption along the bottom:
+    1. the photograph punches in and the small year label wipes across
+    2. the milestone's title rises in, its key phrase in gold
+    3. the story ripples in; a year with more photographs cuts to the next
+       one every few seconds while it stays on screen
+  The opening and the finale build the same way. All of it is motion, not
+  speed: each beat still stays up long enough for a room to read it.
+
+  It plays itself. Each beat stays up long enough for a room to read what it
+  just put on screen — the caption plus any title, story or verse that
+  arrived with it — at wordsPerMinute (140 unless anniversary.json says
+  otherwise), and that clock only starts once the picture has changed. A
+  line along the top of the film strip fills as the beat runs, so whoever
+  is at the laptop can see the next step coming. The clicker still steps by
+  hand at any time; P pauses.
 
   The history itself lives in the church's own anniversary.json, read through
   FLCC.data() like every other per-church file. A church without one gets a
   plain notice rather than somebody else's history.
 
-  Keys:  → Space PageDown  next      ← PageUp  back
-         Home / End  first / last   P  play / pause   F  full screen
+  Keys:  → Space PageDown  next beat    ← PageUp  back
+         Home / End  first / last     P  pause / play   F  full screen
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
 
 <script src="./church.js"></script>
 
 <style>
+  /* Layout: every year is a full-screen photograph. The words sit low on the
+     left over a shade — small year label, then the title, then the story —
+     with the narrator's caption and a slim film strip of years at the foot. */
   :root {
-    --stage: #14100E;
-    --stage-2: #221A16;
-    --ink: #FBF6EE;
-    --ink-muted: #CFC4B6;
-    --ink-subtle: #8C8075;
-    --gold: #E2B95B;
-    --gold-soft: rgba(226, 185, 91, 0.18);
-    --track: rgba(251, 246, 238, 0.16);
+    --stage: #14100C;
+    --stage-warm: #2A1F15;
+    --ink: #F4EBDA;
+    --ink-muted: #C9B89E;
+    --gold: #D9A441;
+    --gold-soft: rgba(217, 164, 65, 0.35);
+    --shade: 10, 8, 6;
+    --film: rgba(11, 9, 7, 0.82);
+    --caption-bg: rgba(10, 8, 6, 0.72);
     --accent: #A33B2A;
+    --display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+    --serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+    --script: 'Mrs Saint Delafield', 'Brush Script MT', cursive;
     --ease: cubic-bezier(.2, .7, .2, 1);
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; overflow: hidden; }
   body {
-    background: radial-gradient(120% 90% at 30% 20%, var(--stage-2), var(--stage) 70%);
+    background: radial-gradient(120% 95% at 45% 35%, var(--stage-warm), var(--stage) 62%);
     color: var(--ink);
-    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--serif);
     -webkit-font-smoothing: antialiased;
     user-select: none;
   }
   body.idle { cursor: none; }
-  .display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.01em; }
 
-  /* ── Frame: header, stage, timeline ───────────────────────────────────── */
-  .frame {
-    position: fixed; inset: 0;
-    display: grid; grid-template-rows: auto 1fr auto;
-    padding: 4.5vh 5vw 5vh;
+  /* ── Film: grain, vignette and a faint flicker over everything ────────── */
+  .grain, .vignette, .leak { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  .grain {
+    inset: -50%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.92 0 0 0 0 0.8 0 0 0 .10 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain 0.9s steps(6) infinite;
   }
+  @keyframes grain {
+    0% { transform: translate(0, 0); } 20% { transform: translate(-4%, 3%); } 40% { transform: translate(3%, -5%); }
+    60% { transform: translate(-2%, 6%); } 80% { transform: translate(5%, 1%); } 100% { transform: translate(0, 0); }
+  }
+  .vignette {
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+    animation: flicker 5s infinite;
+  }
+  @keyframes flicker { 0%, 100% { opacity: 1; } 47% { opacity: 1; } 48% { opacity: 0.88; } 49% { opacity: 1; } 73% { opacity: 0.94; } 74% { opacity: 1; } }
+
+  /* A warm light leak that sweeps across as one year gives way to the next. */
+  .leak {
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 170, 80, 0.18) 45%, rgba(255, 210, 140, 0.26) 50%, rgba(255, 170, 80, 0.16) 55%, transparent 70%);
+    transform: translateX(-100%); opacity: 0;
+  }
+  .leak.run { animation: leak 1600ms cubic-bezier(.65, 0, .25, 1); }
+  @keyframes leak { 0% { transform: translateX(-90%); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(90%); opacity: 0; } }
+
+  /* Warm dust drifting through the light, always. */
+  .dust { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; mix-blend-mode: screen; }
+
+  /* ── Frame ────────────────────────────────────────────────────────────── */
+  .frame { position: fixed; inset: 0; }
   .top {
+    position: absolute; left: 5vw; right: 5vw; top: 4.5vh; z-index: 3;
     display: flex; justify-content: space-between; align-items: center;
-    font-size: clamp(12px, 1.6vh, 20px); letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--ink-subtle);
+    font-family: var(--display); font-size: clamp(14px, 2.2vh, 26px); letter-spacing: 0.22em;
+    color: var(--ink-muted); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   }
-  .top .church { display: flex; align-items: center; gap: 0.8em; }
-  .top .dot { width: 0.7em; height: 0.7em; border-radius: 50%; background: var(--accent); }
-  .sample {
-    border: 1px solid var(--gold); color: var(--gold);
-    padding: 0.35em 0.8em; border-radius: 999px; letter-spacing: 0.18em;
-  }
+  .top .church { display: flex; align-items: center; gap: 0.7em; }
+  .top .dot { width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--accent); }
+  .sample { color: var(--gold); border: 1px solid var(--gold); padding: 0.1em 0.7em 0; letter-spacing: 0.2em; background: rgba(0, 0, 0, 0.35); }
 
-  .stage { position: relative; }
+  /* ── Slides: stacked; one whips out as the next whips in ─────────────── */
+  .stage { position: absolute; inset: 0; }
   .slide {
-    position: absolute; inset: 0;
-    display: flex; align-items: center;
+    position: absolute; inset: 0; overflow: hidden;
     opacity: 0; pointer-events: none;
-    transition: opacity 700ms var(--ease);
   }
-  .slide.on { opacity: 1; pointer-events: auto; }
+  .slide.on { opacity: 1; pointer-events: auto; z-index: 2; }
+  .slide.enter { animation: whip-in 950ms cubic-bezier(.16, .84, .3, 1) both; }
+  .slide.leaving { opacity: 1; z-index: 1; animation: whip-out 650ms cubic-bezier(.7, 0, .84, 0) both; }
+  @keyframes whip-in {
+    0%   { transform: translateX(32%) scale(1.14); filter: blur(24px) brightness(1.7); opacity: 0; }
+    30%  { opacity: 1; }
+    100% { transform: none; filter: none; opacity: 1; }
+  }
+  @keyframes whip-out {
+    0%   { transform: none; filter: none; opacity: 1; }
+    100% { transform: translateX(-32%) scale(1.08); filter: blur(24px); opacity: 0; }
+  }
+  /* The flash a whip lands on. */
+  .flash {
+    position: fixed; inset: 0; pointer-events: none; z-index: 4; opacity: 0;
+    background: radial-gradient(circle at 55% 45%, rgba(255, 240, 215, 0.85), rgba(255, 196, 120, 0.3) 55%, transparent 80%);
+    mix-blend-mode: screen;
+  }
+  .flash.run { animation: flash 700ms ease-out; }
+  @keyframes flash { 0% { opacity: 0; } 22% { opacity: 0.9; } 100% { opacity: 0; } }
 
-  /* Anything marked .rise slides up and fades in once its slide is on,
-     staggered by --d so a slide assembles itself rather than appearing. */
-  .rise {
-    opacity: 0; transform: translateY(4vh);
+  /* A beat's pieces wait until their beat; .shown brings them in. */
+  [data-beat] {
+    opacity: 0; transform: translateY(2.4vh);
     transition: opacity 900ms var(--ease), transform 900ms var(--ease);
     transition-delay: calc(var(--d, 0) * 1ms);
   }
-  .slide.on .rise { opacity: 1; transform: none; }
+  [data-beat].shown { opacity: 1; transform: none; }
 
-  /* ── Opening ──────────────────────────────────────────────────────────── */
-  .intro { flex-direction: column; justify-content: center; text-align: center; width: 100%; }
-  .intro .kicker { color: var(--gold); font-size: clamp(14px, 2.2vh, 28px); letter-spacing: 0.3em; text-transform: uppercase; }
-  .intro h1 { font-size: clamp(36px, 9vh, 120px); font-weight: 600; line-height: 1.02; margin: 2.5vh auto 0; max-width: 16ch; }
-  .intro .span { margin-top: 3vh; font-size: clamp(18px, 3.4vh, 44px); color: var(--ink-muted); }
-  .intro .span b { color: var(--gold); font-weight: 600; }
-
-  .verse { margin: 5vh auto 0; max-width: 60ch; font-size: clamp(15px, 2.4vh, 30px); line-height: 1.5; color: var(--ink-muted); font-style: italic; }
-  .verse cite { display: block; margin-top: 1.2vh; font-style: normal; font-size: 0.8em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-subtle); }
-
-  /* ── Milestones ───────────────────────────────────────────────────────── */
-  .milestone { gap: 5vw; width: 100%; }
-  .milestone .year {
-    flex: 0 0 auto;
-    font-size: clamp(64px, 26vh, 320px); font-weight: 700; line-height: 0.9;
-    color: var(--gold);
-    font-variant-numeric: lining-nums tabular-nums;
+  /* Kinetic type: a line is split into words, each in its own mask.
+     A title's words rise out of their masks one after another; a story's
+     ripple up; the opening's slam in from a blur. */
+  .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding: 0.04em 0.02em 0.1em; margin: -0.04em -0.02em -0.1em; }
+  .w > span {
+    display: inline-block; transform: translateY(108%) rotate(5deg); transform-origin: 0 100%;
+    transition: transform 750ms cubic-bezier(.16, .84, .3, 1);
+    transition-delay: calc(var(--i, 0) * 65ms + var(--d, 0) * 1ms);
   }
-  .milestone .body { flex: 1 1 auto; min-width: 0; display: flex; gap: 3vw; align-items: center; }
-  .milestone .words { flex: 1 1 0; min-width: 0; }
-  .milestone .nth { font-size: clamp(12px, 1.8vh, 22px); letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-subtle); }
-  .milestone h2 { font-size: clamp(28px, 6.5vh, 88px); font-weight: 600; line-height: 1.08; margin-top: 1.5vh; }
-  .milestone p { font-size: clamp(16px, 3vh, 38px); line-height: 1.45; color: var(--ink-muted); margin-top: 2.5vh; max-width: 38ch; }
-  .milestone .rule { height: 3px; width: 0; background: var(--gold); margin-top: 3vh; transition: width 1100ms var(--ease) 500ms; }
-  .slide.on .rule { width: 12vw; }
-  .milestone figure {
-    flex: 0 1 40%; max-height: 52vh; aspect-ratio: 4 / 3;
-    border-radius: 1.4vh; overflow: hidden; background: var(--stage-2);
-    box-shadow: 0 0 0 1px var(--track);
+  .k[data-beat] { opacity: 1; transform: none; }
+  .k.shown .w > span { transform: none; }
+  .k.soft .w > span { transform: translateY(70%); opacity: 0; transition: transform 650ms var(--ease), opacity 650ms var(--ease); transition-delay: calc(var(--i, 0) * 24ms); }
+  .k.soft.shown .w > span { transform: none; opacity: 1; }
+  .k.slam .w { overflow: visible; }
+  .k.slam .w > span {
+    transform: scale(1.7); opacity: 0; filter: blur(14px);
+    transition: transform 700ms cubic-bezier(.2, .9, .25, 1.12), opacity 450ms ease-out, filter 550ms ease-out;
+    transition-delay: calc(var(--i, 0) * 110ms + var(--d, 0) * 1ms);
   }
-  .milestone figure img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-    transform: scale(1.12); transition: transform 9s linear;
-  }
-  .slide.on figure img { transform: scale(1); }
+  .k.slam.shown .w > span { transform: none; opacity: 1; filter: none; }
+  /* A gold line that wipes in under a title once its words have landed. */
+  .rule { display: block; height: 3px; width: 9vw; background: var(--gold); transform-origin: 0 50%; transform: scaleX(0); opacity: 1; transition: transform 700ms cubic-bezier(.16, .84, .3, 1) 450ms; }
+  .rule.shown { transform: scaleX(1); }
 
-  /* ── Finale ───────────────────────────────────────────────────────────── */
-  .finale { flex-direction: column; justify-content: center; text-align: center; width: 100%; }
+  /* The key phrase turns gold. */
+  .hl { color: inherit; transition: color 800ms var(--ease) 150ms; }
+  .hl.shown { color: var(--gold); }
+  .hl[data-beat] { opacity: 1; transform: none; } /* the words are already there; only the gold waits */
+
+  /* ── The photograph: the whole screen, slowly drifting ───────────────── */
+  .photo { position: absolute; inset: 0; }
+  .photo .shot {
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 280ms linear;
+  }
+  .photo .shot.cur { opacity: 1; }
+  .photo img, .photo .ph {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    filter: sepia(0.25) contrast(1.06) brightness(0.92);
+    transform: scale(1.3);
+  }
+  /* Each photograph punches in, then never stops moving. */
+  .slide.on .shot.cur img, .slide.on .shot.cur .ph { animation: drift 10s cubic-bezier(.2, .7, .3, 1) both; }
+  @keyframes drift {
+    0%   { transform: scale(1.36) translate(var(--from, -2.5%), 1.2%); }
+    7%   { transform: scale(1.17) translate(calc(var(--from, -2.5%) * 0.7), 0.8%); }
+    100% { transform: scale(1.03) translate(var(--to, 2.5%), -1.2%); }
+  }
+  .photo .shot:nth-child(even) { --from: 2.5%; --to: -2.5%; }
+  /* A sample photograph, until a real one is added. */
+  .photo .ph {
+    background:
+      radial-gradient(60% 70% at 70% 35%, rgba(217, 164, 65, 0.18), transparent 70%),
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 1.6vh, transparent 1.6vh 3.2vh),
+      linear-gradient(160deg, #4d3c2b, #1d1610 75%);
+  }
+  .photo .ph span {
+    position: absolute; right: 9vw; top: 38vh;
+    font-family: var(--display); letter-spacing: 0.3em; font-size: clamp(14px, 2.4vh, 28px);
+    color: rgba(244, 235, 218, 0.4); border: 1px dashed rgba(244, 235, 218, 0.3); padding: 0.5em 1em 0.35em;
+  }
+  /* The shade that keeps the words readable over any photograph. */
+  .shade {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(to top, rgba(var(--shade), 0.94) 0%, rgba(var(--shade), 0.72) 30%, rgba(var(--shade), 0.15) 62%, rgba(var(--shade), 0) 75%),
+      linear-gradient(to right, rgba(var(--shade), 0.55) 0%, rgba(var(--shade), 0) 55%);
+  }
+  .photo .credit {
+    position: absolute; right: 5vw; bottom: 20vh; z-index: 1;
+    font-family: var(--serif); font-style: italic; font-size: clamp(12px, 1.9vh, 22px); color: var(--ink-muted);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+    opacity: 0; transition: opacity 900ms var(--ease);
+  }
+  .photo .shot.cur .credit { opacity: 1; }
+
+  /* ── The words: small year, then title, then story ───────────────────── */
+  .copy {
+    position: absolute; left: 6vw; bottom: 22vh; z-index: 1;
+    width: min(56vw, 60ch);
+    display: flex; flex-direction: column; gap: 1.8vh;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+  }
+  .when {
+    display: flex; align-items: center; gap: 0.8em;
+    font-family: var(--display); letter-spacing: 0.32em; font-size: clamp(14px, 2.5vh, 30px); color: var(--gold);
+  }
+  .when::before { content: ""; width: 3vw; height: 2px; background: var(--gold); }
+  .when[data-beat] { opacity: 1; transform: none; clip-path: inset(0 100% 0 0); transition: clip-path 800ms cubic-bezier(.16, .84, .3, 1); transition-delay: calc(var(--d, 0) * 1ms); }
+  .when.shown { clip-path: inset(0 0 0 0); }
+  .when .of { color: var(--ink-muted); letter-spacing: 0.24em; }
+  .copy h2 {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(40px, 10vh, 140px); line-height: 0.92; letter-spacing: 0.02em;
+    text-wrap: balance;
+  }
+  .copy p { font-size: clamp(16px, 2.9vh, 36px); line-height: 1.55; max-width: 44ch; }
+
+  /* ── Opening and finale: the same stage, centred ─────────────────────── */
+  .centre {
+    position: absolute; inset: 0 8vw 20vh; z-index: 1;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; gap: 2vh;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+  }
+  .centre .shade-all { position: absolute; inset: 0; }
+  .slide.titled .shade { background: rgba(var(--shade), 0.62); }
+  .intro .kicker { font-family: var(--script); color: var(--gold); font-size: clamp(30px, 6.5vh, 90px); line-height: 1.15; padding: 0 0.3em; }
+  .intro .kicker[data-beat] { opacity: 1; transform: none; clip-path: inset(0 100% 0 0); transition: clip-path 1600ms cubic-bezier(.45, 0, .25, 1); }
+  .intro .kicker.shown { clip-path: inset(-20% -5% -20% 0); }
+  .intro h1 {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(44px, 12vh, 170px); line-height: 0.92; letter-spacing: 0.02em;
+    max-width: 14ch; text-wrap: balance;
+  }
+  .intro .span {
+    font-family: var(--display); font-size: clamp(18px, 3.4vh, 44px); letter-spacing: 0.34em; color: var(--ink-muted);
+    display: inline-flex; align-items: center; gap: 0.8em;
+  }
+  .intro .span i { display: inline-block; width: 4vw; height: 2px; background: var(--gold); }
+  .verse {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(15px, 2.6vh, 32px); line-height: 1.55; max-width: 52ch;
+  }
+  .verse cite {
+    display: block; margin-top: 1.2vh; font-style: normal;
+    font-family: var(--display); letter-spacing: 0.24em; font-size: 0.95em; color: var(--gold);
+  }
   .finale .count {
-    font-size: clamp(120px, 40vh, 520px); font-weight: 700; line-height: 0.85;
-    color: var(--gold);
-    font-variant-numeric: lining-nums tabular-nums;
-    text-shadow: 0 0 8vh var(--gold-soft);
+    font-family: var(--display); font-size: clamp(110px, 28vh, 380px); line-height: 0.82;
+    font-variant-numeric: lining-nums tabular-nums; color: var(--gold);
   }
-  .finale .years { font-size: clamp(16px, 3.2vh, 40px); letter-spacing: 0.4em; text-transform: uppercase; color: var(--ink-muted); margin-top: 1vh; }
-  .finale h2 { font-size: clamp(28px, 6vh, 80px); font-weight: 600; margin-top: 4vh; }
-  .finale p { font-size: clamp(16px, 2.8vh, 34px); color: var(--ink-muted); margin: 2vh auto 0; max-width: 46ch; line-height: 1.45; }
+  .finale .count.pop { animation: pop 800ms cubic-bezier(.2, .9, .25, 1.2); }
+  @keyframes pop { 0% { transform: scale(1); text-shadow: none; } 35% { transform: scale(1.16); text-shadow: 0 0 6vh rgba(217, 164, 65, 0.8); } 100% { transform: scale(1); text-shadow: 0 0 3vh rgba(217, 164, 65, 0.35); } }
+  .finale .years { font-family: var(--display); letter-spacing: 0.6em; font-size: clamp(16px, 3.2vh, 40px); color: var(--ink-muted); margin-right: -0.6em; }
+  .finale h2 { font-family: var(--script); font-weight: 400; font-size: clamp(40px, 9vh, 120px); line-height: 1; }
+  .finale p { font-size: clamp(15px, 2.6vh, 32px); line-height: 1.55; max-width: 46ch; }
 
-  /* ── Timeline: draws itself forward to the current milestone ──────────── */
-  .timeline { position: relative; height: 9vh; margin-top: 3vh; }
-  .timeline .track, .timeline .fill {
-    position: absolute; left: 0; top: 2.2vh; height: 3px; border-radius: 3px;
+  /* ── Captions: what the narrator would say, one beat at a time ────────── */
+  .caption {
+    position: absolute; left: 50%; bottom: 9.5vh; z-index: 3;
+    transform: translateX(-50%);
+    max-width: 80vw; text-align: center;
+    background: var(--caption-bg); color: var(--ink);
+    font-family: var(--serif); font-size: clamp(15px, 2.7vh, 32px); line-height: 1.35;
+    padding: 0.4em 1em;
+    transition: opacity 300ms var(--ease);
   }
-  .timeline .track { right: 0; background: var(--track); }
-  .timeline .fill { width: 0; background: var(--gold); transition: width 1200ms var(--ease); }
-  .timeline .stop {
-    position: absolute; top: 2.2vh; transform: translate(-50%, -50%);
-    display: flex; flex-direction: column; align-items: center;
-    background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer;
-  }
-  .timeline .pip {
-    width: 1.5vh; height: 1.5vh; border-radius: 50%;
-    background: var(--stage); box-shadow: 0 0 0 2px var(--track);
-    transition: background 400ms, box-shadow 400ms, transform 400ms;
-    margin-top: 0; transform-origin: center;
-  }
-  .timeline .label {
-    position: absolute; top: 2.6vh; white-space: nowrap;
-    font-size: clamp(11px, 1.7vh, 20px); color: var(--ink-subtle);
-    font-variant-numeric: tabular-nums; transition: color 400ms;
-  }
-  .timeline .stop.past .pip { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
-  .timeline .stop.now .pip { transform: scale(1.6); animation: pulse 2s ease-out infinite; }
-  .timeline .stop.now .label { color: var(--ink); }
-  @keyframes pulse {
-    0%   { box-shadow: 0 0 0 2px var(--gold), 0 0 0 0 rgba(226, 185, 91, 0.55); }
-    100% { box-shadow: 0 0 0 2px var(--gold), 0 0 0 2vh rgba(226, 185, 91, 0); }
-  }
+  .caption.out { opacity: 0; }
 
-  /* ── Chrome that gets out of the way ──────────────────────────────────── */
+  /* ── The film strip: a slim band of years at the foot of the picture ──── */
+  .ruler {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 6.5vh; z-index: 2;
+    overflow: hidden; background: var(--film);
+  }
+  .ruler::before, .ruler::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 0.9vh; z-index: 1;
+    background: repeating-linear-gradient(90deg, transparent 0 0.9vw, rgba(244, 235, 218, 0.18) 0.9vw 1.8vw, transparent 1.8vw 2.7vw);
+  }
+  .ruler::before, .ruler::after { animation: run 1.1s linear infinite; }
+  @keyframes run { to { background-position-x: -2.7vw; } }
+  .ruler::before { top: 0.35vh; }
+  .ruler::after { bottom: 0.35vh; }
+  .ruler .strip {
+    position: absolute; top: 0; bottom: 0; left: 50%;
+    transform: translateX(calc(var(--x, 0) * -1));
+  }
+  .ruler.ready .strip { transition: transform 1600ms cubic-bezier(.65, 0, .25, 1); }
+  .ruler .yr {
+    position: absolute; top: 1.4vh; bottom: 1.4vh; transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: center;
+    width: 6vw; background: none; border: 0; padding: 0; color: inherit;
+    font-family: var(--display); font-size: clamp(12px, 2.1vh, 26px); letter-spacing: 0.08em;
+    color: rgba(244, 235, 218, 0.3);
+  }
+  .ruler .yr.mark { color: var(--ink-muted); cursor: pointer; }
+  .ruler .yr.mark.past { color: var(--gold); }
+  .ruler .needle {
+    position: absolute; left: 50%; top: 1vh; bottom: 1vh; width: 6vw; transform: translateX(-50%);
+    box-shadow: inset 0 0 0 1px var(--gold); pointer-events: none;
+  }
+  .ruler .progress { position: absolute; left: 0; top: 0; height: 2px; width: 0; z-index: 2; background: var(--gold); }
+
   .hint {
-    position: fixed; left: 50%; bottom: 1.2vh; transform: translateX(-50%);
-    font-size: clamp(11px, 1.4vh, 16px); color: var(--ink-subtle);
+    position: fixed; right: 2vw; bottom: 7.4vh; z-index: 6;
+    font-family: var(--display); letter-spacing: 0.12em; font-size: clamp(11px, 1.5vh, 17px); color: var(--ink-muted);
     transition: opacity 600ms; white-space: nowrap;
   }
   body.idle .hint { opacity: 0; }
-  .hint kbd { font-family: inherit; border: 1px solid var(--track); border-radius: 4px; padding: 0 0.4em; }
+  .hint kbd { font-family: inherit; border: 1px solid rgba(244, 235, 218, 0.3); padding: 0 0.4em; }
   .playing { color: var(--gold); }
 
-  .notice {
-    position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 8vw;
-  }
-  .notice h1 { font-size: clamp(28px, 5vh, 56px); font-weight: 600; }
-  .notice p { margin-top: 2vh; color: var(--ink-muted); font-size: clamp(16px, 2.4vh, 26px); max-width: 44ch; line-height: 1.5; }
+  .notice { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 8vw; }
+  .notice h1 { font-family: var(--display); font-weight: 400; letter-spacing: 0.06em; font-size: clamp(34px, 7vh, 80px); }
+  .notice p { margin-top: 2vh; color: var(--ink-muted); font-size: clamp(15px, 2.3vh, 24px); max-width: 46ch; line-height: 1.6; }
   .notice code { color: var(--gold); }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition-duration: 1ms !important; animation: none !important; }
+    *, *::before, *::after { transition-duration: 1ms !important; transition-delay: 0ms !important; animation: none !important; }
   }
 </style>
 </head>
 <body>
 
 <div class="frame" id="frame" hidden>
+  <div class="stage" id="stage"></div>
+  <canvas class="dust" id="dust" aria-hidden="true"></canvas>
   <div class="top">
     <div class="church"><span class="dot" id="dot"></span><span id="church-name"></span></div>
     <span class="sample" id="sample" hidden>Sample content</span>
   </div>
-  <div class="stage" id="stage"></div>
-  <div class="timeline" id="timeline">
-    <div class="track"></div>
-    <div class="fill" id="fill"></div>
+  <div class="caption out" id="caption"></div>
+  <div class="ruler" id="ruler">
+    <div class="strip" id="strip"></div>
+    <div class="needle"></div>
+    <div class="progress" id="progress"></div>
   </div>
 </div>
+<div class="leak" id="leak" aria-hidden="true"></div>
+<div class="flash" id="flash" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
 
 <div class="hint" id="hint" hidden>
-  <kbd>←</kbd> <kbd>→</kbd> move · <kbd>P</kbd> <span id="play-state">play</span> · <kbd>F</kbd> full screen
+  <kbd>←</kbd> <kbd>→</kbd> step · <kbd>P</kbd> <span id="play-state">play</span> · <kbd>F</kbd> full screen
 </div>
 
 <script>
@@ -211,6 +391,7 @@
 
   var FLCC = window.FLCC;
   var STORY_URL = FLCC.data('anniversary.json');
+  var PHOTO_MS = 3200; // a year with several photographs cuts to the next this often
 
   /* ── Pure helpers ───────────────────────────────────────────────────────── */
 
@@ -220,12 +401,6 @@
       .filter(function (m) { return m && Number.isFinite(m.year) && m.title; })
       .slice()
       .sort(function (a, b) { return a.year - b.year; });
-  }
-
-  /** Where `year` sits along the timeline, 0–100. One year is a point at 0. */
-  function timelinePercent(year, first, last) {
-    if (last <= first) return 0;
-    return Math.max(0, Math.min(100, ((year - first) / (last - first)) * 100));
   }
 
   /** "20" for a church founded in 2006 celebrating in 2026. */
@@ -240,6 +415,41 @@
     return /^(https?:)?\/\//.test(src) || src.charAt(0) === '/' ? src : FLCC.data(src);
   }
 
+  /**
+   * The photographs for a year (or the opening, or the closing), at most
+   * three, each as { src, caption }. The first one is the year's picture;
+   * any others dissolve in after it. `photos` takes plain paths or
+   * { src, caption }; the older single `photo` + `caption` still works.
+   */
+  function photosOf(m) {
+    var list = Array.isArray(m.photos) ? m.photos : (m.photo ? [{ src: m.photo, caption: m.caption }] : []);
+    return list
+      .map(function (p) { return typeof p === 'string' ? { src: p } : (p || {}); })
+      .filter(function (p) { return p.src; })
+      .slice(0, 3);
+  }
+
+  /** The captions for a panel's beats, padded with blanks so beat n always has an entry. */
+  function beatCaptions(list, beats) {
+    var out = [];
+    for (var i = 0; i < beats; i++) out.push(list && typeof list[i] === 'string' ? list[i] : '');
+    return out;
+  }
+
+  /** Words in a piece of text, the way a reader counts them. */
+  function wordCount(text) {
+    return ((text || '').match(/\S+/g) || []).length;
+  }
+
+  /**
+   * How long a beat stays up for a room to read it: a moment to settle, then
+   * the words at the given pace. Never less than 3.5 s, so a beat as short as
+   * "It's 2006." still lands; never more than 16 s, so a long verse moves on.
+   */
+  function readingMs(words, wordsPerMinute) {
+    return Math.min(16000, Math.max(3500, 1200 + words * 60000 / wordsPerMinute));
+  }
+
   /* ── DOM ────────────────────────────────────────────────────────────────── */
 
   function el(tag, cls, text) {
@@ -248,7 +458,51 @@
     if (text != null) n.textContent = text;
     return n;
   }
-  function rise(node, delay) { node.classList.add('rise'); node.style.setProperty('--d', delay); return node; }
+  function beat(node, n, delay) {
+    node.dataset.beat = n;
+    if (delay) node.style.setProperty('--d', delay);
+    return node;
+  }
+
+  /** The title as text, with its key phrase wrapped to turn gold on beat n. */
+  function highlighted(tag, cls, text, phrase, n) {
+    var node = el(tag, cls);
+    var at = phrase ? text.indexOf(phrase) : -1;
+    if (at < 0) { phrase = text; at = 0; }
+    node.appendChild(document.createTextNode(text.slice(0, at)));
+    node.appendChild(beat(el('span', 'hl', phrase), n));
+    node.appendChild(document.createTextNode(text.slice(at + phrase.length)));
+    return node;
+  }
+
+  /**
+   * Splits a line into words, each inside its own mask, so they can move one
+   * after another. The words stay real text: nothing a reader or the
+   * reading-time count sees changes. `style` is '' (rise), 'soft' or 'slam'.
+   */
+  function kinetic(node, style) {
+    node.classList.add('k');
+    if (style) node.classList.add(style);
+    var i = 0;
+    (function walk(n) {
+      Array.prototype.slice.call(n.childNodes).forEach(function (c) {
+        if (c.nodeType === 1) { walk(c); return; }
+        if (c.nodeType !== 3) return;
+        var frag = document.createDocumentFragment();
+        c.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          var mask = el('span', 'w');
+          var word = el('span', null, part);
+          word.style.setProperty('--i', i++);
+          mask.appendChild(word);
+          frag.appendChild(mask);
+        });
+        n.replaceChild(frag, c);
+      });
+    })(node);
+    return node;
+  }
 
   function verseNode(v) {
     var q = el('blockquote', 'verse', v.text);
@@ -256,57 +510,102 @@
     return q;
   }
 
+  /**
+   * The full-screen picture behind a slide: its photographs stacked, the
+   * first one showing, and the shade that keeps the words readable. Sample
+   * content with no photographs gets a stand-in, so the layout is visible.
+   */
+  function photoLayer(photos, sample, label) {
+    var layer = el('div', 'photo');
+    if (!photos.length && sample) photos = [{}];
+    photos.forEach(function (p, k) {
+      var shot = el('div', 'shot' + (k === 0 ? ' cur' : ''));
+      if (p.src) {
+        var img = el('img');
+        img.src = photoUrl(p.src);
+        img.alt = p.caption || '';
+        img.onerror = function () { shot.remove(); };
+        shot.appendChild(img);
+      } else {
+        var ph = el('div', 'ph');
+        ph.appendChild(el('span', null, label));
+        shot.appendChild(ph);
+      }
+      if (p.caption) shot.appendChild(el('div', 'credit', p.caption));
+      layer.appendChild(shot);
+    });
+    layer.appendChild(el('div', 'shade'));
+    return layer;
+  }
+
   function introSlide(story, first, last) {
-    var s = el('section', 'slide intro');
-    s.appendChild(rise(el('div', 'kicker', story.subtitle || 'Anniversary'), 0));
-    s.appendChild(rise(el('h1', 'display', story.title || ''), 200));
-    var span = el('div', 'span display');
-    span.appendChild(el('b', null, String(story.founded || first)));
-    span.appendChild(document.createTextNode('  —  '));
-    span.appendChild(el('b', null, String(last)));
-    s.appendChild(rise(span, 450));
-    if (story.verse && story.verse.text) s.appendChild(rise(verseNode(story.verse), 800));
+    var s = el('section', 'slide intro titled');
+    s.appendChild(photoLayer(photosOf(story), false, ''));
+    var c = el('div', 'centre');
+    c.appendChild(beat(el('div', 'kicker', story.subtitle || 'Anniversary'), 0));
+    c.appendChild(beat(kinetic(highlighted('h1', null, story.title || '', story.highlight, 1), 'slam'), 0, 500));
+    var span = beat(el('div', 'span'), 1);
+    span.appendChild(el('span', null, String(story.founded || first)));
+    span.appendChild(el('i'));
+    span.appendChild(el('span', null, String(last)));
+    c.appendChild(span);
+    if (story.verse && story.verse.text) c.appendChild(beat(verseNode(story.verse), 2));
+    s.appendChild(c);
+    s.captions = beatCaptions(story.captions, 3);
     return s;
   }
 
   function milestoneSlide(m, i, total) {
     var s = el('section', 'slide milestone');
-    var year = rise(el('div', 'year display', String(m.year)), 0);
+    s.appendChild(photoLayer(photosOf(m), m.placeholder, 'Photo · ' + m.year));
+    var copy = el('div', 'copy');
+    var when = beat(el('div', 'when'), 0, 500);
+    var year = el('span', 'yr-num', String(m.year));
     year.dataset.year = m.year;
-    s.appendChild(year);
-
-    var body = el('div', 'body');
-    var words = el('div', 'words');
-    words.appendChild(rise(el('div', 'nth', (i + 1) + ' of ' + total), 250));
-    words.appendChild(rise(el('h2', 'display', m.title), 350));
-    if (m.text) words.appendChild(rise(el('p', null, m.text), 550));
-    words.appendChild(el('div', 'rule'));
-    body.appendChild(words);
-
-    if (m.photo) {
-      var fig = rise(el('figure'), 450);
-      var img = el('img');
-      img.src = photoUrl(m.photo);
-      img.alt = m.caption || m.title;
-      img.onerror = function () { fig.remove(); };
-      fig.appendChild(img);
-      body.appendChild(fig);
-    }
-    s.appendChild(body);
+    when.appendChild(year);
+    when.appendChild(el('span', 'of', (i + 1) + ' of ' + total));
+    copy.appendChild(when);
+    copy.appendChild(beat(kinetic(highlighted('h2', null, m.title, m.highlight, 1)), 1));
+    copy.appendChild(beat(el('i', 'rule'), 1));
+    if (m.text) copy.appendChild(beat(kinetic(el('p', null, m.text), 'soft'), 2));
+    s.appendChild(copy);
+    s.captions = beatCaptions(m.captions, 3);
     return s;
   }
 
   function finaleSlide(story, years) {
     var c = story.closing || {};
-    var s = el('section', 'slide finale');
-    var count = el('div', 'count display', '0');
+    var s = el('section', 'slide finale titled');
+    s.appendChild(photoLayer(photosOf(c), false, ''));
+    var box = el('div', 'centre');
+    var count = beat(el('div', 'count', '0'), 0);
     count.dataset.to = years;
-    s.appendChild(count);
-    s.appendChild(rise(el('div', 'years', years === 1 ? 'Year' : 'Years'), 300));
-    if (c.heading) s.appendChild(rise(el('h2', 'display', c.heading), 1900));
-    if (c.text) s.appendChild(rise(el('p', null, c.text), 2200));
-    if (c.verse && c.verse.text) s.appendChild(rise(verseNode(c.verse), 2600));
+    box.appendChild(count);
+    box.appendChild(beat(el('div', 'years', years === 1 ? 'Year' : 'Years'), 0, 300));
+    if (c.heading) box.appendChild(beat(kinetic(highlighted('h2', null, c.heading, c.highlight, 1), 'slam'), 1));
+    if (c.text) box.appendChild(beat(kinetic(el('p', null, c.text), 'soft'), 1, 500));
+    if (c.verse && c.verse.text) box.appendChild(beat(verseNode(c.verse), 2));
+    s.appendChild(box);
+    s.captions = beatCaptions(c.captions, 3);
     return s;
+  }
+
+  /** How many beats a panel has: one more than the highest beat any piece waits for. */
+  function beatsIn(slide) {
+    var max = 0;
+    slide.querySelectorAll('[data-beat]').forEach(function (n) { max = Math.max(max, +n.dataset.beat); });
+    return max + 1;
+  }
+
+  /** The words beat n puts on screen: its caption, and the text that arrives with it. */
+  function wordsInBeat(slide, n) {
+    var words = wordCount(slide.captions[n]);
+    slide.querySelectorAll('[data-beat="' + n + '"]').forEach(function (node) {
+      // A highlight inside an earlier beat's title adds no new words.
+      if (node.parentElement.closest('[data-beat]')) return;
+      words += wordCount(node.textContent);
+    });
+    return words;
   }
 
   /* ── Animations that CSS can't do alone ─────────────────────────────────── */
@@ -315,24 +614,80 @@
   var running = [];
   function stopTweens() { running.forEach(cancelAnimationFrame); running = []; }
 
-  /** Counts a number up (or across years) with an ease-out, so it lands softly. */
+  /** Counts a number across, eased, so a year rolls through the years between. */
   function tween(node, from, to, ms) {
     if (reduceMotion || from === to) { node.textContent = String(to); return; }
     var t0 = performance.now();
     (function frame(now) {
       var p = Math.min(1, (now - t0) / ms);
-      var eased = 1 - Math.pow(1 - p, 3);
+      var eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
       node.textContent = String(Math.round(from + (to - from) * eased));
       if (p < 1) running.push(requestAnimationFrame(frame));
     })(t0);
+  }
+
+  /**
+   * Warm motes drifting up through the light, and a burst of sparks on cue.
+   * A plain canvas — a few dozen dots — so a projector laptop keeps up.
+   */
+  function dustLayer(canvas) {
+    var ctx = canvas.getContext('2d'), motes = [], w = 0, h = 0;
+    function size() { w = canvas.width = canvas.clientWidth; h = canvas.height = canvas.clientHeight; }
+    function mote(spark, at) {
+      var a = Math.random() * Math.PI * 2, v = 3 + Math.random() * 11;
+      return spark
+        ? { x: at.x + (Math.random() - 0.5) * at.spread, y: at.y + (Math.random() - 0.5) * at.spread * 0.6, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, r: 0.8 + Math.random() * 2.6, alpha: 0.9, life: 1 }
+        : { x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: -0.15 - Math.random() * 0.45, r: 0.6 + Math.random() * 1.9, alpha: 0.12 + Math.random() * 0.4, life: null };
+    }
+    size();
+    window.addEventListener('resize', size);
+    if (reduceMotion) return { burst: function () {} };
+    for (var i = 0; i < 70; i++) motes.push(mote(false));
+    (function tick() {
+      // The frame starts hidden, so the canvas can't know its size until it shows.
+      if (canvas.clientWidth !== w || canvas.clientHeight !== h) {
+        size();
+        motes.forEach(function (m) { if (m.life === null) { m.x = Math.random() * w; m.y = Math.random() * h; } });
+      }
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#F5C97E';
+      motes = motes.filter(function (m) {
+        m.x += m.vx; m.y += m.vy;
+        if (m.life !== null) {
+          m.vx *= 0.97; m.vy = m.vy * 0.97 + 0.05; m.life -= 0.011;
+          if (m.life <= 0) return false;
+        } else if (m.y < -10) { m.y = h + 10; m.x = Math.random() * w; }
+        ctx.globalAlpha = m.alpha * (m.life === null ? 1 : m.life);
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+        return true;
+      });
+      requestAnimationFrame(tick);
+    })();
+    /** Sparks fly out from the middle of `node`. */
+    return {
+      burst: function (node) {
+        var r = node.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+        var at = { x: r.left - c.left + r.width / 2, y: r.top - c.top + r.height / 2, spread: r.width * 0.6 };
+        for (var i = 0; i < 180; i++) motes.push(mote(true, at));
+      }
+    };
+  }
+
+  /** Restarts a CSS animation by taking its class off and putting it back. */
+  function replay(node, cls) {
+    node.classList.remove(cls);
+    void node.offsetWidth;
+    node.classList.add(cls);
   }
 
   /* ── Presentation ───────────────────────────────────────────────────────── */
 
   function present(story) {
     var milestones = orderedMilestones(story);
-    var first = milestones.length ? milestones[0].year : story.founded;
-    var last = milestones.length ? milestones[milestones.length - 1].year : first;
+    var first = Math.min(story.founded || Infinity, milestones.length ? milestones[0].year : Infinity);
+    var lastMilestone = milestones.length ? milestones[milestones.length - 1].year : first;
+    var end = story.anniversaryDate ? +story.anniversaryDate.slice(0, 4) : lastMilestone;
+    var last = Math.max(lastMilestone, end);
     var years = yearsSince(story.founded || first, story.anniversaryDate);
 
     document.title = (story.title || 'Anniversary') + ' — ' + FLCC.name;
@@ -341,74 +696,171 @@
     document.getElementById('sample').hidden = !milestones.some(function (m) { return m.placeholder; });
 
     var stage = document.getElementById('stage');
+    var leak = document.getElementById('leak');
+    var flash = document.getElementById('flash');
+    var dust = dustLayer(document.getElementById('dust'));
     var slides = [introSlide(story, first, last)]
       .concat(milestones.map(function (m, i) { return milestoneSlide(m, i, milestones.length); }))
       .concat([finaleSlide(story, years)]);
+    var beats = slides.map(beatsIn);
     slides.forEach(function (s) { stage.appendChild(s); });
 
-    // One stop on the timeline per milestone; clicking one jumps there.
-    var timeline = document.getElementById('timeline');
-    var stops = milestones.map(function (m, i) {
-      var b = el('button', 'stop');
-      b.type = 'button';
-      b.style.left = timelinePercent(m.year, first, last) + '%';
-      b.setAttribute('aria-label', m.year + ': ' + m.title);
-      b.appendChild(el('span', 'pip'));
-      b.appendChild(el('span', 'label', String(m.year)));
-      b.addEventListener('click', function (e) { e.stopPropagation(); go(i + 1); });
-      timeline.appendChild(b);
-      return b;
-    });
-    var fill = document.getElementById('fill');
+    // The film strip: one frame per year, the milestone years lit and clickable.
+    var ruler = document.getElementById('ruler');
+    var strip = document.getElementById('strip');
+    var YEAR_W = 6; // vw per year — one film frame
+    var marks = {};
+    for (var y = first; y <= last; y++) {
+      var isMark = milestones.some(function (m) { return m.year === y; });
+      var t = el(isMark ? 'button' : 'div', 'yr' + (isMark ? ' mark' : ''), String(y));
+      t.style.left = ((y - first) * YEAR_W) + 'vw';
+      if (isMark) {
+        t.type = 'button';
+        t.setAttribute('aria-label', 'Go to ' + y);
+        (function (year) {
+          t.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var i = milestones.findIndex(function (m) { return m.year === year; });
+            go(i + 1, 0);
+          });
+        })(y);
+        marks[y] = t;
+      }
+      strip.appendChild(t);
+    }
+    function rulerTo(year) { strip.style.setProperty('--x', ((year - first) * YEAR_W) + 'vw'); }
 
-    var index = -1;
+    var caption = document.getElementById('caption');
+    var captionTimer;
+    function setCaption(text) {
+      clearTimeout(captionTimer);
+      caption.classList.add('out');
+      captionTimer = setTimeout(function () {
+        caption.textContent = text;
+        caption.classList.toggle('out', !text);
+      }, caption.textContent ? 300 : 0);
+    }
+
+    // A year with several photographs dissolves from one to the next.
+    var slideshow = null;
+    function startSlideshow(slide) {
+      clearInterval(slideshow);
+      var shots = slide.querySelectorAll('.shot');
+      shots.forEach(function (s, k) { s.classList.toggle('cur', k === 0); });
+      if (shots.length < 2 || reduceMotion) return;
+      var k = 0;
+      slideshow = setInterval(function () {
+        shots[k].classList.remove('cur');
+        k = (k + 1) % shots.length;
+        shots[k].classList.add('cur');
+      }, PHOTO_MS);
+    }
+
+    var index = -1, step = 0, arriving = 0;
     var shownYear = first;
 
-    function go(n) {
+    /** The year a panel stands on: the founding for the opening, the anniversary for the finale. */
+    function yearOf(i) {
+      if (i === 0) return first;
+      if (i === slides.length - 1) return last;
+      return milestones[i - 1].year;
+    }
+
+    function go(n, b) {
       n = Math.max(0, Math.min(slides.length - 1, n));
-      if (n === index) return;
-      stopTweens();
-      if (index >= 0) slides[index].classList.remove('on');
-      index = n;
-      var slide = slides[index];
-      // Re-adding .on restarts every CSS entrance on the slide.
-      void slide.offsetWidth;
-      slide.classList.add('on');
+      b = Math.max(0, Math.min(beats[n] - 1, b));
+      if (n === index && b === step) return;
+      var moved = n !== index;
+      // How long until this beat has finished arriving and can be read.
+      arriving = 900;
 
-      // The milestone a slide stands for: none before the first, all after the last.
-      var at = index === 0 ? -1 : Math.min(index - 1, milestones.length - 1);
-      var atYear = at < 0 ? first : milestones[at].year;
-      fill.style.width = (at < 0 ? 0 : index === slides.length - 1 ? 100 : timelinePercent(atYear, first, last)) + '%';
-      stops.forEach(function (s, i) {
-        s.classList.toggle('past', i <= at);
-        s.classList.toggle('now', i === at && index !== slides.length - 1);
+      if (moved) {
+        stopTweens();
+        if (index >= 0) {
+          // The old year whips out while the new one whips in behind a flash.
+          var old = slides[index];
+          old.classList.remove('on', 'enter');
+          old.classList.add('leaving');
+          setTimeout(function () { old.classList.remove('leaving'); }, 700);
+          arriving = 1100;
+          replay(leak, 'run');
+          replay(flash, 'run');
+        }
+        rulerTo(yearOf(n));
+        index = n;
+        slides[index].classList.remove('leaving');
+        slides[index].classList.add('on');
+        replay(slides[index], 'enter');
+        startSlideshow(slides[index]);
+
+        Object.keys(marks).forEach(function (y) { marks[y].classList.toggle('past', +y <= yearOf(n) && n > 0); });
+
+        var yearNode = slides[index].querySelector('.yr-num');
+        if (yearNode) tween(yearNode, shownYear, +yearNode.dataset.year, 1400);
+        shownYear = yearOf(n);
+      }
+      step = b;
+
+      // Everything up to this beat is on the page; anything later waits.
+      slides[index].querySelectorAll('[data-beat]').forEach(function (node) {
+        node.classList.toggle('shown', +node.dataset.beat <= step);
       });
+      var count = slides[index].querySelector('.count');
+      if (count && moved) {
+        tween(count, 0, +count.dataset.to, 2000);
+        arriving = Math.max(arriving, 2000);
+        // The count lands with a pop and a burst of sparks.
+        setTimeout(function () { if (slides[index].contains(count)) { replay(count, 'pop'); dust.burst(count); } }, 2050);
+      }
 
-      var yearNode = slide.querySelector('.year');
-      if (yearNode) tween(yearNode, shownYear, +yearNode.dataset.year, 900);
-      shownYear = atYear;
-
-      var count = slide.querySelector('.count');
-      if (count) tween(count, 0, +count.dataset.to, 1800);
-
+      setCaption(slides[index].captions[step] || '');
       try { history.replaceState(null, '', '#' + index); } catch (e) {}
       if (playing) schedule();
     }
 
-    /* Auto-play: P toggles; it stops by itself on the finale. */
+    function next() {
+      if (step < beats[index] - 1) go(index, step + 1);
+      else go(index + 1, 0);
+    }
+    function prev() {
+      if (step > 0) go(index, step - 1);
+      else if (index > 0) go(index - 1, beats[index - 1] - 1);
+    }
+
+    /* Auto-play: on from the start, paced for reading; P pauses and resumes.
+       It stops by itself on the last beat of the finale. */
     var playing = false, timer = null;
-    var perSlide = Math.max(3, +story.secondsPerSlide || 9) * 1000;
+    var wordsPerMinute = Math.max(60, +story.wordsPerMinute || 140);
+    var readFor = slides.map(function (slide, i) {
+      var list = [];
+      for (var b = 0; b < beats[i]; b++) list.push(readingMs(wordsInBeat(slide, b), wordsPerMinute));
+      return list;
+    });
+    var progress = document.getElementById('progress');
+    function runProgress(ms) {
+      progress.style.transition = 'none';
+      progress.style.width = '0';
+      if (!ms) return;
+      void progress.offsetWidth;
+      progress.style.transition = 'width ' + ms + 'ms linear';
+      progress.style.width = '100%';
+    }
+    function atEnd() { return index === slides.length - 1 && step === beats[index] - 1; }
     function schedule() {
       clearTimeout(timer);
-      if (index >= slides.length - 1) { setPlaying(false); return; }
-      timer = setTimeout(function () { go(index + 1); }, perSlide);
+      if (atEnd()) { setPlaying(false); return; }
+      // The reading clock starts once the beat has arrived: after the
+      // picture has changed, after the count.
+      var wait = arriving + readFor[index][step];
+      runProgress(wait);
+      timer = setTimeout(next, wait);
     }
     function setPlaying(on) {
       playing = on;
       var state = document.getElementById('play-state');
       state.textContent = on ? 'pause' : 'play';
       state.classList.toggle('playing', on);
-      if (on) schedule(); else clearTimeout(timer);
+      if (on) schedule(); else { clearTimeout(timer); runProgress(0); }
     }
 
     function fullscreen() {
@@ -420,11 +872,11 @@
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       switch (e.key) {
         case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter':
-          go(index + 1); break;
+          next(); break;
         case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace':
-          go(index - 1); break;
-        case 'Home': go(0); break;
-        case 'End': go(slides.length - 1); break;
+          prev(); break;
+        case 'Home': go(0, 0); break;
+        case 'End': go(slides.length - 1, beats[slides.length - 1] - 1); break;
         case 'p': case 'P': setPlaying(!playing); break;
         case 'f': case 'F': fullscreen(); break;
         default: return;
@@ -434,7 +886,7 @@
 
     // A click on the left fifth goes back, anywhere else goes forward.
     document.addEventListener('click', function (e) {
-      go(e.clientX < window.innerWidth / 5 ? index - 1 : index + 1);
+      if (e.clientX < window.innerWidth / 5) prev(); else next();
     });
 
     var touchX = null;
@@ -443,7 +895,7 @@
       if (touchX == null) return;
       var dx = e.changedTouches[0].clientX - touchX;
       touchX = null;
-      if (Math.abs(dx) > 40) { e.preventDefault(); go(dx < 0 ? index + 1 : index - 1); }
+      if (Math.abs(dx) > 40) { e.preventDefault(); if (dx < 0) next(); else prev(); }
     });
 
     // Hide the cursor and key hint once the presenter stops touching the mouse.
@@ -459,13 +911,18 @@
     document.getElementById('frame').hidden = false;
     document.getElementById('hint').hidden = false;
     var start = parseInt(location.hash.slice(1), 10);
-    go(Number.isFinite(start) ? start : 0);
+    go(Number.isFinite(start) ? start : 0, 0);
+    if (story.autoplay !== false) setPlaying(true);
+    // The film strip lands on its first year without running there.
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { ruler.classList.add('ready'); });
+    });
   }
 
   function notice(title, text) {
     var n = el('div', 'notice');
     var inner = el('div');
-    inner.appendChild(el('h1', 'display', title));
+    inner.appendChild(el('h1', null, title));
     var p = el('p');
     p.innerHTML = text;
     inner.appendChild(p);

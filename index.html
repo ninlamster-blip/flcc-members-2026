@@ -2888,6 +2888,52 @@ function BibleCrosswordCard() {
   );
 }
 
+// ── Anniversary timeline ─────────────────────────────────────────────────────
+/**
+ * A link to anniversary.html, the church's history projected one milestone at
+ * a time. Only a church that has published its own anniversary.json gets the
+ * card — every other church would only land on "No anniversary timeline yet".
+ */
+const ANNIVERSARY_DATA_URL = CHURCH.data('anniversary.json');
+
+/** "20th", "21st", "22nd", "23rd", "111th". */
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function AnniversaryCard() {
+  const [story, setStory] = useState(null);
+  useEffect(() => {
+    fetch(`${ANNIVERSARY_DATA_URL}?t=${Date.now()}`)
+      .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then(s => { if (s && s.title && Number.isInteger(s.founded)) setStory(s); })
+      .catch(() => {});
+  }, []);
+  if (!story) return null;
+
+  const end = story.anniversaryDate ? +story.anniversaryDate.slice(0, 4) : new Date().getFullYear();
+  const open = () => { window.location.href = CHURCH.url('anniversary.html'); };
+  return (
+    <div className="mb-5">
+      <div className="text-xs font-medium tracking-widest uppercase ink-subtle mb-2">✦ {ordinal(end - story.founded)} Anniversary</div>
+      <div className="home-grid">
+        <div className="home-card" onClick={open} style={{ borderLeft: '3px solid var(--accent)' }}>
+          <div className="home-card-eyebrow">{story.founded} — {end}</div>
+          <div className="home-card-title">{story.title}</div>
+          <div className="home-card-body text-xs ink-muted">
+            Our history, one milestone at a time.
+          </div>
+          <div className="home-card-actions">
+            <button className="btn btn-soft text-xs" onClick={(e) => { e.stopPropagation(); open(); }}>View timeline →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMonth, onConflict, personalEvents, onEditPersonal, attendanceData, botrScheduleData, announcements }) {
   const today = todayISO();
   const [encourageTarget, setEncourageTarget] = useState(null);
@@ -3409,6 +3455,10 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
           </div>
         </div>
       )}
+
+      {/* The church's anniversary timeline — renders nothing for a church
+          that hasn't published one. */}
+      <AnniversaryCard />
 
       {/* Bible Reading Plan daily card */}
       <div className="mb-5">
