@@ -28,6 +28,11 @@
 //       – level 7: birds swoop across the jungle;
 //       – level 13: lizards patrol the branches too;
 //       – level 19: coconuts drop from the top, with a shadow to warn first.
+//   · Every level is played in one of eight jungles, taken in turn, each
+//     with its own branches and vines, its own key and cage, and its own
+//     time of day — see STAGES below.
+//   · Reaching the key is not the end of it: the monkey holds it up, carries
+//     it to the cage, the lock springs, and papa hops out for a hug.
 //   · Everything random comes from a seed kept as a number on the state, so a
 //     level can be replayed, a test can try a move on a copy, and every phone
 //     in a room race meets the same lizards.
@@ -38,27 +43,148 @@ export const WIDTH = 100;
 export const HEIGHT = 140;
 export const HARDEST = 25;
 
-/** The branches: a top y and an x span. The first is the jungle floor. */
-export const LEDGES = [
-  { y: 134, x1: 0, x2: 100 },     // the jungle floor
-  { y: 104, x1: 62, x2: 98 },     // a branch on the right
-  { y: 70, x1: 38, x2: 60 },      // a branch in the middle
-  { y: 26, x1: 20, x2: 98 },      // the top branch, where the key is
+// ── The stages ─────────────────────────────────────────────────────────────
+//
+// Eight jungles, each with its own branches and vines, its own key and cage
+// spot and its own time of day, taken in turn (see stageFor). Four are drawn
+// by hand and four are those four mirrored.
+// Every stage keeps the same grammar, which the tests hold it to:
+//
+//   · the first ledge is the jungle floor and runs the whole width;
+//   · the key and the cage sit at the top, at y 26;
+//   · every vine hangs from a ledge — the top of every vine (or the middle of
+//     a pair) leads onto the branch above, so climbing up always gets you
+//     somewhere — and there is a way up from the floor to the key;
+//   · two vines closer than PAIR are a pair, and hang over the same span.
+//
+// A ledge is a top y and an x span; a vine an x and the span it hangs over.
+
+const DESIGNS = [
+  {
+    // The first jungle: a long pair up the left, a ledge in the middle.
+    ledges: [
+      { y: 134, x1: 0, x2: 100 },
+      { y: 104, x1: 62, x2: 98 },
+      { y: 70, x1: 38, x2: 60 },
+      { y: 26, x1: 20, x2: 98 },
+    ],
+    vines: [
+      { x: 24, top: 30, bottom: 120 },
+      { x: 29, top: 30, bottom: 120 },
+      { x: 44, top: 74, bottom: 124 },
+      { x: 54, top: 30, bottom: 64 },
+      { x: 66, top: 30, bottom: 98 },
+      { x: 71, top: 30, bottom: 98 },
+      { x: 88, top: 30, bottom: 98 },
+    ],
+    key: 93,
+    cage: 10,
+  },
+  {
+    // Steps: three short branches climbing across, with long vines to cheat by.
+    ledges: [
+      { y: 134, x1: 0, x2: 100 },
+      { y: 110, x1: 4, x2: 38 },
+      { y: 86, x1: 28, x2: 66 },
+      { y: 60, x1: 56, x2: 96 },
+      { y: 26, x1: 4, x2: 80 },
+    ],
+    vines: [
+      { x: 14, top: 114, bottom: 124 },
+      { x: 24, top: 30, bottom: 100 },
+      { x: 33, top: 90, bottom: 102 },
+      { x: 46, top: 30, bottom: 80 },
+      { x: 58, top: 64, bottom: 78 },
+      { x: 66, top: 30, bottom: 52 },
+      { x: 71, top: 30, bottom: 52 },
+    ],
+    key: 8,
+    cage: 90,
+  },
+  {
+    // Twin towers: a branch on each side, a ledge between, and the key up top.
+    ledges: [
+      { y: 134, x1: 0, x2: 100 },
+      { y: 96, x1: 4, x2: 32 },
+      { y: 96, x1: 68, x2: 96 },
+      { y: 62, x1: 36, x2: 64 },
+      { y: 26, x1: 20, x2: 98 },
+    ],
+    vines: [
+      { x: 17, top: 100, bottom: 120 },
+      { x: 24, top: 30, bottom: 84 },
+      { x: 29, top: 30, bottom: 84 },
+      { x: 41, top: 30, bottom: 54 },
+      { x: 50, top: 66, bottom: 122 },
+      { x: 59, top: 30, bottom: 54 },
+      { x: 76, top: 30, bottom: 84 },
+      { x: 83, top: 100, bottom: 120 },
+    ],
+    key: 93,
+    cage: 10,
+  },
+  {
+    // The crossing: a stump, two side branches, a ledge above and three ways up.
+    ledges: [
+      { y: 134, x1: 0, x2: 100 },
+      { y: 114, x1: 40, x2: 60 },
+      { y: 88, x1: 4, x2: 36 },
+      { y: 88, x1: 64, x2: 96 },
+      { y: 56, x1: 30, x2: 70 },
+      { y: 26, x1: 20, x2: 82 },
+    ],
+    vines: [
+      { x: 12, top: 92, bottom: 120 },
+      { x: 17, top: 92, bottom: 120 },
+      { x: 26, top: 30, bottom: 84 },
+      { x: 42, top: 60, bottom: 104 },
+      { x: 50, top: 118, bottom: 126 },
+      { x: 58, top: 60, bottom: 104 },
+      { x: 64, top: 30, bottom: 46 },
+      { x: 72, top: 30, bottom: 84 },
+      { x: 77, top: 30, bottom: 84 },
+      { x: 88, top: 92, bottom: 120 },
+    ],
+    key: 78,
+    cage: 10,
+  },
 ];
-/** The vines: an x, and the span they hang over. Two close together are a pair. */
-export const VINES = [
-  { x: 24, top: 30, bottom: 120 },
-  { x: 29, top: 30, bottom: 120 },
-  { x: 44, top: 74, bottom: 124 },
-  { x: 54, top: 30, bottom: 64 },
-  { x: 66, top: 30, bottom: 98 },
-  { x: 71, top: 30, bottom: 98 },
-  { x: 88, top: 30, bottom: 98 },
-];
-const PAIR = 5.5;                 // vines this close are held together
-const KEY = { x: 93, y: 26 };
-const CAGE = { x: 10, y: 26 };
-const START = { x: 8, y: 134 };
+
+/** A design flipped left to right. */
+function mirror(design) {
+  return {
+    ledges: design.ledges.map((l) => ({ y: l.y, x1: WIDTH - l.x2, x2: WIDTH - l.x1 })),
+    vines: design.vines.map((v) => ({ ...v, x: WIDTH - v.x })).sort((a, b) => a.x - b.x),
+    key: WIDTH - design.key,
+    cage: WIDTH - design.cage,
+  };
+}
+
+/** The times of day, in the order the stages take them. */
+export const SKIES = ['night', 'dawn', 'day', 'sunset'];
+
+/** The eight stages, in play order: each design and its mirror, never twice running. */
+export const STAGES = [
+  DESIGNS[0], mirror(DESIGNS[1]), DESIGNS[2], mirror(DESIGNS[3]),
+  mirror(DESIGNS[0]), DESIGNS[1], mirror(DESIGNS[2]), DESIGNS[3],
+].map((design, i) => ({
+  ledges: design.ledges,
+  vines: design.vines,
+  key: { x: design.key, y: 26 },
+  cage: { x: design.cage, y: 26 },
+  sky: SKIES[i % SKIES.length],
+}));
+
+/**
+ * The stage level `n` is played on: one after another, and each time round
+ * the eight starting one further on, so level 9 is not level 1's jungle again.
+ */
+export const stageFor = (n) => {
+  const i = Math.max(1, Math.trunc(n) || 1) - 1;
+  return STAGES[(i + Math.floor(i / STAGES.length)) % STAGES.length];
+};
+
+export const PAIR = 5.5;          // vines this close are held together
 const MONKEY = { w: 3.4, h: 6, run: 26, jump: 66, gravity: 240, reach: 2.6 };
 const CLIMB = { one: { up: 13, down: 30 }, two: { up: 24, down: 14 } };
 const HANG = 6;                   // feet below the hands, on a vine
@@ -67,9 +193,12 @@ const BIRD_R = 2.4;
 const NUT_R = 2;
 const FRUIT_R = 2.2;
 const LIVES = 3;
-const BETWEEN = 1.8;
 const SHOW_LEVEL = 2.4;
 const HIT_PAUSE = 1.2;
+// Reaching the key plays a short scene before the next level: the monkey holds
+// the key up, carries it to the cage, the lock springs, the door swings open
+// and papa hops out for a hug. These are its beats, in seconds from the key.
+export const RESCUE = { lift: 0.5, carry: 2.1, unlock: 2.5, done: 3.8 };
 
 /** The sounds this game makes, for js/games/chiptune.js. */
 export const SOUNDS = {
@@ -84,6 +213,8 @@ export const SOUNDS = {
     { noise: true, cutFrom: 1800, cutTo: 80, at: 0, dur: 0.45, gain: 0.18 },
     { type: 'sawtooth', from: 220, to: 40, at: 0, dur: 0.4, gain: 0.06 },
   ],
+  unlock: [{ type: 'square', from: 1400, to: 1400, at: 0, dur: 0.04, gain: 0.05 }, { type: 'triangle', from: 500, to: 900, at: 0.05, dur: 0.18, gain: 0.05 }],
+  free: [659, 784, 1047, 1319, 1568].map((hz, i) => ({ type: 'square', from: hz, to: hz, at: i * 0.07, dur: 0.09, gain: 0.05 })),
   level: [523, 659, 784, 1047].map((hz, i) => ({ type: 'square', from: hz, to: hz, at: i * 0.08, dur: 0.1, gain: 0.05 })),
   over: [523, 440, 349, 262].map((hz, i) => ({ type: 'square', from: hz, to: hz, at: i * 0.15, dur: 0.13, gain: 0.05 })),
 };
@@ -117,10 +248,12 @@ function random(state) {
 
 function clamp(value, lo, hi) { return Math.max(lo, Math.min(hi, value)); }
 
-/** The vine paired with this one, if there is one. Vines are kept by number, so a copied state still works. */
-const partner = (vine) => VINES.find((other) => other.x !== vine.x && Math.abs(other.x - vine.x) <= PAIR) || null;
-/** The ledge whose top is at `y` and spans `x`, or null. */
-const ledgeAt = (y, x) => LEDGES.find((l) => Math.abs(l.y - y) < 0.01 && x >= l.x1 && x <= l.x2) || null;
+/** The stage being played. The state keeps its number, so a copied state still works. */
+const stageOf = (state) => STAGES[state.stage];
+/** The vine paired with this one in `vines`, if there is one. Vines are kept by number for the same reason. */
+export const partner = (vines, vine) => vines.find((other) => other.x !== vine.x && Math.abs(other.x - vine.x) <= PAIR) || null;
+/** The ledge in `ledges` whose top is at `y` and spans `x`, or null. */
+export const ledgeAt = (ledges, y, x) => ledges.find((l) => Math.abs(l.y - y) < 0.01 && x >= l.x1 && x <= l.x2) || null;
 
 /**
  * A run, parked until the first press. It starts on level one unless told
@@ -146,6 +279,7 @@ export function create(seed = 1, { level: from = 1, score = 0 } = {}) {
 
 function startLevel(state, n) {
   state.level = n;
+  state.stage = STAGES.indexOf(stageFor(n));
   state.config = level(n);
   state.lives = LIVES;
   state.levelScore = state.score;
@@ -156,19 +290,23 @@ function startLevel(state, n) {
 /** Back to the jungle floor with the field cleared — after a hit, and at a level's start. */
 function resetRound(state) {
   const config = state.config;
-  state.monkey = { x: START.x, y: START.y, vx: 0, vy: 0, mode: 'ground', vine: null, two: false, face: 1, letGo: null, letGoClock: 0 };
+  const { ledges, vines, key } = stageOf(state);
+  // The monkey starts on the floor, at the end away from the key, facing in.
+  const fromRight = key.x < WIDTH / 2;
+  state.monkey = { x: fromRight ? WIDTH - 9 : 8, y: ledges[0].y, vx: 0, vy: 0, mode: 'ground', vine: null, two: false, face: fromRight ? -1 : 1, letGo: null, letGoClock: 0 };
   state.lizards = [];
   state.birds = [];
   state.nuts = [];
+  state.rescue = null;
   // Fruit on vines that reach high, at a spread of heights, from the seed.
-  const tall = VINES.filter((v) => v.bottom - v.top > 50);
+  const tall = vines.filter((v) => v.bottom - v.top > 50);
   state.fruit = Array.from({ length: config.fruit }, (_, i) => {
     const vine = tall[(i * 2 + Math.floor(random(state) * 2)) % tall.length];
     return { x: vine.x, y: vine.top + 12 + random(state) * 18, vy: 0, falling: false, chain: 0 };
   });
   state.crawlers = Array.from({ length: config.crawlers }, (_, i) => {
-    const ledge = LEDGES[1 + (i % 3)];
-    return { ledge: LEDGES.indexOf(ledge), x: ledge.x1 + (ledge.x2 - ledge.x1) * (0.3 + 0.4 * random(state)), dir: i % 2 ? 1 : -1, bonked: false };
+    const ledge = ledges[1 + (i % (ledges.length - 1))];
+    return { ledge: ledges.indexOf(ledge), x: ledge.x1 + (ledge.x2 - ledge.x1) * (0.3 + 0.4 * random(state)), dir: i % 2 ? 1 : -1, bonked: false };
   });
   state.lizardClock = 1.5;
   state.birdClock = config.birdEvery ? config.birdEvery * 0.6 : 0;
@@ -198,6 +336,7 @@ export function step(state, input = {}, dt = 1 / 60) {
 
   if (state.rest > 0) {
     state.rest = Math.max(0, state.rest - dt);
+    rescue(state, dt, events);
     if (state.rest === 0) { startLevel(state, state.level + 1); events.push('next'); }
     return events;
   }
@@ -221,13 +360,14 @@ export function step(state, input = {}, dt = 1 / 60) {
 
   // What hit the monkey.
   const m = state.monkey;
+  const { ledges, key } = stageOf(state);
   const body = { x: m.x, y: m.y - MONKEY.h / 2 };
   const hazards = [
     // A lizard that has dropped off its vine is tumbling away, and harmless.
     ...state.lizards.filter((one) => !one.falling).map((one) => ({ x: one.x, y: one.y, r: LIZARD_R })),
     ...state.birds.map((one) => ({ x: one.x, y: one.y, r: BIRD_R })),
     ...state.nuts.filter((one) => one.falling).map((one) => ({ x: one.x, y: one.y, r: NUT_R })),
-    ...state.crawlers.filter((one) => !one.bonked).map((one) => ({ x: one.x, y: LEDGES[one.ledge].y - LIZARD_R, r: LIZARD_R })),
+    ...state.crawlers.filter((one) => !one.bonked).map((one) => ({ x: one.x, y: ledges[one.ledge].y - LIZARD_R, r: LIZARD_R })),
   ];
   for (const h of hazards) {
     if (Math.abs(h.x - body.x) < h.r + MONKEY.w / 2 - 1 && Math.abs(h.y - body.y) < h.r + MONKEY.h / 2 - 0.8) {
@@ -239,22 +379,55 @@ export function step(state, input = {}, dt = 1 / 60) {
   }
 
   // The key.
-  if (m.mode === 'ground' && Math.abs(m.y - KEY.y) < 0.01 && m.x >= KEY.x - 3) {
+  if (m.mode === 'ground' && Math.abs(m.y - key.y) < 0.01 && Math.abs(m.x - key.x) <= 3) {
     state.score += 500 + Math.round(state.clock) * 10;
-    state.rest = BETWEEN;
+    state.rest = RESCUE.done;
+    // The jungle goes quiet for the rescue.
+    state.lizards = []; state.birds = []; state.nuts = [];
+    for (const c of state.crawlers) c.bonked = true;
+    state.rescue = { t: 0, from: m.x, unlocked: false, free: false };
+    m.vx = 0;
     events.push('level');
   }
   return events;
 }
 
+/**
+ * The rescue scene, one step of it: hold the key up, carry it along the top
+ * to the cage door in little hops, spring the lock, and let papa out.
+ */
+function rescue(state, dt, events) {
+  const r = state.rescue;
+  if (!r) return;
+  const { cage } = stageOf(state);
+  const m = state.monkey;
+  r.t += dt;
+  const side = Math.sign(r.from - cage.x) || 1;
+  const door = cage.x + side * 10;
+  m.face = -side;
+  if (r.t < RESCUE.lift) {
+    m.x = r.from; m.y = cage.y; m.vx = 0; m.mode = 'ground';
+  } else if (r.t < RESCUE.carry) {
+    const k = (r.t - RESCUE.lift) / (RESCUE.carry - RESCUE.lift);
+    m.x = r.from + (door - r.from) * k;
+    m.y = cage.y - Math.abs(Math.sin(k * Math.PI * 5)) * 2.5;
+    m.vx = -side; m.mode = 'ground';
+  } else {
+    m.x = door; m.y = cage.y; m.vx = 0; m.mode = 'ground';
+    if (!r.unlocked) { r.unlocked = true; events.push('unlock'); }
+    if (r.t >= RESCUE.unlock && !r.free) { r.free = true; events.push('free'); }
+  }
+}
+
 function moveMonkey(state, input, dt, events) {
   const m = state.monkey;
+  const { ledges, vines } = stageOf(state);
   if (input.across) m.face = input.across;
   m.letGoClock = Math.max(0, m.letGoClock - dt);
 
   if (m.mode === 'vine') {
-    const vine = VINES[m.vine];
-    const mate = partner(vine);
+    const vine = vines[m.vine];
+    const mate = partner(vines, vine);
     // Toward the partner vine grabs both; away from it lets go of it.
     if (input.across && mate) {
       const toward = Math.sign(mate.x - vine.x) === input.across;
@@ -271,7 +444,7 @@ function moveMonkey(state, input, dt, events) {
     m.y = clamp(m.y + (input.climb < 0 ? -speeds.up : input.climb > 0 ? speeds.down : 0) * dt, top, bottom);
     if (input.climb < 0 && m.y === top) {
       // Up onto the branch above the vine, if there is one.
-      const ledge = ledgeAt(vine.top - 4, m.x);
+      const ledge = ledgeAt(ledges, vine.top - 4, m.x);
       if (ledge) { m.mode = 'ground'; m.y = ledge.y; m.vine = null; m.two = false; }
     } else if (input.climb > 0 && m.y === bottom) {
       m.mode = 'air'; m.vy = 0; m.vx = 0; m.letGo = m.vine; m.letGoClock = 0.3; m.vine = null; m.two = false;
@@ -282,9 +455,9 @@ function moveMonkey(state, input, dt, events) {
   if (m.mode === 'ground') {
     // Up a vine that hangs within reach overhead.
     if (input.climb < 0) {
-      const vine = VINES.find((v) => Math.abs(v.x - m.x) <= MONKEY.reach && v.bottom + HANG >= m.y - 10 && v.top + HANG <= m.y);
+      const vine = vines.find((v) => Math.abs(v.x - m.x) <= MONKEY.reach && v.bottom + HANG >= m.y - 10 && v.top + HANG <= m.y);
       if (vine) {
-        m.mode = 'vine'; m.vine = VINES.indexOf(vine); m.two = false; m.vx = 0;
+        m.mode = 'vine'; m.vine = vines.indexOf(vine); m.two = false; m.vx = 0;
         m.y = Math.min(m.y, vine.bottom + HANG);
         events.push('grab');
         return;
@@ -292,13 +465,13 @@ function moveMonkey(state, input, dt, events) {
     }
     // Down onto a vine that hangs from the branch.
     if (input.climb > 0) {
-      const vine = VINES.find((v) => Math.abs(v.x - m.x) <= MONKEY.reach && Math.abs(v.top - 4 - m.y) < 0.01);
-      if (vine) { m.mode = 'vine'; m.vine = VINES.indexOf(vine); m.two = false; m.y = vine.top + HANG; events.push('grab'); return; }
+      const vine = vines.find((v) => Math.abs(v.x - m.x) <= MONKEY.reach && Math.abs(v.top - 4 - m.y) < 0.01);
+      if (vine) { m.mode = 'vine'; m.vine = vines.indexOf(vine); m.two = false; m.y = vine.top + HANG; events.push('grab'); return; }
     }
     m.vx = input.across * MONKEY.run;
     if (input.jump) { m.mode = 'air'; m.vy = -MONKEY.jump; m.vx = input.across * MONKEY.run; events.push('jump'); return; }
     m.x = clamp(m.x + m.vx * dt, 3, WIDTH - 3);
-    if (!LEDGES.some((l) => Math.abs(l.y - m.y) < 0.01 && m.x >= l.x1 && m.x <= l.x2)) { m.mode = 'air'; m.vy = 0; }
+    if (!ledges.some((l) => Math.abs(l.y - m.y) < 0.01 && m.x >= l.x1 && m.x <= l.x2)) { m.mode = 'air'; m.vy = 0; }
     return;
   }
 
@@ -307,7 +480,7 @@ function moveMonkey(state, input, dt, events) {
   m.vy += MONKEY.gravity * dt;
   m.x = clamp(m.x + m.vx * dt, 3, WIDTH - 3);
   m.y += m.vy * dt;
-  for (const [index, vine] of VINES.entries()) {
+  for (const [index, vine] of vines.entries()) {
     if (index === m.letGo && m.letGoClock > 0) continue;
     if (Math.abs(vine.x - m.x) <= 1.6 && m.y >= vine.top + HANG && m.y <= vine.bottom + HANG + 2) {
       m.mode = 'vine'; m.vine = index; m.two = false; m.vx = 0; m.vy = 0;
@@ -317,7 +490,7 @@ function moveMonkey(state, input, dt, events) {
     }
   }
   if (m.vy > 0) {
-    for (const l of LEDGES) {
+    for (const l of ledges) {
       if (before <= l.y && m.y >= l.y && m.x >= l.x1 && m.x <= l.x2) {
         m.mode = 'ground'; m.y = l.y; m.vy = 0; m.vx = 0;
         return;
@@ -344,11 +517,12 @@ function spawn(state, dt) {
   if (state.lizardClock <= 0 && state.lizards.filter((z) => !z.falling && !z.gone).length >= config.maxLizards) state.lizardClock = 0.5;
   if (state.lizardClock <= 0) {
     state.lizardClock = config.lizardEvery * (0.75 + random(state) * 0.5);
-    const tall = VINES.filter((v) => v.top <= 30);
+    const vines = stageOf(state).vines;
+    const tall = vines.filter((v) => v.top <= 30);
     // Some come down the vine nearest the monkey; the rest anywhere.
     const nearest = [...tall].sort((a, b) => Math.abs(a.x - state.monkey.x) - Math.abs(b.x - state.monkey.x))[0];
     const vine = random(state) < config.aim ? nearest : tall[Math.floor(random(state) * tall.length)];
-    state.lizards.push({ vine: VINES.indexOf(vine), x: vine.x, y: vine.top, dir: 1, patrol: random(state) < config.patrol, falling: false, vy: 0 });
+    state.lizards.push({ vine: vines.indexOf(vine), x: vine.x, y: vine.top, dir: 1, patrol: random(state) < config.patrol, falling: false, vy: 0 });
   }
   if (config.birdEvery) {
     state.birdClock -= dt;
@@ -369,9 +543,10 @@ function spawn(state, dt) {
 
 function moveLizards(state, dt) {
   const speed = state.config.lizardSpeed;
+  const vines = stageOf(state).vines;
   for (const z of state.lizards) {
     if (z.falling) { z.vy += 200 * dt; z.y += z.vy * dt; continue; }
-    const vine = VINES[z.vine];
+    const vine = vines[z.vine];
     z.y += z.dir * speed * dt;
     if (z.y >= vine.bottom) {
       if (z.patrol) { z.y = vine.bottom; z.dir = -1; } else { z.falling = true; z.vy = 0; }
@@ -403,9 +578,10 @@ function moveNuts(state, dt) {
 
 function moveCrawlers(state, dt) {
   const speed = state.config.lizardSpeed * 0.6;
+  const ledges = stageOf(state).ledges;
   for (const c of state.crawlers) {
     if (c.bonked) continue;
-    const ledge = LEDGES[c.ledge];
+    const ledge = ledges[c.ledge];
     c.x += c.dir * speed * dt;
     if (c.x < ledge.x1 + 3) { c.x = ledge.x1 + 3; c.dir = 1; }
     if (c.x > ledge.x2 - 3) { c.x = ledge.x2 - 3; c.dir = -1; }
@@ -414,6 +590,7 @@ function moveCrawlers(state, dt) {
 
 function moveFruit(state, dt, events) {
   const m = state.monkey;
+  const ledges = stageOf(state).ledges;
   for (const f of state.fruit) {
     if (!f.falling) {
       // The monkey knocks it loose by climbing into it.
@@ -425,7 +602,7 @@ function moveFruit(state, dt, events) {
     const knock = (x, y, r) => Math.abs(x - f.x) < r + FRUIT_R && Math.abs(y - f.y) < r + FRUIT_R;
     const hitLizards = state.lizards.filter((z) => knock(z.x, z.y, LIZARD_R));
     const hitBirds = state.birds.filter((b) => knock(b.x, b.y, BIRD_R));
-    const hitCrawlers = state.crawlers.filter((c) => !c.bonked && knock(c.x, LEDGES[c.ledge].y - LIZARD_R, LIZARD_R));
+    const hitCrawlers = state.crawlers.filter((c) => !c.bonked && knock(c.x, ledges[c.ledge].y - LIZARD_R, LIZARD_R));
     for (const _ of [...hitLizards, ...hitBirds, ...hitCrawlers]) {
       f.chain += 1;
       state.score += 100 * (f.chain + 1);
@@ -457,15 +634,32 @@ function mix(a, b, t) {
   return `#${x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('')}`;
 }
 
-/** The scene's tones, worked out once per palette. */
+/** The scene's tones, worked out once per palette and time of day. */
 const toneCache = new WeakMap();
-function tones(colors) {
-  if (toneCache.has(colors)) return toneCache.get(colors);
+function tones(colors, sky = 'night') {
+  if (!toneCache.has(colors)) toneCache.set(colors, {});
+  const cached = toneCache.get(colors);
+  if (cached[sky]) return cached[sky];
   const t = {
-    sky: mix(colors.sky, colors.paper, 0.55),
-    moon: mix(colors.sunshine, colors.paper, 0.45),
-    far: mix(colors.sky, colors.paper, 0.2),
-    mid: mix(colors.sky, colors.captain, 0.45),
+    // The backdrop, which is what the time of day changes.
+    ...{
+      night: {
+        sky: mix(colors.sky, colors.paper, 0.55), glow: mix(colors.sunshine, colors.paper, 0.45),
+        far: mix(colors.sky, colors.paper, 0.2), mid: mix(colors.sky, colors.captain, 0.45),
+      },
+      dawn: {
+        sky: mix(colors.rose, colors.paper, 0.55), glow: mix(colors.sunshine, colors.paper, 0.25),
+        far: mix(colors.rose, colors.sky, 0.55), mid: mix(colors.sky, colors.captain, 0.4),
+      },
+      day: {
+        sky: mix(colors.sky, colors.paper, 0.3), glow: colors.sunshine,
+        far: mix(colors.sky, colors.captain, 0.18), mid: mix(colors.sky, colors.captain, 0.5),
+      },
+      sunset: {
+        sky: mix(mix(colors.sunshine, colors.poppy, 0.45), colors.paper, 0.45), glow: mix(colors.poppy, colors.paper, 0.25),
+        far: mix(colors.rose, colors.poppy, 0.35), mid: mix(colors.rose, colors.captain, 0.55),
+      },
+    }[sky],
     leaf: colors.captain,
     leafDark: mix(colors.captain, colors.ink, 0.45),
     vine: mix(colors.captain, colors.ink, 0.3),
@@ -482,7 +676,7 @@ function tones(colors) {
     soil: mix(colors.captain, colors.ink, 0.55),
     grass: mix(colors.captain, colors.sky, 0.25),
   };
-  toneCache.set(colors, t);
+  cached[sky] = t;
   return t;
 }
 
@@ -525,17 +719,63 @@ function leaf(g, x, y, len, angle, fill) {
   g.restore();
 }
 
-function drawScenery(g, colors, t, time) {
-  // The sky and a low moon.
+/** A round puff of cloud, flat, with no outline, so it sits back. */
+function cloud(g, x, y, w) {
+  g.beginPath();
+  g.arc(x, y, w * 0.28, 0, Math.PI * 2);
+  g.arc(x + w * 0.3, y - w * 0.12, w * 0.32, 0, Math.PI * 2);
+  g.arc(x + w * 0.62, y, w * 0.24, 0, Math.PI * 2);
+  g.fill();
+  g.fillRect(x, y - 0.2, w * 0.62, w * 0.24);
+}
+
+function drawScenery(g, colors, t, time, stage) {
+  const sky = stage.sky;
   g.fillStyle = t.sky;
   g.fillRect(0, 0, WIDTH, HEIGHT);
-  g.fillStyle = t.moon;
-  g.beginPath(); g.arc(70, 16, 11, 0, Math.PI * 2); g.fill();
+  // What is in the sky: a moon and stars, a rising sun, a high sun with
+  // clouds, or a big low sun with bands across it.
+  g.fillStyle = t.glow;
+  if (sky === 'night') {
+    g.beginPath(); g.arc(70, 16, 11, 0, Math.PI * 2); g.fill();
+    g.fillStyle = t.sky;
+    g.beginPath(); g.arc(75, 13, 9, 0, Math.PI * 2); g.fill();
+    g.fillStyle = t.glow;
+    for (let i = 0; i < 9; i++) {
+      const x = (i * 37 + 11) % 96 + 2;
+      const y = 6 + ((i * 23) % 34);
+      const r = 0.35 + 0.25 * Math.abs(Math.sin(time * 1.5 + i));
+      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    }
+  } else if (sky === 'dawn') {
+    g.beginPath(); g.arc(28, 46, 13, Math.PI, 0); g.fill();
+    g.fillStyle = mix(t.glow, colors.paper, 0.5);
+    for (const [x, y, w] of [[50, 22, 16], [8, 30, 11]]) cloud(g, x + Math.sin(time * 0.2) * 2, y, w);
+  } else if (sky === 'day') {
+    g.save();
+    g.translate(80, 16);
+    g.rotate(time * 0.2);
+    g.beginPath();
+    for (let i = 0; i < 24; i++) {
+      const r = i % 2 ? 7.5 : 11;
+      g.lineTo(Math.cos((i * Math.PI) / 12) * r, Math.sin((i * Math.PI) / 12) * r);
+    }
+    g.closePath(); g.fill();
+    g.restore();
+    g.fillStyle = mix(t.glow, colors.paper, 0.3);
+    g.beginPath(); g.arc(80, 16, 6.5, 0, Math.PI * 2); g.fill();
+    g.fillStyle = colors.paper;
+    for (const [x, y, w] of [[10, 18, 14], [44, 30, 18], [62, 8, 10]]) cloud(g, (x + time * 1.2) % 120 - 12, y, w);
+  } else {
+    g.beginPath(); g.arc(50, 44, 19, 0, Math.PI * 2); g.fill();
+    g.fillStyle = t.sky;
+    for (const [y, h] of [[36, 1.4], [42, 1.8], [48, 2.2]]) g.fillRect(30, y, 40, h);
+  }
   // The far canopy: soft round crowns with no outline, so they sit back.
   g.fillStyle = t.far;
   for (let i = 0; i < 9; i++) {
     const x = i * 13 - 4;
-    const y = 48 + Math.sin(i * 1.7) * 6;
+    const y = 48 + Math.sin(i * 1.7 + stage.key.x) * 6;
     g.beginPath(); g.arc(x, y, 10 + (i % 3) * 2, 0, Math.PI * 2); g.fill();
   }
   g.fillRect(0, 50, WIDTH, HEIGHT - 50);
@@ -544,18 +784,31 @@ function drawScenery(g, colors, t, time) {
   for (const [x, w] of [[6, 5], [36, 4], [80, 6], [96, 4]]) g.fillRect(x - w / 2, 70, w, HEIGHT - 70);
   for (let i = 0; i < 8; i++) {
     const x = i * 15 + 2;
-    const y = 76 + Math.sin(i * 2.3) * 5;
+    const y = 76 + Math.sin(i * 2.3 + stage.cage.x) * 5;
     g.beginPath(); g.arc(x, y, 9 + (i % 2) * 3, 0, Math.PI * 2); g.fill();
   }
-  // Fireflies drifting in the dusk.
-  g.fillStyle = t.moon;
-  for (let i = 0; i < 7; i++) {
-    const x = (i * 29 + time * (3 + i)) % WIDTH;
-    const y = 60 + ((i * 37) % 60) + Math.sin(time * 2 + i) * 3;
-    g.beginPath(); g.arc(x, y, 0.5, 0, Math.PI * 2); g.fill();
+  // Fireflies at night and dusk; butterflies by day.
+  if (sky === 'night' || sky === 'sunset') {
+    g.fillStyle = mix(colors.sunshine, colors.paper, 0.45);
+    for (let i = 0; i < 7; i++) {
+      const x = (i * 29 + time * (3 + i)) % WIDTH;
+      const y = 60 + ((i * 37) % 60) + Math.sin(time * 2 + i) * 3;
+      g.beginPath(); g.arc(x, y, 0.5, 0, Math.PI * 2); g.fill();
+    }
+  } else {
+    for (let i = 0; i < 3; i++) {
+      const x = (i * 41 + time * (4 + i)) % (WIDTH + 10) - 5;
+      const y = 70 + i * 17 + Math.sin(time * 1.4 + i * 2) * 4;
+      const flap = 0.35 + 0.65 * Math.abs(Math.sin(time * 10 + i));
+      g.fillStyle = i % 2 ? colors.rose : colors.sunshine;
+      g.save();
+      fine(g, 0.6);
+      for (const side of [-1, 1]) { g.beginPath(); g.ellipse(x + side * 1.2 * flap, y, 1.2 * flap, 1.5, 0, 0, Math.PI * 2); g.fill(); g.stroke(); }
+      g.restore();
+    }
   }
   // The jungle floor: soil, a grass edge and a few flowers.
-  const floor = LEDGES[0].y;
+  const floor = stage.ledges[0].y;
   g.fillStyle = t.soil;
   g.fillRect(0, floor, WIDTH, HEIGHT - floor);
   g.fillStyle = t.grass;
@@ -622,8 +875,8 @@ function drawVine(g, vine, t, time) {
   g.stroke();
 }
 
-function drawBranch(g, l, t, colors) {
-  if (l === LEDGES[0]) return;
+function drawBranch(g, l, t, floor) {
+  if (l === floor) return;
   const h = 4;
   g.fillStyle = t.wood;
   g.beginPath();
@@ -652,7 +905,7 @@ function drawBranch(g, l, t, colors) {
  * The monkey, in a pose: climbing hand over hand on a vine, running, leaping,
  * or standing. Drawn about 8 units tall from its feet; `big` scales papa.
  */
-function drawMonkey(g, m, colors, t, time, { big = 1, sad = false } = {}) {
+function drawMonkey(g, m, colors, t, time, { big = 1, sad = false, lift = false } = {}) {
   const face = m.face || 1;
   const pose = m.mode === 'vine' ? 'climb' : m.mode === 'air' ? 'leap' : m.vx ? 'run' : 'stand';
   const beat = time * (pose === 'run' ? 14 : 8);
@@ -703,9 +956,11 @@ function drawMonkey(g, m, colors, t, time, { big = 1, sad = false } = {}) {
     const k = Math.sin(beat) * 1.1;
     limb(-1.2, -4.8, -0.5, -9.2 - k); limb(1.2, -4.8, 0.5, -9.2 + k);
     paw(-0.5, -9.2 - k); paw(0.5, -9.2 + k);
-  } else if (pose === 'leap') {
-    limb(-1.3, -4.8, -2.6, -7.4); limb(1.3, -4.8, 2.6, -7.4);
-    paw(-2.6, -7.4); paw(2.6, -7.4);
+  } else if (pose === 'leap' || lift) {
+    // Arms up: leaping, or holding the key high.
+    const reach = lift ? [-0.9, -10.2, 0.9, -10.2] : [-2.6, -7.4, 2.6, -7.4];
+    limb(-1.3, -4.8, reach[0], reach[1]); limb(1.3, -4.8, reach[2], reach[3]);
+    paw(reach[0], reach[1]); paw(reach[2], reach[3]);
   } else {
     const k = pose === 'run' ? Math.sin(beat) * 1.1 : Math.sin(time * 2) * 0.2;
     limb(-1.4, -4.6, -2 - k * 0.4, -2.6); limb(1.4, -4.6, 2 + k * 0.4, -2.6);
@@ -853,37 +1108,29 @@ function drawCoconut(g, x, y, colors, t) {
   for (const [dx, dy] of [[0.5, 0.3], [1, 0.9], [0.1, 1]]) { g.beginPath(); g.arc(x + dx, y + dy, 0.22, 0, Math.PI * 2); g.fill(); }
 }
 
-function drawCage(g, colors, t, time) {
-  // A wooden ledge, papa sitting behind the bars, a padlock on the door.
-  g.fillStyle = t.wood;
-  g.fillRect(2, CAGE.y, 16, 4); g.strokeRect(2, CAGE.y, 16, 4);
-  g.fillStyle = t.woodLight;
-  g.fillRect(3, CAGE.y + 0.6, 14, 1);
-  drawMonkey(g, { x: CAGE.x, y: CAGE.y, mode: 'ground', face: 1, vx: 0 }, colors, t, time, { big: 1.35, sad: true });
-  g.fillStyle = t.wood;
-  g.fillRect(2.2, CAGE.y - 15.5, 15.6, 2); g.strokeRect(2.2, CAGE.y - 15.5, 15.6, 2);
-  g.save();
-  g.lineCap = 'round';
-  for (let x = 3.4; x <= 17; x += 2.7) {
-    g.beginPath(); g.moveTo(x, CAGE.y - 13.5); g.lineTo(x, CAGE.y);
-    const w = g.lineWidth;
-    g.lineWidth = w * 1.8; g.strokeStyle = colors.ink; g.stroke();
-    g.lineWidth = w * 0.7; g.strokeStyle = colors.sky; g.stroke();
-    g.lineWidth = w; g.strokeStyle = colors.ink;
-  }
-  g.restore();
-  g.fillStyle = colors.sunshine;
-  g.beginPath(); g.arc(12.5, CAGE.y - 6.5, 0.9, Math.PI, 0); g.stroke();
-  g.fillRect(11.3, CAGE.y - 6.5, 2.4, 2); g.strokeRect(11.3, CAGE.y - 6.5, 2.4, 2);
-  g.fillStyle = colors.ink;
-  g.beginPath(); g.arc(12.5, CAGE.y - 5.7, 0.25, 0, Math.PI * 2); g.fill();
+/** Where the rescue is, as fractions of its beats; null outside it. */
+function rescueBeat(state) {
+  const r = state.rescue;
+  if (!r) return null;
+  const { cage } = stageOf(state);
+  const side = Math.sign(r.from - cage.x) || 1;
+  const between = (a, b) => clamp((r.t - a) / (b - a), 0, 1);
+  return {
+    t: r.t,
+    side,
+    lift: between(0, RESCUE.lift),
+    carry: between(RESCUE.lift, RESCUE.carry),
+    open: between(RESCUE.carry, RESCUE.unlock),
+    out: between(RESCUE.unlock, RESCUE.unlock + 0.4),
+    free: r.t >= RESCUE.unlock,
+  };
 }
 
-function drawKey(g, colors, t, time) {
-  const bob = Math.sin(time * 3) * 0.6;
+/** The golden key, its bow at the top, turned by `angle`, centred on (x, y). */
+function key(g, x, y, angle, colors, t) {
   g.save();
-  g.translate(KEY.x, KEY.y - 6 + bob);
-  g.rotate(-0.5);
+  g.translate(x, y);
+  g.rotate(angle);
   g.fillStyle = colors.sunshine;
   g.beginPath(); g.arc(0, -2.2, 1.9, 0, Math.PI * 2); g.fill(); g.stroke();
   g.fillStyle = t.sky;
@@ -893,19 +1140,144 @@ function drawKey(g, colors, t, time) {
   g.fillRect(0.5, 2.6, 1.3, 0.8); g.strokeRect(0.5, 2.6, 1.3, 0.8);
   g.fillRect(0.5, 3.8, 1, 0.8); g.strokeRect(0.5, 3.8, 1, 0.8);
   g.restore();
-  // A twinkle that turns.
-  const k = (Math.sin(time * 4) + 1) / 2;
+}
+
+/** A four-pointed paper star, the twinkle and the burst. */
+function twinkle(g, x, y, r, spin, fill) {
   g.save();
-  g.translate(KEY.x + 2.6, KEY.y - 10 + bob);
-  g.rotate(time);
-  g.fillStyle = colors.paper;
+  g.translate(x, y);
+  g.rotate(spin);
+  g.fillStyle = fill;
   g.beginPath();
   for (let i = 0; i < 8; i++) {
-    const r = i % 2 ? 0.35 : 0.8 + k * 0.7;
-    g.lineTo(Math.cos((i * Math.PI) / 4) * r, Math.sin((i * Math.PI) / 4) * r);
+    const k = i % 2 ? r * 0.35 : r;
+    g.lineTo(Math.cos((i * Math.PI) / 4) * k, Math.sin((i * Math.PI) / 4) * k);
   }
   g.closePath(); g.fill(); g.stroke();
   g.restore();
+}
+
+function drawCage(g, state, colors, t, time) {
+  const { cage } = stageOf(state);
+  const beat = rescueBeat(state);
+  const side = beat ? beat.side : Math.sign(50 - cage.x) || 1;
+  const x0 = cage.x - 8;
+  // A wooden ledge for it to stand on.
+  g.fillStyle = t.wood;
+  g.fillRect(x0, cage.y, 16, 4); g.strokeRect(x0, cage.y, 16, 4);
+  g.fillStyle = t.woodLight;
+  g.fillRect(x0 + 1, cage.y + 0.6, 14, 1);
+  // Papa: sad behind the bars, then out through the door and jumping for joy.
+  if (!beat || !beat.free) {
+    drawMonkey(g, { x: cage.x, y: cage.y, mode: 'ground', face: side, vx: 0 }, colors, t, time, { big: 1.35, sad: true });
+  }
+  // The roof, the back bars, and the door — the half of the front nearest
+  // the branch, hinged at its outer edge, swinging open in the rescue.
+  g.fillStyle = t.wood;
+  g.fillRect(x0 + 0.2, cage.y - 15.5, 15.6, 2); g.strokeRect(x0 + 0.2, cage.y - 15.5, 15.6, 2);
+  const bar = (x, top = cage.y - 13.5, bottom = cage.y) => {
+    g.beginPath(); g.moveTo(x, top); g.lineTo(x, bottom);
+    const w = g.lineWidth;
+    g.lineWidth = w * 1.8; g.strokeStyle = colors.ink; g.stroke();
+    g.lineWidth = w * 0.7; g.strokeStyle = colors.sky; g.stroke();
+    g.lineWidth = w; g.strokeStyle = colors.ink;
+  };
+  g.save();
+  g.lineCap = 'round';
+  const hinge = cage.x + side * 7.4;
+  const swing = beat ? 1 - 0.85 * beat.open : 1;
+  for (let k = -6.6; k <= 7.1; k += 2.7) {
+    const x = cage.x + side * k;
+    if (side * (x - cage.x) > 0.5) bar(hinge + (x - hinge) * swing);
+    else bar(x);
+  }
+  // The door's frame, top and bottom.
+  const inner = hinge + (cage.x + side * 0.5 - hinge) * swing;
+  g.fillStyle = t.woodLight;
+  for (const y of [cage.y - 13.8, cage.y - 1.4]) {
+    g.beginPath(); g.rect(Math.min(inner, hinge), y, Math.abs(hinge - inner), 1.2); g.fill(); g.stroke();
+  }
+  g.restore();
+  // The padlock on the door: it springs off as the key turns.
+  const lockX = hinge + (cage.x + side * 2.5 - hinge) * swing;
+  let lockY = cage.y - 6.5;
+  let spin = 0;
+  if (beat && beat.open > 0) {
+    const k = beat.open;
+    lockY += -6 * k + 16 * k * k;
+    spin = side * k * 3;
+  }
+  if (!beat || beat.t < RESCUE.unlock + 0.3) {
+    g.save();
+    g.translate(lockX + (beat ? side * beat.open * 4 : 0), lockY);
+    g.rotate(spin);
+    g.fillStyle = colors.sunshine;
+    g.beginPath(); g.arc(0, beat && beat.open > 0 ? -0.6 : 0, 0.9, Math.PI, 0); g.stroke();
+    g.fillRect(-1.2, 0, 2.4, 2); g.strokeRect(-1.2, 0, 2.4, 2);
+    g.fillStyle = colors.ink;
+    g.beginPath(); g.arc(0, 0.8, 0.25, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+  if (beat && beat.free) {
+    // Papa hops out beside the little one, and they both jump for joy.
+    const k = beat.out;
+    const px = cage.x + side * 5.5 * k;
+    const hop = Math.abs(Math.sin((beat.t - RESCUE.unlock) * 9)) * 2.4 * Math.min(1, k * 2);
+    drawMonkey(g, { x: px, y: cage.y - hop, mode: hop > 0.4 ? 'air' : 'ground', face: side, vx: 0 }, colors, t, time, { big: 1.35 });
+  }
+}
+
+/** The key: bobbing on its branch, or held up, carried, and turned in the lock. */
+function drawKey(g, state, colors, t, time) {
+  const stage = stageOf(state);
+  const beat = rescueBeat(state);
+  const m = state.monkey;
+  if (!beat) {
+    const bob = Math.sin(time * 3) * 0.6;
+    key(g, stage.key.x, stage.key.y - 6 + bob, -0.5, colors, t);
+    twinkle(g, stage.key.x + 2.6, stage.key.y - 10 + bob, 0.8 + 0.7 * (Math.sin(time * 4) + 1) / 2, time, colors.paper);
+    return;
+  }
+  if (beat.open > 0) {
+    // In the lock, turning, then gone with the lock.
+    if (beat.t < RESCUE.unlock) {
+      const hinge = stage.cage.x + beat.side * 7.4;
+      const swing = 1 - 0.85 * beat.open;
+      key(g, hinge + (stage.cage.x + beat.side * 2.5 - hinge) * swing + beat.side * 2.2, stage.cage.y - 5, beat.side * (Math.PI / 2 + beat.open * Math.PI), colors, t);
+    }
+    return;
+  }
+  // Held high in both hands, with a ring of sparkles as it is lifted.
+  const lift = beat.lift;
+  key(g, m.x, m.y - 15 - lift * 1.5, Math.sin(time * 10) * 0.15, colors, t);
+  if (lift < 1 || beat.carry < 0.2) {
+    const spread = 3 + lift * 6;
+    for (let i = 0; i < 6; i++) {
+      const a = (i * Math.PI) / 3 + time * 2;
+      twinkle(g, m.x + Math.cos(a) * spread, m.y - 16 + Math.sin(a) * spread, 0.9, time * 3, colors.paper);
+    }
+  }
+}
+
+/** The celebration once papa is out: hearts rising, stars and bananas bursting. */
+function drawCheer(g, state, colors, t, time) {
+  const beat = rescueBeat(state);
+  if (!beat || !beat.free) return;
+  const { cage } = stageOf(state);
+  const since = beat.t - RESCUE.unlock;
+  const cx = cage.x + beat.side * 7.5;
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + 0.3;
+    const r = 4 + since * 16;
+    const x = cx + Math.cos(a) * r;
+    const y = cage.y - 10 + Math.sin(a) * r * 0.8 + since * since * 6;
+    if (i % 3 === 0) drawBananas(g, x, y, colors, t);
+    else twinkle(g, x, y, 1.3, time * 4 + i, i % 2 ? colors.sunshine : colors.paper);
+  }
+  for (let i = 0; i < 3; i++) {
+    const rise = ((since * 1.2 + i * 0.33) % 1);
+    heart(g, cx + (i - 1) * 3 + Math.sin(time * 4 + i) * 0.8, cage.y - 14 - rise * 14, 1.3, colors.poppy);
+  }
 }
 
 function heart(g, x, y, r, fill) {
@@ -921,7 +1293,8 @@ function heart(g, x, y, r, fill) {
 /** Paint the whole jungle. `scale` is canvas pixels per field unit, `edge` the outline in canvas pixels. */
 export function paint(g, state, { colors, scale, edge, stick = null }) {
   g.setTransform(scale, 0, 0, scale, 0, 0);
-  const t = tones(colors);
+  const stage = stageOf(state);
+  const t = tones(colors, stage.sky);
   g.ink = colors.ink;
   g.lineWidth = edge / scale;
   g.lineJoin = 'round';
@@ -929,16 +1302,15 @@ export function paint(g, state, { colors, scale, edge, stick = null }) {
   g.strokeStyle = colors.ink;
   const time = state.time;
 
-  drawScenery(g, colors, t, time);
-  for (const vine of VINES) drawVine(g, vine, t, time);
-  for (const l of LEDGES) drawBranch(g, l, t, colors);
-  drawCage(g, colors, t, time);
-  drawKey(g, colors, t, time);
+  drawScenery(g, colors, t, time, stage);
+  for (const vine of stage.vines) drawVine(g, vine, t, time);
+  for (const l of stage.ledges) drawBranch(g, l, t, stage.ledges[0]);
+  drawCage(g, state, colors, t, time);
   drawFringe(g, t);
 
   for (const f of state.fruit) drawBananas(g, f.x, f.y, colors, t);
   state.lizards.forEach((z, i) => drawLizard(g, z.x, z.y, z.falling ? time * 10 : z.dir > 0 ? Math.PI / 2 : -Math.PI / 2, colors, t, time, i));
-  state.crawlers.forEach((c, i) => { if (!c.bonked) drawLizard(g, c.x, LEDGES[c.ledge].y - 1.2, c.dir > 0 ? 0 : Math.PI, colors, t, time, i + 5); });
+  state.crawlers.forEach((c, i) => { if (!c.bonked) drawLizard(g, c.x, stage.ledges[c.ledge].y - 1.2, c.dir > 0 ? 0 : Math.PI, colors, t, time, i + 5); });
   for (const b of state.birds) drawToucan(g, b, colors, t, time);
   for (const n of state.nuts) {
     if (!n.falling) {
@@ -946,7 +1318,7 @@ export function paint(g, state, { colors, scale, edge, stick = null }) {
       g.save();
       g.globalAlpha = 0.25 + 0.25 * Math.sin(time * 20);
       g.fillStyle = colors.ink;
-      g.beginPath(); g.ellipse(n.x, LEDGES[0].y - 0.4, NUT_R * 1.3, 0.6, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(n.x, stage.ledges[0].y - 0.4, NUT_R * 1.3, 0.6, 0, 0, Math.PI * 2); g.fill();
       g.restore();
       continue;
     }
@@ -954,7 +1326,10 @@ export function paint(g, state, { colors, scale, edge, stick = null }) {
   }
 
   const blink = state.pause > 0 && Math.floor(state.pause * 8) % 2 === 0;
-  if (!blink) drawMonkey(g, state.monkey, colors, t, time, { big: 1.15 });
+  const lifting = state.rescue && state.rescue.t < RESCUE.carry;
+  if (!blink) drawMonkey(g, state.monkey, colors, t, time, { big: 1.15, lift: lifting });
+  drawKey(g, state, colors, t, time);
+  drawCheer(g, state, colors, t, time);
 
   // A finger steering: a ring where it went down, a dot where it is now.
   if (stick) {
@@ -966,24 +1341,31 @@ export function paint(g, state, { colors, scale, edge, stick = null }) {
     g.restore();
   }
 
-  // Lives as hearts, and the bonus on a paper tab.
-  for (let i = 0; i < Math.max(0, state.lives); i++) heart(g, 25 + i * 4.6, 13, 1.6, colors.poppy);
-  g.save();
-  g.font = '800 3.6px Inter, system-ui, sans-serif';
-  g.textAlign = 'right';
-  g.textBaseline = 'middle';
-  const bonus = `BONUS ${Math.round(state.clock) * 10}`;
-  const w = g.measureText(bonus).width + 3;
-  g.fillStyle = colors.paper;
-  g.fillRect(WIDTH - 3 - w, 10.6, w, 5); g.strokeRect(WIDTH - 3 - w, 10.6, w, 5);
-  g.fillStyle = colors.ink;
-  g.fillText(bonus, WIDTH - 4.5, 13.2);
-  g.restore();
+  // Lives as hearts, and the bonus on a paper tab, together in the middle of
+  // the top — the cage and the key take the two ends, on one side or the
+  // other — and out of the way while the key is carried across.
+  if (!state.rescue) {
+    g.save();
+    g.font = '800 3.6px Inter, system-ui, sans-serif';
+    g.textAlign = 'left';
+    g.textBaseline = 'middle';
+    const bonus = `BONUS ${Math.round(state.clock) * 10}`;
+    const w = g.measureText(bonus).width + 3;
+    const left = WIDTH / 2 - (14 + w) / 2;
+    for (let i = 0; i < Math.max(0, state.lives); i++) heart(g, left + 2 + i * 4.6, 13, 1.6, colors.poppy);
+    g.fillStyle = colors.paper;
+    g.fillRect(left + 14, 10.6, w, 5); g.strokeRect(left + 14, 10.6, w, 5);
+    g.fillStyle = colors.ink;
+    g.fillText(bonus, left + 15.5, 13.2);
+    g.restore();
+  }
 
   const middle = HEIGHT * 0.58;
   if (state.rest > 0) {
-    caption(g, 'PAPA IS FREE!', colors, middle, 6.5);
-    caption(g, `NEXT: LEVEL ${state.level + 1}`, colors, middle + 10, 4.5);
+    if (state.rescue && state.rescue.t >= RESCUE.unlock) {
+      caption(g, 'PAPA IS FREE!', colors, middle, 6.5);
+      caption(g, `NEXT: LEVEL ${state.level + 1}`, colors, middle + 10, 4.5);
+    } else caption(g, 'YOU GOT THE KEY!', colors, middle, 5.5);
   } else if (state.pause > 0) {
     caption(g, state.lives > 0 ? `OUCH! ${state.lives} ${state.lives === 1 ? 'LIFE' : 'LIVES'} LEFT` : 'OUT OF LIVES', colors, middle, 5);
   } else if (!state.started || state.showLevel > 0) {
