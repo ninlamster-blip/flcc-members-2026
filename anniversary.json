@@ -40,8 +40,12 @@
         "Sample: A handful of people hold their very first service.",
         "Sample: Nobody there knew what it would grow into."
       ],
-      "photo": "",
-      "placeholder": true
+      "placeholder": true,
+      "photos": [
+        {
+          "src": "anniversary/2006-first-service.jpg"
+        }
+      ]
     },
     {
       "year": 2008,
