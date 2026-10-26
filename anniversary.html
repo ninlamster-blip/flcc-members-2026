@@ -13,12 +13,20 @@
   a projector and a presentation clicker, not a phone: every slide fills a
   16:9 screen and nothing on it scrolls.
 
+  It never sits still. Years whip in and out — the old one flies off
+  blurred, the new one rushes in behind a warm flash — and every photograph
+  punches in and keeps drifting. Words don't fade, they move: a title's
+  words rise out of a mask one after another, a story ripples in word by
+  word, the opening's title slams in from a blur. Warm dust drifts through
+  the light the whole time and the film strip keeps running.
+
   Each year builds in beats, and each beat has a caption along the bottom:
-    1. the photograph fades up and the small year label arrives
-    2. the milestone's title arrives, its key phrase drawn in gold
-    3. the story arrives; a year with more photographs dissolves to the
-       next one every few seconds while it stays on screen
-  The opening and the finale build the same way.
+    1. the photograph punches in and the small year label wipes across
+    2. the milestone's title rises in, its key phrase in gold
+    3. the story ripples in; a year with more photographs cuts to the next
+       one every few seconds while it stays on screen
+  The opening and the finale build the same way. All of it is motion, not
+  speed: each beat still stays up long enough for a room to read it.
 
   It plays itself. Each beat stays up long enough for a room to read what it
   just put on screen — the caption plus any title, story or verse that
@@ -100,6 +108,9 @@
   .leak.run { animation: leak 1600ms cubic-bezier(.65, 0, .25, 1); }
   @keyframes leak { 0% { transform: translateX(-90%); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(90%); opacity: 0; } }
 
+  /* Warm dust drifting through the light, always. */
+  .dust { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; mix-blend-mode: screen; }
+
   /* ── Frame ────────────────────────────────────────────────────────────── */
   .frame { position: fixed; inset: 0; }
   .top {
@@ -112,14 +123,32 @@
   .top .dot { width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--accent); }
   .sample { color: var(--gold); border: 1px solid var(--gold); padding: 0.1em 0.7em 0; letter-spacing: 0.2em; background: rgba(0, 0, 0, 0.35); }
 
-  /* ── Slides: stacked; one dissolves into the next ────────────────────── */
+  /* ── Slides: stacked; one whips out as the next whips in ─────────────── */
   .stage { position: absolute; inset: 0; }
   .slide {
     position: absolute; inset: 0; overflow: hidden;
     opacity: 0; pointer-events: none;
-    transition: opacity 1400ms var(--ease);
   }
-  .slide.on { opacity: 1; pointer-events: auto; }
+  .slide.on { opacity: 1; pointer-events: auto; z-index: 2; }
+  .slide.enter { animation: whip-in 950ms cubic-bezier(.16, .84, .3, 1) both; }
+  .slide.leaving { opacity: 1; z-index: 1; animation: whip-out 650ms cubic-bezier(.7, 0, .84, 0) both; }
+  @keyframes whip-in {
+    0%   { transform: translateX(32%) scale(1.14); filter: blur(24px) brightness(1.7); opacity: 0; }
+    30%  { opacity: 1; }
+    100% { transform: none; filter: none; opacity: 1; }
+  }
+  @keyframes whip-out {
+    0%   { transform: none; filter: none; opacity: 1; }
+    100% { transform: translateX(-32%) scale(1.08); filter: blur(24px); opacity: 0; }
+  }
+  /* The flash a whip lands on. */
+  .flash {
+    position: fixed; inset: 0; pointer-events: none; z-index: 4; opacity: 0;
+    background: radial-gradient(circle at 55% 45%, rgba(255, 240, 215, 0.85), rgba(255, 196, 120, 0.3) 55%, transparent 80%);
+    mix-blend-mode: screen;
+  }
+  .flash.run { animation: flash 700ms ease-out; }
+  @keyframes flash { 0% { opacity: 0; } 22% { opacity: 0.9; } 100% { opacity: 0; } }
 
   /* A beat's pieces wait until their beat; .shown brings them in. */
   [data-beat] {
@@ -128,6 +157,30 @@
     transition-delay: calc(var(--d, 0) * 1ms);
   }
   [data-beat].shown { opacity: 1; transform: none; }
+
+  /* Kinetic type: a line is split into words, each in its own mask.
+     A title's words rise out of their masks one after another; a story's
+     ripple up; the opening's slam in from a blur. */
+  .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding: 0.04em 0.02em 0.1em; margin: -0.04em -0.02em -0.1em; }
+  .w > span {
+    display: inline-block; transform: translateY(108%) rotate(5deg); transform-origin: 0 100%;
+    transition: transform 750ms cubic-bezier(.16, .84, .3, 1);
+    transition-delay: calc(var(--i, 0) * 65ms + var(--d, 0) * 1ms);
+  }
+  .k[data-beat] { opacity: 1; transform: none; }
+  .k.shown .w > span { transform: none; }
+  .k.soft .w > span { transform: translateY(70%); opacity: 0; transition: transform 650ms var(--ease), opacity 650ms var(--ease); transition-delay: calc(var(--i, 0) * 24ms); }
+  .k.soft.shown .w > span { transform: none; opacity: 1; }
+  .k.slam .w { overflow: visible; }
+  .k.slam .w > span {
+    transform: scale(1.7); opacity: 0; filter: blur(14px);
+    transition: transform 700ms cubic-bezier(.2, .9, .25, 1.12), opacity 450ms ease-out, filter 550ms ease-out;
+    transition-delay: calc(var(--i, 0) * 110ms + var(--d, 0) * 1ms);
+  }
+  .k.slam.shown .w > span { transform: none; opacity: 1; filter: none; }
+  /* A gold line that wipes in under a title once its words have landed. */
+  .rule { display: block; height: 3px; width: 9vw; background: var(--gold); transform-origin: 0 50%; transform: scaleX(0); opacity: 1; transition: transform 700ms cubic-bezier(.16, .84, .3, 1) 450ms; }
+  .rule.shown { transform: scaleX(1); }
 
   /* The key phrase turns gold. */
   .hl { color: inherit; transition: color 800ms var(--ease) 150ms; }
@@ -138,17 +191,22 @@
   .photo { position: absolute; inset: 0; }
   .photo .shot {
     position: absolute; inset: 0;
-    opacity: 0; transition: opacity 1800ms var(--ease);
+    opacity: 0; transition: opacity 280ms linear;
   }
   .photo .shot.cur { opacity: 1; }
   .photo img, .photo .ph {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-    filter: sepia(0.25) contrast(1.04) brightness(0.92);
-    transform: scale(1.14) translate(var(--from, -1.5%), 0);
-    transition: transform 16s linear;
+    filter: sepia(0.25) contrast(1.06) brightness(0.92);
+    transform: scale(1.3);
   }
-  .slide.on .shot.cur img, .slide.on .shot.cur .ph { transform: scale(1.02) translate(var(--to, 1.5%), 0); }
-  .photo .shot:nth-child(even) { --from: 1.5%; --to: -1.5%; }
+  /* Each photograph punches in, then never stops moving. */
+  .slide.on .shot.cur img, .slide.on .shot.cur .ph { animation: drift 10s cubic-bezier(.2, .7, .3, 1) both; }
+  @keyframes drift {
+    0%   { transform: scale(1.36) translate(var(--from, -2.5%), 1.2%); }
+    7%   { transform: scale(1.17) translate(calc(var(--from, -2.5%) * 0.7), 0.8%); }
+    100% { transform: scale(1.03) translate(var(--to, 2.5%), -1.2%); }
+  }
+  .photo .shot:nth-child(even) { --from: 2.5%; --to: -2.5%; }
   /* A sample photograph, until a real one is added. */
   .photo .ph {
     background:
@@ -188,6 +246,8 @@
     font-family: var(--display); letter-spacing: 0.32em; font-size: clamp(14px, 2.5vh, 30px); color: var(--gold);
   }
   .when::before { content: ""; width: 3vw; height: 2px; background: var(--gold); }
+  .when[data-beat] { opacity: 1; transform: none; clip-path: inset(0 100% 0 0); transition: clip-path 800ms cubic-bezier(.16, .84, .3, 1); transition-delay: calc(var(--d, 0) * 1ms); }
+  .when.shown { clip-path: inset(0 0 0 0); }
   .when .of { color: var(--ink-muted); letter-spacing: 0.24em; }
   .copy h2 {
     font-family: var(--display); font-weight: 400;
@@ -205,7 +265,9 @@
   }
   .centre .shade-all { position: absolute; inset: 0; }
   .slide.titled .shade { background: rgba(var(--shade), 0.62); }
-  .intro .kicker { font-family: var(--script); color: var(--gold); font-size: clamp(30px, 6.5vh, 90px); line-height: 1; }
+  .intro .kicker { font-family: var(--script); color: var(--gold); font-size: clamp(30px, 6.5vh, 90px); line-height: 1.15; padding: 0 0.3em; }
+  .intro .kicker[data-beat] { opacity: 1; transform: none; clip-path: inset(0 100% 0 0); transition: clip-path 1600ms cubic-bezier(.45, 0, .25, 1); }
+  .intro .kicker.shown { clip-path: inset(-20% -5% -20% 0); }
   .intro h1 {
     font-family: var(--display); font-weight: 400;
     font-size: clamp(44px, 12vh, 170px); line-height: 0.92; letter-spacing: 0.02em;
@@ -228,6 +290,8 @@
     font-family: var(--display); font-size: clamp(110px, 28vh, 380px); line-height: 0.82;
     font-variant-numeric: lining-nums tabular-nums; color: var(--gold);
   }
+  .finale .count.pop { animation: pop 800ms cubic-bezier(.2, .9, .25, 1.2); }
+  @keyframes pop { 0% { transform: scale(1); text-shadow: none; } 35% { transform: scale(1.16); text-shadow: 0 0 6vh rgba(217, 164, 65, 0.8); } 100% { transform: scale(1); text-shadow: 0 0 3vh rgba(217, 164, 65, 0.35); } }
   .finale .years { font-family: var(--display); letter-spacing: 0.6em; font-size: clamp(16px, 3.2vh, 40px); color: var(--ink-muted); margin-right: -0.6em; }
   .finale h2 { font-family: var(--script); font-weight: 400; font-size: clamp(40px, 9vh, 120px); line-height: 1; }
   .finale p { font-size: clamp(15px, 2.6vh, 32px); line-height: 1.55; max-width: 46ch; }
@@ -253,6 +317,8 @@
     content: ""; position: absolute; left: 0; right: 0; height: 0.9vh; z-index: 1;
     background: repeating-linear-gradient(90deg, transparent 0 0.9vw, rgba(244, 235, 218, 0.18) 0.9vw 1.8vw, transparent 1.8vw 2.7vw);
   }
+  .ruler::before, .ruler::after { animation: run 1.1s linear infinite; }
+  @keyframes run { to { background-position-x: -2.7vw; } }
   .ruler::before { top: 0.35vh; }
   .ruler::after { bottom: 0.35vh; }
   .ruler .strip {
@@ -298,6 +364,7 @@
 
 <div class="frame" id="frame" hidden>
   <div class="stage" id="stage"></div>
+  <canvas class="dust" id="dust" aria-hidden="true"></canvas>
   <div class="top">
     <div class="church"><span class="dot" id="dot"></span><span id="church-name"></span></div>
     <span class="sample" id="sample" hidden>Sample content</span>
@@ -310,6 +377,7 @@
   </div>
 </div>
 <div class="leak" id="leak" aria-hidden="true"></div>
+<div class="flash" id="flash" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 
@@ -323,7 +391,7 @@
 
   var FLCC = window.FLCC;
   var STORY_URL = FLCC.data('anniversary.json');
-  var PHOTO_MS = 6000; // a year with several photographs dissolves to the next this often
+  var PHOTO_MS = 3200; // a year with several photographs cuts to the next this often
 
   /* ── Pure helpers ───────────────────────────────────────────────────────── */
 
@@ -407,6 +475,35 @@
     return node;
   }
 
+  /**
+   * Splits a line into words, each inside its own mask, so they can move one
+   * after another. The words stay real text: nothing a reader or the
+   * reading-time count sees changes. `style` is '' (rise), 'soft' or 'slam'.
+   */
+  function kinetic(node, style) {
+    node.classList.add('k');
+    if (style) node.classList.add(style);
+    var i = 0;
+    (function walk(n) {
+      Array.prototype.slice.call(n.childNodes).forEach(function (c) {
+        if (c.nodeType === 1) { walk(c); return; }
+        if (c.nodeType !== 3) return;
+        var frag = document.createDocumentFragment();
+        c.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          var mask = el('span', 'w');
+          var word = el('span', null, part);
+          word.style.setProperty('--i', i++);
+          mask.appendChild(word);
+          frag.appendChild(mask);
+        });
+        n.replaceChild(frag, c);
+      });
+    })(node);
+    return node;
+  }
+
   function verseNode(v) {
     var q = el('blockquote', 'verse', v.text);
     if (v.ref) q.appendChild(el('cite', null, v.ref));
@@ -446,7 +543,7 @@
     s.appendChild(photoLayer(photosOf(story), false, ''));
     var c = el('div', 'centre');
     c.appendChild(beat(el('div', 'kicker', story.subtitle || 'Anniversary'), 0));
-    c.appendChild(beat(highlighted('h1', null, story.title || '', story.highlight, 1), 0, 250));
+    c.appendChild(beat(kinetic(highlighted('h1', null, story.title || '', story.highlight, 1), 'slam'), 0, 500));
     var span = beat(el('div', 'span'), 1);
     span.appendChild(el('span', null, String(story.founded || first)));
     span.appendChild(el('i'));
@@ -468,8 +565,9 @@
     when.appendChild(year);
     when.appendChild(el('span', 'of', (i + 1) + ' of ' + total));
     copy.appendChild(when);
-    copy.appendChild(beat(highlighted('h2', null, m.title, m.highlight, 1), 1));
-    if (m.text) copy.appendChild(beat(el('p', null, m.text), 2));
+    copy.appendChild(beat(kinetic(highlighted('h2', null, m.title, m.highlight, 1)), 1));
+    copy.appendChild(beat(el('i', 'rule'), 1));
+    if (m.text) copy.appendChild(beat(kinetic(el('p', null, m.text), 'soft'), 2));
     s.appendChild(copy);
     s.captions = beatCaptions(m.captions, 3);
     return s;
@@ -484,8 +582,8 @@
     count.dataset.to = years;
     box.appendChild(count);
     box.appendChild(beat(el('div', 'years', years === 1 ? 'Year' : 'Years'), 0, 300));
-    if (c.heading) box.appendChild(beat(highlighted('h2', null, c.heading, c.highlight, 1), 1));
-    if (c.text) box.appendChild(beat(el('p', null, c.text), 1, 300));
+    if (c.heading) box.appendChild(beat(kinetic(highlighted('h2', null, c.heading, c.highlight, 1), 'slam'), 1));
+    if (c.text) box.appendChild(beat(kinetic(el('p', null, c.text), 'soft'), 1, 500));
     if (c.verse && c.verse.text) box.appendChild(beat(verseNode(c.verse), 2));
     s.appendChild(box);
     s.captions = beatCaptions(c.captions, 3);
@@ -528,6 +626,53 @@
     })(t0);
   }
 
+  /**
+   * Warm motes drifting up through the light, and a burst of sparks on cue.
+   * A plain canvas — a few dozen dots — so a projector laptop keeps up.
+   */
+  function dustLayer(canvas) {
+    var ctx = canvas.getContext('2d'), motes = [], w = 0, h = 0;
+    function size() { w = canvas.width = canvas.clientWidth; h = canvas.height = canvas.clientHeight; }
+    function mote(spark, at) {
+      var a = Math.random() * Math.PI * 2, v = 3 + Math.random() * 11;
+      return spark
+        ? { x: at.x + (Math.random() - 0.5) * at.spread, y: at.y + (Math.random() - 0.5) * at.spread * 0.6, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, r: 0.8 + Math.random() * 2.6, alpha: 0.9, life: 1 }
+        : { x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: -0.15 - Math.random() * 0.45, r: 0.6 + Math.random() * 1.9, alpha: 0.12 + Math.random() * 0.4, life: null };
+    }
+    size();
+    window.addEventListener('resize', size);
+    if (reduceMotion) return { burst: function () {} };
+    for (var i = 0; i < 70; i++) motes.push(mote(false));
+    (function tick() {
+      // The frame starts hidden, so the canvas can't know its size until it shows.
+      if (canvas.clientWidth !== w || canvas.clientHeight !== h) {
+        size();
+        motes.forEach(function (m) { if (m.life === null) { m.x = Math.random() * w; m.y = Math.random() * h; } });
+      }
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#F5C97E';
+      motes = motes.filter(function (m) {
+        m.x += m.vx; m.y += m.vy;
+        if (m.life !== null) {
+          m.vx *= 0.97; m.vy = m.vy * 0.97 + 0.05; m.life -= 0.011;
+          if (m.life <= 0) return false;
+        } else if (m.y < -10) { m.y = h + 10; m.x = Math.random() * w; }
+        ctx.globalAlpha = m.alpha * (m.life === null ? 1 : m.life);
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+        return true;
+      });
+      requestAnimationFrame(tick);
+    })();
+    /** Sparks fly out from the middle of `node`. */
+    return {
+      burst: function (node) {
+        var r = node.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+        var at = { x: r.left - c.left + r.width / 2, y: r.top - c.top + r.height / 2, spread: r.width * 0.6 };
+        for (var i = 0; i < 180; i++) motes.push(mote(true, at));
+      }
+    };
+  }
+
   /** Restarts a CSS animation by taking its class off and putting it back. */
   function replay(node, cls) {
     node.classList.remove(cls);
@@ -552,6 +697,8 @@
 
     var stage = document.getElementById('stage');
     var leak = document.getElementById('leak');
+    var flash = document.getElementById('flash');
+    var dust = dustLayer(document.getElementById('dust'));
     var slides = [introSlide(story, first, last)]
       .concat(milestones.map(function (m, i) { return milestoneSlide(m, i, milestones.length); }))
       .concat([finaleSlide(story, years)]);
@@ -629,10 +776,21 @@
 
       if (moved) {
         stopTweens();
-        if (index >= 0) { slides[index].classList.remove('on'); arriving = 1600; replay(leak, 'run'); }
+        if (index >= 0) {
+          // The old year whips out while the new one whips in behind a flash.
+          var old = slides[index];
+          old.classList.remove('on', 'enter');
+          old.classList.add('leaving');
+          setTimeout(function () { old.classList.remove('leaving'); }, 700);
+          arriving = 1100;
+          replay(leak, 'run');
+          replay(flash, 'run');
+        }
         rulerTo(yearOf(n));
         index = n;
+        slides[index].classList.remove('leaving');
         slides[index].classList.add('on');
+        replay(slides[index], 'enter');
         startSlideshow(slides[index]);
 
         Object.keys(marks).forEach(function (y) { marks[y].classList.toggle('past', +y <= yearOf(n) && n > 0); });
@@ -648,7 +806,12 @@
         node.classList.toggle('shown', +node.dataset.beat <= step);
       });
       var count = slides[index].querySelector('.count');
-      if (count && moved) { tween(count, 0, +count.dataset.to, 2000); arriving = Math.max(arriving, 2000); }
+      if (count && moved) {
+        tween(count, 0, +count.dataset.to, 2000);
+        arriving = Math.max(arriving, 2000);
+        // The count lands with a pop and a burst of sparks.
+        setTimeout(function () { if (slides[index].contains(count)) { replay(count, 'pop'); dust.burst(count); } }, 2050);
+      }
 
       setCaption(slides[index].captions[step] || '');
       try { history.replaceState(null, '', '#' + index); } catch (e) {}
