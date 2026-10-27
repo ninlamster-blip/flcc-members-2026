@@ -16,7 +16,7 @@ here; the two applications share no code.
 | `assistant.test.mjs` | Ask FLCC: what it is told, and which files it is told it from |
 | `crossword.test.mjs` | Bible Crossword: the answer bank, the grids, the daily puzzle, the streak |
 | `anniversary.test.mjs` | The anniversary timeline: dates, milestone order, photos, no hardcoded church |
-| `sermons.test.mjs` | Sermons: which Facebook links will play, the sermon list, the editor's one file |
+| `sermons.test.mjs` | Sermons: YouTube plays in the page, Facebook opens out; the sermon list, the editor's one file |
 
 ## How these reach into a single-file app
 

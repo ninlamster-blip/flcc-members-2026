@@ -2,7 +2,8 @@
    Sermons — the rules shared by sermons.html and sermon-editor.html
    -----------------------------------------------------------------------------
    Each church keeps its own list in sermons.json, read through
-   FLCC.data('sermons.json') like every other per-church file:
+   FLCC.data('sermons.json') — by sermons.html, by the editor, and by the
+   members app's "Latest sermon" card on Home:
 
      { "sermons": [
          { "id": "2026-10-25-walking-in-faith",
@@ -10,16 +11,20 @@
            "title": "Walking in Faith",
            "preacher": "Ptr. Rodel",
            "summary": "Two or three sentences about the message.",
-           "video": "https://www.facebook.com/<page>/videos/<id>/" } ] }
+           "video": "https://www.youtube.com/watch?v=<id>" } ] }
 
-   The videos are Facebook Lives, and the page OPENS them on Facebook rather
-   than playing them inside itself. Facebook refuses to play a video on any
-   other site once it hears music it thinks someone else owns — which is the
-   worship set, so nearly every service — and says "Video unavailable". A link
-   out works every time, from a phone straight into the Facebook app.
+   A video is a YouTube link or a Facebook one, and the two behave differently
+   on purpose:
 
-   So all this file asks of a link is that it is a Facebook video, and it
-   tidies it up: the share button's short links work as well as the full ones.
+     YouTube   plays IN the page, behind its own thumbnail. YouTube lets other
+               sites play its videos, which is the reason to use it.
+     Facebook  OPENS on Facebook. Facebook refuses to play a video on any other
+               site once it hears music it thinks someone else owns — the
+               worship set, so nearly every service — and says "Video
+               unavailable". A link out works every time.
+
+   sermonVideo() is the one place that tells them apart; everything else asks
+   it. Short share links work for both.
 
    Plain script, no build step, loaded before the page code. Pure functions
    only, so test/sermons.test.mjs can evaluate this file on its own.
@@ -76,6 +81,65 @@
     return { ok: false, error: 'That Facebook link isn’t a video. Open the video itself, then copy its link.' };
   }
 
+  var YT_HOSTS = /^(?:www\.|m\.|music\.)?youtube(?:-nocookie)?\.com$/i;
+  var YT_ID = /^[A-Za-z0-9_-]{11}$/;
+
+  /** A YouTube link of any shape — watch?v=, youtu.be/, /live/, /shorts/,
+   *  /embed/, or a pasted <iframe> — as its 11-character video id.
+   *    { ok: true,  id, href }   href is the plain watch link
+   *    { ok: false, error } */
+  function youtubeVideo(input) {
+    var text = String(input || '').trim();
+    var embedded = /<iframe[^>]+src=["']([^"']+)["']/i.exec(text);
+    if (embedded) text = embedded[1];
+    if (!/^https?:\/\//i.test(text)) text = 'https://' + text;
+    var url;
+    try { url = new URL(text); } catch (e) { return { ok: false, error: 'That doesn’t look like a link.' }; }
+    var host = url.hostname.toLowerCase();
+    var id = null;
+    if (host === 'youtu.be' || host === 'www.youtu.be') {
+      id = url.pathname.split('/')[1];
+    } else if (YT_HOSTS.test(host)) {
+      var m = /^\/(?:live|shorts|embed|v)\/([^/]+)/i.exec(url.pathname);
+      id = m ? m[1] : (/^\/watch\/?$/i.test(url.pathname) ? url.searchParams.get('v') : null);
+    } else {
+      return { ok: false, error: 'That isn’t a YouTube link.' };
+    }
+    if (!YT_ID.test(id || '')) {
+      return { ok: false, error: 'That YouTube link isn’t a video. Open the video itself, then copy its link.' };
+    }
+    return { ok: true, id: id, href: 'https://www.youtube.com/watch?v=' + id };
+  }
+
+  /** Which kind of video a sermon links to, cleaned up.
+   *    { ok: true, source: 'youtube',  id, href }   plays in the page
+   *    { ok: true, source: 'facebook', href }       opens on Facebook
+   *    { ok: false, error } */
+  function sermonVideo(input) {
+    var text = String(input || '').trim();
+    if (!text) return { ok: false, error: 'Paste the YouTube or Facebook video link.' };
+    if (/youtu\.?be/i.test(text)) {
+      var yt = youtubeVideo(text);
+      return yt.ok ? { ok: true, source: 'youtube', id: yt.id, href: yt.href } : yt;
+    }
+    if (/facebook\.com|fb\.watch/i.test(text)) {
+      var fb = facebookVideo(text);
+      return fb.ok ? { ok: true, source: 'facebook', href: fb.href } : fb;
+    }
+    return { ok: false, error: 'Paste a YouTube or Facebook video link.' };
+  }
+
+  /** YouTube's player for a video, started by the tap that loaded it. The
+   *  -nocookie host keeps YouTube from setting tracking cookies until then. */
+  function youtubeEmbedUrl(id) {
+    return 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
+  }
+
+  /** The video's own thumbnail, which YouTube serves for every public video. */
+  function youtubeThumb(id) {
+    return 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg';
+  }
+
   var ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
   function validDate(s) {
@@ -94,7 +158,7 @@
     if (!String(s.preacher || '').trim()) out.push('Add the preacher.');
     if (!validDate(s.date)) out.push('Pick the date it was preached.');
     if (!String(s.summary || '').trim()) out.push('Add a short summary.');
-    var video = facebookVideo(s.video);
+    var video = sermonVideo(s.video);
     if (!video.ok) out.push(video.error);
     return out;
   }
@@ -169,6 +233,10 @@
     scheduledPreacher: scheduledPreacher,
     preacherSuggestions: preacherSuggestions,
     facebookVideo: facebookVideo,
+    youtubeVideo: youtubeVideo,
+    sermonVideo: sermonVideo,
+    youtubeEmbedUrl: youtubeEmbedUrl,
+    youtubeThumb: youtubeThumb,
     validDate: validDate,
     sermonProblems: sermonProblems,
     sortSermons: sortSermons,

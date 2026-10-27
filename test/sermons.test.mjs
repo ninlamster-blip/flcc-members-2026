@@ -2,11 +2,12 @@
  * Sermons: the public page (sermons.html), the editor (sermon-editor.html) and
  * the rules they share (sermons.js).
  *
- * The rule most worth defending is that the page links OUT to Facebook rather
- * than embedding its player. Facebook refuses to play a video on another site
- * once it hears music it thinks someone else owns — the worship set, so nearly
- * every service — and the first real sermon came up as "Video unavailable".
- * Nothing about that looks wrong until a visitor taps play.
+ * The rule most worth defending is which videos play where. YouTube ones play
+ * in the page; Facebook ones open on Facebook, because Facebook refuses to
+ * play a video on another site once it hears music it thinks someone else owns
+ * — the worship set, so nearly every service — and the first real sermon came
+ * up as "Video unavailable". Nothing about that looks wrong until a visitor
+ * taps play.
  *
  * Run: node --test 'test/*.test.mjs'
  */
@@ -85,12 +86,76 @@ test('anything that is not a Facebook video is refused with a reason', () => {
   }
 });
 
-test("the public page opens videos on Facebook and never embeds Facebook's player", () => {
-  // The embedded player answered "Video unavailable … content owned by someone
+test("the public page never embeds Facebook's player — only YouTube's", () => {
+  // The Facebook player answered "Video unavailable … content owned by someone
   // else" for the first real sermon, because of the worship music.
   const src = readRepoFile('sermons.html').replace(/\/\*[\s\S]*?\*\//g, '');
-  assert.equal(/<iframe|el\('iframe'|plugins\/video\.php/.exec(src), null, 'sermons.html must not embed a player');
-  assert.match(src, /class: 'poster', href: s\.video, target: '_blank'/, 'the play card links to the video');
+  assert.equal(/plugins\/video\.php|<iframe/.exec(src), null, 'no Facebook player, no hand-written iframe');
+  const frames = [...src.matchAll(/el\('iframe', \{\s*src: ([^,]+),/g)].map(m => m[1].trim());
+  assert.deepEqual(frames, ['S.youtubeEmbedUrl(v.id)'], 'the one player is YouTube’s');
+  assert.match(src, /el\('a', \{\s*class: 'poster', href: v\.href, target: '_blank'/, 'a Facebook sermon links out');
+});
+
+test("the members app's Home card follows the same rule", () => {
+  const src = appSource('index.html');
+  const card = src.slice(src.indexOf('function LatestSermonCard('), src.indexOf('function BOTRScheduleCard('));
+  assert.ok(card.length > 0, 'LatestSermonCard must sit just above BOTRScheduleCard');
+  assert.equal(/plugins\/video\.php/.exec(card), null);
+  const frames = [...card.matchAll(/<iframe src=\{([^}]+)\}/g)].map(m => m[1]);
+  assert.deepEqual(frames, ['S.youtubeEmbedUrl(v.id)']);
+  assert.match(card, /CHURCH\.data\('sermons\.json'\)/, 'reads this church’s list through FLCC');
+  assert.match(readRepoFile('index.html'), /<script src="\.\/sermons\.js"><\/script>/);
+});
+
+// ── YouTube ──────────────────────────────────────────────────────────────────
+
+test('every shape of YouTube link comes back as its video id', () => {
+  for (const input of [
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42s&list=PL123',
+    'https://youtu.be/dQw4w9WgXcQ?si=AbCdEf',
+    'youtu.be/dQw4w9WgXcQ',
+    'https://m.youtube.com/watch?v=dQw4w9WgXcQ',
+    'https://www.youtube.com/live/dQw4w9WgXcQ?feature=shared',
+    'https://youtube.com/shorts/dQw4w9WgXcQ',
+    'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
+    '<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=x" title="YouTube video player" allowfullscreen></iframe>',
+  ]) {
+    const v = S.sermonVideo(input);
+    assert.equal(v.ok, true, input);
+    assert.equal(v.source, 'youtube', input);
+    assert.equal(v.id, 'dQw4w9WgXcQ', input);
+    assert.equal(v.href, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', input);
+  }
+});
+
+test('a YouTube link that is not one video is refused with a reason', () => {
+  for (const input of [
+    'https://www.youtube.com/@flccchurch',
+    'https://www.youtube.com/channel/UC123',
+    'https://www.youtube.com/watch?v=short',
+    'https://www.youtube.com/playlist?list=PL123',
+    'https://youtube.com.evil.example/watch?v=dQw4w9WgXcQ',
+  ]) {
+    const v = S.sermonVideo(input);
+    assert.equal(v.ok, false, input);
+    assert.ok(v.error, input);
+  }
+});
+
+test('Facebook links still work, and are marked to open on Facebook', () => {
+  const v = S.sermonVideo('https://www.facebook.com/share/v/19vr6qa5ro/?mibextid=wwXIfr');
+  assert.deepEqual(v, { ok: true, source: 'facebook', href: 'https://www.facebook.com/share/v/19vr6qa5ro/' });
+  assert.equal(S.sermonVideo('https://example.com/video.mp4').ok, false);
+});
+
+test("YouTube's player and thumbnail addresses are built from the id alone", () => {
+  assert.equal(S.youtubeEmbedUrl('dQw4w9WgXcQ'), 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0&playsinline=1');
+  assert.equal(S.youtubeThumb('dQw4w9WgXcQ'), 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
+});
+
+test('a sermon with a YouTube video is publishable', () => {
+  assert.deepEqual(S.sermonProblems({ ...GOOD, video: 'https://youtu.be/dQw4w9WgXcQ' }), []);
 });
 
 // ── One sermon ───────────────────────────────────────────────────────────────
@@ -237,8 +302,9 @@ test('the public page never puts typed text in as HTML', () => {
   const src = readRepoFile('sermons.html');
   const html = [...src.matchAll(/\.innerHTML\s*=\s*([^;]+);/g)].map(m => m[1].trim());
   for (const value of html) {
-    assert.match(value, /^'<svg[^']*'$/, `innerHTML may only hold the fixed play icon, not ${value}`);
+    assert.equal(value, 'PLAY_ICON', `innerHTML may only hold the fixed play icon, not ${value}`);
   }
+  assert.match(src, /var PLAY_ICON = '<svg[^']*';/, 'and the play icon is a fixed string');
 });
 
 test('the members app links to the sermons page for the current church', () => {
