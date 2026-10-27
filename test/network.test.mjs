@@ -19,7 +19,7 @@ const FLCC = loadChurch();
 const CHURCHES = FLCC.churches;
 
 /** Every page that renders for a member or a ministry lead. */
-const APP_PAGES = ['index.html', 'attendance.html', 'prayer.html', 'music.html', 'schedule-editor.html', 'roster.html'];
+const APP_PAGES = ['index.html', 'attendance.html', 'prayer.html', 'music.html', 'schedule-editor.html', 'roster.html', 'sermons.html', 'sermon-editor.html'];
 
 // ── The registry ─────────────────────────────────────────────────────────────
 
@@ -271,7 +271,7 @@ test('no dashboard opens on a month frozen into the source', () => {
 test('pages read their data through FLCC rather than fixed paths', () => {
   for (const page of APP_PAGES.filter(p => p !== 'roster.html')) {
     const src = readRepoFile(page);
-    const hit = /fetch\(\s*['"`]\.?\/?(?:data|attendance|prayer|music|equip|worship)\.json/.exec(src);
+    const hit = /fetch\(\s*['"`]\.?\/?(?:data|attendance|prayer|music|equip|worship|sermons)\.json/.exec(src);
     assert.equal(hit, null, `${page}: fetches a fixed path — use CHURCH.data('…')`);
   }
 });

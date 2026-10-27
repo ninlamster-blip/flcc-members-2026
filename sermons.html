@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Sermons — FLCC</title>
+<meta name="description" content="Watch past services and sermons." />
+<link rel="icon" type="image/png" href="./logo.png" />
+<link rel="apple-touch-icon" href="./logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Which church's sermons these are. Public page, same one for all 14 churches:
+     sermons.html?church=<slug>. -->
+<script src="./church.js"></script>
+<script src="./sermons.js"></script>
+<script>document.title = 'Sermons · ' + window.FLCC.name;</script>
+
+<!-- Deliberately not React: this is the page the public lands on from a shared
+     link, usually on a phone, and it only has to show a list. -->
+<style>
+  :root {
+    --bg: #FAFAF5; --surface: #FFFFFF; --ink: #18181B; --ink-muted: #52525B; --ink-subtle: #A1A1AA;
+    --border: #E7E5DE; --border-strong: #D4D4D0;
+    --accent: #A33B2A; --accent-hover: #8B2E20; --accent-soft: #FBEBE7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .font-display { font-family: 'Fraunces', Georgia, serif; }
+  a { color: var(--accent); }
+
+  .wrap { max-width: 64rem; margin: 0 auto; padding: 0 16px; }
+  header { border-bottom: 1px solid var(--border); background: var(--surface); }
+  .hdr-strip { height: 3px; background: var(--accent); }
+  .hdr { display: flex; align-items: center; gap: 12px; padding: 18px 16px 16px; flex-wrap: wrap; }
+  .hdr img { width: 44px; height: 44px; flex: none; }
+  .hdr-text { flex: 1 1 12rem; min-width: 0; }
+  .eyebrow { font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-size: 1.9rem; font-weight: 600; margin: 2px 0 0; line-height: 1.15; }
+  .church-pick { font: inherit; font-size: .85rem; padding: .45rem .6rem; border-radius: 9px; border: 1.5px solid var(--border-strong); background: var(--bg); color: var(--ink); max-width: 100%; }
+
+  main.wrap { padding: 24px 16px 64px; }
+  .label { font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-subtle); margin: 0 0 10px; }
+
+  .player { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #18181B; border-radius: 14px; overflow: hidden; }
+  .player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; cursor: pointer; color: #fff; font: inherit;
+            background: linear-gradient(135deg, #2A2A30, #18181B); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .poster:hover .play, .poster:focus-visible .play { transform: scale(1.08); background: var(--accent-hover); }
+  .play { width: 58px; height: 58px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; transition: transform .15s, background .15s; }
+  .play svg { width: 22px; height: 22px; margin-left: 4px; }
+  .poster-date { font-size: .8rem; opacity: .8; }
+
+  .featured { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; margin-bottom: 32px; }
+  .featured .meta { padding: 14px 6px 4px; }
+  .featured h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 4px; line-height: 1.2; }
+  /* On a wide screen the words sit beside the video rather than under a
+     full-width player taller than the window. */
+  @media (min-width: 56rem) {
+    .featured { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 8px 22px; align-items: center; }
+    .featured .meta { padding: 6px 8px 6px 0; }
+  }
+
+  .byline { font-size: .875rem; color: var(--ink-muted); }
+  .byline strong { color: var(--ink); font-weight: 600; }
+  .summary { margin: 10px 0 0; color: var(--ink); font-size: .95rem; white-space: pre-line; }
+  .fb-link { display: inline-block; margin-top: 10px; font-size: .8rem; font-weight: 600; text-decoration: none; }
+  .fb-link:hover { text-decoration: underline; }
+
+  .tools { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .tools .label { margin: 0; flex: 1 1 auto; }
+  .search { font: inherit; font-size: .9rem; padding: .55rem .8rem; border-radius: 10px; border: 1.5px solid var(--border-strong); background: var(--surface); width: 16rem; max-width: 100%; }
+  .search:focus, .church-pick:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(163,59,42,.12); }
+
+  .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 44rem) { .grid { grid-template-columns: 1fr 1fr; } h1 { font-size: 2.3rem; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; }
+  .card .player { border-radius: 10px; }
+  .card .meta { padding: 12px 6px 6px; }
+  .card h3 { font-size: 1.15rem; font-weight: 600; margin: 0 0 2px; line-height: 1.25; }
+
+  .empty { text-align: center; color: var(--ink-muted); background: var(--surface); border: 1px dashed var(--border-strong); border-radius: 16px; padding: 40px 20px; }
+  .empty .font-display { font-size: 1.3rem; color: var(--ink); margin-bottom: 4px; }
+  .spinner { width: 32px; height: 32px; margin: 60px auto; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  footer { border-top: 1px solid var(--border); padding: 18px 0 32px; font-size: .8rem; color: var(--ink-muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-strip"></div>
+  <div class="wrap hdr">
+    <img src="./logo.png" alt="" aria-hidden="true" />
+    <div class="hdr-text">
+      <div class="eyebrow" id="church-name"></div>
+      <h1 class="font-display">Sermons</h1>
+    </div>
+    <label>
+      <span class="label" style="display:block;margin:0 0 4px">Church</span>
+      <select class="church-pick" id="church-pick" aria-label="Choose a church"></select>
+    </label>
+  </div>
+</header>
+
+<main class="wrap" id="main" aria-live="polite">
+  <div class="spinner" role="status" aria-label="Loading"></div>
+</main>
+
+<footer>
+  <div class="wrap" id="footer"></div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var CHURCH = window.FLCC;
+  var S = window.FLCCSermons;
+
+  /** createElement with attributes and children. Text always goes in as a text
+   *  node, never as HTML — every word on this page was typed by a person. */
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === 'class') n.className = attrs[k];
+      else if (k === 'text') n.textContent = attrs[k];
+      else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) {
+      if (c == null || c === false) return;
+      n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    });
+    return n;
+  }
+
+  function formatDate(iso) {
+    var d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function iframeFor(s) {
+    return el('iframe', {
+      src: S.embedUrl(s.video),
+      title: s.title,
+      allow: 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share',
+      allowfullscreen: 'true',
+      loading: 'lazy',
+    });
+  }
+
+  /** The newest sermon loads Facebook's player straight away. The rest show a
+   *  play button and only load it when tapped — thirty Facebook players at once
+   *  would make the page unusable on a phone. */
+  function player(s, eager) {
+    var box = el('div', { class: 'player' });
+    if (eager) { box.appendChild(iframeFor(s)); return box; }
+    var btn = el('button', {
+      class: 'poster', type: 'button', 'aria-label': 'Play ' + s.title,
+      onclick: function () { box.replaceChildren(iframeFor(s)); },
+    }, [
+      el('span', { class: 'play', 'aria-hidden': 'true' }),
+      el('span', { class: 'poster-date', text: formatDate(s.date) }),
+    ]);
+    btn.firstChild.innerHTML = '<svg viewBox="0 0 24 24" fill="#fff"><path d="M6 4l15 8-15 8z"/></svg>';
+    box.appendChild(btn);
+    return box;
+  }
+
+  function meta(s, headingTag) {
+    return el('div', { class: 'meta' }, [
+      el(headingTag, { class: 'font-display', text: s.title }),
+      el('div', { class: 'byline' }, [el('strong', { text: s.preacher }), ' · ' + formatDate(s.date)]),
+      el('p', { class: 'summary', text: s.summary }),
+      el('a', { class: 'fb-link', href: s.video, target: '_blank', rel: 'noopener', text: 'Watch on Facebook ↗' }),
+    ]);
+  }
+
+  function render(sermons) {
+    var main = document.getElementById('main');
+    main.replaceChildren();
+
+    if (!sermons.length) {
+      main.appendChild(el('div', { class: 'empty' }, [
+        el('div', { class: 'font-display', text: 'No sermons posted yet' }),
+        el('div', { text: 'Check back after the next service.' }),
+      ]));
+      return;
+    }
+
+    var latest = sermons[0];
+    main.appendChild(el('div', { class: 'label', text: 'Latest sermon' }));
+    main.appendChild(el('section', { class: 'featured' }, [player(latest, true), meta(latest, 'h2')]));
+
+    var rest = sermons.slice(1);
+    if (!rest.length) return;
+
+    var grid = el('div', { class: 'grid' });
+    var search = el('input', { class: 'search', type: 'search', placeholder: 'Search title, preacher…', 'aria-label': 'Search sermons' });
+    var count = el('div', { class: 'label' });
+
+    function fill() {
+      var shown = rest.filter(function (s) { return S.matchesSearch(s, search.value); });
+      count.textContent = search.value.trim()
+        ? shown.length + ' of ' + rest.length + ' earlier sermons'
+        : 'Earlier sermons';
+      grid.replaceChildren.apply(grid, shown.map(function (s) {
+        return el('article', { class: 'card' }, [player(s, false), meta(s, 'h3')]);
+      }));
+      if (!shown.length) grid.appendChild(el('div', { class: 'empty', text: 'No sermon matches that search.' }));
+    }
+    search.addEventListener('input', fill);
+
+    main.appendChild(el('div', { class: 'tools' }, [count, rest.length > 4 ? search : null]));
+    main.appendChild(grid);
+    fill();
+  }
+
+  function renderError() {
+    document.getElementById('main').replaceChildren(el('div', { class: 'empty' }, [
+      el('div', { class: 'font-display', text: 'Couldn’t load the sermons' }),
+      el('div', { text: 'Check your connection and refresh the page.' }),
+    ]));
+  }
+
+  // ── Header, church picker, footer ─────────────────────────────────────────
+  document.getElementById('church-name').textContent = CHURCH.name;
+  var pick = document.getElementById('church-pick');
+  CHURCH.bySector().forEach(function (group) {
+    var og = el('optgroup', { label: group.sector });
+    group.churches.forEach(function (c) {
+      var o = el('option', { value: c.slug, text: c.short });
+      if (c.slug === CHURCH.slug) o.selected = true;
+      og.appendChild(o);
+    });
+    pick.appendChild(og);
+  });
+  pick.addEventListener('change', function () { CHURCH.setChurch(pick.value); });
+
+  document.getElementById('footer').append(
+    CHURCH.name + ' · ',
+    el('a', { href: CHURCH.url('index.html'), text: 'Members app' })
+  );
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+  // ?t= so a page left open, or a phone's cache, still sees this week's sermon.
+  fetch(CHURCH.data('sermons.json') + '?t=' + Date.now())
+    .then(function (r) {
+      if (r.status === 404) return { sermons: [] };   // this church hasn't posted one yet
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (json) {
+      // An entry with something missing is skipped rather than shown half
+      // empty, and every link is the cleaned-up one rather than as typed.
+      var list = S.readSermonsFile(json)
+        .filter(function (s) { return S.sermonProblems(s).length === 0; })
+        .map(function (s) { return Object.assign({}, s, { video: S.facebookVideo(s.video).href }); });
+      render(S.sortSermons(list));
+    })
+    .catch(renderError);
+})();
+</script>
+</body>
+</html>
