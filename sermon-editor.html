@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Sermon Editor — FLCC</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" href="./logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+
+<!-- Which church's sermons are being edited. Decides both the list loaded and
+     the one file Publish writes to: sermon-editor.html?church=<slug>. -->
+<script src="./church.js"></script>
+<script src="./sermons.js"></script>
+<script>document.title = 'Sermon Editor — ' + window.FLCC.short;</script>
+<style>
+  :root {
+    --bg:#F8F7F2; --surface:#FFFFFF; --ink:#1A1A1E; --ink-2:#3D3D44; --ink-3:#6E6E78; --ink-4:#A8A8B3;
+    --border:#E8E6DF; --border-2:#D5D2C8;
+    --accent:#A33B2A; --accent-hover:#7E2D1F;
+    --success:#16A34A; --success-soft:#DCFCE7;
+    --warning:#B45309; --warning-soft:#FEF3C7;
+    --danger:#DC2626; --danger-soft:#FEE2E2;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Geist',ui-sans-serif,system-ui,sans-serif;}
+  .font-display{font-family:'Fraunces',Georgia,serif;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes scaleIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+  @keyframes notif{0%{transform:translate(-50%,20px);opacity:0}12%{transform:translate(-50%,0);opacity:1}80%{transform:translate(-50%,0);opacity:1}100%{transform:translate(-50%,20px);opacity:0}}
+  .spin{animation:spin 1s linear infinite;}
+  .scale-in{animation:scaleIn .3s cubic-bezier(.34,1.56,.64,1) both;}
+
+  .shell{max-width:72rem;margin:0 auto;padding:0 16px 80px;}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:22px 0 18px;border-bottom:1px solid var(--border);margin-bottom:22px;}
+  .cols{display:grid;grid-template-columns:1fr;gap:22px;}
+  @media(min-width:60rem){.cols{grid-template-columns:minmax(0,26rem) minmax(0,1fr);align-items:start;}.sticky{position:sticky;top:16px;}}
+
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;}
+  .field{margin-bottom:14px;}
+  .field-label{display:block;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;}
+  .field-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:.55rem .75rem;font-size:.9375rem;color:var(--ink);font-family:'Geist',sans-serif;outline:none;transition:border-color .15s,box-shadow .15s,background .15s;}
+  .field-input:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px rgba(163,59,42,.12);}
+  textarea.field-input{resize:vertical;min-height:6rem;line-height:1.5;}
+  .hint{font-size:.75rem;color:var(--ink-3);margin-top:5px;line-height:1.5;}
+  .note{font-size:.8125rem;border-radius:10px;padding:.6rem .75rem;margin-top:8px;line-height:1.5;}
+  .note.ok{background:var(--success-soft);color:#14532D;}
+  .note.warn{background:var(--warning-soft);color:#78350F;}
+  .note.bad{background:var(--danger-soft);color:#7F1D1D;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.55rem 1rem;border-radius:10px;font-size:.875rem;font-weight:600;border:1.5px solid transparent;cursor:pointer;white-space:nowrap;font-family:'Geist',sans-serif;text-decoration:none;}
+  .btn:active{transform:scale(.97);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-primary{background:var(--ink);color:#fff;}
+  .btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--border-2);}
+  .btn-ghost:hover{background:var(--bg);}
+  .btn-danger{background:transparent;color:var(--danger);border-color:#FCA5A5;}
+  .publish-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;border-radius:12px;font-size:.9375rem;font-weight:700;border:none;cursor:pointer;background:var(--accent);color:#fff;box-shadow:0 4px 18px rgba(163,59,42,.3);font-family:'Geist',sans-serif;}
+  .publish-btn:hover:not(:disabled){background:var(--accent-hover);}
+  .publish-btn:disabled{opacity:.6;cursor:wait;}
+
+  .row{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--border);}
+  .row:first-child{border-top:0;padding-top:0;}
+  .pill{display:inline-block;font-size:.6875rem;font-weight:700;padding:2px 8px;border-radius:999px;}
+  .player{position:relative;width:100%;aspect-ratio:16/9;background:#18181B;border-radius:10px;overflow:hidden;margin-top:8px;}
+  .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1A1A1E;color:#fff;padding:12px 20px;border-radius:12px;font-size:.875rem;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:100;max-width:calc(100vw - 32px);animation:notif 3.5s ease forwards;}
+  details.help summary{cursor:pointer;font-weight:600;font-size:.875rem;}
+  details.help ol{font-size:.8125rem;color:var(--ink-2);padding-left:18px;line-height:1.7;margin:10px 0 0;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef } = React;
+
+const CHURCH  = window.FLCC;
+const S       = window.FLCCSermons;
+const GH_REPO = 'ninlamster-blip/flcc-members-2026';
+// Scoped to the active church — this editor can only overwrite its own
+// church's sermons file.
+const GH_FILE = CHURCH.publishPath('sermons.json');
+const GH_API  = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+// One admin posts for all 14 churches, so the token is kept device-wide rather
+// than per church — connecting once covers every church. If the schedule
+// editor is already connected for this church, its token is used as is.
+const TOKEN_KEY       = 'flcc-sermon-editor-token-v1';
+const SCHED_TOKEN_KEY = CHURCH.key('flcc-sched-editor-token-v1');
+
+function readToken(){
+  try{ return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(SCHED_TOKEN_KEY) || ''; }catch{ return ''; }
+}
+
+function todayISO(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(iso){
+  const d=new Date(iso+'T00:00:00');
+  return isNaN(d)?iso:d.toLocaleDateString(undefined,{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+
+const EMPTY = { date:'', title:'', preacher:'', summary:'', video:'' };
+
+// UTF-8 safe base64, both ways — sermon summaries carry Tagalog and emoji.
+const toBase64   = s => btoa(unescape(encodeURIComponent(s)));
+const fromBase64 = b => decodeURIComponent(escape(atob(b.replace(/\s/g,''))));
+
+// ─── Token Modal ──────────────────────────────────────────────────────────────
+function TokenModal({onSave,onClose}){
+  const [val,setVal]=useState('');
+  const save=()=>{
+    const v=val.trim();
+    if(!v.startsWith('ghp_')&&!v.startsWith('github_pat_')){alert('Token should start with ghp_ or github_pat_');return;}
+    onSave(v);
+  };
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(26,26,30,.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:16}} onClick={onClose}>
+      <div className="scale-in" style={{background:'var(--surface)',borderRadius:20,padding:24,maxWidth:480,width:'100%',boxShadow:'0 24px 80px rgba(0,0,0,.2)'}} onClick={e=>e.stopPropagation()}>
+        <div className="font-display" style={{fontSize:'1.4rem',fontWeight:600,marginBottom:6}}>Connect GitHub</div>
+        <p style={{fontSize:'.875rem',color:'var(--ink-3)',margin:'0 0 14px',lineHeight:1.6}}>
+          One-time setup. The token is saved on this device only, and works for every church's sermons.
+        </p>
+        <ol style={{fontSize:'.8125rem',color:'var(--ink-3)',paddingLeft:18,lineHeight:1.9,margin:'0 0 16px'}}>
+          <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens → <strong>Fine-grained tokens</strong></li>
+          <li>Repository access → <strong>flcc-members-2026 only</strong></li>
+          <li>Permissions → Contents → <strong>Read and write</strong> → Generate</li>
+          <li>Copy the token and paste below</li>
+        </ol>
+        <input autoFocus type="password" className="field-input" style={{marginBottom:12}}
+          placeholder="github_pat_… or ghp_…" value={val} onChange={e=>setVal(e.target.value)} onKeyDown={e=>e.key==='Enter'&&save()}/>
+        <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn" style={{background:'var(--success)',color:'#fff'}} onClick={save} disabled={!val.trim()}>Connect →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── The Facebook link box, with what it found ────────────────────────────────
+function VideoCheck({value}){
+  const [preview,setPreview]=useState(false);
+  const v=S.facebookVideo(value);
+  useEffect(()=>setPreview(false),[value]);
+  if(!String(value||'').trim()) return null;
+  if(!v.ok) return <div className="note bad">{v.error}</div>;
+  return (
+    <>
+      {v.warning
+        ? <div className="note warn">
+            This is a short <strong>share</strong> link. Facebook often won't play these on another website.
+            For the full link: open the video in a browser and copy the address from the address bar
+            (it has <strong>/videos/</strong> in it). Or on a computer, click <strong>⋯ → Embed</strong> and paste the whole code here.
+          </div>
+        : <div className="note ok">✓ Facebook video link. <button type="button" onClick={()=>setPreview(p=>!p)} style={{background:'none',border:'none',padding:0,color:'inherit',textDecoration:'underline',cursor:'pointer',font:'inherit'}}>{preview?'Hide preview':'Preview it'}</button></div>}
+      {preview&&!v.warning&&(
+        <div className="player"><iframe src={S.embedUrl(v.href)} title="Preview" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/></div>
+      )}
+    </>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+function App(){
+  const [sermons,   setSermons]   = useState([]);
+  const [sha,       setSha]       = useState(null);    // the version of the file on GitHub we loaded
+  const [churchData,setChurchData]= useState(null);    // data.json, for preacher names
+  const [loading,   setLoading]   = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [token,     setToken]     = useState(readToken);
+  const [showSetup, setShowSetup] = useState(false);
+  const [form,      setForm]      = useState({...EMPTY,date:todayISO()});
+  const [editingId, setEditingId] = useState(null);
+  const [tried,     setTried]     = useState(false);   // show problems only after the first Save
+  const [dirty,     setDirty]     = useState(false);
+  const [publishing,setPublishing]= useState(false);
+  const [toast,     setToast]     = useState('');
+
+  const leaving=useRef(false);   // set once the user has already confirmed leaving
+  const showToast=m=>{setToast(m);setTimeout(()=>setToast(''),3600);};
+
+  // With a token, read the file straight from GitHub: the site itself can lag
+  // a publish by a minute or two, and building on that stale copy would wipe
+  // the sermon just added. Without one, the published copy is all there is.
+  const load=async(tok)=>{
+    setLoading(true);setLoadError('');
+    try{
+      if(tok){
+        const r=await fetch(`${GH_API}?ref=main&t=${Date.now()}`,{headers:{Authorization:`Bearer ${tok}`,Accept:'application/vnd.github+json'}});
+        if(r.status===404){setSermons([]);setSha(null);}
+        else if(r.status===401){throw new Error('GitHub did not accept the saved token. Disconnect and connect again.');}
+        else if(!r.ok){throw new Error(`GitHub answered ${r.status}`);}
+        else{const j=await r.json();setSermons(S.readSermonsFile(JSON.parse(fromBase64(j.content))));setSha(j.sha);}
+      }else{
+        const r=await fetch(`${CHURCH.data('sermons.json')}?t=${Date.now()}`);
+        if(r.status===404) setSermons([]);
+        else if(!r.ok) throw new Error(`HTTP ${r.status}`);
+        else setSermons(S.readSermonsFile(await r.json()));
+      }
+      setDirty(false);
+    }catch(e){ setLoadError(e.message||String(e)); }
+    finally{ setLoading(false); }
+  };
+
+  useEffect(()=>{ load(token); },[token]);
+  useEffect(()=>{
+    fetch(`${CHURCH.data('data.json')}?t=${Date.now()}`).then(r=>r.ok?r.json():null).then(setChurchData).catch(()=>{});
+  },[]);
+  useEffect(()=>{
+    const warn=e=>{ if(dirty&&!leaving.current){ e.preventDefault(); e.returnValue=''; } };
+    window.addEventListener('beforeunload',warn);
+    return ()=>window.removeEventListener('beforeunload',warn);
+  },[dirty]);
+
+  const sorted      = useMemo(()=>S.sortSermons(sermons),[sermons]);
+  const suggestions = useMemo(()=>S.preacherSuggestions(churchData,sermons),[churchData,sermons]);
+  const problems    = S.sermonProblems(form);
+
+  const set=(k,v)=>setForm(f=>{
+    const next={...f,[k]:v};
+    // Picking a date fills in whoever the church's schedule says preached
+    // that day — but never over a name already typed.
+    if(k==='date'&&!f.preacher.trim()){
+      const p=S.scheduledPreacher(churchData,v);
+      if(p) next.preacher=p;
+    }
+    return next;
+  });
+
+  // The schedule loads after the form opens on today's date, so fill the
+  // preacher once it arrives too.
+  useEffect(()=>{
+    if(!churchData||editingId) return;
+    setForm(f=>f.preacher.trim()?f:{...f,preacher:S.scheduledPreacher(churchData,f.date)});
+  },[churchData]);
+
+  const resetForm=()=>{setForm({...EMPTY,date:todayISO()});setEditingId(null);setTried(false);};
+
+  const save=()=>{
+    setTried(true);
+    if(problems.length) return;
+    const clean={
+      date:form.date,
+      title:form.title.trim(),
+      preacher:form.preacher.trim(),
+      summary:form.summary.trim(),
+      video:S.facebookVideo(form.video).href,
+    };
+    if(editingId){
+      setSermons(list=>list.map(s=>s.id===editingId?{...s,...clean}:s));
+      showToast('✓ Changes saved — press Publish to put them online');
+    }else{
+      const id=S.sermonId(clean.date,clean.title,sermons.map(s=>s.id));
+      setSermons(list=>[...list,{id,...clean}]);
+      showToast('✓ Sermon added — press Publish to put it online');
+    }
+    setDirty(true);resetForm();
+  };
+
+  const edit=s=>{
+    setForm({date:s.date||'',title:s.title||'',preacher:s.preacher||'',summary:s.summary||'',video:s.video||''});
+    setEditingId(s.id);setTried(false);
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+
+  const remove=s=>{
+    if(!confirm(`Remove "${s.title}"? It comes off the public page when you publish.`)) return;
+    setSermons(list=>list.filter(x=>x.id!==s.id));
+    if(editingId===s.id) resetForm();
+    setDirty(true);
+  };
+
+  const saveToken=v=>{
+    try{localStorage.setItem(TOKEN_KEY,v);}catch{}
+    setShowSetup(false);setToken(v);showToast('✓ GitHub connected');
+  };
+  const disconnect=()=>{
+    try{localStorage.removeItem(TOKEN_KEY);}catch{}
+    setToken('');
+  };
+
+  const publish=async()=>{
+    if(!token){setShowSetup(true);return;}
+    setPublishing(true);
+    try{
+      const content=JSON.stringify({sermons:S.sortSermons(sermons)},null,2)+'\n';
+      const r=await fetch(GH_API,{
+        method:'PUT',
+        headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+        body:JSON.stringify({message:`Sermons: update ${GH_FILE} — ${new Date().toLocaleDateString()}`,content:toBase64(content),branch:'main',...(sha?{sha}:{})}),
+      });
+      if(r.status===409||r.status===422){
+        throw new Error('This list was changed somewhere else since you opened it. Copy anything you just typed, reload the page, then add it again.');
+      }
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||`HTTP ${r.status}`);}
+      const j=await r.json();
+      setSha(j.content&&j.content.sha);setDirty(false);
+      showToast('🎉 Published! It shows on the Sermons page within a minute or two.');
+    }catch(e){
+      alert(`Publish failed: ${e.message}`);
+    }finally{setPublishing(false);}
+  };
+
+  const switchChurch=slug=>{
+    if(dirty&&!confirm('You have changes that are not published. Switch church and lose them?')) return;
+    leaving.current=true;
+    CHURCH.setChurch(slug);
+  };
+
+  return (
+    <div className="shell">
+      {/* ── Header: which church, which file, and the connection ── */}
+      <div className="top">
+        <div style={{minWidth:0}}>
+          <div className="font-display" style={{fontSize:'1.6rem',fontWeight:600}}>🎬 Sermon Editor</div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginTop:8,flexWrap:'wrap'}}>
+            <span style={{width:9,height:9,borderRadius:'50%',background:CHURCH.accent,flex:'none'}}/>
+            <select className="field-input" style={{width:'auto',padding:'.35rem .6rem',fontSize:'.875rem'}} value={CHURCH.slug} onChange={e=>switchChurch(e.target.value)} aria-label="Church">
+              {CHURCH.bySector().map(g=>(
+                <optgroup key={g.sector} label={g.sector}>
+                  {g.churches.map(c=><option key={c.slug} value={c.slug}>{c.name}</option>)}
+                </optgroup>
+              ))}
+            </select>
+            <a className="btn btn-ghost" style={{padding:'.35rem .7rem',fontSize:'.8125rem'}} href={CHURCH.url('sermons.html')} target="_blank" rel="noopener">View public page ↗</a>
+          </div>
+          <div title={GH_FILE} style={{fontFamily:'ui-monospace,monospace',fontSize:'.6875rem',color:'var(--ink-4)',marginTop:6}}>Publishes to {GH_FILE}</div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          {token
+            ? <span style={{fontSize:'.75rem',color:'var(--success)',fontWeight:600}}>✓ GitHub connected <button onClick={disconnect} style={{fontSize:'.6875rem',color:'var(--ink-4)',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>Disconnect</button></span>
+            : <button className="btn btn-ghost" onClick={()=>setShowSetup(true)}>🔑 Connect GitHub</button>}
+          {dirty&&!publishing&&<span className="pill" style={{background:'var(--warning-soft)',color:'var(--warning)'}}>Not published yet</span>}
+          <button className="publish-btn" onClick={publish} disabled={publishing||!dirty}>
+            {publishing
+              ?<><span className="spin" style={{width:16,height:16,border:'2px solid rgba(255,255,255,.4)',borderTopColor:'#fff',borderRadius:'50%'}}/>Publishing…</>
+              :'↑ Publish'}
+          </button>
+        </div>
+      </div>
+
+      <div className="cols">
+        {/* ── The form ── */}
+        <div className="sticky">
+          <div className="panel">
+            <div className="font-display" style={{fontSize:'1.2rem',fontWeight:600,marginBottom:14}}>{editingId?'Edit sermon':'Add a sermon'}</div>
+
+            <div className="field">
+              <label className="field-label" htmlFor="f-date">Date preached</label>
+              <input id="f-date" type="date" className="field-input" value={form.date} onChange={e=>set('date',e.target.value)}/>
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="f-title">Title</label>
+              <input id="f-title" className="field-input" value={form.title} onChange={e=>set('title',e.target.value)} placeholder="Walking in Faith" maxLength={120}/>
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="f-preacher">Preacher</label>
+              <input id="f-preacher" className="field-input" list="preachers" value={form.preacher} onChange={e=>set('preacher',e.target.value)} placeholder="Ptr. Rodel" maxLength={80}/>
+              <datalist id="preachers">{suggestions.map(n=><option key={n} value={n}/>)}</datalist>
+              <div className="hint">Filled in from the church schedule when it knows who preached that day.</div>
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="f-summary">Summary</label>
+              <textarea id="f-summary" className="field-input" value={form.summary} onChange={e=>set('summary',e.target.value)} placeholder="Two or three sentences about the message." maxLength={800}/>
+              <div className="hint" style={{textAlign:'right'}}>{form.summary.length}/800</div>
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="f-video">Facebook video link</label>
+              <input id="f-video" className="field-input" value={form.video} onChange={e=>set('video',e.target.value)} placeholder="https://www.facebook.com/…/videos/…" autoComplete="off" spellCheck={false}/>
+              <VideoCheck value={form.video}/>
+            </div>
+
+            {tried&&problems.length>0&&(
+              <div className="note bad" style={{marginBottom:12}}>{problems.map(p=><div key={p}>• {p}</div>)}</div>
+            )}
+
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-primary" style={{flex:1}} onClick={save}>{editingId?'Save changes':'+ Add sermon'}</button>
+              {editingId&&<button className="btn btn-ghost" onClick={resetForm}>Cancel</button>}
+            </div>
+          </div>
+
+          <div className="panel" style={{marginTop:14}}>
+            <details className="help">
+              <summary>How to get the Facebook link</summary>
+              <ol>
+                <li>The video must be on the church's <strong>Facebook Page</strong> (not a personal profile or a group) and set to <strong>Public</strong>.</li>
+                <li>A Facebook Live becomes an ordinary video on the Page when it ends — use that one.</li>
+                <li><strong>Best:</strong> open the video in a web browser and copy the address from the address bar. It looks like <code>facebook.com/<em>page</em>/videos/123…</code></li>
+                <li><strong>On a computer:</strong> click <strong>⋯ → Embed</strong> on the video and paste the whole code. The editor pulls the link out of it.</li>
+                <li>The <strong>Share → Copy link</strong> button gives a short link that often won't play here. The editor warns you if you paste one.</li>
+              </ol>
+            </details>
+          </div>
+        </div>
+
+        {/* ── The list ── */}
+        <div className="panel">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:14,gap:8}}>
+            <div className="font-display" style={{fontSize:'1.2rem',fontWeight:600}}>{CHURCH.short} sermons</div>
+            <div style={{fontSize:'.8125rem',color:'var(--ink-3)'}}>{sorted.length} posted</div>
+          </div>
+          {!token&&!loading&&(
+            <div className="note warn" style={{marginTop:0,marginBottom:14}}>Showing the published list. Connect GitHub to publish changes.</div>
+          )}
+          {loading
+            ? <div style={{display:'flex',justifyContent:'center',padding:40}}><div className="spin" style={{width:28,height:28,border:'3px solid var(--border)',borderTopColor:'var(--accent)',borderRadius:'50%'}}/></div>
+            : loadError
+            ? <div className="note bad">Couldn't load the list: {loadError}</div>
+            : sorted.length===0
+            ? <div style={{textAlign:'center',color:'var(--ink-3)',padding:'32px 8px',fontSize:'.9rem'}}>No sermons yet for {CHURCH.short}. Add the first one with the form.</div>
+            : sorted.map(s=>{
+                const issues=S.sermonProblems(s);
+                const short=S.facebookVideo(s.video).warning;
+                return (
+                  <div key={s.id} className="row" style={editingId===s.id?{background:'#FBEBE7',margin:'0 -10px',padding:'14px 10px',borderRadius:10}:null}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:'.75rem',color:'var(--ink-3)'}}>{formatDate(s.date)} · {s.preacher}</div>
+                      <div style={{fontWeight:600,margin:'2px 0'}}>{s.title}</div>
+                      <div style={{fontSize:'.8125rem',color:'var(--ink-2)',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>{s.summary}</div>
+                      {issues.length>0&&<div className="note bad">Hidden from the public page: {issues.join(' ')}</div>}
+                      {!issues.length&&short&&<div className="note warn">Short share link. It may not play. Edit it and paste the full link.</div>}
+                    </div>
+                    <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                      <button className="btn btn-ghost" style={{padding:'.35rem .7rem'}} onClick={()=>edit(s)}>Edit</button>
+                      <button className="btn btn-danger" style={{padding:'.35rem .7rem'}} onClick={()=>remove(s)}>Remove</button>
+                    </div>
+                  </div>
+                );
+              })}
+        </div>
+      </div>
+
+      {showSetup&&<TokenModal onSave={saveToken} onClose={()=>setShowSetup(false)}/>}
+      {toast&&<div className="toast">{toast}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -41,7 +41,7 @@ that isn't one.
 Faith Map, Equip content, the games, `ofw-companion/` and `daily-blessing/`.
 
 **Per church**: members and workers, the service schedule, attendance, prayer
-ministry, music ministry, worship songs, giving.
+ministry, music ministry, worship songs, giving, sermons.
 
 `botr-schedule.json` is the exception that proves the rule. It is BOTR
 Friday's Friday-morning worship service at 10:00 AM, but the whole network is
@@ -287,6 +287,48 @@ array in the shape `data.json` wants, with ids assigned (`sis-01`, `ptr-01`, …
 and `eligibleRoles` left empty, since service roles are the admin's to assign
 in the schedule editor.
 
+## Sermons
+
+`sermons.html?church=<slug>` is a **public** page of a church's past services —
+the newest one playing at the top, the rest below with a play button, a
+search box once there are more than a handful. The members app links to it
+from Home. Visitors can switch church from the page itself.
+
+The videos are the churches' Facebook Lives, played in Facebook's own player.
+Each entry is four things typed by the admin plus the link:
+
+```json
+{ "sermons": [
+  { "id": "2026-10-25-walking-in-faith",
+    "date": "2026-10-25",
+    "title": "Walking in Faith",
+    "preacher": "Ptr. Rodel",
+    "summary": "Two or three sentences about the message.",
+    "video": "https://www.facebook.com/<page>/videos/<id>/" } ] }
+```
+
+Nobody edits that by hand: `sermon-editor.html?church=<slug>` is a form (date,
+title, preacher, summary, link) that publishes the file with the admin's GitHub
+token, the same way the schedule editor does. Picking the date fills in the
+preacher from that church's own schedule when it knows. The token is kept
+**device-wide**, not per church, because one person posts for all 14 — and if
+the schedule editor is already connected for that church, its token is used.
+With a token the editor reads the list from GitHub rather than the site, so
+adding two sermons a minute apart can't publish over the first.
+
+A church has no `sermons.json` until its first sermon is published; until then
+its page says "No sermons posted yet". The first publish creates the file.
+
+**Facebook's rules decide what plays.** The video must be posted by a public
+Facebook **Page** (not a personal profile, not a group) and be set to Public.
+The link has to be the video's full address — `facebook.com/<page>/videos/…`,
+`/watch/?v=…` or `/reel/…` — or Facebook's whole Embed code, which the editor
+pulls the link out of. The Share button's short links (`fb.watch/…`,
+`facebook.com/share/v/…`) often won't play on another site, so the editor warns
+when one is pasted. Every card also has a "Watch on Facebook" link, which works
+whatever the player does. All of those rules live in `sermons.js`, shared by
+both pages and covered by `test/sermons.test.mjs`.
+
 ## Who updates what
 
 Two different jobs, two different answers:
@@ -295,6 +337,7 @@ Two different jobs, two different answers:
 | --- | --- | --- |
 | **Schedule, workers, themes, events** (`data.json`) | one central admin | `schedule-editor.html?church=<slug>`, GitHub token |
 | **Attendance** (`attendance.json`) | that church's own steward | `attendance.html?church=<slug>`, church passcode |
+| **Sermons** (`sermons.json`) | one central admin | `sermon-editor.html?church=<slug>`, GitHub token |
 
 Schedules are monthly and centralised — churches submit theirs to the admin,
 who enters them. Attendance is per service, at 14 churches, so it can't route
