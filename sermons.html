@@ -44,20 +44,22 @@
   main.wrap { padding: 24px 16px 64px; }
   .label { font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-subtle); margin: 0 0 10px; }
 
-  .player { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #18181B; border-radius: 14px; overflow: hidden; }
-  .player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  .poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; cursor: pointer; color: #fff; font: inherit;
-            background: linear-gradient(135deg, #2A2A30, #18181B); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  /* The play card is a link to the video on Facebook, not a player — see the
+     note above poster() for why. */
+  .poster { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; color: #fff; text-decoration: none;
+            background: linear-gradient(135deg, #2A2A30, #18181B); }
   .poster:hover .play, .poster:focus-visible .play { transform: scale(1.08); background: var(--accent-hover); }
-  .play { width: 58px; height: 58px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; transition: transform .15s, background .15s; }
-  .play svg { width: 22px; height: 22px; margin-left: 4px; }
-  .poster-date { font-size: .8rem; opacity: .8; }
+  .play { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; transition: transform .15s, background .15s; }
+  .play svg { width: 24px; height: 24px; margin-left: 4px; }
+  .poster-cta { font-size: .95rem; font-weight: 600; }
+  .poster-date { font-size: .8rem; opacity: .75; }
 
   .featured { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; margin-bottom: 32px; }
   .featured .meta { padding: 14px 6px 4px; }
   .featured h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 4px; line-height: 1.2; }
-  /* On a wide screen the words sit beside the video rather than under a
-     full-width player taller than the window. */
+  /* On a wide screen the words sit beside the play card rather than under a
+     full-width one taller than the window. */
   @media (min-width: 56rem) {
     .featured { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 8px 22px; align-items: center; }
     .featured .meta { padding: 6px 8px 6px 0; }
@@ -66,8 +68,6 @@
   .byline { font-size: .875rem; color: var(--ink-muted); }
   .byline strong { color: var(--ink); font-weight: 600; }
   .summary { margin: 10px 0 0; color: var(--ink); font-size: .95rem; white-space: pre-line; }
-  .fb-link { display: inline-block; margin-top: 10px; font-size: .8rem; font-weight: 600; text-decoration: none; }
-  .fb-link:hover { text-decoration: underline; }
 
   .tools { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
   .tools .label { margin: 0; flex: 1 1 auto; }
@@ -77,7 +77,7 @@
   .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
   @media (min-width: 44rem) { .grid { grid-template-columns: 1fr 1fr; } h1 { font-size: 2.3rem; } }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; }
-  .card .player { border-radius: 10px; }
+  .card .poster { border-radius: 10px; }
   .card .meta { padding: 12px 6px 6px; }
   .card h3 { font-size: 1.15rem; font-weight: 600; margin: 0 0 2px; line-height: 1.25; }
 
@@ -141,32 +141,22 @@
     return d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   }
 
-  function iframeFor(s) {
-    return el('iframe', {
-      src: S.embedUrl(s.video),
-      title: s.title,
-      allow: 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share',
-      allowfullscreen: 'true',
-      loading: 'lazy',
-    });
-  }
-
-  /** The newest sermon loads Facebook's player straight away. The rest show a
-   *  play button and only load it when tapped — thirty Facebook players at once
-   *  would make the page unusable on a phone. */
-  function player(s, eager) {
-    var box = el('div', { class: 'player' });
-    if (eager) { box.appendChild(iframeFor(s)); return box; }
-    var btn = el('button', {
-      class: 'poster', type: 'button', 'aria-label': 'Play ' + s.title,
-      onclick: function () { box.replaceChildren(iframeFor(s)); },
+  /** A play card that opens the sermon on Facebook — in the Facebook app, on a
+   *  phone. Deliberately not Facebook's embedded player: Facebook refuses to
+   *  play a video on another site once it hears music it believes someone else
+   *  owns, which is the worship set, so nearly every service came up as "Video
+   *  unavailable". A link out works every time. */
+  function poster(s) {
+    var a = el('a', {
+      class: 'poster', href: s.video, target: '_blank', rel: 'noopener',
+      'aria-label': 'Watch “' + s.title + '” on Facebook',
     }, [
       el('span', { class: 'play', 'aria-hidden': 'true' }),
+      el('span', { class: 'poster-cta', text: 'Watch on Facebook' }),
       el('span', { class: 'poster-date', text: formatDate(s.date) }),
     ]);
-    btn.firstChild.innerHTML = '<svg viewBox="0 0 24 24" fill="#fff"><path d="M6 4l15 8-15 8z"/></svg>';
-    box.appendChild(btn);
-    return box;
+    a.firstChild.innerHTML = '<svg viewBox="0 0 24 24" fill="#fff"><path d="M6 4l15 8-15 8z"/></svg>';
+    return a;
   }
 
   function meta(s, headingTag) {
@@ -174,7 +164,6 @@
       el(headingTag, { class: 'font-display', text: s.title }),
       el('div', { class: 'byline' }, [el('strong', { text: s.preacher }), ' · ' + formatDate(s.date)]),
       el('p', { class: 'summary', text: s.summary }),
-      el('a', { class: 'fb-link', href: s.video, target: '_blank', rel: 'noopener', text: 'Watch on Facebook ↗' }),
     ]);
   }
 
@@ -192,7 +181,7 @@
 
     var latest = sermons[0];
     main.appendChild(el('div', { class: 'label', text: 'Latest sermon' }));
-    main.appendChild(el('section', { class: 'featured' }, [player(latest, true), meta(latest, 'h2')]));
+    main.appendChild(el('section', { class: 'featured' }, [poster(latest), meta(latest, 'h2')]));
 
     var rest = sermons.slice(1);
     if (!rest.length) return;
@@ -207,7 +196,7 @@
         ? shown.length + ' of ' + rest.length + ' earlier sermons'
         : 'Earlier sermons';
       grid.replaceChildren.apply(grid, shown.map(function (s) {
-        return el('article', { class: 'card' }, [player(s, false), meta(s, 'h3')]);
+        return el('article', { class: 'card' }, [poster(s), meta(s, 'h3')]);
       }));
       if (!shown.length) grid.appendChild(el('div', { class: 'empty', text: 'No sermon matches that search.' }));
     }

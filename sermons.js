@@ -12,12 +12,14 @@
            "summary": "Two or three sentences about the message.",
            "video": "https://www.facebook.com/<page>/videos/<id>/" } ] }
 
-   The videos are Facebook Lives. Facebook only lets another site play a video
-   that is PUBLIC and posted by a PAGE — not a personal profile, not a group —
-   and its player wants the video's full address. The short links its Share
-   button hands out (fb.watch/…, facebook.com/share/v/…) often will not play
-   in it, which is the mistake this file exists to catch before it is
-   published rather than after.
+   The videos are Facebook Lives, and the page OPENS them on Facebook rather
+   than playing them inside itself. Facebook refuses to play a video on any
+   other site once it hears music it thinks someone else owns — which is the
+   worship set, so nearly every service — and says "Video unavailable". A link
+   out works every time, from a phone straight into the Facebook app.
+
+   So all this file asks of a link is that it is a Facebook video, and it
+   tidies it up: the share button's short links work as well as the full ones.
 
    Plain script, no build step, loaded before the page code. Pure functions
    only, so test/sermons.test.mjs can evaluate this file on its own.
@@ -28,9 +30,8 @@
   var FB_HOSTS = /^(?:www\.|m\.|web\.|mbasic\.)?facebook\.com$/i;
 
   /** Read whatever was pasted — a video address, a share link, or Facebook's
-   *  whole "Embed" code — and say whether it will play here.
+   *  whole "Embed" code — and say whether it is a Facebook video.
    *    { ok: true,  href }                 ready to publish
-   *    { ok: true,  href, warning }        publishable, but may not play
    *    { ok: false, error }                not a Facebook video at all */
   function facebookVideo(input) {
     var text = String(input || '').trim();
@@ -51,7 +52,7 @@
     var host = url.hostname.toLowerCase();
 
     if (host === 'fb.watch' || host === 'www.fb.watch') {
-      return { ok: true, href: 'https://fb.watch' + url.pathname, warning: 'short' };
+      return { ok: true, href: 'https://fb.watch' + url.pathname };
     }
     if (!FB_HOSTS.test(host)) {
       return { ok: false, error: 'That isn’t a Facebook link.' };
@@ -70,15 +71,9 @@
     }
     // facebook.com/share/v/AbC123 — the Share button's link on a phone.
     if (/^\/share\/[vr]\/[^/]+$/i.test(path)) {
-      return { ok: true, href: 'https://www.facebook.com' + path + '/', warning: 'short' };
+      return { ok: true, href: 'https://www.facebook.com' + path + '/' };
     }
     return { ok: false, error: 'That Facebook link isn’t a video. Open the video itself, then copy its link.' };
-  }
-
-  /** The address of Facebook's own player for a video. */
-  function embedUrl(href) {
-    return 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(href) +
-      '&show_text=false&width=1280&t=0';
   }
 
   var ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -174,7 +169,6 @@
     scheduledPreacher: scheduledPreacher,
     preacherSuggestions: preacherSuggestions,
     facebookVideo: facebookVideo,
-    embedUrl: embedUrl,
     validDate: validDate,
     sermonProblems: sermonProblems,
     sortSermons: sortSermons,

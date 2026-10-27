@@ -67,8 +67,6 @@
   .row{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--border);}
   .row:first-child{border-top:0;padding-top:0;}
   .pill{display:inline-block;font-size:.6875rem;font-weight:700;padding:2px 8px;border-radius:999px;}
-  .player{position:relative;width:100%;aspect-ratio:16/9;background:#18181B;border-radius:10px;overflow:hidden;margin-top:8px;}
-  .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
   .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1A1A1E;color:#fff;padding:12px 20px;border-radius:12px;font-size:.875rem;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:100;max-width:calc(100vw - 32px);animation:notif 3.5s ease forwards;}
   details.help summary{cursor:pointer;font-weight:600;font-size:.875rem;}
   details.help ol{font-size:.8125rem;color:var(--ink-2);padding-left:18px;line-height:1.7;margin:10px 0 0;}
@@ -146,24 +144,13 @@ function TokenModal({onSave,onClose}){
 
 // ─── The Facebook link box, with what it found ────────────────────────────────
 function VideoCheck({value}){
-  const [preview,setPreview]=useState(false);
   const v=S.facebookVideo(value);
-  useEffect(()=>setPreview(false),[value]);
   if(!String(value||'').trim()) return null;
   if(!v.ok) return <div className="note bad">{v.error}</div>;
+  // The public page opens the video on Facebook rather than playing it, so
+  // the check worth offering is the same: does the link open the right video?
   return (
-    <>
-      {v.warning
-        ? <div className="note warn">
-            This is a short <strong>share</strong> link. Facebook often won't play these on another website.
-            For the full link: open the video in a browser and copy the address from the address bar
-            (it has <strong>/videos/</strong> in it). Or on a computer, click <strong>⋯ → Embed</strong> and paste the whole code here.
-          </div>
-        : <div className="note ok">✓ Facebook video link. <button type="button" onClick={()=>setPreview(p=>!p)} style={{background:'none',border:'none',padding:0,color:'inherit',textDecoration:'underline',cursor:'pointer',font:'inherit'}}>{preview?'Hide preview':'Preview it'}</button></div>}
-      {preview&&!v.warning&&(
-        <div className="player"><iframe src={S.embedUrl(v.href)} title="Preview" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/></div>
-      )}
-    </>
+    <div className="note ok">✓ Facebook video link. <a href={v.href} target="_blank" rel="noopener" style={{color:'inherit',fontWeight:600}}>Open it to check ↗</a></div>
   );
 }
 
@@ -393,9 +380,8 @@ function App(){
               <ol>
                 <li>The video must be on the church's <strong>Facebook Page</strong> (not a personal profile or a group) and set to <strong>Public</strong>.</li>
                 <li>A Facebook Live becomes an ordinary video on the Page when it ends — use that one.</li>
-                <li><strong>Best:</strong> open the video in a web browser and copy the address from the address bar. It looks like <code>facebook.com/<em>page</em>/videos/123…</code></li>
-                <li><strong>On a computer:</strong> click <strong>⋯ → Embed</strong> on the video and paste the whole code. The editor pulls the link out of it.</li>
-                <li>The <strong>Share → Copy link</strong> button gives a short link that often won't play here. The editor warns you if you paste one.</li>
+                <li>On the video, tap <strong>Share → Copy link</strong> and paste it here. Any Facebook video link works — the address-bar link (<code>facebook.com/<em>page</em>/videos/123…</code>) or the <strong>⋯ → Embed</strong> code too.</li>
+                <li>Visitors watch the sermon <strong>on Facebook</strong>: the Sermons page opens the video there. Facebook won't play most service videos inside other websites because of the worship music.</li>
               </ol>
             </details>
           </div>
@@ -418,7 +404,6 @@ function App(){
             ? <div style={{textAlign:'center',color:'var(--ink-3)',padding:'32px 8px',fontSize:'.9rem'}}>No sermons yet for {CHURCH.short}. Add the first one with the form.</div>
             : sorted.map(s=>{
                 const issues=S.sermonProblems(s);
-                const short=S.facebookVideo(s.video).warning;
                 return (
                   <div key={s.id} className="row" style={editingId===s.id?{background:'#FBEBE7',margin:'0 -10px',padding:'14px 10px',borderRadius:10}:null}>
                     <div style={{flex:1,minWidth:0}}>
@@ -426,7 +411,6 @@ function App(){
                       <div style={{fontWeight:600,margin:'2px 0'}}>{s.title}</div>
                       <div style={{fontSize:'.8125rem',color:'var(--ink-2)',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>{s.summary}</div>
                       {issues.length>0&&<div className="note bad">Hidden from the public page: {issues.join(' ')}</div>}
-                      {!issues.length&&short&&<div className="note warn">Short share link. It may not play. Edit it and paste the full link.</div>}
                     </div>
                     <div style={{display:'flex',flexDirection:'column',gap:6}}>
                       <button className="btn btn-ghost" style={{padding:'.35rem .7rem'}} onClick={()=>edit(s)}>Edit</button>
