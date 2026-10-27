@@ -2,11 +2,11 @@
  * Sermons: the public page (sermons.html), the editor (sermon-editor.html) and
  * the rules they share (sermons.js).
  *
- * The rule most worth defending is the Facebook link. Facebook's player only
- * plays a public video from a Page, addressed by its full link — and the link
- * its Share button hands out is a short one that often won't play. Nothing on
- * screen looks wrong when that happens until a visitor taps play, so it is
- * caught here and in the editor, not on the public page.
+ * The rule most worth defending is that the page links OUT to Facebook rather
+ * than embedding its player. Facebook refuses to play a video on another site
+ * once it hears music it thinks someone else owns — the worship set, so nearly
+ * every service — and the first real sermon came up as "Video unavailable".
+ * Nothing about that looks wrong until a visitor taps play.
  *
  * Run: node --test 'test/*.test.mjs'
  */
@@ -45,7 +45,6 @@ test('a full Facebook video link is accepted and cleaned up', () => {
     const v = S.facebookVideo(input);
     assert.equal(v.ok, true, input);
     assert.equal(v.href, href, input);
-    assert.equal(v.warning, undefined, `${input} should play without a warning`);
   }
 });
 
@@ -56,7 +55,9 @@ test("Facebook's whole Embed code can be pasted and the link is pulled out of it
   assert.equal(v.href, 'https://www.facebook.com/flccabundance/videos/1234567890/');
 });
 
-test('a short share link is allowed but warned about', () => {
+test("the Share button's short links are accepted as they are", () => {
+  // They open on Facebook as well as the full ones do, and the page only ever
+  // opens a video on Facebook — so there is nothing to warn about.
   for (const input of [
     'https://fb.watch/abCD12_xy/',
     'https://www.facebook.com/share/v/1AbCdEfGh/',
@@ -64,7 +65,7 @@ test('a short share link is allowed but warned about', () => {
   ]) {
     const v = S.facebookVideo(input);
     assert.equal(v.ok, true, input);
-    assert.equal(v.warning, 'short', `${input} needs the "may not play" warning`);
+    assert.equal(v.href, input, input);
   }
 });
 
@@ -84,10 +85,12 @@ test('anything that is not a Facebook video is refused with a reason', () => {
   }
 });
 
-test("the player address is Facebook's own, with the link encoded", () => {
-  const url = S.embedUrl(GOOD.video);
-  assert.ok(url.startsWith('https://www.facebook.com/plugins/video.php?href='));
-  assert.ok(url.includes(encodeURIComponent(GOOD.video)));
+test("the public page opens videos on Facebook and never embeds Facebook's player", () => {
+  // The embedded player answered "Video unavailable … content owned by someone
+  // else" for the first real sermon, because of the worship music.
+  const src = readRepoFile('sermons.html').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.equal(/<iframe|el\('iframe'|plugins\/video\.php/.exec(src), null, 'sermons.html must not embed a player');
+  assert.match(src, /class: 'poster', href: s\.video, target: '_blank'/, 'the play card links to the video');
 });
 
 // ── One sermon ───────────────────────────────────────────────────────────────
