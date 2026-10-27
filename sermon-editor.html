@@ -142,16 +142,21 @@ function TokenModal({onSave,onClose}){
   );
 }
 
-// ─── The Facebook link box, with what it found ────────────────────────────────
+// ─── The video link box, with what it found ───────────────────────────────────
 function VideoCheck({value}){
-  const v=S.facebookVideo(value);
+  const v=S.sermonVideo(value);
   if(!String(value||'').trim()) return null;
   if(!v.ok) return <div className="note bad">{v.error}</div>;
-  // The public page opens the video on Facebook rather than playing it, so
-  // the check worth offering is the same: does the link open the right video?
-  return (
-    <div className="note ok">✓ Facebook video link. <a href={v.href} target="_blank" rel="noopener" style={{color:'inherit',fontWeight:600}}>Open it to check ↗</a></div>
+  const open=<a href={v.href} target="_blank" rel="noopener" style={{color:'inherit',fontWeight:600}}>Open it to check ↗</a>;
+  // YouTube plays inside the page; Facebook opens on Facebook (sermons.js has
+  // why). Say which, so nobody expects a Facebook video to play here.
+  if(v.source==='youtube') return (
+    <div className="note ok" style={{display:'flex',gap:10,alignItems:'center'}}>
+      <img src={S.youtubeThumb(v.id)} alt="" style={{width:96,aspectRatio:'16/9',objectFit:'cover',borderRadius:6,flex:'none'}}/>
+      <div>✓ YouTube video. It plays right on the Sermons page and the members app. {open}</div>
+    </div>
   );
+  return <div className="note ok">✓ Facebook video. Visitors watch it on Facebook. {open}</div>;
 }
 
 // ─── App ──────────────────────────────────────────────────────────────────────
@@ -238,7 +243,7 @@ function App(){
       title:form.title.trim(),
       preacher:form.preacher.trim(),
       summary:form.summary.trim(),
-      video:S.facebookVideo(form.video).href,
+      video:S.sermonVideo(form.video).href,
     };
     if(editingId){
       setSermons(list=>list.map(s=>s.id===editingId?{...s,...clean}:s));
@@ -359,8 +364,8 @@ function App(){
               <div className="hint" style={{textAlign:'right'}}>{form.summary.length}/800</div>
             </div>
             <div className="field">
-              <label className="field-label" htmlFor="f-video">Facebook video link</label>
-              <input id="f-video" className="field-input" value={form.video} onChange={e=>set('video',e.target.value)} placeholder="https://www.facebook.com/…/videos/…" autoComplete="off" spellCheck={false}/>
+              <label className="field-label" htmlFor="f-video">Video link (YouTube or Facebook)</label>
+              <input id="f-video" className="field-input" value={form.video} onChange={e=>set('video',e.target.value)} placeholder="https://youtu.be/… or https://www.facebook.com/…" autoComplete="off" spellCheck={false}/>
               <VideoCheck value={form.video}/>
             </div>
 
@@ -376,12 +381,11 @@ function App(){
 
           <div className="panel" style={{marginTop:14}}>
             <details className="help">
-              <summary>How to get the Facebook link</summary>
+              <summary>How to get the video link</summary>
               <ol>
-                <li>The video must be on the church's <strong>Facebook Page</strong> (not a personal profile or a group) and set to <strong>Public</strong>.</li>
-                <li>A Facebook Live becomes an ordinary video on the Page when it ends — use that one.</li>
-                <li>On the video, tap <strong>Share → Copy link</strong> and paste it here. Any Facebook video link works — the address-bar link (<code>facebook.com/<em>page</em>/videos/123…</code>) or the <strong>⋯ → Embed</strong> code too.</li>
-                <li>Visitors watch the sermon <strong>on Facebook</strong>: the Sermons page opens the video there. Facebook won't play most service videos inside other websites because of the worship music.</li>
+                <li><strong>YouTube (plays on the page):</strong> open the video, tap <strong>Share → Copy link</strong>, paste it here. The video must be <strong>Public</strong> or <strong>Unlisted</strong>, with embedding allowed (YouTube's default). A live stream's link works once the stream has ended.</li>
+                <li><strong>Facebook (opens on Facebook):</strong> open the video on the church's <strong>Facebook Page</strong>, tap <strong>Share → Copy link</strong>, paste it here. It must be <strong>Public</strong>. Facebook won't play most service videos inside other websites because of the worship music, so visitors are sent to Facebook to watch.</li>
+                <li>If a service is on both, use the <strong>YouTube</strong> link.</li>
               </ol>
             </details>
           </div>

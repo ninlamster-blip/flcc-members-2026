@@ -291,11 +291,12 @@ in the schedule editor.
 
 `sermons.html?church=<slug>` is a **public** page of a church's past services —
 the newest one large at the top, the rest below, a search box once there are
-more than a handful. The members app links to it
-from Home. Visitors can switch church from the page itself.
+more than a handful. Visitors can switch church from the page itself. The
+members app's Home tab shows the newest one as a **Latest sermon** card, with
+an "All sermons" link to the page; before a church's first sermon it is a plain
+link card.
 
-The videos are the churches' Facebook Lives, and each sermon's play card
-**opens the video on Facebook** (the Facebook app, on a phone). Each entry is four things typed by the admin plus the link:
+Each entry is four things typed by the admin plus a video link:
 
 ```json
 { "sermons": [
@@ -304,13 +305,38 @@ The videos are the churches' Facebook Lives, and each sermon's play card
     "title": "Walking in Faith",
     "preacher": "Ptr. Rodel",
     "summary": "Two or three sentences about the message.",
-    "video": "https://www.facebook.com/<page>/videos/<id>/" } ] }
+    "video": "https://www.youtube.com/watch?v=<id>" } ] }
 ```
 
-Nobody edits that by hand: `sermon-editor.html?church=<slug>` is a form (date,
-title, preacher, summary, link) that publishes the file with the admin's GitHub
-token, the same way the schedule editor does. Picking the date fills in the
-preacher from that church's own schedule when it knows. The token is kept
+**A video is a YouTube link or a Facebook one, and they behave differently.**
+
+| | On the Sermons page and the Home card |
+| --- | --- |
+| **YouTube** | Its own thumbnail; tapping it plays the video right there |
+| **Facebook** | A "Watch on Facebook" card that opens the video on Facebook |
+
+Facebook doesn't play in the page because it won't: the first real sermon was
+embedded and came up as "Video unavailable — this video can't be embedded
+because it may contain content owned by someone else". That is Facebook's
+copyright matching hearing the worship set, which it will in nearly every
+service, and nothing on our side or the church Page's turns it off. YouTube
+lets other sites play its videos, which is the whole reason to use it — a
+church that wants sermons to play inside the app streams or uploads to
+YouTube as well (Public or Unlisted, embedding left on, as YouTube defaults).
+`test/sermons.test.mjs` fails if Facebook's player ever comes back, or if any
+player other than YouTube's appears.
+
+Any link shape works — YouTube's `watch?v=`, `youtu.be/`, `/live/`, `/shorts/`
+or embed code; Facebook's Share links (`fb.watch/…`, `facebook.com/share/v/…`),
+`/videos/…`, `/watch/?v=…`, `/reel/…` or embed code. `sermonVideo()` in
+`sermons.js` is the one place that reads them, used by the page, the editor and
+the Home card alike.
+
+Nobody edits the file by hand: `sermon-editor.html?church=<slug>` is a form
+(date, title, preacher, summary, link) that publishes it with the admin's GitHub
+token, the same way the schedule editor does. Pasting a link says which kind it
+is — a YouTube one shows its thumbnail. Picking the date fills in the preacher
+from that church's own schedule when it knows. The token is kept
 **device-wide**, not per church, because one person posts for all 14 — and if
 the schedule editor is already connected for that church, its token is used.
 With a token the editor reads the list from GitHub rather than the site, so
@@ -318,20 +344,6 @@ adding two sermons a minute apart can't publish over the first.
 
 A church has no `sermons.json` until its first sermon is published; until then
 its page says "No sermons posted yet". The first publish creates the file.
-
-**Why it links out rather than playing on the page.** It did embed Facebook's
-player at first, and the first real sermon came up as "Video unavailable — this
-video can't be embedded because it may contain content owned by someone else".
-That is Facebook's copyright matching hearing the worship set, and it will hear
-one in nearly every service; nothing on our side or the church Page's can turn
-it off. A link out plays every time, so the page never shows that message.
-`test/sermons.test.mjs` fails if an embedded player comes back.
-
-Any Facebook video link works — the Share button's short links (`fb.watch/…`,
-`facebook.com/share/v/…`), `facebook.com/<page>/videos/…`, `/watch/?v=…`,
-`/reel/…`, or Facebook's whole Embed code, which the editor pulls the link out
-of. The video still has to be **Public** for a visitor who isn't a follower to
-see it. Those rules live in `sermons.js`, shared by both pages.
 
 ## Who updates what
 
