@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { SEASONS, FOCUS } from '../js/core/profile.js';
 import { isIcon, ICONS } from '../js/core/art.js';
+import * as video from '../js/core/video.js';
 
 const read = (path) => JSON.parse(readFileSync(new URL(`../content/${path}`, import.meta.url), 'utf8'));
 const css = readFileSync(new URL('../css/next.css', import.meta.url), 'utf8');
@@ -291,12 +292,12 @@ test('every event can be counted down to, not just read', async () => {
 /**
  * The messages, and the one promise this screen must not make.
  *
- * FLCC publishes no video archive. Every message here therefore ships with
- * `url` empty and stands on what it carries instead — the passage, three
- * takeaways and the question. The Watch screen only offers "Watch the
- * recording" when `url` is filled in, so an empty string is a working state
- * rather than a broken one; what would break is a message with nothing to read
- * and no recording either, which is what this checks.
+ * A message may carry a recording — `youtube`, `facebook`, both or neither —
+ * and must stand without one on what it carries: the passage, three takeaways
+ * and the question. The message screen only offers a recording when a link is
+ * filled in, so an empty string is a working state rather than a broken one;
+ * what would break is a message with nothing to read, or a link that looks
+ * filled in and plays nothing — which is what this checks.
  */
 test('every message can be opened, with or without a recording', () => {
   const messages = read('messages.json');
@@ -315,11 +316,15 @@ test('every message can be opened, with or without a recording', () => {
     assert.ok(Number.isInteger(one.minutes) && one.minutes > 0, `${one.id}: how long was it?`);
     assert.match(one.question, /\?$/, `${one.id}: the question should be a question`);
     assert.ok(one.blurb.length >= 80, `${one.id}: the blurb is too thin to be worth opening`);
-    assert.equal(typeof one.url, 'string', `${one.id}: url must exist, even empty`);
+    assert.equal(one.url, undefined, `${one.id}: "url" became "youtube" and "facebook"`);
+    for (const field of ['youtube', 'facebook']) {
+      assert.equal(typeof one[field], 'string', `${one.id}: ${field} must exist, even empty`);
+    }
+    if (one.youtube) assert.ok(video.youtubeId(one.youtube), `${one.id}: "${one.youtube}" is not one YouTube video`);
+    if (one.facebook) assert.ok(video.isFacebookVideo(one.facebook), `${one.id}: "${one.facebook}" is not one Facebook video`);
     assert.ok(Array.isArray(one.takeaways) && one.takeaways.length === 3,
       `${one.id}: three takeaways — a member reads three and skims seven`);
     for (const line of one.takeaways) assert.ok(isText(line, 30), `${one.id}: a thin takeaway`);
-    if (one.url) assert.match(one.url, /^https:\/\//, `${one.id}: a recording link must be https`);
   }
   // Every series has to be a series. One message on its own is a message.
   const series = new Map();

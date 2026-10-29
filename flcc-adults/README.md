@@ -48,7 +48,8 @@ truth about what this app holds.
 ## Three decisions worth knowing about
 
 **Nothing leaves the device, except a question you chose to ask, a quiz room
-you chose to join, or a prayer request you chose to share.** There is no
+you chose to join, a prayer request you chose to share, or a sermon recording
+you chose to play.** There is no
 server, no account and no sync. Your prayer list, your reflections, your sermon
 notes, your reading and your verses live in this browser on this phone; a
 second device starts empty and clearing site data clears everything. That is a
@@ -380,12 +381,28 @@ out a puzzle. Two rules the suite enforces: the clue may not contain its own
 answer, and it may not trail off into "…in the Bible". Aim at somebody who has
 read the text; the bank sets the level.
 
-**A message does not need a recording.** FLCC publishes no video archive, so
-every message in `messages.json` ships with `url` empty and stands on what it
-carries instead: the passage it was preached from, three takeaways and the
-question it left behind. Nothing on the Watch screen claims to play anything.
-When the media team posts a recording, filling in that one field turns "Watch
-the recording" on for that message and changes nothing else.
+**A message does not need a recording, but it can carry one.** Every message
+in `messages.json` stands on what it carries — the passage it was preached
+from, three takeaways and the question it left behind — and may also link the
+service it came from, which FLCC streams to YouTube and Facebook Live:
+
+| Field | What the message screen does with it |
+| --- | --- |
+| `youtube` | **Play the recording** — YouTube's player, inside the message |
+| `facebook` | **Watch on Facebook** — opens it on Facebook (or **Or on Facebook** beside a YouTube one) |
+
+Both are strings, empty when there is no recording, and the content suite fails
+a link that is not one video. Facebook opens out because it will not play
+service videos inside another site — the worship music trips its copyright
+matching and the player says "Video unavailable".
+
+Playing a YouTube recording is the fourth thing that leaves the phone, and it
+is kept narrow on purpose (`js/core/video.js`): YouTube is contacted **only
+when Play is pressed** — no thumbnails, no player loaded ahead of time — the
+player is youtube-nocookie.com's, and nothing the member has written, prayed or
+read goes with it. `test/video.test.mjs` fails if any screen names a YouTube
+address other than through `video.js`, or builds the player anywhere but behind
+Play.
 
 ## What needs a person, not a server
 
