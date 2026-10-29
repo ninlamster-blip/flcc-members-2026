@@ -93,7 +93,7 @@ test("the public page never embeds Facebook's player — only YouTube's", () => 
   assert.equal(/plugins\/video\.php|<iframe/.exec(src), null, 'no Facebook player, no hand-written iframe');
   const frames = [...src.matchAll(/el\('iframe', \{\s*src: ([^,]+),/g)].map(m => m[1].trim());
   assert.deepEqual(frames, ['S.youtubeEmbedUrl(v.id)'], 'the one player is YouTube’s');
-  assert.match(src, /el\('a', \{\s*class: 'poster', href: v\.href, target: '_blank'/, 'a Facebook sermon links out');
+  assert.match(src, /el\('a', \{\s*class: 'poster', href: links\.facebook\.href, target: '_blank'/, 'a Facebook-only sermon links out');
 });
 
 test("the members app's Home card follows the same rule", () => {
@@ -307,6 +307,60 @@ test('the public page never puts typed text in as HTML', () => {
   assert.match(src, /var PLAY_ICON = '<svg[^']*';/, 'and the play icon is a fixed string');
 });
 
-test('the members app links to the sermons page for the current church', () => {
-  assert.match(readRepoFile('index.html'), /href=\{CHURCH\.url\('sermons\.html'\)\}/);
+test("the members app's Watch tab frames this church's sermons page", () => {
+  // One list, kept in one place: the tab is sermons.html in a frame, not a copy.
+  const src = appSource('index.html');
+  assert.match(src, /\{ key: 'watch',\s+label: '[^']*Watch' \}/, 'Watch is in the tab bar');
+  assert.match(src, /currentTab === 'watch' && <WatchTab \/>/);
+  const tab = src.slice(src.indexOf('function WatchTab('), src.indexOf('function WWLTab('));
+  assert.match(tab, /src=\{CHURCH\.url\('sermons\.html\?embed=1'\)\}/, 'the current church, in embed mode');
+  assert.match(tab, /e\.origin !== window\.location\.origin/, 'only our own page may size the frame');
+  assert.match(src, /<LatestSermonCard onOpenAll=\{\(\) => setActiveTab\('watch'\)\} \/>/, 'Home’s "All sermons" opens it');
+});
+
+test('embed mode is opt-in and only tells our own origin its height', () => {
+  const src = readRepoFile('sermons.html');
+  assert.match(src, /get\('embed'\) === '1' && window\.parent !== window/);
+  assert.match(src, /postMessage\(\{ flccSermons: 'height', h: [^}]+\}, location\.origin\)/);
+});
+
+// ── Both links ───────────────────────────────────────────────────────────────
+
+const YT = 'https://youtu.be/dQw4w9WgXcQ?si=x';
+const FB = 'https://www.facebook.com/share/v/19vr6qa5ro/?mibextid=wwXIfr';
+
+test('a sermon can carry a YouTube link, a Facebook link, or both', () => {
+  const both = S.sermonLinks({ youtube: YT, facebook: FB });
+  assert.deepEqual(both, {
+    youtube: { id: 'dQw4w9WgXcQ', href: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+    facebook: { href: 'https://www.facebook.com/share/v/19vr6qa5ro/' },
+    problems: [],
+  });
+  assert.deepEqual(S.sermonProblems({ ...GOOD, video: undefined, youtube: YT }), []);
+  assert.deepEqual(S.sermonProblems({ ...GOOD, video: undefined, facebook: FB }), []);
+  assert.deepEqual(S.sermonProblems({ ...GOOD, video: undefined, youtube: YT, facebook: FB }), []);
+});
+
+test('a sermon with neither link is not publishable', () => {
+  assert.deepEqual(S.sermonProblems({ ...GOOD, video: undefined }), ['Paste the YouTube or Facebook link — or both.']);
+});
+
+test('a link in the wrong box is named by its box', () => {
+  assert.deepEqual(S.sermonLinks({ youtube: FB }).problems, ['YouTube box: That isn’t a YouTube link.']);
+  assert.deepEqual(S.sermonLinks({ facebook: YT }).problems, ['Facebook box: That isn’t a Facebook link.']);
+});
+
+test('entries from before the two boxes still read, from their single "video" field', () => {
+  assert.equal(S.sermonLinks({ video: FB }).facebook.href, 'https://www.facebook.com/share/v/19vr6qa5ro/');
+  assert.equal(S.sermonLinks({ video: YT }).youtube.id, 'dQw4w9WgXcQ');
+  // A box filled in later wins over the old field.
+  assert.equal(S.sermonLinks({ video: 'https://youtu.be/AAAAAAAAAAA', youtube: YT }).youtube.id, 'dQw4w9WgXcQ');
+});
+
+test('the editor writes the two boxes and drops the old field when an entry is saved', () => {
+  const src = appSource('sermon-editor.html');
+  assert.match(src, /if\(links\.youtube\)  clean\.youtube=links\.youtube\.href;/);
+  assert.match(src, /if\(links\.facebook\) clean\.facebook=links\.facebook\.href;/);
+  assert.match(src, /s\.id===editingId\?\{id:s\.id,\.\.\.clean\}:s/, 'rebuilt, not merged, so an emptied box removes its link');
+  assert.equal(/video:/.exec(src), null, 'nothing writes the old single field');
 });

@@ -2800,11 +2800,12 @@ function LiftingUpCard({ data, me, attendanceData }) {
 }
 
 // ── Latest sermon (Home) ─────────────────────────────────────────
-// The newest entry in this church's sermons.json — the same list sermons.html
-// shows. A YouTube sermon plays right here when tapped; a Facebook one opens on
-// Facebook, which won't let its videos play inside other sites (sermons.js has
-// why). Before a church posts its first sermon this is a plain link card.
-function LatestSermonCard() {
+// The newest entry in this church's sermons.json — the same list the Watch tab
+// shows. A YouTube sermon plays right here when tapped; a Facebook-only one
+// opens on Facebook, which won't let its videos play inside other sites
+// (sermons.js has why). Before a church posts its first sermon this is a plain
+// card into the Watch tab.
+function LatestSermonCard({ onOpenAll }) {
   const S = window.FLCCSermons;
   const [latest, setLatest] = useState(null);
   const [playing, setPlaying] = useState(false);
@@ -2820,12 +2821,12 @@ function LatestSermonCard() {
   }, []);
 
   const allLink = (
-    <a href={CHURCH.url('sermons.html')} className="btn btn-soft text-xs" style={{ textDecoration: 'none' }}>All sermons</a>
+    <button type="button" onClick={onOpenAll} className="btn btn-soft text-xs">All sermons</button>
   );
 
   if (!latest) {
     return (
-      <a href={CHURCH.url('sermons.html')} className="card p-4 mb-5 flex items-center justify-between gap-3" style={{ textDecoration: 'none', color: 'inherit' }}>
+      <button type="button" onClick={onOpenAll} className="card p-4 mb-5 flex items-center justify-between gap-3" style={{ width: '100%', textAlign: 'left', color: 'inherit', font: 'inherit', cursor: 'pointer' }}>
         <div className="flex items-center gap-3">
           <span style={{ fontSize: '1.5rem' }}>📺</span>
           <div>
@@ -2834,12 +2835,13 @@ function LatestSermonCard() {
           </div>
         </div>
         <span className="btn btn-soft text-xs">Watch</span>
-      </a>
+      </button>
     );
   }
 
-  const v = S.sermonVideo(latest.video);
-  const yt = v.source === 'youtube';
+  const links = S.sermonLinks(latest);
+  const v = links.youtube;
+  const yt = !!v;
   const playIcon = (
     <span style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff" style={{ marginLeft: 3 }}><path d="M6 4l15 8-15 8z" /></svg>
@@ -2864,7 +2866,7 @@ function LatestSermonCard() {
             {playIcon}
           </button>
         ) : (
-          <a href={v.href} target="_blank" rel="noopener" style={cover} aria-label={`Watch “${latest.title}” on Facebook`}>
+          <a href={links.facebook.href} target="_blank" rel="noopener" style={cover} aria-label={`Watch “${latest.title}” on Facebook`}>
             {playIcon}
             <span className="text-sm font-semibold">Watch on Facebook</span>
           </a>
@@ -2874,6 +2876,9 @@ function LatestSermonCard() {
         <div className="font-display text-lg font-semibold" style={{ lineHeight: 1.25 }}>{latest.title}</div>
         <div className="text-xs ink-muted mt-1">{latest.preacher} · {formatDateLong(latest.date)}</div>
         {latest.summary && <div className="text-sm mt-2">{latest.summary}</div>}
+        {yt && links.facebook && (
+          <a href={links.facebook.href} target="_blank" rel="noopener" className="text-xs font-semibold" style={{ display: 'inline-block', marginTop: 6, color: 'var(--accent)', textDecoration: 'none' }}>Also on Facebook ↗</a>
+        )}
       </div>
     </div>
   );
@@ -3253,7 +3258,7 @@ function HomeTab({ data, prayerData, musicData, me, setActiveTab, setCurrentMont
       )}
 
       {/* Latest sermon — plays here when it's on YouTube */}
-      <LatestSermonCard />
+      <LatestSermonCard onOpenAll={() => setActiveTab('watch')} />
 
       {/* FLCC BOTR Friday Morning Service */}
       {botrScheduleData && <BOTRScheduleCard botrData={botrScheduleData} />}
@@ -5333,6 +5338,38 @@ function PrayerTab({ data, prayerData, me, currentMonth, setCurrentMonth, onConf
         )}
       </div>
 
+    </div>
+  );
+}
+
+// ── Watch — this church's past sermons ───────────────────────────
+// sermons.html framed, rather than a second copy of it: the same list, the
+// same YouTube-plays / Facebook-opens-out rule, kept in one place. ?embed=1
+// hides that page's own header and has it report its height, so the frame
+// grows with the list instead of scrolling inside the app.
+function WatchTab() {
+  const [height, setHeight] = useState(700);
+
+  useEffect(() => {
+    const onMsg = (e) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data && e.data.flccSermons === 'height' && typeof e.data.h === 'number') {
+        setHeight(Math.max(400, e.data.h));
+      }
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  return (
+    <div className="fade-in">
+      <iframe
+        src={CHURCH.url('sermons.html?embed=1')}
+        title="Sermons"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowFullScreen
+        style={{ width: '100%', height, border: 'none', display: 'block' }}
+      />
     </div>
   );
 }
@@ -15319,6 +15356,7 @@ const TABS = [
   { key: 'home',     label: 'Home' },
   { key: 'parking',  label: 'Parking' },
   { key: 'mine',     label: 'My Schedule', requiresMe: true },
+  { key: 'watch',    label: '📺 Watch' },
   { key: 'bible',    label: 'Bible' },
   { key: 'month',    label: 'This Month' },
   { key: 'calendar', label: 'Calendar' },
@@ -15862,6 +15900,7 @@ function App() {
           {currentTab === 'mine' && me && <MyScheduleTab data={data} prayerData={prayerData} musicData={musicData} me={me} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} attendanceData={attendanceData} botrScheduleData={botrScheduleData} />}
           {currentTab === 'month' && <ThisMonthTab data={data} prayerData={prayerData} musicData={musicData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} personalEvents={personalEvents} onEditPersonal={setEditingPersonal} sermonNotes={sermonNotes} onOpenNote={setOpeningNote} />}
           {currentTab === 'prayer' && prayerData && <PrayerTab data={data} prayerData={prayerData} me={me} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} onConflict={setConflictTarget} />}
+          {currentTab === 'watch' && <WatchTab />}
           {currentTab === 'wwl' && <WWLTab />}
           {currentTab === 'faithmap'  && <FaithMapTab />}
           {currentTab === 'prayermap' && <PrayerMapTab />}
