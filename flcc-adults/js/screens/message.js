@@ -11,6 +11,7 @@ import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import * as notes from '../core/notes.js';
 import * as prayers from '../core/prayers.js';
+import * as video from '../core/video.js';
 
 const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
 
@@ -26,6 +27,7 @@ export default async function messageScreen(ctx) {
     .toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
   const opened = progress.isDone('message', one.id);
   const tone = toneOf(one.tone);
+  const rec = video.recording(one);
   const parts = [];
 
   parts.push(poster({ tone, tall: true },
@@ -37,10 +39,42 @@ export default async function messageScreen(ctx) {
       h('p', { class: 'lead dim', style: 'margin-top:1rem', text: `${one.speaker} · ${when} · ${one.minutes} min` }),
       reference(one.ref, ctx.go, { style: 'margin-top:1rem' })),
     h('div', { class: 'poster-foot' },
-      one.url
-        ? pill('Watch the recording', () => window.open(one.url, '_blank', 'noopener'))
+      rec.youtube || rec.facebook
+        ? h('span', { class: 'go', text: 'The recording is below.' })
         : note('No recording has been published for this one. What was said is below.'),
       art(one.symbol || 'book', { tone, size: 'sm' }))));
+
+  // ── The recording ───────────────────────────────────────────────────────
+  //
+  // YouTube's player is not loaded until Play is pressed: before that this
+  // poster asks nothing of anybody (core/video.js has why). Facebook's
+  // recording opens on Facebook, which will not play it here.
+  if (rec.youtube || rec.facebook) {
+    const screen = h('div', { class: 'video' });
+    let playButton = null;
+    const play = () => {
+      swap(screen, h('iframe', {
+        src: video.playerUrl(rec.youtube),
+        title: `Recording: ${one.title}`,
+        allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen',
+        allowfullscreen: '',
+      }));
+      if (playButton) playButton.remove();
+    };
+    playButton = rec.youtube ? pill('Play the recording', play) : null;
+    const facebook = rec.facebook
+      ? pill(rec.youtube ? 'Or on Facebook' : 'Watch on Facebook',
+          () => window.open(rec.facebook, '_blank', 'noopener'), { quiet: !!rec.youtube })
+      : null;
+    parts.push(poster({ tone: 'ink' },
+      label('The recording'),
+      rec.youtube ? screen : null,
+      h('div', { class: 'poster-foot' },
+        h('div', { class: 'pill-row' },
+          playButton,
+          facebook),
+        h('span', { class: 'row-meta', text: rec.youtube ? 'Plays from YouTube' : 'Opens Facebook' }))));
+  }
 
   parts.push(poster({ tone: 'paper' },
     label('What it was about'),

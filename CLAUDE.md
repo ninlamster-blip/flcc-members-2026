@@ -135,7 +135,17 @@ can mark a request answered with a short note (screened the same way), and
 others react from a fixed set (🙏 ❤️ 🤝, and 🙌 once answered) — never typed.
 A request carries the member's picture (`js/core/avatar.js`): a drawing, or a
 photo shrunk on the phone to a 96-pixel square; it is also shown in quiz
-rooms. Everything else in the app still never leaves the device.
+rooms.
+
+The fourth is a **sermon recording** on Watch (`js/core/video.js`,
+`js/screens/message.js`). A message in `content/messages.json` may link its
+service's `youtube` and `facebook` recordings. A YouTube one plays inside the
+message — but YouTube is contacted only when the member presses Play: no
+thumbnails, no player loaded ahead of time, and the player is
+youtube-nocookie.com's. A Facebook one opens on Facebook, never in an embedded
+player (Facebook refuses service videos there because of the worship music).
+`test/video.test.mjs` holds all of it. Everything else in the app still never
+leaves the device.
 
 Avatars in `flcc-next/` are **drawings only, never photos**: kids and teens see
 each other's on the leaderboard and in rooms. `cleanAvatar` in

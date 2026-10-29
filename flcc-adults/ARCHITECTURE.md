@@ -295,7 +295,7 @@ Nothing in this section is built.
 | 8 | `events` / `event_rsvps` | `id, title, when_text, where_text, blurb; event_id, member_id` | `content/events.json`, `adults/v1/rsvps` |
 | 9 | `updates` | `id, title, from_team, body, published_at` | `content/updates.json` |
 | 10 | `saved_verses` | `member_id, ref, translation, saved_at` | `adults/v1/bible.saved` |
-| 11 | `messages` | `id, title, speaker, preached_on, series, ref, blurb, takeaways[], question, url` | `content/messages.json` |
+| 11 | `messages` | `id, title, speaker, preached_on, series, ref, blurb, takeaways[], question, youtube, facebook` | `content/messages.json` |
 
 Two notes, because a schema is not a neutral document:
 

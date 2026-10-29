@@ -2,27 +2,27 @@
 //
 // One featured poster at full height, then the rest as posters and a list.
 //
-// One thing about this tab is worth stating plainly. **This church has no
-// video archive, and this app will not pretend otherwise.** Every message here
-// carries the passage it was preached from, what it said, and the question it
-// left behind — that is a real thing to open on a Friday evening, and it works
-// with no signal and no data.
+// Every message here carries the passage it was preached from, what it said,
+// and the question it left behind — that is a real thing to open on a Friday
+// evening, and it works with no signal and no data.
 //
-// `url` on a message is the recording, and it is empty on all of them today.
-// When the media team publishes one, filling that field in
-// `content/messages.json` turns "Watch the recording" on for that message and
-// nothing else changes. Until then, no button anywhere on this screen claims
-// to play something that does not exist.
+// Services are streamed to YouTube and Facebook Live, and a message can carry
+// either recording in `youtube` / `facebook` in `content/messages.json`. A
+// YouTube one plays inside the message; a Facebook one opens on Facebook
+// (core/video.js has why). A message with neither is still whole, and no
+// button anywhere on this screen claims to play something that does not exist.
 
 import { h, poster, label, display, headline, art, go, pill,
          rows, row, reference, note, rise, toneFor } from '../core/ui.js';
 import * as content from '../core/content.js';
 import * as progress from '../core/progress.js';
 import * as notes from '../core/notes.js';
+import * as video from '../core/video.js';
 
 const dateOf = (one) => new Date(`${one.date}T00:00:00`);
 const said = (one) => dateOf(one).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 const heard = (one) => progress.isDone('message', one.id);
+const hasRecording = (one) => { const rec = video.recording(one); return !!(rec.youtube || rec.facebook); };
 const toneOf = (name) => (name === 'poppy' ? 'rose' : (name === 'navy' ? 'ink' : (name || 'paper')));
 
 export default async function watchScreen(ctx) {
@@ -55,7 +55,8 @@ export default async function watchScreen(ctx) {
           text: `${featured.speaker} · ${said(featured)} · ${featured.minutes} min` }),
         reference(featured.ref, ctx.go, { style: 'margin-top:1rem' })),
       h('div', { class: 'poster-foot' },
-        pill(heard(featured) ? 'Open it again' : 'Open this message', () => ctx.go(`message/${featured.id}`)),
+        pill(heard(featured) ? 'Open it again' : (hasRecording(featured) ? 'Watch this message' : 'Open this message'),
+          () => ctx.go(`message/${featured.id}`)),
         art(featured.symbol || 'book', { tone, size: 'sm' }))));
   }
 
@@ -86,7 +87,7 @@ export default async function watchScreen(ctx) {
     rows(...all.map((one) => row({
       title: one.title,
       note: `${one.speaker} · ${said(one)}${one.series === one.title ? '' : ` · ${one.series}`}`,
-      meta: heard(one) ? 'Opened' : `${one.minutes} min`,
+      meta: heard(one) ? 'Opened' : (hasRecording(one) ? `▶ ${one.minutes} min` : `${one.minutes} min`),
       onclick: () => ctx.go(`message/${one.id}`),
     })))));
 
@@ -134,10 +135,13 @@ export default async function watchScreen(ctx) {
       art('book', { tone: 'captain', size: 'sm' }))));
 
   // ── What this tab is, and is not ────────────────────────────────────────
+  const recorded = all.filter(hasRecording).length;
   parts.push(poster({ tone: 'paper' },
     label('About the recordings'),
-    h('p', { class: 'body', text: 'FLCC does not publish a video archive, so nothing on this screen plays. What is here is what was preached — the passage, the substance and the question — written up so it can be read on the bus with no signal.' }),
-    note('When the media team posts a recording, it appears here as a link on that message.')));
+    h('p', { class: 'body', text: recorded
+      ? 'A message marked ▶ has its recording: a YouTube one plays inside the message, a Facebook one opens on Facebook. Every message also carries what was preached — the passage, the substance and the question — written up so it can be read on the bus with no signal.'
+      : 'No recordings are linked yet, so nothing on this screen plays. What is here is what was preached — the passage, the substance and the question — written up so it can be read on the bus with no signal.' }),
+    note('YouTube is only contacted when you press Play on a recording.')));
 
   const el = h('div', { style: 'display:contents' }, ...parts);
   rise(parts);
