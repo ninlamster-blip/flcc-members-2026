@@ -92,12 +92,16 @@ export default async function watchScreen(ctx) {
     })))));
 
   // ── Series ──────────────────────────────────────────────────────────────
+  //
+  // Only real series: a standalone message carries its own title as its
+  // series, and a "series" of one is not worth a row. No series, no poster.
   const bySeries = new Map();
   for (const one of all) {
     if (!bySeries.has(one.series)) bySeries.set(one.series, []);
     bySeries.get(one.series).push(one);
   }
-  parts.push(poster({ tone: 'sky' },
+  for (const [name, items] of bySeries) if (items.length < 2) bySeries.delete(name);
+  if (bySeries.size) parts.push(poster({ tone: 'sky' },
     label('Series'),
     rows(...[...bySeries.entries()].map(([name, items]) => {
       const done = items.filter(heard).length;
