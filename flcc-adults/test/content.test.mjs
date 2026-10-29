@@ -301,7 +301,9 @@ test('every event can be counted down to, not just read', async () => {
  */
 test('every message can be opened, with or without a recording', () => {
   const messages = read('messages.json');
-  assert.ok(messages.length >= 6, 'a Watch tab with five messages on it is an empty room');
+  // Real sermons only — the placeholder ten were taken out when the first real
+  // one arrived — so the floor is one, not a number that would need inventing.
+  assert.ok(messages.length >= 1, 'Watch needs at least one message');
   const ids = new Set();
   for (const one of messages) {
     assert.ok(isText(one.id), 'a message without an id');
@@ -326,10 +328,14 @@ test('every message can be opened, with or without a recording', () => {
       `${one.id}: three takeaways — a member reads three and skims seven`);
     for (const line of one.takeaways) assert.ok(isText(line, 30), `${one.id}: a thin takeaway`);
   }
-  // Every series has to be a series. One message on its own is a message.
+  // Every series has to be a series. One message on its own is a message, and
+  // says so by carrying its own title as its series — the Watch screen then
+  // labels it "Message" and leaves it out of the list of series.
   const series = new Map();
   for (const one of messages) series.set(one.series, (series.get(one.series) || 0) + 1);
   for (const [name, count] of series) {
-    assert.ok(count >= 2, `"${name}" has one message in it — that is not a series`);
+    const standalone = count === 1 && messages.some((one) => one.series === name && one.title === name);
+    assert.ok(count >= 2 || standalone,
+      `"${name}" has one message in it — make it a standalone (series = its title) or add the rest of the series`);
   }
 });
