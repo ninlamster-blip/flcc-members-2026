@@ -104,7 +104,7 @@ function formatDate(iso){
   return isNaN(d)?iso:d.toLocaleDateString(undefined,{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 }
 
-const EMPTY = { date:'', title:'', preacher:'', summary:'', video:'' };
+const EMPTY = { date:'', title:'', preacher:'', summary:'', youtube:'', facebook:'' };
 
 // UTF-8 safe base64, both ways — sermon summaries carry Tagalog and emoji.
 const toBase64   = s => btoa(unescape(encodeURIComponent(s)));
@@ -142,21 +142,21 @@ function TokenModal({onSave,onClose}){
   );
 }
 
-// ─── The video link box, with what it found ───────────────────────────────────
-function VideoCheck({value}){
-  const v=S.sermonVideo(value);
+// ─── A video link box, with what it found ─────────────────────────────────────
+// YouTube plays inside the page; Facebook opens on Facebook (sermons.js has
+// why). Each box says which, so nobody expects a Facebook video to play here.
+function VideoCheck({value,kind}){
   if(!String(value||'').trim()) return null;
+  const v=kind==='youtube'?S.youtubeVideo(value):S.facebookVideo(value);
   if(!v.ok) return <div className="note bad">{v.error}</div>;
   const open=<a href={v.href} target="_blank" rel="noopener" style={{color:'inherit',fontWeight:600}}>Open it to check ↗</a>;
-  // YouTube plays inside the page; Facebook opens on Facebook (sermons.js has
-  // why). Say which, so nobody expects a Facebook video to play here.
-  if(v.source==='youtube') return (
+  if(kind==='youtube') return (
     <div className="note ok" style={{display:'flex',gap:10,alignItems:'center'}}>
       <img src={S.youtubeThumb(v.id)} alt="" style={{width:96,aspectRatio:'16/9',objectFit:'cover',borderRadius:6,flex:'none'}}/>
-      <div>✓ YouTube video. It plays right on the Sermons page and the members app. {open}</div>
+      <div>✓ YouTube video. It plays right in the Sermons page and the app's Watch tab. {open}</div>
     </div>
   );
-  return <div className="note ok">✓ Facebook video. Visitors watch it on Facebook. {open}</div>;
+  return <div className="note ok">✓ Facebook video. Shown as "Watch on Facebook", or "Also on Facebook" beside a YouTube one. {open}</div>;
 }
 
 // ─── App ──────────────────────────────────────────────────────────────────────
@@ -243,10 +243,15 @@ function App(){
       title:form.title.trim(),
       preacher:form.preacher.trim(),
       summary:form.summary.trim(),
-      video:S.sermonVideo(form.video).href,
     };
+    const links=S.sermonLinks(form);
+    if(links.youtube)  clean.youtube=links.youtube.href;
+    if(links.facebook) clean.facebook=links.facebook.href;
     if(editingId){
-      setSermons(list=>list.map(s=>s.id===editingId?{...s,...clean}:s));
+      // Rebuilt from the form rather than merged into the old entry, so an
+      // emptied box really removes its link — and the single "video" field
+      // older entries used is replaced by the two boxes.
+      setSermons(list=>list.map(s=>s.id===editingId?{id:s.id,...clean}:s));
       showToast('✓ Changes saved — press Publish to put them online');
     }else{
       const id=S.sermonId(clean.date,clean.title,sermons.map(s=>s.id));
@@ -257,7 +262,10 @@ function App(){
   };
 
   const edit=s=>{
-    setForm({date:s.date||'',title:s.title||'',preacher:s.preacher||'',summary:s.summary||'',video:s.video||''});
+    const links=S.sermonLinks(s);
+    setForm({date:s.date||'',title:s.title||'',preacher:s.preacher||'',summary:s.summary||'',
+      youtube:links.youtube?links.youtube.href:(s.youtube||''),
+      facebook:links.facebook?links.facebook.href:(s.facebook||'')});
     setEditingId(s.id);setTried(false);
     window.scrollTo({top:0,behavior:'smooth'});
   };
@@ -364,9 +372,15 @@ function App(){
               <div className="hint" style={{textAlign:'right'}}>{form.summary.length}/800</div>
             </div>
             <div className="field">
-              <label className="field-label" htmlFor="f-video">Video link (YouTube or Facebook)</label>
-              <input id="f-video" className="field-input" value={form.video} onChange={e=>set('video',e.target.value)} placeholder="https://youtu.be/… or https://www.facebook.com/…" autoComplete="off" spellCheck={false}/>
-              <VideoCheck value={form.video}/>
+              <label className="field-label" htmlFor="f-youtube">YouTube link</label>
+              <input id="f-youtube" className="field-input" value={form.youtube} onChange={e=>set('youtube',e.target.value)} placeholder="https://youtu.be/…" autoComplete="off" spellCheck={false}/>
+              <VideoCheck value={form.youtube} kind="youtube"/>
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="f-facebook">Facebook link</label>
+              <input id="f-facebook" className="field-input" value={form.facebook} onChange={e=>set('facebook',e.target.value)} placeholder="https://www.facebook.com/share/v/…" autoComplete="off" spellCheck={false}/>
+              <VideoCheck value={form.facebook} kind="facebook"/>
+              <div className="hint">Fill in one or both. With both, the YouTube one plays.</div>
             </div>
 
             {tried&&problems.length>0&&(
@@ -381,11 +395,11 @@ function App(){
 
           <div className="panel" style={{marginTop:14}}>
             <details className="help">
-              <summary>How to get the video link</summary>
+              <summary>How to get the video links</summary>
               <ol>
                 <li><strong>YouTube (plays on the page):</strong> open the video, tap <strong>Share → Copy link</strong>, paste it here. The video must be <strong>Public</strong> or <strong>Unlisted</strong>, with embedding allowed (YouTube's default). A live stream's link works once the stream has ended.</li>
                 <li><strong>Facebook (opens on Facebook):</strong> open the video on the church's <strong>Facebook Page</strong>, tap <strong>Share → Copy link</strong>, paste it here. It must be <strong>Public</strong>. Facebook won't play most service videos inside other websites because of the worship music, so visitors are sent to Facebook to watch.</li>
-                <li>If a service is on both, use the <strong>YouTube</strong> link.</li>
+                <li>If the service is on both, paste <strong>both</strong>. Members get the YouTube video playing in the app, with "Also on Facebook" underneath.</li>
               </ol>
             </details>
           </div>

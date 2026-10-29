@@ -74,6 +74,14 @@
   .byline { font-size: .875rem; color: var(--ink-muted); }
   .byline strong { color: var(--ink); font-weight: 600; }
   .summary { margin: 10px 0 0; color: var(--ink); font-size: .95rem; white-space: pre-line; }
+  .also { display: inline-block; margin-top: 8px; font-size: .8rem; font-weight: 600; text-decoration: none; }
+  .also:hover { text-decoration: underline; }
+
+  /* sermons.html?embed=1 — inside the members app's Watch tab, which already
+     has its own header and knows which church it is. */
+  html.embedded header, html.embedded footer { display: none; }
+  html.embedded main.wrap { padding: 4px 0 8px; }
+  html.embedded body { background: transparent; }
 
   .tools { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
   .tools .label { margin: 0; flex: 1 1 auto; }
@@ -161,16 +169,16 @@
    *  else owns, which is the worship set, so nearly every service came up as
    *  "Video unavailable". A link out works every time. */
   function video(s) {
-    var v = S.sermonVideo(s.video);
+    var links = S.sermonLinks(s);
+    var v = links.youtube;
     var box = el('div', { class: 'video' });
-    var label = el('span', { class: 'poster-cta', text: v.source === 'youtube' ? 'Play sermon' : 'Watch on Facebook' });
     var parts = [
-      v.source === 'youtube' ? el('img', { class: 'thumb', src: S.youtubeThumb(v.id), alt: '', loading: 'lazy' }) : null,
+      v ? el('img', { class: 'thumb', src: S.youtubeThumb(v.id), alt: '', loading: 'lazy' }) : null,
       el('span', { class: 'play', 'aria-hidden': 'true' }),
-      label,
+      el('span', { class: 'poster-cta', text: v ? 'Play sermon' : 'Watch on Facebook' }),
       el('span', { class: 'poster-date', text: formatDate(s.date) }),
     ];
-    var poster = v.source === 'youtube'
+    var poster = v
       ? el('button', {
           class: 'poster has-thumb', type: 'button', 'aria-label': 'Play “' + s.title + '”',
           onclick: function () {
@@ -181,7 +189,7 @@
           },
         }, parts)
       : el('a', {
-          class: 'poster', href: v.href, target: '_blank', rel: 'noopener',
+          class: 'poster', href: links.facebook.href, target: '_blank', rel: 'noopener',
           'aria-label': 'Watch “' + s.title + '” on Facebook',
         }, parts);
     poster.querySelector('.play').innerHTML = PLAY_ICON;
@@ -190,10 +198,16 @@
   }
 
   function meta(s, headingTag) {
+    var links = S.sermonLinks(s);
     return el('div', { class: 'meta' }, [
       el(headingTag, { class: 'font-display', text: s.title }),
       el('div', { class: 'byline' }, [el('strong', { text: s.preacher }), ' · ' + formatDate(s.date)]),
       el('p', { class: 'summary', text: s.summary }),
+      // A sermon on both plays from YouTube; Facebook is offered alongside for
+      // anyone who would rather watch, or comment, there.
+      links.youtube && links.facebook
+        ? el('a', { class: 'also', href: links.facebook.href, target: '_blank', rel: 'noopener', text: 'Also on Facebook ↗' })
+        : null,
     ]);
   }
 
@@ -244,6 +258,20 @@
     ]));
   }
 
+  // ── Inside the members app ────────────────────────────────────────────────
+  // The Watch tab frames this page (?embed=1) rather than keeping a second
+  // copy of it. It needs the page's height to size the frame without a
+  // scrollbar inside a scrollbar; only our own origin is told.
+  var embedded = new URLSearchParams(location.search).get('embed') === '1' && window.parent !== window;
+  if (embedded) {
+    document.documentElement.classList.add('embedded');
+    var tell = function () {
+      window.parent.postMessage({ flccSermons: 'height', h: document.documentElement.scrollHeight }, location.origin);
+    };
+    if (window.ResizeObserver) new ResizeObserver(tell).observe(document.body);
+    window.addEventListener('load', tell);
+  }
+
   // ── Header, church picker, footer ─────────────────────────────────────────
   document.getElementById('church-name').textContent = CHURCH.name;
   var pick = document.getElementById('church-pick');
@@ -273,10 +301,10 @@
     })
     .then(function (json) {
       // An entry with something missing is skipped rather than shown half
-      // empty, and every link is the cleaned-up one rather than as typed.
+      // empty; links are read through sermonLinks(), so always the cleaned-up
+      // ones rather than as typed.
       var list = S.readSermonsFile(json)
-        .filter(function (s) { return S.sermonProblems(s).length === 0; })
-        .map(function (s) { return Object.assign({}, s, { video: S.sermonVideo(s.video).href }); });
+        .filter(function (s) { return S.sermonProblems(s).length === 0; });
       render(S.sortSermons(list));
     })
     .catch(renderError);

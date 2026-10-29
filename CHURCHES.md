@@ -291,12 +291,15 @@ in the schedule editor.
 
 `sermons.html?church=<slug>` is a **public** page of a church's past services —
 the newest one large at the top, the rest below, a search box once there are
-more than a handful. Visitors can switch church from the page itself. The
-members app's Home tab shows the newest one as a **Latest sermon** card, with
-an "All sermons" link to the page; before a church's first sermon it is a plain
-link card.
+more than a handful. Visitors can switch church from the page itself.
 
-Each entry is four things typed by the admin plus a video link:
+Inside the members app the same list is the **📺 Watch** tab: `sermons.html`
+in a frame (`?embed=1` hides its header and reports its height so the frame
+grows with the list), not a second copy of it. Home shows the newest sermon as
+a **Latest sermon** card whose "All sermons" button opens the Watch tab.
+
+Each entry is four things typed by the admin plus its links — YouTube,
+Facebook, or both, since most churches stream to both:
 
 ```json
 { "sermons": [
@@ -305,15 +308,21 @@ Each entry is four things typed by the admin plus a video link:
     "title": "Walking in Faith",
     "preacher": "Ptr. Rodel",
     "summary": "Two or three sentences about the message.",
-    "video": "https://www.youtube.com/watch?v=<id>" } ] }
+    "youtube": "https://www.youtube.com/watch?v=<id>",
+    "facebook": "https://www.facebook.com/<page>/videos/<id>/" } ] }
 ```
+
+The very first entries had a single `video` field holding one or the other;
+`sermonLinks()` still reads it, and the editor rewrites an entry into the two
+fields the next time it is saved.
 
 **A video is a YouTube link or a Facebook one, and they behave differently.**
 
 | | On the Sermons page and the Home card |
 | --- | --- |
 | **YouTube** | Its own thumbnail; tapping it plays the video right there |
-| **Facebook** | A "Watch on Facebook" card that opens the video on Facebook |
+| **Facebook only** | A "Watch on Facebook" card that opens the video on Facebook |
+| **Both** | YouTube plays; "Also on Facebook ↗" sits under the summary |
 
 Facebook doesn't play in the page because it won't: the first real sermon was
 embedded and came up as "Video unavailable — this video can't be embedded
@@ -329,8 +338,8 @@ player other than YouTube's appears.
 Any link shape works — YouTube's `watch?v=`, `youtu.be/`, `/live/`, `/shorts/`
 or embed code; Facebook's Share links (`fb.watch/…`, `facebook.com/share/v/…`),
 `/videos/…`, `/watch/?v=…`, `/reel/…` or embed code. `sermonVideo()` in
-`sermons.js` is the one place that reads them, used by the page, the editor and
-the Home card alike.
+`sermons.js` reads one link and `sermonLinks()` a whole sermon; the page, the
+editor and the Home card all go through them.
 
 Nobody edits the file by hand: `sermon-editor.html?church=<slug>` is a form
 (date, title, preacher, summary, link) that publishes it with the admin's GitHub

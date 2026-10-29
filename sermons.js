@@ -2,8 +2,9 @@
    Sermons — the rules shared by sermons.html and sermon-editor.html
    -----------------------------------------------------------------------------
    Each church keeps its own list in sermons.json, read through
-   FLCC.data('sermons.json') — by sermons.html, by the editor, and by the
-   members app's "Latest sermon" card on Home:
+   FLCC.data('sermons.json') — by sermons.html (also the members app's Watch
+   tab, which shows it in a frame), by the editor, and by the members app's
+   "Latest sermon" card on Home:
 
      { "sermons": [
          { "id": "2026-10-25-walking-in-faith",
@@ -11,10 +12,13 @@
            "title": "Walking in Faith",
            "preacher": "Ptr. Rodel",
            "summary": "Two or three sentences about the message.",
-           "video": "https://www.youtube.com/watch?v=<id>" } ] }
+           "youtube": "https://www.youtube.com/watch?v=<id>",
+           "facebook": "https://www.facebook.com/<page>/videos/<id>/" } ] }
 
-   A video is a YouTube link or a Facebook one, and the two behave differently
-   on purpose:
+   Churches stream to both, so a sermon carries either link or both; at least
+   one. (The first entries had a single "video" field holding one or the
+   other — sermonLinks() still reads it.) The two behave differently on
+   purpose:
 
      YouTube   plays IN the page, behind its own thumbnail. YouTube lets other
                sites play its videos, which is the reason to use it.
@@ -23,8 +27,9 @@
                worship set, so nearly every service — and says "Video
                unavailable". A link out works every time.
 
-   sermonVideo() is the one place that tells them apart; everything else asks
-   it. Short share links work for both.
+   With both, YouTube plays and Facebook is offered as "Also on Facebook".
+   sermonLinks() is the one place that reads a sermon's links; everything
+   else asks it. Short share links work for both.
 
    Plain script, no build step, loaded before the page code. Pure functions
    only, so test/sermons.test.mjs can evaluate this file on its own.
@@ -129,6 +134,36 @@
     return { ok: false, error: 'Paste a YouTube or Facebook video link.' };
   }
 
+  /** A sermon's links, read and checked, whichever fields hold them.
+   *    { youtube:  { id, href } | null,   plays in the page
+   *      facebook: { href }     | null,   opens on Facebook
+   *      problems: [sentence, …] }        a box holding something unusable */
+  function sermonLinks(s) {
+    var out = { youtube: null, facebook: null, problems: [] };
+    if (!s || typeof s !== 'object') return out;
+    var yt = String(s.youtube || '').trim();
+    var fb = String(s.facebook || '').trim();
+    if (yt) {
+      var y = youtubeVideo(yt);
+      if (y.ok) out.youtube = { id: y.id, href: y.href };
+      else out.problems.push('YouTube box: ' + y.error);
+    }
+    if (fb) {
+      var f = facebookVideo(fb);
+      if (f.ok) out.facebook = { href: f.href };
+      else out.problems.push('Facebook box: ' + f.error);
+    }
+    // The single "video" field the first entries used, holding either kind.
+    var legacy = String(s.video || '').trim();
+    if (legacy) {
+      var v = sermonVideo(legacy);
+      if (!v.ok) out.problems.push(v.error);
+      else if (v.source === 'youtube' && !out.youtube) out.youtube = { id: v.id, href: v.href };
+      else if (v.source === 'facebook' && !out.facebook) out.facebook = { href: v.href };
+    }
+    return out;
+  }
+
   /** YouTube's player for a video, started by the tap that loaded it. The
    *  -nocookie host keeps YouTube from setting tracking cookies until then. */
   function youtubeEmbedUrl(id) {
@@ -158,8 +193,11 @@
     if (!String(s.preacher || '').trim()) out.push('Add the preacher.');
     if (!validDate(s.date)) out.push('Pick the date it was preached.');
     if (!String(s.summary || '').trim()) out.push('Add a short summary.');
-    var video = sermonVideo(s.video);
-    if (!video.ok) out.push(video.error);
+    var links = sermonLinks(s);
+    out.push.apply(out, links.problems);
+    if (!links.problems.length && !links.youtube && !links.facebook) {
+      out.push('Paste the YouTube or Facebook link — or both.');
+    }
     return out;
   }
 
@@ -235,6 +273,7 @@
     facebookVideo: facebookVideo,
     youtubeVideo: youtubeVideo,
     sermonVideo: sermonVideo,
+    sermonLinks: sermonLinks,
     youtubeEmbedUrl: youtubeEmbedUrl,
     youtubeThumb: youtubeThumb,
     validDate: validDate,
