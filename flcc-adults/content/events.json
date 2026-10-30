@@ -39,149 +39,6 @@
     "tone": "sky"
   },
   {
-    "id": "prayer-2026-10-01",
-    "title": "Prayer meeting",
-    "when": "Thursday 1 October · 6:30 PM",
-    "where": "HS-Zoom (online)",
-    "blurb": "Presider: Sis. Sandra Gabriel · Exhorter: Bro. Edmund Gabriel · Song leader: Sis. Dolly Cas.",
-    "date": "2026-10-01",
-    "start": "18:30",
-    "minutes": 90,
-    "tone": "captain"
-  },
-  {
-    "id": "friday-2026-10-02",
-    "title": "Friday 2 October — who is serving",
-    "when": "Friday 2 October · 4:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Jhem Tulagan · Song leader: Sis. Laidz Pascual · Preacher: Ptr. Justin Flores · Pastoral prayer: Ptr. Doddie Arciaga · Food: Tharah & Juneth. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual. Intercessory prayer before the service, 4:15–4:30 PM: Worship Team — the service coordinator and presider join too.",
-    "date": "2026-10-02",
-    "start": "16:30",
-    "minutes": 120,
-    "tone": "rose"
-  },
-  {
-    "id": "sunday-2026-10-04",
-    "title": "Sunday 4 October — who is serving",
-    "when": "Sunday 4 October · 6:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Annabelle Arciaga · Song leader: Bro. Bong Cas · Preacher: Ptr. Doddie Arciaga · Pastoral prayer: Ptr. Justin Flores · Food: the Cas family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Prayer Ministry — the service coordinator and presider join too.",
-    "date": "2026-10-04",
-    "start": "18:30",
-    "minutes": 120,
-    "tone": "sky"
-  },
-  {
-    "id": "prayer-2026-10-08",
-    "title": "Regular prayer meeting",
-    "when": "Thursday 8 October · 6:30 PM",
-    "where": "Arciaga family flat",
-    "blurb": "Presider: Sis. Laidz Pascual · Exhorter: Bro. Ed Pascual · Song leader: Ptr. Justin Flores.",
-    "date": "2026-10-08",
-    "start": "18:30",
-    "minutes": 90,
-    "tone": "captain"
-  },
-  {
-    "id": "friday-2026-10-09",
-    "title": "Friday 9 October — who is serving",
-    "when": "Friday 9 October · 4:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Mae de Jesus · Song leader: Ptr. Justin Flores · Preacher: Bro. Edmund Gabriel · Pastoral prayer: Sis. Laidz Pascual · Food: the Guerzon family. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual. Intercessory prayer before the service, 4:15–4:30 PM: Fellowship Ministry — the service coordinator and presider join too. BOTR Neck intercessory prayer that morning, 10:00 AM–12:00 PM: Pastors & CSL.",
-    "date": "2026-10-09",
-    "start": "16:30",
-    "minutes": 120,
-    "tone": "rose"
-  },
-  {
-    "id": "sunday-2026-10-11",
-    "title": "Sunday 11 October — who is serving",
-    "when": "Sunday 11 October · 6:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Kitz Tejares · Song leader: Bro. Elbert Siangco · Preacher: Bro. Wilson Guerzon · Pastoral prayer: Bro. Edmund Gabriel · Food: the Vergara family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Finance Team — the service coordinator and presider join too.",
-    "date": "2026-10-11",
-    "start": "18:30",
-    "minutes": 120,
-    "tone": "sky"
-  },
-  {
-    "id": "prayer-2026-10-14",
-    "title": "Corporate prayer meeting",
-    "when": "Wednesday 14 October · 6:00 PM",
-    "where": "CPM-Zoom (online)",
-    "blurb": "Led by Agape.",
-    "date": "2026-10-14",
-    "start": "18:00",
-    "minutes": 90,
-    "tone": "captain"
-  },
-  {
-    "id": "friday-2026-10-16",
-    "title": "Friday 16 October — who is serving",
-    "when": "Friday 16 October · 4:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Lizel Ocenar · Song leader: Bro. Bong Cas · Preacher: Bro. Allen Santos · Pastoral prayer: Bro. Wilson Guerzon · Food: the Pascual family. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual. Intercessory prayer before the service, 4:15–4:30 PM: Admin Ministry — the service coordinator and presider join too.",
-    "date": "2026-10-16",
-    "start": "16:30",
-    "minutes": 120,
-    "tone": "rose"
-  },
-  {
-    "id": "sunday-2026-10-18",
-    "title": "Sunday 18 October — who is serving",
-    "when": "Sunday 18 October · 6:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Sheena Biboso · Song leader: Sis. Grace Siangco · Preacher: Sis. Celsa Sario · Pastoral prayer: Sis. Laidz Pascual · Food: the Arciaga family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Evangelism Team — the service coordinator and presider join too.",
-    "date": "2026-10-18",
-    "start": "18:30",
-    "minutes": 120,
-    "tone": "sky"
-  },
-  {
-    "id": "prayer-2026-10-22",
-    "title": "Prayer meeting — prayer & fasting",
-    "when": "Thursday 22 October · 6:30 PM",
-    "where": "Flores family flat",
-    "blurb": "Presider: Sis. Fretzie Guerzon · Exhorter: Bro. Wilson Guerzon · Song leader: Sis. Laidz Pascual.",
-    "date": "2026-10-22",
-    "start": "18:30",
-    "minutes": 90,
-    "tone": "captain"
-  },
-  {
-    "id": "friday-2026-10-23",
-    "title": "Friday 23 October — who is serving",
-    "when": "Friday 23 October · 4:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Dolly Cas · Song leader: Bro. Dandreb Serna · Preacher: Bro. Edward Sario · Pastoral prayer: Bro. Allen Santos · Food: Bless & Mae. Communion assistants for October's Friday services: Bro. Edmund Gabriel and Sis. Laidz Pascual. Intercessory prayer before the service, 4:15–4:30 PM: WAM — the service coordinator and presider join too.",
-    "date": "2026-10-23",
-    "start": "16:30",
-    "minutes": 120,
-    "tone": "rose"
-  },
-  {
-    "id": "sunday-2026-10-25",
-    "title": "Sunday 25 October — who is serving",
-    "when": "Sunday 25 October · 6:30 PM",
-    "where": "Farwaniya",
-    "blurb": "Presider: Sis. Fretz Guerzon · Song leader: Bro. Dave Vergara · Preacher: Ptr. Nerwin Suelo · Pastoral prayer: Bro. Wilson Guerzon · Food: the Sario family. Communion assistants for October's Sunday services: Bro. Allen Santos and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Discipleship Ministry — the service coordinator and presider join too.",
-    "date": "2026-10-25",
-    "start": "18:30",
-    "minutes": 120,
-    "tone": "sky"
-  },
-  {
-    "id": "prayer-2026-10-29",
-    "title": "Thanksgiving prayer meeting",
-    "when": "Thursday 29 October · 6:30 PM",
-    "where": "Abundance Hall (2F)",
-    "blurb": "Presider: Sis. Dolly Cas · Exhorter: Bro. Bong Cas · Song leader: Bro. Edmund Gabriel. Food: October celebrants.",
-    "date": "2026-10-29",
-    "start": "18:30",
-    "minutes": 90,
-    "tone": "captain"
-  },
-  {
     "id": "friday-2026-10-30",
     "title": "Friday 30 October — who is serving",
     "when": "Friday 30 October · 4:30 PM",
@@ -191,5 +48,148 @@
     "start": "16:30",
     "minutes": 120,
     "tone": "rose"
+  },
+  {
+    "id": "sunday-2026-11-01",
+    "title": "Sunday 1 November — who is serving",
+    "when": "Sunday 1 November · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Grace Siangco · Song leader: Bro. Elbert Siangco · Preacher: Ptr. Justin Flores · Pastoral prayer: Ptr. Doddie Arciaga · Food: the Cas family. Communion assistants for November's Sunday services: Bro. Edmund Gabriel and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Prayer Ministry — the service coordinator and presider join too.",
+    "date": "2026-11-01",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
+    "id": "prayer-2026-11-05",
+    "title": "Sectoral prayer meeting",
+    "when": "Thursday 5 November · 6:30 PM",
+    "where": "Venue TBA (face to face)",
+    "blurb": "Led by FB. Meeting face to face — the venue is still to be announced.",
+    "date": "2026-11-05",
+    "start": "18:30",
+    "minutes": 90,
+    "tone": "captain"
+  },
+  {
+    "id": "friday-2026-11-06",
+    "title": "Friday 6 November — who is serving",
+    "when": "Friday 6 November · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Alma Flores · Song leader: Sis. Dolly Cas · Preacher: Ptr. Doddie Arciaga · Pastoral prayer: Ptr. Justin Flores · Food: the Santos family. Communion assistants for November's Friday services: Sis. Laidz Pascual and Bro. Allen Santos. Intercessory prayer before the service, 4:15–4:30 PM: Worship Team — the service coordinator and presider join too.",
+    "date": "2026-11-06",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
+  },
+  {
+    "id": "sunday-2026-11-08",
+    "title": "Sunday 8 November — who is serving",
+    "when": "Sunday 8 November · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Bro. Dave Vergara · Song leader: Sis. Grace Siangco · Preacher: Bro. Edmund Gabriel · Pastoral prayer: Sis. Laidz Pascual · Food: Almira & Kitzie. Communion assistants for November's Sunday services: Bro. Edmund Gabriel and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Finance Team — the service coordinator and presider join too.",
+    "date": "2026-11-08",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
+    "id": "prayer-2026-11-11",
+    "title": "Corporate prayer meeting",
+    "when": "Wednesday 11 November · 6:00 PM",
+    "where": "CPM-Zoom (online)",
+    "blurb": "Led by CS.",
+    "date": "2026-11-11",
+    "start": "18:00",
+    "minutes": 90,
+    "tone": "captain"
+  },
+  {
+    "id": "friday-2026-11-13",
+    "title": "Friday 13 November — who is serving",
+    "when": "Friday 13 November · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Bless de Jesus · Song leader: Bro. Dandreb Serna · Preacher: Bro. Wilson Guerzon · Pastoral prayer: Bro. Edmund Gabriel · Food: the Treseni family. Communion assistants for November's Friday services: Sis. Laidz Pascual and Bro. Allen Santos. Intercessory prayer before the service, 4:15–4:30 PM: Fellowship Ministry — the service coordinator and presider join too.",
+    "date": "2026-11-13",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
+  },
+  {
+    "id": "sunday-2026-11-15",
+    "title": "Sunday 15 November — who is serving",
+    "when": "Sunday 15 November · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Celsa Sario · Song leader: Bro. Bong Cas · Preacher: Bro. Allen Santos · Pastoral prayer: Bro. Wilson Guerzon · Food: the Gabriel family. Communion assistants for November's Sunday services: Bro. Edmund Gabriel and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Evangelism Team — the service coordinator and presider join too.",
+    "date": "2026-11-15",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
+    "id": "prayer-2026-11-19",
+    "title": "Prayer meeting — prayer & fasting",
+    "when": "Thursday 19 November · 6:30 PM",
+    "where": "Syed & Jen family flat",
+    "blurb": "Presider: Sis. Annabelle Arciaga · Exhorter: Ptr. Doddie Arciaga · Song leader: Bro. Edmund Gabriel.",
+    "date": "2026-11-19",
+    "start": "18:30",
+    "minutes": 90,
+    "tone": "captain"
+  },
+  {
+    "id": "friday-2026-11-20",
+    "title": "Friday 20 November — who is serving",
+    "when": "Friday 20 November · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Christine Santos · Song leader: Sis. Laidz Pascual · Preacher: Bro. Edward Sario · Pastoral prayer: Sis. Laidz Pascual · Food: Lizel & Jhem. Communion assistants for November's Friday services: Sis. Laidz Pascual and Bro. Allen Santos. Intercessory prayer before the service, 4:15–4:30 PM: Admin Ministry — the service coordinator and presider join too.",
+    "date": "2026-11-20",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "rose"
+  },
+  {
+    "id": "sunday-2026-11-22",
+    "title": "Sunday 22 November — who is serving",
+    "when": "Sunday 22 November · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Sis. Rona Vergara · Song leader: Sis. Juneth Atienza · Preacher: Sis. Laidz Pascual · Pastoral prayer: Bro. Allen Santos · Food: the Siangco family. Communion assistants for November's Sunday services: Bro. Edmund Gabriel and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Discipleship Ministry — the service coordinator and presider join too.",
+    "date": "2026-11-22",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
+  },
+  {
+    "id": "prayer-2026-11-26",
+    "title": "Thanksgiving prayer meeting",
+    "when": "Thursday 26 November · 6:30 PM",
+    "where": "Abundance Hall (2F)",
+    "blurb": "Presider: Sis. Sandra Gabriel · Exhorter: Bro. Edmund Gabriel · Song leader: Sis. Celsa Sario. Food: November celebrants.",
+    "date": "2026-11-26",
+    "start": "18:30",
+    "minutes": 90,
+    "tone": "captain"
+  },
+  {
+    "id": "friday-2026-11-27",
+    "title": "Friday 27 November — 20th anniversary celebration",
+    "when": "Friday 27 November · 4:30 PM",
+    "where": "Farwaniya",
+    "blurb": "FLCC - Abundance Church's 20th anniversary celebration takes the place of the usual Friday roster — there is no presider, song leader, preacher or food assignment this week. Intercessory prayer before the service, 4:15–4:30 PM: Singles Ministry — the service coordinator and presider join too.",
+    "date": "2026-11-27",
+    "start": "16:30",
+    "minutes": 120,
+    "tone": "sunshine"
+  },
+  {
+    "id": "sunday-2026-11-29",
+    "title": "Sunday 29 November — who is serving",
+    "when": "Sunday 29 November · 6:30 PM",
+    "where": "Farwaniya",
+    "blurb": "Presider: Bro. Elbert Siangco · Song leader: Bro. Dave Vergara · Preacher: Ptr. Nerwin Suelo · Pastoral prayer: Bro. Edmund Gabriel · Food: the Flores family. Communion assistants for November's Sunday services: Bro. Edmund Gabriel and Bro. Wilson Guerzon. Intercessory prayer before the service, 6:15–6:30 PM: Women's Ministry — the service coordinator and presider join too.",
+    "date": "2026-11-29",
+    "start": "18:30",
+    "minutes": 120,
+    "tone": "sky"
   }
 ]
