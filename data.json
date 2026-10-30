@@ -155,7 +155,8 @@
       "title": "Sis.",
       "type": "individual",
       "eligibleRoles": [
-        "presider"
+        "presider",
+        "songLeader"
       ],
       "status": "active",
       "birthday": "05-16",
@@ -299,7 +300,8 @@
       "title": "Bro.",
       "type": "individual",
       "eligibleRoles": [
-        "songLeader"
+        "songLeader",
+        "presider"
       ],
       "status": "active",
       "birthday": "",
@@ -838,7 +840,8 @@
     "2026-07": "1 THESSALONIANS",
     "2026-08": "Free Topic",
     "2026-09": "FINANCIAL STEWARDSHIP",
-    "2026-10": "MISSIONS"
+    "2026-10": "MISSIONS",
+    "2026-11": "THANKSGIVING"
   },
   "schedule": [
     {
@@ -2317,6 +2320,177 @@
         "communionAssistant1": "bro-05",
         "communionAssistant2": "bro-04",
         "foodInCharge": "fam-06"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-06-friday",
+      "date": "2026-11-06",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-13",
+        "songLeader": "sis-06",
+        "preacher": "ptr-02",
+        "pastoralPrayer": "ptr-01",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-02"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-13-friday",
+      "date": "2026-11-13",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-01",
+        "songLeader": "bro-01",
+        "preacher": "bro-04",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "fam-08"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-20-friday",
+      "date": "2026-11-20",
+      "service": "Friday",
+      "roles": {
+        "presider": "sis-09",
+        "songLeader": "sis-18",
+        "preacher": "bro-08",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": "w-1782986400002"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-27-friday",
+      "date": "2026-11-27",
+      "service": "Friday",
+      "roles": {
+        "presider": null,
+        "songLeader": null,
+        "preacher": null,
+        "pastoralPrayer": null,
+        "communionAssistant1": "sis-18",
+        "communionAssistant2": "bro-05",
+        "foodInCharge": null
+      },
+      "isSpecial": true,
+      "specialNote": "20th Anniversary Celebration",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-01-sunday",
+      "date": "2026-11-01",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-15",
+        "songLeader": "bro-03",
+        "preacher": "ptr-01",
+        "pastoralPrayer": "ptr-02",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-01"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-08-sunday",
+      "date": "2026-11-08",
+      "service": "Sunday",
+      "roles": {
+        "presider": "bro-09",
+        "songLeader": "sis-15",
+        "preacher": "bro-07",
+        "pastoralPrayer": "sis-18",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "par-05"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-15-sunday",
+      "date": "2026-11-15",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-10",
+        "songLeader": "bro-02",
+        "preacher": "bro-05",
+        "pastoralPrayer": "bro-04",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-05"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-22-sunday",
+      "date": "2026-11-22",
+      "service": "Sunday",
+      "roles": {
+        "presider": "sis-07",
+        "songLeader": "sis-12",
+        "preacher": "sis-18",
+        "pastoralPrayer": "bro-05",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-10"
+      },
+      "isSpecial": false,
+      "specialNote": "",
+      "swapped": false,
+      "swapPartner": null,
+      "swapNote": ""
+    },
+    {
+      "id": "2026-11-29-sunday",
+      "date": "2026-11-29",
+      "service": "Sunday",
+      "roles": {
+        "presider": "bro-03",
+        "songLeader": "bro-09",
+        "preacher": "ptr-03",
+        "pastoralPrayer": "bro-07",
+        "communionAssistant1": "bro-07",
+        "communionAssistant2": "bro-04",
+        "foodInCharge": "fam-11"
       },
       "isSpecial": false,
       "specialNote": "",
